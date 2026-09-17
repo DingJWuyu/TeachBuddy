@@ -61,13 +61,16 @@ const frontendContributions = {
       ],
       actions: {
         completeRecurring: ({ endpoint, id, postJson }) => postJson(`${endpoint}/${id}/complete`, {})
+      },
+      messages: {
+        completeRecurring: '提醒已完成。下一次重复提醒会在适用时自动安排。'
       }
     }
   },
   'lesson-planner': {
     panel: LessonPlannerPanel,
     data: {
-      dependencies: { resources: 'resource-vault' }
+      resourceSourceModuleId: 'resource-vault'
     },
     coreEntry: {
       stats: [
@@ -95,7 +98,8 @@ const frontendContributions = {
       ]
     },
     messages: {
-      create: '课程已保存，同时已创建自动提醒。'
+      create: '课程已保存，同时已创建自动提醒。',
+      generateWorksheet: '已根据课程计划创建练习单草稿。'
     },
     actions: {
       generateWorksheet: async ({ endpoint, id, postJson, setActiveModuleId }) => {
@@ -107,7 +111,7 @@ const frontendContributions = {
   'worksheet-designer': {
     panel: WorksheetDesignerPanel,
     data: {
-      dependencies: { resources: 'resource-vault' }
+      resourceSourceModuleId: 'resource-vault'
     },
     coreEntry: {
       stats: [
@@ -159,6 +163,9 @@ const frontendContributions = {
     },
     actions: {
       uploadResource: ({ endpoint, formData, postForm }) => postForm(`${endpoint}/upload`, formData)
+    },
+    messages: {
+      uploadResource: '资源已上传。'
     }
   }
 };

@@ -308,7 +308,7 @@ test('module catalog exposes complete stable registration metadata and route bas
   const context = createTestContext();
 
   try {
-    const token = await login(request(context.app));
+    const token = await register(request(context.app));
     const api = authAgent(context.app, token);
     const response = await api.get('/api/modules').expect(200);
     const modules = response.body.items;

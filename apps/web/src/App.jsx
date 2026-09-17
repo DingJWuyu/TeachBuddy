@@ -33,7 +33,9 @@ export default function App() {
     title: activeModule.title,
     data: moduleData[activeModule.id],
     templates: templates.filter((item) => item.moduleId === activeModule.id),
-    resources: Object.values(activeModule.data.dependencies || {}).flatMap((moduleId) => moduleData[moduleId] || []),
+    resources: activeModule.data.resourceSourceModuleId
+      ? moduleData[activeModule.data.resourceSourceModuleId] || []
+      : [],
     onCreate: (payload) => createItem(activeModule.id, payload),
     onUpdate: (id, payload) => updateItem(activeModule.id, id, payload),
     onDelete: (id) => removeItem(activeModule.id, id),

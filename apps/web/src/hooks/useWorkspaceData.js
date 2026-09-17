@@ -141,12 +141,6 @@ export function useWorkspaceData() {
         return Promise.reject(new Error(`Action ${actionName} is not registered for ${moduleId}.`));
       }
 
-      const successMessages = {
-        completeRecurring: '提醒已完成。下一次重复提醒会在适用时自动安排。',
-        generateWorksheet: '已根据课程计划创建练习单草稿。',
-        uploadResource: '资源已上传。'
-      };
-
       return runAction(
         () => action({
           ...input,
@@ -155,7 +149,7 @@ export function useWorkspaceData() {
           postForm,
           setActiveModuleId
         }),
-        successMessages[actionName]
+        moduleItem.messages?.[actionName]
       );
     }
   };
