@@ -1,15 +1,11 @@
 import { expect, test } from '@playwright/test';
-
-async function registerTeacher(page, { name, email, password }) {
-  await page.goto('/');
-  await page.getByRole('button', { name: '注册' }).click();
-  await page.getByLabel('显示名称').fill(name);
-  await page.getByLabel('邮箱').fill(email);
-  await page.getByLabel('密码', { exact: true }).fill(password);
-  await page.getByLabel('确认密码').fill(password);
-  await page.getByRole('button', { name: '创建账户' }).click();
-  await expect(page.getByRole('button', { name: '工作台首页' })).toBeVisible();
-}
+import {
+  accountFor,
+  expectNoHorizontalOverflow,
+  expectWithinViewport,
+  loginTeacher,
+  registerTeacher
+} from './helpers.js';
 
 function moduleItem(page, title) {
   return page.getByRole('listitem').filter({ hasText: title });
@@ -47,12 +43,9 @@ async function touchDrag(page, source, target) {
   }
 }
 
-test('teacher can arrange grouped modules, preserve hidden placement, and persist after login', async ({ page, browser }) => {
-  await registerTeacher(page, {
-    name: '模块布局教师',
-    email: 'module.layout@example.test',
-    password: 'module layout password'
-  });
+test('teacher can arrange grouped modules, preserve hidden placement, and persist after login', async ({ page, browser }, testInfo) => {
+  const account = accountFor('module-layout', testInfo, 'module layout password');
+  await registerTeacher(page, account);
 
   await page.getByRole('button', { name: '设置' }).click();
   await page.getByLabel('新分组名称').fill('备课组');
@@ -100,9 +93,7 @@ test('teacher can arrange grouped modules, preserve hidden placement, and persis
   await expect(groupRegion(page, '规划').getByRole('listitem').filter({ hasText: '备课规划' })).toBeVisible();
 
   await page.getByRole('button', { name: '退出登录' }).click();
-  await page.getByLabel('邮箱').fill('module.layout@example.test');
-  await page.getByLabel('密码', { exact: true }).fill('module layout password');
-  await page.getByRole('button', { name: '登录' }).click();
+  await loginTeacher(page, account);
   await page.getByRole('button', { name: '设置' }).click();
   await expect(groupRegion(page, '规划')).toBeVisible();
   await expect(groupRegion(page, '规划').getByRole('listitem').filter({ hasText: '排课管理' })).toBeVisible();
@@ -111,9 +102,7 @@ test('teacher can arrange grouped modules, preserve hidden placement, and persis
   const otherPage = await otherContext.newPage();
   try {
     await otherPage.goto('/');
-    await otherPage.getByLabel('邮箱').fill('module.layout@example.test');
-    await otherPage.getByLabel('密码', { exact: true }).fill('module layout password');
-    await otherPage.getByRole('button', { name: '登录' }).click();
+    await loginTeacher(otherPage, account);
     await otherPage.getByRole('button', { name: '设置' }).click();
     await expect(groupRegion(otherPage, '规划')).toBeVisible();
     await expect(groupRegion(otherPage, '规划').getByRole('listitem').filter({ hasText: '排课管理' })).toBeVisible();
@@ -123,23 +112,22 @@ test('teacher can arrange grouped modules, preserve hidden placement, and persis
   }
 });
 
-test('module layout controls remain usable in a narrow viewport', async ({ page }) => {
+test('module layout controls remain usable in a narrow viewport', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await registerTeacher(page, {
-    name: '窄屏布局教师',
-    email: 'module.layout.narrow@example.test',
-    password: 'module narrow password'
-  });
+  await registerTeacher(page, accountFor('module-layout-narrow', testInfo, 'module narrow password'));
 
   await page.getByRole('button', { name: '设置' }).click();
+  await expectNoHorizontalOverflow(page);
   await page.getByLabel('新分组名称').fill('移动端分组');
+  await expectWithinViewport(page, page.getByRole('button', { name: '创建分组' }));
   await page.getByRole('button', { name: '创建分组' }).click();
   await moduleItem(page, '提醒中心').getByRole('combobox').selectOption({ label: '移动端分组' });
   await expect(groupRegion(page, '移动端分组').getByRole('listitem').filter({ hasText: '提醒中心' })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: '提醒中心', exact: true })).toBeVisible();
+  await expectNoHorizontalOverflow(page);
 });
 
-test('group drag works with real touch input in a narrow viewport', async ({ browser }) => {
+test('group drag works with real touch input in a narrow viewport', async ({ browser }, testInfo) => {
   const context = await browser.newContext({
     baseURL: 'http://127.0.0.1:5183',
     viewport: { width: 390, height: 844 },
@@ -147,11 +135,7 @@ test('group drag works with real touch input in a narrow viewport', async ({ bro
   });
   const page = await context.newPage();
   try {
-    await registerTeacher(page, {
-      name: '窄屏触控教师',
-      email: 'module.layout.touch@example.test',
-      password: 'module touch password'
-    });
+    await registerTeacher(page, accountFor('module-layout-touch', testInfo, 'module touch password'));
 
     await page.getByRole('button', { name: '设置' }).click();
     await page.getByLabel('新分组名称').fill('第一组');
@@ -172,4 +156,26 @@ test('group drag works with real touch input in a narrow viewport', async ({ bro
   } finally {
     await context.close();
   }
+});
+
+test('workspace layout has no horizontal overflow on desktop and narrow screens', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await registerTeacher(page, accountFor('module-layout-visual', testInfo, 'layout visual password'));
+  await expectNoHorizontalOverflow(page);
+
+  await page.getByRole('button', { name: '设置' }).click();
+  await expectNoHorizontalOverflow(page);
+  await expectWithinViewport(page, page.getByLabel('新分组名称'));
+  await expectWithinViewport(page, page.getByRole('button', { name: '创建分组' }));
+  await expectWithinViewport(page, page.getByRole('checkbox', { name: '资源库', exact: true }).last());
+  await page.getByLabel('新分组名称').fill('视觉分组');
+  await page.getByRole('button', { name: '创建分组' }).click();
+  await expect(page.getByText('模块分组已创建。')).toBeVisible();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expectNoHorizontalOverflow(page);
+  await expectWithinViewport(page, page.getByLabel('新分组名称'));
+  await expectWithinViewport(page, page.getByRole('button', { name: '创建分组' }));
+  await expectWithinViewport(page, page.getByRole('checkbox', { name: '资源库', exact: true }).last());
+  await expect(page.getByRole('region', { name: '模块分组：视觉分组' })).toBeVisible();
 });

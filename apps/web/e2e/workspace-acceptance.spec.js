@@ -1,17 +1,14 @@
 import { expect, test } from '@playwright/test';
+import {
+  accountFor,
+  itemCard,
+  loginTeacher,
+  moduleButton,
+  registerTeacher,
+  uploadResource
+} from './helpers.js';
 
 const API_BASE = 'http://127.0.0.1:4100/api';
-
-async function registerTeacher(page, { name, email, password }) {
-  await page.goto('/');
-  await page.getByRole('button', { name: '注册' }).click();
-  await page.getByLabel('显示名称').fill(name);
-  await page.getByLabel('邮箱').fill(email);
-  await page.getByLabel('密码', { exact: true }).fill(password);
-  await page.getByLabel('确认密码').fill(password);
-  await page.getByRole('button', { name: '创建账户' }).click();
-  await expect(page.getByRole('button', { name: '工作台首页' })).toBeVisible();
-}
 
 async function apiCall(page, path, { method = 'GET', body } = {}) {
   return page.evaluate(async ({ apiBase, requestPath, requestMethod, requestBody }) => {
@@ -38,35 +35,20 @@ async function apiCall(page, path, { method = 'GET', body } = {}) {
   });
 }
 
-function moduleButton(page, title) {
-  return page.locator('aside').getByRole('button', { name: new RegExp(title) });
-}
-
-function itemCard(page, text) {
-  return page.locator('.item-card').filter({ hasText: text }).first();
-}
-
 test.describe('教师个人工作台最终验收旅程', () => {
   test.setTimeout(60_000);
 
-  test('教师可以通过界面完成五个模块的 CRUD、自动化、模板和导出', async ({ page }) => {
-    await registerTeacher(page, {
-      name: '完整旅程教师',
-      email: 'workspace.acceptance@example.test',
-      password: 'workspace acceptance password'
-    });
+  test('教师可以通过界面完成五个模块的 CRUD、自动化、模板和导出', async ({ page }, testInfo) => {
+    await registerTeacher(page, accountFor('workspace-acceptance', testInfo, 'workspace acceptance password'));
 
     await moduleButton(page, '资源库').click();
-    await page.getByLabel('标题').fill('单摆实验讲义');
-    await page.getByLabel('标签').fill('science, pendulum');
-    await page.getByLabel('关联模块').fill('lesson-planner, worksheet-designer');
-    await page.getByLabel('选择文件').setInputFiles({
-      name: 'pendulum-notes.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('Pendulum notes for the acceptance journey.')
+    await uploadResource(page, {
+      title: '单摆实验讲义',
+      tags: 'science, pendulum',
+      moduleLinks: 'lesson-planner, worksheet-designer',
+      fileName: 'pendulum-notes.txt',
+      contents: 'Pendulum notes for the acceptance journey.'
     });
-    await page.getByRole('button', { name: '上传资源' }).click();
-    await expect(page.getByText('单摆实验讲义', { exact: true })).toBeVisible();
 
     const resourceResponse = await apiCall(page, '/modules/resource-vault');
     expect(resourceResponse.status).toBe(200);
@@ -173,6 +155,9 @@ test.describe('教师个人工作台最终验收旅程', () => {
     await page.getByRole('button', { name: '应用' }).click();
     await page.getByRole('button', { name: '保存练习单草稿' }).click();
     await expect(page.getByText('电磁练习模板稿', { exact: true })).toBeVisible();
+    const templateCard = page.locator('.mini-card').filter({ hasText: '电磁短卷模板' });
+    await templateCard.getByRole('button', { name: '删除' }).click();
+    await expect(templateCard).not.toBeVisible();
 
     const worksheetCard = itemCard(page, '电磁练习模板稿');
     await worksheetCard.getByRole('button', { name: '编辑' }).click();
@@ -201,13 +186,11 @@ test.describe('教师个人工作台最终验收旅程', () => {
     }
 
     await moduleButton(page, '资源库').click();
-    await page.getByLabel('标题').fill('待删除资源');
-    await page.getByLabel('选择文件').setInputFiles({
-      name: 'delete-me.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('temporary resource')
+    await uploadResource(page, {
+      title: '待删除资源',
+      fileName: 'delete-me.txt',
+      contents: 'temporary resource'
     });
-    await page.getByRole('button', { name: '上传资源' }).click();
     const temporaryResourceCard = itemCard(page, '待删除资源');
     await temporaryResourceCard.getByRole('button', { name: '删除' }).click();
     await expect(page.getByText('待删除资源', { exact: true })).not.toBeVisible();
@@ -250,22 +233,17 @@ test.describe('教师个人工作台最终验收旅程', () => {
     await expect(page.getByRole('checkbox', { name: '备课规划', exact: true }).first()).toBeChecked();
   });
 
-  test('两个教师的数据、文件和工作台布局互相隔离', async ({ page }) => {
-    await registerTeacher(page, {
-      name: '边界教师 A',
-      email: 'workspace.boundary.a@example.test',
-      password: 'workspace boundary a password'
-    });
+  test('两个教师的数据、文件和工作台布局互相隔离', async ({ page }, testInfo) => {
+    const firstAccount = accountFor('workspace-boundary-a', testInfo, 'workspace boundary a password');
+    const secondAccount = accountFor('workspace-boundary-b', testInfo, 'workspace boundary b password');
+    await registerTeacher(page, { ...firstAccount, name: '边界教师 A' });
 
     await moduleButton(page, '资源库').click();
-    await page.getByLabel('标题').fill('教师 A 的文件');
-    await page.getByLabel('选择文件').setInputFiles({
-      name: 'teacher-a.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('teacher A private file')
+    await uploadResource(page, {
+      title: '教师 A 的文件',
+      fileName: 'teacher-a.txt',
+      contents: 'teacher A private file'
     });
-    await page.getByRole('button', { name: '上传资源' }).click();
-    await expect(page.getByText('教师 A 的文件', { exact: true })).toBeVisible();
     const firstResource = (await apiCall(page, '/modules/resource-vault')).body.items[0];
 
     await moduleButton(page, '排课管理').click();
@@ -280,12 +258,7 @@ test.describe('教师个人工作台最终验收旅程', () => {
     await expect(page.getByRole('region', { name: '模块分组：教师 A 分组' })).toBeVisible();
     await page.getByRole('button', { name: '退出登录' }).click();
 
-    await page.getByRole('button', { name: '注册' }).click();
-    await page.getByLabel('显示名称').fill('边界教师 B');
-    await page.getByLabel('邮箱').fill('workspace.boundary.b@example.test');
-    await page.getByLabel('密码', { exact: true }).fill('workspace boundary b password');
-    await page.getByLabel('确认密码').fill('workspace boundary b password');
-    await page.getByRole('button', { name: '创建账户' }).click();
+    await registerTeacher(page, { ...secondAccount, name: '边界教师 B' });
     await page.getByRole('button', { name: '工作台首页' }).click();
     await expect(page.getByRole('heading', { name: '即将开始的课程：0' })).toBeVisible();
     await expect(page.getByRole('heading', { name: '资源：0' })).toBeVisible();
@@ -296,14 +269,11 @@ test.describe('教师个人工作台最终验收旅程', () => {
 
     await moduleButton(page, '资源库').click();
     await expect(page.getByText('教师 A 的文件', { exact: true })).not.toBeVisible();
-    await page.getByLabel('标题').fill('教师 B 的文件');
-    await page.getByLabel('选择文件').setInputFiles({
-      name: 'teacher-b.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('teacher B private file')
+    await uploadResource(page, {
+      title: '教师 B 的文件',
+      fileName: 'teacher-b.txt',
+      contents: 'teacher B private file'
     });
-    await page.getByRole('button', { name: '上传资源' }).click();
-    await expect(page.getByText('教师 B 的文件', { exact: true })).toBeVisible();
     const secondResource = (await apiCall(page, '/modules/resource-vault')).body.items[0];
     expect(secondResource.originalName).toBe('teacher-b.txt');
 
@@ -318,9 +288,7 @@ test.describe('教师个人工作台最终验收旅程', () => {
     await page.getByLabel('提醒中心').first().uncheck();
     await page.getByRole('button', { name: '退出登录' }).click();
 
-    await page.getByLabel('邮箱').fill('workspace.boundary.a@example.test');
-    await page.getByLabel('密码', { exact: true }).fill('workspace boundary a password');
-    await page.getByRole('button', { name: '登录' }).click();
+    await loginTeacher(page, firstAccount);
     await expect(page.getByRole('button', { name: '退出登录' })).toBeVisible();
     await expect(moduleButton(page, '提醒中心')).not.toBeVisible();
     await page.getByRole('button', { name: '设置' }).click();

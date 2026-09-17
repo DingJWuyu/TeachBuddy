@@ -1,18 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { accountFor, registerTeacher } from './helpers.js';
 
-async function registerTeacher(page) {
-  await page.goto('/');
-  await page.getByRole('button', { name: '注册' }).click();
-  await page.getByLabel('显示名称').fill('模块目录教师');
-  await page.getByLabel('邮箱').fill('module.registry@example.test');
-  await page.getByLabel('密码', { exact: true }).fill('module registry password');
-  await page.getByLabel('确认密码').fill('module registry password');
-  await page.getByRole('button', { name: '创建账户' }).click();
-  await expect(page.getByRole('button', { name: '工作台首页' })).toBeVisible();
-}
-
-test('registered modules compose the sidebar, core entry, and module switching', async ({ page }) => {
-  await registerTeacher(page);
+test('registered modules compose the sidebar, core entry, and module switching', async ({ page }, testInfo) => {
+  await registerTeacher(page, accountFor('module-registry', testInfo, 'module registry password'));
 
   const sidebar = page.locator('aside');
   for (const title of ['排课管理', '提醒中心', '备课规划', '练习单设计', '资源库']) {
