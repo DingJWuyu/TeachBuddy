@@ -188,7 +188,7 @@ export function useWorkspaceData() {
         return false;
       }
     },
-    async confirmPasswordReset(email, code, password, passwordConfirmation) {
+    async confirmPasswordReset({ email, code, password, passwordConfirmation }) {
       try {
         await postJson('/auth/password-reset/confirm', { email, code, password, passwordConfirmation });
         setError('');

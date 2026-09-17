@@ -50,9 +50,9 @@ const PASSWORD_RECOVERY_RESPONSE = 'If an account exists for that email, a passw
 const PASSWORD_RECOVERY_FAILURE = 'Invalid or expired password recovery code.';
 
 function resolveNow(options) {
-  const configuredNow = options.now ?? options.clock?.now;
+  const configuredNow = options.now ?? (() => new Date());
   return () => {
-    const value = typeof configuredNow === 'function' ? configuredNow() : configuredNow ?? new Date();
+    const value = configuredNow();
     const date = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(date.getTime())) {
       throw new Error('Configured application clock returned an invalid date.');
@@ -67,12 +67,25 @@ function sendMail(mailSender, message) {
   throw new Error('A password recovery mail sender is not configured.');
 }
 
+function readConfirmedPassword(body) {
+  const password = ensureTrimmedString(body.password, 'Password', { maxLength: 120 });
+  const passwordConfirmation = ensureTrimmedString(
+    body.passwordConfirmation,
+    'Password confirmation',
+    { maxLength: 120 }
+  );
+  if (password !== passwordConfirmation) {
+    badRequest('Passwords do not match.');
+  }
+  return password;
+}
+
 export function createApp(options = {}) {
   const runtimeEnv = options.env ? createEnv(options.env) : defaultEnv;
   const eventBus = options.eventBus ?? new ModuleEventBus();
   const dataStore = options.dataStore ?? createDataStore(runtimeEnv);
   const now = resolveNow(options);
-  const mailSender = options.mailSender ?? options.emailSender ?? createRecoveryMailSender(runtimeEnv);
+  const mailSender = options.mailSender ?? createRecoveryMailSender(runtimeEnv);
   const app = express();
   const allowedOriginHosts = new Set(runtimeEnv.corsOrigins.map((origin) => normalizeOriginValue(origin)).filter(Boolean));
 
@@ -117,16 +130,7 @@ export function createApp(options = {}) {
     const body = ensureObject(req.body);
     const name = ensureTrimmedString(body.name, 'Name', { maxLength: 120 });
     const email = ensureTrimmedString(body.email, 'Email', { maxLength: 120 }).toLowerCase();
-    const password = ensureTrimmedString(body.password, 'Password', { maxLength: 120 });
-    const passwordConfirmation = ensureTrimmedString(
-      body.passwordConfirmation,
-      'Password confirmation',
-      { maxLength: 120 }
-    );
-
-    if (password !== passwordConfirmation) {
-      badRequest('Passwords do not match.');
-    }
+    const password = readConfirmedPassword(body);
 
     if (dataStore.findUserByEmail(email)) {
       return res.status(409).json({ message: 'An account with that email already exists.' });
@@ -155,7 +159,7 @@ export function createApp(options = {}) {
   app.post('/api/auth/password-reset/request', async (req, res) => {
     const body = ensureObject(req.body);
     const email = ensureTrimmedString(body.email, 'Email', { maxLength: 120 }).toLowerCase();
-    const user = findUserByEmail(dataStore, email);
+    const user = dataStore.findUserByEmail(email);
 
     if (!user) {
       return res.status(202).json({ message: PASSWORD_RECOVERY_RESPONSE });
@@ -172,13 +176,13 @@ export function createApp(options = {}) {
     await sendMail(mailSender, message);
 
     const requestedAt = now();
-    for (const previousCode of dataStore.list('passwordResetCodes')) {
-      if (previousCode.userId === user.id && !previousCode.usedAt) {
-        dataStore.update('passwordResetCodes', previousCode.id, { usedAt: requestedAt.toISOString() });
+    for (const previousCode of dataStore.listPasswordResetCodes(user.id)) {
+      if (!previousCode.usedAt) {
+        dataStore.markPasswordResetCodeUsed(previousCode.id, user.id, requestedAt.toISOString());
       }
     }
 
-    dataStore.create('passwordResetCodes', {
+    dataStore.createPasswordResetCode({
       userId: user.id,
       codeHash: hashPasswordRecoveryCode(code, codeSalt, runtimeEnv.authSecret),
       codeSalt,
@@ -193,24 +197,16 @@ export function createApp(options = {}) {
     const body = ensureObject(req.body);
     const email = ensureTrimmedString(body.email, 'Email', { maxLength: 120 }).toLowerCase();
     const code = ensureTrimmedString(body.code, 'Recovery code', { maxLength: 6 });
-    const password = ensureTrimmedString(body.password, 'Password', { maxLength: 120 });
-    const passwordConfirmation = ensureTrimmedString(
-      body.passwordConfirmation,
-      'Password confirmation',
-      { maxLength: 120 }
-    );
 
     if (!/^\d{6}$/.test(code)) {
       badRequest('Recovery code must be a 6-digit number.');
     }
-    if (password !== passwordConfirmation) {
-      badRequest('Passwords do not match.');
-    }
+    const password = readConfirmedPassword(body);
 
-    const user = findUserByEmail(dataStore, email);
+    const user = dataStore.findUserByEmail(email);
     const currentTime = now();
     const recoveryCode = user && dataStore
-      .list('passwordResetCodes')
+      .listPasswordResetCodes(user.id)
       .find((item) => item.userId === user.id
         && !item.usedAt
         && Date.parse(item.expiresAt) > currentTime.getTime()
@@ -220,8 +216,8 @@ export function createApp(options = {}) {
       return res.status(400).json({ message: PASSWORD_RECOVERY_FAILURE });
     }
 
-    dataStore.update('users', user.id, { passwordHash: hashPassword(password) });
-    dataStore.update('passwordResetCodes', recoveryCode.id, { usedAt: currentTime.toISOString() });
+    dataStore.updateUserPassword(user.id, hashPassword(password));
+    dataStore.markPasswordResetCodeUsed(recoveryCode.id, user.id, currentTime.toISOString());
     return res.json({ message: 'Password reset successfully.' });
   });
 

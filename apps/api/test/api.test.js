@@ -73,6 +73,24 @@ async function register(agent, email = 'teacher@example.test', password = 'corre
   return response.body.token;
 }
 
+function createMailCapture() {
+  const deliveries = [];
+  return {
+    deliveries,
+    sender: {
+      async send(message) {
+        deliveries.push(message);
+      }
+    }
+  };
+}
+
+function latestRecoveryCode(deliveries) {
+  const code = deliveries.at(-1)?.text?.match(/\b\d{6}\b/)?.[0] || '';
+  assert.match(code, /^\d{6}$/);
+  return code;
+}
+
 function authAgent(app, token) {
   return {
     get: (url) => request(app).get(url).set('Authorization', `Bearer ${token}`),
@@ -289,20 +307,16 @@ test('teacher can log in again after leaving the authenticated session', async (
 });
 
 test('password recovery delivers a six-digit code without exposing it in the API response', async () => {
-  const deliveries = [];
+  const mail = createMailCapture();
   const context = createTestContext({
     appOptions: {
-      mailSender: {
-        async send(message) {
-          deliveries.push(message);
-        }
-      }
+      mailSender: mail.sender
     }
   });
 
   try {
     await register(request(context.app), 'Recovery.Teacher@Example.test', 'old recovery password');
-    assert.equal(deliveries.length, 0, 'registration must not send recovery email');
+    assert.equal(mail.deliveries.length, 0, 'registration must not send recovery email');
 
     const response = await request(context.app)
       .post('/api/auth/password-reset/request')
@@ -312,12 +326,12 @@ test('password recovery delivers a six-digit code without exposing it in the API
     assert.equal(typeof response.body.message, 'string');
     assert.equal(response.body.code, undefined);
     assert.equal(response.body.message.includes('six-digit'), false);
-    assert.equal(deliveries.length, 1);
-    assert.equal(deliveries[0].to, 'recovery.teacher@example.test');
-    const recoveryCode = deliveries[0].text.match(/\b\d{6}\b/)[0];
-    assert.match(deliveries[0].text, /\b\d{6}\b/);
+    assert.equal(mail.deliveries.length, 1);
+    assert.equal(mail.deliveries[0].to, 'recovery.teacher@example.test');
+    const recoveryCode = latestRecoveryCode(mail.deliveries);
 
-    const storedRecoveryCode = context.dataStore.list('passwordResetCodes')[0];
+    const user = context.dataStore.findUserByEmail('recovery.teacher@example.test');
+    const storedRecoveryCode = context.dataStore.listPasswordResetCodes(user.id)[0];
     assert.equal(storedRecoveryCode.code, undefined);
     assert.notEqual(storedRecoveryCode.codeHash, recoveryCode);
   } finally {
@@ -326,14 +340,10 @@ test('password recovery delivers a six-digit code without exposing it in the API
 });
 
 test('password recovery uses the same public response for unknown and known emails', async () => {
-  const deliveries = [];
+  const mail = createMailCapture();
   const context = createTestContext({
     appOptions: {
-      mailSender: {
-        async send(message) {
-          deliveries.push(message);
-        }
-      }
+      mailSender: mail.sender
     }
   });
 
@@ -349,23 +359,19 @@ test('password recovery uses the same public response for unknown and known emai
       .expect(202);
 
     assert.deepEqual(unknownResponse.body, knownResponse.body);
-    assert.equal(deliveries.length, 1);
+    assert.equal(mail.deliveries.length, 1);
   } finally {
     context.cleanup();
   }
 });
 
 test('password recovery expires after ten minutes and replaces the password once', async () => {
-  const deliveries = [];
+  const mail = createMailCapture();
   let currentTime = Date.parse('2026-09-18T10:00:00.000Z');
   const context = createTestContext({
     appOptions: {
       now: () => new Date(currentTime),
-      mailSender: {
-        async send(message) {
-          deliveries.push(message);
-        }
-      }
+      mailSender: mail.sender
     }
   });
 
@@ -379,7 +385,7 @@ test('password recovery expires after ten minutes and replaces the password once
       .post('/api/auth/password-reset/request')
       .send({ email })
       .expect(202);
-    const expiredCode = deliveries.at(-1).text.match(/\b\d{6}\b/)[0];
+    const expiredCode = latestRecoveryCode(mail.deliveries);
 
     currentTime += 10 * 60 * 1000;
     await request(context.app)
@@ -396,7 +402,7 @@ test('password recovery expires after ten minutes and replaces the password once
       .post('/api/auth/password-reset/request')
       .send({ email })
       .expect(202);
-    const validCode = deliveries.at(-1).text.match(/\b\d{6}\b/)[0];
+    const validCode = latestRecoveryCode(mail.deliveries);
 
     const mismatchResponse = await request(context.app)
       .post('/api/auth/password-reset/confirm')

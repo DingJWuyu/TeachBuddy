@@ -44,10 +44,12 @@ export default function LoginCard({
 
     if (isRecoveryConfirmation) {
       const reset = await onConfirmPasswordReset(
-        email,
-        recoveryCode,
-        recoveryPassword,
-        recoveryPasswordConfirmation
+        {
+          email,
+          code: recoveryCode,
+          password: recoveryPassword,
+          passwordConfirmation: recoveryPasswordConfirmation
+        }
       );
       if (reset) {
         setRecoveryCode('');

@@ -270,6 +270,14 @@ export function createDataStore(runtimeEnv = defaultEnv) {
   ensureSchema(db);
 
   const findUserByEmailStatement = db.prepare('SELECT * FROM users WHERE email = ? COLLATE NOCASE');
+  const userPasswordUpdateStatement = db.prepare(
+    'UPDATE users SET passwordHash = @passwordHash, updatedAt = @updatedAt WHERE id = @id'
+  );
+  const passwordResetCodeListStatement = db.prepare('SELECT * FROM passwordResetCodes WHERE userId = ?');
+  const passwordResetCodeGetStatement = db.prepare('SELECT * FROM passwordResetCodes WHERE id = ? AND userId = ?');
+  const passwordResetCodeUseStatement = db.prepare(
+    'UPDATE passwordResetCodes SET usedAt = @usedAt, updatedAt = @updatedAt WHERE id = @id AND userId = @userId'
+  );
 
   const accountScopedKeys = storeKeys.filter((key) => tableConfigs[key].columns.ownerId);
   const accountListStatements = Object.fromEntries(
@@ -386,6 +394,35 @@ export function createDataStore(runtimeEnv = defaultEnv) {
 
     createUser(value) {
       return createItem('users', value);
+    },
+
+    updateUserPassword(userId, passwordHash) {
+      const result = userPasswordUpdateStatement.run({
+        id: userId,
+        passwordHash,
+        updatedAt: new Date().toISOString()
+      });
+      return result.changes > 0;
+    },
+
+    createPasswordResetCode(value) {
+      return createItem('passwordResetCodes', value);
+    },
+
+    listPasswordResetCodes(userId) {
+      return sortByCreatedDesc(passwordResetCodeListStatement.all(userId).map((row) => deserializeRow('passwordResetCodes', row)));
+    },
+
+    markPasswordResetCodeUsed(id, userId, usedAt) {
+      const currentItem = deserializeRow('passwordResetCodes', passwordResetCodeGetStatement.get(id, userId));
+      if (!currentItem) return null;
+      passwordResetCodeUseStatement.run({
+        id,
+        userId,
+        usedAt,
+        updatedAt: new Date().toISOString()
+      });
+      return deserializeRow('passwordResetCodes', passwordResetCodeGetStatement.get(id, userId));
     },
 
     close() {
