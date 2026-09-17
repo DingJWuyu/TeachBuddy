@@ -25,6 +25,10 @@ function normalizeOriginValue(value) {
   }
 }
 
+function toPublicUser(user) {
+  return { id: user.id, name: user.name, email: user.email, role: user.role };
+}
+
 export function createApp(options = {}) {
   const runtimeEnv = options.env ? createEnv(options.env) : defaultEnv;
   const eventBus = options.eventBus ?? new ModuleEventBus();
@@ -67,7 +71,7 @@ export function createApp(options = {}) {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
     const token = createToken(user);
-    return res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    return res.json({ token, user: toPublicUser(user) });
   });
 
   app.post('/api/auth/register', (req, res) => {
@@ -104,7 +108,7 @@ export function createApp(options = {}) {
       throw error;
     }
 
-    const publicUser = { id: user.id, name: user.name, email: user.email, role: user.role };
+    const publicUser = toPublicUser(user);
     const token = createToken(publicUser);
     return res.status(201).json({ token, user: publicUser });
   });

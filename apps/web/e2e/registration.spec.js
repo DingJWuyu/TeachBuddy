@@ -18,6 +18,7 @@ test('teacher can register, enter the workspace, leave, and log in again', async
 
   await expect(page.getByRole('button', { name: '工作台首页' })).toBeVisible();
   await expect(page.getByText('浏览器教师', { exact: true })).toBeVisible();
+  await expect(page.getByText('可用模板：0')).toBeVisible();
 
   await page.getByRole('button', { name: '退出登录' }).click();
   await expect(page.getByRole('heading', { name: '教师账户' })).toBeVisible();
