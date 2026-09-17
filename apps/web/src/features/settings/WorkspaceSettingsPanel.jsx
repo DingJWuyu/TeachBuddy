@@ -41,13 +41,6 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
     setDraftGroupNames(Object.fromEntries(groups.map((group) => [group.id, group.name])));
   }, [layout]);
 
-  function saveLayout(nextLayout, successMessage) {
-    if (onUpdateLayout) {
-      return onUpdateLayout(nextLayout, successMessage);
-    }
-    return Promise.resolve(null);
-  }
-
   function createGroup(event) {
     event.preventDefault();
     const name = newGroupName.trim();
@@ -56,7 +49,7 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
     const nextLayout = copyLayout(layout);
     nextLayout.groups.push({ id: createGroupId(nextLayout.groups), name, moduleIds: [] });
     setNewGroupName('');
-    saveLayout(nextLayout, '模块分组已创建。');
+    onUpdateLayout(nextLayout, '模块分组已创建。');
   }
 
   function commitGroupName(group) {
@@ -68,14 +61,14 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
 
     const nextLayout = copyLayout(layout);
     nextLayout.groups = nextLayout.groups.map((item) => (item.id === group.id ? { ...item, name } : item));
-    saveLayout(nextLayout, '模块分组名称已保存。');
+    onUpdateLayout(nextLayout, '模块分组名称已保存。');
   }
 
   function deleteGroup(groupId) {
     if (!layout) return;
     const nextLayout = copyLayout(layout);
     nextLayout.groups = nextLayout.groups.filter((group) => group.id !== groupId);
-    saveLayout(nextLayout, '模块分组已删除，模块已移入未分组。');
+    onUpdateLayout(nextLayout, '模块分组已删除，模块已移入未分组。');
   }
 
   function moveGroupByOffset(groupId, offset) {
@@ -88,7 +81,7 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
       nextLayout.groups[targetIndex],
       nextLayout.groups[currentIndex]
     ];
-    saveLayout(nextLayout, '模块分组顺序已保存。');
+    onUpdateLayout(nextLayout, '模块分组顺序已保存。');
   }
 
   function reorderGroups(sourceGroupId, targetGroupId) {
@@ -99,7 +92,7 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
     if (sourceIndex < 0 || targetIndex < 0) return;
     const [sourceGroup] = nextLayout.groups.splice(sourceIndex, 1);
     nextLayout.groups.splice(nextLayout.groups.findIndex((group) => group.id === targetGroupId), 0, sourceGroup);
-    saveLayout(nextLayout, '模块分组顺序已保存。');
+    onUpdateLayout(nextLayout, '模块分组顺序已保存。');
   }
 
   function moveModule(moduleId, destinationId, targetModuleId = null) {
@@ -121,7 +114,7 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
 
     const targetIndex = targetModuleId ? destinationItems.indexOf(targetModuleId) : -1;
     destinationItems.splice(targetIndex < 0 ? destinationItems.length : targetIndex, 0, moduleId);
-    saveLayout(nextLayout, '模块顺序已保存。');
+    onUpdateLayout(nextLayout, '模块顺序已保存。');
   }
 
   function moveModuleByOffset(moduleId, containerId, offset) {
@@ -135,7 +128,7 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
     const targetIndex = currentIndex + offset;
     if (currentIndex < 0 || targetIndex < 0 || targetIndex >= items.length) return;
     [items[currentIndex], items[targetIndex]] = [items[targetIndex], items[currentIndex]];
-    saveLayout(nextLayout, '模块顺序已保存。');
+    onUpdateLayout(nextLayout, '模块顺序已保存。');
   }
 
   function handleDragStart(event, payload) {
@@ -145,8 +138,33 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
   }
 
   function handlePointerDown(event, payload) {
-    if (event.button !== 0 || event.target.closest('button, input, select, textarea, label')) return;
+    const interactiveTarget = event.target.closest('button, input, select, textarea, label');
+    if (event.button !== 0 || (interactiveTarget && !interactiveTarget.classList.contains('drag-handle'))) return;
     pointerDragRef.current = payload;
+  }
+
+  function applyDropPayload(payload, destinationId, targetModuleId = null) {
+    if (!payload) return;
+    if (payload.type === 'module') {
+      moveModule(payload.moduleId, destinationId, targetModuleId);
+    } else if (payload.type === 'group' && !targetModuleId) {
+      reorderGroups(payload.groupId, destinationId);
+    }
+  }
+
+  function resolvePointerDrop(event, destinationId, targetModuleId) {
+    if (!event.pointerType || event.pointerType === 'mouse') {
+      return { destinationId, targetModuleId };
+    }
+
+    const pointerTarget = document.elementFromPoint(event.clientX, event.clientY);
+    const targetGroup = pointerTarget?.closest('[data-layout-group]');
+    if (!targetGroup) return null;
+    const targetModule = pointerTarget?.closest('[data-layout-module]');
+    return {
+      destinationId: targetGroup.getAttribute('data-layout-group') || UNGROUPED_ID,
+      targetModuleId: targetModule?.getAttribute('data-layout-module') || null
+    };
   }
 
   function handlePointerDrop(event, destinationId, targetModuleId = null) {
@@ -155,24 +173,15 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
     event.preventDefault();
     event.stopPropagation();
     pointerDragRef.current = null;
-    if (payload.type === 'module') {
-      moveModule(payload.moduleId, destinationId, targetModuleId);
-    } else if (payload.type === 'group' && !targetModuleId) {
-      reorderGroups(payload.groupId, destinationId);
-    }
+    const dropTarget = resolvePointerDrop(event, destinationId, targetModuleId);
+    if (dropTarget) applyDropPayload(payload, dropTarget.destinationId, dropTarget.targetModuleId);
   }
 
   function handleDrop(event, destinationId, targetModuleId = null) {
     event.preventDefault();
     event.stopPropagation();
     pointerDragRef.current = null;
-    const payload = readDragPayload(event);
-    if (!payload) return;
-    if (payload.type === 'module') {
-      moveModule(payload.moduleId, destinationId, targetModuleId);
-    } else if (payload.type === 'group' && !targetModuleId) {
-      reorderGroups(payload.groupId, destinationId);
-    }
+    applyDropPayload(readDragPayload(event), destinationId, targetModuleId);
   }
 
   function renderModule(moduleId, containerId, containerItems) {
@@ -185,6 +194,7 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
       <article
         className="layout-module"
         key={moduleId}
+        data-layout-module={moduleId}
         role="listitem"
         draggable
         onPointerDown={(event) => handlePointerDown(event, { type: 'module', moduleId })}
@@ -303,7 +313,7 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
           {groups.map((group, index) => (
             <section
               className="layout-group"
-              data-layout-group
+              data-layout-group={group.id}
               key={group.id}
               role="region"
               aria-label={`模块分组：${group.name}`}
@@ -377,6 +387,7 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
 
           <section
             className="layout-group layout-group-ungrouped"
+            data-layout-group={UNGROUPED_ID}
             role="region"
             aria-label="未分组模块"
             onDragOver={(event) => event.preventDefault()}
