@@ -13,7 +13,7 @@ const initialForm = {
   note: ''
 };
 
-export default function ScheduleOrganizerPanel({ data, onCreate, onUpdate, onDelete }) {
+export default function ScheduleOrganizerPanel({ title, data, onCreate, onUpdate, onDelete }) {
   const [form, setForm] = useState(initialForm);
   const [search, setSearch] = useState('');
   const [dayFilter, setDayFilter] = useState('all');
@@ -64,7 +64,7 @@ export default function ScheduleOrganizerPanel({ data, onCreate, onUpdate, onDel
     <section className="panel-stack">
       <div className="card split-card">
         <div>
-          <h2>排课管理</h2>
+          <h2>{title}</h2>
           <p className="muted">每周教学时段支持冲突检测、编辑和看板视图，让你的每周安排不再一团雾。</p>
         </div>
         <span className="badge">{data.length} 个时段</span>

@@ -304,6 +304,42 @@ test('auth login and /api/auth/me still work with SQLite persistence', async () 
   }
 });
 
+test('module catalog exposes complete stable registration metadata and route bases', async () => {
+  const context = createTestContext();
+
+  try {
+    const token = await login(request(context.app));
+    const api = authAgent(context.app, token);
+    const response = await api.get('/api/modules').expect(200);
+    const modules = response.body.items;
+
+    assert.deepEqual(modules.map((item) => item.id), [
+      'schedule-organizer',
+      'reminder-center',
+      'lesson-planner',
+      'worksheet-designer',
+      'resource-vault'
+    ]);
+
+    for (const moduleItem of modules) {
+      assert.equal(typeof moduleItem.name, 'string');
+      assert.equal(typeof moduleItem.title, 'string');
+      assert.equal(typeof moduleItem.description, 'string');
+      assert.equal(typeof moduleItem.icon, 'string');
+      assert.equal(typeof moduleItem.category, 'string');
+      assert.equal(moduleItem.routesBasePath, `/api/modules/${moduleItem.id}`);
+      assert.deepEqual(moduleItem.capabilities, ['create', 'read', 'update', 'delete']);
+      await api.get(moduleItem.routesBasePath).expect(200);
+    }
+
+    const schedule = modules.find((item) => item.id === 'schedule-organizer');
+    assert.equal(schedule.title, '排课管理');
+    assert.equal(schedule.icon, '日历');
+  } finally {
+    context.cleanup();
+  }
+});
+
 test('schedule organizer supports CRUD and rejects clashes', async () => {
   const context = createTestContext();
 

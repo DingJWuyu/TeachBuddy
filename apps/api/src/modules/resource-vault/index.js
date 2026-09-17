@@ -6,10 +6,7 @@ import { buildManifest } from '@refatos/shared';
 import { ensureObject, ensureStringArray, optionalTrimmedString } from '../../core/validation.js';
 
 const manifest = buildManifest({
-  id: 'resource-vault',
-  name: 'Resource Vault',
-  category: 'library',
-  routesBasePath: '/api/modules/resource-vault'
+  id: 'resource-vault'
 });
 
 export const moduleDefinition = {

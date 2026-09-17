@@ -3,10 +3,7 @@ import { buildManifest } from '@refatos/shared';
 import { ensureEnum, ensureIsoDate, ensureObject, ensurePositiveInteger, ensureTrimmedString, optionalTrimmedString } from '../../core/validation.js';
 
 const manifest = buildManifest({
-  id: 'reminder-center',
-  name: 'Reminder Center',
-  category: 'productivity',
-  routesBasePath: '/api/modules/reminder-center'
+  id: 'reminder-center'
 });
 
 function incrementDate(isoDate, recurrence = 'none', interval = 1) {

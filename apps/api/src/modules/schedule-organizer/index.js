@@ -3,10 +3,7 @@ import { buildManifest } from '@refatos/shared';
 import { ensureObject, ensureTimeString, ensureTrimmedString, optionalTrimmedString } from '../../core/validation.js';
 
 const manifest = buildManifest({
-  id: 'schedule-organizer',
-  name: 'Schedule Organizer',
-  category: 'planning',
-  routesBasePath: '/api/modules/schedule-organizer'
+  id: 'schedule-organizer'
 });
 
 function hasClash(dataStore, incomingItem, currentId = null) {

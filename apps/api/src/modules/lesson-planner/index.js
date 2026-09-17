@@ -3,10 +3,7 @@ import { buildManifest } from '@refatos/shared';
 import { ensureObject, ensureStringArray, ensureTrimmedString, optionalTrimmedString } from '../../core/validation.js';
 
 const manifest = buildManifest({
-  id: 'lesson-planner',
-  name: 'Lesson Planner',
-  category: 'planning',
-  routesBasePath: '/api/modules/lesson-planner'
+  id: 'lesson-planner'
 });
 
 function createDraftFromLesson(item) {

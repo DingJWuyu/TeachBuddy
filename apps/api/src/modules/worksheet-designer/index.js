@@ -5,10 +5,7 @@ import PDFDocument from 'pdfkit';
 import { ensureEnum, ensureObject, ensurePositiveInteger, ensureStringArray, ensureTrimmedString, optionalTrimmedString } from '../../core/validation.js';
 
 const manifest = buildManifest({
-  id: 'worksheet-designer',
-  name: 'Worksheet Designer',
-  category: 'content-creation',
-  routesBasePath: '/api/modules/worksheet-designer'
+  id: 'worksheet-designer'
 });
 
 function buildQuestions(item) {

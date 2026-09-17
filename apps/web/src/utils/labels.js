@@ -1,10 +1,6 @@
-export const moduleLabels = {
-  'schedule-organizer': '排课管理',
-  'reminder-center': '提醒中心',
-  'lesson-planner': '备课规划',
-  'worksheet-designer': '练习单设计',
-  'resource-vault': '资源库'
-};
+import { moduleCatalog } from '@refatos/shared';
+
+export const moduleLabels = Object.fromEntries(moduleCatalog.map((moduleItem) => [moduleItem.id, moduleItem.title]));
 
 export const dayLabels = {
   Sunday: '星期日',

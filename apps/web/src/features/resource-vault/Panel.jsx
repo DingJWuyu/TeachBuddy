@@ -8,7 +8,7 @@ const initialForm = {
   moduleLinks: ''
 };
 
-export default function ResourceVaultPanel({ data, onUpdate, onDelete, onUpload }) {
+export default function ResourceVaultPanel({ title, data, onUpdate, onDelete, onUpload }) {
   const [form, setForm] = useState(initialForm);
   const [selectedFile, setSelectedFile] = useState(null);
   const [search, setSearch] = useState('');
@@ -70,7 +70,7 @@ export default function ResourceVaultPanel({ data, onUpdate, onDelete, onUpload 
     <section className="panel-stack">
       <div className="card split-card">
         <div>
-          <h2>资源库</h2>
+          <h2>{title}</h2>
           <p className="muted">将课程文件、笔记和可复用附件集中存放在一个可搜索的资源架上。</p>
         </div>
         <span className="badge">{data.length} 个资源</span>

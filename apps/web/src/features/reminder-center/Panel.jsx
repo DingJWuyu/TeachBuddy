@@ -15,7 +15,7 @@ const initialForm = {
   recurrenceInterval: 1
 };
 
-export default function ReminderCenterPanel({ data, onCreate, onUpdate, onDelete, onCompleteRecurring }) {
+export default function ReminderCenterPanel({ title, data, onCreate, onUpdate, onDelete, onCompleteRecurring }) {
   const [form, setForm] = useState(initialForm);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -73,7 +73,7 @@ export default function ReminderCenterPanel({ data, onCreate, onUpdate, onDelete
     <section className="panel-stack">
       <div className="card split-card">
         <div>
-          <h2>提醒中心</h2>
+          <h2>{title}</h2>
           <p className="muted">截止时间、重复任务以及与课程关联的提醒，都集中在这里。</p>
         </div>
         <span className="badge">{data.filter((item) => item.status !== 'done').length} 个活动提醒</span>

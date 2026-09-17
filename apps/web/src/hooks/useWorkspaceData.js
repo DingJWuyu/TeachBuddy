@@ -1,23 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { deleteJson, fetchJson, postForm, postJson, putJson } from '../utils/api.js';
+import { frontendModules, getFrontendModule } from '../features/modules/moduleRegistry.js';
 import { useAppStore } from '../store/useAppStore.js';
 import { localizeError, localizeText } from '../utils/labels.js';
 
-const emptyData = {
-  'schedule-organizer': [],
-  'reminder-center': [],
-  'lesson-planner': [],
-  'worksheet-designer': [],
-  'resource-vault': []
-};
+const emptyData = Object.fromEntries(frontendModules.map((moduleItem) => [moduleItem.id, []]));
 
-const moduleEndpoints = {
-  'schedule-organizer': '/modules/schedule-organizer',
-  'reminder-center': '/modules/reminder-center',
-  'lesson-planner': '/modules/lesson-planner',
-  'worksheet-designer': '/modules/worksheet-designer',
-  'resource-vault': '/modules/resource-vault'
-};
+function getModuleDefinition(moduleId) {
+  const moduleItem = getFrontendModule(moduleId);
+  if (!moduleItem) {
+    throw new Error(`Unknown teacher module: ${moduleId}`);
+  }
+  return moduleItem;
+}
 
 export function useWorkspaceData() {
   const { authToken, setSession, setActiveModuleId } = useAppStore();
@@ -38,25 +33,17 @@ export function useWorkspaceData() {
     setError('');
 
     try {
-      const [modules, schedule, reminders, lessons, worksheets, resources, templateItems, me] = await Promise.all([
+      const [modules, templateItems, me, ...moduleResponses] = await Promise.all([
         fetchJson('/modules'),
-        fetchJson('/modules/schedule-organizer'),
-        fetchJson('/modules/reminder-center'),
-        fetchJson('/modules/lesson-planner'),
-        fetchJson('/modules/worksheet-designer'),
-        fetchJson('/modules/resource-vault'),
         fetchJson('/templates'),
-        fetchJson('/auth/me')
+        fetchJson('/auth/me'),
+        ...frontendModules.map((moduleItem) => fetchJson(moduleItem.data.endpoint))
       ]);
 
       setServerModules(modules.items);
-      setModuleData({
-        'schedule-organizer': schedule.items,
-        'reminder-center': reminders.items,
-        'lesson-planner': lessons.items,
-        'worksheet-designer': worksheets.items,
-        'resource-vault': resources.items
-      });
+      setModuleData(Object.fromEntries(
+        frontendModules.map((moduleItem, index) => [moduleItem.id, moduleItem.data.selectItems(moduleResponses[index])])
+      ));
       setTemplates(templateItems.items);
       setSession({ token: authToken, user: me.user });
     } catch (loadError) {
@@ -87,15 +74,6 @@ export function useWorkspaceData() {
     return () => window.clearTimeout(timer);
   }, [flash]);
 
-  const summary = useMemo(() => ({
-    scheduleCount: moduleData['schedule-organizer'].length,
-    reminderCount: moduleData['reminder-center'].filter((item) => item.status !== 'done').length,
-    lessonCount: moduleData['lesson-planner'].length,
-    worksheetCount: moduleData['worksheet-designer'].length,
-    resourceCount: moduleData['resource-vault'].length,
-    templateCount: templates.length
-  }), [moduleData, templates]);
-
   async function runAction(action, successMessage) {
     try {
       await action();
@@ -121,7 +99,6 @@ export function useWorkspaceData() {
     error,
     flash,
     loading,
-    summary,
     loadData,
     async login(email, password) {
       try {
@@ -141,15 +118,15 @@ export function useWorkspaceData() {
     },
     createItem(moduleId, payload) {
       return runAction(
-        () => postJson(moduleEndpoints[moduleId], payload),
-        moduleId === 'lesson-planner' ? '课程已保存，同时已创建自动提醒。' : '保存成功。'
+        () => postJson(getModuleDefinition(moduleId).data.endpoint, payload),
+        getModuleDefinition(moduleId).messages?.create || '保存成功。'
       );
     },
     updateItem(moduleId, id, payload) {
-      return runAction(() => putJson(`${moduleEndpoints[moduleId]}/${id}`, payload), '更新成功。');
+      return runAction(() => putJson(`${getModuleDefinition(moduleId).data.endpoint}/${id}`, payload), '更新成功。');
     },
     removeItem(moduleId, id) {
-      return runAction(() => deleteJson(`${moduleEndpoints[moduleId]}/${id}`), '删除成功。');
+      return runAction(() => deleteJson(`${getModuleDefinition(moduleId).data.endpoint}/${id}`), '删除成功。');
     },
     createTemplate(moduleId, name, payload) {
       return runAction(() => postJson('/templates', { moduleId, name, payload }), '模板已保存。');
@@ -157,17 +134,29 @@ export function useWorkspaceData() {
     removeTemplate(id) {
       return runAction(() => deleteJson(`/templates/${id}`), '模板已删除。');
     },
-    completeRecurring(id) {
-      return runAction(() => postJson(`/modules/reminder-center/${id}/complete`, {}), '提醒已完成。下一次重复提醒会在适用时自动安排。');
-    },
-    generateWorksheetFromLesson(id) {
-      return runAction(async () => {
-        await postJson(`/modules/lesson-planner/${id}/generate-worksheet-draft`, {});
-        setActiveModuleId('worksheet-designer');
-      }, '已根据课程计划创建练习单草稿。');
-    },
-    uploadResource(formData) {
-      return runAction(() => postForm('/modules/resource-vault/upload', formData), '资源已上传。');
+    runModuleAction(moduleId, actionName, input) {
+      const moduleItem = getModuleDefinition(moduleId);
+      const action = moduleItem.actions?.[actionName];
+      if (!action) {
+        return Promise.reject(new Error(`Action ${actionName} is not registered for ${moduleId}.`));
+      }
+
+      const successMessages = {
+        completeRecurring: '提醒已完成。下一次重复提醒会在适用时自动安排。',
+        generateWorksheet: '已根据课程计划创建练习单草稿。',
+        uploadResource: '资源已上传。'
+      };
+
+      return runAction(
+        () => action({
+          ...input,
+          endpoint: moduleItem.data.endpoint,
+          postJson,
+          postForm,
+          setActiveModuleId
+        }),
+        successMessages[actionName]
+      );
     }
   };
 }

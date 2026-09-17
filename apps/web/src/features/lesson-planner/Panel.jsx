@@ -22,6 +22,7 @@ function normalize(payload) {
 }
 
 export default function LessonPlannerPanel({
+  title,
   data,
   templates = [],
   resources = [],
@@ -88,7 +89,7 @@ export default function LessonPlannerPanel({
     <section className="panel-stack">
       <div className="card split-card">
         <div>
-          <h2>备课规划</h2>
+          <h2>{title}</h2>
           <p className="muted">规划课程、关联资源库中的实际资料，然后一键生成练习单草稿。</p>
         </div>
         <span className="badge">{data.length} 个计划</span>

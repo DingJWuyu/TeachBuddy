@@ -67,6 +67,7 @@ function normalize(payload) {
 }
 
 export default function WorksheetDesignerPanel({
+  title,
   data,
   templates = [],
   resources = [],
@@ -194,7 +195,7 @@ export default function WorksheetDesignerPanel({
     <section className="panel-stack">
       <div className="card split-card">
         <div>
-          <h2>练习单设计</h2>
+          <h2>{title}</h2>
           <p className="muted">导出功能已经就绪，现在可以预览、导出 DOCX 和 PDF，并在导出前调整每道题。</p>
         </div>
         <span className="badge">{data.length} 份草稿</span>

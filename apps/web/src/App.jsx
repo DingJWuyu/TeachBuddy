@@ -15,7 +15,6 @@ export default function App() {
     error,
     flash,
     loading,
-    summary,
     loadData,
     login,
     register,
@@ -24,26 +23,25 @@ export default function App() {
     removeItem,
     createTemplate,
     removeTemplate,
-    completeRecurring,
-    generateWorksheetFromLesson,
-    uploadResource
+    runModuleAction
   } = useWorkspaceData();
 
   const activeModule = frontendModules.find((moduleItem) => moduleItem.id === activeModuleId);
   const ActivePanel = activeModule?.panel;
 
   const panelProps = activeModule ? {
+    title: activeModule.title,
     data: moduleData[activeModule.id],
     templates: templates.filter((item) => item.moduleId === activeModule.id),
-    resources: moduleData['resource-vault'],
+    resources: Object.values(activeModule.data.dependencies || {}).flatMap((moduleId) => moduleData[moduleId] || []),
     onCreate: (payload) => createItem(activeModule.id, payload),
     onUpdate: (id, payload) => updateItem(activeModule.id, id, payload),
     onDelete: (id) => removeItem(activeModule.id, id),
     onSaveTemplate: (name, payload) => createTemplate(activeModule.id, name, payload),
     onDeleteTemplate: removeTemplate,
-    onCompleteRecurring: completeRecurring,
-    onGenerateWorksheet: generateWorksheetFromLesson,
-    onUpload: uploadResource
+    onCompleteRecurring: (id) => runModuleAction(activeModule.id, 'completeRecurring', { id }),
+    onGenerateWorksheet: (id) => runModuleAction(activeModule.id, 'generateWorksheet', { id }),
+    onUpload: (formData) => runModuleAction(activeModule.id, 'uploadResource', { formData })
   } : {};
 
   if (!authToken) {
@@ -96,11 +94,8 @@ export default function App() {
           activeModuleId === 'dashboard' ? (
             <>
               <DashboardPanel
-                summary={summary}
-                reminders={moduleData['reminder-center']}
-                schedule={moduleData['schedule-organizer']}
-                lessons={moduleData['lesson-planner']}
-                worksheets={moduleData['worksheet-designer']}
+                modules={frontendModules}
+                moduleData={moduleData}
                 templates={templates}
                 onOpenModule={setActiveModuleId}
               />
