@@ -1087,6 +1087,11 @@ test('worksheet drafts isolate CRUD and exports between teacher accounts', async
       (await secondApi.get('/api/modules/worksheet-designer').expect(200)).body.items.map((item) => item.title),
       ['Second teacher worksheet']
     );
+    assert.equal(
+      (await firstApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}`).expect(200)).body.title,
+      'First teacher worksheet'
+    );
+    await secondApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}`).expect(404);
 
     await secondApi
       .put(`/api/modules/worksheet-designer/${firstWorksheetId}`)
