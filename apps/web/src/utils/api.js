@@ -1,5 +1,4 @@
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api').replace(/\/$/, '');
-const API_ORIGIN = API_BASE.replace(/\/api$/, '');
 
 function getToken() {
   return typeof window !== 'undefined' ? window.localStorage.getItem('refatos-token') || '' : '';
@@ -25,5 +24,29 @@ export const postJson = (path, body) => request(path, { method: 'POST', body: JS
 export const putJson = (path, body) => request(path, { method: 'PUT', body: JSON.stringify(body) });
 export const deleteJson = (path) => request(path, { method: 'DELETE' });
 export const postForm = (path, formData) => request(path, { method: 'POST', body: formData });
-export const getApiUrl = (path) => `${API_BASE}${path}`;
-export const getUploadUrl = (path) => `${API_ORIGIN}${path}`;
+
+export async function openAuthenticatedFile(path, options = {}) {
+  const token = getToken();
+  const response = await fetch(`${API_BASE}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
+  const isJson = response.headers.get('content-type')?.includes('application/json');
+  if (!response.ok) {
+    const payload = isJson ? await response.json() : await response.text();
+    throw new Error(payload?.message || `Request failed for ${path}`);
+  }
+
+  const objectUrl = URL.createObjectURL(await response.blob());
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  if (options.download) {
+    link.download = options.filename || 'download';
+  } else {
+    link.target = '_blank';
+    link.rel = 'noreferrer';
+  }
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+}

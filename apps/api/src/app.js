@@ -35,6 +35,12 @@ function findUserByEmail(dataStore, email) {
   return dataStore.list('users').find((item) => item.email?.toLowerCase() === normalizedEmail);
 }
 
+function toPublicTemplate(item) {
+  if (!item) return item;
+  const { ownerId, ...publicItem } = item;
+  return publicItem;
+}
+
 export function createApp(options = {}) {
   const runtimeEnv = options.env ? createEnv(options.env) : defaultEnv;
   const eventBus = options.eventBus ?? new ModuleEventBus();
@@ -57,7 +63,6 @@ export function createApp(options = {}) {
 
   app.use(cors(corsOptions));
   app.use(express.json());
-  app.use('/uploads', express.static(runtimeEnv.uploadDir));
 
   app.get('/api/health', (req, res) => {
     res.json({
@@ -141,20 +146,22 @@ export function createApp(options = {}) {
   });
 
   app.get('/api/templates', (req, res) => {
+    const accountStore = dataStore.forAccount(req.user.sub);
     const moduleId = req.query.moduleId;
-    const items = moduleId ? dataStore.listWhere('templates', (item) => item.moduleId === moduleId) : dataStore.list('templates');
-    res.json({ items });
+    const items = accountStore.list('templates');
+    res.json({ items: (moduleId ? items.filter((item) => item.moduleId === moduleId) : items).map(toPublicTemplate) });
   });
 
   app.post('/api/templates', (req, res) => {
     const body = ensureObject(req.body);
-    const item = dataStore.create('templates', {
+    const accountStore = dataStore.forAccount(req.user.sub);
+    const item = accountStore.create('templates', {
       moduleId: ensureTrimmedString(body.moduleId, 'Module ID', { maxLength: 80 }),
       name: ensureTrimmedString(body.name, 'Template name', { maxLength: 120 }),
       payload: ensureObject(body.payload, 'Template payload must be an object.')
     });
     eventBus.emitEvent('template.created', { item });
-    res.status(201).json(item);
+    res.status(201).json(toPublicTemplate(item));
   });
 
   app.put('/api/templates/:id', (req, res) => {
@@ -171,17 +178,19 @@ export function createApp(options = {}) {
       updates.payload = ensureObject(body.payload, 'Template payload must be an object.');
     }
 
-    const item = dataStore.update('templates', req.params.id, updates);
+    const accountStore = dataStore.forAccount(req.user.sub);
+    const item = accountStore.update('templates', req.params.id, updates);
     if (!item) return res.status(404).json({ message: 'Template not found.' });
     eventBus.emitEvent('template.updated', { item });
-    return res.json(item);
+    return res.json(toPublicTemplate(item));
   });
 
   app.delete('/api/templates/:id', (req, res) => {
-    const item = dataStore.remove('templates', req.params.id);
+    const accountStore = dataStore.forAccount(req.user.sub);
+    const item = accountStore.remove('templates', req.params.id);
     if (!item) return res.status(404).json({ message: 'Template not found.' });
     eventBus.emitEvent('template.deleted', { item });
-    return res.json({ success: true, item });
+    return res.json({ success: true, item: toPublicTemplate(item) });
   });
 
   registerModules({ app, eventBus, dataStore });

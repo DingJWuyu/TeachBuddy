@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { deleteJson, fetchJson, postForm, postJson, putJson } from '../utils/api.js';
+import { deleteJson, fetchJson, openAuthenticatedFile, postForm, postJson, putJson } from '../utils/api.js';
 import { frontendModules, getFrontendModule } from '../features/modules/moduleRegistry.js';
 import { useAppStore } from '../store/useAppStore.js';
 import { localizeError, localizeText } from '../utils/labels.js';
@@ -166,6 +166,21 @@ export function useWorkspaceData() {
     },
     removeTemplate(id) {
       return runAction(() => deleteJson(`/templates/${id}`), '模板已删除。');
+    },
+    openResource(id) {
+      return runAction(
+        () => openAuthenticatedFile(`/modules/resource-vault/${id}/file`),
+        ''
+      );
+    },
+    openExport(id, target) {
+      return runAction(
+        () => openAuthenticatedFile(`/modules/worksheet-designer/${id}/export/${target}`, {
+          download: target !== 'preview',
+          filename: `worksheet-${id}.${target}`
+        }),
+        ''
+      );
     },
     runModuleAction(moduleId, actionName, input) {
       const moduleItem = getModuleDefinition(moduleId);

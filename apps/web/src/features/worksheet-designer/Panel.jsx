@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import ResourcePicker from '../../components/ResourcePicker.jsx';
-import { fetchJson, getApiUrl } from '../../utils/api.js';
+import { fetchJson } from '../../utils/api.js';
 import { localizeQuestionType, localizeText, localizeWorksheetFormat } from '../../utils/labels.js';
 
 function buildQuestion(number, marks = 3, topic = '') {
@@ -75,7 +75,8 @@ export default function WorksheetDesignerPanel({
   onUpdate,
   onDelete,
   onSaveTemplate,
-  onDeleteTemplate
+  onDeleteTemplate,
+  onOpenExport
 }) {
   const [form, setForm] = useState(initialForm);
   const [search, setSearch] = useState('');
@@ -395,9 +396,9 @@ export default function WorksheetDesignerPanel({
               <div className="inline-actions">
                 <button className="ghost-button" onClick={() => handleEdit(item)}>编辑</button>
                 <button className="ghost-button" onClick={() => loadExportSpec(item.id)}>导出规格</button>
-                <a className="ghost-button link-button" href={getApiUrl(`/modules/worksheet-designer/${item.id}/export/preview`)} target="_blank" rel="noreferrer">预览</a>
-                <a className="ghost-button link-button" href={getApiUrl(`/modules/worksheet-designer/${item.id}/export/docx`)} target="_blank" rel="noreferrer">DOCX</a>
-                <a className="ghost-button link-button" href={getApiUrl(`/modules/worksheet-designer/${item.id}/export/pdf`)} target="_blank" rel="noreferrer">PDF</a>
+                <button className="ghost-button" type="button" onClick={() => onOpenExport(item.id, 'preview')}>预览</button>
+                <button className="ghost-button" type="button" onClick={() => onOpenExport(item.id, 'docx')}>DOCX</button>
+                <button className="ghost-button" type="button" onClick={() => onOpenExport(item.id, 'pdf')}>PDF</button>
                 <button className="danger-button" onClick={() => onDelete(item.id)}>删除</button>
               </div>
             </div>

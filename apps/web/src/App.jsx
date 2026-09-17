@@ -27,6 +27,8 @@ export default function App() {
     removeItem,
     createTemplate,
     removeTemplate,
+    openResource,
+    openExport,
     runModuleAction
   } = useWorkspaceData();
 
@@ -64,6 +66,8 @@ export default function App() {
     onDelete: (id) => removeItem(activeModule.id, id),
     onSaveTemplate: (name, payload) => createTemplate(activeModule.id, name, payload),
     onDeleteTemplate: removeTemplate,
+    onOpenResource: activeModule.id === 'resource-vault' ? openResource : undefined,
+    onOpenExport: activeModule.id === 'worksheet-designer' ? openExport : undefined,
     onCompleteRecurring: (id) => runModuleAction(activeModule.id, 'completeRecurring', { id }),
     onGenerateWorksheet: (id) => runModuleAction(activeModule.id, 'generateWorksheet', { id }),
     onUpload: (formData) => runModuleAction(activeModule.id, 'uploadResource', { formData })

@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { getUploadUrl } from '../../utils/api.js';
 import { localizeModuleId, localizeTag, localizeTagList, localizeText } from '../../utils/labels.js';
 
 const initialForm = {
@@ -8,7 +7,7 @@ const initialForm = {
   moduleLinks: ''
 };
 
-export default function ResourceVaultPanel({ title, data, onUpdate, onDelete, onUpload }) {
+export default function ResourceVaultPanel({ title, data, onUpdate, onDelete, onUpload, onOpenResource }) {
   const [form, setForm] = useState(initialForm);
   const [selectedFile, setSelectedFile] = useState(null);
   const [search, setSearch] = useState('');
@@ -127,9 +126,9 @@ export default function ResourceVaultPanel({ title, data, onUpdate, onDelete, on
               </div>
               <div className="inline-actions">
                 {item.path && (
-                  <a className="ghost-button link-button" href={getUploadUrl(item.path)} target="_blank" rel="noreferrer">
+                  <button className="ghost-button" type="button" onClick={() => onOpenResource(item.id)}>
                     打开文件
-                  </a>
+                  </button>
                 )}
                 <button className="ghost-button" onClick={() => handleEdit(item)}>编辑</button>
                 <button className="danger-button" onClick={() => onDelete(item.id)}>删除</button>

@@ -5,7 +5,7 @@
 ## 基础 URL
 
 - 本地 API 根地址：`http://localhost:4000/api`
-- 上传文件访问地址：`http://localhost:4000/uploads/...`
+- 上传文件不提供公开静态访问，必须通过资源接口并携带 Bearer 令牌读取。
 
 ## 健康检查
 
@@ -39,6 +39,8 @@
 - `POST /api/templates`
 - `PUT /api/templates/:id`
 - `DELETE /api/templates/:id`
+
+模板列表、筛选、创建、更新和删除均只作用于当前 Bearer 令牌对应的教师账户。
 
 ## 排课组织器（Schedule Organizer）
 
@@ -75,6 +77,7 @@
 ## 练习单设计器（Worksheet Designer）
 
 - `GET /api/modules/worksheet-designer`
+- `GET /api/modules/worksheet-designer/:id`
 - `POST /api/modules/worksheet-designer`
 - `PUT /api/modules/worksheet-designer/:id`
 - `DELETE /api/modules/worksheet-designer/:id`
@@ -83,12 +86,17 @@
 - `GET /api/modules/worksheet-designer/:id/export/docx`
 - `GET /api/modules/worksheet-designer/:id/export/pdf`
 
+练习单列表、单条读取、创建、更新、删除和导出均只作用于当前教师账户。练习单引用的资源和备课计划也必须属于当前账户。
+
 ## 资源库（Resource Vault）
 
 - `GET /api/modules/resource-vault`
 - `POST /api/modules/resource-vault/upload`
+- `GET /api/modules/resource-vault/:id/file`
 - `PUT /api/modules/resource-vault/:id`
 - `DELETE /api/modules/resource-vault/:id`
+
+资源元数据和物理文件均归属于当前教师账户。文件只能通过 `GET /api/modules/resource-vault/:id/file` 认证读取，访问其他账户资源按不存在处理；删除资源会清理当前账户对应的物理文件。
 
 ## 说明
 

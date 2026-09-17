@@ -61,6 +61,7 @@ const tableConfigs = {
   worksheetDrafts: {
     name: 'worksheetDrafts',
     columns: {
+      ownerId: 'TEXT NOT NULL',
       title: 'TEXT NOT NULL',
       className: 'TEXT NOT NULL',
       format: 'TEXT NOT NULL',
@@ -78,6 +79,7 @@ const tableConfigs = {
   resources: {
     name: 'resources',
     columns: {
+      ownerId: 'TEXT NOT NULL',
       title: 'TEXT NOT NULL',
       originalName: 'TEXT NOT NULL',
       mimeType: 'TEXT NOT NULL',
@@ -90,6 +92,7 @@ const tableConfigs = {
   templates: {
     name: 'templates',
     columns: {
+      ownerId: 'TEXT NOT NULL',
       moduleId: 'TEXT NOT NULL',
       name: 'TEXT NOT NULL',
       payload: 'TEXT NOT NULL'

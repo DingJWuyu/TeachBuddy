@@ -1,5 +1,6 @@
 import express from 'express';
 import { buildManifest } from '@refatos/shared';
+import { ensureOwnedReferences } from '../../core/accountOwnership.js';
 import { ensureObject, ensureStringArray, ensureTrimmedString, optionalTrimmedString } from '../../core/validation.js';
 
 const manifest = buildManifest({
@@ -51,6 +52,12 @@ function toPublicLessonPlan(item) {
   return publicItem;
 }
 
+function toPublicWorksheet(item) {
+  if (!item) return item;
+  const { ownerId, ...publicItem } = item;
+  return publicItem;
+}
+
 export const moduleDefinition = {
   manifest,
   register({ app, eventBus, dataStore }) {
@@ -70,14 +77,18 @@ export const moduleDefinition = {
 
     router.post('/', express.json(), (req, res) => {
       const accountStore = dataStore.forAccount(req.user.sub);
-      const item = accountStore.create('lessonPlans', sanitizeLessonPayload(req.body));
+      const payload = sanitizeLessonPayload(req.body);
+      ensureOwnedReferences(dataStore, req.user.sub, 'resources', payload.resourceIds, 'Resource not found.');
+      const item = accountStore.create('lessonPlans', payload);
       eventBus.emitEvent('lesson.plan.created', { moduleId: manifest.id, accountId: req.user.sub, item });
       res.status(201).json(toPublicLessonPlan(item));
     });
 
     router.put('/:id', express.json(), (req, res) => {
       const accountStore = dataStore.forAccount(req.user.sub);
-      const item = accountStore.update('lessonPlans', req.params.id, sanitizeLessonPayload(req.body));
+      const payload = sanitizeLessonPayload(req.body);
+      ensureOwnedReferences(dataStore, req.user.sub, 'resources', payload.resourceIds, 'Resource not found.');
+      const item = accountStore.update('lessonPlans', req.params.id, payload);
       if (!item) return res.status(404).json({ message: 'Lesson plan not found.' });
       eventBus.emitEvent('lesson.plan.updated', { moduleId: manifest.id, item });
       return res.json(toPublicLessonPlan(item));
@@ -88,9 +99,9 @@ export const moduleDefinition = {
       const lesson = accountStore.get('lessonPlans', req.params.id);
       if (!lesson) return res.status(404).json({ message: 'Lesson plan not found.' });
       const payload = createDraftFromLesson(lesson);
-      const draft = dataStore.create('worksheetDrafts', payload);
+      const draft = accountStore.create('worksheetDrafts', payload);
       eventBus.emitEvent('worksheet.draft.created', { moduleId: 'worksheet-designer', item: draft, sourceLesson: lesson });
-      return res.status(201).json(draft);
+      return res.status(201).json(toPublicWorksheet(draft));
     });
 
     router.delete('/:id', (req, res) => {

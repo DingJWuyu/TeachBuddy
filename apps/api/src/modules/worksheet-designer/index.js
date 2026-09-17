@@ -2,6 +2,7 @@ import express from 'express';
 import { buildManifest } from '@refatos/shared';
 import { Packer, Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableCell, TableRow, WidthType } from 'docx';
 import PDFDocument from 'pdfkit';
+import { ensureOwnedReferences } from '../../core/accountOwnership.js';
 import { ensureEnum, ensureObject, ensurePositiveInteger, ensureStringArray, ensureTrimmedString, optionalTrimmedString } from '../../core/validation.js';
 
 const manifest = buildManifest({
@@ -147,6 +148,12 @@ function sanitizeWorksheetPayload(payload) {
   };
 }
 
+function toPublicWorksheet(item) {
+  if (!item) return item;
+  const { ownerId, ...publicItem } = item;
+  return publicItem;
+}
+
 async function createDocxBuffer(item) {
   const questions = buildQuestions(item);
   const doc = new Document({
@@ -228,30 +235,60 @@ export const moduleDefinition = {
     const router = express.Router();
 
     router.get('/', (req, res) => {
-      res.json({ items: dataStore.list('worksheetDrafts') });
+      const accountStore = dataStore.forAccount(req.user.sub);
+      res.json({ items: accountStore.list('worksheetDrafts').map(toPublicWorksheet) });
+    });
+
+    router.get('/:id', (req, res) => {
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.get('worksheetDrafts', req.params.id);
+      if (!item) return res.status(404).json({ message: 'Worksheet draft not found.' });
+      return res.json(toPublicWorksheet(item));
     });
 
     router.post('/', express.json(), (req, res) => {
-      const item = dataStore.create('worksheetDrafts', sanitizeWorksheetPayload(req.body));
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const payload = sanitizeWorksheetPayload(req.body);
+      ensureOwnedReferences(dataStore, req.user.sub, 'resources', payload.resourceIds, 'Resource not found.');
+      ensureOwnedReferences(
+        dataStore,
+        req.user.sub,
+        'lessonPlans',
+        [payload.generatedFromLessonId],
+        'Lesson plan not found.'
+      );
+      const item = accountStore.create('worksheetDrafts', payload);
       eventBus.emitEvent('worksheet.draft.created', { moduleId: manifest.id, item });
-      res.status(201).json(item);
+      res.status(201).json(toPublicWorksheet(item));
     });
 
     router.put('/:id', express.json(), (req, res) => {
-      const item = dataStore.update('worksheetDrafts', req.params.id, sanitizeWorksheetPayload(req.body));
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const payload = sanitizeWorksheetPayload(req.body);
+      ensureOwnedReferences(dataStore, req.user.sub, 'resources', payload.resourceIds, 'Resource not found.');
+      ensureOwnedReferences(
+        dataStore,
+        req.user.sub,
+        'lessonPlans',
+        [payload.generatedFromLessonId],
+        'Lesson plan not found.'
+      );
+      const item = accountStore.update('worksheetDrafts', req.params.id, payload);
       if (!item) return res.status(404).json({ message: 'Worksheet draft not found.' });
       eventBus.emitEvent('worksheet.draft.updated', { moduleId: manifest.id, item });
-      return res.json(item);
+      return res.json(toPublicWorksheet(item));
     });
 
     router.get('/:id/export/spec', (req, res) => {
-      const item = dataStore.get('worksheetDrafts', req.params.id);
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.get('worksheetDrafts', req.params.id);
       if (!item) return res.status(404).json({ message: 'Worksheet draft not found.' });
       return res.json(buildExportSpec(item));
     });
 
     router.get('/:id/export/preview', (req, res) => {
-      const item = dataStore.get('worksheetDrafts', req.params.id);
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.get('worksheetDrafts', req.params.id);
       if (!item) return res.status(404).send('Worksheet draft not found.');
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       return res.send(buildPrintableHtml(item));
@@ -259,7 +296,8 @@ export const moduleDefinition = {
 
     router.get('/:id/export/docx', async (req, res, next) => {
       try {
-        const item = dataStore.get('worksheetDrafts', req.params.id);
+        const accountStore = dataStore.forAccount(req.user.sub);
+        const item = accountStore.get('worksheetDrafts', req.params.id);
         if (!item) return res.status(404).json({ message: 'Worksheet draft not found.' });
         const buffer = await createDocxBuffer(item);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
@@ -272,7 +310,8 @@ export const moduleDefinition = {
 
     router.get('/:id/export/pdf', (req, res, next) => {
       try {
-        const item = dataStore.get('worksheetDrafts', req.params.id);
+        const accountStore = dataStore.forAccount(req.user.sub);
+        const item = accountStore.get('worksheetDrafts', req.params.id);
         if (!item) return res.status(404).json({ message: 'Worksheet draft not found.' });
         return writePdf(res, item);
       } catch (error) {
@@ -281,10 +320,11 @@ export const moduleDefinition = {
     });
 
     router.delete('/:id', (req, res) => {
-      const item = dataStore.remove('worksheetDrafts', req.params.id);
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.remove('worksheetDrafts', req.params.id);
       if (!item) return res.status(404).json({ message: 'Worksheet draft not found.' });
       eventBus.emitEvent('worksheet.draft.deleted', { moduleId: manifest.id, item });
-      return res.json({ success: true, item });
+      return res.json({ success: true, item: toPublicWorksheet(item) });
     });
 
     app.use(manifest.routesBasePath, router);

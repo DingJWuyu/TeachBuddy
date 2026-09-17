@@ -880,7 +880,7 @@ test('worksheet designer CRUD keeps nested JSON fields stable', async () => {
       duration: '40 min',
       questionCount: 2,
       instructions: 'Answer clearly.',
-      resourceIds: ['resources-1'],
+      resourceIds: [],
       questionItems: [
         { number: 1, type: 'short', prompt: 'Define force.', marks: 5, lines: 3, diagramSpace: false },
         { number: 2, type: 'diagram', prompt: 'Draw force arrows.', marks: 15, lines: 0, diagramSpace: true }
@@ -898,7 +898,7 @@ test('worksheet designer CRUD keeps nested JSON fields stable', async () => {
       duration: '45 min',
       questionCount: 2,
       instructions: 'Answer clearly and label diagrams.',
-      resourceIds: ['resources-1'],
+      resourceIds: [],
       questionItems: [
         { number: 1, type: 'short', prompt: 'Define force and give one example.', marks: 10, lines: 4, diagramSpace: false },
         { number: 2, type: 'diagram', prompt: 'Draw balanced forces.', marks: 15, lines: 0, diagramSpace: true }
@@ -909,6 +909,82 @@ test('worksheet designer CRUD keeps nested JSON fields stable', async () => {
     assert.equal(updateResponse.body.questionItems[0].marks, 10);
 
     await api.delete(`/api/modules/worksheet-designer/${createResponse.body.id}`).expect(200);
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('worksheet drafts isolate CRUD and exports between teacher accounts', async () => {
+  const context = createTestContext();
+
+  try {
+    const firstToken = await register(request(context.app), 'worksheet.first@example.test', 'first password');
+    const secondToken = await register(request(context.app), 'worksheet.second@example.test', 'second password');
+    const firstApi = authAgent(context.app, firstToken);
+    const secondApi = authAgent(context.app, secondToken);
+    const worksheetPayload = {
+      title: 'First teacher worksheet',
+      className: 'STD VIII',
+      topic: 'Forces',
+      format: 'Mixed worksheet',
+      marks: 20,
+      duration: '40 min',
+      questionCount: 2,
+      instructions: 'Answer clearly.',
+      resourceIds: [],
+      questionItems: [
+        { number: 1, type: 'short', prompt: 'Define force.', marks: 5, lines: 3, diagramSpace: false },
+        { number: 2, type: 'diagram', prompt: 'Draw force arrows.', marks: 15, lines: 0, diagramSpace: true }
+      ]
+    };
+
+    const firstCreateResponse = await firstApi
+      .post('/api/modules/worksheet-designer')
+      .send(worksheetPayload)
+      .expect(201);
+    const secondCreateResponse = await secondApi
+      .post('/api/modules/worksheet-designer')
+      .send({ ...worksheetPayload, title: 'Second teacher worksheet' })
+      .expect(201);
+
+    assert.equal(firstCreateResponse.body.ownerId, undefined);
+    assert.equal(secondCreateResponse.body.ownerId, undefined);
+    const firstWorksheetId = firstCreateResponse.body.id;
+    assert.deepEqual(
+      (await firstApi.get('/api/modules/worksheet-designer').expect(200)).body.items.map((item) => item.title),
+      ['First teacher worksheet']
+    );
+    assert.deepEqual(
+      (await secondApi.get('/api/modules/worksheet-designer').expect(200)).body.items.map((item) => item.title),
+      ['Second teacher worksheet']
+    );
+
+    await secondApi
+      .put(`/api/modules/worksheet-designer/${firstWorksheetId}`)
+      .send({ ...worksheetPayload, title: 'Unauthorized worksheet update' })
+      .expect(404);
+    await secondApi.delete(`/api/modules/worksheet-designer/${firstWorksheetId}`).expect(404);
+    await secondApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}/export/spec`).expect(404);
+    await secondApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}/export/preview`).expect(404);
+    await secondApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}/export/docx`).expect(404);
+    await secondApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}/export/pdf`).expect(404);
+
+    const updateResponse = await firstApi
+      .put(`/api/modules/worksheet-designer/${firstWorksheetId}`)
+      .send({ ...worksheetPayload, title: 'First teacher worksheet revised' })
+      .expect(200);
+    assert.equal(updateResponse.body.title, 'First teacher worksheet revised');
+    assert.equal((await firstApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}/export/spec`).expect(200)).body.document.title, 'First teacher worksheet revised');
+    await firstApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}/export/preview`).expect(200);
+    await firstApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}/export/docx`).expect(200);
+    await firstApi.get(`/api/modules/worksheet-designer/${firstWorksheetId}/export/pdf`).expect(200);
+
+    await firstApi.delete(`/api/modules/worksheet-designer/${firstWorksheetId}`).expect(200);
+    assert.deepEqual((await firstApi.get('/api/modules/worksheet-designer').expect(200)).body.items, []);
+    assert.deepEqual(
+      (await secondApi.get('/api/modules/worksheet-designer').expect(200)).body.items.map((item) => item.title),
+      ['Second teacher worksheet']
+    );
   } finally {
     context.cleanup();
   }
@@ -953,6 +1029,61 @@ test('template CRUD remains compatible', async () => {
   }
 });
 
+test('templates isolate CRUD and filtered lists between teacher accounts', async () => {
+  const context = createTestContext();
+
+  try {
+    const firstToken = await register(request(context.app), 'template.first@example.test', 'first password');
+    const secondToken = await register(request(context.app), 'template.second@example.test', 'second password');
+    const firstApi = authAgent(context.app, firstToken);
+    const secondApi = authAgent(context.app, secondToken);
+    const templatePayload = {
+      moduleId: 'lesson-planner',
+      name: 'First teacher template',
+      payload: { duration: '25 min', starter: 'Flash review' }
+    };
+
+    const firstCreateResponse = await firstApi.post('/api/templates').send(templatePayload).expect(201);
+    const secondCreateResponse = await secondApi
+      .post('/api/templates')
+      .send({ ...templatePayload, name: 'Second teacher template' })
+      .expect(201);
+
+    assert.equal(firstCreateResponse.body.ownerId, undefined);
+    assert.equal(secondCreateResponse.body.ownerId, undefined);
+    const firstTemplateId = firstCreateResponse.body.id;
+    assert.deepEqual(
+      (await firstApi.get('/api/templates').expect(200)).body.items.map((item) => item.name),
+      ['First teacher template']
+    );
+    assert.deepEqual(
+      (await secondApi.get('/api/templates?moduleId=lesson-planner').expect(200)).body.items.map((item) => item.name),
+      ['Second teacher template']
+    );
+
+    await secondApi
+      .put(`/api/templates/${firstTemplateId}`)
+      .send({ name: 'Unauthorized template update', payload: { duration: '99 min' } })
+      .expect(404);
+    await secondApi.delete(`/api/templates/${firstTemplateId}`).expect(404);
+
+    const updateResponse = await firstApi
+      .put(`/api/templates/${firstTemplateId}`)
+      .send({ name: 'First teacher template revised', payload: { duration: '30 min' } })
+      .expect(200);
+    assert.equal(updateResponse.body.name, 'First teacher template revised');
+
+    await firstApi.delete(`/api/templates/${firstTemplateId}`).expect(200);
+    assert.deepEqual((await firstApi.get('/api/templates').expect(200)).body.items, []);
+    assert.deepEqual(
+      (await secondApi.get('/api/templates').expect(200)).body.items.map((item) => item.name),
+      ['Second teacher template']
+    );
+  } finally {
+    context.cleanup();
+  }
+});
+
 test('resource vault upload, metadata update, and delete clean up both metadata and file', async () => {
   const context = createTestContext();
 
@@ -992,6 +1123,172 @@ test('resource vault upload, metadata update, and delete clean up both metadata 
       .expect(200);
 
     assert.equal(fs.existsSync(uploadedFilePath), false);
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('resources isolate metadata, authenticated file reads, and physical cleanup between teacher accounts', async () => {
+  const context = createTestContext();
+
+  try {
+    const firstToken = await register(request(context.app), 'resource.first@example.test', 'first password');
+    const secondToken = await register(request(context.app), 'resource.second@example.test', 'second password');
+    const firstApi = authAgent(context.app, firstToken);
+    const secondApi = authAgent(context.app, secondToken);
+    const firstSampleFile = path.join(context.rootDir, 'first-sample.txt');
+    const secondSampleFile = path.join(context.rootDir, 'second-sample.txt');
+    fs.writeFileSync(firstSampleFile, 'first teacher file', 'utf-8');
+    fs.writeFileSync(secondSampleFile, 'second teacher file', 'utf-8');
+
+    const firstUploadResponse = await firstApi
+      .post('/api/modules/resource-vault/upload')
+      .field('title', 'First teacher resource')
+      .field('tags', 'science, first')
+      .field('moduleLinks', 'lesson-planner')
+      .attach('file', firstSampleFile)
+      .expect(201);
+    const secondUploadResponse = await secondApi
+      .post('/api/modules/resource-vault/upload')
+      .field('title', 'Second teacher resource')
+      .field('tags', 'science, second')
+      .field('moduleLinks', 'lesson-planner')
+      .attach('file', secondSampleFile)
+      .expect(201);
+
+    const firstResourceId = firstUploadResponse.body.id;
+    const secondResourceId = secondUploadResponse.body.id;
+    const firstUploadedFilePath = path.join(context.uploadDir, path.basename(firstUploadResponse.body.path));
+    const secondUploadedFilePath = path.join(context.uploadDir, path.basename(secondUploadResponse.body.path));
+    assert.ok(fs.existsSync(firstUploadedFilePath));
+    assert.ok(fs.existsSync(secondUploadedFilePath));
+    assert.deepEqual(
+      (await firstApi.get('/api/modules/resource-vault').expect(200)).body.items.map((item) => item.title),
+      ['First teacher resource']
+    );
+    assert.deepEqual(
+      (await secondApi.get('/api/modules/resource-vault').expect(200)).body.items.map((item) => item.title),
+      ['Second teacher resource']
+    );
+
+    await request(context.app).get(firstUploadResponse.body.path).expect(404);
+    await request(context.app).get(`/api/modules/resource-vault/${firstResourceId}/file`).expect(401);
+    const firstFileResponse = await firstApi.get(`/api/modules/resource-vault/${firstResourceId}/file`).expect(200);
+    assert.equal(firstFileResponse.text, 'first teacher file');
+    await secondApi.get(`/api/modules/resource-vault/${firstResourceId}/file`).expect(404);
+
+    await secondApi
+      .put(`/api/modules/resource-vault/${firstResourceId}`)
+      .send({ title: 'Unauthorized resource update', tags: [], moduleLinks: [] })
+      .expect(404);
+    await secondApi.delete(`/api/modules/resource-vault/${firstResourceId}`).expect(404);
+
+    const updateResponse = await firstApi
+      .put(`/api/modules/resource-vault/${firstResourceId}`)
+      .send({ title: 'First teacher resource revised', tags: ['science', 'revised'], moduleLinks: ['worksheet-designer'] })
+      .expect(200);
+    assert.equal(updateResponse.body.title, 'First teacher resource revised');
+
+    await firstApi.delete(`/api/modules/resource-vault/${firstResourceId}`).expect(200);
+    assert.equal(fs.existsSync(firstUploadedFilePath), false);
+    assert.equal(fs.existsSync(secondUploadedFilePath), true);
+    assert.deepEqual((await firstApi.get('/api/modules/resource-vault').expect(200)).body.items, []);
+    assert.equal((await secondApi.get(`/api/modules/resource-vault/${secondResourceId}/file`).expect(200)).text, 'second teacher file');
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('lesson plans and worksheets only reference same-account resources and generated plans', async () => {
+  const context = createTestContext();
+
+  try {
+    const firstToken = await register(request(context.app), 'reference.first@example.test', 'first password');
+    const secondToken = await register(request(context.app), 'reference.second@example.test', 'second password');
+    const firstApi = authAgent(context.app, firstToken);
+    const secondApi = authAgent(context.app, secondToken);
+    const firstSampleFile = path.join(context.rootDir, 'reference-first.txt');
+    const secondSampleFile = path.join(context.rootDir, 'reference-second.txt');
+    fs.writeFileSync(firstSampleFile, 'first resource', 'utf-8');
+    fs.writeFileSync(secondSampleFile, 'second resource', 'utf-8');
+
+    const firstResourceResponse = await firstApi
+      .post('/api/modules/resource-vault/upload')
+      .field('title', 'First resource')
+      .field('tags', 'science')
+      .field('moduleLinks', 'lesson-planner')
+      .attach('file', firstSampleFile)
+      .expect(201);
+    const secondResourceResponse = await secondApi
+      .post('/api/modules/resource-vault/upload')
+      .field('title', 'Second resource')
+      .field('tags', 'science')
+      .field('moduleLinks', 'lesson-planner')
+      .attach('file', secondSampleFile)
+      .expect(201);
+
+    const lessonPayload = {
+      topic: 'Account-scoped lesson',
+      className: 'STD VI',
+      objective: 'Explain the account-scoped lesson objective.',
+      duration: '35 min',
+      materials: 'Notebook',
+      starter: 'Ask a question.',
+      mainActivity: 'Run the demonstration.',
+      assessment: 'Draw a diagram.',
+      resourceIds: [firstResourceResponse.body.id]
+    };
+    const firstLessonResponse = await firstApi.post('/api/modules/lesson-planner').send(lessonPayload).expect(201);
+    const secondLessonResponse = await secondApi
+      .post('/api/modules/lesson-planner')
+      .send({ ...lessonPayload, topic: 'Second account lesson', resourceIds: [secondResourceResponse.body.id] })
+      .expect(201);
+
+    await secondApi
+      .post('/api/modules/lesson-planner')
+      .send({ ...lessonPayload, topic: 'Cross-account lesson', resourceIds: [firstResourceResponse.body.id] })
+      .expect(404);
+    await secondApi
+      .put(`/api/modules/lesson-planner/${secondLessonResponse.body.id}`)
+      .send({ ...lessonPayload, topic: 'Cross-account lesson update', resourceIds: [firstResourceResponse.body.id] })
+      .expect(404);
+
+    const worksheetPayload = {
+      title: 'Resource-linked worksheet',
+      className: 'STD VI',
+      topic: 'Account-scoped lesson',
+      format: 'Mixed worksheet',
+      marks: 20,
+      duration: '40 min',
+      questionCount: 2,
+      instructions: 'Answer clearly.',
+      resourceIds: [firstResourceResponse.body.id],
+      questionItems: []
+    };
+    await firstApi.post('/api/modules/worksheet-designer').send(worksheetPayload).expect(201);
+    await secondApi
+      .post('/api/modules/worksheet-designer')
+      .send({ ...worksheetPayload, title: 'Cross-account worksheet' })
+      .expect(404);
+    await secondApi
+      .post('/api/modules/worksheet-designer')
+      .send({ ...worksheetPayload, title: 'Second worksheet', resourceIds: [secondResourceResponse.body.id] })
+      .expect(201);
+
+    const generatedWorksheetResponse = await firstApi
+      .post(`/api/modules/lesson-planner/${firstLessonResponse.body.id}/generate-worksheet-draft`)
+      .send({})
+      .expect(201);
+    assert.equal(generatedWorksheetResponse.body.generatedFromLessonId, firstLessonResponse.body.id);
+    assert.deepEqual(generatedWorksheetResponse.body.resourceIds, [firstResourceResponse.body.id]);
+    await secondApi
+      .post(`/api/modules/lesson-planner/${firstLessonResponse.body.id}/generate-worksheet-draft`)
+      .send({})
+      .expect(404);
+    await secondApi
+      .post('/api/modules/worksheet-designer')
+      .send({ ...worksheetPayload, title: 'Cross-account generated worksheet', generatedFromLessonId: firstLessonResponse.body.id, resourceIds: [secondResourceResponse.body.id] })
+      .expect(404);
   } finally {
     context.cleanup();
   }
