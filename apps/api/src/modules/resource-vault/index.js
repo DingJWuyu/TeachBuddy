@@ -72,7 +72,7 @@ export const moduleDefinition = {
           moduleLinks,
           path: `/uploads/${path.basename(req.file.path)}`
         });
-        eventBus.emitEvent('resource.created', { moduleId: manifest.id, item });
+        eventBus.emitEvent('resource.created', { moduleId: manifest.id, accountId: req.user.sub, item });
         return res.status(201).json(toPublicResource(item));
       } catch (error) {
         fs.rmSync(req.file.path, { force: true });
@@ -97,7 +97,7 @@ export const moduleDefinition = {
 
       const item = accountStore.update('resources', req.params.id, updates);
       if (!item) return res.status(404).json({ message: 'Resource not found.' });
-      eventBus.emitEvent('resource.updated', { moduleId: manifest.id, item });
+      eventBus.emitEvent('resource.updated', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json(toPublicResource(item));
     });
 
@@ -111,7 +111,7 @@ export const moduleDefinition = {
           fs.unlinkSync(filePath);
         }
       }
-      eventBus.emitEvent('resource.deleted', { moduleId: manifest.id, item });
+      eventBus.emitEvent('resource.deleted', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json({ success: true, item: toPublicResource(item) });
     });
 

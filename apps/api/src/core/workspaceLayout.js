@@ -31,10 +31,8 @@ function flattenPlacedModuleIds(layout) {
   ];
 }
 
-function findWorkspaceLayout(dataStore, userId) {
-  return dataStore
-    .listWhere('workspaceLayouts', (item) => item.userId === userId)
-    .at(0);
+function findWorkspaceLayout(accountStore) {
+  return accountStore.list('workspaceLayouts').at(0);
 }
 
 function validateGroups(value, moduleIds) {
@@ -110,10 +108,10 @@ export function validateWorkspaceLayout(payload, moduleIds) {
   };
 }
 
-export function readWorkspaceLayout(dataStore, userId, moduleIds) {
-  const existingLayout = findWorkspaceLayout(dataStore, userId);
-  const storedLayout = existingLayout || dataStore.create('workspaceLayouts', {
-    userId,
+export function readWorkspaceLayout(dataStore, accountId, moduleIds) {
+  const accountStore = dataStore.forAccount(accountId);
+  const existingLayout = findWorkspaceLayout(accountStore);
+  const storedLayout = existingLayout || accountStore.create('workspaceLayouts', {
     ...createDefaultWorkspaceLayout(moduleIds)
   });
   const hiddenModuleIds = [...new Set(storedLayout.hiddenModuleIds.filter((moduleId) => moduleIds.includes(moduleId)))];
@@ -142,15 +140,16 @@ export function readWorkspaceLayout(dataStore, userId, moduleIds) {
 
   const resolvedLayout = { hiddenModuleIds, groups, ungroupedModuleIds };
   if (!layoutsEqual(storedLayout, resolvedLayout)) {
-    dataStore.update('workspaceLayouts', storedLayout.id, resolvedLayout);
+    accountStore.update('workspaceLayouts', storedLayout.id, resolvedLayout);
   }
 
   return resolvedLayout;
 }
 
-export function saveWorkspaceLayout(dataStore, userId, payload, moduleIds) {
+export function saveWorkspaceLayout(dataStore, accountId, payload, moduleIds) {
+  const accountStore = dataStore.forAccount(accountId);
   const resolvedLayout = validateWorkspaceLayout(payload, moduleIds);
-  const existingLayout = findWorkspaceLayout(dataStore, userId);
+  const existingLayout = findWorkspaceLayout(accountStore);
 
   const placedModuleIds = new Set(flattenPlacedModuleIds(resolvedLayout));
   const previousModuleIds = existingLayout ? flattenPlacedModuleIds(existingLayout) : [];
@@ -163,9 +162,9 @@ export function saveWorkspaceLayout(dataStore, userId, payload, moduleIds) {
   }
 
   if (existingLayout) {
-    dataStore.update('workspaceLayouts', existingLayout.id, resolvedLayout);
+    accountStore.update('workspaceLayouts', existingLayout.id, resolvedLayout);
   } else {
-    dataStore.create('workspaceLayouts', { userId, ...resolvedLayout });
+    accountStore.create('workspaceLayouts', resolvedLayout);
   }
 
   return resolvedLayout;

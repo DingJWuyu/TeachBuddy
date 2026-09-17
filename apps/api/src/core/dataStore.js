@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import { env as defaultEnv } from '../config/env.js';
-import { hashPassword } from './auth.js';
 
 const tableConfigs = {
   users: {
@@ -102,7 +101,7 @@ const tableConfigs = {
   workspaceLayouts: {
     name: 'workspaceLayouts',
     columns: {
-      userId: 'TEXT NOT NULL',
+      ownerId: 'TEXT NOT NULL',
       hiddenModuleIds: 'TEXT NOT NULL',
       groups: 'TEXT NOT NULL',
       ungroupedModuleIds: 'TEXT NOT NULL'
@@ -144,23 +143,18 @@ function createInsertStatement(config) {
   return `INSERT INTO ${config.name} (${fields.join(', ')}) VALUES (${placeholders})`;
 }
 
-function createUpdateStatement(config) {
+function createAccountUpdateStatement(config) {
   const assignments = Object.keys(config.columns)
     .map((field) => `${field} = @${field}`)
     .concat('updatedAt = @updatedAt')
     .join(', ');
-  return `UPDATE ${config.name} SET ${assignments} WHERE id = @id`;
+  return `UPDATE ${config.name} SET ${assignments} WHERE id = @id AND ownerId = @ownerId`;
 }
 
 function normalizeStoredItem(key, item) {
   const config = tableConfigs[key];
   if (!config) return item;
   const normalized = { ...item };
-
-  if (key === 'users' && normalized.password && !normalized.passwordHash) {
-    normalized.passwordHash = hashPassword(normalized.password);
-    delete normalized.password;
-  }
 
   for (const column of config.jsonColumns || []) {
     if (normalized[column] === undefined || normalized[column] === null || normalized[column] === '') {
@@ -239,7 +233,7 @@ function ensureSchema(db) {
     if (!config.columns.ownerId) continue;
     db.exec(`CREATE INDEX IF NOT EXISTS ${ownerIndexName(key)} ON ${config.name} (ownerId);`);
   }
-  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS workspace_layouts_user_unique ON workspaceLayouts (userId);');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS workspace_layouts_owner_unique ON workspaceLayouts (ownerId);');
 }
 
 function getMetadata(db, key) {
@@ -265,19 +259,7 @@ export function createDataStore(runtimeEnv = defaultEnv) {
   db.pragma('journal_mode = WAL');
   ensureSchema(db);
 
-  const listStatements = Object.fromEntries(
-    storeKeys.map((key) => [
-      key,
-      db.prepare(`SELECT * FROM ${key}`)
-    ])
-  );
-
-  const getStatements = Object.fromEntries(
-    storeKeys.map((key) => [
-      key,
-      db.prepare(`SELECT * FROM ${key} WHERE id = ?`)
-    ])
-  );
+  const findUserByEmailStatement = db.prepare('SELECT * FROM users WHERE email = ? COLLATE NOCASE');
 
   const accountScopedKeys = storeKeys.filter((key) => tableConfigs[key].columns.ownerId);
   const accountListStatements = Object.fromEntries(
@@ -294,13 +276,6 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     ])
   );
 
-  const removeStatements = Object.fromEntries(
-    storeKeys.map((key) => [
-      key,
-      db.prepare(`DELETE FROM ${key} WHERE id = ?`)
-    ])
-  );
-
   const insertStatements = Object.fromEntries(
     storeKeys.map((key) => [
       key,
@@ -308,10 +283,17 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     ])
   );
 
-  const updateStatements = Object.fromEntries(
-    storeKeys.map((key) => [
+  const accountUpdateStatements = Object.fromEntries(
+    accountScopedKeys.map((key) => [
       key,
-      db.prepare(createUpdateStatement(tableConfigs[key]))
+      db.prepare(createAccountUpdateStatement(tableConfigs[key]))
+    ])
+  );
+
+  const accountRemoveStatements = Object.fromEntries(
+    accountScopedKeys.map((key) => [
+      key,
+      db.prepare(`DELETE FROM ${key} WHERE id = ? AND ownerId = ?`)
     ])
   );
 
@@ -319,6 +301,39 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     if (!tableConfigs[key]?.columns.ownerId) {
       throw new Error(`Data store key ${key} does not support account ownership.`);
     }
+  }
+
+  function createItem(key, value) {
+    const timestamp = new Date().toISOString();
+    const item = normalizeStoredItem(key, {
+      id: generateId(key),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      ...value
+    });
+    insertStatements[key].run(serializeItem(key, item));
+    return item;
+  }
+
+  function updateAccountItem(key, id, accountId, updates) {
+    const currentItem = deserializeRow(key, accountGetStatements[key].get(id, accountId));
+    if (!currentItem) return null;
+    const updatedItem = normalizeStoredItem(key, {
+      ...currentItem,
+      ...updates,
+      ownerId: accountId,
+      id,
+      updatedAt: new Date().toISOString()
+    });
+    accountUpdateStatements[key].run(serializeItem(key, updatedItem));
+    return updatedItem;
+  }
+
+  function removeAccountItem(key, id, accountId) {
+    const item = deserializeRow(key, accountGetStatements[key].get(id, accountId));
+    if (!item) return null;
+    accountRemoveStatements[key].run(id, accountId);
+    return item;
   }
 
   function createAccountStore(accountId) {
@@ -339,75 +354,28 @@ export function createDataStore(runtimeEnv = defaultEnv) {
 
       create(key, value) {
         assertAccountScopedKey(key);
-        return dataStore.create(key, { ...value, ownerId: accountId });
+        return createItem(key, { ...value, ownerId: accountId });
       },
 
       update(key, id, updates) {
         assertAccountScopedKey(key);
-        const currentItem = this.get(key, id);
-        if (!currentItem) return null;
-        return dataStore.update(key, id, { ...updates, ownerId: accountId });
+        return updateAccountItem(key, id, accountId, updates);
       },
 
       remove(key, id) {
         assertAccountScopedKey(key);
-        const currentItem = this.get(key, id);
-        if (!currentItem) return null;
-        return dataStore.remove(key, id);
+        return removeAccountItem(key, id, accountId);
       }
     };
   }
 
   const dataStore = {
-    list(key) {
-      return sortByCreatedDesc(listStatements[key].all().map((row) => deserializeRow(key, row)));
+    findUserByEmail(email) {
+      return deserializeRow('users', findUserByEmailStatement.get(email));
     },
 
-    listWhere(key, predicate) {
-      return this.list(key).filter(predicate);
-    },
-
-    get(key, id) {
-      return deserializeRow(key, getStatements[key].get(id));
-    },
-
-    create(key, value) {
-      const timestamp = new Date().toISOString();
-      const item = normalizeStoredItem(key, {
-        id: generateId(key),
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        ...value
-      });
-      insertStatements[key].run(serializeItem(key, item));
-      return item;
-    },
-
-    update(key, id, updates) {
-      const currentItem = this.get(key, id);
-      if (!currentItem) return null;
-      const updatedItem = normalizeStoredItem(key, {
-        ...currentItem,
-        ...updates,
-        id,
-        updatedAt: new Date().toISOString()
-      });
-      updateStatements[key].run(serializeItem(key, updatedItem));
-      return updatedItem;
-    },
-
-    remove(key, id) {
-      const item = this.get(key, id);
-      if (!item) return null;
-      removeStatements[key].run(id);
-      return item;
-    },
-
-    snapshot() {
-      return storeKeys.reduce((accumulator, key) => {
-        accumulator[key] = this.list(key);
-        return accumulator;
-      }, {});
+    createUser(value) {
+      return createItem('users', value);
     },
 
     close() {

@@ -90,7 +90,7 @@ export const moduleDefinition = {
       ensureOwnedReferences(dataStore, req.user.sub, 'resources', payload.resourceIds, 'Resource not found.');
       const item = accountStore.update('lessonPlans', req.params.id, payload);
       if (!item) return res.status(404).json({ message: 'Lesson plan not found.' });
-      eventBus.emitEvent('lesson.plan.updated', { moduleId: manifest.id, item });
+      eventBus.emitEvent('lesson.plan.updated', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json(toPublicLessonPlan(item));
     });
 
@@ -100,7 +100,12 @@ export const moduleDefinition = {
       if (!lesson) return res.status(404).json({ message: 'Lesson plan not found.' });
       const payload = createDraftFromLesson(lesson);
       const draft = accountStore.create('worksheetDrafts', payload);
-      eventBus.emitEvent('worksheet.draft.created', { moduleId: 'worksheet-designer', item: draft, sourceLesson: lesson });
+      eventBus.emitEvent('worksheet.draft.created', {
+        moduleId: 'worksheet-designer',
+        accountId: req.user.sub,
+        item: draft,
+        sourceLesson: lesson
+      });
       return res.status(201).json(toPublicWorksheet(draft));
     });
 
@@ -108,7 +113,7 @@ export const moduleDefinition = {
       const accountStore = dataStore.forAccount(req.user.sub);
       const item = accountStore.remove('lessonPlans', req.params.id);
       if (!item) return res.status(404).json({ message: 'Lesson plan not found.' });
-      eventBus.emitEvent('lesson.plan.deleted', { moduleId: manifest.id, item });
+      eventBus.emitEvent('lesson.plan.deleted', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json({ success: true, item: toPublicLessonPlan(item) });
     });
 

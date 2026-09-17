@@ -30,12 +30,12 @@ function createNotFoundError(message) {
 function ensureLinkedItemBelongsToAccount(dataStore, accountId, linkedTo) {
   if (!linkedTo) return;
 
+  const accountStore = dataStore.forAccount(accountId);
   for (const key of ['lessonPlans', 'reminders', 'scheduleItems']) {
-    const item = dataStore.get(key, linkedTo);
-    if (item && item.ownerId !== accountId) {
-      throw createNotFoundError('Linked item not found.');
-    }
+    if (accountStore.get(key, linkedTo)) return;
   }
+
+  throw createNotFoundError('Linked item not found.');
 }
 
 function createNextOccurrence(accountStore, item) {
@@ -73,18 +73,18 @@ export const moduleDefinition = {
     const router = express.Router();
 
     eventBus.onEvent('lesson.plan.created', ({ item, accountId }) => {
-      const ownerId = item?.ownerId || accountId;
-      if (!ownerId) return;
+      if (!accountId || !item?.id) return;
 
-      const accountStore = dataStore.forAccount(ownerId);
-      if (!accountStore.get('lessonPlans', item.id)) return;
+      const accountStore = dataStore.forAccount(accountId);
+      const lesson = accountStore.get('lessonPlans', item.id);
+      if (!lesson) return;
 
       accountStore.create('reminders', {
-        title: `Review lesson plan: ${item.topic}`,
+        title: `Review lesson plan: ${lesson.topic}`,
         dueAt: new Date(Date.now() + 86400000).toISOString(),
         priority: 'medium',
         status: 'pending',
-        linkedTo: item.id,
+        linkedTo: lesson.id,
         source: 'lesson-planner',
         recurrence: 'none',
         recurrenceInterval: 1
@@ -108,7 +108,7 @@ export const moduleDefinition = {
       const payload = sanitizeReminderPayload({ recurrence: 'none', recurrenceInterval: 1, ...req.body });
       ensureLinkedItemBelongsToAccount(dataStore, req.user.sub, payload.linkedTo);
       const item = accountStore.create('reminders', payload);
-      eventBus.emitEvent('reminder.created', { moduleId: manifest.id, item });
+      eventBus.emitEvent('reminder.created', { moduleId: manifest.id, accountId: req.user.sub, item });
       res.status(201).json(toPublicReminder(item));
     });
 
@@ -118,7 +118,7 @@ export const moduleDefinition = {
       ensureLinkedItemBelongsToAccount(dataStore, req.user.sub, payload.linkedTo);
       const item = accountStore.update('reminders', req.params.id, payload);
       if (!item) return res.status(404).json({ message: 'Reminder not found.' });
-      eventBus.emitEvent('reminder.updated', { moduleId: manifest.id, item });
+      eventBus.emitEvent('reminder.updated', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json(toPublicReminder(item));
     });
 
@@ -135,7 +135,7 @@ export const moduleDefinition = {
       const accountStore = dataStore.forAccount(req.user.sub);
       const item = accountStore.remove('reminders', req.params.id);
       if (!item) return res.status(404).json({ message: 'Reminder not found.' });
-      eventBus.emitEvent('reminder.deleted', { moduleId: manifest.id, item });
+      eventBus.emitEvent('reminder.deleted', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json({ success: true, item: toPublicReminder(item) });
     });
 

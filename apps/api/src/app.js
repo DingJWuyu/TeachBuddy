@@ -30,11 +30,6 @@ function toPublicUser(user) {
   return { id: user.id, name: user.name, email: user.email, role: user.role };
 }
 
-function findUserByEmail(dataStore, email) {
-  const normalizedEmail = email.toLowerCase();
-  return dataStore.list('users').find((item) => item.email?.toLowerCase() === normalizedEmail);
-}
-
 function toPublicTemplate(item) {
   if (!item) return item;
   const { ownerId, ...publicItem } = item;
@@ -77,7 +72,7 @@ export function createApp(options = {}) {
     const body = ensureObject(req.body);
     const email = ensureTrimmedString(body.email, 'Email', { maxLength: 120 }).toLowerCase();
     const password = ensureTrimmedString(body.password, 'Password', { maxLength: 120 });
-    const user = findUserByEmail(dataStore, email);
+    const user = dataStore.findUserByEmail(email);
     if (!user || !verifyPassword(password, user.passwordHash)) {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
@@ -100,13 +95,13 @@ export function createApp(options = {}) {
       badRequest('Passwords do not match.');
     }
 
-    if (findUserByEmail(dataStore, email)) {
+    if (dataStore.findUserByEmail(email)) {
       return res.status(409).json({ message: 'An account with that email already exists.' });
     }
 
     let user;
     try {
-      user = dataStore.create('users', {
+      user = dataStore.createUser({
         name,
         email,
         passwordHash: hashPassword(password),
@@ -160,7 +155,7 @@ export function createApp(options = {}) {
       name: ensureTrimmedString(body.name, 'Template name', { maxLength: 120 }),
       payload: ensureObject(body.payload, 'Template payload must be an object.')
     });
-    eventBus.emitEvent('template.created', { item });
+    eventBus.emitEvent('template.created', { accountId: req.user.sub, item });
     res.status(201).json(toPublicTemplate(item));
   });
 
@@ -181,7 +176,7 @@ export function createApp(options = {}) {
     const accountStore = dataStore.forAccount(req.user.sub);
     const item = accountStore.update('templates', req.params.id, updates);
     if (!item) return res.status(404).json({ message: 'Template not found.' });
-    eventBus.emitEvent('template.updated', { item });
+    eventBus.emitEvent('template.updated', { accountId: req.user.sub, item });
     return res.json(toPublicTemplate(item));
   });
 
@@ -189,7 +184,7 @@ export function createApp(options = {}) {
     const accountStore = dataStore.forAccount(req.user.sub);
     const item = accountStore.remove('templates', req.params.id);
     if (!item) return res.status(404).json({ message: 'Template not found.' });
-    eventBus.emitEvent('template.deleted', { item });
+    eventBus.emitEvent('template.deleted', { accountId: req.user.sub, item });
     return res.json({ success: true, item: toPublicTemplate(item) });
   });
 

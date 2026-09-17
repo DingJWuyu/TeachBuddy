@@ -6,8 +6,8 @@ const manifest = buildManifest({
   id: 'schedule-organizer'
 });
 
-function hasClash(dataStore, incomingItem, currentId = null) {
-  const items = dataStore.list('scheduleItems');
+function hasClash(accountStore, incomingItem, currentId = null) {
+  const items = accountStore.list('scheduleItems');
   return items.some((item) => {
     if (currentId && item.id === currentId) return false;
     if (item.day !== incomingItem.day) return false;
@@ -76,7 +76,7 @@ export const moduleDefinition = {
       }
 
       const item = accountStore.create('scheduleItems', payload);
-      eventBus.emitEvent('schedule.created', { moduleId: manifest.id, item });
+      eventBus.emitEvent('schedule.created', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.status(201).json(toPublicScheduleItem(item));
     });
 
@@ -94,7 +94,7 @@ export const moduleDefinition = {
 
       const item = accountStore.update('scheduleItems', req.params.id, payload);
 
-      eventBus.emitEvent('schedule.updated', { moduleId: manifest.id, item });
+      eventBus.emitEvent('schedule.updated', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json(toPublicScheduleItem(item));
     });
 
@@ -105,7 +105,7 @@ export const moduleDefinition = {
         return res.status(404).json({ message: 'Schedule item not found.' });
       }
 
-      eventBus.emitEvent('schedule.deleted', { moduleId: manifest.id, item });
+      eventBus.emitEvent('schedule.deleted', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json({ success: true, item: toPublicScheduleItem(item) });
     });
 

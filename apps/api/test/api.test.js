@@ -769,6 +769,30 @@ test('reminder completion creates the next recurring occurrence', async () => {
   }
 });
 
+test('reminder associations require an existing record owned by the current teacher', async () => {
+  const context = createTestContext();
+
+  try {
+    const token = await register(request(context.app), 'reminder-association@example.test', 'association password');
+    const api = authAgent(context.app, token);
+
+    await api
+      .post('/api/modules/reminder-center')
+      .send({
+        title: 'Invalid association',
+        dueAt: '2026-05-01T10:00:00.000Z',
+        priority: 'medium',
+        status: 'pending',
+        recurrence: 'none',
+        recurrenceInterval: 1,
+        linkedTo: 'missing-record-id'
+      })
+      .expect(404);
+  } finally {
+    context.cleanup();
+  }
+});
+
 test('reminders isolate CRUD, completion, recurrence, and cross-account access', async () => {
   const context = createTestContext();
 

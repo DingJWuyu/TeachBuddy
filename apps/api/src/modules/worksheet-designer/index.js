@@ -258,7 +258,7 @@ export const moduleDefinition = {
         'Lesson plan not found.'
       );
       const item = accountStore.create('worksheetDrafts', payload);
-      eventBus.emitEvent('worksheet.draft.created', { moduleId: manifest.id, item });
+      eventBus.emitEvent('worksheet.draft.created', { moduleId: manifest.id, accountId: req.user.sub, item });
       res.status(201).json(toPublicWorksheet(item));
     });
 
@@ -275,7 +275,7 @@ export const moduleDefinition = {
       );
       const item = accountStore.update('worksheetDrafts', req.params.id, payload);
       if (!item) return res.status(404).json({ message: 'Worksheet draft not found.' });
-      eventBus.emitEvent('worksheet.draft.updated', { moduleId: manifest.id, item });
+      eventBus.emitEvent('worksheet.draft.updated', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json(toPublicWorksheet(item));
     });
 
@@ -323,7 +323,7 @@ export const moduleDefinition = {
       const accountStore = dataStore.forAccount(req.user.sub);
       const item = accountStore.remove('worksheetDrafts', req.params.id);
       if (!item) return res.status(404).json({ message: 'Worksheet draft not found.' });
-      eventBus.emitEvent('worksheet.draft.deleted', { moduleId: manifest.id, item });
+      eventBus.emitEvent('worksheet.draft.deleted', { moduleId: manifest.id, accountId: req.user.sub, item });
       return res.json({ success: true, item: toPublicWorksheet(item) });
     });
 
