@@ -52,14 +52,15 @@ export const moduleDefinition = {
   manifest,
   register({ app, eventBus, dataStore }) {
     const router = express.Router();
+    const accountStoreFor = (req) => dataStore.forAccount(req.user.sub);
 
     router.get('/', (req, res) => {
-      const accountStore = dataStore.forAccount(req.user.sub);
+      const accountStore = accountStoreFor(req);
       res.json({ items: accountStore.list('scheduleItems').map(toPublicScheduleItem) });
     });
 
     router.get('/:id', (req, res) => {
-      const accountStore = dataStore.forAccount(req.user.sub);
+      const accountStore = accountStoreFor(req);
       const item = accountStore.get('scheduleItems', req.params.id);
       if (!item) {
         return res.status(404).json({ message: 'Schedule item not found.' });
@@ -68,7 +69,7 @@ export const moduleDefinition = {
     });
 
     router.post('/', express.json(), (req, res) => {
-      const accountStore = dataStore.forAccount(req.user.sub);
+      const accountStore = accountStoreFor(req);
       const payload = sanitizeSchedulePayload(req.body);
       if (hasClash(accountStore, payload)) {
         return res.status(409).json({ message: 'This time slot clashes with an existing class.' });
@@ -80,7 +81,7 @@ export const moduleDefinition = {
     });
 
     router.put('/:id', express.json(), (req, res) => {
-      const accountStore = dataStore.forAccount(req.user.sub);
+      const accountStore = accountStoreFor(req);
       const currentItem = accountStore.get('scheduleItems', req.params.id);
       if (!currentItem) {
         return res.status(404).json({ message: 'Schedule item not found.' });
@@ -98,7 +99,7 @@ export const moduleDefinition = {
     });
 
     router.delete('/:id', (req, res) => {
-      const accountStore = dataStore.forAccount(req.user.sub);
+      const accountStore = accountStoreFor(req);
       const item = accountStore.remove('scheduleItems', req.params.id);
       if (!item) {
         return res.status(404).json({ message: 'Schedule item not found.' });
