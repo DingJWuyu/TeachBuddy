@@ -81,7 +81,7 @@ export default function LoginCard({
   return (
     <div className="login-shell">
       <div className="card login-card">
-        <p className="eyebrow">RefatOS v1.3</p>
+        <p className="eyebrow">教师个人工作台</p>
         <h1>{title}</h1>
         <p className="muted">{description}</p>
         <form className="form-grid" onSubmit={submit}>

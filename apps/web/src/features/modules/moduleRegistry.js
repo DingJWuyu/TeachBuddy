@@ -58,13 +58,13 @@ const frontendContributions = {
           itemTitle: (item) => localizeText(item.title),
           itemMeta: (item) => `${new Date(item.dueAt).toLocaleString('zh-CN')} | ${priorityLabels[item.priority] || localizeText(item.priority)}`
         }
-      ],
-      actions: {
-        completeRecurring: ({ endpoint, id, postJson }) => postJson(`${endpoint}/${id}/complete`, {})
-      },
-      messages: {
-        completeRecurring: '提醒已完成。下一次重复提醒会在适用时自动安排。'
-      }
+      ]
+    },
+    actions: {
+      completeRecurring: ({ endpoint, id, postJson }) => postJson(`${endpoint}/${id}/complete`, {})
+    },
+    messages: {
+      completeRecurring: '提醒已完成。下一次重复提醒会在适用时自动安排。'
     }
   },
   'lesson-planner': {

@@ -145,6 +145,7 @@ export function useWorkspaceData() {
 
   function setAuthenticatedSession(response, message) {
     setSession(response);
+    setActiveModuleId('dashboard');
     setFlash(`${message}${localizeText(response.user.name)}。`);
     setError('');
   }

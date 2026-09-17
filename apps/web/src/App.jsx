@@ -116,7 +116,7 @@ export default function App() {
       <main className="main-content">
         <header className="topbar card">
           <div>
-            <p className="eyebrow">v1.3 发布工作台</p>
+            <p className="eyebrow">教师个人工作台</p>
             <h1>安全、可导出、支持附件。</h1>
           </div>
           <div className="topbar-meta">

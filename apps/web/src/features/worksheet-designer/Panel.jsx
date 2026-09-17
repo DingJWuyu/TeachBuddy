@@ -24,7 +24,8 @@ function syncQuestionItems(questionCount, marks, topic, currentItems = []) {
         ...currentItem,
         number: index + 1,
         marks: Number(currentItem.marks || defaultMarks),
-        lines: Number(currentItem.lines ?? 4)
+        lines: Number(currentItem.lines ?? 4),
+        prompt: currentItem.prompt || buildQuestion(index + 1, defaultMarks, topic).prompt
       };
     }
     return buildQuestion(index + 1, defaultMarks, topic);
