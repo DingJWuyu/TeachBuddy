@@ -66,5 +66,13 @@ API 可以通过以下环境变量进行配置：
 - `DATABASE_URL`
 - `UPLOAD_DIR`
 - `EXPORT_DIR`
+- `SMTP_HOST`
+- `SMTP_PORT`（默认 `587`）
+- `SMTP_USER`
+- `SMTP_PASSWORD`
+- `SMTP_FROM`
+- `SMTP_SECURE`（`true`/`false`，默认 `false`）
 
 `SQLITE_PATH` 或 `DATABASE_URL` 可以覆盖默认的 SQLite 文件位置。
+
+密码找回邮件使用标准 SMTP 配置直接发送。开发环境未配置 `SMTP_HOST` 时，验证码只写入 API 服务端日志；生产环境应配置完整 SMTP 参数，不会把验证码放入 API 响应。

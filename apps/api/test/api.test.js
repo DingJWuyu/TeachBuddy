@@ -32,7 +32,8 @@ function createTestContext(options = {}) {
       uploadDir,
       exportDir,
       legacyDataFile
-    }
+    },
+    ...(options.appOptions || {})
   });
 
   return {
@@ -282,6 +283,160 @@ test('teacher can log in again after leaving the authenticated session', async (
 
     assert.ok(loginResponse.body.token);
     assert.equal(loginResponse.body.user.email, 'returning@example.test');
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('password recovery delivers a six-digit code without exposing it in the API response', async () => {
+  const deliveries = [];
+  const context = createTestContext({
+    appOptions: {
+      mailSender: {
+        async send(message) {
+          deliveries.push(message);
+        }
+      }
+    }
+  });
+
+  try {
+    await register(request(context.app), 'Recovery.Teacher@Example.test', 'old recovery password');
+    assert.equal(deliveries.length, 0, 'registration must not send recovery email');
+
+    const response = await request(context.app)
+      .post('/api/auth/password-reset/request')
+      .send({ email: 'recovery.teacher@example.test' })
+      .expect(202);
+
+    assert.equal(typeof response.body.message, 'string');
+    assert.equal(response.body.code, undefined);
+    assert.equal(response.body.message.includes('six-digit'), false);
+    assert.equal(deliveries.length, 1);
+    assert.equal(deliveries[0].to, 'recovery.teacher@example.test');
+    const recoveryCode = deliveries[0].text.match(/\b\d{6}\b/)[0];
+    assert.match(deliveries[0].text, /\b\d{6}\b/);
+
+    const storedRecoveryCode = context.dataStore.list('passwordResetCodes')[0];
+    assert.equal(storedRecoveryCode.code, undefined);
+    assert.notEqual(storedRecoveryCode.codeHash, recoveryCode);
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('password recovery uses the same public response for unknown and known emails', async () => {
+  const deliveries = [];
+  const context = createTestContext({
+    appOptions: {
+      mailSender: {
+        async send(message) {
+          deliveries.push(message);
+        }
+      }
+    }
+  });
+
+  try {
+    await register(request(context.app), 'known-recovery@example.test', 'known recovery password');
+    const knownResponse = await request(context.app)
+      .post('/api/auth/password-reset/request')
+      .send({ email: 'known-recovery@example.test' })
+      .expect(202);
+    const unknownResponse = await request(context.app)
+      .post('/api/auth/password-reset/request')
+      .send({ email: 'unknown-recovery@example.test' })
+      .expect(202);
+
+    assert.deepEqual(unknownResponse.body, knownResponse.body);
+    assert.equal(deliveries.length, 1);
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('password recovery expires after ten minutes and replaces the password once', async () => {
+  const deliveries = [];
+  let currentTime = Date.parse('2026-09-18T10:00:00.000Z');
+  const context = createTestContext({
+    appOptions: {
+      now: () => new Date(currentTime),
+      mailSender: {
+        async send(message) {
+          deliveries.push(message);
+        }
+      }
+    }
+  });
+
+  try {
+    const email = 'recovery-lifecycle@example.test';
+    const oldPassword = 'old recovery password';
+    const newPassword = 'new recovery password';
+    await register(request(context.app), email, oldPassword);
+
+    await request(context.app)
+      .post('/api/auth/password-reset/request')
+      .send({ email })
+      .expect(202);
+    const expiredCode = deliveries.at(-1).text.match(/\b\d{6}\b/)[0];
+
+    currentTime += 10 * 60 * 1000;
+    await request(context.app)
+      .post('/api/auth/password-reset/confirm')
+      .send({
+        email,
+        code: expiredCode,
+        password: newPassword,
+        passwordConfirmation: newPassword
+      })
+      .expect(400);
+
+    await request(context.app)
+      .post('/api/auth/password-reset/request')
+      .send({ email })
+      .expect(202);
+    const validCode = deliveries.at(-1).text.match(/\b\d{6}\b/)[0];
+
+    const mismatchResponse = await request(context.app)
+      .post('/api/auth/password-reset/confirm')
+      .send({
+        email,
+        code: validCode,
+        password: newPassword,
+        passwordConfirmation: 'different password'
+      })
+      .expect(400);
+    assert.equal(mismatchResponse.body.message, 'Passwords do not match.');
+
+    await request(context.app)
+      .post('/api/auth/password-reset/confirm')
+      .send({
+        email,
+        code: validCode,
+        password: newPassword,
+        passwordConfirmation: newPassword
+      })
+      .expect(200);
+
+    await request(context.app)
+      .post('/api/auth/password-reset/confirm')
+      .send({
+        email,
+        code: validCode,
+        password: 'another recovery password',
+        passwordConfirmation: 'another recovery password'
+      })
+      .expect(400);
+
+    await request(context.app)
+      .post('/api/auth/login')
+      .send({ email, password: oldPassword })
+      .expect(401);
+    await request(context.app)
+      .post('/api/auth/login')
+      .send({ email, password: newPassword })
+      .expect(200);
   } finally {
     context.cleanup();
   }

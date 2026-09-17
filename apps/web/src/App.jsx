@@ -21,6 +21,8 @@ export default function App() {
     loadData,
     login,
     register,
+    requestPasswordReset,
+    confirmPasswordReset,
     toggleModuleVisibility,
     updateWorkspaceLayout,
     createItem,
@@ -75,7 +77,15 @@ export default function App() {
   } : {};
 
   if (!authToken) {
-    return <LoginCard onLogin={login} onRegister={register} error={error} />;
+    return (
+      <LoginCard
+        onLogin={login}
+        onRegister={register}
+        onRequestPasswordReset={requestPasswordReset}
+        onConfirmPasswordReset={confirmPasswordReset}
+        error={error}
+      />
+    );
   }
 
   return (

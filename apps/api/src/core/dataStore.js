@@ -107,6 +107,16 @@ const tableConfigs = {
       ungroupedModuleIds: 'TEXT NOT NULL'
     },
     jsonColumns: ['hiddenModuleIds', 'groups', 'ungroupedModuleIds']
+  },
+  passwordResetCodes: {
+    name: 'passwordResetCodes',
+    columns: {
+      userId: 'TEXT NOT NULL',
+      codeHash: 'TEXT NOT NULL',
+      codeSalt: 'TEXT NOT NULL',
+      expiresAt: 'TEXT NOT NULL',
+      usedAt: 'TEXT'
+    }
   }
 };
 

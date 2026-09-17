@@ -16,6 +16,7 @@ function getModuleDefinition(moduleId) {
 
 export function useWorkspaceData() {
   const { authToken, setSession, setActiveModuleId } = useAppStore();
+  const authTokenRef = useRef(authToken);
   const [serverModules, setServerModules] = useState([]);
   const [workspaceLayout, setWorkspaceLayout] = useState(null);
   const [moduleData, setModuleData] = useState(emptyData);
@@ -26,6 +27,10 @@ export function useWorkspaceData() {
   const layoutStateRef = useRef(workspaceLayout);
   const layoutSaveQueueRef = useRef(Promise.resolve());
   const latestLayoutRequestRef = useRef(0);
+
+  useEffect(() => {
+    authTokenRef.current = authToken;
+  }, [authToken]);
 
   useEffect(() => {
     layoutStateRef.current = workspaceLayout;
@@ -49,6 +54,8 @@ export function useWorkspaceData() {
         ...frontendModules.map((moduleItem) => fetchJson(moduleItem.data.endpoint))
       ]);
 
+      if (authTokenRef.current !== authToken) return;
+
       setServerModules(modules.items);
       setWorkspaceLayout(layout);
       setModuleData(Object.fromEntries(
@@ -57,13 +64,14 @@ export function useWorkspaceData() {
       setTemplates(templateItems.items);
       setSession({ token: authToken, user: me.user });
     } catch (loadError) {
+      if (authTokenRef.current !== authToken) return;
       const message = loadError.message || 'Could not load RefatOS data.';
       setError(localizeError(message));
       if (message.toLowerCase().includes('auth')) {
         setSession({ token: '', user: null });
       }
     } finally {
-      setLoading(false);
+      if (authTokenRef.current === authToken) setLoading(false);
     }
   }
 
@@ -164,8 +172,30 @@ export function useWorkspaceData() {
       try {
         const response = await postJson('/auth/register', { name, email, password, passwordConfirmation });
         setAuthenticatedSession(response, '欢迎加入，');
+        return true;
       } catch (registrationError) {
         setError(localizeError(registrationError.message || 'Registration failed.'));
+        return false;
+      }
+    },
+    async requestPasswordReset(email) {
+      try {
+        await postJson('/auth/password-reset/request', { email });
+        setError('');
+        return true;
+      } catch (recoveryError) {
+        setError(localizeError(recoveryError.message || 'Password recovery request failed.'));
+        return false;
+      }
+    },
+    async confirmPasswordReset(email, code, password, passwordConfirmation) {
+      try {
+        await postJson('/auth/password-reset/confirm', { email, code, password, passwordConfirmation });
+        setError('');
+        return true;
+      } catch (resetError) {
+        setError(localizeError(resetError.message || 'Password reset failed.'));
+        return false;
       }
     },
     createItem(moduleId, payload) {

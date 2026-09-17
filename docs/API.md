@@ -15,11 +15,17 @@
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `POST /api/auth/password-reset/request`
+- `POST /api/auth/password-reset/confirm`
 - `GET /api/auth/me`
 
-除 `/api/health`、`/api/auth/register` 和 `/api/auth/login` 外，所有 `/api/*` 路由都需要 Bearer 令牌。
+除 `/api/health`、`/api/auth/register`、`/api/auth/login` 和两个密码找回接口外，所有 `/api/*` 路由都需要 Bearer 令牌。
 
 注册请求接受 `name`、`email`、`password` 和 `passwordConfirmation`，邮箱会规范化为小写并保持唯一。成功响应与登录一致，返回 `{ token, user }`。
+
+密码找回请求接受 `{ email }`，无论邮箱是否对应账户都返回统一的 202 响应，验证码不会出现在响应中。已存在的账户会收到 6 位数字验证码；验证码保存为非明文形式，10 分钟后过期，并在成功确认后立即失效。
+
+密码找回确认请求接受 `{ email, code, password, passwordConfirmation }`，成功后返回 `{ message }`。新密码替换旧密码，注册流程不会发送邮件或验证码。
 
 ## 模块
 

@@ -3,6 +3,7 @@ import { createEnv } from '../config/env.js';
 
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 const PASSWORD_KEY_LENGTH = 64;
+const PASSWORD_RECOVERY_CODE_LENGTH = 6;
 
 function toBase64Url(value) {
   return Buffer.from(value).toString('base64url');
@@ -37,6 +38,24 @@ export function verifyPassword(password, passwordHash) {
   }
 
   return crypto.timingSafeEqual(storedBuffer, derivedKey);
+}
+
+export function generatePasswordRecoveryCode() {
+  return crypto.randomInt(0, 10 ** PASSWORD_RECOVERY_CODE_LENGTH)
+    .toString()
+    .padStart(PASSWORD_RECOVERY_CODE_LENGTH, '0');
+}
+
+export function hashPasswordRecoveryCode(code, salt, secret) {
+  return crypto.createHmac('sha256', secret).update(`${salt}:${code}`).digest('hex');
+}
+
+export function verifyPasswordRecoveryCode(code, codeHash, salt, secret) {
+  const expected = hashPasswordRecoveryCode(code, salt, secret);
+  const expectedBuffer = Buffer.from(expected);
+  const providedBuffer = Buffer.from(codeHash || '');
+  if (expectedBuffer.length !== providedBuffer.length) return false;
+  return crypto.timingSafeEqual(expectedBuffer, providedBuffer);
 }
 
 export function createToken(user) {
