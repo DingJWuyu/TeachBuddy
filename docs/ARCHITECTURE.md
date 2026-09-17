@@ -55,7 +55,7 @@ RefatOS 是一个 monorepo，包含一个小型共享包和两个可运行的应
 
 存储层保留现有的高层 CRUD 契约，因此模块通过一个中心抽象与存储交互，而不是直接执行 SQL。
 
-课程表作为第一条账户归属切片，在 `scheduleItems` 中保存 `ownerId`，并通过 `dataStore.forAccount(accountId)` 提供账户级列表、读取、创建、更新和删除接缝。尚未迁移的模块继续使用原有存储访问方式，避免要求一次性迁移全部调用点。
+课程表、提醒和备课已经完成账户归属切片，分别在 `scheduleItems`、`reminders` 和 `lessonPlans` 中保存 `ownerId`，并通过 `dataStore.forAccount(accountId)` 提供账户级列表、读取、创建、更新和删除接缝。尚未迁移的练习单、资源库和模板继续使用原有存储访问方式，避免要求一次性迁移全部调用点；后续迁移完成前，不应将这些记录视为账户级数据。
 
 在 v1.3 中，为了简化迁移，包含大量数组的字段会有意以 JSON 数据块形式存储在 SQLite 中。
 
