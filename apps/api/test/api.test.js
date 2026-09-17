@@ -496,6 +496,77 @@ test('reminder completion creates the next recurring occurrence', async () => {
   }
 });
 
+test('reminders isolate CRUD, completion, recurrence, and cross-account access', async () => {
+  const context = createTestContext();
+
+  try {
+    const firstToken = await register(request(context.app), 'reminder.first@example.test', 'first password');
+    const secondToken = await register(request(context.app), 'reminder.second@example.test', 'second password');
+    const firstApi = authAgent(context.app, firstToken);
+    const secondApi = authAgent(context.app, secondToken);
+    const firstReminderPayload = {
+      title: 'First teacher planning',
+      dueAt: '2026-05-01T10:00:00.000Z',
+      priority: 'high',
+      status: 'pending',
+      recurrence: 'weekly',
+      recurrenceInterval: 1
+    };
+
+    const firstCreateResponse = await firstApi
+      .post('/api/modules/reminder-center')
+      .send(firstReminderPayload)
+      .expect(201);
+    const secondCreateResponse = await secondApi
+      .post('/api/modules/reminder-center')
+      .send({ ...firstReminderPayload, title: 'Second teacher planning' })
+      .expect(201);
+
+    assert.equal(firstCreateResponse.body.ownerId, undefined);
+    assert.equal(secondCreateResponse.body.ownerId, undefined);
+    assert.deepEqual(
+      (await firstApi.get('/api/modules/reminder-center').expect(200)).body.items.map((item) => item.title),
+      ['First teacher planning']
+    );
+    assert.deepEqual(
+      (await secondApi.get('/api/modules/reminder-center').expect(200)).body.items.map((item) => item.title),
+      ['Second teacher planning']
+    );
+
+    const firstReminderId = firstCreateResponse.body.id;
+    assert.equal((await firstApi.get(`/api/modules/reminder-center/${firstReminderId}`).expect(200)).body.title, 'First teacher planning');
+    await secondApi.get(`/api/modules/reminder-center/${firstReminderId}`).expect(404);
+    await secondApi
+      .put(`/api/modules/reminder-center/${firstReminderId}`)
+      .send({ ...firstReminderPayload, title: 'Unauthorized update' })
+      .expect(404);
+    await secondApi.post(`/api/modules/reminder-center/${firstReminderId}/complete`).send({}).expect(404);
+    await secondApi.delete(`/api/modules/reminder-center/${firstReminderId}`).expect(404);
+
+    const updateResponse = await firstApi
+      .put(`/api/modules/reminder-center/${firstReminderId}`)
+      .send({ ...firstReminderPayload, title: 'First teacher planning revised' })
+      .expect(200);
+    assert.equal(updateResponse.body.title, 'First teacher planning revised');
+
+    const completeResponse = await firstApi
+      .post(`/api/modules/reminder-center/${firstReminderId}/complete`)
+      .send({})
+      .expect(200);
+    assert.equal(completeResponse.body.item.status, 'done');
+    assert.equal(completeResponse.body.nextOccurrence.parentReminderId, firstReminderId);
+    assert.equal(completeResponse.body.nextOccurrence.ownerId, undefined);
+
+    await firstApi.delete(`/api/modules/reminder-center/${completeResponse.body.nextOccurrence.id}`).expect(200);
+    assert.deepEqual(
+      (await secondApi.get('/api/modules/reminder-center').expect(200)).body.items.map((item) => item.title),
+      ['Second teacher planning']
+    );
+  } finally {
+    context.cleanup();
+  }
+});
+
 test('lesson planner creation triggers automation and worksheet generation remains stable', async () => {
   const context = createTestContext();
 
@@ -524,6 +595,102 @@ test('lesson planner creation triggers automation and worksheet generation remai
     const exportSpecResponse = await api.get(`/api/modules/worksheet-designer/${worksheetResponse.body.id}/export/spec`).expect(200);
     assert.equal(exportSpecResponse.body.document.topic, 'Light Reflection');
     assert.ok(Array.isArray(exportSpecResponse.body.placeholders));
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('lesson plans isolate CRUD, automation, and cross-account associations', async () => {
+  const context = createTestContext();
+
+  try {
+    const firstToken = await register(request(context.app), 'lesson.first@example.test', 'first password');
+    const secondToken = await register(request(context.app), 'lesson.second@example.test', 'second password');
+    const firstApi = authAgent(context.app, firstToken);
+    const secondApi = authAgent(context.app, secondToken);
+    const firstLessonPayload = {
+      topic: 'First teacher lesson',
+      className: 'STD VI',
+      objective: 'Explain the first lesson objective.',
+      duration: '35 min',
+      materials: 'Mirror',
+      starter: 'Ask a question.',
+      mainActivity: 'Run the demonstration.',
+      assessment: 'Draw a diagram.',
+      resourceIds: []
+    };
+
+    const firstCreateResponse = await firstApi
+      .post('/api/modules/lesson-planner')
+      .send(firstLessonPayload)
+      .expect(201);
+    const secondCreateResponse = await secondApi
+      .post('/api/modules/lesson-planner')
+      .send({ ...firstLessonPayload, topic: 'Second teacher lesson' })
+      .expect(201);
+
+    assert.equal(firstCreateResponse.body.ownerId, undefined);
+    assert.equal(secondCreateResponse.body.ownerId, undefined);
+    const firstLessonId = firstCreateResponse.body.id;
+    assert.deepEqual(
+      (await firstApi.get('/api/modules/lesson-planner').expect(200)).body.items.map((item) => item.topic),
+      ['First teacher lesson']
+    );
+    assert.deepEqual(
+      (await secondApi.get('/api/modules/lesson-planner').expect(200)).body.items.map((item) => item.topic),
+      ['Second teacher lesson']
+    );
+
+    const firstReminders = await firstApi.get('/api/modules/reminder-center').expect(200);
+    const secondReminders = await secondApi.get('/api/modules/reminder-center').expect(200);
+    assert.deepEqual(firstReminders.body.items.map((item) => item.linkedTo), [firstLessonId]);
+    assert.deepEqual(secondReminders.body.items.map((item) => item.linkedTo), [secondCreateResponse.body.id]);
+
+    assert.equal((await firstApi.get(`/api/modules/lesson-planner/${firstLessonId}`).expect(200)).body.topic, 'First teacher lesson');
+    await secondApi.get(`/api/modules/lesson-planner/${firstLessonId}`).expect(404);
+    await secondApi
+      .put(`/api/modules/lesson-planner/${firstLessonId}`)
+      .send({ ...firstLessonPayload, topic: 'Unauthorized lesson update' })
+      .expect(404);
+    await secondApi.delete(`/api/modules/lesson-planner/${firstLessonId}`).expect(404);
+    await secondApi.post(`/api/modules/lesson-planner/${firstLessonId}/generate-worksheet-draft`).send({}).expect(404);
+    await secondApi
+      .post('/api/modules/reminder-center')
+      .send({
+        title: 'Cross-account association',
+        dueAt: '2026-05-01T10:00:00.000Z',
+        priority: 'medium',
+        status: 'pending',
+        recurrence: 'none',
+        recurrenceInterval: 1,
+        linkedTo: firstLessonId
+      })
+      .expect(404);
+    await secondApi
+      .put(`/api/modules/reminder-center/${secondReminders.body.items[0].id}`)
+      .send({
+        title: 'Cross-account association update',
+        dueAt: '2026-05-01T10:00:00.000Z',
+        priority: 'medium',
+        status: 'pending',
+        recurrence: 'none',
+        recurrenceInterval: 1,
+        linkedTo: firstLessonId
+      })
+      .expect(404);
+
+    const updateResponse = await firstApi
+      .put(`/api/modules/lesson-planner/${firstLessonId}`)
+      .send({ ...firstLessonPayload, topic: 'First teacher lesson revised' })
+      .expect(200);
+    assert.equal(updateResponse.body.topic, 'First teacher lesson revised');
+
+    await firstApi.delete(`/api/modules/lesson-planner/${firstLessonId}`).expect(200);
+    assert.deepEqual((await firstApi.get('/api/modules/lesson-planner').expect(200)).body.items, []);
+    assert.deepEqual(
+      (await secondApi.get('/api/modules/lesson-planner').expect(200)).body.items.map((item) => item.topic),
+      ['Second teacher lesson']
+    );
   } finally {
     context.cleanup();
   }

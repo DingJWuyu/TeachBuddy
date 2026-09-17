@@ -30,6 +30,7 @@ const tableConfigs = {
   reminders: {
     name: 'reminders',
     columns: {
+      ownerId: 'TEXT NOT NULL',
       title: 'TEXT NOT NULL',
       dueAt: 'TEXT NOT NULL',
       priority: 'TEXT NOT NULL',
@@ -44,6 +45,7 @@ const tableConfigs = {
   lessonPlans: {
     name: 'lessonPlans',
     columns: {
+      ownerId: 'TEXT NOT NULL',
       topic: 'TEXT NOT NULL',
       className: 'TEXT NOT NULL',
       objective: 'TEXT NOT NULL',
@@ -117,6 +119,10 @@ function ensureDirectories(runtimeEnv) {
   ensureDirectory(path.dirname(runtimeEnv.sqlitePath));
   ensureDirectory(runtimeEnv.uploadDir);
   ensureDirectory(runtimeEnv.exportDir);
+}
+
+function ownerIndexName(key) {
+  return `${key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)}_owner_id_idx`;
 }
 
 function createInsertStatement(config) {
@@ -207,13 +213,19 @@ function ensureSchema(db) {
     `);
   }
 
-  const scheduleColumns = db.prepare('PRAGMA table_info(scheduleItems)').all();
-  if (!scheduleColumns.some((column) => column.name === 'ownerId')) {
-    db.exec('ALTER TABLE scheduleItems ADD COLUMN ownerId TEXT');
+  for (const [key, config] of Object.entries(tableConfigs)) {
+    if (!config.columns.ownerId) continue;
+    const columns = db.prepare(`PRAGMA table_info(${config.name})`).all();
+    if (!columns.some((column) => column.name === 'ownerId')) {
+      db.exec(`ALTER TABLE ${config.name} ADD COLUMN ownerId TEXT`);
+    }
   }
 
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (email COLLATE NOCASE);');
-  db.exec('CREATE INDEX IF NOT EXISTS schedule_items_owner_id_idx ON scheduleItems (ownerId);');
+  for (const [key, config] of Object.entries(tableConfigs)) {
+    if (!config.columns.ownerId) continue;
+    db.exec(`CREATE INDEX IF NOT EXISTS ${ownerIndexName(key)} ON ${config.name} (ownerId);`);
+  }
 }
 
 function getMetadata(db, key) {

@@ -45,30 +45,47 @@ function sanitizeLessonPayload(payload) {
   };
 }
 
+function toPublicLessonPlan(item) {
+  if (!item) return item;
+  const { ownerId, ...publicItem } = item;
+  return publicItem;
+}
+
 export const moduleDefinition = {
   manifest,
   register({ app, eventBus, dataStore }) {
     const router = express.Router();
 
     router.get('/', (req, res) => {
-      res.json({ items: dataStore.list('lessonPlans') });
+      const accountStore = dataStore.forAccount(req.user.sub);
+      res.json({ items: accountStore.list('lessonPlans').map(toPublicLessonPlan) });
+    });
+
+    router.get('/:id', (req, res) => {
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.get('lessonPlans', req.params.id);
+      if (!item) return res.status(404).json({ message: 'Lesson plan not found.' });
+      return res.json(toPublicLessonPlan(item));
     });
 
     router.post('/', express.json(), (req, res) => {
-      const item = dataStore.create('lessonPlans', sanitizeLessonPayload(req.body));
-      eventBus.emitEvent('lesson.plan.created', { moduleId: manifest.id, item });
-      res.status(201).json(item);
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.create('lessonPlans', sanitizeLessonPayload(req.body));
+      eventBus.emitEvent('lesson.plan.created', { moduleId: manifest.id, accountId: req.user.sub, item });
+      res.status(201).json(toPublicLessonPlan(item));
     });
 
     router.put('/:id', express.json(), (req, res) => {
-      const item = dataStore.update('lessonPlans', req.params.id, sanitizeLessonPayload(req.body));
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.update('lessonPlans', req.params.id, sanitizeLessonPayload(req.body));
       if (!item) return res.status(404).json({ message: 'Lesson plan not found.' });
       eventBus.emitEvent('lesson.plan.updated', { moduleId: manifest.id, item });
-      return res.json(item);
+      return res.json(toPublicLessonPlan(item));
     });
 
     router.post('/:id/generate-worksheet-draft', (req, res) => {
-      const lesson = dataStore.get('lessonPlans', req.params.id);
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const lesson = accountStore.get('lessonPlans', req.params.id);
       if (!lesson) return res.status(404).json({ message: 'Lesson plan not found.' });
       const payload = createDraftFromLesson(lesson);
       const draft = dataStore.create('worksheetDrafts', payload);
@@ -77,10 +94,11 @@ export const moduleDefinition = {
     });
 
     router.delete('/:id', (req, res) => {
-      const item = dataStore.remove('lessonPlans', req.params.id);
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.remove('lessonPlans', req.params.id);
       if (!item) return res.status(404).json({ message: 'Lesson plan not found.' });
       eventBus.emitEvent('lesson.plan.deleted', { moduleId: manifest.id, item });
-      return res.json({ success: true, item });
+      return res.json({ success: true, item: toPublicLessonPlan(item) });
     });
 
     app.use(manifest.routesBasePath, router);

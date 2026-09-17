@@ -46,18 +46,24 @@
 ## 提醒中心（Reminder Center）
 
 - `GET /api/modules/reminder-center`
+- `GET /api/modules/reminder-center/:id`
 - `POST /api/modules/reminder-center`
 - `PUT /api/modules/reminder-center/:id`
 - `DELETE /api/modules/reminder-center/:id`
 - `POST /api/modules/reminder-center/:id/complete`
 
+提醒记录归属于当前 Bearer 令牌对应的教师账户。列表、单条读取、创建、更新、完成、删除、周期派生和备课触发提醒均只作用于当前账户；访问其他账户的记录或跨账户关联按不存在处理。
+
 ## 备课规划器（Lesson Planner）
 
 - `GET /api/modules/lesson-planner`
+- `GET /api/modules/lesson-planner/:id`
 - `POST /api/modules/lesson-planner`
 - `PUT /api/modules/lesson-planner/:id`
 - `DELETE /api/modules/lesson-planner/:id`
 - `POST /api/modules/lesson-planner/:id/generate-worksheet-draft`
+
+备课计划归属于当前 Bearer 令牌对应的教师账户。列表、单条读取、创建、更新、删除以及由备课触发的提醒均只作用于当前账户；访问其他账户的计划按不存在处理。
 
 ## 练习单设计器（Worksheet Designer）
 
