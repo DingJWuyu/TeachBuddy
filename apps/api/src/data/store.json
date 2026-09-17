@@ -1,0 +1,138 @@
+{
+  "users": [
+    {
+      "id": "users-1",
+      "name": "Refat Teacher",
+      "email": "refat@local.test",
+      "role": "teacher",
+      "createdAt": "2026-04-05T00:00:00.000Z",
+      "updatedAt": "2026-04-05T00:00:00.000Z",
+      "passwordHash": "71609bbb811c1e188710619b5f53f535:e619b4454a575e17458a68515f9cb62a724d7118c5d8da6c39be0cda3eb555275b499d1c3fb5556f7f25d5df0813b7f06535a4d3ba5741774f57a001efb9dcdb"
+    }
+  ],
+  "scheduleItems": [
+    {
+      "id": "scheduleItems-1",
+      "day": "Sunday",
+      "startTime": "08:00",
+      "endTime": "08:40",
+      "subject": "Physics",
+      "className": "STD IX",
+      "room": "Room 3",
+      "note": "Pendulum practical prep",
+      "createdAt": "2026-04-05T00:00:00.000Z",
+      "updatedAt": "2026-04-05T00:00:00.000Z"
+    },
+    {
+      "id": "scheduleItems-2",
+      "day": "Monday",
+      "startTime": "10:00",
+      "endTime": "10:40",
+      "subject": "Mathematics",
+      "className": "STD VI",
+      "room": "Room 1",
+      "note": "Revision on fractions",
+      "createdAt": "2026-04-05T00:00:00.000Z",
+      "updatedAt": "2026-04-05T00:00:00.000Z"
+    }
+  ],
+  "reminders": [
+    {
+      "id": "reminders-1",
+      "title": "Prepare CT paper for STD IX Physics",
+      "dueAt": "2026-04-06T18:00:00.000Z",
+      "priority": "high",
+      "status": "pending",
+      "linkedTo": null,
+      "source": "manual",
+      "recurrence": "weekly",
+      "recurrenceInterval": 1,
+      "createdAt": "2026-04-05T00:00:00.000Z",
+      "updatedAt": "2026-04-05T00:00:00.000Z"
+    }
+  ],
+  "lessonPlans": [
+    {
+      "id": "lessonPlans-1",
+      "topic": "Simple Pendulum",
+      "className": "STD VI",
+      "objective": "Explain oscillation and time period.",
+      "duration": "35 min",
+      "materials": "String, bob, stopwatch, metre rule",
+      "starter": "Ask students what makes swings go faster or slower.",
+      "mainActivity": "Measure time for 10 oscillations for different lengths.",
+      "assessment": "Exit ticket on time period and oscillation.",
+      "resourceIds": [
+        "resources-1"
+      ],
+      "createdAt": "2026-04-05T00:00:00.000Z",
+      "updatedAt": "2026-04-05T00:00:00.000Z"
+    }
+  ],
+  "worksheetDrafts": [
+    {
+      "id": "worksheetDrafts-1",
+      "title": "Electricity & Magnetism Practice",
+      "className": "STD IX",
+      "format": "O-Level structured",
+      "topic": "Current electricity",
+      "marks": 25,
+      "duration": "40 min",
+      "instructions": "Show all working. Use dotted answer spaces.",
+      "questionCount": 6,
+      "questionItems": [],
+      "generatedFromLessonId": null,
+      "resourceIds": [],
+      "createdAt": "2026-04-05T00:00:00.000Z",
+      "updatedAt": "2026-04-05T00:00:00.000Z"
+    }
+  ],
+  "resources": [
+    {
+      "id": "resources-1",
+      "title": "Pendulum Investigation Notes",
+      "originalName": "pendulum-investigation-notes.pdf",
+      "mimeType": "application/pdf",
+      "tags": [
+        "science",
+        "pendulum",
+        "std-vi"
+      ],
+      "moduleLinks": [
+        "lesson-planner"
+      ],
+      "path": "",
+      "createdAt": "2026-04-05T00:00:00.000Z",
+      "updatedAt": "2026-04-05T00:00:00.000Z"
+    }
+  ],
+  "templates": [
+    {
+      "id": "templates-1",
+      "createdAt": "2026-04-01T12:00:00.000Z",
+      "updatedAt": "2026-04-01T12:00:00.000Z",
+      "moduleId": "lesson-planner",
+      "name": "Theory Lesson Starter",
+      "payload": {
+        "duration": "35 min",
+        "starter": "Quick recall quiz from last class.",
+        "mainActivity": "Board explanation, guided examples, and pair discussion.",
+        "assessment": "Short exit ticket with 3 questions."
+      }
+    },
+    {
+      "id": "templates-2",
+      "createdAt": "2026-04-01T12:05:00.000Z",
+      "updatedAt": "2026-04-01T12:05:00.000Z",
+      "moduleId": "worksheet-designer",
+      "name": "CT O-Level Short Paper",
+      "payload": {
+        "format": "O-Level structured",
+        "marks": 15,
+        "duration": "35 min",
+        "questionCount": 5,
+        "instructions": "Answer all questions. Use dotted answer lines. Leave blank space for diagrams where necessary."
+      }
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+# 架构说明
+
+[返回主 README](../README.md)
+
+## 概览
+
+RefatOS 是一个 monorepo，包含一个小型共享包和两个可运行的应用：
+
+- `apps/web`：React + Vite 前端
+- `apps/api`：使用 SQLite 持久化的 Express 后端
+- `packages/shared`：共享元数据和辅助工具
+
+核心设计目标是支持模块化扩展。每个功能领域都作为独立模块处理，而不是把所有逻辑都添加到一个中心应用层中。
+
+## 后端结构
+
+后端的重要区域：
+
+- `apps/api/src/app.js`：供运行时和测试使用的应用工厂
+- `apps/api/src/server.js`：服务器入口
+- `apps/api/src/core/dataStore.js`：基于 SQLite 的集中式持久化
+- `apps/api/src/core/moduleRegistry.js`：后端模块注册
+- `apps/api/src/events/eventBus.js`：用于跨模块自动化的事件总线
+- `apps/api/src/modules/*`：功能模块
+
+## 前端结构
+
+前端的重要区域：
+
+- `apps/web/src/App.jsx`：应用外壳和当前模块渲染
+- `apps/web/src/hooks/useWorkspaceData.js`：API 加载与操作编排
+- `apps/web/src/features/modules/moduleRegistry.js`：前端模块注册
+- `apps/web/src/features/*`：各模块面板
+- `apps/web/src/components/*`：可复用的 UI 组件
+
+## 模块模型
+
+当前模块：
+
+- 排课组织器（Schedule Organizer）
+- 提醒中心（Reminder Center）
+- 备课规划器（Lesson Planner）
+- 练习单设计器（Worksheet Designer）
+- 资源库（Resource Vault）
+
+每个模块在前端拥有自己的面板，在后端拥有自己的路由注册。
+
+## 存储模型
+
+运行时持久化基于 SQLite。
+
+- 主数据库：`apps/api/src/data/refatos.sqlite`
+- 旧版 JSON 引导数据源：`apps/api/src/data/store.json`
+
+存储层保留现有的高层 CRUD 契约，因此模块通过一个中心抽象与存储交互，而不是直接执行 SQL。
+
+在 v1.3 中，为了简化迁移，包含大量数组的字段会有意以 JSON 数据块形式存储在 SQLite 中。
+
+## 跨模块行为
+
+当前的跨模块自动化通过后端事件和 API 流程实现。例如：
+
+- 创建课程可以创建相关提醒
+- 课程可以生成练习单草稿
+
+与把所有内容硬编码到一个模块中相比，这样可以保持更清晰的模块边界。
