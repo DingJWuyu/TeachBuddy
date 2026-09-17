@@ -9,6 +9,7 @@ import { ModuleEventBus } from './events/eventBus.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requireAuth } from './middleware/requireAuth.js';
+import { readWorkspaceLayout, saveWorkspaceLayout } from './core/workspaceLayout.js';
 
 function normalizeOriginValue(value) {
   if (!value) return '';
@@ -126,6 +127,17 @@ export function createApp(options = {}) {
 
   app.get('/api/modules', (req, res) => {
     res.json({ items: getModuleManifests() });
+  });
+
+  app.get('/api/workspace/layout', (req, res) => {
+    const moduleIds = getModuleManifests().map((moduleItem) => moduleItem.id);
+    return res.json(readWorkspaceLayout(dataStore, req.user.sub, moduleIds));
+  });
+
+  app.put('/api/workspace/layout', (req, res) => {
+    const moduleIds = getModuleManifests().map((moduleItem) => moduleItem.id);
+    const layout = saveWorkspaceLayout(dataStore, req.user.sub, req.body, moduleIds);
+    return res.json(layout);
   });
 
   app.get('/api/templates', (req, res) => {

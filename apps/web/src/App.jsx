@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import LoginCard from './components/LoginCard.jsx';
 import ModuleCard from './components/ModuleCard.jsx';
 import DashboardPanel from './features/dashboard/DashboardPanel.jsx';
 import { frontendModules } from './features/modules/moduleRegistry.js';
+import WorkspaceSettingsPanel from './features/settings/WorkspaceSettingsPanel.jsx';
 import { useWorkspaceData } from './hooks/useWorkspaceData.js';
 import { useAppStore } from './store/useAppStore.js';
 import { localizeText } from './utils/labels.js';
@@ -10,6 +12,7 @@ export default function App() {
   const { activeModuleId, setActiveModuleId, authToken, currentUser, setSession } = useAppStore();
   const {
     serverModules,
+    workspaceLayout,
     moduleData,
     templates,
     error,
@@ -18,6 +21,7 @@ export default function App() {
     loadData,
     login,
     register,
+    toggleModuleVisibility,
     createItem,
     updateItem,
     removeItem,
@@ -26,8 +30,27 @@ export default function App() {
     runModuleAction
   } = useWorkspaceData();
 
-  const activeModule = frontendModules.find((moduleItem) => moduleItem.id === activeModuleId);
+  const moduleById = new Map(frontendModules.map((moduleItem) => [moduleItem.id, moduleItem]));
+  const layoutOrder = workspaceLayout
+    ? [
+        ...(workspaceLayout.groups || []).flatMap((group) => group.moduleIds),
+        ...(workspaceLayout.ungroupedModuleIds || []),
+        ...frontendModules.map((moduleItem) => moduleItem.id)
+      ]
+    : frontendModules.map((moduleItem) => moduleItem.id);
+  const orderedModules = [...new Set(layoutOrder)]
+    .map((moduleId) => moduleById.get(moduleId))
+    .filter(Boolean);
+  const hiddenModuleIds = new Set(workspaceLayout?.hiddenModuleIds || []);
+  const visibleModules = orderedModules.filter((moduleItem) => !hiddenModuleIds.has(moduleItem.id));
+  const activeModule = orderedModules.find((moduleItem) => moduleItem.id === activeModuleId);
   const ActivePanel = activeModule?.panel;
+
+  useEffect(() => {
+    if (workspaceLayout && activeModuleId !== 'dashboard' && activeModuleId !== 'settings' && !visibleModules.some((moduleItem) => moduleItem.id === activeModuleId)) {
+      setActiveModuleId('dashboard');
+    }
+  }, [workspaceLayout, activeModuleId, visibleModules, setActiveModuleId]);
 
   const panelProps = activeModule ? {
     title: activeModule.title,
@@ -61,7 +84,10 @@ export default function App() {
         <button className={`nav-button ${activeModuleId === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveModuleId('dashboard')}>
           工作台首页
         </button>
-        {frontendModules.map((moduleItem) => (
+        <button className={`nav-button ${activeModuleId === 'settings' ? 'active' : ''}`} onClick={() => setActiveModuleId('settings')}>
+          设置
+        </button>
+        {visibleModules.map((moduleItem) => (
           <button
             key={moduleItem.id}
             className={`nav-button ${activeModuleId === moduleItem.id ? 'active' : ''}`}
@@ -96,13 +122,13 @@ export default function App() {
           activeModuleId === 'dashboard' ? (
             <>
               <DashboardPanel
-                modules={frontendModules}
+                modules={visibleModules}
                 moduleData={moduleData}
                 templates={templates}
                 onOpenModule={setActiveModuleId}
               />
               <section className="module-grid">
-                {frontendModules.map((moduleItem) => (
+                {visibleModules.map((moduleItem) => (
                   <ModuleCard
                     key={moduleItem.id}
                     moduleItem={moduleItem}
@@ -112,6 +138,12 @@ export default function App() {
                 ))}
               </section>
             </>
+          ) : activeModuleId === 'settings' ? (
+            <WorkspaceSettingsPanel
+              modules={orderedModules}
+              layout={workspaceLayout}
+              onToggleVisibility={toggleModuleVisibility}
+            />
           ) : (
             ActivePanel ? <ActivePanel {...panelProps} /> : null
           )

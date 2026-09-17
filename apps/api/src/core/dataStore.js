@@ -95,6 +95,16 @@ const tableConfigs = {
       payload: 'TEXT NOT NULL'
     },
     jsonColumns: ['payload']
+  },
+  workspaceLayouts: {
+    name: 'workspaceLayouts',
+    columns: {
+      userId: 'TEXT NOT NULL',
+      hiddenModuleIds: 'TEXT NOT NULL',
+      groups: 'TEXT NOT NULL',
+      ungroupedModuleIds: 'TEXT NOT NULL'
+    },
+    jsonColumns: ['hiddenModuleIds', 'groups', 'ungroupedModuleIds']
   }
 };
 
@@ -226,6 +236,7 @@ function ensureSchema(db) {
     if (!config.columns.ownerId) continue;
     db.exec(`CREATE INDEX IF NOT EXISTS ${ownerIndexName(key)} ON ${config.name} (ownerId);`);
   }
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS workspace_layouts_user_unique ON workspaceLayouts (userId);');
 }
 
 function getMetadata(db, key) {

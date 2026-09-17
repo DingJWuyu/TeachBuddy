@@ -17,6 +17,7 @@ function getModuleDefinition(moduleId) {
 export function useWorkspaceData() {
   const { authToken, setSession, setActiveModuleId } = useAppStore();
   const [serverModules, setServerModules] = useState([]);
+  const [workspaceLayout, setWorkspaceLayout] = useState(null);
   const [moduleData, setModuleData] = useState(emptyData);
   const [templates, setTemplates] = useState([]);
   const [error, setError] = useState('');
@@ -33,14 +34,16 @@ export function useWorkspaceData() {
     setError('');
 
     try {
-      const [modules, templateItems, me, ...moduleResponses] = await Promise.all([
+      const [modules, templateItems, me, layout, ...moduleResponses] = await Promise.all([
         fetchJson('/modules'),
         fetchJson('/templates'),
         fetchJson('/auth/me'),
+        fetchJson('/workspace/layout'),
         ...frontendModules.map((moduleItem) => fetchJson(moduleItem.data.endpoint))
       ]);
 
       setServerModules(modules.items);
+      setWorkspaceLayout(layout);
       setModuleData(Object.fromEntries(
         frontendModules.map((moduleItem, index) => [moduleItem.id, moduleItem.data.selectItems(moduleResponses[index])])
       ));
@@ -62,6 +65,7 @@ export function useWorkspaceData() {
       loadData();
     } else {
       setServerModules([]);
+      setWorkspaceLayout(null);
       setModuleData(emptyData);
       setTemplates([]);
       setLoading(false);
@@ -86,6 +90,33 @@ export function useWorkspaceData() {
     }
   }
 
+  async function updateWorkspaceLayout(nextLayout, successMessage = '工作台设置已保存。') {
+    const previousLayout = workspaceLayout;
+    setWorkspaceLayout(nextLayout);
+    try {
+      const savedLayout = await putJson('/workspace/layout', nextLayout);
+      setWorkspaceLayout(savedLayout);
+      setFlash(successMessage);
+      setError('');
+      return savedLayout;
+    } catch (layoutError) {
+      setWorkspaceLayout(previousLayout);
+      setError(localizeError(layoutError.message || 'Something went wrong.'));
+      return null;
+    }
+  }
+
+  function toggleModuleVisibility(moduleId, isVisible) {
+    if (!workspaceLayout) return Promise.resolve(null);
+    const hiddenModuleIds = isVisible
+      ? workspaceLayout.hiddenModuleIds.filter((hiddenId) => hiddenId !== moduleId)
+      : [...workspaceLayout.hiddenModuleIds, moduleId];
+    return updateWorkspaceLayout({
+      ...workspaceLayout,
+      hiddenModuleIds
+    });
+  }
+
   function setAuthenticatedSession(response, message) {
     setSession(response);
     setFlash(`${message}${localizeText(response.user.name)}。`);
@@ -94,12 +125,14 @@ export function useWorkspaceData() {
 
   return {
     serverModules,
+    workspaceLayout,
     moduleData,
     templates,
     error,
     flash,
     loading,
     loadData,
+    toggleModuleVisibility,
     async login(email, password) {
       try {
         const response = await postJson('/auth/login', { email, password });

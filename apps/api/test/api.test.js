@@ -340,6 +340,174 @@ test('module catalog exposes complete stable registration metadata and route bas
   }
 });
 
+test('workspace layout defaults per account and keeps visibility isolated', async () => {
+  const context = createTestContext();
+
+  try {
+    const firstRegistration = await request(context.app)
+      .post('/api/auth/register')
+      .send({
+        name: 'First Teacher',
+        email: 'first-layout@example.test',
+        password: 'first layout password',
+        passwordConfirmation: 'first layout password'
+      })
+      .expect(201);
+    const secondRegistration = await request(context.app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Second Teacher',
+        email: 'second-layout@example.test',
+        password: 'second layout password',
+        passwordConfirmation: 'second layout password'
+      })
+      .expect(201);
+
+    const firstApi = authAgent(context.app, firstRegistration.body.token);
+    const secondApi = authAgent(context.app, secondRegistration.body.token);
+    const firstLayout = await firstApi.get('/api/workspace/layout').expect(200);
+    const secondLayout = await secondApi.get('/api/workspace/layout').expect(200);
+
+    assert.deepEqual(firstLayout.body, {
+      hiddenModuleIds: [],
+      groups: [],
+      ungroupedModuleIds: [
+        'schedule-organizer',
+        'reminder-center',
+        'lesson-planner',
+        'worksheet-designer',
+        'resource-vault'
+      ]
+    });
+    assert.deepEqual(secondLayout.body, firstLayout.body);
+
+    await firstApi.put('/api/workspace/layout').send({
+      hiddenModuleIds: ['lesson-planner'],
+      groups: [],
+      ungroupedModuleIds: [
+        'schedule-organizer',
+        'reminder-center',
+        'lesson-planner',
+        'worksheet-designer',
+        'resource-vault'
+      ]
+    }).expect(200);
+
+    const secondLayoutAfterFirstUpdate = await secondApi.get('/api/workspace/layout').expect(200);
+    assert.deepEqual(secondLayoutAfterFirstUpdate.body, secondLayout.body);
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('workspace layout preserves hidden module placement across writes and restarts', async () => {
+  const context = createTestContext();
+  const layoutPayload = {
+    hiddenModuleIds: ['lesson-planner'],
+    groups: [{ id: 'planning', name: '规划', moduleIds: ['lesson-planner', 'schedule-organizer'] }],
+    ungroupedModuleIds: ['reminder-center', 'worksheet-designer', 'resource-vault']
+  };
+
+  try {
+    const registration = await request(context.app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Persistent Layout Teacher',
+        email: 'persistent-layout@example.test',
+        password: 'persistent layout password',
+        passwordConfirmation: 'persistent layout password'
+      })
+      .expect(201);
+    const api = authAgent(context.app, registration.body.token);
+
+    const saved = await api.put('/api/workspace/layout').send(layoutPayload).expect(200);
+    assert.deepEqual(saved.body, layoutPayload);
+
+    const lessonResponse = await api.post('/api/modules/lesson-planner').send({
+      topic: 'Stored lesson',
+      className: 'STD V',
+      objective: 'Keep data while the module is hidden.',
+      duration: '30 min',
+      materials: '',
+      starter: '',
+      mainActivity: '',
+      assessment: '',
+      resourceIds: []
+    }).expect(201);
+
+    const hiddenRead = await api.get('/api/workspace/layout').expect(200);
+    assert.deepEqual(hiddenRead.body, layoutPayload);
+    await api.get('/api/modules/lesson-planner').expect(200).then((response) => {
+      assert.ok(response.body.items.some((item) => item.id === lessonResponse.body.id));
+    });
+    await api.get('/api/modules/reminder-center').expect(200).then((response) => {
+      assert.ok(response.body.items.some((item) => item.linkedTo === lessonResponse.body.id));
+    });
+  } finally {
+    context.dataStore.close();
+  }
+
+  const restarted = createApp({
+    env: {
+      sqlitePath: context.sqlitePath,
+      uploadDir: context.uploadDir,
+      exportDir: context.exportDir,
+      legacyDataFile: context.legacyDataFile
+    }
+  });
+
+  try {
+    const token = await login(request(restarted.app), 'persistent-layout@example.test', 'persistent layout password');
+    const persisted = await authAgent(restarted.app, token).get('/api/workspace/layout').expect(200);
+    assert.deepEqual(persisted.body, layoutPayload);
+  } finally {
+    restarted.dataStore.close();
+    fs.rmSync(context.rootDir, { recursive: true, force: true });
+  }
+});
+
+test('workspace layout reconciles a saved layout with the current public module catalog', async () => {
+  const context = createTestContext();
+
+  try {
+    const token = await register(request(context.app), 'layout-validation@example.test', 'layout validation password');
+    const api = authAgent(context.app, token);
+
+    const catalog = await api.get('/api/modules').expect(200);
+    assert.deepEqual(catalog.body.items.map((moduleItem) => moduleItem.id), [
+      'schedule-organizer',
+      'reminder-center',
+      'lesson-planner',
+      'worksheet-designer',
+      'resource-vault'
+    ]);
+
+    await api.put('/api/workspace/layout').send({
+      hiddenModuleIds: [],
+      groups: [{ id: 'planning', name: '规划', moduleIds: ['lesson-planner'] }],
+      ungroupedModuleIds: ['lesson-planner']
+    }).expect(400);
+
+    const reconciled = await api.put('/api/workspace/layout').send({
+      hiddenModuleIds: [],
+      groups: [],
+      ungroupedModuleIds: ['resource-vault']
+    }).expect(200);
+    assert.deepEqual(reconciled.body.ungroupedModuleIds, [
+      'resource-vault',
+      'schedule-organizer',
+      'reminder-center',
+      'lesson-planner',
+      'worksheet-designer'
+    ]);
+
+    const resolved = await api.get('/api/workspace/layout').expect(200);
+    assert.deepEqual(resolved.body, reconciled.body);
+  } finally {
+    context.cleanup();
+  }
+});
+
 test('schedule organizer supports CRUD and rejects clashes', async () => {
   const context = createTestContext();
 

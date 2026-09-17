@@ -25,6 +25,13 @@
 
 - `GET /api/modules`
 
+## 工作台布局
+
+- `GET /api/workspace/layout`
+- `PUT /api/workspace/layout`
+
+工作台布局按当前教师账户保存，响应包含分开的 `hiddenModuleIds`、`groups` 和 `ungroupedModuleIds` 字段。隐藏模块仍保留在位置数据中；读取布局时，目录中新出现的模块会默认显示并追加到“未分组”。核心入口和设置不属于可隐藏模块。
+
 ## 模板
 
 - `GET /api/templates`

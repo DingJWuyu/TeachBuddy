@@ -19,6 +19,7 @@ RefatOS 是一个 monorepo，包含一个小型共享包和两个可运行的应
 - `apps/api/src/app.js`：供运行时和测试使用的应用工厂
 - `apps/api/src/server.js`：服务器入口
 - `apps/api/src/core/dataStore.js`：基于 SQLite 的集中式持久化
+- `apps/api/src/core/workspaceLayout.js`：按教师账户解析、校验并协调工作台布局
 - `apps/api/src/core/moduleRegistry.js`：后端模块注册
 - `apps/api/src/events/eventBus.js`：用于跨模块自动化的事件总线
 - `apps/api/src/modules/*`：功能模块
@@ -30,6 +31,7 @@ RefatOS 是一个 monorepo，包含一个小型共享包和两个可运行的应
 - `apps/web/src/App.jsx`：应用外壳和当前模块渲染
 - `apps/web/src/hooks/useWorkspaceData.js`：API 加载与操作编排
 - `apps/web/src/features/modules/moduleRegistry.js`：前端模块注册
+- `apps/web/src/features/settings/WorkspaceSettingsPanel.jsx`：模块可见性设置
 - `apps/web/src/features/*`：各模块面板
 - `apps/web/src/components/*`：可复用的 UI 组件
 
@@ -56,6 +58,8 @@ RefatOS 是一个 monorepo，包含一个小型共享包和两个可运行的应
 存储层保留现有的高层 CRUD 契约，因此模块通过一个中心抽象与存储交互，而不是直接执行 SQL。
 
 课程表、提醒和备课已经完成账户归属切片，分别在 `scheduleItems`、`reminders` 和 `lessonPlans` 中保存 `ownerId`，并通过 `dataStore.forAccount(accountId)` 提供账户级列表、读取、创建、更新和删除接缝。尚未迁移的练习单、资源库和模板继续使用原有存储访问方式，避免要求一次性迁移全部调用点；后续迁移完成前，不应将这些记录视为账户级数据。
+
+每个教师账户拥有一条工作台布局记录。记录将 `hiddenModuleIds` 与 `groups`、`ungroupedModuleIds` 分开保存；读取时会根据当前模块目录补齐新模块，隐藏只影响前端组合，不会阻止模块路由或事件自动化。
 
 在 v1.3 中，为了简化迁移，包含大量数组的字段会有意以 JSON 数据块形式存储在 SQLite 中。
 

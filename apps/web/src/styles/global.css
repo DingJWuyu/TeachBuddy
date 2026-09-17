@@ -329,9 +329,32 @@ button {
   margin-bottom: 0;
 }
 
-.list-card {
+.list-card,
+.visibility-list {
   display: grid;
   gap: 12px;
+}
+
+.visibility-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+}
+
+.visibility-row input[type="checkbox"] {
+  width: auto;
+  accent-color: #5d76ff;
+}
+
+.visibility-copy {
+  display: grid;
+  gap: 4px;
+  flex: 1;
 }
 
 .item-card,
