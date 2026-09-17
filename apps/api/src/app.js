@@ -29,6 +29,11 @@ function toPublicUser(user) {
   return { id: user.id, name: user.name, email: user.email, role: user.role };
 }
 
+function findUserByEmail(dataStore, email) {
+  const normalizedEmail = email.toLowerCase();
+  return dataStore.list('users').find((item) => item.email?.toLowerCase() === normalizedEmail);
+}
+
 export function createApp(options = {}) {
   const runtimeEnv = options.env ? createEnv(options.env) : defaultEnv;
   const eventBus = options.eventBus ?? new ModuleEventBus();
@@ -66,7 +71,7 @@ export function createApp(options = {}) {
     const body = ensureObject(req.body);
     const email = ensureTrimmedString(body.email, 'Email', { maxLength: 120 }).toLowerCase();
     const password = ensureTrimmedString(body.password, 'Password', { maxLength: 120 });
-    const user = dataStore.list('users').find((item) => item.email?.toLowerCase() === email);
+    const user = findUserByEmail(dataStore, email);
     if (!user || !verifyPassword(password, user.passwordHash)) {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
@@ -76,11 +81,11 @@ export function createApp(options = {}) {
 
   app.post('/api/auth/register', (req, res) => {
     const body = ensureObject(req.body);
-    const name = ensureTrimmedString(body.name ?? body.displayName, 'Name', { maxLength: 120 });
+    const name = ensureTrimmedString(body.name, 'Name', { maxLength: 120 });
     const email = ensureTrimmedString(body.email, 'Email', { maxLength: 120 }).toLowerCase();
     const password = ensureTrimmedString(body.password, 'Password', { maxLength: 120 });
     const passwordConfirmation = ensureTrimmedString(
-      body.passwordConfirmation ?? body.confirmPassword ?? body.passwordConfirm,
+      body.passwordConfirmation,
       'Password confirmation',
       { maxLength: 120 }
     );
@@ -89,7 +94,7 @@ export function createApp(options = {}) {
       badRequest('Passwords do not match.');
     }
 
-    if (dataStore.list('users').some((item) => item.email?.toLowerCase() === email)) {
+    if (findUserByEmail(dataStore, email)) {
       return res.status(409).json({ message: 'An account with that email already exists.' });
     }
 

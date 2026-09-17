@@ -81,6 +81,25 @@ function authAgent(app, token) {
   };
 }
 
+async function assertEmptyWorkspace(app, token) {
+  const endpoints = [
+    '/api/modules/schedule-organizer',
+    '/api/modules/reminder-center',
+    '/api/modules/lesson-planner',
+    '/api/modules/worksheet-designer',
+    '/api/modules/resource-vault',
+    '/api/templates'
+  ];
+  const responses = await Promise.all(endpoints.map((endpoint) => request(app)
+    .get(endpoint)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(200)));
+
+  for (const response of responses) {
+    assert.deepEqual(response.body.items, []);
+  }
+}
+
 test('bootstrap leaves a fresh SQLite database empty', async () => {
   const context = createTestContext();
 
@@ -145,6 +164,8 @@ test('legacy store.json is ignored when creating a fresh SQLite database', async
       .post('/api/auth/login')
       .send({ email: 'legacy@local.test', password: 'refatos123' })
       .expect(401);
+    const freshToken = await register(request(firstContext.app), 'fresh@example.test', 'fresh password');
+    await assertEmptyWorkspace(firstContext.app, freshToken);
   } finally {
     firstContext.dataStore.close();
   }
@@ -154,6 +175,8 @@ test('legacy store.json is ignored when creating a fresh SQLite database', async
   });
 
   try {
+    const freshToken = await login(request(secondContext.app), 'fresh@example.test', 'fresh password');
+    await assertEmptyWorkspace(secondContext.app, freshToken);
     await request(secondContext.app)
       .post('/api/auth/login')
       .send({ email: 'legacy@local.test', password: 'refatos123' })
@@ -198,12 +221,7 @@ test('teacher can register from an empty database and receives an authenticated 
     assert.equal(meResponse.body.user.email, response.body.user.email);
     assert.equal(meResponse.body.user.role, response.body.user.role);
 
-    const emptyBusinessResponse = await request(context.app)
-      .get('/api/modules/schedule-organizer')
-      .set('Authorization', `Bearer ${response.body.token}`)
-      .expect(200);
-
-    assert.deepEqual(emptyBusinessResponse.body.items, []);
+    await assertEmptyWorkspace(context.app, response.body.token);
   } finally {
     context.cleanup();
   }

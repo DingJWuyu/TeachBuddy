@@ -108,6 +108,12 @@ export function useWorkspaceData() {
     }
   }
 
+  function setAuthenticatedSession(response, message) {
+    setSession(response);
+    setFlash(`${message}${localizeText(response.user.name)}。`);
+    setError('');
+  }
+
   return {
     serverModules,
     moduleData,
@@ -120,9 +126,7 @@ export function useWorkspaceData() {
     async login(email, password) {
       try {
         const response = await postJson('/auth/login', { email, password });
-        setSession(response);
-        setFlash(`欢迎回来，${localizeText(response.user.name)}。`);
-        setError('');
+        setAuthenticatedSession(response, '欢迎回来，');
       } catch (loginError) {
         setError(localizeError(loginError.message || 'Login failed.'));
       }
@@ -130,9 +134,7 @@ export function useWorkspaceData() {
     async register(name, email, password, passwordConfirmation) {
       try {
         const response = await postJson('/auth/register', { name, email, password, passwordConfirmation });
-        setSession(response);
-        setFlash(`欢迎加入，${localizeText(response.user.name)}。`);
-        setError('');
+        setAuthenticatedSession(response, '欢迎加入，');
       } catch (registrationError) {
         setError(localizeError(registrationError.message || 'Registration failed.'));
       }
