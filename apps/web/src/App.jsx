@@ -22,6 +22,7 @@ export default function App() {
     login,
     register,
     toggleModuleVisibility,
+    updateWorkspaceLayout,
     createItem,
     updateItem,
     removeItem,
@@ -147,6 +148,7 @@ export default function App() {
               modules={orderedModules}
               layout={workspaceLayout}
               onToggleVisibility={toggleModuleVisibility}
+              onUpdateLayout={updateWorkspaceLayout}
             />
           ) : (
             ActivePanel ? <ActivePanel {...panelProps} /> : null

@@ -468,6 +468,185 @@ button {
   border-color: rgba(255, 92, 122, 0.5);
 }
 
+.layout-editor {
+  display: grid;
+  gap: 18px;
+}
+
+.layout-create-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  background: rgba(255,255,255,0.03);
+}
+
+.layout-create-group label {
+  flex: 1;
+}
+
+.layout-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.layout-group {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(140, 159, 255, 0.22);
+  border-radius: 20px;
+  background: rgba(93, 118, 255, 0.07);
+}
+
+.layout-group-ungrouped {
+  border-color: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+}
+
+.layout-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.layout-group-header h3,
+.layout-group-header p {
+  margin-bottom: 0;
+}
+
+.layout-group-name {
+  flex: 1;
+}
+
+.layout-group-name input {
+  font-weight: 700;
+  background: rgba(255,255,255,0.06);
+}
+
+.layout-group-name input:focus {
+  border-color: rgba(140, 159, 255, 0.65);
+  outline: 2px solid rgba(140, 159, 255, 0.2);
+}
+
+.layout-group-actions,
+.layout-module-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.drag-handle {
+  flex: none;
+  min-width: 40px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  color: #cdddff;
+  cursor: grab;
+  letter-spacing: -0.25em;
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.layout-module-list {
+  display: grid;
+  gap: 10px;
+  min-height: 64px;
+  padding: 2px;
+  border-radius: 14px;
+}
+
+.layout-module-list:has(.layout-module) {
+  min-height: 0;
+}
+
+.layout-module {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.05);
+  cursor: grab;
+  touch-action: none;
+}
+
+.layout-module:active {
+  cursor: grabbing;
+}
+
+.layout-module-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.layout-module-copy strong,
+.layout-module-copy span {
+  overflow-wrap: anywhere;
+}
+
+.layout-visibility-toggle,
+.layout-move-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.layout-visibility-toggle input {
+  width: auto;
+  accent-color: #5d76ff;
+}
+
+.layout-move-select select {
+  width: auto;
+  min-width: 110px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.compact-button {
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+.compact-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.layout-empty {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed rgba(255,255,255,0.15);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .code-block {
   margin: 0;
   white-space: pre-wrap;
@@ -517,6 +696,34 @@ button {
 
   .question-card-meta {
     grid-template-columns: 1fr;
+  }
+
+  .layout-create-group,
+  .layout-group-header,
+  .layout-module {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .layout-create-group button,
+  .layout-group-actions,
+  .layout-module-actions {
+    width: 100%;
+  }
+
+  .layout-group-actions,
+  .layout-module-actions {
+    justify-content: flex-start;
+  }
+
+  .layout-move-select,
+  .layout-move-select select {
+    width: 100%;
+  }
+
+  .layout-module .drag-handle,
+  .layout-group-header > .drag-handle {
+    align-self: flex-start;
   }
 }
 

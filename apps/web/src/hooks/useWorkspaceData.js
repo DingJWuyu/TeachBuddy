@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { deleteJson, fetchJson, openAuthenticatedFile, postForm, postJson, putJson } from '../utils/api.js';
 import { frontendModules, getFrontendModule } from '../features/modules/moduleRegistry.js';
 import { useAppStore } from '../store/useAppStore.js';
@@ -23,6 +23,13 @@ export function useWorkspaceData() {
   const [error, setError] = useState('');
   const [flash, setFlash] = useState('');
   const [loading, setLoading] = useState(Boolean(authToken));
+  const layoutStateRef = useRef(workspaceLayout);
+  const layoutSaveQueueRef = useRef(Promise.resolve());
+  const latestLayoutRequestRef = useRef(0);
+
+  useEffect(() => {
+    layoutStateRef.current = workspaceLayout;
+  }, [workspaceLayout]);
 
   async function loadData() {
     if (!authToken) {
@@ -91,15 +98,26 @@ export function useWorkspaceData() {
   }
 
   async function updateWorkspaceLayout(nextLayout, successMessage = '工作台设置已保存。') {
-    const previousLayout = workspaceLayout;
+    const previousLayout = layoutStateRef.current;
+    const requestId = latestLayoutRequestRef.current + 1;
+    latestLayoutRequestRef.current = requestId;
+    layoutStateRef.current = nextLayout;
     setWorkspaceLayout(nextLayout);
+
+    const request = layoutSaveQueueRef.current.then(() => putJson('/workspace/layout', nextLayout));
+    layoutSaveQueueRef.current = request.catch(() => null);
+
     try {
-      const savedLayout = await putJson('/workspace/layout', nextLayout);
+      const savedLayout = await request;
+      if (requestId !== latestLayoutRequestRef.current) return savedLayout;
+      layoutStateRef.current = savedLayout;
       setWorkspaceLayout(savedLayout);
       setFlash(successMessage);
       setError('');
       return savedLayout;
     } catch (layoutError) {
+      if (requestId !== latestLayoutRequestRef.current) return null;
+      layoutStateRef.current = previousLayout;
       setWorkspaceLayout(previousLayout);
       setError(localizeError(layoutError.message || 'Something went wrong.'));
       return null;
@@ -133,6 +151,7 @@ export function useWorkspaceData() {
     loading,
     loadData,
     toggleModuleVisibility,
+    updateWorkspaceLayout,
     async login(email, password) {
       try {
         const response = await postJson('/auth/login', { email, password });

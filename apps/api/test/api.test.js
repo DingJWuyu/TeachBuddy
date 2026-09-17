@@ -508,6 +508,111 @@ test('workspace layout reconciles a saved layout with the current public module 
   }
 });
 
+test('workspace layout supports ordered group edits without leaking across teacher accounts', async () => {
+  const context = createTestContext();
+
+  try {
+    const firstToken = await register(request(context.app), 'group-owner@example.test', 'group owner password');
+    const secondToken = await register(request(context.app), 'group-observer@example.test', 'group observer password');
+    const firstApi = authAgent(context.app, firstToken);
+    const secondApi = authAgent(context.app, secondToken);
+
+    const initialLayout = {
+      hiddenModuleIds: [],
+      groups: [
+        { id: 'planning', name: '教学计划', moduleIds: ['lesson-planner', 'schedule-organizer'] },
+        { id: 'delivery', name: '课堂交付', moduleIds: ['worksheet-designer'] }
+      ],
+      ungroupedModuleIds: ['reminder-center', 'resource-vault']
+    };
+    await firstApi.put('/api/workspace/layout').send(initialLayout).expect(200);
+
+    const editedLayout = {
+      hiddenModuleIds: [],
+      groups: [
+        { id: 'delivery', name: '内容交付', moduleIds: ['worksheet-designer'] },
+        { id: 'planning', name: '备课与排课', moduleIds: ['schedule-organizer', 'lesson-planner'] }
+      ],
+      ungroupedModuleIds: ['resource-vault', 'reminder-center']
+    };
+    const edited = await firstApi.put('/api/workspace/layout').send(editedLayout).expect(200);
+    assert.deepEqual(edited.body, editedLayout);
+
+    const persisted = await firstApi.get('/api/workspace/layout').expect(200);
+    assert.deepEqual(persisted.body, editedLayout);
+
+    const otherTeacherLayout = await secondApi.get('/api/workspace/layout').expect(200);
+    assert.deepEqual(otherTeacherLayout.body, {
+      hiddenModuleIds: [],
+      groups: [],
+      ungroupedModuleIds: [
+        'schedule-organizer',
+        'reminder-center',
+        'lesson-planner',
+        'worksheet-designer',
+        'resource-vault'
+      ]
+    });
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('workspace layout rejects duplicate group identifiers', async () => {
+  const context = createTestContext();
+
+  try {
+    const token = await register(request(context.app), 'duplicate-group@example.test', 'duplicate group password');
+    await authAgent(context.app, token)
+      .put('/api/workspace/layout')
+      .send({
+        hiddenModuleIds: [],
+        groups: [
+          { id: 'planning', name: '第一组', moduleIds: ['lesson-planner'] },
+          { id: 'planning', name: '第二组', moduleIds: ['schedule-organizer'] }
+        ],
+        ungroupedModuleIds: ['reminder-center', 'worksheet-designer', 'resource-vault']
+      })
+      .expect(400);
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('deleting a workspace group appends its modules to ungrouped in their previous order', async () => {
+  const context = createTestContext();
+
+  try {
+    const token = await register(request(context.app), 'delete-group@example.test', 'delete group password');
+    const api = authAgent(context.app, token);
+    await api.put('/api/workspace/layout').send({
+      hiddenModuleIds: [],
+      groups: [{ id: 'planning', name: '教学计划', moduleIds: ['lesson-planner', 'schedule-organizer'] }],
+      ungroupedModuleIds: ['reminder-center', 'worksheet-designer', 'resource-vault']
+    }).expect(200);
+
+    const deleted = await api.put('/api/workspace/layout').send({
+      hiddenModuleIds: [],
+      groups: [],
+      ungroupedModuleIds: ['reminder-center', 'worksheet-designer', 'resource-vault']
+    }).expect(200);
+
+    assert.deepEqual(deleted.body, {
+      hiddenModuleIds: [],
+      groups: [],
+      ungroupedModuleIds: [
+        'reminder-center',
+        'worksheet-designer',
+        'resource-vault',
+        'lesson-planner',
+        'schedule-organizer'
+      ]
+    });
+  } finally {
+    context.cleanup();
+  }
+});
+
 test('schedule organizer supports CRUD and rejects clashes', async () => {
   const context = createTestContext();
 

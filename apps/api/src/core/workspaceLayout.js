@@ -152,7 +152,12 @@ export function saveWorkspaceLayout(dataStore, userId, payload, moduleIds) {
   const resolvedLayout = validateWorkspaceLayout(payload, moduleIds);
   const existingLayout = findWorkspaceLayout(dataStore, userId);
 
-  const missingModuleIds = moduleIds.filter((moduleId) => !flattenPlacedModuleIds(resolvedLayout).includes(moduleId));
+  const placedModuleIds = new Set(flattenPlacedModuleIds(resolvedLayout));
+  const previousModuleIds = existingLayout ? flattenPlacedModuleIds(existingLayout) : [];
+  const missingModuleIds = [
+    ...previousModuleIds.filter((moduleId) => moduleIds.includes(moduleId) && !placedModuleIds.has(moduleId)),
+    ...moduleIds.filter((moduleId) => !placedModuleIds.has(moduleId) && !previousModuleIds.includes(moduleId))
+  ];
   if (missingModuleIds.length) {
     resolvedLayout.ungroupedModuleIds.push(...missingModuleIds);
   }

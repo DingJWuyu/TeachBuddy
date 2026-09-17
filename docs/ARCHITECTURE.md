@@ -31,7 +31,7 @@ RefatOS 是一个 monorepo，包含一个小型共享包和两个可运行的应
 - `apps/web/src/App.jsx`：应用外壳和当前模块渲染
 - `apps/web/src/hooks/useWorkspaceData.js`：API 加载与操作编排
 - `apps/web/src/features/modules/moduleRegistry.js`：前端模块注册
-- `apps/web/src/features/settings/WorkspaceSettingsPanel.jsx`：模块可见性设置
+- `apps/web/src/features/settings/WorkspaceSettingsPanel.jsx`：模块可见性与工作台布局设置
 - `apps/web/src/features/*`：各模块面板
 - `apps/web/src/components/*`：可复用的 UI 组件
 
@@ -59,7 +59,7 @@ RefatOS 是一个 monorepo，包含一个小型共享包和两个可运行的应
 
 课程表、提醒、备课、练习单、资源库和模板均在记录中保存 `ownerId`，并通过 `dataStore.forAccount(accountId)` 提供账户级列表、读取、创建、更新和删除接缝。跨模块引用会先通过当前账户接缝校验所属关系；上传文件不通过公开静态目录读取，而是由资源路由认证后检查所有者。
 
-每个教师账户拥有一条工作台布局记录。记录将 `hiddenModuleIds` 与 `groups`、`ungroupedModuleIds` 分开保存；读取时会根据当前模块目录补齐新模块，隐藏只影响前端组合，不会阻止模块路由或事件自动化。
+每个教师账户拥有一条工作台布局记录。记录将 `hiddenModuleIds` 与有序的 `groups`、`ungroupedModuleIds` 分开保存；保存时校验分组标识唯一且每个注册模块最多出现一次，删除分组会按原相对顺序把模块追加到“未分组”。读取时会根据当前模块目录补齐新模块，隐藏只影响前端组合，不会阻止模块路由或事件自动化。设置页使用原生拖拽并提供键盘排序和跨组选择操作。
 
 在 v1.3 中，为了简化迁移，包含大量数组的字段会有意以 JSON 数据块形式存储在 SQLite 中。
 
