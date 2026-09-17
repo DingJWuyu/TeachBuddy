@@ -21,6 +21,12 @@ function hasClash(dataStore, incomingItem, currentId = null) {
   });
 }
 
+function toPublicScheduleItem(item) {
+  if (!item) return item;
+  const { ownerId, ...publicItem } = item;
+  return publicItem;
+}
+
 function sanitizeSchedulePayload(payload) {
   const body = ensureObject(payload);
   const item = {
@@ -48,43 +54,58 @@ export const moduleDefinition = {
     const router = express.Router();
 
     router.get('/', (req, res) => {
-      res.json({ items: dataStore.list('scheduleItems') });
+      const accountStore = dataStore.forAccount(req.user.sub);
+      res.json({ items: accountStore.list('scheduleItems').map(toPublicScheduleItem) });
     });
 
-    router.post('/', express.json(), (req, res) => {
-      const payload = sanitizeSchedulePayload(req.body);
-      if (hasClash(dataStore, payload)) {
-        return res.status(409).json({ message: 'This time slot clashes with an existing class.' });
-      }
-
-      const item = dataStore.create('scheduleItems', payload);
-      eventBus.emitEvent('schedule.created', { moduleId: manifest.id, item });
-      return res.status(201).json(item);
-    });
-
-    router.put('/:id', express.json(), (req, res) => {
-      const payload = sanitizeSchedulePayload(req.body);
-      if (hasClash(dataStore, payload, req.params.id)) {
-        return res.status(409).json({ message: 'Updated slot clashes with another class.' });
-      }
-
-      const item = dataStore.update('scheduleItems', req.params.id, payload);
+    router.get('/:id', (req, res) => {
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.get('scheduleItems', req.params.id);
       if (!item) {
         return res.status(404).json({ message: 'Schedule item not found.' });
       }
+      return res.json(toPublicScheduleItem(item));
+    });
+
+    router.post('/', express.json(), (req, res) => {
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const payload = sanitizeSchedulePayload(req.body);
+      if (hasClash(accountStore, payload)) {
+        return res.status(409).json({ message: 'This time slot clashes with an existing class.' });
+      }
+
+      const item = accountStore.create('scheduleItems', payload);
+      eventBus.emitEvent('schedule.created', { moduleId: manifest.id, item });
+      return res.status(201).json(toPublicScheduleItem(item));
+    });
+
+    router.put('/:id', express.json(), (req, res) => {
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const currentItem = accountStore.get('scheduleItems', req.params.id);
+      if (!currentItem) {
+        return res.status(404).json({ message: 'Schedule item not found.' });
+      }
+
+      const payload = sanitizeSchedulePayload(req.body);
+      if (hasClash(accountStore, payload, req.params.id)) {
+        return res.status(409).json({ message: 'Updated slot clashes with another class.' });
+      }
+
+      const item = accountStore.update('scheduleItems', req.params.id, payload);
 
       eventBus.emitEvent('schedule.updated', { moduleId: manifest.id, item });
-      return res.json(item);
+      return res.json(toPublicScheduleItem(item));
     });
 
     router.delete('/:id', (req, res) => {
-      const item = dataStore.remove('scheduleItems', req.params.id);
+      const accountStore = dataStore.forAccount(req.user.sub);
+      const item = accountStore.remove('scheduleItems', req.params.id);
       if (!item) {
         return res.status(404).json({ message: 'Schedule item not found.' });
       }
 
       eventBus.emitEvent('schedule.deleted', { moduleId: manifest.id, item });
-      return res.json({ success: true, item });
+      return res.json({ success: true, item: toPublicScheduleItem(item) });
     });
 
     app.use(manifest.routesBasePath, router);

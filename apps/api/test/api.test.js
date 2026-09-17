@@ -408,6 +408,69 @@ test('schedule organizer supports CRUD and rejects clashes', async () => {
   }
 });
 
+test('schedule organizer isolates records and clash checks between teacher accounts', async () => {
+  const context = createTestContext();
+
+  try {
+    const firstToken = await register(request(context.app), 'first.teacher@example.test', 'first password');
+    const secondToken = await register(request(context.app), 'second.teacher@example.test', 'second password');
+    const firstApi = authAgent(context.app, firstToken);
+    const secondApi = authAgent(context.app, secondToken);
+    const firstSchedule = {
+      day: 'Wednesday',
+      startTime: '09:00',
+      endTime: '10:00',
+      subject: 'Biology',
+      className: 'STD VII',
+      room: 'Room 5',
+      note: 'First teacher schedule'
+    };
+
+    const firstCreateResponse = await firstApi
+      .post('/api/modules/schedule-organizer')
+      .send(firstSchedule)
+      .expect(201);
+
+    const secondCreateResponse = await secondApi
+      .post('/api/modules/schedule-organizer')
+      .send({ ...firstSchedule, subject: 'Physics', note: 'Second teacher schedule' })
+      .expect(201);
+
+    assert.notEqual(firstCreateResponse.body.id, secondCreateResponse.body.id);
+    assert.deepEqual((await firstApi.get('/api/modules/schedule-organizer').expect(200)).body.items.map((item) => item.subject), ['Biology']);
+    assert.deepEqual((await secondApi.get('/api/modules/schedule-organizer').expect(200)).body.items.map((item) => item.subject), ['Physics']);
+
+    await firstApi
+      .post('/api/modules/schedule-organizer')
+      .send({ ...firstSchedule, startTime: '09:30', endTime: '10:30', subject: 'Chemistry' })
+      .expect(409);
+    await secondApi
+      .post('/api/modules/schedule-organizer')
+      .send({ ...firstSchedule, startTime: '09:30', endTime: '10:30', subject: 'Chemistry' })
+      .expect(409);
+
+    const otherTeacherId = firstCreateResponse.body.id;
+    await secondApi.get(`/api/modules/schedule-organizer/${otherTeacherId}`).expect(404);
+    await secondApi
+      .put(`/api/modules/schedule-organizer/${otherTeacherId}`)
+      .send({ ...firstSchedule, subject: 'Unauthorized update' })
+      .expect(404);
+    await secondApi.delete(`/api/modules/schedule-organizer/${otherTeacherId}`).expect(404);
+
+    const updateResponse = await firstApi
+      .put(`/api/modules/schedule-organizer/${otherTeacherId}`)
+      .send({ ...firstSchedule, startTime: '11:00', endTime: '12:00', subject: 'Advanced Biology' })
+      .expect(200);
+    assert.equal(updateResponse.body.subject, 'Advanced Biology');
+
+    await firstApi.delete(`/api/modules/schedule-organizer/${otherTeacherId}`).expect(200);
+    assert.deepEqual((await firstApi.get('/api/modules/schedule-organizer').expect(200)).body.items, []);
+    assert.equal((await secondApi.get('/api/modules/schedule-organizer').expect(200)).body.items[0].subject, 'Physics');
+  } finally {
+    context.cleanup();
+  }
+});
+
 test('reminder completion creates the next recurring occurrence', async () => {
   const context = createTestContext();
 

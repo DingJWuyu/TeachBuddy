@@ -17,6 +17,7 @@ const tableConfigs = {
   scheduleItems: {
     name: 'scheduleItems',
     columns: {
+      ownerId: 'TEXT NOT NULL',
       day: 'TEXT NOT NULL',
       startTime: 'TEXT NOT NULL',
       endTime: 'TEXT NOT NULL',
@@ -206,7 +207,13 @@ function ensureSchema(db) {
     `);
   }
 
+  const scheduleColumns = db.prepare('PRAGMA table_info(scheduleItems)').all();
+  if (!scheduleColumns.some((column) => column.name === 'ownerId')) {
+    db.exec('ALTER TABLE scheduleItems ADD COLUMN ownerId TEXT');
+  }
+
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (email COLLATE NOCASE);');
+  db.exec('CREATE INDEX IF NOT EXISTS schedule_items_owner_id_idx ON scheduleItems (ownerId);');
 }
 
 function getMetadata(db, key) {
@@ -246,6 +253,21 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     ])
   );
 
+  const accountScopedKeys = storeKeys.filter((key) => tableConfigs[key].columns.ownerId);
+  const accountListStatements = Object.fromEntries(
+    accountScopedKeys.map((key) => [
+      key,
+      db.prepare(`SELECT * FROM ${key} WHERE ownerId = ?`)
+    ])
+  );
+
+  const accountGetStatements = Object.fromEntries(
+    accountScopedKeys.map((key) => [
+      key,
+      db.prepare(`SELECT * FROM ${key} WHERE id = ? AND ownerId = ?`)
+    ])
+  );
+
   const removeStatements = Object.fromEntries(
     storeKeys.map((key) => [
       key,
@@ -267,7 +289,50 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     ])
   );
 
-  return {
+  function assertAccountScopedKey(key) {
+    if (!tableConfigs[key]?.columns.ownerId) {
+      throw new Error(`Data store key ${key} does not support account ownership.`);
+    }
+  }
+
+  function createAccountStore(accountId) {
+    if (typeof accountId !== 'string' || !accountId.trim()) {
+      throw new TypeError('An account ID is required for account-scoped data access.');
+    }
+
+    return {
+      list(key) {
+        assertAccountScopedKey(key);
+        return sortByCreatedDesc(accountListStatements[key].all(accountId).map((row) => deserializeRow(key, row)));
+      },
+
+      get(key, id) {
+        assertAccountScopedKey(key);
+        return deserializeRow(key, accountGetStatements[key].get(id, accountId));
+      },
+
+      create(key, value) {
+        assertAccountScopedKey(key);
+        return dataStore.create(key, { ...value, ownerId: accountId });
+      },
+
+      update(key, id, updates) {
+        assertAccountScopedKey(key);
+        const currentItem = this.get(key, id);
+        if (!currentItem) return null;
+        return dataStore.update(key, id, { ...updates, ownerId: accountId });
+      },
+
+      remove(key, id) {
+        assertAccountScopedKey(key);
+        const currentItem = this.get(key, id);
+        if (!currentItem) return null;
+        return dataStore.remove(key, id);
+      }
+    };
+  }
+
+  const dataStore = {
     list(key) {
       return sortByCreatedDesc(listStatements[key].all().map((row) => deserializeRow(key, row)));
     },
@@ -334,6 +399,12 @@ export function createDataStore(runtimeEnv = defaultEnv) {
       get(key) {
         return getMetadata(db, key);
       }
+    },
+
+    forAccount(accountId) {
+      return createAccountStore(accountId);
     }
   };
+
+  return dataStore;
 }

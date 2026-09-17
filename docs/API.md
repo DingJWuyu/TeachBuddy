@@ -36,9 +36,12 @@
 ## 排课组织器（Schedule Organizer）
 
 - `GET /api/modules/schedule-organizer`
+- `GET /api/modules/schedule-organizer/:id`
 - `POST /api/modules/schedule-organizer`
 - `PUT /api/modules/schedule-organizer/:id`
 - `DELETE /api/modules/schedule-organizer/:id`
+
+排课记录归属于当前 Bearer 令牌对应的教师账户。列表、单条读取、创建、更新、删除和时段冲突校验均只作用于当前账户；访问其他账户的记录按不存在处理。
 
 ## 提醒中心（Reminder Center）
 
