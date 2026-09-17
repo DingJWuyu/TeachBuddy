@@ -13,10 +13,13 @@
 
 ## 身份验证
 
+- `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
 
-除 `/api/health` 和 `/api/auth/login` 外，所有 `/api/*` 路由都需要 Bearer 令牌。
+除 `/api/health`、`/api/auth/register` 和 `/api/auth/login` 外，所有 `/api/*` 路由都需要 Bearer 令牌。
+
+注册请求接受 `name`、`email`、`password` 和 `passwordConfirmation`，邮箱会规范化为小写并保持唯一。成功响应与登录一致，返回 `{ token, user }`。
 
 ## 模块
 
@@ -73,6 +76,6 @@
 
 ## 说明
 
-- 当前 API 面向本地和演示使用。
+- 当前 API 面向本地和个人教师工作台使用。
 - 响应结构有意保持简单，主要是 `{ items }`、单个项目负载或 `{ success, item }`。
-- 当前测试套件涵盖身份验证、CRUD 行为、迁移/引导、练习单生成、提醒周期和资源清理。
+- 当前测试套件涵盖空库注册、身份验证、CRUD 行为、练习单生成、提醒周期和资源清理。

@@ -32,7 +32,6 @@
 - `NODE_ENV=production`
 - `PORT=10000`
 - `AUTH_SECRET=your-long-random-secret`
-- `DEMO_PASSWORD=refatos123`
 - `CORS_ORIGINS=https://your-infinityfree-domain`
 
 可选：
@@ -88,7 +87,7 @@ CORS_ORIGINS=https://refatos.infinityfreeapp.com
 两端都上线后：
 
 - 打开 InfinityFree 站点
-- 使用演示账号登录
+- 选择“注册”创建教师账户并自动进入工作台
 - 加载模块
 - 创建课程
 - 生成练习单

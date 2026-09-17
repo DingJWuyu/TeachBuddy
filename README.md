@@ -9,7 +9,7 @@ v1.3 已完成且稳定。代码库已准备好进行 v1.4 工作。
 - 前后端模块化结构
 - React + Vite Web 应用
 - Express + SQLite API
-- 供本地使用的演示认证
+- 教师账户开放注册与 Bearer 认证
 - 从课程到练习单的自动化
 - 规划流程中集成 Resource Vault
 - 可编辑的练习单题目构建器
@@ -36,10 +36,7 @@ npm run dev
 - 前端 Web：`http://localhost:5173`
 - 后端 API：`http://localhost:4000`
 
-演示登录：
-
-- 邮箱：`refat@local.test`
-- 密码：`refatos123`
+首次使用时，打开前端并选择“注册”创建教师账户。注册成功后会自动进入个人工作台。
 
 ## 仓库指南
 
@@ -70,14 +67,15 @@ RefatOS/
 - 后端：Express 5、SQLite、`better-sqlite3`
 - 导出：`docx`、`pdfkit`
 - 上传：`multer`
-- 测试：Node 测试运行器、`supertest`
+- 测试：Node 测试运行器、`supertest`、Playwright
 - 工具：npm workspaces、`npm-run-all`
 
 ## 当前状态
 
 - v1.3 已完成全部功能
 - SQLite 持久化已就绪
-- 旧版 `store.json` 可以在首次运行时引导导入 SQLite
+- 新安装的 SQLite 数据库从空结构开始，不会导入演示账户或业务数据
+- 教师可以注册、退出并使用新凭据再次登录
 - 备课和练习单流程现在使用 Resource Vault 选择器
 - 练习单草稿支持在导出前按题目编辑
 
@@ -98,5 +96,6 @@ RefatOS/
 
 ```bash
 npm run test:api
+npm run test:e2e
 npm run build
 ```

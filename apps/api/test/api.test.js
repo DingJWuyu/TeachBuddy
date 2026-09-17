@@ -49,11 +49,25 @@ function createTestContext(options = {}) {
   };
 }
 
-async function login(agent, email = 'refat@local.test', password = 'refatos123') {
+async function login(agent, email = 'teacher@example.test', password = 'correct horse battery staple') {
   const response = await agent
     .post('/api/auth/login')
     .send({ email, password })
     .expect(200);
+
+  return response.body.token;
+}
+
+async function register(agent, email = 'teacher@example.test', password = 'correct horse battery staple') {
+  const response = await agent
+    .post('/api/auth/register')
+    .send({
+      name: 'Test Teacher',
+      email,
+      password,
+      passwordConfirmation: password
+    })
+    .expect(201);
 
   return response.body.token;
 }
@@ -67,20 +81,26 @@ function authAgent(app, token) {
   };
 }
 
-test('bootstrap seeds demo data into a fresh SQLite database', () => {
+test('bootstrap leaves a fresh SQLite database empty', async () => {
   const context = createTestContext();
 
   try {
-    const snapshot = context.dataStore.snapshot();
-    assert.equal(context.dataStore.metadata.get('bootstrapSource'), 'seed');
-    assert.equal(snapshot.users.length, 1);
     assert.ok(fs.existsSync(context.sqlitePath));
+    await Promise.all([
+      request(context.app)
+        .post('/api/auth/login')
+        .send({ email: 'refat@local.test', password: 'refatos123' })
+        .expect(401),
+      request(context.app)
+        .get('/api/auth/me')
+        .expect(401)
+    ]);
   } finally {
     context.cleanup();
   }
 });
 
-test('bootstrap imports legacy store.json once without duplicating on restart', () => {
+test('legacy store.json is ignored when creating a fresh SQLite database', async () => {
   const legacyStore = {
     users: [
       {
@@ -121,12 +141,10 @@ test('bootstrap imports legacy store.json once without duplicating on restart', 
   const legacyDataFile = firstContext.legacyDataFile;
 
   try {
-    const snapshot = firstContext.dataStore.snapshot();
-    assert.equal(firstContext.dataStore.metadata.get('bootstrapSource'), 'legacy-import');
-    assert.equal(snapshot.users.length, 1);
-    assert.equal(snapshot.scheduleItems.length, 1);
-    assert.equal(snapshot.users[0].email, 'legacy@local.test');
-    assert.ok(snapshot.users[0].passwordHash);
+    await request(firstContext.app)
+      .post('/api/auth/login')
+      .send({ email: 'legacy@local.test', password: 'refatos123' })
+      .expect(401);
   } finally {
     firstContext.dataStore.close();
   }
@@ -136,12 +154,118 @@ test('bootstrap imports legacy store.json once without duplicating on restart', 
   });
 
   try {
-    const snapshot = secondContext.dataStore.snapshot();
-    assert.equal(snapshot.users.length, 1);
-    assert.equal(snapshot.scheduleItems.length, 1);
+    await request(secondContext.app)
+      .post('/api/auth/login')
+      .send({ email: 'legacy@local.test', password: 'refatos123' })
+      .expect(401);
   } finally {
     secondContext.dataStore.close();
     fs.rmSync(path.dirname(path.dirname(sqlitePath)), { recursive: true, force: true });
+  }
+});
+
+test('teacher can register from an empty database and receives an authenticated session', async () => {
+  const context = createTestContext();
+
+  try {
+    const response = await request(context.app)
+      .post('/api/auth/register')
+      .send({
+        name: 'New Teacher',
+        email: 'Teacher@Example.test',
+        password: 'correct horse battery staple',
+        passwordConfirmation: 'correct horse battery staple'
+      })
+      .expect(201);
+
+    assert.ok(response.body.token);
+    assert.equal(response.body.user.name, 'New Teacher');
+    assert.equal(response.body.user.email, 'teacher@example.test');
+    assert.equal(response.body.user.role, 'teacher');
+
+    await request(context.app)
+      .post('/api/auth/login')
+      .send({ email: 'teacher@example.test', password: 'wrong password' })
+      .expect(401);
+
+    const meResponse = await request(context.app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${response.body.token}`)
+      .expect(200);
+
+    assert.equal(meResponse.body.user.sub, response.body.user.id);
+    assert.equal(meResponse.body.user.name, response.body.user.name);
+    assert.equal(meResponse.body.user.email, response.body.user.email);
+    assert.equal(meResponse.body.user.role, response.body.user.role);
+
+    const emptyBusinessResponse = await request(context.app)
+      .get('/api/modules/schedule-organizer')
+      .set('Authorization', `Bearer ${response.body.token}`)
+      .expect(200);
+
+    assert.deepEqual(emptyBusinessResponse.body.items, []);
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('registration rejects a mismatched password confirmation with a clear error', async () => {
+  const context = createTestContext();
+
+  try {
+    const response = await request(context.app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Mismatch Teacher',
+        email: 'mismatch@example.test',
+        password: 'correct horse battery staple',
+        passwordConfirmation: 'different password'
+      })
+      .expect(400);
+
+    assert.equal(response.body.message, 'Passwords do not match.');
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('registration treats email addresses case-insensitively and rejects duplicates', async () => {
+  const context = createTestContext();
+
+  try {
+    await register(request(context.app), 'Teacher@Example.test');
+
+    const duplicateResponse = await request(context.app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Second Teacher',
+        email: 'teacher@example.TEST',
+        password: 'another password',
+        passwordConfirmation: 'another password'
+      })
+      .expect(409);
+
+    assert.equal(duplicateResponse.body.message, 'An account with that email already exists.');
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('teacher can log in again after leaving the authenticated session', async () => {
+  const context = createTestContext();
+
+  try {
+    await register(request(context.app), 'Returning@Example.test', 'returning password');
+
+    const loginResponse = await request(context.app)
+      .post('/api/auth/login')
+      .send({ email: 'returning@example.TEST', password: 'returning password' })
+      .expect(200);
+
+    assert.ok(loginResponse.body.token);
+    assert.equal(loginResponse.body.user.email, 'returning@example.test');
+  } finally {
+    context.cleanup();
   }
 });
 
@@ -149,13 +273,14 @@ test('auth login and /api/auth/me still work with SQLite persistence', async () 
   const context = createTestContext();
 
   try {
-    const token = await login(request(context.app));
+    await register(request(context.app));
+    const token = await login(request(context.app), 'teacher@example.test', 'correct horse battery staple');
     const meResponse = await request(context.app)
       .get('/api/auth/me')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    assert.equal(meResponse.body.user.email, 'refat@local.test');
+    assert.equal(meResponse.body.user.email, 'teacher@example.test');
   } finally {
     context.cleanup();
   }
@@ -165,7 +290,7 @@ test('schedule organizer supports CRUD and rejects clashes', async () => {
   const context = createTestContext();
 
   try {
-    const token = await login(request(context.app));
+    const token = await register(request(context.app));
     const api = authAgent(context.app, token);
 
     const createResponse = await api.post('/api/modules/schedule-organizer').send({
@@ -233,7 +358,7 @@ test('reminder completion creates the next recurring occurrence', async () => {
   const context = createTestContext();
 
   try {
-    const token = await login(request(context.app));
+    const token = await register(request(context.app));
     const api = authAgent(context.app, token);
 
     const createResponse = await api.post('/api/modules/reminder-center').send({
@@ -258,7 +383,7 @@ test('lesson planner creation triggers automation and worksheet generation remai
   const context = createTestContext();
 
   try {
-    const token = await login(request(context.app));
+    const token = await register(request(context.app));
     const api = authAgent(context.app, token);
 
     const lessonResponse = await api.post('/api/modules/lesson-planner').send({
@@ -291,7 +416,7 @@ test('worksheet designer CRUD keeps nested JSON fields stable', async () => {
   const context = createTestContext();
 
   try {
-    const token = await login(request(context.app));
+    const token = await register(request(context.app));
     const api = authAgent(context.app, token);
 
     const createResponse = await api.post('/api/modules/worksheet-designer').send({
@@ -341,7 +466,7 @@ test('template CRUD remains compatible', async () => {
   const context = createTestContext();
 
   try {
-    const token = await login(request(context.app));
+    const token = await register(request(context.app));
 
     const createResponse = await request(context.app)
       .post('/api/templates')
@@ -380,7 +505,7 @@ test('resource vault upload, metadata update, and delete clean up both metadata 
   const context = createTestContext();
 
   try {
-    const token = await login(request(context.app));
+    const token = await register(request(context.app));
     const sampleFile = path.join(context.rootDir, 'sample.txt');
     fs.writeFileSync(sampleFile, 'sample upload', 'utf-8');
 

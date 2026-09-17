@@ -18,6 +18,7 @@ export default function App() {
     summary,
     loadData,
     login,
+    register,
     createItem,
     updateItem,
     removeItem,
@@ -46,7 +47,7 @@ export default function App() {
   } : {};
 
   if (!authToken) {
-    return <LoginCard onLogin={login} error={error} />;
+    return <LoginCard onLogin={login} onRegister={register} error={error} />;
   }
 
   return (

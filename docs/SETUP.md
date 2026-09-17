@@ -34,21 +34,24 @@ npm run dev
 npm run test:api
 ```
 
+运行浏览器端到端测试（会启动真实 Web、API 和临时 SQLite）：
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
 运行完整构建：
 
 ```bash
 npm run build
 ```
 
-## 演示登录
-
-- 邮箱：`refat@local.test`
-- 密码：`refatos123`
+首次使用时，在前端选择“注册”创建教师账户。注册成功后会自动进入工作台。
 
 ## 数据与文件
 
 - 运行时 SQLite 数据库：`apps/api/src/data/refatos.sqlite`
-- 旧版引导数据源：`apps/api/src/data/store.json`
 - 上传目录：`apps/api/src/uploads`
 - 导出目录：`apps/api/src/exports`
 
@@ -58,12 +61,10 @@ API 可以通过以下环境变量进行配置：
 
 - `PORT`
 - `AUTH_SECRET`
-- `DEMO_PASSWORD`
 - `CORS_ORIGINS`
 - `SQLITE_PATH`
 - `DATABASE_URL`
 - `UPLOAD_DIR`
 - `EXPORT_DIR`
-- `LEGACY_STORE_PATH`
 
 `SQLITE_PATH` 或 `DATABASE_URL` 可以覆盖默认的 SQLite 文件位置。

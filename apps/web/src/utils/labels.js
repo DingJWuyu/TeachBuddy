@@ -93,8 +93,10 @@ const tagLabels = {
 };
 
 const fieldLabels = {
+  Name: '显示名称',
   Email: '邮箱',
   Password: '密码',
+  'Password confirmation': '确认密码',
   'Module ID': '模块 ID',
   'Template name': '模板名称',
   'Template payload': '模板内容',
@@ -154,6 +156,8 @@ const enumValueLabels = {
 const errorLabels = {
   'Invalid request body.': '请求内容无效。',
   'Invalid email or password.': '邮箱或密码错误。',
+  'An account with that email already exists.': '该邮箱已注册，请使用其他邮箱。',
+  'Passwords do not match.': '两次输入的密码不一致。',
   'Login failed.': '登录失败。',
   'Could not load RefatOS data.': '无法加载 RefatOS 数据。',
   'Something went wrong.': '出了点问题。',

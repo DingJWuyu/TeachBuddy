@@ -127,6 +127,16 @@ export function useWorkspaceData() {
         setError(localizeError(loginError.message || 'Login failed.'));
       }
     },
+    async register(name, email, password, passwordConfirmation) {
+      try {
+        const response = await postJson('/auth/register', { name, email, password, passwordConfirmation });
+        setSession(response);
+        setFlash(`欢迎加入，${localizeText(response.user.name)}。`);
+        setError('');
+      } catch (registrationError) {
+        setError(localizeError(registrationError.message || 'Registration failed.'));
+      }
+    },
     createItem(moduleId, payload) {
       return runAction(
         () => postJson(moduleEndpoints[moduleId], payload),

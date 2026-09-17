@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import { createEnv, env as defaultEnv } from './config/env.js';
 import { createDataStore } from './core/dataStore.js';
-import { createToken, verifyPassword } from './core/auth.js';
-import { ensureObject, ensureTrimmedString } from './core/validation.js';
+import { createToken, hashPassword, verifyPassword } from './core/auth.js';
+import { badRequest, ensureObject, ensureTrimmedString } from './core/validation.js';
 import { getModuleManifests, registerModules } from './core/moduleRegistry.js';
 import { ModuleEventBus } from './events/eventBus.js';
 import { notFound } from './middleware/notFound.js';
@@ -68,6 +68,45 @@ export function createApp(options = {}) {
     }
     const token = createToken(user);
     return res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  });
+
+  app.post('/api/auth/register', (req, res) => {
+    const body = ensureObject(req.body);
+    const name = ensureTrimmedString(body.name ?? body.displayName, 'Name', { maxLength: 120 });
+    const email = ensureTrimmedString(body.email, 'Email', { maxLength: 120 }).toLowerCase();
+    const password = ensureTrimmedString(body.password, 'Password', { maxLength: 120 });
+    const passwordConfirmation = ensureTrimmedString(
+      body.passwordConfirmation ?? body.confirmPassword ?? body.passwordConfirm,
+      'Password confirmation',
+      { maxLength: 120 }
+    );
+
+    if (password !== passwordConfirmation) {
+      badRequest('Passwords do not match.');
+    }
+
+    if (dataStore.list('users').some((item) => item.email?.toLowerCase() === email)) {
+      return res.status(409).json({ message: 'An account with that email already exists.' });
+    }
+
+    let user;
+    try {
+      user = dataStore.create('users', {
+        name,
+        email,
+        passwordHash: hashPassword(password),
+        role: 'teacher'
+      });
+    } catch (error) {
+      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        return res.status(409).json({ message: 'An account with that email already exists.' });
+      }
+      throw error;
+    }
+
+    const publicUser = { id: user.id, name: user.name, email: user.email, role: user.role };
+    const token = createToken(publicUser);
+    return res.status(201).json({ token, user: publicUser });
   });
 
   app.get('/api/auth/me', requireAuth, (req, res) => {

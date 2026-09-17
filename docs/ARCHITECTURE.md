@@ -50,7 +50,8 @@ RefatOS 是一个 monorepo，包含一个小型共享包和两个可运行的应
 运行时持久化基于 SQLite。
 
 - 主数据库：`apps/api/src/data/refatos.sqlite`
-- 旧版 JSON 引导数据源：`apps/api/src/data/store.json`
+
+新安装的数据库只创建空结构。账户和业务数据由教师通过开放注册和后续工作台操作显式创建。
 
 存储层保留现有的高层 CRUD 契约，因此模块通过一个中心抽象与存储交互，而不是直接执行 SQL。
 

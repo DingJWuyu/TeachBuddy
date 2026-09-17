@@ -9,7 +9,7 @@ const tableConfigs = {
     name: 'users',
     columns: {
       name: 'TEXT NOT NULL',
-      email: 'TEXT NOT NULL',
+      email: 'TEXT NOT NULL COLLATE NOCASE',
       passwordHash: 'TEXT NOT NULL',
       role: 'TEXT NOT NULL'
     }
@@ -118,140 +118,6 @@ function ensureDirectories(runtimeEnv) {
   ensureDirectory(runtimeEnv.exportDir);
 }
 
-function createSeedData(runtimeEnv) {
-  return {
-    users: [
-      {
-        id: 'users-1',
-        createdAt: '2026-04-05T00:00:00.000Z',
-        updatedAt: '2026-04-05T00:00:00.000Z',
-        name: 'Refat Teacher',
-        email: 'refat@local.test',
-        passwordHash: hashPassword(runtimeEnv.demoPassword),
-        role: 'teacher'
-      }
-    ],
-    scheduleItems: [
-      {
-        id: 'scheduleItems-1',
-        day: 'Sunday',
-        startTime: '08:00',
-        endTime: '08:40',
-        subject: 'Physics',
-        className: 'STD IX',
-        room: 'Room 3',
-        note: 'Pendulum practical prep',
-        createdAt: '2026-04-05T00:00:00.000Z',
-        updatedAt: '2026-04-05T00:00:00.000Z'
-      },
-      {
-        id: 'scheduleItems-2',
-        day: 'Monday',
-        startTime: '10:00',
-        endTime: '10:40',
-        subject: 'Mathematics',
-        className: 'STD VI',
-        room: 'Room 1',
-        note: 'Revision on fractions',
-        createdAt: '2026-04-05T00:00:00.000Z',
-        updatedAt: '2026-04-05T00:00:00.000Z'
-      }
-    ],
-    reminders: [
-      {
-        id: 'reminders-1',
-        title: 'Prepare CT paper for STD IX Physics',
-        dueAt: '2026-04-06T18:00:00.000Z',
-        priority: 'high',
-        status: 'pending',
-        linkedTo: null,
-        source: 'manual',
-        recurrence: 'weekly',
-        recurrenceInterval: 1,
-        parentReminderId: null,
-        createdAt: '2026-04-05T00:00:00.000Z',
-        updatedAt: '2026-04-05T00:00:00.000Z'
-      }
-    ],
-    lessonPlans: [
-      {
-        id: 'lessonPlans-1',
-        topic: 'Simple Pendulum',
-        className: 'STD VI',
-        objective: 'Explain oscillation and time period.',
-        duration: '35 min',
-        materials: 'String, bob, stopwatch, metre rule',
-        starter: 'Ask students what makes swings go faster or slower.',
-        mainActivity: 'Measure time for 10 oscillations for different lengths.',
-        assessment: 'Exit ticket on time period and oscillation.',
-        resourceIds: [],
-        createdAt: '2026-04-05T00:00:00.000Z',
-        updatedAt: '2026-04-05T00:00:00.000Z'
-      }
-    ],
-    worksheetDrafts: [
-      {
-        id: 'worksheetDrafts-1',
-        title: 'Electricity & Magnetism Practice',
-        className: 'STD IX',
-        format: 'O-Level structured',
-        topic: 'Current electricity',
-        marks: 25,
-        duration: '40 min',
-        instructions: 'Show all working. Use dotted answer spaces.',
-        questionCount: 6,
-        questionItems: [],
-        generatedFromLessonId: null,
-        resourceIds: [],
-        createdAt: '2026-04-05T00:00:00.000Z',
-        updatedAt: '2026-04-05T00:00:00.000Z'
-      }
-    ],
-    resources: [
-      {
-        id: 'resources-1',
-        title: 'Pendulum Investigation Notes',
-        originalName: 'pendulum-investigation-notes.pdf',
-        mimeType: 'application/pdf',
-        tags: ['science', 'pendulum', 'std-vi'],
-        moduleLinks: ['lesson-planner'],
-        path: '',
-        createdAt: '2026-04-05T00:00:00.000Z',
-        updatedAt: '2026-04-05T00:00:00.000Z'
-      }
-    ],
-    templates: [
-      {
-        id: 'templates-1',
-        createdAt: '2026-04-01T12:00:00.000Z',
-        updatedAt: '2026-04-01T12:00:00.000Z',
-        moduleId: 'lesson-planner',
-        name: 'Theory Lesson Starter',
-        payload: {
-          duration: '35 min',
-          starter: 'Quick recall quiz from last class.',
-          mainActivity: 'Board explanation, guided examples, and pair discussion.',
-          assessment: 'Short exit ticket with 3 questions.'
-        }
-      },
-      {
-        id: 'templates-2',
-        createdAt: '2026-04-01T12:05:00.000Z',
-        updatedAt: '2026-04-01T12:05:00.000Z',
-        moduleId: 'worksheet-designer',
-        name: 'CT O-Level Short Paper',
-        payload: {
-          format: 'O-Level structured',
-          marks: 15,
-          duration: '35 min',
-          questionCount: 5,
-          instructions: 'Answer all questions. Use dotted answer lines. Leave blank space for diagrams where necessary.'
-        }
-      }
-    ]
-  };
-}
-
 function createInsertStatement(config) {
   const fields = ['id', 'createdAt', 'updatedAt', ...Object.keys(config.columns)];
   const placeholders = fields.map((field) => `@${field}`).join(', ');
@@ -339,82 +205,13 @@ function ensureSchema(db) {
       );
     `);
   }
-}
 
-function isStoreEmpty(db) {
-  return storeKeys.every((key) => {
-    const result = db.prepare(`SELECT COUNT(*) AS count FROM ${key}`).get();
-    return Number(result.count) === 0;
-  });
-}
-
-function readLegacyStore(runtimeEnv) {
-  if (!fs.existsSync(runtimeEnv.legacyDataFile)) {
-    return null;
-  }
-
-  try {
-    const store = JSON.parse(fs.readFileSync(runtimeEnv.legacyDataFile, 'utf-8'));
-    const hasData = storeKeys.some((key) => Array.isArray(store[key]) && store[key].length > 0);
-    return hasData ? store : null;
-  } catch {
-    return null;
-  }
-}
-
-function importStore(db, store) {
-  const insertions = storeKeys.map((key) => {
-    const statement = db.prepare(createInsertStatement(tableConfigs[key]));
-    return { key, statement };
-  });
-
-  const insertTransaction = db.transaction((payload) => {
-    for (const { key, statement } of insertions) {
-      const items = Array.isArray(payload[key]) ? payload[key] : [];
-      for (const item of items) {
-        statement.run(serializeItem(key, item));
-      }
-    }
-  });
-
-  insertTransaction(payloadFromStore(store));
-}
-
-function payloadFromStore(store) {
-  return storeKeys.reduce((accumulator, key) => {
-    accumulator[key] = (store[key] || []).map((item) => normalizeStoredItem(key, item));
-    return accumulator;
-  }, {});
-}
-
-function setMetadata(db, key, value) {
-  db.prepare(`
-    INSERT INTO app_metadata (key, value)
-    VALUES (?, ?)
-    ON CONFLICT(key) DO UPDATE SET value = excluded.value
-  `).run(key, String(value));
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (email COLLATE NOCASE);');
 }
 
 function getMetadata(db, key) {
   const result = db.prepare('SELECT value FROM app_metadata WHERE key = ?').get(key);
   return result?.value ?? null;
-}
-
-function bootstrapDatabase(db, runtimeEnv) {
-  if (!isStoreEmpty(db)) {
-    return;
-  }
-
-  const legacyStore = readLegacyStore(runtimeEnv);
-  if (legacyStore) {
-    importStore(db, legacyStore);
-    setMetadata(db, 'bootstrapSource', 'legacy-import');
-    setMetadata(db, 'legacyImportComplete', 'true');
-    return;
-  }
-
-  importStore(db, createSeedData(runtimeEnv));
-  setMetadata(db, 'bootstrapSource', 'seed');
 }
 
 function generateId(key) {
@@ -434,7 +231,6 @@ export function createDataStore(runtimeEnv = defaultEnv) {
   const db = new Database(runtimeEnv.sqlitePath);
   db.pragma('journal_mode = WAL');
   ensureSchema(db);
-  bootstrapDatabase(db, runtimeEnv);
 
   const listStatements = Object.fromEntries(
     storeKeys.map((key) => [
@@ -531,8 +327,7 @@ export function createDataStore(runtimeEnv = defaultEnv) {
       uploadDir: runtimeEnv.uploadDir,
       exportDir: runtimeEnv.exportDir,
       dataFile: runtimeEnv.sqlitePath,
-      sqliteFile: runtimeEnv.sqlitePath,
-      legacyDataFile: runtimeEnv.legacyDataFile
+      sqliteFile: runtimeEnv.sqlitePath
     },
 
     metadata: {
@@ -542,5 +337,3 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     }
   };
 }
-
-export const dataStore = createDataStore();
