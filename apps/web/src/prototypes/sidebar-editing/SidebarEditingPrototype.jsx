@@ -86,6 +86,18 @@ function readDragPayload(event) {
   }
 }
 
+// Drag target marks are strings so they can drive CSS classes directly. Module
+// marks encode which side of the row the insertion line belongs to.
+function moduleDropMark(kind, groupId, moduleId) {
+  return `module-${kind}:${groupId}:${moduleId}`;
+}
+
+function isModuleDropTarget(mark, moduleId, kind) {
+  if (!mark || !moduleId) return false;
+  const [head, , markedModuleId] = mark.split(':');
+  return head === `module-${kind}` && markedModuleId === moduleId;
+}
+
 function useLayoutModel() {
   const [layout, setLayout] = useState(() => cloneLayout(INITIAL_LAYOUT));
   const [announcement, setAnnouncement] = useState('工作台布局已载入');
@@ -173,7 +185,7 @@ function useLayoutModel() {
         next.groups.splice(targetIndex < 0 ? next.groups.length : targetIndex, 0, group);
       });
     },
-    moveModule(moduleId, destinationGroupId, targetModuleId = null) {
+    moveModule(moduleId, destinationGroupId, targetModuleId = null, position = 'before') {
       if (moduleId === targetModuleId) return;
       update(`${moduleById(moduleId)?.name || '模块'}已移动`, (next) => {
         removeModule(next.groups, moduleId);
@@ -183,8 +195,13 @@ function useLayoutModel() {
         next.hiddenModuleIds = next.hiddenModuleIds.filter((id) => id !== moduleId);
         const destination = next.groups.find((group) => group.id === destinationGroupId);
         if (!destination) return;
-        const targetIndex = targetModuleId ? destination.moduleIds.indexOf(targetModuleId) : -1;
-        destination.moduleIds.splice(targetIndex < 0 ? destination.moduleIds.length : targetIndex, 0, moduleId);
+        // Resolve the anchor index after the removal, so dragging downwards
+        // within a group does not land one slot short.
+        const anchorIndex = targetModuleId ? destination.moduleIds.indexOf(targetModuleId) : -1;
+        const insertIndex = anchorIndex < 0
+          ? destination.moduleIds.length
+          : anchorIndex + (position === 'after' ? 1 : 0);
+        destination.moduleIds.splice(insertIndex, 0, moduleId);
       });
     },
     moveModuleByKeyboard(moduleId, direction) {
@@ -467,6 +484,9 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const longPressTimerRef = useRef(null);
   const mobileCloseRef = useRef(null);
+  // Group id -> id of the group rendered above it, cached when a drag starts so
+  // the inter-group gap can be attributed to the previous group.
+  const previousGroupRef = useRef(new Map());
   const hidden = new Set(model.layout.hiddenModuleIds);
 
   useEffect(() => {
@@ -513,6 +533,13 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
 
   function startDrag(event, payload) {
     setDragState(payload);
+    const map = new Map();
+    let previous = null;
+    for (const group of model.layout.groups) {
+      if (previous) map.set(group.id, previous);
+      previous = group.id;
+    }
+    previousGroupRef.current = map;
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', JSON.stringify(payload));
   }
@@ -522,11 +549,56 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
     setDragTarget(null);
   }
 
+  /*
+   * Drop-target state drives the insertion line, so it must only change when the
+   * target actually changes. Reassigning the same value on every dragover
+   * re-rendered the sidebar continuously and made the rows twitch under the
+   * pointer.
+   */
+  function applyDragTarget(next) {
+    setDragTarget((current) => (current === next ? current : next));
+  }
+
+  /*
+   * Resolves which boundary a module drop should land on. The sidebar has no
+   * explicit drop zones between groups, and the gap between two groups belongs
+   * to both: a pointer in that gap is nearer the previous group's last row, so
+   * it targets the previous group's end rather than jumping a whole group down.
+   * Both the hover rule and the drop rule call this, so they always agree.
+   */
+  function pickModuleBoundary(event, groupId) {
+    const section = event.currentTarget;
+    const rows = [...section.querySelectorAll('.tb-module-row')];
+    const row = event.target instanceof Element ? event.target.closest('.tb-module-row') : null;
+    if (row) {
+      const rect = row.getBoundingClientRect();
+      return event.clientY < rect.top + rect.height / 2
+        ? { kind: 'before', groupId, moduleId: row.dataset.dropModule }
+        : { kind: 'after', groupId, moduleId: row.dataset.dropModule };
+    }
+    const rect = section.getBoundingClientRect();
+    const firstRow = rows[0]?.getBoundingClientRect();
+    const inTopGap = firstRow ? event.clientY < firstRow.top : event.clientY < rect.top + rect.height / 2;
+    const previousGroupId = groupId === model.layout.groups[0]?.id ? null : previousGroupRef.current.get(groupId);
+    if (inTopGap && previousGroupId) return { kind: 'groupEnd', groupId: previousGroupId };
+    return { kind: 'groupEnd', groupId };
+  }
+
+  function markOf(target) {
+    if (!target) return null;
+    if (target.kind === 'group') return `group:${target.groupId}`;
+    if (target.kind === 'groupEnd') return `group-end:${target.groupId}`;
+    return moduleDropMark(target.kind, target.groupId, target.moduleId);
+  }
+
   function dropOnGroup(event, groupId) {
     event.preventDefault();
     event.stopPropagation();
     const payload = readDragPayload(event) || dragState;
-    if (payload?.type === 'module') model.moveModule(payload.id, groupId);
+    // Re-resolve the target at drop time with the same rule the hover used, so
+    // the group that receives the drop is the one the insertion line marked.
+    const target = payload?.type === 'module' ? pickModuleBoundary(event, groupId) : { kind: 'group', groupId };
+    if (payload?.type === 'module') model.moveModule(payload.id, target.groupId, target.moduleId, target.kind);
     if (payload?.type === 'group') model.moveGroup(payload.id, groupId);
     if (payload?.type === 'hidden-group') model.restoreGroup(payload.id, groupId);
     finishDrag();
@@ -536,7 +608,12 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
     event.preventDefault();
     event.stopPropagation();
     const payload = readDragPayload(event) || dragState;
-    if (payload?.type === 'module') model.moveModule(payload.id, groupId, moduleId);
+    // Re-resolve with the pointer position so a drop lands on the side of the
+    // row that the insertion line marked.
+    const target = pickModuleBoundary(event, groupId);
+    if (payload?.type === 'module') {
+      model.moveModule(payload.id, target.groupId, target.moduleId, target.kind);
+    }
     finishDrag();
   }
 
@@ -597,17 +674,26 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
               className={`tb-group ${dragTarget === `group:${group.id}` ? 'is-group-insert-target' : ''} ${dragTarget === `group-end:${group.id}` ? 'is-module-end-target' : ''}`}
               data-drop-group={group.id}
               key={group.id}
-              onDragEnter={(event) => {
-                const payload = readDragPayload(event) || dragState;
-                if (payload?.type === 'module') setDragTarget(`group-end:${group.id}`);
-                if ((payload?.type === 'group' || payload?.type === 'hidden-group') && payload.id !== group.id) setDragTarget(`group:${group.id}`);
-              }}
+              /*
+               * Target resolution lives in onDragOver, the only drag event that
+               * carries pointer coordinates. Resolution happens on enter, and
+               * the boundary belonging to the gap above a group depends on where
+               * in that gap the pointer sits.
+               */
               onDragOver={(event) => {
                 const payload = readDragPayload(event) || dragState;
-                if (payload?.type === 'module' || payload?.type === 'group' || payload?.type === 'hidden-group') event.preventDefault();
+                if (payload?.type === 'module') {
+                  event.preventDefault();
+                  applyDragTarget(markOf(pickModuleBoundary(event, group.id)));
+                  return;
+                }
+                if (payload?.type === 'group' || payload?.type === 'hidden-group') {
+                  event.preventDefault();
+                  if (payload.id !== group.id) applyDragTarget(markOf({ kind: 'group', groupId: group.id }));
+                }
               }}
               onDragLeave={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget)) setDragTarget(null);
+                if (!event.currentTarget.contains(event.relatedTarget)) applyDragTarget(null);
               }}
               onDrop={(event) => dropOnGroup(event, group.id)}
             >
@@ -658,7 +744,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
                     return (
                       <div
                         key={moduleId}
-                        className={`tb-module-row ${moduleId === 'classes' ? 'is-active' : ''} ${dragState?.type === 'module' && dragState.id === moduleId ? 'is-dragging' : ''} ${dragTarget === `module:${moduleId}` ? 'is-drop-target' : ''}`}
+                        className={`tb-module-row ${moduleId === 'classes' ? 'is-active' : ''} ${dragState?.type === 'module' && dragState.id === moduleId ? 'is-dragging' : ''} ${isModuleDropTarget(dragTarget, moduleId, 'before') ? 'is-drop-target is-drop-before' : ''} ${isModuleDropTarget(dragTarget, moduleId, 'after') ? 'is-drop-target is-drop-after' : ''}`}
                         data-drop-module={moduleId}
                         data-label={moduleItem.name}
                         role="button"
@@ -668,15 +754,12 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
                         onKeyDown={(event) => handleModuleKeyDown(event, moduleId)}
                         onDragStart={(event) => startDrag(event, { type: 'module', id: moduleId })}
                         onDragEnd={finishDrag}
-                        onDragEnter={(event) => {
-                          event.stopPropagation();
-                          const payload = readDragPayload(event) || dragState;
-                          if (payload?.type === 'module' && payload.id !== moduleId) setDragTarget(`module:${moduleId}`);
-                        }}
                         onDragOver={(event) => {
+                          event.preventDefault();
                           event.stopPropagation();
                           const payload = readDragPayload(event) || dragState;
-                          if (payload?.type === 'module') event.preventDefault();
+                          if (payload?.type !== 'module' || payload.id === moduleId) return;
+                          applyDragTarget(markOf(pickModuleBoundary(event, group.id)));
                         }}
                         onDrop={(event) => dropOnModule(event, group.id, moduleId)}
                       >

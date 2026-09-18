@@ -184,6 +184,55 @@ ok('avatar is 32px with a 12px gap to the name', account.avatarSize === 32 && ac
 ok('language button is 32px wide, not stretched', account.langW === 32, String(account.langW));
 ok('create-term radius is slightly rounded', account.termRadius === '10px', account.termRadius);
 
+// --- spacing is anchored: avatar and workspace heading keep their reference
+// positions and only the create-term button is placed between them ---
+const spacing = await p.evaluate(() => {
+  const r2 = (v) => Math.round(v * 100) / 100;
+  const av = document.querySelector('.tb-account-row .tb-avatar').getBoundingClientRect();
+  const term = document.querySelector('.tb-term-button').getBoundingClientRect();
+  const head = document.querySelector('.tb-workspace-heading').getBoundingClientRect();
+  return { avatarTop: r2(av.top), headingTop: r2(head.top),
+    gapAbove: r2(term.top - av.bottom), gapBelow: r2(head.top - term.bottom) };
+});
+ok('avatar keeps its reference position', Math.abs(spacing.avatarTop - 89) < 0.5, String(spacing.avatarTop));
+ok('workspace heading keeps its reference position', Math.abs(spacing.headingTop - 188.79) < 0.5, String(spacing.headingTop));
+ok('gaps above and below create-term are equal', spacing.gapAbove === spacing.gapBelow,
+  `${spacing.gapAbove} vs ${spacing.gapBelow}`);
+
+// --- trash rows match the module row exactly ---
+// The panel must be opened without toggling it shut, and emptied first: an
+// earlier check leaves one module in the trash, and the empty-state box only
+// exists while nothing is in there.
+const trashDims = await p.evaluate(() => new Promise((resolve) => {
+  function collect() {
+    const target = document.querySelector('.tb-trash-target');
+    const trashRect = target.getBoundingClientRect();
+    if (trashRect.width === 0) {
+      // rail is collapsed from the previous check; expand and retry shortly
+      document.querySelector('.tb-sidebar-toggle').click();
+      setTimeout(collect, 500);
+      return;
+    }
+    if (target.getAttribute('aria-expanded') !== 'true') target.click();
+    setTimeout(() => {
+      const panel = document.querySelector('.tb-hidden-panel');
+      [...panel.querySelectorAll('button')].forEach((btn) => btn.click());
+      setTimeout(() => {
+        const empty = document.querySelector('.tb-hidden-panel > p');
+        resolve({
+          trashRow: { w: Math.round(trashRect.width), h: Math.round(trashRect.height) },
+          emptyBox: empty ? { w: Math.round(empty.getBoundingClientRect().width), h: Math.round(empty.getBoundingClientRect().height) } : null,
+        });
+      }, 400);
+    }, 400);
+  }
+  collect();
+}));
+ok('trash row is the same height as a module row', trashDims.trashRow.h === 36, JSON.stringify(trashDims.trashRow));
+ok('empty trash state occupies one module row', !!trashDims.emptyBox && trashDims.emptyBox.h === 36, JSON.stringify(trashDims.emptyBox));
+await p.keyboard.press('Escape');
+await p.waitForTimeout(200);
+
 ok('no console errors', errs.length === 0, JSON.stringify(errs.slice(0, 3)));
 
 console.log('=== UI REVIEW FIXES ===');

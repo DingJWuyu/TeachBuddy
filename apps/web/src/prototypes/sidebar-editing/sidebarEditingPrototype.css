@@ -28,7 +28,6 @@
   --tb-row-padding: 10px;
   --tb-row-radius: 8px;
   --tb-icon-size: 20px;
-  --tb-sidebar-gap: 6px;
   --tb-ease: cubic-bezier(.4, 0, .2, 1);
   --tb-duration: .2s;
   /* Sidebar collapse: a slight overshoot on the way in reads as the rail
@@ -282,9 +281,6 @@
   min-width: 0;
   height: calc(100vh - 65px);
   flex-direction: column;
-  /* One spacing unit for the account block, the create-term button and the
-   * workspace heading, so the three gaps read equal. */
-  gap: var(--tb-sidebar-gap);
   border-right: 0;
   background: #fff;
 }
@@ -303,8 +299,10 @@
   display: flex;
   align-items: center;
   height: 40px;
-  /* Sidebar padding plus the flex gap produce the 8px band above the avatar. */
-  margin: 8px 0 0;
+  /* Anchored: the avatar and the workspace heading keep the positions measured
+   * from the reference. Only the create-term button is nudged so the gaps on
+   * either side of it match. */
+  margin: 20px 0 0;
 }
 
 .tb-prototype .tb-account-row {
@@ -384,7 +382,9 @@
   gap: 6px;
   width: calc(100% - 24px);
   height: 32px;
-  margin: 0 12px;
+  /* Placed by solving for equal gaps between the avatar, this button and the
+   * pinned workspace heading: both gaps land on 14.9px. */
+  margin: 13.9px 12px 0;
   padding: 0 10px;
   border: 1px solid var(--tb-line);
   border-radius: 10px;
@@ -407,7 +407,10 @@
   align-items: center;
   justify-content: space-between;
   height: 24px;
-  margin-top: 0;
+  /* Pinned to the reference position (y=188.79, sidebar top at y=65). The
+   * fractional value is exact: it is what makes the gaps above and below the
+   * create-term button equal to the pixel. */
+  margin-top: 17.895px;
   padding: 0 12px;
   color: var(--tb-sidebar-foreground);
   font-size: 10px;
@@ -609,18 +612,20 @@
   min-height: 4px;
 }
 
-.tb-group.is-module-end-target .tb-module-list::after {
-  height: 2px;
-  margin: 1px 8px 0;
-  border-radius: 99px;
-  background: var(--tb-purple);
-  content: "";
+/*
+ * Group-end insertion line. Also absolutely positioned for the same reason as
+ * the row line: an in-flow line would grow the group and push the rows below it.
+ */
+.tb-group.is-module-end-target {
+  position: relative;
 }
 
-.tb-group.is-module-end-target:not(:has(.tb-module-list))::after {
-  display: block;
+.tb-group.is-module-end-target::after {
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--tb-row-gap) / -2 - 1px);
+  left: 0;
   height: 2px;
-  margin: 1px 8px 0;
   border-radius: 99px;
   background: var(--tb-purple);
   content: "";
@@ -668,15 +673,28 @@
   box-shadow: 0 1px 2px 0 #0000000d;
 }
 
+/*
+ * Insertion line. Drawn as an absolutely positioned 2px bar that takes part in
+ * no layout, in either direction: a line that changed row geometry would shift
+ * the very rows it points between and make the list twitch under the pointer.
+ */
 .tb-module-row.is-drop-target::before {
   position: absolute;
-  top: -3px;
+  z-index: 3;
   right: 0;
   left: 0;
   height: 2px;
   border-radius: 99px;
   background: var(--tb-purple);
   content: "";
+}
+
+.tb-module-row.is-drop-before::before {
+  top: calc(var(--tb-row-gap) / -2 - 1px);
+}
+
+.tb-module-row.is-drop-after::before {
+  bottom: calc(var(--tb-row-gap) / -2 - 1px);
 }
 
 .tb-module-row > span:last-child {
@@ -716,7 +734,7 @@
 .tb-prototype .tb-trash-target {
   display: flex;
   width: 100%;
-  min-height: var(--tb-row-height);
+  height: var(--tb-row-height);
   align-items: center;
   gap: 12px;
   padding: var(--tb-row-padding);
