@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import LoginCard from './components/LoginCard.jsx';
 import ModuleCard from './components/ModuleCard.jsx';
+import WorkspaceSidebar from './components/WorkspaceSidebar.jsx';
 import DashboardPanel from './features/dashboard/DashboardPanel.jsx';
 import { frontendModules } from './features/modules/moduleRegistry.js';
 import WorkspaceSettingsPanel from './features/settings/WorkspaceSettingsPanel.jsx';
@@ -90,28 +91,13 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand-block">
-          <p className="eyebrow">教师工作台</p>
-          <h2>RefatOS</h2>
-          <p className="muted">一个让教学保持从容、随时容纳新功能的模块化教师工作台。</p>
-        </div>
-        <button className={`nav-button ${activeModuleId === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveModuleId('dashboard')}>
-          工作台首页
-        </button>
-        <button className={`nav-button ${activeModuleId === 'settings' ? 'active' : ''}`} onClick={() => setActiveModuleId('settings')}>
-          设置
-        </button>
-        {visibleModules.map((moduleItem) => (
-          <button
-            key={moduleItem.id}
-            className={`nav-button ${activeModuleId === moduleItem.id ? 'active' : ''}`}
-            onClick={() => setActiveModuleId(moduleItem.id)}
-          >
-            {moduleItem.icon} {moduleItem.title}
-          </button>
-        ))}
-      </aside>
+      <WorkspaceSidebar
+        modules={orderedModules}
+        layout={workspaceLayout}
+        activeModuleId={activeModuleId}
+        onSelectModule={setActiveModuleId}
+        onUpdateLayout={updateWorkspaceLayout}
+      />
 
       <main className="main-content">
         <header className="topbar card">
@@ -158,7 +144,6 @@ export default function App() {
               modules={orderedModules}
               layout={workspaceLayout}
               onToggleVisibility={toggleModuleVisibility}
-              onUpdateLayout={updateWorkspaceLayout}
             />
           ) : (
             ActivePanel ? <ActivePanel {...panelProps} /> : null

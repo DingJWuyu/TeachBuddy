@@ -54,7 +54,7 @@ export async function uploadResource(page, {
 }
 
 export function moduleButton(page, title) {
-  return page.locator('aside').getByRole('button', { name: new RegExp(title) });
+  return page.locator('aside').getByRole('button', { name: title, exact: true });
 }
 
 export function itemCard(page, text) {

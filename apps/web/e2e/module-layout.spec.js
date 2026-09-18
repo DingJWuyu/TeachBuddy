@@ -47,7 +47,6 @@ test('teacher can arrange grouped modules, preserve hidden placement, and persis
   const account = accountFor('module-layout', testInfo, 'module layout password');
   await registerTeacher(page, account);
 
-  await page.getByRole('button', { name: '设置' }).click();
   await page.getByLabel('新分组名称').fill('备课组');
   await page.getByRole('button', { name: '创建分组' }).click();
   await page.getByLabel('新分组名称').fill('内容组');
@@ -63,23 +62,24 @@ test('teacher can arrange grouped modules, preserve hidden placement, and persis
     .filter((label) => label?.startsWith('模块分组：')));
   expect(groupNames).toEqual(['模块分组：内容组', '模块分组：规划']);
 
-  await moduleItem(page, '备课规划').dragTo(groupRegion(page, '规划').getByRole('list'));
-  await moduleItem(page, '排课管理').dragTo(groupRegion(page, '规划').getByRole('list'));
-  await moduleItem(page, '排课管理').dragTo(moduleItem(page, '备课规划'));
-  await moduleItem(page, '资源库').dragTo(groupRegion(page, '内容组').getByRole('list'));
+  await moduleItem(page, '备课规划').getByLabel('拖动此模块').dragTo(groupRegion(page, '规划').getByRole('list'));
+  await moduleItem(page, '排课管理').getByRole('combobox').selectOption({ label: '规划' });
+  await moduleItem(page, '排课管理').getByRole('button', { name: '上移模块' }).click();
+  await moduleItem(page, '资源库').getByRole('combobox').selectOption({ label: '内容组' });
 
   const planningItems = await groupRegion(page, '规划').getByRole('listitem').allTextContents();
   expect(planningItems[0]).toContain('排课管理');
   expect(planningItems[1]).toContain('备课规划');
   await expect(groupRegion(page, '内容组').getByRole('listitem').filter({ hasText: '资源库' })).toBeVisible();
 
+  await page.getByRole('button', { name: '设置' }).click();
   const lessonVisibility = page.getByRole('checkbox', { name: '备课规划', exact: true });
   await lessonVisibility.uncheck();
   await expect(lessonVisibility).not.toBeChecked();
-  await expect(page.locator('aside').getByRole('button', { name: /备课规划/ })).not.toBeVisible();
+  await expect(page.locator('aside').getByRole('button', { name: '备课规划', exact: true })).not.toBeVisible();
   await lessonVisibility.check();
   await expect(lessonVisibility).toBeChecked();
-  await expect(page.locator('aside').getByRole('button', { name: /备课规划/ })).toBeVisible();
+  await expect(page.locator('aside').getByRole('button', { name: '备课规划', exact: true })).toBeVisible();
 
   await groupRegion(page, '内容组').getByRole('button', { name: '删除分组 内容组' }).click();
   await expect(groupRegion(page, '内容组')).not.toBeVisible();
@@ -87,14 +87,12 @@ test('teacher can arrange grouped modules, preserve hidden placement, and persis
 
   await page.reload();
   await expect(page.getByRole('button', { name: '设置' })).toBeVisible();
-  await page.getByRole('button', { name: '设置' }).click();
   await expect(groupRegion(page, '规划')).toBeVisible();
   await expect(groupRegion(page, '规划').getByRole('listitem').filter({ hasText: '排课管理' })).toBeVisible();
   await expect(groupRegion(page, '规划').getByRole('listitem').filter({ hasText: '备课规划' })).toBeVisible();
 
   await page.getByRole('button', { name: '退出登录' }).click();
   await loginTeacher(page, account);
-  await page.getByRole('button', { name: '设置' }).click();
   await expect(groupRegion(page, '规划')).toBeVisible();
   await expect(groupRegion(page, '规划').getByRole('listitem').filter({ hasText: '排课管理' })).toBeVisible();
 
@@ -103,7 +101,6 @@ test('teacher can arrange grouped modules, preserve hidden placement, and persis
   try {
     await otherPage.goto('/');
     await loginTeacher(otherPage, account);
-    await otherPage.getByRole('button', { name: '设置' }).click();
     await expect(groupRegion(otherPage, '规划')).toBeVisible();
     await expect(groupRegion(otherPage, '规划').getByRole('listitem').filter({ hasText: '排课管理' })).toBeVisible();
     await expect(otherPage.getByRole('region', { name: '未分组模块' }).getByRole('listitem').filter({ hasText: '资源库' })).toBeVisible();
@@ -116,13 +113,13 @@ test('module layout controls remain usable in a narrow viewport', async ({ page 
   await page.setViewportSize({ width: 390, height: 844 });
   await registerTeacher(page, accountFor('module-layout-narrow', testInfo, 'module narrow password'));
 
-  await page.getByRole('button', { name: '设置' }).click();
   await expectNoHorizontalOverflow(page);
   await page.getByLabel('新分组名称').fill('移动端分组');
   await expectWithinViewport(page, page.getByRole('button', { name: '创建分组' }));
   await page.getByRole('button', { name: '创建分组' }).click();
   await moduleItem(page, '提醒中心').getByRole('combobox').selectOption({ label: '移动端分组' });
   await expect(groupRegion(page, '移动端分组').getByRole('listitem').filter({ hasText: '提醒中心' })).toBeVisible();
+  await page.getByRole('button', { name: '设置' }).click();
   await expect(page.getByRole('checkbox', { name: '提醒中心', exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
@@ -137,7 +134,6 @@ test('group drag works with real touch input in a narrow viewport', async ({ bro
   try {
     await registerTeacher(page, accountFor('module-layout-touch', testInfo, 'module touch password'));
 
-    await page.getByRole('button', { name: '设置' }).click();
     await page.getByLabel('新分组名称').fill('第一组');
     await page.getByRole('button', { name: '创建分组' }).click();
     await page.getByLabel('新分组名称').fill('第二组');
@@ -178,4 +174,47 @@ test('workspace layout has no horizontal overflow on desktop and narrow screens'
   await expectWithinViewport(page, page.getByRole('button', { name: '创建分组' }));
   await expectWithinViewport(page, page.getByRole('checkbox', { name: '资源库', exact: true }).last());
   await expect(page.getByRole('region', { name: '模块分组：视觉分组' })).toBeVisible();
+});
+
+test('sidebar stays fixed while its overflowing navigation scrolls independently', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 720 });
+  await registerTeacher(page, accountFor('sidebar-scroll', testInfo, 'sidebar scroll password'));
+
+  const sidebar = page.locator('aside');
+  const navigation = page.getByRole('navigation', { name: '工作台导航' });
+  const initialSidebarBox = await sidebar.boundingBox();
+  expect(initialSidebarBox).not.toBeNull();
+  const initialNavigationMetrics = await navigation.evaluate((node) => ({
+    clientHeight: node.clientHeight,
+    scrollHeight: node.scrollHeight,
+    overflowY: getComputedStyle(node).overflowY
+  }));
+  expect(initialNavigationMetrics.overflowY).toBe('auto');
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  const afterPageScrollBox = await sidebar.boundingBox();
+  expect(afterPageScrollBox).not.toBeNull();
+  expect(afterPageScrollBox.y).toBeCloseTo(initialSidebarBox.y, 0);
+
+  for (let index = 1; index <= 8; index += 1) {
+    await page.getByLabel('新分组名称').fill(`滚动分组 ${index}`);
+    await page.getByRole('button', { name: '创建分组' }).click();
+  }
+
+  const overflowingNavigationMetrics = await navigation.evaluate((node) => ({
+    clientHeight: node.clientHeight,
+    scrollHeight: node.scrollHeight,
+    scrollTop: node.scrollTop,
+    overflowY: getComputedStyle(node).overflowY
+  }));
+  expect(overflowingNavigationMetrics.scrollHeight).toBeGreaterThan(overflowingNavigationMetrics.clientHeight);
+  expect(overflowingNavigationMetrics.overflowY).toBe('auto');
+
+  await navigation.evaluate((node) => { node.scrollTop = node.scrollHeight; });
+  await expect.poll(() => navigation.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+  const afterNavigationScrollBox = await sidebar.boundingBox();
+  expect(afterNavigationScrollBox).not.toBeNull();
+  expect(afterNavigationScrollBox.y).toBeCloseTo(initialSidebarBox.y, 0);
+  await expectNoHorizontalOverflow(page);
 });

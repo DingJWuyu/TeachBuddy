@@ -254,7 +254,7 @@ test.describe('教师个人工作台最终验收旅程', () => {
     await page.getByRole('button', { name: '设置' }).click();
     await page.getByLabel('新分组名称').fill('教师 A 分组');
     await page.getByRole('button', { name: '创建分组' }).click();
-    await page.getByLabel('提醒中心').first().uncheck();
+    await page.getByRole('checkbox', { name: '提醒中心', exact: true }).uncheck();
     await expect(page.getByRole('region', { name: '模块分组：教师 A 分组' })).toBeVisible();
     await page.getByRole('button', { name: '退出登录' }).click();
 
@@ -285,7 +285,7 @@ test.describe('教师个人工作台最终验收旅程', () => {
     await page.getByRole('button', { name: '设置' }).click();
     await page.getByLabel('新分组名称').fill('教师 B 分组');
     await page.getByRole('button', { name: '创建分组' }).click();
-    await page.getByLabel('提醒中心').first().uncheck();
+    await page.getByRole('checkbox', { name: '提醒中心', exact: true }).uncheck();
     await page.getByRole('button', { name: '退出登录' }).click();
 
     await loginTeacher(page, firstAccount);
