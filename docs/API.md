@@ -2,112 +2,65 @@
 
 [返回主 README](../README.md)
 
-## 基础 URL
+## 基础地址
 
-- 本地 API 根地址：`http://localhost:4000/api`
-- 上传文件不提供公开静态访问，必须通过资源接口并携带 Bearer 令牌读取。
+本地 API 地址为 http://localhost:4000/api。
+
+除健康检查和账户入口外，API 路由都需要 Bearer 令牌。令牌通过注册或登录响应返回。
 
 ## 健康检查
 
-- `GET /api/health`
+- GET /api/health
 
-## 身份验证
+响应包含应用名称、运行环境、状态和当前模块数量。当前模块数量为 0。
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/password-reset/request`
-- `POST /api/auth/password-reset/confirm`
-- `GET /api/auth/me`
+## 账户入口
 
-除 `/api/health`、`/api/auth/register`、`/api/auth/login` 和两个密码找回接口外，所有 `/api/*` 路由都需要 Bearer 令牌。
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/password-reset/request
+- POST /api/auth/password-reset/confirm
+- GET /api/auth/me
 
-注册请求接受 `name`、`email`、`password` 和 `passwordConfirmation`，邮箱会规范化为小写并保持唯一。成功响应与登录一致，返回 `{ token, user }`。
+注册请求接受 name、email、password 和 passwordConfirmation。邮箱按不区分大小写的规则保持唯一，注册成功后返回令牌并进入工作台。
 
-密码找回请求接受 `{ email }`，无论邮箱是否对应账户都返回统一的 202 响应，验证码不会出现在响应中。已存在的账户会收到 6 位数字验证码；验证码保存为非明文形式，10 分钟后过期，并在成功确认后立即失效。
+密码找回请求接受 email。无论账户是否存在，都返回统一的 202 响应；已存在的账户会收到一次性六位验证码。验证码保存为非明文形式，十分钟后过期，确认成功后立即失效。
 
-密码找回确认请求接受 `{ email, code, password, passwordConfirmation }`，成功后返回 `{ message }`。新密码替换旧密码，注册流程不会发送邮件或验证码。
+## 模块目录
 
-## 模块
+- GET /api/modules
 
-- `GET /api/modules`
+当前响应固定为空列表：
+
+~~~
+{ "items": [] }
+~~~
+
+模块注册契约由 packages/shared 提供。未来模块可以声明身份、侧栏入口、自有面板和后端能力；当前 API 不绑定首页聚合字段。
 
 ## 工作台布局
 
-- `GET /api/workspace/layout`
-- `PUT /api/workspace/layout`
+- GET /api/workspace/layout
+- PUT /api/workspace/layout
 
-工作台布局按当前教师账户保存，响应包含分开的 `hiddenModuleIds`、`groups` 和 `ungroupedModuleIds` 字段。分组及组内模块数组的顺序就是工作台展示顺序；分组标识必须唯一，模块不能出现在多个位置。隐藏模块仍保留在位置数据中；删除分组时，其模块按原相对顺序追加到“未分组”；读取或保存布局时，目录中新出现的模块会默认显示并追加到“未分组”。核心入口和设置不属于可隐藏模块。
+布局按教师账户保存，响应包含：
 
-## 模板
+~~~
+{
+  "hiddenModuleIds": [],
+  "groups": [],
+  "ungroupedModuleIds": []
+}
+~~~
 
-- `GET /api/templates`
-- `GET /api/templates?moduleId=lesson-planner`
-- `POST /api/templates`
-- `PUT /api/templates/:id`
-- `DELETE /api/templates/:id`
+分组 ID、模块位置和数组结构会在保存时校验。当前目录为空，因此默认布局和未分组区域均为空；核心首页和设置入口不属于可隐藏模块。
 
-模板列表、筛选、创建、更新和删除均只作用于当前 Bearer 令牌对应的教师账户。
+布局保存支持未来目录中的模块 ID。读取布局时，目录中尚未出现在布局里的模块会追加到未分组区域。
 
-## 排课组织器（Schedule Organizer）
+## 数据边界
 
-- `GET /api/modules/schedule-organizer`
-- `GET /api/modules/schedule-organizer/:id`
-- `POST /api/modules/schedule-organizer`
-- `PUT /api/modules/schedule-organizer/:id`
-- `DELETE /api/modules/schedule-organizer/:id`
+账户、密码找回记录和工作台布局按教师账户隔离。当前版本不提供功能模块业务路由，也不提供模板、上传、导出或跨模块自动化端点。
 
-排课记录归属于当前 Bearer 令牌对应的教师账户。列表、单条读取、创建、更新、删除和时段冲突校验均只作用于当前账户；访问其他账户的记录按不存在处理。
+## 统一错误
 
-## 提醒中心（Reminder Center）
-
-- `GET /api/modules/reminder-center`
-- `GET /api/modules/reminder-center/:id`
-- `POST /api/modules/reminder-center`
-- `PUT /api/modules/reminder-center/:id`
-- `DELETE /api/modules/reminder-center/:id`
-- `POST /api/modules/reminder-center/:id/complete`
-
-提醒记录归属于当前 Bearer 令牌对应的教师账户。列表、单条读取、创建、更新、完成、删除、周期派生和备课触发提醒均只作用于当前账户；访问其他账户的记录或跨账户关联按不存在处理。
-
-## 备课规划器（Lesson Planner）
-
-- `GET /api/modules/lesson-planner`
-- `GET /api/modules/lesson-planner/:id`
-- `POST /api/modules/lesson-planner`
-- `PUT /api/modules/lesson-planner/:id`
-- `DELETE /api/modules/lesson-planner/:id`
-- `POST /api/modules/lesson-planner/:id/generate-worksheet-draft`
-
-备课计划归属于当前 Bearer 令牌对应的教师账户。列表、单条读取、创建、更新、删除以及由备课触发的提醒均只作用于当前账户；访问其他账户的计划按不存在处理。
-
-## 练习单设计器（Worksheet Designer）
-
-- `GET /api/modules/worksheet-designer`
-- `GET /api/modules/worksheet-designer/:id`
-- `POST /api/modules/worksheet-designer`
-- `PUT /api/modules/worksheet-designer/:id`
-- `DELETE /api/modules/worksheet-designer/:id`
-- `GET /api/modules/worksheet-designer/:id/export/spec`
-- `GET /api/modules/worksheet-designer/:id/export/preview`
-- `GET /api/modules/worksheet-designer/:id/export/docx`
-- `GET /api/modules/worksheet-designer/:id/export/pdf`
-
-练习单列表、单条读取、创建、更新、删除和导出均只作用于当前教师账户。练习单引用的资源和备课计划也必须属于当前账户。
-
-## 资源库（Resource Vault）
-
-- `GET /api/modules/resource-vault`
-- `POST /api/modules/resource-vault/upload`
-- `GET /api/modules/resource-vault/:id/file`
-- `PUT /api/modules/resource-vault/:id`
-- `DELETE /api/modules/resource-vault/:id`
-
-资源元数据和物理文件均归属于当前教师账户。文件只能通过 `GET /api/modules/resource-vault/:id/file` 认证读取，访问其他账户资源按不存在处理；删除资源会清理当前账户对应的物理文件。
-
-## 说明
-
-- 当前 API 面向个人教师工作台使用。注册开放，成功后返回 Bearer 令牌；不存在固定演示账户或自动导入的业务数据。
-- 除健康检查、账户入口和密码找回外，模块、模板、资源文件和工作台布局都要求认证，并按当前教师账户隔离。
-- 响应结构有意保持简单，主要是 `{ items }`、单个项目负载或 `{ success, item }`。
-- 工作台布局保存模块可见性、分组和顺序；隐藏模块仍可通过认证 API 参与数据处理和跨模块自动化。
-- 当前测试套件涵盖空库注册、身份验证、账户边界、布局持久化、CRUD 行为、练习单生成、提醒周期和资源清理。
+验证失败通常返回 400，认证失败返回 401，资源不存在返回 404，邮箱重复返回 409。响应使用 message 和 path 字段描述错误。

@@ -7,6 +7,4 @@ apps/web/dist
 apps/api/dist
 apps/api/src/data/*.sqlite
 apps/api/src/data/*.sqlite-*
-apps/api/src/uploads
-apps/api/src/exports
 test-results

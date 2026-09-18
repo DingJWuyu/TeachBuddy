@@ -2,7 +2,7 @@
   "name": "refatos-v1",
   "private": true,
   "version": "0.3.0",
-  "description": "A modular teacher workspace monorepo with lesson planning, reminders, worksheet design, and resource management.",
+  "description": "A teacher workspace shell with account access, persistent layout, and a neutral module registration contract.",
   "license": "MIT",
   "author": "Robiul Islam Refat",
   "workspaces": [

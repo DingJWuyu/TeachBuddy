@@ -14,7 +14,6 @@ import {
 import { createRecoveryMailSender, PASSWORD_RECOVERY_SUBJECT } from './core/mail.js';
 import { badRequest, ensureObject, ensureTrimmedString } from './core/validation.js';
 import { getModuleManifests, registerModules } from './core/moduleRegistry.js';
-import { ModuleEventBus } from './events/eventBus.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requireAuth } from './middleware/requireAuth.js';
@@ -37,12 +36,6 @@ function normalizeOriginValue(value) {
 
 function toPublicUser(user) {
   return { id: user.id, name: user.name, email: user.email, role: user.role };
-}
-
-function toPublicTemplate(item) {
-  if (!item) return item;
-  const { ownerId, ...publicItem } = item;
-  return publicItem;
 }
 
 const PASSWORD_RECOVERY_TTL_MS = 10 * 60 * 1000;
@@ -82,7 +75,6 @@ function readConfirmedPassword(body) {
 
 export function createApp(options = {}) {
   const runtimeEnv = options.env ? createEnv(options.env) : defaultEnv;
-  const eventBus = options.eventBus ?? new ModuleEventBus();
   const dataStore = options.dataStore ?? createDataStore(runtimeEnv);
   const now = resolveNow(options);
   const mailSender = options.mailSender ?? createRecoveryMailSender(runtimeEnv);
@@ -242,57 +234,9 @@ export function createApp(options = {}) {
     return res.json(layout);
   });
 
-  app.get('/api/templates', (req, res) => {
-    const accountStore = dataStore.forAccount(req.user.sub);
-    const moduleId = req.query.moduleId;
-    const items = accountStore.list('templates');
-    res.json({ items: (moduleId ? items.filter((item) => item.moduleId === moduleId) : items).map(toPublicTemplate) });
-  });
-
-  app.post('/api/templates', (req, res) => {
-    const body = ensureObject(req.body);
-    const accountStore = dataStore.forAccount(req.user.sub);
-    const item = accountStore.create('templates', {
-      moduleId: ensureTrimmedString(body.moduleId, 'Module ID', { maxLength: 80 }),
-      name: ensureTrimmedString(body.name, 'Template name', { maxLength: 120 }),
-      payload: ensureObject(body.payload, 'Template payload must be an object.')
-    });
-    eventBus.emitEvent('template.created', { accountId: req.user.sub, item });
-    res.status(201).json(toPublicTemplate(item));
-  });
-
-  app.put('/api/templates/:id', (req, res) => {
-    const body = ensureObject(req.body);
-    const updates = {};
-
-    if (body.moduleId !== undefined) {
-      updates.moduleId = ensureTrimmedString(body.moduleId, 'Module ID', { maxLength: 80 });
-    }
-    if (body.name !== undefined) {
-      updates.name = ensureTrimmedString(body.name, 'Template name', { maxLength: 120 });
-    }
-    if (body.payload !== undefined) {
-      updates.payload = ensureObject(body.payload, 'Template payload must be an object.');
-    }
-
-    const accountStore = dataStore.forAccount(req.user.sub);
-    const item = accountStore.update('templates', req.params.id, updates);
-    if (!item) return res.status(404).json({ message: 'Template not found.' });
-    eventBus.emitEvent('template.updated', { accountId: req.user.sub, item });
-    return res.json(toPublicTemplate(item));
-  });
-
-  app.delete('/api/templates/:id', (req, res) => {
-    const accountStore = dataStore.forAccount(req.user.sub);
-    const item = accountStore.remove('templates', req.params.id);
-    if (!item) return res.status(404).json({ message: 'Template not found.' });
-    eventBus.emitEvent('template.deleted', { accountId: req.user.sub, item });
-    return res.json({ success: true, item: toPublicTemplate(item) });
-  });
-
-  registerModules({ app, eventBus, dataStore });
+  registerModules({ app, dataStore, env: runtimeEnv });
   app.use(notFound);
   app.use(errorHandler);
 
-  return { app, dataStore, eventBus, env: runtimeEnv };
+  return { app, dataStore, env: runtimeEnv };
 }

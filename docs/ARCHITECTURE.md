@@ -2,75 +2,58 @@
 
 [返回主 README](../README.md)
 
-## 概览
+## 结构
 
-RefatOS 是一个 monorepo，包含一个小型共享包和两个可运行的应用：
+仓库采用 npm workspaces：
 
-- `apps/web`：React + Vite 前端
-- `apps/api`：使用 SQLite 持久化的 Express 后端
-- `packages/shared`：共享元数据和辅助工具
+- apps/web：React + Vite 工作台外壳、账户入口、首页、设置和侧栏布局编辑
+- apps/api：Express 应用工厂、认证、密码找回、SQLite 和布局 API
+- packages/shared：中性模块注册契约与当前为空的模块目录
 
-核心设计目标是支持模块化扩展。每个功能领域都作为独立模块处理，而不是把所有逻辑都添加到一个中心应用层中。
+## 工作台外壳
 
-## 后端结构
+工作台外壳始终提供首页和设置。首页不依赖模块数据；模块目录为空时，主内容区域保持空白，不渲染统计、卡片、快捷操作或占位内容。
 
-后端的重要区域：
+WorkspaceSidebar 负责教师账户的布局偏好：
 
-- `apps/api/src/app.js`：供运行时和测试使用的应用工厂
-- `apps/api/src/server.js`：服务器入口
-- `apps/api/src/core/dataStore.js`：基于 SQLite 的集中式持久化
-- `apps/api/src/core/workspaceLayout.js`：按教师账户解析、校验并协调工作台布局
-- `apps/api/src/core/moduleRegistry.js`：后端模块注册
-- `apps/api/src/events/eventBus.js`：用于跨模块自动化的事件总线
-- `apps/api/src/modules/*`：功能模块
+- 创建、重命名和删除分组
+- 分组排序
+- 未来模块在分组或未分组区域中的拖拽、移动和排序
+- 设置页中的模块可见性
 
-## 前端结构
+布局偏好只影响展示，不改变账户认证边界或未来模块的业务行为。
 
-前端的重要区域：
+## 模块注册契约
 
-- `apps/web/src/App.jsx`：应用外壳和当前模块渲染
-- `apps/web/src/hooks/useWorkspaceData.js`：API 加载与操作编排
-- `apps/web/src/features/modules/moduleRegistry.js`：前端模块注册
-- `apps/web/src/components/WorkspaceSidebar.jsx`：固定侧栏、模块导航与工作台布局编辑
-- `apps/web/src/features/settings/WorkspaceSettingsPanel.jsx`：模块可见性设置
-- `apps/web/src/features/*`：各模块面板
-- `apps/web/src/components/*`：可复用的 UI 组件
+共享包导出空的 moduleCatalog 和 buildManifest。buildManifest 只提供中性默认值和模块自身声明的字段，不要求模块向首页贡献任何聚合内容。
 
-## 模块模型
+未来模块可以在自己的实现中声明：
 
-当前模块：
+- 身份信息
+- 侧栏入口
+- 自有面板
+- 后端能力和注册函数
 
-- 排课组织器（Schedule Organizer）
-- 提醒中心（Reminder Center）
-- 备课规划器（Lesson Planner）
-- 练习单设计器（Worksheet Designer）
-- 资源库（Resource Vault）
+后端和前端各自保留 registry seam；当前注册数组为空，因此 API 的模块列表为空，模块目录没有运行时贡献。
 
-每个模块在前端拥有自己的面板，在后端拥有自己的路由注册。
+## 后端边界
 
-## 存储模型
+apps/api/src/app.js 负责公共路由、认证中间件和布局路由。apps/api/src/core/moduleRegistry.js 只协调未来模块注册，不携带业务实现。
 
-运行时持久化基于 SQLite。
+认证使用 Bearer 令牌。注册、登录和密码找回由外壳直接提供，账户不属于组织，也不包含管理员或成员管理能力。
 
-- 主数据库：`apps/api/src/data/refatos.sqlite`
+## 持久化
 
-新安装的数据库只创建空结构。账户和业务数据由教师通过开放注册和后续工作台操作显式创建。
+SQLite 数据存储保留以下基础结构：
 
-存储层保留现有的高层 CRUD 契约，因此模块通过一个中心抽象与存储交互，而不是直接执行 SQL。
+- users：教师账户身份和密码摘要
+- passwordResetCodes：短期、一次性的找回密码验证码摘要
+- workspaceLayouts：按账户保存的布局偏好
 
-课程表、提醒、备课、练习单、资源库和模板均在记录中保存 `ownerId`，并通过 `dataStore.forAccount(accountId)` 提供账户级列表、读取、创建、更新和删除接缝。跨模块引用会先通过当前账户接缝校验所属关系；上传文件不通过公开静态目录读取，而是由资源路由认证后检查所有者。
+app_metadata 用于保留通用应用元数据接缝。账户存储通过 dataStore.forAccount(accountId) 提供隔离的列表、读取、创建、更新和删除接口，工作台外壳只使用布局记录。
 
-每个教师账户拥有一条工作台布局记录。记录将 `hiddenModuleIds` 与有序的 `groups`、`ungroupedModuleIds` 分开保存；保存时校验分组标识唯一且每个注册模块最多出现一次，删除分组会按原相对顺序把模块追加到“未分组”。读取时会根据当前模块目录补齐新模块，隐藏只影响前端组合，不会阻止模块路由或事件自动化。固定侧栏负责创建、重命名、删除和排序分组，以及模块的拖拽、跨组移动和键盘排序；设置页只负责模块可见性。
+新建数据库只创建账户认证和工作台底座所需结构，不创建功能模块业务表。
 
-为了保持存储接缝简单，包含大量数组的字段会以 JSON 数据块形式存储在 SQLite 中。
+## 运行与验证
 
-## 跨模块行为
-
-当前的跨模块自动化通过后端事件和 API 流程实现。例如：
-
-- 创建课程可以创建相关提醒
-- 课程可以生成练习单草稿
-
-与把所有内容硬编码到一个模块中相比，这样可以保持更清晰的模块边界。
-
-账户入口由应用外壳提供开放注册、登录和密码找回。新数据库从空结构开始；教师账户不属于组织，也没有成员、角色或管理员后台。工作台布局属于当前教师账户，模块可见性只影响展示，不影响模块路由、数据访问或自动化。
+API 使用 Node 测试运行器和 supertest，浏览器验收使用真实 Web、API 和临时 SQLite。完整验证入口见 README。

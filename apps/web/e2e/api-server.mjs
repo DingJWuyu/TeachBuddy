@@ -12,9 +12,7 @@ const context = startServer({
     port: 4100,
     authSecret: 'teacher-workspace-e2e-secret',
     corsOrigins: ['http://127.0.0.1:5183'],
-    sqlitePath: path.join(rootDir, 'data', 'workspace.sqlite'),
-    uploadDir: path.join(rootDir, 'uploads'),
-    exportDir: path.join(rootDir, 'exports')
+    sqlitePath: path.join(rootDir, 'data', 'workspace.sqlite')
   },
   mailSender: {
     async send(message) {

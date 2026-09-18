@@ -19,8 +19,6 @@ export function createEnv(overrides = {}) {
   const corsOriginsInput = overrides.corsOrigins ?? process.env.CORS_ORIGINS ?? '';
   const sqlitePathInput = overrides.sqlitePath ?? process.env.SQLITE_PATH ?? process.env.DATABASE_URL ?? path.join(dataDir, 'refatos.sqlite');
   const sqlitePath = path.isAbsolute(sqlitePathInput) ? sqlitePathInput : path.resolve(process.cwd(), sqlitePathInput);
-  const uploadDirInput = overrides.uploadDir ?? process.env.UPLOAD_DIR ?? path.resolve(apiRootDir, 'uploads');
-  const exportDirInput = overrides.exportDir ?? process.env.EXPORT_DIR ?? path.resolve(apiRootDir, 'exports');
 
   return {
     appName: overrides.appName ?? 'RefatOS API',
@@ -39,9 +37,7 @@ export function createEnv(overrides = {}) {
         .split(',')
         .map((item) => item.trim())
         .filter(Boolean),
-    sqlitePath,
-    uploadDir: path.isAbsolute(uploadDirInput) ? uploadDirInput : path.resolve(process.cwd(), uploadDirInput),
-    exportDir: path.isAbsolute(exportDirInput) ? exportDirInput : path.resolve(process.cwd(), exportDirInput)
+    sqlitePath
   };
 }
 

@@ -7,9 +7,8 @@ export default function WorkspaceSettingsPanel({ modules, layout, onToggleVisibi
         <div>
           <p className="eyebrow">工作台设置</p>
           <h2>工作台设置</h2>
-          <p className="muted">选择要显示在侧栏和工作台首页中的模块；隐藏模块会保留在侧栏分组和顺序中。</p>
+          <p className="muted">核心入口和个人布局始终保留在工作台外壳中。</p>
         </div>
-        <span className="badge">{modules.length} 个模块</span>
       </div>
 
       <div className="card visibility-list">

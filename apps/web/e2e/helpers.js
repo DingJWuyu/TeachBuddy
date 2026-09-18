@@ -10,8 +10,8 @@ export function accountFor(base, testInfo, password) {
   ].join(':');
   const suffix = crypto.createHash('sha1').update(identity).digest('hex').slice(0, 12);
   return {
-    name: `${base}教师`,
-    email: `${base}.${suffix}@example.test`,
+    name: base + '教师',
+    email: base + '.' + suffix + '@example.test',
     password
   };
 }
@@ -32,33 +32,6 @@ export async function loginTeacher(page, { email, password }) {
   await page.getByLabel('密码', { exact: true }).fill(password);
   await page.getByRole('button', { name: '登录' }).click();
   await expect(page.getByRole('button', { name: '工作台首页' })).toBeVisible();
-}
-
-export async function uploadResource(page, {
-  title,
-  fileName,
-  contents,
-  tags = '',
-  moduleLinks = ''
-}) {
-  await page.getByLabel('标题').fill(title);
-  if (tags) await page.getByLabel('标签').fill(tags);
-  if (moduleLinks) await page.getByLabel('关联模块').fill(moduleLinks);
-  await page.getByLabel('选择文件').setInputFiles({
-    name: fileName,
-    mimeType: 'text/plain',
-    buffer: Buffer.from(contents)
-  });
-  await page.getByRole('button', { name: '上传资源' }).click();
-  await expect(page.getByText(title, { exact: true })).toBeVisible();
-}
-
-export function moduleButton(page, title) {
-  return page.locator('aside').getByRole('button', { name: title, exact: true });
-}
-
-export function itemCard(page, text) {
-  return page.locator('.item-card').filter({ hasText: text }).first();
 }
 
 export async function expectNoHorizontalOverflow(page) {

@@ -1,107 +1,59 @@
-# RefatOS
+# 教师个人工作台
 
-RefatOS 是一个模块化教师个人工作台，采用 monorepo 组织形式。它将备课、提醒、排课、练习单起草和资源存储整合到一个本地优先系统中，同时避免代码库变成相互纠缠的单体应用。
+这是一个面向独立教师的个人工作空间。当前版本提供教师账户入口、认证、密码找回、账户隔离的工作台布局，以及可供未来功能模块接入的中性注册契约。模块目录当前为空，工作台可以在没有功能模块时独立运行。
 
-## 亮点
+## 当前能力
 
-- 前后端模块化结构
-- React + Vite Web 应用
-- Express + SQLite API
-- 教师账户开放注册与 Bearer 认证
-- 通过邮箱一次性验证码找回密码
-- 教师内容按账户隔离，上传文件通过认证接口读取
-- 按教师账户持久化的模块可见性与工作台布局（分组、顺序和拖拽整理）
-- 从课程到练习单的自动化
-- 规划流程中集成 Resource Vault
-- 可编辑的练习单题目构建器
-- 支持 DOCX、PDF 和预览导出
-- 覆盖核心流程的 API 回归测试与真实浏览器验收
+- 开放注册、登录、退出和密码找回
+- 教师账户之间的数据和工作台偏好隔离
+- 始终可见的工作台首页和设置入口
+- 侧栏分组、重命名、排序、拖拽和布局持久化底座
+- 认证 Bearer API 与 SQLite 持久化
+- 空模块目录下的 API、真实浏览器验收和构建验证
 
-## 模块
-
-- 排课组织器（Schedule Organizer）
-- 提醒中心（Reminder Center）
-- 备课规划器（Lesson Planner）
-- 练习单设计器（Worksheet Designer）
-- 资源库（Resource Vault）
+首页在模块目录为空时保持空白，不渲染模块统计、卡片、快捷操作或占位提示。未来模块可以通过共享注册契约声明身份、侧栏入口、自有面板和后端能力。
 
 ## 快速开始
 
-```bash
+~~~
 npm install
 npm run dev
-```
+~~~
 
-应用：
+应用地址：
 
-- 前端 Web：`http://localhost:5173`
-- 后端 API：`http://localhost:4000`
+- Web：http://localhost:5173
+- API：http://localhost:4000
 
-首次使用时，打开前端并选择“注册”创建教师账户。注册成功后会自动进入个人工作台。
+打开 Web 后选择“注册”创建教师账户。开发环境未配置 SMTP 时，密码找回验证码会写入 API 服务端日志。
 
-忘记密码时可从登录入口申请 6 位验证码。配置 SMTP 后由 API 直接发送；本地开发未配置 SMTP 时，验证码会写入 API 服务端日志。
+## 仓库结构
 
-## 仓库指南
+~~~
+/
+├── apps/
+│   ├── api/        Express API、认证、SQLite 和工作台布局
+│   └── web/        React + Vite 工作台外壳
+├── packages/
+│   └── shared/     中性模块注册契约与空模块目录
+├── docs/           安装、API、架构和部署说明
+├── CONTEXT.md      领域术语和边界
+└── CHANGELOG.md    发布与工程日志
+~~~
 
-从这里开始，然后进入你需要的部分：
+## 文档入口
 
 - [安装指南](./docs/SETUP.md)
-- [架构说明](./docs/ARCHITECTURE.md)
 - [API 指南](./docs/API.md)
-- [更新日志](./CHANGELOG.md)
-- [InfinityFree + Render 部署指南](./docs/DEPLOY_INFINITYFREE_RENDER.md)
-- [路线图与发布说明](./docs/ROADMAP.md)
-
-## 项目结构
-
-```text
-RefatOS/
-  apps/
-    api/        Express API、模块运行时、SQLite 持久化
-    web/        React + Vite 前端
-  packages/
-    shared/     共享模块元数据和辅助工具
-  docs/         安装、架构、API、路线图文档
-```
-
-## 技术栈
-
-- 前端：React 19、Vite、Zustand
-- 后端：Express 5、SQLite、`better-sqlite3`
-- 导出：`docx`、`pdfkit`
-- 上传：`multer`
-- 测试：Node 测试运行器、`supertest`、Playwright
-- 工具：npm workspaces、`npm-run-all`
-
-## 当前状态
-
-- 新安装的 SQLite 数据库从空结构开始，不会创建账户、业务记录或导入演示数据
-- 教师可以开放注册、自动进入工作台、退出并使用新凭据再次登录
-- 忘记密码时可以通过邮箱一次性验证码重置密码；注册不需要邮箱验证
-- 课程、提醒、备课、练习单、模板、资源及其跨模块引用按教师账户隔离
-- 上传文件只能由所属教师通过认证资源接口读取
-- 教师可以在设置中隐藏、恢复功能模块，并直接在固定侧栏中创建分组、拖拽和排序模块；布局跟随账户持久化
-- 隐藏只整理侧栏和工作台首页展示，不停止业务数据、后端路由或跨模块自动行为
-- 备课和练习单流程现在使用 Resource Vault 选择器
-- 练习单草稿支持在导出前按题目编辑
-
-## 部署状态
-
-项目可以使用类似 `InfinityFree + Render` 的前后端分离方案托管，但存在一些重要限制：
-
-- 前端是静态应用，可以托管在免费的静态托管服务上
-- 后端需要真实的 Node 服务器，因此必须运行在 Render 之类的服务上
-- 当前后端将 SQLite 数据和上传文件存储在本地磁盘
-- 因此当前部署适合演示、预览和轻量测试，不适合需要长期可靠性的生产环境
-
-如果使用 InfinityFree + Render 方案，请参考：
-
-- [InfinityFree + Render 部署指南](./docs/DEPLOY_INFINITYFREE_RENDER.md)
+- [架构说明](./docs/ARCHITECTURE.md)
+- [路线图](./docs/ROADMAP.md)
+- [部署指南](./docs/DEPLOY_INFINITYFREE_RENDER.md)
 
 ## 验证
 
-```bash
+~~~
 npm run test:api
 npm run test:e2e
 npm run build
-```
+git diff --check
+~~~

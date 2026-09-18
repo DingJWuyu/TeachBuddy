@@ -3,6 +3,9 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { env as defaultEnv } from '../config/env.js';
 
+// Only account, authentication, and workspace-shell records belong to the
+// baseline. Future modules can add their own storage without making the shell
+// aware of module-specific tables.
 const tableConfigs = {
   users: {
     name: 'users',
@@ -12,91 +15,6 @@ const tableConfigs = {
       passwordHash: 'TEXT NOT NULL',
       role: 'TEXT NOT NULL'
     }
-  },
-  scheduleItems: {
-    name: 'scheduleItems',
-    columns: {
-      ownerId: 'TEXT NOT NULL',
-      day: 'TEXT NOT NULL',
-      startTime: 'TEXT NOT NULL',
-      endTime: 'TEXT NOT NULL',
-      subject: 'TEXT NOT NULL',
-      className: 'TEXT NOT NULL',
-      room: 'TEXT',
-      note: 'TEXT'
-    }
-  },
-  reminders: {
-    name: 'reminders',
-    columns: {
-      ownerId: 'TEXT NOT NULL',
-      title: 'TEXT NOT NULL',
-      dueAt: 'TEXT NOT NULL',
-      priority: 'TEXT NOT NULL',
-      status: 'TEXT NOT NULL',
-      linkedTo: 'TEXT',
-      source: 'TEXT',
-      recurrence: 'TEXT NOT NULL',
-      recurrenceInterval: 'INTEGER NOT NULL',
-      parentReminderId: 'TEXT'
-    }
-  },
-  lessonPlans: {
-    name: 'lessonPlans',
-    columns: {
-      ownerId: 'TEXT NOT NULL',
-      topic: 'TEXT NOT NULL',
-      className: 'TEXT NOT NULL',
-      objective: 'TEXT NOT NULL',
-      duration: 'TEXT NOT NULL',
-      materials: 'TEXT',
-      starter: 'TEXT',
-      mainActivity: 'TEXT',
-      assessment: 'TEXT',
-      resourceIds: 'TEXT NOT NULL'
-    },
-    jsonColumns: ['resourceIds']
-  },
-  worksheetDrafts: {
-    name: 'worksheetDrafts',
-    columns: {
-      ownerId: 'TEXT NOT NULL',
-      title: 'TEXT NOT NULL',
-      className: 'TEXT NOT NULL',
-      format: 'TEXT NOT NULL',
-      topic: 'TEXT NOT NULL',
-      marks: 'INTEGER NOT NULL',
-      duration: 'TEXT NOT NULL',
-      instructions: 'TEXT',
-      questionCount: 'INTEGER NOT NULL',
-      questionItems: 'TEXT NOT NULL',
-      generatedFromLessonId: 'TEXT',
-      resourceIds: 'TEXT NOT NULL'
-    },
-    jsonColumns: ['questionItems', 'resourceIds']
-  },
-  resources: {
-    name: 'resources',
-    columns: {
-      ownerId: 'TEXT NOT NULL',
-      title: 'TEXT NOT NULL',
-      originalName: 'TEXT NOT NULL',
-      mimeType: 'TEXT NOT NULL',
-      tags: 'TEXT NOT NULL',
-      moduleLinks: 'TEXT NOT NULL',
-      path: 'TEXT'
-    },
-    jsonColumns: ['tags', 'moduleLinks']
-  },
-  templates: {
-    name: 'templates',
-    columns: {
-      ownerId: 'TEXT NOT NULL',
-      moduleId: 'TEXT NOT NULL',
-      name: 'TEXT NOT NULL',
-      payload: 'TEXT NOT NULL'
-    },
-    jsonColumns: ['payload']
   },
   workspaceLayouts: {
     name: 'workspaceLayouts',
@@ -139,26 +57,24 @@ function ensureDirectory(dirPath) {
 
 function ensureDirectories(runtimeEnv) {
   ensureDirectory(path.dirname(runtimeEnv.sqlitePath));
-  ensureDirectory(runtimeEnv.uploadDir);
-  ensureDirectory(runtimeEnv.exportDir);
 }
 
 function ownerIndexName(key) {
-  return `${key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)}_owner_id_idx`;
+  return key.replace(/[A-Z]/g, (letter) => '_' + letter.toLowerCase()) + '_owner_id_idx';
 }
 
 function createInsertStatement(config) {
   const fields = ['id', 'createdAt', 'updatedAt', ...Object.keys(config.columns)];
-  const placeholders = fields.map((field) => `@${field}`).join(', ');
-  return `INSERT INTO ${config.name} (${fields.join(', ')}) VALUES (${placeholders})`;
+  const placeholders = fields.map((field) => '@' + field).join(', ');
+  return 'INSERT INTO ' + config.name + ' (' + fields.join(', ') + ') VALUES (' + placeholders + ')';
 }
 
 function createAccountUpdateStatement(config) {
   const assignments = Object.keys(config.columns)
-    .map((field) => `${field} = @${field}`)
+    .map((field) => field + ' = @' + field)
     .concat('updatedAt = @updatedAt')
     .join(', ');
-  return `UPDATE ${config.name} SET ${assignments} WHERE id = @id AND ownerId = @ownerId`;
+  return 'UPDATE ' + config.name + ' SET ' + assignments + ' WHERE id = @id AND ownerId = @ownerId';
 }
 
 function normalizeStoredItem(key, item) {
@@ -168,12 +84,8 @@ function normalizeStoredItem(key, item) {
 
   for (const column of config.jsonColumns || []) {
     if (normalized[column] === undefined || normalized[column] === null || normalized[column] === '') {
-      normalized[column] = column === 'payload' ? {} : [];
+      normalized[column] = [];
     }
-  }
-
-  if (key === 'reminders' && normalized.parentReminderId === undefined) {
-    normalized.parentReminderId = null;
   }
 
   return normalized;
@@ -190,7 +102,9 @@ function serializeItem(key, item) {
 
   for (const field of Object.keys(config.columns)) {
     const value = normalized[field];
-    row[field] = (config.jsonColumns || []).includes(field) ? JSON.stringify(value ?? (field === 'payload' ? {} : [])) : value ?? null;
+    row[field] = (config.jsonColumns || []).includes(field)
+      ? JSON.stringify(value ?? [])
+      : value ?? null;
   }
 
   return row;
@@ -202,48 +116,35 @@ function deserializeRow(key, row) {
   const item = { ...row };
 
   for (const field of config.jsonColumns || []) {
-    item[field] = safeJsonParse(item[field], field === 'payload' ? {} : []);
+    item[field] = safeJsonParse(item[field], []);
   }
 
   return item;
 }
 
 function ensureSchema(db) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS app_metadata (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-  `);
+  db.exec('CREATE TABLE IF NOT EXISTS app_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);');
 
   for (const [key, config] of Object.entries(tableConfigs)) {
     const columnDefinitions = Object.entries(config.columns)
-      .map(([field, type]) => `${field} ${type}`)
+      .map(([field, type]) => field + ' ' + type)
       .join(', ');
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS ${key} (
-        id TEXT PRIMARY KEY,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
-        ${columnDefinitions}
-      );
-    `);
-  }
-
-  for (const [key, config] of Object.entries(tableConfigs)) {
-    if (!config.columns.ownerId) continue;
-    const columns = db.prepare(`PRAGMA table_info(${config.name})`).all();
-    if (!columns.some((column) => column.name === 'ownerId')) {
-      db.exec(`ALTER TABLE ${config.name} ADD COLUMN ownerId TEXT`);
-    }
+    db.exec(
+      'CREATE TABLE IF NOT EXISTS ' + key + ' (' +
+      'id TEXT PRIMARY KEY, ' +
+      'createdAt TEXT NOT NULL, ' +
+      'updatedAt TEXT NOT NULL, ' +
+      columnDefinitions +
+      ');'
+    );
   }
 
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (email COLLATE NOCASE);');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS workspace_layouts_owner_unique ON workspaceLayouts (ownerId);');
   for (const [key, config] of Object.entries(tableConfigs)) {
     if (!config.columns.ownerId) continue;
-    db.exec(`CREATE INDEX IF NOT EXISTS ${ownerIndexName(key)} ON ${config.name} (ownerId);`);
+    db.exec('CREATE INDEX IF NOT EXISTS ' + ownerIndexName(key) + ' ON ' + config.name + ' (ownerId);');
   }
-  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS workspace_layouts_owner_unique ON workspaceLayouts (ownerId);');
 }
 
 function getMetadata(db, key) {
@@ -252,14 +153,14 @@ function getMetadata(db, key) {
 }
 
 function generateId(key) {
-  return `${key}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return key + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 }
 
 function getComparableTime(item) {
   return item.updatedAt || item.createdAt || '';
 }
 
-function sortByCreatedDesc(items) {
+function sortByUpdatedDesc(items) {
   return [...items].sort((a, b) => (getComparableTime(a) < getComparableTime(b) ? 1 : -1));
 }
 
@@ -283,45 +184,42 @@ export function createDataStore(runtimeEnv = defaultEnv) {
   const accountListStatements = Object.fromEntries(
     accountScopedKeys.map((key) => [
       key,
-      db.prepare(`SELECT * FROM ${key} WHERE ownerId = ?`)
+      db.prepare('SELECT * FROM ' + key + ' WHERE ownerId = ?')
     ])
   );
-
   const accountGetStatements = Object.fromEntries(
     accountScopedKeys.map((key) => [
       key,
-      db.prepare(`SELECT * FROM ${key} WHERE id = ? AND ownerId = ?`)
+      db.prepare('SELECT * FROM ' + key + ' WHERE id = ? AND ownerId = ?')
     ])
   );
-
   const insertStatements = Object.fromEntries(
     storeKeys.map((key) => [
       key,
       db.prepare(createInsertStatement(tableConfigs[key]))
     ])
   );
-
   const accountUpdateStatements = Object.fromEntries(
     accountScopedKeys.map((key) => [
       key,
       db.prepare(createAccountUpdateStatement(tableConfigs[key]))
     ])
   );
-
   const accountRemoveStatements = Object.fromEntries(
     accountScopedKeys.map((key) => [
       key,
-      db.prepare(`DELETE FROM ${key} WHERE id = ? AND ownerId = ?`)
+      db.prepare('DELETE FROM ' + key + ' WHERE id = ? AND ownerId = ?')
     ])
   );
 
   function assertAccountScopedKey(key) {
     if (!tableConfigs[key]?.columns.ownerId) {
-      throw new Error(`Data store key ${key} does not support account ownership.`);
+      throw new Error('Data store key ' + key + ' does not support account ownership.');
     }
   }
 
   function createItem(key, value) {
+    if (!tableConfigs[key]) throw new Error('Unknown data store key: ' + key);
     const timestamp = new Date().toISOString();
     const item = normalizeStoredItem(key, {
       id: generateId(key),
@@ -362,7 +260,7 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     return {
       list(key) {
         assertAccountScopedKey(key);
-        return sortByCreatedDesc(accountListStatements[key].all(accountId).map((row) => deserializeRow(key, row)));
+        return sortByUpdatedDesc(accountListStatements[key].all(accountId).map((row) => deserializeRow(key, row)));
       },
 
       get(key, id) {
@@ -387,7 +285,7 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     };
   }
 
-  const dataStore = {
+  return {
     findUserByEmail(email) {
       return deserializeRow('users', findUserByEmailStatement.get(email));
     },
@@ -410,7 +308,7 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     },
 
     listPasswordResetCodes(userId) {
-      return sortByCreatedDesc(passwordResetCodeListStatement.all(userId).map((row) => deserializeRow('passwordResetCodes', row)));
+      return sortByUpdatedDesc(passwordResetCodeListStatement.all(userId).map((row) => deserializeRow('passwordResetCodes', row)));
     },
 
     markPasswordResetCodeUsed(id, userId, usedAt) {
@@ -430,8 +328,6 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     },
 
     paths: {
-      uploadDir: runtimeEnv.uploadDir,
-      exportDir: runtimeEnv.exportDir,
       dataFile: runtimeEnv.sqlitePath,
       sqliteFile: runtimeEnv.sqlitePath
     },
@@ -446,6 +342,4 @@ export function createDataStore(runtimeEnv = defaultEnv) {
       return createAccountStore(accountId);
     }
   };
-
-  return dataStore;
 }

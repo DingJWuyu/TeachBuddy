@@ -49,7 +49,9 @@ export default function WorkspaceSidebar({
   const ungroupedModuleIds = layout?.ungroupedModuleIds || fallbackUngroupedModuleIds;
 
   useEffect(() => {
-    setDraftGroupNames(Object.fromEntries(groups.map((group) => [group.id, group.name])));
+    setDraftGroupNames((current) => Object.fromEntries(
+      groups.map((group) => [group.id, current[group.id] ?? group.name])
+    ));
   }, [layout]);
 
   function createGroup(event) {
@@ -63,8 +65,8 @@ export default function WorkspaceSidebar({
     onUpdateLayout(nextLayout, '模块分组已创建。');
   }
 
-  function commitGroupName(group) {
-    const name = (draftGroupNames[group.id] || '').trim();
+  function commitGroupName(group, value = draftGroupNames[group.id]) {
+    const name = (value || '').trim();
     if (!name || name === group.name || !layout) {
       setDraftGroupNames((current) => ({ ...current, [group.id]: group.name }));
       return;
@@ -278,7 +280,6 @@ export default function WorkspaceSidebar({
   }
 
   function renderModuleList(moduleIds, containerId, ariaLabel) {
-    const visibleItems = moduleIds.filter((moduleId) => visibleModuleIds.has(moduleId));
     return (
       <div
         className="sidebar-module-list"
@@ -288,7 +289,6 @@ export default function WorkspaceSidebar({
         onDrop={(event) => handleDrop(event, containerId)}
       >
         {moduleIds.map((moduleId) => renderModule(moduleId, containerId, moduleIds))}
-        {!visibleItems.length && <p className="muted tiny-text sidebar-empty">拖动模块到这里。</p>}
       </div>
     );
   }
@@ -323,10 +323,11 @@ export default function WorkspaceSidebar({
               aria-label={`重命名分组 ${group.name}`}
               value={draftGroupNames[group.id] ?? group.name}
               onChange={(event) => setDraftGroupNames((current) => ({ ...current, [group.id]: event.target.value }))}
-              onBlur={() => commitGroupName(group)}
+              onBlur={(event) => commitGroupName(group, event.currentTarget.value)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault();
+                  commitGroupName(group, event.currentTarget.value);
                   event.currentTarget.blur();
                 }
                 if (event.key === 'Escape') {
@@ -399,7 +400,6 @@ export default function WorkspaceSidebar({
             <p className="eyebrow">功能模块</p>
             <h3>我的工作台</h3>
           </div>
-          <span className="badge">{visibleModuleIds.size}</span>
         </div>
 
         <form className="sidebar-create-group" onSubmit={createGroup}>
@@ -409,7 +409,7 @@ export default function WorkspaceSidebar({
               aria-label="新分组名称"
               value={newGroupName}
               onChange={(event) => setNewGroupName(event.target.value)}
-              placeholder="例如：备课与排课"
+              placeholder="例如：近期安排"
             />
           </label>
           <button className="primary-button compact-button" type="submit" disabled={!layout}>创建分组</button>
