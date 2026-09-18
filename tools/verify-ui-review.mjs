@@ -28,7 +28,7 @@ const anim = await p.evaluate(() => {
   return { shellTransition: `${shell.transitionProperty} ${shell.transitionDuration} ${shell.transitionTimingFunction}`,
     topbarTransition: topbar.transitionDuration, toggleX: Math.round(toggle.x), toggleW: Math.round(toggle.width) };
 });
-ok('sidebar collapse is animated', anim.shellTransition.includes('grid-template-columns') && anim.shellTransition.includes('0.32s'), anim.shellTransition);
+ok('sidebar collapse is animated', anim.shellTransition.includes('grid-template-columns') && anim.shellTransition.includes('0.2s'), anim.shellTransition);
 // The top bar is a fixed shell: its brand column is pinned, so it must carry no
 // width transition and must not move when the sidebar collapses.
 ok('top bar does not animate with the sidebar', anim.topbarTransition === '0s', anim.topbarTransition);
@@ -91,12 +91,13 @@ const railTop = await p.evaluate(() => {
 });
 ok('first rail icon has clearance below the top bar', railTop >= 8, `${railTop}px`);
 
-// the rail reveal is masked along the top-left diagonal
+// The collapse is a plain width animation: the diagonal sweep read as a page
+// flip and was removed, so no mask may be attached.
 const maskState = await p.evaluate(() => {
   const cs = getComputedStyle(document.querySelector('.tb-sidebar'));
-  return { name: cs.animationName, duration: cs.animationDuration };
+  return { name: cs.animationName, clip: cs.clipPath };
 });
-ok('rail collapse uses a diagonal mask', maskState.name === 'tb-sidebar-fold' && maskState.duration === '0.32s', JSON.stringify(maskState));
+ok('rail collapse has no flip-page mask', maskState.name === 'none' && maskState.clip === 'none', JSON.stringify(maskState));
 
 // Both settled states must be fully visible: an animation that keeps painting
 // its final frame would leave the sidebar masked after the transition ends.
@@ -154,8 +155,10 @@ const form = await p.evaluate(() => {
     radius: getComputedStyle(f).borderRadius, shadow: getComputedStyle(f).boxShadow.slice(0, 40) };
 });
 ok('new-group form opens to the right of its trigger', form && form.x >= toggleBox.right, `form x=${form?.x} trigger right=${toggleBox.right}`);
-ok('new-group form is compact', form && form.w <= 260 && form.h <= 60, `w=${form?.w} h=${form?.h}`);
-ok('new-group form uses the popover grammar', form?.position === 'fixed' && form?.radius === '12px', `${form?.position} r=${form?.radius}`);
+ok('new-group form is compact', form && form.w <= 200 && form.h <= 60, `w=${form?.w} h=${form?.h}`);
+ok('new-group form uses the popover grammar', form?.position === 'fixed' && form?.radius === '10px', `${form?.position} r=${form?.radius}`);
+const hasEnterHint = await p.evaluate(() => !!document.querySelector('.tb-new-group-form > span'));
+ok('new-group form has no Enter hint', !hasEnterHint);
 await p.keyboard.press('Escape');
 await p.waitForTimeout(300);
 
@@ -221,6 +224,7 @@ const trashDims = await p.evaluate(() => new Promise((resolve) => {
         const empty = document.querySelector('.tb-hidden-panel > p');
         resolve({
           trashRow: { w: Math.round(trashRect.width), h: Math.round(trashRect.height) },
+          panelW: Math.round(panel.getBoundingClientRect().width),
           emptyBox: empty ? { w: Math.round(empty.getBoundingClientRect().width), h: Math.round(empty.getBoundingClientRect().height) } : null,
         });
       }, 400);
@@ -228,6 +232,10 @@ const trashDims = await p.evaluate(() => new Promise((resolve) => {
   }
   collect();
 }));
+ok('trash panel matches the trash row footprint',
+  trashDims.trashRow.w === trashDims.panelW, `row=${trashDims.trashRow.w} panel=${trashDims.panelW}`);
+ok('a dropped module fills the panel width',
+  trashDims.emptyBox ? trashDims.emptyBox.w === trashDims.trashRow.w : null, JSON.stringify(trashDims.emptyBox));
 ok('trash row is the same height as a module row', trashDims.trashRow.h === 36, JSON.stringify(trashDims.trashRow));
 ok('empty trash state occupies one module row', !!trashDims.emptyBox && trashDims.emptyBox.h === 36, JSON.stringify(trashDims.emptyBox));
 await p.keyboard.press('Escape');

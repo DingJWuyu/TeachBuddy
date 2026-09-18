@@ -164,7 +164,9 @@ check('workspace heading hidden', rail.workspaceHeading, 'hidden');
 check('account row hidden', rail.accountRow, 'hidden');
 check('language row hidden', rail.languageRow, 'hidden');
 check('trash hidden', rail.trash, 'hidden');
-check('sidebar footer hidden', rail.footer, 'hidden');
+// The sidebar footer was removed: the reference puts settings in the top bar's
+// support menu, not at the bottom of the sidebar.
+check('sidebar footer removed', rail.footer, 'absent');
 check('module label hidden', rail.rowLabel, 'hidden');
 check('group divider present', rail.groupDivider.startsWith('1px'), true);
 check('tooltip text bound', rail.tooltipContent.includes('我的班级'), true);

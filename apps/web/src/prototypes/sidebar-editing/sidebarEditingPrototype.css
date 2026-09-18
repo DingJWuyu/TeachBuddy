@@ -28,12 +28,10 @@
   --tb-row-padding: 10px;
   --tb-row-radius: 8px;
   --tb-icon-size: 20px;
+  /* The sidebar imposes the same width on trash rows and every module row. */
+  --tb-row-width: 232px;
   --tb-ease: cubic-bezier(.4, 0, .2, 1);
   --tb-duration: .2s;
-  /* Sidebar collapse: a slight overshoot on the way in reads as the rail
-   * folding toward the top-left corner rather than snapping. */
-  --tb-motion-duration: .32s;
-  --tb-motion-ease: cubic-bezier(.32, 1.18, .5, 1);
   min-height: 100vh;
   color: var(--tb-ink);
   background: var(--tb-page);
@@ -164,6 +162,49 @@
   background: #303238;
 }
 
+/* Top-bar support menu, measured from the reference: 167px wide, 12px radius,
+ * 4px inset, 30px rows with 14px labels. */
+.tb-prototype .tb-support-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.tb-prototype .tb-support-menu {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 10px);
+  left: 50%;
+  display: grid;
+  width: 167px;
+  gap: 0;
+  padding: 4px;
+  border: 1px solid var(--tb-line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
+  transform: translateX(-50%);
+}
+
+.tb-prototype .tb-support-menu button {
+  display: flex;
+  width: 100%;
+  height: 30px;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: var(--tb-ink);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tb-prototype .tb-support-menu button:hover {
+  background: var(--tb-sidebar-accent);
+}
+
 .tb-top-actions {
   justify-content: flex-end;
   gap: 3px;
@@ -266,7 +307,7 @@
   display: grid;
   grid-template-columns: var(--tb-sidebar-width) minmax(0, 1fr);
   min-height: calc(100vh - 65px);
-  transition: grid-template-columns var(--tb-motion-duration) var(--tb-motion-ease);
+  transition: grid-template-columns var(--tb-duration) var(--tb-ease);
 }
 
 /*
@@ -424,12 +465,17 @@
   opacity: .7;
 }
 
+/* Flex centring rather than place-items: with a block-level SVG child, grid
+ * place-items left the glyph visually off-centre inside the square. */
 .tb-prototype .tb-workspace-heading > button {
-  display: grid;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 0;
   font-size: 10px;
   width: 20px;
   height: 20px;
-  place-items: center;
   border-radius: 5px;
   color: var(--tb-sidebar-foreground);
   background: transparent;
@@ -453,12 +499,10 @@
   position: fixed;
   z-index: 70;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 236px;
-  padding: 8px;
+  width: 184px;
+  padding: 6px;
   border: 1px solid var(--tb-line);
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fff;
   box-shadow: var(--tb-card-elevation);
 }
@@ -466,10 +510,10 @@
 .tb-prototype .tb-new-group-form input {
   width: 100%;
   min-width: 0;
-  height: 32px;
-  padding: 0 10px;
+  height: 30px;
+  padding: 0 8px;
   border: 1px solid #d8d8d6;
-  border-radius: 8px;
+  border-radius: 7px;
   color: var(--tb-ink);
   background: #fff;
   font-size: 14px;
@@ -484,18 +528,11 @@
   border-color: var(--tb-primary);
 }
 
-.tb-prototype .tb-new-group-form > span {
-  flex: none;
-  color: var(--tb-muted-foreground-faint);
-  font-size: 10px;
-  letter-spacing: .5px;
-  text-transform: uppercase;
-}
-
 /* Empty state occupies exactly one module row so the panel keeps the same
  * footprint whether or not anything has been dropped in. */
 .tb-prototype .tb-hidden-panel > p {
   display: flex;
+  width: 100%;
   height: var(--tb-row-height);
   align-items: center;
   justify-content: center;
@@ -595,14 +632,26 @@
   transform: rotate(-90deg);
 }
 
-.tb-group-rename {
+/* Rename keeps the group header's own metrics: same 24px box, same 10px label
+ * ramp, so the header does not change size when it turns into an input. */
+.tb-prototype .tb-group-rename {
   width: 100%;
+  height: 24px;
   margin: 0;
-  padding: 2px 6px;
+  padding: 0 4px;
+  border: 1px solid var(--tb-primary);
   border-radius: 5px;
+  color: var(--tb-ink);
+  background: #fff;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: .5px;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.tb-prototype .tb-group-rename:focus-visible {
+  outline: 0;
 }
 
 .tb-module-list {
@@ -697,6 +746,16 @@
   bottom: calc(var(--tb-row-gap) / -2 - 1px);
 }
 
+/*
+ * The end-of-group line and the "insert before the first row" line resolve to
+ * the same physical position, so a pointer held on that boundary used to draw
+ * two stacked bars. The group-end line wins; the row line is suppressed while
+ * its group is the end target.
+ */
+.tb-group.is-module-end-target .tb-module-row.is-drop-before::before {
+  display: none;
+}
+
 .tb-module-row > span:last-child {
   min-width: 0;
   overflow: hidden;
@@ -733,11 +792,11 @@
 
 .tb-prototype .tb-trash-target {
   display: flex;
-  width: 100%;
+  width: var(--tb-row-width);
   height: var(--tb-row-height);
   align-items: center;
   gap: 12px;
-  padding: var(--tb-row-padding);
+  padding: 0 var(--tb-row-padding);
   border: 1px solid transparent;
   border-radius: var(--tb-row-radius);
   color: var(--tb-muted-foreground-faint);
@@ -771,17 +830,21 @@
   position: fixed;
   z-index: 70;
   display: grid;
-  /* Panel padding mirrors the module row inset so every item inside is the
-   * same size as its sidebar counterpart. */
-  width: 251px;
+  /* The panel has no padding of its own: it is exactly as wide as the trash row
+   * it belongs to, and each item inside fills the full panel so a dropped module
+   * is the same size as the row it came from. */
+  width: var(--tb-row-width);
   max-height: min(340px, calc(100vh - 24px));
-  overflow-y: auto;
-  gap: var(--tb-row-gap);
-  padding: var(--tb-row-padding);
-  border: 1px solid var(--tb-line);
-  border-radius: 12px;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--tb-row-radius);
+  overflow: hidden auto;
   background: #fff;
-  box-shadow: var(--tb-card-elevation);
+  /* The hairline is drawn with an inset shadow rather than a border so it costs
+   * no layout: a 1px border would shrink the content box to 230px and every row
+   * inside would come up 2px short of the trash row it mirrors. */
+  box-shadow: inset 0 0 0 1px var(--tb-line), var(--tb-card-elevation);
 }
 
 .tb-hidden-panel > p {
@@ -800,9 +863,10 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
+  width: 100%;
   height: var(--tb-row-height);
-  padding: var(--tb-row-padding);
-  border-radius: var(--tb-row-radius);
+  padding: 0 var(--tb-row-padding);
+  border-radius: 0;
   color: var(--tb-sidebar-foreground);
   background: transparent;
   cursor: grab;
@@ -848,25 +912,32 @@
   font-size: 12px;
 }
 
+/* Compact popover built from the same grammar as the reference's small
+ * dropdowns: a plain list of 13px rows rather than oversized menu items. */
 .tb-context-menu {
   position: fixed;
   z-index: 100;
   display: grid;
-  width: 196px;
-  gap: 2px;
-  padding: 6px;
+  width: 156px;
+  gap: 1px;
+  padding: 4px;
   border: 1px solid var(--tb-line);
   border-radius: 10px;
   background: #fff;
-  box-shadow: 0 16px 38px rgba(40, 42, 47, .18);
+  box-shadow: var(--tb-card-elevation);
 }
 
 .tb-prototype .tb-context-menu button {
-  font-size: 14px;
-  gap: 1px;
-  padding: 8px 9px;
+  display: flex;
+  width: 100%;
+  height: 30px;
+  align-items: center;
+  padding: 0 8px;
   border-radius: 7px;
   background: transparent;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
   text-align: left;
 }
 
@@ -878,11 +949,6 @@
 
 .tb-context-menu button.is-danger {
   color: #a74747;
-}
-
-.tb-context-menu small {
-  color: #9a7474;
-  font-size: 10px;
 }
 
 .tb-main {
@@ -1254,44 +1320,6 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-/*
- * Diagonal sweep for the sidebar transition. The column animates its own width,
- * but a bare width change reads as the rail being squashed sideways, so a mask
- * sweeps along the diagonal from the top-left corner: collapsing folds the
- * surface toward that corner, expanding unfolds it back out.
- *
- * No fill mode is used on purpose. The sweep is a transient overlay on the width
- * animation, not a persistent state, so both settled states stay unclipped. A
- * forwards fill would leave the expanded sidebar permanently masked.
- */
-@keyframes tb-sidebar-fold {
-  from {
-    clip-path: polygon(0 0, 100% 0, 0 100%);
-  }
-
-  to {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-}
-
-@keyframes tb-sidebar-unfold {
-  from {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-
-  to {
-    clip-path: polygon(0 0, 100% 0, 0 100%);
-  }
-}
-
-.tb-prototype.is-sidebar-collapsed .tb-sidebar {
-  animation: tb-sidebar-fold var(--tb-motion-duration) var(--tb-motion-ease);
-}
-
-.tb-prototype:not(.is-sidebar-collapsed) .tb-sidebar {
-  animation: tb-sidebar-unfold var(--tb-motion-duration) var(--tb-motion-ease);
 }
 
 /*

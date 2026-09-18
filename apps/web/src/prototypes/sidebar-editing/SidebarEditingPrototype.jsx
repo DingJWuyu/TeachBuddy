@@ -1,6 +1,7 @@
 // High-fidelity interaction prototype for TeachBuddy sidebar organization.
 // PROTOTYPE: memory-only state, no production persistence or API calls.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import SupportMenu from './SupportMenu.jsx';
 import './sidebarEditingPrototype.css';
 
 const MODULES = [
@@ -267,7 +268,7 @@ function Topbar({ onOpenMobileSidebar, sidebarCollapsed, onToggleSidebar }) {
       <nav className="tb-global-nav" aria-label="全局导航">
         <button className="is-current">首页</button>
         <button>日历</button>
-        <button>支持</button>
+        <SupportMenu />
       </nav>
       <div className="tb-top-actions">
         <button aria-label="搜索"><Icon name="search" /></button>
@@ -311,9 +312,7 @@ function ContextMenu({ position, onRename, onDelete, onClose }) {
   return (
     <div ref={menuRef} className="tb-context-menu" role="menu" style={{ left: position.x, top: position.y }}>
       <button role="menuitem" onClick={onRename}>重命名分组</button>
-      <button role="menuitem" className="is-danger" onClick={onDelete}>
-        <span>删除分组</span><small>模块将移到未分组</small>
-      </button>
+      <button role="menuitem" className="is-danger" onClick={onDelete}>移到未分组</button>
     </div>
   );
 }
@@ -372,7 +371,6 @@ function NewGroupForm({ onCreate, onClose }) {
       }}
     >
       <input name="new-group-name" aria-label="新分组名称" value={name} onChange={(event) => setName(event.target.value)} placeholder="分组名称" />
-      <span>Enter</span>
     </form>
   );
 }
@@ -481,12 +479,15 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
   const [renameDraft, setRenameDraft] = useState('');
   const [dragState, setDragState] = useState(null);
   const [dragTarget, setDragTarget] = useState(null);
+  const dragTargetRef = useRef(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const longPressTimerRef = useRef(null);
   const mobileCloseRef = useRef(null);
-  // Group id -> id of the group rendered above it, cached when a drag starts so
-  // the inter-group gap can be attributed to the previous group.
+  // Cached when a drag starts so boundary resolution stays stable for the whole
+  // gesture: group id -> id of the group above it, and group id -> bottom edge
+  // of that group's last row (used to split the gap between two groups).
   const previousGroupRef = useRef(new Map());
+  const previousGroupEndRef = useRef(new Map());
   const hidden = new Set(model.layout.hiddenModuleIds);
 
   useEffect(() => {
@@ -534,18 +535,24 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
   function startDrag(event, payload) {
     setDragState(payload);
     const map = new Map();
+    const ends = new Map();
     let previous = null;
     for (const group of model.layout.groups) {
       if (previous) map.set(group.id, previous);
+      const section = document.querySelector(`[data-drop-group="${group.id}"]`);
+      const lastRow = section?.querySelector('.tb-module-row:last-of-type');
+      if (lastRow) ends.set(group.id, lastRow.getBoundingClientRect().bottom);
       previous = group.id;
     }
     previousGroupRef.current = map;
+    previousGroupEndRef.current = ends;
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', JSON.stringify(payload));
   }
 
   function finishDrag() {
     setDragState(null);
+    dragTargetRef.current = null;
     setDragTarget(null);
   }
 
@@ -556,32 +563,62 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
    * pointer.
    */
   function applyDragTarget(next) {
+    dragTargetRef.current = next;
     setDragTarget((current) => (current === next ? current : next));
   }
 
   /*
-   * Resolves which boundary a module drop should land on. The sidebar has no
-   * explicit drop zones between groups, and the gap between two groups belongs
-   * to both: a pointer in that gap is nearer the previous group's last row, so
-   * it targets the previous group's end rather than jumping a whole group down.
-   * Both the hover rule and the drop rule call this, so they always agree.
+   * Resolves which boundary a module drop should land on.
+   *
+   * The sidebar has no explicit drop zones between groups, and the gap between
+   * two groups belongs to both: a pointer in that gap is nearer the previous
+   * group's last row, so it targets the previous group's end rather than jumping
+   * a whole group down.
+   *
+   * The current target is threaded in so resolution can apply hysteresis. A plain
+   * midpoint test flips between two adjacent boundaries while the pointer sits on
+   * one, which made the insertion line flicker and jump between rows; once a side
+   * is chosen the pointer must travel a quarter of a row past the midpoint before
+   * the choice changes.
    */
-  function pickModuleBoundary(event, groupId) {
+  function pickModuleBoundary(event, groupId, current) {
     const section = event.currentTarget;
     const rows = [...section.querySelectorAll('.tb-module-row')];
+    const y = event.clientY;
     const row = event.target instanceof Element ? event.target.closest('.tb-module-row') : null;
+
     if (row) {
       const rect = row.getBoundingClientRect();
-      return event.clientY < rect.top + rect.height / 2
-        ? { kind: 'before', groupId, moduleId: row.dataset.dropModule }
-        : { kind: 'after', groupId, moduleId: row.dataset.dropModule };
+      const id = row.dataset.dropModule;
+      const middle = rect.top + rect.height / 2;
+      // Half a row of hysteresis: the pointer must travel a full quarter row
+      // clear of the midpoint on either side before the marked side flips.
+      const slack = rect.height / 2;
+      let after = y >= middle;
+      if (current && current.moduleId === id) {
+        if (current.kind === 'after' && y < middle - slack) after = false;
+        if (current.kind === 'before' && y >= middle + slack) after = true;
+      }
+      return after
+        ? { kind: 'after', groupId, moduleId: id }
+        : { kind: 'before', groupId, moduleId: id };
     }
-    const rect = section.getBoundingClientRect();
+
+    // The pointer is in the padding around a group's rows. The gap above a group
+    // is shared with the group before it, so attribute it to whichever the
+    // pointer is nearer, holding the previous decision until it clearly crosses.
     const firstRow = rows[0]?.getBoundingClientRect();
-    const inTopGap = firstRow ? event.clientY < firstRow.top : event.clientY < rect.top + rect.height / 2;
-    const previousGroupId = groupId === model.layout.groups[0]?.id ? null : previousGroupRef.current.get(groupId);
-    if (inTopGap && previousGroupId) return { kind: 'groupEnd', groupId: previousGroupId };
-    return { kind: 'groupEnd', groupId };
+    const previousGroupId = previousGroupRef.current.get(groupId);
+    if (!firstRow || !previousGroupId) return { kind: 'groupEnd', groupId };
+
+    const boundaryY = (previousGroupEndRef.current.get(previousGroupId) + firstRow.top) / 2;
+    const slack = firstRow.height / 2;
+    let usePrevious = y < boundaryY;
+    if (current?.kind === 'groupEnd') {
+      if (current.groupId === previousGroupId && y > boundaryY + slack) usePrevious = false;
+      if (current.groupId === groupId && y < boundaryY - slack) usePrevious = true;
+    }
+    return { kind: 'groupEnd', groupId: usePrevious ? previousGroupId : groupId };
   }
 
   function markOf(target) {
@@ -597,7 +634,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
     const payload = readDragPayload(event) || dragState;
     // Re-resolve the target at drop time with the same rule the hover used, so
     // the group that receives the drop is the one the insertion line marked.
-    const target = payload?.type === 'module' ? pickModuleBoundary(event, groupId) : { kind: 'group', groupId };
+    const target = payload?.type === 'module' ? pickModuleBoundary(event, groupId, null) : { kind: 'group', groupId };
     if (payload?.type === 'module') model.moveModule(payload.id, target.groupId, target.moduleId, target.kind);
     if (payload?.type === 'group') model.moveGroup(payload.id, groupId);
     if (payload?.type === 'hidden-group') model.restoreGroup(payload.id, groupId);
@@ -610,7 +647,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
     const payload = readDragPayload(event) || dragState;
     // Re-resolve with the pointer position so a drop lands on the side of the
     // row that the insertion line marked.
-    const target = pickModuleBoundary(event, groupId);
+    const target = pickModuleBoundary(event, groupId, null);
     if (payload?.type === 'module') {
       model.moveModule(payload.id, target.groupId, target.moduleId, target.kind);
     }
@@ -684,7 +721,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
                 const payload = readDragPayload(event) || dragState;
                 if (payload?.type === 'module') {
                   event.preventDefault();
-                  applyDragTarget(markOf(pickModuleBoundary(event, group.id)));
+                  applyDragTarget(markOf(pickModuleBoundary(event, group.id, dragTargetRef.current)));
                   return;
                 }
                 if (payload?.type === 'group' || payload?.type === 'hidden-group') {
@@ -759,7 +796,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
                           event.stopPropagation();
                           const payload = readDragPayload(event) || dragState;
                           if (payload?.type !== 'module' || payload.id === moduleId) return;
-                          applyDragTarget(markOf(pickModuleBoundary(event, group.id)));
+                          applyDragTarget(markOf(pickModuleBoundary(event, group.id, dragTargetRef.current)));
                         }}
                         onDrop={(event) => dropOnModule(event, group.id, moduleId)}
                       >
@@ -789,10 +826,6 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
             }}
           />
         </nav>
-
-        <div className="tb-sidebar-footer">
-          <button>设置</button>
-        </div>
 
         {contextMenu && (
           <ContextMenu
