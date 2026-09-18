@@ -9,6 +9,8 @@
 - 截图目录：`docs/reference/shots/`
 - 原始度量：`docs/reference/measurements.json`
 
+设计原则、美学要求与验证陷阱见 `docs/rules/design-and-verification.md`，那些要求同样适用于本文件描述的视觉系统。
+
 与 `docs/research/emstudio-ui-ux-baseline.md`（`a3ee7a8`，人工观察，非实测）的差异见文末。
 
 ## 设计令牌（实测自 `:root`）

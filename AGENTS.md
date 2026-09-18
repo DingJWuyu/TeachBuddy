@@ -11,6 +11,7 @@
 **Others:**
 
 - 进行重要产品或部署变更时，保持 `README.md` 与项目当前面向公众的状态一致。
+- UI/UX 开发规则：美学基线、间距与动效要求、参考来源边界、验证陷阱。参见 `docs/rules/design-and-verification.md`。
 
 ## Agent skills
 
