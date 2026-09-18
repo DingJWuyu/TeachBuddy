@@ -12,6 +12,8 @@
   --tb-page: #f9f9f9;
   --tb-purple: #7963bd;
   --tb-sidebar-width: 256px;
+  /* Top-bar brand column: fixed at the expanded sidebar width. */
+  --tb-shell-brand-column: 256px;
   --tb-primary: #2e3137;
   --tb-primary-foreground: #fff;
   --tb-sidebar-foreground: #4d4d4d;
@@ -26,8 +28,13 @@
   --tb-row-padding: 10px;
   --tb-row-radius: 8px;
   --tb-icon-size: 20px;
+  --tb-sidebar-gap: 6px;
   --tb-ease: cubic-bezier(.4, 0, .2, 1);
   --tb-duration: .2s;
+  /* Sidebar collapse: a slight overshoot on the way in reads as the rail
+   * folding toward the top-left corner rather than snapping. */
+  --tb-motion-duration: .32s;
+  --tb-motion-ease: cubic-bezier(.32, 1.18, .5, 1);
   min-height: 100vh;
   color: var(--tb-ink);
   background: var(--tb-page);
@@ -99,13 +106,17 @@
   z-index: 60;
   top: 0;
   display: grid;
-  grid-template-columns: var(--tb-sidebar-width) minmax(0, 1fr) 256px;
+  /*
+   * The brand column is pinned, not derived from --tb-sidebar-width. The top bar
+   * is a fixed shell: collapsing the sidebar must not drag the centre nav left
+   * or clamp the brand, so this column keeps its expanded width in both states.
+   */
+  grid-template-columns: var(--tb-shell-brand-column) minmax(0, 1fr) 256px;
   align-items: center;
   height: 65px;
   padding: 0 18px;
   border-bottom: 1px solid var(--tb-line);
   background: rgba(255, 255, 255, .98);
-  transition: grid-template-columns var(--tb-duration) var(--tb-ease);
 }
 
 .tb-prototype.is-sidebar-collapsed {
@@ -221,7 +232,9 @@
   font-size: 14px;
   z-index: 2;
   top: 50%;
-  left: calc(var(--tb-sidebar-width) - 36px);
+  /* Anchored to the pinned brand column, so it stays put when the sidebar
+   * collapses: this control lives in the top bar, and the top bar is fixed. */
+  left: calc(var(--tb-shell-brand-column) - 36px);
   display: grid;
   width: 32px;
   height: 32px;
@@ -254,7 +267,7 @@
   display: grid;
   grid-template-columns: var(--tb-sidebar-width) minmax(0, 1fr);
   min-height: calc(100vh - 65px);
-  transition: grid-template-columns var(--tb-duration) var(--tb-ease);
+  transition: grid-template-columns var(--tb-motion-duration) var(--tb-motion-ease);
 }
 
 /*
@@ -269,6 +282,9 @@
   min-width: 0;
   height: calc(100vh - 65px);
   flex-direction: column;
+  /* One spacing unit for the account block, the create-term button and the
+   * workspace heading, so the three gaps read equal. */
+  gap: var(--tb-sidebar-gap);
   border-right: 0;
   background: #fff;
 }
@@ -287,7 +303,8 @@
   display: flex;
   align-items: center;
   height: 40px;
-  margin: 20px 0 6px;
+  /* Sidebar padding plus the flex gap produce the 8px band above the avatar. */
+  margin: 8px 0 0;
 }
 
 .tb-prototype .tb-account-row {
@@ -367,7 +384,7 @@
   gap: 6px;
   width: calc(100% - 24px);
   height: 32px;
-  margin: 0 12px 4px;
+  margin: 0 12px;
   padding: 0 10px;
   border: 1px solid var(--tb-line);
   border-radius: 10px;
@@ -390,7 +407,7 @@
   align-items: center;
   justify-content: space-between;
   height: 24px;
-  margin-top: 16px;
+  margin-top: 0;
   padding: 0 12px;
   color: var(--tb-sidebar-foreground);
   font-size: 10px;
@@ -470,6 +487,21 @@
   font-size: 10px;
   letter-spacing: .5px;
   text-transform: uppercase;
+}
+
+/* Empty state occupies exactly one module row so the panel keeps the same
+ * footprint whether or not anything has been dropped in. */
+.tb-prototype .tb-hidden-panel > p {
+  display: flex;
+  height: var(--tb-row-height);
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  color: var(--tb-muted-foreground-faint);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
 }
 
 .tb-module-nav {
@@ -721,11 +753,13 @@
   position: fixed;
   z-index: 70;
   display: grid;
-  width: 236px;
+  /* Panel padding mirrors the module row inset so every item inside is the
+   * same size as its sidebar counterpart. */
+  width: 251px;
   max-height: min(340px, calc(100vh - 24px));
   overflow-y: auto;
-  gap: 3px;
-  padding: 9px;
+  gap: var(--tb-row-gap);
+  padding: var(--tb-row-padding);
   border: 1px solid var(--tb-line);
   border-radius: 12px;
   background: #fff;
@@ -747,12 +781,16 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  padding: 7px;
-  border-radius: 8px;
+  gap: 12px;
+  height: var(--tb-row-height);
+  padding: var(--tb-row-padding);
+  border-radius: var(--tb-row-radius);
+  color: var(--tb-sidebar-foreground);
   background: transparent;
   cursor: grab;
   font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
   text-align: left;
 }
 
@@ -1200,7 +1238,44 @@
   border: 0;
 }
 
-.tb-prototype.is-sidebar-collapsed .tb-brand-slot > strong,
+/*
+ * Diagonal sweep for the sidebar transition. The column animates its own width,
+ * but a bare width change reads as the rail being squashed sideways, so a mask
+ * sweeps along the diagonal from the top-left corner: collapsing folds the
+ * surface toward that corner, expanding unfolds it back out.
+ *
+ * No fill mode is used on purpose. The sweep is a transient overlay on the width
+ * animation, not a persistent state, so both settled states stay unclipped. A
+ * forwards fill would leave the expanded sidebar permanently masked.
+ */
+@keyframes tb-sidebar-fold {
+  from {
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+  }
+
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes tb-sidebar-unfold {
+  from {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+
+  to {
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+  }
+}
+
+.tb-prototype.is-sidebar-collapsed .tb-sidebar {
+  animation: tb-sidebar-fold var(--tb-motion-duration) var(--tb-motion-ease);
+}
+
+.tb-prototype:not(.is-sidebar-collapsed) .tb-sidebar {
+  animation: tb-sidebar-unfold var(--tb-motion-duration) var(--tb-motion-ease);
+}
+
 /*
  * Collapsed rail. The reference keeps only the module icon column: every
  * account control and every section label disappears, icons sit in 36x36 rows
@@ -1209,6 +1284,10 @@
  * user's own grouping survives the collapse, which the reference has no
  * equivalent for.
  */
+.tb-sidebar {
+  will-change: clip-path;
+}
+
 .tb-sidebar.is-rail-collapsed .tb-account-block,
 .tb-sidebar.is-rail-collapsed .tb-term-button,
 .tb-sidebar.is-rail-collapsed .tb-workspace-heading,
@@ -1219,8 +1298,14 @@
   display: none;
 }
 
+/* The hidden children still count toward the sidebar gap, so it is dropped here
+ * to keep the first rail icon off the top bar. */
+.tb-sidebar.is-rail-collapsed {
+  gap: 0;
+}
+
 .tb-sidebar.is-rail-collapsed .tb-module-nav {
-  padding: 0 0 12px;
+  padding: 8px 0 12px;
 }
 
 .tb-sidebar.is-rail-collapsed .tb-group {
@@ -1305,6 +1390,7 @@
 @media (max-width: 880px) {
   .tb-prototype {
     --tb-sidebar-width: 220px;
+    --tb-shell-brand-column: 220px;
   }
 
   .tb-prototype.is-sidebar-collapsed {
@@ -1312,7 +1398,7 @@
   }
 
   .tb-topbar {
-    grid-template-columns: var(--tb-sidebar-width) minmax(0, 1fr) 190px;
+    grid-template-columns: var(--tb-shell-brand-column) minmax(0, 1fr) 190px;
   }
 
   .tb-dashboard-left,
