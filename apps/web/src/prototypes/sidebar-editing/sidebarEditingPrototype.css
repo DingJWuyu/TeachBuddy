@@ -105,7 +105,7 @@
   padding: 0 18px;
   border-bottom: 1px solid var(--tb-line);
   background: rgba(255, 255, 255, .98);
-  transition: grid-template-columns .2s ease;
+  transition: grid-template-columns var(--tb-duration) var(--tb-ease);
 }
 
 .tb-prototype.is-sidebar-collapsed {
@@ -202,7 +202,10 @@
   font-size: 9px;
 }
 
-.tb-mobile-menu {
+/* Hidden on desktop; revealed by the narrow-screen media query below. Must stay
+ * at the same specificity as the shared button rule above, or the desktop
+ * display:none loses and the hamburger leaks into the desktop top bar. */
+.tb-prototype .tb-mobile-menu {
   display: none;
 }
 
@@ -242,10 +245,16 @@
   background: var(--tb-sidebar-accent);
 }
 
+/*
+ * Grid-template-columns is animatable, so this transition drives the sidebar
+ * width and the content reflow together. The top bar carries the matching
+ * transition on its own first column.
+ */
 .tb-shell {
   display: grid;
   grid-template-columns: var(--tb-sidebar-width) minmax(0, 1fr);
   min-height: calc(100vh - 65px);
+  transition: grid-template-columns var(--tb-duration) var(--tb-ease);
 }
 
 /*
@@ -269,98 +278,105 @@
 }
 
 /*
- * Reference account row: x=16, 183.33x40, padding 4px, radius 6px, 12px gap,
- * transparent background (no tinted fill), 14px/20px label at weight 500.
+ * Account block. The reference lays the account row and the language button on
+ * one line inside a 40px band: the row spans x=16..199 and the language button
+ * sits at x=203.33 as a fixed 32x32 target, so the two never fight for width.
  */
+.tb-prototype .tb-account-block {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  margin: 20px 0 6px;
+}
+
 .tb-prototype .tb-account-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  position: relative;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   width: 183px;
-  margin: 20px 16px 6px;
+  margin: 0 0 0 16px;
   padding: 4px;
   border-radius: 6px;
   background: transparent;
   text-align: left;
 }
 
-.tb-account-row:hover {
+.tb-prototype .tb-account-row:hover {
   background: var(--tb-sidebar-accent);
 }
 
-.tb-account-row > span:nth-child(2) {
+.tb-prototype .tb-account-row > span:nth-child(2) {
   display: grid;
   min-width: 0;
 }
 
-.tb-account-row strong {
+.tb-prototype .tb-account-row strong {
+  overflow: hidden;
   color: var(--tb-ink);
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.tb-account-row small {
+.tb-prototype .tb-account-row small {
+  overflow: hidden;
   color: var(--tb-muted);
   font-size: 11px;
   line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /*
  * Reference language entry is a standalone 32x32 icon button parked at the
  * right edge of the sidebar (x=203.33), not a full-width text row.
  */
-.tb-prototype .tb-language-row,
-.tb-prototype .tb-term-button {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: calc(100% - 24px);
-  margin: 0 12px;
-  padding: 0 10px;
-  border-radius: 6px;
-  color: var(--tb-sidebar-foreground);
-  background: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  text-align: left;
-}
-
 .tb-prototype .tb-language-row {
   position: absolute;
-  top: 20px;
-  right: 4px;
+  top: 4px;
+  right: 20px;
+  display: flex;
   width: 32px;
   height: 32px;
+  align-items: center;
   justify-content: center;
   margin: 0;
   padding: 0;
+  border-radius: 6px;
+  color: var(--tb-sidebar-foreground);
+  background: transparent;
 }
 
-.tb-language-row > span {
-  display: none;
-}
-
-.tb-language-row:hover,
-.tb-term-button:hover {
+.tb-prototype .tb-language-row:hover,
+.tb-prototype .tb-term-button:hover {
   background: var(--tb-sidebar-accent);
 }
 
 /*
- * Reference "create term" button: x=12, 231.33x32, radius 6px, padding 0 10px,
- * 6px icon gap, white fill with a 1px #e3e3e3 border.
+ * Reference "create term" button: x=12, 231.33x32, padding 0 10px, 6px icon
+ * gap, white fill with a 1px #e3e3e3 border. The radius is nudged above the
+ * reference's 6px because at this width 6px reads overly square.
  */
 .tb-prototype .tb-term-button {
-  height: 32px;
+  display: flex;
+  align-items: center;
   gap: 6px;
-  margin-top: 0;
-  margin-bottom: 4px;
+  width: calc(100% - 24px);
+  height: 32px;
+  margin: 0 12px 4px;
+  padding: 0 10px;
   border: 1px solid var(--tb-line);
-  border-radius: 6px;
+  border-radius: 10px;
+  color: var(--tb-sidebar-foreground);
   background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
 }
 
 /*
@@ -407,31 +423,53 @@
   opacity: 1;
 }
 
-.tb-new-group-form {
-  display: grid;
-  gap: 4px;
-  margin: 1px 13px 8px;
+/*
+ * New-group entry. Unanchored to any reference state, so it reuses the
+ * reference popover grammar: white surface, 1px #e3e3e3 border, 12px radius and
+ * the card elevation token, opening to the right of the trigger like the trash
+ * panel rather than pushing a full-width form into the sidebar flow.
+ */
+.tb-prototype .tb-new-group-form {
+  position: fixed;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 236px;
   padding: 8px;
   border: 1px solid var(--tb-line);
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
-  box-shadow: 0 8px 20px rgba(45, 48, 55, .08);
+  box-shadow: var(--tb-card-elevation);
 }
 
-.tb-new-group-form input {
+.tb-prototype .tb-new-group-form input {
   width: 100%;
   min-width: 0;
-  padding: 6px 8px;
+  height: 32px;
+  padding: 0 10px;
   border: 1px solid #d8d8d6;
-  border-radius: 7px;
+  border-radius: 8px;
   color: var(--tb-ink);
   background: #fff;
+  font-size: 14px;
+  line-height: 20px;
 }
 
-.tb-new-group-form > span {
-  color: #999ca3;
+/* The popover opens with the field already focused, and the shared 3px focus
+ * ring reads as a second border inside this 236px surface, so the focus state
+ * is carried by the border colour alone. */
+.tb-prototype .tb-new-group-form input:focus-visible {
+  outline: 0;
+  border-color: var(--tb-primary);
+}
+
+.tb-prototype .tb-new-group-form > span {
+  flex: none;
+  color: var(--tb-muted-foreground-faint);
   font-size: 10px;
-  text-align: right;
+  letter-spacing: .5px;
+  text-transform: uppercase;
 }
 
 .tb-module-nav {
@@ -706,7 +744,7 @@
 }
 
 .tb-prototype .tb-hidden-panel > button {
-  font-size: 14px;
+  display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
@@ -714,6 +752,7 @@
   border-radius: 8px;
   background: transparent;
   cursor: grab;
+  font-size: 14px;
   text-align: left;
 }
 
@@ -1170,8 +1209,7 @@
  * user's own grouping survives the collapse, which the reference has no
  * equivalent for.
  */
-.tb-sidebar.is-rail-collapsed .tb-account-row,
-.tb-sidebar.is-rail-collapsed .tb-language-row,
+.tb-sidebar.is-rail-collapsed .tb-account-block,
 .tb-sidebar.is-rail-collapsed .tb-term-button,
 .tb-sidebar.is-rail-collapsed .tb-workspace-heading,
 .tb-sidebar.is-rail-collapsed .tb-new-group-form,
@@ -1313,7 +1351,7 @@
     height: 29px;
   }
 
-  .tb-mobile-menu {
+  .tb-prototype .tb-mobile-menu {
     display: grid;
     margin-right: -3px;
   }

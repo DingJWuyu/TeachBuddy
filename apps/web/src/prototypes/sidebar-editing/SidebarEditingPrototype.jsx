@@ -1,6 +1,6 @@
 // High-fidelity interaction prototype for TeachBuddy sidebar organization.
 // PROTOTYPE: memory-only state, no production persistence or API calls.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import './sidebarEditingPrototype.css';
 
 const MODULES = [
@@ -301,9 +301,32 @@ function ContextMenu({ position, onRename, onDelete, onClose }) {
   );
 }
 
+// Anchors the new-group popover to the right of its trigger, matching the
+// trash panel's flyout grammar instead of pushing a full-width form into flow.
+function useFlyoutPosition(open) {
+  const triggerRef = useRef(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const trigger = document.querySelector('[data-new-group-toggle]');
+    if (!trigger) return;
+    triggerRef.current = trigger;
+    const rect = trigger.getBoundingClientRect();
+    const width = 236;
+    const margin = 8;
+    const left = Math.min(rect.right + margin, window.innerWidth - width - 12);
+    const top = Math.min(rect.top - 8, window.innerHeight - 60);
+    setPosition({ top, left });
+  }, [open]);
+
+  return position;
+}
+
 function NewGroupForm({ onCreate, onClose }) {
   const formRef = useRef(null);
   const [name, setName] = useState('');
+  const position = useFlyoutPosition(true);
 
   useEffect(() => {
     formRef.current?.querySelector('input')?.focus();
@@ -325,13 +348,14 @@ function NewGroupForm({ onCreate, onClose }) {
     <form
       ref={formRef}
       className="tb-new-group-form"
+      style={{ top: position.top, left: position.left }}
       onSubmit={(event) => {
         event.preventDefault();
         if (onCreate(name)) onClose();
       }}
     >
-      <input name="new-group-name" aria-label="新分组名称" value={name} onChange={(event) => setName(event.target.value)} placeholder="输入分组名称" />
-      <span>按 Enter 创建</span>
+      <input name="new-group-name" aria-label="新分组名称" value={name} onChange={(event) => setName(event.target.value)} placeholder="分组名称" />
+      <span>Enter</span>
     </form>
   );
 }
@@ -544,12 +568,13 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
         inert={isNarrow && !mobileOpen ? true : undefined}
       >
         <div className="tb-sidebar-mobile-head"><strong>工作台</strong><button ref={mobileCloseRef} onClick={onCloseMobile} aria-label="关闭"><Icon name="close" /></button></div>
-        <button className="tb-account-row">
-          <span className="tb-avatar">林</span>
-          <span><strong>林老师</strong><small>2026 秋季学期</small></span>
-          <Icon name="chevron" size={15} />
-        </button>
-        <button className="tb-language-row" aria-label="语言：简体中文"><Icon name="language" /><span>简体中文</span></button>
+        <div className="tb-account-block">
+          <button className="tb-account-row">
+            <span className="tb-avatar">林</span>
+            <span><strong>林老师</strong><small>2026 秋季学期</small></span>
+          </button>
+          <button className="tb-language-row" aria-label="语言：简体中文"><Icon name="language" /></button>
+        </div>
         <button className="tb-term-button"><Icon name="plus" size={16} /><span>创建学期</span></button>
 
         <div className="tb-workspace-heading">
