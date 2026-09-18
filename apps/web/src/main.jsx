@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import SidebarEditingPrototype from './prototypes/sidebar-editing/SidebarEditingPrototype.jsx';
+import DevSurfaceSwitcher from './prototypes/sidebar-editing/DevSurfaceSwitcher.jsx';
 /*
  * Import order is unchanged. global.css declares `button { font: inherit }`,
  * and because that is a shorthand it resets font-size on every prototype
@@ -18,5 +19,8 @@ const showSidebarPrototype = import.meta.env.DEV && searchParams.get('prototype'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     {showSidebarPrototype ? <SidebarEditingPrototype /> : <App />}
+    {import.meta.env.DEV && (
+      <DevSurfaceSwitcher active={showSidebarPrototype ? 'prototype' : 'app'} />
+    )}
   </React.StrictMode>
 );
