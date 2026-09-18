@@ -556,7 +556,7 @@
 .tb-group {
   position: relative;
   min-width: 0;
-  padding: 4px 0;
+  padding: 4px 0 6px;
   border-radius: 8px;
 }
 
@@ -632,17 +632,25 @@
   transform: rotate(-90deg);
 }
 
-/* Rename keeps the group header's own metrics: same 24px box, same 10px label
- * ramp, so the header does not change size when it turns into an input. */
+/*
+ * Rename reads as editing the label in place rather than as a control dropped on
+ * top of the list. A full bordered box at this width sat flush against the
+ * selected row below it and looked cramped, so the field keeps the header's
+ * 24px box and is drawn with an underline only.
+ */
 .tb-prototype .tb-group-rename {
   width: 100%;
   height: 24px;
-  margin: 0;
-  padding: 0 4px;
-  border: 1px solid var(--tb-primary);
-  border-radius: 5px;
+  /* Extra room below while editing: the field and the selected row underneath
+   * are both full-width bars, and at the normal row gap they read as colliding. */
+  margin: 0 0 12px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
   color: var(--tb-ink);
-  background: #fff;
+  /* No resting outline: the tint alone marks the field, so it does not compete
+   * with the selected row underneath. The border appears on focus only. */
+  background: var(--tb-sidebar-accent);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: .5px;
@@ -650,8 +658,14 @@
   text-transform: uppercase;
 }
 
-.tb-prototype .tb-group-rename:focus-visible {
+.tb-prototype .tb-group-rename:focus-visible,
+.tb-prototype .tb-group-rename:focus {
   outline: 0;
+  /* A soft hairline and a white field, not the dark primary border: the field is
+   * on screen for the whole edit, so a heavy outline would sit on the rows the
+   * entire time. */
+  border-color: var(--tb-line);
+  background: #fff;
 }
 
 .tb-module-list {
