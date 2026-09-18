@@ -52,7 +52,7 @@ const ICON_PATHS = {
   folder: <><path d="M3.5 6.5h6l2 2h9v10h-17z"/><path d="M3.5 9h17"/></>
 };
 
-function Icon({ name, size = 18 }) {
+function Icon({ name, size = 20 }) {
   return (
     <svg className="tb-icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {ICON_PATHS[name]}
@@ -622,7 +622,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
                     }}
                   >
                     <span>{group.name}</span>
-                    <Icon name="chevron" size={13} />
+                    <Icon name="chevron" size={16} />
                   </button>
                 )}
               </div>
@@ -635,6 +635,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
                         key={moduleId}
                         className={`tb-module-row ${moduleId === 'classes' ? 'is-active' : ''} ${dragState?.type === 'module' && dragState.id === moduleId ? 'is-dragging' : ''} ${dragTarget === `module:${moduleId}` ? 'is-drop-target' : ''}`}
                         data-drop-module={moduleId}
+                        data-label={moduleItem.name}
                         role="button"
                         tabIndex={0}
                         draggable

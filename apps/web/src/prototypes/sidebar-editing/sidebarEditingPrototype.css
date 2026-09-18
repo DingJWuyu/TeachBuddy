@@ -1,3 +1,9 @@
+/*
+ * Visual tokens measured from the live EMStudio sidebar at 1440x900.
+ * Source of record: docs/reference/emstudio-sidebar-measured-spec.md
+ * EMStudio authors these as Tailwind v4 theme variables; the lab() outputs are
+ * resolved here to their 8-bit equivalents so this file stays plain CSS.
+ */
 .tb-prototype {
   --tb-ink: #2d3037;
   --tb-muted: #7c8089;
@@ -6,12 +12,28 @@
   --tb-page: #f9f9f9;
   --tb-purple: #7963bd;
   --tb-sidebar-width: 256px;
+  --tb-primary: #2e3137;
+  --tb-primary-foreground: #fff;
+  --tb-sidebar-foreground: #4d4d4d;
+  --tb-sidebar-accent: #f3f3f3;
+  --tb-sidebar-accent-foreground: #131313;
+  --tb-sidebar-border: #ededed;
+  --tb-muted-foreground-faint: #919191;
+  --tb-card-elevation: 0 4px 12px 0 #0000000d, 0 2px 4px -1px #00000008;
+  /* EMStudio row grammar: 36px row, 10px inset, 8px radius, 12px icon gap. */
+  --tb-row-height: 36px;
+  --tb-row-gap: 4px;
+  --tb-row-padding: 10px;
+  --tb-row-radius: 8px;
+  --tb-icon-size: 20px;
+  --tb-ease: cubic-bezier(.4, 0, .2, 1);
+  --tb-duration: .2s;
   min-height: 100vh;
   color: var(--tb-ink);
   background: var(--tb-page);
   font-family: "DM Sans", "Noto Sans SC", "PingFang SC", system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 1.45;
+  font-size: 16px;
+  line-height: 24px;
 }
 
 .tb-prototype *,
@@ -20,6 +42,30 @@
   box-sizing: border-box;
 }
 
+/*
+ * Reference account avatar: a 32px filled circle with white initials, which is
+ * distinct from the top-bar avatar in the same interface.
+ */
+.tb-account-row .tb-avatar {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #6d4aad;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/*
+ * global.css declares `button, input, select, textarea, a { font: inherit }`
+ * plus `button { color: ... }` with generic selectors that win against
+ * prototype button rules at equal specificity, silently resetting the
+ * reference type ramp. Every prototype rule that sets button typography is
+ * therefore scoped under `.tb-prototype` so it outranks those resets without
+ * needing !important.
+ */
 .tb-prototype button,
 .tb-prototype input {
   color: inherit;
@@ -31,10 +77,15 @@
   cursor: pointer;
 }
 
+/*
+ * The reference uses a 2px #2e3137 focus ring on nav rows. This prototype keeps
+ * a 3px ring because it also marks drag-and-drop affordances, but the ring is
+ * drawn from the reference's own ring token rather than an unrelated violet.
+ */
 .tb-prototype button:focus-visible,
 .tb-prototype input:focus-visible,
 .tb-prototype [tabindex]:focus-visible {
-  outline: 3px solid rgba(121, 99, 189, .25);
+  outline: 3px solid rgba(46, 49, 55, .32);
   outline-offset: 2px;
 }
 
@@ -90,14 +141,15 @@
   gap: 4px;
 }
 
-.tb-global-nav button {
+.tb-prototype .tb-global-nav button {
+  font-size: 14px;
   padding: 6px 19px;
   border-radius: 999px;
   background: transparent;
   font-weight: 500;
 }
 
-.tb-global-nav button.is-current {
+.tb-prototype .tb-global-nav button.is-current {
   color: #fff;
   background: #303238;
 }
@@ -107,9 +159,10 @@
   gap: 3px;
 }
 
-.tb-top-actions > button,
-.tb-mobile-menu {
+.tb-prototype .tb-top-actions > button,
+.tb-prototype .tb-mobile-menu {
   position: relative;
+  font-size: 14px;
   display: grid;
   width: 34px;
   height: 34px;
@@ -118,8 +171,8 @@
   background: transparent;
 }
 
-.tb-top-actions > button:hover,
-.tb-mobile-menu:hover {
+.tb-prototype .tb-top-actions > button:hover,
+.tb-prototype .tb-mobile-menu:hover {
   background: #f1f1f0;
 }
 
@@ -153,24 +206,30 @@
   display: none;
 }
 
-.tb-sidebar-toggle {
+/*
+ * The reference keeps its collapse control at 32x32, sitting fully inside the
+ * 256px sidebar column (x=220..252) rather than straddling the boundary, and
+ * styles it as a plain hover-tinted icon button rather than a floating chip.
+ * TeacherWorkspace additionally reveals it on top-bar hover, which is an
+ * accepted behavioural requirement of Issue #16.
+ */
+.tb-prototype .tb-sidebar-toggle {
   position: absolute;
+  font-size: 14px;
   z-index: 2;
   top: 50%;
-  left: calc(var(--tb-sidebar-width) - 14px);
+  left: calc(var(--tb-sidebar-width) - 36px);
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   place-items: center;
-  border: 1px solid #dededb !important;
-  border-radius: 8px;
-  color: #686c74;
-  background: #fff;
-  box-shadow: 0 3px 10px rgba(45, 48, 55, .1);
+  border-radius: 6px;
+  color: var(--tb-sidebar-foreground);
+  background: transparent;
   opacity: 0;
   pointer-events: none;
   transform: translateY(-50%);
-  transition: left .2s ease, opacity .14s ease, background .14s ease;
+  transition: left var(--tb-duration) var(--tb-ease), opacity .14s ease, background .14s ease;
 }
 
 .tb-topbar:hover .tb-sidebar-toggle,
@@ -179,17 +238,20 @@
   pointer-events: auto;
 }
 
-.tb-sidebar-toggle:hover {
-  background: #f5f5f4;
+.tb-prototype .tb-sidebar-toggle:hover {
+  background: var(--tb-sidebar-accent);
 }
 
 .tb-shell {
   display: grid;
   grid-template-columns: var(--tb-sidebar-width) minmax(0, 1fr);
   min-height: calc(100vh - 65px);
-  transition: grid-template-columns .2s ease;
 }
 
+/*
+ * The reference has no right border on the sidebar: the 256px column reads as
+ * a distinct region purely from white against the #f9f9f9 content area.
+ */
 .tb-sidebar {
   position: sticky;
   z-index: 40;
@@ -198,25 +260,34 @@
   min-width: 0;
   height: calc(100vh - 65px);
   flex-direction: column;
-  border-right: 1px solid var(--tb-line);
-  background: rgba(255, 255, 255, .99);
+  border-right: 0;
+  background: #fff;
 }
 
 .tb-sidebar-mobile-head {
   display: none;
 }
 
-.tb-account-row {
+/*
+ * Reference account row: x=16, 183.33x40, padding 4px, radius 6px, 12px gap,
+ * transparent background (no tinted fill), 14px/20px label at weight 500.
+ */
+.tb-prototype .tb-account-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  position: relative;
   align-items: center;
-  gap: 10px;
-  width: calc(100% - 28px);
-  margin: 14px 14px 7px;
-  padding: 9px;
-  border-radius: 10px;
-  background: #f7f7f6;
+  gap: 12px;
+  width: 183px;
+  margin: 20px 16px 6px;
+  padding: 4px;
+  border-radius: 6px;
+  background: transparent;
   text-align: left;
+}
+
+.tb-account-row:hover {
+  background: var(--tb-sidebar-accent);
 }
 
 .tb-account-row > span:nth-child(2) {
@@ -224,64 +295,116 @@
   min-width: 0;
 }
 
-.tb-account-row strong,
-.tb-account-row small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.tb-account-row strong {
+  color: var(--tb-ink);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
 }
 
 .tb-account-row small {
   color: var(--tb-muted);
   font-size: 11px;
+  line-height: 16px;
 }
 
-.tb-language-row,
-.tb-term-button {
+/*
+ * Reference language entry is a standalone 32x32 icon button parked at the
+ * right edge of the sidebar (x=203.33), not a full-width text row.
+ */
+.tb-prototype .tb-language-row,
+.tb-prototype .tb-term-button {
   display: flex;
   align-items: center;
-  gap: 10px;
-  width: calc(100% - 36px);
-  margin: 0 18px;
-  padding: 7px 6px;
-  border-radius: 8px;
+  gap: 12px;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--tb-sidebar-foreground);
   background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
   text-align: left;
+}
+
+.tb-prototype .tb-language-row {
+  position: absolute;
+  top: 20px;
+  right: 4px;
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+.tb-language-row > span {
+  display: none;
 }
 
 .tb-language-row:hover,
 .tb-term-button:hover {
-  background: #f5f5f4;
+  background: var(--tb-sidebar-accent);
 }
 
-.tb-term-button {
-  margin-top: 1px;
-  padding-bottom: 11px;
-  border-bottom: 1px solid #eeeeec;
-  border-radius: 8px 8px 0 0;
+/*
+ * Reference "create term" button: x=12, 231.33x32, radius 6px, padding 0 10px,
+ * 6px icon gap, white fill with a 1px #e3e3e3 border.
+ */
+.tb-prototype .tb-term-button {
+  height: 32px;
+  gap: 6px;
+  margin-top: 0;
+  margin-bottom: 4px;
+  border: 1px solid var(--tb-line);
+  border-radius: 6px;
+  background: #fff;
 }
 
+/*
+ * Reference type ramp for section labels: 10px/15px, weight 500, 0.5px
+ * tracking, uppercase, and 70% opacity over the sidebar foreground. The
+ * reference has no collapse affordance here, so the trailing control and the
+ * group chevrons are TeacherWorkspace extensions built from the same tokens.
+ */
 .tb-workspace-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px 6px;
-  font-size: 12px;
-  letter-spacing: .025em;
+  height: 24px;
+  margin-top: 16px;
+  padding: 0 12px;
+  color: var(--tb-sidebar-foreground);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .5px;
+  line-height: 15px;
+  text-transform: uppercase;
 }
 
-.tb-workspace-heading > button {
+.tb-workspace-heading > strong {
+  opacity: .7;
+}
+
+.tb-prototype .tb-workspace-heading > button {
   display: grid;
-  width: 27px;
-  height: 27px;
+  font-size: 10px;
+  width: 20px;
+  height: 20px;
   place-items: center;
-  border-radius: 7px;
+  border-radius: 5px;
+  color: var(--tb-sidebar-foreground);
   background: transparent;
+  opacity: .7;
+  transition: background var(--tb-duration) var(--tb-ease), opacity var(--tb-duration) var(--tb-ease);
 }
 
 .tb-workspace-heading > button:hover,
 .tb-workspace-heading > button[aria-expanded="true"] {
-  background: #efefed;
+  background: var(--tb-sidebar-accent);
+  opacity: 1;
 }
 
 .tb-new-group-form {
@@ -295,8 +418,7 @@
   box-shadow: 0 8px 20px rgba(45, 48, 55, .08);
 }
 
-.tb-new-group-form input,
-.tb-group-rename {
+.tb-new-group-form input {
   width: 100%;
   min-width: 0;
   padding: 6px 8px;
@@ -318,14 +440,14 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0 10px 12px;
+  padding: 0 12px 12px;
 }
 
 .tb-group {
   position: relative;
   min-width: 0;
-  padding: 1px 0 3px;
-  border-radius: 9px;
+  padding: 4px 0;
+  border-radius: 8px;
 }
 
 .tb-group.is-group-insert-target::before {
@@ -357,28 +479,43 @@
   opacity: .35;
 }
 
-.tb-group-toggle {
+/*
+ * Group header. Not present in the reference, so it is built to the reference's
+ * label ramp: 10px/15px uppercase at 0.5px tracking, held inside a 24px box and
+ * left-aligned to the same x=12 axis as module rows. The chevron carries the
+ * expand/collapse affordance the reference lacks.
+ */
+.tb-prototype .tb-group-toggle {
   display: inline-flex;
   width: auto;
   min-width: 0;
+  height: 24px;
   align-items: center;
   gap: 4px;
-  padding: 6px 8px;
-  border-radius: 7px;
-  color: #686c74;
+  padding: 0;
+  border-radius: 5px;
+  color: var(--tb-sidebar-foreground);
   background: transparent;
-  font-size: 12px;
-  font-weight: 650;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .5px;
+  line-height: 15px;
+  text-transform: uppercase;
   text-align: left;
 }
 
-.tb-group-toggle:hover {
-  color: var(--tb-ink);
-  background: #f5f5f4;
+.tb-group-toggle > span {
+  opacity: .7;
 }
 
 .tb-group-toggle .tb-icon {
-  transition: transform .16s ease;
+  opacity: .7;
+  transition: transform .16s var(--tb-ease);
+}
+
+.tb-group-toggle:hover > span,
+.tb-group-toggle:hover .tb-icon {
+  opacity: 1;
 }
 
 .tb-group-toggle[aria-expanded="false"] .tb-icon {
@@ -386,15 +523,19 @@
 }
 
 .tb-group-rename {
-  margin: 2px 7px;
-  font-size: 12px;
-  font-weight: 650;
+  width: 100%;
+  margin: 0;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .5px;
 }
 
 .tb-module-list {
   position: relative;
   display: grid;
-  gap: 1px;
+  gap: var(--tb-row-gap);
   min-height: 4px;
 }
 
@@ -415,37 +556,53 @@
   content: "";
 }
 
+/*
+ * Reference module row: 36px tall, 10px inset, 8px radius, plain 20px stroke
+ * icon (no tinted badge), 12px icon-to-label gap, 14px/20px label at weight
+ * 500, hover tint #f3f3f3, and the active row in #2e3137 with white text.
+ */
 .tb-module-row {
   position: relative;
   display: flex;
+  height: var(--tb-row-height);
   min-width: 0;
-  min-height: 37px;
   align-items: center;
-  gap: 9px;
-  padding: 6px 9px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: var(--tb-row-padding);
+  border-radius: var(--tb-row-radius);
+  color: var(--tb-sidebar-foreground);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
   cursor: grab;
   user-select: none;
+  transition: background var(--tb-duration) var(--tb-ease), color var(--tb-duration) var(--tb-ease);
 }
 
 .tb-module-row:hover {
-  background: #f4f4f3;
+  color: var(--tb-sidebar-accent-foreground);
+  background: var(--tb-sidebar-accent);
 }
 
 .tb-module-row:active {
   cursor: grabbing;
 }
 
+/*
+ * Reference active row keeps the same 500 weight as an inactive row and adds
+ * shadow-sm; only the fill and text colour change.
+ */
 .tb-module-row.is-active {
-  color: #fff;
-  background: #303238;
+  color: var(--tb-primary-foreground);
+  background: var(--tb-primary);
+  box-shadow: 0 1px 2px 0 #0000000d;
 }
 
 .tb-module-row.is-drop-target::before {
   position: absolute;
-  top: -2px;
-  right: 8px;
-  left: 8px;
+  top: -3px;
+  right: 0;
+  left: 0;
   height: 2px;
   border-radius: 99px;
   background: var(--tb-purple);
@@ -461,51 +618,53 @@
 
 .tb-module-icon {
   display: grid;
-  width: 25px;
-  height: 25px;
+  width: var(--tb-icon-size);
+  height: var(--tb-icon-size);
   flex: none;
   place-items: center;
-  border-radius: 7px;
-  color: #646871;
-  background: #eeeeec;
+  color: inherit;
+  background: transparent;
 }
 
 .tb-module-icon .tb-icon {
-  width: 15px;
-  height: 15px;
+  width: var(--tb-icon-size);
+  height: var(--tb-icon-size);
 }
 
 .tb-module-row.is-active .tb-module-icon {
-  color: #fff;
-  background: rgba(255, 255, 255, .14);
+  color: inherit;
+  background: transparent;
 }
 
 .tb-trash-wrap {
   position: relative;
   margin-top: 4px;
-  padding-top: 8px;
-  border-top: 1px solid #eeeeec;
+  padding-top: 12px;
+  border-top: 1px solid var(--tb-sidebar-border);
 }
 
-.tb-trash-target {
+.tb-prototype .tb-trash-target {
   display: flex;
   width: 100%;
-  min-height: 35px;
+  min-height: var(--tb-row-height);
   align-items: center;
-  gap: 8px;
-  padding: 7px 9px;
+  gap: 12px;
+  padding: var(--tb-row-padding);
   border: 1px solid transparent;
-  border-radius: 8px;
-  color: #8a8e96;
+  border-radius: var(--tb-row-radius);
+  color: var(--tb-muted-foreground-faint);
   background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
   text-align: left;
-  transition: background .14s ease, color .14s ease;
+  transition: background var(--tb-duration) var(--tb-ease), color var(--tb-duration) var(--tb-ease);
 }
 
 .tb-trash-target:hover,
 .tb-trash-target[aria-expanded="true"] {
-  color: #5f626a;
-  background: #f4f4f3;
+  color: var(--tb-sidebar-accent-foreground);
+  background: var(--tb-sidebar-accent);
 }
 
 .tb-trash-target > b {
@@ -530,9 +689,9 @@
   gap: 3px;
   padding: 9px;
   border: 1px solid var(--tb-line);
-  border-radius: 11px;
+  border-radius: 12px;
   background: #fff;
-  box-shadow: 0 14px 34px rgba(45, 48, 55, .16);
+  box-shadow: var(--tb-card-elevation);
 }
 
 .tb-hidden-panel > p {
@@ -546,8 +705,8 @@
   text-align: center;
 }
 
-.tb-hidden-panel > button {
-  display: grid;
+.tb-prototype .tb-hidden-panel > button {
+  font-size: 14px;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
@@ -586,7 +745,8 @@
   border-top: 1px solid var(--tb-line);
 }
 
-.tb-sidebar-footer button {
+.tb-prototype .tb-sidebar-footer button {
+  font-size: 12px;
   padding: 5px 7px;
   border-radius: 6px;
   background: transparent;
@@ -606,8 +766,8 @@
   box-shadow: 0 16px 38px rgba(40, 42, 47, .18);
 }
 
-.tb-context-menu button {
-  display: grid;
+.tb-prototype .tb-context-menu button {
+  font-size: 14px;
   gap: 1px;
   padding: 8px 9px;
   border-radius: 7px;
@@ -659,7 +819,7 @@
   border: 1px solid var(--tb-line);
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 1px 2px rgba(29, 31, 35, .02), 0 8px 24px rgba(29, 31, 35, .035);
+  box-shadow: var(--tb-card-elevation);
 }
 
 .tb-card h1,
@@ -1002,75 +1162,79 @@
 }
 
 .tb-prototype.is-sidebar-collapsed .tb-brand-slot > strong,
-.tb-sidebar.is-rail-collapsed .tb-account-row > span:nth-child(2),
-.tb-sidebar.is-rail-collapsed .tb-account-row > .tb-icon,
-.tb-sidebar.is-rail-collapsed .tb-language-row > span,
+/*
+ * Collapsed rail. The reference keeps only the module icon column: every
+ * account control and every section label disappears, icons sit in 36x36 rows
+ * with 20px glyphs in a 72px column, and hovering reveals a dark tooltip to the
+ * right. TeacherWorkspace additionally keeps a 1px hairline between groups so a
+ * user's own grouping survives the collapse, which the reference has no
+ * equivalent for.
+ */
+.tb-sidebar.is-rail-collapsed .tb-account-row,
+.tb-sidebar.is-rail-collapsed .tb-language-row,
 .tb-sidebar.is-rail-collapsed .tb-term-button,
 .tb-sidebar.is-rail-collapsed .tb-workspace-heading,
 .tb-sidebar.is-rail-collapsed .tb-new-group-form,
 .tb-sidebar.is-rail-collapsed .tb-group-heading,
-.tb-sidebar.is-rail-collapsed .tb-module-row > span:last-child,
-.tb-sidebar.is-rail-collapsed .tb-trash-target > span,
+.tb-sidebar.is-rail-collapsed .tb-trash-wrap,
 .tb-sidebar.is-rail-collapsed .tb-sidebar-footer {
   display: none;
 }
 
-.tb-sidebar.is-rail-collapsed .tb-account-row {
-  display: grid;
-  width: 48px;
-  margin: 14px auto 7px;
-  padding: 7px;
-  place-items: center;
-  background: transparent;
-}
-
-.tb-sidebar.is-rail-collapsed .tb-language-row {
-  width: 44px;
-  margin: 0 auto 10px;
-  padding: 10px;
-  justify-content: center;
-}
-
 .tb-sidebar.is-rail-collapsed .tb-module-nav {
-  padding: 5px 8px 12px;
+  padding: 0 0 12px;
 }
 
 .tb-sidebar.is-rail-collapsed .tb-group {
   padding: 0;
 }
 
+.tb-sidebar.is-rail-collapsed .tb-group + .tb-group {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--tb-sidebar-border);
+}
+
 .tb-sidebar.is-rail-collapsed .tb-module-list {
-  gap: 3px;
+  gap: var(--tb-row-gap);
 }
 
 .tb-sidebar.is-rail-collapsed .tb-module-row {
-  width: 44px;
-  min-height: 40px;
+  width: 36px;
+  min-height: 36px;
   margin: 0 auto;
-  padding: 7px;
+  padding: 8px;
   justify-content: center;
 }
 
-.tb-sidebar.is-rail-collapsed .tb-trash-wrap {
-  padding-top: 7px;
+.tb-sidebar.is-rail-collapsed .tb-module-row > span:last-child {
+  display: none;
 }
 
-.tb-sidebar.is-rail-collapsed .tb-trash-target {
-  position: relative;
-  width: 44px;
-  margin: 0 auto;
-  padding: 9px;
-  justify-content: center;
-}
-
-.tb-sidebar.is-rail-collapsed .tb-trash-target > b {
+/* Rail tooltip: 12px on #2d3037 with a 6px radius, anchored to the icon. */
+.tb-sidebar.is-rail-collapsed .tb-module-row::after {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 16px;
-  height: 16px;
-  margin: 0;
-  font-size: 9px;
+  z-index: 5;
+  top: 50%;
+  left: calc(100% + 14px);
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--tb-page);
+  background: var(--tb-ink);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  content: attr(data-label);
+  transform: translateY(-50%);
+  transition: opacity .14s ease;
+  white-space: nowrap;
+}
+
+.tb-sidebar.is-rail-collapsed .tb-module-row:hover::after,
+.tb-sidebar.is-rail-collapsed .tb-module-row:focus-visible::after {
+  opacity: 1;
 }
 
 .tb-mobile-scrim {
@@ -1205,12 +1369,13 @@
     border-bottom: 1px solid var(--tb-line);
   }
 
-  .tb-sidebar-mobile-head button {
+  .tb-prototype .tb-sidebar-mobile-head button {
     display: grid;
     width: 32px;
     height: 32px;
     place-items: center;
     border-radius: 8px;
+    font-size: 14px;
     background: transparent;
   }
 
