@@ -31,6 +31,11 @@ p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
 await p.goto('http://localhost:4174/?prototype=sidebar', { waitUntil: 'networkidle' });
 await p.waitForTimeout(500);
 
+// The one-shot first-run guide dims the shell and swallows presses by design, so
+// dismiss it before driving the surface under test.
+await p.click('.tb-coach-dismiss').catch(() => {});
+await p.waitForTimeout(250);
+
 const rows = [];
 const check = (name, actual, expected, tol = 0) => {
   const ok = typeof actual === 'number' && typeof expected === 'number'

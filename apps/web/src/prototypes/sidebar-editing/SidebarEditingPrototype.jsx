@@ -1,7 +1,10 @@
-// High-fidelity interaction prototype for TeachBuddy sidebar organization.
+// High-fidelity interaction prototype for the TeachBuddy workbench shell.
 // PROTOTYPE: memory-only state, no production persistence or API calls.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import SupportMenu from './SupportMenu.jsx';
+import Topbar from './Topbar.jsx';
+import { SUPPORT_MENU_ITEMS } from './SupportMenu.jsx';
+import { TutorialCelebration } from './TopbarSurfaces.jsx';
+import { Icon } from './icons.jsx';
 import './sidebarEditingPrototype.css';
 
 const MODULES = [
@@ -26,40 +29,6 @@ const INITIAL_LAYOUT = {
   hiddenModuleIds: [],
   hiddenGroups: []
 };
-
-const ICON_PATHS = {
-  classes: <><path d="M4 6.5h16v12H4z"/><path d="M8 6.5v12M16 6.5v12M4 10.5h16"/></>,
-  calendar: <><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M7.5 3v4M16.5 3v4M3.5 9h17"/></>,
-  planner: <><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></>,
-  lessons: <><path d="M4 5.5c3-1.6 5.6-1.6 8 0v14c-2.4-1.6-5-1.6-8 0z"/><path d="M20 5.5c-3-1.6-5.6-1.6-8 0v14c2.4-1.6 5-1.6 8 0z"/></>,
-  students: <><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.3"/><path d="M3.5 19c.5-4 2.4-6 5.5-6s5 2 5.5 6M14 14c3-.5 5 .9 5.8 4"/></>,
-  classwork: <><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9l2 2 5-5M8 15h8"/></>,
-  grades: <><path d="M5 19L19 5M7 6h.01M17 18h.01"/><circle cx="7" cy="6" r="2.5"/><circle cx="17" cy="18" r="2.5"/></>,
-  attendance: <><path d="M5 4h14v16H5zM8 8h8M8 12h4"/><path d="M14 16l1.5 1.5L19 14"/></>,
-  standards: <><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8z"/></>,
-  search: <><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></>,
-  feedback: <><path d="M4 5h16v12H8l-4 3z"/><path d="M8 9h8M8 13h5"/></>,
-  tutorial: <><path d="M4 6h16v12H4z"/><path d="M10 9l5 3-5 3z"/></>,
-  shield: <><path d="M12 3l7 3v5c0 4.6-2.4 7.8-7 10-4.6-2.2-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-5"/></>,
-  language: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></>,
-  plus: <path d="M12 5v14M5 12h14"/>,
-  minus: <path d="M5 12h14"/>,
-  trash: <><path d="M4 7h16M9 3h6l1 4H8zM7 7l1 14h8l1-14M10 11v6M14 11v6"/></>,
-  chevron: <path d="M8 10l4 4 4-4"/>,
-  menu: <path d="M4 7h16M4 12h16M4 17h16"/>,
-  close: <path d="M6 6l12 12M18 6L6 18"/>,
-  panelClose: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M7 9l-2 3 2 3"/></>,
-  panelOpen: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M5 9l2 3-2 3"/></>,
-  folder: <><path d="M3.5 6.5h6l2 2h9v10h-17z"/><path d="M3.5 9h17"/></>
-};
-
-function Icon({ name, size = 20 }) {
-  return (
-    <svg className="tb-icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {ICON_PATHS[name]}
-    </svg>
-  );
-}
 
 function cloneLayout(layout) {
   return {
@@ -115,6 +84,10 @@ function useLayoutModel() {
   return {
     layout,
     announcement,
+    // The one announcement slot. Surfaces push here too: previously they kept a
+    // second slot that the layout's always-truthy message shadowed, so no surface
+    // action was ever announced.
+    announce: setAnnouncement,
     reset() {
       setLayout(cloneLayout(INITIAL_LAYOUT));
       setAnnouncement('已恢复原型默认布局');
@@ -255,39 +228,6 @@ function useNarrowLayout() {
   }, []);
 
   return isNarrow;
-}
-
-function Topbar({ onOpenMobileSidebar, sidebarCollapsed, onToggleSidebar }) {
-  return (
-    <header className="tb-topbar">
-      <div className="tb-brand-slot">
-        <button className="tb-mobile-menu" onClick={onOpenMobileSidebar} aria-label="打开工作台导航"><Icon name="menu" /></button>
-        <span className="tb-brand-mark">T</span>
-        <strong>TeachBuddy</strong>
-      </div>
-      <nav className="tb-global-nav" aria-label="全局导航">
-        <button className="is-current">首页</button>
-        <button>日历</button>
-        <SupportMenu />
-      </nav>
-      <div className="tb-top-actions">
-        <button aria-label="搜索"><Icon name="search" /></button>
-        <button aria-label="反馈"><Icon name="feedback" /></button>
-        <button className="tb-tutorial" aria-label="教程进度"><Icon name="tutorial" /><span>3</span></button>
-        <button aria-label="Privacy & Security"><Icon name="shield" /></button>
-        <button className="tb-avatar" aria-label="账户菜单">林</button>
-      </div>
-      <button
-        type="button"
-        className="tb-sidebar-toggle"
-        aria-label={sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'}
-        aria-pressed={sidebarCollapsed}
-        onClick={onToggleSidebar}
-      >
-        <Icon name={sidebarCollapsed ? 'panelOpen' : 'panelClose'} size={16} />
-      </button>
-    </header>
-  );
 }
 
 function ContextMenu({ position, onRename, onDelete, onClose }) {
@@ -481,6 +421,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
   const [dragTarget, setDragTarget] = useState(null);
   const dragTargetRef = useRef(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
+  const [mobileSupportOpen, setMobileSupportOpen] = useState(false);
   const longPressTimerRef = useRef(null);
   const mobileCloseRef = useRef(null);
   // Cached when a drag starts so boundary resolution stays stable for the whole
@@ -690,6 +631,41 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) 
           <button className="tb-language-row" aria-label="语言：简体中文"><Icon name="language" /></button>
         </div>
         <button className="tb-term-button"><Icon name="plus" size={16} /><span>创建学期</span></button>
+
+        {/*
+          Narrow-screen navigation form. The reference drops its top-bar nav below
+          the phone breakpoint and re-surfaces only "首页" as the first row of the
+          drawer; TeachBuddy carries all three entries over so 日历 and 支持 stay
+          reachable, reusing the sidebar's own row grammar.
+        */}
+        {isNarrow && (
+          <nav className="tb-mobile-nav" aria-label="全局导航">
+            <a className="tb-module-row is-active" href="/" aria-current="page">
+              <span className="tb-module-icon"><Icon name="home" /></span>
+              <span>首页</span>
+            </a>
+            <a className="tb-module-row" href="/calendar">
+              <span className="tb-module-icon"><Icon name="calendar" /></span>
+              <span>日历</span>
+            </a>
+            <button
+              type="button"
+              className="tb-module-row"
+              aria-expanded={mobileSupportOpen}
+              onClick={() => setMobileSupportOpen((current) => !current)}
+            >
+              <span className="tb-module-icon"><Icon name="circleHelp" /></span>
+              <span>支持</span>
+              <Icon name="chevron" size={16} />
+            </button>
+            {mobileSupportOpen && SUPPORT_MENU_ITEMS.map((item) => (
+              <button type="button" className="tb-module-row tb-mobile-support-item" key={item.label} onClick={onCloseMobile}>
+                <span className="tb-module-icon"><Icon name={item.icon} size={16} /></span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        )}
 
         <div className="tb-workspace-heading">
           <strong>工作台</strong>
@@ -901,20 +877,119 @@ export default function SidebarEditingPrototype() {
   const model = useLayoutModel();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [openSurface, setOpenSurface] = useState(null);
+  const [completedTutorials, setCompletedTutorials] = useState([]);
+  // The first-run coach mark is a one-shot. It is memory-only, so a page reload
+  // replays it, which is how the first-visit state stays reviewable.
+  const [coachVisible, setCoachVisible] = useState(true);
+  const [celebrating, setCelebrating] = useState(false);
   const isNarrow = useNarrowLayout();
   const openMobileSidebar = useCallback(() => setMobileSidebarOpen(true), []);
   const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
 
   useEffect(() => {
-    document.title = 'TeachBuddy 工作台侧栏原型';
+    document.title = 'TeachBuddy 工作台外壳原型';
   }, []);
+
+  const toggleSurface = useCallback((surface) => {
+    setOpenSurface((current) => {
+      if (current !== surface) return surface;
+      return null;
+    });
+    if (surface === 'tutorial') setCoachVisible(false);
+  }, []);
+
+  const showSurface = useCallback((surface) => {
+    setOpenSurface(surface);
+    if (surface === 'tutorial') setCoachVisible(false);
+  }, []);
+
+  const closeSurface = useCallback(({ restoreFocus = false } = {}) => {
+    setOpenSurface((current) => {
+      if (restoreFocus && current) {
+        const trigger = document.querySelector(`[data-surface="${current}"]`);
+        window.requestAnimationFrame(() => trigger?.focus());
+      }
+      return null;
+    });
+  }, []);
+
+  const completeTutorial = useCallback((moduleId) => {
+    setCoachVisible(false);
+    setCompletedTutorials((current) => (
+      current.includes(moduleId) ? current.filter((id) => id !== moduleId) : [...current, moduleId]
+    ));
+  }, []);
+
+  // Celebrate on the transition to a full set rather than on every render, so
+  // un-completing and re-completing a module shows it again but a reload does not.
+  const allTutorialsDone = MODULES.length > 0 && completedTutorials.length === MODULES.length;
+  useEffect(() => {
+    if (allTutorialsDone) setCelebrating(true);
+  }, [allTutorialsDone]);
+
+  /*
+   * Shell-level interaction rules shared by every top-bar surface: one surface at
+   * a time, Escape closes and hands focus back to the trigger, a pointer press
+   * outside the top bar closes without moving focus, and Ctrl/Cmd+K toggles
+   * search from anywhere.
+   */
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key === 'Escape' && openSurface) {
+        event.preventDefault();
+        closeSurface({ restoreFocus: true });
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setOpenSurface((current) => (current === 'search' ? null : 'search'));
+        setCoachVisible(false);
+      }
+    }
+    /*
+     * Any press that is neither inside the open panel nor on that panel's own
+     * trigger closes it. This used to exempt the whole top bar, which left a
+     * popover stuck open when you pressed the brand or the nav beside it.
+     * Pressing a different trigger still switches surfaces: this runs on
+     * pointerdown and the trigger's own click lands after the state has cleared.
+     */
+    function handlePointerDown(event) {
+      if (!openSurface) return;
+      const panel = document.querySelector('.tb-popover, .tb-support-menu, .tb-search-panel');
+      if (panel && panel.contains(event.target)) return;
+      const trigger = document.querySelector(`[data-surface="${openSurface}"]`);
+      if (trigger && trigger.contains(event.target)) return;
+      setOpenSurface(null);
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [openSurface, closeSurface]);
+
+  const announce = useCallback((message) => {
+    model.announce(message);
+  }, [model]);
 
   return (
     <div className={`tb-prototype ${sidebarCollapsed ? 'is-sidebar-collapsed' : ''}`}>
       <Topbar
+        openSurface={openSurface}
+        onToggleSurface={toggleSurface}
+        onOpenSurface={showSurface}
+        onCloseSurface={closeSurface}
         onOpenMobileSidebar={openMobileSidebar}
         sidebarCollapsed={sidebarCollapsed}
         onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
+        modules={MODULES}
+        completedTutorials={completedTutorials}
+        onCompleteTutorial={completeTutorial}
+        coachVisible={coachVisible}
+        onDismissCoach={() => setCoachVisible(false)}
+        onAnnounce={announce}
       />
       <div className="tb-shell">
         <Sidebar
@@ -926,6 +1001,7 @@ export default function SidebarEditingPrototype() {
         />
         <Dashboard />
       </div>
+      {celebrating && <TutorialCelebration onClose={() => setCelebrating(false)} />}
       <div className="tb-announcer" aria-live="polite">{model.announcement}</div>
     </div>
   );

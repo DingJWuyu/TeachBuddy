@@ -12,6 +12,11 @@ p.on('pageerror', (e) => errs.push(String(e)));
 await p.goto('http://localhost:4174/?prototype=sidebar', { waitUntil: 'networkidle' });
 await p.waitForTimeout(600);
 
+// The one-shot first-run guide dims the shell and swallows presses by design, so
+// dismiss it before driving the surface under test.
+await p.click('.tb-coach-dismiss').catch(() => {});
+await p.waitForTimeout(250);
+
 // 1. no hamburger in the desktop top bar
 const burger = await p.evaluate(() => {
   const el = document.querySelector('.tb-mobile-menu');
@@ -38,7 +43,7 @@ ok('collapse control at reference x=220', anim.toggleX === 220 && anim.toggleW =
 const topbarBefore = await p.evaluate(() => {
   const nav = document.querySelector('.tb-global-nav').getBoundingClientRect();
   const brand = document.querySelector('.tb-brand-slot').getBoundingClientRect();
-  const brandText = document.querySelector('.tb-brand-slot > strong').getBoundingClientRect();
+  const brandText = document.querySelector('.tb-brand-wordmark').getBoundingClientRect();
   return { navX: Math.round(nav.x), brandX: Math.round(brand.x), brandW: Math.round(brand.width), brandTextW: Math.round(brandText.width) };
 });
 
@@ -76,7 +81,7 @@ ok('collapsed width settles at 72px', settled === 72, String(settled));
 const topbarAfter = await p.evaluate(() => {
   const nav = document.querySelector('.tb-global-nav').getBoundingClientRect();
   const brand = document.querySelector('.tb-brand-slot').getBoundingClientRect();
-  const brandText = document.querySelector('.tb-brand-slot > strong').getBoundingClientRect();
+  const brandText = document.querySelector('.tb-brand-wordmark').getBoundingClientRect();
   const toggle = document.querySelector('.tb-sidebar-toggle').getBoundingClientRect();
   return { navX: Math.round(nav.x), brandX: Math.round(brand.x), brandW: Math.round(brand.width), brandTextW: Math.round(brandText.width), toggleX: Math.round(toggle.x) };
 });

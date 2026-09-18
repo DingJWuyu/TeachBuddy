@@ -17,6 +17,11 @@ p.on('pageerror', (e) => errs.push(String(e)));
 await p.goto('http://localhost:4174/?prototype=sidebar', { waitUntil: 'networkidle' });
 await p.waitForTimeout(700);
 
+// The one-shot first-run guide dims the shell and swallows presses by design, so
+// dismiss it before driving the surface under test.
+await p.click('.tb-coach-dismiss').catch(() => {});
+await p.waitForTimeout(250);
+
 // Count how many times the sidebar subtree re-renders by patching React's
 // commit hook is overkill; instead count DOM mutations under the nav.
 await p.evaluate(() => {

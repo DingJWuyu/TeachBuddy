@@ -15,6 +15,11 @@ p.on('pageerror', (e) => errs.push(String(e)));
 await p.goto('http://localhost:4174/?prototype=sidebar', { waitUntil: 'networkidle' });
 await p.waitForTimeout(500);
 
+// The one-shot first-run guide dims the shell and swallows presses by design, so
+// dismiss it before driving the surface under test.
+await p.click('.tb-coach-dismiss').catch(() => {});
+await p.waitForTimeout(250);
+
 // --- accessibility ---
 const a11y = await p.evaluate(() => {
   const visible = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
@@ -75,6 +80,9 @@ ok('no horizontal overflow @1440x900', !overflow1440);
 const m = await b.newPage({ viewport: { width: 390, height: 844 } });
 await m.goto('http://localhost:4174/?prototype=sidebar', { waitUntil: 'networkidle' });
 await m.waitForTimeout(500);
+// This page has its own load, so it raises its own first-run guide.
+await m.click('.tb-coach-dismiss').catch(() => {});
+await m.waitForTimeout(250);
 const overflow390 = await m.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
 ok('no horizontal overflow @390x844', !overflow390);
 await m.click('.tb-mobile-menu', { force: true });
