@@ -22,7 +22,8 @@ const INITIAL_LAYOUT = {
     { id: 'assessment-group', name: '评估', collapsed: false, fixed: false, moduleIds: ['grades', 'attendance', 'standards'] },
     { id: 'ungrouped', name: '未分组', collapsed: false, fixed: true, moduleIds: [] }
   ],
-  hiddenModuleIds: []
+  hiddenModuleIds: [],
+  hiddenGroups: []
 };
 
 const ICON_PATHS = {
@@ -45,7 +46,10 @@ const ICON_PATHS = {
   trash: <><path d="M4 7h16M9 3h6l1 4H8zM7 7l1 14h8l1-14M10 11v6M14 11v6"/></>,
   chevron: <path d="M8 10l4 4 4-4"/>,
   menu: <path d="M4 7h16M4 12h16M4 17h16"/>,
-  close: <path d="M6 6l12 12M18 6L6 18"/>
+  close: <path d="M6 6l12 12M18 6L6 18"/>,
+  panelClose: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M7 9l-2 3 2 3"/></>,
+  panelOpen: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M5 9l2 3-2 3"/></>,
+  folder: <><path d="M3.5 6.5h6l2 2h9v10h-17z"/><path d="M3.5 9h17"/></>
 };
 
 function Icon({ name, size = 18 }) {
@@ -59,7 +63,8 @@ function Icon({ name, size = 18 }) {
 function cloneLayout(layout) {
   return {
     groups: layout.groups.map((group) => ({ ...group, moduleIds: [...group.moduleIds] })),
-    hiddenModuleIds: [...layout.hiddenModuleIds]
+    hiddenModuleIds: [...layout.hiddenModuleIds],
+    hiddenGroups: layout.hiddenGroups.map((group) => ({ ...group, moduleIds: [...group.moduleIds] }))
   };
 }
 
@@ -151,9 +156,31 @@ function useLayoutModel() {
         next.groups.splice(nextTargetIndex < 0 ? next.groups.length - 1 : nextTargetIndex, 0, source);
       });
     },
+    hideGroup(groupId) {
+      update('分组及其中模块已移入垃圾桶', (next) => {
+        const sourceIndex = next.groups.findIndex((group) => group.id === groupId && !group.fixed);
+        if (sourceIndex < 0) return;
+        const [group] = next.groups.splice(sourceIndex, 1);
+        next.hiddenGroups.push(group);
+      });
+    },
+    restoreGroup(groupId, targetId = 'ungrouped') {
+      update('分组及其中模块已恢复', (next) => {
+        const sourceIndex = next.hiddenGroups.findIndex((group) => group.id === groupId);
+        if (sourceIndex < 0) return;
+        const [group] = next.hiddenGroups.splice(sourceIndex, 1);
+        const targetIndex = next.groups.findIndex((item) => item.id === targetId);
+        next.groups.splice(targetIndex < 0 ? next.groups.length : targetIndex, 0, group);
+      });
+    },
     moveModule(moduleId, destinationGroupId, targetModuleId = null) {
+      if (moduleId === targetModuleId) return;
       update(`${moduleById(moduleId)?.name || '模块'}已移动`, (next) => {
         removeModule(next.groups, moduleId);
+        next.hiddenGroups.forEach((group) => {
+          group.moduleIds = group.moduleIds.filter((id) => id !== moduleId);
+        });
+        next.hiddenModuleIds = next.hiddenModuleIds.filter((id) => id !== moduleId);
         const destination = next.groups.find((group) => group.id === destinationGroupId);
         if (!destination) return;
         const targetIndex = targetModuleId ? destination.moduleIds.indexOf(targetModuleId) : -1;
@@ -182,12 +209,16 @@ function useLayoutModel() {
     },
     hideModule(moduleId) {
       update(`${moduleById(moduleId)?.name || '模块'}已隐藏`, (next) => {
+        removeModule(next.groups, moduleId);
         if (!next.hiddenModuleIds.includes(moduleId)) next.hiddenModuleIds.push(moduleId);
       });
     },
     restoreModule(moduleId) {
-      update(`${moduleById(moduleId)?.name || '模块'}已恢复`, (next) => {
+      update(`${moduleById(moduleId)?.name || '模块'}已恢复到未分组`, (next) => {
+        removeModule(next.groups, moduleId);
         next.hiddenModuleIds = next.hiddenModuleIds.filter((id) => id !== moduleId);
+        const ungrouped = next.groups.find((group) => group.fixed);
+        if (ungrouped && !ungrouped.moduleIds.includes(moduleId)) ungrouped.moduleIds.push(moduleId);
       });
     }
   };
@@ -208,7 +239,7 @@ function useNarrowLayout() {
   return isNarrow;
 }
 
-function Topbar({ onOpenMobileSidebar }) {
+function Topbar({ onOpenMobileSidebar, sidebarCollapsed, onToggleSidebar }) {
   return (
     <header className="tb-topbar">
       <div className="tb-brand-slot">
@@ -228,6 +259,15 @@ function Topbar({ onOpenMobileSidebar }) {
         <button aria-label="Privacy & Security"><Icon name="shield" /></button>
         <button className="tb-avatar" aria-label="账户菜单">林</button>
       </div>
+      <button
+        type="button"
+        className="tb-sidebar-toggle"
+        aria-label={sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'}
+        aria-pressed={sidebarCollapsed}
+        onClick={onToggleSidebar}
+      >
+        <Icon name={sidebarCollapsed ? 'panelOpen' : 'panelClose'} size={16} />
+      </button>
     </header>
   );
 }
@@ -296,64 +336,104 @@ function NewGroupForm({ onCreate, onClose }) {
   );
 }
 
-function HiddenModules({ model, open, onToggle, dragState, onDragEnter, onDragLeave, onDrop }) {
-  const panelRef = useRef(null);
+function HiddenModules({ model, open, onToggle, dragState, onDrop, onStartDrag, onFinishDrag }) {
+  const wrapRef = useRef(null);
+  const buttonRef = useRef(null);
+  const [panelPosition, setPanelPosition] = useState({ left: 0, top: 0 });
+  const hiddenCount = model.layout.hiddenModuleIds.length + model.layout.hiddenGroups.length;
+
+  const positionPanel = useCallback(() => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const panelHeight = Math.min(340, 64 + hiddenCount * 45);
+    setPanelPosition({
+      left: Math.min(rect.right + 10, window.innerWidth - 246),
+      top: Math.max(12, Math.min(rect.top, window.innerHeight - panelHeight - 12))
+    });
+  }, [hiddenCount]);
 
   useEffect(() => {
     if (!open) return undefined;
+    positionPanel();
     function handlePointerDown(event) {
-      if (!panelRef.current?.contains(event.target) && !event.target.closest('[data-trash-toggle]')) onToggle(false);
+      if (!wrapRef.current?.contains(event.target)) onToggle(false);
     }
     function handleKeyDown(event) {
       if (event.key === 'Escape') onToggle(false);
     }
+    window.addEventListener('resize', positionPanel);
+    window.addEventListener('scroll', positionPanel, true);
     document.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('keydown', handleKeyDown);
     return () => {
+      window.removeEventListener('resize', positionPanel);
+      window.removeEventListener('scroll', positionPanel, true);
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, onToggle]);
+  }, [open, onToggle, positionPanel]);
 
   return (
-    <div className="tb-trash-wrap" ref={panelRef}>
+    <div className="tb-trash-wrap" ref={wrapRef}>
       <button
+        ref={buttonRef}
         type="button"
         data-trash-toggle
-        className={`tb-trash-target ${dragState?.type === 'module' ? 'is-ready' : ''}`}
+        className="tb-trash-target"
+        aria-label={hiddenCount ? `垃圾桶，${hiddenCount} 项` : '垃圾桶'}
         aria-expanded={open}
         onClick={() => onToggle(!open)}
-        onDragEnter={onDragEnter}
         onDragOver={(event) => {
-          if (dragState?.type === 'module') event.preventDefault();
+          const payload = readDragPayload(event) || dragState;
+          if (payload?.type === 'module' || payload?.type === 'group') event.preventDefault();
         }}
-        onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
         <Icon name="trash" />
-        <span>{dragState?.type === 'module' ? '拖到这里隐藏' : '已隐藏'}</span>
-        {model.layout.hiddenModuleIds.length > 0 && <b>{model.layout.hiddenModuleIds.length}</b>}
+        <span>垃圾桶</span>
+        {hiddenCount > 0 && <b>{hiddenCount}</b>}
       </button>
       {open && (
-        <div className="tb-hidden-panel">
-          <div className="tb-hidden-panel-title"><strong>已隐藏模块</strong><span>点击即可恢复</span></div>
-          {model.layout.hiddenModuleIds.length ? model.layout.hiddenModuleIds.map((moduleId) => {
+        <div className="tb-hidden-panel" style={panelPosition}>
+          {model.layout.hiddenGroups.map((group) => (
+            <button
+              key={group.id}
+              draggable
+              aria-label={`${group.name}。点击恢复，或拖到侧边栏指定位置`}
+              onClick={() => model.restoreGroup(group.id)}
+              onDragStart={(event) => onStartDrag(event, { type: 'hidden-group', id: group.id })}
+              onDragEnd={onFinishDrag}
+            >
+              <span className="tb-module-icon"><Icon name="folder" /></span>
+              <span>{group.name}</span>
+              <small>{group.moduleIds.length}</small>
+            </button>
+          ))}
+          {model.layout.hiddenModuleIds.map((moduleId) => {
             const moduleItem = moduleById(moduleId);
             return (
-              <button key={moduleId} onClick={() => model.restoreModule(moduleId)}>
+              <button
+                key={moduleId}
+                draggable
+                aria-label={`${moduleItem.name}。点击恢复到未分组，或拖到其他分组`}
+                onClick={() => model.restoreModule(moduleId)}
+                onDragStart={(event) => onStartDrag(event, { type: 'module', id: moduleId })}
+                onDragEnd={onFinishDrag}
+              >
                 <span className="tb-module-icon"><Icon name={moduleItem.icon} /></span>
                 <span>{moduleItem.name}</span>
                 <Icon name="plus" size={15} />
               </button>
             );
-          }) : <p>没有隐藏的模块</p>}
+          })}
+          {!hiddenCount && <p>空</p>}
         </div>
       )}
     </div>
   );
 }
 
-function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow }) {
+function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) {
   const [addingGroup, setAddingGroup] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
   const [renamingGroupId, setRenamingGroupId] = useState(null);
@@ -421,16 +501,17 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow }) {
   function dropOnGroup(event, groupId) {
     event.preventDefault();
     event.stopPropagation();
-    const payload = dragState || readDragPayload(event);
+    const payload = readDragPayload(event) || dragState;
     if (payload?.type === 'module') model.moveModule(payload.id, groupId);
     if (payload?.type === 'group') model.moveGroup(payload.id, groupId);
+    if (payload?.type === 'hidden-group') model.restoreGroup(payload.id, groupId);
     finishDrag();
   }
 
   function dropOnModule(event, groupId, moduleId) {
     event.preventDefault();
     event.stopPropagation();
-    const payload = dragState || readDragPayload(event);
+    const payload = readDragPayload(event) || dragState;
     if (payload?.type === 'module') model.moveModule(payload.id, groupId, moduleId);
     finishDrag();
   }
@@ -457,7 +538,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow }) {
     <>
       <button hidden={!mobileOpen} aria-hidden={!mobileOpen} className={`tb-mobile-scrim ${mobileOpen ? 'is-visible' : ''}`} aria-label="关闭工作台导航" onClick={onCloseMobile} />
       <aside
-        className={`tb-sidebar ${mobileOpen ? 'is-mobile-open' : ''}`}
+        className={`tb-sidebar ${mobileOpen ? 'is-mobile-open' : ''} ${railCollapsed ? 'is-rail-collapsed' : ''}`}
         aria-label="工作台导航"
         aria-hidden={isNarrow && !mobileOpen ? true : undefined}
         inert={isNarrow && !mobileOpen ? true : undefined}
@@ -468,7 +549,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow }) {
           <span><strong>林老师</strong><small>2026 秋季学期</small></span>
           <Icon name="chevron" size={15} />
         </button>
-        <button className="tb-language-row"><Icon name="language" /><span>简体中文</span></button>
+        <button className="tb-language-row" aria-label="语言：简体中文"><Icon name="language" /><span>简体中文</span></button>
         <button className="tb-term-button"><Icon name="plus" size={16} /><span>创建学期</span></button>
 
         <div className="tb-workspace-heading">
@@ -488,11 +569,18 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow }) {
         <nav className="tb-module-nav" aria-label="功能模块">
           {model.layout.groups.map((group) => (
             <section
-              className={`tb-group ${dragTarget === `group:${group.id}` ? 'is-drop-target' : ''}`}
+              className={`tb-group ${dragTarget === `group:${group.id}` ? 'is-group-insert-target' : ''} ${dragTarget === `group-end:${group.id}` ? 'is-module-end-target' : ''}`}
               data-drop-group={group.id}
               key={group.id}
-              onDragEnter={() => setDragTarget(`group:${group.id}`)}
-              onDragOver={(event) => event.preventDefault()}
+              onDragEnter={(event) => {
+                const payload = readDragPayload(event) || dragState;
+                if (payload?.type === 'module') setDragTarget(`group-end:${group.id}`);
+                if ((payload?.type === 'group' || payload?.type === 'hidden-group') && payload.id !== group.id) setDragTarget(`group:${group.id}`);
+              }}
+              onDragOver={(event) => {
+                const payload = readDragPayload(event) || dragState;
+                if (payload?.type === 'module' || payload?.type === 'group' || payload?.type === 'hidden-group') event.preventDefault();
+              }}
               onDragLeave={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) setDragTarget(null);
               }}
@@ -538,7 +626,7 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow }) {
                   </button>
                 )}
               </div>
-              {!group.collapsed && (
+              {(!group.collapsed || railCollapsed) && (
                 <div className="tb-module-list">
                   {group.moduleIds.filter((moduleId) => !hidden.has(moduleId)).map((moduleId) => {
                     const moduleItem = moduleById(moduleId);
@@ -554,8 +642,16 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow }) {
                         onKeyDown={(event) => handleModuleKeyDown(event, moduleId)}
                         onDragStart={(event) => startDrag(event, { type: 'module', id: moduleId })}
                         onDragEnd={finishDrag}
-                        onDragEnter={() => setDragTarget(`module:${moduleId}`)}
-                        onDragOver={(event) => event.preventDefault()}
+                        onDragEnter={(event) => {
+                          event.stopPropagation();
+                          const payload = readDragPayload(event) || dragState;
+                          if (payload?.type === 'module' && payload.id !== moduleId) setDragTarget(`module:${moduleId}`);
+                        }}
+                        onDragOver={(event) => {
+                          event.stopPropagation();
+                          const payload = readDragPayload(event) || dragState;
+                          if (payload?.type === 'module') event.preventDefault();
+                        }}
                         onDrop={(event) => dropOnModule(event, group.id, moduleId)}
                       >
                         <span className="tb-module-icon"><Icon name={moduleItem.icon} /></span>
@@ -563,7 +659,6 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow }) {
                       </div>
                     );
                   })}
-                  {!group.moduleIds.filter((moduleId) => !hidden.has(moduleId)).length && dragState?.type === 'module' && <div className="tb-empty-group">放在这里</div>}
                 </div>
               )}
             </section>
@@ -573,12 +668,14 @@ function Sidebar({ model, mobileOpen, onCloseMobile, isNarrow }) {
             open={hiddenOpen}
             onToggle={setHiddenOpen}
             dragState={dragState}
-            onDragEnter={() => dragState?.type === 'module' && setDragTarget('trash')}
-            onDragLeave={() => setDragTarget(null)}
+            onStartDrag={startDrag}
+            onFinishDrag={finishDrag}
             onDrop={(event) => {
               event.preventDefault();
-              const payload = dragState || readDragPayload(event);
+              event.stopPropagation();
+              const payload = readDragPayload(event) || dragState;
               if (payload?.type === 'module') model.hideModule(payload.id);
+              if (payload?.type === 'group') model.hideGroup(payload.id);
               finishDrag();
             }}
           />
@@ -661,6 +758,7 @@ function Dashboard() {
 export default function SidebarEditingPrototype() {
   const model = useLayoutModel();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const isNarrow = useNarrowLayout();
   const openMobileSidebar = useCallback(() => setMobileSidebarOpen(true), []);
   const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
@@ -670,10 +768,20 @@ export default function SidebarEditingPrototype() {
   }, []);
 
   return (
-    <div className="tb-prototype">
-      <Topbar onOpenMobileSidebar={openMobileSidebar} />
+    <div className={`tb-prototype ${sidebarCollapsed ? 'is-sidebar-collapsed' : ''}`}>
+      <Topbar
+        onOpenMobileSidebar={openMobileSidebar}
+        sidebarCollapsed={sidebarCollapsed}
+        onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
+      />
       <div className="tb-shell">
-        <Sidebar model={model} mobileOpen={mobileSidebarOpen} onCloseMobile={closeMobileSidebar} isNarrow={isNarrow} />
+        <Sidebar
+          model={model}
+          mobileOpen={mobileSidebarOpen}
+          onCloseMobile={closeMobileSidebar}
+          isNarrow={isNarrow}
+          railCollapsed={sidebarCollapsed && !isNarrow}
+        />
         <Dashboard />
       </div>
       <div className="tb-announcer" aria-live="polite">{model.announcement}</div>
