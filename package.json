@@ -11,7 +11,8 @@
   ],
   "scripts": {
     "dev": "npm-run-all --parallel dev:web dev:api",
-    "prototype:sidebar": "npm --workspace @refatos/web run dev -- --host 0.0.0.0 --port 4174",
+    "prototype:sidebar": "vite prototype --host 0.0.0.0 --port 4174 --strictPort",
+    "prototype:build": "vite build prototype",
     "dev:web": "npm --workspace @refatos/web run dev",
     "dev:api": "npm --workspace @refatos/api run dev",
     "test:api": "npm --workspace @refatos/api run test",

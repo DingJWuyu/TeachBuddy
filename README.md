@@ -39,10 +39,20 @@ npm run dev
 │   └── web/        React + Vite 工作台外壳
 ├── packages/
 │   └── shared/     中性模块注册契约与空模块目录
+├── prototype/      已集成原型、行为文档索引和验证证据
 ├── docs/           安装、API、架构和部署说明
 ├── CONTEXT.md      领域术语和边界
 └── CHANGELOG.md    发布与工程日志
 ~~~
+
+## 原型入口
+
+行为文档从 [manifest](./prototype/behavior/manifest.md) 进入，按外壳、导航、侧栏和顶部栏分别维护。
+
+```bash
+npm run prototype:sidebar   # 当前原型：http://localhost:4174/
+npm run prototype:build
+```
 
 ## 文档入口
 
