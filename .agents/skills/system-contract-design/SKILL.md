@@ -8,21 +8,19 @@ disable-model-invocation: true
 
 Turn an accepted product behavior record into the stable boundary that independent frontend and backend implementations can share. **Trace, then design**: every contract element must serve an observable behavior or an established system invariant.
 
-This is a fresh design pass, not a continuation of visual prototyping. Preserve the accepted experience and choose the simplest robust boundary that fits the repository's architecture.
+Do not redesign product behavior or implement the frontend or backend.
 
 ## Process
 
 ### 1. Establish the source
 
-Read the supplied `product-behavior.md`, every artifact it marks authoritative, `CONTEXT.md`, applicable ADRs, `docs/ARCHITECTURE.md`, and existing contracts in the affected area. Use prototype fixtures as semantic examples rather than copying them into transport shapes.
+Read the supplied behavior record and every artifact it marks authoritative. Use fixtures as semantic examples rather than copying them into transport shapes.
 
-The behavior record must identify one selected prototype and have status `Accepted`. If either condition is missing, report the exact product input gap and stop before designing around guesses.
+The behavior record must be accepted and distinguish confirmed behavior from inference and open questions. If it does not, report the exact input gap and stop before designing around guesses.
 
-Write the result beside the behavior record unless an existing project convention says otherwise:
+Assign stable local references to source behaviors and states that do not already have IDs, without changing their meaning.
 
-```text
-docs/product/<slice>/system-contract.md
-```
+Create one durable contract artifact and identify the exact accepted behavior record it derives from.
 
 ### 2. Classify every observable obligation
 
@@ -39,20 +37,20 @@ The step is complete when every behavior ID is classified and every proposed con
 
 ### 3. Design the boundary
 
-Model user intent and domain capability rather than pages, components, fixtures, or database tables. Reuse established seams and vocabulary. Keep ownership cohesive: one authority owns each invariant and other parts collaborate through explicit contracts.
+Model user intent and domain capability rather than pages, components, fixtures, or database tables. Reuse established public seams where they fit. Keep ownership cohesive: one authority owns each invariant and other parts collaborate through explicit contracts.
 
 Define only the boundary forms the feature needs, such as:
 
 - queries and read models;
 - commands and their outcomes;
 - domain or integration events;
-- module public ports;
+- programmatic interfaces;
 - HTTP or other transport bindings;
 - shared validation or schema artifacts.
 
 For each operation, make the relevant semantics explicit:
 
-- actor, authorization, and account isolation;
+- actor, identity, authorization, and data isolation where relevant;
 - input meaning, required context, and validation;
 - successful result and observable timing;
 - stable identifiers and lifecycle;
@@ -61,11 +59,11 @@ For each operation, make the relevant semantics explicit:
 - timezone, locale, pagination, filtering, and sorting where they affect meaning;
 - consistency, caching, and partial failure where the experience depends on them.
 
-Omit irrelevant machinery instead of filling a generic checklist. Add a machine-readable schema only when it is the project's established source of truth or materially removes ambiguity; link it from the document rather than duplicating it.
+Omit irrelevant machinery instead of filling a generic checklist. Add a machine-readable schema only when it is an established source of truth or materially removes ambiguity; link it from the document rather than duplicating it.
 
 ### 4. Run the adversarial pass
 
-Walk the proposed contract against every accepted journey and fixture. Test the boundary mentally against slow responses, repetition, interruption, stale data, concurrent actors, permission changes, partial failure, and future compatible evolution wherever those cases are plausible.
+Walk the proposed contract against every accepted journey and fixture. Test the boundary mentally against slow responses, repetition, interruption, stale data, concurrent actors, permission changes, partial failure, and compatible evolution wherever those cases are plausible.
 
 Classify each discovery:
 
@@ -80,10 +78,10 @@ Continue designing unaffected portions when a gap is local. Mark the whole contr
 Use this shape, pruning sections that have no bearing on the feature:
 
 ```markdown
-# <Product slice> system contract
+# <Feature or product area> system contract
 
 Status: Draft | Blocked by product decision | Ready for implementation
-Source behavior: <path and accepted revision>
+Source behavior: <artifact and accepted version>
 
 ## Scope and boundary
 Capabilities covered, ownership, consumers, dependencies, and non-goals.
@@ -93,8 +91,8 @@ Behavior or state ID, classification, responsible capability, and contract
 element. Frontend-only rows remain visible to prove they were considered.
 
 ## Domain semantics and invariants
-Authoritative terms, identities, lifecycle, validation, authorization, account
-isolation, and rules that must agree across the boundary.
+Authoritative terms, identities, lifecycle, validation, authorization, data
+isolation, and rules that must agree across the boundary where relevant.
 
 ## Operations
 Queries, commands, events, or ports. For each: purpose, actor, input, output,
@@ -105,7 +103,7 @@ Routes, methods, headers, status codes, serialization, and schemas when the
 boundary uses a transport. Keep transport separate from domain meaning.
 
 ## Examples and mocks
-Representative success and failure exchanges mapped to prototype fixtures.
+Representative success and failure exchanges mapped to source fixtures.
 Examples illustrate the contract and never add undocumented semantics.
 
 ## Verification
@@ -124,9 +122,9 @@ Mark the document `Ready for implementation` only when:
 - every backend-dependent accepted behavior has a traceable contract path;
 - every operation has one owner and complete success and actionable-failure semantics;
 - every shared field has one meaning;
-- authorization and account isolation are explicit;
+- relevant identity, authorization, and data-isolation rules are explicit;
 - relevant retry, concurrency, ordering, time, and consistency behavior is settled;
 - frontend and backend can build compatible implementations without a private side conversation;
 - no open product gap can cause those implementations to diverge.
 
-Report the contract path, readiness state, covered behavior IDs, decisions made, and remaining product gaps. Preserve the design artifacts and stop before frontend or backend implementation; the user controls the next invocation.
+Report the contract artifact, readiness state, covered behavior IDs, decisions made, and remaining product gaps.

@@ -1,102 +1,105 @@
 ---
 name: product-behavior-design
-description: "Refine one selected UI prototype and preserve its complete user-observable behavior as the product record."
+description: "Refine a selected interactive prototype with the user and capture its agreed behavior in a complete product record."
 disable-model-invocation: true
 ---
 
 # Product Behavior Design
 
-Work on one selected prototype with the user until its experience is accepted. The **observable surface** is your boundary: what the user can see, do, perceive, and recover from. Leave system and API design to a later contract-design session.
+Work with the user on one supplied prototype until its **observable behavior** is settled: what the user sees, can do, and experiences as a result. Preserve that behavior in a runnable prototype and a written record a fresh reader can use without the conversation.
 
-Read `docs/rules/design-and-verification.md` before changing UI. Use the vocabulary in `CONTEXT.md` and respect applicable ADRs.
+Keep changes within the prototype and its artifacts. Do not undertake system design, API design, contract design, or production implementation.
 
 ## Process
 
-### 1. Fix the subject
+### 1. Open the prototype
 
-Identify the exact prototype or product area the user selected. Continue that direction instead of reopening the earlier variant search. If more than one candidate remains plausible, ask one concise question and wait.
+Run the selected prototype and walk its existing journeys. Resolve an ambiguous selection or missing access before editing.
 
-Find the existing artifact home. If the project has no convention for this product slice, use:
+Create or continue one Markdown behavior record among its artifacts, using the format below. Establish the user goal and scope from the supplied material, and index what is needed to run and review it. Treat behavior without recorded user confirmation as provisional.
 
-```text
-docs/product/<slice>/product-behavior.md
-```
+### 2. Refine a journey
 
-Record pointers to the prototype source, its run command, fixtures, visual references, and relevant decisions. The step is complete when one selected prototype and one behavior record have unambiguous locations.
+Work from the user's feedback. Trace each requested change through the affected **journeys**: the paths from a user's goal to an outcome, including ways back. Look for contradictions, dead ends, ambiguous feedback, and loss of user work, including consequences the user has not mentioned.
 
-### 2. Iterate on the observable surface
+For unresolved choices that would materially change the experience, use the `grilling` skill, scoped to the affected journeys. Ground the discussion in a concrete situation the prototype can demonstrate.
 
-Keep the prototype runnable while the user reviews it. Apply each round of feedback to the same selected direction, inspect the result in a real browser, and update the behavior record during the session rather than reconstructing it at the end.
+Apply settled changes and make the relevant outcomes reachable with mock scenarios. A **scenario** is a product situation with the data and conditions needed to experience it. Choose contrasting examples and boundaries that change what the user sees or can do; fixture shapes carry no implementation decisions.
 
-Keep changes inside the selected prototype and its evidence package. Production frontend and backend implementation begin only after the later contract stage.
+Exercise the changed journeys in the target runtime, including effects on connected journeys. Update the record and its evidence in the same round. Bring the user back to the changed experience with a clear way to try it and the choices still open.
 
-For every visible control and system response, capture:
+Repeat as feedback or exploration exposes more work. A round is complete when the demonstrated behavior and the record agree.
 
-- the visible precondition;
-- the user action, including pointer, keyboard, and touch behavior where relevant;
-- immediate feedback and any intermediate state;
-- the settled success state;
-- cancellation, failure, recovery, and retry behavior when the user can encounter them;
-- responsive, focus, motion, timing, and persistence effects when they change what the user perceives.
+### 3. Walk the whole scope
 
-Use mock data to make meaningful states reachable. Treat fixtures as **product evidence**: record the meaning the UI needs, not a presumed wire format, endpoint, table, or storage model. Cover contrasting records and boundary cases that materially change the experience.
+Follow every journey from its entry point in the target runtime. Probe empty, busy, partial, failed, interrupted, and conflicting situations wherever the scoped behavior permits them, including destructive or repeated actions and leaving or returning with unfinished work.
 
-When a new state would change the product experience, bring it into the prototype discussion. Leave backend mechanisms and transport design unchosen; record the visible effect, data meaning, or unresolved product behavior instead.
+The walkthrough is complete when:
 
-### 3. Maintain the product behavior record
+- Every control and observable system event belongs to a recorded journey.
+- Every state has been exercised through its recorded scenario or action, with its exits and recovery accounted for.
+- Every displayed or entered value has a defined meaning, and visible rules hold across the supported viewport and input modes.
+- Every in-scope outcome is defined; any deferred behavior is explicitly excluded by agreement.
 
-Keep `product-behavior.md` aligned with the current prototype using this shape:
+Feed gaps back into the refinement loop. An unexercised case remains a named gap in the record.
+
+### 4. Accept and preserve
+
+After the walkthrough, present the prototype and record for acceptance, highlighting provisional choices. Identify the version being reviewed. Mark the record `Accepted` and its provisional choices `Confirmed` only when the user explicitly accepts that version and its behavior; until then it remains `In review`.
+
+Preserve the accepted source, required assets, scenarios, visual evidence, and record as a reproducible set. Report its entry point and any agreed exclusions. If accepted behavior is reopened, return the working record to `In review` and retain a reference to the accepted version.
+
+## Behavior record
+
+Give journeys and states stable IDs so scenarios, evidence, and decisions can refer to exact behavior. Use this format:
 
 ```markdown
-# <Product slice> behavior
+# <Product area> behavior
 
 Status: In review | Accepted
 
 ## Scope
-The user goal, actor, entry point, and explicit non-goals.
 
-## Artifact index
-Paths and run instructions for the selected prototype, fixtures, screenshots,
-and references. State which artifact is authoritative when two overlap.
+User goal, actors, entry points, supported environments, and non-goals.
 
-## Observable states
-Stable IDs for every distinct state the user can perceive, with entry and exit
-conditions and the fixture or action that makes each state reachable.
+## Artifacts
 
-## Behavior journeys
-For each journey: visible precondition, user action, immediate response,
-settled result, and failure or recovery path. Reference observable-state IDs.
+Pointers to the prototype source, run instructions, required assets, scenarios,
+and visual evidence. Identify the working version and, on acceptance, the
+accepted version and confirmation.
 
-## Visible data semantics
-What each displayed value means to the user, representative examples, and
-formatting, ordering, timezone, locale, or privacy expectations that are visible.
+## Journeys
+
+For each journey: ID, user goal, actor, and visible preconditions.
+For each step: starting state, action or system event, immediate feedback,
+intermediate states, settled outcome, and resulting state. Include available
+cancellation, failure, recovery, and retry paths. Reference state IDs.
+
+## States and scenarios
+
+For each distinct observable state: ID, what is visible, available and disabled
+actions, and the scenario or steps that reproduce it. Link visual evidence
+where appearance matters. Scenarios include their starting conditions,
+representative data, and how to select and reset them.
+
+## Visible information
+
+What each displayed or entered value means, its source from the user's
+perspective, examples, and rules for validity, absence, and change. Define
+visible relationships, derived values, ordering, formatting, locale, timezone,
+and privacy expectations where they affect interpretation.
 
 ## Experience rules
-Confirmed responsive, input, focus, motion, timing, persistence, and
-accessibility behavior.
 
-## Decisions and unknowns
-Separate Confirmed, Inferred, and Open items. Product-affecting inference stays
-visible until the user confirms it.
+Shared behavior across journeys: responsive layout, input methods, focus,
+accessibility, motion, timing, and what survives navigation or a new session.
+Journey-specific exceptions reference the shared rule they qualify.
+
+## Decisions and questions
+
+Confirmed: choices the user accepted, with their rationale and affected IDs.
+Provisional: inherited behavior or working assumptions awaiting review.
+Open: unanswered product questions and the journeys they affect.
+When a decision changes, retain what it superseded and why. Link existing
+decision records rather than copying them.
 ```
-
-Prefer tables when they make state or transition coverage easier to audit. Keep each meaning authoritative in one place and link to it elsewhere.
-
-### 4. Sweep the gaps
-
-Before asking the user to accept the result, exercise the prototype end to end and account for:
-
-- every interactive control;
-- every state transition and way back;
-- empty, populated, loading, partial, unavailable, and failure states that are relevant to this experience;
-- destructive, repeated, interrupted, and conflicting actions the user could observe;
-- supported viewport and input modes;
-- every fixture and every screenshot retained as evidence.
-
-Add only relevant cases. Record an explicit unknown when the product has not settled an observable outcome. The sweep is complete when every implemented control maps to a documented journey and every documented state is reachable or clearly marked as a future state.
-
-### 5. Close the session
-
-Mark the behavior record `Accepted` only after the user explicitly accepts the selected prototype and its observable behavior. Preserve the prototype source, required assets, meaningful fixtures, accepted screenshots, and the final behavior record; remove superseded temporary artifacts.
-
-Report the artifact paths, confirmed coverage, and remaining open questions. State that the package is ready for a separately invoked `$system-contract-design` session when it meets that bar. Stop there: the user controls whether and when contract design begins.
