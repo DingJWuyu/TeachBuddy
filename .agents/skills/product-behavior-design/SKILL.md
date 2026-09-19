@@ -1,6 +1,7 @@
 ---
 name: product-behavior-design
 description: "Refine one selected UI prototype and preserve its complete user-observable behavior as the product record."
+disable-model-invocation: true
 ---
 
 # Product Behavior Design

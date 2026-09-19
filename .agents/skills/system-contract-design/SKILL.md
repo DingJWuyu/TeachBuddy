@@ -1,6 +1,7 @@
 ---
 name: system-contract-design
 description: "Derive an implementation-ready system contract from an accepted product behavior record."
+disable-model-invocation: true
 ---
 
 # System Contract Design
