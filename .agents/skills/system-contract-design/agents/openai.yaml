@@ -1,0 +1,7 @@
+interface:
+  display_name: "System Contract Design"
+  short_description: "Derive an implementation-ready system contract"
+  default_prompt: "Use $system-contract-design to derive a system contract from the accepted product behavior record."
+
+policy:
+  allow_implicit_invocation: false

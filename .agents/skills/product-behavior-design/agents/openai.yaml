@@ -1,0 +1,7 @@
+interface:
+  display_name: "Product Behavior Design"
+  short_description: "Refine a chosen prototype into a behavior record"
+  default_prompt: "Use $product-behavior-design to refine the selected prototype and preserve its user-observable behavior."
+
+policy:
+  allow_implicit_invocation: false
