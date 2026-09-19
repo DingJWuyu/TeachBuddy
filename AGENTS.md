@@ -4,9 +4,9 @@
 
 **Git:**
 
-- Branch：一条 main 主干；开发时从 main 创建短生命周期 branch → 持续合回 main；branch 命名优先使用常见前缀，但不严格限制。正式版本通过 `Release PR` 汇总后再打 Tag / 发布。
-* Commit：遵循 Conventional Commits。
-* Pull Request：如果用户让你生成 PR，Title 遵循 Conventional Commits；如有 PR Template，则务必遵循，否则默认为 Summarize-Why-What changed-Testing 四段式；如有关联 issue，则在 Body 中关联。
+- Branch：一条 main 主干；开发时必须从 main 创建短生命周期 branch → 持续合回 main，不允许在 main 上直接开发，必须经过用户准许才合并进 main；branch 命名优先使用常见前缀，但不严格限制。正式版本通过 `Release PR` 汇总后再打 Tag / 发布。
+- Commit：遵循 Conventional Commits。
+- Pull Request：如果用户让你生成 PR，Title 遵循 Conventional Commits；如有 PR Template，则务必遵循，否则默认为 Summarize-Why-What changed-Testing 四段式；如有关联 issue，则在 Body 中关联。
 
 **Others:**
 
@@ -14,6 +14,16 @@
 - UI/UX 开发规则：美学基线、间距与动效要求、参考来源边界、验证陷阱。参见 `docs/rules/design-and-verification.md`。
 
 ## Agent skills
+
+### DeepSeek Harness
+
+当用户明确要求调用 `dsh` 时，在当前项目目录中将完整任务说明作为单个参数交给一次性 Headless profile：
+
+```bash
+dsh --profile headless "<task>"
+```
+
+该命令使用 `~/.dsh/settings.yaml` 中当前配置的 Provider、模型和 reasoning effort。
 
 ### Issue tracker
 
