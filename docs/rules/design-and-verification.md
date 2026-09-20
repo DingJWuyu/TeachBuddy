@@ -20,7 +20,7 @@
 
 **做法**：没有参考时，**先量一个最近的参考同类件，再套它的数值**，不要凭直觉发明。
 
-实测锚点（EMStudio，1440×900，来源 `docs/reference/emstudio-sidebar-measured-spec.md`）：
+实测锚点（EMStudio 登录态页面，1440×900，读 `getComputedStyle` 与 `getBoundingClientRect` 实测）：
 
 | 项 | 值 |
 | --- | --- |
@@ -71,10 +71,19 @@ UI 文案里不允许出现任何自曝性质或免责性质的说明，包括"�
 
 ## 三、参考来源与边界
 
-- **视觉参考是真实登录态的 EMStudio**（`emstudio.pro`），不是推测。研究基线 `docs/research/emstudio-ui-ux-baseline.md` 是人工观察版，实测规格才是准的；两者冲突时以实测为准（实测已更正人工版 10 处）。
+- **视觉参考是真实登录态的 EMStudio**（`emstudio.pro`），不是推测。取值一律以实测为准：目测和印象会系统性偏大偏重，与实测冲突时信实测值。
 - **必须排除**：Pro 试用、升级至 Pro、AI Magic 额度、Storage 用量、订阅套餐等商业化内容。
 - **参考没有的状态要外推**：从同一套令牌和交互语法长出来，不能像另一套设计系统。
-- 采集参考的方法见 `docs/reference/emstudio-sidebar-measured-spec.md` 的「采集方法备注」（Chrome 152 的若干坑）。
+
+**采集真实参考的方法（Chrome 152 踩过的坑）**：
+
+量真实登录态页面的数值时，用 DevTools remote debugging 读 `getComputedStyle` 与 `getBoundingClientRect`，不要凭截图目测。已知的坑：
+
+- Chrome 152 的 `/json/version` 与 `/json/list` 返回 `404`，HTTP 发现接口不可用；带 `Origin` 头的 CDP WebSocket 握手被 `403` 拒绝，所以 `playwright.connectOverCDP` 不可用。不带 `Origin` 头的裸 `ws://` 握手返回 `101`，浏览器级 ws 路径从 `~/.config/google-chrome/DevToolsActivePort` 第二行读取。
+- `chrome-devtools-axi` 配 `CHROME_DEVTOOLS_AXI_AUTO_CONNECT=1` 附着的是独立的 headless 实例，不带用户登录态，`CHROME_DEVTOOLS_AXI_BROWSER_URL` 同样受限。用户登录态在 `Profile 1`，不在 `Default`。
+- **每次建立 CDP 连接，Chrome 都会弹一次调试授权确认。** 把所有采集合并进单个长连接脚本，不要反复打扰用户。
+- **探针命中的可能是定位容器，不是面板本身。** Radix 一类的容器是 `background: transparent`、`border-radius: 0`、`box-shadow: none`，直接读它会得出「圆角 0、无阴影、透明底」的错误结论，面板样式要用截图像素测量补齐。
+- **像素测量要从面板内部向外扫。** 各弹层的压暗比例不同（`50%`／`20%`／不压暗），同一个亮度阈值不可能同时成立。
 
 ## 四、验证陷阱（本项目的真实教训）
 
