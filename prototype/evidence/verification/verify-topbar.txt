@@ -1,0 +1,111 @@
+=== TOP BAR ===
+ok   top bar is 65px tall  65
+ok   top bar insets are 18px left / 48px right  0px 48px 0px 18px
+ok   brand starts at x=18  18
+ok   brand mark is 28px at 6px radius  28 6px
+ok   wordmark starts at x=54  54
+ok   wordmark is 18px/27px at weight 400  {"x":54,"y":18.5,"w":99.31,"h":27,"right":153.31,"fontSize":"18px","lineHeight":"27px","fontWeight":"400","letterSpacing":"-0.36px"}
+ok   wordmark tracking is -0.36px  -0.36px
+ok   nav item is 32px, 6px 20px, fully rounded  {"text":"首页","h":32,"pad":"6px 20px","radius":"9999px","font":"14px","weight":"500","bg":"rgb(45, 48, 55)","color":"rgb(255, 255, 255)"}
+ok   nav item type is 14px at weight 500  14px 500
+ok   selected nav uses the ink pill  rgb(45, 48, 55) rgb(255, 255, 255)
+ok   unselected nav uses the muted-foreground token  rgb(85, 85, 85)
+ok   nav gap is 4px  4px
+ok   right group carries five entries  全局搜索 | 通知 | 发送反馈 | 教程进度：已完成 0 / 9 | Privacy & Security
+ok   entries are 32px at 6px radius  [[32,"6px"],[32,"6px"],[32,"6px"],[32,"6px"],[32,"6px"]]
+ok   entry gap is 8px  8px
+ok   right group ends 48px from the viewport edge  1392
+ok   entry icons use the muted-foreground token  rgb(85, 85, 85)
+ok   notification bell carries the red badge  {"text":"!","w":16,"h":16,"y":14,"right":1273,"btnRight":1272,"bg":"rgb(251, 44, 54)","fs":"10px"}
+ok   tutorial entry carries the amber count  {"text":"9","w":16,"h":16,"y":14,"right":1353,"btnRight":1352,"bg":"rgb(254, 154, 0)","fs":"10px"}
+ok   badges are 16px pinned to the button corner  [[16,14,1273,1272],[16,14,1353,1352]]
+ok   no hamburger in the desktop top bar  {"display":"none","w":0}
+ok   icon buttons reset the UA padding  0px 0px 0px 0px 0px
+ok   every entry icon is centred in its box  [["search",0,0],["notifications",0,0],["feedback",0,0],["tutorial",0,0],["privacy",0,0]]
+ok   first run dims the whole viewport  [0,0,1440,900] rgba(0, 0, 0, 0.5)
+ok   the tutorial entry stays lit above the scrim  wrap 96 scrim 94 lit=true
+ok   the scrim swallows presses everywhere else  true
+ok   dismissing the guide removes the scrim  scrim still present
+ok   search tooltip reads "搜索 (Ctrl+K)"  搜索 (Ctrl+K)
+ok   tooltip is 28px at y=66 with the rail geometry  {"text":"搜索 (Ctrl+K)","h":28,"y":66,"pad":"6px 12px","radius":"6px","bg":"rgb(45, 48, 55)","color":"rgb(249, 249, 249)","font":"12px","opacity":"1","centre":1216,"btnCentre":1216}
+ok   tooltip uses the dark ink surface  rgb(45, 48, 55) rgb(249, 249, 249)
+ok   tooltip is centred on its trigger  1216 vs 1216
+ok   support menu opens on hover alone  open
+ok   support menu keeps the 167px reference width  167
+ok   every support row carries an icon  [["设置",true],["帮助",true],["更新日志",true]]
+ok   support rows place a 16px icon then the label  [[12,38],[12,38],[12,38]]
+ok   the chevron flips while the menu is showing  matrix(-1, 0, 0, -1, 0, 0)
+ok   the menu survives the pointer crossing the gap below its trigger  gap=true panel=true
+ok   a support item can actually be reached and clicked  {"open":false,"said":"设置"}
+ok   support menu closes when the pointer leaves  still open
+ok   the chevron returns to pointing down  none
+ok   notifications panel opens at y=56 flush with its trigger  y=56 right=1272 trigger=1272
+ok   notifications panel radius is 12px  12px
+ok   notifications panel padding is 16px 20px  16px 20px
+ok   notifications panel is 320px wide  320
+ok   notifications hides its tooltip while open  0
+ok   feedback panel opens at y=56 flush with its trigger  y=56 right=1312 trigger=1312
+ok   feedback panel radius is 12px  12px
+ok   feedback panel padding is 16px 20px  16px 20px
+ok   feedback panel is 540px wide  540
+ok   feedback hides its tooltip while open  0
+ok   tutorial panel opens at y=56 flush with its trigger  y=56 right=1352 trigger=1352
+ok   tutorial panel radius is 12px  12px
+ok   tutorial panel padding is 16px 20px  16px 20px
+ok   tutorial panel is 320px wide  320
+ok   tutorial hides its tooltip while open  0
+ok   privacy panel opens at y=56 flush with its trigger  y=56 right=1392 trigger=1392
+ok   privacy panel radius is 16px  16px
+ok   privacy panel padding is 16px 20px  16px 20px
+ok   privacy hides its tooltip while open  0
+ok   each feedback type selects in its own colour  [["建议","rgb(124, 58, 237)"],["错误报告","rgb(229, 72, 77)"],["问题","rgb(194, 116, 10)"],["赞扬","rgb(22, 163, 74)"]]
+ok   unselected feedback chips stay grey  [["rgb(85, 85, 85)","rgb(85, 85, 85)","rgb(85, 85, 85)"],["rgb(85, 85, 85)","rgb(85, 85, 85)","rgb(85, 85, 85)"],["rgb(85, 85, 85)","rgb(85, 85, 85)","rgb(85, 85, 85)"],["rgb(85, 85, 85)","rgb(85, 85, 85)","rgb(85, 85, 85)"]]
+ok   search panel is a viewport-centred modal  {"x":464,"y":275}
+ok   search panel is 512px at 8px radius  512 8px
+ok   search panel uses the page colour and no shadow  rgb(249, 249, 249) none
+ok   search scrim is 50% black  rgba(0, 0, 0, 0.5)
+ok   search is a labelled modal dialog  dialog true
+ok   search focuses its input on open  true
+ok   search row grammar is 48 / 28 / 36  48 28 36
+ok   search shows an empty state when nothing matches  empty state visible
+ok   surfaces are mutually exclusive  1 open
+ok   Escape closes the surface  0
+ok   Escape returns focus to the trigger  feedback
+ok   Ctrl+K opens search  search panel visible
+ok   a pointer press outside the top bar closes the surface  closed
+ok   pressing the top bar beside a popover closes it  1 -> 0
+ok   pressing inside the popover keeps it open  closed
+ok   the guide has staged entrance keyframes  {"hasKeyframes":true,"dim":"0s","light":"0.06s","rise":"0.3s"}
+ok   entrance runs dim, then light, then text  0s < 0.06s < 0.3s
+ok   first run shows the coach mark  present
+ok   coach mark carries the one-time sentence  想了解什么功能，就点击对应项来学习吧～
+ok   coach mark points at the tutorial entry and stays on screen  {"text":"想了解什么功能，就点击对应项来学习吧～","w":244,"withinViewport":true,"pointsAtTutorial":true}
+ok   pressing the dimmed area dismisses the guide  still up
+ok   completing a tutorial decrements the amber badge  9 -> 8
+ok   completing a tutorial updates the progress line  {"badge":"8","progress":"已完成 1 / 9","done":1}
+ok   tutorial shows a 6px pill progress track  6 9999px
+ok   progress fill uses the badge amber  rgb(254, 154, 0)
+ok   progress fill tracks the completed count  0.109
+ok   progress sits 13px from its label  13
+ok   progress track is a progressbar  progressbar
+ok   finishing every tutorial fills the track  1 已完成 9 / 9
+ok   the amber badge disappears once nothing is left  true
+ok   finishing every tutorial celebrates  {"t":"恭喜您完成了所有引导！","s":"请尽情享受吧～"}
+ok   the celebration animates fireworks  70
+ok   a delayed burst never stacks its particles  0
+ok   the celebration can be dismissed  still up
+ok   @768 bar is 65px with a 32px right inset  65 32
+ok   @768 entries are 32px at 6px  32 6px
+ok   @768 brand stays visible  {"display":"none","x":0,"w":0,"h":0,"radius":"6px"}
+ok   @768 keeps all five entries and no overflow  5 overflow=false
+ok   @390 bar is 56px with a 16px right inset  56 16
+ok   @390 entries are 36px at 8px  36 8px
+ok   @390 brand gives way to the hamburger  {"display":"grid","x":16,"w":36,"h":36,"radius":"8px"}
+ok   @390 keeps all five entries and no overflow  5 overflow=false
+ok   narrow drawer carries 首页 / 日历 / 支持  首页,日历,支持
+ok   drawer nav rows reuse the sidebar row geometry  {"labels":["首页","日历","支持"],"rowH":36,"rowW":301,"moduleRowW":301,"currentLabel":"首页","currentBg":"rgb(46, 49, 55)","currentColor":"rgb(255, 255, 255)"}
+ok   drawer nav marks the current destination  {"labels":["首页","日历","支持"],"rowH":36,"rowW":301,"moduleRowW":301,"currentLabel":"首页","currentBg":"rgb(46, 49, 55)","currentColor":"rgb(255, 255, 255)"}
+ok   drawer support row expands the same three items as the menu  设置,帮助,更新日志
+ok   no console errors
+
+108/108 passed

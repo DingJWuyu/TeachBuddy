@@ -1,0 +1,16 @@
+=== REGRESSION ===
+ok   no unnamed visible buttons  []
+ok   no unlabeled visible inputs
+ok   no nested interactive controls
+ok   Delete hides a module
+ok   trash count reflects hidden module  垃圾桶，1 项
+ok   trash panel opens
+ok   trash panel opens to the right  panel x=254
+ok   trash panel lists restorable items
+ok   module restores to Ungrouped
+ok   no horizontal overflow @1440x900
+ok   no horizontal overflow @390x844
+ok   mobile drawer opens  {"open":true,"x":0,"w":326}
+ok   no console errors  []
+
+13/13 passed

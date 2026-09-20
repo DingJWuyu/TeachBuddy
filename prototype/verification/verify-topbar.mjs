@@ -1,10 +1,10 @@
-// Workbench top-bar geometry and interaction checks. Measured reference:
-// docs/reference/emstudio-topbar-measured-spec.md.
+// Geometry and interaction checks for the accepted workbench top bar.
 import { chromium } from 'playwright';
+import { openWorkbench } from './session.mjs';
 import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/', import.meta.url));
+const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/screenshots/workbench/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
 
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?prototype=sidebar';
@@ -56,7 +56,7 @@ const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errs = [];
 p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
 p.on('pageerror', (e) => errs.push(String(e)));
-await p.goto(BASE, { waitUntil: 'networkidle' });
+await openWorkbench(p, BASE);
 await p.waitForTimeout(600);
 
 /*
@@ -369,7 +369,7 @@ await p.waitForTimeout(200);
 
 // ------------------------------------------------------------- coach mark
 
-await p.reload({ waitUntil: 'networkidle' });
+await openWorkbench(p, BASE);
 await p.waitForTimeout(600);
 
 const entrance = await p.evaluate(() => {
@@ -402,7 +402,7 @@ await p.mouse.click(700, 500);
 await p.waitForTimeout(350);
 ok('pressing the dimmed area dismisses the guide', (await p.evaluate(() => document.querySelectorAll('.tb-coach, .tb-coach-scrim').length)) === 0, 'still up');
 
-await p.reload({ waitUntil: 'networkidle' });
+await openWorkbench(p, BASE);
 await p.waitForTimeout(600);
 await settle();
 
@@ -546,47 +546,47 @@ const failed = results.filter((r) => !r.pass).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 
 await p.setViewportSize({ width: 1440, height: 900 });
-await p.reload({ waitUntil: 'networkidle' });
+await openWorkbench(p, BASE);
 await p.waitForTimeout(600);
 await settle();
-await p.screenshot({ path: `${OUT}/prototype-topbar-coach.png` });
+await p.screenshot({ path: `${OUT}/PC-CW12-coach.png` });
 await p.click('.tb-coach-dismiss');
 await p.waitForTimeout(250);
-await p.screenshot({ path: `${OUT}/prototype-topbar-default.png` });
+await p.screenshot({ path: `${OUT}/PC-CW01-expanded.png` });
 await p.hover('[data-surface="support"]');
 await p.waitForTimeout(400);
-await p.screenshot({ path: `${OUT}/prototype-topbar-support-menu.png` });
+await p.screenshot({ path: `${OUT}/PC-CW06-support.png` });
 await p.mouse.move(700, 400);
 await p.waitForTimeout(300);
 await p.click('[data-surface="notifications"]');
 await p.waitForTimeout(300);
-await p.screenshot({ path: `${OUT}/prototype-topbar-notifications.png` });
+await p.screenshot({ path: `${OUT}/PC-CW08-notifications.png` });
 await p.keyboard.press('Escape');
 await p.click('[data-surface="feedback"]');
 await p.waitForTimeout(300);
-await p.screenshot({ path: `${OUT}/prototype-topbar-feedback.png` });
+await p.screenshot({ path: `${OUT}/PC-CW09-feedback.png` });
 await p.keyboard.press('Escape');
 await p.click('[data-surface="tutorial"]');
 await p.waitForTimeout(300);
-await p.screenshot({ path: `${OUT}/prototype-topbar-tutorial.png` });
+await p.screenshot({ path: `${OUT}/PC-CW10-tutorial.png` });
 await p.keyboard.press('Escape');
 await p.click('[data-surface="privacy"]');
 await p.waitForTimeout(300);
-await p.screenshot({ path: `${OUT}/prototype-topbar-privacy.png` });
+await p.screenshot({ path: `${OUT}/PC-CW11-privacy.png` });
 await p.keyboard.press('Escape');
 await p.click('[data-surface="search"]');
 await p.waitForTimeout(400);
-await p.screenshot({ path: `${OUT}/prototype-topbar-search.png` });
+await p.screenshot({ path: `${OUT}/PC-CW07-search.png` });
 await p.keyboard.press('Escape');
 await p.setViewportSize({ width: 390, height: 844 });
 await p.waitForTimeout(400);
 await p.click('.tb-mobile-menu');
 await p.waitForTimeout(500);
-await p.screenshot({ path: `${OUT}/prototype-topbar-narrow-drawer.png` });
+await p.screenshot({ path: `${OUT}/手机-CW14-drawer.png` });
 await p.keyboard.press('Escape');
 await p.setViewportSize({ width: 1440, height: 900 });
 await p.waitForTimeout(400);
-await p.reload({ waitUntil: 'networkidle' });
+await openWorkbench(p, BASE);
 await p.waitForTimeout(600);
 await settle();
 await p.click('.tb-coach-dismiss');
@@ -599,6 +599,6 @@ for (let i = 1; i <= 9; i += 1) {
 }
 // Wait past the last burst's delay so the screenshot shows the full effect.
 await p.waitForTimeout(2400);
-await p.screenshot({ path: `${OUT}/prototype-topbar-celebration.png` });
+await p.screenshot({ path: `${OUT}/PC-CW13-celebration.png` });
 await b.close();
 process.exit(failed === 0 ? 0 : 1);

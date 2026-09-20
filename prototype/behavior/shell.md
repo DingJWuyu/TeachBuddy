@@ -6,7 +6,7 @@ Status: Accepted
 
 ## Scope
 
-独立教师使用同一套顶部栏与侧边栏。桌面、平板和手机均可进入原型；首页正文只是样例，不构成业务模块设计承诺。
+独立教师使用同一套顶部栏与侧边栏。桌面、平板和手机均可进入原型；外壳在会话之后，打开原型先看到[账户入口](auth.md)，登录或注册成功后才是本文件描述的界面。首页正文只是样例，不构成业务模块设计承诺。
 
 ## States and scenarios
 
@@ -31,5 +31,4 @@ S8 的模块名称提示被导航滚动容器裁切，实际只露出左边缘�
 
 ## Evidence
 
-- [展开](../evidence/prototype-topbar-default.png)、[收起键悬停](../evidence/prototype-desktop-1440-toggle-hover.png)、[窄轨](../evidence/prototype-desktop-1440-rail.png)、[窄轨提示](../evidence/prototype-desktop-1440-rail-tooltip.png)、[手机抽屉](../evidence/prototype-topbar-narrow-drawer.png)。
-- [交互回归](../verification/verify-regression.mjs) 与 [几何验证](../verification/verify-visual.mjs) 覆盖桌面、手机、隐藏恢复及无障碍标签。
+当前截图、复现步骤、断言结果及覆盖缺口见 [工作台场景覆盖](workbench-scenarios.md#外壳)。

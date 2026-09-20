@@ -30,5 +30,4 @@ Status: Accepted
 
 ## Evidence
 
-- [通知](../evidence/prototype-topbar-notifications.png)、[反馈](../evidence/prototype-topbar-feedback.png)、[教程](../evidence/prototype-topbar-tutorial.png)、[隐私](../evidence/prototype-topbar-privacy.png)。
-- [首次引导](../evidence/prototype-topbar-coach.png)、[庆祝](../evidence/prototype-topbar-celebration.png)。窄屏共享布局见 [外壳](shell.md)。
+当前截图、复现步骤、断言结果及覆盖缺口见 [工作台场景覆盖](workbench-scenarios.md#顶部栏)。

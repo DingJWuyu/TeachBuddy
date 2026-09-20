@@ -28,5 +28,4 @@ Status: Accepted
 
 ## Evidence
 
-- [导航悬停](../evidence/prototype-desktop-1440-nav-hover.png)、[搜索](../evidence/prototype-topbar-search.png)、[支持菜单](../evidence/prototype-topbar-support-menu.png)。
-- [顶部栏验证](../verification/verify-topbar.mjs) 覆盖搜索过滤、键盘选择、菜单悬停和关闭。
+当前截图、复现步骤、断言结果及覆盖缺口见 [工作台场景覆盖](workbench-scenarios.md#导航)。

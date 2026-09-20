@@ -47,12 +47,14 @@ npm run dev
 
 ## 原型入口
 
-行为文档从 [manifest](./prototype/behavior/manifest.md) 进入，按外壳、导航、侧栏和顶部栏分别维护。
+行为文档从 [manifest](./prototype/behavior/manifest.md) 进入，按账户入口、外壳、导航、侧栏和顶部栏分别维护。
 
 ```bash
 npm run prototype:sidebar   # 当前原型：http://localhost:4174/
 npm run prototype:build
 ```
+
+打开后先是账户入口的登录卡。示例邮箱 `example@example.com`，密码填 8 位以上（例如 `teachbuddy`）即可进入工作台。
 
 ## 文档入口
 

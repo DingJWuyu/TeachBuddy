@@ -1,10 +1,10 @@
-// Side-by-side geometry check: prototype vs the EMStudio reference values.
-// Reference values come from docs/reference/emstudio-sidebar-measured-spec.md.
+// Geometry checks for the accepted sidebar layout.
 import { chromium } from 'playwright';
+import { openWorkbench } from './session.mjs';
 import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/', import.meta.url));
+const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/screenshots/workbench/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
 
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?prototype=sidebar';
@@ -35,7 +35,7 @@ const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errs = [];
 p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
-await p.goto(BASE, { waitUntil: 'networkidle' });
+await openWorkbench(p, BASE);
 await p.waitForTimeout(500);
 
 // The one-shot first-run guide dims the shell and swallows presses by design, so
@@ -189,7 +189,9 @@ for (const r of rows2) {
 }
 
 console.log('\nconsole errors:', errs.length ? errs.slice(0, 3) : 'none');
-console.log('horizontal overflow:', await p.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth));
+const overflow = await p.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+console.log('horizontal overflow:', overflow);
 
-await p.screenshot({ path: `${OUT}/prototype-desktop-1440-rail.png` });
+await p.screenshot({ path: `${OUT}/PC-CW02-rail.png` });
 await b.close();
+process.exitCode = rows.some((result) => !result.ok) || errs.length || overflow ? 1 : 0;

@@ -3,6 +3,7 @@
 // hide/restore interactions. Drag-and-drop paths are exercised structurally
 // rather than by replaying synthetic drag events.
 import { chromium } from 'playwright';
+import { openWorkbench } from './session.mjs';
 
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?prototype=sidebar';
 
@@ -14,7 +15,7 @@ const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errs = [];
 p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
 p.on('pageerror', (e) => errs.push(String(e)));
-await p.goto(BASE, { waitUntil: 'networkidle' });
+await openWorkbench(p, BASE);
 await p.waitForTimeout(500);
 
 // The one-shot first-run guide dims the shell and swallows presses by design, so
@@ -80,7 +81,7 @@ const overflow1440 = await p.evaluate(() => document.documentElement.scrollWidth
 ok('no horizontal overflow @1440x900', !overflow1440);
 
 const m = await b.newPage({ viewport: { width: 390, height: 844 } });
-await m.goto(BASE, { waitUntil: 'networkidle' });
+await openWorkbench(m, BASE);
 await m.waitForTimeout(500);
 // This page has its own load, so it raises its own first-run guide.
 await m.click('.tb-coach-dismiss').catch(() => {});
@@ -104,3 +105,5 @@ const failed = results.filter((r) => !r.pass).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 
 await b.close();
+
+process.exitCode = results.some((result) => !result.pass) || errs.length ? 1 : 0;

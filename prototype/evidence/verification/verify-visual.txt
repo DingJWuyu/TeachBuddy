@@ -1,0 +1,56 @@
+=== EXPANDED @1440x900 ===
+ok   topbar height              actual=65  expected=65
+ok   sidebar width              actual=256  expected=256
+ok   sidebar x                  actual=0  expected=0
+ok   sidebar y                  actual=65  expected=65
+ok   sidebar border-right       actual=0px  expected=0px
+ok   row height                 actual=36  expected=36
+ok   row x                      actual=12  expected=12
+ok   row padding                actual=10px  expected=10px
+ok   row radius                 actual=8px  expected=8px
+ok   row gap (list)             actual=4px  expected=4px
+ok   row label x                actual=54  expected=54
+ok   row label font             actual=14px  expected=14px
+ok   row label line-height      actual=20px  expected=20px
+ok   row label weight           actual=500  expected=500
+ok   icon box                   actual=20  expected=20
+ok   icon badge bg              actual=rgba(0, 0, 0, 0)  expected=rgba(0, 0, 0, 0)
+ok   group label font           actual=10px  expected=10px
+ok   group label tracking       actual=0.5px  expected=0.5px
+ok   group label transform      actual=uppercase  expected=uppercase
+ok   group label x              actual=12  expected=12
+ok   account avatar size        actual=32  expected=32
+ok   account avatar bg          actual=rgb(109, 74, 173)  expected=rgb(109, 74, 173)
+ok   account row x              actual=16  expected=16
+ok   account row width          actual=183  expected=183
+ok   account row padding        actual=4px  expected=4px
+ok   account row radius         actual=6px  expected=6px
+ok   account row bg (no fill)   actual=rgba(0, 0, 0, 0)  expected=rgba(0, 0, 0, 0)
+ok   term button x              actual=12  expected=12
+ok   term button width          actual=232  expected=231
+ok   term button height         actual=32  expected=32
+ok   term button radius         actual=10px  expected=10px
+ok   toggle x (inside sidebar)  actual=220  expected=220
+ok   toggle size                actual=32  expected=32
+ok   card shadow token          actual=true  expected=true
+
+=== COLLAPSED RAIL @1440x900 ===
+ok   toggle size                actual=32  expected=32
+ok   card shadow token          actual=true  expected=true
+ok   rail width                 actual=72  expected=72
+ok   rail row width             actual=36  expected=36
+ok   rail row x                 actual=18  expected=16
+ok   rail row height            actual=36  expected=36
+ok   rail row padding           actual=8px  expected=8px
+ok   group headings hidden      actual=hidden  expected=hidden
+ok   workspace heading hidden   actual=hidden  expected=hidden
+ok   account row hidden         actual=hidden  expected=hidden
+ok   language row hidden        actual=hidden  expected=hidden
+ok   trash hidden               actual=hidden  expected=hidden
+ok   sidebar footer removed     actual=absent  expected=absent
+ok   module label hidden        actual=hidden  expected=hidden
+ok   group divider present      actual=true  expected=true
+ok   tooltip text bound         actual=true  expected=true
+
+console errors: none
+horizontal overflow: false

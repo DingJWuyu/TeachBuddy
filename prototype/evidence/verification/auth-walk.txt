@@ -1,0 +1,15 @@
+login desktop-1440: 不滚动 doc=900 vp=900 card=400x371@249 品牌同行=true 圆标=50%
+register desktop-1440: 不滚动 doc=900 vp=900 card=400x593@161 品牌同行=true 圆标=50%
+recovery-request desktop-1440: 不滚动 doc=900 vp=900 card=400x244@313 品牌同行=true 圆标=50%
+recovery-confirm desktop-1440: 不滚动 doc=900 vp=900 card=400x524@173 品牌同行=true 圆标=50%
+登录后: {"workbench":true,"session":"example老师 | example@example.com | 退出登录","strip":{"visible":true,"box":[16,834,227,50]}}
+login tablet-768: 不滚动 doc=1024 vp=1024 card=400x371@311 品牌同行=true 圆标=50%
+register tablet-768: 不滚动 doc=1024 vp=1024 card=400x593@223 品牌同行=true 圆标=50%
+recovery-request tablet-768: 不滚动 doc=1024 vp=1024 card=400x244@375 品牌同行=true 圆标=50%
+recovery-confirm tablet-768: 不滚动 doc=1024 vp=1024 card=400x524@235 品牌同行=true 圆标=50%
+login mobile-390: 不滚动 doc=844 vp=844 card=362x361@226 品牌同行=true 圆标=50%
+register mobile-390: 不滚动 doc=844 vp=844 card=362x583@138 品牌同行=true 圆标=50%
+recovery-request mobile-390: 不滚动 doc=844 vp=844 card=362x234@290 品牌同行=true 圆标=50%
+recovery-confirm mobile-390: 不滚动 doc=844 vp=844 card=362x514@150 品牌同行=true 圆标=50%
+
+无控制台错误，全程不滚动，卡片居中，品牌同行，错误落在字段上，登录可进入工作台。

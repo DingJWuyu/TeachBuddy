@@ -39,5 +39,4 @@ S6：点击垃圾桶打开隐藏项面板。隐藏模块或分组可复现非空
 
 ## Evidence
 
-- [垃圾桶面板](../evidence/prototype-trash-panel.png)、[新建分组](../evidence/prototype-new-group-popover.png)、[插入线](../evidence/prototype-insertion-line.png)。
-- [侧栏回归](../verification/verify-ui-review.mjs) 覆盖侧栏动效、锚点、浮层与行几何。
+当前截图、复现步骤、断言结果及覆盖缺口见 [工作台场景覆盖](workbench-scenarios.md#侧栏)。

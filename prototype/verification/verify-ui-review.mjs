@@ -1,9 +1,10 @@
 // Checks sidebar motion, anchors, popovers, and row geometry.
 import { chromium } from 'playwright';
+import { openWorkbench } from './session.mjs';
 import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/', import.meta.url));
+const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/screenshots/workbench/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
 
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?prototype=sidebar';
@@ -16,7 +17,7 @@ const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errs = [];
 p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
 p.on('pageerror', (e) => errs.push(String(e)));
-await p.goto(BASE, { waitUntil: 'networkidle' });
+await openWorkbench(p, BASE);
 await p.waitForTimeout(600);
 
 // The one-shot first-run guide dims the shell and swallows presses by design, so
@@ -266,9 +267,11 @@ await p.evaluate(() => {
 await p.waitForTimeout(300);
 await p.click('.tb-trash-target', { force: true });
 await p.waitForTimeout(400);
-await p.screenshot({ path: `${OUT}/prototype-trash-panel.png` });
+await p.screenshot({ path: `${OUT}/PC-CW15-trash.png` });
 await p.keyboard.press('Escape');
 await p.click('[data-new-group-toggle]', { force: true });
 await p.waitForTimeout(400);
-await p.screenshot({ path: `${OUT}/prototype-new-group-popover.png` });
+await p.screenshot({ path: `${OUT}/PC-CW16-new-group.png` });
 await b.close();
+
+process.exitCode = results.some((result) => !result.pass) || errs.length ? 1 : 0;
