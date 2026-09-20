@@ -1,130 +1,63 @@
 ---
 name: system-contract-design
-description: "Derive an implementation-ready system contract from an accepted product behavior record."
+description: "Turn the accepted outputs of product-behavior-design into an agreed frontend/backend contract with the user."
 disable-model-invocation: true
 ---
 
 # System Contract Design
 
-Turn an accepted product behavior record into the stable boundary that independent frontend and backend implementations can share. **Trace, then design**: every contract element must serve an observable behavior or an established system invariant.
+Work with the user to agree the **shared interface** that lets frontend and backend independently implement the behavior recorded in `product-behavior-design`'s accepted outputs. Leave each side's internal implementation to its implementer. Do not implement either side.
 
-Do not redesign product behavior or implement the frontend or backend.
+## Establish the starting point
 
-## Process
+Read [product-behavior-design's artifact layout](../product-behavior-design/SKILL.md#artifacts) and [behavior record definition](../product-behavior-design/references/record.md) as the input contract. Start from its accepted manifest, follow ownership to the selected behavior records and shared concerns, and use their coverage tables to reach the relevant runtime scenarios and evidence. Reuse the existing journey, state, and scenario IDs.
 
-### 1. Establish the source
+Consume the selected scope of the current integrated accepted version. Keep these inputs read-only. If that scope is ambiguous, still in review, or awaiting integration, identify the input gap with the user before designing the dependent interface. Other accepted scopes can proceed independently.
 
-Read the supplied behavior record and every artifact it marks authoritative. Use fixtures as semantic examples rather than copying them into transport shapes.
+When resuming, compare the current behavior with the source revision recorded in the contract. Reopen agreements affected by a behavior change before treating them as ready.
 
-The behavior record must be accepted and distinguish confirmed behavior from inference and open questions. If it does not, report the exact input gap and stop before designing around guesses.
+Explore the existing interfaces, relevant code, domain language, and recorded decisions. Bring the accepted behavior and established decisions into the discussion as settled constraints; surface conflicts with the current system rather than silently choosing a source to override.
 
-Assign stable local references to source behaviors and states that do not already have IDs, without changing their meaning.
+## Design together
 
-Create one durable contract artifact and identify the exact accepted behavior record it derives from.
+Use these skills throughout the discussion:
 
-### 2. Classify every observable obligation
+- **`grilling`** to work through the decisions about what frontend and backend must agree on.
+- **`domain-modeling`** to sharpen shared meanings and record domain terms and significant decisions as they settle.
+- **`codebase-design`** for the interface vocabulary and principles used to shape the agreement.
 
-Create a traceability table from each behavior or state ID to one of:
+Focus the design tree on the shared interface needed to deliver the accepted journeys. New shared-interface decisions belong in that discussion with the user. Keep choices either implementation can make independently outside the contract.
 
-- frontend-only behavior;
-- backend-owned behavior;
-- shared boundary behavior;
-- unresolved product behavior.
+Walk proposed agreements through the journeys from both sides, including the accepted failure and recovery paths. Use concrete exchanges to expose incompatible interpretations. Feed discoveries back into the design tree; an agreed happy path does not settle the rest of a journey.
 
-Frontend-only behavior needs no invented API. Backend-owned and shared behavior must identify the responsible capability and the information or action crossing the boundary. An unresolved product behavior remains a product gap rather than becoming a technical assumption.
+If an answer requires deciding previously unspecified product behavior, return the affected IDs to the user as an input gap for `product-behavior-design`. Keep dependent contract choices open until the resolution is part of its integrated accepted output. Continue with independent choices.
 
-The step is complete when every behavior ID is classified and every proposed contract element traces back to at least one behavior or system invariant.
+## Deliver the contract
 
-### 3. Design the boundary
+Use `writing-for-agents` to maintain the following artifacts as agreements form. Give the contract one durable entry using the project's document conventions. Definitions and cases can live in that document or in linked files suited to the project's tooling; each has one authoritative home.
 
-Model user intent and domain capability rather than pages, components, fixtures, or database tables. Reuse established public seams where they fit. Keep ownership cohesive: one authority owns each invariant and other parts collaborate through explicit contracts.
+**Contract entry**
 
-Define only the boundary forms the feature needs, such as:
+- Identify the scope, agreement status, and exact accepted source revision. Link the manifest, owning behavior records, and relevant evidence through their existing entries.
+- Map the in-scope upstream scenario IDs and referenced states to shared interface definitions and contract cases, or to the side that owns the behavior entirely.
+- Link the shared definitions, cases, glossary, and relevant decisions. Distinguish confirmed agreements from proposals, and name open decisions with the IDs and interface elements they block.
 
-- queries and read models;
-- commands and their outcomes;
-- domain or integration events;
-- programmatic interfaces;
-- HTTP or other transport bindings;
-- shared validation or schema artifacts.
+**Shared interface definitions**
 
-For each operation, make the relevant semantics explicit:
+Define the concrete operations and data shapes, responsibility for each result, and the rules both sides need to use the interface correctly. Include the communication protocol when a transport is involved. Follow `codebase-design` for what belongs to the interface and `domain-modeling` for shared meanings.
 
-- actor, identity, authorization, and data isolation where relevant;
-- input meaning, required context, and validation;
-- successful result and observable timing;
-- stable identifiers and lifecycle;
-- errors the caller can act on;
-- retry, idempotency, concurrency, and ordering behavior;
-- timezone, locale, pagination, filtering, and sorting where they affect meaning;
-- consistency, caching, and partial failure where the experience depends on them.
+Use the project's authoritative contract format where one exists. Keep schemas, types, and protocol definitions precise enough for either side to implement without inventing fields or outcomes. Derive these from the agreed interface; upstream prototype data illustrates behavior and does not prescribe the exchange format.
 
-Omit irrelevant machinery instead of filling a generic checklist. Add a machine-readable schema only when it is an established source of truth or materially removes ambiguity; link it from the document rather than duplicating it.
+**Contract cases**
 
-### 4. Run the adversarial pass
+Turn the mapped upstream scenarios into concrete exchanges: starting conditions, inputs or events, expected results, and the assertions each side must satisfy. Cover the shared interactions in the accepted success, failure, and recovery paths. A case must explain how the frontend can exercise it with a substitute backend and how the backend can verify it without the frontend.
 
-Walk the proposed contract against every accepted journey and fixture. Test the boundary mentally against slow responses, repetition, interruption, stale data, concurrent actors, permission changes, partial failure, and compatible evolution wherever those cases are plausible.
+Keep examples consistent with the shared definitions. Add runnable mocks or contract tests when requested or needed to remove an ambiguity, using these same definitions and cases. Record how to run anything executable and what was actually checked; case definitions alone are not evidence of a passing implementation.
 
-Classify each discovery:
+## Check independent implementation
 
-- **Product gap**: the answer changes what the user observes. Return the question without choosing for the user.
-- **Contract decision**: the answer is internal to the boundary. Decide it, record the rationale, and keep the experience unchanged.
-- **Implementation detail**: either side can choose independently. Keep it outside the contract.
+Rehearse every in-scope journey using only the contract entry and its linked artifacts. Check the upstream scenario mapping for omissions. For every shared interaction, use the corresponding definition and case to check whether the frontend can determine what to send and how to respond, and whether the backend can determine what to accept and produce.
 
-Continue designing unaffected portions when a gap is local. Mark the whole contract blocked only when independent implementation would otherwise require incompatible guesses.
+Any point that requires an implementer to guess a shared meaning or seek an undocumented agreement is still an open decision. Return it to `grilling` and update the contract as it is resolved.
 
-### 5. Write the contract
-
-Use this shape, pruning sections that have no bearing on the feature:
-
-```markdown
-# <Feature or product area> system contract
-
-Status: Draft | Blocked by product decision | Ready for implementation
-Source behavior: <artifact and accepted version>
-
-## Scope and boundary
-Capabilities covered, ownership, consumers, dependencies, and non-goals.
-
-## Behavior traceability
-Behavior or state ID, classification, responsible capability, and contract
-element. Frontend-only rows remain visible to prove they were considered.
-
-## Domain semantics and invariants
-Authoritative terms, identities, lifecycle, validation, authorization, data
-isolation, and rules that must agree across the boundary where relevant.
-
-## Operations
-Queries, commands, events, or ports. For each: purpose, actor, input, output,
-success semantics, actionable errors, and relevant concurrency or timing rules.
-
-## Transport binding
-Routes, methods, headers, status codes, serialization, and schemas when the
-boundary uses a transport. Keep transport separate from domain meaning.
-
-## Examples and mocks
-Representative success and failure exchanges mapped to source fixtures.
-Examples illustrate the contract and never add undocumented semantics.
-
-## Verification
-Contract-level acceptance cases both implementations can run independently,
-including compatibility and failure cases that materially matter.
-
-## Decisions, assumptions, and open product gaps
-Record technical decisions with rationale. Keep assumptions explicit and list
-product questions that require user-visible decisions.
-```
-
-### 6. Set the readiness state
-
-Mark the document `Ready for implementation` only when:
-
-- every backend-dependent accepted behavior has a traceable contract path;
-- every operation has one owner and complete success and actionable-failure semantics;
-- every shared field has one meaning;
-- relevant identity, authorization, and data-isolation rules are explicit;
-- relevant retry, concurrency, ordering, time, and consistency behavior is settled;
-- frontend and backend can build compatible implementations without a private side conversation;
-- no open product gap can cause those implementations to diverge.
-
-Report the contract artifact, readiness state, covered behavior IDs, decisions made, and remaining product gaps.
+Present the contract entry, shared definitions, contract cases, covered upstream IDs, and any remaining decisions. The contract is ready when the user confirms the agreement, its source revision still matches the accepted behavior, and both sides can implement and check all in-scope journeys compatibly from these artifacts with no unresolved shared decisions.
