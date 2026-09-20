@@ -1,17 +1,8 @@
-/*
- * Top-bar entry surfaces for the workbench prototype.
- *
- * Geometry and type come from docs/reference/emstudio-topbar-measured-spec.md:
- *   - popovers anchor to the trigger's right edge, 8px below a 32px trigger
- *   - panel padding is 16px 20px with a 1px #e3e3e3 border and the card shadow
- *   - the search surface is a viewport-centred 512px modal over a 50% scrim
- *   - row pitch is 36px and row labels are 14px/20px
- *
- * PROTOTYPE: memory-only. Nothing here talks to a backend, and the notification
- * and search contents are fixtures standing in for module-contributed data.
- */
+
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createDragChip } from './dragChip.js';
 import { Icon } from './icons.jsx';
+import { modulePath, navigate, routeClick, withSearch } from './routes.js';
 
 /* ------------------------------------------------------------------ search */
 
@@ -19,22 +10,22 @@ const SEARCH_GROUPS = [
   {
     group: '功能模块',
     items: [
-      { id: 'm-timetable', name: '课程表', hint: '班级 · 周视图', icon: 'calendar' },
-      { id: 'm-planner', name: '规划器', hint: '周计划与迷你月历', icon: 'planner' },
-      { id: 'm-students', name: '学生', hint: '9 名学生', icon: 'students' }
+      { id: 'm-timetable', name: '课程表', hint: '班级 · 周视图', icon: 'calendar', route: modulePath('timetable') },
+      { id: 'm-planner', name: '规划器', hint: '周计划与迷你月历', icon: 'planner', route: modulePath('planner') },
+      { id: 'm-students', name: '学生', hint: '9 名学生', icon: 'students', route: modulePath('students') }
     ]
   },
   {
     group: '班级',
     items: [
-      { id: 'c-8a', name: '八年级 A 班', hint: '32 名学生', dot: '#94a3b8' },
-      { id: 'c-club', name: '数学兴趣小组', hint: '18 名学生', dot: '#94a3b8' }
+      { id: 'c-8a', name: '八年级 A 班', hint: '32 名学生', dot: '#94a3b8', route: modulePath('classes') },
+      { id: 'c-club', name: '数学兴趣小组', hint: '18 名学生', dot: '#94a3b8', route: modulePath('classes') }
     ]
   },
   {
     group: '课程',
     items: [
-      { id: 'l-fn', name: '八年级数学 · 一次函数', hint: '本周四 10:20', icon: 'lessons' }
+      { id: 'l-fn', name: '八年级数学 · 一次函数', hint: '本周四 10:20', icon: 'lessons', route: modulePath('lessons') }
     ]
   }
 ];
@@ -65,6 +56,16 @@ export function SearchModal({ onClose, onAnnounce }) {
     setActiveIndex(0);
   }, [query]);
 
+  /*
+   * Results navigate to the destination they name, so search leaves the shell
+   * showing the page the user picked instead of only announcing it.
+   */
+  function openItem(item) {
+    onAnnounce(`已打开「${item.name}」`);
+    onClose();
+    navigate(item.route);
+  }
+
   function handleKeyDown(event) {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
@@ -72,10 +73,9 @@ export function SearchModal({ onClose, onAnnounce }) {
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
       setActiveIndex((current) => (flat.length === 0 ? 0 : (current - 1 + flat.length) % flat.length));
-    } else if (event.key === 'Enter' && flat[activeIndex]) {
+    } else if (event.key === 'Enter' && event.target === inputRef.current && flat[activeIndex]) {
       event.preventDefault();
-      onAnnounce(`已打开「${flat[activeIndex].name}」`);
-      onClose();
+      openItem(flat[activeIndex]);
     }
   }
 
@@ -122,14 +122,17 @@ export function SearchModal({ onClose, onAnnounce }) {
                 cursor += 1;
                 const index = cursor;
                 return (
-                  <button
-                    type="button"
+                  <a
+                    href={withSearch(item.route)}
                     key={item.id}
                     className={`tb-search-item${index === activeIndex ? ' is-active' : ''}`}
                     onPointerEnter={() => setActiveIndex(index)}
-                    onClick={() => {
-                      onAnnounce(`已打开「${item.name}」`);
-                      onClose();
+                    onClick={(event) => {
+                      routeClick(event, item.route);
+                      if (event.defaultPrevented) {
+                        onAnnounce(`已打开「${item.name}」`);
+                        onClose();
+                      }
                     }}
                   >
                     {item.icon
@@ -137,7 +140,7 @@ export function SearchModal({ onClose, onAnnounce }) {
                       : <span className="tb-search-dot" style={{ background: item.dot }} />}
                     <span className="tb-search-item-name">{item.name}</span>
                     <span className="tb-search-item-hint">{item.hint}</span>
-                  </button>
+                  </a>
                 );
               })}
             </div>
@@ -150,18 +153,63 @@ export function SearchModal({ onClose, onAnnounce }) {
 
 /* ----------------------------------------------------------- notifications */
 
-const NOTIFICATIONS = [
-  { id: 'n1', module: 'grades', icon: 'grades', text: '「9 月月考」成绩待录入', time: '今天', unread: true },
-  { id: 'n2', module: 'classwork', icon: 'classwork', text: '「八年级数学」作业明天截止', time: '明天', unread: true },
-  { id: 'n3', module: 'timetable', icon: 'calendar', text: '「数学兴趣小组」课程时间调整', time: '周三', unread: false }
+/*
+ * Notification fixtures. `read` is the state the user can flip, both ways, by
+ * clicking a row or by marking everything read; a read row is struck through and
+ * is the only thing that can be dragged to the trash.
+ */
+export const NOTIFICATIONS = [
+  { id: 'n1', module: 'grades', icon: 'grades', text: '「9 月月考」成绩待录入', time: '今天', read: false },
+  { id: 'n2', module: 'classwork', icon: 'classwork', text: '「八年级数学」作业明天截止', time: '明天', read: false },
+  { id: 'n3', module: 'timetable', icon: 'calendar', text: '「数学兴趣小组」课程时间调整', time: '周三', read: true }
 ];
 
-export function NotificationPanel({ onAnnounce }) {
-  const [items, setItems] = useState(NOTIFICATIONS);
-  const unread = items.filter((item) => item.unread).length;
+export function NotificationPanel({ items, onChange, onAnnounce }) {
+  /*
+   * Which notification is in flight, and whether it is over the trash. A drag
+   * that has not reached the trash yet must not lose anything: removal happens
+   * on drop, and only for the row that is actually being dragged.
+   */
+  const [draggingId, setDraggingId] = useState(null);
+  const [overTrash, setOverTrash] = useState(false);
+  // The drag image in flight. A row is wider than the trash it is aimed at, so
+  // without a smaller image the trash is covered at the exact moment it should
+  // be confirming the drop.
+  const dragChipRef = useRef(null);
+  const unread = items.filter((item) => !item.read).length;
+
+  function setRead(id, read) {
+    onChange(items.map((item) => (item.id === id ? { ...item, read } : item)));
+  }
+
+  /** Drops the chip that is following the pointer. Safe to call twice. */
+  function removeChip() {
+    dragChipRef.current?.remove();
+    dragChipRef.current = null;
+  }
+
+  // Last resort: an empty list has no drag left to end, and a panel that is
+  // closed or navigated away from must not leave the disc behind either.
+  useEffect(() => removeChip, []);
+
+  function removeDragged() {
+    const dragged = items.find((item) => item.id === draggingId);
+    if (dragged) {
+      onChange(items.filter((item) => item.id !== dragged.id));
+      onAnnounce('通知已删除');
+    }
+    setDraggingId(null);
+    setOverTrash(false);
+    /* A removed source cannot receive dragend; remove the chip at drop and on unmount too. */
+    removeChip();
+  }
 
   return (
-    <div className="tb-popover tb-popover-notifications" role="dialog" aria-labelledby="tb-notifications-title">
+    <div
+      className={`tb-popover tb-popover-notifications${draggingId ? ' is-dragging' : ''}${overTrash ? ' is-over-trash' : ''}`}
+      role="dialog"
+      aria-labelledby="tb-notifications-title"
+    >
       <div className="tb-popover-head">
         <h2 id="tb-notifications-title">通知</h2>
         {unread > 0 && (
@@ -169,7 +217,7 @@ export function NotificationPanel({ onAnnounce }) {
             type="button"
             className="tb-popover-action"
             onClick={() => {
-              setItems((current) => current.map((item) => ({ ...item, unread: false })));
+              onChange(items.map((item) => ({ ...item, read: true })));
               onAnnounce('已全部标为已读');
             }}
           >
@@ -177,43 +225,82 @@ export function NotificationPanel({ onAnnounce }) {
           </button>
         )}
       </div>
-      <p className="tb-popover-desc">功能模块有需要你处理的事情时会出现在这里。</p>
       {items.length === 0 ? (
         <div className="tb-popover-empty">
           <Icon name="bell" size={20} />
           <p>暂无通知</p>
         </div>
       ) : (
-        <div className="tb-popover-list">
+        /*
+         * The chip is torn down on the list rather than on each row. `dragend`
+         * bubbles, and the list outlives the row, so a row that is deleted by its
+         * own drop still ends its drag here.
+         */
+        <div className="tb-popover-list" onDragEnd={removeChip}>
           {items.map((item) => (
             <button
               type="button"
-              className={`tb-row${item.unread ? ' is-unread' : ''}`}
+              className={`tb-row tb-notification${item.read ? ' is-read' : ''}${draggingId === item.id ? ' is-dragging' : ''}`}
               key={item.id}
+              draggable={item.read}
+              aria-pressed={item.read}
+              title={item.read ? '点击标为未读，或拖到垃圾桶删除' : '点击标为已读'}
               onClick={() => {
-                setItems((current) => current.map((entry) => (entry.id === item.id ? { ...entry, unread: false } : entry)));
-                onAnnounce(item.text);
+                setRead(item.id, !item.read);
+                onAnnounce(item.read ? `「${item.text}」已标为未读` : `「${item.text}」已标为已读`);
+              }}
+              onDragStart={(event) => {
+                setDraggingId(item.id);
+                event.dataTransfer.setData('text/plain', item.id);
+                event.dataTransfer.effectAllowed = 'move';
+                dragChipRef.current?.remove();
+                dragChipRef.current = createDragChip({ icon: item.icon });
+                dragChipRef.current.set(event);
+                dragChipRef.current.moveTo(event.clientX, event.clientY);
+              }}
+              onDrag={(event) => dragChipRef.current?.moveTo(event.clientX, event.clientY)}
+              onDragEnd={() => {
+                setDraggingId(null);
+                setOverTrash(false);
+                dragChipRef.current?.remove();
+                dragChipRef.current = null;
               }}
             >
               <span className="tb-row-icon"><Icon name={item.icon} size={16} /></span>
-              <span className="tb-row-label">{item.text}</span>
+              <span className="tb-row-label"><span className="tb-row-text">{item.text}</span></span>
               <span className="tb-row-meta">{item.time}</span>
             </button>
           ))}
         </div>
       )}
+      {/*
+       * The trash is always present so the delete affordance does not appear only
+       * once something is already being dragged. Unread rows are not draggable,
+       * so it sits idle until a read one is picked up.
+       */}
+      <div
+        className="tb-notification-trash"
+        onDragOver={(event) => {
+          if (!draggingId) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'move';
+          setOverTrash(true);
+        }}
+        onDragLeave={() => setOverTrash(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          removeDragged();
+        }}
+      >
+        <span className="tb-notification-trash-icon"><Icon name="trash" size={16} /></span>
+        <span>删除消息</span>
+      </div>
     </div>
   );
 }
 
 /* ---------------------------------------------------------------- feedback */
 
-/*
- * Each feedback type owns a colour, applied only while it is the chosen one;
- * every other chip stays grey. The reference only ever shows its first chip
- * selected, so the violet is the one colour taken from it and the other three
- * are chosen here as ordinary semantic colours.
- */
 const FEEDBACK_TYPES = [
   { label: '建议', color: '#7c3aed', tint: 'rgba(124, 58, 237, .1)' },
   { label: '错误报告', color: '#e5484d', tint: 'rgba(229, 72, 77, .1)' },
@@ -221,7 +308,7 @@ const FEEDBACK_TYPES = [
   { label: '赞扬', color: '#16a34a', tint: 'rgba(22, 163, 74, .1)' }
 ];
 
-export function FeedbackPanel({ onAnnounce }) {
+export function FeedbackPanel({ onAnnounce, onClose }) {
   const [type, setType] = useState('建议');
   const [body, setBody] = useState('');
   const [sent, setSent] = useState(false);
@@ -233,7 +320,9 @@ export function FeedbackPanel({ onAnnounce }) {
         <div className="tb-feedback-sent">
           <span className="tb-feedback-sent-mark"><Icon name="check" size={20} /></span>
           <h2 id="tb-feedback-title">已收到，谢谢你的反馈！</h2>
-          <p>这是一条原型演示，不会真的发送任何内容。</p>
+          {/* The acknowledgement replaces the form, so it has to carry its own
+              way out; otherwise the only exits are Escape and a click outside. */}
+          <button type="button" className="tb-feedback-dismiss" onClick={onClose}>知道了</button>
         </div>
       </div>
     );
@@ -350,10 +439,6 @@ export function CoachMark({ onDismiss }) {
 
 /* ------------------------------------------------------------- celebration */
 
-/*
- * Shown once the last tutorial is completed. TeachBuddy's celebration uses
- * fireworks and a card with the popover grammar and amber accent.
- */
 const BURSTS = [
   { x: 20, y: 30, delay: 0, color: '#fe9a00' },
   { x: 78, y: 26, delay: .45, color: '#7160a7' },

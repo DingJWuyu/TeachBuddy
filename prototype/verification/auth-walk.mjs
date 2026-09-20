@@ -35,7 +35,7 @@ async function open(viewport) {
 /*
  * Typing is verified by reading the value back, not by trusting the fill call.
  * A control whose change handler is broken swallows every keystroke and still
- * looks like a successful fill, which once hid a ReferenceError in this card.
+ * looks like a successful fill.
  */
 async function enter(locator, text, label) {
   await locator.fill(text);

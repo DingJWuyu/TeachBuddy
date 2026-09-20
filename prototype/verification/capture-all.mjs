@@ -4,15 +4,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { expect } from '@playwright/test';
 import { scenarios, viewports } from './auth-scenarios.mjs';
+import { evidencePaths } from './evidence-paths.mjs';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
 const base = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?no-dev-chrome';
-const out = path.resolve(process.env.PROTOTYPE_EVIDENCE_DIR || path.join(here, '../evidence/screenshots'));
-const resultsDir = path.resolve(process.env.PROTOTYPE_RESULTS_DIR || path.join(here, '../evidence/verification'));
+const { screenshots: out, results: resultsDir } = evidencePaths('auth');
 const stagingParent = path.resolve(process.env.PROTOTYPE_TEMP_DIR || tmpdir());
 await fs.mkdir(stagingParent, { recursive: true });
 const staging = await fs.mkdtemp(path.join(stagingParent, 'capture-'));

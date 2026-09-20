@@ -1,23 +1,12 @@
-/*
- * Top bar for the workbench prototype.
- *
- * Measured reference values live in
- * docs/reference/emstudio-topbar-measured-spec.md. Two deliberate departures
- * from the reference are encoded here and should stay visible:
- *
- *  1. Five right-hand entries instead of four. The reference folds feedback and
- *     notifications into one red-badged button and has no notification entry at
- *     all; TeachBuddy gives notifications its own bell and keeps feedback
- *     separate, extending the row leftwards rather than tightening the gaps.
- *  2. Every entry carries a tooltip and an accessible name. The reference leaves
- *     its privacy entry with neither, and lets its feedback button's accessible
- *     name degrade to the badge text "!".
- */
+
+import { useState } from 'react';
 import { Icon } from './icons.jsx';
 import SupportMenu from './SupportMenu.jsx';
+import { CALENDAR_PATH, HOME_PATH, routeClick, withSearch } from './routes.js';
 import {
   CoachMark,
   FeedbackPanel,
+  NOTIFICATIONS,
   NotificationPanel,
   PrivacyPanel,
   SearchModal,
@@ -48,6 +37,7 @@ function Entry({ surface, icon, label, hint, badge, openSurface, onToggle, coach
 }
 
 export default function Topbar({
+  route,
   openSurface,
   onToggleSurface,
   onOpenSurface,
@@ -63,6 +53,18 @@ export default function Topbar({
   onAnnounce
 }) {
   const remaining = Math.max(0, modules.length - completedTutorials.length);
+  /* The active item is derived from the address, never stored: a top-bar item
+   * that highlighted itself on click would go stale the moment the browser's
+   * back button moved the shell. */
+  const activePath = route.pathname;
+  /*
+   * The unread count lives here rather than in the panel because the trigger's
+   * badge is its only other reader, and the panel unmounts whenever another
+   * surface opens. Notifications are read as a set, so the count is owned by the
+   * shell and handed to the panel.
+   */
+  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  const unreadNotifications = notifications.filter((item) => !item.read).length;
 
   return (
     <header className="tb-topbar">
@@ -70,15 +72,34 @@ export default function Topbar({
         <button className="tb-mobile-menu" onClick={onOpenMobileSidebar} aria-label="打开工作台导航">
           <Icon name="menu" />
         </button>
-        <a className="tb-brand" href="/" aria-label="TeachBuddy 首页">
+        <a
+          className="tb-brand"
+          href={withSearch(HOME_PATH)}
+          aria-label="TeachBuddy 首页"
+          onClick={(event) => routeClick(event, HOME_PATH)}
+        >
           <span className="tb-brand-mark" aria-hidden="true">T</span>
           <span className="tb-brand-wordmark">TeachBuddy</span>
         </a>
       </div>
 
       <nav className="tb-global-nav" aria-label="全局导航">
-        <a className="tb-nav-item is-current" href="/" aria-current="page">首页</a>
-        <a className="tb-nav-item" href="/calendar">日历</a>
+        <a
+          className={`tb-nav-item${activePath === HOME_PATH ? ' is-current' : ''}`}
+          href={withSearch(HOME_PATH)}
+          aria-current={activePath === HOME_PATH ? 'page' : undefined}
+          onClick={(event) => routeClick(event, HOME_PATH)}
+        >
+          首页
+        </a>
+        <a
+          className={`tb-nav-item${activePath === CALENDAR_PATH ? ' is-current' : ''}`}
+          href={withSearch(CALENDAR_PATH)}
+          aria-current={activePath === CALENDAR_PATH ? 'page' : undefined}
+          onClick={(event) => routeClick(event, CALENDAR_PATH)}
+        >
+          日历
+        </a>
         <SupportMenu
           open={openSurface === 'support'}
           onOpen={() => onOpenSurface('support')}
@@ -99,13 +120,18 @@ export default function Topbar({
         <Entry
           surface="notifications"
           icon="bell"
-          label="通知"
+          label={unreadNotifications > 0 ? `通知，${unreadNotifications} 条未读` : '通知'}
           hint="通知"
-          badge={{ tone: 'red', value: '!' }}
+          /* The red badge marks unread work. With nothing unread it is gone. */
+          badge={unreadNotifications > 0 ? { tone: 'red', value: '!' } : null}
           openSurface={openSurface}
           onToggle={onToggleSurface}
         >
-          <NotificationPanel onAnnounce={onAnnounce} />
+          <NotificationPanel
+            items={notifications}
+            onChange={setNotifications}
+            onAnnounce={onAnnounce}
+          />
         </Entry>
         <Entry
           surface="feedback"
@@ -115,7 +141,7 @@ export default function Topbar({
           openSurface={openSurface}
           onToggle={onToggleSurface}
         >
-          <FeedbackPanel onAnnounce={onAnnounce} />
+          <FeedbackPanel onAnnounce={onAnnounce} onClose={onCloseSurface} />
         </Entry>
         <Entry
           surface="tutorial"

@@ -1,9 +1,9 @@
 === DRAG AND DROP ===
 ok   rows do not move while a drop target is shown
-ok   insertion line is drawn on exactly one row  1
+ok   insertion line is drawn on exactly one row  {"lines":1,"before":1,"after":0}
 ok   repeated dragover does not churn the DOM  mutations=2
-ok   gap between groups marks the previous group end  {"gapY":363,"firstGroupName":"班级","hoveredGroupName":"计划","markedName":"班级"}
-ok   dropping in the gap appends to the previous group  {"orderBefore":["我的班级","课程表","规划器","课程","学生","课堂作业","成绩","出勤","课程标准"],"firstGroup":{"name":"班级","modules":["我的班级","课程表","规划器","课程标准"]}}
+ok   the top of a group is claimed by that group  {"aimY":375,"markedRows":1,"lineIsAtGroupTop":true}
+ok   dropping there puts the module first in that group  {"orderBefore":["我的班级","课程表","规划器","课程","学生","课堂作业","成绩","出勤","课程标准"],"secondGroup":{"modules":["课程标准","课程","学生","课堂作业"]}}
 ok   no console errors  []
 
 6/6 passed

@@ -1,12 +1,4 @@
-/*
- * Shared icon set for the workbench prototype.
- *
- * Paths are Lucide equivalents on a 24x24 grid, drawn as outlines so they match
- * the reference's line-icon grammar. The stroke width is Lucide's default 2:
- * inside a 24-unit viewBox rendered at 20px that lands as 1.67 device px, which
- * is what the reference renders. An earlier 1.7 was measurably too light, giving
- * 2px of ink where the reference gives 3px.
- */
+/* Shared outline icons on a 24x24 grid, with a 2-unit stroke. */
 export const ICON_PATHS = {
   home: <><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9.5 20v-6h5v6"/></>,
   circleHelp: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></>,
@@ -22,10 +14,10 @@ export const ICON_PATHS = {
   attendance: <><path d="M5 4h14v16H5zM8 8h8M8 12h4"/><path d="M14 16l1.5 1.5L19 14"/></>,
   standards: <><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8z"/></>,
   search: <><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></>,
-  // Reference top bar uses message-square-plus for the feedback entry.
+  // Message-square-plus marks feedback.
   feedback: <><path d="M22 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2z"/><path d="M9.5 10h5M12 7.5v5"/></>,
   bell: <><path d="M10.3 21a2 2 0 0 0 3.4 0"/><path d="M3.3 15.3A1 1 0 0 0 4 17h16a1 1 0 0 0 .7-1.7C19.4 14 18 12.5 18 8A6 6 0 0 0 6 8c0 4.5-1.4 6-2.7 7.3"/></>,
-  // Graduation cap: the reference's tutorial-progress entry.
+  // Graduation cap marks tutorial progress.
   tutorial: <><path d="M21.4 10.9a1 1 0 0 0 0-1.8L12.8 5.2a2 2 0 0 0-1.6 0L2.6 9.1a1 1 0 0 0 0 1.8l8.6 3.9a2 2 0 0 0 1.6 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></>,
   shield: <><path d="M12 3l7 3v5c0 4.6-2.4 7.8-7 10-4.6-2.2-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-5"/></>,
   shieldPlain: <path d="M12 3l7 3v5c0 4.6-2.4 7.8-7 10-4.6-2.2-7-5.4-7-10V6z"/>,

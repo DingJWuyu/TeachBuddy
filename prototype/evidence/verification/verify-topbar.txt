@@ -11,7 +11,7 @@ ok   nav item type is 14px at weight 500  14px 500
 ok   selected nav uses the ink pill  rgb(45, 48, 55) rgb(255, 255, 255)
 ok   unselected nav uses the muted-foreground token  rgb(85, 85, 85)
 ok   nav gap is 4px  4px
-ok   right group carries five entries  全局搜索 | 通知 | 发送反馈 | 教程进度：已完成 0 / 9 | Privacy & Security
+ok   right group carries five entries  全局搜索 | 通知，2 条未读 | 发送反馈 | 教程进度：已完成 0 / 9 | Privacy & Security
 ok   entries are 32px at 6px radius  [[32,"6px"],[32,"6px"],[32,"6px"],[32,"6px"],[32,"6px"]]
 ok   entry gap is 8px  8px
 ok   right group ends 48px from the viewport edge  1392

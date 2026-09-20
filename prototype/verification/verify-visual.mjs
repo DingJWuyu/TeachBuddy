@@ -2,9 +2,10 @@
 import { chromium } from 'playwright';
 import { openWorkbench } from './session.mjs';
 import { mkdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { evidencePaths } from './evidence-paths.mjs';
 
-const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/screenshots/workbench/', import.meta.url));
+const paths = evidencePaths('verify-visual');
+const OUT = `${paths.screenshots}/`;
 mkdirSync(OUT, { recursive: true });
 
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?prototype=sidebar';
@@ -62,7 +63,8 @@ const g = await p.evaluate(() => {
   const iconSvg = firstRow ? firstRow.querySelector('svg') : null;
   const iconBox = iconSvg ? iconSvg.getBoundingClientRect() : null;
   const iconSpan = firstRow ? firstRow.querySelector('.tb-module-icon') : null;
-  const groupLabel = document.querySelector('.tb-group-toggle > span');
+  // Measure the label, not its adjacent expand/collapse button.
+  const groupLabel = document.querySelector('.tb-group-heading .tb-group-label');
   return {
     topbar: box('.tb-topbar'),
     sidebar: box('.tb-sidebar'),
@@ -73,7 +75,7 @@ const g = await p.evaluate(() => {
     icon: iconBox && { w: px(iconBox.width), h: px(iconBox.height) },
     iconSpan: iconSpan && (() => { const r = iconSpan.getBoundingClientRect(); const c = getComputedStyle(iconSpan); return { w: px(r.width), h: px(r.height), bg: c.backgroundColor, radius: c.borderRadius }; })(),
     rowGap: (() => { const list = document.querySelector('.tb-module-list'); return list ? getComputedStyle(list).gap : null; })(),
-    groupLabel: groupLabel && (() => { const c = getComputedStyle(groupLabel.parentElement); const r = groupLabel.parentElement.getBoundingClientRect(); return { fontSize: c.fontSize, letterSpacing: c.letterSpacing, textTransform: c.textTransform, fontWeight: c.fontWeight, x: px(r.x), h: px(r.height) }; })(),
+    groupLabel: groupLabel && (() => { const c = getComputedStyle(groupLabel); const r = groupLabel.getBoundingClientRect(); return { fontSize: c.fontSize, letterSpacing: c.letterSpacing, textTransform: c.textTransform, fontWeight: c.fontWeight, x: px(r.x), h: px(r.height) }; })(),
     sidebarBorderRight: getComputedStyle(document.querySelector('.tb-sidebar')).borderRightWidth,
     accountAvatar: (() => { const a = document.querySelector('.tb-account-row .tb-avatar'); if (!a) return null; const r = a.getBoundingClientRect(); const c = getComputedStyle(a); return { w: px(r.width), h: px(r.height), bg: c.backgroundColor, radius: c.borderRadius }; })(),
     accountRow: (() => { const a = document.querySelector('.tb-account-row'); const r = a.getBoundingClientRect(); const c = getComputedStyle(a); return { x: px(r.x), y: px(r.y), w: px(r.width), h: px(r.height), padding: c.padding, radius: c.borderRadius, bg: c.backgroundColor }; })(),
@@ -113,8 +115,7 @@ check('account row bg (no fill)', g.accountRow.bg, 'rgba(0, 0, 0, 0)');
 check('term button x', g.termButton.x, 12);
 check('term button width', g.termButton.w, 231, 2);
 check('term button height', g.termButton.h, 32);
-// Intentional deviation: the reference uses 6px, but at this width a 6px radius
-// reads overly square, so the prototype uses 10px.
+// The wide term button uses a 10px radius to soften its corners.
 check('term button radius', g.termButton.radius, '10px');
 check('toggle x (inside sidebar)', g.toggle.x, 220);
 check('toggle size', g.toggle.w, 32);
@@ -159,15 +160,13 @@ const rail = await p.evaluate(() => {
     groupDivider: cs ? cs.borderTopWidth + ' ' + cs.borderTopColor : null,
     groupDividerTop: cs ? cs.paddingTop : null,
     rowLabel: visible('.tb-module-row > span:last-child'),
-    tooltipContent: getComputedStyle(row, '::after').content,
+    tooltipContent: row.dataset.label,
   };
 });
 console.log('\n=== COLLAPSED RAIL @1440x900 ===');
 check('rail width', rail.railWidth, REF.railWidth);
 check('rail row width', rail.row.w, REF.railRowWidth);
-// The reference rail row measures 17..53 inside the 72px column; the prototype
-// centres it at 18..54. The 1px difference traces to the reference's own
-// scrollbar gutter, so it is an accepted deviation rather than a defect.
+// Centre the row inside the 72px rail; allow a 2px rendering tolerance.
 check('rail row x', rail.row.x, REF.railRowX, 2);
 check('rail row height', rail.row.h, REF.rowHeight);
 check('rail row padding', rail.rowPadding, '8px');
@@ -176,8 +175,7 @@ check('workspace heading hidden', rail.workspaceHeading, 'hidden');
 check('account row hidden', rail.accountRow, 'hidden');
 check('language row hidden', rail.languageRow, 'hidden');
 check('trash hidden', rail.trash, 'hidden');
-// The sidebar footer was removed: the reference puts settings in the top bar's
-// support menu, not at the bottom of the sidebar.
+// Settings belong to the top-bar support menu, not a sidebar footer.
 check('sidebar footer removed', rail.footer, 'absent');
 check('module label hidden', rail.rowLabel, 'hidden');
 check('group divider present', rail.groupDivider.startsWith('1px'), true);

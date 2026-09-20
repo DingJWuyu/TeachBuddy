@@ -7,9 +7,9 @@
 import { chromium } from 'playwright';
 import { openWorkbench } from './session.mjs';
 import { mkdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { evidencePaths } from './evidence-paths.mjs';
 
-const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/screenshots/workbench/', import.meta.url));
+const { screenshots: OUT } = evidencePaths('verify-drag');
 mkdirSync(OUT, { recursive: true });
 
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?prototype=sidebar';
@@ -65,6 +65,10 @@ const dragTo = async (fromLabel, toExpr) => p.evaluate(({ fromLabel, toExpr }) =
 }, { fromLabel, toExpr });
 
 // --- 1. geometry must not move while hovering a drop target ---
+//
+// The dragstart and the dragover go in separate evaluations: the mark is React
+// state rendered on the next commit, so a synchronous read in the same
+// evaluation sees the previous render and reports no line at all.
 const before = await rowGeometry();
 await p.evaluate(() => {
   const rows = [...document.querySelectorAll('.tb-module-row')];
@@ -75,15 +79,28 @@ await p.evaluate(() => {
   from.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
   window.__dt = dt;
   window.__onto = onto;
-  window.__coord = { x: rect.x + rect.width / 2, y: rect.y + 4 };
-  onto.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dt, ...window.__coord }));
+  /*
+   * The coordinate keys are `clientX`/`clientY`: a DragEvent ignores `x`/`y`,
+   * so a spread of `{x, y}` leaves the pointer at (0, 0) and every mark is
+   * resolved as if the drag were in the top-left corner.
+   */
+  window.__coord = { clientX: rect.x + rect.width / 2, clientY: rect.y + 4 };
+});
+await p.waitForTimeout(120);
+await p.evaluate(() => {
+  window.__onto.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: window.__dt, ...window.__coord }));
 });
 await p.waitForTimeout(250);
 const during = await rowGeometry();
 ok('rows do not move while a drop target is shown', JSON.stringify(before) === JSON.stringify(during),
   before.length === during.length ? '' : `count ${before.length} -> ${during.length}`);
-const lineDrawn = await p.evaluate(() => document.querySelectorAll('.tb-module-row.is-drop-target').length);
-ok('insertion line is drawn on exactly one row', lineDrawn === 1, String(lineDrawn));
+const lineDrawn = await p.evaluate(() => ({
+  lines: document.querySelectorAll('.tb-module-row.is-drop-target').length,
+  before: document.querySelectorAll('.tb-module-row.is-drop-before').length,
+  after: document.querySelectorAll('.tb-module-row.is-drop-after').length,
+}));
+ok('insertion line is drawn on exactly one row',
+  lineDrawn.lines === 1 && lineDrawn.before + lineDrawn.after === 1, JSON.stringify(lineDrawn));
 const mutations = await p.evaluate(() => window.__mutations);
 ok('repeated dragover does not churn the DOM', mutations <= 2, `mutations=${mutations}`);
 await p.evaluate(() => {
@@ -91,55 +108,64 @@ await p.evaluate(() => {
   document.querySelectorAll('.tb-module-row').forEach((r) => r.classList.remove('is-drop-target'));
 });
 
-// --- 2. the gap between two groups belongs to the previous group ---
+// --- 2. a heading and the space above it belong to that group's top ---
+//
+// A heading belongs to the top of its own group. Aiming just under it must
+// insert before that group's first row.
+//
 // Dispatch, then wait a frame: the marker is rendered from React state, so
 // reading it synchronously right after the event sees the previous render.
-const gapSetup = await p.evaluate(() => {
+const headingSetup = await p.evaluate(() => {
   const groups = [...document.querySelectorAll('.tb-group')];
-  const first = groups[0];
   const second = groups[1];
-  const gapY = (first.getBoundingClientRect().bottom + second.getBoundingClientRect().top) / 2;
+  const heading = second.querySelector('.tb-group-toggle');
+  const rect = heading.getBoundingClientRect();
   const from = [...document.querySelectorAll('.tb-module-row')].find((r) => r.textContent.includes('课程标准'));
   const dt = new DataTransfer();
   from.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
-  const rect = second.getBoundingClientRect();
+  // a few pixels below the heading, still above the first row
   second.dispatchEvent(new DragEvent('dragover', {
-    bubbles: true, cancelable: true, dataTransfer: dt, clientX: rect.x + 40, clientY: gapY,
+    bubbles: true, cancelable: true, dataTransfer: dt, clientX: rect.x + 40, clientY: rect.y + 8,
   }));
   window.__dragCleanup = () => from.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer: dt }));
   return {
-    gapY: Math.round(gapY),
-    firstGroupName: first.querySelector('.tb-group-toggle span')?.textContent,
     hoveredGroupName: second.querySelector('.tb-group-toggle span')?.textContent,
+    aimY: Math.round(rect.y + 8),
   };
 });
 await p.waitForTimeout(250);
-const gapMark = await p.evaluate(() => {
-  const marked = document.querySelector('.tb-group.is-module-end-target');
-  return { markedName: marked ? marked.querySelector('.tb-group-toggle span')?.textContent : null };
+const headingMark = await p.evaluate(() => {
+  const section = document.querySelectorAll('.tb-group')[1];
+  const rows = [...section.querySelectorAll('.tb-module-row')];
+  const marked = rows.filter((row) => row.classList.contains('is-drop-target'));
+  const before = rows.filter((row) => row.classList.contains('is-drop-before'));
+  return {
+    markedName: section.querySelector('.tb-group-toggle span')?.textContent,
+    // exactly one line, and it sits at the top of the group the pointer is over
+    markedRows: marked.length,
+    lineIsAtGroupTop: before.length === 1 && before[0] === rows[0],
+  };
 });
 await p.evaluate(() => window.__dragCleanup());
-const gapResult = { ...gapSetup, ...gapMark };
-ok('gap between groups marks the previous group end',
-  gapResult.markedName === gapResult.firstGroupName,
-  JSON.stringify(gapResult));
+const headingResult = { ...headingSetup, ...headingMark };
+ok('the top of a group is claimed by that group',
+  headingResult.markedRows === 1 && headingResult.lineIsAtGroupTop,
+  JSON.stringify(headingResult));
 
-// --- 3. dropping in the gap really lands at the end of the previous group ---
+// --- 3. dropping there really lands as the first row of that group ---
 const orderBefore = await p.evaluate(() => [...document.querySelectorAll('.tb-module-row')].map((r) => r.textContent.trim()));
-const dropped = await p.evaluate(() => {
+await p.evaluate(() => {
   const groups = [...document.querySelectorAll('.tb-group')];
-  const first = groups[0];
   const second = groups[1];
-  const gapY = (first.getBoundingClientRect().bottom + second.getBoundingClientRect().top) / 2;
+  const rect = second.querySelector('.tb-group-toggle').getBoundingClientRect();
   const rows = [...document.querySelectorAll('.tb-module-row')];
   const from = rows.find((r) => r.textContent.includes('课程标准'));
   const dt = new DataTransfer();
   from.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
-  const rect = second.getBoundingClientRect();
-  second.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dt, clientX: rect.x + 40, clientY: gapY }));
-  second.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt, clientX: rect.x + 40, clientY: gapY }));
+  const over = { bubbles: true, cancelable: true, dataTransfer: dt, clientX: rect.x + 40, clientY: rect.y + 8 };
+  second.dispatchEvent(new DragEvent('dragover', over));
+  second.dispatchEvent(new DragEvent('drop', over));
   from.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer: dt }));
-  return true;
 });
 await p.waitForTimeout(400);
 const orderAfter = await p.evaluate(() => {
@@ -149,10 +175,10 @@ const orderAfter = await p.evaluate(() => {
     modules: [...g.querySelectorAll('.tb-module-row')].map((r) => r.textContent.trim()),
   }));
 });
-const firstGroup = orderAfter[0];
-ok('dropping in the gap appends to the previous group',
-  firstGroup.modules[firstGroup.modules.length - 1] === '课程标准',
-  JSON.stringify({ orderBefore, firstGroup }));
+const secondGroup = orderAfter[1];
+ok('dropping there puts the module first in that group',
+  secondGroup.modules[0] === '课程标准',
+  JSON.stringify({ orderBefore, secondGroup }));
 
 // --- 4. no jitter on the real drop-target path either ---
 const before4 = await rowGeometry();

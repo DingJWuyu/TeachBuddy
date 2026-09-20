@@ -1,10 +1,11 @@
 // Geometry and interaction checks for the accepted workbench top bar.
 import { chromium } from 'playwright';
-import { openWorkbench } from './session.mjs';
+import { openWorkbench, revealCoachMark } from './session.mjs';
 import { mkdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { evidencePaths } from './evidence-paths.mjs';
 
-const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/screenshots/workbench/', import.meta.url));
+const paths = evidencePaths('verify-topbar');
+const OUT = `${paths.screenshots}/`;
 mkdirSync(OUT, { recursive: true });
 
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?prototype=sidebar';
@@ -179,7 +180,7 @@ await p.waitForTimeout(400);
 const menu = await p.evaluate(() => {
   const m = document.querySelector('.tb-support-menu');
   if (!m) return null;
-  const items = [...m.querySelectorAll('button')].map((b) => {
+  const items = [...m.querySelectorAll('[role="menuitem"]')].map((b) => {
     const br = b.getBoundingClientRect();
     const icon = b.querySelector('svg');
     const label = b.querySelector('span');
@@ -213,11 +214,11 @@ await p.mouse.move(centreX, supportBox.y + supportBox.height + 22);
 await p.waitForTimeout(200);
 const inPanel = await p.evaluate(() => {
   const m = document.querySelector('.tb-support-menu');
-  return m ? [...m.querySelectorAll('button')].map((b) => b.textContent.trim()) : null;
+  return m ? [...m.querySelectorAll('[role="menuitem"]')].map((b) => b.textContent.trim()) : null;
 });
 ok('the menu survives the pointer crossing the gap below its trigger', inGap && inPanel !== null, `gap=${inGap} panel=${inPanel !== null}`);
 
-await p.click('.tb-support-menu button:first-child');
+await p.click('.tb-support-menu [role="menuitem"]:first-child');
 await p.waitForTimeout(300);
 const afterItem = await p.evaluate(() => ({ open: !!document.querySelector('.tb-support-menu'), said: document.querySelector('.tb-announcer')?.textContent }));
 ok('a support item can actually be reached and clicked', afterItem.open === false && afterItem.said === '设置', JSON.stringify(afterItem));
@@ -369,7 +370,7 @@ await p.waitForTimeout(200);
 
 // ------------------------------------------------------------- coach mark
 
-await openWorkbench(p, BASE);
+await revealCoachMark(p, BASE);
 await p.waitForTimeout(600);
 
 const entrance = await p.evaluate(() => {
@@ -402,7 +403,7 @@ await p.mouse.click(700, 500);
 await p.waitForTimeout(350);
 ok('pressing the dimmed area dismisses the guide', (await p.evaluate(() => document.querySelectorAll('.tb-coach, .tb-coach-scrim').length)) === 0, 'still up');
 
-await openWorkbench(p, BASE);
+await revealCoachMark(p, BASE);
 await p.waitForTimeout(600);
 await settle();
 
@@ -546,7 +547,7 @@ const failed = results.filter((r) => !r.pass).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 
 await p.setViewportSize({ width: 1440, height: 900 });
-await openWorkbench(p, BASE);
+await revealCoachMark(p, BASE);
 await p.waitForTimeout(600);
 await settle();
 await p.screenshot({ path: `${OUT}/PC-CW12-coach.png` });
@@ -586,7 +587,7 @@ await p.screenshot({ path: `${OUT}/手机-CW14-drawer.png` });
 await p.keyboard.press('Escape');
 await p.setViewportSize({ width: 1440, height: 900 });
 await p.waitForTimeout(400);
-await openWorkbench(p, BASE);
+await revealCoachMark(p, BASE);
 await p.waitForTimeout(600);
 await settle();
 await p.click('.tb-coach-dismiss');

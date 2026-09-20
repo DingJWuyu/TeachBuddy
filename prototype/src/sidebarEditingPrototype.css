@@ -1,9 +1,4 @@
-/*
- * Visual tokens measured from the live EMStudio sidebar at 1440x900.
- * Source of record: docs/reference/emstudio-sidebar-measured-spec.md
- * EMStudio authors these as Tailwind v4 theme variables; the lab() outputs are
- * resolved here to their 8-bit equivalents so this file stays plain CSS.
- */
+
 .tb-prototype {
   --tb-ink: #2d3037;
   --tb-muted: #7c8089;
@@ -29,7 +24,7 @@
   --tb-accent: #7160a7;
   --tb-accent-tint: rgba(113, 96, 167, .1);
   --tb-card-elevation: 0 4px 12px 0 #0000000d, 0 2px 4px -1px #00000008;
-  /* EMStudio row grammar: 36px row, 10px inset, 8px radius, 12px icon gap. */
+  /* Navigation rows use compact 36px targets. */
   --tb-row-height: 36px;
   --tb-row-gap: 4px;
   --tb-row-padding: 10px;
@@ -39,6 +34,17 @@
   --tb-row-width: 232px;
   --tb-ease: cubic-bezier(.4, 0, .2, 1);
   --tb-duration: .2s;
+  /*
+   * Drag chip. Every drag carries a 32px white disc with the dragged item's own
+   * icon instead of a full-size snapshot, so the drop target stays visible while
+   * something is over it. The disc is a real element placed by dragChip.js, which
+   * is what makes it centre on the pointer exactly; the edge and the shadow are
+   * what keep a white disc legible on a white page.
+   */
+  --tb-chip-surface: #ffffff;
+  --tb-chip-ink: #2d3037;
+  --tb-chip-edge: rgba(15, 18, 24, .12);
+  --tb-chip-size: 32px;
   min-height: 100vh;
   color: var(--tb-ink);
   background: var(--tb-page);
@@ -53,10 +59,6 @@
   box-sizing: border-box;
 }
 
-/*
- * Reference account avatar: a 32px filled circle with white initials, which is
- * distinct from the top-bar avatar in the same interface.
- */
 .tb-account-row .tb-avatar {
   display: grid;
   width: 32px;
@@ -69,14 +71,7 @@
   font-weight: 600;
 }
 
-/*
- * global.css declares `button, input, select, textarea, a { font: inherit }`
- * plus `button { color: ... }` with generic selectors that win against
- * prototype button rules at equal specificity, silently resetting the
- * reference type ramp. Every prototype rule that sets button typography is
- * therefore scoped under `.tb-prototype` so it outranks those resets without
- * needing !important.
- */
+/* Scope control typography above the shared global.css font reset. */
 .tb-prototype button,
 .tb-prototype input {
   color: inherit;
@@ -100,11 +95,6 @@
   padding: 0;
 }
 
-/*
- * The reference uses a 2px #2e3137 focus ring on nav rows. This prototype keeps
- * a 3px ring because it also marks drag-and-drop affordances, but the ring is
- * drawn from the reference's own ring token rather than an unrelated violet.
- */
 .tb-prototype button:focus-visible,
 .tb-prototype input:focus-visible,
 .tb-prototype [tabindex]:focus-visible {
@@ -132,11 +122,7 @@
   grid-template-columns: var(--tb-shell-brand-column) minmax(0, 1fr) auto;
   align-items: center;
   height: 65px;
-  /*
-   * Asymmetric like the reference: the brand starts 18px in while the right-hand
-   * entry group ends 48px from the viewport edge, lining up with the 48px inset
-   * the page content uses below it.
-   */
+
   padding: 0 48px 0 18px;
   border-bottom: 1px solid var(--tb-line);
   background: #fff;
@@ -157,11 +143,15 @@
   min-width: 0;
 }
 
-/*
- * Reference brand: 28px mark at 6px radius, 8px gap, then an 18px/27px wordmark
- * at weight 400 with -0.36px tracking. The light weight and the negative
- * tracking are the two details most easily lost here.
- */
+.tb-global-nav {
+  display: flex;
+  align-items: center;
+}
+
+.tb-brand-slot {
+  min-width: 0;
+}
+
 .tb-prototype .tb-brand {
   display: flex;
   align-items: center;
@@ -197,12 +187,6 @@
   gap: 4px;
 }
 
-/*
- * Reference nav item: 32px tall, 6px 20px padding, fully rounded, 14px/20px at
- * weight 500, inactive text on the muted-foreground token. The selected pill is
- * the ink colour (#2d3037), not --tb-primary (#2e3137): the reference renders
- * the foreground token here even though the two differ by one step per channel.
- */
 .tb-prototype .tb-nav-item {
   display: inline-flex;
   align-items: center;
@@ -231,9 +215,6 @@
   background: var(--tb-ink);
 }
 
-/* Top-bar support menu, measured from the reference: 167px wide, 12px radius,
- * 4px inset, 30px rows with 14px labels, centred on its trigger rather than
- * right-aligned like the utility popovers. */
 .tb-prototype .tb-support-wrap {
   position: relative;
   display: inline-flex;
@@ -253,9 +234,28 @@
   background: #fff;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
   transform: translateX(-50%);
+  transform-origin: top center;
+  animation: tb-surface-in-centered .18s var(--tb-ease) both;
 }
 
-.tb-prototype .tb-support-menu button {
+/*
+ * The support menu is centred on its trigger with translateX(-50%), so it cannot
+ * use the shared reveal: a keyframe's transform replaces the element's own while
+ * the animation runs, and would drop the centring for its whole duration. This
+ * variant carries the -50% through both ends of the motion.
+ */
+@keyframes tb-surface-in-centered {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
+.tb-prototype .tb-support-menu [role="menuitem"] {
   display: flex;
   width: 100%;
   height: 30px;
@@ -270,6 +270,7 @@
   line-height: 20px;
   text-align: left;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 /*
@@ -288,7 +289,7 @@
   content: '';
 }
 
-.tb-prototype .tb-support-menu button:hover {
+.tb-prototype .tb-support-menu [role="menuitem"]:hover {
   background: var(--tb-sidebar-accent);
 }
 
@@ -305,9 +306,6 @@
   transform: rotate(-180deg);
 }
 
-/* Right-hand entries: 32px buttons at 6px radius with 8px gaps, per the
- * reference. TeachBuddy carries five of them and extends the row leftwards
- * instead of tightening these numbers. */
 .tb-top-actions {
   justify-content: flex-end;
   gap: 8px;
@@ -356,16 +354,7 @@
   background: var(--tb-sidebar-accent);
 }
 
-/*
- * The reference keeps its collapse control at 32x32, sitting fully inside the
- * 256px sidebar column (x=220..252) rather than straddling the boundary, and
- * styles it as a plain hover-tinted icon button rather than a floating chip.
- * TeacherWorkspace reveals it on top-bar hover.
- *
- * This control must stay absolutely positioned: as a static child of the grid it
- * becomes a grid item, adds a second implicit row, and squashes every other
- * top-bar item into the first row.
- */
+/* Absolute positioning keeps the collapse control out of the topbar grid's row sizing. */
 .tb-prototype .tb-sidebar-toggle {
   position: absolute;
   z-index: 2;
@@ -397,12 +386,6 @@
   background: var(--tb-sidebar-accent);
 }
 
-/*
- * Badge: 16px, pinned to the button's top-right corner with a 2px upward and a
- * 1px rightward overhang, exactly as measured. The amber badge counts what is
- * left rather than what is done: the reference shows "1" while its accessible
- * name reads "8 of 9 completed".
- */
 .tb-badge {
   position: absolute;
   top: -2px;
@@ -483,11 +466,14 @@
   border-radius: 12px;
   background: #fff;
   box-shadow: var(--tb-card-elevation);
+  transform-origin: top right;
 }
 
+/* The coach mark already rose into place; it grows on the same anchor as every
+ * other top-bar surface so first-run and normal reveals share one grammar. */
 @keyframes tb-coach-rise {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(8px) scale(.96); }
+  to { opacity: 1; transform: none; }
 }
 
 .tb-coach-caret {
@@ -680,8 +666,23 @@
   /* Skip the staged entrance and land on the settled state immediately. */
   .tb-coach-scrim,
   .tb-entry-wrap.is-coached .tb-entry,
-  .tb-prototype .tb-coach {
+  .tb-prototype .tb-coach,
+  .tb-page {
     animation: none;
+  }
+
+  /*
+   * A progressive reveal is motion, so it is dropped rather than shortened. The
+   * surfaces still appear; they simply arrive with the panel already at rest.
+   */
+  .tb-prototype .tb-popover,
+  .tb-prototype .tb-support-menu,
+  .tb-prototype .tb-search-panel,
+  .tb-notification.is-read .tb-row-text::after,
+  .tb-notification:not(.is-read) .tb-row-text::after,
+  .tb-module-collapse {
+    animation: none;
+    transition: none;
   }
 }
 
@@ -703,6 +704,26 @@
   border-radius: 12px;
   background: #fff;
   box-shadow: var(--tb-card-elevation);
+  transform-origin: top right;
+  animation: tb-surface-in .18s var(--tb-ease) both;
+}
+
+/*
+ * Progressive reveal for every surface that appears over the shell. A popover
+ * that snaps into existence reads as a jump cut; growing it from its own anchor
+ * gives the eye a direction to follow. Surfaces anchored to the right grow from
+ * their top-right corner, the centred support menu from its top centre, and the
+ * centred modals keep a centred origin, so each one unfolds the way it hangs.
+ */
+@keyframes tb-surface-in {
+  from {
+    opacity: 0;
+    transform: scale(.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .tb-prototype .tb-popover h2 {
@@ -747,16 +768,17 @@
   margin-top: 12px;
 }
 
-/*
- * Row anatomy measured from the reference tutorial list: an 18px completion box,
- * 8px, a 24px tinted icon tile, 12px, then a 14px/20px label, all on a 36px
- * pitch. Gaps are set with margins because the two steps differ.
- */
 .tb-prototype .tb-row {
   display: flex;
   width: 100%;
   height: 36px;
   align-items: center;
+  /*
+   * No side padding. The row fills the panel's content box on purpose, so its
+   * hover tint and its icon column line up with the panel edge and with every
+   * other row. The trailing meta text gets its breathing room from its own
+   * margin instead, which is added below.
+   */
   padding: 0;
   border-radius: 6px;
   color: var(--tb-muted-foreground);
@@ -810,6 +832,12 @@
 .tb-row-meta {
   flex: none;
   margin-left: 8px;
+  /*
+   * Trailing room. Without it the last thing in the row, which is this meta
+   * text, sits flush against the row's edge and reads as clipped by it. The row
+   * itself keeps padding 0 so its hover tint still spans the panel.
+   */
+  margin-right: 10px;
   color: var(--tb-muted-foreground-faint);
   font-size: 12px;
   line-height: 16px;
@@ -819,17 +847,112 @@
   color: var(--tb-sidebar-accent-foreground);
   font-weight: 500;
 }
+/*
+ * Unread rows carry the emphasis: dark ink at weight 500 against the muted
+ * weight-400 body. Read ones keep the label in place behind a rule rather than
+ * dimming it, because the rule is what the user just asked for and it has to
+ * stay readable enough to recognise which message they struck out.
+ */
+.tb-prototype .tb-notification {
+  cursor: pointer;
+}
+
+.tb-prototype .tb-notification:not(.is-read) .tb-row-label {
+  color: var(--tb-sidebar-accent-foreground);
+  font-weight: 500;
+}
+
+/* The dragged row fades while its chip follows the pointer, which is the only
+ * feedback that the removal is still pending rather than already done. */
+.tb-prototype .tb-notification.is-dragging {
+  background: var(--tb-sidebar-accent);
+  cursor: grabbing;
+}
+
+/*
+ * Read marks. The rule is a pseudo-element rather than a text-decoration because
+ * a decoration cannot be animated: it would appear at full width in one frame.
+ * Drawing it from scaleX(0) makes the line cross the label, and the unread
+ * direction reuses the same transition so the line retracts instead of blinking
+ * out.
+ *
+ * The measured element is the label span, not the flex label box: the box takes
+ * all the row's leftover width, and a rule across that would run through empty
+ * space well past the end of the message.
+ */
+.tb-notification .tb-row-text {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.tb-notification .tb-row-text::after {
+  position: absolute;
+  top: calc(50% - .5px);
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  content: "";
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .28s var(--tb-ease);
+}
+
+.tb-notification.is-read .tb-row-label {
+  color: var(--tb-muted);
+}
+
+.tb-notification.is-read .tb-row-text::after {
+  transform: scaleX(1);
+}
+
+/*
+ * The trash lives at the foot of the notification list and is always drawn, so
+ * the delete affordance is discoverable before anything is being dragged. It
+ * reacts only once a read notification is over it: the icon goes red and swells,
+ * which is the confirmation that releasing here will remove the message.
+ */
+.tb-notification-trash {
+  display: flex;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--tb-line);
+  padding-top: 12px;
+  margin-bottom: -4px;
+  color: var(--tb-muted-foreground-faint);
+  font-size: 12px;
+  line-height: 18px;
+  transition: color var(--tb-duration) var(--tb-ease);
+}
+
+.tb-notification-trash-icon {
+  display: grid;
+  place-items: center;
+  transition: color .18s var(--tb-ease), transform .18s cubic-bezier(.2, .8, .3, 1.4);
+}
+
+.tb-popover-notifications.is-over-trash .tb-notification-trash {
+  color: #d92d20;
+}
+
+.tb-popover-notifications.is-over-trash .tb-notification-trash-icon {
+  color: #d92d20;
+  transform: scale(1.28);
+}
 
 .tb-prototype .tb-popover-tutorial,
 .tb-prototype .tb-popover-notifications {
   width: 320px;
 }
 
-/*
- * Progress row measured from the reference: a 6px pill track filling left to
- * right in the badge amber, then a 13px gap and the label. The track takes the
- * leftover width, which is what puts the label flush with the content edge.
- */
 .tb-prototype .tb-progress {
   display: flex;
   align-items: center;
@@ -960,8 +1083,6 @@
   line-height: 20px;
 }
 
-/* The reference renders its empty-state send button as a flat grey, not a
- * faded primary, so the disabled affordance is a colour swap. */
 .tb-prototype .tb-button-primary:disabled {
   background: #96989b;
   cursor: not-allowed;
@@ -972,6 +1093,19 @@
   justify-items: center;
   gap: 6px;
   padding: 12px 20px 16px;
+  text-align: center;
+}
+/*
+ * Sent state. It now holds a mark and a single line, so the rhythm is the mark's
+ * own disc, a slightly wider 14px gap and the heading, with equal padding above
+ * and below: an acknowledgement that lands centred and even rather than crowded
+ * against one edge.
+ */
+.tb-feedback-sent {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 18px 20px 20px;
   text-align: center;
 }
 
@@ -990,14 +1124,22 @@
   color: var(--tb-muted-foreground);
   font-size: 12px;
   line-height: 18px;
+}.tb-prototype .tb-feedback-sent h2 {
+  font-weight: 600;
 }
 
-/*
- * Privacy: the reference panel carries a 16px radius, a step rounder than the
- * other popovers. TeachBuddy keeps only the 28px tinted icon disc and the
- * heading, so the panel hugs its content instead of holding the reference's
- * 352px width open around empty space.
- */
+/* Same dismiss grammar as the coach mark: a quiet tinted pill, so the
+ * acknowledgement ends on a control rather than on an open edge. */
+.tb-prototype .tb-feedback-dismiss {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  color: var(--tb-accent);
+  background: var(--tb-accent-tint);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
 .tb-prototype .tb-popover-privacy {
   display: flex;
   width: max-content;
@@ -1045,6 +1187,7 @@
   border: 1px solid var(--tb-line);
   border-radius: 8px;
   background: var(--tb-page);
+  animation: tb-surface-in .18s var(--tb-ease) both;
 }
 
 .tb-search-input-row {
@@ -1069,12 +1212,6 @@
   outline: none;
 }
 
-/*
- * Suppress the shared focus ring here. Chrome matches :focus-visible on any
- * focused text input, so autofocus would otherwise draw a ring the reference does
- * not have; inside a modal whose only focusable control is the search field, the
- * caret carries the indication instead.
- */
 .tb-prototype .tb-search-input:focus-visible {
   outline: none;
 }
@@ -1113,6 +1250,7 @@
 }
 
 .tb-prototype .tb-search-item {
+  text-decoration: none;
   display: flex;
   width: 100%;
   height: 36px;
@@ -1186,9 +1324,26 @@
 }
 
 /*
- * The reference has no right border on the sidebar: the 256px column reads as
- * a distinct region purely from white against the #f9f9f9 content area.
+ * The page body. Navigation replaces this element and nothing else, so the top
+ * bar and the sidebar are never rebuilt: no reload, no white frame, and no loss
+ * of anything the session is holding.
+ *
+ * The entrance is opacity only. A transform here would move the content under
+ * the pointer on every page change, and the shell is dense enough that a small
+ * slide reads as a jolt rather than as an arrival.
  */
+.tb-page {
+  display: grid;
+  min-width: 0;
+  min-height: 100%;
+  animation: tb-page-in .16s var(--tb-ease) both;
+}
+
+@keyframes tb-page-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .tb-sidebar {
   position: sticky;
   z-index: 40;
@@ -1205,19 +1360,12 @@
   display: none;
 }
 
-/*
- * Account block. The reference lays the account row and the language button on
- * one line inside a 40px band: the row spans x=16..199 and the language button
- * sits at x=203.33 as a fixed 32x32 target, so the two never fight for width.
- */
 .tb-prototype .tb-account-block {
   position: relative;
   display: flex;
   align-items: center;
   height: 40px;
-  /* Anchored: the avatar and the workspace heading keep the positions measured
-   * from the reference. Only the create-term button is nudged so the gaps on
-   * either side of it match. */
+
   margin: 20px 0 0;
 }
 
@@ -1262,10 +1410,6 @@
   white-space: nowrap;
 }
 
-/*
- * Reference language entry is a standalone 32x32 icon button parked at the
- * right edge of the sidebar (x=203.33), not a full-width text row.
- */
 .tb-prototype .tb-language-row {
   position: absolute;
   top: 4px;
@@ -1287,11 +1431,6 @@
   background: var(--tb-sidebar-accent);
 }
 
-/*
- * Reference "create term" button: x=12, 231.33x32, padding 0 10px, 6px icon
- * gap, white fill with a 1px #e3e3e3 border. The radius is nudged above the
- * reference's 6px because at this width 6px reads overly square.
- */
 .tb-prototype .tb-term-button {
   display: flex;
   align-items: center;
@@ -1312,20 +1451,12 @@
   text-align: left;
 }
 
-/*
- * Reference type ramp for section labels: 10px/15px, weight 500, 0.5px
- * tracking, uppercase, and 70% opacity over the sidebar foreground. The
- * reference has no collapse affordance here, so the trailing control and the
- * group chevrons are TeacherWorkspace extensions built from the same tokens.
- */
 .tb-workspace-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 24px;
-  /* Pinned to the reference position (y=188.79, sidebar top at y=65). The
-   * fractional value is exact: it is what makes the gaps above and below the
-   * create-term button equal to the pixel. */
+
   margin-top: 17.895px;
   padding: 0 12px;
   color: var(--tb-sidebar-foreground);
@@ -1364,12 +1495,6 @@
   opacity: 1;
 }
 
-/*
- * New-group entry. Unanchored to any reference state, so it reuses the
- * reference popover grammar: white surface, 1px #e3e3e3 border, 12px radius and
- * the card elevation token, opening to the right of the trigger like the trash
- * panel rather than pushing a full-width form into the sidebar flow.
- */
 .tb-prototype .tb-new-group-form {
   position: fixed;
   z-index: 70;
@@ -1428,6 +1553,66 @@
   padding: 0 12px 12px;
 }
 
+/*
+ * Drag chip. A real element rather than a `setDragImage` snapshot, because the
+ * browser draws the native image wherever it likes and paints the system cursor
+ * over it: a disc centred on the pointer still reads as off-centre while the
+ * arrow sits inside it. This one is centred on the pointer by its own transform,
+ * so its geometry is exact and stays exact.
+ *
+ * It is invisible until it has been placed, since a drag can begin before the
+ * pointer has moved and an unpositioned chip would flash in the corner.
+ */
+.tb-prototype .tb-drag-chip {
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  display: grid;
+  width: var(--tb-chip-size);
+  height: var(--tb-chip-size);
+  place-items: center;
+  border: 1px solid var(--tb-chip-edge);
+  border-radius: 50%;
+  color: var(--tb-chip-ink);
+  background: var(--tb-chip-surface);
+  box-shadow: 0 2px 6px rgba(15, 18, 24, .22);
+  opacity: 0;
+  pointer-events: none;
+  /*
+   * The disc is centred on the pointer by its own transform. The position is
+   * written to `left`/`top` for exactly that reason: sharing one property would
+   * mean the position call replaced the centring.
+   */
+  transform: translate(-50%, -50%);
+  transition: opacity .12s var(--tb-ease);
+}
+
+.tb-prototype .tb-drag-chip.is-placed {
+  opacity: 1;
+}
+
+/*
+ * The grab hand during a drag, best effort.
+ *
+ * The browser owns the cursor for a native drag and normally paints its own
+ * arrow, which CSS cannot override. These rules ask for the hand anyway: where a
+ * platform honours them the drag reads as holding the chip, and where it does not
+ * the arrow is unchanged. The chip itself is unaffected either way, because it is
+ * a plain element rather than the native image.
+ */
+body.is-dragging-item,
+body.is-dragging-item * {
+  cursor: grabbing !important;
+}
+
+.tb-prototype .tb-drag-chip::before {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  content: "";
+}
+
 .tb-group {
   position: relative;
   min-width: 0;
@@ -1445,6 +1630,21 @@
   border-radius: 99px;
   background: var(--tb-purple);
   content: "";
+}
+
+/*
+ * An empty group has no row to draw an insertion line against, so the area the
+ * module would land in is outlined while a module is over it.
+ *
+ * The outline covers that area only, never the group heading: boxing the heading
+ * runs the border along the group's name, which reads as if the name itself were
+ * the drop target and crowds the text against the edge.
+ */
+.tb-group.is-empty-drop-target .tb-module-list {
+  min-height: 36px;
+  border: 1px dashed var(--tb-purple);
+  border-radius: var(--tb-row-radius);
+  background: var(--tb-purple-tint, rgba(113, 96, 167, .08));
 }
 
 .tb-group-heading {
@@ -1465,11 +1665,12 @@
 }
 
 /*
- * Group header. Not present in the reference, so it is built to the reference's
- * label ramp: 10px/15px uppercase at 0.5px tracking, held inside a 24px box and
- * left-aligned to the same x=12 axis as module rows. The chevron carries the
- * expand/collapse affordance the reference lacks.
+ * The name is a heading and the chevron is its own button, because a collapsed
+ * group must not be a link: sending the user to a row they cannot see is worse
+ * than not being clickable. Both share one label ramp and one hover, so the
+ * heading still reads as a single control.
  */
+.tb-prototype .tb-group-label,
 .tb-prototype .tb-group-toggle {
   display: inline-flex;
   width: auto;
@@ -1487,9 +1688,13 @@
   line-height: 15px;
   text-transform: uppercase;
   text-align: left;
+  text-decoration: none;
 }
 
-.tb-group-toggle > span {
+.tb-prototype .tb-group-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   opacity: .7;
 }
 
@@ -1498,9 +1703,30 @@
   transition: transform .16s var(--tb-ease);
 }
 
-.tb-group-toggle:hover > span,
-.tb-group-toggle:hover .tb-icon {
+.tb-group-heading:hover .tb-group-label,
+.tb-group-heading:hover .tb-group-toggle .tb-icon {
   opacity: 1;
+}
+
+/*
+ * Opening and closing a group. The list stays mounted and the wrapper animates
+ * from 0fr to 1fr, which is what makes the change gradual: a row that appeared
+ * and vanished would jump the whole list under the pointer. `overflow: hidden`
+ * on the inner box is what lets the row be clipped while the track shrinks.
+ */
+.tb-module-collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows .22s var(--tb-ease);
+}
+
+.tb-module-collapse.is-collapsed {
+  grid-template-rows: 0fr;
+}
+
+.tb-module-clip {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .tb-group-toggle[aria-expanded="false"] .tb-icon {
@@ -1568,11 +1794,6 @@
   content: "";
 }
 
-/*
- * Reference module row: 36px tall, 10px inset, 8px radius, plain 20px stroke
- * icon (no tinted badge), 12px icon-to-label gap, 14px/20px label at weight
- * 500, hover tint #f3f3f3, and the active row in #2e3137 with white text.
- */
 .tb-module-row {
   position: relative;
   display: flex;
@@ -1607,10 +1828,6 @@
   cursor: grabbing;
 }
 
-/*
- * Reference active row keeps the same 500 weight as an inactive row and adds
- * shadow-sm; only the fill and text colour change.
- */
 .tb-module-row.is-active {
   color: var(--tb-primary-foreground);
   background: var(--tb-primary);
@@ -1756,6 +1973,30 @@
   background: #777b84;
   font-size: 10px;
 }
+/*
+ * Trash as a drop target. The row, its label and the icon all turn red together,
+ * and only the icon swells: the same confirmation the notification trash gives,
+ * so a module dropped here reads as deleted at the moment of recognition rather
+ * than after the drop lands.
+ */
+.tb-trash-icon {
+  display: grid;
+  place-items: center;
+  transition: color .18s var(--tb-ease), transform .18s cubic-bezier(.2, .8, .3, 1.4);
+}
+
+.tb-trash-target.is-drop-target {
+  color: #d92d20;
+}
+
+.tb-trash-target.is-drop-target .tb-trash-icon {
+  color: #d92d20;
+  transform: scale(1.28);
+}
+
+.tb-trash-target.is-drop-target > b {
+  background: #d92d20;
+}
 
 .tb-hidden-panel {
   position: fixed;
@@ -1843,8 +2084,6 @@
   font-size: 12px;
 }
 
-/* Compact popover built from the same grammar as the reference's small
- * dropdowns: a plain list of 13px rows rather than oversized menu items. */
 .tb-context-menu {
   position: fixed;
   z-index: 100;
@@ -1896,6 +2135,68 @@
   gap: 16px;
   max-width: 1440px;
   margin: 0 auto;
+}
+
+/*
+ * A destination with no design yet. It keeps the home page's 48px inset and
+ * 1440px measure so the shell does not shift when the page body changes, and
+ * centres its own content in the height the home page would have taken. Nothing
+ * here implies a feature: a named marker, the title, one sentence.
+ */
+.tb-main-empty {
+  display: grid;
+  place-items: center;
+}
+
+/*
+ * Individually centred, not stretched. The page body is a wrapper that fills the
+ * content column, so the empty state has to opt out of that fill itself:
+ * `place-items` on the parent centres a stand-in that is already as wide as the
+ * column, which leaves the text left-aligned in the middle of the page.
+ */
+.tb-empty-page {
+  display: grid;
+  width: fit-content;
+  max-width: 1440px;
+  justify-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.tb-empty-page-mark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 9999px;
+  color: var(--tb-muted);
+  background: #fff;
+  box-shadow: var(--tb-card-elevation);
+}
+
+.tb-prototype .tb-empty-page h1 {
+  margin: 0;
+  color: var(--tb-ink);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.tb-prototype .tb-empty-page p {
+  margin: 0;
+  color: var(--tb-muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.tb-prototype .tb-empty-page code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
 }
 
 .tb-dashboard-left,
@@ -2253,14 +2554,6 @@
   border: 0;
 }
 
-/*
- * Collapsed rail. The reference keeps only the module icon column: every
- * account control and every section label disappears, icons sit in 36x36 rows
- * with 20px glyphs in a 72px column, and hovering reveals a dark tooltip to the
- * right. TeacherWorkspace additionally keeps a 1px hairline between groups so a
- * user's own grouping survives the collapse, which the reference has no
- * equivalent for.
- */
 .tb-sidebar {
   will-change: clip-path;
 }
@@ -2312,11 +2605,9 @@
 }
 
 /* Rail tooltip: 12px on #2d3037 with a 6px radius, anchored to the icon. */
-.tb-sidebar.is-rail-collapsed .tb-module-row::after {
-  position: absolute;
-  z-index: 5;
-  top: 50%;
-  left: calc(100% + 14px);
+.tb-prototype .tb-rail-tooltip {
+  position: fixed;
+  z-index: 100;
   padding: 6px 12px;
   border-radius: 6px;
   color: var(--tb-page);
@@ -2324,17 +2615,15 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 1.35;
-  opacity: 0;
   pointer-events: none;
-  content: attr(data-label);
   transform: translateY(-50%);
-  transition: opacity .14s ease;
+  animation: tb-rail-tooltip-in .14s ease both;
   white-space: nowrap;
 }
 
-.tb-sidebar.is-rail-collapsed .tb-module-row:hover::after,
-.tb-sidebar.is-rail-collapsed .tb-module-row:focus-visible::after {
-  opacity: 1;
+@keyframes tb-rail-tooltip-in {
+  from { opacity: 0; transform: translateY(-50%) scale(.96); }
+  to { opacity: 1; transform: translateY(-50%) scale(1); }
 }
 
 .tb-mobile-scrim {
@@ -2376,7 +2665,7 @@
 
   .tb-topbar {
     grid-template-columns: var(--tb-shell-brand-column) minmax(0, 1fr) auto;
-    /* Reference tightens the right inset to 32px at this width. */
+
     padding-right: 32px;
   }
 
@@ -2396,13 +2685,6 @@
     --tb-sidebar-width: 0px;
   }
 
-  /*
-   * Narrow form, measured from the reference at 500px: the bar drops to 56px, the
-   * nav gives way to a hamburger, and the icon buttons grow to 36px at 8px radius
-   * with the inset tightening to 16px. The reference also drops its tutorial entry
-   * here; TeachBuddy keeps all five, because they fit at 390px and the one-shot
-   * first-run guide points at the tutorial entry.
-   */
   .tb-topbar {
     grid-template-columns: auto minmax(0, 1fr);
     height: 56px;
@@ -2420,7 +2702,7 @@
     border-radius: 8px;
   }
 
-  .tb-sidebar-toggle {
+  .tb-prototype .tb-sidebar-toggle {
     display: none;
   }
 
@@ -2436,6 +2718,20 @@
     width: 36px;
     height: 36px;
     border-radius: 8px;
+  }
+
+  .tb-prototype .tb-popover {
+    position: fixed;
+    top: 64px;
+    right: 12px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 80px);
+    overflow-y: auto;
+  }
+
+  .tb-popover-feedback .tb-popover-head {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .tb-shell {
@@ -2535,4 +2831,15 @@
     border-radius: 14px;
   }
 
+}
+
+/* Keep the settled state authoritative after every animation declaration. */
+@media (prefers-reduced-motion: reduce) {
+  .tb-prototype *,
+  .tb-prototype *::before,
+  .tb-prototype *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

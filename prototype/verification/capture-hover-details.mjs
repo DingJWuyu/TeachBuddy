@@ -7,12 +7,12 @@
 //
 // PROTOTYPE_URL 覆盖目标地址，PROTOTYPE_EVIDENCE_DIR 覆盖产物目录。
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { evidencePaths } from './evidence-paths.mjs';
 import { chromium } from 'playwright';
 import { openWorkbench } from './session.mjs';
 
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?prototype=sidebar';
-const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/screenshots/workbench/', import.meta.url));
+const { screenshots: OUT } = evidencePaths('capture-hover-details');
 
 const browser = await chromium.launch();
 

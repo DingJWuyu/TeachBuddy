@@ -2,9 +2,9 @@
 import { chromium } from 'playwright';
 import { openWorkbench } from './session.mjs';
 import { mkdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { evidencePaths } from './evidence-paths.mjs';
 
-const OUT = process.env.PROTOTYPE_EVIDENCE_DIR || fileURLToPath(new URL('../evidence/screenshots/workbench/', import.meta.url));
+const { screenshots: OUT } = evidencePaths('verify-ui-review');
 mkdirSync(OUT, { recursive: true });
 
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?prototype=sidebar';

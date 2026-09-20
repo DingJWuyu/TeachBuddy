@@ -6,7 +6,7 @@ Status: Accepted
 
 ## 复现与验证
 
-从 [manifest](manifest.md) 启动原型。每个用例使用独立浏览器上下文，回到空登录卡后执行，避免前一场景留下的邮箱或验证码影响结果。完整操作和逐步断言见 [auth-scenarios.mjs](../verification/auth-scenarios.mjs)，运行 `node prototype/verification/capture-all.mjs` 可复现全部场景并更新证据。
+从 [manifest](manifest.md) 启动原型。每个用例使用独立浏览器上下文，回到空登录卡后执行，避免前一场景留下的邮箱或验证码影响结果。完整操作和逐步断言见 [auth-scenarios.mjs](../verification/auth-scenarios.mjs)，运行 `node prototype/verification/capture-all.mjs` 可复现全部场景，输出暂存位置见命令提示；核对后再替换当前证据。
 
 登录使用 `example@example.com` / `teachbuddy`；注册新地址使用 `new@example.com`、昵称 `林`、验证码 `309614`；找回验证码 `841207`、新密码 `new-teachbuddy`。页面刷新重置内存，切换卡片只保留邮箱。各错误用例只改变表中指定条件，修正路径验证重试结果。
 

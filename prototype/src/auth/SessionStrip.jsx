@@ -1,12 +1,4 @@
-/*
- * Signs the prototype session out so the entry screens stay reviewable.
- *
- * PROTOTYPE: the workbench does not own a session yet, so rather than thread a
- * sign-out control into its sidebar - which is measured against the reference
- * and must not move - the session is surfaced here, floating above the shell.
- * This is the seam that becomes the account menu when the entry screens are
- * integrated.
- */
+/* Shows the current in-memory account and signs out without changing the sidebar layout. */
 export default function SessionStrip({ user, onSignOut }) {
   if (!user) return null;
 

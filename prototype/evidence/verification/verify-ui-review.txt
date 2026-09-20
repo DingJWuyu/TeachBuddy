@@ -4,7 +4,7 @@ ok   sidebar collapse is animated  grid-template-columns 0.2s cubic-bezier(0.4, 
 ok   top bar does not animate with the sidebar  0s
 ok   collapse control at reference x=220  x=220 w=32
 ok   sidebar starts expanded  256
-ok   width is mid-flight during transition  samples=256,256,253,240,213,172,137,113,97,87,79,75 midFlight=11
+ok   width is mid-flight during transition  samples=256,256,253,240,213,172,137,113,97,87,80,75 midFlight=11
 ok   collapsed width settles at 72px  72
 ok   top-bar centre nav does not shift  before=274 after=274
 ok   brand does not shift or collapse  {"before":{"navX":274,"brandX":18,"brandW":256,"brandTextW":99},"after":{"navX":274,"brandX":18,"brandW":256,"brandTextW":99,"toggleX":220}}
