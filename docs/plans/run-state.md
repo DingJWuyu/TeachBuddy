@@ -26,7 +26,7 @@
 - 配置文件属于已存在的运行环境，本页只保留指针，不复制进仓库，不修改、重建或测试触发器，也不创建安装脚本。
 - 根收到 `check` 后先读本页：有未完成任务且近 45 分钟没有回执时，才对台账中相关 session 做一次恢复检查。这个 `check` 同时判断回执缺失和异常通知；正常 `FAIL` 仍回原节点处理，只有异常退出、结果已落盘但通知未到等情况才按回执缺失处理。无未完成任务或已有近期回执时结束本次检查。结果已保存但回执丢失时按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败规则处理。超过 45 分钟本身不判失败，不杀死健康进程，不盲目重派；`check` 不替代依赖和权限判断。
 - 首条 `check` 已于 `2026-09-21T18:09:55Z` 在根会话收到并处理；距最后任务回执不足一分钟，本次结束检查，未查询或重启任何 session。此记录只证明消息已接收，未另核实投递来源，中断恢复仍未演练。`check` 自身不更新最后任务回执时间。
-- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T20:49:49.442696+00:00`，对应任务为 `C23@1 attempt 1`；本地制作已自验，模型/M-X 切片有界接续。根按实际回执更新此字段，供下一次 `check` 使用。
+- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T20:51:56.654921+00:00`，对应任务为 `AUTH-CONTRACT-REVIEW@1 attempt 1`；两项不一致回设计者，包含 B11/A11 接缝传播。根按实际回执更新此字段，供下一次 `check` 使用。
 
 | 任务/版本 | 当前状态 | attempt | 负责 session 与 worktree | 输入/正式回执或产物位置 | 阻塞/下一步条件 | 适用授权 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -75,8 +75,9 @@
 | T50-REVIEW@1 / attempt 1 | 完成，independent CHANGES_REQUIRED | 固定设计 `f2b5ba9` | Codex Sol high；session `01a0c5a8-cb3c-7233-bca4-e258e3625183`；`/home/liam_t/项目/TeacherWorkspace-t50-review` | 报告 `bc5f7b9dad387ed97ffec70b4509d18c541fda91:docs/acceptance/evidence/T50/v1/review.md` | 三项限定文档缺口交 Luna 修订；其余边界已核验，不重做整套设计 |
 | T50-CORRECTION@1 / attempt 1 | RUNNING | `32af4eb53f78d83780c55fd83821733b000f393b`，含原设计与独立发现 | Codex Luna max；session `01a0c5b6-10bd-71f1-8ce9-b2cd45828890`；PID `241649`；exec `51502`；`/home/liam_t/项目/TeacherWorkspace-t50-corrections`；`docs/t50-contract-corrections` | `.scratch/dag-dispatch/T50-CORRECTION/1/task.md`；receipt 待生成 | 仅修三项稳定编号，随后 Sol 限定冻结核验；不启动 T51/T52 |
 | C20-INTEGRATION@1 / attempt 1 | 完成（self），已合 main | `e921225`（冻结 C20/B11） | Codex Luna max；session `01a0c58f-fc16-7130-a01e-e236f7d469e7`；临时工作区与分支已完成用途并清理 | 集成版本 `5d8099b357131325e24fbaacffafbfaf16cc01ab`；[正式回执](../acceptance/evidence/C20/v1/integration.md) | C21-C23、T50、C24 探针已并行；C24 真业务仍等 B16，根恢复 main 文档同步 |
-| AUTH-CONTRACT@1 / attempt 1 | READY_FOR_REVIEW | `5b12a9063cc0b692103df73997cb8963506bd9ea` | Codex Astra high；session `01a0c592-84d8-7622-8092-772d18cf0ac3`；`/home/liam_t/项目/TeacherWorkspace-auth-contract`；`design/auth-contract-completion` | 设计 `fd3f6d5e8d19823aa83a417b99f223c87f4aa713`；作者 `975fb04cd99ddb8da1ec0d9c455c84021e554fcd`；`docs/acceptance/evidence/AUTH-CONTRACT/v1/author.md` | I01-I07 契约交独立冻结；之后同版认证前后端 dsh 并行，共享入口串行集成；真实认证/邮件交付仍未完成 |
-| AUTH-CONTRACT-REVIEW@1 / attempt 1 | RUNNING | `a11094e25c9605216af45fccc31de2ccc2c2eb0f`；固定设计 `fd3f6d5` | Codex Sol high；session `01a0c5aa-73b8-7560-86cd-96b27f336936`；PID `221791`；exec `48218`；`/home/liam_t/项目/TeacherWorkspace-auth-contract-review`；`review/auth-contract-freeze` | `.scratch/dag-dispatch/AUTH-CONTRACT-REVIEW/1/task.md`；receipt 待生成 | 独立核验认证行为、协议、B11 接缝及实施包；不验真实登录或邮件 |
+| AUTH-CONTRACT@1 / attempt 1 | CHANGES_REQUIRED | `5b12a9063cc0b692103df73997cb8963506bd9ea` | Codex Astra high；session `01a0c592-84d8-7622-8092-772d18cf0ac3`；`/home/liam_t/项目/TeacherWorkspace-auth-contract`；`design/auth-contract-completion` | 设计 `fd3f6d5e8d19823aa83a417b99f223c87f4aa713`；作者 `975fb04cd99ddb8da1ec0d9c455c84021e554fcd`；`docs/acceptance/evidence/AUTH-CONTRACT/v1/author.md` | AUTH-CR-001/002 待修并限定冻结，认证实现尚不放行；旧首流固定输入不变 |
+| AUTH-CONTRACT-REVIEW@1 / attempt 1 | 完成，independent CHANGES_REQUIRED | 固定设计 `fd3f6d5` | Codex Sol high；session `01a0c5aa-73b8-7560-86cd-96b27f336936`；`/home/liam_t/项目/TeacherWorkspace-auth-contract-review` | 报告 `092d7c89cb1386e913ef245a0a6370bede141947:docs/acceptance/evidence/AUTH-CONTRACT/v1/review.md` | PageContext 工作台 schema 声明与 I03 Problem 集合交设计修订；其余已核验内容不重做 |
+| AUTH-CONTRACT-CORRECTION@1 / attempt 1 | PREPARED | `7b86b03fb51fa317dc2fade3b1319a53db9247de`，含原候选和独立发现 | 新 Codex Astra high；`/home/liam_t/项目/TeacherWorkspace-auth-contract-corrections`；`design/auth-contract-corrections` | `.scratch/dag-dispatch/AUTH-CONTRACT-CORRECTION/1/task.md`；receipt 待生成 | 两项限定修订及跨 B11/A11 版本传播；原活动实现固定输入继续，修订后 Sol 限定冻结 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
