@@ -49,9 +49,8 @@
 | --- | --- | --- | --- | --- | --- |
 | B10@1 / attempt 1 | 完成（self）；B11 可派发 | `9f93c2a` | Codex Luna max；session `01a0c545-5089-7452-a568-f0131b567189`；exec `14318`；`/home/liam_t/项目/TeacherWorkspace-b10`，`chore/b10-entry` | 最终提交 `8e9b230c56c7384521b122a7a80b6b07e18c852c`；`docs/acceptance/evidence/B10/v1/receipt.md`；源任务回执已接收 | B11 设计与 B10/EMODEL 文档集成并行；本轮不追加 B10 审查 |
 | EMODEL@1 / attempt 1 | 完成（self，基本连通性）；待随后续文档集成 | `9f93c2a`；现有 API 调研与本地凭据 | Codex Luna max；session `01a0c545-507e-74d2-965b-7f25c4722a75`；exec `48750`；`/home/liam_t/项目/TeacherWorkspace-emodel`，`chore/emodel-live` | 候选 `d52ba58a6db51d4214144976224f944c31643796`；`/home/liam_t/项目/TeacherWorkspace-emodel/docs/arch/evidence/EMODEL.md`；`.scratch/dag-dispatch/EMODEL/1/receipt.md` | 两个模型 HTTP 200，但 token 上限耗尽且正文为空；正常文本、流式/tool calling、pi 和计费状态留给后续相关验证，不追加本次复审 |
-
-| B11@1 / attempt 1 | 启动中 | `59a14e9` + B10 `8e9b230` 只读交接 | Codex Astra high；`/home/liam_t/项目/TeacherWorkspace-b11`；`design/b11-first-flow` | `.scratch/dag-dispatch/B11/1/task.md`；receipt 待生成 | 完成后交 Sol high 契约冻结核验，随后 dsh 实现 B12 |
-| PREFLIGHT-INTEGRATION@1 / attempt 1 | 启动中 | B10 `8e9b230`、EMODEL `d52ba58`、最新 main | Codex Luna max；`/home/liam_t/项目/TeacherWorkspace-preflight-integration`；`chore/b10-emodel-integration` | `.scratch/dag-dispatch/PREFLIGHT-INTEGRATION/1/task.md`；receipt 待生成 | 按已有许可集成 main 文档；该 session 活跃期间根不写 main |
+| B11@1 / attempt 1 | RUNNING | `59a14e9` + B10 `8e9b230` 只读交接 | Codex Astra high；session `01a0c555-bc91-7b02-afea-135650a01780`；exec `58212`；`/home/liam_t/项目/TeacherWorkspace-b11`；`design/b11-first-flow` | `.scratch/dag-dispatch/B11/1/task.md`；receipt 待生成 | 完成后交 Sol high 契约冻结核验，随后 dsh 实现 B12 |
+| PREFLIGHT-INTEGRATION@1 / attempt 1 | RUNNING | B10 `8e9b230`、EMODEL `d52ba58`、最新 main | Codex Luna max；session `01a0c555-bc95-7200-b3d2-32e294665c9e`；exec `64550`；`/home/liam_t/项目/TeacherWorkspace-preflight-integration`；`chore/b10-emodel-integration` | `.scratch/dag-dispatch/PREFLIGHT-INTEGRATION/1/task.md`；receipt 待生成 | 按已有许可集成 main 文档；该 session 活跃期间根不写 main |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
