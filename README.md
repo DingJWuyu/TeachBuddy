@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-下表描述 2026-09-21 整理时的代码状态，代码基线为 `911e624`。后续功能落地时同步更新本表；执行顺序和在做事项统一维护在[路线图](docs/ROADMAP.md)。
+下表描述 2026-09-21 整理时的代码状态，代码基线为 `911e624`。后续功能落地时同步更新本表；节点依赖和授权停止点见[交付 DAG](docs/plans/mvp-dag.md)，当前编排状态见[运行台账](docs/plans/run-state.md)，[路线图](docs/ROADMAP.md)提供状态导航。
 
 | 部分 | 已有内容 | 距离目标的差距 |
 | --- | --- | --- |
@@ -23,7 +23,8 @@
 | 要了解的内容 | 唯一入口 |
 | --- | --- |
 | MVP 必须做什么、哪些不做 | [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) |
-| 开发顺序、Agent 分工、当前任务和交付门槛 | [ROADMAP](docs/ROADMAP.md) |
+| 阶段、节点依赖、角色分工和授权停止点 | [交付 DAG](docs/plans/mvp-dag.md) |
+| 当前编排状态和下一步 | [运行台账](docs/plans/run-state.md) |
 | 页面共识、教师工作过程和跨模块联系 | [WORKBENCH_DESIGN](docs/WORKBENCH_DESIGN.md) |
 | 美学、滚动、现场保留和验证要求 | [设计规则](docs/rules/design-and-verification.md) |
 | 领域词汇 | [CONTEXT](CONTEXT.md) |
@@ -56,10 +57,10 @@ CONTEXT.md         领域术语
 .agents/skills/    显式选用的原型评审、契约讨论流程
 ```
 
-后续 MVP 直接在 `apps/` 实现。已验收的界面可按需迁入，迁入后由正式应用独立维护，生产代码不依赖原型源码。原型不会成为另一套需要同步开发的产品。旧执行计划 `PROJECT_PLAN.md` 已撤下，当前计划只维护在 ROADMAP。
+后续 MVP 直接在 `apps/` 实现。已验收的界面可按需迁入，迁入后由正式应用独立维护，生产代码不依赖原型源码。原型不会成为另一套需要同步开发的产品。旧执行计划 `PROJECT_PLAN.md` 已撤下，当前计划只维护在[交付 DAG](docs/plans/mvp-dag.md)，ROADMAP 仅作导航。
 
 ## 验证与部署
 
 当前可用命令为 `npm run test:api`、`npm run test:e2e`、`npm run build`、`npm run prototype:build`。它们尚未覆盖目标 MVP；`build:api` 会检查并可能创建 SQLite 文件，详见安装指南。原型脚本的适用范围以行为索引为准，不能把旧空首页、九模块断言套到最新模块稿。
 
-[API 指南](docs/API.md)描述旧 Bearer 应用；[旧部署说明](docs/DEPLOY_INFINITYFREE_RENDER.md)也仅供旧底座参考。新认证已确认同源 Cookie 方向，MVP 还需接通真实服务、持久文件和备份恢复，当前没有通过验证的 MVP 部署方案。可交付标准见路线图。
+[API 指南](docs/API.md)描述旧 Bearer 应用；[旧部署说明](docs/DEPLOY_INFINITYFREE_RENDER.md)也仅供旧底座参考。新认证已确认同源 Cookie 方向，MVP 还需接通真实服务、持久文件和备份恢复，当前没有通过验证的 MVP 部署方案。可交付标准见[验收矩阵](docs/acceptance/mvp-matrix.md)。

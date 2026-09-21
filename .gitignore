@@ -2,6 +2,7 @@ node_modules
 dist
 coverage
 .env
+.env.agent
 .DS_Store
 apps/web/dist
 apps/api/dist
