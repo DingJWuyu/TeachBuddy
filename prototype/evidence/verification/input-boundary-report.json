@@ -1,0 +1,795 @@
+{
+  "suite": "g06-input-boundary-delivery",
+  "generatedAt": "2026-09-21T11:36:35.907Z",
+  "url": "http://127.0.0.1:4189/?dev-code=001234&dev-no-cooldown=",
+  "reproduce": "在 prototype 根目录执行：PROTOTYPE_URL=http://127.0.0.1:4174/ node verification/verify-input-boundaries.mjs",
+  "rules": {
+    "G06N": "昵称 trim 后 1-40 Unicode code points，保存 trim 值，计数与规则解释一致，不静默截断。",
+    "G06P": "密码 8-128 Unicode code points，原样保留，不 trim、大小写转换或 Unicode normalization；确认密码只做本地相等。",
+    "G06E": "邮箱输入期间原样保留；发送和提交目标 trim+lowercase；ASCII、总长不超过 254、形状规则按已确定约束校验。",
+    "G06C": "验证码为 6 位 ASCII 数字，允许前导 0；全角数字、少于或超过 6 位拒绝且不静默改写。",
+    "G06V": "每个新增独特视觉状态在 PC 1440x900、平板 768x1024、手机 390x844 采集，并检查无遮挡、无横向溢出、无开发浮层。"
+  },
+  "scenarios": [
+    {
+      "id": "CA110",
+      "rules": [
+        "G06N",
+        "G06V"
+      ],
+      "description": "trim 后 40 Unicode code points 可注册，计数、保存值和账号行一致",
+      "assertions": [
+        "昵称输入原样保留，trim 后计数为 40/40",
+        "提交后进入真实工作台，账号行保存且显示 trim 后昵称"
+      ]
+    },
+    {
+      "id": "CA111",
+      "rules": [
+        "G06N",
+        "G06V"
+      ],
+      "description": "41 Unicode code points 拒绝，完整输入保留",
+      "assertions": [
+        "提交出现昵称 40 字符边界错误",
+        "输入值仍为完整 41 code points，页面没有静默截断或进入工作台",
+        "trim 后为空白的昵称拒绝，空白输入值仍保留"
+      ]
+    },
+    {
+      "id": "CA112",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "description": "8 code points 的首尾空格、emoji、组合字符和大小写密码按原样注册",
+      "assertions": [
+        "密码 DOM 值和 8/128 计数保留原始语义",
+        "确认值逐 code point 相等时真实注册成功",
+        "注册后用原密码登录成功，改变大小写的密码登录被拒绝",
+        "128 个 emoji 密码达到上限并真实注册成功"
+      ]
+    },
+    {
+      "id": "CA113",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "description": "7 Unicode code points 拒绝，129 Unicode code points 拒绝并完整保留",
+      "assertions": [
+        "7 code points 提交出现至少 8 位错误且完整保留",
+        "129 code points 提交出现密码上限错误且完整保留，未静默截断"
+      ]
+    },
+    {
+      "id": "CA114",
+      "rules": [
+        "G06E",
+        "G06V"
+      ],
+      "description": "trim+lower 后恰好 254 ASCII 邮箱可发码并完成注册",
+      "assertions": [
+        "输入框保留首尾空格和大写原文",
+        "验证码发送目标和后续账户保存使用 lower-case 规范值",
+        "长目标的完整规范值保留在 aria-label/title，可见前缀和有效期保留并使用省略号",
+        "真实注册成功进入工作台"
+      ]
+    },
+    {
+      "id": "CA115",
+      "rules": [
+        "G06E",
+        "G06V"
+      ],
+      "description": "255 边界与代表性邮箱形状表驱动拒绝",
+      "assertions": [
+        "255 字符完整保留并因长度拒绝",
+        "local/domain 非法形状均拒绝，代表性子用例复用同一错误视觉状态"
+      ]
+    },
+    {
+      "id": "CA116",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "description": "前导 0 的六位验证码实际完成注册",
+      "assertions": [
+        "输入值保持 001234",
+        "验证码经过真实提交并进入工作台"
+      ]
+    },
+    {
+      "id": "CA117",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "description": "全角、少位、超长验证码拒绝且不改写，修正后可用",
+      "assertions": [
+        "六种格式错误的输入值均原样保留",
+        "错误提示位于验证码字段，累计六次形状错误后修正为 001234 仍真实注册成功，证明格式错误未耗用挑战"
+      ]
+    },
+    {
+      "id": "CA118",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "description": "验证码格式错与未勾条款同时存在时优先格式错误",
+      "assertions": [
+        "错误验证码提交时显示验证码字段错误",
+        "同一提交不把错误优先显示为条款错误"
+      ]
+    },
+    {
+      "id": "CA119",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "description": "确认密码不做 trim、大小写或 normalization，修正为原值后成功",
+      "assertions": [
+        "去掉首尾空格、改变大小写或把组合字符改为预组字符的确认值均被拒绝，原始密码值不变",
+        "确认值恢复逐 code point 相等后真实注册成功",
+        "注册后原密码登录成功，trim 和组合字符 normalization 后的密码均被拒绝"
+      ]
+    }
+  ],
+  "selectedScenarios": [
+    "CA110",
+    "CA111",
+    "CA112",
+    "CA113",
+    "CA114",
+    "CA115",
+    "CA116",
+    "CA117",
+    "CA118",
+    "CA119"
+  ],
+  "viewports": [
+    {
+      "name": "PC",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "name": "平板",
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "name": "手机",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "rows": [
+    {
+      "id": "CA110",
+      "description": "trim 后 40 Unicode code points 可注册，计数、保存值和账号行一致",
+      "rules": [
+        "G06N",
+        "G06V"
+      ],
+      "assertions": [
+        "昵称输入原样保留，trim 后计数为 40/40",
+        "提交后进入真实工作台，账号行保存且显示 trim 后昵称"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA110/PC-CA110-trimmed-40-filled.png",
+        "CA110/PC-CA110-saved-trimmed-name.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA111",
+      "description": "41 Unicode code points 拒绝，完整输入保留",
+      "rules": [
+        "G06N",
+        "G06V"
+      ],
+      "assertions": [
+        "提交出现昵称 40 字符边界错误",
+        "输入值仍为完整 41 code points，页面没有静默截断或进入工作台",
+        "trim 后为空白的昵称拒绝，空白输入值仍保留"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA111/PC-CA111-over-40-retained.png",
+        "CA111/PC-CA111-blank-after-trim.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA112",
+      "description": "8 code points 的首尾空格、emoji、组合字符和大小写密码按原样注册",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "assertions": [
+        "密码 DOM 值和 8/128 计数保留原始语义",
+        "确认值逐 code point 相等时真实注册成功",
+        "注册后用原密码登录成功，改变大小写的密码登录被拒绝",
+        "128 个 emoji 密码达到上限并真实注册成功"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA112/PC-CA112-raw-password-visible.png",
+        "CA112/PC-CA112-raw-password-accepted.png",
+        "CA112/PC-CA112-max-128-password-visible.png",
+        "CA112/PC-CA112-max-128-password-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA113",
+      "description": "7 Unicode code points 拒绝，129 Unicode code points 拒绝并完整保留",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "assertions": [
+        "7 code points 提交出现至少 8 位错误且完整保留",
+        "129 code points 提交出现密码上限错误且完整保留，未静默截断"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA113/PC-CA113-over-128-retained.png",
+        "CA113/PC-CA113-under-8-retained.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA114",
+      "description": "trim+lower 后恰好 254 ASCII 邮箱可发码并完成注册",
+      "rules": [
+        "G06E",
+        "G06V"
+      ],
+      "assertions": [
+        "输入框保留首尾空格和大写原文",
+        "验证码发送目标和后续账户保存使用 lower-case 规范值",
+        "长目标的完整规范值保留在 aria-label/title，可见前缀和有效期保留并使用省略号",
+        "真实注册成功进入工作台"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA114/PC-CA114-valid-254-sent.png",
+        "CA114/PC-CA114-valid-254-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA115",
+      "description": "255 边界与代表性邮箱形状表驱动拒绝",
+      "rules": [
+        "G06E",
+        "G06V"
+      ],
+      "assertions": [
+        "255 字符完整保留并因长度拒绝",
+        "local/domain 非法形状均拒绝，代表性子用例复用同一错误视觉状态"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA115/PC-CA115-length-255-retained.png",
+        "CA115/PC-CA115-shape-table-rejected.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA116",
+      "description": "前导 0 的六位验证码实际完成注册",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "assertions": [
+        "输入值保持 001234",
+        "验证码经过真实提交并进入工作台"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA116/PC-CA116-leading-zero-filled.png",
+        "CA116/PC-CA116-leading-zero-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA117",
+      "description": "全角、少位、超长验证码拒绝且不改写，修正后可用",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "assertions": [
+        "六种格式错误的输入值均原样保留",
+        "错误提示位于验证码字段，累计六次形状错误后修正为 001234 仍真实注册成功，证明格式错误未耗用挑战"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA117/PC-CA117-malformed-code-retained.png",
+        "CA117/PC-CA117-corrected-code-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA118",
+      "description": "验证码格式错与未勾条款同时存在时优先格式错误",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "assertions": [
+        "错误验证码提交时显示验证码字段错误",
+        "同一提交不把错误优先显示为条款错误"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA118/PC-CA118-format-before-terms.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA119",
+      "description": "确认密码不做 trim、大小写或 normalization，修正为原值后成功",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "assertions": [
+        "去掉首尾空格、改变大小写或把组合字符改为预组字符的确认值均被拒绝，原始密码值不变",
+        "确认值恢复逐 code point 相等后真实注册成功",
+        "注册后原密码登录成功，trim 和组合字符 normalization 后的密码均被拒绝"
+      ],
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "CA119/PC-CA119-confirmation-transform-rejected.png",
+        "CA119/PC-CA119-confirmation-exact-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA110",
+      "description": "trim 后 40 Unicode code points 可注册，计数、保存值和账号行一致",
+      "rules": [
+        "G06N",
+        "G06V"
+      ],
+      "assertions": [
+        "昵称输入原样保留，trim 后计数为 40/40",
+        "提交后进入真实工作台，账号行保存且显示 trim 后昵称"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA110/平板-CA110-trimmed-40-filled.png",
+        "CA110/平板-CA110-saved-trimmed-name.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA111",
+      "description": "41 Unicode code points 拒绝，完整输入保留",
+      "rules": [
+        "G06N",
+        "G06V"
+      ],
+      "assertions": [
+        "提交出现昵称 40 字符边界错误",
+        "输入值仍为完整 41 code points，页面没有静默截断或进入工作台",
+        "trim 后为空白的昵称拒绝，空白输入值仍保留"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA111/平板-CA111-over-40-retained.png",
+        "CA111/平板-CA111-blank-after-trim.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA112",
+      "description": "8 code points 的首尾空格、emoji、组合字符和大小写密码按原样注册",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "assertions": [
+        "密码 DOM 值和 8/128 计数保留原始语义",
+        "确认值逐 code point 相等时真实注册成功",
+        "注册后用原密码登录成功，改变大小写的密码登录被拒绝",
+        "128 个 emoji 密码达到上限并真实注册成功"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA112/平板-CA112-raw-password-visible.png",
+        "CA112/平板-CA112-raw-password-accepted.png",
+        "CA112/平板-CA112-max-128-password-visible.png",
+        "CA112/平板-CA112-max-128-password-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA113",
+      "description": "7 Unicode code points 拒绝，129 Unicode code points 拒绝并完整保留",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "assertions": [
+        "7 code points 提交出现至少 8 位错误且完整保留",
+        "129 code points 提交出现密码上限错误且完整保留，未静默截断"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA113/平板-CA113-over-128-retained.png",
+        "CA113/平板-CA113-under-8-retained.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA114",
+      "description": "trim+lower 后恰好 254 ASCII 邮箱可发码并完成注册",
+      "rules": [
+        "G06E",
+        "G06V"
+      ],
+      "assertions": [
+        "输入框保留首尾空格和大写原文",
+        "验证码发送目标和后续账户保存使用 lower-case 规范值",
+        "长目标的完整规范值保留在 aria-label/title，可见前缀和有效期保留并使用省略号",
+        "真实注册成功进入工作台"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA114/平板-CA114-valid-254-sent.png",
+        "CA114/平板-CA114-valid-254-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA115",
+      "description": "255 边界与代表性邮箱形状表驱动拒绝",
+      "rules": [
+        "G06E",
+        "G06V"
+      ],
+      "assertions": [
+        "255 字符完整保留并因长度拒绝",
+        "local/domain 非法形状均拒绝，代表性子用例复用同一错误视觉状态"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA115/平板-CA115-length-255-retained.png",
+        "CA115/平板-CA115-shape-table-rejected.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA116",
+      "description": "前导 0 的六位验证码实际完成注册",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "assertions": [
+        "输入值保持 001234",
+        "验证码经过真实提交并进入工作台"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA116/平板-CA116-leading-zero-filled.png",
+        "CA116/平板-CA116-leading-zero-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA117",
+      "description": "全角、少位、超长验证码拒绝且不改写，修正后可用",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "assertions": [
+        "六种格式错误的输入值均原样保留",
+        "错误提示位于验证码字段，累计六次形状错误后修正为 001234 仍真实注册成功，证明格式错误未耗用挑战"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA117/平板-CA117-malformed-code-retained.png",
+        "CA117/平板-CA117-corrected-code-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA118",
+      "description": "验证码格式错与未勾条款同时存在时优先格式错误",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "assertions": [
+        "错误验证码提交时显示验证码字段错误",
+        "同一提交不把错误优先显示为条款错误"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA118/平板-CA118-format-before-terms.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA119",
+      "description": "确认密码不做 trim、大小写或 normalization，修正为原值后成功",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "assertions": [
+        "去掉首尾空格、改变大小写或把组合字符改为预组字符的确认值均被拒绝，原始密码值不变",
+        "确认值恢复逐 code point 相等后真实注册成功",
+        "注册后原密码登录成功，trim 和组合字符 normalization 后的密码均被拒绝"
+      ],
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "CA119/平板-CA119-confirmation-transform-rejected.png",
+        "CA119/平板-CA119-confirmation-exact-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA110",
+      "description": "trim 后 40 Unicode code points 可注册，计数、保存值和账号行一致",
+      "rules": [
+        "G06N",
+        "G06V"
+      ],
+      "assertions": [
+        "昵称输入原样保留，trim 后计数为 40/40",
+        "提交后进入真实工作台，账号行保存且显示 trim 后昵称"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA110/手机-CA110-trimmed-40-filled.png",
+        "CA110/手机-CA110-saved-trimmed-name.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA111",
+      "description": "41 Unicode code points 拒绝，完整输入保留",
+      "rules": [
+        "G06N",
+        "G06V"
+      ],
+      "assertions": [
+        "提交出现昵称 40 字符边界错误",
+        "输入值仍为完整 41 code points，页面没有静默截断或进入工作台",
+        "trim 后为空白的昵称拒绝，空白输入值仍保留"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA111/手机-CA111-over-40-retained.png",
+        "CA111/手机-CA111-blank-after-trim.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA112",
+      "description": "8 code points 的首尾空格、emoji、组合字符和大小写密码按原样注册",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "assertions": [
+        "密码 DOM 值和 8/128 计数保留原始语义",
+        "确认值逐 code point 相等时真实注册成功",
+        "注册后用原密码登录成功，改变大小写的密码登录被拒绝",
+        "128 个 emoji 密码达到上限并真实注册成功"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA112/手机-CA112-raw-password-visible.png",
+        "CA112/手机-CA112-raw-password-accepted.png",
+        "CA112/手机-CA112-max-128-password-visible.png",
+        "CA112/手机-CA112-max-128-password-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA113",
+      "description": "7 Unicode code points 拒绝，129 Unicode code points 拒绝并完整保留",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "assertions": [
+        "7 code points 提交出现至少 8 位错误且完整保留",
+        "129 code points 提交出现密码上限错误且完整保留，未静默截断"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA113/手机-CA113-over-128-retained.png",
+        "CA113/手机-CA113-under-8-retained.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA114",
+      "description": "trim+lower 后恰好 254 ASCII 邮箱可发码并完成注册",
+      "rules": [
+        "G06E",
+        "G06V"
+      ],
+      "assertions": [
+        "输入框保留首尾空格和大写原文",
+        "验证码发送目标和后续账户保存使用 lower-case 规范值",
+        "长目标的完整规范值保留在 aria-label/title，可见前缀和有效期保留并使用省略号",
+        "真实注册成功进入工作台"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA114/手机-CA114-valid-254-sent.png",
+        "CA114/手机-CA114-valid-254-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA115",
+      "description": "255 边界与代表性邮箱形状表驱动拒绝",
+      "rules": [
+        "G06E",
+        "G06V"
+      ],
+      "assertions": [
+        "255 字符完整保留并因长度拒绝",
+        "local/domain 非法形状均拒绝，代表性子用例复用同一错误视觉状态"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA115/手机-CA115-length-255-retained.png",
+        "CA115/手机-CA115-shape-table-rejected.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA116",
+      "description": "前导 0 的六位验证码实际完成注册",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "assertions": [
+        "输入值保持 001234",
+        "验证码经过真实提交并进入工作台"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA116/手机-CA116-leading-zero-filled.png",
+        "CA116/手机-CA116-leading-zero-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA117",
+      "description": "全角、少位、超长验证码拒绝且不改写，修正后可用",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "assertions": [
+        "六种格式错误的输入值均原样保留",
+        "错误提示位于验证码字段，累计六次形状错误后修正为 001234 仍真实注册成功，证明格式错误未耗用挑战"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA117/手机-CA117-malformed-code-retained.png",
+        "CA117/手机-CA117-corrected-code-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA118",
+      "description": "验证码格式错与未勾条款同时存在时优先格式错误",
+      "rules": [
+        "G06C",
+        "G06V"
+      ],
+      "assertions": [
+        "错误验证码提交时显示验证码字段错误",
+        "同一提交不把错误优先显示为条款错误"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA118/手机-CA118-format-before-terms.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA119",
+      "description": "确认密码不做 trim、大小写或 normalization，修正为原值后成功",
+      "rules": [
+        "G06P",
+        "G06V"
+      ],
+      "assertions": [
+        "去掉首尾空格、改变大小写或把组合字符改为预组字符的确认值均被拒绝，原始密码值不变",
+        "确认值恢复逐 code point 相等后真实注册成功",
+        "注册后原密码登录成功，trim 和组合字符 normalization 后的密码均被拒绝"
+      ],
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "CA119/手机-CA119-confirmation-transform-rejected.png",
+        "CA119/手机-CA119-confirmation-exact-accepted.png"
+      ],
+      "status": "passed"
+    }
+  ],
+  "failures": [],
+  "status": "passed"
+}

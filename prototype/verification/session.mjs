@@ -11,9 +11,14 @@ export async function dismissCoach(page) {
 // A document load loses the in-memory account session. Sign in through the UI.
 export async function openWorkbench(page, url, { dismissCoach: dismiss = false, ...options } = {}) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000, ...options });
-  await page.waitForSelector('.ae-card, .tb-shell', { timeout: 15000 });
+  await page.waitForSelector('.ae-restore-card, .ae-form, .tb-shell', { timeout: 15000 });
+  if (await page.locator('.ae-restore-card').count()) {
+    /* A saved-session restore is a gate, not a login form. Keep the helper
+     * from filling selectors that do not exist while the gate is waiting. */
+    await page.waitForFunction(() => !document.querySelector('.ae-restore-card'), null, { timeout: 15000 });
+  }
   if (await page.locator('.ae-card').count()) {
-    await page.fill('.ae-form input[type="email"]', DEMO_EMAIL);
+    await page.fill('.ae-form input[autocomplete="email"]', DEMO_EMAIL);
     await page.fill('.ae-form input[type="password"]', DEMO_PASSWORD);
     await page.click('.ae-primary');
   }
