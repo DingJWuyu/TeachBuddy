@@ -1,6 +1,6 @@
 # 工作台契约入口
 
-状态：`AUTH-CONTRACT-CORRECTION@1 / READY_FOR_REVIEW`。当前 OpenAPI 为 `0.1.0-candidate.2`，与认证 `1.0.0-rc.2` 同一候选提交消费，等待页面头接缝的限定独立冻结。适用行为仍为 [first-flow](../user-stories/first-flow.md)、[UX U0-U7](../ux/first-flow.md)。原型参考 [Mixed manifest](../../prototype/behavior/manifest.md)，不将 Draft 模块稿声明为 Accepted。
+状态：`AUTH-CONTRACT-CORRECTION@1 / FROZEN`。当前 OpenAPI 为 `0.1.0-candidate.2`，与认证 `1.0.0-rc.2` 同一候选提交消费；页面头接缝已由限定独立审查冻结。适用行为仍为 [first-flow](../user-stories/first-flow.md)、[UX U0-U7](../ux/first-flow.md)。原型参考 [Mixed manifest](../../prototype/behavior/manifest.md)，不将 Draft 模块稿声明为 Accepted。
 
 精确 HTTP、字段、枚举、边界、错误与例子唯一归 [first-flow.openapi.yaml](workbench/first-flow.openapi.yaml)。本页拥有跨操作语义，[契约用例](workbench/first-flow-cases.md)拥有交换序列和固定样本；实现两侧消费同一 OpenAPI，不另写竞争 schema。下游任务见 [B12-B15](../plans/tasks/first-flow-implementation.md)。
 
@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | 已冻结首流 | B11 `9aee091a34ba2eb311b51299d9beed78a032d026`，OpenAPI `0.1.0-candidate.1`；独立审查 `b62034eb6661f99127d0e4b1407174260a139089` 的 [review](../acceptance/evidence/B11/v1/review.md) | 保留其固定源 `59a14e95bab667e0a01b8d62f6e87e018ddb1c5f`、B10 `8e9b230c56c7384521b122a7a80b6b07e18c852c`。旧冻结只覆盖该版本，未验页面头。 |
 | 现有测试身份首流 | 运行任务输入 `b938f8af0b8152718f5063d4326d494bf8b5426c`；B12 交付 `3c8d1b3210f3d35e45eaca8141040852e3cb865c`，其 author 固定实现 `feb64304a58077de50bc16507f8c271c60ca3ee8` | B12-B16 可继续按旧固定契约完成 `real-api/test-principal`；不要求其模拟认证页面绑定，也不能据此声明新 schema 或 real-auth 通过。 |
-| 真实认证接续 | 工作台 `0.1.0-candidate.2` + 认证 `1.0.0-rc.2`；两份文件均取 [correction 回执](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md) 的实际 `result_revision` | 新增所有 15 个受保护操作的必填 PageContext。须先独立冻结修订，再由根为认证前后端、A10/A11 固定同版输入；新版本验收另留证据，旧 PASS 不适用。 |
+| 真实认证接续 | 工作台 `0.1.0-candidate.2` + 认证 `1.0.0-rc.2`；两份文件均取 [correction 回执](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md) 的实际 `result_revision`，由 [限定独立审查](../acceptance/evidence/AUTH-CONTRACT/v1/correction-review.md) 固定 | 新增所有 15 个受保护操作的必填 PageContext。认证前后端、A10/A11 按同版输入接续；新版本验收另留证据，旧 PASS 不适用。 |
 
 直接受影响的是 B12 公共 schema/身份门禁、B14 请求 transport/替身、B15 集成与 B16 的 HTTP 验收口径，以及认证前后端、A10/A11/A12。B13 业务 body、principal、事务和返回 schema 保持，但切到新版时其 HTTP fixture 同样必须携带页面头。旧固定任务继续使用旧 commit 内的契约；读取当前文件的消费者按新版执行，不能以 test-principal 为由把当前必填头改为可选。根决定何时切换和固定各候选；本页不改 DAG 或派发状态。
 

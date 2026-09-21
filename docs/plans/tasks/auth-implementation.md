@@ -1,6 +1,6 @@
 # 认证前后端实现任务包
 
-共同输入为 `AUTH-CONTRACT-CORRECTION@1` 的[修订回执](../../acceptance/evidence/AUTH-CONTRACT/v1/correction.md)中实际 `result_revision` + 外层限定独立冻结回执。前后端同时固定该 SHA 的认证 `1.0.0-rc.2`、工作台 `0.1.0-candidate.2` 和相关 cases；仅旧设计 `fd3f6d5e` 或旧 author/review 不足以放行，不能以分支“最新”代替固定版本。本页提供认证支线的前后端工作包，不新增 DAG 节点；根负责指定实际任务标识、worktree、端口、隔离数据目录和唯一集成者。
+共同输入为 `AUTH-CONTRACT-CORRECTION@1` 的[修订回执](../../acceptance/evidence/AUTH-CONTRACT/v1/correction.md)中实际 `result_revision` 与已通过的[限定独立冻结回执](../../acceptance/evidence/AUTH-CONTRACT/v1/correction-review.md)。前后端同时固定该 SHA 的认证 `1.0.0-rc.2`、工作台 `0.1.0-candidate.2` 和相关 cases；仅旧设计 `fd3f6d5e` 或旧 author/review 不足以放行，不能以分支“最新”代替固定版本。本页提供认证支线的前后端工作包，不新增 DAG 节点；根负责指定实际任务标识、worktree、端口、隔离数据目录和唯一集成者。
 
 本次必须新增的定向验证：后端 ST01 对 I03 的账户、挑战消费及 pending 写入分别注入失败，统一 account-store-unavailable 且完整回滚，撤故障同码重试；前端依据同版 I03 503 集合映射已知回滚与未知结果。两侧按工作台 [C19-C21](../../contracts/workbench/first-flow-cases.md#真实认证页面接缝)验证 transport/身份接缝，其中15个操作的页面头声明、缺失/非法拒绝及恢复前后身份不可省略。真实浏览器联调留给集成者，替身与fake-mail结果单列。
 

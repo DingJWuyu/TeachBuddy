@@ -8,8 +8,8 @@
 
 - 实际能力以 [README](../../../README.md#当前状态) 为准。文档 HEAD 为 `5eab55d64463215b7e9c044ffb71edb5c365d0e9`，旧代码 main 基线为 `911e62469a0298339613385b7e4a1f8d90822191`；下一次派工须重新固定输入。
 - B11 读取 [PRODUCT_SCOPE](../../PRODUCT_SCOPE.md) 的题库、备课、跨模块和基础交付段落，[WORKBENCH_DESIGN](../../WORKBENCH_DESIGN.md) 的对应流程，以及 [ADR 0001](../../adr/0001-use-a-single-static-module-catalog.md)。数学内容、引用和身份接缝均需本轮消费者可实现。
-- 认证仍由独立工作线负责。[现有契约](../../contracts/auth.md) 和 OpenAPI/用例引用 `a496c5a4727e2900bd110198819295e068739439`，OpenAPI 为 `partial`；当前行为索引为 Mixed，账户范围扩至 CA120，CA53 设置退出暂缺。旧 Accepted 描述不证明完整性。
-- 已确认同源 HTTPS、HttpOnly/Secure Cookie 和来源防护；身份、恢复、退出和失败交换仍需认证负责人交付。A10 只消费其主动交付的代码、契约、行为源和测试回执的固定版本。
+- 认证仍由独立工作线负责。[认证契约](../../contracts/auth.md) 和 OpenAPI/用例当前固定消费认证 `1.0.0-rc.2`、工作台 `0.1.0-candidate.2`；契约已冻结，认证前后端实施中，真实认证尚未交付。当前行为索引为 Mixed，账户范围扩至 CA120，CA53 设置退出暂缺。旧 Accepted 描述和旧 B11/v1/test-principal 结果不证明新版真实认证完整性。
+- 已确认同源 HTTPS、HttpOnly/Secure Cookie 和来源防护；身份、恢复、退出和失败交换仍需认证负责人交付。A10 只消费其主动交付的代码、契约、行为源和测试回执的固定版本；旧首流继续消费 B11/v1/test-principal，新认证消费者固定同版 `rc.2`/`candidate.2`。
 - 现有 Node API/Playwright 测试、HTTP 不同端口及构建副作用由 B11/B12 核对。当前无 lint 脚本/CI workflow；`build:api` 会初始化 SQLite，必须隔离数据库。
 - 本次已将 ROADMAP 改为导航，不等于执行 B10。B10 仍需核对获批文档、实际 diff、分支来源和用户改动保留，再完成 Git 准备。
 

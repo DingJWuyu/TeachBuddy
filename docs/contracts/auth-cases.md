@@ -1,6 +1,6 @@
 # 认证交换用例
 
-状态：`AUTH-CONTRACT-CORRECTION@1 / READY_FOR_REVIEW`，消费认证 `1.0.0-rc.2`。本文件是可执行实现的验收规格，不是已通过记录。规范字段、完整样本和错误身份唯一见 [OpenAPI](auth.openapi.yaml)，业务时点与恢复语义见 [契约入口](auth.md)。以下 CC 组覆盖入口所映射的 CA，表内子编号用于实现证据定位。
+状态：`AUTH-CONTRACT-CORRECTION@1 / FROZEN`，消费认证 `1.0.0-rc.2`。本文件是可执行实现的验收规格，不是已通过记录。规范字段、完整样本和错误身份唯一见 [OpenAPI](auth.openapi.yaml)，业务时点与恢复语义见 [契约入口](auth.md)。以下 CC 组覆盖入口所映射的 CA，表内子编号用于实现证据定位。
 
 ## 公共运行条件
 

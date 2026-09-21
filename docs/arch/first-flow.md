@@ -1,6 +1,6 @@
 # First-flow 实现边界
 
-状态：既有模块接缝按 B11/v1 冻结；当前 HTTP 页面头接续候选等待限定独立冻结，旧输入与当前消费范围见[契约版本](../contracts/workbench.md#消费版本与验收范围)。产品语义只见 [契约](../contracts/workbench.md)，字段只见 [OpenAPI](../contracts/workbench/first-flow.openapi.yaml)。React/Vite、Express、better-sqlite3 沿用现有工程；本批不建立插件系统、事件总线、任务平台或独立服务。
+状态：既有模块接缝按 B11/v1 冻结；当前 HTTP 页面头接续候选已与认证 `1.0.0-rc.2`、工作台 `0.1.0-candidate.2` 一并冻结。旧输入与当前消费范围见[契约版本](../contracts/workbench.md#消费版本与验收范围)。产品语义只见 [契约](../contracts/workbench.md)，字段只见 [OpenAPI](../contracts/workbench/first-flow.openapi.yaml)。React/Vite、Express、better-sqlite3 沿用现有工程；本批不建立插件系统、事件总线、任务平台或独立服务。
 
 ## 模块与接缝
 

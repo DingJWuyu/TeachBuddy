@@ -24,7 +24,7 @@
 - 实际运行能力仍以 [README 当前状态](../../README.md#当前状态) 为准：`apps/web` 和 `apps/api` 是旧工作台/账户底座，`packages/shared` 的模块目录为空，`prototype/` 只作交互参考。
 - 产品范围只读 [PRODUCT_SCOPE](../PRODUCT_SCOPE.md)；工作台行为和页面结构只读 [WORKBENCH_DESIGN](../WORKBENCH_DESIGN.md)；静态模块目录边界只读 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。
 - [API 指南](../API.md)描述旧 Bearer API，不是新工作台契约；新 schema、错误例、公共端口和 B12-B15 的逐文件边界必须由 B11 冻结。
-- 认证契约仍是 `partial`，真实认证由 A10/A11 负责。B11 不修改认证契约、认证实现或原型认证证据，也不能让浏览器自报 `accountId` 作为身份依据。
+- B10/B11 的旧固定输入把认证契约视作 `partial`，该旧消费边界仍保留；当前认证契约已冻结为 `1.0.0-rc.2`，前后端实施中，真实认证仍由后续实现与 A10/A11 交付。B11 不修改认证契约、认证实现或原型认证证据，也不能让浏览器自报 `accountId` 作为身份依据。
 
 ## B11 必要输入
 
@@ -36,7 +36,7 @@ B11 从以下固定输入开始，不需要追溯旧 `PROJECT_PLAN.md`、旧三 
 4. `docs/adr/0001-use-a-single-static-module-catalog.md`：模块目录、公共端口和边界约束。
 5. `docs/plans/execution-protocol.md` 的 design、ownership、receipt 章节，以及本页的 Git 基线和写入清单。
 
-认证只作为身份接缝的现状输入：需要知道 `docs/contracts/auth.md` 当前不完整及其同源 Cookie 方向，但不得在 B11 临时补字段或把讨论中契约当成已完成接口。
+认证只作为 B10/B11 旧输入中的身份接缝现状：旧首流继续按 B11/v1/test-principal 消费；新认证实现按已冻结的同版 `rc.2`/`candidate.2` 进入独立任务包。B11 不临时补字段，也不把旧测试身份或冻结契约当成真实认证已交付。
 
 ## 写入所有权
 
@@ -59,7 +59,7 @@ B11 从以下固定输入开始，不需要追溯旧 `PROJECT_PLAN.md`、旧三 
 - 首条题库到备课的真实业务契约、稳定对象 ID、来源/副本、引用更新、冲突、幂等和保存失败语义尚未冻结。
 - `apps/` 尚无题库、备课业务模块；当前模块 API 返回空目录，旧布局和 Bearer 行为不能证明目标流程。
 - B12 尚未交付独立 SQLite/文件目录、测试身份、同源 HTTPS、生产构建隔离和失败反馈设施。
-- 认证实现、会话生命周期、退出、邮件链路和账户隔离仍由认证工作线交付；当前契约明确为 partial。
+- 认证实现、会话生命周期、退出、邮件链路和账户隔离仍由认证工作线交付；当前契约已冻结，但真实服务尚未交付。旧 B11/v1/test-principal 首流结果不能替代新版 real-auth 验收。
 - 真实浏览器首条流程、API 重启、写入中断、草稿恢复和不重复重试均未执行。
 
 ## 研究输入校验

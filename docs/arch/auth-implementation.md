@@ -1,6 +1,6 @@
 # 认证实现与工作台交接
 
-状态：`AUTH-CONTRACT-CORRECTION@1 / READY_FOR_REVIEW`。消费 [认证契约](../contracts/auth.md)及[工作台消费版本](../contracts/workbench.md#消费版本与验收范围)；限定独立冻结后前后端可以并行。当前只有设计，没有真实认证服务交付；[就绪事实](auth-readiness.md)是先前固定基线的调查记录。
+状态：`AUTH-CONTRACT-CORRECTION@1 / FROZEN`。消费 [认证契约](../contracts/auth.md)及[工作台消费版本](../contracts/workbench.md#消费版本与验收范围)；认证前后端按同版候选实施中。当前没有真实认证服务交付；[限定独立审查](../acceptance/evidence/AUTH-CONTRACT/v1/correction-review.md)固定设计候选，[就绪事实](auth-readiness.md)仍是先前固定基线的调查记录。
 
 ## 最小模块与接缝
 

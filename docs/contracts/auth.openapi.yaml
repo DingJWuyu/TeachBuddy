@@ -2,9 +2,9 @@ openapi: 3.2.1
 info:
   title: TeachBuddy 账户入口契约
   version: 1.0.0-rc.2
-  description: AUTH-CONTRACT-CORRECTION@1 限定修订候选；尚待独立冻结，不代表已实现。auth.md 拥有跨操作语义与首错顺序，auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
+  description: AUTH-CONTRACT-CORRECTION@1 限定修订候选；已由限定独立审查冻结，不代表已实现。auth.md 拥有跨操作语义与首错顺序，auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
     no-store。
-x-contract-status: ready-for-review
+x-contract-status: frozen
 x-accepted-source:
   commit: c7420af8c2740ddee5e01caa6da8bf7f57c134e2
   prototype-tree: 6f4a7d30c16a67b44af1e7a9c1157abb6d065b6b
@@ -19,7 +19,7 @@ paths:
       operationId: login
       summary: 核验凭据并创建待激活会话
       x-interaction-id: I01
-      x-contract-status: ready-for-review
+      x-contract-status: frozen
       description: 必须先 bootstrap 并确认 Cookie 可用。成功不设置 Cookie、不自动激活；随后 I06 activate。已有 Cookie 不替代本次密码校验。
       parameters:
       - $ref: '#/components/parameters/PageContext'
@@ -102,7 +102,7 @@ paths:
       operationId: requestRegistrationCode
       summary: 申请或重发注册验证码
       x-interaction-id: I02
-      x-contract-status: ready-for-review
+      x-contract-status: frozen
       description: 无需登录/Cookie，按用途+邮箱限制。只有完整成功结果可安装挑战。
       parameters:
       - $ref: '#/components/parameters/PageContext'
@@ -198,7 +198,7 @@ paths:
       operationId: register
       summary: 创建账户与待激活会话
       x-interaction-id: I03
-      x-contract-status: ready-for-review
+      x-contract-status: frozen
       description: 账户创建/挑战消费/pending会话原子提交。后续记住我失败不否定创建结果；响应不明不可自动重复注册。
       parameters:
       - $ref: '#/components/parameters/PageContext'
@@ -314,7 +314,7 @@ paths:
       operationId: requestPasswordResetCode
       summary: 申请或重发密码找回验证码
       x-interaction-id: I04
-      x-contract-status: ready-for-review
+      x-contract-status: frozen
       description: 无需登录/Cookie；只有账户存在且发码成功才进入确认卡。
       parameters:
       - $ref: '#/components/parameters/PageContext'
@@ -393,7 +393,7 @@ paths:
       operationId: resetPassword
       summary: 更新密码并撤销目标账户全部旧会话
       x-interaction-id: I05
-      x-contract-status: ready-for-review
+      x-contract-status: frozen
       description: 无登录前置；密码/挑战/撤销原子提交。不修改浏览器 Cookie，避免重置A误清B的载体。
       parameters:
       - $ref: '#/components/parameters/PageContext'
@@ -474,7 +474,7 @@ paths:
       operationId: getSession
       summary: 读取页面会话与可恢复目标
       x-interaction-id: I06
-      x-contract-status: ready-for-review
+      x-contract-status: frozen
       description: 无 Cookie 为200匿名；GET 不创建/激活/恢复身份，不续期。
       parameters:
       - $ref: '#/components/parameters/PageContext'
@@ -514,7 +514,7 @@ paths:
       operationId: changeSession
       summary: 建立浏览器上下文、激活或恢复会话
       x-interaction-id: I06
-      x-contract-status: ready-for-review
+      x-contract-status: frozen
       description: bootstrap 可无 Cookie；activate/restore 必须有效 Cookie 和目标绑定。activate 的 session 为 active；bootstrap/restore
         结果结构由 SessionStatus 表达。命令成功同参重试不延长有效期。
       parameters:
@@ -607,7 +607,7 @@ paths:
       operationId: logout
       summary: 撤销指定当前会话
       x-interaction-id: I07
-      x-contract-status: ready-for-review
+      x-contract-status: frozen
       description: 缺Cookie/无匹配/重复均204。sessionId=null不选择或撤销其他身份。剩余会话为空才清除Cookie。响应未知时重试同目标。
       parameters:
       - $ref: '#/components/parameters/PageContext'

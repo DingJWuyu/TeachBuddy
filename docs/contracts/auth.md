@@ -1,6 +1,6 @@
 # 账户入口契约
 
-状态：`AUTH-CONTRACT-CORRECTION@1 / READY_FOR_REVIEW`。本包消费认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2`，尚待外层限定独立冻结；不是认证实现、真实邮件或 A10 通过声明。实际候选 SHA 见 [correction](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md)。
+状态：`AUTH-CONTRACT-CORRECTION@1 / FROZEN`。限定独立审查已在候选 `6f3003250d170b44e89f6ac9b0a74f91d658a357` 上通过；本包消费认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2`，供认证前后端实施和 A10/A11 接续。它不是认证实现、真实邮件或 A10/A11/A12 通过声明。实际候选与审查入口见 [correction](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md) 和 [correction-review](../acceptance/evidence/AUTH-CONTRACT/v1/correction-review.md)。
 
 [OpenAPI](auth.openapi.yaml) 唯一拥有方法、地址、字段、类型、状态码、Problem 和样本；本文拥有跨操作语义；[交换用例](auth-cases.md)拥有前后端各自可验证的条件。实现从这三份文件进入。[架构与 A10 交接](../arch/auth-implementation.md)、[UX 接线](../ux/auth-integration.md)、[BDD](../acceptance/auth.feature)和[前后端任务包](../plans/tasks/auth-implementation.md)分别限定实现接缝、界面组合、验收和写入归属。
 
@@ -114,6 +114,6 @@ Cookie 被浏览器完全禁用时，没有任何可用当前会话，应停在�
 
 ## 就绪与外部边界
 
-本候选两项修订的结构检查、双向走查与接续条件见 [correction](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md)；旧 author/review 只对应各自固定版本，冻结权归外层独立核验。邮件提供者/发信域/真实收件箱、部署同源 HTTPS、真实持久运行和原账户迁移样本仍需后续交付验证，不能被本包或替身通过替代。
+本候选两项修订的结构检查、双向走查与接续条件见 [correction](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md)；[correction-review](../acceptance/evidence/AUTH-CONTRACT/v1/correction-review.md) 已在固定候选上独立 PASS。旧 author/review 只对应各自固定版本，不追认新版消费边界。邮件提供者/发信域/真实收件箱、部署同源 HTTPS、真实持久运行和原账户迁移样本仍需后续交付验证，不能被本包或替身通过替代。
 
 技术格式遵循 [OpenAPI 3.2.1](https://spec.openapis.org/oas/v3.2.1.html)、[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html)；Cookie 服务端寿命与浏览器留存分开处理，参见 [RFC 6265](https://httpwg.org/specs/rfc6265.html)。协议版本沿用既定选择，具体会话组合是为当前行为设计的项目约定。
