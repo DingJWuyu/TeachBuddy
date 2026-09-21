@@ -26,7 +26,7 @@
 - 配置文件属于已存在的运行环境，本页只保留指针，不复制进仓库，不修改、重建或测试触发器，也不创建安装脚本。
 - 根收到 `check` 后先读本页：有未完成任务且近 45 分钟没有回执时，才对台账中相关 session 做一次恢复检查。这个 `check` 同时判断回执缺失和异常通知；正常 `FAIL` 仍回原节点处理，只有异常退出、结果已落盘但通知未到等情况才按回执缺失处理。无未完成任务或已有近期回执时结束本次检查。结果已保存但回执丢失时按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败规则处理。超过 45 分钟本身不判失败，不杀死健康进程，不盲目重派；`check` 不替代依赖和权限判断。
 - 首条 `check` 已于 `2026-09-21T18:09:55Z` 在根会话收到并处理；距最后任务回执不足一分钟，本次结束检查，未查询或重启任何 session。此记录只证明消息已接收，未另核实投递来源，中断恢复仍未演练。`check` 自身不更新最后任务回执时间。
-- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T21:06:06.489477+00:00`，对应任务为 `B13@1 attempt 4`；真实底座接续 self PASS，首流候选到齐进入 B15。根按实际回执更新此字段，供下一次 `check` 使用。
+- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T21:12:45.031571+00:00`，对应任务为 `AUTH-CONTRACT-CORRECTION@1 attempt 1`；限定修订 self 完成，正交独立冻结。根按实际回执更新此字段，供下一次 `check` 使用。
 
 | 任务/版本 | 当前状态 | attempt | 负责 session 与 worktree | 输入/正式回执或产物位置 | 阻塞/下一步条件 | 适用授权 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -81,7 +81,8 @@
 | C20-INTEGRATION@1 / attempt 1 | 完成（self），已合 main | `e921225`（冻结 C20/B11） | Codex Luna max；session `01a0c58f-fc16-7130-a01e-e236f7d469e7`；临时工作区与分支已完成用途并清理 | 集成版本 `5d8099b357131325e24fbaacffafbfaf16cc01ab`；[正式回执](../acceptance/evidence/C20/v1/integration.md) | C21-C23、T50、C24 探针已并行；C24 真业务仍等 B16，根恢复 main 文档同步 |
 | AUTH-CONTRACT@1 / attempt 1 | CHANGES_REQUIRED | `5b12a9063cc0b692103df73997cb8963506bd9ea` | Codex Astra high；session `01a0c592-84d8-7622-8092-772d18cf0ac3`；`/home/liam_t/项目/TeacherWorkspace-auth-contract`；`design/auth-contract-completion` | 设计 `fd3f6d5e8d19823aa83a417b99f223c87f4aa713`；作者 `975fb04cd99ddb8da1ec0d9c455c84021e554fcd`；`docs/acceptance/evidence/AUTH-CONTRACT/v1/author.md` | AUTH-CR-001/002 待修并限定冻结，认证实现尚不放行；旧首流固定输入不变 |
 | AUTH-CONTRACT-REVIEW@1 / attempt 1 | 完成，independent CHANGES_REQUIRED | 固定设计 `fd3f6d5` | Codex Sol high；session `01a0c5aa-73b8-7560-86cd-96b27f336936`；`/home/liam_t/项目/TeacherWorkspace-auth-contract-review` | 报告 `092d7c89cb1386e913ef245a0a6370bede141947:docs/acceptance/evidence/AUTH-CONTRACT/v1/review.md` | PageContext 工作台 schema 声明与 I03 Problem 集合交设计修订；其余已核验内容不重做 |
-| AUTH-CONTRACT-CORRECTION@1 / attempt 1 | RUNNING | `7b86b03fb51fa317dc2fade3b1319a53db9247de`，含原候选和独立发现 | Codex Astra high；session `01a0c5bd-5d52-77e0-b745-9a09e57824bb`；PID `261851`；exec `82259`；`/home/liam_t/项目/TeacherWorkspace-auth-contract-corrections`；`design/auth-contract-corrections` | `.scratch/dag-dispatch/AUTH-CONTRACT-CORRECTION/1/task.md`；receipt 待生成 | 两项限定修订及跨 B11/A11 版本传播；原活动实现固定输入继续，修订后 Sol 限定冻结 |
+| AUTH-CONTRACT-CORRECTION@1 / attempt 1 | 完成（self），待限定冻结 | `7b86b03fb51fa317dc2fade3b1319a53db9247de` | Codex Astra high；session `01a0c5bd-5d52-77e0-b745-9a09e57824bb`；`/home/liam_t/项目/TeacherWorkspace-auth-contract-corrections` | 修订 `6f3003250d170b44e89f6ac9b0a74f91d658a357`；回执 `2b1e9226156bfc0bc57e5b68d97231878dd701e3:docs/acceptance/evidence/AUTH-CONTRACT/v1/correction.md` | 两项 schema/样本及版本传播已修；原 B15 固定输入继续，新认证实现须限定冻结 PASS |
+| AUTH-CONTRACT-FINAL-REVIEW@1 / attempt 1 | PREPARED | `618ecaf6525f39bd5c74999d3652719509276e17`；固定修订 `6f30032` | Codex Sol high；`/home/liam_t/项目/TeacherWorkspace-auth-contract-final-review`；`review/auth-contract-correction` | `.scratch/dag-dispatch/AUTH-CONTRACT-FINAL-REVIEW/1/task.md`；receipt 待生成 | 只核验 AUTH-CR-001/002 和受影响接续；PASS 后 dsh 认证前后端并行 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
