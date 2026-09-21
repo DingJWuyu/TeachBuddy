@@ -1,0 +1,1 @@
+{"at":"2026-09-21T22:56:06.477Z","scope":"unhandled POST /api/modules/questions/items","name":"SqliteError","message":"attempt to write a readonly database","code":"SQLITE_READONLY"}
