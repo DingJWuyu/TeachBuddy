@@ -26,7 +26,7 @@
 - 配置文件属于已存在的运行环境，本页只保留指针，不复制进仓库，不修改、重建或测试触发器，也不创建安装脚本。
 - 根收到 `check` 后先读本页：有未完成任务且近 45 分钟没有回执时，才对台账中相关 session 做一次恢复检查。这个 `check` 同时判断回执缺失和异常通知；正常 `FAIL` 仍回原节点处理，只有异常退出、结果已落盘但通知未到等情况才按回执缺失处理。无未完成任务或已有近期回执时结束本次检查。结果已保存但回执丢失时按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败规则处理。超过 45 分钟本身不判失败，不杀死健康进程，不盲目重派；`check` 不替代依赖和权限判断。
 - 首条 `check` 已于 `2026-09-21T18:09:55Z` 在根会话收到并处理；距最后任务回执不足一分钟，本次结束检查，未查询或重启任何 session。此记录只证明消息已接收，未另核实投递来源，中断恢复仍未演练。`check` 自身不更新最后任务回执时间。
-- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T19:35:17.914096+00:00`，对应任务为 `B11-REVIEW@1`；固定 B11 候选已独立 PASS，放行首批并行任务。根每次收到实际任务回执后记录实际处理 UTC 时间及对应任务，供下一次 `check` 使用；本次不编造旧值。
+- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T19:44:55.139593+00:00`，对应任务为 `B11-INTEGRATION@1`；已接收并去重该任务完成通知，退出与集成版本匹配。根每次收到实际任务回执后记录实际处理 UTC 时间及对应任务，供下一次 `check` 使用；本次不编造旧值。
 
 | 任务/版本 | 当前状态 | attempt | 负责 session 与 worktree | 输入/正式回执或产物位置 | 阻塞/下一步条件 | 适用授权 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -39,27 +39,27 @@
 | 对话决定补录 / `transcript-reconciliation@1` | 已完成；文档提交 `78851d0` 已按许可快进合入 main；按 `self` 记录，不追加审查或产品实施 | 1 | `01a0c511-6177-7a11-b409-8b973ae2f0b6`；Codex Luna max；`docs/mvp-delivery-baseline` | [正式补录映射](../acceptance/evidence/transcript-reconciliation.md)；原始对话入口见本页上下文恢复章节 | 常规核验、dsh 委托、check/恢复、认证和规则同步已回到既有权威位置；完成态 main `a738d5ad98440d24510a3828d76f88f4b3a62f06` | 用户本轮授权回查 transcript 与补录；既有文档提交、main 合并许可继续有效 |
 | dsh 回执与通知调研 / `dsh-receipts@1` | 已接收，报告提交 `3533eeee5fbec3c25e2f864b8bec28baf217d505` 已合入 main；按 `self` 记录 | 1 | `01a0c514-6f84-7443-9bd9-ecc2cb2745c0`；Codex Luna max；已合并的 `docs/dsh-receipts` 临时 worktree 已清理 | [调研报告](../research/dsh-receipts.md)；真实回执已接收，版本和来源由报告及本行定位 | 无原生跨 harness 通知；外层顺序执行并通过 codex queue 通知具有静态依据，真实模型任务和通知投递未实测；不追加复审 | 用户授权 Luna 调研及文档 main 集成；不含产品实施 |
 | 新 session 接任实验 / `cold-orchestrator@1` | 已完成；实验者能理解职责、状态和下一步，真实长程稳定性未验证；受测版本 `f1d408515b7ba89653e59603d3e857883f81265d` | 1 | `01a0c524-4a9b-71f2-828d-314754c4cf5c`；Codex Luna max；临时只读 worktree 已完成用途并清理 | [任务原文与原始回答](../acceptance/evidence/cold-orchestrator.md) | 交用户评阅实验结果；不追加审查，不自动修订流程或启动产品 | 用户明确授权 Luna 冷启动实验；不含产品派工或实施 |
-| 产品 DAG / G00 | 用户授权 PASS；B10 已完成，B11 进入派发 | 1 | 根编排会话 | 本页当前用户授权 | B10 后进入 B11；独立输入准备可并行 | 实施、本地验证、候选提交；不含公开部署发布 |
+| 产品 DAG / G00 | 用户授权 PASS；B11 已冻结，首流并行实现中 | 1 | 根编排会话 | 本页当前用户授权 | B10 后进入 B11；独立输入准备可并行 | 实施、本地验证、候选提交；不含公开部署发布 |
 
 ## 当前实施任务
 
 本节为活动节点的唯一列表；上方前置任务表是已交付资料索引。每个节点按对应任务包执行，不因旧前置回执里的“未授权”字样忽略当前 G00。
 
-当前生效的并行依赖固定在 `14b8cb7c216fafc8e0a278a3900c8decf8172075:docs/plans/mvp-dag.md`，并行规划 worktree 内可读。B11 已独立冻结；同批下游输入为 `b938f8af0b8152718f5063d4326d494bf8b5426c`，Luna 同时整合文档到 main。首批可并行 B12/B13/B14/C20；首流汇合 B15、独立验收 B16 保留，不以替身自验替代最终真实链路。
+当前生效的并行依赖固定在 `14b8cb7c216fafc8e0a278a3900c8decf8172075:docs/plans/mvp-dag.md`，已随冻结文档集成 main `420312f`。B11 已独立冻结；当前四个下游任务的固定输入仍为 `b938f8af0b8152718f5063d4326d494bf8b5426c`，不因 main 更新漂移。首批可并行 B12/B13/B14/C20；首流汇合 B15、独立验收 B16 保留，不以替身自验替代最终真实链路。
 
 | 节点 | 状态 | 输入版本 | 负责人与工作区 | 任务与回执 | 下一步 |
 | --- | --- | --- | --- | --- | --- |
 | B10@1 / attempt 1 | 完成（self），已集成 main | `9f93c2a` | Codex Luna max；session `01a0c545-5089-7452-a568-f0131b567189`；exec `14318`；已完成用途的临时工作区与分支已清理 | 最终提交 `8e9b230c56c7384521b122a7a80b6b07e18c852c`；`docs/acceptance/evidence/B10/v1/receipt.md`；源任务回执已接收 | B11 已消费交接；正式证据与输入提交保留在 main |
 | EMODEL@1 / attempt 1 | 完成（self，基本连通性），已集成 main | `9f93c2a`；现有 API 调研与本地凭据 | Codex Luna max；session `01a0c545-507e-74d2-965b-7f25c4722a75`；exec `48750`；临时工作区与分支已清理 | 候选 `d52ba58a6db51d4214144976224f944c31643796`；[正式证据](../arch/evidence/EMODEL.md) | 两个模型 HTTP 200，但 token 上限耗尽且正文为空；正常文本、流式/tool calling、pi 和计费状态留给后续相关验证，不追加本次复审 |
-| B11@1 / attempt 1 | 已独立冻结 PASS | `59a14e9` + B10 `8e9b230` 只读交接 | Codex Astra high；session `01a0c555-bc91-7b02-afea-135650a01780`；exec `58212`；`/home/liam_t/项目/TeacherWorkspace-b11`；`design/b11-first-flow` | 设计 `9aee091`、回执 `47ee119`；`docs/acceptance/evidence/B11/v1/author.md` | 已通过 Sol 独立核验，首批任务输入固定为 `b938f8a` |
+| B11@1 / attempt 1 | 已独立冻结 PASS | `59a14e9` + B10 `8e9b230` 只读交接 | Codex Astra high；session `01a0c555-bc91-7b02-afea-135650a01780`；exec `58212`；已完成并清理临时工作区/分支 | 设计 `9aee091`、回执 `47ee119`；`docs/acceptance/evidence/B11/v1/author.md` | 已通过 Sol 独立核验，首批任务输入固定为 `b938f8a` |
 | PREFLIGHT-INTEGRATION@1 / attempt 1 | 完成（self），main 集成完成 | B10 `8e9b230`、EMODEL `d52ba58`、最新 main | Codex Luna max；session `01a0c555-bc95-7200-b3d2-32e294665c9e`；exec `64550`；临时工作区与分支已清理 | [正式回执](../acceptance/evidence/preflight-integration.md)；集成 main `9ca5e41` | 文档集成已完成，不追加审查；根恢复独占台账写入 |
-| B11-REVIEW@1 / attempt 1 | 完成，independent PASS | `bd1d204`，固定 B11 设计 `9aee091` | Codex Sol high；session `01a0c56a-7222-7df1-a3c8-aadb8545f1b1`；exec `60473`；`/home/liam_t/项目/TeacherWorkspace-b11-review`；`review/b11-freeze` | 报告提交 `b62034eb6661f99127d0e4b1407174260a139089`；`docs/acceptance/evidence/B11/v1/review.md` | 固定设计 `9aee091` 已冻结；B12/B13/B14/C20 并行启动 |
-| PARALLEL-PLAN@1 / attempt 1 | 完成（self）；并行调度方案已接收，待与 B11 文档集成 | `dfb88f0`，现有 DAG + B11 接缝 | Codex Astra high；session `01a0c56a-7212-7a80-814c-af7a5d011f68`；exec `21662`；`/home/liam_t/项目/TeacherWorkspace-parallel-plan`；`docs/mvp-parallel-dependencies` | 调度提交 `14b8cb7c216fafc8e0a278a3900c8decf8172075`；`.scratch/dag-dispatch/PARALLEL-PLAN/1/receipt.md` | B11 独立冻结后立即按该版本派 B12/B13/B14/C20；五份调度文档与 B11 一并交 Luna 集成，不另复审本次调度 |
+| B11-REVIEW@1 / attempt 1 | 完成，independent PASS | `bd1d204`，固定 B11 设计 `9aee091` | Codex Sol high；session `01a0c56a-7222-7df1-a3c8-aadb8545f1b1`；exec `60473`；已完成并清理临时工作区/分支 | 报告提交 `b62034eb6661f99127d0e4b1407174260a139089`；`docs/acceptance/evidence/B11/v1/review.md` | 固定设计 `9aee091` 已冻结；B12/B13/B14/C20 并行启动 |
+| PARALLEL-PLAN@1 / attempt 1 | 完成（self）；已与 B11 一并集成 | `dfb88f0`，现有 DAG + B11 接缝 | Codex Astra high；session `01a0c56a-7212-7a80-814c-af7a5d011f68`；exec `21662`；已完成并清理临时工作区/分支 | 调度提交 `14b8cb7c216fafc8e0a278a3900c8decf8172075`；[归档结果](../acceptance/evidence/B11/v1/integration.md) | 已按该版本派 B12/B13/B14/C20；调度文档已在 main，不另复审 |
 | B12@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | dsh headless，当前配置；独立 dsh 进程 PID `121768`；session ID 未由 launcher 暴露；exec `81732`；`/home/liam_t/项目/TeacherWorkspace-b12`；`feat/b12-foundation` | `.scratch/dag-dispatch/B12/1/task.md`；receipt 待生成 | 提交公共入口供 B13 接真服务；B15 汇合 |
 | B13@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | dsh headless，当前配置；独立 dsh 进程 PID `121778`；session ID 未由 launcher 暴露；exec `83478`；`/home/liam_t/项目/TeacherWorkspace-b13`；`feat/b13-question-lessons` | `.scratch/dag-dispatch/B13/1/task.md`；receipt 待生成 | 模块实现后需接 B12 真服务自验；若先完成回执待集成 |
 | B14@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | dsh headless，当前配置；独立 dsh 进程 PID `121821`；session ID 未由 launcher 暴露；exec `82628`；`/home/liam_t/项目/TeacherWorkspace-b14`；`feat/b14-workbench-ui` | `.scratch/dag-dispatch/B14/1/task.md`；receipt 待生成 | 本节点契约替身自验；B15 接真实服务 |
 | C20@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | Codex Astra high；session `01a0c577-c06f-7e30-abe2-2fcff66386e9`；exec `98698`；`/home/liam_t/项目/TeacherWorkspace-c20`；`design/c20-capabilities` | `.scratch/dag-dispatch/C20/1/task.md`；receipt 待生成 | 设计完成交必要独立核验，随后 C21-C23/T50 并行 |
-| B11-INTEGRATION@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | Codex Luna max；session `01a0c577-c068-7b01-99bb-c3c6aa0d0753`；exec `69302`；`/home/liam_t/项目/TeacherWorkspace-first-flow-integration`；`chore/b11-doc-integration` | `.scratch/dag-dispatch/B11-INTEGRATION/1/task.md`；receipt 待生成 | 安全合 main 文档；活动期间根不写 main |
+| B11-INTEGRATION@1 / attempt 1 | 完成（self）；main 已集成 | `b938f8a`（含冻结 B11 与并行调度） | Codex Luna max；session `01a0c577-c068-7b01-99bb-c3c6aa0d0753`；exec `69302`；已完成并清理临时工作区/分支 | [正式集成回执](../acceptance/evidence/B11/v1/integration.md)；main `420312f` | 文档集成完成；只继续正在运行的产品与实验设计任务 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
