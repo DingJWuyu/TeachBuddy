@@ -1,0 +1,15 @@
+TeachBuddy first-flow runner running on https://localhost:47116
+TeachBuddy first-flow runner running on https://localhost:47116
+[PASS] core-flow: 录题 c31b961c-ead5-472d-b87d-e1e47f9e39fa，改编 65138fb7-d983-4613-9b2d-c75c147400f0，备课 a2ebfbfb-cd68-40e3-8429-228d78134c06；返回、刷新、保留库重启和新上下文均读回
+[PASS] wb-010-desktop-scene: 搜索、多选、列表滚动 422px、右栏和 AI 草稿在切模块与刷新后恢复
+[PASS] two-account-isolation: 账户 B 的列表为空，读取 A 的题目返回 404，且无 A 的草稿现场
+[PASS] wb-011-local-storage: 实际浏览器拒绝 workbench localStorage 写入时给出明确警告，仍可通过在线保存恢复
+[PASS] real-write-failure-recovery: 真实 SQLite 拒写返回 503，业务行与幂等记录均无部分写；恢复后原键重试只新增 1 题和 1 记录
+[PASS] pad-visual: 768×1024 下列表/阅读/改编对照按区切换，右栏独占内容区，长公式无页面横向溢出，reduced-motion 动画时长为 0s
+[PASS] narrow-desktop-visual: 1100×800 下题目与右栏同时可操作，页面无横向溢出
+TeachBuddy first-flow runner running on https://localhost:48116
+TeachBuddy first-flow runner running on https://localhost:48116
+[PASS] old-database-upgrade: 固定基线旧账户和布局在工作台迁移后保留，questions/lessons 迁移均已执行
+[PASS] startup-guards: 故意破损迁移和 production test-principal 均非零退出，原因可定位
+[PASS] build-isolation: 固定候选的生产构建 exit 0，使用临时 API 数据库，未创建 apps/api/src/data/refatos.sqlite
+[PASS] service-log-index: 脱敏服务日志已复制：service-errors.jsonl, service-requests.jsonl
