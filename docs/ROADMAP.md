@@ -6,7 +6,7 @@
 
 ## 实际状态
 
-2026-09-21 文档基线整理与只读审计已完成，未改变运行代码。`apps/web`、`apps/api` 仍是旧应用，尚未交付真实 MVP；认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2` 已冻结，认证前后端实施中，真实认证尚未交付；原型工作台仍使用内存数据和固定回复。详细能力、差距与代码基线只在 [README 当前状态](../README.md#当前状态)维护。
+2026-09-21 文档基线整理与只读审计已完成，未改变运行代码。`apps/web`、`apps/api` 仍是旧应用，尚未交付真实 MVP；认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2` 已冻结，认证前后端实施中，真实认证尚未交付；原型工作台仍使用内存数据和固定回复。固定交付候选 `feat/b15-first-flow@612f0a9868743a1d5eea7e6f236d3ff903752439` 的录题、复制改编、备课引用、持久重启、失败恢复及桌面/Pad 已由 [B16 独立报告](acceptance/evidence/B16/v1/attempt2.md) 独立通过，身份仍为 `test-principal`；候选未合入 `main`，不改变主干交付状态。完整 MVP、真实认证、真实 AI、材料和部署仍未通过。详细能力、差距与代码基线只在 [README 当前状态](../README.md#当前状态)维护。
 
 原计划的真实题目到备课、材料与输出、数学作品、教学时间、完整交付等工作均未实施。规划和前置调研已完成，用户已授权产品实施，首批任务开始派发；实际运行节点见运行台账。
 
@@ -21,6 +21,7 @@
 | 当前运行状态、待回执和下一步 | [运行台账](plans/run-state.md)。 |
 | 进入首条流程设计与实现 | 先读 [B10/B11 执行基线](arch/execution-baseline.md)，再按任务包读取 B11 的范围、行为和 ADR 输入；旧首流继续消费 B11/v1 与 `test-principal` 固定输入。 |
 | 进入认证实现与真实交接 | 读取 [认证契约](contracts/auth.md)、[认证实现架构](arch/auth-implementation.md) 和 [认证前后端任务包](plans/tasks/auth-implementation.md)；新消费者固定 `rc.2` + `candidate.2`，真实认证仍待交付。 |
+| 核对固定交付候选的首流、恢复和桌面/Pad 证据 | 读取 [B16 独立报告](acceptance/evidence/B16/v1/attempt2.md) 及其中的[既有验收 runner](acceptance/evidence/B16/v1/attempt2/run-acceptance.mjs)。 |
 | 设计、实现、独立验收 | 从本次任务包读取本角色、当前节点和相关规格；不从本页全量展开。 |
 | 设计者准备单次任务 | [任务包模板](plans/task-package.md)。 |
 | 核查完整 MVP 覆盖 | [唯一范围映射](acceptance/mvp-matrix.md#scope)；范围本身仍归 PRODUCT_SCOPE。 |

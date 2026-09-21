@@ -2,7 +2,7 @@
 
 [返回主 README](../README.md)
 
-本文描述代码基线 `911e624`，不是已完成的 MVP 架构。原型与真实应用的状态见 README；实施顺序见[路线图](ROADMAP.md)。B10 固定的 Git 交接、B11 输入和逐文件所有权见[执行基线](arch/execution-baseline.md)。旧应用仍使用 Bearer 认证；目标认证契约已冻结为 `1.0.0-rc.2`，前后端实施中，真实认证服务尚未交付，且不要求新契约兼容旧 Bearer API。
+本文描述代码基线 `911e624`，不是已完成的 MVP 架构。固定交付候选 `feat/b15-first-flow@612f0a9868743a1d5eea7e6f236d3ff903752439` 的录题、复制改编、备课引用、持久重启、失败恢复及桌面/Pad 已由 [B16 独立报告](acceptance/evidence/B16/v1/attempt2.md) 独立通过，身份仍为 `test-principal`；该候选未合入 `main`，不改变本文描述的主干结构或交付状态。完整 MVP、真实认证、真实 AI、材料和部署仍未通过。原型与真实应用的状态见 README；实施顺序见[路线图](ROADMAP.md)。B10 固定的 Git 交接、B11 输入和逐文件所有权见[执行基线](arch/execution-baseline.md)。旧应用仍使用 Bearer 认证；目标认证契约已冻结为 `1.0.0-rc.2`，前后端实施中，真实认证服务尚未交付，且不要求新契约兼容旧 Bearer API。
 
 ## 复用与替换
 

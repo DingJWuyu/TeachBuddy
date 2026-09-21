@@ -2,7 +2,7 @@
 
 送给一位中国大陆重点高中高一数学实习教师的个人工作台。目标是让他收集题目、组织备课、制作数学演示、复用资料、安排时间，并留下课堂反馈。首页是能操作这些内容的 Agent 工作区。
 
-**当前尚未交付真实 MVP。** 仓库同时保留旧的可运行应用和新的交互原型，两者的进展不能混为一谈。已确认的完整交付范围以 [MVP 产品范围](docs/PRODUCT_SCOPE.md) 为准。
+**当前尚未交付真实 MVP。** 固定交付候选 `feat/b15-first-flow@612f0a9868743a1d5eea7e6f236d3ff903752439` 已在 [B16 独立验收报告](docs/acceptance/evidence/B16/v1/attempt2.md) 中通过录题、复制改编、备课引用、持久重启、失败恢复及桌面/Pad 验收，身份仍为 `test-principal`。该候选尚未合入 `main`，因此不改变下方主干代码状态；完整 MVP、真实认证、真实 AI、材料和部署仍未通过。仓库同时保留旧的可运行应用和新的交互原型，两者的进展不能混为一谈。已确认的完整交付范围以 [MVP 产品范围](docs/PRODUCT_SCOPE.md) 为准。
 
 ## 当前状态
 
@@ -31,6 +31,7 @@
 | 认证行为、场景和原型证据 | [原型行为索引](prototype/behavior/manifest.md) |
 | 认证契约、版本消费和实现接缝 | [认证契约](docs/contracts/auth.md)；[认证实现架构](docs/arch/auth-implementation.md) |
 | B10/B11 首条流程交接基线与旧 test-principal 边界 | [执行基线](docs/arch/execution-baseline.md) |
+| 固定交付候选的首条流程、恢复和设备验收 | [B16 独立报告](docs/acceptance/evidence/B16/v1/attempt2.md)；[既有验收 runner](docs/acceptance/evidence/B16/v1/attempt2/run-acceptance.mjs) |
 | 代码结构、旧底座与可复用部分 | [架构说明](docs/ARCHITECTURE.md) |
 
 已确认的产品要求指导新实现；原型代码用于参考交互，旧应用用于参考可复用底座。冻结的认证契约只定义实现边界，不证明真实服务已交付；原型证据只证明对应原型版本，正式应用的旧测试只证明其旧行为。
