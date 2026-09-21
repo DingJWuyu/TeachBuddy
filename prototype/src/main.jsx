@@ -1,15 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import SidebarEditingPrototype from './SidebarEditingPrototype.jsx';
-import DevSurfaceSwitcher from './DevSurfaceSwitcher.jsx';
-import DevFailureControl from './DevFailureControl.jsx';
 import AuthEntry from './auth/AuthEntry.jsx';
 import {
   PrototypeAuth,
   SESSION_KEY,
   readStoredSession,
   request,
-  setFailureMode,
   setResendCooldown
 } from './auth/demo-data.js';
 import '@workspace-styles';
@@ -21,9 +18,7 @@ import './auth/authEntry.css';
  */
 const EXPIRED_NOTICE = { message: '登录状态已过期，请重新登录。', tone: 'error' };
 
-
 const bootParams = new URLSearchParams(window.location.search);
-const devChromeVisible = import.meta.env.DEV && !bootParams.has('no-dev-chrome');
 
 /* Check-run seam: a shortened resend cooldown for this page load. */
 if (bootParams.has('dev-cooldown')) setResendCooldown(Number(bootParams.get('dev-cooldown')));
@@ -50,7 +45,6 @@ function App() {
   const [user, setUser] = useState(() => (restored ? auth.sessionUser(restored) : null));
   const [mode, setMode] = useState('login');
   const [notice, setNotice] = useState(() => (refused.current ? EXPIRED_NOTICE : null));
-  const [failureMode, setModeForFailures] = useState('normal');
 
   useEffect(() => {
     document.body.className = user ? 'tb-workbench' : 'ae-entry';
@@ -128,56 +122,25 @@ function App() {
     return { field: 'code', message: '验证码已失效，请重新发送。' };
   }
 
-  function expireSession() {
-    auth.expireSessions();
-    setUser(null);
-    setMode('login');
-    setNotice(EXPIRED_NOTICE);
-  }
-
-  function expireCode() {
-    auth.expireCode({ email: 'example@example.com', purpose: 'recovery' });
-    auth.expireCode({ email: 'example@example.com', purpose: 'register' });
-  }
-
-  function changeFailureMode(next) {
-    setFailureMode(next);
-    setModeForFailures(next);
-  }
-
   return (
-    <>
-      {user ? (
-        <SidebarEditingPrototype />
-      ) : (
-        <AuthEntry
-          auth={auth}
-          mode={mode}
-          onModeChange={setMode}
-          notice={notice}
-          onNotice={setNotice}
-          onDismissNotice={() => setNotice(null)}
-          onSubmit={(values) => (values.name ? register(values) : signIn(values))}
-          onSendCode={sendCode}
-          onConfirmRecovery={confirmRecovery}
-        />
-      )}
-      {devChromeVisible && (
-        <DevFailureControl
-          mode={failureMode}
-          onModeChange={changeFailureMode}
-          onExpireSession={expireSession}
-          onExpireCode={expireCode}
-          onReset={() => { window.location.href = window.location.pathname; }}
-        />
-      )}
-    </>
+    user ? <SidebarEditingPrototype /> : (
+      <AuthEntry
+        auth={auth}
+        mode={mode}
+        onModeChange={setMode}
+        notice={notice}
+        onNotice={setNotice}
+        onDismissNotice={() => setNotice(null)}
+        onSubmit={(values) => (values.name ? register(values) : signIn(values))}
+        onSendCode={sendCode}
+        onConfirmRecovery={confirmRecovery}
+      />
+    )
   );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
-    {devChromeVisible && <DevSurfaceSwitcher active="prototype" />}
   </React.StrictMode>
 );

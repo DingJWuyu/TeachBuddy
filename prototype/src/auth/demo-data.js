@@ -37,16 +37,9 @@ export const RESET_KEY = 'teachbuddy-prototype-resets';
 
 /*
  * Injected transport conditions. The account entry cannot reach a real network,
- * so the failure branches are driven from here: the development control selects
- * one of these, and every simulated request passes through the same gate.
+ * so verification scripts select a failure here; every simulated request
+ * passes through the same gate. This has no visible control in the prototype.
  */
-export const FAILURE_MODES = [
-  { id: 'normal', label: '正常' },
-  { id: 'offline', label: '网络不可用' },
-  { id: 'server', label: '服务故障' },
-  { id: 'timeout', label: '超时' }
-];
-
 export const REQUEST_LATENCY_MS = 450;
 
 const FAILURE_MESSAGES = {
@@ -55,7 +48,7 @@ const FAILURE_MESSAGES = {
   timeout: '请求超时，请重试。'
 };
 
-/* Selected by the development control, never read from storage. */
+/* Selected by verification scripts, never read from storage. */
 let failureMode = 'normal';
 
 /* Resend cooldown for this page load. A check run can shorten it so the wait
@@ -72,11 +65,7 @@ export function currentResendCooldown() {
 }
 
 export function setFailureMode(mode) {
-  failureMode = FAILURE_MODES.some((entry) => entry.id === mode) ? mode : 'normal';
-}
-
-export function getFailureMode() {
-  return failureMode;
+  failureMode = Object.hasOwn(FAILURE_MESSAGES, mode) ? mode : 'normal';
 }
 
 /* The one gate every simulated request passes through. */
@@ -266,12 +255,6 @@ export class PrototypeAuth {
     return { ok: true, record };
   }
 
-  /* Used by the development control to demonstrate an expired code. Every
-   * pending code is retired, whichever address it was sent to. */
-  expireCode() {
-    for (const record of this.#codes.values()) record.expiresAt = Date.now() - 1;
-  }
-
   register({ name, email, password, remember = true }) {
     const address = this.#address(email);
     if (this.isRegistered(address)) {
@@ -375,14 +358,6 @@ export class PrototypeAuth {
     };
     this.#sessions.set(session.id, session);
     return session;
-  }
-
-  /* Used by the development control to demonstrate an expired session. */
-  expireSessions() {
-    for (const session of this.#sessions.values()) {
-      session.expiresAt = Date.now() - 1;
-    }
-    clearStoredSession();
   }
 
   /*

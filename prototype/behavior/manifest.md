@@ -35,7 +35,7 @@ npm run prototype:sidebar
 
 | 入口 | 用途 |
 | --- | --- |
-| [src](../src/) | 原型组件与内嵌模拟数据，入口为 `main.jsx`；[src/auth](../src/auth/) 是账户入口的表单、模拟数据与会话接缝；`DevFailureControl.jsx` 提供开发模式故障注入 |
+| [src](../src/) | 原型组件与内嵌模拟数据，入口为 `main.jsx`；[src/auth](../src/auth/) 是账户入口的表单、模拟数据与会话接缝；故障由验证脚本注入，界面不提供开发控件 |
 | [flags](../flags/) | 语言菜单用的 20 面圆形国旗，由源码导入并进入构建产物 |
 | [index.html](../index.html)、[Vite 配置](../vite.config.mjs) | 独立运行与构建 |
 | [screenshots](../evidence/screenshots/) | 按旅程分类，文件名包含终端与场景 ID；证据索引由对应场景覆盖文档拥有 |
@@ -72,7 +72,7 @@ node prototype/verification/verify-home-empty.mjs
 
 头部采集与回归检查使用 PC 1440×900、平板 768×1024、手机 390×844；几何与学期动作专项检查使用 PC 1440×900。`capture-sidebar-head.mjs` 的截图输出指向 `workbench/sidebar-head/`，完整操作与覆盖表见头部场景覆盖。
 
-`PROTOTYPE_URL` 指定目标地址；添加 `?no-dev-chrome` 可隐藏开发环境切换控件，不改变账户或工作台行为。`PROTOTYPE_EVIDENCE_DIR` 指定截图输出，账户场景使用截图根目录，工作台场景使用 `workbench/` 子目录，再按外壳、导航、侧栏、顶部栏分类。`PROTOTYPE_RESULTS_DIR` 指定断言结果目录，`PROTOTYPE_TEMP_DIR` 指定临时输出位置。验证默认暂存输出，不直接替换当前证据；执行前将输出指向可写位置，确认目标、完整结果与截图一致后再按场景更新。账户采集全部通过后才写入指定输出目录。
+`PROTOTYPE_URL` 指定目标地址。原型已删除故障面板和应用切换浮层，不需要 `no-dev-chrome`；旧地址保留该参数也不影响行为。`PROTOTYPE_EVIDENCE_DIR` 指定截图输出，账户场景使用截图根目录，工作台场景使用 `workbench/` 子目录，再按外壳、导航、侧栏、顶部栏分类。`PROTOTYPE_RESULTS_DIR` 指定断言结果目录，`PROTOTYPE_TEMP_DIR` 指定临时输出位置。验证默认暂存输出，不直接替换当前证据；执行前将输出指向可写位置，确认目标、完整结果与截图一致后再按场景更新。账户采集全部通过后才写入指定输出目录。
 
 工作台检查共用 [session.mjs](../verification/session.mjs)，通过界面登录。客户端跳转保持会话；文档重载是否恢复由账户入口的“记住我”模拟决定。工作台外观与账号行继续由工作台行为拥有，原型没有退出入口。截图、行为记录与断言结果各由上表对应入口拥有。
 

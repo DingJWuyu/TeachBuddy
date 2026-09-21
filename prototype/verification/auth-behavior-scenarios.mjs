@@ -31,7 +31,17 @@ const switchCard = (p) => p.locator('.ae-switch button').click();
 const alert = (p, text) => expect(p.locator('.ae-notice')).toContainText(text);
 const fieldAlert = (p, text) => expect(p.locator('.ae-field-error')).toContainText(text);
 const heading = (p, text) => expect(p.locator('.ae-card h1')).toHaveText(text);
-const devButton = (p, name) => p.locator('[aria-label="开发环境故障注入"]').getByRole('button', { name }).click({ force: true });
+// Only the fixture state is injected. Submission, feedback and retry still use
+// the product interface, which never renders development controls.
+const setFailureMode = (p, mode) => p.evaluate(async (value) => {
+  // Vite adds a version query after a source edit. Import the URL the page
+  // actually loaded so the test changes the same module instance as the app.
+  const loaded = performance.getEntriesByType('resource')
+    .findLast(entry => new URL(entry.name).pathname === '/src/auth/demo-data.js');
+  if (!loaded) throw new Error('Prototype auth fixtures were not loaded');
+  const fixtures = await import(loaded.name);
+  fixtures.setFailureMode(value);
+}, mode);
 /* The send control is labelled "发送验证码" before a code exists and
  * "重新发送" afterwards, in a combo next to the code field. */
 function sendControl(p) {
@@ -47,30 +57,17 @@ async function pressSend(p) {
   await p.getByRole('button', { name: '发送验证码', exact: true }).click();
 }
 
-/* Opens the entry card on the development URL, where the failure control is
- * available. */
+/* Fault injection uses Vite's source module URL; no page controls are needed. */
 async function openEntry(p, url) {
   await p.goto(url, { waitUntil: 'networkidle' });
   await heading(p, '登录');
+  await expect(p.locator('[aria-label="开发环境故障注入"], [aria-label="开发环境界面切换"]')).toHaveCount(0);
 }
 
-/* Opens the entry card with the development chrome hidden, which is the state
- * every review screenshot should show. */
 function withParams(url, params) {
   const target = new URL(url);
   for (const [key, value] of Object.entries(params)) target.searchParams.set(key, value);
   return target.href;
-}
-
-function cleanUrl(url) {
-  const target = new URL(url);
-  target.searchParams.set('no-dev-chrome', '');
-  return target.href;
-}
-
-async function openClean(p, url) {
-  await p.goto(cleanUrl(url), { waitUntil: 'networkidle' });
-  await heading(p, '登录');
 }
 
 async function dismissCoach(p) {
@@ -126,7 +123,7 @@ function scenario(id, journey, description, run) {
 /* ---------------------------------------------------------------- 登录失败 */
 
 scenario(41, 'login', '凭据错误：卡片顶部拒绝、密码清空、邮箱保留、可关闭', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await signIn(p, { secret: 'wrong-password' });
   await alert(p, '邮箱或密码不正确，请重试。');
   await expect(password(p)).toHaveValue('');
@@ -141,7 +138,7 @@ scenario(41, 'login', '凭据错误：卡片顶部拒绝、密码清空、邮箱
 });
 
 scenario(42, 'login', '不存在的账户与错误密码得到同一条答复', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await signIn(p, { address: 'nobody@example.com', secret: 'wrong-password' });
   await alert(p, '邮箱或密码不正确，请重试。');
   await shot('unknown-account');
@@ -152,7 +149,7 @@ scenario(42, 'login', '不存在的账户与错误密码得到同一条答复', 
 });
 
 scenario(43, 'login', '提交等待：按钮进入等待态并阻止第二次提交', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await email(p).fill(EMAIL);
   await password(p).fill(PASSWORD);
   const press = submit(p);
@@ -169,13 +166,13 @@ scenario(43, 'login', '提交等待：按钮进入等待态并阻止第二次提
 
 scenario(44, 'login', '网络不可用：横幅提示、保留输入、恢复后重试成功', async (p, shot, { url }) => {
   await openEntry(p, url);
-  await devButton(p, '网络不可用');
+  await setFailureMode(p, 'offline');
   await signIn(p);
   await alert(p, '网络连接不可用，请检查网络后重试。');
   await expect(password(p)).toHaveValue(PASSWORD);
   await expect(email(p)).toHaveValue(EMAIL);
   await shot('offline');
-  await devButton(p, '正常');
+  await setFailureMode(p, 'normal');
   await submit(p);
   await expect(p.locator('.tb-shell')).toBeVisible();
   await shot('retried');
@@ -183,7 +180,7 @@ scenario(44, 'login', '网络不可用：横幅提示、保留输入、恢复后
 
 scenario(45, 'login', '服务故障：可关闭的横幅，不误标到字段上', async (p, shot, { url }) => {
   await openEntry(p, url);
-  await devButton(p, '服务故障');
+  await setFailureMode(p, 'server');
   await signIn(p);
   await alert(p, '服务暂时不可用，请稍后重试。');
   await expect(p.locator('.ae-field-error')).toHaveCount(0);
@@ -195,18 +192,18 @@ scenario(45, 'login', '服务故障：可关闭的横幅，不误标到字段上
 
 scenario(46, 'login', '请求超时：横幅提示并可重试', async (p, shot, { url }) => {
   await openEntry(p, url);
-  await devButton(p, '超时');
+  await setFailureMode(p, 'timeout');
   await signIn(p);
   await alert(p, '请求超时，请重试。');
   await shot('timeout');
-  await devButton(p, '正常');
+  await setFailureMode(p, 'normal');
   await submit(p);
   await expect(p.locator('.tb-shell')).toBeVisible();
   await shot('retried');
 });
 
 scenario(47, 'login', '请求中修改密码：等待态保持，不产生第二次请求', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await email(p).fill(EMAIL);
   await password(p).fill(PASSWORD);
   await submit(p);
@@ -221,7 +218,7 @@ scenario(47, 'login', '请求中修改密码：等待态保持，不产生第二
 /* ------------------------------------------------------------------ 会话 */
 
 scenario(49, 'session', '勾选记住我：刷新后仍在工作台', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await expect(p.getByRole('checkbox', { name: '记住我' })).toBeChecked();
   await signIn(p);
   await expect(p.locator('.tb-shell')).toBeVisible();
@@ -232,7 +229,7 @@ scenario(49, 'session', '勾选记住我：刷新后仍在工作台', async (p, 
 });
 
 scenario(50, 'session', '不勾选记住我：刷新即退出，回到空登录卡', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await p.getByRole('checkbox', { name: '记住我' }).uncheck();
   await signIn(p);
   await expect(p.locator('.tb-shell')).toBeVisible();
@@ -243,13 +240,13 @@ scenario(50, 'session', '不勾选记住我：刷新即退出，回到空登录�
 });
 
 scenario(51, 'session', '换设备：另一台机器没有可恢复的会话', async (p, shot, { url, newContext }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await signIn(p);
   await expect(p.locator('.tb-shell')).toBeVisible();
   await shot('first-device');
   const other = await newContext();
   const page = await other.newPage();
-  await openClean(page, url);
+  await openEntry(page, url);
   await expect(page.locator('.ae-card')).toBeVisible();
   await shot('second-device', page);
   await signIn(page);
@@ -258,12 +255,24 @@ scenario(51, 'session', '换设备：另一台机器没有可恢复的会话', a
   await other.close();
 });
 
-scenario(52, 'session', '会话过期：回到登录卡并说明原因', async (p, shot, { url }) => {
+scenario(52, 'session', '会话在另一标签页失效：回到登录卡并说明原因', async (p, shot, { url }) => {
   await openEntry(p, url);
   await signIn(p);
   await expect(p.locator('.tb-shell')).toBeVisible();
   await dismissCoach(p);
-  await devButton(p, '会话过期');
+  // Removing the remembered session in a second tab sends a real storage event
+  // to this page. Do not fabricate a user-facing logout action or React state.
+  const other = await p.context().newPage();
+  try {
+    await other.goto(url, { waitUntil: 'networkidle' });
+    await other.evaluate(async () => {
+      const { SESSION_KEY } = await import('/src/auth/demo-data.js');
+      if (!localStorage.getItem(SESSION_KEY)) throw new Error('Expected a remembered session');
+      localStorage.removeItem(SESSION_KEY);
+    });
+  } finally {
+    await other.close();
+  }
   await heading(p, '登录');
   await alert(p, '登录状态已过期，请重新登录。');
   await shot('expired-notice');
@@ -275,7 +284,7 @@ scenario(52, 'session', '会话过期：回到登录卡并说明原因', async (
 
 scenario(54, 'session', '密码重置后旧密码失效，新密码可用', async (p, shot, { url }) => {
   // Password recovery starts at the entry; no workbench logout action is required.
-  await openClean(p, url);
+  await openEntry(p, url);
   await p.getByRole('button', { name: '忘记密码？' }).click();
   await email(p).fill(EMAIL);
   await submit(p);
@@ -303,19 +312,19 @@ scenario(54, 'session', '密码重置后旧密码失效，新密码可用', asyn
 scenario(55, 'register', '发码失败：横幅提示，验证码字段不出现', async (p, shot, { url }) => {
   await openEntry(p, url);
   await startRegistration(p);
-  await devButton(p, '服务故障');
+  await setFailureMode(p, 'server');
   await p.getByRole('button', { name: '发送验证码', exact: true }).click();
   await alert(p, '服务暂时不可用，请稍后重试。');
   await expect(code(p)).toHaveCount(0);
   await shot('send-failed');
-  await devButton(p, '正常');
+  await setFailureMode(p, 'normal');
   await p.getByRole('button', { name: '发送验证码', exact: true }).click();
   await expect(code(p)).toBeVisible();
   await shot('send-retried');
 });
 
 scenario(56, 'register', '冷却：重发倒计时，冷却结束才能再发', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await startRegistration(p);
   await p.getByRole('button', { name: '发送验证码', exact: true }).click();
   await expect(code(p)).toBeVisible();
@@ -331,7 +340,7 @@ scenario(56, 'register', '冷却：重发倒计时，冷却结束才能再发', 
 });
 
 scenario(57, 'register', '验证码错误次数用尽后该码作废，需要重新发送', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await startRegistration(p);
   await p.getByRole('button', { name: '发送验证码', exact: true }).click();
   await expect(code(p)).toBeVisible();
@@ -357,7 +366,13 @@ scenario(58, 'register', '验证码过期：需要重新发送', async (p, shot,
   await startRegistration(p);
   await p.getByRole('button', { name: '发送验证码', exact: true }).click();
   await expect(code(p)).toBeVisible();
-  await devButton(p, '验证码过期');
+  // Advance Date beyond the code's real fixture lifetime without waiting ten
+  // minutes. Request timers still run normally and no component is required.
+  const expiredAt = await p.evaluate(async () => {
+    const { CODE_TTL_MS } = await import('/src/auth/demo-data.js');
+    return Date.now() + CODE_TTL_MS + 1;
+  });
+  await p.clock.setFixedTime(expiredAt);
   await expect(code(p)).toBeVisible();
   await code(p).fill('000000');
   await p.locator('.is-terms input').check();
@@ -372,7 +387,7 @@ scenario(58, 'register', '验证码过期：需要重新发送', async (p, shot,
 });
 
 scenario(59, 'register', '重发后旧码作废、新码可用；换地址后必须重新发送', async (p, shot, { url, newContext }) => {
-  await openClean(p, withParams(url, { 'dev-code': `${REGISTER_CODE},555555`, 'dev-no-cooldown': '' }));
+  await openEntry(p, withParams(url, { 'dev-code': `${REGISTER_CODE},555555`, 'dev-no-cooldown': '' }));
   await startRegistration(p);
   await p.getByRole('button', { name: '发送验证码', exact: true }).click();
   await expect(code(p)).toBeVisible();
@@ -391,7 +406,7 @@ scenario(59, 'register', '重发后旧码作废、新码可用；换地址后必
   // Address changes are an independent branch; use another real entry page.
   const other = await newContext();
   const page = await other.newPage();
-  await openClean(page, withParams(url, { 'dev-code': REGISTER_CODE, 'dev-no-cooldown': '' }));
+  await openEntry(page, withParams(url, { 'dev-code': REGISTER_CODE, 'dev-no-cooldown': '' }));
   await startRegistration(page);
   await pressSend(page);
   await expect(code(page)).toBeVisible();
@@ -405,7 +420,7 @@ scenario(59, 'register', '重发后旧码作废、新码可用；换地址后必
 });
 
 scenario(60, 'recovery', '找回第一步：未注册地址被拒，不发验证码', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await p.getByRole('button', { name: '忘记密码？' }).click();
   await email(p).fill('nobody@example.com');
   await submit(p);
@@ -419,7 +434,7 @@ scenario(60, 'recovery', '找回第一步：未注册地址被拒，不发验证
 });
 
 scenario(61, 'recovery', '找回第二步的地址是锁定的，验证码只对它有效', async (p, shot, { url }) => {
-  await openClean(p, url);
+  await openEntry(p, url);
   await startRecovery(p);
   await expect(email(p)).toHaveAttribute('readonly', '');
   await expect(email(p)).toHaveValue(EMAIL);
@@ -471,11 +486,11 @@ scenario(63, 'recovery', '重置成功：回到登录卡并说明结果，再次
 scenario(64, 'recovery', '找回发码遇到网络失败：横幅提示，可重试', async (p, shot, { url }) => {
   await openEntry(p, url);
   await startRecovery(p);
-  await devButton(p, '网络不可用');
+  await setFailureMode(p, 'offline');
   await pressSend(p);
   await alert(p, '网络连接不可用，请检查网络后重试。');
   await shot('send-failed');
-  await devButton(p, '正常');
+  await setFailureMode(p, 'normal');
   await pressSend(p);
   await expect(p.locator('.ae-field-note').last()).toContainText(EMAIL);
   await shot('send-retried');

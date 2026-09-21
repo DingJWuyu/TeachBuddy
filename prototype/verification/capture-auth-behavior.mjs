@@ -83,7 +83,8 @@ for (const viewport of viewportSet) {
         if (metrics.entry) expect(metrics.scroll, 'card fits the viewport').toBe(false);
         const file = `${scenario.journey}/${viewport.name}-${scenario.id}-${state}.png`;
         await fs.mkdir(path.dirname(path.join(staging, file)), { recursive: true });
-        await targetPage.screenshot({ path: path.join(staging, file), animations: 'disabled', style: '[aria-label="开发环境故障注入"], [aria-label="开发环境界面切换"] { visibility: hidden !important; }' });
+        await expect(targetPage.locator('[aria-label="开发环境故障注入"], [aria-label="开发环境界面切换"]')).toHaveCount(0);
+        await targetPage.screenshot({ path: path.join(staging, file), animations: 'disabled' });
         row.screenshots.push(file);
       }, { url: base, newContext });
 
