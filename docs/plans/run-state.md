@@ -26,7 +26,7 @@
 - 配置文件属于已存在的运行环境，本页只保留指针，不复制进仓库，不修改、重建或测试触发器，也不创建安装脚本。
 - 根收到 `check` 后先读本页：有未完成任务且近 45 分钟没有回执时，才对台账中相关 session 做一次恢复检查。这个 `check` 同时判断回执缺失和异常通知；正常 `FAIL` 仍回原节点处理，只有异常退出、结果已落盘但通知未到等情况才按回执缺失处理。无未完成任务或已有近期回执时结束本次检查。结果已保存但回执丢失时按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败规则处理。超过 45 分钟本身不判失败，不杀死健康进程，不盲目重派；`check` 不替代依赖和权限判断。
 - 首条 `check` 已于 `2026-09-21T18:09:55Z` 在根会话收到并处理；距最后任务回执不足一分钟，本次结束检查，未查询或重启任何 session。此记录只证明消息已接收，未另核实投递来源，中断恢复仍未演练。`check` 自身不更新最后任务回执时间。
-- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T20:29:28.490392+00:00`，对应任务为 `T50@1 attempt 1`；设计已交回，独立冻结待完成。根按实际回执更新此字段，供下一次 `check` 使用。
+- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T20:31:17.196909+00:00`，对应任务为 `AUTH-CONTRACT@1 attempt 1`；认证设计已交回，独立冻结待完成。根按实际回执更新此字段，供下一次 `check` 使用。
 
 | 任务/版本 | 当前状态 | attempt | 负责 session 与 worktree | 输入/正式回执或产物位置 | 阻塞/下一步条件 | 适用授权 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -72,7 +72,8 @@
 | T50@1 / attempt 1 | READY_FOR_REVIEW | `e921225`（冻结 C20/B11） | Codex Astra high；session `01a0c58f-fc47-7563-a2ba-cabbd5225ef5`；`/home/liam_t/项目/TeacherWorkspace-t50`；`design/t50-teaching-time` | 设计 `f2b5ba90631247b880411bcbdc1ebae8224ae2b4`；作者 `d36676275dc91a79957f27b71eb047843619b5be`；`docs/acceptance/evidence/T50/v1/author.md` | 交 Sol 独立冻结，T51/T52 启动仍取 B16；作品关联待 M40/M44 |
 | T50-REVIEW@1 / attempt 1 | RUNNING | `5d88d53806c52b48a6381da7b5e3f8d5b8ef50fd`；固定设计 `f2b5ba9` | Codex Sol high；session `01a0c5a8-cb3c-7233-bca4-e258e3625183`；PID `216268`；exec `81675`；`/home/liam_t/项目/TeacherWorkspace-t50-review`；`review/t50-freeze` | `.scratch/dag-dispatch/T50-REVIEW/1/task.md`；receipt 待生成 | 独立核对行为/契约、共享扩展及并行实现边界；不验产品 |
 | C20-INTEGRATION@1 / attempt 1 | 完成（self），已合 main | `e921225`（冻结 C20/B11） | Codex Luna max；session `01a0c58f-fc16-7130-a01e-e236f7d469e7`；临时工作区与分支已完成用途并清理 | 集成版本 `5d8099b357131325e24fbaacffafbfaf16cc01ab`；[正式回执](../acceptance/evidence/C20/v1/integration.md) | C21-C23、T50、C24 探针已并行；C24 真业务仍等 B16，根恢复 main 文档同步 |
-| AUTH-CONTRACT@1 / attempt 1 | RUNNING | `5b12a9063cc0b692103df73997cb8963506bd9ea`，含认证事实报告与已冻结 B11 | Codex Astra high；session `01a0c592-84d8-7622-8092-772d18cf0ac3`；exec `23837`；`/home/liam_t/项目/TeacherWorkspace-auth-contract`；`design/auth-contract-completion` | `.scratch/dag-dispatch/AUTH-CONTRACT/1/task.md`；原负责人通知结果同目录保存；receipt 待生成 | 完成认证契约并交独立冻结；后续 auth 前后端 dsh 实现，真实交付后供 A10，不改工作台依赖门槛 |
+| AUTH-CONTRACT@1 / attempt 1 | READY_FOR_REVIEW | `5b12a9063cc0b692103df73997cb8963506bd9ea` | Codex Astra high；session `01a0c592-84d8-7622-8092-772d18cf0ac3`；`/home/liam_t/项目/TeacherWorkspace-auth-contract`；`design/auth-contract-completion` | 设计 `fd3f6d5e8d19823aa83a417b99f223c87f4aa713`；作者 `975fb04cd99ddb8da1ec0d9c455c84021e554fcd`；`docs/acceptance/evidence/AUTH-CONTRACT/v1/author.md` | I01-I07 契约交独立冻结；之后同版认证前后端 dsh 并行，共享入口串行集成；真实认证/邮件交付仍未完成 |
+| AUTH-CONTRACT-REVIEW@1 / attempt 1 | PREPARED | `a11094e25c9605216af45fccc31de2ccc2c2eb0f`；固定设计 `fd3f6d5` | 新 Codex Sol high；`/home/liam_t/项目/TeacherWorkspace-auth-contract-review`；`review/auth-contract-freeze` | `.scratch/dag-dispatch/AUTH-CONTRACT-REVIEW/1/task.md`；receipt 待生成 | 独立核验认证行为、协议、B11 接缝及实施包；不验真实登录或邮件 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
