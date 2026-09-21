@@ -30,6 +30,7 @@
 | 领域词汇 | [CONTEXT](CONTEXT.md) |
 | 认证行为、场景和原型证据 | [原型行为索引](prototype/behavior/manifest.md) |
 | 认证共享接口的已有约定和待补项 | [认证契约](docs/contracts/auth.md)，目前不完整 |
+| B10/B11 首条流程交接基线与文件所有权 | [执行基线](docs/arch/execution-baseline.md) |
 | 代码结构、旧底座与可复用部分 | [架构说明](docs/ARCHITECTURE.md) |
 
 已确认的产品要求指导新实现；原型代码用于参考交互，旧应用用于参考可复用底座。二者均不能替代尚未形成的业务契约。原型证据只证明对应原型版本，正式应用的旧测试只证明其旧行为。

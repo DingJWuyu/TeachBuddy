@@ -2,7 +2,7 @@
 
 [返回主 README](../README.md)
 
-本文描述代码基线 `911e624`，不是已完成的 MVP 架构。原型与真实应用的状态见 README；实施顺序见[路线图](ROADMAP.md)。旧认证由独立工作线迁移，不要求新契约兼容旧 Bearer API。
+本文描述代码基线 `911e624`，不是已完成的 MVP 架构。原型与真实应用的状态见 README；实施顺序见[路线图](ROADMAP.md)。B10 固定的 Git 交接、B11 输入和逐文件所有权见[执行基线](arch/execution-baseline.md)。旧认证由独立工作线迁移，不要求新契约兼容旧 Bearer API。
 
 ## 复用与替换
 
