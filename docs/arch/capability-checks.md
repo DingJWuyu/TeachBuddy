@@ -1,10 +1,10 @@
 # C20/v1 能力实验设计
 
-状态：READY_FOR_REVIEW，作者自检，不是独立冻结或实验 PASS。输入为 `b938f8af0b8152718f5063d4326d494bf8b5426c` 的 [B11 风险表](first-flow.md#c20-需验证的问题与外部缺口)及已独立通过的 [B11/v1](../acceptance/evidence/B11/v1/review.md)。本包不修改 B11 契约。
+状态：已独立冻结（PASS）。固定设计为 `cff6f97aa0488dbfdd2e30d0e14ad35b064f040b`，作者回执见 [C20/v1 作者回执](../acceptance/evidence/C20/v1/author.md)，独立审查见 [C20/v1 独立实验设计审查](../acceptance/evidence/C20/v1/review.md)。输入为 `b938f8af0b8152718f5063d4326d494bf8b5426c` 的 [B11 风险表](first-flow.md#c20-需验证的问题与外部缺口)及已独立通过的 [B11/v1](../acceptance/evidence/B11/v1/review.md)。本包不修改 B11 契约。
 
 ## 派发入口
 
-独立冻结本包后，实验者只需读本节、共同边界、自己的短包及其中指定的样本/环境段落，按[执行者协议](../plans/execution-protocol.md#implementation)交付。候选、标准和样本内容以本包所在提交固定；实验结果不能反过来改变门槛。
+本包已独立冻结。实验者只需读本节、共同边界、自己的短包及其中指定的样本/环境段落，按[执行者协议](../plans/execution-protocol.md#implementation)交付。候选、标准和样本内容以本包所在提交固定；实验结果不能反过来改变门槛。
 
 | 节点 | 短包 | 现在可做 | 真正待补的条件 | 结果消费者 |
 | --- | --- | --- | --- | --- |
@@ -20,7 +20,7 @@
 3. [EMODEL](evidence/EMODEL.md)仅证明两个精确 ID 返回 HTTP 200。实验者需另证非空正常输出、工具循环、模型用量与计费配置；不能把旧报告中的空 content 当正常完成，也不因缺余额截图重问已获额度授权。遇额度/额外计费提示即停止有关调用，保留本地可继续部分。
 4. 每次请求设置有限输出预算和超时，记录实际次数、usage、耗时；按任务包的有限场景执行，禁止无限重试或开放式自动探索。截断可以据响应结构调整一次预算。耗时/体积是观察值，不设没有课堂依据的速度或像素一致性硬门槛。
 5. 写入仅限 `experiments/C21/` 至 `experiments/C24/` 各自隔离目录、各自 `docs/arch/evidence/Cxx.md` 和 `docs/acceptance/evidence/Cxx/v1/`。各自依赖清单、锁文件、数据、端口也放隔离目录，不改根依赖、产品代码或 B11。执行方法由实验者选择；免费依赖的隔离安装属于准备工作，安装失败才报告具体网络/权限缺口。
-6. 报告按[证据与回执协议](../plans/execution-protocol.md#receipt)记录候选提交、组件版本、样本路径/校验值、实际运行命令、逐场景预期与结果、失败原件、继续校对/重试入口及建议。正式结果用 self 的 PASS/FAIL/BLOCKED，并分列本机和目标设备结果；独立复核归[实验验收矩阵](../acceptance/mvp-matrix.md#experiments)的消费节点。本次设计只交 READY_FOR_REVIEW。
+6. 报告按[证据与回执协议](../plans/execution-protocol.md#receipt)记录候选提交、组件版本、样本路径/校验值、实际运行命令、逐场景预期与结果、失败原件、继续校对/重试入口及建议。正式结果用 self 的 PASS/FAIL/BLOCKED，并分列本机和目标设备结果；独立复核归[实验验收矩阵](../acceptance/mvp-matrix.md#experiments)的消费节点。本设计候选已由独立审查放行，实验结果仍需按各节点证据交付。
 
 ## 公共材料
 
@@ -28,3 +28,4 @@
 - [环境说明](capability-checks/environment.md)：本机实查、授权边界、单进程 Node/SQLite/持久目录交付候选及缺口归属。
 - [一手来源](capability-checks/sources.md)：技术文档支持什么、尚未证明什么；不代替实验。
 - [作者回执](../acceptance/evidence/C20/v1/author.md)：本次设计与检查结果。
+- [独立审查回执](../acceptance/evidence/C20/v1/review.md)：固定候选的放行结论与执行边界。
