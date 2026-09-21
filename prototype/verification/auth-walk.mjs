@@ -122,7 +122,7 @@ for (const viewport of VIEWPORTS) {
   await measure(page, `login ${tag}`, true);
 
   // 登录：密码不足 8 位 -> 字段级错误
-  await enter(page.locator('.ae-form input[type="email"]'), 'example@example.com', `login ${tag} 邮箱`);
+  await enter(page.locator('.ae-form input[autocomplete="email"]'), 'example@example.com', `login ${tag} 邮箱`);
   await enter(page.locator('.ae-form input[type="password"]'), 'short', `login ${tag} 密码`);
   await page.locator('.ae-primary').click();
   await page.waitForTimeout(250);
@@ -154,7 +154,7 @@ for (const viewport of VIEWPORTS) {
   }
 
   await enter(page.locator('.ae-field:has-text("昵称") input'), '林', `register ${tag} 昵称`);
-  await enter(page.locator('.ae-form input[type="email"]'), 'new@example.com', `register ${tag} 邮箱`);
+  await enter(page.locator('.ae-form input[autocomplete="email"]'), 'new@example.com', `register ${tag} 邮箱`);
   await page.locator('.ae-send.is-block').click();
   await page.waitForTimeout(250);
   const codeNote = await page.locator('.ae-field-note').textContent();
@@ -167,7 +167,7 @@ for (const viewport of VIEWPORTS) {
   if (await terms.isChecked()) problems.push(`register ${tag} 条款默认被勾选了`);
   await terms.check();
   await page.locator('.ae-primary').click();
-  await page.waitForTimeout(250);
+  await page.locator('.ae-field-error').first().waitFor({ timeout: 5000 });
   const codeError = await fieldError(page, '邮箱验证码');
   if (!codeError.includes('验证码不正确')) problems.push(`register ${tag} 错误验证码未报字段错误: "${codeError}"`);
 
@@ -177,7 +177,7 @@ for (const viewport of VIEWPORTS) {
   await page.locator('.ae-card-head h1:text-is("找回密码")').waitFor({ timeout: 5000 });
   await measure(page, `recovery-request ${tag}`, true);
 
-  await enter(page.locator('.ae-form input[type="email"]'), 'example@example.com', `recovery ${tag} 邮箱`);
+  await enter(page.locator('.ae-form input[autocomplete="email"]'), 'example@example.com', `recovery ${tag} 邮箱`);
   await page.locator('.ae-primary').click();
   await page.locator('.ae-card-head h1:text-is("设置新密码")').waitFor({ timeout: 5000 });
   await measure(page, `recovery-confirm ${tag}`, true);
@@ -206,7 +206,7 @@ for (const viewport of VIEWPORTS) {
     await page.locator('.ae-card-head h1:text-is("登录")').waitFor({ timeout: 5000 });
 
     // 登录成功：进入工作台。刚才的重置已经改掉了旧密码，这里用新密码。
-    await enter(page.locator('.ae-form input[type="email"]'), 'example@example.com', '登录邮箱');
+    await enter(page.locator('.ae-form input[autocomplete="email"]'), 'example@example.com', '登录邮箱');
     await enter(page.locator('.ae-form input[type="password"]'), 'new-teachbuddy', '登录新密码');
     await page.locator('.ae-primary').click();
     await page.waitForSelector('.tb-topbar', { timeout: 8000 });

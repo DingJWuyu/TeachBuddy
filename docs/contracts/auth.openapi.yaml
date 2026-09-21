@@ -1,0 +1,790 @@
+openapi: 3.2.1
+info:
+  title: TeachBuddy 账户入口契约
+  version: 0.1.0-draft.9
+  description: |
+    讨论入口为同目录 auth.md。此文件记录已确认的操作地址、输入片段及错误交换。
+    前端先按已验收行为本地校验；不通过则不提交本次认证请求。字段错误响应不是远程校验服务。
+    后端独立校验实际收到的输入；各操作只返回与自身请求及业务有关的已定义错误。
+    密码显隐、确认密码一致性及表单切换等前端独有行为不产生新的后端接口。
+    正式浏览器页面与 /api 同源，生产使用 HTTPS。后端通过 Set-Cookie 设置 HttpOnly、Secure 凭据。
+    浏览器自动保存并携带凭据；前端脚本不读取、存储凭据或拼接 Bearer 头。
+    Cookie 名称及固定属性见 SessionCookie 安全方案；寿命及各操作的凭据要求仍待 G03。
+    安全方案定义不等于已完成各操作的认证要求，尚未附加全局 security 要求以免误将登录前操作变为须先登录。
+    所有已定义 POST 都执行来源与保护头检查，单一防护条件不满足时返回 RequestNotAllowed。
+    所有认证成功和失败响应必须带 Cache-Control: no-store，未来补齐的结果也必须沿用。
+    所有操作均为 partial：成功响应、完整输入及其他结果仍待产品行为补齐。
+    logout 只确认方法、地址及通用防护；未声明 requestBody 表示尚待定义，不表示约定了空请求。
+    当前 responses 只列已定义的错误；没有声明某类响应不代表该结果不可能发生。
+    EmailInput、NicknameInput、PasswordInput 暂时只约束类型；精确边界待 D04。
+    最终完整请求拒绝未知字段并返回 422，输入类型不做隐式转换；Core 片段尚未封闭。
+    有数据的成功响应直接返回 JSON 结果对象；操作完成且无返回数据时用 204，无响应体。
+    成功规则不表示任何具体操作已经确定了成功时点、状态码或返回数据。
+    前端忽略已知响应中未使用的附加字段，仍校验已定义的必填字段、类型及结果身份。
+    未知状态、未知错误 type 或结构不合法的响应不算已知结果；其页面恢复规则待 G01。
+    原型模拟限制不能用作正式认证的凭据、验证码或会话策略。
+x-contract-status: partial
+x-accepted-source:
+  commit: a496c5a4727e2900bd110198819295e068739439
+  prototype-tree: 05dc1e5244cd9224d3480f0a1935dac56d8f3fcd
+x-open-decisions:
+  - D04 输入边界、归一化、完整请求与身份结构
+  - D05 完整交换与契约用例
+  - D07 尚未列明的错误类型与状态码
+  - G01-G06 尚待补齐并集成的产品行为
+servers:
+  - url: /
+    description: 相对于浏览器页面的同一来源；生产使用 HTTPS，具体域名及内部转发方式由部署确定。
+paths:
+  /api/auth/login:
+    parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+    post:
+      operationId: login
+      summary: 登录并交接身份
+      x-interaction-id: I01
+      x-contract-status: partial
+      x-unresolved: [G01, G03, G04, G05, G06]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestCore'
+      responses:
+        '403':
+          $ref: '#/components/responses/RequestNotAllowed'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/LoginInvalidInput'
+  /api/auth/registration-codes:
+    parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+    post:
+      operationId: requestRegistrationCode
+      summary: 申请或重新申请注册验证码
+      description: 发码前判断邮箱占用，已占用时拒绝且不发码。发码成功、重发策略和投递结果尚未定义。
+      x-interaction-id: I02
+      x-contract-status: partial
+      x-unresolved: [G01, G02, G04, G06]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailCodeRequestCore'
+      responses:
+        '403':
+          $ref: '#/components/responses/RequestNotAllowed'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '409':
+          $ref: '#/components/responses/EmailAlreadyRegistered'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/EmailCodeInvalidInput'
+  /api/auth/register:
+    parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+    post:
+      operationId: register
+      summary: 创建教师账户并交接身份
+      x-interaction-id: I03
+      x-contract-status: partial
+      x-unresolved: [G01, G02, G03, G04, G05, G06]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequestCore'
+      responses:
+        '403':
+          $ref: '#/components/responses/RequestNotAllowed'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '409':
+          $ref: '#/components/responses/EmailAlreadyRegistered'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/RegistrationInvalidInput'
+  /api/auth/password-reset-codes:
+    parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+    post:
+      operationId: requestPasswordResetCode
+      summary: 申请或重新申请密码找回验证码
+      x-interaction-id: I04
+      x-contract-status: partial
+      x-unresolved: [G01, G02, G04, G06]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailCodeRequestCore'
+      responses:
+        '403':
+          $ref: '#/components/responses/RequestNotAllowed'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/EmailCodeInvalidInput'
+  /api/auth/password-reset:
+    parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+    post:
+      operationId: resetPassword
+      summary: 确认验证码并重置密码
+      x-interaction-id: I05
+      x-contract-status: partial
+      x-unresolved: [G01, G02, G03, G06]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestCore'
+      responses:
+        '403':
+          $ref: '#/components/responses/RequestNotAllowed'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/PasswordResetInvalidInput'
+  /api/auth/logout:
+    parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+    post:
+      operationId: logout
+      summary: 退出登录
+      description: |
+        对应 CA07/CA25 已有退出动作，目前只确认 POST 地址和 D13/D14 通用约束。
+        请求体、凭据要求、会话影响范围、重复或无会话时的结果及清理时点待 G01/G03。
+        未声明 requestBody 不表示已约定无请求体；未定义成功响应，不预先指定 204。
+      x-interaction-id: I07
+      x-contract-status: partial
+      x-unresolved: [G01, G03]
+      responses:
+        '403':
+          $ref: '#/components/responses/RequestNotAllowed'
+components:
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-teachbuddy_session
+      description: |
+        后端通过 Set-Cookie 设置的会话凭据，浏览器保存并自动携带。
+        必须包含 HttpOnly、Secure、Path=/、SameSite=Lax，不设置 Domain。
+        浏览器契约验证和本地联调使用 HTTPS 同源入口及相同固定属性。
+        apiKey 是 OpenAPI 对 Cookie 凭据的表示，不要求教师申请或填写 API 密钥。
+        前端脚本不读取或存储其值，也不解析其内部格式。
+        Expires、Max-Age、产生/替换/清除时点及操作级认证要求仍待 G03。
+  parameters:
+    BrowserRequestProtection:
+      name: X-TeachBuddy-Request
+      in: header
+      required: true
+      description: |
+        前端为原本允许发出的认证写请求添加的固定保护头；不是秘密或登录凭据。
+        缺少或值不符时，若无其他竞争拒绝条件，返回 403 RequestNotAllowed，不作为 JSON 字段错误。
+        本地校验不通过时仍不发送请求；该头不属于请求体属性。
+      schema:
+        type: string
+        const: '1'
+    RequestOrigin:
+      name: Origin
+      in: header
+      required: false
+      description: |
+        浏览器管理此头，前端脚本不手动设置。后端将其完整来源与部署配置的公开来源比较。
+        有值时必须有效且相符；null、格式错误或不符均拒绝，不能转而使用 Referer 放行。
+        仅缺失时才回退到 Referer；这里的 required=false 只表达有条件回退，不允许无来源通过。
+        来源保护不满足时，在无其他竞争拒绝条件下返回 403 RequestNotAllowed。
+        后端直接 HTTP 测试需显式提供测试来源或有效的 Referer 回退。
+      schema:
+        type: string
+    RequestReferer:
+      name: Referer
+      in: header
+      required: false
+      description: |
+        仅在 Origin 缺失时解析本头的来源；按完整协议、主机与端口和可信公开来源比较。
+        Origin 和本头都缺失、或回退时无法解析/来源不符，均返回 403 RequestNotAllowed。
+        浏览器管理此头，前端脚本不手动伪造；来源检查不采用字符串前缀或子域后缀匹配。
+      schema:
+        type: string
+  headers:
+    AuthCacheControl:
+      required: true
+      description: |
+        所有认证成功和失败响应必须提供；未来补齐的成功响应也沿用。
+        不以此代替会话撤销，不宣称清空已有缓存、Cookie 或页面状态。
+      schema:
+        type: string
+        const: no-store
+  responses:
+    RequestNotAllowed:
+      description: |
+        Origin/Referer 来源检查或固定保护头不满足，且没有其他竞争拒绝条件。
+        HTTP 403，不关联表单字段，不进入账户、密码、验证码或会话的业务变更。
+        该浏览器 API 不向其他来源开放 CORS 访问；不能仅靠浏览器禁止读取响应来代替服务端拒绝。
+        具体页面提示及恢复仍待 G01。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RequestNotAllowedProblem'
+          examples:
+            denied:
+              $ref: '#/components/examples/RequestNotAllowed'
+    MalformedJson:
+      description: 请求体不是合法 JSON，不关联表单字段。协议拒绝已定义，页面呈现待 G01。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/MalformedJsonProblem'
+          examples:
+            malformed:
+              $ref: '#/components/examples/MalformedJson'
+    UnsupportedMediaType:
+      description: 请求媒体类型不受支持，不关联表单字段。协议拒绝已定义，页面呈现待 G01。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/UnsupportedMediaTypeProblem'
+          examples:
+            unsupported:
+              $ref: '#/components/examples/UnsupportedMediaType'
+    EmailCodeInvalidInput:
+      description: |
+        两类发码操作的已确认输入拒绝：四类协议问题及邮箱空值或格式错误。
+        正常前端先本地拦截邮箱错误；本响应约束后端实际收到不合规请求时的拒绝。
+        已有邮箱错误在邮箱字段使用上游文案；通用协议错误的页面呈现仍待 G01。
+        完整输入、其他结果及未定首错顺序仍待相应 G 项，不能把部分 schema 当作结果全集。
+      x-contract-status: partial
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/EmailCodeInputProblem'
+          examples:
+            nonObject:
+              $ref: '#/components/examples/InvalidRequestBody'
+            unknownField:
+              $ref: '#/components/examples/UnknownField'
+            missingEmail:
+              $ref: '#/components/examples/RequiredEmail'
+            emailType:
+              $ref: '#/components/examples/InvalidEmailType'
+            emptyEmail:
+              $ref: '#/components/examples/EmailEmpty'
+            emailFormat:
+              $ref: '#/components/examples/EmailInvalidFormat'
+    LoginInvalidInput:
+      description: 登录的已确认协议或字段拒绝。正常前端先本地校验；具体错误只涉及登录字段。完整输入及结果仍待补齐。
+      x-contract-status: partial
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/LoginInputProblem'
+    RegistrationInvalidInput:
+      description: 注册提交的已确认协议或字段拒绝。正常前端先本地校验；验证码真实值由后端判断，不接收或校验确认密码。完整验证码上下文及结果仍待补齐。
+      x-contract-status: partial
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RegistrationInputProblem'
+          examples:
+            incorrectCode:
+              $ref: '#/components/examples/VerificationCodeIncorrect'
+    PasswordResetInvalidInput:
+      description: 密码重置的已确认协议或字段拒绝。验证码字符形状与真实性分别裁决；邮箱参与确认的方式仍待 G02，本轮没有据此添加重置步骤的邮箱产品错误。
+      x-contract-status: partial
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/PasswordResetInputProblem'
+          examples:
+            incorrectCode:
+              $ref: '#/components/examples/VerificationCodeIncorrect'
+    EmailAlreadyRegistered:
+      description: 注册邮箱已占用；在邮箱字段显示上游 S20 文案，申请注册码时不发送邮件。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/EmailAlreadyRegisteredProblem'
+          examples:
+            occupied:
+              $ref: '#/components/examples/EmailAlreadyRegistered'
+  examples:
+    RequestNotAllowed:
+      value:
+        type: /problems/auth/request-not-allowed
+    MalformedJson:
+      value:
+        type: /problems/auth/malformed-json
+    UnsupportedMediaType:
+      value:
+        type: /problems/auth/unsupported-media-type
+    InvalidRequestBody:
+      value:
+        type: /problems/auth/invalid-request-body
+    UnknownField:
+      value:
+        type: /problems/auth/unknown-field
+    RequiredEmail:
+      summary: 缺少必填 email 属性；不代表空字符串的产品错误
+      value:
+        type: /problems/auth/required-field
+        field: email
+    InvalidEmailType:
+      summary: email 的 JSON 类型不符；不代表邮箱字符串的格式错误
+      value:
+        type: /problems/auth/invalid-field-type
+        field: email
+    EmailEmpty:
+      value:
+        type: /problems/auth/email-empty
+        field: email
+    EmailInvalidFormat:
+      value:
+        type: /problems/auth/email-invalid-format
+        field: email
+    NicknameEmpty:
+      value:
+        type: /problems/auth/nickname-empty
+        field: nickname
+    PasswordTooShort:
+      value:
+        type: /problems/auth/password-too-short
+        field: password
+    VerificationCodeInvalidFormat:
+      value:
+        type: /problems/auth/verification-code-invalid-format
+        field: verificationCode
+    VerificationCodeIncorrect:
+      summary: CA22/CA35 的验证码值不匹配片段，排除其他竞争拒绝条件
+      value:
+        type: /problems/auth/verification-code-incorrect
+        field: verificationCode
+    TermsNotAccepted:
+      value:
+        type: /problems/auth/terms-not-accepted
+        field: termsAccepted
+    EmailAlreadyRegistered:
+      summary: CA13 已占用邮箱的拒绝片段
+      value:
+        type: /problems/auth/email-already-registered
+        field: email
+  schemas:
+    ProtocolInputProblem:
+      description: |
+        已确认的四类 422 协议问题。根值不是对象或存在未知字段时不带 field。
+        缺少必填属性使用 required-field；当前不允许 null 的字段收到 null 使用 invalid-field-type。
+        field 须指向当前操作已声明的对应字段；缺失错误只能指向该操作的必填字段。
+        当前 Core 请求尚不完整，未知字段依最终完整 schema 判断，不提前封闭。
+        通用协议问题的页面呈现及未定义的多个错误优先级仍待 G01。
+      oneOf:
+        - $ref: '#/components/schemas/InvalidRequestBodyProblem'
+        - $ref: '#/components/schemas/UnknownFieldProblem'
+        - $ref: '#/components/schemas/RequiredFieldProblem'
+        - $ref: '#/components/schemas/InvalidFieldTypeProblem'
+    EmailCodeInputProblem:
+      description: 两类发码操作共用的已定义 422 结果；完整上下文就绪后需扩展对应字段与结果。
+      x-contract-status: partial
+      type: object
+      properties:
+        field:
+          enum: [email]
+      oneOf:
+        - $ref: '#/components/schemas/ProtocolInputProblem'
+        - $ref: '#/components/schemas/EmailEmptyProblem'
+        - $ref: '#/components/schemas/EmailInvalidFormatProblem'
+    LoginInputProblem:
+      description: 登录已定义的 422 结果；不包含昵称、条款或验证码字段的拒绝。
+      x-contract-status: partial
+      type: object
+      properties:
+        field:
+          enum: [email, password]
+      oneOf:
+        - $ref: '#/components/schemas/ProtocolInputProblem'
+        - $ref: '#/components/schemas/EmailEmptyProblem'
+        - $ref: '#/components/schemas/EmailInvalidFormatProblem'
+        - $ref: '#/components/schemas/PasswordTooShortProblem'
+    RegistrationInputProblem:
+      description: 注册已定义的 422 结果；确认密码及客户端已发码状态不是后端请求字段。
+      x-contract-status: partial
+      type: object
+      properties:
+        field:
+          enum: [nickname, email, password, verificationCode, termsAccepted]
+      oneOf:
+        - $ref: '#/components/schemas/ProtocolInputProblem'
+        - $ref: '#/components/schemas/EmailEmptyProblem'
+        - $ref: '#/components/schemas/EmailInvalidFormatProblem'
+        - $ref: '#/components/schemas/NicknameEmptyProblem'
+        - $ref: '#/components/schemas/PasswordTooShortProblem'
+        - $ref: '#/components/schemas/VerificationCodeInvalidFormatProblem'
+        - $ref: '#/components/schemas/VerificationCodeIncorrectProblem'
+        - $ref: '#/components/schemas/TermsNotAcceptedProblem'
+    PasswordResetInputProblem:
+      description: |
+        重置已定义的 422 结果；email 当前只作为待 G02 决定的请求字段片段，
+        不能据此宣布缺少 email 必须拒绝，也不引入第二步邮箱格式校验。
+        完整绑定上下文及请求必填字段尚需确定。
+      x-contract-status: partial
+      type: object
+      properties:
+        field:
+          enum: [email, password, verificationCode]
+      oneOf:
+        - $ref: '#/components/schemas/ProtocolInputProblem'
+        - $ref: '#/components/schemas/PasswordTooShortProblem'
+        - $ref: '#/components/schemas/VerificationCodeInvalidFormatProblem'
+        - $ref: '#/components/schemas/VerificationCodeIncorrectProblem'
+    LoginRequestCore:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          $ref: '#/components/schemas/EmailInput'
+        password:
+          $ref: '#/components/schemas/PasswordInput'
+      description: 已知必填输入片段，不是最终完整请求。记住我及其他会话上下文待 G03；补齐后按 D08 封闭请求并拒绝未知字段，当前片段不提前封闭。
+      x-contract-status: partial
+    EmailCodeRequestCore:
+      type: object
+      required: [email]
+      properties:
+        email:
+          $ref: '#/components/schemas/EmailInput'
+      description: 两类发码操作共用的已知邮箱输入；业务结果各自定义。完整上下文待 G02；补齐后按 D08 封闭请求并拒绝未知字段，当前片段不提前封闭。
+      x-contract-status: partial
+    RegistrationRequestCore:
+      type: object
+      required: [nickname, email, password, verificationCode, termsAccepted]
+      properties:
+        nickname:
+          $ref: '#/components/schemas/NicknameInput'
+        email:
+          $ref: '#/components/schemas/EmailInput'
+        password:
+          $ref: '#/components/schemas/PasswordInput'
+        verificationCode:
+          $ref: '#/components/schemas/VerificationCodeInput'
+        termsAccepted:
+          $ref: '#/components/schemas/TermsAcceptanceInput'
+      description: 已知必填输入片段；确认密码不传输。验证码绑定上下文待 G02；补齐后按 D08 封闭请求并拒绝未知字段，当前片段不提前封闭。
+      x-contract-status: partial
+    PasswordResetRequestCore:
+      type: object
+      required: [password, verificationCode]
+      properties:
+        email:
+          $ref: '#/components/schemas/EmailInput'
+        password:
+          $ref: '#/components/schemas/PasswordInput'
+        verificationCode:
+          $ref: '#/components/schemas/VerificationCodeInput'
+      description: |
+        已知密码与验证码输入片段，不是可直接实施的完整重置请求。
+        邮箱是否以该字段参与确认、绑定上下文的完整形状及更改邮箱的影响待 G02。
+        此处未将 email 列为必填，不表示已同意后端接受无身份绑定的重置。
+        完整上下文补齐后按 D08 封闭请求并拒绝未知字段，当前片段不提前封闭。
+      x-contract-status: partial
+    NicknameInput:
+      type: string
+      description: |
+        注册填写的昵称，对应字段 nickname。
+        当前只固定传输类型。已验收的去除首尾空白后非空规则及其精确处理方式待 D04 定义，
+        不能把此类型校验视为完整昵称校验。
+      x-contract-status: partial
+      x-unresolved: [D04, G06]
+    EmailInput:
+      type: string
+      description: |
+        教师输入的邮箱，对应字段 email。
+        当前只固定传输类型。空值、格式及归一化的完整规则待 D04，
+        不以 JSON Schema format 的某个实现默认值代替双方约定。
+      x-contract-status: partial
+      x-unresolved: [D04, G06]
+    PasswordInput:
+      type: string
+      description: |
+        对应字段 password；登录时为当前密码，注册或重置时为要设置的密码。
+        当前只固定传输类型。上游至少八位的计数方式、边界和输入处理待 D04 精确定义，
+        不能把此类型校验视为完整密码校验。确认密码值不传输。
+      x-contract-status: partial
+      x-unresolved: [D04, G06]
+    VerificationCodeInput:
+      type: string
+      minLength: 6
+      maxLength: 6
+      pattern: '^[0-9]{6}$'
+      description: |
+        对应字段 verificationCode；六位数字以字符串传输，保留前导零。
+        这里只定义字符形状。验证码的地址绑定、真实性、有效期和消费规则待 G02，
+        通过 schema 校验不代表该验证码可用于注册或密码重置。
+      examples:
+        - '012345'
+    TermsAcceptanceInput:
+      type: boolean
+      const: true
+      description: |
+        对应注册字段 termsAccepted。注册要求显式同意条款，后端校验该值。
+        条款页面暂不做；此字段不引入条款版本管理或新交互。
+    ProblemDetailsBase:
+      type: object
+      additionalProperties: true
+      required:
+        - type
+      description: |
+        RFC 9457 的标准字段基础，以 application/problem+json 传输。
+        type 是已确认的稳定错误身份；前端据此选择已验收文案，
+        不解析 title 或 detail 判断业务结果。
+        字段错误使用 field 定位已确认的请求字段；没有对应字段时省略 field。
+        每次响应只表达一个主要问题，不发送多个错误列表。
+        按 D10 允许附加字段；前端忽略未使用的附加字段，仍检查已声明字段与具体结果的约束。
+        允许附加字段不表示允许已声明字段错误，也不赋予未知 type 已知业务含义。
+        通用基类尚未穷尽项目错误类型；已完成的特定问题另有派生 schema。
+      x-contract-status: partial
+      x-unresolved: [D07]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          description: 稳定的错误类型标识，已确定值见特定问题 schema；完整业务错误集合尚未补齐。
+        title:
+          type: string
+          description: 人类可读的错误类型摘要，不作为前端分支依据。
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+          description: 若提供，须与实际 HTTP 响应状态一致。
+        detail:
+          type: string
+          description: 此次问题的说明，不作为前端分支依据。
+        instance:
+          type: string
+          format: uri-reference
+          description: 此次问题的标识；当前未约定必须提供。
+        field:
+          type: string
+          description: 有对应输入字段时使用该操作的请求字段名。错误特定 schema 决定其是否必填及取值。
+    RequestNotAllowedProblem:
+      description: 请求来源或保护头校验失败；不是账号、密码或验证码的字段错误。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - properties:
+            type:
+              const: /problems/auth/request-not-allowed
+            status:
+              const: 403
+            field: false
+    MalformedJsonProblem:
+      description: 非法 JSON；不能定位为表单字段错误。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - properties:
+            type:
+              const: /problems/auth/malformed-json
+            status:
+              const: 400
+            field: false
+    UnsupportedMediaTypeProblem:
+      description: 请求媒体类型不受支持；不能定位为表单字段错误。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - properties:
+            type:
+              const: /problems/auth/unsupported-media-type
+            status:
+              const: 415
+            field: false
+    InvalidRequestBodyProblem:
+      description: JSON 根值不是对象，例如数组或 null；不关联表单字段。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - properties:
+            type:
+              const: /problems/auth/invalid-request-body
+            status:
+              const: 422
+            field: false
+    UnknownFieldProblem:
+      description: 最终完整请求中出现未声明属性；不以未知名称填充 field。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - properties:
+            type:
+              const: /problems/auth/unknown-field
+            status:
+              const: 422
+            field: false
+    RequiredFieldProblem:
+      description: 缺少已声明的必填属性；field 必须指向该操作中缺少的必填字段，不用于空字符串。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - required: [field]
+          properties:
+            type:
+              const: /problems/auth/required-field
+            status:
+              const: 422
+    InvalidFieldTypeProblem:
+      description: 已声明字段的 JSON 类型错误；field 必须指向该操作中类型不符的字段。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - required: [field]
+          properties:
+            type:
+              const: /problems/auth/invalid-field-type
+            status:
+              const: 422
+    EmailEmptyProblem:
+      description: 邮箱值为空字符串；与缺少 email 属性分别处理。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - required: [field]
+          properties:
+            type:
+              const: /problems/auth/email-empty
+            status:
+              const: 422
+            field:
+              const: email
+    EmailInvalidFormatProblem:
+      description: 邮箱字符串格式不正确；完整地址接受范围及归一化仍待 G06。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - required: [field]
+          properties:
+            type:
+              const: /problems/auth/email-invalid-format
+            status:
+              const: 422
+            field:
+              const: email
+    NicknameEmptyProblem:
+      description: 昵称去除首尾空白后为空；完整字符处理边界仍待 G06。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - required: [field]
+          properties:
+            type:
+              const: /problems/auth/nickname-empty
+            status:
+              const: 422
+            field:
+              const: nickname
+    PasswordTooShortProblem:
+      description: 密码少于八位；适用于当前密码或新密码，页面文案按操作决定。精确计数规则仍待 G06。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - required: [field]
+          properties:
+            type:
+              const: /problems/auth/password-too-short
+            status:
+              const: 422
+            field:
+              const: password
+    VerificationCodeInvalidFormatProblem:
+      description: 验证码字符串不符合 VerificationCodeInput 的六位 ASCII 数字形状；不表示验证码真实性或生命周期拒绝。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - required: [field]
+          properties:
+            type:
+              const: /problems/auth/verification-code-invalid-format
+            status:
+              const: 422
+            field:
+              const: verificationCode
+    VerificationCodeIncorrectProblem:
+      description: |
+        对应 CA22/CA35。验证码符合六位 ASCII 数字形状，其他条件满足，但值与对应真实验证码不匹配。
+        后端裁决真实性，前端在 verificationCode 字段显示已有错误文案，不用原型固定码本地判断。
+        此类型不代表过期、已消费、地址不匹配或限流。完整绑定上下文、错误次数及重试规则仍待 G02。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - required: [field]
+          properties:
+            type:
+              const: /problems/auth/verification-code-incorrect
+            status:
+              const: 422
+            field:
+              const: verificationCode
+    TermsNotAcceptedProblem:
+      description: 注册 termsAccepted 为 false；缺少属性和类型不符各按协议错误处理。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - required: [field]
+          properties:
+            type:
+              const: /problems/auth/terms-not-accepted
+            status:
+              const: 422
+            field:
+              const: termsAccepted
+    EmailAlreadyRegisteredProblem:
+      description: 对应 S20、CA13 和 CA25 的已占用邮箱拒绝。
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetailsBase'
+        - type: object
+          required: [field]
+          properties:
+            type:
+              const: /problems/auth/email-already-registered
+            status:
+              const: 409
+            field:
+              const: email

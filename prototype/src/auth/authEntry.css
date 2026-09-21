@@ -131,6 +131,14 @@
   gap: 8px;
 }
 
+.ae-field-count {
+  margin-left: auto;
+  color: #a2a6af;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
 .ae-password {
   position: relative;
   display: block;
@@ -215,10 +223,48 @@
   line-height: 18px;
 }
 
+.ae-field-note.is-long-address {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 4px;
+  min-width: 0;
+}
+
+.ae-code-note-label {
+  grid-column: 1;
+}
+
+.ae-code-note-expiry {
+  grid-column: 2;
+  white-space: nowrap;
+}
+
+.ae-code-note-address {
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* A standing explanation about the field, quieter than the send note it sits
  * above, so the two are not read as one sentence. */
 .ae-field-hint {
   color: #9aa0ab;
+}
+
+.ae-inline-action {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ae-accent);
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.ae-inline-action:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .ae-field-note a {
@@ -343,6 +389,12 @@
   color: #1f5c3d;
 }
 
+.ae-notice.is-neutral {
+  border-color: rgba(113, 96, 167, .3);
+  background: rgba(113, 96, 167, .07);
+  color: #53427f;
+}
+
 .ae-notice-dismiss {
   flex: none;
   width: 18px;
@@ -397,6 +449,80 @@
 
 .ae-primary:hover:not(:disabled) {
   background: #3d4148;
+}
+
+.ae-closed-state,
+.ae-restore-card,
+.ae-session-recovery {
+  padding: 22px 28px 26px;
+}
+
+.ae-closed-state p,
+.ae-restore-message,
+.ae-session-recovery p {
+  margin: 0 0 16px;
+  color: var(--ae-muted);
+  text-align: center;
+}
+
+.ae-session-recovery {
+  display: grid;
+  gap: 10px;
+}
+
+.ae-session-recovery .ae-primary {
+  width: 100%;
+  margin-top: 0;
+}
+
+.ae-session-recovery .ae-recovery-return {
+  justify-self: center;
+  margin-top: 2px;
+}
+
+.ae-restore-card {
+  padding: 0 28px 26px;
+  min-height: 154px;
+}
+
+.ae-restore-card .ae-card-head {
+  margin: 0 -28px;
+}
+
+.ae-restore-message {
+  margin: 16px 0 18px;
+}
+
+.ae-restore-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.ae-restore-actions .ae-primary {
+  width: 100%;
+  margin-top: 0;
+}
+
+.ae-restore-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ae-ink);
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.ae-restore-mark {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--tb-brand-mark);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .ae-primary:focus-visible,
@@ -494,6 +620,7 @@ body.ae-entry button {
   }
 
   .ae-form {
+    gap: 13px;
     padding: 20px 18px 22px;
   }
 
@@ -503,5 +630,19 @@ body.ae-entry button {
 
   .ae-card-head {
     padding: 18px 18px 16px;
+  }
+
+  .ae-closed-state,
+  .ae-restore-card,
+  .ae-session-recovery {
+    padding: 20px 18px 22px;
+  }
+
+  .ae-restore-card {
+    padding: 0 18px 22px;
+  }
+
+  .ae-restore-card .ae-card-head {
+    margin: 0 -18px;
   }
 }

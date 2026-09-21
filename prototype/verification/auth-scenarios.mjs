@@ -6,7 +6,7 @@ export const viewports = [
   { name: '手机', width: 390, height: 844 }
 ];
 
-const email = (p) => p.locator('.ae-form input[type="email"]');
+const email = (p) => p.locator('.ae-form input[autocomplete="email"]');
 const password = (p) => p.locator('.ae-password input');
 const confirmation = (p) => p.locator('.ae-field input[autocomplete="new-password"]').last();
 const code = (p) => p.locator('input[inputmode="numeric"]');
@@ -209,8 +209,8 @@ for (const [id, field, value, message] of [
   [17, 'name', '   ', '请填写昵称。'],
   [18, 'password', 'short', '密码至少 8 位。'],
   [19, 'confirmation', 'different', '两次输入的密码不一致。'],
-  [20, 'code', '12', '请输入 6 位数字验证码。'],
-  [21, 'code', 'abcdef', '请输入 6 位数字验证码。'],
+  [20, 'code', '12', '请输入 6 位数字验证码（0-9）。'],
+  [21, 'code', 'abcdef', '请输入 6 位数字验证码（0-9）。'],
   [22, 'code', '111111', '验证码不正确，还可以再试 4 次。']
 ]) {
   scenario(id, 'register', `注册字段校验与修正：${message}`, async (p, shot) => {
@@ -321,19 +321,20 @@ scenario(32, 'recovery', '两步找回的空表单', async (p, shot) => {
   await email(p).fill('example@example.com');
   await submit(p);
   await heading(p, '设置新密码');
-  /* Step two starts without a code: the address is bound, and the code is
-   * asked for from here. */
-  await expect(code(p)).toHaveCount(0);
-  await expect(password(p)).toHaveValue('');
-  await shot('confirm');
-  await p.getByRole('button', { name: '发送验证码', exact: true }).click();
+  /* The first step sends the code before entering step two. The confirmation
+   * card binds the read-only address and starts with an empty code field. */
+  await expect(email(p)).toHaveAttribute('readonly', '');
+  await expect(email(p)).toHaveValue('example@example.com');
   await expect(code(p)).toBeVisible();
   await expect(code(p)).toHaveValue('');
+  await expect(password(p)).toHaveValue('');
+  await shot('confirm');
+  /* Keep the established evidence name for the now-completed first send. */
   await shot('code-sent');
 });
 for (const [id, field, value, message] of [
-  [33, 'code', '84', '请输入 6 位数字验证码。'],
-  [34, 'code', 'abcdef', '请输入 6 位数字验证码。'],
+  [33, 'code', '84', '请输入 6 位数字验证码（0-9）。'],
+  [34, 'code', 'abcdef', '请输入 6 位数字验证码（0-9）。'],
   [35, 'code', '000000', '验证码不正确，还可以再试 4 次。'],
   [36, 'password', 'short', '新密码至少 8 位。'],
   [37, 'confirmation', 'different', '两次输入的新密码不一致。']
@@ -368,21 +369,24 @@ scenario(39, 'recovery', '第二步取消后重进，清空验证码和密码', 
   await email(p).fill('example@example.com');
   await submit(p);
   await heading(p, '设置新密码');
-  await p.getByRole('button', { name: '发送验证码', exact: true }).click();
   await expect(code(p)).toBeVisible();
+  await expect(code(p)).toHaveValue('');
+  await code(p).fill('841207');
+  await password(p).fill('new-teachbuddy');
+  await confirmation(p).fill('new-teachbuddy');
   await switchCard(p);
   await heading(p, '登录');
   await shot('cancelled');
   await recovery(p, { confirm: false });
   await submit(p);
   await heading(p, '设置新密码');
-  await expect(code(p)).toHaveCount(0);
+  await expect(code(p)).toBeVisible();
+  await expect(code(p)).toHaveValue('');
+  await expect(email(p)).toHaveAttribute('readonly', '');
   await expect(password(p)).toHaveValue('');
   await expect(confirmation(p)).toHaveValue('');
   await shot('reset');
-  await p.getByRole('button', { name: '发送验证码', exact: true }).click();
-  await expect(code(p)).toBeVisible();
-  await expect(code(p)).toHaveValue('');
+  /* The re-entered first step has already sent a fresh, empty challenge. */
   await expect(password(p)).toHaveValue('');
   await shot('code-sent');
 });
@@ -392,7 +396,7 @@ scenario(40, 'recovery', '第二步邮箱锁定到已发码的地址；显示与
    * is shown as fixed rather than as a second editable field. */
   await expect(email(p)).toHaveAttribute('readonly', '');
   await expect(email(p)).toHaveValue('example@example.com');
-  await expect(p.locator('.ae-field-hint')).toContainText('只对这个地址有效');
+  await expect(p.locator('.ae-field-hint').filter({ hasText: '只对这个地址有效' })).toHaveCount(1);
   await shot('bound');
   await p.locator('.ae-password-toggle').click();
   await expect(password(p)).toHaveAttribute('type', 'text');

@@ -525,8 +525,8 @@ export default function SidebarHead({ accountName = '林老师', onAnnounce, ope
   return (
     <>
       <div className="tb-account-block">
-        <a className="tb-account-row" href={SETTINGS_HREF} onClick={(event) => routeClick(event, SETTINGS_HREF)}>
-          <span className="tb-avatar" data-slot="avatar">{accountName.slice(0, 1)}</span>
+        <a className="tb-account-row" href={SETTINGS_HREF} aria-label={`账户：${accountName}`} title={accountName} onClick={(event) => routeClick(event, SETTINGS_HREF)}>
+          <span className="tb-avatar" data-slot="avatar">{Array.from(accountName)[0] || '林'}</span>
           <p className="tb-account-name">{accountName}</p>
         </a>
         <button

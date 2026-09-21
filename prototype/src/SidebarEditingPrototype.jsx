@@ -555,7 +555,7 @@ function HiddenModules({ model, open, onToggle, dragState, onDrop, onStartDrag, 
   );
 }
 
-function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed, openSurface, onToggleSurface, onOpenSurface, onCloseSurface }) {
+function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed, openSurface, onToggleSurface, onOpenSurface, onCloseSurface, accountName }) {
   const workspace = useWorkspace();
   const [addingGroup, setAddingGroup] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
@@ -845,6 +845,7 @@ function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNa
       >
         <div className="tb-sidebar-mobile-head"><strong>工作台</strong><button ref={mobileCloseRef} onClick={onCloseMobile} aria-label="关闭"><Icon name="close" /></button></div>
         <SidebarHead
+          accountName={accountName}
           onAnnounce={model.announce}
           openSurface={openSurface}
           onToggleSurface={onToggleSurface}
@@ -1147,7 +1148,7 @@ function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNa
   );
 }
 
-function WorkbenchShell() {
+function WorkbenchShell({ accountName }) {
   const model = useLayoutModel();
   const route = useRoute();
   const routePath = route.pathname;
@@ -1314,6 +1315,7 @@ function WorkbenchShell() {
       <div className="tb-shell">
         <Sidebar
           model={model}
+          accountName={accountName}
           routePath={routePath}
           onNavigate={closeMobileSidebar}
           mobileOpen={mobileSidebarOpen}
@@ -1333,6 +1335,6 @@ function WorkbenchShell() {
   );
 }
 
-export default function SidebarEditingPrototype() {
-  return <WorkspaceProvider><WorkbenchShell /></WorkspaceProvider>;
+export default function SidebarEditingPrototype({ accountName = '林老师' }) {
+  return <WorkspaceProvider><WorkbenchShell accountName={accountName} /></WorkspaceProvider>;
 }
