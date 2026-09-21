@@ -15,7 +15,7 @@
 - 仅对编排者，效率优先：在已有权限和依赖允许时并行使用 worktree；某条 flow 等用户时记录阻塞并继续其他可推进的 flow。用户将离开一段时间，不应要求用户逐项决定范围内的实现细节。
 - 派发使用[最小任务包](task-package.md)，保留背景、边界、适用规则和明确但适度的完成条件，不附加脑测实现步骤、额外限制或过严验收。适用 skill 的内部助手继续继承调用 session 的模型与 effort。
 - 顶层任务由编排者派给独立 session。适用 skill 要求的内部助手由调用 session 管理并汇总，不单列 DAG 节点，不自行继续委派或跨业务互聊；业务 session 不自由互聊或扩展 DAG。
-- 认证与工作台由根编排者统一协调，延续现有 OpenAPI 和 HTTP 状态码约定；尚未收到认证交付，先推进不依赖它的业务，按现有 check 规则处理缺失回执。
+- 认证与工作台由根编排者统一协调，延续现有 OpenAPI 和 HTTP 状态码约定；认证事实调查已完成，原 session 最后保存回复停在 partial；根已发一次新的写入归属调整通知，安排独立 AUTH-CONTRACT 接续。不把通知投递当确认，也不覆盖任何未交付旧成果。
 - 产品只允许 `deepseek/deepseek-v4.1-flash`、`z-ai/glm-5.3-flash`；EMODEL 已用真实 key 对两个模型收到 HTTP 200；正常回答、pi 工具链、完整部署和大陆访问尚未验收。
 
 ## 低频 check 与回执监测
@@ -26,7 +26,7 @@
 - 配置文件属于已存在的运行环境，本页只保留指针，不复制进仓库，不修改、重建或测试触发器，也不创建安装脚本。
 - 根收到 `check` 后先读本页：有未完成任务且近 45 分钟没有回执时，才对台账中相关 session 做一次恢复检查。这个 `check` 同时判断回执缺失和异常通知；正常 `FAIL` 仍回原节点处理，只有异常退出、结果已落盘但通知未到等情况才按回执缺失处理。无未完成任务或已有近期回执时结束本次检查。结果已保存但回执丢失时按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败规则处理。超过 45 分钟本身不判失败，不杀死健康进程，不盲目重派；`check` 不替代依赖和权限判断。
 - 首条 `check` 已于 `2026-09-21T18:09:55Z` 在根会话收到并处理；距最后任务回执不足一分钟，本次结束检查，未查询或重启任何 session。此记录只证明消息已接收，未另核实投递来源，中断恢复仍未演练。`check` 自身不更新最后任务回执时间。
-- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T20:01:44.660680+00:00`，对应任务为 `C20-REVIEW@1`；固定 C20 设计已独立 PASS，放行实验和 T50。根每次收到实际任务回执后记录实际处理 UTC 时间及对应任务，供下一次 `check` 使用；本次不编造旧值。
+- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T20:04:47.059838+00:00`，对应任务为 `EAUTH-READINESS@1`；只读事实已核对，认证真实交付仍未成立。根每次收到实际任务回执后记录实际处理 UTC 时间及对应任务，供下一次 `check` 使用；本次不编造旧值。
 
 | 任务/版本 | 当前状态 | attempt | 负责 session 与 worktree | 输入/正式回执或产物位置 | 阻塞/下一步条件 | 适用授权 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -61,7 +61,7 @@
 | C20@1 / attempt 1 | 已独立冻结 PASS | `b938f8a`（含冻结 B11 与并行调度） | Codex Astra high；session `01a0c577-c06f-7e30-abe2-2fcff66386e9`；exec `98698`；`/home/liam_t/项目/TeacherWorkspace-c20`；`design/c20-capabilities` | 设计 `cff6f97`、作者 `85c1af8`；`docs/acceptance/evidence/C20/v1/author.md` | 独立核验已通过；C21-C23/T50 与 C24 PI-01/02 并行，PI-03/04 等 B16 |
 | B11-INTEGRATION@1 / attempt 1 | 完成（self）；main 已集成 | `b938f8a`（含冻结 B11 与并行调度） | Codex Luna max；session `01a0c577-c068-7b01-99bb-c3c6aa0d0753`；exec `69302`；已完成并清理临时工作区/分支 | [正式集成回执](../acceptance/evidence/B11/v1/integration.md)；main `420312f` | 文档集成完成；只继续正在运行的产品与实验设计任务 |
 | C20-REVIEW@1 / attempt 1 | 完成，independent PASS | `0ff698b6117fd4473d801d4817f70acb1fd3a7ef`；设计 `cff6f97` | Codex Sol high；session `01a0c585-051a-7b90-82cf-44d8c1063949`；exec `16110`；`/home/liam_t/项目/TeacherWorkspace-c20-review`；`review/c20-freeze` | 报告 `2acb283aba31f4482876f74f96b8542073cf49d7`；`docs/acceptance/evidence/C20/v1/review.md` | C21/C22/C23/T50 与 C24 前置探针已放行 |
-| EAUTH-READINESS@1 / attempt 1 | RUNNING | `819e79332d0c3f9cb19d64adff0ce8127d890098`；已有认证文件与指定 session 保存记录 | Codex Luna max；session `01a0c585-051a-7601-80a7-af5d1c44c610`；exec `60020`；`/home/liam_t/项目/TeacherWorkspace-auth-readiness`；`docs/auth-readiness` | `.scratch/dag-dispatch/EAUTH-READINESS/1/task.md`；receipt 待生成 | 一次性整理认证事实与写入归属，不轮询、不催促、不擅自接管代码；根据事实安排交接或补齐 |
+| EAUTH-READINESS@1 / attempt 1 | 完成（self）；EAUTH/A10 未通过 | `819e79332d0c3f9cb19d64adff0ce8127d890098`；已有认证文件与指定 session 保存记录 | Codex Luna max；session `01a0c585-051a-7601-80a7-af5d1c44c610`；exec `60020`；`/home/liam_t/项目/TeacherWorkspace-auth-readiness`；`docs/auth-readiness` | 报告 `3ec3d3582f820f09ef59786d0626fc01f5d4ec5c:docs/arch/auth-readiness.md` | c7420af 行为已交付，5757141 契约仍 partial；由新的独立 AUTH-CONTRACT 接续设计 |
 | DSH-REVIEW-COMPLETION@1 / attempt 1 | RUNNING | B13 实际退出/日志及本机匹配 dsh；已有调研 | Codex Luna max；session `01a0c587-4c67-71e2-999a-d73c2b66bd4e`；exec `27569`；`/home/liam_t/项目/TeacherWorkspace-dsh-review-research`；`docs/dsh-review-completion` | `.scratch/dag-dispatch/DSH-REVIEW-COMPLETION/1/task.md`；receipt 待生成 | 有界核实 headless 等待与已存审查结果，给 dsh 接续最小办法；不实现/审查产品 |
 | C21@1 / attempt 1 | RUNNING | `e921225`（冻结 C20/B11） | Codex Luna max；session `01a0c58f-fbe3-7563-90a5-9e876c101668`；exec `76945`；`/home/liam_t/项目/TeacherWorkspace-c21`；`experiment/c21-extraction` | `.scratch/dag-dispatch/C21/1/task.md`；receipt 待生成 | 提取实测交 R30 消费；两路线失败回 C20 |
 | C22@1 / attempt 1 | RUNNING | `e921225`（冻结 C20/B11） | Codex Luna max；session `01a0c58f-fc0e-7fa3-b08f-c98ae4ed6f0f`；exec `95842`；`/home/liam_t/项目/TeacherWorkspace-c22`；`experiment/c22-office` | `.scratch/dag-dispatch/C22/1/task.md`；receipt 待生成 | 真实 Office 编辑/预览与输出交 R30；目标 WPS 单列 |
@@ -69,6 +69,7 @@
 | C24-PROBE@1 / attempt 1 | RUNNING | `e921225`（冻结 C20/B11） | Codex Luna max；session `01a0c58f-fbe9-75e1-a365-c9631bb3ffb9`；exec `35116`；`/home/liam_t/项目/TeacherWorkspace-c24`；`experiment/c24-pi-probe` | `.scratch/dag-dispatch/C24-PROBE/1/task.md`；receipt 待生成 | 仅 PI-01/02；PI-03/04 等 B16，不记 C24 整体 PASS |
 | T50@1 / attempt 1 | RUNNING | `e921225`（冻结 C20/B11） | Codex Astra high；session `01a0c58f-fc47-7563-a2ba-cabbd5225ef5`；exec `1744`；`/home/liam_t/项目/TeacherWorkspace-t50`；`design/t50-teaching-time` | `.scratch/dag-dispatch/T50/1/task.md`；receipt 待生成 | 设计后独立冻结，T51/T52 启动仍取 B16 |
 | C20-INTEGRATION@1 / attempt 1 | RUNNING | `e921225`（冻结 C20/B11） | Codex Luna max；session `01a0c58f-fc16-7130-a01e-e236f7d469e7`；exec `94888`；`/home/liam_t/项目/TeacherWorkspace-capability-integration`；`chore/c20-doc-integration` | `.scratch/dag-dispatch/C20-INTEGRATION/1/task.md`；receipt 待生成 | 安全合 main 文档；活动期间根不写 main |
+| AUTH-CONTRACT@1 / attempt 1 | 启动中 | `5b12a9063cc0b692103df73997cb8963506bd9ea`，含认证事实报告与已冻结 B11 | Codex Astra high；`/home/liam_t/项目/TeacherWorkspace-auth-contract`；`design/auth-contract-completion` | `.scratch/dag-dispatch/AUTH-CONTRACT/1/task.md`；原负责人通知结果同目录保存；receipt 待生成 | 完成认证契约并交独立冻结；后续 auth 前后端 dsh 实现，真实交付后供 A10，不改工作台依赖门槛 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
