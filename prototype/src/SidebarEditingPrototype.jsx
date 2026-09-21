@@ -564,7 +564,7 @@ function HiddenModules({ model, open, onToggle, dragState, onDrop, onStartDrag, 
   );
 }
 
-function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed }) {
+function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed, openSurface, onToggleSurface, onOpenSurface, onCloseSurface }) {
   const [addingGroup, setAddingGroup] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
   const [renamingGroupId, setRenamingGroupId] = useState(null);
@@ -622,12 +622,16 @@ function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNa
   useEffect(() => {
     if (!isNarrow || !mobileOpen) return undefined;
     mobileCloseRef.current?.focus();
+  }, [isNarrow, mobileOpen]);
+
+  useEffect(() => {
+    if (!isNarrow || !mobileOpen) return undefined;
     function handleKeyDown(event) {
-      if (event.key === 'Escape') onCloseMobile();
+      if (event.key === 'Escape' && !event.defaultPrevented && !openSurface) onCloseMobile();
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isNarrow, mobileOpen, onCloseMobile]);
+  }, [isNarrow, mobileOpen, onCloseMobile, openSurface]);
 
   function beginRename(group) {
     setContextMenu(null);
@@ -848,7 +852,14 @@ function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNa
         inert={isNarrow && !mobileOpen ? true : undefined}
       >
         <div className="tb-sidebar-mobile-head"><strong>工作台</strong><button ref={mobileCloseRef} onClick={onCloseMobile} aria-label="关闭"><Icon name="close" /></button></div>
-        <SidebarHead onAnnounce={model.announce} />
+        <SidebarHead
+          onAnnounce={model.announce}
+          openSurface={openSurface}
+          onToggleSurface={onToggleSurface}
+          onOpenSurface={onOpenSurface}
+          onCloseSurface={onCloseSurface}
+          visible={isNarrow ? mobileOpen : !railCollapsed}
+        />
 
         {}
         {isNarrow && (
@@ -1169,6 +1180,7 @@ export default function SidebarEditingPrototype() {
   }, [page.title]);
 
   const toggleSurface = useCallback((surface) => {
+    if (!['language', 'semester', 'semester-dialog'].includes(surface)) setMobileSidebarOpen(false);
     setOpenSurface((current) => {
       if (current !== surface) return surface;
       return null;
@@ -1177,6 +1189,7 @@ export default function SidebarEditingPrototype() {
   }, [dismissCoach]);
 
   const showSurface = useCallback((surface) => {
+    if (!['language', 'semester', 'semester-dialog'].includes(surface)) setMobileSidebarOpen(false);
     setOpenSurface(surface);
     if (surface === 'tutorial') dismissCoach();
   }, [dismissCoach]);
@@ -1184,7 +1197,7 @@ export default function SidebarEditingPrototype() {
   const closeSurface = useCallback(({ restoreFocus = false } = {}) => {
     setOpenSurface((current) => {
       if (restoreFocus && current) {
-        const trigger = document.querySelector(`[data-surface="${current}"]`);
+        const trigger = document.querySelector(`[data-surface="${current === 'semester-dialog' ? 'semester' : current}"]`);
         window.requestAnimationFrame(() => trigger?.focus());
       }
       return null;
@@ -1213,6 +1226,7 @@ export default function SidebarEditingPrototype() {
    */
   useEffect(() => {
     function handleKeyDown(event) {
+      if (event.defaultPrevented) return;
       if (event.key === 'Escape' && openSurface) {
         event.preventDefault();
         closeSurface({ restoreFocus: true });
@@ -1220,6 +1234,7 @@ export default function SidebarEditingPrototype() {
       }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
+        setMobileSidebarOpen(false);
         setOpenSurface((current) => (current === 'search' ? null : 'search'));
         dismissCoach();
       }
@@ -1227,7 +1242,8 @@ export default function SidebarEditingPrototype() {
     /* Outside pointerdown closes before a different trigger's click opens its surface. */
     function handlePointerDown(event) {
       if (!openSurface) return;
-      const panel = document.querySelector('.tb-popover, .tb-support-menu, .tb-search-panel');
+      const panel = document.querySelector('.tb-popover, .tb-support-menu, .tb-search-panel, .tb-head-surface');
+      if (openSurface === 'semester-dialog') return;
       if (panel && panel.contains(event.target)) return;
       const trigger = document.querySelector(`[data-surface="${openSurface}"]`);
       if (trigger && trigger.contains(event.target)) return;
@@ -1252,7 +1268,8 @@ export default function SidebarEditingPrototype() {
    */
   useEffect(() => {
     setOpenSurface(null);
-  }, [page.path]);
+    setMobileSidebarOpen(false);
+  }, [route.key, page.path]);
 
   /*
    * A page change replaces the body, not the document, so nothing scrolls on its
@@ -1315,6 +1332,10 @@ export default function SidebarEditingPrototype() {
           onCloseMobile={closeMobileSidebar}
           isNarrow={isNarrow}
           railCollapsed={sidebarCollapsed && !isNarrow}
+          openSurface={openSurface}
+          onToggleSurface={toggleSurface}
+          onOpenSurface={showSurface}
+          onCloseSurface={closeSurface}
         />
         {/*
           * Keyed by the route key, not by the path: revisiting a page has to run

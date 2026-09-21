@@ -1,0 +1,44 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "name": "选来源后对话框不位移",
+      "pass": true,
+      "detail": "foot.top=646.5"
+    },
+    {
+      "name": "更多菜单里有删除",
+      "pass": true,
+      "detail": "{\"rect\":[122,40],\"text\":\"删除\",\"color\":\"rgb(220, 38, 38)\",\"radius\":\"6px\"}"
+    },
+    {
+      "name": "删除真的生效",
+      "pass": true,
+      "detail": "2026秋季学期"
+    },
+    {
+      "name": "删除后关闭并播报",
+      "pass": true,
+      "detail": "announce=已删除 2026春季学期"
+    },
+    {
+      "name": "最后一个学期不可删",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "删除非当前学期时当前学期不变",
+      "pass": true,
+      "detail": "active=2026秋季学期 now=2026秋季学期"
+    },
+    {
+      "name": "编辑按钮悬停有描边环",
+      "pass": true,
+      "detail": "{\"opacity\":\"1\",\"outlineWidth\":\"2px\",\"outlineStyle\":\"solid\",\"outlineColor\":\"rgba(46, 49, 55, 0.5)\",\"outlineOffset\":\"1px\"}"
+    }
+  ],
+  "problems": []
+}

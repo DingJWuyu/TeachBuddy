@@ -1,0 +1,79 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "name": "账号行客户端跳转",
+      "pass": true,
+      "detail": "path=/settings shell=true login=false"
+    },
+    {
+      "name": "外壳没有独立会话浮层",
+      "pass": true,
+      "detail": "count=0"
+    },
+    {
+      "name": "日期始终年月日",
+      "pass": true,
+      "detail": "2026年3月1日 – 2026年7月10日 | 2026年9月1日 – 2027年1月15日"
+    },
+    {
+      "name": "列表与新建之间有分隔线",
+      "pass": true,
+      "detail": "1px solid rgb(227, 227, 227)"
+    },
+    {
+      "name": "编辑按钮打开编辑学期",
+      "pass": true,
+      "detail": "title=编辑学期 submit=保存更改 cards=0 name=2026春季学期 note=yes"
+    },
+    {
+      "name": "叉号与标题左对齐",
+      "pass": true,
+      "detail": "icon=248 title=248"
+    },
+    {
+      "name": "日期使用原生日期输入",
+      "pass": true,
+      "detail": "2 inputs, types=date,date"
+    },
+    {
+      "name": "起始方式与提交按钮间距 24px",
+      "pass": true,
+      "detail": "gap=25.0 (want 24)"
+    },
+    {
+      "name": "桌面对话框高度 601px",
+      "pass": true,
+      "detail": "h=601 (want 601)"
+    },
+    {
+      "name": "起始方式卡片高 82",
+      "pass": true,
+      "detail": "h=82"
+    },
+    {
+      "name": "卡片图标为 16px",
+      "pass": true,
+      "detail": "w=16"
+    },
+    {
+      "name": "创建模式无更多按钮",
+      "pass": true,
+      "detail": "hasMore=false"
+    },
+    {
+      "name": "乱填日期不成立",
+      "pass": true,
+      "detail": "value=\"\""
+    },
+    {
+      "name": "星芒图标填满尺寸框",
+      "pass": true,
+      "detail": "[{\"label\":\"预览星芒\",\"box\":24,\"ink\":20},{\"label\":\"编辑铅笔\",\"missing\":true},{\"label\":\"学期箭头\",\"box\":14,\"ink\":5.8}]"
+    }
+  ],
+  "problems": []
+}

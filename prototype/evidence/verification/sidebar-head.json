@@ -1,0 +1,425 @@
+{
+  "pass": true,
+  "checks": [
+    {
+      "name": "CW49 编辑按钮 Enter",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 编辑按钮 Space",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 更多 Escape 保留未提交表单并恢复焦点",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 来源 Escape 保留表单并恢复焦点",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 更多焦点移出后 Escape 仍只关闭子菜单",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 来源焦点移出后 Escape 仍只关闭子菜单",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 对话框焦点进入、循环与取消",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW48 菜单与搜索互斥",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW48 浏览器后退与前进关闭浮层",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW50 从复制返回从头开始不复制",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW50 只选来源未选分类不报告复制",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW48 语言菜单宽度与全部资源",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW51 复制区与字段可访问且不横向溢出",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 减弱动效直接落终态",
+      "viewport": "PC",
+      "dimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 编辑按钮 Enter",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 编辑按钮 Space",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 更多 Escape 保留未提交表单并恢复焦点",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 来源 Escape 保留表单并恢复焦点",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 更多焦点移出后 Escape 仍只关闭子菜单",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 来源焦点移出后 Escape 仍只关闭子菜单",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 对话框焦点进入、循环与取消",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW48 菜单与搜索互斥",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW48 浏览器后退与前进关闭浮层",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW50 从复制返回从头开始不复制",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW50 只选来源未选分类不报告复制",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW48 语言菜单宽度与全部资源",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW51 复制区与字段可访问且不横向溢出",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 减弱动效直接落终态",
+      "viewport": "平板",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      },
+      "input": "mouse + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 编辑按钮 Enter",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 编辑按钮 Space",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 更多 Escape 保留未提交表单并恢复焦点",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 来源 Escape 保留表单并恢复焦点",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 更多焦点移出后 Escape 仍只关闭子菜单",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 来源焦点移出后 Escape 仍只关闭子菜单",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 对话框焦点进入、循环与取消",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW48 菜单与搜索互斥",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW48 浏览器后退与前进关闭浮层",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW50 从复制返回从头开始不复制",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW50 只选来源未选分类不报告复制",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW48 语言菜单宽度与全部资源",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW51 复制区与字段可访问且不横向溢出",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    },
+    {
+      "name": "CW49 减弱动效直接落终态",
+      "viewport": "手机",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "input": "touch + keyboard",
+      "pass": true
+    }
+  ]
+}

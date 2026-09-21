@@ -20,7 +20,7 @@ const record = (name, pass, detail) => {
 };
 
 async function fresh() {
-  const p = await browser.newPage({ viewport: { width: 1675, height: 914 } });
+  const p = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   p.on('console', (m) => { if (m.type() === 'error') problems.push(m.text()); });
   p.on('pageerror', (e) => problems.push(String(e)));
   await openWorkbench(p, BASE);
@@ -182,9 +182,9 @@ async function fresh() {
 }
 
 const failed = checks.filter((c) => !c.pass);
-writeFileSync(`${paths.results}/semester-actions.json`, JSON.stringify({ checks, problems }, null, 2));
+writeFileSync(`${paths.results}/semester-actions${failed.length || problems.length ? '-failed' : ''}.json`, JSON.stringify({ viewport: {width:1440,height:900}, checks, problems }, null, 2));
 console.log(`\n${checks.length - failed.length}/${checks.length} passed`);
 if (problems.length) console.log(`console problems: ${problems.join(' | ')}`);
 console.error(`Screenshots: ${OUT}`);
 await browser.close();
-if (failed.length) process.exitCode = 1;
+if (failed.length || problems.length) process.exitCode = 1;

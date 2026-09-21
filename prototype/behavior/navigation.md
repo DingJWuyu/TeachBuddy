@@ -2,7 +2,7 @@
 
 Status: Accepted
 
-运行入口见 [manifest](manifest.md)，面板互斥、关闭、焦点与跳转共用的规则见 [外壳](shell.md)。目的页面的正文只有首页有设计，其余统一为空占位，不属于导航本身的交付内容。
+运行入口见 [manifest](manifest.md)，面板互斥、关闭、焦点与跳转共用的规则见 [外壳](shell.md)。首页及其余目的页面的正文统一为空占位，不属于导航本身的交付内容。
 
 ## Journeys
 
