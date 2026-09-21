@@ -26,7 +26,7 @@
 - 配置文件属于已存在的运行环境，本页只保留指针，不复制进仓库，不修改、重建或测试触发器，也不创建安装脚本。
 - 根收到 `check` 后先读本页：有未完成任务且近 45 分钟没有回执时，才对台账中相关 session 做一次恢复检查。这个 `check` 同时判断回执缺失和异常通知；正常 `FAIL` 仍回原节点处理，只有异常退出、结果已落盘但通知未到等情况才按回执缺失处理。无未完成任务或已有近期回执时结束本次检查。结果已保存但回执丢失时按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败规则处理。超过 45 分钟本身不判失败，不杀死健康进程，不盲目重派；`check` 不替代依赖和权限判断。
 - 首条 `check` 已于 `2026-09-21T18:09:55Z` 在根会话收到并处理；距最后任务回执不足一分钟，本次结束检查，未查询或重启任何 session。此记录只证明消息已接收，未另核实投递来源，中断恢复仍未演练。`check` 自身不更新最后任务回执时间。
-- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T20:27:07.775553+00:00`，对应任务为 `C24-PROBE@1 attempt 1`；已记录切片实测与 CLI 非法模型缺口，C24 整体仍待 B16。根按实际回执更新此字段，供下一次 `check` 使用。
+- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T20:27:56.693271+00:00`，对应任务为 `B13@1 attempt 3`；定向修复自验已交回，B13 等待 B12 真服务。根按实际回执更新此字段，供下一次 `check` 使用。
 
 | 任务/版本 | 当前状态 | attempt | 负责 session 与 worktree | 输入/正式回执或产物位置 | 阻塞/下一步条件 | 适用授权 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -58,7 +58,7 @@
 | B12@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | dsh headless，当前配置；独立 dsh 进程 PID `121768`；session ID 未由 launcher 暴露；exec `81732`；`/home/liam_t/项目/TeacherWorkspace-b12`；`feat/b12-foundation` | `.scratch/dag-dispatch/B12/1/task.md`；receipt 待生成 | 提交公共入口供 B13 接真服务；B15 汇合 |
 | B13@1 / attempt 1 | 收尾中断，已有候选保留 | `b938f8a` | dsh session `session-bd3f4354-152a-465a-9b1c-93732a28219f` 已退出；`/home/liam_t/项目/TeacherWorkspace-b13`；`feat/b13-question-lessons` | 代码候选 `80769179f7caf367fda4e0467aa7601cb3fc8ed0`；`.scratch/dag-dispatch/B13/1/receipt.md` | 两个后台 reviewer 无最终结果，由 attempt 2 补齐；已有 adapter 自验不代替 B12 真服务，计数以 attempt 2 更正为准 |
 | B13@1 / attempt 2 | 收尾完成，内部两轴 FAIL | 候选 `8076917`；fixed point `b938f8a` | dsh session `session-62c1b8b2-0709-430f-aa8d-c48888b7fa30`；`/home/liam_t/项目/TeacherWorkspace-b13` | 回执 `3cd12f12fc83c5f3393037a8b3b2b4a4b6359c3e:docs/acceptance/evidence/B13/v1/author.md`；`.scratch/dag-dispatch/B13/2/receipt.md` | 两项前台调用取得真实结果；attempt 3 修实现缺陷及覆盖/证据缺口，B12 真服务仍待接入 |
-| B13@1 / attempt 3 | RUNNING | 固定修复输入 `3cd12f12fc83c5f3393037a8b3b2b4a4b6359c3e`；B11/v1 不变 | 新 dsh headless，当前配置；PID `191916`；exec `96206`；`/home/liam_t/项目/TeacherWorkspace-b13` | `.scratch/dag-dispatch/B13/3/task.md`；receipt 待生成 | 首轮实现修复与定向自验；attempt 2 仅为收尾，不计实现失败重试 |
+| B13@1 / attempt 3 | 修复自验 PASS，节点等待 B12 | 修复输入 `3cd12f1`；B11/v1 不变 | dsh session `session-71536bb0-9f73-4495-a64d-196d7d339e3a`；`/home/liam_t/项目/TeacherWorkspace-b13`；`feat/b13-question-lessons` | 代码 `1b0744eedf78c41ebfbf73c552dbc4b1937a7df8`；回执 `56b18e528279197e3a5c3f60892f1ab15fc20dbc:docs/acceptance/evidence/B13/v1/author.md`；实际退出 `2026-09-21T20:27:10.823603+00:00`，以外层 exit.json 为准，覆盖作者误填的 20:31 | 硬缺陷、冻结覆盖和迁移/证据已定向修复；红 5 项、绿 36 项（含 harness 文件），隔离构建通过；B12 交付后接真实 HTTP/身份/事务再交 B15，保留全部接续成果 |
 | B14@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | dsh headless，当前配置；独立 dsh 进程 PID `121821`；session ID 未由 launcher 暴露；exec `82628`；`/home/liam_t/项目/TeacherWorkspace-b14`；`feat/b14-workbench-ui` | `.scratch/dag-dispatch/B14/1/task.md`；receipt 待生成 | 本节点契约替身自验；B15 接真实服务 |
 | C20@1 / attempt 1 | 已独立冻结 PASS | `b938f8a`（含冻结 B11 与并行调度） | Codex Astra high；session `01a0c577-c06f-7e30-abe2-2fcff66386e9`；exec `98698`；临时工作区与分支已清理，输入提交保留在 main | 设计 `cff6f97`、作者 `85c1af8`；`docs/acceptance/evidence/C20/v1/author.md` | 独立核验已通过；C21-C23/T50 与 C24 PI-01/02 并行，PI-03/04 等 B16 |
 | B11-INTEGRATION@1 / attempt 1 | 完成（self）；main 已集成 | `b938f8a`（含冻结 B11 与并行调度） | Codex Luna max；session `01a0c577-c068-7b01-99bb-c3c6aa0d0753`；exec `69302`；已完成并清理临时工作区/分支 | [正式集成回执](../acceptance/evidence/B11/v1/integration.md)；main `420312f` | 文档集成完成；只继续正在运行的产品与实验设计任务 |
