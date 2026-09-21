@@ -1,6 +1,8 @@
 # 认证前后端实现任务包
 
-共同输入为 `AUTH-CONTRACT@1` 外层独立冻结的候选 commit + 回执，不能以分支“最新”代替固定版本。作者回执见 [AUTH-CONTRACT/v1](../../acceptance/evidence/AUTH-CONTRACT/v1/author.md)。本页提供认证支线的前后端工作包，不新增 DAG 节点；根负责指定实际任务标识、worktree、端口、隔离数据目录和唯一集成者。
+共同输入为 `AUTH-CONTRACT-CORRECTION@1` 的[修订回执](../../acceptance/evidence/AUTH-CONTRACT/v1/correction.md)中实际 `result_revision` + 外层限定独立冻结回执。前后端同时固定该 SHA 的认证 `1.0.0-rc.2`、工作台 `0.1.0-candidate.2` 和相关 cases；仅旧设计 `fd3f6d5e` 或旧 author/review 不足以放行，不能以分支“最新”代替固定版本。本页提供认证支线的前后端工作包，不新增 DAG 节点；根负责指定实际任务标识、worktree、端口、隔离数据目录和唯一集成者。
+
+本次必须新增的定向验证：后端 ST01 对 I03 的账户、挑战消费及 pending 写入分别注入失败，统一 account-store-unavailable 且完整回滚，撤故障同码重试；前端依据同版 I03 503 集合映射已知回滚与未知结果。两侧按工作台 [C19-C21](../../contracts/workbench/first-flow-cases.md#真实认证页面接缝)验证 transport/身份接缝，其中15个操作的页面头声明、缺失/非法拒绝及恢复前后身份不可省略。真实浏览器联调留给集成者，替身与fake-mail结果单列。
 
 前后端基于同版契约可并行。默认代码实现调用 dsh headless，额度不足才 Luna max；失败接手、必要review和回执按 [implementation](../execution-protocol.md#implementation)、[receipt](../execution-protocol.md#receipt)及根模型路由。只在任务分支提交，合main/push/外部写入仍由根单独授权。必读材料中的链接可直接进入本包范围，不要求通读DAG。
 
@@ -22,6 +24,11 @@
 
 ## 集成者与 A10
 
-根在当前共享写者交付后给集成者固定B12/B14/认证前后端版本。集成者独占装配入口、依赖、迁移、HTTPS、真实配置及旧入口退役，并按真实状态同步README；不得从其他worktree未提交实现猜测安装方式。认证内部缺陷退回认证实现者，B11接缝冲突退回设计者，不临时加body身份字段。
+1. 根收到限定冻结通过回执后，前后端可在同一设计 SHA 独立实现；回执须分别列设计 SHA、实现 SHA、实际命令、identity_mode 及 ST01/C19-C21 的适用结果。业务首流仍可按[旧固定输入](../../contracts/workbench.md#消费版本与验收范围)推进，不为等待真实认证改造 test-principal 协议。
+2. A10 先核对上述同版契约和固定认证前后端导出，再核对稳定身份、恢复、撤销及真实运行证据；缺真实外部条件时只记录已验证部分，不能宣称 A10 PASS。A10 不以尚未完成的 A11 设置 UI 验收代替认证交付核验；设置 UI 的最终证明归 A11/A12。
+3. 根在当前共享写者交付后给 A11/唯一集成者固定 B12/B14 与认证前后端版本。B12 可定位的交付为 `3c8d1b3210f3d35e45eaca8141040852e3cb865c` 的 author（实现 `feb64304a58077de50bc16507f8c271c60ca3ee8`）；其测试身份 PASS 不能证明新增页面绑定。集成者核对最终共享 schema/常量及 HTTP fixture 已消费工作台 candidate.2，注入 useAuth.request 和 resolvePrincipal/error 映射，覆盖 context、目录及所有业务请求，串行接门禁、账号行与设置退出。
+4. A11 用固定集成候选验证 C19-C21、当前上下文 accountKey 一致、缺/非法/失效页401、写来源优先403、存储503、刷新恢复和旧响应丢弃，并回归受影响的首流身份/隔离/幂等路径。A12 在该候选独立走真实登录/退出、刷新/重登、跨设备及数据隔离；这些新增证据单列版本，不能追记到旧 B11/B12/B16 PASS。
+
+集成者独占装配入口、依赖、迁移、HTTPS、真实配置及旧入口退役，并按真实状态同步README；不得从其他worktree未提交实现猜测安装方式。认证内部缺陷退回认证实现者，B11接缝冲突退回设计者，不临时加body身份字段。
 
 A10预读可从[架构交接表](../../arch/auth-implementation.md#a10-可消费清单与外部缺口)开始；正式交接核验仍需要固定实现、真实邮件/会话/恢复证据。A11消费审查后的固定输入接principal、transport、账号行、设置退出和工作台门禁；A12独立验证真实账户、刷新/重登、跨设备与隔离。fake-mail、test-principal及手工Cookie不能替代最终真实验收。

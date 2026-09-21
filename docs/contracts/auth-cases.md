@@ -1,6 +1,6 @@
 # 认证交换用例
 
-状态：`AUTH-CONTRACT@1 / READY_FOR_REVIEW`。本文件是可执行实现的验收规格，不是已通过记录。规范字段、完整样本和错误身份唯一见 [OpenAPI](auth.openapi.yaml)，业务时点与恢复语义见 [契约入口](auth.md)。以下 CC 组覆盖入口所映射的 CA，表内子编号用于实现证据定位。
+状态：`AUTH-CONTRACT-CORRECTION@1 / READY_FOR_REVIEW`，消费认证 `1.0.0-rc.2`。本文件是可执行实现的验收规格，不是已通过记录。规范字段、完整样本和错误身份唯一见 [OpenAPI](auth.openapi.yaml)，业务时点与恢复语义见 [契约入口](auth.md)。以下 CC 组覆盖入口所映射的 CA，表内子编号用于实现证据定位。
 
 ## 公共运行条件
 
@@ -19,7 +19,7 @@ API 侧通过真实 HTTP、独立 SQLite、可控时钟和可控投递 adapter �
 | P03，JSON `null`/数组、额外 `confirmPassword`、缺 email、email=123 | 依次 422 invalid-request-body、unknown-field、required-field(field=email)、invalid-field-type(field=email) | 正常 UI 不发送这些请求；替身错误仍能安全呈现 | 对每个适用操作遍历 required 和字段类型，未知字段先于必填，严格拒绝 null 和隐式转换 |
 | P04，返回合法结果带附加属性；再移除必填/改已声明类型/未知 type/未知 HTTP 状态 | 附加属性忽略；其余不当作成功 | I01 为 S36，发码不进入第二步，I03/I05 按 CC-UNKNOWN，I06 不进入工作台 | 产出响应都符合相应操作 schema，错误 status 若存在等于实际状态 |
 | P05，全部成功/失败/204/GET，跨站表单和跨源 fetch | 全部 no-store；204 无 body；跨站 POST 403 | 不从应用缓存/Service Worker 读取身份 | 无跨源允许头；检查 Cookie 固定属性；不因浏览器阻止读取就跳过服务器防护 |
-| P06，缺/非法页面头；仅伪造页面头、accountKey、Authorization 或别容器 sessionId | 409 browser-context-required；有效页面头但无授权按相应匿名/401 结果 | 前端 transport 为认证和业务请求附当前 P | 无 Cookie+绑定不授权；Bearer 和客户端 accountKey 不提供身份 |
+| P06，认证操作缺/非法页面头；仅伪造页面头、accountKey、Authorization 或别容器 sessionId | 认证操作为409 browser-context-required；有效页面头但无授权按相应匿名/401 结果。工作台结果见 [C19-C21](workbench/first-flow-cases.md#真实认证页面接缝) | 前端 transport 为认证和业务请求附当前 P | 无 Cookie+绑定不授权；Bearer 和客户端 accountKey 不提供身份 |
 
 ## CC-HAPPY 登录、注册及身份
 
@@ -61,7 +61,7 @@ API 侧通过真实 HTTP、独立 SQLite、可控时钟和可控投递 adapter �
 | 子例与交换 | 精确结果 | 前端断言 | 后端断言 |
 | --- | --- | --- | --- |
 | R01，A有两设备、page与remembered及pending会话，B已登录；I04成功后I05 | 204无body；A所有旧会话401，旧密码401，新密码I01成功；B仍200 | 重置确认回S14绿色S37，无自动登录；旧A页面核验后回登录 | 密码、消费和A会话撤销同事务；不清B Cookie/数据/accountKey |
-| ST01，I03或I05事务写入失败，再撤故障同码重试 | 503 account-store-unavailable；随后201/204 | 可重试失败，保留输入，正确码仍有效 | 重启读回确认无半个账户/新密码/消费/撤销；撤故障同码成功 |
+| ST01，I03账户/挑战消费/pending写入任一步失败，或I05密码/撤销/消费写入失败，再撤故障同码重试 | 503 AccountStoreUnavailable 样本；随后I03为201 Pending、I05为204 | 按当前操作503 schema校验；明确回滚则保留输入允许同码重试，不进入记住我失败S45；若I03收到SessionStoreUnavailable则按P04/CC-UNKNOWN处理，不能断言已回滚 | 每个失败点都回滚；重启确认无半个账户/pending/新密码/消费/撤销；撤故障同码成功，I03仍须activate才授权 |
 | ST02，账户存储不可读、结构损坏、版本不识别 | 503 account-store-unavailable | 登录S36，恢复S47，可返回登录；不出现示例昵称/旧密码 | 不重新种子化，不静默清库；不以null伪装匿名身份 |
 | CL01，关闭注册前后GET状态，已有挑战提交，提交等待中关闭 | registrationOpen=false；I02/I03 403 registration-closed | S43及返回登录，已有输入不被网络错误代替 | 以实际事务裁决时开放状态为准，账户/挑战不变；重开后有效同码可继续 |
 | CL02，关闭后现有账户登录、找回、重置；关闭发生在账户已提交之后 | 既有流程正常；已创建账户不删除 | 不把已完成结果撤回或锁住登录 | 配置只影响注册；不新增管理API |

@@ -1,6 +1,6 @@
 # 认证实现与工作台交接
 
-状态：`AUTH-CONTRACT@1 / READY_FOR_REVIEW`。消费 [认证契约](../contracts/auth.md)与其固定输入；独立冻结后前后端可以并行。当前只有设计，没有真实服务交付；[就绪事实](auth-readiness.md)是先前固定基线的调查记录，本包不修改它或 B11。
+状态：`AUTH-CONTRACT-CORRECTION@1 / READY_FOR_REVIEW`。消费 [认证契约](../contracts/auth.md)及[工作台消费版本](../contracts/workbench.md#消费版本与验收范围)；限定独立冻结后前后端可以并行。当前只有设计，没有真实认证服务交付；[就绪事实](auth-readiness.md)是先前固定基线的调查记录。
 
 ## 最小模块与接缝
 
@@ -17,7 +17,7 @@
 | 工作台 transport | useAuth.request 采用 `fetch(input, init) -> Promise<Response>` 调用形状；仅同源 `/api`，自动 `credentials:'same-origin'`、当前 X-TeachBuddy-Page，POST等写请求加固定保护头。保留 body/Idempotency-Key，不解析或改写工作台协议。不自动重试业务写入。 | 认证前端；A11 注入现有API client |
 | 设置退出 | useAuth.logout 无参数，返回 Promise<void>；内部捕获目标id、锁住当前业务交互，按 I07 完成或抛错。只在确证退出后resolve。设置按钮负责等待/失败反馈，其他认证恢复卡由AuthGate拥有。 | 前端导出；A11 设置接线 |
 
-这些导出是本包冻结后供集成使用的新增目录边界，不声称 B12/B14 已有对应实现。B11 的 resolvePrincipal 返回同步值或 Promise 均允许，本包选择 Promise 是其子集；accountKey 仍为长度 1-200 的稳定字符串，工作台 context 的形状与错误命名空间不变。Page header 由通用 transport 添加，不增加业务 body 字段、不改变业务接口语义；缺失时 fail closed。
+这些导出是本包冻结后供集成使用的新增目录边界，不声称 B12/B14 已有对应实现。B11 的 resolvePrincipal 返回同步值或 Promise 均允许，本包选择 Promise 是其子集；accountKey 仍为长度 1-200 的稳定字符串，工作台 context 的形状与错误命名空间不变。Page header 由通用 transport 添加，工作台新版15个操作均显式要求；缺失、形状非法或绑定失效时 resolvePrincipal 返回null，由工作台映射401。写来源拒绝仍在身份之前，GET不增加来源检查。
 
 A11 在 active 身份变化时先失效旧请求代次/锁住旧草稿，再取现有 workbench context；必须等 context.accountKey 与 auth Account.accountKey 一致才挂载该账户业务数据。暂不可用显示恢复失败，不回退旧身份。昵称只供账号行，永不作授权键。
 
@@ -50,7 +50,7 @@ worker 可在自己测试目录建立最小测试 app/HTML挂载入口，以真 
 
 | 项目 | 本设计交付 | A10 仍需的真实输入/解除条件 |
 | --- | --- | --- |
-| 版本与授权 | 固定行为/旧协议/本包候选、外层独立冻结回执 | 后端、前端、最终装配三个固定版本；原认证归属通知不能当成交付 |
+| 版本与授权 | 固定行为/旧协议、认证rc.2与工作台candidate.2同一候选SHA、限定独立冻结回执 | 后端、前端、最终装配三个固定版本均声明消费该SHA；旧B11/B12 PASS不覆盖页面头，接续步骤见[任务包](../plans/tasks/auth-implementation.md#集成者与-a10) |
 | 身份接缝 | Account、稳定accountKey、Cookie+页面绑定、resolvePrincipal/error映射 | 真账户登录及业务context一致证据；生产test-principal被禁止 |
 | 生命周期 | pending、page、remembered、7天绝对寿命、恢复/失效/撤销 | 浏览器重开、服务重启、重置全账户撤销、B账户不受影响的真实证据 |
 | 退出 | I07完整请求、重复、目标范围、Cookie条件清除、未知恢复 | A11设置入口；真实退出后刷新与重新登录，不用手工Cookie替代 |

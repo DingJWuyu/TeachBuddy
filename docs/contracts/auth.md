@@ -1,6 +1,6 @@
 # 账户入口契约
 
-状态：`AUTH-CONTRACT@1 / READY_FOR_REVIEW`。本包是完整设计候选，尚待外层独立冻结；不是认证实现、真实邮件或 A10 通过声明。范围内共享决定由本次设计授权裁决，不再逐项等待用户答复。
+状态：`AUTH-CONTRACT-CORRECTION@1 / READY_FOR_REVIEW`。本包消费认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2`，尚待外层限定独立冻结；不是认证实现、真实邮件或 A10 通过声明。实际候选 SHA 见 [correction](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md)。
 
 [OpenAPI](auth.openapi.yaml) 唯一拥有方法、地址、字段、类型、状态码、Problem 和样本；本文拥有跨操作语义；[交换用例](auth-cases.md)拥有前后端各自可验证的条件。实现从这三份文件进入。[架构与 A10 交接](../arch/auth-implementation.md)、[UX 接线](../ux/auth-integration.md)、[BDD](../acceptance/auth.feature)和[前后端任务包](../plans/tasks/auth-implementation.md)分别限定实现接缝、界面组合、验收和写入归属。
 
@@ -8,13 +8,14 @@
 
 | 输入 | 固定版本与入口 |
 | --- | --- |
-| 任务基线 | `5b12a9063cc0b692103df73997cb8963506bd9ea` |
+| 原设计输入 | `5b12a9063cc0b692103df73997cb8963506bd9ea`；原设计候选 `fd3f6d5e8d19823aa83a417b99f223c87f4aa713` |
+| 本次修订输入 | `7b86b03fb51fa317dc2fade3b1319a53db9247de`；独立报告 `092d7c89cb1386e913ef245a0a6370bede141947` 的 AUTH-CR-001/002 |
 | 认证行为提交 | `c7420af8c2740ddee5e01caa6da8bf7f57c134e2`；该提交的 prototype tree 是 `6f4a7d30c16a67b44af1e7a9c1157abb6d065b6b` |
-| 当前集成源 | 任务基线中的 prototype tree `1281d51665a740573a0a6f237b9e37d0335cf2c3`；认证行为及两份认证场景与 c7420af 字节一致，其他工作台文件已有集成变化 |
+| 集成行为源 | 原设计输入中的 prototype tree `1281d51665a740573a0a6f237b9e37d0335cf2c3`；本次固定输入的认证行为及两份认证场景与 c7420af 字节一致 |
 | 已定协议 | `5757141a61e719c8002736ae5af0ac1778dad054` 中 D01-D14 的已确认部分 |
 | 行为入口 | [manifest](../../prototype/behavior/manifest.md)、[auth](../../prototype/behavior/auth.md)，J11-J13、J25、G01-G06 |
 | 原型证据索引 | [CA01-CA40](../../prototype/behavior/auth-scenarios.md)、[CA41-CA109、CA120](../../prototype/behavior/auth-behavior-scenarios.md)、[输入边界](../../prototype/evidence/verification/input-boundary-report.json)；只是模拟证据 |
-| 工作台冻结消费方 | B11 候选 `9aee091a34ba2eb311b51299d9beed78a032d026`，独立审查 `b62034e`；[接缝](../arch/first-flow.md#模块与接缝)与 [context schema](workbench/first-flow.openapi.yaml)只读 |
+| 工作台消费方 | [版本与验收范围](workbench.md#消费版本与验收范围)固定旧 B11/运行输入及新同版消费；本次授权限定写入页面头声明、相关文字和样本。context/accountKey 与模块接缝保持 |
 
 覆盖登录、开放注册、两类发码、重置、恢复、记住我失败恢复和退出交换。设置退出按钮仍归 A11，CA53 原型暂缺不阻塞其协议设计。注册默认开放，关闭只阻止新注册及注册发码。条款链接不跳转；不新增管理后台、条款版本、刷新令牌、Bearer 或账户管理功能。术语沿用 [CONTEXT](../../CONTEXT.md)；本包的会话、挑战和页面上下文是协议术语，不更改业务词义。
 
@@ -113,6 +114,6 @@ Cookie 被浏览器完全禁用时，没有任何可用当前会话，应停在�
 
 ## 就绪与外部边界
 
-作者结构检查与双向走查记录见 [author](../acceptance/evidence/AUTH-CONTRACT/v1/author.md)。设计候选没有已知待实现者猜测的共享字段；冻结权归外层独立核验。邮件提供者/发信域/真实收件箱、部署同源 HTTPS、真实持久运行和原账户迁移样本仍需后续交付验证，不能被本包或替身通过替代。
+本候选两项修订的结构检查、双向走查与接续条件见 [correction](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md)；旧 author/review 只对应各自固定版本，冻结权归外层独立核验。邮件提供者/发信域/真实收件箱、部署同源 HTTPS、真实持久运行和原账户迁移样本仍需后续交付验证，不能被本包或替身通过替代。
 
 技术格式遵循 [OpenAPI 3.2.1](https://spec.openapis.org/oas/v3.2.1.html)、[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html)；Cookie 服务端寿命与浏览器留存分开处理，参见 [RFC 6265](https://httpwg.org/specs/rfc6265.html)。协议版本沿用既定选择，具体会话组合是为当前行为设计的项目约定。

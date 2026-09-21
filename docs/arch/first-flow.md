@@ -1,6 +1,6 @@
 # First-flow 实现边界
 
-状态：B11/v1 已冻结，见[独立契约冻结审查](../acceptance/evidence/B11/v1/review.md)。产品语义只见 [契约](../contracts/workbench.md)，字段只见 [OpenAPI](../contracts/workbench/first-flow.openapi.yaml)。React/Vite、Express、better-sqlite3 沿用现有工程；本批不建立插件系统、事件总线、任务平台或独立服务。
+状态：既有模块接缝按 B11/v1 冻结；当前 HTTP 页面头接续候选等待限定独立冻结，旧输入与当前消费范围见[契约版本](../contracts/workbench.md#消费版本与验收范围)。产品语义只见 [契约](../contracts/workbench.md)，字段只见 [OpenAPI](../contracts/workbench/first-flow.openapi.yaml)。React/Vite、Express、better-sqlite3 沿用现有工程；本批不建立插件系统、事件总线、任务平台或独立服务。
 
 ## 模块与接缝
 
@@ -45,7 +45,7 @@ SQLite 内业务写入和幂等成功记录一个事务提交，不使用先写�
 | B14 | `apps/web/src/features/questions/`、`lessons/`、`workbench/`；本批 feature 样式和 `apps/web/e2e/first-flow-ui*.spec.js` | `apps/web/src/App.jsx`、`main.jsx`、`components/WorkspaceSidebar.jsx`、`features/modules/moduleRegistry.js`、`store/useAppStore.js`、`hooks/useWorkspaceData.js`、`utils/api.js`、`styles/global.css`；只改工作台集成部分，认证表单/流程不改 |
 | B15 | `apps/web/e2e/first-flow.spec.js`、`first-flow/` 故障 fixture、本批集成运行说明与证据 | 收齐固定 B12-B14 候选并终止其写入后，接手上述入口/注册/依赖文件进行必要装配，以及 `README.md` 当前状态；不重定义 schema |
 
-各节点另拥有自己的 `docs/acceptance/evidence/<节点>/v1/`。认证文件、原型、已有 ADR、CHANGELOG、根台账/DAG 不在以上边界。API app.js 允许新增工作台组装和独立中间件挂载，不修改原认证路由语义；新业务不能落入旧 Bearer gate。B12 为共享 HTTP 层提供本组的新错误响应，不能把认证的 partial 改成自定完成版。
+各节点另拥有自己的 `docs/acceptance/evidence/<节点>/v1/`。认证文件、原型、已有 ADR、CHANGELOG、根台账/DAG 不在以上边界。API app.js 允许新增工作台组装和独立中间件挂载，不修改原认证路由语义；新业务不能落入旧 Bearer gate。B12 为共享 HTTP 层提供本组的新错误响应，认证行为及其冻结状态由认证契约拥有。
 
 B11 独立冻结后 B12/B13/B14 可在独立 worktree 并行。B13 可先使用本包固定 seam 的测试 adapter，B14 可使用由同版 OpenAPI/cases 驱动的替身；它们的真实集成自验需补接 B12。B12 单独用目录/迁移 fixture 验证公共机制，实际业务目录条目只在对应实现导入后启用；不能留下假模块来让构建通过。B15 收齐三者固定候选，独占最后装配并跑真服务。没有共享文件双写，也不以替身结果替代 B16。
 

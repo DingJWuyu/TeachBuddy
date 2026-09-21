@@ -1,8 +1,8 @@
 openapi: 3.2.1
 info:
   title: TeachBuddy 账户入口契约
-  version: 1.0.0-rc.1
-  description: AUTH-CONTRACT@1 完整设计候选；尚待独立冻结，不代表已实现。auth.md 拥有跨操作语义与首错顺序，auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
+  version: 1.0.0-rc.2
+  description: AUTH-CONTRACT-CORRECTION@1 限定修订候选；尚待独立冻结，不代表已实现。auth.md 拥有跨操作语义与首错顺序，auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
     no-store。
 x-contract-status: ready-for-review
 x-accepted-source:
@@ -296,8 +296,10 @@ paths:
               schema:
                 oneOf:
                 - $ref: '#/components/schemas/AccountStoreUnavailableProblem'
-                - $ref: '#/components/schemas/SessionStoreUnavailableProblem'
                 - $ref: '#/components/schemas/ServiceUnavailableProblem'
+              examples:
+                atomicStoreFailure:
+                  $ref: '#/components/examples/AccountStoreUnavailable'
       requestBody:
         required: true
         content:
@@ -707,7 +709,8 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/PageContext'
-      description: 只选择 Cookie 内当前页面绑定，不能单独授权；由认证 transport 同样附于工作台请求。错误为409 browser-context-required。
+      example: '0123456789abcdef0123456789abcdef'
+      description: 只选择 Cookie 内当前页面绑定，不能单独授权；由认证 transport 同样附于工作台请求。认证操作缺失/形状错误为409 browser-context-required；工作台缺失/形状错误或无有效绑定由身份门禁返回401 workbench/unauthenticated，写来源防护仍先于身份。
   headers:
     AuthCacheControl:
       required: true
