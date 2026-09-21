@@ -2,7 +2,7 @@
 
 [返回主 README](../README.md)
 
-本文描述代码基线 `911e624`，不是已完成的 MVP 架构。原型与真实应用的状态见 README；实施顺序见[路线图](ROADMAP.md)。B10 固定的 Git 交接、B11 输入和逐文件所有权见[执行基线](arch/execution-baseline.md)。旧认证由独立工作线迁移，不要求新契约兼容旧 Bearer API。
+本文描述代码基线 `911e624`，不是已完成的 MVP 架构。原型与真实应用的状态见 README；实施顺序见[路线图](ROADMAP.md)。B10 固定的 Git 交接、B11 输入和逐文件所有权见[执行基线](arch/execution-baseline.md)。旧应用仍使用 Bearer 认证；目标认证契约已冻结为 `1.0.0-rc.2`，前后端实施中，真实认证服务尚未交付，且不要求新契约兼容旧 Bearer API。
 
 ## 复用与替换
 
@@ -17,7 +17,7 @@
 仓库采用 npm workspaces：
 
 - apps/web：React + Vite 工作台外壳、账户入口、首页、设置和侧栏布局编辑
-- apps/api：Express 应用工厂、认证、密码找回、SQLite 和布局 API
+- apps/api：Express 应用工厂、旧认证/密码找回、SQLite 和布局 API；目标认证模块按[认证实现架构](arch/auth-implementation.md)实施
 - packages/shared：中性模块注册契约与当前为空的模块目录
 
 ## 旧应用的工作台外壳
@@ -50,7 +50,7 @@ WorkspaceSidebar 负责教师账户的布局偏好：
 
 apps/api/src/app.js 负责公共路由、认证中间件和布局路由。apps/api/src/core/moduleRegistry.js 只协调未来模块注册，不携带业务实现。
 
-认证使用 Bearer 令牌。注册、登录和密码找回由外壳直接提供，账户不属于组织，也不包含管理员或成员管理能力。
+旧应用认证使用 Bearer 令牌。目标认证契约使用同源 Cookie 会话，注册、登录和密码找回仍由账户入口提供；认证前后端正在实施，账户不属于组织，也不包含管理员或成员管理能力。
 
 ## 持久化
 

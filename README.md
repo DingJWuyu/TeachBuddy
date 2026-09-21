@@ -6,17 +6,17 @@
 
 ## 当前状态
 
-下表描述 2026-09-21 整理时的代码状态，代码基线为 `911e624`。后续功能落地时同步更新本表；节点依赖和授权停止点见[交付 DAG](docs/plans/mvp-dag.md)，当前编排状态见[运行台账](docs/plans/run-state.md)，[路线图](docs/ROADMAP.md)提供状态导航。
+下表描述 2026-09-21 整理时的代码状态，代码基线为 `911e624`；认证文档当前消费候选为认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2`。后续功能落地时同步更新本表；节点依赖和授权停止点见[交付 DAG](docs/plans/mvp-dag.md)，当前编排状态见[运行台账](docs/plans/run-state.md)，[路线图](docs/ROADMAP.md)提供状态导航。
 
 | 部分 | 已有内容 | 距离目标的差距 |
 | --- | --- | --- |
 | `apps/web`、`apps/api` | 旧 React/Express 应用；Bearer 认证、密码找回、SQLite 账户与布局保存 | 未接入本轮已验收的账户 UI；业务模块为空，不是目标 MVP |
 | `packages/shared` | 中性模块描述工具和空模块目录 | 尚无工作台业务接口定义；已有模块边界决议也未全部实现 |
-| `prototype/` 账户入口 | 登录、注册、找回、会话恢复及失败分支已验收；此前行为缺口已补齐 | 使用模拟服务；认证契约尚未同步全部新增行为 |
+| `prototype/` 账户入口 | 登录、注册、找回、会话恢复及失败分支已验收；此前行为缺口已补齐 | 使用模拟服务；正式认证契约已冻结，但真实认证服务尚未交付 |
 | `prototype/` 工作台 | 既有侧栏与顶栏基线；已合入 Agent 首页、六模块及跨模块交互草稿 | 模块为内存数据，AI 为固定回复；模块稿尚未通过整体视觉与交互验收 |
-| `docs/contracts/` | 认证契约、OpenAPI 和契约用例的部分约定 | 仍引用旧行为版本，状态为讨论中；没有工作台业务契约 |
+| `docs/contracts/` | 认证 `1.0.0-rc.2`、工作台 `0.1.0-candidate.2` 及对应用例 | 认证契约已冻结；认证前后端实施中，真实认证和工作台业务模块尚未交付 |
 
-登录注册由独立工作线负责。工作台对接登录后的账户身份与会话边界，退出按钮留在工作台设置中实现；当前原型没有退出入口。旧应用中的退出和 Bearer API 不代表新的交接契约已经完成。
+认证契约已冻结为 `1.0.0-rc.2`，工作台 HTTP 契约为 `0.1.0-candidate.2`；认证前后端按同一候选实施中，真实认证服务、邮件、持久会话和工作台接入尚未交付。旧 B11/v1 的 `test-principal` 首流仍按旧固定输入推进，不能据此宣称 `real-auth`；设置退出由 A11 接入。旧应用中的退出和 Bearer API 不代表新的真实交接已完成。
 
 ## 从哪里开始读
 
@@ -29,11 +29,11 @@
 | 美学、滚动、现场保留和验证要求 | [设计规则](docs/rules/design-and-verification.md) |
 | 领域词汇 | [CONTEXT](CONTEXT.md) |
 | 认证行为、场景和原型证据 | [原型行为索引](prototype/behavior/manifest.md) |
-| 认证共享接口的已有约定和待补项 | [认证契约](docs/contracts/auth.md)，目前不完整 |
-| B10/B11 首条流程交接基线与文件所有权 | [执行基线](docs/arch/execution-baseline.md) |
+| 认证契约、版本消费和实现接缝 | [认证契约](docs/contracts/auth.md)；[认证实现架构](docs/arch/auth-implementation.md) |
+| B10/B11 首条流程交接基线与旧 test-principal 边界 | [执行基线](docs/arch/execution-baseline.md) |
 | 代码结构、旧底座与可复用部分 | [架构说明](docs/ARCHITECTURE.md) |
 
-已确认的产品要求指导新实现；原型代码用于参考交互，旧应用用于参考可复用底座。二者均不能替代尚未形成的业务契约。原型证据只证明对应原型版本，正式应用的旧测试只证明其旧行为。
+已确认的产品要求指导新实现；原型代码用于参考交互，旧应用用于参考可复用底座。冻结的认证契约只定义实现边界，不证明真实服务已交付；原型证据只证明对应原型版本，正式应用的旧测试只证明其旧行为。
 
 ## 运行
 
@@ -64,4 +64,4 @@ CONTEXT.md         领域术语
 
 当前可用命令为 `npm run test:api`、`npm run test:e2e`、`npm run build`、`npm run prototype:build`。它们尚未覆盖目标 MVP；`build:api` 会检查并可能创建 SQLite 文件，详见安装指南。原型脚本的适用范围以行为索引为准，不能把旧空首页、九模块断言套到最新模块稿。
 
-[API 指南](docs/API.md)描述旧 Bearer 应用；[旧部署说明](docs/DEPLOY_INFINITYFREE_RENDER.md)也仅供旧底座参考。新认证已确认同源 Cookie 方向，MVP 还需接通真实服务、持久文件和备份恢复，当前没有通过验证的 MVP 部署方案。可交付标准见[验收矩阵](docs/acceptance/mvp-matrix.md)。
+[API 指南](docs/API.md)描述旧 Bearer 应用；[旧部署说明](docs/DEPLOY_INFINITYFREE_RENDER.md)也仅供旧底座参考。认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2` 已冻结，前后端实施中；MVP 还需接通真实服务、持久文件和备份恢复，当前没有通过验证的真实认证或 MVP 部署方案。可交付标准见[验收矩阵](docs/acceptance/mvp-matrix.md)。

@@ -1,10 +1,10 @@
 # First-flow 交换与样本
 
-本页为设计用例，不是运行通过证据。字段和样本值唯一在 [OpenAPI](first-flow.openapi.yaml)；语义见 [工作台契约](../workbench.md)。前端替身与后端 HTTP 集成都从 `components.examples` 取样本并按下表序列验证，不各造一套模型。
+本页消费工作台 `0.1.0-candidate.2` 与认证 `1.0.0-rc.2`，为设计用例，不是运行通过证据。字段和样本值唯一在 [OpenAPI](first-flow.openapi.yaml)；[消费版本](../workbench.md#消费版本与验收范围)区分旧测试身份首流与当前认证接续。前端替身与后端 HTTP 集成都从 `components.examples` 取样本并按下表序列验证，不各造一套模型。
 
 ## 可复现起点
 
-B12 runner 建独立空库、两名测试身份 A/B 和相互独立 Cookie jar；context 的 accountKey 由 runner 注入的服务端 principal 决定。生产入口不得接受这一 bootstrap。清空测试目录可从零运行；“重启”必须保留同一 SQLite 和文件目录。样本均为本设计自写的高中数学题，不依赖外部文件或密钥。
+测试身份场景由 B12 runner 建独立空库、两名测试身份 A/B 和相互独立 Cookie jar；context 的 accountKey 由 runner 注入的服务端 principal 决定。消费当前 schema 的 HTTP fixture 也须带合法页面头，但 test-principal 不能证明 Cookie+页面绑定；真实认证按 C19-C21 建立身份。生产入口不得接受测试 bootstrap。清空测试目录可从零运行；“重启”必须保留同一 SQLite 和文件目录。样本均为本设计自写的高中数学题，不依赖外部文件或密钥。
 
 样本 `CreatePasted` 含题面“已知函数 f(x)=x²-2x，求最小值，并说明理由”、答案 -1、行内/独立 LaTeX 以及教学笔记；原稿有换行，需逐字保持。变式把题面公式改为 `g(x)=x^2-4x`，公式源为 `g(x)=(x-2)^2-4\geq -4`，结论 x=2 时最小值 -4。该公式在 JSON 中按正常反斜杠转义，不存二次转义字符串。
 
@@ -12,7 +12,7 @@ B12 runner 建独立空库、两名测试身份 A/B 和相互独立 Cookie jar�
 
 ## 成功与恢复交换
 
-写请求统一同源 HTTPS，`Content-Type: application/json`、`X-TeachBuddy-Request: 1`、`Idempotency-Key: K` 和浏览器 Cookie；直接 HTTP 测试补可信 Origin。所有响应均验证 no-store、媒体类型和 schema。
+所有请求带浏览器 Cookie 与当前 `X-TeachBuddy-Page: P1`；P1 取外引 PageContext 的 example，仅为非秘密样本。写请求另带 `Content-Type: application/json`、`X-TeachBuddy-Request: 1`、`Idempotency-Key: K`；直接 HTTP 测试补可信 Origin。所有响应均验证 no-store、媒体类型和 schema。
 
 | 用例/BDD | 输入与前置状态 | 必须返回与检查 |
 | --- | --- | --- |
@@ -43,6 +43,16 @@ B12 runner 建独立空库、两名测试身份 A/B 和相互独立 Cookie jar�
 | C18 / WB-015、017 | 操作期间 context 变身份；旧响应随后返回；重新登录不同账户 | UI 丢弃旧响应，不能显示旧内容/草稿。返回原身份才解锁本地草稿；真实认证动作待 A11，自本批 runner 可验证边界。 |
 
 `invalid-input` 的 field 是 JSON Pointer，例如 `/sections/0/references/0/questionId`；缺少键/类型/范围/内容分别用 schema 中的 reason。空白课题/环节名视为 out-of-range，字段只校验不自动 trim；题目 title 可以空。未知版本用 unsupported-content-version；重复 ID 用 duplicate-id；改指引用用 invalid-reference。
+
+## 真实认证页面接缝
+
+以下复用 WB-016/017/018 与认证 H02/H03、P06、CC-RESTORE 的行为；前端以同版认证/工作台 HTTP 替身验证发送与恢复，后端以真实认证模块 + 隔离 SQLite/HTTPS 验证授权及无写入，不依赖前端。最终 A11/A12 再用真实浏览器组合两侧。Cookie 从 I06 bootstrap 取得，不在样本或证据中写 Cookie 值。A 的身份样本为认证 `ActiveStatus`，工作台返回 `AuthenticatedContext`；真实运行将两者的示例 accountKey 同时替换为服务端实际稳定键。
+
+| 用例 | 输入与前置状态 | 返回、前端与后端断言 |
+| --- | --- | --- |
+| C19 / WB-016、018 | 同一 Cookie jar/P1 经 I01或I03得到 pending，再 I06 activate；使用 P1 请求 context、目录以及 C01-C10 的全部读写操作 | pending 时业务401；active后 context 返回200 AuthenticatedContext，与认证Account.accountKey一致；目录200 ModuleCatalog，业务成功按原样本。前端 transport 在15个操作都发送当前页面头，保留原body/Idempotency-Key；后端仅以已验证 principal授权。 |
+| C20 / WB-016、018 | 同 Cookie：逐一省略页面头、空/31/33字符、含非十六进制字符、换成合法但未绑定的P2；另仅给合法P1而无Cookie。写请求的来源/保护头先保持合法 | 读写、context/目录均401，body取工作台responses/401的unauthenticated样本；前端锁住业务并复核认证状态，不当成字段422或认证409。后端无业务写入/幂等成功记录；同Cookie不能绕过页面绑定。再叠加错误写来源，先返回responses/403样本；GET不要求来源/保护头。 |
+| C21 / WB-017、018 | P1已active，刷新产生P2；分别验证page与remembered模式；再撤销/到期以及身份存储不可读 | P2在restore前业务401；page模式回登录，remembered按I06恢复成功后以P2得到相同accountKey及原内容。撤销/到期后401；存储不可读映射工作台503样本，不能回退旧身份。前端丢弃P1的迟到响应并保持草稿账户分区；后端实时复核绑定，不自动用恢复指针授权。 |
 
 ## UI 独有与故障响应
 

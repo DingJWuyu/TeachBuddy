@@ -1,59 +1,46 @@
 openapi: 3.2.1
 info:
   title: TeachBuddy 账户入口契约
-  version: 0.1.0-draft.9
-  description: |
-    讨论入口为同目录 auth.md。此文件记录已确认的操作地址、输入片段及错误交换。
-    前端先按已验收行为本地校验；不通过则不提交本次认证请求。字段错误响应不是远程校验服务。
-    后端独立校验实际收到的输入；各操作只返回与自身请求及业务有关的已定义错误。
-    密码显隐、确认密码一致性及表单切换等前端独有行为不产生新的后端接口。
-    正式浏览器页面与 /api 同源，生产使用 HTTPS。后端通过 Set-Cookie 设置 HttpOnly、Secure 凭据。
-    浏览器自动保存并携带凭据；前端脚本不读取、存储凭据或拼接 Bearer 头。
-    Cookie 名称及固定属性见 SessionCookie 安全方案；寿命及各操作的凭据要求仍待 G03。
-    安全方案定义不等于已完成各操作的认证要求，尚未附加全局 security 要求以免误将登录前操作变为须先登录。
-    所有已定义 POST 都执行来源与保护头检查，单一防护条件不满足时返回 RequestNotAllowed。
-    所有认证成功和失败响应必须带 Cache-Control: no-store，未来补齐的结果也必须沿用。
-    所有操作均为 partial：成功响应、完整输入及其他结果仍待产品行为补齐。
-    logout 只确认方法、地址及通用防护；未声明 requestBody 表示尚待定义，不表示约定了空请求。
-    当前 responses 只列已定义的错误；没有声明某类响应不代表该结果不可能发生。
-    EmailInput、NicknameInput、PasswordInput 暂时只约束类型；精确边界待 D04。
-    最终完整请求拒绝未知字段并返回 422，输入类型不做隐式转换；Core 片段尚未封闭。
-    有数据的成功响应直接返回 JSON 结果对象；操作完成且无返回数据时用 204，无响应体。
-    成功规则不表示任何具体操作已经确定了成功时点、状态码或返回数据。
-    前端忽略已知响应中未使用的附加字段，仍校验已定义的必填字段、类型及结果身份。
-    未知状态、未知错误 type 或结构不合法的响应不算已知结果；其页面恢复规则待 G01。
-    原型模拟限制不能用作正式认证的凭据、验证码或会话策略。
-x-contract-status: partial
+  version: 1.0.0-rc.2
+  description: AUTH-CONTRACT-CORRECTION@1 限定修订候选；已由限定独立审查冻结，不代表已实现。auth.md 拥有跨操作语义与首错顺序，auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
+    no-store。
+x-contract-status: frozen
 x-accepted-source:
-  commit: a496c5a4727e2900bd110198819295e068739439
-  prototype-tree: 05dc1e5244cd9224d3480f0a1935dac56d8f3fcd
-x-open-decisions:
-  - D04 输入边界、归一化、完整请求与身份结构
-  - D05 完整交换与契约用例
-  - D07 尚未列明的错误类型与状态码
-  - G01-G06 尚待补齐并集成的产品行为
+  commit: c7420af8c2740ddee5e01caa6da8bf7f57c134e2
+  prototype-tree: 6f4a7d30c16a67b44af1e7a9c1157abb6d065b6b
+  integrated-commit: 5b12a9063cc0b692103df73997cb8963506bd9ea
+  integrated-prototype-tree: 1281d51665a740573a0a6f237b9e37d0335cf2c3
 servers:
-  - url: /
-    description: 相对于浏览器页面的同一来源；生产使用 HTTPS，具体域名及内部转发方式由部署确定。
+- url: /
+  description: 页面与 API 同源 HTTPS；本地浏览器联调保持相同安全属性。
 paths:
   /api/auth/login:
-    parameters:
-      - $ref: '#/components/parameters/BrowserRequestProtection'
-      - $ref: '#/components/parameters/RequestOrigin'
-      - $ref: '#/components/parameters/RequestReferer'
     post:
       operationId: login
-      summary: 登录并交接身份
+      summary: 核验凭据并创建待激活会话
       x-interaction-id: I01
-      x-contract-status: partial
-      x-unresolved: [G01, G03, G04, G05, G06]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequestCore'
+      x-contract-status: frozen
+      description: 必须先 bootstrap 并确认 Cookie 可用。成功不设置 Cookie、不自动激活；随后 I06 activate。已有 Cookie 不替代本次密码校验。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      security:
+      - SessionCookie: []
       responses:
+        '200':
+          description: 核验凭据并创建待激活会话完成；业务时点以 auth.md 为准。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingSession'
+              examples:
+                sample:
+                  $ref: '#/components/examples/Pending'
         '403':
           $ref: '#/components/responses/RequestNotAllowed'
         '400':
@@ -61,82 +48,293 @@ paths:
         '415':
           $ref: '#/components/responses/UnsupportedMediaType'
         '422':
-          $ref: '#/components/responses/LoginInvalidInput'
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - oneOf:
+                  - $ref: '#/components/schemas/InvalidRequestBodyProblem'
+                  - $ref: '#/components/schemas/UnknownFieldProblem'
+                  - $ref: '#/components/schemas/RequiredFieldProblem'
+                  - $ref: '#/components/schemas/InvalidFieldTypeProblem'
+                  - $ref: '#/components/schemas/InvalidFieldValueProblem'
+                  - $ref: '#/components/schemas/EmailEmptyProblem'
+                  - $ref: '#/components/schemas/EmailInvalidFormatProblem'
+                  - $ref: '#/components/schemas/PasswordTooShortProblem'
+                  - $ref: '#/components/schemas/PasswordTooLongProblem'
+                - properties:
+                    field:
+                      enum:
+                      - email
+                      - password
+                      - rememberMe
+        '401':
+          $ref: '#/components/responses/CredentialsRejected'
+        '503':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AccountStoreUnavailableProblem'
+                - $ref: '#/components/schemas/SessionStoreUnavailableProblem'
+                - $ref: '#/components/schemas/ServiceUnavailableProblem'
+        '409':
+          $ref: '#/components/responses/BrowserContextRequired'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              sample:
+                $ref: '#/components/examples/Login'
   /api/auth/registration-codes:
-    parameters:
-      - $ref: '#/components/parameters/BrowserRequestProtection'
-      - $ref: '#/components/parameters/RequestOrigin'
-      - $ref: '#/components/parameters/RequestReferer'
     post:
       operationId: requestRegistrationCode
-      summary: 申请或重新申请注册验证码
-      description: 发码前判断邮箱占用，已占用时拒绝且不发码。发码成功、重发策略和投递结果尚未定义。
+      summary: 申请或重发注册验证码
       x-interaction-id: I02
-      x-contract-status: partial
-      x-unresolved: [G01, G02, G04, G06]
+      x-contract-status: frozen
+      description: 无需登录/Cookie，按用途+邮箱限制。只有完整成功结果可安装挑战。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      security: []
+      responses:
+        '200':
+          description: 申请或重发注册验证码完成；业务时点以 auth.md 为准。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationChallenge'
+              examples:
+                sample:
+                  $ref: '#/components/examples/RegistrationCode'
+        '403':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/RequestNotAllowedProblem'
+                - $ref: '#/components/schemas/RegistrationClosedProblem'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - oneOf:
+                  - $ref: '#/components/schemas/InvalidRequestBodyProblem'
+                  - $ref: '#/components/schemas/UnknownFieldProblem'
+                  - $ref: '#/components/schemas/RequiredFieldProblem'
+                  - $ref: '#/components/schemas/InvalidFieldTypeProblem'
+                  - $ref: '#/components/schemas/InvalidFieldValueProblem'
+                  - $ref: '#/components/schemas/EmailEmptyProblem'
+                  - $ref: '#/components/schemas/EmailInvalidFormatProblem'
+                - properties:
+                    field:
+                      enum:
+                      - email
+        '409':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/EmailAlreadyRegisteredProblem'
+                - $ref: '#/components/schemas/BrowserContextRequiredProblem'
+        '429':
+          $ref: '#/components/responses/CodeSendCooldown'
+        '503':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/CodeDeliveryUnavailableProblem'
+                - $ref: '#/components/schemas/AccountStoreUnavailableProblem'
+                - $ref: '#/components/schemas/ServiceUnavailableProblem'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmailCodeRequestCore'
-      responses:
-        '403':
-          $ref: '#/components/responses/RequestNotAllowed'
-        '400':
-          $ref: '#/components/responses/MalformedJson'
-        '409':
-          $ref: '#/components/responses/EmailAlreadyRegistered'
-        '415':
-          $ref: '#/components/responses/UnsupportedMediaType'
-        '422':
-          $ref: '#/components/responses/EmailCodeInvalidInput'
+              $ref: '#/components/schemas/EmailCodeRequest'
+            examples:
+              sample:
+                $ref: '#/components/examples/SendCode'
   /api/auth/register:
-    parameters:
-      - $ref: '#/components/parameters/BrowserRequestProtection'
-      - $ref: '#/components/parameters/RequestOrigin'
-      - $ref: '#/components/parameters/RequestReferer'
     post:
       operationId: register
-      summary: 创建教师账户并交接身份
+      summary: 创建账户与待激活会话
       x-interaction-id: I03
-      x-contract-status: partial
-      x-unresolved: [G01, G02, G03, G04, G05, G06]
+      x-contract-status: frozen
+      description: 账户创建/挑战消费/pending会话原子提交。后续记住我失败不否定创建结果；响应不明不可自动重复注册。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      security:
+      - SessionCookie: []
+      responses:
+        '201':
+          description: 创建账户与待激活会话完成；业务时点以 auth.md 为准。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingSession'
+              examples:
+                sample:
+                  $ref: '#/components/examples/Pending'
+        '403':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/RequestNotAllowedProblem'
+                - $ref: '#/components/schemas/RegistrationClosedProblem'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - oneOf:
+                  - $ref: '#/components/schemas/InvalidRequestBodyProblem'
+                  - $ref: '#/components/schemas/UnknownFieldProblem'
+                  - $ref: '#/components/schemas/RequiredFieldProblem'
+                  - $ref: '#/components/schemas/InvalidFieldTypeProblem'
+                  - $ref: '#/components/schemas/InvalidFieldValueProblem'
+                  - $ref: '#/components/schemas/EmailEmptyProblem'
+                  - $ref: '#/components/schemas/EmailInvalidFormatProblem'
+                  - $ref: '#/components/schemas/PasswordTooShortProblem'
+                  - $ref: '#/components/schemas/PasswordTooLongProblem'
+                  - $ref: '#/components/schemas/VerificationCodeInvalidFormatProblem'
+                  - $ref: '#/components/schemas/VerificationCodeMissingProblem'
+                  - $ref: '#/components/schemas/VerificationCodeBindingMismatchProblem'
+                  - $ref: '#/components/schemas/VerificationCodeConsumedProblem'
+                  - $ref: '#/components/schemas/VerificationCodeReplacedProblem'
+                  - $ref: '#/components/schemas/VerificationCodeExpiredProblem'
+                  - $ref: '#/components/schemas/VerificationCodeIncorrectProblem'
+                  - $ref: '#/components/schemas/VerificationCodeExhaustedProblem'
+                  - $ref: '#/components/schemas/NicknameEmptyProblem'
+                  - $ref: '#/components/schemas/NicknameTooLongProblem'
+                  - $ref: '#/components/schemas/TermsNotAcceptedProblem'
+                - properties:
+                    field:
+                      enum:
+                      - email
+                      - nickname
+                      - password
+                      - challengeId
+                      - verificationCode
+                      - termsAccepted
+                      - rememberMe
+        '409':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/EmailAlreadyRegisteredProblem'
+                - $ref: '#/components/schemas/BrowserContextRequiredProblem'
+        '503':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AccountStoreUnavailableProblem'
+                - $ref: '#/components/schemas/ServiceUnavailableProblem'
+              examples:
+                atomicStoreFailure:
+                  $ref: '#/components/examples/AccountStoreUnavailable'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegistrationRequestCore'
-      responses:
-        '403':
-          $ref: '#/components/responses/RequestNotAllowed'
-        '400':
-          $ref: '#/components/responses/MalformedJson'
-        '409':
-          $ref: '#/components/responses/EmailAlreadyRegistered'
-        '415':
-          $ref: '#/components/responses/UnsupportedMediaType'
-        '422':
-          $ref: '#/components/responses/RegistrationInvalidInput'
+              $ref: '#/components/schemas/RegistrationRequest'
+            examples:
+              sample:
+                $ref: '#/components/examples/Register'
   /api/auth/password-reset-codes:
-    parameters:
-      - $ref: '#/components/parameters/BrowserRequestProtection'
-      - $ref: '#/components/parameters/RequestOrigin'
-      - $ref: '#/components/parameters/RequestReferer'
     post:
       operationId: requestPasswordResetCode
-      summary: 申请或重新申请密码找回验证码
+      summary: 申请或重发密码找回验证码
       x-interaction-id: I04
-      x-contract-status: partial
-      x-unresolved: [G01, G02, G04, G06]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmailCodeRequestCore'
+      x-contract-status: frozen
+      description: 无需登录/Cookie；只有账户存在且发码成功才进入确认卡。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      security: []
       responses:
+        '200':
+          description: 申请或重发密码找回验证码完成；业务时点以 auth.md 为准。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetChallenge'
+              examples:
+                sample:
+                  $ref: '#/components/examples/ResetCode'
         '403':
           $ref: '#/components/responses/RequestNotAllowed'
         '400':
@@ -144,25 +342,71 @@ paths:
         '415':
           $ref: '#/components/responses/UnsupportedMediaType'
         '422':
-          $ref: '#/components/responses/EmailCodeInvalidInput'
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - oneOf:
+                  - $ref: '#/components/schemas/InvalidRequestBodyProblem'
+                  - $ref: '#/components/schemas/UnknownFieldProblem'
+                  - $ref: '#/components/schemas/RequiredFieldProblem'
+                  - $ref: '#/components/schemas/InvalidFieldTypeProblem'
+                  - $ref: '#/components/schemas/InvalidFieldValueProblem'
+                  - $ref: '#/components/schemas/EmailEmptyProblem'
+                  - $ref: '#/components/schemas/EmailInvalidFormatProblem'
+                  - $ref: '#/components/schemas/EmailNotRegisteredProblem'
+                - properties:
+                    field:
+                      enum:
+                      - email
+        '429':
+          $ref: '#/components/responses/CodeSendCooldown'
+        '503':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/CodeDeliveryUnavailableProblem'
+                - $ref: '#/components/schemas/AccountStoreUnavailableProblem'
+                - $ref: '#/components/schemas/ServiceUnavailableProblem'
+        '409':
+          $ref: '#/components/responses/BrowserContextRequired'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailCodeRequest'
+            examples:
+              sample:
+                $ref: '#/components/examples/SendCode'
   /api/auth/password-reset:
-    parameters:
-      - $ref: '#/components/parameters/BrowserRequestProtection'
-      - $ref: '#/components/parameters/RequestOrigin'
-      - $ref: '#/components/parameters/RequestReferer'
     post:
       operationId: resetPassword
-      summary: 确认验证码并重置密码
+      summary: 更新密码并撤销目标账户全部旧会话
       x-interaction-id: I05
-      x-contract-status: partial
-      x-unresolved: [G01, G02, G03, G06]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PasswordResetRequestCore'
+      x-contract-status: frozen
+      description: 无登录前置；密码/挑战/撤销原子提交。不修改浏览器 Cookie，避免重置A误清B的载体。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      security: []
       responses:
+        '204':
+          description: 更新密码并撤销目标账户全部旧会话完成；业务时点以 auth.md 为准。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
         '403':
           $ref: '#/components/responses/RequestNotAllowed'
         '400':
@@ -170,88 +414,325 @@ paths:
         '415':
           $ref: '#/components/responses/UnsupportedMediaType'
         '422':
-          $ref: '#/components/responses/PasswordResetInvalidInput'
-  /api/auth/logout:
-    parameters:
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - oneOf:
+                  - $ref: '#/components/schemas/InvalidRequestBodyProblem'
+                  - $ref: '#/components/schemas/UnknownFieldProblem'
+                  - $ref: '#/components/schemas/RequiredFieldProblem'
+                  - $ref: '#/components/schemas/InvalidFieldTypeProblem'
+                  - $ref: '#/components/schemas/InvalidFieldValueProblem'
+                  - $ref: '#/components/schemas/EmailEmptyProblem'
+                  - $ref: '#/components/schemas/EmailInvalidFormatProblem'
+                  - $ref: '#/components/schemas/PasswordTooShortProblem'
+                  - $ref: '#/components/schemas/PasswordTooLongProblem'
+                  - $ref: '#/components/schemas/VerificationCodeInvalidFormatProblem'
+                  - $ref: '#/components/schemas/VerificationCodeMissingProblem'
+                  - $ref: '#/components/schemas/VerificationCodeBindingMismatchProblem'
+                  - $ref: '#/components/schemas/VerificationCodeConsumedProblem'
+                  - $ref: '#/components/schemas/VerificationCodeReplacedProblem'
+                  - $ref: '#/components/schemas/VerificationCodeExpiredProblem'
+                  - $ref: '#/components/schemas/VerificationCodeIncorrectProblem'
+                  - $ref: '#/components/schemas/VerificationCodeExhaustedProblem'
+                - properties:
+                    field:
+                      enum:
+                      - verificationCode
+                      - password
+                      - challengeId
+                      - email
+        '503':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AccountStoreUnavailableProblem'
+                - $ref: '#/components/schemas/ServiceUnavailableProblem'
+        '409':
+          $ref: '#/components/responses/BrowserContextRequired'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+            examples:
+              sample:
+                $ref: '#/components/examples/ResetPassword'
+  /api/auth/session:
+    get:
+      operationId: getSession
+      summary: 读取页面会话与可恢复目标
+      x-interaction-id: I06
+      x-contract-status: frozen
+      description: 无 Cookie 为200匿名；GET 不创建/激活/恢复身份，不续期。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
+      security:
+      - {}
+      - SessionCookie: []
+      responses:
+        '200':
+          description: 读取页面会话与可恢复目标完成；业务时点以 auth.md 为准。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionStatus'
+              examples:
+                sample:
+                  $ref: '#/components/examples/AnonymousStatus'
+        '401':
+          $ref: '#/components/responses/SessionInvalid'
+        '503':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AccountStoreUnavailableProblem'
+                - $ref: '#/components/schemas/SessionStoreUnavailableProblem'
+                - $ref: '#/components/schemas/ServiceUnavailableProblem'
+        '409':
+          $ref: '#/components/responses/BrowserContextRequired'
+    post:
+      operationId: changeSession
+      summary: 建立浏览器上下文、激活或恢复会话
+      x-interaction-id: I06
+      x-contract-status: frozen
+      description: bootstrap 可无 Cookie；activate/restore 必须有效 Cookie 和目标绑定。activate 的 session 为 active；bootstrap/restore
+        结果结构由 SessionStatus 表达。命令成功同参重试不延长有效期。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
       - $ref: '#/components/parameters/RequestReferer'
-    post:
-      operationId: logout
-      summary: 退出登录
-      description: |
-        对应 CA07/CA25 已有退出动作，目前只确认 POST 地址和 D13/D14 通用约束。
-        请求体、凭据要求、会话影响范围、重复或无会话时的结果及清理时点待 G01/G03。
-        未声明 requestBody 不表示已约定无请求体；未定义成功响应，不预先指定 204。
-      x-interaction-id: I07
-      x-contract-status: partial
-      x-unresolved: [G01, G03]
+      security:
+      - {}
+      - SessionCookie: []
       responses:
+        '200':
+          description: 建立浏览器上下文、激活或恢复会话完成；业务时点以 auth.md 为准。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+            Set-Cookie:
+              $ref: '#/components/headers/SessionSetCookie'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionStatus'
+              examples:
+                sample:
+                  $ref: '#/components/examples/ActiveStatus'
         '403':
           $ref: '#/components/responses/RequestNotAllowed'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - oneOf:
+                  - $ref: '#/components/schemas/InvalidRequestBodyProblem'
+                  - $ref: '#/components/schemas/UnknownFieldProblem'
+                  - $ref: '#/components/schemas/RequiredFieldProblem'
+                  - $ref: '#/components/schemas/InvalidFieldTypeProblem'
+                  - $ref: '#/components/schemas/InvalidFieldValueProblem'
+                - properties:
+                    field:
+                      enum:
+                      - action
+                      - sessionId
+                      - rememberMe
+        '401':
+          $ref: '#/components/responses/SessionInvalid'
+        '409':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/SessionStateConflictProblem'
+                - $ref: '#/components/schemas/BrowserContextRequiredProblem'
+        '503':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AccountStoreUnavailableProblem'
+                - $ref: '#/components/schemas/SessionStoreUnavailableProblem'
+                - $ref: '#/components/schemas/SessionPersistenceUnavailableProblem'
+                - $ref: '#/components/schemas/ServiceUnavailableProblem'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionCommand'
+            examples:
+              sample:
+                $ref: '#/components/examples/ActivateRemembered'
+  /api/auth/logout:
+    post:
+      operationId: logout
+      summary: 撤销指定当前会话
+      x-interaction-id: I07
+      x-contract-status: frozen
+      description: 缺Cookie/无匹配/重复均204。sessionId=null不选择或撤销其他身份。剩余会话为空才清除Cookie。响应未知时重试同目标。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      security:
+      - {}
+      - SessionCookie: []
+      responses:
+        '204':
+          description: 撤销指定当前会话完成；业务时点以 auth.md 为准。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+            Set-Cookie:
+              $ref: '#/components/headers/SessionSetCookie'
+        '403':
+          $ref: '#/components/responses/RequestNotAllowed'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - oneOf:
+                  - $ref: '#/components/schemas/InvalidRequestBodyProblem'
+                  - $ref: '#/components/schemas/UnknownFieldProblem'
+                  - $ref: '#/components/schemas/RequiredFieldProblem'
+                  - $ref: '#/components/schemas/InvalidFieldTypeProblem'
+                  - $ref: '#/components/schemas/InvalidFieldValueProblem'
+                - properties:
+                    field:
+                      enum:
+                      - sessionId
+        '503':
+          description: 本操作的拒绝；首错及无副作用保证见 auth.md。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/SessionStoreUnavailableProblem'
+                - $ref: '#/components/schemas/ServiceUnavailableProblem'
+        '409':
+          $ref: '#/components/responses/BrowserContextRequired'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+            examples:
+              sample:
+                $ref: '#/components/examples/Logout'
 components:
   securitySchemes:
     SessionCookie:
       type: apiKey
       in: cookie
       name: __Host-teachbuddy_session
-      description: |
-        后端通过 Set-Cookie 设置的会话凭据，浏览器保存并自动携带。
-        必须包含 HttpOnly、Secure、Path=/、SameSite=Lax，不设置 Domain。
-        浏览器契约验证和本地联调使用 HTTPS 同源入口及相同固定属性。
-        apiKey 是 OpenAPI 对 Cookie 凭据的表示，不要求教师申请或填写 API 密钥。
-        前端脚本不读取或存储其值，也不解析其内部格式。
-        Expires、Max-Age、产生/替换/清除时点及操作级认证要求仍待 G03。
+      description: HttpOnly; Secure; Path=/; SameSite=Lax；不设 Domain。只由浏览器自动携带，不返回或存入前端。Cookie容器与页面上下文共同选择服务端会话；只有active且未到期/撤销才能授权。见
+        auth.md。
   parameters:
     BrowserRequestProtection:
       name: X-TeachBuddy-Request
       in: header
       required: true
-      description: |
-        前端为原本允许发出的认证写请求添加的固定保护头；不是秘密或登录凭据。
-        缺少或值不符时，若无其他竞争拒绝条件，返回 403 RequestNotAllowed，不作为 JSON 字段错误。
-        本地校验不通过时仍不发送请求；该头不属于请求体属性。
       schema:
         type: string
         const: '1'
+      description: 固定非秘密保护头；缺失/不符返回403，先于业务。
     RequestOrigin:
       name: Origin
       in: header
       required: false
-      description: |
-        浏览器管理此头，前端脚本不手动设置。后端将其完整来源与部署配置的公开来源比较。
-        有值时必须有效且相符；null、格式错误或不符均拒绝，不能转而使用 Referer 放行。
-        仅缺失时才回退到 Referer；这里的 required=false 只表达有条件回退，不允许无来源通过。
-        来源保护不满足时，在无其他竞争拒绝条件下返回 403 RequestNotAllowed。
-        后端直接 HTTP 测试需显式提供测试来源或有效的 Referer 回退。
       schema:
         type: string
+      description: 浏览器管理；有值时严格匹配可信公开来源；null/错误不回退。仅缺失才用 Referer。
     RequestReferer:
       name: Referer
       in: header
       required: false
-      description: |
-        仅在 Origin 缺失时解析本头的来源；按完整协议、主机与端口和可信公开来源比较。
-        Origin 和本头都缺失、或回退时无法解析/来源不符，均返回 403 RequestNotAllowed。
-        浏览器管理此头，前端脚本不手动伪造；来源检查不采用字符串前缀或子域后缀匹配。
       schema:
         type: string
+      description: 仅 Origin 缺失时解析完整来源；两者皆无或来源不符拒绝。
+    PageContext:
+      name: X-TeachBuddy-Page
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/PageContext'
+      example: '0123456789abcdef0123456789abcdef'
+      description: 只选择 Cookie 内当前页面绑定，不能单独授权；由认证 transport 同样附于工作台请求。认证操作缺失/形状错误为409 browser-context-required；工作台缺失/形状错误或无有效绑定由身份门禁返回401 workbench/unauthenticated，写来源防护仍先于身份。
   headers:
     AuthCacheControl:
       required: true
-      description: |
-        所有认证成功和失败响应必须提供；未来补齐的成功响应也沿用。
-        不以此代替会话撤销，不宣称清空已有缓存、Cookie 或页面状态。
       schema:
         type: string
         const: no-store
+      description: 所有认证响应必需。
+    SessionSetCookie:
+      schema:
+        type: string
+      description: 仅 bootstrap/remembered 激活或最终清除时出现。固定 __Host-teachbuddy_session，HttpOnly; Secure; Path=/;
+        SameSite=Lax，无 Domain。bootstrap 无到期属性；remembered Max-Age<=604800 且不超过剩余绝对期限；清除 Max-Age=0。见 auth.md。
+    RetryAfter:
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 30
+      description: 剩余冷却向上取整秒数，与 body retryAfterSeconds 相同。
   responses:
     RequestNotAllowed:
-      description: |
-        Origin/Referer 来源检查或固定保护头不满足，且没有其他竞争拒绝条件。
-        HTTP 403，不关联表单字段，不进入账户、密码、验证码或会话的业务变更。
-        该浏览器 API 不向其他来源开放 CORS 访问；不能仅靠浏览器禁止读取响应来代替服务端拒绝。
-        具体页面提示及恢复仍待 G01。
+      description: 来源/保护头拒绝，无业务副作用。
       headers:
         Cache-Control:
           $ref: '#/components/headers/AuthCacheControl'
@@ -260,10 +741,10 @@ components:
           schema:
             $ref: '#/components/schemas/RequestNotAllowedProblem'
           examples:
-            denied:
+            sample:
               $ref: '#/components/examples/RequestNotAllowed'
     MalformedJson:
-      description: 请求体不是合法 JSON，不关联表单字段。协议拒绝已定义，页面呈现待 G01。
+      description: JSON 解析失败，包括空 body。
       headers:
         Cache-Control:
           $ref: '#/components/headers/AuthCacheControl'
@@ -272,10 +753,10 @@ components:
           schema:
             $ref: '#/components/schemas/MalformedJsonProblem'
           examples:
-            malformed:
+            sample:
               $ref: '#/components/examples/MalformedJson'
     UnsupportedMediaType:
-      description: 请求媒体类型不受支持，不关联表单字段。协议拒绝已定义，页面呈现待 G01。
+      description: POST 只接受 application/json，可带 UTF-8 charset。
       headers:
         Cache-Control:
           $ref: '#/components/headers/AuthCacheControl'
@@ -284,73 +765,166 @@ components:
           schema:
             $ref: '#/components/schemas/UnsupportedMediaTypeProblem'
           examples:
-            unsupported:
+            sample:
               $ref: '#/components/examples/UnsupportedMediaType'
-    EmailCodeInvalidInput:
-      description: |
-        两类发码操作的已确认输入拒绝：四类协议问题及邮箱空值或格式错误。
-        正常前端先本地拦截邮箱错误；本响应约束后端实际收到不合规请求时的拒绝。
-        已有邮箱错误在邮箱字段使用上游文案；通用协议错误的页面呈现仍待 G01。
-        完整输入、其他结果及未定首错顺序仍待相应 G 项，不能把部分 schema 当作结果全集。
-      x-contract-status: partial
+    InvalidRequestBody:
+      description: JSON 根不是对象。
       headers:
         Cache-Control:
           $ref: '#/components/headers/AuthCacheControl'
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/EmailCodeInputProblem'
+            $ref: '#/components/schemas/InvalidRequestBodyProblem'
           examples:
-            nonObject:
+            sample:
               $ref: '#/components/examples/InvalidRequestBody'
-            unknownField:
+    UnknownField:
+      description: 含当前操作未声明的 JSON 属性。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/UnknownFieldProblem'
+          examples:
+            sample:
               $ref: '#/components/examples/UnknownField'
-            missingEmail:
-              $ref: '#/components/examples/RequiredEmail'
-            emailType:
-              $ref: '#/components/examples/InvalidEmailType'
-            emptyEmail:
+    RequiredField:
+      description: 缺少必填属性，按 required 顺序定位。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RequiredFieldProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/RequiredField'
+    InvalidFieldType:
+      description: JSON 类型不符；不进行隐式转换。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/InvalidFieldTypeProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/InvalidFieldType'
+    InvalidFieldValue:
+      description: 命令 action/标识形状不符；已命名业务字段错误优先使用专有 type。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/InvalidFieldValueProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/InvalidFieldValue'
+    EmailEmpty:
+      description: 规范化后邮箱为空。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/EmailEmptyProblem'
+          examples:
+            sample:
               $ref: '#/components/examples/EmailEmpty'
-            emailFormat:
+    EmailInvalidFormat:
+      description: 规范邮箱形状或254总长度/各段边界不符。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/EmailInvalidFormatProblem'
+          examples:
+            sample:
               $ref: '#/components/examples/EmailInvalidFormat'
-    LoginInvalidInput:
-      description: 登录的已确认协议或字段拒绝。正常前端先本地校验；具体错误只涉及登录字段。完整输入及结果仍待补齐。
-      x-contract-status: partial
+    NicknameEmpty:
+      description: trim 后昵称为空。
       headers:
         Cache-Control:
           $ref: '#/components/headers/AuthCacheControl'
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/LoginInputProblem'
-    RegistrationInvalidInput:
-      description: 注册提交的已确认协议或字段拒绝。正常前端先本地校验；验证码真实值由后端判断，不接收或校验确认密码。完整验证码上下文及结果仍待补齐。
-      x-contract-status: partial
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/AuthCacheControl'
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RegistrationInputProblem'
+            $ref: '#/components/schemas/NicknameEmptyProblem'
           examples:
-            incorrectCode:
-              $ref: '#/components/examples/VerificationCodeIncorrect'
-    PasswordResetInvalidInput:
-      description: 密码重置的已确认协议或字段拒绝。验证码字符形状与真实性分别裁决；邮箱参与确认的方式仍待 G02，本轮没有据此添加重置步骤的邮箱产品错误。
-      x-contract-status: partial
+            sample:
+              $ref: '#/components/examples/NicknameEmpty'
+    NicknameTooLong:
+      description: trim 后超过40个 code points。
       headers:
         Cache-Control:
           $ref: '#/components/headers/AuthCacheControl'
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/PasswordResetInputProblem'
+            $ref: '#/components/schemas/NicknameTooLongProblem'
           examples:
-            incorrectCode:
-              $ref: '#/components/examples/VerificationCodeIncorrect'
+            sample:
+              $ref: '#/components/examples/NicknameTooLong'
+    PasswordTooShort:
+      description: 少于8个 code points。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/PasswordTooShortProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/PasswordTooShort'
+    PasswordTooLong:
+      description: 超过128个 code points。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/PasswordTooLongProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/PasswordTooLong'
+    VerificationCodeInvalidFormat:
+      description: 不是6位 ASCII 数字字符串；不扣次数。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/VerificationCodeInvalidFormatProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/VerificationCodeInvalidFormat'
+    TermsNotAccepted:
+      description: 必须为 true，验证码值判断前拒绝。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/TermsNotAcceptedProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/TermsNotAccepted'
     EmailAlreadyRegistered:
-      description: 注册邮箱已占用；在邮箱字段显示上游 S20 文案，申请注册码时不发送邮件。
+      description: 邮箱已占用；不消费挑战，发码操作不投递。
       headers:
         Cache-Control:
           $ref: '#/components/headers/AuthCacheControl'
@@ -359,8 +933,1092 @@ components:
           schema:
             $ref: '#/components/schemas/EmailAlreadyRegisteredProblem'
           examples:
-            occupied:
+            sample:
               $ref: '#/components/examples/EmailAlreadyRegistered'
+    EmailNotRegistered:
+      description: 找回邮箱不存在，不投递。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/EmailNotRegisteredProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/EmailNotRegistered'
+    CredentialsRejected:
+      description: 邮箱不存在与密码不符同一结果，不透露账户存在性。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/CredentialsRejectedProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/CredentialsRejected'
+    RegistrationClosed:
+      description: 不创建账户、不发注册码、不消费挑战；登录找回仍可用。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RegistrationClosedProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/RegistrationClosed'
+    VerificationCodeMissing:
+      description: challengeId 空字符串或查无挑战，要求重新发码。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/VerificationCodeMissingProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/VerificationCodeMissing'
+    VerificationCodeBindingMismatch:
+      description: 用途或规范邮箱不匹配，不扣次数。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/VerificationCodeBindingMismatchProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/VerificationCodeBindingMismatch'
+    VerificationCodeConsumed:
+      description: 挑战已成功消费，要求重新发码或用已提交密码登录恢复。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/VerificationCodeConsumedProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/VerificationCodeConsumed'
+    VerificationCodeReplaced:
+      description: 成功重发已经替换此挑战。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/VerificationCodeReplacedProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/VerificationCodeReplaced'
+    VerificationCodeExpired:
+      description: 服务端 now>=expiresAt，要求重发。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/VerificationCodeExpiredProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/VerificationCodeExpired'
+    VerificationCodeIncorrect:
+      description: 形状合法且绑定/生命周期有效，值错，返回剩余次数。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/VerificationCodeIncorrectProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/VerificationCodeIncorrect'
+    VerificationCodeExhausted:
+      description: 第五次值错及其后，剩余次数0，必须重发。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/VerificationCodeExhaustedProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/VerificationCodeExhausted'
+    CodeSendCooldown:
+      description: 同用途+规范邮箱发码冷却中，没有投递或挑战变化。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/CodeSendCooldownProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/CodeSendCooldown'
+    CodeDeliveryUnavailable:
+      description: 新挑战未激活；旧挑战保留。可能已有邮件被外部提供者接受，不声称到达或绝无投递。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/CodeDeliveryUnavailableProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/CodeDeliveryUnavailable'
+    AccountStoreUnavailable:
+      description: 账户不可读/损坏，或账户业务写入已回滚；不回种子账户。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/AccountStoreUnavailableProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/AccountStoreUnavailable'
+    SessionPersistenceUnavailable:
+      description: 记住我激活尚未提交，pending 身份保留，可重试或继续当前页。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/SessionPersistenceUnavailableProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/SessionPersistenceUnavailable'
+    SessionStoreUnavailable:
+      description: 会话读取失败或会话命令已回滚，可重试。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/SessionStoreUnavailableProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/SessionStoreUnavailable'
+    BrowserContextRequired:
+      description: 页面头缺失/形状错误，或需要的 bootstrap Cookie 未建立；先恢复浏览器上下文。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/BrowserContextRequiredProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/BrowserContextRequired'
+    SessionInvalid:
+      description: 会话/Cookie 无效、撤销、到期或绑定不匹配；不授权业务。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/SessionInvalidProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/SessionInvalid'
+    SessionStateConflict:
+      description: 会话已激活为另一模式或请求 remembered 超出原 rememberMe；GET 核实，不重做账户业务。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/SessionStateConflictProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/SessionStateConflict'
+    ServiceUnavailable:
+      description: 操作尚未提交或已回滚的服务故障；若无法确认提交结果，断开响应，不伪造此拒绝。
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/AuthCacheControl'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ServiceUnavailableProblem'
+          examples:
+            sample:
+              $ref: '#/components/examples/ServiceUnavailable'
+  schemas:
+    OpaqueId:
+      type: string
+      minLength: 1
+      maxLength: 200
+      pattern: ^[A-Za-z0-9_-]+$(?![\s\S])
+      description: 服务端生成的不可预测标识；不是账户凭据，不能脱离 Cookie 授权。
+    PageContext:
+      type: string
+      minLength: 32
+      maxLength: 32
+      pattern: ^[0-9a-f]{32}$
+      description: 当前内存中的随机页面上下文；刷新/重开/放弃上下文时重新生成，不持久保存。
+    CanonicalEmail:
+      type: string
+      minLength: 3
+      maxLength: 254
+      pattern: ^(?=.{1,254}$)(?=.{1,64}@)[a-z0-9_%+\-]+(?:\.[a-z0-9_%+\-]+)*@[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?)+$(?![\s\S])
+      description: 规范 ASCII 邮箱；恰好一个 @，本地 1-64、无首尾/连续点；域至少两标签，每段 1-63，无首尾连字符。不做 DNS 查询。
+    EmailInput:
+      type: string
+      description: 类型校验后执行 ECMAScript trim，再 ASCII 小写，结果必须通过 CanonicalEmail；此 schema 的原始字符串不以 format:email
+        代替规范化后的验证。
+      x-normalize:
+      - ECMAScript-trim
+      - ASCII-lowercase
+      x-normalized-schema:
+        $ref: '#/components/schemas/CanonicalEmail'
+    CanonicalNickname:
+      type: string
+      minLength: 1
+      maxLength: 40
+      description: ECMAScript trim 后的账户昵称，按 Unicode code points 计数；不从邮箱派生。
+    NicknameInput:
+      type: string
+      description: 类型检查后 ECMAScript trim，结果必须满足 CanonicalNickname；键入时不改写显示。
+      x-normalize:
+      - ECMAScript-trim
+      x-normalized-schema:
+        $ref: '#/components/schemas/CanonicalNickname'
+    PasswordInput:
+      type: string
+      minLength: 8
+      maxLength: 128
+      description: Unicode code points 计数，保留首尾空白、大小写和 Unicode 原形，不 trim/normalize。
+    VerificationCodeInput:
+      type: string
+      minLength: 6
+      maxLength: 6
+      pattern: ^[0-9]{6}$
+      examples:
+      - '001234'
+    TermsAcceptanceInput:
+      type: boolean
+      const: true
+    Account:
+      type: object
+      properties:
+        accountKey:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 服务端分配且永久稳定的账户分区键；登录/重置/重启不变，永不重新分配。不是凭据。
+        email:
+          $ref: '#/components/schemas/CanonicalEmail'
+        nickname:
+          $ref: '#/components/schemas/CanonicalNickname'
+      required:
+      - accountKey
+      - email
+      - nickname
+      additionalProperties: true
+    Session:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/OpaqueId'
+        account:
+          $ref: '#/components/schemas/Account'
+        state:
+          enum:
+          - pending
+          - active
+        persistence:
+          enum:
+          - page
+          - remembered
+        rememberRequested:
+          type: boolean
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - id
+      - account
+      - state
+      - persistence
+      - rememberRequested
+      - issuedAt
+      - expiresAt
+      additionalProperties: true
+      description: pending 尚未授权。pending 的 persistence=page；rememberRequested=true 时 expiresAt=issuedAt+7天。active
+        page 的 expiresAt=null；active remembered 的 expiresAt=issuedAt+7天。
+      allOf:
+      - if:
+          properties:
+            state:
+              const: pending
+        then:
+          properties:
+            persistence:
+              const: page
+      - if:
+          properties:
+            state:
+              const: active
+            persistence:
+              const: page
+        then:
+          properties:
+            expiresAt:
+              type: 'null'
+      - if:
+          properties:
+            persistence:
+              const: remembered
+        then:
+          properties:
+            state:
+              const: active
+            rememberRequested:
+              const: true
+            expiresAt:
+              type: string
+              format: date-time
+      - if:
+          properties:
+            state:
+              const: pending
+            rememberRequested:
+              const: true
+        then:
+          properties:
+            expiresAt:
+              type: string
+              format: date-time
+      - if:
+          properties:
+            state:
+              const: pending
+            rememberRequested:
+              const: false
+        then:
+          properties:
+            expiresAt:
+              type: 'null'
+    PendingSession:
+      allOf:
+      - $ref: '#/components/schemas/Session'
+      - properties:
+          state:
+            const: pending
+    ActiveSession:
+      allOf:
+      - $ref: '#/components/schemas/Session'
+      - properties:
+          state:
+            const: active
+    RememberedSession:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/OpaqueId'
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - expiresAt
+      additionalProperties: true
+      description: 只有同一 Cookie 容器的可恢复目标元数据，不是客户端身份依据。
+    SessionStatus:
+      type: object
+      properties:
+        browserReady:
+          type: boolean
+        registrationOpen:
+          type: boolean
+        session:
+          oneOf:
+          - $ref: '#/components/schemas/Session'
+          - type: 'null'
+        rememberedSession:
+          oneOf:
+          - $ref: '#/components/schemas/RememberedSession'
+          - type: 'null'
+        serverTime:
+          type: string
+          format: date-time
+      required:
+      - browserReady
+      - registrationOpen
+      - session
+      - rememberedSession
+      - serverTime
+      additionalProperties: true
+      description: GET 是快照，不创建/绑定身份。无 Cookie 正常返回 browserReady=false，两个 session 为 null。损坏/失效 Cookie 返回 401；存储不可读返回
+        503。
+    Challenge:
+      type: object
+      properties:
+        challengeId:
+          $ref: '#/components/schemas/OpaqueId'
+        purpose:
+          enum:
+          - registration
+          - password-reset
+        email:
+          $ref: '#/components/schemas/CanonicalEmail'
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        resendAt:
+          type: string
+          format: date-time
+        serverTime:
+          type: string
+          format: date-time
+        remainingAttempts:
+          type: integer
+          const: 5
+      required:
+      - challengeId
+      - purpose
+      - email
+      - issuedAt
+      - expiresAt
+      - resendAt
+      - serverTime
+      - remainingAttempts
+      additionalProperties: true
+      description: 已被邮件提供者接受且新挑战已持久激活；不保证到达收件箱，不含验证码。expiresAt=issuedAt+600秒，resendAt=issuedAt+30秒。
+    RegistrationChallenge:
+      allOf:
+      - $ref: '#/components/schemas/Challenge'
+      - properties:
+          purpose:
+            const: registration
+    PasswordResetChallenge:
+      allOf:
+      - $ref: '#/components/schemas/Challenge'
+      - properties:
+          purpose:
+            const: password-reset
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          $ref: '#/components/schemas/EmailInput'
+        password:
+          $ref: '#/components/schemas/PasswordInput'
+        rememberMe:
+          type: boolean
+      required:
+      - email
+      - password
+      - rememberMe
+      additionalProperties: false
+    EmailCodeRequest:
+      type: object
+      properties:
+        email:
+          $ref: '#/components/schemas/EmailInput'
+      required:
+      - email
+      additionalProperties: false
+    RegistrationRequest:
+      type: object
+      properties:
+        email:
+          $ref: '#/components/schemas/EmailInput'
+        nickname:
+          $ref: '#/components/schemas/NicknameInput'
+        password:
+          $ref: '#/components/schemas/PasswordInput'
+        challengeId:
+          $ref: '#/components/schemas/OpaqueId'
+        verificationCode:
+          $ref: '#/components/schemas/VerificationCodeInput'
+        termsAccepted:
+          $ref: '#/components/schemas/TermsAcceptanceInput'
+        rememberMe:
+          type: boolean
+      required:
+      - email
+      - nickname
+      - password
+      - challengeId
+      - verificationCode
+      - termsAccepted
+      - rememberMe
+      additionalProperties: false
+    PasswordResetRequest:
+      type: object
+      properties:
+        verificationCode:
+          $ref: '#/components/schemas/VerificationCodeInput'
+        password:
+          $ref: '#/components/schemas/PasswordInput'
+        challengeId:
+          $ref: '#/components/schemas/OpaqueId'
+        email:
+          $ref: '#/components/schemas/EmailInput'
+      required:
+      - verificationCode
+      - password
+      - challengeId
+      - email
+      additionalProperties: false
+    BootstrapRequest:
+      type: object
+      properties:
+        action:
+          const: bootstrap
+      required:
+      - action
+      additionalProperties: false
+    ActivateRequest:
+      type: object
+      properties:
+        action:
+          const: activate
+        sessionId:
+          $ref: '#/components/schemas/OpaqueId'
+        rememberMe:
+          type: boolean
+      required:
+      - action
+      - sessionId
+      - rememberMe
+      additionalProperties: false
+      description: true 仅用于原登录/注册 rememberMe=true 的 pending；false 可继续当前页。相同选择重试安全，不重复账户业务。
+    RestoreRequest:
+      type: object
+      properties:
+        action:
+          const: restore
+        sessionId:
+          $ref: '#/components/schemas/OpaqueId'
+      required:
+      - action
+      - sessionId
+      additionalProperties: false
+    SessionCommand:
+      oneOf:
+      - $ref: '#/components/schemas/BootstrapRequest'
+      - $ref: '#/components/schemas/ActivateRequest'
+      - $ref: '#/components/schemas/RestoreRequest'
+    LogoutRequest:
+      type: object
+      properties:
+        sessionId:
+          oneOf:
+          - $ref: '#/components/schemas/OpaqueId'
+          - type: 'null'
+      required:
+      - sessionId
+      additionalProperties: false
+      description: 定向撤销页面绑定或同容器恢复目标；null 不选择其他会话，无目标也返回204。
+    ProblemDetailsBase:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri-reference
+        field:
+          type: string
+      required:
+      - type
+      additionalProperties: true
+      description: 单一主要问题；允许附加响应字段。type 决定语义，status 若存在须匹配 HTTP。title/detail 不决定 UI 文案。
+    RequestNotAllowedProblem:
+      description: 来源/保护头拒绝，无业务副作用。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/request-not-allowed
+          status:
+            const: 403
+          field: false
+        required: []
+    MalformedJsonProblem:
+      description: JSON 解析失败，包括空 body。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/malformed-json
+          status:
+            const: 400
+          field: false
+        required: []
+    UnsupportedMediaTypeProblem:
+      description: POST 只接受 application/json，可带 UTF-8 charset。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/unsupported-media-type
+          status:
+            const: 415
+          field: false
+        required: []
+    InvalidRequestBodyProblem:
+      description: JSON 根不是对象。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/invalid-request-body
+          status:
+            const: 422
+          field: false
+        required: []
+    UnknownFieldProblem:
+      description: 含当前操作未声明的 JSON 属性。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/unknown-field
+          status:
+            const: 422
+          field: false
+        required: []
+    RequiredFieldProblem:
+      description: 缺少必填属性，按 required 顺序定位。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/required-field
+          status:
+            const: 422
+          field:
+            type: string
+        required:
+        - field
+    InvalidFieldTypeProblem:
+      description: JSON 类型不符；不进行隐式转换。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/invalid-field-type
+          status:
+            const: 422
+          field:
+            type: string
+        required:
+        - field
+    InvalidFieldValueProblem:
+      description: 命令 action/标识形状不符；已命名业务字段错误优先使用专有 type。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/invalid-field-value
+          status:
+            const: 422
+          field:
+            type: string
+        required:
+        - field
+    EmailEmptyProblem:
+      description: 规范化后邮箱为空。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/email-empty
+          status:
+            const: 422
+          field:
+            const: email
+        required:
+        - field
+    EmailInvalidFormatProblem:
+      description: 规范邮箱形状或254总长度/各段边界不符。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/email-invalid-format
+          status:
+            const: 422
+          field:
+            const: email
+        required:
+        - field
+    NicknameEmptyProblem:
+      description: trim 后昵称为空。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/nickname-empty
+          status:
+            const: 422
+          field:
+            const: nickname
+        required:
+        - field
+    NicknameTooLongProblem:
+      description: trim 后超过40个 code points。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/nickname-too-long
+          status:
+            const: 422
+          field:
+            const: nickname
+        required:
+        - field
+    PasswordTooShortProblem:
+      description: 少于8个 code points。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/password-too-short
+          status:
+            const: 422
+          field:
+            const: password
+        required:
+        - field
+    PasswordTooLongProblem:
+      description: 超过128个 code points。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/password-too-long
+          status:
+            const: 422
+          field:
+            const: password
+        required:
+        - field
+    VerificationCodeInvalidFormatProblem:
+      description: 不是6位 ASCII 数字字符串；不扣次数。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/verification-code-invalid-format
+          status:
+            const: 422
+          field:
+            const: verificationCode
+        required:
+        - field
+    TermsNotAcceptedProblem:
+      description: 必须为 true，验证码值判断前拒绝。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/terms-not-accepted
+          status:
+            const: 422
+          field:
+            const: termsAccepted
+        required:
+        - field
+    EmailAlreadyRegisteredProblem:
+      description: 邮箱已占用；不消费挑战，发码操作不投递。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/email-already-registered
+          status:
+            const: 409
+          field:
+            const: email
+        required:
+        - field
+    EmailNotRegisteredProblem:
+      description: 找回邮箱不存在，不投递。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/email-not-registered
+          status:
+            const: 422
+          field:
+            const: email
+        required:
+        - field
+    CredentialsRejectedProblem:
+      description: 邮箱不存在与密码不符同一结果，不透露账户存在性。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/credentials-rejected
+          status:
+            const: 401
+          field: false
+        required: []
+    RegistrationClosedProblem:
+      description: 不创建账户、不发注册码、不消费挑战；登录找回仍可用。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/registration-closed
+          status:
+            const: 403
+          field: false
+        required: []
+    VerificationCodeMissingProblem:
+      description: challengeId 空字符串或查无挑战，要求重新发码。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/verification-code-missing
+          status:
+            const: 422
+          field:
+            const: verificationCode
+        required:
+        - field
+    VerificationCodeBindingMismatchProblem:
+      description: 用途或规范邮箱不匹配，不扣次数。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/verification-code-binding-mismatch
+          status:
+            const: 422
+          field:
+            const: verificationCode
+        required:
+        - field
+    VerificationCodeConsumedProblem:
+      description: 挑战已成功消费，要求重新发码或用已提交密码登录恢复。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/verification-code-consumed
+          status:
+            const: 422
+          field:
+            const: verificationCode
+        required:
+        - field
+    VerificationCodeReplacedProblem:
+      description: 成功重发已经替换此挑战。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/verification-code-replaced
+          status:
+            const: 422
+          field:
+            const: verificationCode
+        required:
+        - field
+    VerificationCodeExpiredProblem:
+      description: 服务端 now>=expiresAt，要求重发。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/verification-code-expired
+          status:
+            const: 422
+          field:
+            const: verificationCode
+        required:
+        - field
+    VerificationCodeIncorrectProblem:
+      description: 形状合法且绑定/生命周期有效，值错，返回剩余次数。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/verification-code-incorrect
+          status:
+            const: 422
+          field:
+            const: verificationCode
+          remainingAttempts:
+            type: integer
+            minimum: 1
+            maximum: 4
+        required:
+        - field
+        - remainingAttempts
+    VerificationCodeExhaustedProblem:
+      description: 第五次值错及其后，剩余次数0，必须重发。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/verification-code-exhausted
+          status:
+            const: 422
+          field:
+            const: verificationCode
+          remainingAttempts:
+            type: integer
+            const: 0
+        required:
+        - field
+        - remainingAttempts
+    CodeSendCooldownProblem:
+      description: 同用途+规范邮箱发码冷却中，没有投递或挑战变化。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/code-send-cooldown
+          status:
+            const: 429
+          field: false
+          retryAfterSeconds:
+            type: integer
+            minimum: 1
+            maximum: 30
+          resendAt:
+            type: string
+            format: date-time
+        required:
+        - retryAfterSeconds
+        - resendAt
+    CodeDeliveryUnavailableProblem:
+      description: 新挑战未激活；旧挑战保留。可能已有邮件被外部提供者接受，不声称到达或绝无投递。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/code-delivery-unavailable
+          status:
+            const: 503
+          field: false
+        required: []
+    AccountStoreUnavailableProblem:
+      description: 账户不可读/损坏，或账户业务写入已回滚；不回种子账户。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/account-store-unavailable
+          status:
+            const: 503
+          field: false
+        required: []
+    SessionPersistenceUnavailableProblem:
+      description: 记住我激活尚未提交，pending 身份保留，可重试或继续当前页。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/session-persistence-unavailable
+          status:
+            const: 503
+          field: false
+        required: []
+    SessionStoreUnavailableProblem:
+      description: 会话读取失败或会话命令已回滚，可重试。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/session-store-unavailable
+          status:
+            const: 503
+          field: false
+        required: []
+    BrowserContextRequiredProblem:
+      description: 页面头缺失/形状错误，或需要的 bootstrap Cookie 未建立；先恢复浏览器上下文。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/browser-context-required
+          status:
+            const: 409
+          field: false
+        required: []
+    SessionInvalidProblem:
+      description: 会话/Cookie 无效、撤销、到期或绑定不匹配；不授权业务。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/session-invalid
+          status:
+            const: 401
+          field: false
+        required: []
+    SessionStateConflictProblem:
+      description: 会话已激活为另一模式或请求 remembered 超出原 rememberMe；GET 核实，不重做账户业务。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/session-state-conflict
+          status:
+            const: 409
+          field: false
+        required: []
+    ServiceUnavailableProblem:
+      description: 操作尚未提交或已回滚的服务故障；若无法确认提交结果，断开响应，不伪造此拒绝。
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetailsBase'
+      - properties:
+          type:
+            const: /problems/auth/service-unavailable
+          status:
+            const: 503
+          field: false
+        required: []
   examples:
     RequestNotAllowed:
       value:
@@ -377,15 +2035,17 @@ components:
     UnknownField:
       value:
         type: /problems/auth/unknown-field
-    RequiredEmail:
-      summary: 缺少必填 email 属性；不代表空字符串的产品错误
+    RequiredField:
       value:
         type: /problems/auth/required-field
         field: email
-    InvalidEmailType:
-      summary: email 的 JSON 类型不符；不代表邮箱字符串的格式错误
+    InvalidFieldType:
       value:
         type: /problems/auth/invalid-field-type
+        field: email
+    InvalidFieldValue:
+      value:
+        type: /problems/auth/invalid-field-value
         field: email
     EmailEmpty:
       value:
@@ -399,392 +2059,277 @@ components:
       value:
         type: /problems/auth/nickname-empty
         field: nickname
+    NicknameTooLong:
+      value:
+        type: /problems/auth/nickname-too-long
+        field: nickname
     PasswordTooShort:
       value:
         type: /problems/auth/password-too-short
         field: password
+    PasswordTooLong:
+      value:
+        type: /problems/auth/password-too-long
+        field: password
     VerificationCodeInvalidFormat:
       value:
         type: /problems/auth/verification-code-invalid-format
-        field: verificationCode
-    VerificationCodeIncorrect:
-      summary: CA22/CA35 的验证码值不匹配片段，排除其他竞争拒绝条件
-      value:
-        type: /problems/auth/verification-code-incorrect
         field: verificationCode
     TermsNotAccepted:
       value:
         type: /problems/auth/terms-not-accepted
         field: termsAccepted
     EmailAlreadyRegistered:
-      summary: CA13 已占用邮箱的拒绝片段
       value:
         type: /problems/auth/email-already-registered
         field: email
-  schemas:
-    ProtocolInputProblem:
-      description: |
-        已确认的四类 422 协议问题。根值不是对象或存在未知字段时不带 field。
-        缺少必填属性使用 required-field；当前不允许 null 的字段收到 null 使用 invalid-field-type。
-        field 须指向当前操作已声明的对应字段；缺失错误只能指向该操作的必填字段。
-        当前 Core 请求尚不完整，未知字段依最终完整 schema 判断，不提前封闭。
-        通用协议问题的页面呈现及未定义的多个错误优先级仍待 G01。
-      oneOf:
-        - $ref: '#/components/schemas/InvalidRequestBodyProblem'
-        - $ref: '#/components/schemas/UnknownFieldProblem'
-        - $ref: '#/components/schemas/RequiredFieldProblem'
-        - $ref: '#/components/schemas/InvalidFieldTypeProblem'
-    EmailCodeInputProblem:
-      description: 两类发码操作共用的已定义 422 结果；完整上下文就绪后需扩展对应字段与结果。
-      x-contract-status: partial
-      type: object
-      properties:
-        field:
-          enum: [email]
-      oneOf:
-        - $ref: '#/components/schemas/ProtocolInputProblem'
-        - $ref: '#/components/schemas/EmailEmptyProblem'
-        - $ref: '#/components/schemas/EmailInvalidFormatProblem'
-    LoginInputProblem:
-      description: 登录已定义的 422 结果；不包含昵称、条款或验证码字段的拒绝。
-      x-contract-status: partial
-      type: object
-      properties:
-        field:
-          enum: [email, password]
-      oneOf:
-        - $ref: '#/components/schemas/ProtocolInputProblem'
-        - $ref: '#/components/schemas/EmailEmptyProblem'
-        - $ref: '#/components/schemas/EmailInvalidFormatProblem'
-        - $ref: '#/components/schemas/PasswordTooShortProblem'
-    RegistrationInputProblem:
-      description: 注册已定义的 422 结果；确认密码及客户端已发码状态不是后端请求字段。
-      x-contract-status: partial
-      type: object
-      properties:
-        field:
-          enum: [nickname, email, password, verificationCode, termsAccepted]
-      oneOf:
-        - $ref: '#/components/schemas/ProtocolInputProblem'
-        - $ref: '#/components/schemas/EmailEmptyProblem'
-        - $ref: '#/components/schemas/EmailInvalidFormatProblem'
-        - $ref: '#/components/schemas/NicknameEmptyProblem'
-        - $ref: '#/components/schemas/PasswordTooShortProblem'
-        - $ref: '#/components/schemas/VerificationCodeInvalidFormatProblem'
-        - $ref: '#/components/schemas/VerificationCodeIncorrectProblem'
-        - $ref: '#/components/schemas/TermsNotAcceptedProblem'
-    PasswordResetInputProblem:
-      description: |
-        重置已定义的 422 结果；email 当前只作为待 G02 决定的请求字段片段，
-        不能据此宣布缺少 email 必须拒绝，也不引入第二步邮箱格式校验。
-        完整绑定上下文及请求必填字段尚需确定。
-      x-contract-status: partial
-      type: object
-      properties:
-        field:
-          enum: [email, password, verificationCode]
-      oneOf:
-        - $ref: '#/components/schemas/ProtocolInputProblem'
-        - $ref: '#/components/schemas/PasswordTooShortProblem'
-        - $ref: '#/components/schemas/VerificationCodeInvalidFormatProblem'
-        - $ref: '#/components/schemas/VerificationCodeIncorrectProblem'
-    LoginRequestCore:
-      type: object
-      required: [email, password]
-      properties:
-        email:
-          $ref: '#/components/schemas/EmailInput'
-        password:
-          $ref: '#/components/schemas/PasswordInput'
-      description: 已知必填输入片段，不是最终完整请求。记住我及其他会话上下文待 G03；补齐后按 D08 封闭请求并拒绝未知字段，当前片段不提前封闭。
-      x-contract-status: partial
-    EmailCodeRequestCore:
-      type: object
-      required: [email]
-      properties:
-        email:
-          $ref: '#/components/schemas/EmailInput'
-      description: 两类发码操作共用的已知邮箱输入；业务结果各自定义。完整上下文待 G02；补齐后按 D08 封闭请求并拒绝未知字段，当前片段不提前封闭。
-      x-contract-status: partial
-    RegistrationRequestCore:
-      type: object
-      required: [nickname, email, password, verificationCode, termsAccepted]
-      properties:
-        nickname:
-          $ref: '#/components/schemas/NicknameInput'
-        email:
-          $ref: '#/components/schemas/EmailInput'
-        password:
-          $ref: '#/components/schemas/PasswordInput'
-        verificationCode:
-          $ref: '#/components/schemas/VerificationCodeInput'
-        termsAccepted:
-          $ref: '#/components/schemas/TermsAcceptanceInput'
-      description: 已知必填输入片段；确认密码不传输。验证码绑定上下文待 G02；补齐后按 D08 封闭请求并拒绝未知字段，当前片段不提前封闭。
-      x-contract-status: partial
-    PasswordResetRequestCore:
-      type: object
-      required: [password, verificationCode]
-      properties:
-        email:
-          $ref: '#/components/schemas/EmailInput'
-        password:
-          $ref: '#/components/schemas/PasswordInput'
-        verificationCode:
-          $ref: '#/components/schemas/VerificationCodeInput'
-      description: |
-        已知密码与验证码输入片段，不是可直接实施的完整重置请求。
-        邮箱是否以该字段参与确认、绑定上下文的完整形状及更改邮箱的影响待 G02。
-        此处未将 email 列为必填，不表示已同意后端接受无身份绑定的重置。
-        完整上下文补齐后按 D08 封闭请求并拒绝未知字段，当前片段不提前封闭。
-      x-contract-status: partial
-    NicknameInput:
-      type: string
-      description: |
-        注册填写的昵称，对应字段 nickname。
-        当前只固定传输类型。已验收的去除首尾空白后非空规则及其精确处理方式待 D04 定义，
-        不能把此类型校验视为完整昵称校验。
-      x-contract-status: partial
-      x-unresolved: [D04, G06]
-    EmailInput:
-      type: string
-      description: |
-        教师输入的邮箱，对应字段 email。
-        当前只固定传输类型。空值、格式及归一化的完整规则待 D04，
-        不以 JSON Schema format 的某个实现默认值代替双方约定。
-      x-contract-status: partial
-      x-unresolved: [D04, G06]
-    PasswordInput:
-      type: string
-      description: |
-        对应字段 password；登录时为当前密码，注册或重置时为要设置的密码。
-        当前只固定传输类型。上游至少八位的计数方式、边界和输入处理待 D04 精确定义，
-        不能把此类型校验视为完整密码校验。确认密码值不传输。
-      x-contract-status: partial
-      x-unresolved: [D04, G06]
-    VerificationCodeInput:
-      type: string
-      minLength: 6
-      maxLength: 6
-      pattern: '^[0-9]{6}$'
-      description: |
-        对应字段 verificationCode；六位数字以字符串传输，保留前导零。
-        这里只定义字符形状。验证码的地址绑定、真实性、有效期和消费规则待 G02，
-        通过 schema 校验不代表该验证码可用于注册或密码重置。
-      examples:
-        - '012345'
-    TermsAcceptanceInput:
-      type: boolean
-      const: true
-      description: |
-        对应注册字段 termsAccepted。注册要求显式同意条款，后端校验该值。
-        条款页面暂不做；此字段不引入条款版本管理或新交互。
-    ProblemDetailsBase:
-      type: object
-      additionalProperties: true
-      required:
-        - type
-      description: |
-        RFC 9457 的标准字段基础，以 application/problem+json 传输。
-        type 是已确认的稳定错误身份；前端据此选择已验收文案，
-        不解析 title 或 detail 判断业务结果。
-        字段错误使用 field 定位已确认的请求字段；没有对应字段时省略 field。
-        每次响应只表达一个主要问题，不发送多个错误列表。
-        按 D10 允许附加字段；前端忽略未使用的附加字段，仍检查已声明字段与具体结果的约束。
-        允许附加字段不表示允许已声明字段错误，也不赋予未知 type 已知业务含义。
-        通用基类尚未穷尽项目错误类型；已完成的特定问题另有派生 schema。
-      x-contract-status: partial
-      x-unresolved: [D07]
-      properties:
-        type:
-          type: string
-          format: uri-reference
-          description: 稳定的错误类型标识，已确定值见特定问题 schema；完整业务错误集合尚未补齐。
-        title:
-          type: string
-          description: 人类可读的错误类型摘要，不作为前端分支依据。
-        status:
-          type: integer
-          minimum: 100
-          maximum: 599
-          description: 若提供，须与实际 HTTP 响应状态一致。
-        detail:
-          type: string
-          description: 此次问题的说明，不作为前端分支依据。
-        instance:
-          type: string
-          format: uri-reference
-          description: 此次问题的标识；当前未约定必须提供。
-        field:
-          type: string
-          description: 有对应输入字段时使用该操作的请求字段名。错误特定 schema 决定其是否必填及取值。
-    RequestNotAllowedProblem:
-      description: 请求来源或保护头校验失败；不是账号、密码或验证码的字段错误。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - properties:
-            type:
-              const: /problems/auth/request-not-allowed
-            status:
-              const: 403
-            field: false
-    MalformedJsonProblem:
-      description: 非法 JSON；不能定位为表单字段错误。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - properties:
-            type:
-              const: /problems/auth/malformed-json
-            status:
-              const: 400
-            field: false
-    UnsupportedMediaTypeProblem:
-      description: 请求媒体类型不受支持；不能定位为表单字段错误。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - properties:
-            type:
-              const: /problems/auth/unsupported-media-type
-            status:
-              const: 415
-            field: false
-    InvalidRequestBodyProblem:
-      description: JSON 根值不是对象，例如数组或 null；不关联表单字段。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - properties:
-            type:
-              const: /problems/auth/invalid-request-body
-            status:
-              const: 422
-            field: false
-    UnknownFieldProblem:
-      description: 最终完整请求中出现未声明属性；不以未知名称填充 field。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - properties:
-            type:
-              const: /problems/auth/unknown-field
-            status:
-              const: 422
-            field: false
-    RequiredFieldProblem:
-      description: 缺少已声明的必填属性；field 必须指向该操作中缺少的必填字段，不用于空字符串。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - required: [field]
-          properties:
-            type:
-              const: /problems/auth/required-field
-            status:
-              const: 422
-    InvalidFieldTypeProblem:
-      description: 已声明字段的 JSON 类型错误；field 必须指向该操作中类型不符的字段。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - required: [field]
-          properties:
-            type:
-              const: /problems/auth/invalid-field-type
-            status:
-              const: 422
-    EmailEmptyProblem:
-      description: 邮箱值为空字符串；与缺少 email 属性分别处理。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - required: [field]
-          properties:
-            type:
-              const: /problems/auth/email-empty
-            status:
-              const: 422
-            field:
-              const: email
-    EmailInvalidFormatProblem:
-      description: 邮箱字符串格式不正确；完整地址接受范围及归一化仍待 G06。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - required: [field]
-          properties:
-            type:
-              const: /problems/auth/email-invalid-format
-            status:
-              const: 422
-            field:
-              const: email
-    NicknameEmptyProblem:
-      description: 昵称去除首尾空白后为空；完整字符处理边界仍待 G06。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - required: [field]
-          properties:
-            type:
-              const: /problems/auth/nickname-empty
-            status:
-              const: 422
-            field:
-              const: nickname
-    PasswordTooShortProblem:
-      description: 密码少于八位；适用于当前密码或新密码，页面文案按操作决定。精确计数规则仍待 G06。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - required: [field]
-          properties:
-            type:
-              const: /problems/auth/password-too-short
-            status:
-              const: 422
-            field:
-              const: password
-    VerificationCodeInvalidFormatProblem:
-      description: 验证码字符串不符合 VerificationCodeInput 的六位 ASCII 数字形状；不表示验证码真实性或生命周期拒绝。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - required: [field]
-          properties:
-            type:
-              const: /problems/auth/verification-code-invalid-format
-            status:
-              const: 422
-            field:
-              const: verificationCode
-    VerificationCodeIncorrectProblem:
-      description: |
-        对应 CA22/CA35。验证码符合六位 ASCII 数字形状，其他条件满足，但值与对应真实验证码不匹配。
-        后端裁决真实性，前端在 verificationCode 字段显示已有错误文案，不用原型固定码本地判断。
-        此类型不代表过期、已消费、地址不匹配或限流。完整绑定上下文、错误次数及重试规则仍待 G02。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - required: [field]
-          properties:
-            type:
-              const: /problems/auth/verification-code-incorrect
-            status:
-              const: 422
-            field:
-              const: verificationCode
-    TermsNotAcceptedProblem:
-      description: 注册 termsAccepted 为 false；缺少属性和类型不符各按协议错误处理。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - required: [field]
-          properties:
-            type:
-              const: /problems/auth/terms-not-accepted
-            status:
-              const: 422
-            field:
-              const: termsAccepted
-    EmailAlreadyRegisteredProblem:
-      description: 对应 S20、CA13 和 CA25 的已占用邮箱拒绝。
-      allOf:
-        - $ref: '#/components/schemas/ProblemDetailsBase'
-        - type: object
-          required: [field]
-          properties:
-            type:
-              const: /problems/auth/email-already-registered
-            status:
-              const: 409
-            field:
-              const: email
+    EmailNotRegistered:
+      value:
+        type: /problems/auth/email-not-registered
+        field: email
+    CredentialsRejected:
+      value:
+        type: /problems/auth/credentials-rejected
+    RegistrationClosed:
+      value:
+        type: /problems/auth/registration-closed
+    VerificationCodeMissing:
+      value:
+        type: /problems/auth/verification-code-missing
+        field: verificationCode
+    VerificationCodeBindingMismatch:
+      value:
+        type: /problems/auth/verification-code-binding-mismatch
+        field: verificationCode
+    VerificationCodeConsumed:
+      value:
+        type: /problems/auth/verification-code-consumed
+        field: verificationCode
+    VerificationCodeReplaced:
+      value:
+        type: /problems/auth/verification-code-replaced
+        field: verificationCode
+    VerificationCodeExpired:
+      value:
+        type: /problems/auth/verification-code-expired
+        field: verificationCode
+    VerificationCodeIncorrect:
+      value:
+        type: /problems/auth/verification-code-incorrect
+        field: verificationCode
+        remainingAttempts: 4
+    VerificationCodeExhausted:
+      value:
+        type: /problems/auth/verification-code-exhausted
+        field: verificationCode
+        remainingAttempts: 0
+    CodeSendCooldown:
+      value:
+        type: /problems/auth/code-send-cooldown
+        retryAfterSeconds: 20
+        resendAt: '2026-09-21T12:00:30Z'
+    CodeDeliveryUnavailable:
+      value:
+        type: /problems/auth/code-delivery-unavailable
+    AccountStoreUnavailable:
+      value:
+        type: /problems/auth/account-store-unavailable
+    SessionPersistenceUnavailable:
+      value:
+        type: /problems/auth/session-persistence-unavailable
+    SessionStoreUnavailable:
+      value:
+        type: /problems/auth/session-store-unavailable
+    BrowserContextRequired:
+      value:
+        type: /problems/auth/browser-context-required
+    SessionInvalid:
+      value:
+        type: /problems/auth/session-invalid
+    SessionStateConflict:
+      value:
+        type: /problems/auth/session-state-conflict
+    ServiceUnavailable:
+      value:
+        type: /problems/auth/service-unavailable
+    Login:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        email: teacher@example.com
+        password: ' TeAcH😀9'
+        rememberMe: true
+    SendCode:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        email: teacher@example.com
+    Register:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        email: teacher@example.com
+        nickname: 林老师
+        password: ' TeAcH😀9'
+        challengeId: fixture-challenge-r
+        verificationCode: '001234'
+        termsAccepted: true
+        rememberMe: true
+    ResetPassword:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        email: teacher@example.com
+        password: new-secret-9
+        challengeId: fixture-challenge-p
+        verificationCode: '001234'
+    Bootstrap:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        action: bootstrap
+    ActivateRemembered:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        action: activate
+        sessionId: fixture-session-a
+        rememberMe: true
+    ActivatePage:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        action: activate
+        sessionId: fixture-session-a
+        rememberMe: false
+    Restore:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        action: restore
+        sessionId: fixture-session-a
+    Logout:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        sessionId: fixture-session-a
+    LogoutEmpty:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        sessionId: null
+    Pending:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        id: fixture-session-a
+        account:
+          accountKey: fixture-account-a
+          email: teacher@example.com
+          nickname: 林老师
+        state: pending
+        persistence: page
+        rememberRequested: true
+        issuedAt: '2026-09-21T12:00:00Z'
+        expiresAt: '2026-09-28T12:00:00Z'
+    ActiveRemembered:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        id: fixture-session-a
+        account:
+          accountKey: fixture-account-a
+          email: teacher@example.com
+          nickname: 林老师
+        state: active
+        persistence: remembered
+        rememberRequested: true
+        issuedAt: '2026-09-21T12:00:00Z'
+        expiresAt: '2026-09-28T12:00:00Z'
+    ActivePage:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        id: fixture-session-a
+        account:
+          accountKey: fixture-account-a
+          email: teacher@example.com
+          nickname: 林老师
+        state: active
+        persistence: page
+        rememberRequested: true
+        issuedAt: '2026-09-21T12:00:00Z'
+        expiresAt: null
+    AnonymousStatus:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        browserReady: false
+        registrationOpen: true
+        session: null
+        rememberedSession: null
+        serverTime: '2026-09-21T12:00:00Z'
+    BootstrapStatus:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        browserReady: true
+        registrationOpen: true
+        session: null
+        rememberedSession: null
+        serverTime: '2026-09-21T12:00:00Z'
+    PendingStatus:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        browserReady: true
+        registrationOpen: true
+        session:
+          id: fixture-session-a
+          account:
+            accountKey: fixture-account-a
+            email: teacher@example.com
+            nickname: 林老师
+          state: pending
+          persistence: page
+          rememberRequested: true
+          issuedAt: '2026-09-21T12:00:00Z'
+          expiresAt: '2026-09-28T12:00:00Z'
+        rememberedSession: null
+        serverTime: '2026-09-21T12:00:00Z'
+    ActiveStatus:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        browserReady: true
+        registrationOpen: true
+        session:
+          id: fixture-session-a
+          account:
+            accountKey: fixture-account-a
+            email: teacher@example.com
+            nickname: 林老师
+          state: active
+          persistence: remembered
+          rememberRequested: true
+          issuedAt: '2026-09-21T12:00:00Z'
+          expiresAt: '2026-09-28T12:00:00Z'
+        rememberedSession:
+          id: fixture-session-a
+          expiresAt: '2026-09-28T12:00:00Z'
+        serverTime: '2026-09-21T12:00:00Z'
+    RestorableStatus:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        browserReady: true
+        registrationOpen: true
+        session: null
+        rememberedSession:
+          id: fixture-session-a
+          expiresAt: '2026-09-28T12:00:00Z'
+        serverTime: '2026-09-21T12:00:00Z'
+    RegistrationCode:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        challengeId: fixture-challenge-r
+        purpose: registration
+        email: teacher@example.com
+        issuedAt: '2026-09-21T12:00:00Z'
+        expiresAt: '2026-09-21T12:10:00Z'
+        resendAt: '2026-09-21T12:00:30Z'
+        serverTime: '2026-09-21T12:00:00Z'
+        remainingAttempts: 5
+    ResetCode:
+      summary: 契约替身样本，不是生产账户、凭据或固定验证码。
+      value:
+        challengeId: fixture-challenge-p
+        purpose: password-reset
+        email: teacher@example.com
+        issuedAt: '2026-09-21T12:00:00Z'
+        expiresAt: '2026-09-21T12:10:00Z'
+        resendAt: '2026-09-21T12:00:30Z'
+        serverTime: '2026-09-21T12:00:00Z'
+        remainingAttempts: 5

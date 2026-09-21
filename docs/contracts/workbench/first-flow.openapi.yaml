@@ -1,10 +1,10 @@
 openapi: 3.2.1
 info:
   title: TeachBuddy first-flow 工作台契约
-  version: 0.1.0-candidate.1
-  description: B11/v1 已冻结，设计候选 9aee091 已通过独立契约冻结审查 b62034e。业务语义见 ../workbench.md。所有响应 no-store；写请求同源 HTTPS + 保护头；请求拒绝未知字段/隐式类型转换，响应容忍附加字段。JSON 请求体上限 2
+  version: 0.1.0-candidate.2
+  description: AUTH-CONTRACT-CORRECTION@1 页面头接续候选，已由限定独立审查冻结；消费认证 1.0.0-rc.2。版本、旧冻结适用范围及业务语义见 ../workbench.md。所有响应 no-store；写请求同源 HTTPS + 保护头；请求拒绝未知字段/隐式类型转换，响应容忍附加字段。JSON 请求体上限 2
     MiB（解码后的 UTF-8 字节），超限 413。URL/query 非法值 422，未知 query 拒绝。
-x-contract-status: candidate
+x-contract-status: frozen
 x-source-revision: 59a14e95bab667e0a01b8d62f6e87e018ddb1c5f
 servers:
 - url: /
@@ -13,6 +13,8 @@ security:
 paths:
   /api/workbench/context:
     get:
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
       operationId: getWorkbenchContext
       summary: getWorkbenchContext
       responses:
@@ -30,6 +32,8 @@ paths:
               examples:
                 sample:
                   $ref: '#/components/examples/Context'
+                authenticated:
+                  $ref: '#/components/examples/AuthenticatedContext'
         '401':
           $ref: '#/components/responses/401'
         '404':
@@ -61,6 +65,7 @@ paths:
         '422':
           $ref: '#/components/responses/422'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Query'
       - $ref: '#/components/parameters/State'
       - $ref: '#/components/parameters/Starred'
@@ -101,6 +106,7 @@ paths:
         '503':
           $ref: '#/components/responses/503'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
       - $ref: '#/components/parameters/RequestReferer'
@@ -142,6 +148,7 @@ paths:
         '422':
           $ref: '#/components/responses/422'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Id'
     put:
       operationId: updateQuestion
@@ -177,6 +184,7 @@ paths:
         '503':
           $ref: '#/components/responses/503'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Id'
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -216,6 +224,7 @@ paths:
         '422':
           $ref: '#/components/responses/422'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Id'
       - $ref: '#/components/parameters/State'
     post:
@@ -252,6 +261,7 @@ paths:
         '503':
           $ref: '#/components/responses/503'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Id'
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -301,6 +311,7 @@ paths:
         '503':
           $ref: '#/components/responses/503'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Id'
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -340,6 +351,7 @@ paths:
         '422':
           $ref: '#/components/responses/422'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Query'
       - $ref: '#/components/parameters/State'
     post:
@@ -379,6 +391,7 @@ paths:
         '503':
           $ref: '#/components/responses/503'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
       - $ref: '#/components/parameters/RequestReferer'
@@ -420,6 +433,7 @@ paths:
         '422':
           $ref: '#/components/responses/422'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Id'
     put:
       operationId: updateLesson
@@ -458,6 +472,7 @@ paths:
         '503':
           $ref: '#/components/responses/503'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Id'
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -507,6 +522,7 @@ paths:
         '503':
           $ref: '#/components/responses/503'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/Id'
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -546,9 +562,12 @@ paths:
         '422':
           $ref: '#/components/responses/422'
       parameters:
+      - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/QuestionId'
   /api/modules:
     get:
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
       operationId: getModuleCatalog
       summary: 读取可运行的静态模块目录
       responses:
@@ -575,6 +594,8 @@ components:
     SessionCookie:
       $ref: ../auth.openapi.yaml#/components/securitySchemes/SessionCookie
   parameters:
+    PageContext:
+      $ref: ../auth.openapi.yaml#/components/parameters/PageContext
     Id:
       name: id
       in: path
@@ -1855,6 +1876,11 @@ components:
       x-schema: WorkbenchContext
       value:
         accountKey: fixture-teacher-a
+    AuthenticatedContext:
+      x-schema: WorkbenchContext
+      summary: 对应同版认证 ActiveStatus 的账户；实际运行使用服务端稳定键。
+      value:
+        accountKey: fixture-account-a
     ModuleCatalog:
       x-schema: ModuleCatalog
       value:
