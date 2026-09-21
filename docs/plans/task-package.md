@@ -11,11 +11,11 @@
 - 非目标：本次不处理的相邻问题。
 - 授权：来源、适用范围、提交/合并/外部动作权限。
 - Git 权限：提交、合并、推送、发布等动作逐项写明；未明确的动作视为未授权。
-- 角色：本次责任、模型/effort/harness、新独立 session；编排者 thread ID。
+- 角色：本次责任、顶层模型/effort/harness、新独立 session；编排者 thread ID。
 - 适用 skill：本次会触发的 skill 及其完整入口；未触发的 skill 不因相邻任务自动调用。
 - 基线与 fixed point：完整 `base_revision`、需要审查时的 fixed point、输入回执位置及版本；计划 revision（追溯用）。
 - 规格与标准来源：本次使用的 spec、验收矩阵、仓库标准和 review 标准的完整 commit + path + 章节。
-- 内部委派：是否允许 skill 内部助手、每个内部角色的模型/effort/harness，以及是否已确认该 harness 支持显式选择；没有确认则写 BLOCKED 条件。
+- 内部委派：是否允许 skill 内部助手、每个内部角色及 harness；适用 skill 要求时由调用 session 创建和管理，内部助手继承调用 session 的模型与 effort。
 - 工作区：worktree、分支、端口、数据/文件目录、身份模式、用户已有改动。
 
 ## 本任务必读，按顺序

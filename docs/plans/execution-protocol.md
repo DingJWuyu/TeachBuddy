@@ -11,7 +11,7 @@
 
 - 派发前记录任务和输入；启动成功后记录实际 session 与运行状态。
 - 回执到达时核对 `task`、`revision`、`attempt`、`session_id` 和 `verification_level`，再更新状态。重复回执或旧版本回执不重复派发、不推进下游。
-- 恢复时先读根 `AGENTS.md` 的条件入口、当前运行台账和未完成任务的固定任务包/回执。未收到回执不假设成功，也不盲目重派；核对既有记录后只处理明确异常。等待仍依靠主动通知，不轮询。
+- 恢复时先读根 `AGENTS.md` 的条件入口、当前运行台账和未完成任务的固定任务包/回执。收到内容恰为 `check` 时，根先读 `run-state`；只有存在未完成任务且台账显示近 45 分钟没有回执，才对相关 session 做一次恢复检查。没有未完成任务或已有近期回执时结束本次检查。若结果已保存但回执丢失，按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败归属处理。超时本身不判失败、不杀死运行中的工作、不盲目重派；这项 `check` 是获授权的低频例外，不是循环轮询或 watcher，也不能启动产品 DAG。
 - 活跃任务包或证据未完成时保留；正式验收回执和证据按既有 evidence 约定可追溯后，再清理无用临时日志。台账只引用真实存在的材料，未来路径明确标为待生成，不复制研究或验收全文。
 
 ### 派发与收回执
@@ -26,13 +26,13 @@
 
 | 代号 | 模型、effort、harness | 责任 |
 | --- | --- | --- |
-| A | 常规核验使用 `gpt-5.6-sol`，`high`；复杂疑难审查才使用 `gpt-6-astra`，`high`；新 `codex exec` | 行为、契约、验收和技术方案设计或独立审查；可验证、看源码与证据，不写或修产品实现。具体模型必须写入任务包和回执。 |
+| A | 常规核验使用 `gpt-5.6-sol`，`high`；复杂疑难审查才使用 `gpt-6-astra`，`high`；新 `codex exec` | 行为、契约、验收和技术方案设计或独立审查；可验证、看源码与证据，不写或修产品实现。顶层 session 的实际模型必须写入任务包和回执。 |
 | W | 默认 `gpt-5.6-luna`，`max`，新 `codex exec` | 冻结任务的实现、实验、集成、复现、修复和证据。 |
-| S | `gpt-5.6-sol`，`high`，新 `codex exec` | 有具体失败依据时的困难实现升级；也用于常规 skill 内部核验。 |
+| S | `gpt-5.6-sol`，`high`，新 `codex exec` | 有具体失败依据时的困难实现升级或常规核验的顶层 session。 |
 | W 替代 | 用户指定的 dsh 一次性 headless | 调用形式及配置归根 AGENTS 的 DeepSeek Harness 条款；回执记录实际可获模型信息。 |
 | 用户 | 无模型 | 授权和用户验收，见 DAG 用户门禁。 |
 
-设计或独立验收节点是否需要独立 reviewer 由任务包和节点门禁确定；需要时使用新的独立 session，常规核验明确为 Sol high，复杂疑难才升级 Astra。`implement` 的 `code-review` 是调用 session 的收尾步骤，内部 Standards/Spec reviewer 是只读叶子，由调用 session 管理并聚合，不增加 DAG 节点。普通文档修正和状态更新不因小调整自动重开审查。
+设计或独立验收节点是否需要独立 reviewer 由任务包和节点门禁确定；需要时使用新的独立 session，常规核验明确为 Sol high，复杂疑难才升级 Astra。`implement` 的 `code-review` 是调用 session 的收尾步骤，内部 Standards/Spec reviewer 是只读叶子，由调用 session 管理并聚合，不增加 DAG 节点；内部助手继承调用 session 的模型与 effort。普通文档修正和状态更新不因小调整自动重开审查。
 
 ### 并行与版本
 
@@ -51,9 +51,9 @@
 
 ### 启动与主动通知
 
-仅在授权后使用现有 `codex exec`；参数以本机 `codex exec --help` 为准，将完整任务文件作为输入，固定 worktree、模型、effort 和最终回执文件。顶层 session、内部 reviewer 和 harness 能力都必须显式记录。模型或 effort 不可用要报告 harness BLOCKED，不静默降级。
+仅在授权后使用现有 `codex exec`；参数以本机 `codex exec --help` 为准，将完整任务文件作为输入，固定 worktree、顶层模型、effort 和最终回执文件。顶层 session 的模型、effort 和 harness 能力必须显式记录；内部助手记录角色和 harness，并继承调用 session 的模型与 effort。顶层模型或 effort 不可用要报告 harness BLOCKED，不静默降级。
 
-外层负责在进程结束后按本机 `codex queue --help` 的通知接口主动发回编排者 thread。异常退出也发送 FAIL、退出码和日志路径；通知失败则保存回执、明确报错，由现有环境通知人工处理。skill 若要求内部 reviewer，先确认所选 harness 支持内部委派及显式模型；未证实时回执 BLOCKED，不开发 wrapper 或假定能力。此责任不授予 worker 联系其他 session 的权限，也不要求建立 watcher 或调度平台。
+外层负责在进程结束后按本机 `codex queue --help` 的通知接口主动发回编排者 thread。正常结束发送结构化 `PASS` 或 `FAIL`；正常 `FAIL` 按本节点既有失败归属处理。异常通知只用于回执可能丢失的情况，例如子进程或运行环境异常退出且未生成回执，或结果已落盘但队列投递失败；异常通知附退出码、日志或回执路径，不能把正常 `FAIL` 混成异常。skill 若要求内部助手，调用 session 按 skill 创建和管理，使用所选 harness 的内部助手能力；内部助手继承调用 session 的模型与 effort，不另设模型选择验证门禁。无法提供内部助手能力时按协议回执 `BLOCKED`，不开发 wrapper 或假定能力。此责任不授予 worker 联系其他 session 的权限，也不要求建立 watcher 或调度平台。
 
 派发后停止并等待主动回执，遵守根 AGENTS 等待条款。产品 pi runtime 与开发 harness 分开。
 
@@ -102,7 +102,7 @@
 3. 按冻结目标实现与自验。原型只供交互参考，可迁入适用界面，生产代码不依赖原型源码。替换失效实现与旧断言须有当前行为依据，不为旧空首页测试恢复错误行为。
 4. 用任务包指定的验证入口及[适用证据章节](../acceptance/mvp-matrix.md#evidence)提交结果。发现失败先按真实用户路径复现，再记录最小输入、版本、预期/实际、截图和日志后修复；测试失败、flaky 和明显 UI 问题同样归属处理。
 5. 自验结束按[回执](#receipt)返回 `self`，交任务包指定的独立验收。无法满足当前契约则停止本节点并给出缺陷归属，不联络其他 worker 自行改约定。
-6. 若本任务触发 `code-review`，先建立获授权的候选提交，再确认 fixed point 可解析、`git diff <fixed-point>...HEAD` 非空、受审变更全部已进入 `HEAD`，且工作区没有漏审的实现变更。调用 session 同时启动 Standards 和 Spec 两个只读内部 reviewer，默认均使用 `gpt-5.6-sol` `high`，分别返回结果后由调用 session 聚合一份回执；根不再派同内容的顶层 diff review。未触发 `code-review` 的普通文档集成不得填写虚假的 review target。
+6. 若本任务触发 `code-review`，先建立获授权的候选提交，再确认 fixed point 可解析、`git diff <fixed-point>...HEAD` 非空、受审变更全部已进入 `HEAD`，且工作区没有漏审的实现变更。调用 session 同时启动 Standards 和 Spec 两个只读内部 reviewer，内部 reviewer 继承调用 session 的模型与 effort，分别返回结果后由调用 session 聚合一份回执；根不再派同内容的顶层 diff review。未触发 `code-review` 的普通文档集成不得填写虚假的 review target。
 
 <a id="integration"></a>
 ## Git 准备与集成任务
@@ -135,6 +135,7 @@ attempt: 1
 role: implement
 status: PASS # PASS / FAIL / BLOCKED
 verification_level: self # self / independent / user
+finished_at_utc: "实际生成本回执的 UTC 时间"
 session_id: "实际 ID；取不到则 unavailable"
 runner: "实际 harness、模型和 effort"
 skills_used: ["本次实际调用的 skill；未调用则 []"]

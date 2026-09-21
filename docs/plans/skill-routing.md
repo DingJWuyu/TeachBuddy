@@ -51,8 +51,8 @@
 
 ## 模型与特殊触发
 
-- 常规 `code-review` 的两个内部 subagent 显式使用 `gpt-5.6-sol` `high`，不继承调用者可能更贵的模型。复杂疑难审查才在任务授权中升级 Astra。
+- 顶层常规核验使用 `gpt-5.6-sol` `high`；复杂疑难审查才升级 `gpt-6-astra` `high`。适用 skill 的内部助手继承调用 session 的模型与 effort，由调用 session 按 skill 创建和管理；其模型与 effort 由调用 session 决定，不另设验证项。
 - 实现默认 `gpt-5.6-luna` `max`，有具体失败证据的复杂实现用 `gpt-5.6-sol` `high`，或按用户明确指定使用 `dsh`。设计按判断难度选型，不把所有设计或 A 类任务强制为 Astra。
 - `grilling` 只在用户明确要求压力测试，或任务遇到上述必须升级的决策时调用。`prototype` 只用于回答明确的逻辑/外观设计问题。`wizard` 只用于必须由人执行的凭据、第三方界面或迁移流程。
 - 只在已授权的 merge/rebase 正处于冲突时调用 `resolving-merge-conflicts`。其“完成并提交”不能越过 Git 权限。
-- `dsh` 只在用户明确要求时使用。任务若要求 skill 内部 subagent，调度前必须选择已知支持该能力的 harness；无法确认时交回一个边界明确的 BLOCKED 回执，不开发 wrapper，不假定一次性 headless 环境具有未验证的内部委派能力。
+- `dsh` 只在用户明确要求时使用。任务若要求 skill 内部助手，调用 session 必须使用支持该能力的 harness；内部助手沿用调用 session 的模型与 effort。若 harness 不具备内部助手能力，交回边界明确的 BLOCKED 回执，不开发 wrapper，不假定一次性 headless 环境具有未验证的内部委派能力。
