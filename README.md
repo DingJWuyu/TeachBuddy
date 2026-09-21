@@ -1,79 +1,65 @@
-# 教师个人工作台
+# TeachBuddy 教师个人工作台
 
-这是一个面向独立教师的个人工作空间。当前版本提供教师账户入口、认证、密码找回、账户隔离的工作台布局，以及可供未来功能模块接入的中性注册契约。模块目录当前为空，工作台可以在没有功能模块时独立运行。
+送给一位中国大陆重点高中高一数学实习教师的个人工作台。目标是让他收集题目、组织备课、制作数学演示、复用资料、安排时间，并留下课堂反馈。首页是能操作这些内容的 Agent 工作区。
 
-账户入口、侧边栏与顶部栏的既有 UI/UX 原型已经验收并纳入仓库。2026-09-21 已确认真实 MVP 范围：题库、备课、数学工坊、资源库、班级教学、日程，以及以 pi agent 为核心运行时、能实际操作各模块的 Agent。优先面向中国大陆高中教师，首先服务实习数学教师的教学工作。
+**当前尚未交付真实 MVP。** 仓库同时保留旧的可运行应用和新的交互原型，两者的进展不能混为一谈。已确认的完整交付范围以 [MVP 产品范围](docs/PRODUCT_SCOPE.md) 为准。
 
-`prototype/` 已加入首轮模块内存交互稿，用户体验后提出视觉与交互调整要求，该稿未通过整体验收；上述业务能力与 Agent 尚未接入正式应用。后续以产品行为确定契约，再推进前后端并行实现与真实数据联调。具体交付要求和页面设计结论见 [MVP 产品范围](./docs/PRODUCT_SCOPE.md)、[工作台设计](./docs/WORKBENCH_DESIGN.md)及[路线图](./docs/ROADMAP.md)。
+## 当前状态
 
-## 当前能力
+下表描述 2026-09-21 整理时的代码状态，代码基线为 `911e624`。后续功能落地时同步更新本表；执行顺序和在做事项统一维护在[路线图](docs/ROADMAP.md)。
 
-- 开放注册、登录、退出和密码找回
-- 教师账户之间的数据和工作台偏好隔离
-- 始终可见的工作台首页和设置入口
-- 侧栏分组、重命名、排序、拖拽和布局持久化底座
-- 已完成的账户入口、侧边栏与顶部栏 UI/UX 原型，以及相关行为文档和验证证据
-- 认证 Bearer API 与 SQLite 持久化
-- 空模块目录下的 API、真实浏览器验收和构建验证
+| 部分 | 已有内容 | 距离目标的差距 |
+| --- | --- | --- |
+| `apps/web`、`apps/api` | 旧 React/Express 应用；Bearer 认证、密码找回、SQLite 账户与布局保存 | 未接入本轮已验收的账户 UI；业务模块为空，不是目标 MVP |
+| `packages/shared` | 中性模块描述工具和空模块目录 | 尚无工作台业务接口定义；已有模块边界决议也未全部实现 |
+| `prototype/` 账户入口 | 登录、注册、找回、会话恢复及失败分支已验收；此前行为缺口已补齐 | 使用模拟服务；认证契约尚未同步全部新增行为 |
+| `prototype/` 工作台 | 既有侧栏与顶栏基线；已合入 Agent 首页、六模块及跨模块交互草稿 | 模块为内存数据，AI 为固定回复；模块稿尚未通过整体视觉与交互验收 |
+| `docs/contracts/` | 认证契约、OpenAPI 和契约用例的部分约定 | 仍引用旧行为版本，状态为讨论中；没有工作台业务契约 |
 
-正式应用中的首页在模块目录为空时保持空白。独立原型已采用 Agent 首页、顶部日程、五个业务模块和固定 AI 入口，各主要内容区域独立滚动，右侧工具与 AI 共用空间。模块草稿和关联使用内存数据，AI 为固定交互样例，尚未接入模型、OCR 或业务持久化；刷新会重置模块内容。中性模块注册契约继续作为正式接入基础。
+登录注册由独立工作线负责。工作台对接登录后的账户身份与会话边界，退出按钮留在工作台设置中实现；当前原型没有退出入口。旧应用中的退出和 Bearer API 不代表新的交接契约已经完成。
 
-## 快速开始
+## 从哪里开始读
 
-~~~
-npm install
-npm run dev
-~~~
+| 要了解的内容 | 唯一入口 |
+| --- | --- |
+| MVP 必须做什么、哪些不做 | [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) |
+| 开发顺序、Agent 分工、当前任务和交付门槛 | [ROADMAP](docs/ROADMAP.md) |
+| 页面共识、教师工作过程和跨模块联系 | [WORKBENCH_DESIGN](docs/WORKBENCH_DESIGN.md) |
+| 美学、滚动、现场保留和验证要求 | [设计规则](docs/rules/design-and-verification.md) |
+| 领域词汇 | [CONTEXT](CONTEXT.md) |
+| 认证行为、场景和原型证据 | [原型行为索引](prototype/behavior/manifest.md) |
+| 认证共享接口的已有约定和待补项 | [认证契约](docs/contracts/auth.md)，目前不完整 |
+| 代码结构、旧底座与可复用部分 | [架构说明](docs/ARCHITECTURE.md) |
 
-应用地址：
+已确认的产品要求指导新实现；原型代码用于参考交互，旧应用用于参考可复用底座。二者均不能替代尚未形成的业务契约。原型证据只证明对应原型版本，正式应用的旧测试只证明其旧行为。
 
-- Web：http://localhost:5173
-- API：http://localhost:4000
+## 运行
 
-打开 Web 后选择“注册”创建教师账户。开发环境未配置 SMTP 时，密码找回验证码会写入 API 服务端日志。
+使用 Node.js 22.23.2 和 npm 可复现此前运行环境。首次执行 `npm install`，其他环境要求见[安装与运行](docs/SETUP.md)。
 
-## 仓库结构
+| 查看什么 | 命令 | 默认入口 |
+| --- | --- | --- |
+| 当前交互原型，无需 API | `npm run prototype:sidebar` | `http://localhost:4174/` |
+| 旧应用及真实 API | `npm run dev` | Web `http://localhost:5173/`；API `http://localhost:4000/` |
 
-~~~
-/
-├── apps/
-│   ├── api/        Express API、认证、SQLite 和工作台布局
-│   └── web/        React + Vite 工作台外壳
-├── packages/
-│   └── shared/     中性模块注册契约与空模块目录
-├── prototype/      已集成原型、行为文档索引和验证证据
-├── docs/           安装、API、架构和部署说明
-├── CONTEXT.md      领域术语和边界
-└── CHANGELOG.md    发布与工程日志
-~~~
+原型示例登录：`example@example.com` / `teachbuddy`。旧应用使用自身数据库中的账户，与原型模拟账户互不相通。
 
-## 原型入口
+## 仓库边界
 
-行为文档从 [manifest](./prototype/behavior/manifest.md) 进入；本轮交互覆盖和限制见[模块原型](./prototype/behavior/modules.md)。
-
-```bash
-npm run prototype:sidebar   # 当前原型：http://localhost:4174/
-npm run prototype:build
+```text
+apps/web/          真实前端的实现位置，目前仍是旧应用
+apps/api/          真实后端的实现位置，目前仅账户与布局底座
+packages/shared/   前后端确实需要共享的目录与契约代码
+prototype/         交互参考、已验收的账户/外壳行为及模块草稿
+docs/              产品范围、执行计划、契约、设计规则和技术说明
+CONTEXT.md         领域术语
+.agents/skills/    显式选用的原型评审、契约讨论流程
 ```
 
-打开后先是账户入口的登录卡。示例邮箱为 `example@example.com`，密码为 `teachbuddy`。
+后续 MVP 直接在 `apps/` 实现。已验收的界面可按需迁入，迁入后由正式应用独立维护，生产代码不依赖原型源码。原型不会成为另一套需要同步开发的产品。旧执行计划 `PROJECT_PLAN.md` 已撤下，当前计划只维护在 ROADMAP。
 
-## 文档入口
+## 验证与部署
 
-- [安装指南](./docs/SETUP.md)
-- [API 指南](./docs/API.md)
-- [架构说明](./docs/ARCHITECTURE.md)
-- [账户入口契约（讨论中）](./docs/contracts/auth.md)
-- [路线图](./docs/ROADMAP.md)
-- [MVP 产品范围](./docs/PRODUCT_SCOPE.md)
-- [工作台功能模块设计](./docs/WORKBENCH_DESIGN.md)
-- [部署指南](./docs/DEPLOY_INFINITYFREE_RENDER.md)
+当前可用命令为 `npm run test:api`、`npm run test:e2e`、`npm run build`、`npm run prototype:build`。它们尚未覆盖目标 MVP；`build:api` 会检查并可能创建 SQLite 文件，详见安装指南。原型脚本的适用范围以行为索引为准，不能把旧空首页、九模块断言套到最新模块稿。
 
-## 验证
-
-~~~
-npm run test:api
-npm run test:e2e
-npm run build
-git diff --check
-~~~
+[API 指南](docs/API.md)描述旧 Bearer 应用；[旧部署说明](docs/DEPLOY_INFINITYFREE_RENDER.md)也仅供旧底座参考。新认证已确认同源 Cookie 方向，MVP 还需接通真实服务、持久文件和备份恢复，当前没有通过验证的 MVP 部署方案。可交付标准见路线图。

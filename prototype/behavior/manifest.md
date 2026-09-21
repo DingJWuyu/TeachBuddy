@@ -44,7 +44,9 @@ npm run prototype:sidebar
 | [verification](../verification/) | 当前几何、交互、拖拽与响应式验证脚本；账户入口另有走查与截图表脚本 |
 | [项目设计规则](../../docs/rules/design-and-verification.md) | 跨原型与产品适用的设计要求及验证经验 |
 
-验证脚本从仓库根目录运行：
+下面是仓库保留的验证脚本索引，不是一组适用于当前版本的全量验收命令。账户脚本按账户覆盖文档使用；旧工作台脚本中的空首页、九模块及固定通知断言不适用当前模块稿，尤其不能直接用 `verify-home-empty.mjs` 判定本版是否正确。工作台的历史报告应先逐项核对场景与现状，当前模块覆盖见 [modules.md](modules.md)。
+
+脚本均从仓库根目录运行：
 
 ```bash
 node prototype/verification/capture-all.mjs

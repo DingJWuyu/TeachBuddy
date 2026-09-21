@@ -1,8 +1,10 @@
-# 部署指南：InfinityFree + Render
+# 旧底座部署参考：InfinityFree + Render
 
 [返回主 README](../README.md)
 
-此方案适合预览、轻量测试和个人使用：
+**状态：旧演示方案，未经当前 MVP 验证。** 下文对应旧 Bearer 应用的异源部署，与新[认证契约](contracts/auth.md)已确认的同源 Secure Cookie 要求不同，不能直接用于 MVP 上线。持久业务数据、文件、备份恢复及真实流程的上线条件见[路线图](ROADMAP.md)。
+
+旧方案的部署分工：
 
 - 前端静态文件部署到 InfinityFree
 - API 部署到 Render 或其他 Node 服务
@@ -25,15 +27,14 @@
 - SQLITE_PATH=/opt/render/project/src/apps/api/src/data/refatos.sqlite
 - SMTP_HOST、SMTP_PORT、SMTP_USER、SMTP_PASSWORD、SMTP_FROM、SMTP_SECURE
 
-SQLite 依赖实例本地磁盘。部署环境必须提供持久磁盘或接受账户和布局数据随实例重启丢失。
+SQLite 依赖实例本地磁盘。部署环境必须提供持久磁盘；无持久磁盘时可能丢失数据，只能作为可丢弃的演示环境，不能承载老师的实际资料。本页没有验证任何服务套餐目前是否提供所需条件。
 
 ## 前端
 
-构建前设置 VITE_API_BASE_URL：
+从仓库根目录构建旧前端时传入 VITE_API_BASE_URL：
 
 ~~~
-VITE_API_BASE_URL=https://你的-api-服务.onrender.com/api
-npm run build
+VITE_API_BASE_URL=https://你的-api-服务.onrender.com/api npm run build:web
 ~~~
 
 前端产物位于 apps/web/dist，将该目录内容上传到静态站点根目录。
@@ -42,7 +43,7 @@ npm run build
 
 如果登录或 API 请求失败，确认 CORS_ORIGINS 使用完整的前端来源，包括 https 协议和域名。
 
-## 上线检查
+## 旧底座检查，不是 MVP 验收
 
 - 打开前端并创建教师账户
 - 确认登录后首页保持空白且首页、设置入口都可用

@@ -1,6 +1,8 @@
 # 工作台场景覆盖
 
-Status: Accepted
+Status: Accepted (旧外壳基线；当前模块稿需重新核对受影响场景)
+
+本索引保留此前外壳验收的场景与证据。加入 Agent 首页、六模块及真实形态的日程通知交互后，空首页、九模块和固定通知等前提已经改变，下文“通过”只描述原报告，不能作为当前模块稿或 MVP 的通过结果。当前模块覆盖及限制见 [modules.md](modules.md)，账户恢复规则见 [auth.md](auth.md)。
 
 本文件拥有 CW01-CW46 与 CW52 的场景与证据索引；CW48-CW51 由[头部场景覆盖](sidebar-head-scenarios.md)索引。行为定义由各节链接的文档拥有。
 
@@ -8,11 +10,11 @@ Status: Accepted
 
 从 [manifest](manifest.md) 启动原型。每个场景使用独立浏览器上下文，以默认布局和示例账户登录开始；除 CW12 外关闭首次引导。完整操作、样例数据和逐步断言见 [capture-workbench.mjs](../verification/capture-workbench.mjs)。
 
-运行 `node prototype/verification/capture-workbench.mjs` 复现全部场景，`--only=CW27,CW31` 选择指定场景。输出配置见 manifest。截图在断言目标状态后采集，检查横向溢出及弹层边界，再做视觉检查。静态截图不证明动画、焦点或持久性，这些由脚本中的交互断言验证。
+先核对脚本场景是否仍适用，再使用 `node prototype/verification/capture-workbench.mjs --only=CW27,CW31` 等方式选择场景；不把旧全量断言直接作为当前版本门禁。输出配置见 manifest。截图在断言目标状态后采集，检查横向溢出及弹层边界，再做视觉检查。静态截图不证明动画、焦点或持久性，这些由脚本中的交互断言验证。
 
-客户端跳转不退出登录；刷新和直接加载深链会失去内存会话，检查必须重新通过界面登录。刷新不会清除布局或标签页引导标记；重置场景须使用新的浏览器上下文，或清除原型站点存储后重新进入。
+客户端跳转不退出登录。刷新和直接加载深链是否恢复身份，以当前账户行为中“记住我”及会话状态为准，旧脚本的内存会话前提需要核对。刷新不会清除布局或标签页引导标记；重置场景须使用新的浏览器上下文，或清除原型站点存储后重新进入。
 
-[当前场景结果](../evidence/verification/workbench.json)：46 个场景 × 3 类视口，共 138 行。132 行通过，6 行因布局没有对应入口而不适用，314 张当前截图。表中每个“通过”对应结果文件内相同场景 ID 与视口的断言。
+[旧外壳场景结果](../evidence/verification/workbench.json)：46 个场景 × 3 类视口，共 138 行。原报告记录 132 行通过，6 行因布局没有对应入口而不适用，314 张截图。表中每个“通过”对应结果文件内相同场景 ID 与视口的当时断言，本轮未重新运行或替换这些证据。
 
 ## 验证边界
 
@@ -22,9 +24,9 @@ Status: Accepted
 
 ## 交互与几何检查
 
-以下检查补充场景矩阵。截图统一使用下方索引，不把辅助脚本的抓图混入当前证据。
+以下是此前检查报告，补充同一旧基线的场景矩阵。重新验证时需要核对当前行为，不能沿用这里的计数作为新版本结论。
 
-| 脚本 | 当前结果 | 覆盖 |
+| 脚本 | 原报告结果 | 覆盖 |
 | --- | --- | --- |
 | [verify-topbar](../verification/verify-topbar.mjs) | [108/108](../evidence/verification/verify-topbar.txt) | 顶栏、互斥、通知、反馈、教程、隐私、引导与庆祝 |
 | [verify-hidden-page-redirect](../verification/verify-hidden-page-redirect.mjs) | [64/64](../evidence/verification/verify-hidden-page-redirect.txt) | 当前页隐藏、分组删除、持久化隐藏成员归一化、空分组与拖拽图 |

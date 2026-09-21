@@ -1,5 +1,11 @@
 # AGENTS.md
 
+## 项目入口
+
+- 接手工作先读 `README.md` 的实际状态和 `docs/ROADMAP.md` 的当前任务；MVP 范围以 `docs/PRODUCT_SCOPE.md` 为准。
+- 工作台的行为、契约、并行实现和验收按 ROADMAP 推进。`prototype/` 是交互参考，`apps/` 才是真实产品实现位置；旧演示 API 不约束新契约。
+- 登录注册由独立 session 负责；涉及身份交接或退出时读取 `docs/contracts/auth.md`，核对其源版本与未完成项，不把讨论中的契约当成已实现能力。
+
 ## Rules
 
 **Git:**
