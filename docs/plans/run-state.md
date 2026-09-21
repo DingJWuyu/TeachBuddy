@@ -26,7 +26,7 @@
 - 配置文件属于已存在的运行环境，本页只保留指针，不复制进仓库，不修改、重建或测试触发器，也不创建安装脚本。
 - 根收到 `check` 后先读本页：有未完成任务且近 45 分钟没有回执时，才对台账中相关 session 做一次恢复检查。这个 `check` 同时判断回执缺失和异常通知；正常 `FAIL` 仍回原节点处理，只有异常退出、结果已落盘但通知未到等情况才按回执缺失处理。无未完成任务或已有近期回执时结束本次检查。结果已保存但回执丢失时按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败规则处理。超过 45 分钟本身不判失败，不杀死健康进程，不盲目重派；`check` 不替代依赖和权限判断。
 - 首条 `check` 已于 `2026-09-21T18:09:55Z` 在根会话收到并处理；距最后任务回执不足一分钟，本次结束检查，未查询或重启任何 session。此记录只证明消息已接收，未另核实投递来源，中断恢复仍未演练。`check` 自身不更新最后任务回执时间。
-- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T19:44:55.139593+00:00`，对应任务为 `B11-INTEGRATION@1`；已接收并去重该任务完成通知，退出与集成版本匹配。根每次收到实际任务回执后记录实际处理 UTC 时间及对应任务，供下一次 `check` 使用；本次不编造旧值。
+- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T19:50:03.466201+00:00`，对应任务为 `C20@1`；作者回执及固定设计候选已接收，尚待独立冻结。根每次收到实际任务回执后记录实际处理 UTC 时间及对应任务，供下一次 `check` 使用；本次不编造旧值。
 
 | 任务/版本 | 当前状态 | attempt | 负责 session 与 worktree | 输入/正式回执或产物位置 | 阻塞/下一步条件 | 适用授权 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -58,8 +58,10 @@
 | B12@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | dsh headless，当前配置；独立 dsh 进程 PID `121768`；session ID 未由 launcher 暴露；exec `81732`；`/home/liam_t/项目/TeacherWorkspace-b12`；`feat/b12-foundation` | `.scratch/dag-dispatch/B12/1/task.md`；receipt 待生成 | 提交公共入口供 B13 接真服务；B15 汇合 |
 | B13@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | dsh headless，当前配置；独立 dsh 进程 PID `121778`；session ID 未由 launcher 暴露；exec `83478`；`/home/liam_t/项目/TeacherWorkspace-b13`；`feat/b13-question-lessons` | `.scratch/dag-dispatch/B13/1/task.md`；receipt 待生成 | 模块实现后需接 B12 真服务自验；若先完成回执待集成 |
 | B14@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | dsh headless，当前配置；独立 dsh 进程 PID `121821`；session ID 未由 launcher 暴露；exec `82628`；`/home/liam_t/项目/TeacherWorkspace-b14`；`feat/b14-workbench-ui` | `.scratch/dag-dispatch/B14/1/task.md`；receipt 待生成 | 本节点契约替身自验；B15 接真实服务 |
-| C20@1 / attempt 1 | RUNNING | `b938f8a`（含冻结 B11 与并行调度） | Codex Astra high；session `01a0c577-c06f-7e30-abe2-2fcff66386e9`；exec `98698`；`/home/liam_t/项目/TeacherWorkspace-c20`；`design/c20-capabilities` | `.scratch/dag-dispatch/C20/1/task.md`；receipt 待生成 | 设计完成交必要独立核验，随后 C21-C23/T50 并行 |
+| C20@1 / attempt 1 | READY_FOR_REVIEW（self） | `b938f8a`（含冻结 B11 与并行调度） | Codex Astra high；session `01a0c577-c06f-7e30-abe2-2fcff66386e9`；exec `98698`；`/home/liam_t/项目/TeacherWorkspace-c20`；`design/c20-capabilities` | 设计 `cff6f97`、作者 `85c1af8`；`docs/acceptance/evidence/C20/v1/author.md` | Sol 独立核验；通过后 C21-C23/T50 并行，C24 可先探针 |
 | B11-INTEGRATION@1 / attempt 1 | 完成（self）；main 已集成 | `b938f8a`（含冻结 B11 与并行调度） | Codex Luna max；session `01a0c577-c068-7b01-99bb-c3c6aa0d0753`；exec `69302`；已完成并清理临时工作区/分支 | [正式集成回执](../acceptance/evidence/B11/v1/integration.md)；main `420312f` | 文档集成完成；只继续正在运行的产品与实验设计任务 |
+| C20-REVIEW@1 / attempt 1 | 启动中 | `0ff698b6117fd4473d801d4817f70acb1fd3a7ef`；设计 `cff6f97` | Codex Sol high；`/home/liam_t/项目/TeacherWorkspace-c20-review`；`review/c20-freeze` | `.scratch/dag-dispatch/C20-REVIEW/1/task.md`；receipt 待生成 | 核验可执行性与真实门禁后放行实验 |
+| EAUTH-READINESS@1 / attempt 1 | 启动中 | `819e79332d0c3f9cb19d64adff0ce8127d890098`；已有认证文件与指定 session 保存记录 | Codex Luna max；`/home/liam_t/项目/TeacherWorkspace-auth-readiness`；`docs/auth-readiness` | `.scratch/dag-dispatch/EAUTH-READINESS/1/task.md`；receipt 待生成 | 一次性整理认证事实与写入归属，不轮询、不催促、不擅自接管代码；根据事实安排交接或补齐 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
