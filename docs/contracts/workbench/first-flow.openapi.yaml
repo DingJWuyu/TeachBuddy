@@ -1,0 +1,1875 @@
+openapi: 3.2.1
+info:
+  title: TeachBuddy first-flow 工作台契约
+  version: 0.1.0-candidate.1
+  description: B11/v1 候选，待独立冻结。业务语义见 ../workbench.md。所有响应 no-store；写请求同源 HTTPS + 保护头；请求拒绝未知字段/隐式类型转换，响应容忍附加字段。JSON 请求体上限 2
+    MiB（解码后的 UTF-8 字节），超限 413。URL/query 非法值 422，未知 query 拒绝。
+x-contract-status: candidate
+x-source-revision: 59a14e95bab667e0a01b8d62f6e87e018ddb1c5f
+servers:
+- url: /
+security:
+- SessionCookie: []
+paths:
+  /api/workbench/context:
+    get:
+      operationId: getWorkbenchContext
+      summary: getWorkbenchContext
+      responses:
+        '200':
+          description: 当前账户的结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkbenchContext'
+              examples:
+                sample:
+                  $ref: '#/components/examples/Context'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '503':
+          $ref: '#/components/responses/503'
+  /api/modules/questions/items:
+    get:
+      operationId: listQuestions
+      summary: listQuestions
+      responses:
+        '200':
+          description: 当前账户的结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '503':
+          $ref: '#/components/responses/503'
+        '422':
+          $ref: '#/components/responses/422'
+      parameters:
+      - $ref: '#/components/parameters/Query'
+      - $ref: '#/components/parameters/State'
+      - $ref: '#/components/parameters/Starred'
+    post:
+      operationId: createQuestion
+      summary: createQuestion
+      responses:
+        '201':
+          description: 已确认的持久结果。重放保持原状态码和结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+              examples:
+                sample:
+                  $ref: '#/components/examples/QuestionSaved'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateQuestion'
+            examples:
+              sample:
+                $ref: '#/components/examples/CreatePasted'
+  /api/modules/questions/items/{id}:
+    get:
+      operationId: getQuestion
+      summary: getQuestion
+      responses:
+        '200':
+          description: 当前账户的结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+              examples:
+                sample:
+                  $ref: '#/components/examples/QuestionSaved'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '503':
+          $ref: '#/components/responses/503'
+        '422':
+          $ref: '#/components/responses/422'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      operationId: updateQuestion
+      summary: updateQuestion
+      responses:
+        '200':
+          description: 已确认的持久结果。重放保持原状态码和结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateQuestion'
+            examples:
+              sample:
+                $ref: '#/components/examples/UpdateQuestion'
+  /api/modules/questions/items/{id}/copies:
+    get:
+      operationId: listDerivatives
+      summary: listDerivatives
+      responses:
+        '200':
+          description: 当前账户的结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '503':
+          $ref: '#/components/responses/503'
+        '422':
+          $ref: '#/components/responses/422'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/State'
+    post:
+      operationId: copyQuestion
+      summary: copyQuestion
+      responses:
+        '201':
+          description: 已确认的持久结果。重放保持原状态码和结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyQuestion'
+            examples:
+              sample:
+                $ref: '#/components/examples/CopyQuestion'
+  /api/modules/questions/items/{id}/deletion:
+    post:
+      operationId: setQuestionDeletion
+      summary: setQuestionDeletion
+      responses:
+        '200':
+          description: 已确认的持久结果。重放保持原状态码和结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetDeletion'
+            examples:
+              sample:
+                $ref: '#/components/examples/DeleteV1'
+  /api/modules/lessons/items:
+    get:
+      operationId: listLessons
+      summary: listLessons
+      responses:
+        '200':
+          description: 当前账户的结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '503':
+          $ref: '#/components/responses/503'
+        '422':
+          $ref: '#/components/responses/422'
+      parameters:
+      - $ref: '#/components/parameters/Query'
+      - $ref: '#/components/parameters/State'
+    post:
+      operationId: createLesson
+      summary: createLesson
+      responses:
+        '201':
+          description: 已确认的持久结果。重放保持原状态码和结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+              examples:
+                sample:
+                  $ref: '#/components/examples/LessonSaved'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLesson'
+            examples:
+              sample:
+                $ref: '#/components/examples/CreateLesson'
+  /api/modules/lessons/items/{id}:
+    get:
+      operationId: getLesson
+      summary: getLesson
+      responses:
+        '200':
+          description: 当前账户的结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+              examples:
+                sample:
+                  $ref: '#/components/examples/LessonReferenced'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '503':
+          $ref: '#/components/responses/503'
+        '422':
+          $ref: '#/components/responses/422'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      operationId: updateLesson
+      summary: updateLesson
+      responses:
+        '200':
+          description: 已确认的持久结果。重放保持原状态码和结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+              examples:
+                sample:
+                  $ref: '#/components/examples/LessonReferenced'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLesson'
+            examples:
+              sample:
+                $ref: '#/components/examples/AddReference'
+  /api/modules/lessons/items/{id}/deletion:
+    post:
+      operationId: setLessonDeletion
+      summary: setLessonDeletion
+      responses:
+        '200':
+          description: 已确认的持久结果。重放保持原状态码和结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetDeletion'
+            examples:
+              sample:
+                $ref: '#/components/examples/DeleteV1'
+  /api/modules/lessons/question-usages/{questionId}:
+    get:
+      operationId: listQuestionUsages
+      summary: listQuestionUsages
+      responses:
+        '200':
+          description: 当前账户的结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '503':
+          $ref: '#/components/responses/503'
+        '422':
+          $ref: '#/components/responses/422'
+      parameters:
+      - $ref: '#/components/parameters/QuestionId'
+  /api/modules:
+    get:
+      operationId: getModuleCatalog
+      summary: 读取可运行的静态模块目录
+      responses:
+        '200':
+          description: 与 Web/API 编译期目录一致的模块描述。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleCatalog'
+              examples:
+                registered:
+                  $ref: '#/components/examples/ModuleCatalog'
+        '401':
+          $ref: '#/components/responses/401'
+        '503':
+          $ref: '#/components/responses/503'
+components:
+  securitySchemes:
+    SessionCookie:
+      $ref: ../auth.openapi.yaml#/components/securitySchemes/SessionCookie
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    QuestionId:
+      name: questionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    Query:
+      name: q
+      in: query
+      schema:
+        type: string
+        maxLength: 200
+        default: ''
+    State:
+      name: state
+      in: query
+      schema:
+        enum:
+        - active
+        - deleted
+        default: active
+    Starred:
+      name: starred
+      in: query
+      schema:
+        type: boolean
+      description: 省略为全部；仅接受字面 true/false。
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    BrowserRequestProtection:
+      $ref: ../auth.openapi.yaml#/components/parameters/BrowserRequestProtection
+    RequestOrigin:
+      $ref: ../auth.openapi.yaml#/components/parameters/RequestOrigin
+    RequestReferer:
+      $ref: ../auth.openapi.yaml#/components/parameters/RequestReferer
+  responses:
+    '400':
+      description: malformed-json
+      headers:
+        Cache-Control:
+          required: true
+          schema:
+            const: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem400'
+          examples:
+            malformed-json:
+              value:
+                type: /problems/workbench/malformed-json
+    '401':
+      description: unauthenticated
+      headers:
+        Cache-Control:
+          required: true
+          schema:
+            const: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem401'
+          examples:
+            unauthenticated:
+              value:
+                type: /problems/workbench/unauthenticated
+    '403':
+      description: request-not-allowed
+      headers:
+        Cache-Control:
+          required: true
+          schema:
+            const: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem403'
+          examples:
+            request-not-allowed:
+              value:
+                type: /problems/workbench/request-not-allowed
+    '404':
+      description: not-found
+      headers:
+        Cache-Control:
+          required: true
+          schema:
+            const: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem404'
+          examples:
+            not-found:
+              value:
+                type: /problems/workbench/not-found
+    '409':
+      description: version-conflict / reference-version-conflict / idempotency-key-reused / object-deleted
+      headers:
+        Cache-Control:
+          required: true
+          schema:
+            const: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem409'
+          examples:
+            version-conflict:
+              value:
+                type: /problems/workbench/version-conflict
+                currentVersion: 2
+            reference-version-conflict:
+              value:
+                type: /problems/workbench/reference-version-conflict
+                questionId: 00000000-0000-4000-8000-000000000001
+                currentVersion: 2
+            idempotency-key-reused:
+              value:
+                type: /problems/workbench/idempotency-key-reused
+            object-deleted:
+              value:
+                type: /problems/workbench/object-deleted
+    '413':
+      description: payload-too-large
+      headers:
+        Cache-Control:
+          required: true
+          schema:
+            const: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem413'
+          examples:
+            payload-too-large:
+              value:
+                type: /problems/workbench/payload-too-large
+    '415':
+      description: unsupported-media-type
+      headers:
+        Cache-Control:
+          required: true
+          schema:
+            const: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem415'
+          examples:
+            unsupported-media-type:
+              value:
+                type: /problems/workbench/unsupported-media-type
+    '422':
+      description: invalid-input
+      headers:
+        Cache-Control:
+          required: true
+          schema:
+            const: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem422'
+          examples:
+            invalid-input:
+              value:
+                type: /problems/workbench/invalid-input
+                field: /body
+                reason: empty-content
+    '503':
+      description: temporarily-unavailable
+      headers:
+        Cache-Control:
+          required: true
+          schema:
+            const: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem503'
+          examples:
+            temporarily-unavailable:
+              value:
+                type: /problems/workbench/temporarily-unavailable
+  schemas:
+    Id:
+      type: string
+      format: uuid
+    Version:
+      type: integer
+      minimum: 1
+      maximum: 9007199254740991
+    Timestamp:
+      type: string
+      format: date-time
+    Title:
+      type: string
+      maxLength: 200
+    Note:
+      type: string
+      maxLength: 20000
+    TextRun:
+      type: object
+      properties:
+        type:
+          const: text
+        text:
+          type: string
+          maxLength: 20000
+      required:
+      - type
+      - text
+      additionalProperties: false
+    MathRun:
+      type: object
+      properties:
+        type:
+          const: math
+        latex:
+          type: string
+          minLength: 1
+          maxLength: 10000
+      required:
+      - type
+      - latex
+      additionalProperties: false
+    Paragraph:
+      type: object
+      properties:
+        type:
+          const: paragraph
+        runs:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/TextRun'
+            - $ref: '#/components/schemas/MathRun'
+          maxItems: 1000
+      required:
+      - type
+      - runs
+      additionalProperties: false
+    MathBlock:
+      type: object
+      properties:
+        type:
+          const: math
+        latex:
+          type: string
+          minLength: 1
+          maxLength: 10000
+      required:
+      - type
+      - latex
+      additionalProperties: false
+    Document:
+      type: object
+      properties:
+        version:
+          const: 1
+        blocks:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/Paragraph'
+            - $ref: '#/components/schemas/MathBlock'
+          maxItems: 1000
+      required:
+      - version
+      - blocks
+      additionalProperties: false
+      description: 保留输入顺序。段落可含行内公式，独立 math 块单独排版。空 blocks 合法；题目 body 另须至少有一个非空白文字或公式。未知版本/节点返回 422，不静默丢弃。
+    Snapshot:
+      type: object
+      properties:
+        title:
+          $ref: '#/components/schemas/Title'
+        body:
+          $ref: '#/components/schemas/Document'
+        solution:
+          $ref: '#/components/schemas/Document'
+      required:
+      - title
+      - body
+      - solution
+    ManualSource:
+      type: object
+      properties:
+        kind:
+          const: manual
+      required:
+      - kind
+      additionalProperties: false
+    PasteSource:
+      type: object
+      properties:
+        kind:
+          const: paste
+        text:
+          type: string
+          minLength: 1
+          maxLength: 100000
+      required:
+      - kind
+      - text
+      additionalProperties: false
+    CopySource:
+      type: object
+      properties:
+        kind:
+          const: copy
+        questionId:
+          $ref: '#/components/schemas/Id'
+        questionVersion:
+          $ref: '#/components/schemas/Version'
+        snapshot:
+          $ref: '#/components/schemas/Snapshot'
+      required:
+      - kind
+      - questionId
+      - questionVersion
+      - snapshot
+    CreateSource:
+      oneOf:
+      - $ref: '#/components/schemas/ManualSource'
+      - $ref: '#/components/schemas/PasteSource'
+    Source:
+      oneOf:
+      - $ref: '#/components/schemas/ManualSource'
+      - $ref: '#/components/schemas/PasteSource'
+      - $ref: '#/components/schemas/CopySource'
+    CreateQuestion:
+      type: object
+      properties:
+        title:
+          $ref: '#/components/schemas/Title'
+        body:
+          $ref: '#/components/schemas/Document'
+        solution:
+          $ref: '#/components/schemas/Document'
+        note:
+          $ref: '#/components/schemas/Note'
+        starred:
+          type: boolean
+        source:
+          $ref: '#/components/schemas/CreateSource'
+      required:
+      - title
+      - body
+      - solution
+      - note
+      - starred
+      - source
+      additionalProperties: false
+    UpdateQuestion:
+      type: object
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+        title:
+          $ref: '#/components/schemas/Title'
+        body:
+          $ref: '#/components/schemas/Document'
+        solution:
+          $ref: '#/components/schemas/Document'
+        note:
+          $ref: '#/components/schemas/Note'
+        starred:
+          type: boolean
+      required:
+      - baseVersion
+      - title
+      - body
+      - solution
+      - note
+      - starred
+      additionalProperties: false
+    Question:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+        deletedAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+        title:
+          $ref: '#/components/schemas/Title'
+        body:
+          $ref: '#/components/schemas/Document'
+        solution:
+          $ref: '#/components/schemas/Document'
+        note:
+          $ref: '#/components/schemas/Note'
+        starred:
+          type: boolean
+        source:
+          $ref: '#/components/schemas/Source'
+      required:
+      - id
+      - version
+      - createdAt
+      - updatedAt
+      - deletedAt
+      - title
+      - body
+      - solution
+      - note
+      - starred
+      - source
+    QuestionSummary:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+        deletedAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+        title:
+          $ref: '#/components/schemas/Title'
+        body:
+          $ref: '#/components/schemas/Document'
+        starred:
+          type: boolean
+      required:
+      - id
+      - version
+      - updatedAt
+      - deletedAt
+      - title
+      - body
+      - starred
+    QuestionList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionSummary'
+      required:
+      - items
+    CopyQuestion:
+      type: object
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+        title:
+          $ref: '#/components/schemas/Title'
+        body:
+          $ref: '#/components/schemas/Document'
+        solution:
+          $ref: '#/components/schemas/Document'
+        note:
+          $ref: '#/components/schemas/Note'
+        starred:
+          type: boolean
+      required:
+      - baseVersion
+      - title
+      - body
+      - solution
+      - note
+      - starred
+      additionalProperties: false
+      description: 首个副本保存即提交编辑后的完整内容；初始编辑值来自原题，note 为空、starred=false。source 由服务器从原题指定版本生成。
+    SetDeletion:
+      type: object
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+        deleted:
+          type: boolean
+      required:
+      - baseVersion
+      - deleted
+      additionalProperties: false
+    ReferenceInput:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        questionId:
+          $ref: '#/components/schemas/Id'
+        questionVersion:
+          $ref: '#/components/schemas/Version'
+        note:
+          $ref: '#/components/schemas/Note'
+      required:
+      - id
+      - questionId
+      - questionVersion
+      - note
+      additionalProperties: false
+    QuestionReference:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        questionId:
+          $ref: '#/components/schemas/Id'
+        questionVersion:
+          $ref: '#/components/schemas/Version'
+        note:
+          $ref: '#/components/schemas/Note'
+        snapshot:
+          $ref: '#/components/schemas/Snapshot'
+        sourceState:
+          enum:
+          - active
+          - deleted
+        latestVersion:
+          $ref: '#/components/schemas/Version'
+      required:
+      - id
+      - questionId
+      - questionVersion
+      - note
+      - snapshot
+      - sourceState
+      - latestVersion
+    SectionInput:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          $ref: '#/components/schemas/Document'
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReferenceInput'
+          maxItems: 1000
+      required:
+      - id
+      - title
+      - content
+      - references
+      additionalProperties: false
+    Section:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          $ref: '#/components/schemas/Document'
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionReference'
+          maxItems: 1000
+      required:
+      - id
+      - title
+      - content
+      - references
+    CreateLesson:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        intro:
+          $ref: '#/components/schemas/Document'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/SectionInput'
+          maxItems: 200
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReferenceInput'
+          maxItems: 1000
+      required:
+      - title
+      - intro
+      - sections
+      - materials
+      additionalProperties: false
+    UpdateLesson:
+      type: object
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        intro:
+          $ref: '#/components/schemas/Document'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/SectionInput'
+          maxItems: 200
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReferenceInput'
+          maxItems: 1000
+      required:
+      - baseVersion
+      - title
+      - intro
+      - sections
+      - materials
+      additionalProperties: false
+    Lesson:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+        deletedAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        intro:
+          $ref: '#/components/schemas/Document'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Section'
+          maxItems: 200
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionReference'
+          maxItems: 1000
+      required:
+      - id
+      - version
+      - createdAt
+      - updatedAt
+      - deletedAt
+      - title
+      - intro
+      - sections
+      - materials
+    LessonSummary:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+        deletedAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+      required:
+      - id
+      - version
+      - updatedAt
+      - deletedAt
+      - title
+    LessonList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LessonSummary'
+      required:
+      - items
+    Usage:
+      type: object
+      properties:
+        lessonId:
+          $ref: '#/components/schemas/Id'
+        lessonTitle:
+          $ref: '#/components/schemas/Title'
+        sectionId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        sectionTitle:
+          type:
+          - string
+          - 'null'
+        referenceId:
+          $ref: '#/components/schemas/Id'
+        questionVersion:
+          $ref: '#/components/schemas/Version'
+      required:
+      - lessonId
+      - lessonTitle
+      - sectionId
+      - sectionTitle
+      - referenceId
+      - questionVersion
+    UsageList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Usage'
+      required:
+      - items
+    WorkbenchContext:
+      type: object
+      properties:
+        accountKey:
+          type: string
+          minLength: 1
+          maxLength: 200
+      required:
+      - accountKey
+    Problem:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/malformed-json
+        required:
+        - type
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/unauthenticated
+        required:
+        - type
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/request-not-allowed
+        required:
+        - type
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/not-found
+        required:
+        - type
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/version-conflict
+          currentVersion:
+            $ref: '#/components/schemas/Version'
+        required:
+        - type
+        - currentVersion
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/reference-version-conflict
+          questionId:
+            $ref: '#/components/schemas/Id'
+          currentVersion:
+            $ref: '#/components/schemas/Version'
+        required:
+        - type
+        - questionId
+        - currentVersion
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/idempotency-key-reused
+        required:
+        - type
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/object-deleted
+        required:
+        - type
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/payload-too-large
+        required:
+        - type
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/unsupported-media-type
+        required:
+        - type
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/invalid-input
+          field:
+            type: string
+            description: RFC 6901 JSON Pointer；根值错误为 ""，查询字段为 /query/<name>，请求头错误为 /headers/<name>。
+          reason:
+            enum:
+            - required
+            - unknown-field
+            - invalid-type
+            - out-of-range
+            - empty-content
+            - duplicate-id
+            - invalid-reference
+            - unsupported-content-version
+        required:
+        - type
+        - field
+        - reason
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/temporarily-unavailable
+        required:
+        - type
+      description: HTTP 状态与 type 对照由 responses 的例子固定；不输出敏感对象或数据库细节。未知 type/结构不合法不视为已知拒绝。
+    Problem400:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/malformed-json
+        required:
+        - type
+    Problem401:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/unauthenticated
+        required:
+        - type
+    Problem403:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/request-not-allowed
+        required:
+        - type
+    Problem404:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/not-found
+        required:
+        - type
+    Problem409:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/version-conflict
+          currentVersion:
+            $ref: '#/components/schemas/Version'
+        required:
+        - type
+        - currentVersion
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/reference-version-conflict
+          questionId:
+            $ref: '#/components/schemas/Id'
+          currentVersion:
+            $ref: '#/components/schemas/Version'
+        required:
+        - type
+        - questionId
+        - currentVersion
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/idempotency-key-reused
+        required:
+        - type
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/object-deleted
+        required:
+        - type
+    Problem413:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/payload-too-large
+        required:
+        - type
+    Problem415:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/unsupported-media-type
+        required:
+        - type
+    Problem422:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/invalid-input
+          field:
+            type: string
+            description: RFC 6901 JSON Pointer；根值错误为 ""，查询字段为 /query/<name>，请求头错误为 /headers/<name>。
+          reason:
+            enum:
+            - required
+            - unknown-field
+            - invalid-type
+            - out-of-range
+            - empty-content
+            - duplicate-id
+            - invalid-reference
+            - unsupported-content-version
+        required:
+        - type
+        - field
+        - reason
+    Problem503:
+      oneOf:
+      - type: object
+        properties:
+          type:
+            const: /problems/workbench/temporarily-unavailable
+        required:
+        - type
+    ModuleDescriptor:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - path
+      - navigation
+      - auxiliaryPanel
+      - requires
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z][a-z0-9-]*$
+        name:
+          type: string
+          minLength: 1
+        path:
+          type: string
+          pattern: ^/[a-z][a-z0-9-]*$
+        navigation:
+          enum:
+          - sidebar
+          - top
+        auxiliaryPanel:
+          type: boolean
+        requires:
+          type: array
+          uniqueItems: true
+          items:
+            enum:
+            - questions.readForReference
+    ModuleCatalog:
+      type: object
+      required:
+      - version
+      - items
+      properties:
+        version:
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleDescriptor'
+      description: 来自唯一编译期静态目录；构建检查 ID/path 唯一、运行时映射与依赖完整。top 资格仅预留，不注册未实现的日程。
+  examples:
+    CreateManual:
+      x-schema: CreateQuestion
+      value:
+        title: 二次函数最小值
+        body:
+          version: 1
+          blocks:
+          - type: paragraph
+            runs:
+            - type: text
+              text: '已知函数 '
+            - type: math
+              latex: f(x)=x^2-2x
+            - type: text
+              text: ，求最小值，并说明理由。
+        solution:
+          version: 1
+          blocks:
+          - type: math
+            latex: f(x)=(x-1)^2-1\geq -1
+          - type: paragraph
+            runs:
+            - type: text
+              text: 当 x=1 时取等号。
+        note: 先让学生尝试配方。
+        starred: true
+        source:
+          kind: manual
+    CreatePasted:
+      x-schema: CreateQuestion
+      value:
+        title: 二次函数最小值
+        body:
+          version: 1
+          blocks:
+          - type: paragraph
+            runs:
+            - type: text
+              text: '已知函数 '
+            - type: math
+              latex: f(x)=x^2-2x
+            - type: text
+              text: ，求最小值，并说明理由。
+        solution:
+          version: 1
+          blocks:
+          - type: math
+            latex: f(x)=(x-1)^2-1\geq -1
+          - type: paragraph
+            runs:
+            - type: text
+              text: 当 x=1 时取等号。
+        note: 先让学生尝试配方。
+        starred: true
+        source:
+          kind: paste
+          text: '已知函数 f(x)=x^2-2x，求最小值，并说明理由。
+
+            答案：-1；配方求解。'
+    QuestionSaved:
+      x-schema: Question
+      value:
+        id: 00000000-0000-4000-8000-000000000001
+        version: 1
+        createdAt: '2026-09-21T12:00:00Z'
+        updatedAt: '2026-09-21T12:00:00Z'
+        deletedAt: null
+        title: 二次函数最小值
+        body:
+          version: 1
+          blocks:
+          - type: paragraph
+            runs:
+            - type: text
+              text: '已知函数 '
+            - type: math
+              latex: f(x)=x^2-2x
+            - type: text
+              text: ，求最小值，并说明理由。
+        solution:
+          version: 1
+          blocks:
+          - type: math
+            latex: f(x)=(x-1)^2-1\geq -1
+          - type: paragraph
+            runs:
+            - type: text
+              text: 当 x=1 时取等号。
+        note: 先让学生尝试配方。
+        starred: true
+        source:
+          kind: paste
+          text: '已知函数 f(x)=x^2-2x，求最小值，并说明理由。
+
+            答案：-1；配方求解。'
+    UpdateQuestion:
+      x-schema: UpdateQuestion
+      value:
+        baseVersion: 1
+        title: 二次函数最小值
+        body:
+          version: 1
+          blocks:
+          - type: paragraph
+            runs:
+            - type: text
+              text: '已知函数 '
+            - type: math
+              latex: f(x)=x^2-2x
+            - type: text
+              text: ，求最小值，并说明理由。
+        solution:
+          version: 1
+          blocks:
+          - type: math
+            latex: f(x)=(x-1)^2-1\geq -1
+          - type: paragraph
+            runs:
+            - type: text
+              text: 当 x=1 时取等号。
+        note: 先配方，再联系顶点。
+        starred: true
+    CopyQuestion:
+      x-schema: CopyQuestion
+      value:
+        baseVersion: 1
+        title: 二次函数变式
+        body:
+          version: 1
+          blocks:
+          - type: paragraph
+            runs:
+            - type: text
+              text: '已知函数 '
+            - type: math
+              latex: f(x)=x^2-2x
+            - type: text
+              text: ，求最小值，并说明理由。
+        solution:
+          version: 1
+          blocks:
+          - type: math
+            latex: f(x)=(x-1)^2-1\geq -1
+          - type: paragraph
+            runs:
+            - type: text
+              text: 当 x=1 时取等号。
+        note: ''
+        starred: false
+    CreateLesson:
+      x-schema: CreateLesson
+      value:
+        title: 二次函数的最值
+        intro:
+          version: 1
+          blocks: []
+        sections:
+        - id: 00000000-0000-4000-8000-000000000201
+          title: 例题讨论
+          content:
+            version: 1
+            blocks: []
+          references: []
+        materials: []
+    LessonSaved:
+      x-schema: Lesson
+      value:
+        id: 00000000-0000-4000-8000-000000000101
+        version: 1
+        createdAt: '2026-09-21T12:00:00Z'
+        updatedAt: '2026-09-21T12:00:00Z'
+        deletedAt: null
+        title: 二次函数的最值
+        intro:
+          version: 1
+          blocks: []
+        sections:
+        - id: 00000000-0000-4000-8000-000000000201
+          title: 例题讨论
+          content:
+            version: 1
+            blocks: []
+          references: []
+        materials: []
+    AddReference:
+      x-schema: UpdateLesson
+      value:
+        title: 二次函数的最值
+        intro:
+          version: 1
+          blocks: []
+        sections:
+        - id: 00000000-0000-4000-8000-000000000201
+          title: 例题讨论
+          content:
+            version: 1
+            blocks: []
+          references:
+          - id: 00000000-0000-4000-8000-000000000301
+            questionId: 00000000-0000-4000-8000-000000000001
+            questionVersion: 1
+            note: 先讨论配方，再提问顶点位置。
+        materials: []
+        baseVersion: 1
+    LessonReferenced:
+      x-schema: Lesson
+      value:
+        title: 二次函数的最值
+        intro:
+          version: 1
+          blocks: []
+        sections:
+        - id: 00000000-0000-4000-8000-000000000201
+          title: 例题讨论
+          content:
+            version: 1
+            blocks: []
+          references:
+          - id: 00000000-0000-4000-8000-000000000301
+            questionId: 00000000-0000-4000-8000-000000000001
+            questionVersion: 1
+            note: 先讨论配方，再提问顶点位置。
+            snapshot:
+              title: 二次函数最小值
+              body:
+                version: 1
+                blocks:
+                - type: paragraph
+                  runs:
+                  - type: text
+                    text: '已知函数 '
+                  - type: math
+                    latex: f(x)=x^2-2x
+                  - type: text
+                    text: ，求最小值，并说明理由。
+              solution:
+                version: 1
+                blocks:
+                - type: math
+                  latex: f(x)=(x-1)^2-1\geq -1
+                - type: paragraph
+                  runs:
+                  - type: text
+                    text: 当 x=1 时取等号。
+            sourceState: active
+            latestVersion: 1
+        materials: []
+        id: 00000000-0000-4000-8000-000000000101
+        version: 2
+        createdAt: '2026-09-21T12:00:00Z'
+        updatedAt: '2026-09-21T12:00:00Z'
+        deletedAt: null
+    DeleteV1:
+      x-schema: SetDeletion
+      value:
+        baseVersion: 1
+        deleted: true
+    RestoreV2:
+      x-schema: SetDeletion
+      value:
+        baseVersion: 2
+        deleted: false
+    Context:
+      x-schema: WorkbenchContext
+      value:
+        accountKey: fixture-teacher-a
+    ModuleCatalog:
+      x-schema: ModuleCatalog
+      value:
+        version: 1
+        items:
+        - id: questions
+          name: 题库
+          path: /questions
+          navigation: sidebar
+          auxiliaryPanel: true
+          requires: []
+        - id: lessons
+          name: 备课
+          path: /lessons
+          navigation: sidebar
+          auxiliaryPanel: true
+          requires:
+          - questions.readForReference
