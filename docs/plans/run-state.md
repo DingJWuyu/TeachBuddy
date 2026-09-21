@@ -47,8 +47,8 @@
 
 | 节点 | 状态 | 输入版本 | 负责人与工作区 | 任务与回执 | 下一步 |
 | --- | --- | --- | --- | --- | --- |
-| B10@1 / attempt 1 | 待启动 | 启动授权提交，派发时固定 | Codex Luna max；待创建独立 worktree | 待生成 | 入口与分支准备完成后派 B11，不追加文档复审 |
-| EMODEL@1 / attempt 1 | 待启动 | 同一授权基线；现有 API 调研与本地凭据 | Codex Luna max；待创建独立 worktree | 待生成 | 确认两个允许模型的真实接口可用性；不代替 C24 pi 实验 |
+| B10@1 / attempt 1 | RUNNING | `9f93c2a` | Codex Luna max；session `01a0c545-5089-7452-a568-f0131b567189`；exec `14318`；`/home/liam_t/项目/TeacherWorkspace-b10`，`chore/b10-entry` | `.scratch/dag-dispatch/B10/1/task.md`、同目录 `receipt.md`（待生成） | 入口与分支准备完成后派 B11，不追加文档复审 |
+| EMODEL@1 / attempt 1 | RUNNING | `9f93c2a`；现有 API 调研与本地凭据 | Codex Luna max；session `01a0c545-507e-74d2-965b-7f25c4722a75`；exec `48750`；`/home/liam_t/项目/TeacherWorkspace-emodel`，`chore/emodel-live` | `.scratch/dag-dispatch/EMODEL/1/task.md`、同目录 `receipt.md`（待生成） | 确认两个允许模型的真实接口可用性；不代替 C24 pi 实验 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
