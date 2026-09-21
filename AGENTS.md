@@ -5,6 +5,7 @@
 - 核对实际能力或运行状态时读 `README.md`；`prototype/` 是交互参考，`apps/` 才是真实产品实现位置，旧演示 API 不约束新契约。
 - 编排 MVP 时从 `docs/plans/mvp-dag.md` 进入调度视图；了解总体进度时可从 `docs/ROADMAP.md` 导航。
 - 当前编排状态和下一步读取 `docs/plans/run-state.md`；它只维护执行台账，不替代 DAG 的依赖与授权视图。
+- 仅编排者：效率优先，在依赖与权限允许时并行使用 worktree；某条 flow 等用户时继续其他可推进的 flow。派发 prompt 保持最小必要，模型路由和具体规则见 `docs/plans/execution-protocol.md#orchestration`，任务包见 `docs/plans/task-package.md`。
 - 需要选择或解释 skill 流程时读取 `docs/plans/skill-routing.md`；任务包点名 skill 时，完整读取其 `SKILL.md` 及直接引用。业务 session 之间不互聊、不扩 DAG；skill 明确要求的有界内部 subagent 由调用 session 管理并聚合，只是该规则的有限例外，不单列 DAG 节点。
 - 接到设计、实现或独立验收任务时，从本次任务包的必读清单进入对应节点、规格和 `docs/plans/execution-protocol.md` 的本角色章节；按触发条件补读，不要求通读 DAG 或其他模块。
 - 设计或核查范围时读取 `docs/PRODUCT_SCOPE.md` 的相关段落；页面和跨模块行为读取 `docs/WORKBENCH_DESIGN.md` 的相关段落。范围不能由旧代码或原型反推。
@@ -33,7 +34,7 @@
 
 ### DeepSeek Harness
 
-在已获实施授权的具体任务包中，用户已将实现 harness 的选择委托给根编排者；根可在 `dsh` 与 Codex Luna 之间选择，不要求用户逐节点再次点名。当前产品 DAG 尚未获得 G00，本轮不运行 `dsh`。选择 `dsh` 时，在当前项目目录中将完整任务说明作为单个参数交给一次性 Headless profile：
+前后端代码实现使用 `dsh`；仅当 dsh 明确报告额度不足或触发限额时，回退 Codex Luna max。调研、文档和集成仍使用 Luna max。任务授权与具体路由见 [MVP 执行协议](docs/plans/execution-protocol.md#模型与固定派发)。调用时，在任务 worktree 中将最小必要任务说明作为单个参数交给一次性 Headless profile：
 
 ```bash
 dsh --profile headless "<task>"
