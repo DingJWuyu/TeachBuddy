@@ -47,12 +47,12 @@
 
 | 节点 | 状态 | 输入版本 | 负责人与工作区 | 任务与回执 | 下一步 |
 | --- | --- | --- | --- | --- | --- |
-| B10@1 / attempt 1 | 完成（self），已集成 main | `9f93c2a` | Codex Luna max；session `01a0c545-5089-7452-a568-f0131b567189`；exec `14318`；`/home/liam_t/项目/TeacherWorkspace-b10`，`chore/b10-entry` | 最终提交 `8e9b230c56c7384521b122a7a80b6b07e18c852c`；`docs/acceptance/evidence/B10/v1/receipt.md`；源任务回执已接收 | B11 正在消费交接；其回执前保留 B10 worktree |
+| B10@1 / attempt 1 | 完成（self），已集成 main | `9f93c2a` | Codex Luna max；session `01a0c545-5089-7452-a568-f0131b567189`；exec `14318`；已完成用途的临时工作区与分支已清理 | 最终提交 `8e9b230c56c7384521b122a7a80b6b07e18c852c`；`docs/acceptance/evidence/B10/v1/receipt.md`；源任务回执已接收 | B11 已消费交接；正式证据与输入提交保留在 main |
 | EMODEL@1 / attempt 1 | 完成（self，基本连通性），已集成 main | `9f93c2a`；现有 API 调研与本地凭据 | Codex Luna max；session `01a0c545-507e-74d2-965b-7f25c4722a75`；exec `48750`；临时工作区与分支已清理 | 候选 `d52ba58a6db51d4214144976224f944c31643796`；[正式证据](../arch/evidence/EMODEL.md) | 两个模型 HTTP 200，但 token 上限耗尽且正文为空；正常文本、流式/tool calling、pi 和计费状态留给后续相关验证，不追加本次复审 |
 | B11@1 / attempt 1 | READY_FOR_REVIEW（self） | `59a14e9` + B10 `8e9b230` 只读交接 | Codex Astra high；session `01a0c555-bc91-7b02-afea-135650a01780`；exec `58212`；`/home/liam_t/项目/TeacherWorkspace-b11`；`design/b11-first-flow` | 设计 `9aee091`、回执 `47ee119`；`docs/acceptance/evidence/B11/v1/author.md` | 独立 Sol 冻结核验；设计声明 B12/B13/B14 可并行，交规划者同步实际依赖 |
 | PREFLIGHT-INTEGRATION@1 / attempt 1 | 完成（self），main 集成完成 | B10 `8e9b230`、EMODEL `d52ba58`、最新 main | Codex Luna max；session `01a0c555-bc95-7200-b3d2-32e294665c9e`；exec `64550`；临时工作区与分支已清理 | [正式回执](../acceptance/evidence/preflight-integration.md)；集成 main `9ca5e41` | 文档集成已完成，不追加审查；根恢复独占台账写入 |
-| B11-REVIEW@1 / attempt 1 | 启动中 | `bd1d204`，固定 B11 设计 `9aee091` | Codex Sol high；`/home/liam_t/项目/TeacherWorkspace-b11-review`；`review/b11-freeze` | `.scratch/dag-dispatch/B11-REVIEW/1/task.md`；receipt 待生成 | PASS 放行首批实现；真实契约缺口回 B11 |
-| PARALLEL-PLAN@1 / attempt 1 | 启动中 | `dfb88f0`，现有 DAG + B11 接缝 | Codex Astra high；`/home/liam_t/项目/TeacherWorkspace-parallel-plan`；`docs/mvp-parallel-dependencies` | `.scratch/dag-dispatch/PARALLEL-PLAN/1/task.md`；receipt 待生成 | 同步真实依赖与可并行边界，保持最终集成验收，普通调度修订不追加审查 |
+| B11-REVIEW@1 / attempt 1 | RUNNING | `bd1d204`，固定 B11 设计 `9aee091` | Codex Sol high；session `01a0c56a-7222-7df1-a3c8-aadb8545f1b1`；exec `60473`；`/home/liam_t/项目/TeacherWorkspace-b11-review`；`review/b11-freeze` | `.scratch/dag-dispatch/B11-REVIEW/1/task.md`；receipt 待生成 | PASS 放行首批实现；真实契约缺口回 B11 |
+| PARALLEL-PLAN@1 / attempt 1 | RUNNING | `dfb88f0`，现有 DAG + B11 接缝 | Codex Astra high；session `01a0c56a-7212-7a80-814c-af7a5d011f68`；exec `21662`；`/home/liam_t/项目/TeacherWorkspace-parallel-plan`；`docs/mvp-parallel-dependencies` | `.scratch/dag-dispatch/PARALLEL-PLAN/1/task.md`；receipt 待生成 | 同步真实依赖与可并行边界，保持最终集成验收，普通调度修订不追加审查 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
