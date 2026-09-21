@@ -11,7 +11,7 @@
 
 - 派发前记录任务和输入；启动成功后记录实际 session 与运行状态。
 - 回执到达时核对 `task`、`revision`、`attempt`、`session_id` 和 `verification_level`，再更新状态。重复回执或旧版本回执不重复派发、不推进下游。
-- 恢复时先读根 `AGENTS.md` 的条件入口、当前运行台账和未完成任务的固定任务包/回执。收到内容恰为 `check` 时，根先读 `run-state`；只有存在未完成任务且台账显示近 45 分钟没有回执，才对相关 session 做一次恢复检查。没有未完成任务或已有近期回执时结束本次检查。若结果已保存但回执丢失，按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败归属处理。超时本身不判失败、不杀死运行中的工作、不盲目重派；这项 `check` 是获授权的低频例外，不是循环轮询或 watcher，也不能启动产品 DAG。
+- 恢复时先读根 `AGENTS.md` 的条件入口、当前运行台账和未完成任务的固定任务包/回执。收到内容恰为 `check` 时，根先读 `run-state`；只有存在未完成任务且台账显示近 45 分钟没有回执，才对相关 session 做一次恢复检查。这个 `check` 同时判断回执缺失和异常通知：正常 `FAIL` 仍回原节点处理，只有子进程或运行环境异常、结果已落盘但通知未到等情况才按回执缺失处理。没有未完成任务或已有近期回执时结束本次检查。若结果已保存但回执丢失，按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败归属处理。超过 45 分钟本身不判失败，不杀死健康进程，不盲目重派；这项 `check` 是获授权的低频例外，不是循环轮询或 watcher，也不能启动产品 DAG。
 - 活跃任务包或证据未完成时保留；正式验收回执和证据按既有 evidence 约定可追溯后，再清理无用临时日志。台账只引用真实存在的材料，未来路径明确标为待生成，不复制研究或验收全文。
 
 ### 派发与收回执
@@ -22,17 +22,31 @@
 4. 接收 PASS 时核对 `verification_level`。实现自验为 `self`，设计冻结和独立验收为 `independent`，用户门禁为 `user`。阶段验收及必要的实际状态同步均完成后才报告阶段 PASS；自验不能代替阶段放行。阶段文档同步是记录动作，不自动增加另一轮审查。
 5. 普通文档修正和运行状态更新完成必要自检后直接交回或集成，不自动追加审查。编排者只维护运行台账中的调度元数据，不另派状态文档 session；产品行为、代码和实质验收结论仍归对应角色。
 
+### 核验触发与产物
+
+“常规核验”是边界明确的顶层独立判断，默认使用 `gpt-5.6-sol`、`high`，不等于每次改文件或缺一个字段就另派 reviewer，也不等于 `implement` 内部的 `code-review`。触发条件和最小产物如下：
+
+- 阶段独立验收：在固定候选上复现实际用户流程、保存和恢复，并返回 `independent` 回执及证据。例如 B16 走“新建题目 → 真实保存 → 备课引用 → 刷新或重启后继续使用”，R35 使用真实文件并核对导出结果，A12 验证真实登录、退出后的数据隔离。
+- 任务明确要求的契约交接或规格一致性检查：对固定版本的接口、行为、所有权和失败 case 逐项核对，产出缺口清单、证据引用和归属，不代替设计者改契约。
+- 明确必要的一手来源或 skill 事实核对：核对指定官方来源、技能规则或 harness 能力，产出来源位置、事实结论和未证实项；`skill-routing` 的技能读取核对属于此类。
+
+实现 session 的自检、skill 内部双轴 code review、上述阶段实际用户流程验收是三层不同活动。普通文档修正和运行状态更新只做必要自检。复杂行为、契约、架构设计或复杂疑难审查才升级为 `gpt-6-astra`、`high`；角色 A 同时覆盖设计和验收，角色代号不决定模型。
+
 ### 模型与固定派发
 
-| 代号 | 模型、effort、harness | 责任 |
+以下是模型、effort 和 harness 的唯一权威映射。任务包和回执必须记录实际选择，不得把角色代号当作模型：
+
+| 任务类型/代号 | 模型、effort、harness | 责任 |
 | --- | --- | --- |
-| A | 常规核验使用 `gpt-5.6-sol`，`high`；复杂疑难审查才使用 `gpt-6-astra`，`high`；新 `codex exec` | 行为、契约、验收和技术方案设计或独立审查；可验证、看源码与证据，不写或修产品实现。顶层 session 的实际模型必须写入任务包和回执。 |
-| W | 默认 `gpt-5.6-luna`，`max`，新 `codex exec` | 冻结任务的实现、实验、集成、复现、修复和证据。 |
-| S | `gpt-5.6-sol`，`high`，新 `codex exec` | 有具体失败依据时的困难实现升级或常规核验的顶层 session。 |
-| W 替代 | 用户指定的 dsh 一次性 headless | 调用形式及配置归根 AGENTS 的 DeepSeek Harness 条款；回执记录实际可获模型信息。 |
+| A · 复杂行为、契约、架构设计或复杂疑难审查 | `gpt-6-astra`，`high`，新 `codex exec` | 形成设计判断或独立审查，不写或修产品实现。 |
+| A · 上述常规核验 | `gpt-5.6-sol`，`high`，新 `codex exec` | 按固定场景、契约检查或一手来源事实核对返回独立结论。 |
+| W · 实现、实验、调研、文档和集成 | 默认 `gpt-5.6-luna`，`max`，新 `codex exec` | 执行冻结任务并自检。 |
+| S · 有具体失败依据的困难实现升级 | `gpt-5.6-sol`，`high`，新 `codex exec` | 只在实现失败证据支持升级时使用。 |
+| W 替代 · 已获实施授权的有界实现任务 | `dsh --profile headless`，模型和 effort 读取 `~/.dsh/settings.yaml` | 根可在任务包中选择 dsh 或 Codex Luna，不要求用户逐节点再次指定；不把 Luna max 套给 dsh，不读出或输出配置秘密。 |
+| skill 内部助手 | 继承调用 session 的模型、effort 和 harness 能力 | 由调用 session 按 skill 创建、管理并聚合；能力未证实则选择具备该能力的 Codex 或按协议回执 `BLOCKED`。 |
 | 用户 | 无模型 | 授权和用户验收，见 DAG 用户门禁。 |
 
-设计或独立验收节点是否需要独立 reviewer 由任务包和节点门禁确定；需要时使用新的独立 session，常规核验明确为 Sol high，复杂疑难才升级 Astra。`implement` 的 `code-review` 是调用 session 的收尾步骤，内部 Standards/Spec reviewer 是只读叶子，由调用 session 管理并聚合，不增加 DAG 节点；内部助手继承调用 session 的模型与 effort。普通文档修正和状态更新不因小调整自动重开审查。
+设计或独立验收节点是否需要独立 session 由任务包和节点门禁确定。`implement` 的 `code-review` 是调用 session 的收尾步骤，内部 Standards/Spec reviewer 是只读叶子，由调用 session 管理并聚合，不增加 DAG 节点；根不再派同内容的顶层 diff review。产品里的 pi runtime 与上述开发 harness 分开，产品模型白名单不因开发 harness 选择而扩大。
 
 ### 并行与版本
 
@@ -51,7 +65,7 @@
 
 ### 启动与主动通知
 
-仅在授权后使用现有 `codex exec`；参数以本机 `codex exec --help` 为准，将完整任务文件作为输入，固定 worktree、顶层模型、effort 和最终回执文件。顶层 session 的模型、effort 和 harness 能力必须显式记录；内部助手记录角色和 harness，并继承调用 session 的模型与 effort。顶层模型或 effort 不可用要报告 harness BLOCKED，不静默降级。
+仅在授权后使用任务包选择的现有 `codex exec` 或 dsh harness；Codex 参数以本机 `codex exec --help` 为准，dsh 按根 AGENTS 的命令条款执行，将完整任务文件作为输入，固定 worktree、顶层模型、effort 和最终回执文件。顶层 session 的模型、effort 和 harness 能力必须显式记录；内部助手记录角色和 harness，并继承调用 session 的模型与 effort。顶层模型或 effort 不可用要报告 harness BLOCKED，不静默降级。
 
 外层负责在进程结束后按本机 `codex queue --help` 的通知接口主动发回编排者 thread。正常结束发送结构化 `PASS` 或 `FAIL`；正常 `FAIL` 按本节点既有失败归属处理。异常通知只用于回执可能丢失的情况，例如子进程或运行环境异常退出且未生成回执，或结果已落盘但队列投递失败；异常通知附退出码、日志或回执路径，不能把正常 `FAIL` 混成异常。skill 若要求内部助手，调用 session 按 skill 创建和管理，使用所选 harness 的内部助手能力；内部助手继承调用 session 的模型与 effort，不另设模型选择验证门禁。无法提供内部助手能力时按协议回执 `BLOCKED`，不开发 wrapper 或假定能力。此责任不授予 worker 联系其他 session 的权限，也不要求建立 watcher 或调度平台。
 

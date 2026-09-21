@@ -1,6 +1,6 @@
 # 技能路由
 
-本文只规定 skill 如何改变 TeacherWorkspace 的任务执行。产品依赖和授权仍由 MVP DAG 拥有，当前状态由 `run-state.md` 拥有，单次输入由任务包固定。skill 不能扩大任务范围、写入集合、提交、合并、发布、外部写入或费用权限。
+本文只规定 skill 如何改变 TeacherWorkspace 的任务执行。产品依赖和授权仍由 MVP DAG 拥有，当前状态由 `run-state.md` 拥有，单次输入由任务包固定。模型、effort、harness 及常规核验的触发和产物由[执行协议的编排章节](execution-protocol.md#orchestration)唯一拥有；本文只说明 skill 的路由和内部边界。skill 不能扩大任务范围、写入集合、提交、合并、发布、外部写入或费用权限。
 
 ## 调度边界
 
@@ -51,8 +51,8 @@
 
 ## 模型与特殊触发
 
-- 顶层常规核验使用 `gpt-5.6-sol` `high`；复杂疑难审查才升级 `gpt-6-astra` `high`。适用 skill 的内部助手继承调用 session 的模型与 effort，由调用 session 按 skill 创建和管理；其模型与 effort 由调用 session 决定，不另设验证项。
-- 实现默认 `gpt-5.6-luna` `max`，有具体失败证据的复杂实现用 `gpt-5.6-sol` `high`，或按用户明确指定使用 `dsh`。设计按判断难度选型，不把所有设计或 A 类任务强制为 Astra。
+- 顶层核验和实现的模型、effort、harness 选择见[执行协议的唯一映射](execution-protocol.md#模型与固定派发)。常规核验的具体触发和产物见同一编排章节，不把所有设计或 A 类任务强制为同一模型。
+- `code-review` 的 Standards/Spec 内部助手继承调用 session 的模型、effort 和 harness 能力；不另设根级模型验证项。没有证据证明所选 harness 支持 skill 要求的内部助手时，改选已具备能力的 Codex 或按协议回执 `BLOCKED`。
 - `grilling` 只在用户明确要求压力测试，或任务遇到上述必须升级的决策时调用。`prototype` 只用于回答明确的逻辑/外观设计问题。`wizard` 只用于必须由人执行的凭据、第三方界面或迁移流程。
 - 只在已授权的 merge/rebase 正处于冲突时调用 `resolving-merge-conflicts`。其“完成并提交”不能越过 Git 权限。
-- `dsh` 只在用户明确要求时使用。任务若要求 skill 内部助手，调用 session 必须使用支持该能力的 harness；内部助手沿用调用 session 的模型与 effort。若 harness 不具备内部助手能力，交回边界明确的 BLOCKED 回执，不开发 wrapper，不假定一次性 headless 环境具有未验证的内部委派能力。
+- 已获实施授权的有界实现任务可由根在 dsh 与 Codex Luna 之间选择；这项选择已经由用户委托给根，不要求用户逐节点再次点名。调用形式、配置归属和 dsh 的能力边界见[根 AGENTS 的 DeepSeek Harness 条款](../../AGENTS.md)及[执行协议](execution-protocol.md#模型与固定派发)。不把 dsh 的配置模型或 effort 写成 Luna，也不假定一次性 headless 环境具备未验证的 skill 内部助手能力。

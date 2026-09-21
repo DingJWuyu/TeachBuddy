@@ -33,13 +33,13 @@
 
 ### DeepSeek Harness
 
-当用户明确要求调用 `dsh` 时，在当前项目目录中将完整任务说明作为单个参数交给一次性 Headless profile：
+在已获实施授权的具体任务包中，用户已将实现 harness 的选择委托给根编排者；根可在 `dsh` 与 Codex Luna 之间选择，不要求用户逐节点再次点名。当前产品 DAG 尚未获得 G00，本轮不运行 `dsh`。选择 `dsh` 时，在当前项目目录中将完整任务说明作为单个参数交给一次性 Headless profile：
 
 ```bash
 dsh --profile headless "<task>"
 ```
 
-该命令使用 `~/.dsh/settings.yaml` 中当前配置的 Provider、模型和 reasoning effort。
+该命令使用 `~/.dsh/settings.yaml` 中当前配置的 Provider、模型和 reasoning effort；选择和回执规则见 [MVP 执行协议](docs/plans/execution-protocol.md#orchestration)。
 
 ### Issue tracker
 
