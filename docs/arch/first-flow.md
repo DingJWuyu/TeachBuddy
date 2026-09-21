@@ -1,6 +1,6 @@
 # First-flow 实现边界
 
-状态：B11/v1 候选。产品语义只见 [契约](../contracts/workbench.md)，字段只见 [OpenAPI](../contracts/workbench/first-flow.openapi.yaml)。React/Vite、Express、better-sqlite3 沿用现有工程；本批不建立插件系统、事件总线、任务平台或独立服务。
+状态：B11/v1 已冻结，见[独立契约冻结审查](../acceptance/evidence/B11/v1/review.md)。产品语义只见 [契约](../contracts/workbench.md)，字段只见 [OpenAPI](../contracts/workbench/first-flow.openapi.yaml)。React/Vite、Express、better-sqlite3 沿用现有工程；本批不建立插件系统、事件总线、任务平台或独立服务。
 
 ## 模块与接缝
 

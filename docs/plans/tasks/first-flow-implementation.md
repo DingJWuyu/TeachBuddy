@@ -1,6 +1,6 @@
 # B12-B15 首条流程任务包
 
-状态：待 B11/v1 独立冻结后派发。根在每次派发记录中填完整 `base_revision`、本设计包冻结 SHA、前置候选 SHA、worktree、attempt、模型与已有 Git 权限；本页不以动态 main 替代固定输入。[公共写者表](../../arch/first-flow.md#并行写入与集成)是唯一所有权来源。下列任务实现方法自主决定，前后端默认 dsh，限额回退及内部 code review 按执行协议。
+状态：B11/v1 已独立冻结，可按固定候选派发 B12-B15。冻结候选为 `9aee091`，独立审查见[回执](../../acceptance/evidence/B11/v1/review.md)。根在每次派发记录中填完整 `base_revision`、本设计包冻结 SHA、前置候选 SHA、worktree、attempt、模型与已有 Git 权限；本页不以动态 main 替代固定输入。[公共写者表](../../arch/first-flow.md#并行写入与集成)是唯一所有权来源。下列任务实现方法自主决定，前后端默认 dsh，限额回退及内部 code review 按执行协议。
 
 ## B12 公共底座与反馈
 

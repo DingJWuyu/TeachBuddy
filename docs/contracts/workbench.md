@@ -1,6 +1,6 @@
 # 工作台契约入口
 
-状态：`B11/v1 candidate`，待根派独立 reviewer 冻结。适用行为：[first-flow](../user-stories/first-flow.md)、[UX U0-U7](../ux/first-flow.md)，同一候选提交内共同定版；固定源 HEAD `59a14e95bab667e0a01b8d62f6e87e018ddb1c5f`，B10 输入 `8e9b230c56c7384521b122a7a80b6b07e18c852c`。原型参考 [Mixed manifest](../../prototype/behavior/manifest.md)，不将 Draft 模块稿声明为 Accepted。
+状态：`B11/v1 已冻结`，见[独立契约冻结审查](../acceptance/evidence/B11/v1/review.md)。适用行为：[first-flow](../user-stories/first-flow.md)、[UX U0-U7](../ux/first-flow.md)，同一候选提交内共同定版；冻结候选 `9aee091`，固定源 HEAD `59a14e95bab667e0a01b8d62f6e87e018ddb1c5f`，B10 输入 `8e9b230c56c7384521b122a7a80b6b07e18c852c`。原型参考 [Mixed manifest](../../prototype/behavior/manifest.md)，不将 Draft 模块稿声明为 Accepted。
 
 精确 HTTP、字段、枚举、边界、错误与例子唯一归 [first-flow.openapi.yaml](workbench/first-flow.openapi.yaml)。本页拥有跨操作语义，[契约用例](workbench/first-flow-cases.md)拥有交换序列和固定样本；实现两侧消费同一 OpenAPI，不另写竞争 schema。下游任务见 [B12-B15](../plans/tasks/first-flow-implementation.md)。
 
