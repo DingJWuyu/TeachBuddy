@@ -62,7 +62,7 @@
 | B11-INTEGRATION@1 / attempt 1 | 完成（self）；main 已集成 | `b938f8a`（含冻结 B11 与并行调度） | Codex Luna max；session `01a0c577-c068-7b01-99bb-c3c6aa0d0753`；exec `69302`；已完成并清理临时工作区/分支 | [正式集成回执](../acceptance/evidence/B11/v1/integration.md)；main `420312f` | 文档集成完成；只继续正在运行的产品与实验设计任务 |
 | C20-REVIEW@1 / attempt 1 | RUNNING | `0ff698b6117fd4473d801d4817f70acb1fd3a7ef`；设计 `cff6f97` | Codex Sol high；session `01a0c585-051a-7b90-82cf-44d8c1063949`；exec `16110`；`/home/liam_t/项目/TeacherWorkspace-c20-review`；`review/c20-freeze` | `.scratch/dag-dispatch/C20-REVIEW/1/task.md`；receipt 待生成 | 核验可执行性与真实门禁后放行实验 |
 | EAUTH-READINESS@1 / attempt 1 | RUNNING | `819e79332d0c3f9cb19d64adff0ce8127d890098`；已有认证文件与指定 session 保存记录 | Codex Luna max；session `01a0c585-051a-7601-80a7-af5d1c44c610`；exec `60020`；`/home/liam_t/项目/TeacherWorkspace-auth-readiness`；`docs/auth-readiness` | `.scratch/dag-dispatch/EAUTH-READINESS/1/task.md`；receipt 待生成 | 一次性整理认证事实与写入归属，不轮询、不催促、不擅自接管代码；根据事实安排交接或补齐 |
-| DSH-REVIEW-COMPLETION@1 / attempt 1 | 启动中 | B13 实际退出/日志及本机匹配 dsh；已有调研 | Codex Luna max；`/home/liam_t/项目/TeacherWorkspace-dsh-review-research`；`docs/dsh-review-completion` | `.scratch/dag-dispatch/DSH-REVIEW-COMPLETION/1/task.md`；receipt 待生成 | 有界核实 headless 等待与已存审查结果，给 dsh 接续最小办法；不实现/审查产品 |
+| DSH-REVIEW-COMPLETION@1 / attempt 1 | RUNNING | B13 实际退出/日志及本机匹配 dsh；已有调研 | Codex Luna max；session `01a0c587-4c67-71e2-999a-d73c2b66bd4e`；exec `27569`；`/home/liam_t/项目/TeacherWorkspace-dsh-review-research`；`docs/dsh-review-completion` | `.scratch/dag-dispatch/DSH-REVIEW-COMPLETION/1/task.md`；receipt 待生成 | 有界核实 headless 等待与已存审查结果，给 dsh 接续最小办法；不实现/审查产品 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
