@@ -42,6 +42,10 @@
 4. 调用 session 同时启动 Standards 和 Spec 两个 subagent。无规格时只能按 skill 明示跳过 Spec 轴，不能把 Standards 结果冒充双轴 PASS。
 5. 调用者保留两轴分离结果并聚合一次。实现者修复发现后运行定向自检；只有修复引入实质新范围或新风险时才再审，不默认重复同一评论。
 
+### dsh headless 的内部审查收尾
+
+使用 dsh headless 时，在同一轮并行调用 Standards 和 Spec 两个 `subagent`，每个调用显式设置 `run_in_background:false`。两个调用返回实际结果后，父 session 才聚合并结束；只收到 child ID 不代表完成。本机默认后台模式只等待父 Agent 空闲，可能随父进程退出丢失审查结果，依据见 [headless 调查](../research/dsh-headless-review.md)。
+
 ## 项目约束对 skill 的覆盖
 
 - `tdd` 的“先与用户确认 seam”由已冻结契约、场景和任务包满足；缺少时交设计拥有者，不让用户逐测试决定。UI 不写单元测试，其他单元测试仅在没有更合适的公开 seam 且确有必要时使用；优先集成和 E2E 行为。

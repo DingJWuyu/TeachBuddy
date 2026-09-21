@@ -74,6 +74,8 @@
 
 dsh 的结果和退出码由外层保存，再调用 `codex queue` 主动通知；没有原生跨 harness 通知不妨碍使用这条直接路径。能力证据和未验证部分见 [dsh 调研](../research/dsh-receipts.md)，不另建通知平台。
 
+派发 dsh 且会触发内部审查时，任务包带上[前台等待要求](skill-routing.md#dsh-headless-的内部审查收尾)，避免父进程先于内部结果结束。缺少内部结果只补未完成的收尾，不重复实现或切换实现模型。
+
 外层负责在进程结束后按本机 `codex queue --help` 的通知接口主动发回编排者 thread。正常结束发送结构化 `PASS` 或 `FAIL`；正常 `FAIL` 按本节点既有失败归属处理。异常通知只用于回执可能丢失的情况，例如子进程或运行环境异常退出且未生成回执，或结果已落盘但队列投递失败；异常通知附退出码、日志或回执路径，不能把正常 `FAIL` 混成异常。skill 若要求内部助手，调用 session 按 skill 创建和管理，使用所选 harness 的内部助手能力；内部助手继承调用 session 的模型与 effort，不另设模型选择验证门禁。无法提供内部助手能力时按协议回执 `BLOCKED`，不开发 wrapper 或假定能力。此责任不授予 worker 联系其他 session 的权限，也不要求建立 watcher 或调度平台。
 
 派发后停止并等待主动回执，遵守根 AGENTS 等待条款。产品 pi runtime 与开发 harness 分开。
