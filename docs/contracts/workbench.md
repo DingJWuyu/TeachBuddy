@@ -1,14 +1,28 @@
 # 工作台契约入口
 
-状态：`B11/v1 已冻结`，见[独立契约冻结审查](../acceptance/evidence/B11/v1/review.md)。适用行为：[first-flow](../user-stories/first-flow.md)、[UX U0-U7](../ux/first-flow.md)，同一候选提交内共同定版；冻结候选 `9aee091`，固定源 HEAD `59a14e95bab667e0a01b8d62f6e87e018ddb1c5f`，B10 输入 `8e9b230c56c7384521b122a7a80b6b07e18c852c`。原型参考 [Mixed manifest](../../prototype/behavior/manifest.md)，不将 Draft 模块稿声明为 Accepted。
+状态：`AUTH-CONTRACT-CORRECTION@1 / READY_FOR_REVIEW`。当前 OpenAPI 为 `0.1.0-candidate.2`，与认证 `1.0.0-rc.2` 同一候选提交消费，等待页面头接缝的限定独立冻结。适用行为仍为 [first-flow](../user-stories/first-flow.md)、[UX U0-U7](../ux/first-flow.md)。原型参考 [Mixed manifest](../../prototype/behavior/manifest.md)，不将 Draft 模块稿声明为 Accepted。
 
 精确 HTTP、字段、枚举、边界、错误与例子唯一归 [first-flow.openapi.yaml](workbench/first-flow.openapi.yaml)。本页拥有跨操作语义，[契约用例](workbench/first-flow-cases.md)拥有交换序列和固定样本；实现两侧消费同一 OpenAPI，不另写竞争 schema。下游任务见 [B12-B15](../plans/tasks/first-flow-implementation.md)。
+
+## 消费版本与验收范围
+
+| 消费线 | 固定输入 | 适用范围与接续条件 |
+| --- | --- | --- |
+| 已冻结首流 | B11 `9aee091a34ba2eb311b51299d9beed78a032d026`，OpenAPI `0.1.0-candidate.1`；独立审查 `b62034eb6661f99127d0e4b1407174260a139089` 的 [review](../acceptance/evidence/B11/v1/review.md) | 保留其固定源 `59a14e95bab667e0a01b8d62f6e87e018ddb1c5f`、B10 `8e9b230c56c7384521b122a7a80b6b07e18c852c`。旧冻结只覆盖该版本，未验页面头。 |
+| 现有测试身份首流 | 运行任务输入 `b938f8af0b8152718f5063d4326d494bf8b5426c`；B12 交付 `3c8d1b3210f3d35e45eaca8141040852e3cb865c`，其 author 固定实现 `feb64304a58077de50bc16507f8c271c60ca3ee8` | B12-B16 可继续按旧固定契约完成 `real-api/test-principal`；不要求其模拟认证页面绑定，也不能据此声明新 schema 或 real-auth 通过。 |
+| 真实认证接续 | 工作台 `0.1.0-candidate.2` + 认证 `1.0.0-rc.2`；两份文件均取 [correction 回执](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md) 的实际 `result_revision` | 新增所有 15 个受保护操作的必填 PageContext。须先独立冻结修订，再由根为认证前后端、A10/A11 固定同版输入；新版本验收另留证据，旧 PASS 不适用。 |
+
+直接受影响的是 B12 公共 schema/身份门禁、B14 请求 transport/替身、B15 集成与 B16 的 HTTP 验收口径，以及认证前后端、A10/A11/A12。B13 业务 body、principal、事务和返回 schema 保持，但切到新版时其 HTTP fixture 同样必须携带页面头。旧固定任务继续使用旧 commit 内的契约；读取当前文件的消费者按新版执行，不能以 test-principal 为由把当前必填头改为可选。根决定何时切换和固定各候选；本页不改 DAG 或派发状态。
+
+切换后的公共 schema/客户端检查覆盖全部 15 个操作；真实认证集成按 [C19-C21](workbench/first-flow-cases.md#真实认证页面接缝)核验读写、目录/context、拒绝及刷新恢复，并回归原 WB-001 至 WB-019 中受影响的身份、来源、重试和账户隔离路径。新增要求的独立验收归 A12；如 B15/B16 提前消费新版，也必须另记 schema 版本与 identity_mode，不能沿用旧 PASS。
 
 ## 身份与 HTTP
 
 沿用 [认证 OpenAPI](auth.openapi.yaml) 中已有的同源 HTTPS、Cookie、固定保护头、完整来源校验、直接 JSON 成功结果、`application/problem+json` 失败、`Cache-Control: no-store`、请求拒绝未知字段与隐式转换、响应允许附加字段的风格。工作台错误使用独立 `/problems/workbench/*` 命名空间。浏览器不拼接 Bearer、不接收 accountId 参数；写请求缺来源/保护头在任何业务变更前拒绝。
 
-认证仍为 partial，源 `a496c5a4727e2900bd110198819295e068739439`。本包不定义登录、退出、Cookie 寿命或认证身份响应。服务端接入边界为 `resolvePrincipal(request) -> { accountKey: string } | null`，accountKey 来自已验证身份的稳定账户映射。工作台 `getWorkbenchContext` 只返回缓存分区键，不构成认证 API。客户端传回此键不能证明身份。所有读、列表、来源、引用、复制、恢复、请求重放均按该身份授权；无身份 401，不属于该账户或不存在的对象统一 404，不泄漏是否存在。
+认证消费上述同版候选的 [auth.md](auth.md)，其真实实现和交付另行验收。登录、退出、Cookie 寿命和认证身份响应由认证拥有。服务端接入边界为 `resolvePrincipal(request) -> { accountKey: string } | null`（允许 Promise），accountKey 来自已验证身份的稳定账户映射。工作台 `getWorkbenchContext` 只返回缓存分区键，不构成认证 API。客户端传回此键不能证明身份。所有读、列表、来源、引用、复制、恢复、请求重放均按该身份授权；无身份 401，不属于该账户或不存在的对象统一 404，不泄漏是否存在。
+
+当前全部受保护操作显式外引认证 PageContext，页面头由认证 transport 附加。缺失、形状非法、无当前页 active 绑定或身份失效均返回工作台 401 `unauthenticated`；服务存储不可用仍为工作台 503 `temporarily-unavailable`。写请求的来源/保护头拒绝先于身份，GET 不增加来源/保护头要求。认证端点的 409 `browser-context-required` 不传播为工作台错误。页面头单独不能授权，记住我 Cookie 在新页未经 restore 也不能直接授权。
 
 客户端先获取上下文才能读取本地账户数据。响应还要属于当前身份代次、请求对象及提交版本，迟到旧响应不能回填新账户或覆盖更新草稿。A10/A11 负责把真实认证映射到此边界；B12 只提供隔离测试 runner 的可信 principal，生产配置发现测试身份立即失败退出，无请求头/查询参数/浏览器 accountId 后门。
 
