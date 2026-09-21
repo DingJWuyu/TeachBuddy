@@ -5,7 +5,7 @@
 - `task`: `transcript-reconciliation@1`
 - `attempt`: `1`
 - `verification_level`: `self`
-- 输入：`.scratch/transcript-reconciliation/conversation.md`，根 transcript 的用户消息及助手最终回复；关键决定包括原始 transcript line 2189、2403、3083、3147、3200。
+- 输入：根 transcript 的用户消息及助手最终回复，本地原文定位见[运行台账的恢复入口](../../plans/run-state.md#上下文恢复入口)；临时抽取副本已完成用途并清理；关键决定包括原始 transcript line 2189、2403、3083、3147、3200。
 - 当前产品状态：G00 未授予，未启动产品 DAG；本轮未运行 dsh、未发起真实模型请求。
 
 | 补录主题 | 唯一权威位置 | 记录结果 |
