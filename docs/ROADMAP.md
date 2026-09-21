@@ -1,6 +1,6 @@
 # MVP 状态与规划入口
 
-[返回 README](../README.md) · [产品范围](PRODUCT_SCOPE.md) · [工作台设计](WORKBENCH_DESIGN.md)
+[返回 README](../README.md) · [产品范围](PRODUCT_SCOPE.md) · [工作台设计](WORKBENCH_DESIGN.md) · [B10/B11 执行基线](arch/execution-baseline.md)
 
 本页只导航，不再维护第二套执行流程。MVP 的节点、依赖和授权停止点见 [交付 DAG](plans/mvp-dag.md)；当前执行状态和下一步见[运行台账](plans/run-state.md)；角色工作规则由其链接的执行协议拥有。
 
@@ -19,6 +19,7 @@
 | 用户检查阶段、成果和授权点 | [DAG 用户总览](plans/mvp-dag.md#用户总览)及用户门禁。 |
 | 编排者派发与接回执 | [DAG](plans/mvp-dag.md)及[编排协议](plans/execution-protocol.md#orchestration)。 |
 | 当前运行状态、待回执和下一步 | [运行台账](plans/run-state.md)。 |
+| 进入首条流程设计与实现 | 先读 [B10/B11 执行基线](arch/execution-baseline.md)，再按任务包读取 B11 的范围、行为和 ADR 输入。 |
 | 设计、实现、独立验收 | 从本次任务包读取本角色、当前节点和相关规格；不从本页全量展开。 |
 | 设计者准备单次任务 | [任务包模板](plans/task-package.md)。 |
 | 核查完整 MVP 覆盖 | [唯一范围映射](acceptance/mvp-matrix.md#scope)；范围本身仍归 PRODUCT_SCOPE。 |
