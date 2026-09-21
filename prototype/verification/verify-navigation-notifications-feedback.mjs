@@ -32,7 +32,7 @@ function check(name, value, expected) {
 async function settling(pathname) {
   await page.waitForURL((url) => url.pathname === pathname, { timeout: 15000 });
   if (pathname === '/') {
-    await page.waitForSelector('.tb-dashboard-grid', { timeout: 15000 });
+    await page.waitForSelector('.tb-empty-page', { timeout: 15000 });
   } else {
     await page.waitForSelector('.tb-empty-page h1', { timeout: 15000 });
   }
@@ -71,7 +71,7 @@ await page.click('.tb-brand');
 await settling('/');
 check('brand returns home pathname', await page.evaluate(() => window.location.pathname), '/');
 check('coach mark stays dismissed across a real navigation', await page.locator('.tb-coach').count(), 0);
-check('home dashboard visible', await page.isVisible('.tb-dashboard-grid'));
+check('home placeholder visible', await page.isVisible('.tb-empty-page'));
 check('首页 aria-current back', await page.getAttribute('.tb-global-nav a:nth-of-type(1)', 'aria-current'), 'page');
 
 // ------------------------------------------------------ 2. sidebar module nav
@@ -90,7 +90,7 @@ await page.screenshot({ path: `${OUT}/PC-CW20-module-page.png` });
 await page.goBack();
 await settling('/');
 check('back returns home', await page.evaluate(() => window.location.pathname), '/');
-check('back shows dashboard', await page.isVisible('.tb-dashboard-grid'));
+check('back shows the home placeholder', await page.isVisible('.tb-empty-page'));
 
 // ------------------------------------------------------- 3. support menu nav
 await page.hover('[data-surface="support"]');

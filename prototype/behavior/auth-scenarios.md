@@ -36,9 +36,9 @@ Status: Accepted
 | CA06 | 取消记住我，不改变本次登录结果 | PC 1440×900 | [未勾选](../evidence/screenshots/login/PC-CA06-unchecked.png) · [已登录](../evidence/screenshots/login/PC-CA06-signed-in.png) | 通过 |
 | CA06 | 取消记住我，不改变本次登录结果 | 平板 768×1024 | [未勾选](../evidence/screenshots/login/平板-CA06-unchecked.png) · [已登录](../evidence/screenshots/login/平板-CA06-signed-in.png) | 通过 |
 | CA06 | 取消记住我，不改变本次登录结果 | 手机 390×844 | [未勾选](../evidence/screenshots/login/手机-CA06-unchecked.png) · [已登录](../evidence/screenshots/login/手机-CA06-signed-in.png) | 通过 |
-| CA07 | 登录、首次引导、关闭引导、退出登录 | PC 1440×900 | [引导](../evidence/screenshots/login/PC-CA07-coach.png) · [工作台](../evidence/screenshots/login/PC-CA07-workbench.png) · [已退出](../evidence/screenshots/login/PC-CA07-signed-out.png) | 通过 |
-| CA07 | 登录、首次引导、关闭引导、退出登录 | 平板 768×1024 | [引导](../evidence/screenshots/login/平板-CA07-coach.png) · [工作台](../evidence/screenshots/login/平板-CA07-workbench.png) · [已退出](../evidence/screenshots/login/平板-CA07-signed-out.png) | 通过 |
-| CA07 | 登录、首次引导、关闭引导、退出登录 | 手机 390×844 | [引导](../evidence/screenshots/login/手机-CA07-coach.png) · [工作台](../evidence/screenshots/login/手机-CA07-workbench.png) · [已退出](../evidence/screenshots/login/手机-CA07-signed-out.png) | 通过 |
+| CA07 | 登录、首次引导、关闭引导 | PC 1440×900 | [引导](../evidence/screenshots/login/PC-CA07-coach.png) · [工作台](../evidence/screenshots/login/PC-CA07-workbench.png) | 通过 |
+| CA07 | 登录、首次引导、关闭引导 | 平板 768×1024 | [引导](../evidence/screenshots/login/平板-CA07-coach.png) · [工作台](../evidence/screenshots/login/平板-CA07-workbench.png) | 通过 |
+| CA07 | 登录、首次引导、关闭引导 | 手机 390×844 | [引导](../evidence/screenshots/login/手机-CA07-coach.png) · [工作台](../evidence/screenshots/login/手机-CA07-workbench.png) | 通过 |
 | CA08 | 键盘聚焦、输入、Enter 登录 | PC 1440×900 | [焦点](../evidence/screenshots/login/PC-CA08-focus.png) · [已登录](../evidence/screenshots/login/PC-CA08-signed-in.png) | 通过 |
 | CA08 | 键盘聚焦、输入、Enter 登录 | 平板 768×1024 | [焦点](../evidence/screenshots/login/平板-CA08-focus.png) · [已登录](../evidence/screenshots/login/平板-CA08-signed-in.png) | 通过 |
 | CA08 | 键盘聚焦、输入、Enter 登录 | 手机 390×844 | [焦点](../evidence/screenshots/login/手机-CA08-focus.png) · [已登录](../evidence/screenshots/login/手机-CA08-signed-in.png) | 通过 |
@@ -95,9 +95,9 @@ Status: Accepted
 | CA24 | 未同意条款，显示错误文字，勾选后重试 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA24-error.png) · [修正结果](../evidence/screenshots/register/PC-CA24-recovered.png) | 通过 |
 | CA24 | 未同意条款，显示错误文字，勾选后重试 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA24-error.png) · [修正结果](../evidence/screenshots/register/平板-CA24-recovered.png) | 通过 |
 | CA24 | 未同意条款，显示错误文字，勾选后重试 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA24-error.png) · [修正结果](../evidence/screenshots/register/手机-CA24-recovered.png) | 通过 |
-| CA25 | 注册成功、退出、同一会话重复注册被拒绝 | PC 1440×900 | [已填写](../evidence/screenshots/register/PC-CA25-filled.png) · [已注册](../evidence/screenshots/register/PC-CA25-registered.png) · [已退出](../evidence/screenshots/register/PC-CA25-signed-out.png) · [占用](../evidence/screenshots/register/PC-CA25-taken.png) | 通过 |
-| CA25 | 注册成功、退出、同一会话重复注册被拒绝 | 平板 768×1024 | [已填写](../evidence/screenshots/register/平板-CA25-filled.png) · [已注册](../evidence/screenshots/register/平板-CA25-registered.png) · [已退出](../evidence/screenshots/register/平板-CA25-signed-out.png) · [占用](../evidence/screenshots/register/平板-CA25-taken.png) | 通过 |
-| CA25 | 注册成功、退出、同一会话重复注册被拒绝 | 手机 390×844 | [已填写](../evidence/screenshots/register/手机-CA25-filled.png) · [已注册](../evidence/screenshots/register/手机-CA25-registered.png) · [已退出](../evidence/screenshots/register/手机-CA25-signed-out.png) · [占用](../evidence/screenshots/register/手机-CA25-taken.png) | 通过 |
+| CA25 | 注册成功 | PC 1440×900 | [已填写](../evidence/screenshots/register/PC-CA25-filled.png) · [已注册](../evidence/screenshots/register/PC-CA25-registered.png) | 通过 |
+| CA25 | 注册成功 | 平板 768×1024 | [已填写](../evidence/screenshots/register/平板-CA25-filled.png) · [已注册](../evidence/screenshots/register/平板-CA25-registered.png) | 通过 |
+| CA25 | 注册成功 | 手机 390×844 | [已填写](../evidence/screenshots/register/手机-CA25-filled.png) · [已注册](../evidence/screenshots/register/手机-CA25-registered.png) | 通过 |
 | CA26 | 切换登录再返回，只保留邮箱 | PC 1440×900 | [登录卡](../evidence/screenshots/register/PC-CA26-login.png) · [重置](../evidence/screenshots/register/PC-CA26-reset.png) | 通过 |
 | CA26 | 切换登录再返回，只保留邮箱 | 平板 768×1024 | [登录卡](../evidence/screenshots/register/平板-CA26-login.png) · [重置](../evidence/screenshots/register/平板-CA26-reset.png) | 通过 |
 | CA26 | 切换登录再返回，只保留邮箱 | 手机 390×844 | [登录卡](../evidence/screenshots/register/手机-CA26-login.png) · [重置](../evidence/screenshots/register/手机-CA26-reset.png) | 通过 |

@@ -178,7 +178,7 @@ if (wanted(1)) {
   check('课程页标为当前页', await page.getAttribute('[data-drop-module="lessons"]', 'aria-current'), 'page');
   await deleteCurrentRow('lessons');
   check('删掉正在浏览的模块后回到首页（回归修复）', await pathname(), '/');
-  check('首页正文回来了', await page.locator('.tb-dashboard-grid').count(), 1);
+  check('首页正文回来了', await page.locator('.tb-empty-page').count(), 1);
   check('被删掉的模块不在侧栏里了', await page.locator('[data-drop-module="lessons"]').count(), 0);
   check('垃圾桶计数为 1', await page.textContent('.tb-trash-target b'), '1');
   check('回到首页不重新加载文档', await page.evaluate(() => window.__navigationProbe), documentToken);

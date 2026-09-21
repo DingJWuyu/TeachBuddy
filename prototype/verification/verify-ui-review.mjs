@@ -181,7 +181,7 @@ const account = await p.evaluate(() => {
   const lang = document.querySelector('.tb-language-row');
   const term = document.querySelector('.tb-term-button');
   const avatar = row.querySelector('.tb-avatar');
-  const name = row.querySelector('strong');
+  const name = row.querySelector('.tb-account-name');
   const rr = row.getBoundingClientRect();
   const ar = avatar.getBoundingClientRect();
   const nr = name.getBoundingClientRect();
@@ -198,21 +198,24 @@ const account = await p.evaluate(() => {
 ok('account row has no trailing chevron', account.accountSvgCount === 0, String(account.accountSvgCount));
 ok('avatar is 32px with a 12px gap to the name', account.avatarSize === 32 && account.avatarToName === 12, JSON.stringify(account));
 ok('language button is 32px wide, not stretched', account.langW === 32, String(account.langW));
-ok('create-term radius is slightly rounded', account.termRadius === '10px', account.termRadius);
+ok('term control uses the reference radius', account.termRadius === '6px', account.termRadius);
 
 // --- spacing is anchored: avatar and workspace heading keep their reference
 // positions and only the create-term button is placed between them ---
+// The head block follows the reference's rhythm: the account row, then the
+// semester control, then the workspace heading, each separated by the same gap.
 const spacing = await p.evaluate(() => {
   const r2 = (v) => Math.round(v * 100) / 100;
-  const av = document.querySelector('.tb-account-row .tb-avatar').getBoundingClientRect();
+  const row = document.querySelector('.tb-account-row').getBoundingClientRect();
   const term = document.querySelector('.tb-term-button').getBoundingClientRect();
   const head = document.querySelector('.tb-workspace-heading').getBoundingClientRect();
-  return { avatarTop: r2(av.top), headingTop: r2(head.top),
-    gapAbove: r2(term.top - av.bottom), gapBelow: r2(head.top - term.bottom) };
+  return { rowBottom: r2(row.bottom), termTop: r2(term.top), termBottom: r2(term.bottom), headingTop: r2(head.top),
+    gapAbove: r2(term.top - row.bottom), gapBelow: r2(head.top - term.bottom) };
 });
-ok('avatar keeps its reference position', Math.abs(spacing.avatarTop - 89) < 0.5, String(spacing.avatarTop));
-ok('workspace heading keeps its reference position', Math.abs(spacing.headingTop - 188.79) < 0.5, String(spacing.headingTop));
-ok('gaps above and below create-term are equal', spacing.gapAbove === spacing.gapBelow,
+ok('account row sits where the reference places it', Math.abs(spacing.rowBottom - 129) < 0.5, String(spacing.rowBottom));
+ok('semester control follows the account row by 16px', Math.abs(spacing.gapAbove - 16) < 0.5, String(spacing.gapAbove));
+ok('workspace heading follows the semester control by 16px', Math.abs(spacing.gapBelow - 16) < 0.5, String(spacing.gapBelow));
+ok('gaps above and below the semester control are equal', spacing.gapAbove === spacing.gapBelow,
   `${spacing.gapAbove} vs ${spacing.gapBelow}`);
 
 // --- trash rows match the module row exactly ---

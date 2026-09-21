@@ -1,26 +1,24 @@
-Scope: all
-Status: passed
 PASS 侧栏已渲染 (expected 1, got 1)
 PASS 地址变为 /calendar (expected "/calendar", got "/calendar")
-PASS 入口查询参数保留 (expected "?no-dev-chrome", got "?no-dev-chrome")
+PASS 入口查询参数保留 (expected "?prototype=sidebar", got "?prototype=sidebar")
 PASS 页面标题跟随 (expected "TeachBuddy 工作台外壳原型 · 日历", got "TeachBuddy 工作台外壳原型 · 日历")
 PASS 正文换成日历空页面 (expected "日历", got "日历")
 PASS 侧栏节点没有被重建 (expected "kept", got "kept")
-PASS 点击导航没有重新加载文档 (expected "doc-mu9p6cgkg8i0", got "doc-mu9p6cgkg8i0")
+PASS 点击导航没有重新加载文档 (expected "doc-mua4pdml2ran", got "doc-mua4pdml2ran")
 PASS 侧栏仍然存在 (expected 1, got 1)
 PASS 顶栏仍然存在 (expected 1, got 1)
 PASS 回到首页 (expected "/", got "/")
 PASS 首页正文恢复 (expected 1, got 1)
-PASS 返回首页也未重新加载文档 (expected "doc-mu9p6cgkg8i0", got "doc-mu9p6cgkg8i0")
+PASS 返回首页也未重新加载文档 (expected "doc-mua4pdml2ran", got "doc-mua4pdml2ran")
 PASS 后退仍然工作 (expected "/calendar", got "/calendar")
 PASS 前进仍然工作 (expected "/", got "/")
 PASS 点侧栏功能模块走到 /modules/planner (expected "/modules/planner", got "/modules/planner")
-PASS 点侧栏功能模块没有重新加载文档 (expected "doc-mu9p6cgkg8i0", got "doc-mu9p6cgkg8i0")
+PASS 点侧栏功能模块没有重新加载文档 (expected "doc-mua4pdml2ran", got "doc-mua4pdml2ran")
 PASS 侧栏节点仍然没有被重建 (expected "kept", got "kept")
 PASS 顶栏在侧栏导航后仍未被重建 (expected 1, got 1)
 PASS 正文换成规划器空页面 (expected "规划器", got "规划器")
 PASS 侧栏中的当前项高亮 (expected "page", got "page")
-PASS 连续在侧栏中点模块也不重载文档 (expected "doc-mu9p6cgkg8i0", got "doc-mu9p6cgkg8i0")
+PASS 连续在侧栏中点模块也不重载文档 (expected "doc-mua4pdml2ran", got "doc-mua4pdml2ran")
 PASS 第二次点击也走到目标页 (expected "/modules/grades", got "/modules/grades")
 PASS 拖拽时创建了拖拽图 (expected true, got true)
 PASS 拖拽图挂在原型根节点内（样式作用域） (expected "tb-prototype", got "tb-prototype")
@@ -37,6 +35,12 @@ PASS 拖拽结束后 body 标记被清掉 (expected false, got false)
 PASS 分组拖拽也生成拖拽图 (expected true, got true)
 PASS 分组拖拽图同样居中在指针上 (expected "[500,300]", got "[500,300]")
 PASS 通知拖拽图同样是 32x32 且居中 (expected "{\"center\":[900,200],\"size\":[32,32]}", got "{\"center\":[900,200],\"size\":[32,32]}")
+  分组标题中部: y=537 on=tb-group-heading mark={"kind":"before","moduleId":"grades"} expectedIndex=0 landedIndex=0 order=["planner","grades","attendance","standards"]
+  分组标题上沿: y=526 on=tb-group-heading mark={"kind":"before","moduleId":"grades"} expectedIndex=0 landedIndex=0 order=["planner","grades","attendance","standards"]
+  首行上半部: y=555 on=grades mark={"kind":"before","moduleId":"grades"} expectedIndex=0 landedIndex=0 order=["planner","grades","attendance","standards"]
+  首行下半部: y=579 on=grades mark={"kind":"after","moduleId":"grades"} expectedIndex=1 landedIndex=1 order=["grades","planner","attendance","standards"]
+  第三行上半部: y=595 on=attendance mark={"kind":"before","moduleId":"attendance"} expectedIndex=1 landedIndex=1 order=["grades","planner","attendance","standards"]
+  末行下半部: y=621 on=attendance mark={"kind":"after","moduleId":"attendance"} expectedIndex=2 landedIndex=2 order=["grades","attendance","planner","standards"]
 PASS 每个用例都画出了插入线 (expected true, got true)
 PASS 分组标题中部：落点与插入线一致 (expected 0, got 0)
 PASS 分组标题上沿：落点与插入线一致 (expected 0, got 0)
@@ -71,3 +75,5 @@ PASS 直接以 /calendar 打开也保留布局 (expected "1", got "1")
 PASS 直接打开时侧栏顺序保留 (expected "[\"classes\",\"timetable\",\"students\",\"lessons\",\"classwork\",\"grades\",\"attendance\",\"standards\"]", got "[\"classes\",\"timetable\",\"students\",\"lessons\",\"classwork\",\"grades\",\"attendance\",\"standards\"]")
 PASS 损坏的存储数据回落到默认布局 (expected 9, got 9)
 PASS 无脚本错误 -> true
+
+71/71 passed

@@ -150,7 +150,7 @@ await page.screenshot({ path: `${OUT}PC-CW19-calendar-page.png` });
 await page.click('.tb-global-nav a:nth-of-type(1)');
 await page.waitForTimeout(400);
 check('回到首页', await page.evaluate(() => window.location.pathname), '/');
-check('首页正文恢复', await page.locator('.tb-dashboard-grid').count(), 1);
+check('首页正文恢复', await page.locator('.tb-empty-page').count(), 1);
 check('返回首页也未重新加载文档', await documentId(), bootId);
 
 check('后退仍然工作', await page.evaluate(async () => {

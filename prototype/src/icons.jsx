@@ -32,13 +32,21 @@ export const ICON_PATHS = {
   panelClose: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M7 9l-2 3 2 3"/></>,
   panelOpen: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M5 9l2 3-2 3"/></>,
   folder: <><path d="M3.5 6.5h6l2 2h9v10h-17z"/><path d="M3.5 9h17"/></>,
+  // Geometry follows the Lucide grid so these fill the 24x24 box like the rest
+  // of the set; hand-fitted paths sat visibly small beside them.
+  select: <><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></>,
+  pencil: <><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></>,
+  copy: <><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></>,
+  sparkles: <><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></>,
+  more: <><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></>,
+  info: <><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></>,
   inbox: <><path d="M3.5 12h4l1.5 3h6l1.5-3h4"/><path d="M5.5 5h13l2 7v7h-17v-7z"/></>
 };
 
-export function Icon({ name, size = 20, strokeWidth = 2 }) {
+export function Icon({ name, size = 20, strokeWidth = 2, className = '' }) {
   return (
     <svg
-      className="tb-icon"
+      className={`tb-icon${className ? ` ${className}` : ''}`}
       width={size}
       height={size}
       viewBox="0 0 24 24"

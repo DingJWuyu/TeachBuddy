@@ -1,8 +1,6 @@
-Scope: all
-Status: passed
-PASS brand href keeps query options (expected "/?no-dev-chrome", got "/?no-dev-chrome")
-PASS 首页 href (expected "/?no-dev-chrome", got "/?no-dev-chrome")
-PASS 日历 href (expected "/calendar?no-dev-chrome", got "/calendar?no-dev-chrome")
+PASS brand href keeps query options (expected "/?prototype=sidebar", got "/?prototype=sidebar")
+PASS 首页 href (expected "/?prototype=sidebar", got "/?prototype=sidebar")
+PASS 日历 href (expected "/calendar?prototype=sidebar", got "/calendar?prototype=sidebar")
 PASS 首页 aria-current (expected "page", got "page")
 PASS after 日历 click pathname (expected "/calendar", got "/calendar")
 PASS 日历 page title (expected "日历", got "日历")
@@ -11,17 +9,17 @@ PASS sidebar still rendered -> true
 PASS no sign-in form (expected 0, got 0)
 PASS brand returns home pathname (expected "/", got "/")
 PASS coach mark stays dismissed across a real navigation (expected 0, got 0)
-PASS home dashboard visible -> true
+PASS home placeholder visible -> true
 PASS 首页 aria-current back (expected "page", got "page")
 PASS module row is anchor (expected "A", got "A")
-PASS module row href (expected "/modules/classes?no-dev-chrome", got "/modules/classes?no-dev-chrome")
+PASS module row href (expected "/modules/classes?prototype=sidebar", got "/modules/classes?prototype=sidebar")
 PASS module pathname (expected "/modules/classes", got "/modules/classes")
 PASS module page title (expected "我的班级", got "我的班级")
 PASS module row active (expected true, got true)
 PASS module row aria-current (expected "page", got "page")
 PASS 首页 no longer current (expected null, got null)
 PASS back returns home (expected "/", got "/")
-PASS back shows dashboard -> true
+PASS back shows the home placeholder -> true
 PASS support menu animates in (expected "tb-surface-in-centered", got "tb-surface-in-centered")
 PASS support 设置 navigates (expected "/settings", got "/settings")
 PASS 支持 menu closed after nav (expected 0, got 0)
@@ -63,3 +61,5 @@ PASS sidebar trash icon swells (expected true, got true)
 PASS module hidden into trash (expected 1, got 1)
 PASS sidebar trash state cleared after the drop (expected false, got false)
 PASS no page errors -> true
+
+63/63 passed

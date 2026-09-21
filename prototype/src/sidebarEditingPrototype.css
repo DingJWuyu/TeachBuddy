@@ -13,6 +13,11 @@
   --tb-primary-foreground: #fff;
   --tb-sidebar-foreground: #4d4d4d;
   --tb-sidebar-accent: #f3f3f3;
+  /* The account row and the language menu rows sit one step darker than the
+   * buttons; both values are measured from the reference, not derived. */
+  --tb-account-hover: #f2f2f2;
+  --tb-primary-tint: rgb(46 49 55 / .05);
+  --tb-destructive: #dc2626;
   --tb-sidebar-accent-foreground: #131313;
   --tb-sidebar-border: #ededed;
   --tb-muted-foreground-faint: #919191;
@@ -1363,36 +1368,37 @@
 .tb-prototype .tb-account-block {
   position: relative;
   display: flex;
-  align-items: center;
-  height: 40px;
-
+  align-items: flex-start;
+  /* 20px above the row plus the row's own 4px top padding and 12px below it,
+   * matching the reference head block's 56px account row. */
+  height: 56px;
+  padding-top: 4px;
   margin: 20px 0 0;
 }
 
 .tb-prototype .tb-account-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
   gap: 12px;
   width: 183px;
+  height: 40px;
   margin: 0 0 0 16px;
   padding: 4px;
   border-radius: 6px;
+  color: inherit;
   background: transparent;
   text-align: left;
+  text-decoration: none;
+  transition: background-color .15s var(--tb-ease);
 }
 
 .tb-prototype .tb-account-row:hover {
-  background: var(--tb-sidebar-accent);
+  background: var(--tb-account-hover);
 }
 
-.tb-prototype .tb-account-row > span:nth-child(2) {
-  display: grid;
-  min-width: 0;
-}
-
-.tb-prototype .tb-account-row strong {
+.tb-prototype .tb-account-name {
   overflow: hidden;
+  margin: 0;
   color: var(--tb-ink);
   font-size: 14px;
   font-weight: 500;
@@ -1401,18 +1407,11 @@
   white-space: nowrap;
 }
 
-.tb-prototype .tb-account-row small {
-  overflow: hidden;
-  color: var(--tb-muted);
-  font-size: 11px;
-  line-height: 16px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
+/* Sits at the right end of the account row, vertically centred against the
+ * 40px row: 4px block padding + 4px centring. */
 .tb-prototype .tb-language-row {
   position: absolute;
-  top: 4px;
+  top: 8px;
   right: 20px;
   display: flex;
   width: 32px;
@@ -1421,34 +1420,857 @@
   justify-content: center;
   margin: 0;
   padding: 0;
+  border: 0;
   border-radius: 6px;
   color: var(--tb-sidebar-foreground);
   background: transparent;
+  transition: background-color .15s var(--tb-ease);
 }
 
 .tb-prototype .tb-language-row:hover,
-.tb-prototype .tb-term-button:hover {
+.tb-prototype .tb-term-button:hover,
+.tb-prototype .tb-semester-option:hover,
+.tb-prototype .tb-semester-create:hover {
   background: var(--tb-sidebar-accent);
 }
 
+/* The current language rides the globe's bottom-right corner and overhangs it
+ * by 2px, ringed in white so it stays legible against the icon. */
+.tb-prototype .tb-language-flag {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.tb-prototype .tb-language-menu {
+  position: absolute;
+  z-index: 60;
+  top: 44px;
+  left: 0;
+  display: flex;
+  width: var(--tb-sidebar-width);
+  max-height: 321px;
+  flex-direction: column;
+  overflow-y: auto;
+  border: 1px solid rgb(0 0 0 / .06);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+  animation: tb-grow-in .18s var(--tb-ease) both;
+  transform-origin: 100% 0;
+}
+
+.tb-prototype .tb-language-option {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 1px solid rgb(0 0 0 / .06);
+  color: var(--tb-ink);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  transition: background-color .15s var(--tb-ease);
+}
+
+.tb-prototype .tb-language-option:last-child {
+  border-bottom: 0;
+}
+
+.tb-prototype .tb-language-option:hover {
+  background: var(--tb-account-hover);
+}
+
+.tb-prototype .tb-language-option-flag {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.tb-prototype .tb-language-option-name {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tb-prototype .tb-language-native {
+  font-weight: 500;
+}
+
+.tb-prototype .tb-language-english {
+  color: var(--tb-muted);
+  font-weight: 400;
+}
+
+.tb-prototype .tb-language-check {
+  flex: 0 0 auto;
+  color: var(--tb-primary);
+}
+
 .tb-prototype .tb-term-button {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
   width: calc(100% - 24px);
-  height: 32px;
-  /* Placed by solving for equal gaps between the avatar, this button and the
-   * pinned workspace heading: both gaps land on 14.9px. */
-  margin: 13.9px 12px 0;
+  height: 36px;
+  margin: 4px 12px 0;
   padding: 0 10px;
-  border: 1px solid var(--tb-line);
-  border-radius: 10px;
+  border: 0;
+  border-radius: 6px;
   color: var(--tb-sidebar-foreground);
   background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .05);
+  cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
   text-align: left;
+  transition: background-color .15s var(--tb-ease);
+}
+
+.tb-prototype .tb-term-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tb-prototype .tb-term-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 70;
+  padding: 6px 12px;
+  transform: translateX(-50%);
+  border-radius: 6px;
+  color: var(--tb-page);
+  background: var(--tb-ink);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Caret pointing down at the trigger. */
+.tb-prototype .tb-term-tooltip::after {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 8px;
+  height: 4px;
+  transform: translateX(-50%);
+  background: var(--tb-ink);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  content: "";
+}
+
+.tb-prototype .tb-semester-popover {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 4px);
+  left: 12px;
+  /* The wrapper is exactly as tall as the button, so 100% is the button's
+   * bottom edge and the popover opens 4px under it. */
+  width: 280px;
+  border: 1px solid rgb(0 0 0 / .06);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+  animation: tb-grow-in .18s var(--tb-ease) both;
+  transform-origin: 0 0;
+}
+
+.tb-prototype .tb-term-wrap {
+  position: relative;
+  display: block;
+}
+
+.tb-prototype .tb-semester-list {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+}
+
+.tb-prototype .tb-semester-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color .15s var(--tb-ease);
+}
+
+.tb-prototype .tb-semester-option-body {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tb-prototype .tb-semester-option-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tb-ink);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.tb-prototype .tb-semester-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tb-prototype .tb-semester-range {
+  margin: 0;
+  color: var(--tb-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+/* Revealed only while its row is hovered, so the list stays quiet at rest. */
+.tb-prototype .tb-semester-edit {
+  display: flex;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  opacity: 0;
+  color: var(--tb-ink);
+  background: var(--tb-sidebar-accent);
+  cursor: pointer;
+  transition: opacity .15s var(--tb-ease);
+}
+
+/* The reference button holds focus while its row is hovered, so the ring shows
+ * together with the reveal. Ring colour matches the shell's focus token. */
+.tb-prototype .tb-semester-option:hover .tb-semester-edit,
+.tb-prototype .tb-semester-edit:focus-visible {
+  opacity: 1;
+  outline: 2px solid rgb(46 49 55 / .5);
+  outline-offset: 1px;
+}
+
+.tb-prototype .tb-semester-create-row {
+  display: block;
+  padding: 8px;
+  border-top: 1px solid var(--tb-line);
+}
+
+.tb-prototype .tb-semester-create {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 36px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--tb-muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  transition: background-color .15s var(--tb-ease);
+}
+
+@keyframes tb-grow-in {
+  from {
+    opacity: 0;
+    transform: scale(.96) translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tb-prototype .tb-dialog-layer {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.tb-prototype .tb-dialog-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgb(0 0 0 / .5);
+  cursor: default;
+  animation: tb-fade-in .18s var(--tb-ease) both;
+}
+
+.tb-prototype .tb-dialog {
+  position: relative;
+  display: grid;
+  width: 1000px;
+  max-width: calc(100vw - 32px);
+  height: 601px;
+  max-height: calc(100vh - 32px);
+  grid-template-columns: 380px minmax(0, 1fr);
+  /* Without this the row is sized by its content, so a long copy list pushes
+   * both columns past the fixed height and the footer gets clipped. */
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+  animation: tb-grow-in .18s var(--tb-ease) both;
+}
+
+.tb-prototype .tb-dialog-form {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  background: rgb(246 246 246 / .3);
+}
+
+.tb-prototype .tb-dialog-head {
+  padding: 20px 28px;
+}
+
+.tb-prototype .tb-dialog-close {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  /* Pulled left so the icon, not the hit area, lines up with the title. */
+  margin-left: -4px;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 0;
+  border-radius: 2px;
+  color: var(--tb-ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+.tb-prototype .tb-dialog-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tb-prototype .tb-dialog-more {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin: -2px -5px -2px auto;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: var(--tb-ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+.tb-prototype .tb-dialog-more:hover {
+  background: var(--tb-sidebar-accent);
+}
+
+.tb-prototype .tb-dialog-more-wrap {
+  position: relative;
+  margin: -2px -5px -2px auto;
+}
+
+.tb-prototype .tb-dialog-more-menu {
+  position: absolute;
+  z-index: 70;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 122px;
+  padding: 4px;
+  border: 1px solid rgb(0 0 0 / .06);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+  animation: tb-grow-in .18s var(--tb-ease) both;
+  transform-origin: 100% 0;
+}
+
+.tb-prototype .tb-dialog-more-item {
+  display: flex;
+  width: 100%;
+  height: 30px;
+  align-items: center;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 2px;
+  color: var(--tb-destructive);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.tb-prototype .tb-dialog-more-item:hover {
+  background: var(--tb-account-hover);
+}
+
+.tb-prototype .tb-dialog-more-item:disabled {
+  color: var(--tb-muted);
+  cursor: default;
+}
+
+.tb-prototype .tb-dialog-title {
+  margin: 0;
+  color: var(--tb-ink);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 36px;
+}
+
+.tb-prototype .tb-dialog-desc {
+  margin: 4px 0 0;
+  color: var(--tb-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.tb-prototype .tb-dialog-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 28px 12px;
+}
+
+.tb-prototype .tb-field {
+  display: grid;
+  gap: 8px;
+}
+
+.tb-prototype .tb-field-label {
+  color: var(--tb-ink);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+.tb-prototype .tb-field-input {
+  height: 36px;
+  padding: 4px 12px;
+  border: 1px solid var(--tb-line);
+  border-radius: 6px;
+  color: var(--tb-ink);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.tb-prototype .tb-field-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tb-prototype .tb-field-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.tb-prototype .tb-mode-cards {
+  display: grid;
+  gap: 8px;
+}
+
+.tb-prototype .tb-mode-card {
+  display: flex;
+  min-height: 82px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--tb-line);
+  border-radius: 8px;
+  color: var(--tb-ink);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.tb-prototype .tb-mode-card.is-selected {
+  border-color: var(--tb-primary);
+  background: var(--tb-primary-tint);
+}
+
+.tb-prototype .tb-mode-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.tb-prototype .tb-mode-card-note {
+  margin: 0;
+  padding-left: 30px;
+  color: var(--tb-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 17px;
+}
+
+.tb-prototype .tb-dialog-foot {
+  display: grid;
+  gap: 8px;
+  padding: 12px 28px 20px;
+}
+
+.tb-prototype .tb-dialog-submit {
+  height: 36px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--tb-primary-foreground);
+  background: var(--tb-primary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tb-prototype .tb-dialog-cancel {
+  height: 28px;
+  padding: 4px 0;
+  border: 0;
+  color: var(--tb-muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.tb-prototype .tb-dialog-preview {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.tb-prototype .tb-dialog-preview-head {
+  padding: 20px 24px 16px;
+  background: var(--tb-page);
+}
+
+.tb-prototype .tb-dialog-preview-head h3 {
+  margin: 0;
+  color: var(--tb-ink);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
+}
+
+.tb-prototype .tb-dialog-preview-body {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+}
+
+.tb-prototype .tb-preview-card {
+  display: grid;
+  width: 384px;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+}
+
+.tb-prototype .tb-preview-mark {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--tb-primary);
+  background: rgb(46 49 55 / .1);
+}
+
+.tb-prototype .tb-preview-card p {
+  margin: 0;
+  color: var(--tb-muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.tb-prototype .tb-copy-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tb-prototype .tb-copy-source-block {
+  display: grid;
+  gap: 8px;
+  padding: 20px 24px 8px;
+}
+
+.tb-prototype .tb-copy-field {
+  display: grid;
+  gap: 8px;
+}
+
+.tb-prototype .tb-copy-source-wrap {
+  position: relative;
+}
+
+.tb-prototype .tb-copy-source-placeholder {
+  color: var(--tb-muted);
+}
+
+/* Opens over the select it belongs to; width follows the trigger. */
+.tb-prototype .tb-copy-source-menu {
+  position: absolute;
+  z-index: 70;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  padding: 4px;
+  border: 1px solid rgb(0 0 0 / .06);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+  animation: tb-grow-in .18s var(--tb-ease) both;
+}
+
+.tb-prototype .tb-copy-source-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 36px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 2px;
+  color: var(--tb-ink);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.tb-prototype .tb-copy-source-option:hover {
+  background: var(--tb-account-hover);
+}
+
+.tb-prototype .tb-copy-source-mark {
+  display: flex;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+/* One copyable category: [checkbox] [icon] [name] [count]. */
+.tb-prototype .tb-copy-list {
+  display: grid;
+  border: 1px solid var(--tb-line);
+  border-radius: 6px;
+}
+
+.tb-prototype .tb-copy-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.tb-prototype .tb-copy-item:last-child {
+  border-bottom: 0;
+}
+
+.tb-prototype .tb-copy-item.is-disabled {
+  opacity: .55;
+}
+
+.tb-prototype .tb-checkbox {
+  display: flex;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--tb-line);
+  border-radius: 4px;
+  color: #fff;
+  background: #fff;
+  cursor: pointer;
+}
+
+.tb-prototype .tb-checkbox.is-checked {
+  border-color: var(--tb-primary);
+  background: var(--tb-primary);
+}
+
+.tb-prototype .tb-checkbox:disabled {
+  cursor: default;
+}
+
+.tb-prototype .tb-copy-item-icon {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--tb-ink);
+  background: var(--tb-sidebar-accent);
+}
+
+.tb-prototype .tb-copy-item-name {
+  flex: 1 1 auto;
+  color: var(--tb-ink);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tb-prototype .tb-copy-item-count {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  color: var(--tb-ink);
+  background: var(--tb-sidebar-accent);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tb-prototype .tb-copy-source {
+  display: flex;
+  width: 100%;
+  height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border: 1px solid var(--tb-line);
+  border-radius: 6px;
+  color: var(--tb-muted);
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.tb-prototype .tb-copy-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 24px;
+}
+
+.tb-prototype .tb-copy-empty {
+  padding: 32px 16px;
+  border: 1px dashed var(--tb-line);
+  border-radius: 6px;
+  background: rgb(246 246 246 / .2);
+}
+
+.tb-prototype .tb-copy-empty p {
+  margin: 0;
+  color: var(--tb-muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* Sits at the bottom of the copy panel, matching the reference. */
+.tb-prototype .tb-copy-note-row {
+  margin-top: auto;
+  padding: 12px 24px 20px;
+}
+
+.tb-prototype .tb-copy-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.tb-prototype .tb-copy-note .tb-icon {
+  flex: 0 0 auto;
+}
+
+.tb-prototype .tb-copy-note p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+/* Amber warns about the target semester; blue explains what copying shares. */
+.tb-prototype .tb-copy-note.is-warn {
+  border: 1px solid #ffd230;
+  background: #fffbeb;
+}
+
+.tb-prototype .tb-copy-note.is-warn .tb-icon {
+  color: #e17100;
+}
+
+.tb-prototype .tb-copy-note.is-warn p {
+  color: #461901;
+}
+
+/* Values sampled from the reference capture, not derived. */
+.tb-prototype .tb-copy-note.is-info {
+  border: 1px solid #93c5fd;
+  background: #eff6ff;
+}
+
+.tb-prototype .tb-copy-note.is-info .tb-icon {
+  color: #8ec5ff;
+}
+
+.tb-prototype .tb-copy-note.is-info p {
+  color: #162556;
+}
+
+@keyframes tb-fade-in {
+  from { opacity: 0; }
+
+  to { opacity: 1; }
 }
 
 .tb-workspace-heading {
@@ -1457,7 +2279,7 @@
   justify-content: space-between;
   height: 24px;
 
-  margin-top: 17.895px;
+  margin-top: 16px;
   padding: 0 12px;
   color: var(--tb-sidebar-foreground);
   font-size: 10px;
@@ -2129,19 +2951,11 @@ body.is-dragging-item * {
   background-size: 28px 28px;
 }
 
-.tb-dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(380px, 2fr) minmax(210px, 1fr) minmax(210px, 1fr);
-  gap: 16px;
-  max-width: 1440px;
-  margin: 0 auto;
-}
-
 /*
- * A destination with no design yet. It keeps the home page's 48px inset and
- * 1440px measure so the shell does not shift when the page body changes, and
- * centres its own content in the height the home page would have taken. Nothing
- * here implies a feature: a named marker, the title, one sentence.
+ * A destination with no design yet, which is every destination for now. It keeps
+ * the shell's 48px inset and 1440px measure so nothing shifts when the page body
+ * changes, and centres its own content in the height it fills. Nothing here
+ * implies a feature: a named marker, the title, one sentence.
  */
 .tb-main-empty {
   display: grid;
@@ -2197,349 +3011,6 @@ body.is-dragging-item * {
   background: #fff;
   font-family: inherit;
   font-size: 13px;
-}
-
-.tb-dashboard-left,
-.tb-dashboard-right {
-  display: grid;
-  align-content: start;
-  gap: 16px;
-  min-width: 0;
-}
-
-.tb-card {
-  min-width: 0;
-  border: 1px solid var(--tb-line);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: var(--tb-card-elevation);
-}
-
-.tb-card h1,
-.tb-card h2,
-.tb-card p {
-  margin-top: 0;
-}
-
-.tb-card h2 {
-  margin-bottom: 0;
-  font-size: 20px;
-  line-height: 1.25;
-}
-
-.tb-card-kicker {
-  color: #8273ac;
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: .035em;
-}
-
-.tb-welcome-card {
-  position: relative;
-  display: grid;
-  min-height: 220px;
-  align-items: end;
-  overflow: hidden;
-  padding: 28px;
-  background: linear-gradient(145deg, #fff 0%, #f6f3fc 100%);
-}
-
-.tb-welcome-card > div:first-child {
-  position: relative;
-  z-index: 2;
-}
-
-.tb-welcome-card h1 {
-  margin: 35px 0 8px;
-  font-size: clamp(27px, 2.2vw, 36px);
-  line-height: 1.12;
-}
-
-.tb-welcome-card p {
-  margin-bottom: 0;
-  color: var(--tb-muted);
-}
-
-.tb-welcome-orbit {
-  position: absolute;
-  top: -10px;
-  right: -2px;
-  width: 210px;
-  height: 210px;
-}
-
-.tb-welcome-orbit span {
-  position: absolute;
-  border-radius: 50%;
-}
-
-.tb-welcome-orbit span:nth-child(1) {
-  top: 27px;
-  right: 35px;
-  width: 108px;
-  height: 108px;
-  background: #ddd5f6;
-}
-
-.tb-welcome-orbit span:nth-child(2) {
-  top: 80px;
-  right: 112px;
-  width: 42px;
-  height: 42px;
-  border: 1px solid #c7bce9;
-}
-
-.tb-welcome-orbit span:nth-child(3) {
-  top: 18px;
-  right: 10px;
-  width: 18px;
-  height: 18px;
-  background: #bbaee4;
-}
-
-.tb-lessons-card,
-.tb-schedule-card,
-.tb-calendar-card,
-.tb-tasks-card {
-  padding: 18px;
-}
-
-.tb-lessons-card > header,
-.tb-schedule-card > header,
-.tb-calendar-card > header,
-.tb-tasks-card > header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-
-.tb-lessons-card > header button,
-.tb-schedule-card > header button,
-.tb-tasks-card > header button {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #7963ad;
-  background: transparent;
-  font-size: 11px;
-}
-
-.tb-lesson-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-top: 1px solid #ededeb;
-}
-
-.tb-date-block {
-  display: grid;
-  width: 42px;
-  height: 46px;
-  place-items: center;
-  border-radius: 9px;
-  background: #f2effa;
-  line-height: 1;
-}
-
-.tb-date-block b {
-  align-self: end;
-  font-size: 16px;
-}
-
-.tb-date-block small {
-  align-self: start;
-  color: #7668a1;
-  font-size: 9px;
-}
-
-.tb-lesson-row > div,
-.tb-timeline article,
-.tb-tasks-card label > span {
-  display: grid;
-  min-width: 0;
-}
-
-.tb-lesson-row small,
-.tb-timeline small,
-.tb-tasks-card label small {
-  margin-top: 3px;
-  color: var(--tb-muted);
-  font-size: 11px;
-}
-
-.tb-class-chip {
-  padding: 4px 7px;
-  border-radius: 999px;
-  color: #6c58a6;
-  background: #f0ebfb;
-  font-size: 10px;
-}
-
-.tb-class-chip.is-green {
-  color: #427a65;
-  background: #eaf6f0;
-}
-
-.tb-schedule-card {
-  display: flex;
-  min-height: 480px;
-  flex-direction: column;
-}
-
-.tb-schedule-card > header h2 {
-  margin-top: 2px;
-}
-
-.tb-timeline {
-  display: grid;
-  gap: 0;
-  flex: 1;
-}
-
-.tb-timeline > div {
-  position: relative;
-  display: grid;
-  grid-template-columns: 47px 13px minmax(0, 1fr);
-  gap: 7px;
-  min-height: 82px;
-}
-
-.tb-timeline > div:not(:last-child)::after {
-  position: absolute;
-  top: 21px;
-  bottom: 0;
-  left: 59px;
-  width: 1px;
-  background: #e6e6e3;
-  content: "";
-}
-
-.tb-timeline time {
-  color: #737780;
-  font-size: 11px;
-}
-
-.tb-timeline-dot {
-  position: relative;
-  z-index: 1;
-  width: 9px;
-  height: 9px;
-  margin-top: 5px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: #303238;
-  box-shadow: 0 0 0 1px #303238;
-}
-
-.tb-timeline-dot.is-purple {
-  background: #9481c9;
-  box-shadow: 0 0 0 1px #9481c9;
-}
-
-.tb-timeline-dot.is-green {
-  background: #65a889;
-  box-shadow: 0 0 0 1px #65a889;
-}
-
-.tb-add-event {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 9px;
-  border: 1px solid var(--tb-line);
-  border-radius: 8px;
-  background: #fff;
-}
-
-.tb-calendar-card header > div:first-child {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-}
-
-.tb-calendar-card header span {
-  font-size: 18px;
-  font-weight: 750;
-}
-
-.tb-calendar-card header strong {
-  color: var(--tb-muted);
-  font-size: 11px;
-}
-
-.tb-calendar-card header button {
-  width: 25px;
-  height: 25px;
-  border-radius: 7px;
-  background: transparent;
-  font-size: 18px;
-}
-
-.tb-calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 3px;
-}
-
-.tb-calendar-grid > * {
-  display: grid;
-  aspect-ratio: 1;
-  min-width: 0;
-  place-items: center;
-}
-
-.tb-calendar-grid button {
-  border-radius: 7px;
-  background: transparent;
-  font-size: 10px;
-}
-
-.tb-calendar-grid button:hover {
-  background: #f2f2f0;
-}
-
-.tb-calendar-grid button.is-today {
-  color: #fff;
-  background: #303238;
-}
-
-.tb-calendar-grid button.is-outside {
-  color: #bbbcc0;
-}
-
-.tb-weekday {
-  color: #92959c;
-  font-size: 9px;
-}
-
-.tb-tasks-card label {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 11px 0;
-  border-top: 1px solid #ededeb;
-  cursor: pointer;
-}
-
-.tb-tasks-card input {
-  width: 15px;
-  height: 15px;
-  margin: 2px 0 0;
-  accent-color: #303238;
-}
-
-.tb-all-tasks {
-  width: 100%;
-  margin-top: 8px;
-  padding: 8px;
-  border-radius: 8px;
-  color: #73619f;
-  background: #f5f2fa;
 }
 
 .tb-announcer {
@@ -2639,18 +3110,6 @@ body.is-dragging-item * {
     padding: 30px;
   }
 
-  .tb-dashboard-grid {
-    grid-template-columns: minmax(0, 1.35fr) minmax(240px, .65fr);
-  }
-
-  .tb-dashboard-left {
-    grid-column: 1 / -1;
-    grid-template-columns: minmax(0, 1.4fr) minmax(280px, .6fr);
-  }
-
-  .tb-schedule-card {
-    min-height: 430px;
-  }
 }
 
 @media (max-width: 880px) {
@@ -2669,14 +3128,6 @@ body.is-dragging-item * {
     padding-right: 32px;
   }
 
-  .tb-dashboard-left,
-  .tb-dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .tb-dashboard-left {
-    grid-column: auto;
-  }
 }
 
 @media (max-width: 700px) {
@@ -2803,23 +3254,6 @@ body.is-dragging-item * {
 
   .tb-main {
     padding: 18px 14px 70px;
-  }
-
-  .tb-welcome-card {
-    min-height: 210px;
-    padding: 22px;
-  }
-
-  .tb-welcome-card h1 {
-    margin-top: 28px;
-  }
-
-  .tb-welcome-orbit {
-    right: -55px;
-  }
-
-  .tb-schedule-card {
-    min-height: 420px;
   }
 
   .tb-context-menu {

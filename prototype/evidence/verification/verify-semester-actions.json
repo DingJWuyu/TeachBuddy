@@ -1,0 +1,90 @@
+{
+  "checks": [
+    {
+      "name": "空表单被校验拦住",
+      "pass": true,
+      "detail": "dialogOpen=true formValid=false"
+    },
+    {
+      "name": "创建后对话框关闭",
+      "pass": true,
+      "detail": "open=false"
+    },
+    {
+      "name": "创建后切为新学期",
+      "pass": true,
+      "detail": "active=2027春季学期"
+    },
+    {
+      "name": "创建后被播报",
+      "pass": true,
+      "detail": "announce=已创建 2027春季学期"
+    },
+    {
+      "name": "新学期出现在列表中",
+      "pass": true,
+      "detail": "2026春季学期 | 2026秋季学期 | 2027春季学期"
+    },
+    {
+      "name": "新学期日期完整",
+      "pass": true,
+      "detail": "2026年3月1日 – 2026年7月10日 | 2026年9月1日 – 2027年1月15日 | 2027年3月1日 – 2027年7月10日"
+    },
+    {
+      "name": "编辑就地生效",
+      "pass": true,
+      "detail": "2026春季学期（已改名） | 2026秋季学期"
+    },
+    {
+      "name": "编辑后对话框关闭并被播报",
+      "pass": true,
+      "detail": "announce=已保存 2026春季学期（已改名）"
+    },
+    {
+      "name": "未选来源时是空状态",
+      "pass": true,
+      "detail": "empty=true items=0"
+    },
+    {
+      "name": "来源可选",
+      "pass": true,
+      "detail": "2026春季学期 | 2026秋季学期"
+    },
+    {
+      "name": "选来源后列出复制内容",
+      "pass": true,
+      "detail": "label=2026春季学期 count=6"
+    },
+    {
+      "name": "数量胶囊与名称齐全",
+      "pass": true,
+      "detail": "班级 / 2 个班级"
+    },
+    {
+      "name": "零数量行禁用",
+      "pass": true,
+      "detail": "disabled=[false,false,false,false,false,true]"
+    },
+    {
+      "name": "选来源后提示改为复制说明",
+      "pass": true,
+      "detail": "学生的提交、考勤记录和成绩仍保留在 2026春季学期 中。单元和课程为共享而非复"
+    },
+    {
+      "name": "复制项可勾选",
+      "pass": true,
+      "detail": "aria-checked=true"
+    },
+    {
+      "name": "带复制创建被播报",
+      "pass": true,
+      "detail": "announce=已创建 2027秋季学期，并复制了所选内容"
+    },
+    {
+      "name": "编辑态未选来源时是琥珀提示",
+      "pass": true,
+      "detail": "tb-copy-note is-warn"
+    }
+  ],
+  "problems": []
+}

@@ -79,9 +79,8 @@ const g = await p.evaluate(() => {
     sidebarBorderRight: getComputedStyle(document.querySelector('.tb-sidebar')).borderRightWidth,
     accountAvatar: (() => { const a = document.querySelector('.tb-account-row .tb-avatar'); if (!a) return null; const r = a.getBoundingClientRect(); const c = getComputedStyle(a); return { w: px(r.width), h: px(r.height), bg: c.backgroundColor, radius: c.borderRadius }; })(),
     accountRow: (() => { const a = document.querySelector('.tb-account-row'); const r = a.getBoundingClientRect(); const c = getComputedStyle(a); return { x: px(r.x), y: px(r.y), w: px(r.width), h: px(r.height), padding: c.padding, radius: c.borderRadius, bg: c.backgroundColor }; })(),
-    termButton: (() => { const a = document.querySelector('.tb-term-button'); const r = a.getBoundingClientRect(); const c = getComputedStyle(a); return { x: px(r.x), w: px(r.width), h: px(r.height), radius: c.borderRadius, border: c.borderTopWidth + ' ' + c.borderTopColor }; })(),
+    termButton: (() => { const a = document.querySelector('.tb-term-button'); const r = a.getBoundingClientRect(); const c = getComputedStyle(a); return { x: px(r.x), w: px(r.width), h: px(r.height), radius: c.borderRadius, border: c.borderTopWidth + ' ' + c.borderTopColor, shadow: c.boxShadow }; })(),
     toggle: (() => { const a = document.querySelector('.tb-sidebar-toggle'); const r = a.getBoundingClientRect(); return { x: px(r.x), w: px(r.width), h: px(r.height) }; })(),
-    cardShadow: getComputedStyle(document.querySelector('.tb-card')).boxShadow,
   };
 });
 
@@ -114,12 +113,15 @@ check('account row radius', g.accountRow.radius, '6px');
 check('account row bg (no fill)', g.accountRow.bg, 'rgba(0, 0, 0, 0)');
 check('term button x', g.termButton.x, 12);
 check('term button width', g.termButton.w, 231, 2);
-check('term button height', g.termButton.h, 32);
-// The wide term button uses a 10px radius to soften its corners.
-check('term button radius', g.termButton.radius, '10px');
+check('term button height', g.termButton.h, 36);
+// The semester combobox follows the reference control: a 6px radius and no border.
+check('term button radius', g.termButton.radius, '6px');
+check('term button has no border', g.termButton.border.startsWith('0px'), true);
 check('toggle x (inside sidebar)', g.toggle.x, 220);
 check('toggle size', g.toggle.w, 32);
-check('card shadow token', g.cardShadow.includes('rgba(0, 0, 0, 0.05)') || g.cardShadow.includes('#0000000d') || g.cardShadow.length > 0, true);
+// The home cards that used to carry the card shadow are gone; the semester
+// combobox now carries the reference control's own shadow.
+check('term button shadow', g.termButton.shadow, 'rgba(0, 0, 0, 0.05) 0px 1px 2px 0px');
 
 console.log('=== EXPANDED @1440x900 ===');
 for (const r of rows) {

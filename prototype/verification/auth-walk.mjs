@@ -198,25 +198,25 @@ for (const viewport of VIEWPORTS) {
     await page.waitForSelector('.tb-topbar', { timeout: 8000 });
     await page.waitForTimeout(700);
     const signedIn = await page.evaluate(() => {
-      const strip = document.querySelector('.ae-session');
-      const box = strip?.getBoundingClientRect();
+      const account = document.querySelector('.tb-account-row');
+      const box = account?.getBoundingClientRect();
       return {
         workbench: Boolean(document.querySelector('.tb-topbar')),
-        session: strip?.innerText.replace(/\n/g, ' | ') || '',
+        account: account?.innerText.replace(/\n/g, ' | ') || '',
         /*
-         * 会话语条是浮在外壳之上的固定控件，一旦没有样式就会掉到工作台下面，
-         * 只出现在整页截图里。这里断言它在视口内，且不越出左下角。
+         * 账号行是侧栏头部里的普通控件，一旦没有样式就会塌掉或掉出视口。
+         * 这里断言它在视口内，且落在侧栏里。
          */
-        strip: box ? {
-          visible: box.width > 0 && box.height > 0 && box.bottom <= window.innerHeight + 1 && box.top >= 0,
+        row: box ? {
+          visible: box.width > 0 && box.height > 0 && box.top >= 0 && box.bottom <= window.innerHeight + 1,
           box: [Math.round(box.x), Math.round(box.y), Math.round(box.width), Math.round(box.height)]
         } : null
       };
     });
     console.log('登录后:', JSON.stringify(signedIn));
     if (!signedIn.workbench) problems.push('登录后未进入工作台');
-    if (!signedIn.session) problems.push('登录后未显示会话语条');
-    if (!signedIn.strip?.visible) problems.push(`会话语条不在视口内: ${JSON.stringify(signedIn.strip)}`);
+    if (!signedIn.account) problems.push('侧栏头部未显示账号行');
+    if (!signedIn.row?.visible) problems.push(`账号行不在视口内: ${JSON.stringify(signedIn.row)}`);
     /*
      * 会话闸门给 body 加的类名不能和外壳根元素同名，否则脚本里按 `.tb-prototype`
      * 取根元素会取到 body，侧栏收起状态就读错了。
@@ -225,16 +225,12 @@ for (const viewport of VIEWPORTS) {
 
     /*
      * The workbench shows its first-run spotlight over everything on the first
-     * visit, including the session strip. Dismiss it the way a user would before
-     * reaching for sign-out.
+     * visit. Dismiss it the way a user would before inspecting the shell.
      */
     if (await page.locator('.tb-coach-scrim').count()) {
       await page.getByRole('button', { name: '知道了' }).click();
       await page.waitForTimeout(300);
     }
-
-    await page.locator('.ae-session-out').click();
-    await page.locator('.ae-card-head h1:text-is("登录")').waitFor({ timeout: 5000 });
   }
 
   await page.close();

@@ -2,7 +2,8 @@
 
 Status: Accepted
 
-本文件拥有 CW01-CW46 的场景与证据索引。行为定义由各节链接的文档拥有。
+本文件拥有 CW01-CW46 与 CW52 的场景与证据索引；CW48-CW51 由[侧栏头部](sidebar-head.md)索引。
+CW47 记录的是改动前的旧行为，已随该改动退役。行为定义由各节链接的文档拥有。
 
 ## 复现与验证
 
@@ -99,6 +100,7 @@ Status: Accepted
 | CW46 | 搜索快捷键打开与关闭、方向键循环及无匹配 Enter 保持 | PC 1440×900 | [已打开](../evidence/screenshots/workbench/navigation/PC-CW46-open.png) · [循环到末项](../evidence/screenshots/workbench/navigation/PC-CW46-last.png) · [循环到首项](../evidence/screenshots/workbench/navigation/PC-CW46-first.png) · [空状态](../evidence/screenshots/workbench/navigation/PC-CW46-empty.png) · [已关闭](../evidence/screenshots/workbench/navigation/PC-CW46-closed.png) | 通过 |
 | CW46 | 搜索快捷键打开与关闭、方向键循环及无匹配 Enter 保持 | 平板 768×1024 | [已打开](../evidence/screenshots/workbench/navigation/平板-CW46-open.png) · [循环到末项](../evidence/screenshots/workbench/navigation/平板-CW46-last.png) · [循环到首项](../evidence/screenshots/workbench/navigation/平板-CW46-first.png) · [空状态](../evidence/screenshots/workbench/navigation/平板-CW46-empty.png) · [已关闭](../evidence/screenshots/workbench/navigation/平板-CW46-closed.png) | 通过 |
 | CW46 | 搜索快捷键打开与关闭、方向键循环及无匹配 Enter 保持 | 手机 390×844 | [已打开](../evidence/screenshots/workbench/navigation/手机-CW46-open.png) · [循环到末项](../evidence/screenshots/workbench/navigation/手机-CW46-last.png) · [循环到首项](../evidence/screenshots/workbench/navigation/手机-CW46-first.png) · [空状态](../evidence/screenshots/workbench/navigation/手机-CW46-empty.png) · [已关闭](../evidence/screenshots/workbench/navigation/手机-CW46-closed.png) | 通过 |
+| CW52 | 首页正文是与其他目的页面相同的空占位，只有图标与标题 | PC 1440×900 | [首页](../evidence/screenshots/workbench/sidebar-head/PC-CW52-home-empty.png) | 通过 |
 
 ## 侧栏
 

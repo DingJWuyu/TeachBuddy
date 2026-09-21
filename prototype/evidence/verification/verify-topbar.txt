@@ -4,7 +4,7 @@ ok   top bar insets are 18px left / 48px right  0px 48px 0px 18px
 ok   brand starts at x=18  18
 ok   brand mark is 28px at 6px radius  28 6px
 ok   wordmark starts at x=54  54
-ok   wordmark is 18px/27px at weight 400  {"x":54,"y":18.5,"w":99.31,"h":27,"right":153.31,"fontSize":"18px","lineHeight":"27px","fontWeight":"400","letterSpacing":"-0.36px"}
+ok   wordmark is 18px/27px at weight 400  {"x":54,"y":18.5,"w":100.23,"h":27,"right":154.23,"fontSize":"18px","lineHeight":"27px","fontWeight":"400","letterSpacing":"-0.36px"}
 ok   wordmark tracking is -0.36px  -0.36px
 ok   nav item is 32px, 6px 20px, fully rounded  {"text":"首页","h":32,"pad":"6px 20px","radius":"9999px","font":"14px","weight":"500","bg":"rgb(45, 48, 55)","color":"rgb(255, 255, 255)"}
 ok   nav item type is 14px at weight 500  14px 500

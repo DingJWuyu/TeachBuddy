@@ -4,31 +4,32 @@ ok   sidebar collapse is animated  grid-template-columns 0.2s cubic-bezier(0.4, 
 ok   top bar does not animate with the sidebar  0s
 ok   collapse control at reference x=220  x=220 w=32
 ok   sidebar starts expanded  256
-ok   width is mid-flight during transition  samples=256,256,253,240,213,172,137,113,97,87,80,75 midFlight=11
+ok   width is mid-flight during transition  samples=256,253,240,213,172,137,113,97,87,80,75,73 midFlight=11
 ok   collapsed width settles at 72px  72
 ok   top-bar centre nav does not shift  before=274 after=274
-ok   brand does not shift or collapse  {"before":{"navX":274,"brandX":18,"brandW":256,"brandTextW":99},"after":{"navX":274,"brandX":18,"brandW":256,"brandTextW":99,"toggleX":220}}
+ok   brand does not shift or collapse  {"before":{"navX":274,"brandX":18,"brandW":256,"brandTextW":100},"after":{"navX":274,"brandX":18,"brandW":256,"brandTextW":100,"toggleX":220}}
 ok   collapse control stays at x=220 when collapsed  220
 ok   first rail icon has clearance below the top bar  8px
 ok   rail collapse has no flip-page mask  {"name":"none","clip":"none"}
 ok   collapsed rail is not masked away  {"clip":"none","rowW":36,"rowH":36}
 ok   trash row uses the grid layout  grid
-ok   trash row children are laid out horizontally  {"display":"grid","kidCount":3,"xSpread":197,"ySpread":0,"rows":[{"mid":696,"x":264},{"mid":696,"x":296},{"mid":696,"x":461}]}
+ok   trash row children are laid out horizontally  {"display":"grid","kidCount":3,"xSpread":197,"ySpread":0,"rows":[{"mid":704,"x":264},{"mid":704,"x":296},{"mid":704,"x":461}]}
 ok   new-group form opens to the right of its trigger  form x=252 trigger right=244
 ok   new-group form is compact  w=184 h=44
 ok   new-group form uses the popover grammar  fixed r=10px
 ok   new-group form has no Enter hint
 ok   account row has no trailing chevron  0
-ok   avatar is 32px with a 12px gap to the name  {"avatarSize":32,"avatarToName":12,"accountSvgCount":0,"rowRight":199,"langX":204,"langW":32,"gapRowToLang":5,"termRadius":"10px","termBottom":171}
+ok   avatar is 32px with a 12px gap to the name  {"avatarSize":32,"avatarToName":12,"accountSvgCount":0,"rowRight":199,"langX":204,"langW":32,"gapRowToLang":5,"termRadius":"6px","termBottom":181}
 ok   language button is 32px wide, not stretched  32
-ok   create-term radius is slightly rounded  10px
-ok   avatar keeps its reference position  89
-ok   workspace heading keeps its reference position  188.78
-ok   gaps above and below create-term are equal  17.89 vs 17.89
+ok   term control uses the reference radius  6px
+ok   account row sits where the reference places it  129
+ok   semester control follows the account row by 16px  16
+ok   workspace heading follows the semester control by 16px  16
+ok   gaps above and below the semester control are equal  16 vs 16
 ok   trash panel matches the trash row footprint  row=232 panel=232
 ok   a dropped module fills the panel width  {"w":232,"h":36}
 ok   trash row is the same height as a module row  {"w":232,"h":36}
 ok   empty trash state occupies one module row  {"w":232,"h":36}
 ok   no console errors  []
 
-31/31 passed
+32/32 passed

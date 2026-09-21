@@ -56,7 +56,7 @@ const MODULE_PAGE_COPY = {
  */
 export function describePath(pathname) {
   if (SHELL_PAGES[pathname]) {
-    return { kind: pathname === HOME_PATH ? 'home' : 'shell', path: pathname, ...SHELL_PAGES[pathname] };
+    return { kind: 'shell', path: pathname, ...SHELL_PAGES[pathname] };
   }
   const moduleMatch = pathname.match(/^\/modules\/([^/]+)$/);
   if (moduleMatch && MODULE_PAGE_COPY[moduleMatch[1]]) {

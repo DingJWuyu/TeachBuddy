@@ -116,17 +116,13 @@ scenario(6, 'login', '取消记住我，不改变本次登录结果', async (p, 
   await dismissCoach(p);
   await shot('signed-in');
 });
-scenario(7, 'login', '登录、首次引导、关闭引导、退出登录', async (p, shot) => {
+scenario(7, 'login', '登录、首次引导、关闭引导', async (p, shot) => {
   await login(p);
   await expect(p.locator('.tb-coach')).toBeVisible();
   await shot('coach');
   await dismissCoach(p);
-  await expect(p.locator('.ae-session-name')).toHaveText('example老师');
+  await expect(p.locator('.tb-shell')).toBeVisible();
   await shot('workbench');
-  await p.locator('.ae-session-out').click();
-  await heading(p, '登录');
-  await expect(email(p)).toHaveValue('');
-  await shot('signed-out');
 });
 scenario(8, 'login', '键盘聚焦、输入、Enter 登录', async (p, shot) => {
   await p.keyboard.press('Tab');
@@ -217,7 +213,7 @@ for (const [id, field, value, message] of [
     await shot('error');
     await fields[field].fill({ name: '林', password: 'teachbuddy', confirmation: 'teachbuddy', code: '309614' }[field]);
     await submit(p);
-    await expect(p.locator('.ae-session-name')).toHaveText('林');
+    await expect(p.locator('.tb-shell')).toBeVisible();
     await dismissCoach(p);
     await shot('recovered');
   });
@@ -240,25 +236,17 @@ scenario(24, 'register', '未同意条款，显示错误文字，勾选后重试
   await shot('error');
   await p.locator('.is-terms input').check();
   await submit(p);
-  await expect(p.locator('.ae-session-name')).toHaveText('林');
+  await expect(p.locator('.tb-shell')).toBeVisible();
   await dismissCoach(p);
   await shot('recovered');
 });
-scenario(25, 'register', '注册成功、退出、同一会话重复注册被拒绝', async (p, shot) => {
+scenario(25, 'register', '注册成功', async (p, shot) => {
   await registration(p);
   await shot('filled');
   await submit(p);
-  await expect(p.locator('.ae-session-name')).toHaveText('林');
+  await expect(p.locator('.tb-shell')).toBeVisible();
   await dismissCoach(p);
   await shot('registered');
-  await p.locator('.ae-session-out').click();
-  await heading(p, '登录');
-  await shot('signed-out');
-  await switchCard(p);
-  await email(p).fill('new@example.com');
-  await p.getByRole('button', { name: '发送验证码', exact: true }).click();
-  await alert(p, '这个邮箱已经注册过了，直接登录，或换一个邮箱。');
-  await shot('taken');
 });
 scenario(26, 'register', '切换登录再返回，只保留邮箱', async (p, shot) => {
   await registration(p);

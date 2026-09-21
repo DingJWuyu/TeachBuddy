@@ -113,7 +113,7 @@ function scenario(id, journey, description, run, applies = () => true) {
 const wide = (v) => v.width > 700;
 const narrow = (v) => v.width <= 700;
 scenario('CW01', 'shell', '登录后关闭引导，查看默认外壳', async (p, shot) => {
-  await expect(p.locator('.tb-dashboard-grid')).toBeVisible(); await shot('default');
+  await expect(p.locator('.tb-empty-page')).toBeVisible(); await shot('default');
 });
 scenario('CW02', 'shell', '悬停顶栏，收起侧栏，再展开', async (p, shot) => {
   await rail(p); await shot('rail');
@@ -184,7 +184,7 @@ scenario('CW18', 'topbar', '初始通知未读数与三条消息一致', async (
 });
 scenario('CW19', 'navigation', '日历、后退首页、前进日历', async (p, shot) => {
   await calendar(p); await shot('calendar'); await p.goBack();
-  await expect(p.locator('.tb-dashboard-grid')).toBeVisible(); await shot('back');
+  await expect(p.locator('.tb-empty-page')).toBeVisible(); await shot('back');
   await p.goForward(); await expect(p.locator('.tb-empty-page h1')).toHaveText('日历'); await shot('forward');
 });
 scenario('CW20', 'navigation', '从模块行进入我的班级页', async (p, shot) => {
@@ -253,7 +253,7 @@ scenario('CW31', 'sidebar', '模块落入空分组后刷新仍保留', async (p,
 });
 scenario('CW32', 'sidebar', '正在浏览的模块被隐藏时回首页', async (p, shot) => {
   await sidebar(p); await p.locator('[data-drop-module="lessons"]').click(); await expect(p.locator('.tb-empty-page h1')).toHaveText('课程'); await shot('page');
-  await hide(p,'lessons'); await expect(p.locator('.tb-dashboard-grid')).toBeVisible(); await shot('home');
+  await hide(p,'lessons'); await expect(p.locator('.tb-empty-page')).toBeVisible(); await shot('home');
 });
 scenario('CW33', 'sidebar', '折叠与展开分组，内容退出和恢复键盘可达', async (p, shot) => {
   await sidebar(p); const group=p.locator('[data-drop-group="classes-group"]'); await shot('expanded');

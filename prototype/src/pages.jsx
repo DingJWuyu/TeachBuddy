@@ -2,9 +2,9 @@
 import { Icon } from './icons.jsx';
 
 /**
- * The body of a destination that has no design yet. It carries the page title
- * without feature content, on the same 48px content inset the home page uses, so
- * moving between pages does not shift the shell's alignment.
+ * The body of a destination that has no design yet, which is currently every
+ * destination. It carries the page title without feature content on the shell's
+ * 48px content inset, so moving between pages does not shift the alignment.
  */
 export function EmptyPage({ title, icon }) {
   return (

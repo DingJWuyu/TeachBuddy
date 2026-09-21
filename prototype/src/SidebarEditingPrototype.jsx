@@ -8,6 +8,7 @@ import { EmptyPage, UnknownPage } from './pages.jsx';
 import { createDragChip } from './dragChip.js';
 import { CALENDAR_PATH, HOME_PATH, describePath, modulePath, navigate, routeClick, useRoute, withSearch } from './routes.js';
 import { Icon } from './icons.jsx';
+import SidebarHead from './SidebarHead.jsx';
 import './sidebarEditingPrototype.css';
 
 /** Marks the first-run coach mark as seen, for the rest of the tab's session. */
@@ -847,14 +848,7 @@ function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNa
         inert={isNarrow && !mobileOpen ? true : undefined}
       >
         <div className="tb-sidebar-mobile-head"><strong>工作台</strong><button ref={mobileCloseRef} onClick={onCloseMobile} aria-label="关闭"><Icon name="close" /></button></div>
-        <div className="tb-account-block">
-          <button className="tb-account-row">
-            <span className="tb-avatar">林</span>
-            <span><strong>林老师</strong><small>2026 秋季学期</small></span>
-          </button>
-          <button className="tb-language-row" aria-label="语言：简体中文"><Icon name="language" /></button>
-        </div>
-        <button className="tb-term-button"><Icon name="plus" size={16} /><span>创建学期</span></button>
+        <SidebarHead onAnnounce={model.announce} />
 
         {}
         {isNarrow && (
@@ -1147,60 +1141,6 @@ function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNa
   );
 }
 
-function MiniCalendar() {
-  const days = ['一', '二', '三', '四', '五', '六', '日'];
-  const dates = [31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 1, 2, 3, 4];
-  return (
-    <section className="tb-card tb-calendar-card">
-      <header><div><span>九月</span><strong>2026</strong></div><div><button aria-label="上个月">‹</button><button aria-label="下个月">›</button></div></header>
-      <div className="tb-calendar-grid">
-        {days.map((day) => <span className="tb-weekday" key={day}>{day}</span>)}
-        {dates.map((date, index) => <button className={`${index === 18 ? 'is-today' : ''} ${index === 0 || index > 30 ? 'is-outside' : ''}`} key={`${date}-${index}`}>{date}</button>)}
-      </div>
-    </section>
-  );
-}
-
-function Dashboard() {
-  return (
-    <main className="tb-main">
-      <div className="tb-dashboard-grid">
-        <div className="tb-dashboard-left">
-          <section className="tb-card tb-welcome-card">
-            <div><span className="tb-card-kicker">星期五 · 9 月 18 日</span><h1>早上好，林老师</h1><p>今天有 3 节课，下一节在 10:20 开始。</p></div>
-            <div className="tb-welcome-orbit"><span /><span /><span /></div>
-          </section>
-          <section className="tb-card tb-lessons-card">
-            <header><h2>本周课程</h2><button>查看全部</button></header>
-            <div className="tb-lesson-row"><span className="tb-date-block"><b>18</b><small>周五</small></span><div><strong>八年级数学</strong><small>10:20 - 11:05 · 教学楼 A203</small></div><span className="tb-class-chip">8A</span></div>
-            <div className="tb-lesson-row"><span className="tb-date-block"><b>19</b><small>周六</small></span><div><strong>数学兴趣小组</strong><small>09:00 - 10:30 · 多功能教室</small></div><span className="tb-class-chip is-green">社团</span></div>
-          </section>
-        </div>
-
-        <section className="tb-card tb-schedule-card">
-          <header><div><span className="tb-card-kicker">今日</span><h2>日程</h2></div><button aria-label="日程菜单">•••</button></header>
-          <div className="tb-timeline">
-            <div><time>08:30</time><span className="tb-timeline-dot is-purple"/><article><strong>晨间备课</strong><small>办公室</small></article></div>
-            <div><time>10:20</time><span className="tb-timeline-dot is-dark"/><article><strong>八年级数学</strong><small>教学楼 A203</small></article></div>
-            <div><time>14:00</time><span className="tb-timeline-dot is-green"/><article><strong>教研会议</strong><small>第三会议室</small></article></div>
-          </div>
-          <button className="tb-add-event"><Icon name="plus" size={16}/> 添加日程</button>
-        </section>
-
-        <div className="tb-dashboard-right">
-          <MiniCalendar />
-          <section className="tb-card tb-tasks-card">
-            <header><h2>即将到来</h2><button><Icon name="plus" size={15}/> 新建</button></header>
-            <label><input name="task-unit-test" type="checkbox"/><span><strong>准备单元测验</strong><small>今天 · 教学</small></span></label>
-            <label><input name="task-research-record" type="checkbox"/><span><strong>提交教研记录</strong><small>明天 · 行政</small></span></label>
-            <button className="tb-all-tasks">查看全部任务</button>
-          </section>
-        </div>
-      </div>
-    </main>
-  );
-}
-
 export default function SidebarEditingPrototype() {
   const model = useLayoutModel();
   const route = useRoute();
@@ -1381,7 +1321,6 @@ export default function SidebarEditingPrototype() {
           * the body's entrance again, and a remount is what makes that happen.
           */}
         <div className="tb-page" key={route.key ?? page.path}>
-          {page.kind === 'home' && <Dashboard />}
           {page.kind === 'module' && <EmptyPage title={page.title} icon={page.icon} />}
           {page.kind === 'shell' && <EmptyPage title={page.title} icon={page.icon} />}
           {page.kind === 'unknown' && <UnknownPage path={page.path} />}

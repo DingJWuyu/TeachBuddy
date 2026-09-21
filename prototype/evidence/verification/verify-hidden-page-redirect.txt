@@ -1,12 +1,10 @@
-Scope: all
-Status: passed
 PASS 从首页点课程进入课程页 (expected "/modules/lessons", got "/modules/lessons")
 PASS 课程页标为当前页 (expected "page", got "page")
 PASS 删掉正在浏览的模块后回到首页（回归修复） (expected "/", got "/")
 PASS 首页正文回来了 (expected 1, got 1)
 PASS 被删掉的模块不在侧栏里了 (expected 0, got 0)
 PASS 垃圾桶计数为 1 (expected "1", got "1")
-PASS 回到首页不重新加载文档 (expected "460e7be1-ff35-4580-a1e7-92ab04cdd041", got "460e7be1-ff35-4580-a1e7-92ab04cdd041")
+PASS 回到首页不重新加载文档 (expected "19cf97dd-0846-4171-a8a3-c040ee840357", got "19cf97dd-0846-4171-a8a3-c040ee840357")
 PASS 删掉别的模块时停留在当前页 (expected "/modules/grades", got "/modules/grades")
 PASS 被删掉的模块从侧栏消失 (expected 0, got 0)
 PASS 垃圾桶计数为 2 (expected "2", got "2")
@@ -64,3 +62,5 @@ PASS 拖拽期间请求了抓取手势 (expected "grabbing", got "grabbing")
 PASS 拖拽结束后拖拽图被移除 (expected 0, got 0)
 PASS 拖拽结束后姿态标记被清掉 (expected false, got false)
 PASS 无脚本错误 -> true
+
+64/64 passed
