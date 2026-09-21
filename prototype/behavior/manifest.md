@@ -1,6 +1,6 @@
 # TeachBuddy 原型行为索引
 
-Status: Accepted
+Status: Mixed (工作台已验收；账户补齐待复核)
 
 当前范围是 TeachBuddy 的账户入口（登录、注册、找回密码）与工作台外壳的侧边栏、侧栏头部、顶部栏及共享交互。
 首页正文与其余目的页面一样是空占位，尚无设计。
@@ -14,14 +14,15 @@ npm install
 npm run prototype:sidebar
 ```
 
-打开 <http://localhost:4174/>，先看到账户入口的登录卡。示例账户是 `example@example.com`，密码填 8 位以上（例如 `teachbuddy`）即可进入工作台；注册与找回密码的示例验证码写在对应输入框的提示里。构建命令为 `npm run prototype:build`。原型使用仓库已有的 React、Vite 依赖及共享基础样式，不需要启动 API。
+打开 <http://localhost:4174/>，先看到账户入口的登录卡。示例账户是 `example@example.com`，密码是 `teachbuddy`；注册与找回密码的示例验证码写在对应输入框的提示里。构建命令为 `npm run prototype:build`。原型使用仓库已有的 React、Vite 依赖及共享基础样式，不需要启动 API。
 
 ## 行为文档
 
 | 文档 | 范围与拥有的标识 |
 | --- | --- |
-| [账户入口](auth.md) | 登录、注册、找回密码与会话边界；J11-J13；S14-S21 |
+| [账户入口](auth.md) | 登录、注册、找回密码与会话边界；J11-J13、J25；S14-S21、S36-S42 |
 | [账户场景覆盖](auth-scenarios.md) | CA01-CA40；三端场景复现、截图与验证结果，不重复账户行为定义 |
+| [失败与恢复场景覆盖](auth-behavior-scenarios.md) | CA41-CA64；账户失败、验证码与会话补齐，含暂缓场景，尚待产品验收 |
 | [工作台场景覆盖](workbench-scenarios.md) | CW01-CW46、CW52；工作台截图、检查结果与覆盖边界 |
 | [头部场景覆盖](sidebar-head-scenarios.md) | CW48-CW51；头部、学期对话框与三端交互证据 |
 | [外壳与共享交互](shell.md) | 桌面窄轨、手机抽屉、跳转不重建外壳、浮层互斥与焦点、状态分层；S8、S9、S29 |
@@ -34,7 +35,7 @@ npm run prototype:sidebar
 
 | 入口 | 用途 |
 | --- | --- |
-| [src](../src/) | 原型组件与内嵌模拟数据，入口为 `main.jsx`；[src/auth](../src/auth/) 是账户入口的四个状态、示例数据与会话接缝 |
+| [src](../src/) | 原型组件与内嵌模拟数据，入口为 `main.jsx`；[src/auth](../src/auth/) 是账户入口的表单、模拟数据与会话接缝；`DevFailureControl.jsx` 提供开发模式故障注入 |
 | [flags](../flags/) | 语言菜单用的 20 面圆形国旗，由源码导入并进入构建产物 |
 | [index.html](../index.html)、[Vite 配置](../vite.config.mjs) | 独立运行与构建 |
 | [screenshots](../evidence/screenshots/) | 按旅程分类，文件名包含终端与场景 ID；证据索引由对应场景覆盖文档拥有 |
@@ -46,6 +47,7 @@ npm run prototype:sidebar
 
 ```bash
 node prototype/verification/capture-all.mjs
+node prototype/verification/capture-auth-behavior.mjs
 node prototype/verification/capture-workbench.mjs
 node prototype/verification/auth-walk.mjs
 node prototype/verification/verify-regression.mjs
@@ -72,4 +74,6 @@ node prototype/verification/verify-home-empty.mjs
 
 `PROTOTYPE_URL` 指定目标地址；添加 `?no-dev-chrome` 可隐藏开发环境切换控件，不改变账户或工作台行为。`PROTOTYPE_EVIDENCE_DIR` 指定截图输出，账户场景使用截图根目录，工作台场景使用 `workbench/` 子目录，再按外壳、导航、侧栏、顶部栏分类。`PROTOTYPE_RESULTS_DIR` 指定断言结果目录，`PROTOTYPE_TEMP_DIR` 指定临时输出位置。验证默认暂存输出，不直接替换当前证据；执行前将输出指向可写位置，确认目标、完整结果与截图一致后再按场景更新。账户采集全部通过后才写入指定输出目录。
 
-工作台检查共用 [session.mjs](../verification/session.mjs)，通过界面登录。文档加载会失去内存会话，客户端跳转不会。截图、行为记录与断言结果各由上表对应入口拥有。
+工作台检查共用 [session.mjs](../verification/session.mjs)，通过界面登录。客户端跳转保持会话；文档重载是否恢复由账户入口的“记住我”模拟决定。工作台外观与账号行继续由工作台行为拥有，原型没有退出入口。截图、行为记录与断言结果各由上表对应入口拥有。
+
+账户补齐当前保留 worktree 的运行行为供复核，包括尚未确认的找回第二步只读邮箱和生命周期取值；整合与检查通过不等于产品验收。详见[账户入口的待确认项](auth.md#decisions-and-questions)。测试参数见[失败与恢复场景覆盖](auth-behavior-scenarios.md#测试接缝)。

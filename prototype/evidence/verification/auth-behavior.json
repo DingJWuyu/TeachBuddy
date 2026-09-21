@@ -1,0 +1,894 @@
+{
+  "suite": "auth-behavior-scenarios",
+  "scenarios": 22,
+  "viewports": 3,
+  "partial": false,
+  "deferred": [
+    {
+      "id": "CA48",
+      "reason": "原脚本依赖退出入口，且没有真正覆盖请求中离开；等待该行为补齐。"
+    },
+    {
+      "id": "CA53",
+      "reason": "原型暂不提供退出入口；退出范围与昵称展示接入等待设置页设计。"
+    }
+  ],
+  "results": [
+    {
+      "id": "CA41",
+      "journey": "login",
+      "description": "凭据错误：卡片顶部拒绝、密码清空、邮箱保留、可关闭",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "login/PC-CA41-rejected.png",
+        "login/PC-CA41-dismissed.png",
+        "login/PC-CA41-recovered.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA42",
+      "journey": "login",
+      "description": "不存在的账户与错误密码得到同一条答复",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "login/PC-CA42-unknown-account.png",
+        "login/PC-CA42-wrong-password.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA43",
+      "journey": "login",
+      "description": "提交等待：按钮进入等待态并阻止第二次提交",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "login/PC-CA43-pending.png",
+        "login/PC-CA43-settled.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA44",
+      "journey": "login",
+      "description": "网络不可用：横幅提示、保留输入、恢复后重试成功",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "login/PC-CA44-offline.png",
+        "login/PC-CA44-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA45",
+      "journey": "login",
+      "description": "服务故障：可关闭的横幅，不误标到字段上",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "login/PC-CA45-server-error.png",
+        "login/PC-CA45-dismissed.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA46",
+      "journey": "login",
+      "description": "请求超时：横幅提示并可重试",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "login/PC-CA46-timeout.png",
+        "login/PC-CA46-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA47",
+      "journey": "login",
+      "description": "请求中修改密码：等待态保持，不产生第二次请求",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "login/PC-CA47-edited-while-pending.png",
+        "login/PC-CA47-settled.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA49",
+      "journey": "session",
+      "description": "勾选记住我：刷新后仍在工作台",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "session/PC-CA49-restored.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA50",
+      "journey": "session",
+      "description": "不勾选记住我：刷新即退出，回到空登录卡",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "session/PC-CA50-expired.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA51",
+      "journey": "session",
+      "description": "换设备：另一台机器没有可恢复的会话",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "session/PC-CA51-first-device.png",
+        "session/PC-CA51-second-device.png",
+        "session/PC-CA51-second-device-signed-in.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA52",
+      "journey": "session",
+      "description": "会话过期：回到登录卡并说明原因",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "session/PC-CA52-expired-notice.png",
+        "session/PC-CA52-signed-in-again.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA54",
+      "journey": "session",
+      "description": "密码重置后旧密码失效，新密码可用",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "session/PC-CA54-reset-confirmed.png",
+        "session/PC-CA54-old-password-rejected.png",
+        "session/PC-CA54-new-password-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA55",
+      "journey": "register",
+      "description": "发码失败：横幅提示，验证码字段不出现",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "register/PC-CA55-send-failed.png",
+        "register/PC-CA55-send-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA56",
+      "journey": "register",
+      "description": "冷却：重发倒计时，冷却结束才能再发",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "register/PC-CA56-cooldown.png",
+        "register/PC-CA56-ready.png",
+        "register/PC-CA56-resent.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA57",
+      "journey": "register",
+      "description": "验证码错误次数用尽后该码作废，需要重新发送",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "register/PC-CA57-first-miss.png",
+        "register/PC-CA57-exhausted.png",
+        "register/PC-CA57-still-refused.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA58",
+      "journey": "register",
+      "description": "验证码过期：需要重新发送",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "register/PC-CA58-expired.png",
+        "register/PC-CA58-new-code-active.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA59",
+      "journey": "register",
+      "description": "重发后旧码作废、新码可用；换地址后必须重新发送",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "register/PC-CA59-old-code-dead.png",
+        "register/PC-CA59-new-code-accepted.png",
+        "register/PC-CA59-address-changed.png",
+        "register/PC-CA59-resent.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA60",
+      "journey": "recovery",
+      "description": "找回第一步：未注册地址被拒，不发验证码",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "recovery/PC-CA60-unknown-address.png",
+        "recovery/PC-CA60-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA61",
+      "journey": "recovery",
+      "description": "找回第二步的地址是锁定的，验证码只对它有效",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "recovery/PC-CA61-bound-address.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA62",
+      "journey": "recovery",
+      "description": "找回可重发，冷却与注册一致",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "recovery/PC-CA62-sent.png",
+        "recovery/PC-CA62-resent.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA63",
+      "journey": "recovery",
+      "description": "重置成功：回到登录卡并说明结果，再次找回需重新发码",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "recovery/PC-CA63-filled.png",
+        "recovery/PC-CA63-done.png",
+        "recovery/PC-CA63-code-reissued.png",
+        "recovery/PC-CA63-reset-again.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA64",
+      "journey": "recovery",
+      "description": "找回发码遇到网络失败：横幅提示，可重试",
+      "viewport": "PC",
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "recovery/PC-CA64-send-failed.png",
+        "recovery/PC-CA64-send-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA41",
+      "journey": "login",
+      "description": "凭据错误：卡片顶部拒绝、密码清空、邮箱保留、可关闭",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "login/平板-CA41-rejected.png",
+        "login/平板-CA41-dismissed.png",
+        "login/平板-CA41-recovered.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA42",
+      "journey": "login",
+      "description": "不存在的账户与错误密码得到同一条答复",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "login/平板-CA42-unknown-account.png",
+        "login/平板-CA42-wrong-password.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA43",
+      "journey": "login",
+      "description": "提交等待：按钮进入等待态并阻止第二次提交",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "login/平板-CA43-pending.png",
+        "login/平板-CA43-settled.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA44",
+      "journey": "login",
+      "description": "网络不可用：横幅提示、保留输入、恢复后重试成功",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "login/平板-CA44-offline.png",
+        "login/平板-CA44-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA45",
+      "journey": "login",
+      "description": "服务故障：可关闭的横幅，不误标到字段上",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "login/平板-CA45-server-error.png",
+        "login/平板-CA45-dismissed.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA46",
+      "journey": "login",
+      "description": "请求超时：横幅提示并可重试",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "login/平板-CA46-timeout.png",
+        "login/平板-CA46-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA47",
+      "journey": "login",
+      "description": "请求中修改密码：等待态保持，不产生第二次请求",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "login/平板-CA47-edited-while-pending.png",
+        "login/平板-CA47-settled.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA49",
+      "journey": "session",
+      "description": "勾选记住我：刷新后仍在工作台",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "session/平板-CA49-restored.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA50",
+      "journey": "session",
+      "description": "不勾选记住我：刷新即退出，回到空登录卡",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "session/平板-CA50-expired.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA51",
+      "journey": "session",
+      "description": "换设备：另一台机器没有可恢复的会话",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "session/平板-CA51-first-device.png",
+        "session/平板-CA51-second-device.png",
+        "session/平板-CA51-second-device-signed-in.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA52",
+      "journey": "session",
+      "description": "会话过期：回到登录卡并说明原因",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "session/平板-CA52-expired-notice.png",
+        "session/平板-CA52-signed-in-again.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA54",
+      "journey": "session",
+      "description": "密码重置后旧密码失效，新密码可用",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "session/平板-CA54-reset-confirmed.png",
+        "session/平板-CA54-old-password-rejected.png",
+        "session/平板-CA54-new-password-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA55",
+      "journey": "register",
+      "description": "发码失败：横幅提示，验证码字段不出现",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "register/平板-CA55-send-failed.png",
+        "register/平板-CA55-send-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA56",
+      "journey": "register",
+      "description": "冷却：重发倒计时，冷却结束才能再发",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "register/平板-CA56-cooldown.png",
+        "register/平板-CA56-ready.png",
+        "register/平板-CA56-resent.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA57",
+      "journey": "register",
+      "description": "验证码错误次数用尽后该码作废，需要重新发送",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "register/平板-CA57-first-miss.png",
+        "register/平板-CA57-exhausted.png",
+        "register/平板-CA57-still-refused.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA58",
+      "journey": "register",
+      "description": "验证码过期：需要重新发送",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "register/平板-CA58-expired.png",
+        "register/平板-CA58-new-code-active.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA59",
+      "journey": "register",
+      "description": "重发后旧码作废、新码可用；换地址后必须重新发送",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "register/平板-CA59-old-code-dead.png",
+        "register/平板-CA59-new-code-accepted.png",
+        "register/平板-CA59-address-changed.png",
+        "register/平板-CA59-resent.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA60",
+      "journey": "recovery",
+      "description": "找回第一步：未注册地址被拒，不发验证码",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "recovery/平板-CA60-unknown-address.png",
+        "recovery/平板-CA60-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA61",
+      "journey": "recovery",
+      "description": "找回第二步的地址是锁定的，验证码只对它有效",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "recovery/平板-CA61-bound-address.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA62",
+      "journey": "recovery",
+      "description": "找回可重发，冷却与注册一致",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "recovery/平板-CA62-sent.png",
+        "recovery/平板-CA62-resent.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA63",
+      "journey": "recovery",
+      "description": "重置成功：回到登录卡并说明结果，再次找回需重新发码",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "recovery/平板-CA63-filled.png",
+        "recovery/平板-CA63-done.png",
+        "recovery/平板-CA63-code-reissued.png",
+        "recovery/平板-CA63-reset-again.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA64",
+      "journey": "recovery",
+      "description": "找回发码遇到网络失败：横幅提示，可重试",
+      "viewport": "平板",
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "recovery/平板-CA64-send-failed.png",
+        "recovery/平板-CA64-send-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA41",
+      "journey": "login",
+      "description": "凭据错误：卡片顶部拒绝、密码清空、邮箱保留、可关闭",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "login/手机-CA41-rejected.png",
+        "login/手机-CA41-dismissed.png",
+        "login/手机-CA41-recovered.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA42",
+      "journey": "login",
+      "description": "不存在的账户与错误密码得到同一条答复",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "login/手机-CA42-unknown-account.png",
+        "login/手机-CA42-wrong-password.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA43",
+      "journey": "login",
+      "description": "提交等待：按钮进入等待态并阻止第二次提交",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "login/手机-CA43-pending.png",
+        "login/手机-CA43-settled.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA44",
+      "journey": "login",
+      "description": "网络不可用：横幅提示、保留输入、恢复后重试成功",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "login/手机-CA44-offline.png",
+        "login/手机-CA44-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA45",
+      "journey": "login",
+      "description": "服务故障：可关闭的横幅，不误标到字段上",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "login/手机-CA45-server-error.png",
+        "login/手机-CA45-dismissed.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA46",
+      "journey": "login",
+      "description": "请求超时：横幅提示并可重试",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "login/手机-CA46-timeout.png",
+        "login/手机-CA46-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA47",
+      "journey": "login",
+      "description": "请求中修改密码：等待态保持，不产生第二次请求",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "login/手机-CA47-edited-while-pending.png",
+        "login/手机-CA47-settled.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA49",
+      "journey": "session",
+      "description": "勾选记住我：刷新后仍在工作台",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "session/手机-CA49-restored.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA50",
+      "journey": "session",
+      "description": "不勾选记住我：刷新即退出，回到空登录卡",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "session/手机-CA50-expired.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA51",
+      "journey": "session",
+      "description": "换设备：另一台机器没有可恢复的会话",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "session/手机-CA51-first-device.png",
+        "session/手机-CA51-second-device.png",
+        "session/手机-CA51-second-device-signed-in.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA52",
+      "journey": "session",
+      "description": "会话过期：回到登录卡并说明原因",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "session/手机-CA52-expired-notice.png",
+        "session/手机-CA52-signed-in-again.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA54",
+      "journey": "session",
+      "description": "密码重置后旧密码失效，新密码可用",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "session/手机-CA54-reset-confirmed.png",
+        "session/手机-CA54-old-password-rejected.png",
+        "session/手机-CA54-new-password-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA55",
+      "journey": "register",
+      "description": "发码失败：横幅提示，验证码字段不出现",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "register/手机-CA55-send-failed.png",
+        "register/手机-CA55-send-retried.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA56",
+      "journey": "register",
+      "description": "冷却：重发倒计时，冷却结束才能再发",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "register/手机-CA56-cooldown.png",
+        "register/手机-CA56-ready.png",
+        "register/手机-CA56-resent.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA57",
+      "journey": "register",
+      "description": "验证码错误次数用尽后该码作废，需要重新发送",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "register/手机-CA57-first-miss.png",
+        "register/手机-CA57-exhausted.png",
+        "register/手机-CA57-still-refused.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA58",
+      "journey": "register",
+      "description": "验证码过期：需要重新发送",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "register/手机-CA58-expired.png",
+        "register/手机-CA58-new-code-active.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA59",
+      "journey": "register",
+      "description": "重发后旧码作废、新码可用；换地址后必须重新发送",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "register/手机-CA59-old-code-dead.png",
+        "register/手机-CA59-new-code-accepted.png",
+        "register/手机-CA59-address-changed.png",
+        "register/手机-CA59-resent.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA60",
+      "journey": "recovery",
+      "description": "找回第一步：未注册地址被拒，不发验证码",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "recovery/手机-CA60-unknown-address.png",
+        "recovery/手机-CA60-accepted.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA61",
+      "journey": "recovery",
+      "description": "找回第二步的地址是锁定的，验证码只对它有效",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "recovery/手机-CA61-bound-address.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA62",
+      "journey": "recovery",
+      "description": "找回可重发，冷却与注册一致",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "recovery/手机-CA62-sent.png",
+        "recovery/手机-CA62-resent.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA63",
+      "journey": "recovery",
+      "description": "重置成功：回到登录卡并说明结果，再次找回需重新发码",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "recovery/手机-CA63-filled.png",
+        "recovery/手机-CA63-done.png",
+        "recovery/手机-CA63-code-reissued.png",
+        "recovery/手机-CA63-reset-again.png"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "CA64",
+      "journey": "recovery",
+      "description": "找回发码遇到网络失败：横幅提示，可重试",
+      "viewport": "手机",
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "recovery/手机-CA64-send-failed.png",
+        "recovery/手机-CA64-send-retried.png"
+      ],
+      "status": "passed"
+    }
+  ]
+}

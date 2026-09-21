@@ -12,7 +12,8 @@ const confirmation = (p) => p.locator('.ae-field input[autocomplete="new-passwor
 const code = (p) => p.locator('input[inputmode="numeric"]');
 const submit = (p) => p.locator('.ae-primary').click();
 const switchCard = (p) => p.locator('.ae-switch button').click();
-const alert = (p, text) => expect(p.getByRole('alert')).toHaveText(text);
+const alert = (p, text) => expect(p.locator('.ae-field-error')).toContainText(text);
+const fieldAlert = alert;
 const heading = (p, text) => expect(p.locator('.ae-card h1')).toHaveText(text);
 const name = (p) => p.locator('input[autocomplete="nickname"]');
 
@@ -28,6 +29,7 @@ async function dismissCoach(p) {
   await expect(p.locator('.tb-coach')).toHaveCount(0);
 }
 
+/* Waits out the resend cooldown the way a user would. */
 async function registration(p, { sent = true } = {}) {
   await switchCard(p);
   await heading(p, '注册');
@@ -50,6 +52,11 @@ async function recovery(p, { confirm = true } = {}) {
     await email(p).fill('example@example.com');
     await submit(p);
     await heading(p, '设置新密码');
+    /* The code is requested from the second step, where it is bound to the
+     * address the first step collected. */
+    const send = p.getByRole('button', { name: '发送验证码', exact: true });
+    if (await send.count()) await send.click();
+    await expect(code(p)).toBeVisible();
     await code(p).fill('841207');
     await password(p).fill('new-teachbuddy');
     await confirmation(p).fill('new-teachbuddy');
@@ -139,7 +146,8 @@ scenario(8, 'login', '键盘聚焦、输入、Enter 登录', async (p, shot) => 
   await dismissCoach(p);
   await shot('signed-in');
 });
-scenario(9, 'login', '刷新清除会话，回到空登录卡', async (p, shot) => {
+scenario(9, 'login', '不勾选记住我时刷新清除会话，回到空登录卡', async (p, shot) => {
+  await p.getByRole('checkbox', { name: '记住我' }).uncheck();
   await login(p);
   await p.reload();
   await heading(p, '登录');
@@ -182,9 +190,10 @@ scenario(14, 'register', '发码和重新发送', async (p, shot) => {
   await code(p).fill('');
   await expect(p.locator('.ae-field-note')).toContainText('new@example.com');
   await shot('sent');
-  await p.getByRole('button', { name: '重新发送', exact: true }).click();
+  await expect(p.locator('.ae-combo button')).toHaveText('重新发送');
+  await p.locator('.ae-combo button').click();
   await expect(code(p)).toBeVisible();
-  await expect(p.getByRole('alert')).toHaveCount(0);
+  await expect(p.locator('.ae-field-error')).toHaveCount(0);
   await shot('resent');
 });
 for (const [id, value, message] of [[15, '', '请填写邮箱。'], [16, 'invalid', '邮箱格式不正确。']]) {
@@ -202,14 +211,14 @@ for (const [id, field, value, message] of [
   [19, 'confirmation', 'different', '两次输入的密码不一致。'],
   [20, 'code', '12', '请输入 6 位数字验证码。'],
   [21, 'code', 'abcdef', '请输入 6 位数字验证码。'],
-  [22, 'code', '111111', '验证码不正确，请检查后重试。']
+  [22, 'code', '111111', '验证码不正确，还可以再试 4 次。']
 ]) {
   scenario(id, 'register', `注册字段校验与修正：${message}`, async (p, shot) => {
     await registration(p);
     const fields = { name: name(p), password: password(p), confirmation: confirmation(p), code: code(p) };
     await fields[field].fill(value);
     await submit(p);
-    await alert(p, message);
+    await fieldAlert(p, message);
     await shot('error');
     await fields[field].fill({ name: '林', password: 'teachbuddy', confirmation: 'teachbuddy', code: '309614' }[field]);
     await submit(p);
@@ -312,14 +321,20 @@ scenario(32, 'recovery', '两步找回的空表单', async (p, shot) => {
   await email(p).fill('example@example.com');
   await submit(p);
   await heading(p, '设置新密码');
-  await expect(code(p)).toHaveValue('');
+  /* Step two starts without a code: the address is bound, and the code is
+   * asked for from here. */
+  await expect(code(p)).toHaveCount(0);
   await expect(password(p)).toHaveValue('');
   await shot('confirm');
+  await p.getByRole('button', { name: '发送验证码', exact: true }).click();
+  await expect(code(p)).toBeVisible();
+  await expect(code(p)).toHaveValue('');
+  await shot('code-sent');
 });
 for (const [id, field, value, message] of [
   [33, 'code', '84', '请输入 6 位数字验证码。'],
   [34, 'code', 'abcdef', '请输入 6 位数字验证码。'],
-  [35, 'code', '000000', '验证码不正确，请检查后重试。'],
+  [35, 'code', '000000', '验证码不正确，还可以再试 4 次。'],
   [36, 'password', 'short', '新密码至少 8 位。'],
   [37, 'confirmation', 'different', '两次输入的新密码不一致。']
 ]) {
@@ -328,7 +343,7 @@ for (const [id, field, value, message] of [
     const fields = { password: password(p), confirmation: confirmation(p), code: code(p) };
     await fields[field].fill(value);
     await submit(p);
-    await alert(p, message);
+    await fieldAlert(p, message);
     await shot('error');
     await fields[field].fill({ password: 'new-teachbuddy', confirmation: 'new-teachbuddy', code: '841207' }[field]);
     await submit(p);
@@ -337,7 +352,7 @@ for (const [id, field, value, message] of [
     await shot('recovered');
   });
 }
-scenario(38, 'recovery', '重置成功回到登录，不另加成功横幅', async (p, shot) => {
+scenario(38, 'recovery', '重置成功回到登录，字段上没有残留错误', async (p, shot) => {
   await recovery(p);
   await p.getByRole('button', { name: '显示密码', exact: true }).click();
   await shot('filled');
@@ -349,22 +364,36 @@ scenario(38, 'recovery', '重置成功回到登录，不另加成功横幅', asy
   await shot('returned');
 });
 scenario(39, 'recovery', '第二步取消后重进，清空验证码和密码', async (p, shot) => {
-  await recovery(p);
+  await recovery(p, { confirm: false });
+  await email(p).fill('example@example.com');
+  await submit(p);
+  await heading(p, '设置新密码');
+  await p.getByRole('button', { name: '发送验证码', exact: true }).click();
+  await expect(code(p)).toBeVisible();
   await switchCard(p);
   await heading(p, '登录');
   await shot('cancelled');
   await recovery(p, { confirm: false });
   await submit(p);
   await heading(p, '设置新密码');
+  await expect(code(p)).toHaveCount(0);
+  await expect(password(p)).toHaveValue('');
+  await expect(confirmation(p)).toHaveValue('');
+  await shot('reset');
+  await p.getByRole('button', { name: '发送验证码', exact: true }).click();
+  await expect(code(p)).toBeVisible();
   await expect(code(p)).toHaveValue('');
   await expect(password(p)).toHaveValue('');
-  await shot('reset');
+  await shot('code-sent');
 });
-scenario(40, 'recovery', '第二步邮箱可编辑；显示与隐藏新密码', async (p, shot) => {
+scenario(40, 'recovery', '第二步邮箱锁定到已发码的地址；显示与隐藏新密码', async (p, shot) => {
   await recovery(p);
-  await email(p).fill('changed@example.com');
-  await expect(email(p)).toHaveValue('changed@example.com');
-  await expect(p.locator('.ae-field-note')).toContainText('changed@example.com');
+  /* The code was issued for the address collected in step one, so that address
+   * is shown as fixed rather than as a second editable field. */
+  await expect(email(p)).toHaveAttribute('readonly', '');
+  await expect(email(p)).toHaveValue('example@example.com');
+  await expect(p.locator('.ae-field-hint')).toContainText('只对这个地址有效');
+  await shot('bound');
   await p.locator('.ae-password-toggle').click();
   await expect(password(p)).toHaveAttribute('type', 'text');
   await shot('revealed');

@@ -207,11 +207,18 @@
   line-height: 18px;
 }
 
-.ae-field-note {
+.ae-field-note,
+.ae-field-hint {
   margin-top: 6px;
   color: var(--ae-muted);
   font-size: 12px;
   line-height: 18px;
+}
+
+/* A standing explanation about the field, quieter than the send note it sits
+ * above, so the two are not read as one sentence. */
+.ae-field-hint {
+  color: #9aa0ab;
 }
 
 .ae-field-note a {
@@ -307,6 +314,61 @@
   line-height: 19px;
 }
 
+/* Whole-request feedback. Field rules keep their own line under the field; this
+ * band carries what belongs to the request as a whole: a transport failure, or
+ * the outcome of a password reset. */
+.ae-notice {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 28px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(214, 69, 96, .4);
+  border-radius: 8px;
+  background: rgba(214, 69, 96, .07);
+  color: #97243c;
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.ae-notice > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.ae-notice.is-success {
+  border-color: rgba(58, 140, 96, .38);
+  background: rgba(58, 140, 96, .08);
+  color: #1f5c3d;
+}
+
+.ae-notice-dismiss {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: inherit;
+  font-size: 15px;
+  line-height: 18px;
+  opacity: .7;
+  cursor: pointer;
+  transition: opacity var(--ae-duration) var(--ae-ease), background-color var(--ae-duration) var(--ae-ease);
+}
+
+.ae-notice-dismiss:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, .05);
+}
+
+.ae-notice-dismiss:focus-visible {
+  outline: 2px solid var(--ae-accent);
+  outline-offset: 2px;
+}
+
 .ae-primary {
   height: 43px;
   margin-top: 2px;
@@ -318,7 +380,22 @@
   transition: background-color var(--ae-duration) var(--ae-ease);
 }
 
-.ae-primary:hover {
+/* A request in flight holds the button, so a second press cannot start a
+ * second request. */
+.ae-send:disabled,
+.ae-primary:disabled {
+  color: #b9bcc3;
+  background: #f2f2f1;
+  cursor: default;
+}
+
+.ae-field input[readonly] {
+  color: #6f7480;
+  background: #fafafa;
+  cursor: default;
+}
+
+.ae-primary:hover:not(:disabled) {
   background: #3d4148;
 }
 
@@ -418,6 +495,10 @@ body.ae-entry button {
 
   .ae-form {
     padding: 20px 18px 22px;
+  }
+
+  .ae-notice {
+    margin: 12px 18px 0;
   }
 
   .ae-card-head {

@@ -11,6 +11,13 @@ import { chromium } from 'playwright';
  * evidence/ 写图，目录里会混进两套命名，看的人分不清哪张是哪套。
  */
 const BASE = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?no-dev-chrome';
+/* Demo codes are pinned and the resend cooldown is waived when the runtime is
+ * driven by a check run; both are test seams and change nothing in the UI. */
+const checkUrl = (url) => {
+  const target = new URL(url);
+  target.searchParams.set('dev-cooldown', '1000');
+  return target.href;
+};
 
 const VIEWPORTS = [
   { name: 'desktop-1440', width: 1440, height: 900 },
@@ -27,7 +34,7 @@ async function open(viewport) {
     if (message.type() === 'error') problems.push(`console: ${message.text()}`);
   });
   page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`));
-  await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+  await page.goto(checkUrl(BASE), { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('.ae-card');
   return page;
 }
@@ -176,12 +183,19 @@ for (const viewport of VIEWPORTS) {
   await measure(page, `recovery-confirm ${tag}`, true);
 
   if (tag === 'desktop-1440') {
+    // 第二步自己发码：这一步绑定了第一步的地址，发码后验证码输入框才出现
+    const codeField = page.locator('.ae-form input[inputmode="numeric"]');
+    if (!(await codeField.count())) {
+      await page.getByRole('button', { name: '发送验证码', exact: true }).click();
+      await codeField.waitFor({ timeout: 5000 });
+    }
     // 验证码错：字段级错误，且不残留"已发送"这类横幅
     await enter(page.locator('.ae-form input[inputmode="numeric"]'), '000000', 'recovery 验证码');
     await enter(page.locator('.ae-field', { has: page.locator('span:text-is("新密码")') }).locator('input'), 'new-teachbuddy', 'recovery 新密码');
     await enter(page.locator('.ae-field:has-text("确认新密码") input'), 'new-teachbuddy', 'recovery 确认新密码');
     await page.locator('.ae-primary').click();
-    await page.waitForTimeout(300);
+    /* 提交要等一次请求往返，字段错误才可能出现。 */
+    await page.locator('.ae-field-error').first().waitFor({ timeout: 5000 }).catch(() => {});
     const recoveryError = await fieldError(page, '验证码');
     if (!recoveryError) problems.push('recovery 错误验证码未报字段错误');
     if (await page.locator('.ae-notice').count()) problems.push('页面上仍有成功提示条残留');
@@ -191,9 +205,9 @@ for (const viewport of VIEWPORTS) {
     await page.locator('.ae-primary').click();
     await page.locator('.ae-card-head h1:text-is("登录")').waitFor({ timeout: 5000 });
 
-    // 登录成功：进入工作台
+    // 登录成功：进入工作台。刚才的重置已经改掉了旧密码，这里用新密码。
     await enter(page.locator('.ae-form input[type="email"]'), 'example@example.com', '登录邮箱');
-    await enter(page.locator('.ae-form input[type="password"]'), 'teachbuddy', '登录密码');
+    await enter(page.locator('.ae-form input[type="password"]'), 'new-teachbuddy', '登录新密码');
     await page.locator('.ae-primary').click();
     await page.waitForSelector('.tb-topbar', { timeout: 8000 });
     await page.waitForTimeout(700);

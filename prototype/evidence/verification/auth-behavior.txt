@@ -1,0 +1,223 @@
+suite: auth-behavior-scenarios
+url: http://127.0.0.1:4176/
+scenarios: 22
+viewports: 3
+
+DEFERRED CA48 原脚本依赖退出入口，且没有真正覆盖请求中离开；等待该行为补齐。
+DEFERRED CA53 原型暂不提供退出入口；退出范围与昵称展示接入等待设置页设计。
+PASSED PC CA41 凭据错误：卡片顶部拒绝、密码清空、邮箱保留、可关闭
+  login/PC-CA41-rejected.png
+  login/PC-CA41-dismissed.png
+  login/PC-CA41-recovered.png
+PASSED PC CA42 不存在的账户与错误密码得到同一条答复
+  login/PC-CA42-unknown-account.png
+  login/PC-CA42-wrong-password.png
+PASSED PC CA43 提交等待：按钮进入等待态并阻止第二次提交
+  login/PC-CA43-pending.png
+  login/PC-CA43-settled.png
+PASSED PC CA44 网络不可用：横幅提示、保留输入、恢复后重试成功
+  login/PC-CA44-offline.png
+  login/PC-CA44-retried.png
+PASSED PC CA45 服务故障：可关闭的横幅，不误标到字段上
+  login/PC-CA45-server-error.png
+  login/PC-CA45-dismissed.png
+PASSED PC CA46 请求超时：横幅提示并可重试
+  login/PC-CA46-timeout.png
+  login/PC-CA46-retried.png
+PASSED PC CA47 请求中修改密码：等待态保持，不产生第二次请求
+  login/PC-CA47-edited-while-pending.png
+  login/PC-CA47-settled.png
+PASSED PC CA49 勾选记住我：刷新后仍在工作台
+  session/PC-CA49-restored.png
+PASSED PC CA50 不勾选记住我：刷新即退出，回到空登录卡
+  session/PC-CA50-expired.png
+PASSED PC CA51 换设备：另一台机器没有可恢复的会话
+  session/PC-CA51-first-device.png
+  session/PC-CA51-second-device.png
+  session/PC-CA51-second-device-signed-in.png
+PASSED PC CA52 会话过期：回到登录卡并说明原因
+  session/PC-CA52-expired-notice.png
+  session/PC-CA52-signed-in-again.png
+PASSED PC CA54 密码重置后旧密码失效，新密码可用
+  session/PC-CA54-reset-confirmed.png
+  session/PC-CA54-old-password-rejected.png
+  session/PC-CA54-new-password-accepted.png
+PASSED PC CA55 发码失败：横幅提示，验证码字段不出现
+  register/PC-CA55-send-failed.png
+  register/PC-CA55-send-retried.png
+PASSED PC CA56 冷却：重发倒计时，冷却结束才能再发
+  register/PC-CA56-cooldown.png
+  register/PC-CA56-ready.png
+  register/PC-CA56-resent.png
+PASSED PC CA57 验证码错误次数用尽后该码作废，需要重新发送
+  register/PC-CA57-first-miss.png
+  register/PC-CA57-exhausted.png
+  register/PC-CA57-still-refused.png
+PASSED PC CA58 验证码过期：需要重新发送
+  register/PC-CA58-expired.png
+  register/PC-CA58-new-code-active.png
+PASSED PC CA59 重发后旧码作废、新码可用；换地址后必须重新发送
+  register/PC-CA59-old-code-dead.png
+  register/PC-CA59-new-code-accepted.png
+  register/PC-CA59-address-changed.png
+  register/PC-CA59-resent.png
+PASSED PC CA60 找回第一步：未注册地址被拒，不发验证码
+  recovery/PC-CA60-unknown-address.png
+  recovery/PC-CA60-accepted.png
+PASSED PC CA61 找回第二步的地址是锁定的，验证码只对它有效
+  recovery/PC-CA61-bound-address.png
+PASSED PC CA62 找回可重发，冷却与注册一致
+  recovery/PC-CA62-sent.png
+  recovery/PC-CA62-resent.png
+PASSED PC CA63 重置成功：回到登录卡并说明结果，再次找回需重新发码
+  recovery/PC-CA63-filled.png
+  recovery/PC-CA63-done.png
+  recovery/PC-CA63-code-reissued.png
+  recovery/PC-CA63-reset-again.png
+PASSED PC CA64 找回发码遇到网络失败：横幅提示，可重试
+  recovery/PC-CA64-send-failed.png
+  recovery/PC-CA64-send-retried.png
+PASSED 平板 CA41 凭据错误：卡片顶部拒绝、密码清空、邮箱保留、可关闭
+  login/平板-CA41-rejected.png
+  login/平板-CA41-dismissed.png
+  login/平板-CA41-recovered.png
+PASSED 平板 CA42 不存在的账户与错误密码得到同一条答复
+  login/平板-CA42-unknown-account.png
+  login/平板-CA42-wrong-password.png
+PASSED 平板 CA43 提交等待：按钮进入等待态并阻止第二次提交
+  login/平板-CA43-pending.png
+  login/平板-CA43-settled.png
+PASSED 平板 CA44 网络不可用：横幅提示、保留输入、恢复后重试成功
+  login/平板-CA44-offline.png
+  login/平板-CA44-retried.png
+PASSED 平板 CA45 服务故障：可关闭的横幅，不误标到字段上
+  login/平板-CA45-server-error.png
+  login/平板-CA45-dismissed.png
+PASSED 平板 CA46 请求超时：横幅提示并可重试
+  login/平板-CA46-timeout.png
+  login/平板-CA46-retried.png
+PASSED 平板 CA47 请求中修改密码：等待态保持，不产生第二次请求
+  login/平板-CA47-edited-while-pending.png
+  login/平板-CA47-settled.png
+PASSED 平板 CA49 勾选记住我：刷新后仍在工作台
+  session/平板-CA49-restored.png
+PASSED 平板 CA50 不勾选记住我：刷新即退出，回到空登录卡
+  session/平板-CA50-expired.png
+PASSED 平板 CA51 换设备：另一台机器没有可恢复的会话
+  session/平板-CA51-first-device.png
+  session/平板-CA51-second-device.png
+  session/平板-CA51-second-device-signed-in.png
+PASSED 平板 CA52 会话过期：回到登录卡并说明原因
+  session/平板-CA52-expired-notice.png
+  session/平板-CA52-signed-in-again.png
+PASSED 平板 CA54 密码重置后旧密码失效，新密码可用
+  session/平板-CA54-reset-confirmed.png
+  session/平板-CA54-old-password-rejected.png
+  session/平板-CA54-new-password-accepted.png
+PASSED 平板 CA55 发码失败：横幅提示，验证码字段不出现
+  register/平板-CA55-send-failed.png
+  register/平板-CA55-send-retried.png
+PASSED 平板 CA56 冷却：重发倒计时，冷却结束才能再发
+  register/平板-CA56-cooldown.png
+  register/平板-CA56-ready.png
+  register/平板-CA56-resent.png
+PASSED 平板 CA57 验证码错误次数用尽后该码作废，需要重新发送
+  register/平板-CA57-first-miss.png
+  register/平板-CA57-exhausted.png
+  register/平板-CA57-still-refused.png
+PASSED 平板 CA58 验证码过期：需要重新发送
+  register/平板-CA58-expired.png
+  register/平板-CA58-new-code-active.png
+PASSED 平板 CA59 重发后旧码作废、新码可用；换地址后必须重新发送
+  register/平板-CA59-old-code-dead.png
+  register/平板-CA59-new-code-accepted.png
+  register/平板-CA59-address-changed.png
+  register/平板-CA59-resent.png
+PASSED 平板 CA60 找回第一步：未注册地址被拒，不发验证码
+  recovery/平板-CA60-unknown-address.png
+  recovery/平板-CA60-accepted.png
+PASSED 平板 CA61 找回第二步的地址是锁定的，验证码只对它有效
+  recovery/平板-CA61-bound-address.png
+PASSED 平板 CA62 找回可重发，冷却与注册一致
+  recovery/平板-CA62-sent.png
+  recovery/平板-CA62-resent.png
+PASSED 平板 CA63 重置成功：回到登录卡并说明结果，再次找回需重新发码
+  recovery/平板-CA63-filled.png
+  recovery/平板-CA63-done.png
+  recovery/平板-CA63-code-reissued.png
+  recovery/平板-CA63-reset-again.png
+PASSED 平板 CA64 找回发码遇到网络失败：横幅提示，可重试
+  recovery/平板-CA64-send-failed.png
+  recovery/平板-CA64-send-retried.png
+PASSED 手机 CA41 凭据错误：卡片顶部拒绝、密码清空、邮箱保留、可关闭
+  login/手机-CA41-rejected.png
+  login/手机-CA41-dismissed.png
+  login/手机-CA41-recovered.png
+PASSED 手机 CA42 不存在的账户与错误密码得到同一条答复
+  login/手机-CA42-unknown-account.png
+  login/手机-CA42-wrong-password.png
+PASSED 手机 CA43 提交等待：按钮进入等待态并阻止第二次提交
+  login/手机-CA43-pending.png
+  login/手机-CA43-settled.png
+PASSED 手机 CA44 网络不可用：横幅提示、保留输入、恢复后重试成功
+  login/手机-CA44-offline.png
+  login/手机-CA44-retried.png
+PASSED 手机 CA45 服务故障：可关闭的横幅，不误标到字段上
+  login/手机-CA45-server-error.png
+  login/手机-CA45-dismissed.png
+PASSED 手机 CA46 请求超时：横幅提示并可重试
+  login/手机-CA46-timeout.png
+  login/手机-CA46-retried.png
+PASSED 手机 CA47 请求中修改密码：等待态保持，不产生第二次请求
+  login/手机-CA47-edited-while-pending.png
+  login/手机-CA47-settled.png
+PASSED 手机 CA49 勾选记住我：刷新后仍在工作台
+  session/手机-CA49-restored.png
+PASSED 手机 CA50 不勾选记住我：刷新即退出，回到空登录卡
+  session/手机-CA50-expired.png
+PASSED 手机 CA51 换设备：另一台机器没有可恢复的会话
+  session/手机-CA51-first-device.png
+  session/手机-CA51-second-device.png
+  session/手机-CA51-second-device-signed-in.png
+PASSED 手机 CA52 会话过期：回到登录卡并说明原因
+  session/手机-CA52-expired-notice.png
+  session/手机-CA52-signed-in-again.png
+PASSED 手机 CA54 密码重置后旧密码失效，新密码可用
+  session/手机-CA54-reset-confirmed.png
+  session/手机-CA54-old-password-rejected.png
+  session/手机-CA54-new-password-accepted.png
+PASSED 手机 CA55 发码失败：横幅提示，验证码字段不出现
+  register/手机-CA55-send-failed.png
+  register/手机-CA55-send-retried.png
+PASSED 手机 CA56 冷却：重发倒计时，冷却结束才能再发
+  register/手机-CA56-cooldown.png
+  register/手机-CA56-ready.png
+  register/手机-CA56-resent.png
+PASSED 手机 CA57 验证码错误次数用尽后该码作废，需要重新发送
+  register/手机-CA57-first-miss.png
+  register/手机-CA57-exhausted.png
+  register/手机-CA57-still-refused.png
+PASSED 手机 CA58 验证码过期：需要重新发送
+  register/手机-CA58-expired.png
+  register/手机-CA58-new-code-active.png
+PASSED 手机 CA59 重发后旧码作废、新码可用；换地址后必须重新发送
+  register/手机-CA59-old-code-dead.png
+  register/手机-CA59-new-code-accepted.png
+  register/手机-CA59-address-changed.png
+  register/手机-CA59-resent.png
+PASSED 手机 CA60 找回第一步：未注册地址被拒，不发验证码
+  recovery/手机-CA60-unknown-address.png
+  recovery/手机-CA60-accepted.png
+PASSED 手机 CA61 找回第二步的地址是锁定的，验证码只对它有效
+  recovery/手机-CA61-bound-address.png
+PASSED 手机 CA62 找回可重发，冷却与注册一致
+  recovery/手机-CA62-sent.png
+  recovery/手机-CA62-resent.png
+PASSED 手机 CA63 重置成功：回到登录卡并说明结果，再次找回需重新发码
+  recovery/手机-CA63-filled.png
+  recovery/手机-CA63-done.png
+  recovery/手机-CA63-code-reissued.png
+  recovery/手机-CA63-reset-again.png
+PASSED 手机 CA64 找回发码遇到网络失败：横幅提示，可重试
+  recovery/手机-CA64-send-failed.png
+  recovery/手机-CA64-send-retried.png

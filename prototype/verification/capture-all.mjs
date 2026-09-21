@@ -10,6 +10,14 @@ import { scenarios, viewports } from './auth-scenarios.mjs';
 import { evidencePaths } from './evidence-paths.mjs';
 
 const base = process.env.PROTOTYPE_URL || 'http://127.0.0.1:4174/?no-dev-chrome';
+/* Demo codes are pinned and the resend cooldown is waived when the runtime is
+ * driven by a check run; both are test seams and change nothing in the UI. */
+const checkUrl = (url) => {
+  const target = new URL(url);
+  target.searchParams.set('dev-cooldown', '1000');
+  target.searchParams.set('dev-no-cooldown', '');
+  return target.href;
+};
 const { screenshots: out, results: resultsDir } = evidencePaths('auth');
 const stagingParent = path.resolve(process.env.PROTOTYPE_TEMP_DIR || tmpdir());
 await fs.mkdir(stagingParent, { recursive: true });
@@ -30,7 +38,7 @@ try {
       const row = { id: scenario.id, journey: scenario.journey, description: scenario.description,
         viewport: viewport.name, width: viewport.width, height: viewport.height, screenshots: [], status: 'passed' };
       try {
-        await page.goto(base, { waitUntil: 'networkidle' });
+        await page.goto(checkUrl(base), { waitUntil: 'networkidle' });
         await expect(page.locator('.ae-card h1')).toHaveText('登录');
         await page.evaluate(() => document.fonts.ready);
         await scenario.run(page, async (state) => {
@@ -53,7 +61,15 @@ try {
       } catch (error) {
         row.status = 'failed';
         row.error = error.message;
-        failures.push(`${viewport.name} ${scenario.id}: ${error.message}`);
+        row.diagnostic = await page.evaluate(() => ({
+          url: location.href,
+          card: !!document.querySelector('.ae-card'),
+          shell: !!document.querySelector('.tb-shell'),
+          strip: !!document.querySelector('.ae-session'),
+          coach: !!document.querySelector('.tb-coach'),
+          body: document.body.innerText.replace(/\s+/g, ' ').slice(0, 200)
+        })).catch(() => null);
+        failures.push(`${viewport.name} ${scenario.id}: ${error.message.split('\n')[0]} | ${JSON.stringify(row.diagnostic)}`);
         console.log(`FAIL ${viewport.name} ${scenario.id}: ${error.message.split('\n')[0]}`);
       } finally {
         results.push(row);
@@ -79,11 +95,14 @@ if (failures.length) {
       await fs.unlink(path.join(staging, file));
     }
   }
-  // Retire only files owned by this suite; unrelated evidence is left alone.
+  // Retire only the shots of the scenarios this suite owns: a screenshot that
+  // belongs to another scenario set in the same journey is left alone.
   const keep = new Set(results.flatMap((row) => row.screenshots));
+  const owned = new Set(scenarios.map((scenario) => scenario.id));
   for (const journey of new Set(scenarios.map((scenario) => scenario.journey))) {
     for (const file of await fs.readdir(path.join(out, journey))) {
-      if (/^(PC|平板|手机)-CA\d+-[a-z-]+\.png$/.test(file) && !keep.has(`${journey}/${file}`)) {
+      const match = /^(?:PC|平板|手机)-(CA\d+)-[a-z-]+\.png$/.exec(file);
+      if (match && owned.has(match[1]) && !keep.has(`${journey}/${file}`)) {
         await fs.unlink(path.join(out, journey, file));
       }
     }
