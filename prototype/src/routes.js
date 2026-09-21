@@ -2,17 +2,18 @@
  * Route table for the workbench shell prototype.
  *
  * The shell navigates for real: the brand, the top-bar nav, every sidebar module
- * row, the support menu and the search results all resolve to a path. Only the
- * home page has a designed body, so every other destination renders the shared
- * empty page rather than dead-ending or falling back to the sign-in screen.
+ * row, the support menu and the search results all resolve to a path. Home,
+ * schedule and five teaching modules have interactive bodies; other shell
+ * destinations keep their shared empty page.
  *
  * Navigation is client-side. Every anchor keeps a real href, but a plain press is
  * routed through the history API so the top bar and the sidebar stay mounted and
- * only the page body changes.
+ * the active body changes while teaching pages retain their local work state.
  *
- * PROTOTYPE: navigation and page bodies are real, no route owns data of its own.
+ * Teaching fixtures and drafts live in memory in the workspace provider.
  */
 import { useEffect, useState } from 'react';
+import { WORKBENCH_MODULES } from './workbench/data.js';
 
 export const HOME_PATH = '/';
 export const CALENDAR_PATH = '/calendar';
@@ -23,7 +24,7 @@ export function withSearch(path) {
 }
 
 /*
- * The nine module destinations are the same ids the sidebar layout model uses,
+ * Module destinations are the same ids the sidebar layout model uses,
  * so a row's route is derived from its module id rather than stored twice.
  */
 export function modulePath(moduleId) {
@@ -32,23 +33,13 @@ export function modulePath(moduleId) {
 
 export const SHELL_PAGES = {
   [HOME_PATH]: { title: '首页', icon: 'home' },
-  [CALENDAR_PATH]: { title: '日历', icon: 'calendar' },
+  [CALENDAR_PATH]: { title: '日程', icon: 'calendar' },
   '/settings': { title: '设置', icon: 'settings' },
   '/help': { title: '帮助', icon: 'circleHelp' },
   '/changelog': { title: '更新日志', icon: 'newspaper' }
 };
 
-const MODULE_PAGE_COPY = {
-  classes: { title: '我的班级', icon: 'classes' },
-  timetable: { title: '课程表', icon: 'calendar' },
-  planner: { title: '规划器', icon: 'planner' },
-  lessons: { title: '课程', icon: 'lessons' },
-  students: { title: '学生', icon: 'students' },
-  classwork: { title: '课堂作业', icon: 'classwork' },
-  grades: { title: '成绩', icon: 'grades' },
-  attendance: { title: '出勤', icon: 'attendance' },
-  standards: { title: '课程标准', icon: 'standards' }
-};
+const MODULE_PAGE_COPY = Object.fromEntries(WORKBENCH_MODULES.map((item) => [item.id, { title: item.name, icon: item.icon }]));
 
 /**
  * Describes any path the shell can show. Unknown paths resolve to a page that

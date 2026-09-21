@@ -1,5 +1,17 @@
 /* Shared outline icons on a 24x24 grid, with a 2-unit stroke. */
 export const ICON_PATHS = {
+  graph: <><path d="M4 3v17h17M6 16c4 0 4-10 8-10s3 7 6 7" /></>,
+  arrowLeft: <path d="m14 6-6 6 6 6" />,
+  arrowRight: <path d="m10 6 6 6-6 6" />,
+  arrowUp: <path d="M12 20V4m-6 6 6-6 6 6" />,
+  arrowDown: <path d="M12 4v16m-6-6 6 6 6-6" />,
+  expand: <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6m0 6 7-7" />,
+  grid: <><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><rect x="14" y="14" width="6" height="6" rx="1" /></>,
+  list: <path d="M8 6h12M8 12h12M8 18h12M4 6h.1M4 12h.1M4 18h.1" />,
+  file: <><path d="M5 3h9l5 5v13H5zM14 3v6h5M8 13h8M8 17h6" /></>,
+  upload: <path d="M4 15v5h16v-5M12 16V4m-5 5 5-5 5 5" />,
+  link: <><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-5-5l4-4a4 4 0 0 1 6 0m0 8a4 4 0 0 0 6 0l4-4a4 4 0 0 0-5-5l-1 1" /></>,
+  tag: <><path d="M3 4h8l10 10-7 7L3 10z" /><circle cx="7" cy="8" r="1" /></>,
   home: <><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9.5 20v-6h5v6"/></>,
   circleHelp: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></>,
   settings: <><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7V20a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>,

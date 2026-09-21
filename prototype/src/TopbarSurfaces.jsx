@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createDragChip } from './dragChip.js';
 import { Icon } from './icons.jsx';
 import { modulePath, navigate, routeClick, withSearch } from './routes.js';
+import { WORKBENCH_MODULES } from './workbench/data.js';
 
 /* ------------------------------------------------------------------ search */
 
@@ -10,22 +11,20 @@ const SEARCH_GROUPS = [
   {
     group: '功能模块',
     items: [
-      { id: 'm-timetable', name: '课程表', hint: '班级 · 周视图', icon: 'calendar', route: modulePath('timetable') },
-      { id: 'm-planner', name: '规划器', hint: '周计划与迷你月历', icon: 'planner', route: modulePath('planner') },
-      { id: 'm-students', name: '学生', hint: '9 名学生', icon: 'students', route: modulePath('students') }
+      ...WORKBENCH_MODULES.map((item) => ({ id: 'm-' + item.id, name: item.name, hint: '个人教学工作台', icon: item.icon, route: modulePath(item.id) })),
+      { id: 'm-schedule', name: '日程', hint: '课程、时间段与待办', icon: 'calendar', route: '/calendar' }
     ]
   },
   {
     group: '班级',
     items: [
-      { id: 'c-8a', name: '八年级 A 班', hint: '32 名学生', dot: '#94a3b8', route: modulePath('classes') },
-      { id: 'c-club', name: '数学兴趣小组', hint: '18 名学生', dot: '#94a3b8', route: modulePath('classes') }
+      { id: 'c-strong', name: '高一 · 理科强基班', hint: '实际进度与课堂记录', dot: '#b29cc8', route: modulePath('classes') }
     ]
   },
   {
     group: '课程',
     items: [
-      { id: 'l-fn', name: '八年级数学 · 一次函数', hint: '本周四 10:20', icon: 'lessons', route: modulePath('lessons') }
+      { id: 'l-fn', name: '函数的单调性', hint: '教学思路与本课材料', icon: 'lessons', route: modulePath('prep') }
     ]
   }
 ];
@@ -99,8 +98,8 @@ export function SearchModal({ onClose, onAnnounce }) {
             className="tb-search-input"
             type="search"
             value={query}
-            placeholder="搜索学生、班级、课程…"
-            aria-label="搜索学生、班级、课程"
+            placeholder="搜索模块、班级、备课…"
+            aria-label="搜索模块、班级、备课"
             onChange={(event) => setQuery(event.target.value)}
           />
           <button type="button" className="tb-search-close" aria-label="关闭搜索" onClick={onClose}>
@@ -112,7 +111,7 @@ export function SearchModal({ onClose, onAnnounce }) {
             <div className="tb-search-empty">
               <Icon name="search" size={20} />
               <p>没有匹配「{query}」的结果</p>
-              <span>试试学生姓名、班级名或课程名。</span>
+              <span>试试模块、班级或备课名称。</span>
             </div>
           )}
           {groups.map((group) => (
@@ -153,18 +152,10 @@ export function SearchModal({ onClose, onAnnounce }) {
 
 /* ----------------------------------------------------------- notifications */
 
-/*
- * Notification fixtures. `read` is the state the user can flip, both ways, by
- * clicking a row or by marking everything read; a read row is struck through and
- * is the only thing that can be dragged to the trash.
- */
-export const NOTIFICATIONS = [
-  { id: 'n1', module: 'grades', icon: 'grades', text: '「9 月月考」成绩待录入', time: '今天', read: false },
-  { id: 'n2', module: 'classwork', icon: 'classwork', text: '「八年级数学」作业明天截止', time: '明天', read: false },
-  { id: 'n3', module: 'timetable', icon: 'calendar', text: '「数学兴趣小组」课程时间调整', time: '周三', read: true }
-];
+// Schedule reminders come from WorkspaceProvider. Reading one opens its event;
+// read status never means a teaching task is completed.
 
-export function NotificationPanel({ items, onChange, onAnnounce }) {
+export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem }) {
   /*
    * Which notification is in flight, and whether it is over the trash. A drag
    * that has not reached the trash yet must not lose anything: removal happens
@@ -240,12 +231,13 @@ export function NotificationPanel({ items, onChange, onAnnounce }) {
           {items.map((item) => (
             <button
               type="button"
-              className={`tb-row tb-notification${item.read ? ' is-read' : ''}${draggingId === item.id ? ' is-dragging' : ''}`}
+              className={`tb-row tb-notification${item.eventId ? ' is-reminder' : ''}${item.read ? ' is-read' : ''}${draggingId === item.id ? ' is-dragging' : ''}`}
               key={item.id}
               draggable={item.read}
-              aria-pressed={item.read}
-              title={item.read ? '点击标为未读，或拖到垃圾桶删除' : '点击标为已读'}
+              aria-pressed={item.eventId ? undefined : item.read}
+              title={item.eventId ? '查看对应时间段' : item.read ? '点击标为未读，或拖到垃圾桶删除' : '点击标为已读'}
               onClick={() => {
+                if (item.eventId) { setRead(item.id, true); onOpenItem?.(item); return; }
                 setRead(item.id, !item.read);
                 onAnnounce(item.read ? `「${item.text}」已标为未读` : `「${item.text}」已标为已读`);
               }}

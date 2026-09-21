@@ -4,7 +4,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import Topbar from './Topbar.jsx';
 import { SUPPORT_MENU_ITEMS } from './SupportMenu.jsx';
 import { TutorialCelebration } from './TopbarSurfaces.jsx';
-import { EmptyPage, UnknownPage } from './pages.jsx';
+import Workbench from './workbench/Workbench.jsx';
+import { WorkspaceProvider } from './workbench/WorkspaceState.jsx';
+import { useWorkspace } from './workbench/context.js';
+import { WORKBENCH_MODULES } from './workbench/data.js';
 import { createDragChip } from './dragChip.js';
 import { CALENDAR_PATH, HOME_PATH, describePath, modulePath, navigate, routeClick, useRoute, withSearch } from './routes.js';
 import { Icon } from './icons.jsx';
@@ -14,23 +17,11 @@ import './sidebarEditingPrototype.css';
 /** Marks the first-run coach mark as seen, for the rest of the tab's session. */
 const COACH_SEEN_KEY = 'teachbuddy-prototype-coach-seen';
 
-const MODULES = [
-  { id: 'classes', name: '我的班级', icon: 'classes' },
-  { id: 'timetable', name: '课程表', icon: 'calendar' },
-  { id: 'planner', name: '规划器', icon: 'planner' },
-  { id: 'lessons', name: '课程', icon: 'lessons' },
-  { id: 'students', name: '学生', icon: 'students' },
-  { id: 'classwork', name: '课堂作业', icon: 'classwork' },
-  { id: 'grades', name: '成绩', icon: 'grades' },
-  { id: 'attendance', name: '出勤', icon: 'attendance' },
-  { id: 'standards', name: '课程标准', icon: 'standards' }
-];
+const MODULES = WORKBENCH_MODULES;
 
 const INITIAL_LAYOUT = {
   groups: [
-    { id: 'classes-group', name: '班级', collapsed: false, fixed: false, moduleIds: ['classes', 'timetable', 'planner'] },
-    { id: 'planning-group', name: '计划', collapsed: false, fixed: false, moduleIds: ['lessons', 'students', 'classwork'] },
-    { id: 'assessment-group', name: '评估', collapsed: false, fixed: false, moduleIds: ['grades', 'attendance', 'standards'] },
+    { id: 'teaching-group', name: '教学', collapsed: false, fixed: false, moduleIds: MODULES.map((item) => item.id) },
     { id: 'ungrouped', name: '未分组', collapsed: false, fixed: true, moduleIds: [] }
   ],
   hiddenModuleIds: []
@@ -58,7 +49,7 @@ function cloneLayout(layout) {
  * missing or whose ids no longer exist.
  */
 const LAYOUT_STORAGE_KEY = 'teachbuddy-prototype-layout';
-const LAYOUT_STRUCTURE_VERSION = 1;
+const LAYOUT_STRUCTURE_VERSION = 2;
 
 const layoutStorageAvailable = (() => {
   try {
@@ -565,6 +556,7 @@ function HiddenModules({ model, open, onToggle, dragState, onDrop, onStartDrag, 
 }
 
 function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed, openSurface, onToggleSurface, onOpenSurface, onCloseSurface }) {
+  const workspace = useWorkspace();
   const [addingGroup, setAddingGroup] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
   const [renamingGroupId, setRenamingGroupId] = useState(null);
@@ -886,7 +878,7 @@ function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNa
               }}
             >
               <span className="tb-module-icon"><Icon name="calendar" /></span>
-              <span>日历</span>
+              <span>日程</span>
             </a>
             <button
               type="button"
@@ -1131,6 +1123,9 @@ function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNa
           />
         </nav>
 
+        <button className="wb-ai-entry" aria-label="打开 AI 助理" onClick={() => { workspace.openAssistant(); onCloseMobile(); }} onPointerEnter={(event) => showRailTooltip(event, 'AI 助理')} onPointerLeave={() => setRailTooltip(null)}>
+          <Icon name="sparkles" size={18} /><span>AI 助理</span><small>随时一起想想</small>
+        </button>
         {contextMenu && (
           <ContextMenu
             position={contextMenu.position}
@@ -1152,7 +1147,7 @@ function Sidebar({ model, routePath, onNavigate, mobileOpen, onCloseMobile, isNa
   );
 }
 
-export default function SidebarEditingPrototype() {
+function WorkbenchShell() {
   const model = useLayoutModel();
   const route = useRoute();
   const routePath = route.pathname;
@@ -1176,7 +1171,7 @@ export default function SidebarEditingPrototype() {
   }, []);
 
   useEffect(() => {
-    document.title = `TeachBuddy 工作台外壳原型 · ${page.title}`;
+    document.title = `TeachBuddy · ${page.title}`;
   }, [page.title]);
 
   const toggleSurface = useCallback((surface) => {
@@ -1271,14 +1266,7 @@ export default function SidebarEditingPrototype() {
     setMobileSidebarOpen(false);
   }, [route.key, page.path]);
 
-  /*
-   * A page change replaces the body, not the document, so nothing scrolls on its
-   * own: without this, opening a module from halfway down the home page would
-   * land halfway down a page the user has never seen.
-   */
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  }, [route.key, page.path]);
+  // Working pages stay mounted. Each panel owns its scroll and editing scene.
 
   /*
    * A page that stops existing takes the user with it.
@@ -1306,7 +1294,7 @@ export default function SidebarEditingPrototype() {
   }, [routePath, page, model, model.revision]);
 
   return (
-    <div className={`tb-prototype ${sidebarCollapsed ? 'is-sidebar-collapsed' : ''}`}>
+    <div className={`tb-prototype tb-module-design ${sidebarCollapsed ? 'is-sidebar-collapsed' : ''}`}>
       <Topbar
         route={route}
         openSurface={openSurface}
@@ -1337,18 +1325,14 @@ export default function SidebarEditingPrototype() {
           onOpenSurface={showSurface}
           onCloseSurface={closeSurface}
         />
-        {/*
-          * Keyed by the route key, not by the path: revisiting a page has to run
-          * the body's entrance again, and a remount is what makes that happen.
-          */}
-        <div className="tb-page" key={route.key ?? page.path}>
-          {page.kind === 'module' && <EmptyPage title={page.title} icon={page.icon} />}
-          {page.kind === 'shell' && <EmptyPage title={page.title} icon={page.icon} />}
-          {page.kind === 'unknown' && <UnknownPage path={page.path} />}
-        </div>
+        <div className="tb-page"><Workbench page={page} /></div>
       </div>
       {celebrating && <TutorialCelebration onClose={() => setCelebrating(false)} />}
       <div className="tb-announcer" aria-live="polite">{model.announcement}</div>
     </div>
   );
+}
+
+export default function SidebarEditingPrototype() {
+  return <WorkspaceProvider><WorkbenchShell /></WorkspaceProvider>;
 }

@@ -1,12 +1,11 @@
 
-import { useState } from 'react';
+import { useWorkspace } from './workbench/context.js';
 import { Icon } from './icons.jsx';
 import SupportMenu from './SupportMenu.jsx';
-import { CALENDAR_PATH, HOME_PATH, routeClick, withSearch } from './routes.js';
+import { CALENDAR_PATH, HOME_PATH, navigate, routeClick, withSearch } from './routes.js';
 import {
   CoachMark,
   FeedbackPanel,
-  NOTIFICATIONS,
   NotificationPanel,
   PrivacyPanel,
   SearchModal,
@@ -57,13 +56,9 @@ export default function Topbar({
    * that highlighted itself on click would go stale the moment the browser's
    * back button moved the shell. */
   const activePath = route.pathname;
-  /*
-   * The unread count lives here rather than in the panel because the trigger's
-   * badge is its only other reader, and the panel unmounts whenever another
-   * surface opens. Notifications are read as a set, so the count is owned by the
-   * shell and handed to the panel.
-   */
-  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  // Provider-owned reminders survive panel closure and module navigation.
+  const workspace = useWorkspace();
+  const { notifications, setNotifications } = workspace;
   const unreadNotifications = notifications.filter((item) => !item.read).length;
 
   return (
@@ -98,7 +93,7 @@ export default function Topbar({
           aria-current={activePath === CALENDAR_PATH ? 'page' : undefined}
           onClick={(event) => routeClick(event, CALENDAR_PATH)}
         >
-          日历
+          日程
         </a>
         <SupportMenu
           open={openSurface === 'support'}
@@ -131,6 +126,14 @@ export default function Topbar({
             items={notifications}
             onChange={setNotifications}
             onAnnounce={onAnnounce}
+            onOpenItem={(item) => {
+              const event = workspace.events.find((event) => event.id === item.eventId);
+              if (!event) return;
+              workspace.setSchedule((state) => ({ ...state, start: event.date, selected: event.id }));
+              workspace.openTools();
+              navigate(CALENDAR_PATH);
+              onCloseSurface();
+            }}
           />
         </Entry>
         <Entry

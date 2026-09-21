@@ -1,6 +1,6 @@
 # 侧栏编辑
 
-Status: Accepted
+Status: Mixed (布局编辑已验收；五模块与底部 AI 入口待评审)
 
 运行入口见 [manifest](manifest.md)，共享响应式与跳转规则见 [外壳](shell.md)，模块行的跳转行为见 [导航](navigation.md)，
 头部区（账号行、语言切换、学期选择）见[侧栏头部](sidebar-head.md)。本文件拥有 J7、J16、J17 与 S5、S6、S22、S23、S26-S28。
