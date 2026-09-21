@@ -16,7 +16,7 @@
 - 派发使用[最小任务包](task-package.md)，保留背景、边界、适用规则和明确但适度的完成条件，不附加脑测实现步骤、额外限制或过严验收。适用 skill 的内部助手继续继承调用 session 的模型与 effort。
 - 顶层任务由编排者派给独立 session。适用 skill 要求的内部助手由调用 session 管理并汇总，不单列 DAG 节点，不自行继续委派或跨业务互聊；业务 session 不自由互聊或扩展 DAG。
 - 认证与工作台由根编排者统一协调，延续现有 OpenAPI 和 HTTP 状态码约定；尚未收到认证交付，先推进不依赖它的业务，按现有 check 规则处理缺失回执。
-- 产品只允许 `deepseek/deepseek-v4.1-flash`、`z-ai/glm-5.3-flash`；真实 API key、调用、完整部署和大陆访问均尚未验收。
+- 产品只允许 `deepseek/deepseek-v4.1-flash`、`z-ai/glm-5.3-flash`；EMODEL 已用真实 key 对两个模型收到 HTTP 200；正常回答、pi 工具链、完整部署和大陆访问尚未验收。
 
 ## 低频 check 与回执监测
 
@@ -26,12 +26,12 @@
 - 配置文件属于已存在的运行环境，本页只保留指针，不复制进仓库，不修改、重建或测试触发器，也不创建安装脚本。
 - 根收到 `check` 后先读本页：有未完成任务且近 45 分钟没有回执时，才对台账中相关 session 做一次恢复检查。这个 `check` 同时判断回执缺失和异常通知；正常 `FAIL` 仍回原节点处理，只有异常退出、结果已落盘但通知未到等情况才按回执缺失处理。无未完成任务或已有近期回执时结束本次检查。结果已保存但回执丢失时按原 `task`、`revision`、`attempt` 接续；session 仍正常运行则等待；明确中断才按既有失败规则处理。超过 45 分钟本身不判失败，不杀死健康进程，不盲目重派；`check` 不替代依赖和权限判断。
 - 首条 `check` 已于 `2026-09-21T18:09:55Z` 在根会话收到并处理；距最后任务回执不足一分钟，本次结束检查，未查询或重启任何 session。此记录只证明消息已接收，未另核实投递来源，中断恢复仍未演练。`check` 自身不更新最后任务回执时间。
-- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T18:09:39.706639+00:00`，对应任务为 `cold-orchestrator@1`；已接收原始回答并保存固定受测版本、任务原文和结果。根每次收到实际任务回执后记录实际处理 UTC 时间及对应任务，供下一次 `check` 使用；本次不编造旧值。
+- 回执监测字段：监测起点为上述真实注册时间；最后回执处理时间为 `2026-09-21T18:46:51.052106+00:00`，对应任务为 `EMODEL@1`；已核对指定 session、退出记录、候选 SHA 和 self 证据。根每次收到实际任务回执后记录实际处理 UTC 时间及对应任务，供下一次 `check` 使用；本次不编造旧值。
 
 | 任务/版本 | 当前状态 | attempt | 负责 session 与 worktree | 输入/正式回执或产物位置 | 阻塞/下一步条件 | 适用授权 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 文档拆分 / `mvp-dag-refactor-v2` | v2 受审版本独立 PASS；v2.1 规则同步不追加复审 | 1 | `01a0c480-d75b-76f1-bf01-d03e40d7336c`；`docs/mvp-delivery-baseline` | [独立核验回执](mvp-dag-refactor-review.md) | 原 PASS 只适用于受审版本；原证据归档，实施已获 G00 | 文档规划审查；不含产品实施授权 |
-| API/部署调研及修正 / `readiness-correction@1` | RR-01/02/03 已由作者 Luna 修正并自查；不记录为修正后独立 PASS | 1 | API `01a0c4a3-ecfe-76f3-b7c2-e0278103d996`；部署 `01a0c4a3-ed08-7723-8cc8-9378471bcc83`；首次核验 `01a0c4b5-362a-7d60-a1b4-9c47602e9ee8`；修正 `01a0c4bf-e5c7-7613-ae17-2c6e000726d2` | [正式修正回执](../acceptance/evidence/readiness-correction.md)、[API 报告](../research/command-code-api.md)、[部署报告](../research/deployment-options.md) | 用户已取消独立复审；套餐额度内的真实调用已获许可但未执行，部署和大陆网络验证仍未执行 | 已完成文档修正与自查；后续调用遵守本页费用授权，不含部署或购买服务 |
+| API/部署调研及修正 / `readiness-correction@1` | RR-01/02/03 已由作者 Luna 修正并自查；不记录为修正后独立 PASS | 1 | API `01a0c4a3-ecfe-76f3-b7c2-e0278103d996`；部署 `01a0c4a3-ed08-7723-8cc8-9378471bcc83`；首次核验 `01a0c4b5-362a-7d60-a1b4-9c47602e9ee8`；修正 `01a0c4bf-e5c7-7613-ae17-2c6e000726d2` | [正式修正回执](../acceptance/evidence/readiness-correction.md)、[API 报告](../research/command-code-api.md)、[部署报告](../research/deployment-options.md) | 用户已取消独立复审；最小真实调用证据见当前 EMODEL 行，部署和大陆网络验证仍未执行 | 已完成文档修正与自查；后续调用遵守本页费用授权，不含部署或购买服务 |
 | 认证交接 / `c7420af` 行为基线 | 已发一次现状请求和一次统一编排通知，等待 `[AUTH_HANDOFF_STATUS]` 主动回执；正式认证交付尚未证实 | 1 | `01a0bea6-5119-7861-b060-e5f1da67947b`；worktree：待回执 | [认证契约](../contracts/auth.md)、[认证行为](../../prototype/behavior/auth.md)；回执目标为根 thread `01a0be12-5c28-7823-a7ed-644df825467f` | queue 投递不证明 session 正在运行或正式认证已交付；等待主动回执，不查活动、不轮询、不重复催促、不另开认证实现 | 用户已将认证纳入统一编排；不扩展原任务或启动产品 DAG |
 | 技能流程核对 / `skill-routing@1` | 已集成，已完成，不追加审查 | 1 | Sol high `01a0c4d1-9404-75b1-8b48-5f5a928c0664`；`/home/liam_t/项目/TeacherWorkspace-mvp` | [技能路由](skill-routing.md)、[正式回执](../acceptance/evidence/skill-routing.md)；输入 SHA-256 `9cddc05827f0bfc1797d7b357d21d809f950ff56796e3908e2844b999e4ba5a0` | 最小规则已进入协议与任务包；适用 skill 的内部助手继续按所选 harness 执行，不新增内部模型选择验证项目 | 用户授权技能核对及适用技能内部限定委派；不含产品实施 |
 | 编排规则同步 / `orchestration-rules-sync@1` | 已完成；候选 commit `bb50dfd` 已按授权快进合入 main `515c658`；四份计划文档已同步并通过必要自检；首条 `check` 已接收，恢复检查未演练 | 1 | `01a0c500-ce05-7722-a2e4-497353d057dc`；`docs/mvp-delivery-baseline`；finished_at `2026-09-21T17:34:30.535Z` | [技能路由](skill-routing.md)、[执行协议](execution-protocol.md)、[任务包](task-package.md)、本页；正式结果由本行的 session、提交与受改文件定位 | 本次同步已完成；不启动产品 DAG | Luna max；文档提交与合并已获许可；不含产品实施、API 请求、额外审查或 push |
@@ -48,8 +48,8 @@
 | 节点 | 状态 | 输入版本 | 负责人与工作区 | 任务与回执 | 下一步 |
 | --- | --- | --- | --- | --- | --- |
 | B10@1 / attempt 1 | RUNNING | `9f93c2a` | Codex Luna max；session `01a0c545-5089-7452-a568-f0131b567189`；exec `14318`；`/home/liam_t/项目/TeacherWorkspace-b10`，`chore/b10-entry` | `.scratch/dag-dispatch/B10/1/task.md`、同目录 `receipt.md`（待生成） | 入口与分支准备完成后派 B11，不追加文档复审 |
-| EMODEL@1 / attempt 1 | RUNNING | `9f93c2a`；现有 API 调研与本地凭据 | Codex Luna max；session `01a0c545-507e-74d2-965b-7f25c4722a75`；exec `48750`；`/home/liam_t/项目/TeacherWorkspace-emodel`，`chore/emodel-live` | `.scratch/dag-dispatch/EMODEL/1/task.md`、同目录 `receipt.md`（待生成） | 确认两个允许模型的真实接口可用性；不代替 C24 pi 实验 |
+| EMODEL@1 / attempt 1 | 完成（self，基本连通性）；待随后续文档集成 | `9f93c2a`；现有 API 调研与本地凭据 | Codex Luna max；session `01a0c545-507e-74d2-965b-7f25c4722a75`；exec `48750`；`/home/liam_t/项目/TeacherWorkspace-emodel`，`chore/emodel-live` | 候选 `d52ba58a6db51d4214144976224f944c31643796`；`/home/liam_t/项目/TeacherWorkspace-emodel/docs/arch/evidence/EMODEL.md`；`.scratch/dag-dispatch/EMODEL/1/receipt.md` | 两个模型 HTTP 200，但 token 上限耗尽且正文为空；正常文本、流式/tool calling、pi 和计费状态留给后续相关验证，不追加本次复审 |
 
 配置准备状态：文档 worktree 和 main 的 `.env` 均已从现有本地配置准备，权限为 `0600`，两处 `COMMANDCODE_API_KEY` 只核对状态、不在仓库记录值；两处均被 Git 忽略。`.env.agent.example` 只保留无密钥模板。
 
-未完成外部状态：认证 session 尚未主动回执；两个允许模型的真实请求、额度和费用未验证，本轮未发生真实模型请求；部署候选、Cloudflare/Tunnel、Windows/WPS/Edge/Chrome 目标流程、备份恢复和中断恢复演练均未执行。以上状态不因文档已写或配置已准备而改变。
+未完成外部状态：认证 session 尚未主动回执；两个允许模型已发生最小真实请求并返回 HTTP 200，正常回答、pi 工具链、账户余额和实际计费仍未验证；部署候选、Cloudflare/Tunnel、Windows/WPS/Edge/Chrome 目标流程、备份恢复和中断恢复演练均未执行。以上状态不因文档已写或配置已准备而改变。
