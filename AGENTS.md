@@ -34,7 +34,7 @@
 
 ### DeepSeek Harness
 
-前后端代码实现使用 `dsh`；仅当 dsh 明确报告额度不足或触发限额时，回退 Codex Luna max。调研、文档和集成仍使用 Luna max。任务授权与具体路由见 [MVP 执行协议](docs/plans/execution-protocol.md#模型与固定派发)。调用时，在任务 worktree 中将最小必要任务说明作为单个参数交给一次性 Headless profile：
+前后端代码实现默认使用 `dsh`；dsh 明确报告额度不足或触发限额时，回退 Codex Luna max。任务确实困难、当前 dsh 或 Luna 反复尝试仍无法解决时，可升级 Codex Sol high 接手，前后端都适用。调研、文档和集成仍使用 Luna max。具体路由见 [MVP 执行协议](docs/plans/execution-protocol.md#模型与固定派发)。调用时，在任务 worktree 中将最小必要任务说明作为单个参数交给一次性 Headless profile：
 
 ```bash
 dsh --profile headless "<task>"
