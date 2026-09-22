@@ -98,7 +98,7 @@ flowchart TD
     B13 --> B15
     B14 --> B15
     B15 --> B16[B16 首条独立验收]
-    A10["A10 认证交接审查<br/>接线已交付，完整交接待收口"] --> A11[A11 工作台真实认证接入]
+    A10["A10 认证交接审查<br/>恢复设计已接受，操作实现中"] --> A11[A11 工作台真实认证接入]
     B16 --> A11
     A11 --> A12["A12 认证与数据隔离验收<br/>本地通过；待邮件、设备及恢复撤销"]
   end
@@ -189,9 +189,9 @@ flowchart TD
 
   class P00,P01,G00,B10,B11,B12,B13,B14,B15,B16,A11,C20,C24,C25,C26,C27,R30,M40,T50,T52,T53 done;
   class C22,C23 human;
-  class C21,R35,F60 running;
+  class A10,C21,R35,F60 running;
   class R33,T54 blocked;
-  class A10,A12,R31,R32,R34,M41,M42,M43,M44,T51 delivered;
+  class A12,R31,R32,R34,M41,M42,M43,M44,T51 delivered;
   %% 未开工：F61,F62,F63,F64,F65,D70,D71,D72,G73,D74,D75,G76。
   %% 三个外部输入单独着色，不计入 50 个交付节点。
   class EMODEL done;
