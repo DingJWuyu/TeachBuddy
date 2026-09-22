@@ -226,6 +226,16 @@ export default function LessonDetail({ id }) {
     );
   }
 
+  // Restore the document before mounting panels that initialize per-lesson
+  // options and pending requests from its input and saved identity.
+  if (savable.loadState === "loading" || !savable.input) {
+    return (
+      <div className="wb-page wb-empty-note" role="status" data-region="lesson-loading">
+        正在读取备课…
+      </div>
+    );
+  }
+
   const pickerDialogs = (
     <>
       {pickerFlow.targetGone && picker && (
