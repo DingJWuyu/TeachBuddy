@@ -6,9 +6,11 @@
 
 ## 实际状态
 
-2026-09-21 文档基线整理与只读审计已完成，未改变运行代码。`apps/web`、`apps/api` 仍是旧应用，尚未交付真实 MVP；认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2` 已冻结，认证前后端及 A11 本地真实接线已自验，真实外部条件与 A12 独立验收尚未完成；原型工作台仍使用内存数据和固定回复。固定交付候选 `feat/b15-first-flow@612f0a9868743a1d5eea7e6f236d3ff903752439` 的录题、复制改编、备课引用、持久重启、失败恢复及桌面/Pad 已由 [B16 独立报告](acceptance/evidence/B16/v1/attempt2.md) 独立通过，身份仍为 `test-principal`；候选未合入 `main`，不改变主干交付状态。完整 MVP、真实认证、真实 AI、材料和部署仍未通过。详细能力、差距与代码基线只在 [README 当前状态](../README.md#当前状态)维护。
+2026-09-22 状态同步未改变运行代码。当前 `main@e9c3b58adf99a41e347947cccef646d85a3cd143` 的 `apps/web`、`apps/api` 仍是旧应用，真实 MVP 尚未交付。首流、认证、教学时间、Agent 和静态数学的已验证能力均在未合主干的任务分支；详细能力、边界与主干基线只在 [README 当前状态](../README.md#当前状态)维护，固定 SHA、验证级别与未决项只在[运行台账](plans/run-state.md#固定候选与必要证据)维护。
 
-首条题目到备课链路已在固定候选独立通过；材料、数学、教学时间、认证与 Agent 分别处于实验、设计、局部自验或集成阶段。当前完整执行的派发与各自门槛以运行台账为准，不能把部分成果称为完整 MVP。
+当前可消费的固定结论是：B16 首流 independent PASS，仍为 `test-principal`；A12 认证和 T54 教学时间组合本地 independent PASS，仍保留邮件、目标设备、可信证书和备份恢复等外部边界；C27 Agent 候选经公式排版复验后本地 independent PASS，与原两模型真业务链的未变结论合用。C26 与 C27 账本分别保持 10 次 / 79,983 totalTokens 和 11 次 / 88,550 totalTokens，排版修复与限定复验没有新增产品模型请求；实际费用未知，`cost=0` 不证明免费。
+
+R30 已完成最终限定冻结，只冻结材料设计、实验消费和后续放行边界；完整 R31 已启动。真在线 C21 最新 `2b10b4e` / `4115bb6` 仍为 FAIL，材料和在线采集没有交付。M41 静态数学候选只完成 self PASS，M42 正在实施，M43、M44 与完整数学关联尚未通过。完整 MVP 还需后续模块组合、可靠性、真实外部条件、部署和备份恢复验收。
 
 文档拆分的 v2 受审版本已由[独立审查](plans/mvp-dag-refactor-review.md)核验 PASS；本次 v2.1 只同步已授权的执行规则，不把旧 PASS 扩展到新版本。RR-01/02/03 已由作者修正并自查，用户取消独立复审，不记录为修正后独立 PASS。G00 已通过，按依赖推进产品实施。合并、推送及公开交付的权限按 DAG 用户门禁分别核对。
 
@@ -20,7 +22,7 @@
 | 编排者派发与接回执 | [DAG](plans/mvp-dag.md)及[编排协议](plans/execution-protocol.md#orchestration)。 |
 | 当前运行状态、待回执和下一步 | [运行台账](plans/run-state.md)。 |
 | 进入首条流程设计与实现 | 先读 [B10/B11 执行基线](arch/execution-baseline.md)，再按任务包读取 B11 的范围、行为和 ADR 输入；旧首流继续消费 B11/v1 与 `test-principal` 固定输入。 |
-| 进入认证实现与真实交接 | 读取 [认证契约](contracts/auth.md)、[认证实现架构](arch/auth-implementation.md) 和 [认证前后端任务包](plans/tasks/auth-implementation.md)；新消费者固定 `rc.2` + `candidate.2`，真实认证仍待交付。 |
+| 进入认证实现与真实交接 | 读取 [认证契约](contracts/auth.md)、[认证实现架构](arch/auth-implementation.md) 和 [认证前后端任务包](plans/tasks/auth-implementation.md)；新消费者固定 `rc.2` + `candidate.2`，本地候选与外部交付边界从运行台账核对。 |
 | 核对固定交付候选的首流、恢复和桌面/Pad 证据 | 读取 [B16 独立报告](acceptance/evidence/B16/v1/attempt2.md) 及其中的[既有验收 runner](acceptance/evidence/B16/v1/attempt2/run-acceptance.mjs)。 |
 | 设计、实现、独立验收 | 从本次任务包读取本角色、当前节点和相关规格；不从本页全量展开。 |
 | 设计者准备单次任务 | [任务包模板](plans/task-package.md)。 |
@@ -31,6 +33,6 @@
 
 旧 ROADMAP 的常驻三 Agent、协调者兼任设计/实现/验收、worker 自由讨论和按旧阶段开工的指令已被替代。其他既有文档中指向本页的“三 Agent”等执行描述，应从这里转到新角色入口；这不修改它们拥有的范围、行为或视觉约束。
 
-认证契约已由限定独立审查冻结为 `1.0.0-rc.2`，工作台同步消费 `0.1.0-candidate.2`；认证前后端与 A11 本地真实接线已自验，真实外部条件与 A12 独立验收尚未交付；详细状态见运行台账。旧 B11/v1 与 `test-principal` 的首流消费边界继续有效，不因新版冻结或文档入口整理而切换，也不能据此宣称真实认证已完成。
+认证契约已由限定独立审查冻结为 `1.0.0-rc.2`，工作台同步消费 `0.1.0-candidate.2`。A12 已有本地 independent PASS，但 fake-mail、自签 HTTPS、视口模拟和普通重启不替代外部邮件、目标物理设备、可信证书或备份恢复验收。旧 B11/v1 与 `test-principal` 的首流消费边界继续有效，不因新版冻结或文档入口整理而切换。
 
 范围内设计交由设计 session 决定，逐条真实流程的行为、契约、实现和独立验证仍保留。原型只作交互参考，不恢复全量原型评审作为额外门禁；既有历史证据只证明其适用版本。完整 MVP 须覆盖全部已确认能力，阶段内部通过和用户验收按 DAG 分别记录。
