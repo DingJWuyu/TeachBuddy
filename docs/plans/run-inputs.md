@@ -38,10 +38,13 @@
 | 唯一设计 | `73d68c2e1ec864faac8ee49a8b5f9e6361e82964:docs/contracts/auth-recovery.md`；同版架构 `docs/arch/auth-recovery.md` 和BDD `docs/acceptance/auth-recovery.feature` |
 | 实现/交接短包 | `767f949dc9f15a960c5146ebb367dd2f1e827b4f:docs/plans/tasks/auth-recovery.md`；作者回执 `docs/acceptance/evidence/AUTH-RECOVERY-DESIGN/v1/author.md` |
 | A10设计独立接受 | `a3d5b5ec80d4823ec978e3b9b331b8fa266302be:docs/acceptance/evidence/A10/v1/recovery-review.md` |
+| 可运行操作self | 实现 `627bf878d9b2ec57e8bc88a227337744c697a9ce`；完整 `070def5a928ae5c87d37be646d652c56cf5a5e0f:docs/acceptance/evidence/AUTH-RECOVERY-IMPLEMENTATION/v1/author.md`。恢复28/28、认证98/98，待A10独立交接。 |
 | 原认证冻结 | `6f3003250d170b44e89f6ac9b0a74f91d658a357:docs/contracts/auth.md`；独立 `63bfe8f7900b4a2bb7fc9ab5a4145f1c89a6f73b:docs/acceptance/evidence/AUTH-CONTRACT/v1/correction-review.md` |
 | 原恢复责任与外部条件 | `c966447f1e2dea83bd11871bca82d7981b276cb1:docs/arch/auth-handoff.md`；已满足的旧前置以run-state和新固定回执为准 |
 
-auth-recovery/1已独立接受，设计选择离线 `prepareRestoredAuth({db})`；当前可运行实现未交。认证后端拥有内部操作，F62拥有停服、完整恢复、调用和最后开放。F62须取得固定实现及A10交接，不能自行补认证SQL。
+auth-recovery/1已独立接受，离线 `prepareRestoredAuth({db})` 已交self候选，支持冻结的七项认证迁移；A10正在固定可运行交接。认证后端拥有内部操作，F62拥有停服、完整恢复、调用和最后开放。F62须取得固定实现及A10交接，不能自行补认证SQL。
+
+上述候选完整API为335/336，唯一TT-C7失败归T53目录写者：主业务3d5c3f3的目录依赖与旧数学样本不一致；认证实现未修改这些输入。具体复现和日志读作者回执“全API回归”，修复由run-state中的T53任务接续，不能报告全套通过。
 
 OPS-001需F62候选及A12真实恢复专项，11条BDD的设计覆盖PASS不等于运行PASS。真实邮件/可信HTTPS/物理设备继续保留。F60无需等待这些实测才能设计；具体依赖以DAG和已冻结交接为准。
 
