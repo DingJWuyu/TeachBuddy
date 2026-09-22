@@ -6,7 +6,7 @@
 
 M40 读取 [PRODUCT_SCOPE](../../PRODUCT_SCOPE.md) 的数学工坊及备课往返段落，相关 [工作台行为](../../WORKBENCH_DESIGN.md)，C23 实验，以及材料阶段冻结的内容、文件和引用契约。
 
-M40 的材料输入是 R30 独立冻结包，不是 R35 完整产品；设计可与材料实现并行。M41 的限定隔离启动依次固定 M40 冻结交接 `1a5dd015863d749e5244346f4eaad24ac506670d:docs/acceptance/evidence/M40/v1/handoff.md`、R31 基础产品 `5f696b8ce611e67d940ce149ce13946a50b65510` 及 self 交接 `c08fa62d434efffc89b471151faa73308e3ce716`、[依赖裁决](../../arch/math-foundation-dependency.md)和其[限定 independent PASS](../../acceptance/evidence/M41-DEPENDENCY-PLAN/v1/review.md)，并须取得 M41 模块独占权。这只允许隔离实现与切片自验；完整 R31 仍是正式产品组合和完整 M41 门禁。独立制作、保存和导出不等待资源/收题/六种输出验收。备课返回适配按 R30/M40 冻结契约准备，最终 M43 必须等 R35 independent PASS 的固定材料候选与 M42，接真后交 M44。完整 M41 到 M42 的启动依赖和停写交接保留，切片 self 不满足该边。
+M40 的材料输入是 R30 独立冻结包，不是 R35 完整产品；设计可与材料实现并行。M41 的限定隔离启动依次固定 M40 冻结交接 `1a5dd015863d749e5244346f4eaad24ac506670d:docs/acceptance/evidence/M40/v1/handoff.md`、R31 基础产品 `5f696b8ce611e67d940ce149ce13946a50b65510` 及 self 交接 `c08fa62d434efffc89b471151faa73308e3ce716`、[依赖裁决](../../arch/math-foundation-dependency.md)和其[限定 independent PASS](../../acceptance/evidence/M41-DEPENDENCY-PLAN/v1/review.md)，并须取得 M41 模块独占权。这只允许隔离实现与切片自验；完整 R31 仍是正式产品组合和完整 M41 门禁。独立制作、保存和导出不等待资源/收题/六种输出验收。备课返回适配按 R30/M40 冻结契约准备；M43/M44 的限定本地启动边按[材料接续裁决](../../arch/materials-continuation.md#r35-m43-m44-gates)执行。完整 M41 到 M42 的启动依赖和停写交接保留，切片 self 不满足该边。
 
 <a id="m40"></a>
 ## M40 冻结工坊制作和往返契约
@@ -42,8 +42,10 @@ M40 的材料输入是 R30 独立冻结包，不是 R35 完整产品；设计可
 
 写入边界：工坊与备课公共端口适配、返回现场、跨模块 E2E 及集成清单，并交付可供 Agent 使用的操作清单。
 
-输入与集成：接收 M42 和 R35 的固定候选；本节点独占本批装配，备课共享文件按根交接的唯一写者处理。开发替身或仅制作端通过不能替代真实往返、重启与离线验证。
+输入与集成：本地实现启动时，任务包必须固定 M `b0703907a7339513ed34bfed5c1e6787cc65d37d:docs/acceptance/evidence/M42/v1/attempt2.md`、P `6398bf2dae85d1872c929aa8ef32d5705d763687:docs/acceptance/evidence/R34/v1/integration3.md`、D `1a5dd015863d749e5244346f4eaad24ac506670d:docs/acceptance/evidence/M40/v1/handoff.md`、R35 具名本地材料消费切片的 independent PASS 回执，并交接外壳、lessons、目录、迁移入口、manifest 及锁文件等共享路径的唯一写权。目前 R35 仍在验收，这些前置不可预设已满足，M43 也不可记为已启动。完整 M43 self PASS 另需完整 R35 independent PASS。开发替身或仅制作端通过不能替代真实往返、重启与离线验证。
 
 - 产物/完成：从指定备课环节进入制作，完成带回且草稿/选中/滚动不丢；已有作品可复用，修改影响遵守版本规则。下载动态成果后，在全新浏览器环境断网打开，不靠工作台登录、CDN 缓存或本地服务；静态输出用于外部 PPT 的实际取用可验证。
+
+交回 M44：M43 固定局部候选可交独立验收者复现数学准确性、三类作品、往返、源码/隔离和 Linux 实际下载物冷启动。回执只签具名本地范围，不放行完整 M44。完整 M44 仍消费完整 M43 及支持环境证据，其 PASS 才可供 T51 完成真实作品关联。
 
 验收入口：[本节点适用条目](../../acceptance/mvp-matrix.md#m44)，具体场景由任务包列明。

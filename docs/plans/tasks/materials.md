@@ -10,6 +10,8 @@ R30 不等待 B16，可以先冻结材料设计；R31 实现仍取 B16 固定的
 
 R32/R33/R34 各自修改 resources/questions/lessons；未到达的跨模块输入使用同版契约样本或测试 adapter，只记录对应 self 结果。R34 接收 R31-R33 的固定候选并独占本批集成，再报完整 self PASS；R35 的真实材料流程与独立验收要求不变。跨 flow 的备课适配和共享入口按根指定的单写者交接，不覆盖其他候选的变更。
 
+R35 的具名本地材料消费切片取得 independent PASS 后，可作为 M43 本地实现的一项启动输入，但还必须同时固定 P/M/D 并交接共享唯一写权。此限定例外已经[独立核验](../../acceptance/evidence/R30-MATERIALS-CONTINUATION/v1/review.md)并纳入 DAG，详细范围只由[接续裁决](../../arch/materials-continuation.md#r35-m43-m44-gates)拥有。R35 当前仍在验收，不表示该切片已通过或 M43 已开始；完整 R35 仍是完整 M43 的完成门禁。
+
 <a id="r30"></a>
 ## R30 冻结材料、数学内容与导出行为
 
@@ -40,6 +42,11 @@ R32/R33/R34 各自修改 resources/questions/lessons；未到达的跨模块输�
 本节点补充边界：认证内部表只读。
 
 验收入口：[本节点适用条目](../../acceptance/mvp-matrix.md#r35)，具体场景由任务包列明。
+
+<a id="r35-local"></a>
+## R35 具名本地消费切片
+
+按[接续任务包](materials/continuation.md#r35-本地证据与-m43m44-接续)在固定 P 上独立验证 File 读写、预览/裁图、已确认题/资源快照、备课持久/幂等/隔离/重启、六输出本机内容与过滤。每项报告实际结果与缺陷归属；受共享重启 OPEN 影响的条目必须自身取得 independent PASS，才能进入 M43 前置集合。本切片回执不代替完整 R35，不代签在线新材料、Word/WPS 实际编辑保存、PDF 打印预览或目标设备。
 
 <a id="r32"></a>
 ## R32 交付资源管理、预览、替换与复用

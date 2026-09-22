@@ -1,13 +1,13 @@
 # 材料接续的派发补充
 
-本包是提案，尚未派发。事实、固定SHA、预算与依赖裁决只由[接续架构](../../../arch/materials-continuation.md)拥有；原 R33/M43 任务包与冻结 schema 仍是规格。根按下列范围选择既有节点接续，不新建业务 flow。
+本包是已采纳的派发补充。事实、固定 SHA、预算与依赖裁决只由[接续架构](../../../arch/materials-continuation.md)拥有；原 R33/M43 任务包与冻结 schema 仍是规格。固定提案 `da23eb680a9c8b214ad18482d4f1fbc8a5f3fded` 及独立 PASS `677161bd23e37e2d8e22ae7e47214e2e662011ed:docs/acceptance/evidence/R30-MATERIALS-CONTINUATION/v1/review.md` 只授权既有节点的限定本地启动边，不新建业务 flow。
 
-## 依赖例外的限定核验
+## 已采纳的限定边界
 
-- 角色：独立设计核验，Codex CLI / gpt-6-astra / medium。根固定本提案提交、架构 P/M/D/F/T 及控制版本；作者不能自审或自行派 reviewer。
-- 必读：架构的固定输入、实现缺口、依赖提案及冻结影响；控制版 `execution-protocol.md#acceptance`、`#receipt`；D 的 M43包和材料引用/目录语义；P 的 composition、questions extraction、lessons；M 交接。
-- 工作：只读核对架构末节的六项影响。明确是否允许 R35本地证据→M43本地、M43局部候选→M44本地；有实质缺口交设计作者，不自改范围或契约。不运行产品模型、不读密钥、不联络Provider/其他业务session。
-- 完成：逐项结论与对应代码/证据，标 `independent`；只批准明确切片，不签产品 PASS。回执建议 `docs/acceptance/evidence/R30-MATERIALS-CONTINUATION/v1/review.md`，待根授权生成。根采纳前原DAG不变。
+- R35 具名本地材料消费切片 independent 通过、固定 P/M/D 与共享唯一写权齐备后，可启动 M43 本地实现。
+- M43 形成固定局部候选后，可交 M44 独立验具名本地项。该回执只报实测范围与未决，不放行完整 M44。
+- 完整 R35 仍是完整 M43 的完成门禁；完整 M43 仍是完整 M44 的输入。完整 M44 才可供 T51 完成真实作品关联，并继续 T54 完整、F60 及最终交付链。
+- R35 当前仍在验收，不把本裁决写成切片已通过或 M43 已开始。共享重启观察仍为 OPEN；`c915f5939cb9e4102bbc9d84d4b83608b72eda52:docs/acceptance/evidence/R34/v1/restart-diagnosis.md` 仅增加错误证据，不满足受影响的局部前置。
 
 ## 原 R33 零调用接续
 
@@ -17,10 +17,11 @@
 - 完成：真实HTTP/UI复现适配缺口，再验证实际选页归并、独立答案定位、续文歧义/重复编号、缺页unresolved、图来源、取消/重试/重启及人工版保护；真实T/W与故障输入回归。旧响应、合成控制流、新原生结果分别出证据。运行原包适用API/E2E、全API/构建；普通UI不写单元测试。触发实现内部review时按原skill路由完成一次，回执仍self。
 - 停止：调用预算0；缺内容不能补造，不能在校验失败后试参；公共语义缺口或确需新网络响应时固定已完成成果与具体缺失输入交根。保留完整R33未完成项，不把局部修复写成在线成功。
 
+<a id="r35-本地证据与-m43m44-接续"></a>
 ## R35 本地证据与 M43/M44 接续
 
-- R35：Codex CLI / gpt-6-astra / medium，固定P及T，从 P 的 `R34/v1/integration3.md` 启动独立隔离环境。先验架构定义的材料消费切片，再按适用材料场景扩展；旧测试会写证据目录，必须保护旧字节并将新结果另存。只报告实际候选/身份/设备；共享异常按实测保留，不联系其诊断写者。本地报告不以等待在线或Windows为结束前提，完整R35仍未满足。
-- M43：仅在依赖例外已独立核验并由根采纳、上述消费切片通过后，根固定P或其经过相同核验的新候选、M、D和独占公共文件清单。Codex CLI / gpt-6-astra / low；沿 D 的 M43包实现，限架构表列本地范围，明确组合M而非沿用P静态math。外壳/lessons/目录/锁文件必须单写者，隔离数据，原来源只读。
+- R35：固定 P `6398bf2dae85d1872c929aa8ef32d5705d763687` 及 T，从 P 的 `docs/acceptance/evidence/R34/v1/integration3.md` 启动独立隔离环境。先验架构定义的材料消费切片，再按适用材料场景扩展；旧测试会写证据目录，必须保护旧字节并将新结果另存。只报告实际候选/身份/设备；共享异常按实测保留。本地报告不以等待在线或 Windows 为结束前提，完整 R35 仍未满足。
+- M43：上述消费切片通过后，根固定 P `6398bf2dae85d1872c929aa8ef32d5705d763687:docs/acceptance/evidence/R34/v1/integration3.md` 或其经过相同核验的新候选、M `b0703907a7339513ed34bfed5c1e6787cc65d37d:docs/acceptance/evidence/M42/v1/attempt2.md`、D `1a5dd015863d749e5244346f4eaad24ac506670d:docs/acceptance/evidence/M40/v1/handoff.md` 和独占公共文件清单。沿 D 的 M43 包实现，限架构表列本地范围，明确组合 M 而非沿用 P 静态 math。外壳/lessons/目录/锁文件必须单写者，隔离数据，原来源只读。
 - M43自验：真实认证浏览器保存作品→指定备课环节→更新/另存/返回；旧v2拒绝与幂等；空库及两个来源旧库副本重启；包含math的实际输出和最终下载物关闭服务/禁网/新进程file打开，检查数学和交互。记录具体OS/浏览器与未到设备；不发模型请求。保留D的适用API/E2E、全API/build和内部review要求。
 - M44本地：Codex CLI / gpt-6-astra / medium，在M43固定局部候选独立复现原数学场景适用项，避免复用作者运行库或缓存。只签具名切片结果，完整状态和外部未决单列。
 - 回执：各节点用其既有 evidence 目录的新attempt，固定候选SHA、范围、命令/环境、缺陷拥有者、完整节点未决和停写状态。新增路径由根派发时固定；本包不代为生成。后续完整门槛、在线预算和版本传播均按架构，不重复冻结或改账。
