@@ -10,6 +10,7 @@ R35-PANDOC-001 的修复自验通过。候选只为备课页面增加加载边�
 
 ```bash
 export TMPDIR=/home/liam_t/per-tmp
+mkdir -p "$TMPDIR"
 export MATERIALS_PANDOC_PATH=/home/liam_t/项目/TeacherWorkspace-office-comparison/experiments/office-comparison/tools/pandoc-3.11/bin/pandoc
 export MATERIALS_OFFICE_ROOT=/home/liam_t/项目/TeacherWorkspace-c22/experiments/C22/deps/libreoffice/opt/opt/libreoffice26.8
 export EXPORT_RECOVERY_EVIDENCE="$PWD/docs/acceptance/evidence/PREVIEW-EXPORT-RECOVERY/v1/green"
@@ -44,4 +45,71 @@ node node_modules/@playwright/test/cli.js test \
 
 ## 候选审查与预览切换
 
-候选审查和同一预览服务重启的最终结果将在本回执收尾时填写。受限在线备份已位于 `.scratch/preview/backups/export-recovery-20260922T204248Z/`，含 SQLite 在线快照、持久文件及运行配置副本；目录 0700、文件 0600。用户 `.scratch/preview/data`、`files`、TLS、SMTP 与启动配置均保留。
+受审产品候选为 `395d4931fc0f298948d16c12f7a919e4b77541e0`。`teacherworkspace-preview.service` 已重启并保持 active/running，入口 **https://localhost:50880**。首页、`/lessons`、`/api/health` 均 HTTP 200，服务首页与本轮构建字节一致。重启后用户库 `integrity_check=ok`，全部 38 张表内容与在线备份一致，文件和 runtime.env/start.sh 字节保持：[运行证据](service.json)。受限在线备份已位于 `.scratch/preview/backups/export-recovery-20260922T204248Z/`，含 SQLite 在线快照、持久文件及运行配置副本；目录 0700、文件 0600。用户 `.scratch/preview/data`、`files`、TLS、SMTP 与启动配置均保留。
+
+
+## Standards
+
+PASS，0 项文档标准违规，0 项值得单列的代码异味。加载边界复用现有样式，未新增抽象或清除现场；E2E 使用真实身份、保存和下载，符合 implementation 第 4 条与设计验证规则。范围外新建草稿观察已明确披露。
+
+## Spec
+
+PASS，0 项阻断性规格偏差。001 的刷新/重回、旧任务下载、选项、六输出及失败切片均覆盖；产品仅增加加载边界，符合本轮授权范围。新建直接取题的旧问题保留为体验限制，不宣称所有新建路径通过。
+
+两轴分别 0 项发现；审查范围为 `de831a07777da423c59e5239a432eee36fa8ac7b...395d4931fc0f298948d16c12f7a919e4b77541e0`。审查后的提交只补运行回执和删除重复证据，没有未审产品变更。
+
+本任务普通临时库、Chrome 临时目录、采集脚本与重复日志已清理。范围外未解决观察的隔离库及浏览器失败 trace 明确保留在 `.scratch/preview-export-recovery-observation/`，权限受限，供下一任务诊断；不含用户库。没有遗留本任务测试服务，用户预览服务继续运行。产品模型请求和自动外发邮件均为 0；无 main 合并、push 或公网部署，未联系或读取 Agent 活动 HEAD。
+
+```yaml
+task: PREVIEW-EXPORT-RECOVERY@1
+revision: 1
+attempt: 1
+responsibility_node: R34
+role: implement
+status: PASS
+status_scope: "R35-PANDOC-001 定向修复及同一预览服务更新；非完整R35或所有新建路径验收"
+verification_level: self
+finished_at_utc: "2026-09-22T20:53:16.924904+00:00"
+session_id: "01a0cad5-80de-7bb1-afbe-cdd9346e9c44"
+runner: "Codex / gpt-6-astra / low"
+skills_used: [diagnosing-bugs, writing-for-agents, code-review]
+base_revision: "de831a07777da423c59e5239a432eee36fa8ac7b"
+result_revision: "395d4931fc0f298948d16c12f7a919e4b77541e0 受审产品；最终回执所在提交SHA由返回消息提供"
+review_target:
+  fixed_point: "de831a07777da423c59e5239a432eee36fa8ac7b"
+  commit_range: "de831a07777da423c59e5239a432eee36fa8ac7b...395d4931fc0f298948d16c12f7a919e4b77541e0"
+  standards: PASS
+  spec: PASS
+  aggregate: "本回执 Standards/Spec，分轴各0项发现"
+internal_reviewers:
+  - "standards；Codex / gpt-6-astra / low；继承调用session；只读叶子"
+  - "spec；Codex / gpt-6-astra / low；继承调用session；只读叶子"
+inputs:
+  - "5f6ea979aea8b9237c4831f1719ff6ee597f9e47:docs/acceptance/evidence/R35/v1/pandoc-review.md，仅R35-PANDOC-001"
+  - "de831a07777da423c59e5239a432eee36fa8ac7b:docs/ux/materials.md U-M6及docs/acceptance/materials.feature M023"
+changed_files:
+  - apps/web/src/features/lessons/LessonDetail.jsx
+  - apps/web/e2e/materials-integration-export-recovery.spec.js
+  - README.md
+  - docs/acceptance/evidence/PREVIEW-EXPORT-RECOVERY/v1/
+artifacts:
+  - "red/test.log、red/result.json、red/before.png、red/after.png"
+  - "green/test.log、green/flow-result.json、green/content-check.json及实际文件/截图"
+  - "new-draft-observation/；受限原始现场.scratch/preview-export-recovery-observation/"
+  - "build.log、service.json"
+checks:
+  - "真实浏览器最小红灯后同路径绿灯；2项E2E通过"
+  - "慢加载、刷新、重回、读取失败重试、选项与旧下载hash保持通过"
+  - "六份真实输出、错误定位修正、原键确认与明确保存路径新建通过"
+  - "npm run build及git diff --check通过"
+  - "同服务重启active/running、3入口200、构建及用户数据/配置保留核对通过"
+identity_mode: "real-auth / in-process fake-mail / isolated HTTPS"
+product_model_requests: 0
+external_mail: 0
+open_items:
+  - "范围外：新建直接取题自动保存后new草稿残留待确认，R34后续诊断；当前体验先保存课题再取题"
+  - "原Word/WPS真人门禁仍待验，未重开已通过生成/过滤/24输出/Office切片"
+failure_owner: null
+next_condition: "按固定新提交的E2E命令重建隔离库复验；用户预览继续在50880；范围外观察另行诊断"
+authorization_used: "本轮PREVIEW-EXPORT-RECOVERY@1 attempt1：唯一写者、本分支提交、构建并重启同一预览服务，保留数据和受限备份；禁止main合并/push/公网部署"
+```
