@@ -73,6 +73,9 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768
       await openSection(page, '步骤');
       await wheelTo(page, titleInput);
       await expect(titleInput).toHaveValue('滚动可编辑步骤');
+      const objectToggle = titleInput.locator('..').locator('..').getByLabel('P', { exact: true });
+      await wheelTo(page, objectToggle);
+      expect((await objectToggle.boundingBox()).width).toBeLessThan(30);
       await page.screenshot({ path: path.join(out, 'dynamic-steps.png') });
       // AI and tools still share one right panel, including unsent draft preservation.
       await page.getByRole('tab', { name: 'AI 助理', exact: true }).click();
