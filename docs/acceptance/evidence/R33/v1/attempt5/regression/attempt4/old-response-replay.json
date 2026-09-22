@@ -1,0 +1,78 @@
+{
+  "job": {
+    "id": "32f0a56e-3b84-4744-9dae-bdc75a04b812",
+    "kind": "extraction",
+    "target": {
+      "kind": "import",
+      "id": "707ef6cb-921d-4cc6-8c1a-2609983c21f1",
+      "version": 1
+    },
+    "state": "partial",
+    "createdAt": "2026-09-22T15:41:14.958Z",
+    "updatedAt": "2026-09-22T15:41:15.098Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 1,
+      "total": 1,
+      "unit": "pages"
+    },
+    "outputFileIds": [],
+    "issues": [
+      {
+        "code": "truncated-response",
+        "unitId": "file:898acf91-6f3c-4025-920a-ca6c7d4aa32d:page:1",
+        "field": null,
+        "detail": "提取结果不完整，请对照原稿继续。"
+      }
+    ]
+  },
+  "material": {
+    "id": "707ef6cb-921d-4cc6-8c1a-2609983c21f1",
+    "version": 2,
+    "createdAt": "2026-09-22T15:41:14.958Z",
+    "updatedAt": "2026-09-22T15:41:15.097Z",
+    "deletedAt": null,
+    "title": "合成控制流，不计识别质量",
+    "origin": "",
+    "input": {
+      "kind": "files",
+      "fileIds": [
+        "898acf91-6f3c-4025-920a-ca6c7d4aa32d"
+      ],
+      "pages": []
+    },
+    "supplementFileIds": [],
+    "drafts": [],
+    "fragments": [
+      {
+        "id": "cb23155f-417b-4613-aae4-4c9e330ce2b3",
+        "text": "{\"fragments\":[{\"role\":\"other\",\"label\":\"\",\"section\":\"\",\"group\":\"\",\"text\":\"第2页 · 原题\",\"content\":[{\"text\":\"第2页 · 原题\"}],\"continues\":\"\",\"doubts\":[]},{\"role\":\"question\",\"label\":\"Q3.\",\"section\":\"第2页 · 原题\",\"group\":\"\",\"text\":\"Q3. f(x)= { ax+1, x<0。若 f(-2)=3，求 a 和 f(1)。 { x²-1, x≥0\",\"content\":[{\"latex\":\"f(x)=\\\\begin{cases} ax+1, & x<0 \\\\\\\\ x^2-1, & x\\\\ge 0 \\\\end{cases}\"},{\"text\":\"。若 \"},{\"latex\":\"f(-2)=3\"},{\"text\":\"，求 \"},{\"latex\":\"a\"},{\"text\":\" 和 \"",
+        "locations": [
+          {
+            "kind": "page",
+            "fileId": "898acf91-6f3c-4025-920a-ca6c7d4aa32d",
+            "renditionFileId": "898acf91-6f3c-4025-920a-ca6c7d4aa32d",
+            "page": 1,
+            "box": null
+          }
+        ],
+        "disposition": "unassigned"
+      },
+      {
+        "id": "dabab9bb-3ac5-4984-aadd-21b235a92558",
+        "text": "第2页 · 原题",
+        "locations": [
+          {
+            "kind": "page",
+            "fileId": "898acf91-6f3c-4025-920a-ca6c7d4aa32d",
+            "renditionFileId": "898acf91-6f3c-4025-920a-ca6c7d4aa32d",
+            "page": 1,
+            "box": null
+          }
+        ],
+        "disposition": "unassigned"
+      }
+    ],
+    "jobId": "32f0a56e-3b84-4744-9dae-bdc75a04b812"
+  }
+}

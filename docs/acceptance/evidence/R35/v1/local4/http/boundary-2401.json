@@ -1,0 +1,84 @@
+{
+  "question": {
+    "id": "d8435d70-617f-4c38-ac79-8386feb6ef40",
+    "version": 1,
+    "createdAt": "2026-09-22T15:59:27.873Z",
+    "updatedAt": "2026-09-22T15:59:27.873Z",
+    "deletedAt": null,
+    "title": "边界 2401",
+    "source": {
+      "kind": "manual"
+    },
+    "note": "R35_PRIVATE_MUST_NOT_RENDER",
+    "starred": false,
+    "typeId": null,
+    "tagIds": [],
+    "answerStatus": "absent",
+    "solution": {
+      "version": 2,
+      "blocks": []
+    },
+    "body": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "image",
+          "fileId": "053afb2c-f303-4d3b-aae6-74e38980a2f2",
+          "alt": "高度边界色块",
+          "widthMm": 100
+        },
+        {
+          "type": "image",
+          "fileId": "060a202f-6b40-4197-9377-1dc28f6a60fa",
+          "alt": "高度边界色块",
+          "widthMm": 100
+        }
+      ]
+    }
+  },
+  "job": {
+    "id": "65364e3b-656a-4a03-8e95-dd17ec1d18e4",
+    "kind": "question-asset",
+    "target": {
+      "kind": "question",
+      "id": "d8435d70-617f-4c38-ac79-8386feb6ef40",
+      "version": 1
+    },
+    "state": "succeeded",
+    "createdAt": "2026-09-22T15:59:27.877Z",
+    "updatedAt": "2026-09-22T15:59:27.977Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 2,
+      "total": 2,
+      "unit": "stages"
+    },
+    "outputFileIds": [
+      "23943ccb-2f7b-4760-9cf9-6a10f456be2c",
+      "d3eb563e-4042-4d54-b5a6-b70ac3f4e592"
+    ],
+    "issues": []
+  },
+  "files": [
+    {
+      "file": "boundary-2401-0.png",
+      "id": "23943ccb-2f7b-4760-9cf9-6a10f456be2c",
+      "width": 1600,
+      "height": 1092,
+      "alpha": true,
+      "transparent": 243200,
+      "visible": 1504000,
+      "sha256": "e0395db309f0d0508c194d53f707e1e5d37957802f51921ddff4398da41179d6"
+    },
+    {
+      "file": "boundary-2401-1.png",
+      "id": "d3eb563e-4042-4d54-b5a6-b70ac3f4e592",
+      "width": 1600,
+      "height": 1381,
+      "alpha": true,
+      "transparent": 270944,
+      "visible": 1938656,
+      "sha256": "3da44fe5a0d3d25539b20a2c3e8457c0aec062f7fa56ada2b8da1a42a13dff49"
+    }
+  ]
+}

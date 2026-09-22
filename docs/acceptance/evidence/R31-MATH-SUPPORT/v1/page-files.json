@@ -1,0 +1,27 @@
+{
+  "fileRequests": [
+    {
+      "path": "/api/workbench/files",
+      "method": "POST",
+      "hasPage": true
+    },
+    {
+      "path": "/api/workbench/files/4f719890-a91c-47bf-88f7-6a08118ce456/content",
+      "method": "GET",
+      "hasPage": true
+    },
+    {
+      "path": "/api/workbench/files/4f719890-a91c-47bf-88f7-6a08118ce456/content",
+      "method": "GET",
+      "hasPage": true
+    },
+    {
+      "path": "/api/workbench/files/4f719890-a91c-47bf-88f7-6a08118ce456/content",
+      "method": "GET",
+      "hasPage": true
+    }
+  ],
+  "restoredWithNewPage": true,
+  "logoutStatus": 401,
+  "downloadMatches": true
+}

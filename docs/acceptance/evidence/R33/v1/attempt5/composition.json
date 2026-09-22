@@ -1,0 +1,936 @@
+{
+  "fixedPoint": "afdb8f96098e77cfac076179ea0fd2be05bb7c9c",
+  "root": "f5356029c6ab8e21b15569f338eeaf9c5941e2b7",
+  "P": "3a10e0d5108a4950bba0851610bae7d8495dc8ff",
+  "productP": "18a80073380116e1d30165f0001a86e5fdb2304c",
+  "code": "331bd367df450522fb54982984c452c6bb8d4c52",
+  "session": "01a0c9bc-7a28-7c81-a505-8d8c173bc6ec",
+  "regressionCopy": "/home/liam_t/r33-attempt5-runtime/regression",
+  "productFiles": [
+    {
+      "path": "apps/api/src/app.js",
+      "sha256": "f7533ca3f320f138a2ea4bd9d4bbec8d914968589865a73cd45caa65c020a18b",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/server.js",
+      "sha256": "2ab93356bace95f8eb0f19e08b8d12bed3ce56de11ba1e93bd07585e81be8e7a",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/config/env.js",
+      "sha256": "03ac4464397a159d80c6b0510c513711f4f7dd065a882db9ff64f146741c8a1c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/core/auth.js",
+      "sha256": "b586447264797389b5c40da40b5b9a4d289fc6d8dbc94726cb2b25a3355a0f39",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/core/validation.js",
+      "sha256": "cb24fda46135e8cd951a2379c0869f0089dd69cb598769ccbbc9e8e59d0b5781",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/core/workspaceLayout.js",
+      "sha256": "58893f925423e4e76a383d6d5e8b524f8430ea502787bd2121a1fe0a0f19cc84",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/core/dataStore.js",
+      "sha256": "7c7e411f87c51e2d5864a7e484c2fd18e6d9e73d2144450f8ddd5335755fb51f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/core/mail.js",
+      "sha256": "9d37f50c107fd66795ab035cd08a3db344b6c36b5c50336ccbdb39f48ffb4133",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/core/moduleRegistry.js",
+      "sha256": "acaa8c56b802cfedabcfe7e3661ec8cc8221e211a5a0caa1fa410b77eaf5543f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/middleware/errorHandler.js",
+      "sha256": "f7f227d5fc74565ace2f1662d8d83cffd5e3fd08ff89f481ee6192875f5f5e4b",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/middleware/notFound.js",
+      "sha256": "1e946efaaeca234b2724a12bbe875f5fe2b8c832faeee4285b2d14ab78f2aba5",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/middleware/requireAuth.js",
+      "sha256": "0375fd05351e15f9c417c814698d8044e975a5d8e1e84178dbee5ea4a4ab5a2c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/scripts/verify-storage.js",
+      "sha256": "3305ba4016d39642a7d40d36c47f90496da6ba8f4e0669e98387dd1a43eb1bcc",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/http.js",
+      "sha256": "54fc99f9b76690ca858445440bd5007dae0df7dc7415c9c9a0bd0148d413dd83",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/identity.js",
+      "sha256": "7b1fc7c05235feb36056cd2a4f28991fee560bb2053229e5e29fc495a7f5a6ca",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/index.js",
+      "sha256": "a26bacee4cd287b669488f3cf2f0a6d14632654d173454844d6860efed4460b0",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/logger.js",
+      "sha256": "982b9c70307a0da0d2e9eedeb2156aab48f621c1ceb1324d111720f5ecbcd4d9",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/migrations.js",
+      "sha256": "75b71ad136064ea629692f754cd832af0bbcaae11ddab60b8dbde48ee26e1d21",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/moduleImplementations.js",
+      "sha256": "fe2feed80c26d8471cd2dda9dfc390891d1e6c5fe347cd90fcdf52f330e2a233",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/moduleLoader.js",
+      "sha256": "41a8c37d2ce2d4988abd1c6f65cc24c7ebc87fec8697e81d3728aa23287c14ed",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/mutations.js",
+      "sha256": "4a6704da98348c2124ec0ece3a863d98a619af785fb3d9392459e9f35b5797f7",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/problems.js",
+      "sha256": "cc901d5cebe54417379f955854602395e4c3ffbe8a69899d229c85b08055018e",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/schema.js",
+      "sha256": "3551be518cf1143473d9d27800a77d1f7eef70a45043e614d2d14d89a5d052ea",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/storage.js",
+      "sha256": "d36ca9dc4c6eedf3ad05abdcbf9bc3aa32c2889aa3d6b7e615a1f01c209f9529",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/content/index.js",
+      "sha256": "e3ffd4d605a67e4ba420920762403f766e7822075e8cfcb99b35bd202f4d7b13",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/content/schema.js",
+      "sha256": "9aaf6f0a48c8e9c69813efc4de7a95db180f7ab4b463283460ede96a6820414a",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/files/conversion-worker.mjs",
+      "sha256": "25a72a8803940eebfe081b6941207175f342dd06827b4749eac0761e72ba00e4",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/files/converter.js",
+      "sha256": "25834ab3b53c70b7438db86ff0cfd9f76aae1e24639b0d46da3560e72b66fe85",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/files/index.js",
+      "sha256": "d1bbda3cfcbd8f95e6f1bd19092e2ec62da8a93d0caa43eb5e557f93a82ed53c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/files/migrations.js",
+      "sha256": "6179b568455b1ef9e6b9749925d93a83293e82a33909190c9c57b6c3000576b7",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/files/preview.js",
+      "sha256": "256d663cf560832d2fc0e1274e7949f2f0530344a1ee2c5d6937b829f55002f7",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/files/router.js",
+      "sha256": "45968f932c87147e744ef00c4607685265e2869e37a31c947b043938999f22a4",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/jobs/fixtures.js",
+      "sha256": "609bea54b505771edf32562718bd6a4f8e9b9cbab8af9f52feeee37f4a72dcec",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/jobs/index.js",
+      "sha256": "875bbd38692fac0d30821b2ffa5933d7cb41ac5589902fd067ba75c67958dc19",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/jobs/migrations.js",
+      "sha256": "2015aef70a08ff9d6445d7b3b1a5f88d632daa17ddd76709940987d6940bce5a",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/workbench/jobs/router.js",
+      "sha256": "35ce50c031cd75ceb565a08fe051fdc5166658ef35bfed7055dd49c8bbe38f87",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/exports.js",
+      "sha256": "03d42d60d9045b6e2ce099b4707606f28052d92dd4008215b7d288422a7dcfe6",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/formula.js",
+      "sha256": "4ff0408d7d1fea3a87e528083698318a479c723fe99633a246c5aed5740d7e6e",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/index.js",
+      "sha256": "6ff5b46bf94457903e3630ab1f6e09ccc0023adb4bb9c856ac554fdaaa63209d",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/materials.js",
+      "sha256": "2576c8ffb68e9de69520263180273b002c756eddbb56f0662f69f3d1e999573f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/output.js",
+      "sha256": "eed1400f131b2889fd638e1d09d7d0e1a94bd08fb921f55e7baa4e8e510f4418",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/repository.js",
+      "sha256": "c89cea88c1496c0efc0ca2aba583ee6d88baf01e15aed4f024fff34cf3959ca9",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/router.js",
+      "sha256": "47497c0595308e8db5650259afd2ce56439817efd5c40ca4ee348b009b3e35f5",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/service.js",
+      "sha256": "e7c1134daceb7d5064bef8bc4bbc89115346bc96a35aacaad4436aabd3ef7922",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/math/contract.js",
+      "sha256": "21c130f7b4638858e33bff7fc76ef81377fed61c8e7ccfed60f5ae7312a371c2",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/math/font.js",
+      "sha256": "38301589c4ac2591b04fecb26953c26f22c40b95a7663cdac6aee95e9a12bdd3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/math/formula.js",
+      "sha256": "c0be18885d7c46db7a38fdc63c6ffa0e9de9f93da72fe3df5bfc90d24e4d40ff",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/math/index.js",
+      "sha256": "09b1dd5bcb8516bebcad2aea4f178112b8a5b073024aba8a20b69ef173f1d0ea",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/math/migrations.js",
+      "sha256": "9977e2b1cbd9528c7bbfc7110d20913c0897615b0590aa903770acd0be4126f3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/math/render-worker.js",
+      "sha256": "1098b6f7dcc0a883aa04e6d304931ec84eff31111c249abe32daadfcfab69d79",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/math/render.js",
+      "sha256": "d61fdd6ffb071933adc4fc62aa5ced894d063df1dbc4fa1915f30b78c601fb0b",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/math/service.js",
+      "sha256": "bfa49ab1bdee173c6b09ca63d7f81cd30ca0de6c07b0f7f0ce96b23c45219ef4",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/assets.js",
+      "sha256": "15f6d4770f9fab9299beb840e6a004650f695f7eee4fa4574cb0de7ea5a0c765",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/casefold.js",
+      "sha256": "ab3a62c7e7c30faf13f449a4c6574dffb00a8cad0a2d999cddb6e4c9bbc50fe2",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/contract.js",
+      "sha256": "dc63c1f2e679dc69c0f158d491be439bf5dea98a5678d7c6fc84f0bcff51cbaf",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/extraction-figures.js",
+      "sha256": "45426da31dab86e82d73a56f4354e11fd5ec8f767277ba2f748faf0f2bc0a40b",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/extraction-fragments.js",
+      "sha256": "ac89702cbb4c4011f3bfbd52c87d833b79d30afd0713eb6ed9e0d81ada089e02",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/extraction.js",
+      "sha256": "df09c5ae08d787d8150908667b81b9104514f3aa04f4eb2d6827a70f9bd2b290",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/index.js",
+      "sha256": "c33a9c0746fa2c1ff7c1bb8f3007fbd0930cbdd5425c85b3e20d4d16f0f50a7c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/materials-content.js",
+      "sha256": "253843be33db2e940b962fe90f03b642c009090ec3e32f76ee46bbec989dd28b",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/materials-router.js",
+      "sha256": "77e3546ba95f76cc182555a102bce84c38207c5f762057d15f5befb1d398ee0e",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/materials-service.js",
+      "sha256": "0d1c467a9abff54abde8be6657396efddfe83b27d633904491065be878f97645",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/materials-store.js",
+      "sha256": "a4bedb1afb22ac201e445e27b787071569bee9def8c6c7ea6a1ea013c2700e2c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/native-math.js",
+      "sha256": "14c77b1642c6f0dbc3b4ee1e52db04ffa249528d3142060eb1ba352076766fb9",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/native-word.js",
+      "sha256": "7da9b8a7ac98d3d553e1c462c91cc08b6096905fb7272c69d489e98abb4dc924",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/repository.js",
+      "sha256": "923448667c2584d397e31d5af1fb21f7f7ee225ad3150dae6288d1c9134a96c8",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/request-key.js",
+      "sha256": "4bbbe873859fcea92e2faa7c757e8cffcc90c152f8ce80448d79558f80b8bb8d",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/router.js",
+      "sha256": "8e142fe07b3e9730e04da578382891a6e6f10a190e8222d636127ec420549c0e",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/schema.js",
+      "sha256": "1b6781f298d4e8941e0331479d956ffe9e3696e5d05e964e552c8f01f5b01223",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/service.js",
+      "sha256": "9025a6a3f7f72fc267f784f96756cb9aa2487d650d5048059170e4a5efb090c0",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/resources/casefold.js",
+      "sha256": "29b7148fb113de24ae974571e2a644753b99e908c1465be4393d84d9230bb998",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/resources/index.js",
+      "sha256": "5ddc50a261219c7c6669ebc6875826778188582ee8c629076dca9ea04262bf8c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/resources/taxonomy.js",
+      "sha256": "894184065712082cad504040108a0bd60134c1e6af6b3e7476595809ff840953",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/resources/migrations/index.js",
+      "sha256": "40368aa71a442241896202694b866fa7b003b73851453e0f75618c3d56828151",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/questions/migrations/index.js",
+      "sha256": "a94321b33c559df2ceef0273bdba4b779579adcaaf4cdb2dabe4a48c515b5386",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/migrations/index.js",
+      "sha256": "5d9bd6d24bdf42f043ecf7245c966fce8aa668b8e426964606092d8ce6123c6d",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/modules/lessons/migrations/materials.js",
+      "sha256": "dbaf1383da3416f78abc2de034255432bad6901408c8298deffd8b7ae93068df",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/features/auth/index.js",
+      "sha256": "ee8d861325edb6f58233b99393dd105fb52ee52d43c280dd62f728af30de0d66",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/features/auth/operations.js",
+      "sha256": "a11ab6c935d7786decaf1bce7c398fec7c9548917bd502dcf891eb5b56b57389",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/features/auth/passwords.js",
+      "sha256": "70294420b4ba335bf3142fac70fcdaff5c847674f6070460427f85e374448bc5",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/features/auth/problems.js",
+      "sha256": "68b6d99b108f5b6796b22e98ddfdefd2ccaccd63372bdf80395f39e382fc7941",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/features/auth/protocol.js",
+      "sha256": "d3a8681dd690014de7bb9e13d8d08c5579212a1dc43964ff99940aa4beedc9e9",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/features/auth/store.js",
+      "sha256": "4fe31b36e279e60dcd307097bb51078744776c90a83d8b3321440e04d8699711",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/features/auth/validation.js",
+      "sha256": "b5aa7124dc05561dc6f96a475d47380f8c170e3bb637d635e30156509891bcef",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/api/src/features/auth/migrations/index.js",
+      "sha256": "c4911aa0cc752884c3ba1e72023705514aa6ed482f3a8ce608aa74c93dff080f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/main.jsx",
+      "sha256": "4d3f4d816327940e6ae606cf61be63f4d4e6aab49c67f6ad5a3c9260b76349ae",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/App.jsx",
+      "sha256": "3223b348e51a7f8ee73318d6fad956410613877940da7b7f0349ecf57fac67d1",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/components/LoginCard.jsx",
+      "sha256": "d36f8d156c85da6767c2a5b8c2d2be38e71f97c83e40635bb7c8092292426e86",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/components/WorkspaceSidebar.jsx",
+      "sha256": "cb319bb99bed3d8468a48db5182caa5a269746e63f5be61c40a1083257586bf4",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/hooks/useWorkspaceData.js",
+      "sha256": "e6a8272b97c3687a1c7827ef78fe1f317b94a89d77da0b3dde44cc5da7738933",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/store/useAppStore.js",
+      "sha256": "5135e95021f115991ddb31301b10418a5ae87650319540b167fc2de35fecb49e",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/styles/global.css",
+      "sha256": "4b264eba2f94e227d72a1b43b61ce9be0bc136854de47bed3baf896fb9e1641c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/utils/api.js",
+      "sha256": "b6ecab11063fc6929204151e68be879302cd6ac1f24a87fbacc1fa780ed18c01",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/utils/labels.js",
+      "sha256": "4b3916f1e75965f66a2f17c922a48228d623dd6bcca854c57d1c685c40fcad18",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/modules/moduleRegistry.js",
+      "sha256": "35a1122e5dd4a8000d978652acab36689731f71e82f3571f68de6ea1df25ffd3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/settings/WorkspaceSettingsPanel.jsx",
+      "sha256": "c59d6d2848d215c8682ed95ddba797ff83cb150a72fff33824fc2f395349e3a9",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/AuthGate.jsx",
+      "sha256": "827d44767eca0373e14343bb95ac41ce97cf0c7a40926954c1e98805f687acb3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/AuthProvider.jsx",
+      "sha256": "f03026cce3f2d0362e14f90b9b704b1136637ec484c5982df72c308ff5e67c5e",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/AuthSurface.jsx",
+      "sha256": "a17a6f22f61bf20e975782894922843bb0ddd067ff2c0590ef187e34a8da79c3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/BrandMark.jsx",
+      "sha256": "919631584158763c6b245400c6ec26dac94ac4afd91cdeff6bfc72de0dcd86e4",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/PasswordToggle.jsx",
+      "sha256": "f4385d67bfa14d6a0942c62ce65d07beebd1967c4cf6129323897184d79010b4",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/RestoreView.jsx",
+      "sha256": "fe2e06413d1ed68f089c230005e5f1ead95e4f535726670788970587586143c6",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/api.js",
+      "sha256": "438475f604975666ef090079838d83a29a6b6b6169da675f0e1958b9917ce5e8",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/auth.css",
+      "sha256": "fd111449ba552252f3230e848db4be7c57d364e3989072d749dbcc118de935e3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/index.jsx",
+      "sha256": "bf3263f4cd0cc7b65fd9d9d9e99da9cb4ce8fbe419fa698154f7c81db2031017",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/pageContext.js",
+      "sha256": "edb4da9089621fe8821bc38c6b20ef4e0fdb2ad17dcbb09c1b84ed286c33cebd",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/presentation.js",
+      "sha256": "53a40a4e687ffa92185dc84f6c63c80acfb7612bd9b78faeb9cb29e68dc65a05",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/auth/rules.js",
+      "sha256": "2994f711d5e60ba6dfac245e9bb569f1ea99fcc402ceb3cc66e991b93ed45f41",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/ExportsPanel.jsx",
+      "sha256": "238f24e56a2b281d8b428a3127d679c470f30cac8df70c1fe0cd44ce6b637e5b",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/FilePreview.jsx",
+      "sha256": "b2b4aa5bc9c5e348e4d66a89f34a4f9ff3eb34c96edbb1167e755d822a93f6e6",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/LessonDetail.jsx",
+      "sha256": "208b3af6c72a0c1c75f5f747dae4584acbced108a860ceb755ce7df74fbbdec1",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/LessonDocumentEditor.jsx",
+      "sha256": "35f6dcef545c2ccf5a24b081a9f1e20f97d132d18d2c36b7cfb97d3a2d35389b",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/LessonPanels.jsx",
+      "sha256": "be5c9e7623017973221b6ac8993ae9c50800b069c8aec0ebf79937e69737f198",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/MaterialsPicker.jsx",
+      "sha256": "0687c5a5ad17fba9653d7c40682474f22d138b7ac23fda1bae0f63ec6569a1d3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/QuestionPicker.jsx",
+      "sha256": "24302d2bc80d29e47f35cdd9f444be720491865e692474811fa20775b5b908a4",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/ReferenceCard.jsx",
+      "sha256": "7bb43c91f384768485b1c8a286a05799d7ae8275f95b522b0c4ceda857cc093a",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/api.js",
+      "sha256": "83eea237c98b52ae5e5fe3fa1a95cfda2fbbeb2a8924875fe8be7021bf993d06",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/files.js",
+      "sha256": "74983e4090d454d684e1b12d73a1524cbf9d9da6c34250316593be1b0848b2b4",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/index.jsx",
+      "sha256": "552e5da83a949b119cede68ef25298280e7b7f7ca41507b1172e0bbba3475727",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/materials.css",
+      "sha256": "4c4fc8c82d985ee5bcf7c3b69c1551dbaaaf40b74d09107306f864d22b1c72bc",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/model.js",
+      "sha256": "e029fedeb94771af720ba0bbdfc0e2b03c8e52b52e0b43a9faec7f58029dfbb8",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/lessons/useLessonPickerFlow.js",
+      "sha256": "a70ab36a6ccdc3a041876d09c2257998e8270cb06b6e03a945a9ed86f4e7ef5f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/math/FormulaPreview.jsx",
+      "sha256": "74db779c7f7e15161c505af3a8773e164328ca093a2c0de49b6fa42d59f0fff3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/math/api.js",
+      "sha256": "305c7010f23e9d52b6cea0c9b09f21febe2dad503f557a625edc93edbf6a0673",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/math/index.jsx",
+      "sha256": "dfbf2fb5cee5c259570ab338a623a28154fda6bd34d51ad848df9e52d3800e49",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/math/localFont.js",
+      "sha256": "336aa6a33f085de3b9058b3a509d6cd482e57b91287b832c9d9409cfb1398ab8",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/math/math.css",
+      "sha256": "6a173870bdc5654b5be60f3078ccb7b18827bf1043217ff6bdf22dd2fdad50a6",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/math/model.js",
+      "sha256": "dc3c2ff7e956c1bec9a66127e34043cbc949181749b43e37ac5e2b6dbb50f75c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/AddToLessonDialog.jsx",
+      "sha256": "4e18fe935cd086b96bcb93c2696985df830029ea4bd25ad9b466e5d50771cf8f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/MaterialsQuestionsPage.jsx",
+      "sha256": "19462b4716244b4e4e4a68c64844facdcb4862e6e6942f6b0ad0babcd8b04e63",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/OriginalPane.jsx",
+      "sha256": "37c6cbefc4ed059f50dbd5520de98ede1f52200b08de37da90a2caeb9dbdc2d8",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/QuestionDetail.jsx",
+      "sha256": "8ff2f91717ef2f949af8e2d162501b3fe7f85c62a59e79e050a8bbc725342a63",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/QuestionEditor.jsx",
+      "sha256": "20ec158a53eaff8d147319b3d8f034d5f28e473f91bec619b74fe24b002a2e44",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/QuestionList.jsx",
+      "sha256": "2d2c23def99ca17aeebcf0d76d5725ef4e45ed7d9f57a0c7844b00bac7010625",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/QuestionReader.jsx",
+      "sha256": "e4753b0b56522c0b3ea45cac726d51d6d9dbbe5787b512cc9c6ffca97f14c78f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/api.js",
+      "sha256": "9a7706fa22c9297ee2e21e58f5d8a5d2c179f929664d9fc657886371e1e96b8b",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/index.jsx",
+      "sha256": "0508db17f661fcdb6977baacffd91ffe763f70a7ab3243092566102ba3f03636",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/materials-api.js",
+      "sha256": "d206b753d880bbbf1d249acbf7eb5358c90a87400a400a837e02be80f9d36b2f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/model.js",
+      "sha256": "b137a5289d1d0ccf9ded7380937443ced09a497fb8e6ae03efe2d8e9d5bbb8b1",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/questions/questions-materials.css",
+      "sha256": "f3b50137a02ff18260069d41d74f5b923d0e692ec18c2f305c36c3dae223bc69",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/resources/AddToLesson.jsx",
+      "sha256": "b893b19b69ae97127265edaa1c6005147058da787e21d73e9aeb2b1317867beb",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/resources/Preview.jsx",
+      "sha256": "2a2b6a2e5cd1810cb32f0f2c0b148681bc4c0f57687eaf7b3ed2d48e6fa627e1",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/resources/Taxonomy.jsx",
+      "sha256": "e1e6ba227d0f08c85a3404fff9e778a37bd2065546f9d000569308067c3efb28",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/resources/client.js",
+      "sha256": "f0f193aa21cc8b43450591792be73ab1892aac3b37f6e919f41b7561eb3f9135",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/resources/index.jsx",
+      "sha256": "7f91814c29702fa4b6e05c15c3df0ac23aa1461ea6adaf5200b7ac5bb1112e64",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/resources/resources.css",
+      "sha256": "398b6e184710f1e4cdb65e4e37dc85c0fbce82db2b7f7d077663b20a931fdbb2",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/AuxiliaryPanel.jsx",
+      "sha256": "c32715814e0ac34962d48e95424822aaa51fc0a27972976b89e7be9dbac53c3a",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/ConflictResolution.jsx",
+      "sha256": "248e30b0d220098d2b94af773a62db056d35d2e669a42142099e0e00e0035489",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/DocumentEditor.jsx",
+      "sha256": "e849708a0615f2f3101338c4bcccbf915d990b27708fad4e57249a9666e4a728",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/MathText.jsx",
+      "sha256": "8f2623a33e94791af1f6850309bd0133ddbca7050dda690d7199a28f67301c35",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/ResourceRoute.jsx",
+      "sha256": "8042e84abed3d85b69cb755a89976768930d668555e6d6f65106110e2d9a2277",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/SaveStatus.jsx",
+      "sha256": "03021d8542af6d9b3c82710e09ac4f463d555e6410f327a075bdaf4b64959e3c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/WorkbenchApp.jsx",
+      "sha256": "d2dab0b678e82c655f9f599d3f6132e77b1991e8bad4dd34d5affaac06058ad8",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/WorkbenchRoot.jsx",
+      "sha256": "1389fea65cb768813332dda74f6cfaed98d69c0641d393c9cb8986ec31744cb2",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/WorkbenchSettings.jsx",
+      "sha256": "b6fa2b26137d3d5862125a6e3e28686416f6d5406bb09310bd3085bb3eeb7cb0",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/apiClient.js",
+      "sha256": "fb591a0961741a4c84d922c65db1a6bdd4896d5f93aaa4fd1cad60b3706be1d0",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/documents.js",
+      "sha256": "99c5193637af6d868e53a06d1c09ee2b56055c35daca8493dd5fd8e700ffa625",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/icons.jsx",
+      "sha256": "181c59517c0f16492936a9d732a692a19ddb4c1de89bacb4aa90a261932ceedb",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/overlays.jsx",
+      "sha256": "6c2bc10fca5705583db44f36052c248ea50032ac26250c027b10eea8b9bf7325",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/problems.js",
+      "sha256": "1581b0b4828aa2024b7c1cb967719bd1ea117bc647fc5499465d9bf699d2f7c8",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/routes.js",
+      "sha256": "c89f9ab2b85e57c6024ff9b4c57da248b277c2f629423f1b4510db1f777f966c",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/saveStates.js",
+      "sha256": "5e8a505b0626d22b888c2cde74ba8732e37a3323732f6c0918991a47c959775f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/shellContext.js",
+      "sha256": "3ab44db3af3e336b4e55d1b6ccfd1d8d966eac270386534518c6975117f027fd",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/storage.js",
+      "sha256": "46baa2a5cbc7c3b359ed2bd31ffac513d6df157e95875a543bee3edb27695823",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/useIdempotentSubmit.js",
+      "sha256": "45619c1b17a0bb3234b839541193ad0d23c6363318b1111cb2c0651f2414786a",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/useSavableDocument.js",
+      "sha256": "1c8bf2706a2f1bd9e84303f93a7ddfb90c51537cd9dcd5183e6a8c6bfee045c3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/useSaveShortcut.js",
+      "sha256": "5fbeb96a8ff1b0793c19d32d200e32673c3deba13e1385ee7ba3d246174b2cc8",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/useScene.js",
+      "sha256": "330150865d773a3b7ea139a345bf1d37f1fe82d10fcba902e7503201137ca513",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/useScrollRestore.js",
+      "sha256": "d4b74eae41efc940dc4f724123e1c938e7b9fcbee3f516c7011088a159e41373",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/uuid.js",
+      "sha256": "9d65b5eec9c8a6eb28033566980a51a83fc57ce912f4b1f2cf49e9513e3d866f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/workbench.css",
+      "sha256": "8e1487b6c80070fe2e79f61dc9eef9c5063632c3c33594612b6aeb30b5b20a76",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/materials/DocumentEditor.jsx",
+      "sha256": "d5ce73e98633e9b9a540da226cfe340f9e0cb4cfaf590941938d3d0f27668f11",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/materials/DocumentView.jsx",
+      "sha256": "5160cc8c7a1b8321e7064f7cc85106d5668068d64e8ac1e94774f3a64ec52676",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/materials/index.js",
+      "sha256": "07d8c8d391c94bc344ea9c9f7614a57c020726d64aefe899b49f1b2f1d0eb6c7",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "apps/web/src/features/workbench/materials/materials.css",
+      "sha256": "e4ed18fea769174440803eee4b8e81c0aa5af2aab8172f5e3a554045f40f55c9",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/package.json",
+      "sha256": "ef494ee84d2c1f9368a75163970288b4ec8fa1dc73f031db4cbe1b5627a1ad17",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/src/contract.js",
+      "sha256": "39bee99ed37dd51b394a6bbcb5eb11822fabd301f862e0f2e7011db3559d772e",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/src/index.js",
+      "sha256": "c78d7c473d8c697128048077c530ecfc0b3cb5bd502d2bd5004f47624ebb10e9",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/src/moduleCatalog.js",
+      "sha256": "2db5cda789ecd1b6f4c7ca8d6738d2c45f4859d058cca4b30cf13a627bedf5dc",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/src/moduleCatalogValidation.js",
+      "sha256": "7cd4daa32a95290543b9bb51a306cd9d1cad19bf0b4451dc5bc9dfd19827a3b3",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/scripts/verify-catalog.mjs",
+      "sha256": "1b8ebb1dc308a161850e124d3a257a1388b1fb0f99fe154e6e765a6bd67f1ce4",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/src/materials/content.js",
+      "sha256": "c31c36eebd708dab669a46cf74c014cd9af7ff1a642ea3456478c12b3f97c5db",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/src/math/expression.js",
+      "sha256": "ba4035fa349a18a35b5f52fe05ce6f603af446fc8590dd4708ee33dfc829197a",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/src/math/formula.js",
+      "sha256": "233f5c8e27856ab2fc2940b2452bbeab301ba142882e9cbdaaaf7c9b91e54f4f",
+      "regressionCopyEqual": true
+    },
+    {
+      "path": "packages/shared/src/math/graphics.js",
+      "sha256": "517223db0501a9182a932a3102d7294500cb44bc2c4b325e8b9f7a4b761806e8",
+      "regressionCopyEqual": true
+    }
+  ]
+}

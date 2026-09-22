@@ -1,0 +1,16 @@
+{
+  "lessonUrl": "https://127.0.0.1:35729/lessons/d0073662-1765-4fcd-954d-4d7586fe089f",
+  "requests": [
+    {
+      "key": "bbc43deb-e493-42d1-b1e3-85f959a2291e",
+      "body": "{\"baseVersion\":3,\"title\":\"二次函数未提交现场\",\"intro\":{\"version\":1,\"blocks\":[]},\"sections\":[{\"id\":\"00662bb1-36bb-4263-b115-d5d6cef1cf68\",\"title\":\"探究判别式\",\"content\":{\"version\":1,\"blocks\":[]},\"references\":[{\"id\":\"bc1e697c-38f8-4a85-9d61-e49555d80d9b\",\"kind\":\"math\",\"workId\":\"eae83fd4-e3c7-458e-b7c8-aceb4527a50d\",\"workVersion\":2,\"note\":\"不得出现在学生输出中的私密备注\"}]}],\"materials\":[]}",
+      "url": "https://127.0.0.1:35729/api/modules/lessons/v3/d0073662-1765-4fcd-954d-4d7586fe089f"
+    },
+    {
+      "key": "bbc43deb-e493-42d1-b1e3-85f959a2291e",
+      "body": "{\"baseVersion\":3,\"title\":\"二次函数未提交现场\",\"intro\":{\"version\":1,\"blocks\":[]},\"sections\":[{\"id\":\"00662bb1-36bb-4263-b115-d5d6cef1cf68\",\"title\":\"探究判别式\",\"content\":{\"version\":1,\"blocks\":[]},\"references\":[{\"id\":\"bc1e697c-38f8-4a85-9d61-e49555d80d9b\",\"kind\":\"math\",\"workId\":\"eae83fd4-e3c7-458e-b7c8-aceb4527a50d\",\"workVersion\":2,\"note\":\"不得出现在学生输出中的私密备注\"}]}],\"materials\":[]}",
+      "url": "https://127.0.0.1:35729/api/modules/lessons/v3/d0073662-1765-4fcd-954d-4d7586fe089f"
+    }
+  ],
+  "confirmed": true
+}

@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "2b6cbcda934057a89c0443437e03b2e30e850a8d",
+  "identity": "test-principal",
+  "id": "bd90b427-1ca5-4fac-a8e4-62d586be1087",
+  "v1DocumentPreserved": true,
+  "oldRequestReplayPreserved": true,
+  "restartPreserved": true,
+  "dataDir": "/tmp/r33-upgrade-CiHiRM"
+}

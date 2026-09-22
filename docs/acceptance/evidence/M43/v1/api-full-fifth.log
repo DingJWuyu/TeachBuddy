@@ -1,0 +1,2335 @@
+
+> refatos-v1@0.3.0 test:api
+> npm --workspace @refatos/api run test
+
+
+> @refatos/api@0.3.0 test
+> node --test test/*.test.js
+
+TAP version 13
+# Subtest: application requires explicit persistent code-secret and HTTPS origin
+ok 1 - application requires explicit persistent code-secret and HTTPS origin
+  ---
+  duration_ms: 4.674926
+  type: 'test'
+  ...
+# Subtest: legacy bearer, me, password-reset and layout routes cannot authorize the product
+ok 2 - legacy bearer, me, password-reset and layout routes cannot authorize the product
+  ---
+  duration_ms: 449.836122
+  type: 'test'
+  ...
+# Subtest: CC-HAPPY 账户、注册与服务失败
+    # Subtest: H01 空容器匿名、bootstrap 建立 Cookie、GET 确认真实携带
+    ok 1 - H01 空容器匿名、bootstrap 建立 Cookie、GET 确认真实携带
+      ---
+      duration_ms: 23.127854
+      type: 'test'
+      ...
+    # Subtest: H02 登录创建 pending 不授权，activate 后才得到固定 accountKey
+    ok 2 - H02 登录创建 pending 不授权，activate 后才得到固定 accountKey
+      ---
+      duration_ms: 355.97966
+      type: 'test'
+      ...
+    # Subtest: H03 注册原子提交，重启后同账户键可登录
+    ok 3 - H03 注册原子提交，重启后同账户键可登录
+      ---
+      duration_ms: 188.486436
+      type: 'test'
+      ...
+    # Subtest: H04 昵称按 code point 保存完整值，不从邮箱派生
+    ok 4 - H04 昵称按 code point 保存完整值，不从邮箱派生
+      ---
+      duration_ms: 182.812998
+      type: 'test'
+      ...
+    1..4
+ok 3 - CC-HAPPY 账户、注册与服务失败
+  ---
+  duration_ms: 764.545936
+  type: 'suite'
+  ...
+# Subtest: CC-INPUT / CC-BOUNDARY 精确输入
+    # Subtest: IN01 各操作独立拒绝非法字段且无账户/预算副作用
+    ok 1 - IN01 各操作独立拒绝非法字段且无账户/预算副作用
+      ---
+      duration_ms: 12.280326
+      type: 'test'
+      ...
+    # Subtest: IN02 缺 challengeId、空字符串与未知 id 各自定位
+    ok 2 - IN02 缺 challengeId、空字符串与未知 id 各自定位
+      ---
+      duration_ms: 7.074663
+      type: 'test'
+      ...
+    # Subtest: B01 邮箱规范化与边界
+    ok 3 - B01 邮箱规范化与边界
+      ---
+      duration_ms: 109.245496
+      type: 'test'
+      ...
+    # Subtest: B02 昵称 trim、40/41 code points 与全空白
+    ok 4 - B02 昵称 trim、40/41 code points 与全空白
+      ---
+      duration_ms: 135.720048
+      type: 'test'
+      ...
+    # Subtest: B03 密码按原始字符串处理，不 trim/不归一化
+    ok 5 - B03 密码按原始字符串处理，不 trim/不归一化
+      ---
+      duration_ms: 700.561647
+      type: 'test'
+      ...
+    # Subtest: B04 验证码是六位字符串，前导零保留且不隐式转数
+    ok 6 - B04 验证码是六位字符串，前导零保留且不隐式转数
+      ---
+      duration_ms: 94.842401
+      type: 'test'
+      ...
+    # Subtest: B05 验证码形状与条款先于值判断
+    ok 7 - B05 验证码形状与条款先于值判断
+      ---
+      duration_ms: 10.576783
+      type: 'test'
+      ...
+    # Subtest: L01 不存在邮箱与错误密码使用同一拒绝
+    ok 8 - L01 不存在邮箱与错误密码使用同一拒绝
+      ---
+      duration_ms: 453.850686
+      type: 'test'
+      ...
+    1..8
+ok 4 - CC-INPUT / CC-BOUNDARY 精确输入
+  ---
+  duration_ms: 1528.547131
+  type: 'suite'
+  ...
+# Subtest: CC-SEND / CC-CODE 发码与验证码生命周期
+    # Subtest: S01 注册占用与找回未注册按各自入口披露，均不投递
+    ok 1 - S01 注册占用与找回未注册按各自入口披露，均不投递
+      ---
+      duration_ms: 103.288137
+      type: 'test'
+      ...
+    # Subtest: S02 冷却拒绝不换码，重发成功替换旧挑战，并发只投递一次
+    ok 2 - S02 冷却拒绝不换码，重发成功替换旧挑战，并发只投递一次
+      ---
+      duration_ms: 6.10488
+      type: 'test'
+      ...
+    # Subtest: S03 投递失败不激活新码、不改变旧码与冷却
+    ok 3 - S03 投递失败不激活新码、不改变旧码与冷却
+      ---
+      duration_ms: 105.878141
+      type: 'test'
+      ...
+    # Subtest: S04 成功发码只承诺提供者接受，响应与存储都不含验证码
+    ok 4 - S04 成功发码只承诺提供者接受，响应与存储都不含验证码
+      ---
+      duration_ms: 2.745573
+      type: 'test'
+      ...
+    # Subtest: C01 前四次错码剩余4..1，第五次耗尽且正确码也被拒绝
+    ok 5 - C01 前四次错码剩余4..1，第五次耗尽且正确码也被拒绝
+      ---
+      duration_ms: 23.473747
+      type: 'test'
+      ...
+    # Subtest: C01 错码预算跨进程重启不重置
+    ok 6 - C01 错码预算跨进程重启不重置
+      ---
+      duration_ms: 9.156021
+      type: 'test'
+      ...
+    # Subtest: C02 到期、替换与新id旧值语义
+    ok 7 - C02 到期、替换与新id旧值语义
+      ---
+      duration_ms: 5.2026
+      type: 'test'
+      ...
+    # Subtest: C03 绑定错误不扣预算，原用途仍可成功
+    ok 8 - C03 绑定错误不扣预算，原用途仍可成功
+      ---
+      duration_ms: 96.715249
+      type: 'test'
+      ...
+    # Subtest: C04 挑战只消费一次，并发正确提交只有一个成功
+    ok 9 - C04 挑战只消费一次，并发正确提交只有一个成功
+      ---
+      duration_ms: 106.988555
+      type: 'test'
+      ...
+    1..9
+ok 5 - CC-SEND / CC-CODE 发码与验证码生命周期
+  ---
+  duration_ms: 463.06727
+  type: 'suite'
+  ...
+# Subtest: CC-STORE 事务回滚
+    # Subtest: ST01 I03 账户/消费/pending 三个失败点统一回滚且同码重试
+    ok 1 - ST01 I03 账户/消费/pending 三个失败点统一回滚且同码重试
+      ---
+      duration_ms: 733.167404
+      type: 'test'
+      ...
+    # Subtest: ST01 I05 密码/撤销/消费三个失败点统一回滚且同码重试
+    ok 2 - ST01 I05 密码/撤销/消费三个失败点统一回滚且同码重试
+      ---
+      duration_ms: 1097.75474
+      type: 'test'
+      ...
+    # Subtest: ST02 账户存储不可读/结构损坏返回503，不种子化也不伪装匿名
+    ok 3 - ST02 账户存储不可读/结构损坏返回503，不种子化也不伪装匿名
+      ---
+      duration_ms: 105.213083
+      type: 'test'
+      ...
+    # Subtest: ST02 昵称缺口返回503而不是邮箱派生身份
+    ok 4 - ST02 昵称缺口返回503而不是邮箱派生身份
+      ---
+      duration_ms: 275.994574
+      type: 'test'
+      ...
+    # Subtest: RA03 activate 与撤销按提交顺序裁决，已撤销目标不可复活
+    ok 5 - RA03 activate 与撤销按提交顺序裁决，已撤销目标不可复活
+      ---
+      duration_ms: 319.82521
+      type: 'test'
+      ...
+    # Subtest: RA01/RA02 并发提交使用请求快照且只产生一个业务结果
+    ok 6 - RA01/RA02 并发提交使用请求快照且只产生一个业务结果
+      ---
+      duration_ms: 294.959636
+      type: 'test'
+      ...
+    1..6
+ok 6 - CC-STORE 事务回滚
+  ---
+  duration_ms: 2842.930621
+  type: 'suite'
+  ...
+# Subtest: CC-UNKNOWN 响应丢失后的恢复
+    # Subtest: UN01 注册已提交但响应丢失：登录可恢复且同码重试为已消费
+    ok 1 - UN01 注册已提交但响应丢失：登录可恢复且同码重试为已消费
+      ---
+      duration_ms: 229.383298
+      type: 'test'
+      ...
+    # Subtest: UN01 请求未达服务端时没有副作用，原码仍可用
+    ok 2 - UN01 请求未达服务端时没有副作用，原码仍可用
+      ---
+      duration_ms: 91.85354
+      type: 'test'
+      ...
+    # Subtest: UN02 重置已提交但响应丢失：不自动重试，旧密码失效且只改一次
+    ok 3 - UN02 重置已提交但响应丢失：不自动重试，旧密码失效且只改一次
+      ---
+      duration_ms: 383.461929
+      type: 'test'
+      ...
+    # Subtest: UN03 发码响应丢失后冷却仍有效，旧挑战可继续使用
+    ok 4 - UN03 发码响应丢失后冷却仍有效，旧挑战可继续使用
+      ---
+      duration_ms: 7.42508
+      type: 'test'
+      ...
+    # Subtest: O02 退出已提交但响应丢失：重试同目标安全
+    ok 5 - O02 退出已提交但响应丢失：重试同目标安全
+      ---
+      duration_ms: 99.624504
+      type: 'test'
+      ...
+    # Subtest: P04 所有成功与失败响应结构符合操作schema
+    ok 6 - P04 所有成功与失败响应结构符合操作schema
+      ---
+      duration_ms: 117.854878
+      type: 'test'
+      ...
+    1..6
+ok 7 - CC-UNKNOWN 响应丢失后的恢复
+  ---
+  duration_ms: 948.030302
+  type: 'suite'
+  ...
+# Subtest: 同源 HTTPS 与 Cookie 固定属性
+    # Subtest: HTTPS 建立容器与 remembered Cookie，属性固定且无跨源头
+    ok 1 - HTTPS 建立容器与 remembered Cookie，属性固定且无跨源头
+      ---
+      duration_ms: 258.615881
+      type: 'test'
+      ...
+    # Subtest: 真实浏览器在同源 HTTPS 下固定 Cookie 属性且 HttpOnly 不可见
+    ok 2 - 真实浏览器在同源 HTTPS 下固定 Cookie 属性且 HttpOnly 不可见
+      ---
+      duration_ms: 2924.941249
+      type: 'test'
+      ...
+    1..2
+ok 8 - 同源 HTTPS 与 Cookie 固定属性
+  ---
+  duration_ms: 3315.612825
+  type: 'suite'
+  ...
+# Subtest: 认证迁移
+    # Subtest: 空库：迁移可重复执行且新账户路径可独立完成
+    ok 1 - 空库：迁移可重复执行且新账户路径可独立完成
+      ---
+      duration_ms: 154.77015
+      type: 'test'
+      ...
+    # Subtest: 旧库：保留稳定账户键与昵称，缺口显式登记且不派生邮箱
+    ok 2 - 旧库：保留稳定账户键与昵称，缺口显式登记且不派生邮箱
+      ---
+      duration_ms: 770.309937
+      type: 'test'
+      ...
+    # Subtest: 上一阶段库：遗留的验证码密钥表被新增迁移删除
+    ok 3 - 上一阶段库：遗留的验证码密钥表被新增迁移删除
+      ---
+      duration_ms: 1.636643
+      type: 'test'
+      ...
+    # Subtest: 旧库迁移不覆盖已有认证账户，也不改动baseline表
+    ok 4 - 旧库迁移不覆盖已有认证账户，也不改动baseline表
+      ---
+      duration_ms: 42.223603
+      type: 'test'
+      ...
+    1..4
+ok 9 - 认证迁移
+  ---
+  duration_ms: 969.910321
+  type: 'suite'
+  ...
+# Subtest: CC-PROTOCOL 来源、媒体类型与请求形状
+    # Subtest: P01 缺保护头、错误/null 来源统一403且无副作用，Origin缺失时才回退Referer
+    ok 1 - P01 缺保护头、错误/null 来源统一403且无副作用，Origin缺失时才回退Referer
+      ---
+      duration_ms: 35.684404
+      type: 'test'
+      ...
+    # Subtest: P02 媒体类型先于JSON解析，破损/空body为400
+    ok 2 - P02 媒体类型先于JSON解析，破损/空body为400
+      ---
+      duration_ms: 7.411442
+      type: 'test'
+      ...
+    # Subtest: P03 根值、未知字段、必填与类型按协议顺序对每个操作适用
+    ok 3 - P03 根值、未知字段、必填与类型按协议顺序对每个操作适用
+      ---
+      duration_ms: 67.840329
+      type: 'test'
+      ...
+    # Subtest: P03 命令根对象先拒绝联合外属性，再判 action，再按分支拒绝
+    ok 4 - P03 命令根对象先拒绝联合外属性，再判 action，再按分支拒绝
+      ---
+      duration_ms: 9.331546
+      type: 'test'
+      ...
+    # Subtest: P05 全部响应no-store、204无body、无跨源允许头、GET不改变状态
+    ok 5 - P05 全部响应no-store、204无body、无跨源允许头、GET不改变状态
+      ---
+      duration_ms: 219.123329
+      type: 'test'
+      ...
+    # Subtest: P06 页面头缺失/非法为409，伪造身份不能授权
+    ok 6 - P06 页面头缺失/非法为409，伪造身份不能授权
+      ---
+      duration_ms: 146.398704
+      type: 'test'
+      ...
+    1..6
+ok 10 - CC-PROTOCOL 来源、媒体类型与请求形状
+  ---
+  duration_ms: 501.214609
+  type: 'suite'
+  ...
+# Subtest: CC-SESSION / CC-PENDING / CC-RESTORE 会话寿命与恢复
+    # Subtest: SE01 page 身份只绑定当前页面，刷新换页不能继承
+    ok 1 - SE01 page 身份只绑定当前页面，刷新换页不能继承
+      ---
+      duration_ms: 208.192731
+      type: 'test'
+      ...
+    # Subtest: SE02 remembered 恢复不延期，第7天边界401，独立设备无目标
+    ok 2 - SE02 remembered 恢复不延期，第7天边界401，独立设备无目标
+      ---
+      duration_ms: 97.299915
+      type: 'test'
+      ...
+    # Subtest: PN01 remembered 持久失败保留 pending，可继续当前页或重试保存
+    ok 3 - PN01 remembered 持久失败保留 pending，可继续当前页或重试保存
+      ---
+      duration_ms: 203.771388
+      type: 'test'
+      ...
+    # Subtest: PN01 注册后的 pending 保存失败不否定账户与验证码消费
+    ok 4 - PN01 注册后的 pending 保存失败不否定账户与验证码消费
+      ---
+      duration_ms: 99.143757
+      type: 'test'
+      ...
+    # Subtest: PN02 保存失败期间账户被重置或目标被撤销后不能进入
+    ok 5 - PN02 保存失败期间账户被重置或目标被撤销后不能进入
+      ---
+      duration_ms: 526.777875
+      type: 'test'
+      ...
+    # Subtest: PN03 放弃旧目标后新页面上下文不被旧事件清除
+    ok 6 - PN03 放弃旧目标后新页面上下文不被旧事件清除
+      ---
+      duration_ms: 297.716587
+      type: 'test'
+      ...
+    # Subtest: PN04 已提交的不同选择为409，同参重试不延期
+    ok 7 - PN04 已提交的不同选择为409，同参重试不延期
+      ---
+      duration_ms: 104.945793
+      type: 'test'
+      ...
+    # Subtest: RE01 restore 存储故障可重试且不续期
+    ok 8 - RE01 restore 存储故障可重试且不续期
+      ---
+      duration_ms: 101.418169
+      type: 'test'
+      ...
+    # Subtest: RE02 到期、撤销、被替换与数据损坏的恢复结果
+    ok 9 - RE02 到期、撤销、被替换与数据损坏的恢复结果
+      ---
+      duration_ms: 334.86129
+      type: 'test'
+      ...
+    1..9
+ok 11 - CC-SESSION / CC-PENDING / CC-RESTORE 会话寿命与恢复
+  ---
+  duration_ms: 1992.34513
+  type: 'suite'
+  ...
+# Subtest: CC-RESET / CC-ISOLATION 重置撤销与账户隔离
+    # Subtest: R01 重置撤销A全部旧会话且不清B，A账户键保持
+    ok 1 - R01 重置撤销A全部旧会话且不清B，A账户键保持
+      ---
+      duration_ms: 764.272985
+      type: 'test'
+      ...
+    # Subtest: IS02 无关账户的重置通知不退出另一账户
+    ok 2 - IS02 无关账户的重置通知不退出另一账户
+      ---
+      duration_ms: 291.159831
+      type: 'test'
+      ...
+    # Subtest: IS03 accountKey 只来自服务器绑定的会话
+    ok 3 - IS03 accountKey 只来自服务器绑定的会话
+      ---
+      duration_ms: 195.365478
+      type: 'test'
+      ...
+    1..3
+ok 12 - CC-RESET / CC-ISOLATION 重置撤销与账户隔离
+  ---
+  duration_ms: 1262.211249
+  type: 'suite'
+  ...
+# Subtest: CC-CLOSED 注册关闭
+    # Subtest: CL01 关闭只阻止新注册与注册发码，重开后同码可用
+    ok 1 - CL01 关闭只阻止新注册与注册发码，重开后同码可用
+      ---
+      duration_ms: 136.911157
+      type: 'test'
+      ...
+    # Subtest: CL01 发码等待期间关闭注册不激活挑战
+    ok 2 - CL01 发码等待期间关闭注册不激活挑战
+      ---
+      duration_ms: 2.0239
+      type: 'test'
+      ...
+    # Subtest: CL02 关闭后既有账户登录、找回、重置正常，已创建账户保留
+    ok 3 - CL02 关闭后既有账户登录、找回、重置正常，已创建账户保留
+      ---
+      duration_ms: 276.666499
+      type: 'test'
+      ...
+    1..3
+ok 13 - CC-CLOSED 注册关闭
+  ---
+  duration_ms: 422.851646
+  type: 'suite'
+  ...
+# Subtest: CC-LOGOUT 退出交换
+    # Subtest: O01 定向撤销、重复、无会话与外容器id均安全
+    ok 1 - O01 定向撤销、重复、无会话与外容器id均安全
+      ---
+      duration_ms: 281.151761
+      type: 'test'
+      ...
+    # Subtest: O01 无 Cookie 退出仍返回204与清除头
+    ok 2 - O01 无 Cookie 退出仍返回204与清除头
+      ---
+      duration_ms: 1.126232
+      type: 'test'
+      ...
+    # Subtest: O02 撤销写入失败回滚为503，重试成功且旧请求不影响新会话
+    ok 3 - O02 撤销写入失败回滚为503，重试成功且旧请求不影响新会话
+      ---
+      duration_ms: 185.569015
+      type: 'test'
+      ...
+    # Subtest: O03 退出后刷新无旧身份，重新登录可恢复业务
+    ok 4 - O03 退出后刷新无旧身份，重新登录可恢复业务
+      ---
+      duration_ms: 179.784496
+      type: 'test'
+      ...
+    1..4
+ok 14 - CC-LOGOUT 退出交换
+  ---
+  duration_ms: 663.754125
+  type: 'suite'
+  ...
+# Subtest: A11 HTTPS: pending refuses workbench; active shares accountKey
+ok 15 - A11 HTTPS: pending refuses workbench; active shares accountKey
+  ---
+  duration_ms: 492.455876
+  type: 'test'
+  ...
+# Subtest: C19/C20: all 15 operations use real principal; page rejection precedes data and writes
+ok 16 - C19/C20: all 15 operations use real principal; page rejection precedes data and writes
+  ---
+  duration_ms: 568.185165
+  type: 'test'
+  ...
+# Subtest: C21: refresh requires explicit restore; expiry/revocation 401 and both stores 503
+ok 17 - C21: refresh requires explicit restore; expiry/revocation 401 and both stores 503
+  ---
+  duration_ms: 361.83617
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: old database retains stable accountKey, credentials, layout and migration ledger after restart
+# RefatOS API running on https://localhost:45445
+ok 18 - old database retains stable accountKey, credentials, layout and migration ledger after restart
+  ---
+  duration_ms: 473.649976
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: legacy nickname gap stops startup without deriving a nickname from email
+ok 19 - legacy nickname gap stops startup without deriving a nickname from email
+  ---
+  duration_ms: 126.359509
+  type: 'test'
+  ...
+# Subtest: real server waits for all migrations and refuses missing TLS configuration
+ok 20 - real server waits for all migrations and refuses missing TLS configuration
+  ---
+  duration_ms: 128.617308
+  type: 'test'
+  ...
+# Subtest: WB-005: a lesson keeps stable section ids, order and server snapshots
+ok 21 - WB-005: a lesson keeps stable section ids, order and server snapshots
+  ---
+  duration_ms: 508.12456
+  type: 'test'
+  ...
+# Subtest: WB-007: moving a reference keeps its id, snapshot and note
+ok 22 - WB-007: moving a reference keeps its id, snapshot and note
+  ---
+  duration_ms: 69.729355
+  type: 'test'
+  ...
+# Subtest: WB-006/013: stale reference versions reject the whole lesson atomically
+ok 23 - WB-006/013: stale reference versions reject the whole lesson atomically
+  ---
+  duration_ms: 34.093618
+  type: 'test'
+  ...
+# Subtest: WB-008: a question update never silently changes prepared content
+ok 24 - WB-008: a question update never silently changes prepared content
+  ---
+  duration_ms: 53.931044
+  type: 'test'
+  ...
+# Subtest: WB-009: question deletion keeps prepared snapshots and blocks new references
+ok 25 - WB-009: question deletion keeps prepared snapshots and blocks new references
+  ---
+  duration_ms: 66.81176
+  type: 'test'
+  ...
+# Subtest: WB-009: lesson deletion and restore keep sections, references and questions
+ok 26 - WB-009: lesson deletion and restore keep sections, references and questions
+  ---
+  duration_ms: 32.749321
+  type: 'test'
+  ...
+# Subtest: WB-014/016: lesson reference identity and ownership are enforced
+ok 27 - WB-014/016: lesson reference identity and ownership are enforced
+  ---
+  duration_ms: 32.610072
+  type: 'test'
+  ...
+# Subtest: WB-005: lesson search covers title and body text but not snapshots or notes
+ok 28 - WB-005: lesson search covers title and body text but not snapshots or notes
+  ---
+  duration_ms: 22.934719
+  type: 'test'
+  ...
+# Subtest: WB-005: section order is server-side and reordering keeps stable ids
+ok 29 - WB-005: section order is server-side and reordering keeps stable ids
+  ---
+  duration_ms: 46.825078
+  type: 'test'
+  ...
+# Subtest: C11/WB-013: stale lesson base versions conflict on update, delete and restore
+ok 30 - C11/WB-013: stale lesson base versions conflict on update, delete and restore
+  ---
+  duration_ms: 34.96706
+  type: 'test'
+  ...
+# Subtest: WB-019: a fresh database applies both module migrations once and survives restart
+ok 31 - WB-019: a fresh database applies both module migrations once and survives restart
+  ---
+  duration_ms: 401.354402
+  type: 'test'
+  ...
+# Subtest: WB-019: a previous-stage account and layout database upgrades without losing rows
+ok 32 - WB-019: a previous-stage account and layout database upgrades without losing rows
+  ---
+  duration_ms: 57.22938
+  type: 'test'
+  ...
+# Subtest: WB-012: committed writes survive restart and replay without duplicating objects
+ok 33 - WB-012: committed writes survive restart and replay without duplicating objects
+  ---
+  duration_ms: 377.766843
+  type: 'test'
+  ...
+# Subtest: WB-012: one key is bound to one logical request per account
+ok 34 - WB-012: one key is bound to one logical request per account
+  ---
+  duration_ms: 50.170545
+  type: 'test'
+  ...
+# Subtest: WB-018: a failing write rolls back fully and the key stays reusable
+ok 35 - WB-018: a failing write rolls back fully and the key stays reusable
+  ---
+  duration_ms: 33.391307
+  type: 'test'
+  ...
+# Subtest: WB-012: concurrent requests with one key still commit once
+ok 36 - WB-012: concurrent requests with one key still commit once
+  ---
+  duration_ms: 26.15646
+  type: 'test'
+  ...
+# Subtest: WB-016/018: write protection matches the trusted origin exactly
+ok 37 - WB-016/018: write protection matches the trusted origin exactly
+  ---
+  duration_ms: 66.401329
+  type: 'test'
+  ...
+# Subtest: WB-014/018: transport and query failures use the contract problem types
+ok 38 - WB-014/018: transport and query failures use the contract problem types
+  ---
+  duration_ms: 74.706256
+  type: 'test'
+  ...
+# Subtest: WB-012: a real HTTP listener keeps the same persisted result across restart
+ok 39 - WB-012: a real HTTP listener keeps the same persisted result across restart
+  ---
+  duration_ms: 38.342196
+  type: 'test'
+  ...
+# Subtest: WB-001/002: a pasted question keeps its original text and can be found again
+ok 40 - WB-001/002: a pasted question keeps its original text and can be found again
+  ---
+  duration_ms: 522.967951
+  type: 'test'
+  ...
+# Subtest: WB-003/013: editing keeps the same id, bumps the version and replays idempotently
+ok 41 - WB-003/013: editing keeps the same id, bumps the version and replays idempotently
+  ---
+  duration_ms: 28.313735
+  type: 'test'
+  ...
+# Subtest: WB-004: a copy keeps the original snapshot and both questions evolve independently
+ok 42 - WB-004: a copy keeps the original snapshot and both questions evolve independently
+  ---
+  duration_ms: 31.00163
+  type: 'test'
+  ...
+# Subtest: WB-009: question deletion hides the item but keeps tombstones and stable ids
+ok 43 - WB-009: question deletion hides the item but keeps tombstones and stable ids
+  ---
+  duration_ms: 31.280646
+  type: 'test'
+  ...
+# Subtest: WB-014: invalid question payloads are rejected without touching stored data
+ok 44 - WB-014: invalid question payloads are rejected without touching stored data
+  ---
+  duration_ms: 43.172944
+  type: 'test'
+  ...
+# Subtest: WB-016: another account cannot reach a question and forged identity is ignored
+ok 45 - WB-016: another account cannot reach a question and forged identity is ignored
+  ---
+  duration_ms: 19.392934
+  type: 'test'
+  ...
+# Subtest: WB-001: list search covers title, body and note only, and starred filters apply
+ok 46 - WB-001: list search covers title, body and note only, and starred filters apply
+  ---
+  duration_ms: 21.949342
+  type: 'test'
+  ...
+# Subtest: C11/WB-013: every question write trigger rejects a stale base version with the current version
+ok 47 - C11/WB-013: every question write trigger rejects a stale base version with the current version
+  ---
+  duration_ms: 40.745881
+  type: 'test'
+  ...
+# Subtest: real A11 HTTPS page identity protects previews, crops and jobs across restart and logout
+ok 48 - real A11 HTTPS page identity protects previews, crops and jobs across restart and logout
+  ---
+  duration_ms: 1090.574326
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: persistent handlers retain partial units, cancellation, unknown provider and interrupted restart without resending
+ok 49 - persistent handlers retain partial units, cancellation, unknown provider and interrupted restart without resending
+  ---
+  duration_ms: 730.91252
+  type: 'test'
+  ...
+# Subtest: four fixed bindings are required and production refuses unconnected business fixtures
+ok 50 - four fixed bindings are required and production refuses unconnected business fixtures
+  ---
+  duration_ms: 0.907853
+  type: 'test'
+  ...
+# Subtest: the frozen material catalog fixture is version 2 without registering unimplemented modules
+ok 51 - the frozen material catalog fixture is version 2 without registering unimplemented modules
+  ---
+  duration_ms: 136.966595
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: HTTP image preview, crop, deduplicated acceptance and restart retain authorized bytes
+ok 52 - HTTP image preview, crop, deduplicated acceptance and restart retain authorized bytes
+  ---
+  duration_ms: 1037.850736
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: HTTP DOCX makes real PDF pages and an immutable crop, while unsupported originals remain downloadable
+ok 53 - HTTP DOCX makes real PDF pages and an immutable crop, while unsupported originals remain downloadable
+  ---
+  duration_ms: 1970.085957
+  type: 'test'
+  ...
+# Subtest: HTTP real PDF/PPTX/PPT and legacy DOC retain every page and legacy risk on retry
+ok 54 - HTTP real PDF/PPTX/PPT and legacy DOC retain every page and legacy risk on retry
+  ---
+  duration_ms: 6897.748218
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: HTTP rejects external relationships, archive expansion and conversion deadlines while preserving originals
+ok 55 - HTTP rejects external relationships, archive expansion and conversion deadlines while preserving originals
+  ---
+  duration_ms: 696.744994
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: same conversion sandbox cannot read a host sentinel or reach the host network
+ok 56 - same conversion sandbox cannot read a host sentinel or reach the host network
+  ---
+  duration_ms: 649.819828
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: HTML is rendered as literal source pixels and never as an executable page
+ok 57 - HTML is rendered as literal source pixels and never as an executable page
+  ---
+  duration_ms: 337.35494
+  type: 'test'
+  ...
+# Subtest: JPEG orientation and WebP produce actual pages; 501-page PDF is retained but rejected
+ok 58 - JPEG orientation and WebP produce actual pages; 501-page PDF is retained but rejected
+  ---
+  duration_ms: 385.841239
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: real HTTP: upload/get/download, idempotency, isolation, restart, same public ports
+ok 59 - real HTTP: upload/get/download, idempotency, isolation, restart, same public ports
+  ---
+  duration_ms: 731.506604
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: real HTTP failure recovery: staging write, rename, DB commit rollback, corruption
+ok 60 - real HTTP failure recovery: staging write, rename, DB commit rollback, corruption
+  ---
+  duration_ms: 108.523972
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: real socket: interrupted upload creates no record; lost response confirms original key
+ok 61 - real socket: interrupted upload creates no record; lost response confirms original key
+  ---
+  duration_ms: 48.457408
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: content schemas, known locations, controlled images and unknown versions
+ok 62 - content schemas, known locations, controlled images and unknown versions
+  ---
+  duration_ms: 147.357089
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: HTTP rejects malformed multipart, extra fields/files, absent identity and invalid content without committing
+ok 63 - HTTP rejects malformed multipart, extra fields/files, absent identity and invalid content without committing
+  ---
+  duration_ms: 882.47899
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: HTTP accepts exactly the schema maximum of 100 MiB
+ok 64 - HTTP accepts exactly the schema maximum of 100 MiB
+  ---
+  duration_ms: 1502.560706
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: persistent fixture preserves v1 and rejects an unknown version without overwriting
+ok 65 - persistent fixture preserves v1 and rejects an unknown version without overwriting
+  ---
+  duration_ms: 90.056701
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: material composition serves the frozen v3 catalog through real page-bound identity
+ok 66 - material composition serves the frozen v3 catalog through real page-bound identity
+  ---
+  duration_ms: 791.899912
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# R34_OUTPUT_MANIFEST /tmp/m43-suite/apps/api/test-results/r34-integration/api/chain-3nh0iM/manifest.json
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: real modules: import review, immutable mixed references, 24 filtered outputs, isolation and restart
+ok 67 - real modules: import review, immutable mixed references, 24 filtered outputs, isolation and restart
+  ---
+  duration_ms: 23414.453503
+  type: 'test'
+  ...
+# Subtest: production composes real handlers and rejects missing or fixture overrides before serving
+ok 68 - production composes real handlers and rejects missing or fixture overrides before serving
+  ---
+  duration_ms: 9.401198
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+ok 69 - MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+  ---
+  duration_ms: 343.77865
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+ok 70 - MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+  ---
+  duration_ms: 1926.344517
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+ok 71 - MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+  ---
+  duration_ms: 27.66914
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+ok 72 - MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+  ---
+  duration_ms: 1877.466212
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+ok 73 - MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+  ---
+  duration_ms: 2900.834843
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+ok 74 - MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+  ---
+  duration_ms: 23.832646
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+ok 75 - MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+  ---
+  duration_ms: 819.032744
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: selected original pages merge a unique question and independently located answer
+ok 76 - selected original pages merge a unique question and independently located answer
+  ---
+  duration_ms: 715.212461
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: failed answer page remains unresolved; explicit retry preserves human review and successful pages
+ok 77 - failed answer page remains unresolved; explicit retry preserves human review and successful pages
+  ---
+  duration_ms: 487.920329
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: only explicit unique continuation merges; duplicate labels and ambiguous answers remain unassigned
+ok 78 - only explicit unique continuation merges; duplicate labels and ambiguous answers remain unassigned
+  ---
+  duration_ms: 1323.260042
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: truncated fragment prefix is retained without constructing the incomplete question
+ok 79 - truncated fragment prefix is retained without constructing the incomplete question
+  ---
+  duration_ms: 247.351257
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: own PDF layout binds a real crop; unverified image associations remain blocked
+ok 80 - own PDF layout binds a real crop; unverified image associations remain blocked
+  ---
+  duration_ms: 1479.053208
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: fixed O page 2 replay retains only complete prefix and never invents Q3/Q4
+ok 81 - fixed O page 2 replay retains only complete prefix and never invents Q3/Q4
+  ---
+  duration_ms: 377.265711
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: selected actual pages 7 and 8 retain original numbering and explicit continuation
+ok 82 - selected actual pages 7 and 8 retain original numbering and explicit continuation
+  ---
+  duration_ms: 3875.662151
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: identical native text imports keep independent editable draft identities
+ok 83 - identical native text imports keep independent editable draft identities
+  ---
+  duration_ms: 109.249304
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: uncertain explicit absence and incomplete selected pages stay unresolved
+ok 84 - uncertain explicit absence and incomplete selected pages stay unresolved
+  ---
+  duration_ms: 439.15351
+  type: 'test'
+  ...
+# Subtest: two same-height column anchors cannot claim the same figure
+ok 85 - two same-height column anchors cannot claim the same figure
+  ---
+  duration_ms: 381.496194
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 4, skipped 0
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 7, skipped 4
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: fixed R31 v1 database upgrades preserving original request replay, IDs and documents
+ok 86 - fixed R31 v1 database upgrades preserving original request replay, IDs and documents
+  ---
+  duration_ms: 1183.278816
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: text import preserves original, produces editable drafts and commits once
+ok 87 - text import preserves original, produces editable drafts and commits once
+  ---
+  duration_ms: 278.664156
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: taxonomy and v2 editing, copies, legacy refusal, account isolation and restart
+ok 88 - taxonomy and v2 editing, copies, legacy refusal, account isolation and restart
+  ---
+  duration_ms: 136.257919
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: blocked provider keeps real image, retry preserves review and supplement originals
+ok 89 - blocked provider keeps real image, retry preserves review and supplement originals
+  ---
+  duration_ms: 390.113922
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: PPT assets use persisted snapshot, transparent bounded PNG and exclude note
+ok 90 - PPT assets use persisted snapshot, transparent bounded PNG and exclude note
+  ---
+  duration_ms: 196.290309
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: fixed native T and W preserve six question boundaries and existing answer roles
+ok 91 - fixed native T and W preserve six question boundaries and existing answer roles
+  ---
+  duration_ms: 2392.843073
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: truncated Provider retains complete candidates; retry never replaces saved review
+ok 92 - truncated Provider retains complete candidates; retry never replaces saved review
+  ---
+  duration_ms: 1061.247387
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: Word answer-only image stays in solution and out of student asset snapshot
+ok 93 - Word answer-only image stays in solution and out of student asset snapshot
+  ---
+  duration_ms: 914.843869
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: frozen old visual response runs through Adapter as replay, not live recognition
+ok 94 - frozen old visual response runs through Adapter as replay, not live recognition
+  ---
+  duration_ms: 614.195946
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: review protects confirmed mappings, invalid taxonomy and explicit source range
+ok 95 - review protects confirmed mappings, invalid taxonomy and explicit source range
+  ---
+  duration_ms: 36.234871
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: PNG table keeps cell grid, transparency and bounded dimensions
+ok 96 - PNG table keeps cell grid, transparency and bounded dimensions
+  ---
+  duration_ms: 68.351751
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: external E selected pages remain 7 and 8 and original stays complete without online calls
+ok 97 - external E selected pages remain 7 and 8 and original stays complete without online calls
+  ---
+  duration_ms: 3647.870751
+  type: 'test'
+  ...
+# Subtest: native math generalizes across changed labels and values without solving missing answers
+ok 98 - native math generalizes across changed labels and values without solving missing answers
+  ---
+  duration_ms: 14.280411
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: complex native OMML keeps nested structures and flags unsupported nodes
+ok 99 - complex native OMML keeps nested structures and flags unsupported nodes
+  ---
+  duration_ms: 842.838188
+  type: 'test'
+  ...
+# Subtest: native nested checks and explanation separation protect confirmation
+ok 100 - native nested checks and explanation separation protect confirmation
+  ---
+  duration_ms: 15.449627
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC02 上传后真实收录，重启仍可读取同一资源和原文件
+ok 101 - MC02 上传后真实收录，重启仍可读取同一资源和原文件
+  ---
+  duration_ms: 761.529629
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC12 分类移动删除、组合检索及跨账户隔离
+ok 102 - MC12 分类移动删除、组合检索及跨账户隔离
+  ---
+  duration_ms: 187.384018
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC13-15 替换、补充预览、固定快照、删除恢复及幂等
+ok 103 - MC13-15 替换、补充预览、固定快照、删除恢复及幂等
+  ---
+  duration_ms: 1143.623139
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC14 lessons Adapter 通过 HTTP 固定采用、拒绝过期、显式更新和重启
+ok 104 - MC14 lessons Adapter 通过 HTTP 固定采用、拒绝过期、显式更新和重启
+  ---
+  duration_ms: 287.4218
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与 HTTP 等价
+ok 105 - MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与 HTTP 等价
+  ---
+  duration_ms: 201.165346
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: R31旧库追加resources迁移后原文件与数据仍可读取
+ok 106 - R31旧库追加resources迁移后原文件与数据仍可读取
+  ---
+  duration_ms: 251.273058
+  type: 'test'
+  ...
+# Subtest: closed expression and projected coordinate independent expected values
+ok 107 - closed expression and projected coordinate independent expected values
+  ---
+  duration_ms: 11.170359
+  type: 'test'
+  ...
+# Subtest: real HTTP dynamic presets, relation failures, public port, identity, immutable export and two restarts
+ok 108 - real HTTP dynamic presets, relation failures, public port, identity, immutable export and two restarts
+  ---
+  duration_ms: 3465.451508
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 4, skipped 7
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 7, skipped 4
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11: fixed P library copy preserves rows, files and receipts across two restarts
+ok 109 - MC11: fixed P library copy preserves rows, files and receipts across two restarts
+  ---
+  duration_ms: 654.749074
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11: fixed M library copy preserves rows, files and receipts across two restarts
+ok 110 - MC11: fixed M library copy preserves rows, files and receipts across two restarts
+  ---
+  duration_ms: 695.363608
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC05/06/11: real composition preserves math snapshots, v2 replay and restart
+ok 111 - MC05/06/11: real composition preserves math snapshots, v2 replay and restart
+  ---
+  duration_ms: 2338.19147
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC06/10: adopted snapshots survive deletion; real classes reverse links preserve linked labels
+ok 112 - MC06/10: adopted snapshots survive deletion; real classes reverse links preserve linked labels
+  ---
+  duration_ms: 952.136334
+  type: 'test'
+  ...
+# Subtest: MC07: all five math kinds produce real DOCX and PDF without private notes
+ok 113 - MC07: all five math kinds produce real DOCX and PDF without private notes
+  ---
+  duration_ms: 6463.678457
+  type: 'test'
+  ...
+# Subtest: real HTML upload, original/current bytes, large/broken assets, cross-account and persistent receipts
+ok 114 - real HTML upload, original/current bytes, large/broken assets, cross-account and persistent receipts
+  ---
+  duration_ms: 1416.269943
+  type: 'test'
+  ...
+# Subtest: MC01/08/09/13 real-auth formula source, immutable files/history, failures and two restarts
+ok 115 - MC01/08/09/13 real-auth formula source, immutable files/history, failures and two restarts
+  ---
+  duration_ms: 4572.827242
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: R31 database upgrade retains files, documents, questions and replay across two restarts
+ok 116 - R31 database upgrade retains files, documents, questions and replay across two restarts
+  ---
+  duration_ms: 515.334094
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: actual HTTP SVG/PNG: Q2 coordinates, Q5 labels, Q6 explicit edge
+ok 117 - actual HTTP SVG/PNG: Q2 coordinates, Q5 labels, Q6 explicit edge
+  ---
+  duration_ms: 3287.119164
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] unhandled POST /api/modules/math/v1/works: SqliteError: test disk transaction failure
+#     at persist (file:///tmp/m43-suite/apps/api/src/modules/math/service.js:72:61)
+#     at file:///tmp/m43-suite/apps/api/src/modules/math/service.js:402:53
+#     at Function.<anonymous> (file:///tmp/m43-suite/apps/api/src/workbench/mutations.js:88:22)
+#     at Function.sqliteTransaction (/tmp/m43-suite/node_modules/better-sqlite3/lib/methods/transaction.js:65:24)
+#     at Object.execute (file:///tmp/m43-suite/apps/api/src/workbench/mutations.js:110:24)
+#     at operations.<computed> [as createWork] (file:///tmp/m43-suite/apps/api/src/modules/math/service.js:376:24)
+#     at async file:///tmp/m43-suite/apps/api/src/modules/math/index.js:31:24 {
+#   code: 'SQLITE_CONSTRAINT_TRIGGER'
+# }
+# Subtest: real HTTP: source, history, replay, exports, restart and failures
+ok 118 - real HTTP: source, history, replay, exports, restart and failures
+  ---
+  duration_ms: 3393.105035
+  type: 'test'
+  ...
+# Subtest: isolated static math mapping: real A11, native work, files, replay and two restarts share one composition
+ok 119 - isolated static math mapping: real A11, native work, files, replay and two restarts share one composition
+  ---
+  duration_ms: 1752.19461
+  type: 'test'
+  ...
+# Subtest: R31 pinned Node packages render real formula SVG/transparent PNG and local Chinese font
+ok 120 - R31 pinned Node packages render real formula SVG/transparent PNG and local Chinese font
+  ---
+  duration_ms: 84.029322
+  type: 'test'
+  ...
+# Subtest: R31 real HTTPS: files enforce A11 page binding, restore, expiry and revocation
+ok 121 - R31 real HTTPS: files enforce A11 page binding, restore, expiry and revocation
+  ---
+  duration_ms: 747.686169
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: R31 real HTTPS: file/content, idempotency and migration ledger survive two restarts
+ok 122 - R31 real HTTPS: file/content, idempotency and migration ledger survive two restarts
+  ---
+  duration_ms: 416.029622
+  type: 'test'
+  ...
+# Subtest: R31 composition: injected workbench binds real auth; production refuses fixture handlers
+ok 123 - R31 composition: injected workbench binds real auth; production refuses fixture handlers
+  ---
+  duration_ms: 23.438765
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T001: 班级只有名称，可建可改名可删可恢复，重复名允许
+ok 124 - TT-C1/WB-T001: 班级只有名称，可建可改名可删可恢复，重复名允许
+  ---
+  duration_ms: 375.86023
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T001: 一句话就是一条有效记录，刷新与保留库重启后仍在
+ok 125 - TT-C1/WB-T001: 一句话就是一条有效记录，刷新与保留库重启后仍在
+  ---
+  duration_ms: 68.412172
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T002: 补充实际位置、按班级隔离并按日期排序
+ok 126 - TT-C1/WB-T002: 补充实际位置、按班级隔离并按日期排序
+  ---
+  duration_ms: 38.156871
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T003/WB-T019: 备课链接保存时标题，两班反馈独立，改删来源不破坏记录
+ok 127 - TT-C1/WB-T003/WB-T019: 备课链接保存时标题，两班反馈独立，改删来源不破坏记录
+  ---
+  duration_ms: 59.094773
+  type: 'test'
+  ...
+# Subtest: TT-C1.6/WB-T002/WB-T019: 删班记录只读，恢复保留原 ID 与来源，记录单独恢复
+ok 128 - TT-C1.6/WB-T002/WB-T019: 删班记录只读，恢复保留原 ID 与来源，记录单独恢复
+  ---
+  duration_ms: 42.533116
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T019: 空标题只影响显示回退，labelAtLink 保存服务器读取的原文
+ok 129 - TT-C1/WB-T019: 空标题只影响显示回退，labelAtLink 保存服务器读取的原文
+  ---
+  duration_ms: 17.62229
+  type: 'test'
+  ...
+# Subtest: WB-T017/TT-C5: 同键重放返回原结果、同键改体 409、无部分写入
+ok 130 - WB-T017/TT-C5: 同键重放返回原结果、同键改体 409、无部分写入
+  ---
+  duration_ms: 38.886439
+  type: 'test'
+  ...
+# Subtest: WB-T017/WB-T018: 存储失败 503 不留业务/幂等记录，恢复后同键只写一次
+ok 131 - WB-T017/WB-T018: 存储失败 503 不留业务/幂等记录，恢复后同键只写一次
+  ---
+  duration_ms: 17.3903
+  type: 'test'
+  ...
+# Subtest: WB-T018: 来源保护、身份与账户隔离
+ok 132 - WB-T018: 来源保护、身份与账户隔离
+  ---
+  duration_ms: 31.024098
+  type: 'test'
+  ...
+# Subtest: TM-C1/C5 fixed T53 SQLite upgrade preserves old links and successful receipt
+ok 133 - TM-C1/C5 fixed T53 SQLite upgrade preserves old links and successful receipt
+  ---
+  duration_ms: 835.444286
+  type: 'test'
+  ...
+# Subtest: TM-C6 HTTP: question 404 must not become a tombstone
+ok 134 - TM-C6 HTTP: question 404 must not become a tombstone
+  ---
+  duration_ms: 389.976529
+  type: 'test'
+  ...
+# Subtest: TM-C6 HTTP: lesson 404 must not become a tombstone
+ok 135 - TM-C6 HTTP: lesson 404 must not become a tombstone
+  ---
+  duration_ms: 21.059408
+  type: 'test'
+  ...
+# Subtest: TM-C1/C2: v2 current titles, tombstones, retained links, remove/relink and restart
+ok 136 - TM-C1/C2: v2 current titles, tombstones, retained links, remove/relink and restart
+  ---
+  duration_ms: 54.475162
+  type: 'test'
+  ...
+# Subtest: TM-C4/C5: shared records, legacy loss guards and original successful receipt after restart
+ok 137 - TM-C4/C5: shared records, legacy loss guards and original successful receipt after restart
+  ---
+  duration_ms: 42.302986
+  type: 'test'
+  ...
+# Subtest: TM-C3/C6: complete reverse feedback, ownership and rollback of mutations/receipts
+ok 138 - TM-C3/C6: complete reverse feedback, ownership and rollback of mutations/receipts
+  ---
+  duration_ms: 60.901183
+  type: 'test'
+  ...
+# Subtest: TM-C6 strict sources, empty titles, invalid render and v2 replay
+ok 139 - TM-C6 strict sources, empty titles, invalid render and v2 replay
+  ---
+  duration_ms: 99.0465
+  type: 'test'
+  ...
+# Subtest: TM-C7 schedule RecordReference remains readable when math projection fails
+ok 140 - TM-C7 schedule RecordReference remains readable when math projection fails
+  ---
+  duration_ms: 111.219864
+  type: 'test'
+  ...
+# Subtest: TM-C6 restoration projection failure rolls back deletion state and receipt
+ok 141 - TM-C6 restoration projection failure rolls back deletion state and receipt
+  ---
+  duration_ms: 35.7833
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数据保持可读
+ok 142 - classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数据保持可读
+  ---
+  duration_ms: 357.517055
+  type: 'test'
+  ...
+# Subtest: 公共端口：readClass/readRecord 允许 tombstone，外账户统一 404
+ok 143 - 公共端口：readClass/readRecord 允许 tombstone，外账户统一 404
+  ---
+  duration_ms: 379.378283
+  type: 'test'
+  ...
+# Subtest: 公共端口：readRecord 的 label 取首个非空文字并截前 300 个 code point
+ok 144 - 公共端口：readRecord 的 label 取首个非空文字并截前 300 个 code point
+  ---
+  duration_ms: 48.246106
+  type: 'test'
+  ...
+# Subtest: 公共端口：listSourceRecords 与 HTTP 同语义，返回活动记录与活动班级顺序
+ok 145 - 公共端口：listSourceRecords 与 HTTP 同语义，返回活动记录与活动班级顺序
+  ---
+  duration_ms: 33.606024
+  type: 'test'
+  ...
+# Subtest: 来源读取失败使本次读取失败，404 同样传播而非伪删除
+ok 146 - 来源读取失败使本次读取失败，404 同样传播而非伪删除
+  ---
+  duration_ms: 19.298416
+  type: 'test'
+  ...
+# Subtest: 直接业务调用同样拒绝非法输入，不依赖 HTTP 层
+ok 147 - 直接业务调用同样拒绝非法输入，不依赖 HTTP 层
+  ---
+  duration_ms: 12.578075
+  type: 'test'
+  ...
+# Subtest: real composition exposes scheduled notifications with no implicit reminder
+ok 148 - real composition exposes scheduled notifications with no implicit reminder
+  ---
+  duration_ms: 300.394472
+  type: 'test'
+  ...
+# Subtest: WB-T012/014: before, after, original due time and stable identities survive repeated restarts
+ok 149 - WB-T012/014: before, after, original due time and stable identities survive repeated restarts
+  ---
+  duration_ms: 60.673636
+  type: 'test'
+  ...
+# Subtest: WB-T013: changing before due recalculates; changing after due captures old title and original time atomically
+ok 150 - WB-T013: changing before due recalculates; changing after due captures old title and original time atomically
+  ---
+  duration_ms: 27.654708
+  type: 'test'
+  ...
+# Subtest: WB-T015/017/018: reads, dismissal snapshots, atomic foreign-ID rejection, replay and isolation
+ok 151 - WB-T015/017/018: reads, dismissal snapshots, atomic foreign-ID rejection, replay and isolation
+  ---
+  duration_ms: 60.900759
+  type: 'test'
+  ...
+# Subtest: WB-T013/018: real SQLite failure rolls back pre-change notification capture and the schedule write
+ok 152 - WB-T013/018: real SQLite failure rolls back pre-change notification capture and the schedule write
+  ---
+  duration_ms: 28.206442
+  type: 'test'
+  ...
+# Subtest: WB-T012: Unicode fallback title matches the public candidate projection without truncating saved input
+ok 153 - WB-T012: Unicode fallback title matches the public candidate projection without truncating saved input
+  ---
+  duration_ms: 18.02558
+  type: 'test'
+  ...
+# Subtest: WB-T010/016: moved weekly instances, cancellation recovery, deletion and outside-series targets
+ok 154 - WB-T010/016: moved weekly instances, cancellation recovery, deletion and outside-series targets
+  ---
+  duration_ms: 56.105056
+  type: 'test'
+  ...
+# Subtest: TT-C7: production catalog matches frozen combined v3 and rejects all four invalid static inputs
+ok 155 - TT-C7: production catalog matches frozen combined v3 and rejects all four invalid static inputs
+  ---
+  duration_ms: 17.434706
+  type: 'test'
+  ...
+# Subtest: WB-T016: cancelling before due and restoring after due is quiet; deleting after due captures the old notification
+ok 156 - WB-T016: cancelling before due and restoring after due is quiet; deleting after due captures the old notification
+  ---
+  duration_ms: 36.005936
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: TT-C5: notification actions reject malformed, unknown and duplicate input before writing
+ok 157 - TT-C5: notification actions reject malformed, unknown and duplicate input before writing
+  ---
+  duration_ms: 33.076564
+  type: 'test'
+  ...
+# Subtest: B16 database upgrades into the real four-module composition without losing linked sources
+ok 158 - B16 database upgrades into the real four-module composition without losing linked sources
+  ---
+  duration_ms: 43.479311
+  type: 'test'
+  ...
+# Subtest: settings default to Asia/Shanghai version 1 and update with a version guard
+ok 159 - settings default to Asia/Shanghai version 1 and update with a version guard
+  ---
+  duration_ms: 106.373312
+  type: 'test'
+  ...
+# Subtest: unscheduled entries save, list and schedule without losing item identity
+ok 160 - unscheduled entries save, list and schedule without losing item identity
+  ---
+  duration_ms: 31.514005
+  type: 'test'
+  ...
+# Subtest: array order is segment order and priority is a separate axis
+ok 161 - array order is segment order and priority is a separate axis
+  ---
+  duration_ms: 19.328715
+  type: 'test'
+  ...
+# Subtest: strict request schema rejects unknown nested fields with the exact pointer
+ok 162 - strict request schema rejects unknown nested fields with the exact pointer
+  ---
+  duration_ms: 34.487296
+  type: 'test'
+  ...
+# Subtest: cross-field entry rules reject empty content, blank or duplicate items and bad couplings
+ok 163 - cross-field entry rules reject empty content, blank or duplicate items and bad couplings
+  ---
+  duration_ms: 29.314653
+  type: 'test'
+  ...
+# Subtest: the supported date window is inclusive on both ends
+ok 164 - the supported date window is inclusive on both ends
+  ---
+  duration_ms: 11.844355
+  type: 'test'
+  ...
+# Subtest: course links resolve through the ports and derived state never fakes a deletion
+ok 165 - course links resolve through the ports and derived state never fakes a deletion
+  ---
+  duration_ms: 34.354102
+  type: 'test'
+  ...
+# Subtest: repeating templates keep the first day, zone and kind after the first save
+ok 166 - repeating templates keep the first day, zone and kind after the first save
+  ---
+  duration_ms: 38.828182
+  type: 'test'
+  ...
+# Subtest: delete and restore are versioned and a deleted entry rejects edits
+ok 167 - delete and restore are versioned and a deleted entry rejects edits
+  ---
+  duration_ms: 23.051755
+  type: 'test'
+  ...
+# Subtest: write protocol keeps source, identity, conflict and unknown-result rules intact
+ok 168 - write protocol keeps source, identity, conflict and unknown-result rules intact
+  ---
+  duration_ms: 26.743923
+  type: 'test'
+  ...
+# Subtest: entry lists are stable, repeated queries are rejected and PUT replaces the whole body
+ok 169 - entry lists are stable, repeated queries are rejected and PUT replaces the whole body
+  ---
+  duration_ms: 16.439117
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: an empty database receives every schedule table and ledger row
+ok 170 - an empty database receives every schedule table and ledger row
+  ---
+  duration_ms: 15.903661
+  type: 'test'
+  ...
+# Subtest: a B16 database upgrades in place and keeps its previous rows
+ok 171 - a B16 database upgrades in place and keeps its previous rows
+  ---
+  duration_ms: 309.305972
+  type: 'test'
+  ...
+# Subtest: moving an item to a new unscheduled entry is one atomic result and replay-safe
+ok 172 - moving an item to a new unscheduled entry is one atomic result and replay-safe
+  ---
+  duration_ms: 51.302091
+  type: 'test'
+  ...
+# Subtest: moving into an existing entry inserts at the index and rolls back entirely on conflict
+ok 173 - moving into an existing entry inserts at the index and rolls back entirely on conflict
+  ---
+  duration_ms: 27.524649
+  type: 'test'
+  ...
+# Subtest: invalid move shapes and repeating participants are rejected without a partial write
+ok 174 - invalid move shapes and repeating participants are rejected without a partial write
+  ---
+  duration_ms: 25.719848
+  type: 'test'
+  ...
+# Subtest: an emptied untitled source is soft-deleted while a titled source stays
+ok 175 - an emptied untitled source is soft-deleted while a titled source stays
+  ---
+  duration_ms: 10.650023
+  type: 'test'
+  ...
+# Subtest: deleted source or target rejects the move before any change
+ok 176 - deleted source or target rejects the move before any change
+  ---
+  duration_ms: 13.601366
+  type: 'test'
+  ...
+# Subtest: listReminderCandidates only returns armed instances that are due
+ok 177 - listReminderCandidates only returns armed instances that are due
+  ---
+  duration_ms: 58.879725
+  type: 'test'
+  ...
+# Subtest: an unset reminder never produces a candidate and a past one is rejected on create
+ok 178 - an unset reminder never produces a candidate and a past one is rejected on create
+  ---
+  duration_ms: 30.365528
+  type: 'test'
+  ...
+# Subtest: a repeating template needs at least one future instance for a reminder
+ok 179 - a repeating template needs at least one future instance for a reminder
+  ---
+  duration_ms: 14.186187
+  type: 'test'
+  ...
+# Subtest: past reminder configurations survive text edits but not an adjusted due time
+ok 180 - past reminder configurations survive text edits but not an adjusted due time
+  ---
+  duration_ms: 24.269543
+  type: 'test'
+  ...
+# Subtest: changing the reminder re-arms it and never backfills the old due instant
+ok 181 - changing the reminder re-arms it and never backfills the old due instant
+  ---
+  duration_ms: 13.520504
+  type: 'test'
+  ...
+# Subtest: cancelled instances stay silent while a moved override is found on its new time
+ok 182 - cancelled instances stay silent while a moved override is found on its new time
+  ---
+  duration_ms: 34.585813
+  type: 'test'
+  ...
+# Subtest: the reminder title projection trims the fallback item to 300 code points
+ok 183 - the reminder title projection trims the fallback item to 300 code points
+  ---
+  duration_ms: 10.156846
+  type: 'test'
+  ...
+# Subtest: cancelling before the due instant keeps that occurrence out of the candidates
+ok 184 - cancelling before the due instant keeps that occurrence out of the candidates
+  ---
+  duration_ms: 14.259347
+  type: 'test'
+  ...
+# Subtest: readOccurrence honours the port contract for unscheduled, unknown and outside-series
+ok 185 - readOccurrence honours the port contract for unscheduled, unknown and outside-series
+  ---
+  duration_ms: 10.396078
+  type: 'test'
+  ...
+# Subtest: beforeChange runs once, inside the write, before the change and never on replay
+ok 186 - beforeChange runs once, inside the write, before the change and never on replay
+  ---
+  duration_ms: 14.846609
+  type: 'test'
+  ...
+# Subtest: a failing beforeChange rolls the whole schedule write back
+ok 187 - a failing beforeChange rolls the whole schedule write back
+  ---
+  duration_ms: 14.652267
+  type: 'test'
+  ...
+# Subtest: a failing source read fails the read instead of faking a deletion
+ok 188 - a failing source read fails the read instead of faking a deletion
+  ---
+  duration_ms: 13.177999
+  type: 'test'
+  ...
+# Subtest: accounts and ranges stay isolated from each other
+ok 189 - accounts and ranges stay isolated from each other
+  ---
+  duration_ms: 15.70216
+  type: 'test'
+  ...
+# Subtest: a repeating template keeps a past reminder through text edits but not through a new due time
+ok 190 - a repeating template keeps a past reminder through text edits but not through a new due time
+  ---
+  duration_ms: 12.588504
+  type: 'test'
+  ...
+# Subtest: deleting and restoring the group cannot replay reminders from the disabled window
+ok 191 - deleting and restoring the group cannot replay reminders from the disabled window
+  ---
+  duration_ms: 14.1958
+  type: 'test'
+  ...
+# Subtest: a weekly series expands to one instance per week with stable origin dates
+ok 192 - a weekly series expands to one instance per week with stable origin dates
+  ---
+  duration_ms: 40.084516
+  type: 'test'
+  ...
+# Subtest: a single-instance override keeps its origin identity and is found on the moved date
+ok 193 - a single-instance override keeps its origin identity and is found on the moved date
+  ---
+  duration_ms: 20.163328
+  type: 'test'
+  ...
+# Subtest: shortening and extending the series hides and restores exceptions without deleting them
+ok 194 - shortening and extending the series hides and restores exceptions without deleting them
+  ---
+  duration_ms: 18.01043
+  type: 'test'
+  ...
+# Subtest: cancel, restore and repeated inherit each advance the group version
+ok 195 - cancel, restore and repeated inherit each advance the group version
+  ---
+  duration_ms: 12.896437
+  type: 'test'
+  ...
+# Subtest: a deleted group shows deleted instances and restores its exceptions
+ok 196 - a deleted group shows deleted instances and restores its exceptions
+  ---
+  duration_ms: 18.618532
+  type: 'test'
+  ...
+# Subtest: origin dates off the weekly rhythm are not found and out-of-range writes are 422
+ok 197 - origin dates off the weekly rhythm are not found and out-of-range writes are 422
+  ---
+  duration_ms: 14.998377
+  type: 'test'
+  ...
+# Subtest: range queries use the account timezone half-open interval and reject bad bounds
+ok 198 - range queries use the account timezone half-open interval and reject bad bounds
+  ---
+  duration_ms: 17.584224
+  type: 'test'
+  ...
+# Subtest: a 25-hour DST day keeps the half-open local-day boundaries
+ok 199 - a 25-hour DST day keeps the half-open local-day boundaries
+  ---
+  duration_ms: 8.811782
+  type: 'test'
+  ...
+# Subtest: DST gaps and overlaps resolve to the exact UTC instants the contract fixes
+ok 200 - DST gaps and overlaps resolve to the exact UTC instants the contract fixes
+  ---
+  duration_ms: 10.971495
+  type: 'test'
+  ...
+# Subtest: changing the account timezone moves range display boundaries but not instants
+ok 201 - changing the account timezone moves range display boundaries but not instants
+  ---
+  duration_ms: 14.855327
+  type: 'test'
+  ...
+# Subtest: the shared catalog carries exactly the frozen material entries
+ok 202 - the shared catalog carries exactly the frozen material entries
+  ---
+  duration_ms: 2.149886
+  type: 'test'
+  ...
+# Subtest: catalog validation reports duplicates, missing dependencies and cycles
+ok 203 - catalog validation reports duplicates, missing dependencies and cycles
+  ---
+  duration_ms: 0.737817
+  type: 'test'
+  ...
+# Subtest: catalog projection enables only implemented modules and rejects orphans
+ok 204 - catalog projection enables only implemented modules and rejects orphans
+  ---
+  duration_ms: 0.619347
+  type: 'test'
+  ...
+# Subtest: the shared contract vocabulary stays in the frozen OpenAPI documents
+ok 205 - the shared contract vocabulary stays in the frozen OpenAPI documents
+  ---
+  duration_ms: 1.420918
+  type: 'test'
+  ...
+# Subtest: the loader refuses an implementation without a catalog mapping
+ok 206 - the loader refuses an implementation without a catalog mapping
+  ---
+  duration_ms: 0.548768
+  type: 'test'
+  ...
+# Subtest: the loader names factories by convention and requires {router, port}
+ok 207 - the loader names factories by convention and requires {router, port}
+  ---
+  duration_ms: 0.692573
+  type: 'test'
+  ...
+# Subtest: the loader wires a required public port and enforces its presence
+ok 208 - the loader wires a required public port and enforces its presence
+  ---
+  duration_ms: 0.483542
+  type: 'test'
+  ...
+# Subtest: a module that requires a missing provider stops composition
+ok 209 - a module that requires a missing provider stops composition
+  ---
+  duration_ms: 0.273014
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: the context response is JSON and never cached
+ok 210 - the context response is JSON and never cached
+  ---
+  duration_ms: 290.433908
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: a write without the fixed browser protection header is refused before any change
+ok 211 - a write without the fixed browser protection header is refused before any change
+  ---
+  duration_ms: 17.929118
+  type: 'test'
+  ...
+# [workbench] unhandled POST /api/modules/workbench-probe/items: SyntaxError: Unexpected end of JSON input
+#     at JSON.parse (<anonymous>)
+#     at parse (/tmp/m43-suite/node_modules/body-parser/lib/types/json.js:91:21)
+#     at /tmp/m43-suite/node_modules/body-parser/lib/read.js:162:18
+#     at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+#     at invokeCallback (/tmp/m43-suite/node_modules/raw-body/index.js:238:16)
+#     at done (/tmp/m43-suite/node_modules/raw-body/index.js:227:7)
+#     at IncomingMessage.onEnd (/tmp/m43-suite/node_modules/raw-body/index.js:287:7)
+#     at IncomingMessage.emit (node:events:519:28)
+#     at endReadableNT (node:internal/streams/readable:1698:12)
+#     at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+#   expose: true,
+#   statusCode: 400,
+#   status: 400,
+#   body: '{"value":',
+#   type: 'entity.parse.failed'
+# }
+# [workbench] unhandled POST /api/modules/workbench-probe/items: PayloadTooLargeError: request entity too large
+#     at readStream (/tmp/m43-suite/node_modules/raw-body/index.js:163:17)
+#     at getRawBody (/tmp/m43-suite/node_modules/raw-body/index.js:116:12)
+#     at read (/tmp/m43-suite/node_modules/body-parser/lib/read.js:113:3)
+#     at jsonParser (/tmp/m43-suite/node_modules/body-parser/lib/types/json.js:60:5)
+#     at Layer.handleRequest (/tmp/m43-suite/node_modules/router/lib/layer.js:152:17)
+#     at trimPrefix (/tmp/m43-suite/node_modules/router/index.js:342:13)
+#     at /tmp/m43-suite/node_modules/router/index.js:297:9
+#     at processParams (/tmp/m43-suite/node_modules/router/index.js:582:12)
+#     at next (/tmp/m43-suite/node_modules/router/index.js:291:5)
+#     at logRequest (file:///tmp/m43-suite/apps/api/src/workbench/logger.js:70:12) {
+#   expected: 2097228,
+#   length: 2097228,
+#   limit: 2097152,
+#   type: 'entity.too.large'
+# }
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: media type, malformed JSON and payload size map to their contract statuses
+ok 212 - media type, malformed JSON and payload size map to their contract statuses
+  ---
+  duration_ms: 31.571421
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: the idempotency key header is required and must be a UUID
+ok 213 - the idempotency key header is required and must be a UUID
+  ---
+  duration_ms: 10.917203
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: invalid input returns exactly one located error in the frozen order
+ok 214 - invalid input returns exactly one located error in the frozen order
+  ---
+  duration_ms: 26.242464
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: unknown fields are reported before field content, ordered by key ascending
+ok 215 - unknown fields are reported before field content, ordered by key ascending
+  ---
+  duration_ms: 13.155859
+  type: 'test'
+  ...
+# [workbench] unhandled POST /api/modules/workbench-probe/items/00000000-0000-4000-8000-000000000000/explode: Error: simulated unknown storage failure
+#     at write (file:///tmp/m43-suite/apps/api/test/fixtures/first-flow/modules/workbench-probe/index.js:93:13)
+#     at file:///tmp/m43-suite/apps/api/src/workbench/http.js:164:13
+#     at Function.<anonymous> (file:///tmp/m43-suite/apps/api/src/workbench/mutations.js:88:22)
+#     at Function.sqliteTransaction (/tmp/m43-suite/node_modules/better-sqlite3/lib/methods/transaction.js:65:24)
+#     at Object.execute (file:///tmp/m43-suite/apps/api/src/workbench/mutations.js:110:24)
+#     at file:///tmp/m43-suite/apps/api/src/workbench/http.js:156:30
+#     at handle (file:///tmp/m43-suite/apps/api/src/workbench/http.js:40:23)
+#     at Layer.handleRequest (/tmp/m43-suite/node_modules/router/lib/layer.js:152:17)
+#     at next (/tmp/m43-suite/node_modules/router/lib/route.js:157:13)
+#     at Route.dispatch (/tmp/m43-suite/node_modules/router/lib/route.js:117:3)
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: an unknown storage failure rolls back and maps to temporarily-unavailable
+ok 216 - an unknown storage failure rolls back and maps to temporarily-unavailable
+  ---
+  duration_ms: 10.301697
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: workbench module paths are owned only for catalog module IDs
+ok 217 - workbench module paths are owned only for catalog module IDs
+  ---
+  duration_ms: 12.339958
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: the composed app mounts the catalog handler on the exact contract path
+not ok 218 - the composed app mounts the catalog handler on the exact contract path
+  ---
+  duration_ms: 21.545485
+  type: 'test'
+  location: '/tmp/m43-suite/apps/api/test/workbench-http.test.js:238:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    3 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 3
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/m43-suite/apps/api/test/workbench-http.test.js:274:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: an anonymous workbench request is unauthenticated and never cached
+ok 219 - an anonymous workbench request is unauthenticated and never cached
+  ---
+  duration_ms: 289.59674
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: write source protection rejects a wrong, null or missing origin before identity
+ok 220 - write source protection rejects a wrong, null or missing origin before identity
+  ---
+  duration_ms: 36.164681
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: reads carry no source requirement in the frozen contract
+ok 221 - reads carry no source requirement in the frozen contract
+  ---
+  duration_ms: 9.30963
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: the test runner binds two independent identities and rejects forged identity input
+ok 222 - the test runner binds two independent identities and rejects forged identity input
+  ---
+  duration_ms: 24.091682
+  type: 'test'
+  ...
+# Subtest: another account cannot read or list an account object and never sees its content
+ok 223 - another account cannot read or list an account object and never sees its content
+  ---
+  duration_ms: 20.667958
+  type: 'test'
+  ...
+# Subtest: a production process refuses the test-principal identity mode
+ok 224 - a production process refuses the test-principal identity mode
+  ---
+  duration_ms: 0.67252
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-broken
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-broken
+# Subtest: an empty database applies migrations once and records them in the ledger
+ok 225 - an empty database applies migrations once and records them in the ledger
+  ---
+  duration_ms: 260.738413
+  type: 'test'
+  ...
+# Subtest: an existing account and layout database is upgraded without losing its data
+ok 226 - an existing account and layout database is upgraded without losing its data
+  ---
+  duration_ms: 40.712474
+  type: 'test'
+  ...
+# Subtest: startServer refuses to open the port when a migration fails
+ok 227 - startServer refuses to open the port when a migration fails
+  ---
+  duration_ms: 5.995214
+  type: 'test'
+  ...
+# Subtest: a failing migration leaves no ledger row and no partial table
+ok 228 - a failing migration leaves no ledger row and no partial table
+  ---
+  duration_ms: 3.652714
+  type: 'test'
+  ...
+# Subtest: the runner validates migration IDs, prefixes and removals
+ok 229 - the runner validates migration IDs, prefixes and removals
+  ---
+  duration_ms: 0.971544
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: replaying the same key and request returns the original result exactly once
+ok 230 - replaying the same key and request returns the original result exactly once
+  ---
+  duration_ms: 269.400661
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: object key order does not change the request fingerprint but the body does
+ok 231 - object key order does not change the request fingerprint but the body does
+  ---
+  duration_ms: 14.533682
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: a failed write rolls back the business row and the confirmed-request record
+ok 232 - a failed write rolls back the business row and the confirmed-request record
+  ---
+  duration_ms: 18.638611
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: the same key in another account is an independent request
+ok 233 - the same key in another account is an independent request
+  ---
+  duration_ms: 12.101573
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: concurrent identical requests commit only once and both see the confirmed result
+ok 234 - concurrent identical requests commit only once and both see the confirmed result
+  ---
+  duration_ms: 9.175583
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule, workbench-probe
+# [workbench] migrations applied 0, skipped 12
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule, workbench-probe
+# Subtest: a confirmed request replays after the API process restarts on the same database
+ok 235 - a confirmed request replays after the API process restarts on the same database
+  ---
+  duration_ms: 13.578719
+  type: 'test'
+  ...
+# Subtest: mutations.execute rejects an asynchronous write callback inside the transaction
+ok 236 - mutations.execute rejects an asynchronous write callback inside the transaction
+  ---
+  duration_ms: 0.930438
+  type: 'test'
+  ...
+# Subtest: a well-formed document passes with inline and block math
+ok 237 - a well-formed document passes with inline and block math
+  ---
+  duration_ms: 1.189776
+  type: 'test'
+  ...
+# Subtest: an unknown document version or node type is an unsupported content version
+ok 238 - an unknown document version or node type is an unsupported content version
+  ---
+  duration_ms: 0.682764
+  type: 'test'
+  ...
+# Subtest: document errors pick the deepest, first-in-order location
+ok 239 - document errors pick the deepest, first-in-order location
+  ---
+  duration_ms: 0.259865
+  type: 'test'
+  ...
+# Subtest: sources accept the frozen kinds and reject an unknown one
+ok 240 - sources accept the frozen kinds and reject an unknown one
+  ---
+  duration_ms: 0.349991
+  type: 'test'
+  ...
+# Subtest: reference and section inputs use the shared ID, version and note shapes
+ok 241 - reference and section inputs use the shared ID, version and note shapes
+  ---
+  duration_ms: 0.293725
+  type: 'test'
+  ...
+# Subtest: the boolean branch matches the frozen starred field
+ok 242 - the boolean branch matches the frozen starred field
+  ---
+  duration_ms: 0.091099
+  type: 'test'
+  ...
+# Subtest: scalar primitives reject implicit conversion and empty content
+ok 243 - scalar primitives reject implicit conversion and empty content
+  ---
+  duration_ms: 0.180491
+  type: 'test'
+  ...
+# Subtest: validateBody throws the contract 422 problem a module can reuse
+ok 244 - validateBody throws the contract 422 problem a module can reuse
+  ---
+  duration_ms: 0.406079
+  type: 'test'
+  ...
+1..244
+# tests 296
+# suites 12
+# pass 295
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 24916.275133
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /tmp/m43-suite/apps/api
+npm error workspace @refatos/api@0.3.0
+npm error location /tmp/m43-suite/apps/api
+npm error command failed
+npm error command sh -c node --test test/*.test.js

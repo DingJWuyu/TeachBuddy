@@ -34,9 +34,9 @@ test('a teacher can enter an empty home, open settings, and persist layout data'
   await expect(page.getByText('暂无模块')).toHaveCount(0);
   await expect(page.getByText('选择下一步')).toHaveCount(0);
 
-  const modules = await apiCall(page, '/modules');
-  expect(modules).toEqual({ status: 200, body: { items: [] } });
-
+  // The old bearer module directory endpoint is retired (`GET /api/modules` is
+  // the same-origin workbench catalog now), so this shell reads no server module
+  // list; the layout contract below is what it still owns.
   const layout = {
     hiddenModuleIds: [],
     groups: [{ id: 'daily', name: '日常', moduleIds: [] }],

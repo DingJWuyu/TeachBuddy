@@ -1,0 +1,833 @@
+{
+  "id": "a81aebf4-6085-4c2b-bacc-30fb308d1827",
+  "version": 4,
+  "createdAt": "2026-09-22T13:22:27.320Z",
+  "updatedAt": "2026-09-22T13:22:27.935Z",
+  "deletedAt": null,
+  "title": "Adapter replay only",
+  "origin": "fixed old I response on matching P page source",
+  "input": {
+    "kind": "files",
+    "fileIds": [
+      "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c"
+    ],
+    "pages": [
+      {
+        "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+        "pages": [
+          1,
+          2,
+          3
+        ]
+      }
+    ]
+  },
+  "supplementFileIds": [],
+  "drafts": [
+    {
+      "id": "bd884ea8-44cb-43d0-adb0-f864899a57af",
+      "title": "Q1",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "求函数 "
+              },
+              {
+                "type": "math",
+                "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+              },
+              {
+                "type": "text",
+                "text": " 的定义域。"
+              }
+            ]
+          },
+          {
+            "type": "list",
+            "role": "options",
+            "items": [
+              {
+                "label": "A",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "math",
+                        "latex": "[\\frac{1}{2},+\\infty )"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "B",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "math",
+                        "latex": "[\\frac{1}{2},2) \\cup  (2,+\\infty )"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "C",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "math",
+                        "latex": "(\\frac{1}{2},2) \\cup  (2,+\\infty )"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "D",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "math",
+                        "latex": "(-\\infty ,2) \\cup  (2,+\\infty )"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "答案 B。根号内非负且分母不为零。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 1,
+              "box": null
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 1,
+              "box": null
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "5098f4f1-ddbe-456e-a42e-74ed9b306c1d",
+          "code": "unverified-location",
+          "field": "/parts",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 1,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "50765778-bde8-4942-bca6-6b12c020a175",
+          "code": "uncertain-formula",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 1,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "04e5ae1b-adab-444c-a44a-c5c5f15766b7",
+      "title": "Q2",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "已知 "
+              },
+              {
+                "type": "math",
+                "latex": "f(x)=x^{2}-2x-3"
+              },
+              {
+                "type": "text",
+                "text": "，配坐标轴与抛物线图，标出顶点和两个横轴交点。(1) 求零点；(2) 写出单调递增区间。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "解析 "
+              },
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^{2}-4"
+              },
+              {
+                "type": "text",
+                "text": "；零点为 −1、3；单调递增区间为 "
+              },
+              {
+                "type": "math",
+                "latex": "[1,+\\infty )"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 1,
+              "box": null
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 1,
+              "box": null
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "3fa7acee-ede1-484d-afad-ba314d8a7d1e",
+          "code": "unverified-location",
+          "field": "/parts",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 1,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "5e21f3e8-8c64-448a-ab6b-a9063c7eac4c",
+          "code": "missing-figure",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 1,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "540d15e3-ba00-4687-9ffe-75da48409905",
+          "code": "uncertain-formula",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 1,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "7fcff23e-b08a-4cb2-ac44-84cbb954b35c",
+      "title": "Q3",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "math",
+                "latex": "f(x)= \\begin{cases}ax+1 & x<0 \\\\ x^{2}-1 & x\\ge 0\\end{cases}"
+              },
+              {
+                "type": "text",
+                "text": "。若 "
+              },
+              {
+                "type": "math",
+                "latex": "f(-2)=3"
+              },
+              {
+                "type": "text",
+                "text": "，求 a 和 "
+              },
+              {
+                "type": "math",
+                "latex": "f(1)"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "答案 "
+              },
+              {
+                "type": "math",
+                "latex": "a=-1"
+              },
+              {
+                "type": "text",
+                "text": "，"
+              },
+              {
+                "type": "math",
+                "latex": "f(1)=0"
+              },
+              {
+                "type": "text",
+                "text": "。代入负数分支求 a，再代入非负分支。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 2,
+              "box": null
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 2,
+              "box": null
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "f2658ca7-6663-481d-8e49-b3c8778722b3",
+          "code": "unverified-location",
+          "field": "/parts",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 2,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "c6cd4df5-7b8d-4336-b00a-31c38564bea7",
+          "code": "uncertain-formula",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 2,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "31a15612-e3c5-458e-a707-9fdcdf41d448",
+      "title": "Q4",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "解不等式 "
+              },
+              {
+                "type": "math",
+                "latex": "\\log _{2}(x-1) \\le  1"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "先有 "
+              },
+              {
+                "type": "math",
+                "latex": "x>1"
+              },
+              {
+                "type": "text",
+                "text": "，底数 2 大于 1，故 "
+              },
+              {
+                "type": "math",
+                "latex": "x-1\\le 2"
+              },
+              {
+                "type": "text",
+                "text": "，答案 "
+              },
+              {
+                "type": "math",
+                "latex": "1<x\\le 3"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 2,
+              "box": null
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 2,
+              "box": null
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "12014582-c76e-4d1b-97c5-59044e70ccb6",
+          "code": "unverified-location",
+          "field": "/parts",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 2,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "55e8c79f-642a-41e7-8ad9-0dadc425afa9",
+          "code": "uncertain-formula",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 2,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "264e1714-7bee-4396-ae30-df4e708dda79",
+      "title": "Q5",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "如图，直角三角形 ABC，"
+              },
+              {
+                "type": "math",
+                "latex": "\\angle A=90^{\\circ}"
+              },
+              {
+                "type": "text",
+                "text": "。求 BC 的长及 "
+              },
+              {
+                "type": "math",
+                "latex": "\\tan  B"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "答案 "
+              },
+              {
+                "type": "math",
+                "latex": "BC=5"
+              },
+              {
+                "type": "text",
+                "text": "，"
+              },
+              {
+                "type": "math",
+                "latex": "\\tan  B=\\frac{3}{4}"
+              },
+              {
+                "type": "text",
+                "text": "；由勾股定理和正切定义得到。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 3,
+              "box": null
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 3,
+              "box": null
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "af12e15c-9583-4478-bb4b-3d7f6f74d69d",
+          "code": "unverified-location",
+          "field": "/parts",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 3,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "c4607777-f664-4c06-8596-bfbb81cf8a6d",
+          "code": "missing-figure",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 3,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "5a4c32d8-0b59-4870-8751-e1d686be8383",
+          "code": "uncertain-formula",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 3,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "ddfda794-3924-4ca2-a6f7-9d9994d11893",
+      "title": "Q6",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "正方体 "
+              },
+              {
+                "type": "math",
+                "latex": "ABCD-A_{1}B_{1}C_{1}D_{1}"
+              },
+              {
+                "type": "text",
+                "text": " 的棱长为 2。(1) 求体对角线 "
+              },
+              {
+                "type": "math",
+                "latex": "AC_{1}"
+              },
+              {
+                "type": "text",
+                "text": " 的长；(2) 求体积。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": []
+      },
+      "answerStatus": "absent",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 3,
+              "box": null
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "7b831fd5-686d-4236-8291-c8223989703c",
+          "code": "unverified-location",
+          "field": "/parts",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 3,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "80698fa1-cf22-491d-b6cd-bbb9c7314b2b",
+          "code": "missing-figure",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 3,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "a5cbbe80-ea99-4ee2-b794-e43c4b94b59f",
+          "code": "uncertain-formula",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "renditionFileId": "76764d5f-c8eb-4cc0-a5e9-e4d9ad14378c",
+              "page": 3,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    }
+  ],
+  "fragments": [],
+  "jobId": "8a2b8cc0-7754-4e52-b228-2e622cf70250"
+}

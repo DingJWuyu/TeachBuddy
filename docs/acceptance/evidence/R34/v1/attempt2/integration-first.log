@@ -1,0 +1,55 @@
+TAP version 13
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: material composition serves the frozen v2 catalog through real page-bound identity
+ok 1 - material composition serves the frozen v2 catalog through real page-bound identity
+  ---
+  duration_ms: 379.21539
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: real modules: import review, immutable mixed references, 24 filtered outputs, isolation and restart
+not ok 2 - real modules: import review, immutable mixed references, 24 filtered outputs, isolation and restart
+  ---
+  duration_ms: 135.380756
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-integration/apps/api/test/materials-integration.test.js:34:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"type":"/problems/workbench/not-found"}
+    
+    404 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    ok (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-integration/apps/api/test/materials-integration.test.js:44:96)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-integration/apps/api/test/materials-integration.test.js:61:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: production composes real handlers and rejects missing or fixture overrides before serving
+ok 3 - production composes real handlers and rejects missing or fixture overrides before serving
+  ---
+  duration_ms: 85.463214
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 2
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 881.748053

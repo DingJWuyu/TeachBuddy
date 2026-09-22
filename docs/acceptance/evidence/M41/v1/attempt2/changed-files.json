@@ -1,0 +1,29 @@
+{
+  "base": "97d466c307a5cd18063a5b78a047980a5b78720d",
+  "product": "c3ab0dacd1ff172d8557117f028ebdd805235d41",
+  "paths": [
+    "apps/api/src/modules/math/font.js",
+    "apps/api/src/modules/math/formula.js",
+    "apps/api/src/modules/math/render-worker.js",
+    "apps/api/src/modules/math/render.js",
+    "apps/api/test/math-static-formula.test.js",
+    "apps/api/test/math-static-output.test.js",
+    "apps/api/test/math-static.test.js",
+    "apps/web/e2e/fixtures/math-static/build.mjs",
+    "apps/web/e2e/fixtures/math-static/main.jsx",
+    "apps/web/e2e/fixtures/math-static/playwright.config.mjs",
+    "apps/web/e2e/fixtures/math-static/real.config.mjs",
+    "apps/web/e2e/fixtures/math-static/real.mjs",
+    "apps/web/e2e/fixtures/math-static/server.mjs",
+    "apps/web/e2e/math-static-formula.spec.js",
+    "apps/web/e2e/math-static-real.spec.js",
+    "apps/web/e2e/math-static.spec.js",
+    "apps/web/src/features/math/FormulaPreview.jsx",
+    "apps/web/src/features/math/api.js",
+    "apps/web/src/features/math/index.jsx",
+    "apps/web/src/features/math/localFont.js",
+    "apps/web/src/features/math/math.css",
+    "packages/shared/src/math/formula.js",
+    "packages/shared/src/math/graphics.js"
+  ]
+}

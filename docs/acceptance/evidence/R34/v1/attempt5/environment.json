@@ -1,0 +1,14 @@
+{
+  "finishedAtUtc": "2026-09-22T14:22:45.078218+00:00",
+  "node": "v22.23.2",
+  "browser": "Chrome 152.0.7977.64",
+  "office": "LibreOffice 26.8.0.3 Linux",
+  "data": "/tmp/teacher-r34-attempt5",
+  "origin": "https://127.0.0.1:49754",
+  "officeProfile": "/tmp/teacher-r34-attempt5-office-verified",
+  "officePort": 49755,
+  "display": ":154",
+  "modelCalls": 0,
+  "modelKeysRead": 0,
+  "identity": "real-auth / fake-mail / self-signed HTTPS; fragments fixture test-principal"
+}

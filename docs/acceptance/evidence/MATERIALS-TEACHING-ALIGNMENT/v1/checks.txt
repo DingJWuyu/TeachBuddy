@@ -1,0 +1,16 @@
+UTC 2026-09-22T16:16:36.113650+00:00
+Level: self; static design checks only; no product/HTTP/browser execution.
+PASS: all 8 fixed Git commits resolve.
+INPUT 4b5c31e6e67543a2826f662ff07acc19a0de765f:docs/acceptance/evidence/M43/v1/author.md sha256=9d1684723f0edf7ec441c5cd108e09f3a9bb77095b3ff82d649d8c9a88f897f6
+INPUT 4b5c31e6e67543a2826f662ff07acc19a0de765f:docs/acceptance/evidence/M43/v1/question-link-open.json sha256=dbc46e87f06ac4eada9d49b3502156385715141fcd71fcaaa902245af461c791
+INPUT 4b5c31e6e67543a2826f662ff07acc19a0de765f:docs/acceptance/evidence/M43/v1/integration.md sha256=8e9a605e5edcd259214ee1240f47bf69cc51ca7cece0380b8ff8b2b00d6471b2
+PASS: frozen real-auth failure JSON matches exact endpoint/status/field/reason.
+PASS: fixed selector -> legacy HTTP and classes -> legacy port; v2 provider already exported (static).
+PASS: inspected real rich-question entry/detail do not mount existing SourceRecordsPanel (static finding).
+PASS: proposed catalog delta is exactly /items/4/requires/0; all dependencies exist; graph acyclic.
+PASS: proposed dependency is already in ModuleDescriptorV3 enum; catalog schema version stays 3.
+PASS: fixed runtime already declares the v2 provider mapping; no new mapping/HTTP/schema needed.
+PASS: 7 distinct incremental cases WB-MTA001-007; product results remain NOT RUN.
+PASS: 10 relative file links resolve; no em dash in new Markdown.
+PASS: tracked product, old evidence, root DAG/run-state and existing docs unchanged before staging.
+PASS: git diff --cached --check; staged paths exactly the 4 task documents on design/materials-teaching-alignment.

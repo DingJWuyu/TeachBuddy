@@ -1,0 +1,447 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1281281,
+  "argv": [
+    "/home/liam_t/.local/share/pi-node/node-v22.23.2-linux-x64/bin/node",
+    "/tmp/m43-suite/apps/api/test/materials-foundation-jobs.test.js"
+  ],
+  "cwd": "/tmp/m43-suite/apps/api",
+  "events": [
+    {
+      "ms": 1050.664725,
+      "event": "server:listen",
+      "server": 1,
+      "port": 0,
+      "host": "localhost"
+    },
+    {
+      "ms": 1068.194379,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "::1",
+        "family": "IPv6",
+        "port": 38627
+      }
+    },
+    {
+      "ms": 1130.917395,
+      "event": "request:create",
+      "request": 2,
+      "method": "POST",
+      "path": "/api/workbench/jobs/f2f4fc9f-f9ec-4e3b-9ed9-3cb7438d0fa0/retry",
+      "origin": "http://localhost:38627"
+    },
+    {
+      "ms": 1134.397848,
+      "event": "server:socket",
+      "socket": 3,
+      "localPort": 38627,
+      "remotePort": 36414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1136.015582,
+      "event": "client:socket",
+      "socket": 4,
+      "localPort": 36414,
+      "remotePort": 38627,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1136.047017,
+      "event": "client:send",
+      "request": 2,
+      "socket": 4,
+      "localPort": 36414,
+      "remotePort": 38627,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1142.217902,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/workbench/jobs/f2f4fc9f-f9ec-4e3b-9ed9-3cb7438d0fa0/retry",
+      "socket": 3,
+      "localPort": 38627,
+      "remotePort": 36414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1157.358399,
+      "event": "server:response",
+      "server": 1,
+      "status": 422,
+      "socket": 3,
+      "localPort": 38627,
+      "remotePort": 36414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1160.221289,
+      "event": "request:headers",
+      "request": 2,
+      "method": "POST",
+      "path": "/api/workbench/jobs/f2f4fc9f-f9ec-4e3b-9ed9-3cb7438d0fa0/retry",
+      "origin": "http://localhost:38627",
+      "status": 422
+    },
+    {
+      "ms": 1166.391571,
+      "event": "request:create",
+      "request": 5,
+      "method": "POST",
+      "path": "/api/workbench/jobs/f2f4fc9f-f9ec-4e3b-9ed9-3cb7438d0fa0/retry",
+      "origin": "http://localhost:38627"
+    },
+    {
+      "ms": 1173.285195,
+      "event": "server:socket",
+      "socket": 6,
+      "localPort": 38627,
+      "remotePort": 36426,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1173.571491,
+      "event": "client:socket",
+      "socket": 7,
+      "localPort": 36426,
+      "remotePort": 38627,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1173.585888,
+      "event": "client:send",
+      "request": 5,
+      "socket": 7,
+      "localPort": 36426,
+      "remotePort": 38627,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1176.116853,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/workbench/jobs/f2f4fc9f-f9ec-4e3b-9ed9-3cb7438d0fa0/retry",
+      "socket": 6,
+      "localPort": 38627,
+      "remotePort": 36426,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1183.30399,
+      "event": "server:response",
+      "server": 1,
+      "status": 202,
+      "socket": 6,
+      "localPort": 38627,
+      "remotePort": 36426,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1184.355649,
+      "event": "request:headers",
+      "request": 5,
+      "method": "POST",
+      "path": "/api/workbench/jobs/f2f4fc9f-f9ec-4e3b-9ed9-3cb7438d0fa0/retry",
+      "origin": "http://localhost:38627",
+      "status": 202
+    },
+    {
+      "ms": 1204.000318,
+      "event": "request:create",
+      "request": 8,
+      "method": "POST",
+      "path": "/api/workbench/jobs/f26da2a3-7aa9-4bc3-bad1-5b73563bed21/cancel",
+      "origin": "http://localhost:38627"
+    },
+    {
+      "ms": 1211.705378,
+      "event": "client:send",
+      "request": 8,
+      "socket": 4,
+      "localPort": 36414,
+      "remotePort": 38627,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1212.359046,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/workbench/jobs/f26da2a3-7aa9-4bc3-bad1-5b73563bed21/cancel",
+      "socket": 3,
+      "localPort": 38627,
+      "remotePort": 36414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1213.645727,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 3,
+      "localPort": 38627,
+      "remotePort": 36414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1215.518545,
+      "event": "request:headers",
+      "request": 8,
+      "method": "POST",
+      "path": "/api/workbench/jobs/f26da2a3-7aa9-4bc3-bad1-5b73563bed21/cancel",
+      "origin": "http://localhost:38627",
+      "status": 200
+    },
+    {
+      "ms": 1248.215796,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 1248.703662,
+      "event": "server:close",
+      "server": 1
+    },
+    {
+      "ms": 1266.241208,
+      "event": "server:listen",
+      "server": 9,
+      "port": 0,
+      "host": "localhost"
+    },
+    {
+      "ms": 1270.408941,
+      "event": "client:end",
+      "socket": 4,
+      "remotePort": 38627,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 1270.589442,
+      "event": "client:error",
+      "socket": 4,
+      "remotePort": 38627,
+      "destroyed": true,
+      "readableEnded": true,
+      "error": {
+        "name": "SocketError",
+        "message": "other side closed",
+        "code": "UND_ERR_SOCKET",
+        "socket": {
+          "localAddress": "::1",
+          "localPort": 36414,
+          "remoteAddress": "::1",
+          "remotePort": 38627,
+          "remoteFamily": "IPv6",
+          "bytesWritten": 968,
+          "bytesRead": 982
+        }
+      }
+    },
+    {
+      "ms": 1272.590646,
+      "event": "client:end",
+      "socket": 7,
+      "remotePort": 38627,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 1272.632731,
+      "event": "client:error",
+      "socket": 7,
+      "remotePort": 38627,
+      "destroyed": true,
+      "readableEnded": true,
+      "error": {
+        "name": "SocketError",
+        "message": "other side closed",
+        "code": "UND_ERR_SOCKET",
+        "socket": {
+          "localAddress": "::1",
+          "localPort": 36426,
+          "remoteAddress": "::1",
+          "remotePort": 38627,
+          "remoteFamily": "IPv6",
+          "bytesWritten": 495,
+          "bytesRead": 649
+        }
+      }
+    },
+    {
+      "ms": 1273.090344,
+      "event": "client:close",
+      "socket": 7,
+      "remotePort": 38627,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 1273.11186,
+      "event": "client:close",
+      "socket": 4,
+      "remotePort": 38627,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 1273.197175,
+      "event": "server:close",
+      "socket": 6,
+      "remotePort": 36426,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 1273.206344,
+      "event": "server:close",
+      "socket": 3,
+      "remotePort": 36414,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 1273.348598,
+      "event": "server:listening",
+      "server": 9,
+      "address": {
+        "address": "::1",
+        "family": "IPv6",
+        "port": 37453
+      }
+    },
+    {
+      "ms": 1306.512416,
+      "event": "server:close-called",
+      "server": 9
+    },
+    {
+      "ms": 1306.613702,
+      "event": "server:close",
+      "server": 9
+    },
+    {
+      "ms": 1336.270868,
+      "event": "server:listen",
+      "server": 10,
+      "port": 0,
+      "host": "localhost"
+    },
+    {
+      "ms": 1338.562885,
+      "event": "server:listening",
+      "server": 10,
+      "address": {
+        "address": "::1",
+        "family": "IPv6",
+        "port": 39883
+      }
+    },
+    {
+      "ms": 1340.668977,
+      "event": "request:create",
+      "request": 11,
+      "method": "POST",
+      "path": "/api/workbench/jobs/ec97d4b9-1c0a-426c-90f7-4008daecbb2e/retry",
+      "origin": "http://localhost:39883"
+    },
+    {
+      "ms": 1348.369665,
+      "event": "server:socket",
+      "socket": 12,
+      "localPort": 39883,
+      "remotePort": 53050,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1348.702955,
+      "event": "client:socket",
+      "socket": 13,
+      "localPort": 53050,
+      "remotePort": 39883,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1348.711622,
+      "event": "client:send",
+      "request": 11,
+      "socket": 13,
+      "localPort": 53050,
+      "remotePort": 39883,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1349.165052,
+      "event": "server:request",
+      "server": 10,
+      "method": "POST",
+      "path": "/api/workbench/jobs/ec97d4b9-1c0a-426c-90f7-4008daecbb2e/retry",
+      "socket": 12,
+      "localPort": 39883,
+      "remotePort": 53050,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1353.531194,
+      "event": "server:response",
+      "server": 10,
+      "status": 202,
+      "socket": 12,
+      "localPort": 39883,
+      "remotePort": 53050,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1360.182127,
+      "event": "request:headers",
+      "request": 11,
+      "method": "POST",
+      "path": "/api/workbench/jobs/ec97d4b9-1c0a-426c-90f7-4008daecbb2e/retry",
+      "origin": "http://localhost:39883",
+      "status": 202
+    },
+    {
+      "ms": 1366.528868,
+      "event": "server:close-called",
+      "server": 10
+    },
+    {
+      "ms": 1366.788585,
+      "event": "server:close",
+      "server": 10
+    },
+    {
+      "ms": 1508.736807,
+      "event": "server:close",
+      "socket": 12,
+      "remotePort": 53050,
+      "destroyed": true,
+      "readableEnded": false
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+TAP version 13
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: material composition serves the frozen v2 catalog through real page-bound identity
+ok 1 - material composition serves the frozen v2 catalog through real page-bound identity
+  ---
+  duration_ms: 311.30342
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 0, skipped 7
+# [workbench] modules enabled: questions, resources, lessons
+# R34_OUTPUT_MANIFEST /home/liam_t/项目/TeacherWorkspace-r34-output-pagination/apps/api/test-results/r34-integration/api/chain-i8znPu/manifest.json
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: real modules: import review, immutable mixed references, 24 filtered outputs, isolation and restart
+ok 2 - real modules: import review, immutable mixed references, 24 filtered outputs, isolation and restart
+  ---
+  duration_ms: 24991.35748
+  type: 'test'
+  ...
+# Subtest: production composes real handlers and rejects missing or fixture overrides before serving
+ok 3 - production composes real handlers and rejects missing or fixture overrides before serving
+  ---
+  duration_ms: 70.673751
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 0, skipped 7
+# [workbench] modules enabled: questions, resources, lessons
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+ok 4 - MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+  ---
+  duration_ms: 113.49931
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+ok 5 - MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+  ---
+  duration_ms: 838.614977
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+ok 6 - MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+  ---
+  duration_ms: 11.895976
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 0, skipped 7
+# [workbench] modules enabled: questions, resources, lessons
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+ok 7 - MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+  ---
+  duration_ms: 834.418808
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+ok 8 - MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+  ---
+  duration_ms: 2343.498848
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+ok 9 - MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+  ---
+  duration_ms: 15.163966
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 0, skipped 7
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+ok 10 - MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+  ---
+  duration_ms: 795.778801
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 25619.880733

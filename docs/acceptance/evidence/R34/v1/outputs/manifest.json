@@ -1,0 +1,194 @@
+[
+  {
+    "name": "lesson-plan-docx-00",
+    "fileId": "fedb7beb-8fa1-4502-8f9e-2a79a161c9f7",
+    "sha256": "dade9d1577e4ac23e8af73fc82a4ff0092eba532057c4ccc5e2ec0e4dd852ff9",
+    "byteLength": 11787,
+    "jobId": "62beb6d6-4d07-4555-beb8-d2f4b0ad5220",
+    "state": "succeeded"
+  },
+  {
+    "name": "lesson-plan-docx-10",
+    "fileId": "d8ce585b-8a96-4ecf-a8d2-481197444ce4",
+    "sha256": "c1130b2cf6930f568689a77ca5f9a57ac0d4cd2107b853c6bbdc040e706a2de3",
+    "byteLength": 11881,
+    "jobId": "5334e28f-4580-45a8-a162-98b17337d278",
+    "state": "succeeded"
+  },
+  {
+    "name": "lesson-plan-docx-01",
+    "fileId": "045fcd86-c39a-4f0c-9f1b-61c18182c34b",
+    "sha256": "a400b125212090984de9ee2f4d217e8c203981bc51eb241d844f91b2e52aaf24",
+    "byteLength": 11891,
+    "jobId": "1a8c712c-0e56-4287-b5af-607e785f0e36",
+    "state": "succeeded"
+  },
+  {
+    "name": "lesson-plan-docx-11",
+    "fileId": "db929428-6799-411d-bf86-4c255a822ee4",
+    "sha256": "b982b5cfd184eb3021115969eec2330a7ed25a5c017fffa3f5c709a0d18def4e",
+    "byteLength": 11980,
+    "jobId": "61225d54-5d97-4872-afb5-b924a7d9b0ef",
+    "state": "succeeded"
+  },
+  {
+    "name": "lesson-plan-pdf-00",
+    "fileId": "006b4e7f-b370-47a2-9ab3-2dab31c44c62",
+    "sha256": "aeda03d042c205d079c52140498eeef7602ae5f87d963aaf13cc6c76649d6d45",
+    "byteLength": 63189,
+    "jobId": "bbbead1c-6a64-428a-b4b5-31da2c43d5c2",
+    "state": "succeeded"
+  },
+  {
+    "name": "lesson-plan-pdf-10",
+    "fileId": "db62b433-ab1a-4d2b-86c9-e76c1c115fad",
+    "sha256": "fb741a671646e7c1d2dc2361a0db008d90a59603acd65c7f237889f404bd3c1b",
+    "byteLength": 66608,
+    "jobId": "6b2c749d-a48b-4e8b-a7af-25a1edca3a2a",
+    "state": "succeeded"
+  },
+  {
+    "name": "lesson-plan-pdf-01",
+    "fileId": "1abe5693-e606-495f-9246-597575467836",
+    "sha256": "b17b55e4ffa3088a9bbd7e7840bfe38fd359c23c20db93107ce14791cfbc6caa",
+    "byteLength": 68231,
+    "jobId": "6de443ca-e424-4744-bf12-2fab368c2b2a",
+    "state": "succeeded"
+  },
+  {
+    "name": "lesson-plan-pdf-11",
+    "fileId": "506ca057-9fa9-407d-a482-68f7de64ab2f",
+    "sha256": "304f019c20c4dea43c04ac84fae95cc9b5835782db3ced24eae5acb0c3a6c580",
+    "byteLength": 71388,
+    "jobId": "6aca9a41-279e-44d2-9426-4bb6f8d816cb",
+    "state": "succeeded"
+  },
+  {
+    "name": "handout-docx-00",
+    "fileId": "5e8a6edf-534e-4d41-a3ae-bb6bd87a70a3",
+    "sha256": "10466f29f5a65c3f911b6feba745150bba16cbdd6ad8fb88d4203619bf4cdd09",
+    "byteLength": 11806,
+    "jobId": "dee37525-daa3-4ca0-81df-4c3fe26a4d08",
+    "state": "succeeded"
+  },
+  {
+    "name": "handout-docx-10",
+    "fileId": "cd997bf5-7536-4113-bbf4-b578768ad614",
+    "sha256": "888f74ecf5b38bc7c1b08514d71cb3949371f0584038fe29122d86b155e0b8ce",
+    "byteLength": 11905,
+    "jobId": "ea09e7e4-1368-4510-bd97-072024dccf1f",
+    "state": "succeeded"
+  },
+  {
+    "name": "handout-docx-01",
+    "fileId": "e642d02e-1528-4577-ae4c-0c6ed25bff0e",
+    "sha256": "885a7c7e7e0da2c64c70884c0a72f5c7f621137c8de44b514b1d190b178c258c",
+    "byteLength": 11915,
+    "jobId": "24079053-227c-4ab2-8440-89971d144b60",
+    "state": "succeeded"
+  },
+  {
+    "name": "handout-docx-11",
+    "fileId": "8695526e-5ef3-4be4-a43c-951ae91ef51c",
+    "sha256": "989cb98a5da3f34942fd3db3d883e2e35be0621554434b95462550994f25e311",
+    "byteLength": 12001,
+    "jobId": "be063ae8-56a4-45cb-8170-36df43f7f40a",
+    "state": "succeeded"
+  },
+  {
+    "name": "handout-pdf-00",
+    "fileId": "3e169737-250a-4e60-bcdd-e462b2b6d6ca",
+    "sha256": "62d55496a3839c9343fcd917448b19457145af14a8a37d0de02d7856e614ca77",
+    "byteLength": 64388,
+    "jobId": "4b443871-ad49-44cb-b365-8eebdd31ff56",
+    "state": "succeeded"
+  },
+  {
+    "name": "handout-pdf-10",
+    "fileId": "4ece43b7-7c4d-4a74-aa08-c7a700310d72",
+    "sha256": "b55876aadf23a9a9be419976d666b8ada0b7112f0d8feac3eb442596921d9fa0",
+    "byteLength": 67835,
+    "jobId": "c7dfd9d7-2f82-4e4c-a4c8-7d6001f8de6a",
+    "state": "succeeded"
+  },
+  {
+    "name": "handout-pdf-01",
+    "fileId": "f4ec7b9a-90f7-41da-a197-67fc0131bca3",
+    "sha256": "81bb08096f5343a964f3056c0474156579c1e4197477a82557711073f03af989",
+    "byteLength": 69429,
+    "jobId": "cb902388-822e-472a-bb47-8a7713e1b739",
+    "state": "succeeded"
+  },
+  {
+    "name": "handout-pdf-11",
+    "fileId": "75259cbd-b672-4c2f-aa66-7e15db9d9df0",
+    "sha256": "c0ee64c68e08fd70bcd6d72ee10b92681bc5183a6db2236c1100f782e87b7d27",
+    "byteLength": 72623,
+    "jobId": "8e108b0a-f1d2-49d9-8f6d-78943b6e8de3",
+    "state": "succeeded"
+  },
+  {
+    "name": "practice-docx-00",
+    "fileId": "c703d6a8-4c30-46ae-a55e-f67d4aa06b17",
+    "sha256": "8cdbc097e732746078cfe99d627d674bedfce2460973a3fabd4e63122c96e3dd",
+    "byteLength": 11379,
+    "jobId": "e150a86c-0d75-4ce3-97ce-7551915efd73",
+    "state": "succeeded"
+  },
+  {
+    "name": "practice-docx-10",
+    "fileId": "ebc8411e-4650-4aff-b74b-a12edaef113a",
+    "sha256": "9c4d606db4688caf326385ec1be9ff41beb699e2deccc26adcb44950b29ac09e",
+    "byteLength": 11481,
+    "jobId": "0c8b9665-ebd0-43a8-8022-2ac47438580a",
+    "state": "succeeded"
+  },
+  {
+    "name": "practice-docx-01",
+    "fileId": "d41d4fa2-d922-4db5-a292-cddaf50b312b",
+    "sha256": "6e698acd082e7b9e354320e943fa75209672899744ef102897772fcbe3c0916f",
+    "byteLength": 11489,
+    "jobId": "35a5c1d0-67a8-4968-9d13-ee8026fabdce",
+    "state": "succeeded"
+  },
+  {
+    "name": "practice-docx-11",
+    "fileId": "34e8dec8-e249-434a-97d5-d115020e4fab",
+    "sha256": "468ada41e219089ff7d79cb513234bbf9133f94cce29b07232c79bc9d7901bae",
+    "byteLength": 11585,
+    "jobId": "17a6b466-751e-47fa-b5ca-1ef255134f0f",
+    "state": "succeeded"
+  },
+  {
+    "name": "practice-pdf-00",
+    "fileId": "4da57a55-7fc0-4af9-8cdb-e64189c7aab0",
+    "sha256": "0761455eb387691cbfa0bb943586c94018e1ef520d271f4fd3b0aec32dc15aa6",
+    "byteLength": 48081,
+    "jobId": "76d2b9a8-e4a6-46b0-846d-380ae0104c59",
+    "state": "succeeded"
+  },
+  {
+    "name": "practice-pdf-10",
+    "fileId": "c5a4ea76-d8df-4b6e-9f59-967106bdbeda",
+    "sha256": "9ac4e649895046524f74018fac0fc1a07349f01b4d02b8a17316634a16ad56a4",
+    "byteLength": 52465,
+    "jobId": "5fdf8c50-5f12-4ec8-94d1-a7189c1eeb25",
+    "state": "succeeded"
+  },
+  {
+    "name": "practice-pdf-01",
+    "fileId": "5cc28861-6b07-4edc-ba3d-358186e2472c",
+    "sha256": "be3405f502bf6aef433d9eb02ea675b68fe144b7fe0e51d1945c631721060165",
+    "byteLength": 54280,
+    "jobId": "9ea4f96b-fb83-4d32-a3fb-eb23ecb13908",
+    "state": "succeeded"
+  },
+  {
+    "name": "practice-pdf-11",
+    "fileId": "5e67a133-7668-4ccc-b32e-c76ee6620ec4",
+    "sha256": "0d72c9cf9b2d2e2582699f50deb199723289546d78f154733c16441b9d62d0dc",
+    "byteLength": 57569,
+    "jobId": "dc9e85fa-3187-4cb6-92a6-3b41b2f4f5a5",
+    "state": "succeeded"
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-09-22T16:11:00.801829+00:00",
+  "ruleBase": "592c04d55b1113232b913f37001007de4a476a1b",
+  "candidate": "42b0cde25f1f8602d25155b27620ac7da4289bd7",
+  "product": "331bd367df450522fb54982984c452c6bb8d4c52",
+  "composition": "afdb8f96098e77cfac076179ea0fd2be05bb7c9c",
+  "candidateProductDiff": "",
+  "priorProductCompositionDiff": "",
+  "changedProductAndTests": [
+    "apps/api/src/modules/questions/assets.js",
+    "apps/api/src/modules/questions/extraction.js",
+    "apps/api/test/materials-questions-local5.test.js",
+    "apps/web/e2e/fixtures/materials-questions/attempt5.config.mjs",
+    "apps/web/e2e/materials-questions-local5.spec.js",
+    "apps/web/src/features/questions/MaterialsQuestionsPage.jsx",
+    "apps/web/src/features/questions/index.jsx",
+    "apps/web/src/features/questions/questions-materials.css"
+  ],
+  "contractBehaviorDiff": "",
+  "isolatedTrackedStatus": "",
+  "sourceTrackedDiff": "",
+  "activity": "No M43 branch read or modified; fixed objects only"
+}

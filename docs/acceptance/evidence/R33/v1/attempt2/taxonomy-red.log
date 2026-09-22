@@ -1,0 +1,31 @@
+
+Running 1 test using 1 worker
+
+(node:1119829) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-questions-local.spec.js:328:1 › renaming and deleting selected classification updates filters and keeps the question (30.0s)
+
+
+  1) apps/web/e2e/materials-questions-local.spec.js:328:1 › renaming and deleting selected classification updates filters and keeps the question 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('.q-list > button').filter({ hasText: '分类生命周期1790078797852' })
+        - locator resolved to <button class="selected">…</button>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+      - element was detached from the DOM, retrying
+
+
+      337 |  await page.locator('.q-list > button').filter({hasText:name}).click();await expect(page.locator('.q-question').getByRole('combobox',{name:'题型',exact:true})).toHaveValue('');
+      338 | });
+    > 339 |
+          | ^
+        at /home/liam_t/项目/TeacherWorkspace-r33-local-fix/apps/web/e2e/materials-questions-local.spec.js:339:64
+
+    Error Context: test-results/r33-attempt2/e2e/materials-questions-local--0a71a-ters-and-keeps-the-question/error-context.md
+
+  1 failed
+    apps/web/e2e/materials-questions-local.spec.js:328:1 › renaming and deleting selected classification updates filters and keeps the question 

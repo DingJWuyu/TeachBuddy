@@ -1,0 +1,59 @@
+{
+  "inputBodies": [
+    " \n\t  "
+  ],
+  "job": {
+    "id": "b307daba-176b-42a4-9d87-17f5107fb9b1",
+    "kind": "extraction",
+    "target": {
+      "kind": "import",
+      "id": "2b166d62-41ba-4c85-aac1-666ba0cd2eaa",
+      "version": 1
+    },
+    "state": "failed",
+    "createdAt": "2026-09-22T15:58:13.844Z",
+    "updatedAt": "2026-09-22T15:58:13.946Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 1,
+      "total": 1,
+      "unit": "pages"
+    },
+    "outputFileIds": [],
+    "issues": [
+      {
+        "code": "empty-response",
+        "unitId": "file:44a0dfa5-aa4c-42ff-8452-d3352ac88a92:page:1",
+        "field": null,
+        "detail": "提取结果不完整，请对照原稿继续。"
+      }
+    ]
+  },
+  "material": {
+    "id": "2b166d62-41ba-4c85-aac1-666ba0cd2eaa",
+    "version": 2,
+    "createdAt": "2026-09-22T15:58:13.844Z",
+    "updatedAt": "2026-09-22T15:58:13.945Z",
+    "deletedAt": null,
+    "title": "独立受控 whitespace",
+    "origin": "local adapter only",
+    "input": {
+      "kind": "files",
+      "fileIds": [
+        "44a0dfa5-aa4c-42ff-8452-d3352ac88a92"
+      ],
+      "pages": []
+    },
+    "supplementFileIds": [],
+    "drafts": [],
+    "fragments": [],
+    "jobId": "b307daba-176b-42a4-9d87-17f5107fb9b1"
+  },
+  "sources": [
+    {
+      "id": "44a0dfa5-aa4c-42ff-8452-d3352ac88a92",
+      "sha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f"
+    }
+  ],
+  "calls": 1
+}
