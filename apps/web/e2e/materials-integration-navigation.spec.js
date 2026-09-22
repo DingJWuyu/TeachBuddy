@@ -131,7 +131,7 @@ test("加入备课响应丢失后确认原请求仍提供前往入口且不重�
   await page.getByRole("button", { name: "加入备课", exact: true }).click();
   await page.getByRole("button", { name: "真实材料整合课", exact: true }).click();
   let originalKey;
-  await page.route("**/api/modules/lessons/v2/items/*", async (route) => {
+  await page.route("**/api/modules/lessons/v3/*", async (route) => {
     if (route.request().method() !== "PUT") return route.continue();
     originalKey = route.request().headers()["idempotency-key"];
     await route.fetch();
@@ -139,8 +139,8 @@ test("加入备课响应丢失后确认原请求仍提供前往入口且不重�
   });
   await page.getByRole("button", { name: "加入", exact: true }).click();
   await expect(page.getByRole("button", { name: "重试确认", exact: true })).toBeVisible();
-  await page.unroute("**/api/modules/lessons/v2/items/*");
-  const replay = page.waitForRequest(r => r.method() === "PUT" && r.url().includes("/lessons/v2/items/"));
+  await page.unroute("**/api/modules/lessons/v3/*");
+  const replay = page.waitForRequest(r => r.method() === "PUT" && r.url().includes("/lessons/v3/"));
   await page.getByRole("button", { name: "重试确认", exact: true }).click();
   expect((await replay).headers()["idempotency-key"]).toBe(originalKey);
   await expect(page.getByRole("link", { name: "前往备课" })).toBeVisible({ timeout: 3000 });

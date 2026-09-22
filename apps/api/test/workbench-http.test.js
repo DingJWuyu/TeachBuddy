@@ -271,8 +271,8 @@ test('the composed app mounts the catalog handler on the exact contract path', a
         .get(workbenchPaths.modules)
         .set(workbenchRequestHeaders(bare))
         .expect(200);
-      assert.equal(empty.body.version, 2);
-      assert.deepEqual(empty.body.items.map((entry) => entry.id), ['questions', 'resources', 'lessons']);
+      assert.equal(empty.body.version, 3);
+      assert.deepEqual(empty.body.items.map((entry) => entry.id), ['questions', 'lessons', 'math', 'resources', 'classes', 'schedule']);
     } finally {
       bare.cleanup();
     }

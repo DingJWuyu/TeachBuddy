@@ -76,3 +76,6 @@ export async function listSources(kind, q = "") {
     )
   ).body.items;
 }
+
+// Public serializer for consumers adding references to a complete lesson draft.
+export { referenceInputFrom } from "./model.js";

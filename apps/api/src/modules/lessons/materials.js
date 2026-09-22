@@ -1,4 +1,4 @@
-import { validate as validateMath } from "../math/contract.js";
+import { validate as validateMath } from "../../workbench/content/mathSchema.js";
 import { normalizeSearchQuery, matchesSearch } from "../questions/contract.js";
 import { createLessonExports } from "./exports.js";
 import { materialErrors } from "../../workbench/jobs/router.js";

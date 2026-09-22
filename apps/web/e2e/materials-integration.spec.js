@@ -292,7 +292,7 @@ test("真实身份边界及保存丢响应：同键恢复、草稿保留、退�
   await page.getByRole("button", { name: "保存", exact: true }).click();
   await expect(page).toHaveURL(/\/lessons\/[a-f0-9-]{36}$/);
   const id = new URL(page.url()).pathname.split("/").at(-1),
-    endpoint = "/api/modules/lessons/v2/items/" + id;
+    endpoint = "/api/modules/lessons/v3/" + id;
   let originalKey;
   await page.route("**" + endpoint, async (route) => {
     if (route.request().method() === "PUT") {

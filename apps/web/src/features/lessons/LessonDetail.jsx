@@ -378,9 +378,9 @@ export default function LessonDetail({ id }) {
     >
       {mathReturn.pending && <div className="wb-inline-error" role="status">
         <span>{mathReturn.problem || '作品已保存，正在确认加入备课'}</span>
-        <button className="wb-button" onClick={mathReturn.retry}>确认带回</button>
-        <button className="wb-button" onClick={mathReturn.toMaterials}>放入本课材料</button>
-        <button className="wb-button" onClick={mathReturn.cancel}>取消带回</button>
+        <button className="wb-button" disabled={mathReturn.busy} onClick={mathReturn.retry}>确认带回</button>
+        <button className="wb-button" disabled={mathReturn.busy} onClick={mathReturn.toMaterials}>放入本课材料</button>
+        <button className="wb-button" disabled={mathReturn.busy} onClick={mathReturn.cancel}>取消带回</button>
       </div>}
       <header className="wb-object-head">
         <input

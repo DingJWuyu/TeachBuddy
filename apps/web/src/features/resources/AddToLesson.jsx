@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { referenceInputFrom as inputReference } from '../lessons/model.js';
+import { referenceInputFrom as inputReference } from '../lessons/api.js';
 export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
   const sequence = useRef(0);
   const [selectedId, setSelectedId] = useState("");

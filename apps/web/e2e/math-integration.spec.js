@@ -7,8 +7,7 @@ const evidence=path.resolve('docs/acceptance/evidence/M43/v1/browser');
 fs.mkdirSync(evidence,{recursive:true});
 let world;
 test.afterEach(async({context})=>{await context.close();await world?.close();});
-test('real-auth: specified lesson section -> saved formula -> v3 return keeps draft and AI',async({page})=>{
- const errors=[];page.on('pageerror',e=>errors.push(e.message));
+async function registerPage(page) {
  world=await createIntegration();
  await page.goto(world.origin);
  await page.getByRole('button',{name:'创建账户'}).click();
@@ -21,6 +20,10 @@ test('real-auth: specified lesson section -> saved formula -> v3 return keeps dr
  await page.getByLabel('邮箱验证码').fill(world.mailer.lastCode('registration','m43@example.test'));
  await page.getByRole('checkbox').check();await page.getByRole('button',{name:'注册',exact:true}).click();
  await expect(page.locator('.wb-shell')).toBeVisible();
+}
+test('real-auth: specified lesson section -> saved formula -> v3 return keeps draft and AI',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await registerPage(page);
  await page.locator('.wb-sidebar').getByRole('link',{name:'备课',exact:true}).click();
  await page.getByRole('button',{name:'新建备课',exact:true}).click();
  await page.getByLabel('课题',{exact:true}).fill('二次函数往返课');
@@ -38,7 +41,9 @@ test('real-auth: specified lesson section -> saved formula -> v3 return keeps dr
  await page.getByLabel('LaTeX',{exact:true}).fill('x_{1,2}=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}');
  await page.getByRole('button',{name:'保存',exact:true}).click();
  await expect(page.getByRole('status').first()).toContainText('已保存');
+ await expect(page.getByAltText('当前公式预览',{exact:true})).toBeVisible();
  await page.screenshot({path:path.join(evidence,'formula-before-return.png')});
+ await downloadWork(page,'png','formula.png');
  await page.getByRole('button',{name:'带回备课',exact:true}).click();
  await expect(page.getByLabel('AI 输入')).toHaveValue('保留判别式讲解草稿，不发送');
  await expect(page.getByLabel('课题',{exact:true})).toHaveValue('二次函数未提交现场');
@@ -113,18 +118,7 @@ async function downloadWork(page, format, name) {
  const target=path.join(evidence,name);await (await event).saveAs(target);return target;
 }
 test('real-auth: dynamic and exact external HTML final downloads cold start with service stopped and network disabled',async({page})=>{
- world=await createIntegration();
- await page.goto(world.origin);
- await page.getByRole('button',{name:'创建账户'}).click();
- await page.getByLabel('昵称',{exact:true}).fill('数学集成老师');
- await page.getByLabel('邮箱',{exact:true}).fill('m43@example.test');
- await page.getByLabel('密码',{exact:true}).fill('math-integration-password');
- await page.getByLabel('确认密码',{exact:true}).fill('math-integration-password');
- await page.getByRole('button',{name:'发送验证码'}).click();
- await expect.poll(()=>world.mailer.lastCode('registration','m43@example.test')).toBeTruthy();
- await page.getByLabel('邮箱验证码').fill(world.mailer.lastCode('registration','m43@example.test'));
- await page.getByRole('checkbox').check();await page.getByRole('button',{name:'注册',exact:true}).click();
- await expect(page.locator('.wb-shell')).toBeVisible();
+ await registerPage(page);
 
  await page.locator('.wb-sidebar').getByRole('link',{name:'数学工坊',exact:true}).click();
  await page.getByRole('button',{name:'新建演示',exact:true}).first().click();
@@ -170,4 +164,111 @@ test('real-auth: dynamic and exact external HTML final downloads cold start with
  expect(requests).toEqual([]);
  fs.writeFileSync(path.join(evidence,'offline.json'),JSON.stringify({origin,serviceStopped:true,newBrowser:true,offline:true,browser:await coldBrowser.version(),platform:process.platform,requests,dynamic,external},null,2));
  }finally{await cold.close();await coldBrowser.close();}
+});
+
+test('real-auth: unsaved new section survives the workshop return',async({page})=>{
+ await registerPage(page);
+ await page.locator('.wb-sidebar').getByRole('link',{name:'备课',exact:true}).click();
+ await page.getByRole('button',{name:'新建备课',exact:true}).click();
+ await page.getByLabel('课题',{exact:true}).fill('新增环节现场');
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await page.getByRole('button',{name:'添加环节',exact:true}).click();
+ await page.getByLabel('环节名称 1').fill('未保存的新环节');
+ await page.locator('[data-section-id]').getByRole('button',{name:'制作数学作品',exact:true}).click();
+ await page.getByRole('button',{name:'新建公式',exact:true}).click();
+ await page.getByLabel('作品名称').fill('新环节公式');
+ await page.getByLabel('LaTeX',{exact:true}).fill('a^2+b^2=c^2');
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await page.getByRole('button',{name:'带回备课',exact:true}).click();
+ await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await expect(page.getByLabel('环节名称 1')).toHaveValue('未保存的新环节');
+});
+
+test('real-auth: rejected second save can cancel, reuse, and retry an independent replacement',async({page})=>{
+ await registerPage(page);
+ await page.locator('.wb-sidebar').getByRole('link',{name:'备课',exact:true}).click();
+ await page.getByRole('button',{name:'新建备课',exact:true}).click();
+ await page.getByLabel('课题',{exact:true}).fill('明确失败恢复');
+ await page.getByRole('button',{name:'添加环节',exact:true}).click();
+ await page.getByLabel('环节名称 1').fill('推导');
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await page.locator('[data-section-id]').getByRole('button',{name:'制作数学作品',exact:true}).click();
+ await page.getByRole('button',{name:'新建公式',exact:true}).click();
+ await page.getByLabel('作品名称').fill('可复用公式');
+ await page.getByLabel('LaTeX',{exact:true}).fill('a^2+b^2=c^2');
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ async function refuseNextSave(){
+  let refused=false;
+  await page.route('**/api/modules/lessons/v3/*',async route=>{
+   if(route.request().method()==='PUT'&&!refused){refused=true;await route.fulfill({status:422,contentType:'application/problem+json',body:JSON.stringify({type:'/problems/workbench/invalid-input',field:'/title',reason:'required'})});}
+   else await route.continue();
+  });
+ }
+ await refuseNextSave();
+ await page.getByRole('button',{name:'带回备课',exact:true}).click();
+ await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+ await expect(page.getByRole('button',{name:'取消带回',exact:true})).toBeEnabled();
+ await page.getByRole('button',{name:'取消带回',exact:true}).click();
+ await expect(page.locator('[data-reference-id]')).toHaveCount(0);
+ await page.unroute('**/api/modules/lessons/v3/*');
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await page.reload();await expect(page.locator('[data-reference-id]')).toHaveCount(0);
+ await page.locator('[data-section-id]').getByRole('button',{name:'制作数学作品',exact:true}).click();
+ await expect(page.getByLabel('作品名称')).toHaveValue('可复用公式');
+ await page.getByRole('button',{name:'带回备课',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await page.getByRole('button',{name:'另存作品并替换本处',exact:true}).click();
+ await page.getByRole('button',{name:'另存作品',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await page.getByLabel('作品名称').fill('独立替换稿');
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await refuseNextSave();
+ await page.getByRole('button',{name:'带回备课',exact:true}).click();
+ await expect(page.getByRole('button',{name:'确认带回',exact:true})).toBeEnabled();
+ await page.getByRole('button',{name:'确认带回',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+ await expect(page.locator('[data-reference-id]')).toContainText('独立替换稿');
+ await page.screenshot({path:path.join(evidence,'replacement-recovered.png')});
+});
+
+test('real-auth: an old v2 unknown request confirms on its original path after the UI upgrade',async({page})=>{
+ await registerPage(page);
+ await page.locator('.wb-sidebar').getByRole('link',{name:'备课',exact:true}).click();
+ await page.getByRole('button',{name:'新建备课',exact:true}).click();
+ await page.getByLabel('课题',{exact:true}).fill('旧客户端待确认');
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ const id=page.url().split('/').at(-1);const oldPath=`/api/modules/lessons/v2/items/${id}`;
+ let committed;
+ await page.route(`**/api/modules/lessons/v3/${id}`,async route=>{
+  if(route.request().method()!=='PUT'){await route.continue();return;}
+  const response=await route.fetch({url:world.origin+oldPath});expect(response.status()).toBe(200);
+  committed={key:route.request().headers()['idempotency-key'],body:route.request().postData()};
+  await route.abort('failed');
+ });
+ await page.getByLabel('课题',{exact:true}).fill('旧请求已写入但响应丢失');
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('button',{name:'重试确认',exact:true})).toBeVisible();
+ // A persisted pre-v3 draft has no apiVersion field. The payload/key are the
+ // actual request accepted above, not a fabricated success response.
+ await page.evaluate(id=>{
+  const key=Object.keys(localStorage).find(k=>k.endsWith(`:draft:lesson:${id}`));
+  const draft=JSON.parse(localStorage.getItem(key));delete draft.pending.apiVersion;localStorage.setItem(key,JSON.stringify(draft));
+ },id);
+ await page.unroute(`**/api/modules/lessons/v3/${id}`);
+ await page.reload();
+ const replay=page.waitForRequest(r=>r.method()==='PUT'&&new URL(r.url()).pathname===oldPath);
+ await page.getByRole('button',{name:'重试确认',exact:true}).click();
+ const sent=await replay;expect(sent.headers()['idempotency-key']).toBe(committed.key);expect(sent.postData()).toBe(committed.body);
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await expect(page.getByLabel('课题',{exact:true})).toHaveValue('旧请求已写入但响应丢失');
+ fs.writeFileSync(path.join(evidence,'old-request-confirmed.json'),JSON.stringify({oldPath,id,fixture:'actual v2 commit plus pre-v3 pending shape',confirmed:true},null,2));
 });
