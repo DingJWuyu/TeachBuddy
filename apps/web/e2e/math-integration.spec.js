@@ -223,7 +223,12 @@ test('real-auth: rejected second save can cancel, reuse, and retry an independen
  await expect(page.getByLabel('作品名称')).toHaveValue('可复用公式');
  await page.getByRole('button',{name:'带回备课',exact:true}).click();
  await expect(page.getByRole('status').first()).toContainText('已保存');
- await page.getByRole('button',{name:'另存作品并替换本处',exact:true}).click();
+ await page.getByRole('button',{name:'再放一次',exact:true}).first().click();
+ await page.getByRole('button',{name:'再放一次',exact:true}).first().click();
+ const beforeIds=await page.locator('[data-reference-id]').evaluateAll(rows=>rows.map(r=>r.dataset.referenceId));
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ await page.locator('[data-reference-id]').nth(1).getByRole('button',{name:'另存作品并替换本处',exact:true}).click();
  await page.getByRole('button',{name:'另存作品',exact:true}).click();
  await expect(page.getByRole('status').first()).toContainText('已保存');
  await page.getByLabel('作品名称').fill('独立替换稿');
@@ -234,8 +239,10 @@ test('real-auth: rejected second save can cancel, reuse, and retry an independen
  await expect(page.getByRole('button',{name:'确认带回',exact:true})).toBeEnabled();
  await page.getByRole('button',{name:'确认带回',exact:true}).click();
  await expect(page.getByRole('status').first()).toContainText('已保存');
- await expect(page.locator('[data-reference-id]')).toHaveCount(1);
- await expect(page.locator('[data-reference-id]')).toContainText('独立替换稿');
+ await expect(page.locator('[data-reference-id]')).toHaveCount(3);
+ await expect(page.locator('[data-reference-id]').nth(1)).toContainText('独立替换稿');
+ const afterIds=await page.locator('[data-reference-id]').evaluateAll(rows=>rows.map(r=>r.dataset.referenceId));
+ expect(afterIds[0]).toBe(beforeIds[0]);expect(afterIds[2]).toBe(beforeIds[2]);
  await page.screenshot({path:path.join(evidence,'replacement-recovered.png')});
 });
 

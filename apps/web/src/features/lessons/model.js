@@ -308,6 +308,15 @@ export function removeReference(input, referenceId) {
 }
 
 /** Move one reference between positions, keeping its id, snapshot and note. */
+export function replaceReference(input, referenceId, replacement) {
+  return updateInput(input, next => {
+    for (const references of [next.materials, ...next.sections.map(section => section.references)]) {
+      const index = references.findIndex(reference => reference.id === referenceId);
+      if (index !== -1) references.splice(index, 1, replacement);
+    }
+  });
+}
+
 export function moveReference(input, referenceId, target) {
   return updateInput(input, (next) => {
     let found = null;

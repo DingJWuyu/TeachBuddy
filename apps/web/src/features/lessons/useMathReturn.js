@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useScene } from '../workbench/useScene.js';
-import { addReferences, removeReference, targetLabel, targetReferences } from './model.js';
+import { addReferences, removeReference, replaceReference, targetLabel, targetReferences } from './model.js';
 import { getLesson } from './api.js';
 
 /** Lessons owns the return intent, original draft and the second save. */
@@ -26,8 +26,9 @@ export function useMathReturn({ shell, savable, id }) {
   function undoInsertion(input, target) {
     const placement = target.sectionId ? { type: 'section', sectionId: target.sectionId } : { type: 'materials' };
     const hadInsertion = targetReferences(input, placement).some(r => r.id === target.referenceId);
-    const restored = removeReference(input, target.referenceId);
-    return hadInsertion && target.replacement ? addReferences(restored, placement, [target.replacement]) : restored;
+    return hadInsertion && target.replacement
+      ? replaceReference(input, target.referenceId, target.replacement)
+      : removeReference(input, target.referenceId);
   }
   async function apply(target = scene.target) {
     if (!target || !scene.result || savable.pending || busy) return;
@@ -51,10 +52,10 @@ export function useMathReturn({ shell, savable, id }) {
       }
       const same = existing.find(r => r.kind === 'math' && r.workId === scene.result.id);
       if (!inserted && (!same || target.replaceId)) {
-        if (target.replaceId) input = removeReference(input, target.replaceId);
-        input = addReferences(input, placement, [{ id: target.referenceId, kind: 'math',
+        const reference = { id: target.referenceId, kind: 'math',
           workId: scene.result.id, workVersion: scene.result.version, note: target.note ?? '',
-          snapshot: scene.result.snapshot, sourceState: 'active', latestVersion: scene.result.version }]);
+          snapshot: scene.result.snapshot, sourceState: 'active', latestVersion: scene.result.version };
+        input = target.replaceId ? replaceReference(input, target.replaceId, reference) : addReferences(input, placement, [reference]);
       }
       // Persist the ID before sending; an unknown result confirms this request.
       patch({ target, inserted: true });
