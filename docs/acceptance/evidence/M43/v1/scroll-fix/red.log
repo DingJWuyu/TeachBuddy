@@ -1,0 +1,69 @@
+
+Running 1 test using 1 worker
+
+(node:1376136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1376136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/math-scroll.spec.js:6:1 › ordinary wheel: math tools must expose dynamic steps (5.1s)
+
+
+  1) apps/web/e2e/math-scroll.spec.js:6:1 › ordinary wheel: math tools must expose dynamic steps ───
+
+    Error: ordinary step click must be reachable
+
+    expect(received).toBeNull()
+
+    Received: "locator.click: Timeout 2500ms exceeded.
+    Call log:
+      - waiting for getByText('步骤', { exact: true })
+        - locator resolved to <summary>步骤</summary>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - element is outside of the viewport
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - element is outside of the viewport
+        - retrying click action
+          - waiting 100ms
+        5 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - element is outside of the viewport
+        - retrying click action
+          - waiting 500ms
+    "
+
+      13 |  fs.writeFileSync(out+'/result.json',JSON.stringify({origin:world.origin,directory:world.directory,before,after,clickError},null,2));
+      14 |  await page.screenshot({path:out+'/unreachable-steps.png'});
+    > 15 |  expect(clickError,'ordinary step click must be reachable').toBeNull();
+         |                                                             ^
+      16 |  }finally{await context.close();await world.close();}
+      17 | });
+      18 |
+        at /home/liam_t/项目/TeacherWorkspace-m43-scroll-fix/apps/web/e2e/math-scroll.spec.js:15:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../m43-scroll-attempt2/red-results/math-scroll-ordinary-wheel-a445d-s-must-expose-dynamic-steps/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../m43-scroll-attempt2/red-results/math-scroll-ordinary-wheel-a445d-s-must-expose-dynamic-steps/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../m43-scroll-attempt2/red-results/math-scroll-ordinary-wheel-a445d-s-must-expose-dynamic-steps/trace.zip
+    Usage:
+
+        npx playwright show-trace ../../m43-scroll-attempt2/red-results/math-scroll-ordinary-wheel-a445d-s-must-expose-dynamic-steps/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/math-scroll.spec.js:6:1 › ordinary wheel: math tools must expose dynamic steps ────

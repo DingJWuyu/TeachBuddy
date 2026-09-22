@@ -1,0 +1,147 @@
+{
+  "origin": "https://127.0.0.1:39751",
+  "directory": "/home/liam_t/m43-scroll-attempt2/tmp/a11-hNPeUX",
+  "before": {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "regions": [
+      {
+        "className": "wb-aux",
+        "clientHeight": 844,
+        "scrollHeight": 2710,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1140,
+          "y": 56,
+          "width": 300,
+          "height": 844,
+          "top": 56,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1140
+        }
+      },
+      {
+        "className": "wb-aux-body",
+        "clientHeight": 800,
+        "scrollHeight": 2666,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1141,
+          "y": 100,
+          "width": 299,
+          "height": 800,
+          "top": 100,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1141
+        }
+      },
+      {
+        "className": "math-tools-panel",
+        "clientHeight": 2666,
+        "scrollHeight": 2666,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1141,
+          "y": 100,
+          "width": 299,
+          "height": 2665.703125,
+          "top": 100,
+          "right": 1440,
+          "bottom": 2765.703125,
+          "left": 1141
+        }
+      }
+    ],
+    "steps": [
+      {
+        "x": 1141,
+        "y": 1647.71875,
+        "width": 299,
+        "height": 23.09375,
+        "top": 1647.71875,
+        "right": 1440,
+        "bottom": 1670.8125,
+        "left": 1141
+      }
+    ]
+  },
+  "after": {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "regions": [
+      {
+        "className": "wb-aux",
+        "clientHeight": 844,
+        "scrollHeight": 2710,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1140,
+          "y": 56,
+          "width": 300,
+          "height": 844,
+          "top": 56,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1140
+        }
+      },
+      {
+        "className": "wb-aux-body",
+        "clientHeight": 800,
+        "scrollHeight": 2666,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1141,
+          "y": 100,
+          "width": 299,
+          "height": 800,
+          "top": 100,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1141
+        }
+      },
+      {
+        "className": "math-tools-panel",
+        "clientHeight": 2666,
+        "scrollHeight": 2666,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1141,
+          "y": 100,
+          "width": 299,
+          "height": 2665.703125,
+          "top": 100,
+          "right": 1440,
+          "bottom": 2765.703125,
+          "left": 1141
+        }
+      }
+    ],
+    "steps": [
+      {
+        "x": 1141,
+        "y": 1647.71875,
+        "width": 299,
+        "height": 23.09375,
+        "top": 1647.71875,
+        "right": 1440,
+        "bottom": 1670.8125,
+        "left": 1141
+      }
+    ]
+  },
+  "clickError": "locator.click: Timeout 2500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('步骤', { exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <summary>步骤</summary>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - element is outside of the viewport\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - element is outside of the viewport\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    5 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - element is outside of the viewport\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n"
+}
