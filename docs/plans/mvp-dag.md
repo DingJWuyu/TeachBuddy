@@ -147,7 +147,7 @@ flowchart TD
     T50[T50 教学和日程设计] --> T51["T51 班级教学<br/>题目关联独立通过，完整门槛待满足"]
     T50 --> T52[T52 日程与重复例外]
     T51 -.->|完成：班级关联集成| T53
-    T52 --> T53["T53 提醒与补呈现<br/>新发现目录回归，修复中"]
+    T52 --> T53[T53 提醒与补呈现]
     T53 --> T54["T54 教学时间独立验收<br/>本地通过，完整验收待数学关联"]
   end
   C20 --> T50
@@ -187,9 +187,9 @@ flowchart TD
   classDef blocked fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:2px;
   classDef delivered fill:#ede9fe,stroke:#7c3aed,color:#4c1d95,stroke-width:2px;
 
-  class P00,P01,G00,B10,B11,B12,B13,B14,B15,B16,A11,C20,C24,C25,C26,C27,R30,M40,T50,T52 done;
+  class P00,P01,G00,B10,B11,B12,B13,B14,B15,B16,A11,C20,C24,C25,C26,C27,R30,M40,T50,T52,T53 done;
   class C22,C23 human;
-  class A10,F60,T53 running;
+  class A10,F60 running;
   class C21,R33,R35,T54 blocked;
   class A12,R31,R32,R34,M41,M42,M43,M44,T51 delivered;
   %% 未开工：F61,F62,F63,F64,F65,D70,D71,D72,G73,D74,D75,G76。

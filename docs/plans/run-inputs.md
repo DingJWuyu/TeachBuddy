@@ -21,6 +21,7 @@
 | 主业务组合 | 完整 `3d5c3f308bfeaa0e038a9fb86e6dab2816b9ec7c`；产品 `c2cdd9d12428dadb6ac405ff5b8081d15b51f0d6`；来源 `/home/liam_t/项目/TeacherWorkspace-r34-protection-fix` | 已含真实认证、材料、数学、教学；没有C26。 |
 | 最新R35本地结果 | `efd3b071a603d38902688b0b4dd68289e8516c69:docs/acceptance/evidence/R35/v1/local-review6.md` 及同版local6/ | 001-007已关闭；原28行矩阵的已列本地余项补齐，必要传播回归通过。完整R35、在线/新材料、目标环境和OBS未代签。只读现场 `/home/liam_t/r35l6/`，50735/50736已停止。 |
 | R34修复交接 | `3d5c3f308bfeaa0e038a9fb86e6dab2816b9ec7c:docs/acceptance/evidence/R34/v1/protection-fix.md` | self和复现入口；已由上一行独立消费，不再重复同范围审查。 |
+| TT-C7测试修复 | 修复 `baaeb09973cd01848432622e35712b74627f4488`；`f9f6776eaa0d4035c94158d12092ba2587fa3e00:docs/acceptance/evidence/T53/v1/catalog-fix.md` | 原产品源码不变，仅补已冻结的目录覆盖层预期。HTTP红绿及反向变异、89/89定向、308/308原产品API与内部双轴PASS。后继只取修复提交，不取006b4def准备提交；认证恢复组合336项尚未重跑。 |
 | F60原业务输入 | `267cf5119e05e6caba8f2db58ece3487dc6c3e9d`；来源 `/home/liam_t/项目/TeacherWorkspace-teaching-math-integration` | 活动设计固定输入，不静默替换为3d5c3f3。后继集成按最新修复及其独立证据交接。 |
 | 首批Agent候选 | 完整 `ec5094c00d122c77d2acdb376f4ede96eafb13e0`；产品 `687121ec8d9afeccb527d2738f8b1ca22791dd69`；同版 `docs/acceptance/evidence/C26/v1/math-layout-fix.md` | F61负责与主业务组合并扩展全模块。当前只代表首批能力。 |
 | 首批Agent独立结果 | `6d48bc7f214a6b27e51b3a8cbdfa6cffc212f4d1:docs/acceptance/evidence/C27/v1/math-recheck.md` | D01关闭，未变live/持久/隔离结果按报告来源复用。C27-O01两项moderate依赖公告交后续维护，未证可达缺陷。 |
@@ -44,7 +45,7 @@
 
 auth-recovery/1已独立接受，离线 `prepareRestoredAuth({db})` 已交self候选，支持冻结的七项认证迁移；A10正在固定可运行交接。认证后端拥有内部操作，F62拥有停服、完整恢复、调用和最后开放。F62须取得固定实现及A10交接，不能自行补认证SQL。
 
-上述候选完整API为335/336，唯一TT-C7失败归T53目录写者：主业务3d5c3f3的目录依赖与旧数学样本不一致；认证实现未修改这些输入。具体复现和日志读作者回执“全API回归”，修复由run-state中的T53任务接续，不能报告全套通过。
+上述认证操作候选完整API为335/336，唯一TT-C7旧预期遗漏已由产品候选表中的测试修复闭环。该修复未合入070def5；后继合流再跑包含恢复28项的完整套件，不能将308/308原产品结果写成336/336。
 
 OPS-001需F62候选及A12真实恢复专项，11条BDD的设计覆盖PASS不等于运行PASS。真实邮件/可信HTTPS/物理设备继续保留。F60无需等待这些实测才能设计；具体依赖以DAG和已冻结交接为准。
 
