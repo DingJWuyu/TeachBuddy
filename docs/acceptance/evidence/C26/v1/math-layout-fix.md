@@ -51,4 +51,59 @@ npm run review:agent -- /tmp/c27-math-recheck 44649
 
 ## 内部审查与回执
 
-内部双轴审查待聚合；产品自验通过不替代 C27 independent。仅提交任务分支，不合 main/push/部署，不改源 worktree 或根台账，不通知其他 session。
+### Standards
+
+PASS，0项发现。产品变更限于 KaTeX 依赖、锁文件和 Agent 公式段落样式；无过度设计、UI单测或旧报告覆盖。真实失败、生产构建及恢复证据满足实现协议与设计验证要求。
+
+### Spec
+
+PASS，0项发现。底数/上下标、长公式局部滚动、三视口、原持久与新回复、题库和恢复均有对应证据；无业务/认证改动，零模型入口与分列用量满足本轮要求。reviewer审看证据，未自行重跑产品或调用模型。
+
+两轴各0项，无待修项。审查固定目标为 `f76e24c94f43f5a09169e7ac2b41285ea22dc4e7...8fb52c4`，提交 `687121e` 和 `8fb52c4`；两位只读内部助手继承 Codex CLI / gpt-6-astra / low，未继续委派。最终文档只聚合审查和补齐回执，不新增产品变更。
+
+```yaml
+task: C26@1
+revision: v1
+attempt: 2
+role: implement
+status: PASS
+verification_level: self
+finished_at_utc: "2026-09-22T09:53:48Z"
+session_id: "01a0c87e-8cdb-75a1-ab5e-3aed859d92a6"
+runner: "Codex CLI / gpt-6-astra / low"
+skills_used: [diagnosing-bugs, implement, code-review, writing-for-agents]
+base_revision: "f76e24c94f43f5a09169e7ac2b41285ea22dc4e7"
+product_revision: "687121ec8d9afeccb527d2738f8b1ca22791dd69"
+result_revision: "本文件最后提交；完整SHA由最终回执返回"
+review_target:
+  fixed_point: "f76e24c94f43f5a09169e7ac2b41285ea22dc4e7"
+  commit_range: "f76e24c94f43f5a09169e7ac2b41285ea22dc4e7...8fb52c42c64de285b46394a09ad5a5f3aedc9876"
+  standards: PASS
+  spec: PASS
+  aggregate: "本文件内部审查章节；两轴各0项"
+internal_reviewers:
+  - "standards；Codex CLI / gpt-6-astra / low；只读叶子"
+  - "spec；Codex CLI / gpt-6-astra / low；只读叶子"
+inputs:
+  - "C27 34e668ae97e1eb0cd5744550b6b05a4c25aa9301:docs/acceptance/evidence/C27/v1/review.md"
+  - "C26 31ade74207bf593260f8740be80882c936c97152 / 产品127c7e55b006acd5a06ad460f3380963cb51bce0"
+  - "C25 18293e9389e739ed8aaf67ee568503ca8e87d475 / independent 741025bd0a8e09098b5877428b81c2bdd7f357d0"
+changed_files:
+  - apps/web/package.json
+  - package-lock.json
+  - apps/web/src/features/agent/agent.css
+  - docs/acceptance/evidence/C26/v1/math-layout-fix.md
+  - docs/acceptance/evidence/C26/v1/math-layout-fix/
+artifacts: ["math-layout-fix/artifacts.sha256", "本文件实际验证表"]
+checks:
+  - "C27-D01/WB-AG-003: 原生产页面明确判红；修复后三视口持久/新回复、题库数学及局部滚轮通过"
+  - "刷新、进程重开重新登录、右栏往返全文一致 PASS"
+  - "生产构建 PASS；API164项分别通过；Agent浏览器7/7；认证接线10/10"
+identity_mode: "real-api/fake-mail；真实HTTPS与Cookie；无手动注入Cookie"
+open_items: ["C27-D01待C27 independent复验", "A12既有外部邮件/设备/运维边界保持"]
+failure_owner: null
+next_condition: "C27从完整新候选构建，复制原保存库及可选新样本库，沿零模型入口复验"
+authorization_used: "用户 C26@1 / attempt 2 / C27-D01：限定修复、提交本分支、零新增产品模型调用"
+```
+
+本次仅完成作者 self，C27 independent 仍待外层安排。原现场与源 worktree保持只读，原作者/独立报告、根台账未改；不合main、push、部署或发送外层通知。保留原回复副本和最终新样本为C27复验制品，停止服务，清理其他本次临时目录。
