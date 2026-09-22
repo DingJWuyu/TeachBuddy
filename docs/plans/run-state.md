@@ -6,7 +6,7 @@
 
 1. 读取根 [AGENTS.md](../../AGENTS.md)、本页的当前批次和对应任务包。
 2. 依据固定候选与正式回执判断依赖；区分 `self`、`independent` 和用户验收。
-3. 当前处于完整 DAG 执行状态。C25 首批 Agent 完整契约已 self 交付，进入独立冻结核验；材料新窗口和 R31 基础分段启动均已 independent PASS，C21/C22 修复和 R31 基础实施均已启动；R30 原缺口仍未关闭。M40 冻结交接已完成，A12 本地认证定向独立复验已 PASS，两项缺陷关闭；真实邮件与目标设备仍待提供；T54 普通教学主链通过但三项缺陷使独立结论 FAIL，T53 集成候选正统一修复。依据下面派发记录接续，不重复派发，不主动轮询。
+3. 当前处于完整 DAG 执行状态。C25 首批 Agent 完整契约已 self 交付，进入独立冻结核验；材料新窗口和 R31 基础分段启动均已 independent PASS，C21/C22 修复和 R31 基础实施均已启动；R30 原缺口仍未关闭。M40 冻结交接已完成，A12 本地认证定向独立复验已 PASS，两项缺陷关闭；真实邮件与目标设备仍待提供；T53 三项修复已 self PASS，T54 正定向独立复验；真实作品关联仍待依赖。依据下面派发记录接续，不重复派发，不主动轮询。
 4. 权威材料确实缺少已作出的决定时，再查根 transcript：thread `01a0be12-5c28-7823-a7ed-644df825467f`，文件 `/home/liam_t/.codex/sessions/2026/09/20/rollout-2026-09-20T05-07-49-01a0be12-5c28-7823-a7ed-644df825467f.jsonl`。
 
 ## 当前用户授权与调度决定
@@ -28,13 +28,13 @@
 | C24-BUSINESS | 原 session 接续，attempt 2 / resume 1 | gpt-5.6-sol / medium | 已完成，self FAIL，制品 d826b72 | `01a0c7a8-94e5-7da1-bfe0-aa537396c067` | `.scratch/dag-dispatch/C24-BUSINESS/2/resume-1/` |
 | R30-RECOVERY-REVIEW | 恢复原会话，attempt 1 | gpt-6-astra / medium | 已完成，independent FAIL | `01a0c642-8129-7c11-84d1-f64a3fa85255` | `.scratch/dag-dispatch/R30-RECOVERY-REVIEW/1/resume-1/` |
 | C23-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent PASS（限定） | `01a0c7a8-9494-7672-9e16-cfa5034ea18d` | `.scratch/dag-dispatch/C23-MATH-REVIEW/1/` |
-| T53 | 新会话，attempt 3 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7e4-7387-7ff3-8fcd-5e79840ab177` | `.scratch/dag-dispatch/T53/3/` |
+| T53 | 新会话，attempt 3 | gpt-6-astra / low | 已完成，三项修复 self PASS | `01a0c7e4-7387-7ff3-8fcd-5e79840ab177` | `.scratch/dag-dispatch/T53/3/` |
 | A11 | 新会话，attempt 3 | gpt-6-astra / low | 已完成，self PASS | `01a0c7d9-dfcb-7562-a2fd-b36edacee619` | `.scratch/dag-dispatch/A11/3/` |
 | M40-HANDOFF | 新会话，attempt 1 | gpt-5.6-sol / medium | 已完成，冻结交接 PASS | `01a0c7c8-8354-7192-b525-9b10180805b0` | `.scratch/dag-dispatch/M40-HANDOFF/1/` |
 | C24-BUSINESS-FIX | 新会话，attempt 1 | gpt-6-astra / low | 已完成，self PASS | `01a0c7c8-833e-7f12-9ecf-5dce76b8c2b7` | `.scratch/dag-dispatch/C24-BUSINESS-FIX/1/` |
 | MATERIALS-NEXT-PLAN | 新会话，attempt 1 | gpt-6-astra / high | 已完成，方案已独立冻结 | `01a0c7c8-8353-7113-b827-5e82f5bbf02d` | `.scratch/dag-dispatch/MATERIALS-NEXT-PLAN/1/` |
 | A12-LOCAL | 新会话，attempt 2 | gpt-6-astra / medium | 已完成，本地 independent PASS / 外部 BLOCKED | `01a0c7ea-45a9-7ee0-8373-a849de8e660a` | `.scratch/dag-dispatch/A12-LOCAL/2/` |
-| T54 | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent FAIL（三项缺陷） | `01a0c7cb-3875-7fa0-b80f-2fcd66e0e26c` | `.scratch/dag-dispatch/T54/1/` |
+| T54 | 新会话，attempt 2 | gpt-6-astra / medium | 已启动，待主动回执 | `01a0c7f3-6299-79d1-8655-8a5e4dd0ca09` | `.scratch/dag-dispatch/T54/2/` |
 | C25 | 新会话，attempt 1 | gpt-6-astra / high | 已完成，self 候选待冻结 | `01a0c7d2-7a74-7050-8c8a-e28df0188772` | `.scratch/dag-dispatch/C25/1/` |
 | C25-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已启动，待主动回执 | `01a0c7ee-7965-75f0-bad4-e0c38c979e51` | `.scratch/dag-dispatch/C25-REVIEW/1/` |
 | T50-MATH-CONTRACT | 新会话，attempt 1 | gpt-6-astra / high | 已完成，self 候选待冻结 | `01a0c7d5-b6d8-7232-b045-9ef61d8c46cb` | `.scratch/dag-dispatch/T50-MATH-CONTRACT/1/` |
@@ -55,7 +55,7 @@
 | 认证：AUTH-CONTRACT、两端、A10-A12 | A12 本地 independent PASS：新候选 9ecabbf 的双页退出、恢复卡及必要退出/会话回归通过；未受影响的正常认证、隔离和持久重启结论沿用。 | 两项本地缺陷关闭，可供后续固定认证接线消费。A12 整体仍受真实邮件、目标设备/可信证书阻塞；备份恢复归可靠性阶段。 |
 | 材料：C21/C22、R30-R35 | R30 补证独立验收 FAIL。C22 角色隔离和三类打印缺口已关闭，参数化输出与本机编辑仅按报告限定范围沿用。 | C21 公式按题号回填、P/I/PS 图资产借自样本，逐题评分与一致编辑证明不足；C22 旧 DOC 与一般 LaTeX 转换仍欠证。两项 REV 均开放；新窗口与 R31 基础依赖已由 0fb32a6 独立冻结，C21/C22 修复及 R31 基础实施已并行启动。完整 R31 与 R32-R35 尚未完成。 |
 | 数学：C23、M40-M44 | M40/v1 设计已完成冻结交接，候选 1a5dd01；三项实验阻断 independent 关闭，交接动作仅 self 文档自检。 | M41 仍待 R31，M42 待 M41，M43 待 M42/R35；教学记录作品新版 a44587b 已形成候选，T50-MATH-REVIEW 正独立核验。数学产品尚未实现。 |
-| 班级与日程：T50-T54 | T54 普通课程、提醒和反馈主链独立通过；当前整体 FAIL：D03 新草稿被迟到响应清空、D01 平板通知遮挡、D02 未排期列表裁切。 | 原归属 T51/T53/T52，交 T53 attempt 3 在同一候选统一修复，之后定向独立复验。真实作品仍待教学时间新版与 M44/WB-T020。 |
+| 班级与日程：T50-T54 | T54 普通课程、提醒和反馈主链独立通过；当前整体 FAIL：D03 新草稿被迟到响应清空、D01 平板通知遮挡、D02 未排期列表裁切。 | 原归属 T51/T53/T52，T53 attempt 3 已统一修复并 self PASS，T54 attempt 2 正验新候选 ff24814。真实作品仍待教学时间新版与 M44/WB-T020。 |
 | Agent：C24-C27 | C24 PI-03/04 定向补验 self PASS，候选 e8fdf9a；旧 PI-01/02 有 self 证据。副本读回已修复，pi 错误标志语义已实测。 | C25 候选 cadc61a 已交付，错误映射、模型白名单和恢复语义正由 C25-REVIEW 独立核验；C26/C27 尚未启动，不把实验当产品通过。 |
 | 可靠性：F60-F65 | 尚未启动。 | 等待 T54、C27、A12 的真实交付，再补全模块工具、现场、恢复和整日集成。 |
 | 最终交付：D70-D75、G73/G76 | 尚未启动，未部署、未用户验收。 | 等待全范围验收、可用目标环境及具体交付动作授权。 |
@@ -70,7 +70,7 @@
 | C24 / C25 | C25 完整候选与实验消费回执已接收，派 C25-REVIEW 独立冻结核验。 | 设计候选独立冻结后派 C26；证据缺口明确归属，不重复已有实验或把作者自检代替冻结。 |
 | R30 / C20 / R31 | 两项冻结已通过，按短包并行派 C21/C22 修复、R31 基础实现。 | 收到实验新制品即交 R30 分项独立消费；R31 基础交付保留转换待接，不提前放行完整 R31 或 M41。 |
 | A11 / A12 | 已接收本地 independent PASS，关闭 A12-LOCAL-001/002，无新增缺陷，不再派重复复验。 | C26 等后续组合消费固定 9ecabbf 与 aaa3d77 报告；外部邮件和目标设备输入到达后补真实验收，不提前解除 A12 整体及 F60 门禁。 |
-| T53 / T54 | T54-D01/D02/D03 已交同一集成候选唯一写者定向修复，原组件归属保留。 | 新固定候选交 T54 定向复验，沿用未变场景；作品与目标设备仍另行接续。 |
+| T53 / T54 | T53 三项修复 self PASS 已接收，派 T54 attempt 2 定向独立复验，原组件归属保留。 | 新固定候选交 T54 定向复验，沿用未变场景；作品与目标设备仍另行接续。 |
 
 ## 固定候选与必要证据
 
@@ -85,7 +85,7 @@
 | A12 本地独立报告 | `aaa3d77accbfc743f47edfb1ffc385735b2bf3db:docs/acceptance/evidence/A12/v1/local-recheck.md`；受测 `9ecabbf`，本地 PASS、外部 BLOCKED；未变结论沿用 `8bd41a5:docs/acceptance/evidence/A12/v1/local-review.md`，旧现场保留。 |
 | T50 / T51 / T52 | 冻结 `afda1c5` + review `f9eb35f`；T51 代码 `fdf03fd`、回执 `56cbfd6`；T52 `14e18ed`。 |
 | T50 作品关联候选 | 设计 `a44587b9bd18618d77df13f7349f5043a297d226`；作者 `6e1afef26a95c49ad559ed3790502313aa341dd7:docs/acceptance/evidence/T50-MATH-CONTRACT/v1/author.md`；138 样本、22 HTTP 交换及30 BDD 场景结构自检通过，待独立冻结。 |
-| T53 真实组合 / 回执 | 产品 `89fe81bcd9c93e0b2c6af10b595cdf22eb5c75bd`；回执 `c8bd75a151fc1f3b405d8f58b6de182c5fa76be9:docs/acceptance/evidence/T53/v1/author.md`；API 147、浏览器 26、构建 self 通过，身份 test-principal。 |
+| T53 真实组合 / 回执 | 修复产品 `ff248141ac60668cca958b1212bcc2dfcf799490`；回执 `680117f076b548ed997bfd11e4687614666a0b85:docs/acceptance/evidence/T53/v1/attempt3.md`；定向 11、教学 8、首流 18、API 147 及构建 self 通过，身份 test-principal。 |
 | T54 独立报告 | `488c3b87ac02f4835544b65ad5f30f5718712b9c:docs/acceptance/evidence/T54/v1/review.md`；受测 `89fe81b`，independent FAIL，三项最小复现与场景矩阵已归档；身份 test-principal。 |
 | R30 / 限定接缝 | 原设计 `ae9a395`、review `0467f46`；恢复方案 `7789974` + review `c82cd69` 仅放行材料补验和 M40 设计接缝。 |
 | 材料补证 | C21 制品 `cfbbc1d` + 回执 `96be500`；C22 实际制品 `f29a7afc5254fc852811c9a9e2368f46cce3e01e` + 回执 `c8c089c`；受审组合 `8d48af5`；独立报告 `16d4b013b17b1e8d8c240c0d15a8b5366102024b:docs/acceptance/evidence/R30/v1/recovery-review.md`。 |
