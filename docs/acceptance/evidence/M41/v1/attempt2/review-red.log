@@ -1,0 +1,79 @@
+[WebServer] (node:953028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:953027) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:953105) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/math-static-formula.spec.js:11:1 › local font failure is visible and retry restores native preview (7.8s)
+(node:953223) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 apps/web/e2e/math-static-formula.spec.js:22:1 › unclosed brace error locates the source selection (30.2s)
+
+
+  1) apps/web/e2e/math-static-formula.spec.js:11:1 › local font failure is visible and retry restores native preview
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: '重试字体', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: '重试字体', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: '重试字体', exact: true })
+
+
+      14 |   await page.goto('/fixture/session');
+      15 |   await page.getByRole('button', { name: '新建平面图形', exact: true }).first().click();
+    > 16 |   await expect(page.getByRole('button', { name: '重试字体', exact: true })).toBeVisible();
+         |                                                                         ^
+      17 |   await expect(page.getByRole('img', { name: '当前数学图形预览' })).toHaveCount(0);
+      18 |   fail = false;
+      19 |   await page.getByRole('button', { name: '重试字体', exact: true }).click();
+        at /home/liam_t/项目/TeacherWorkspace-m41-complete/apps/web/e2e/math-static-formula.spec.js:16:73
+
+    Error Context: test-results/m41/playwright-1790069961881/math-static-formula-local--baa2b-try-restores-native-preview/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m41/playwright-1790069961881/math-static-formula-local--baa2b-try-restores-native-preview/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m41/playwright-1790069961881/math-static-formula-local--baa2b-try-restores-native-preview/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) apps/web/e2e/math-static-formula.spec.js:22:1 › unclosed brace error locates the source selection
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '定位到第 1 行第 6 列', exact: true })
+
+
+      24 |   await page.getByRole('button', { name: '新建公式', exact: true }).first().click();
+      25 |   await page.getByLabel('LaTeX', { exact: true }).fill(String.raw`\frac{1`);
+    > 26 |   await page.getByRole('button', { name: '定位到第 1 行第 6 列', exact: true }).click();
+         |                                                                          ^
+      27 |   expect(await page.getByLabel('LaTeX', { exact: true }).evaluate(node => [node.selectionStart, node.selectionEnd])).toEqual([5, 6]);
+      28 | });
+      29 |
+        at /home/liam_t/项目/TeacherWorkspace-m41-complete/apps/web/e2e/math-static-formula.spec.js:26:74
+
+    Error Context: test-results/m41/playwright-1790069969960/math-static-formula-unclos-6b13e-ocates-the-source-selection/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m41/playwright-1790069969960/math-static-formula-unclos-6b13e-ocates-the-source-selection/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m41/playwright-1790069969960/math-static-formula-unclos-6b13e-ocates-the-source-selection/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    apps/web/e2e/math-static-formula.spec.js:11:1 › local font failure is visible and retry restores native preview
+    apps/web/e2e/math-static-formula.spec.js:22:1 › unclosed brace error locates the source selection

@@ -1,0 +1,62 @@
+{
+  "status": "PASS",
+  "question": {
+    "id": "a961e3bd-bdae-4b17-a337-de09fefe6f32",
+    "version": 4,
+    "createdAt": "2026-09-22T18:25:33.312Z",
+    "updatedAt": "2026-09-22T18:25:33.678Z",
+    "deletedAt": null,
+    "title": "正常题目-1790101533306已修改",
+    "body": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "正常题干"
+            }
+          ]
+        }
+      ]
+    },
+    "solution": {
+      "version": 2,
+      "blocks": []
+    },
+    "note": "正常笔记",
+    "starred": false,
+    "source": {
+      "kind": "manual"
+    },
+    "answerStatus": "absent",
+    "typeId": null,
+    "tagIds": []
+  },
+  "lesson": {
+    "id": "368f03e6-ae61-4e62-a3ca-60ec4bcf9354",
+    "version": 4,
+    "createdAt": "2026-09-22T18:25:33.875Z",
+    "updatedAt": "2026-09-22T18:25:34.965Z",
+    "deletedAt": null,
+    "title": "正常课题已修改",
+    "intro": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "正常文稿已修改"
+            }
+          ]
+        }
+      ]
+    },
+    "sections": [],
+    "materials": []
+  },
+  "copyNoteEmpty": true
+}

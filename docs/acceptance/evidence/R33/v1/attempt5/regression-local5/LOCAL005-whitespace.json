@@ -1,0 +1,281 @@
+{
+  "directory": "/tmp/r33-local5-api-acVlJV",
+  "trace": [
+    {
+      "at": "2026-09-22T15:41:13.358Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "0b9b139a-e8fc-4efd-a60c-89fc60f05612",
+        "name": "triangle.png",
+        "mediaType": "image/png",
+        "byteLength": 16272,
+        "sha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f",
+        "createdAt": "2026-09-22T15:41:13.371Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.375Z",
+      "route": "/api/modules/questions/v2/imports",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "whitespace",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "0b9b139a-e8fc-4efd-a60c-89fc60f05612"
+          ],
+          "pages": []
+        }
+      },
+      "response": {
+        "id": "dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+        "version": 1,
+        "createdAt": "2026-09-22T15:41:13.382Z",
+        "updatedAt": "2026-09-22T15:41:13.382Z",
+        "deletedAt": null,
+        "title": "whitespace",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "0b9b139a-e8fc-4efd-a60c-89fc60f05612"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [],
+        "fragments": [],
+        "jobId": "f6fd330e-d77e-443c-a08a-50ba0b9341ac"
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.393Z",
+      "route": "/api/workbench/jobs/f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.383Z",
+        "updatedAt": "2026-09-22T15:41:13.384Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.424Z",
+      "route": "/api/workbench/jobs/f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.383Z",
+        "updatedAt": "2026-09-22T15:41:13.384Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.455Z",
+      "route": "/api/workbench/jobs/f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.383Z",
+        "updatedAt": "2026-09-22T15:41:13.384Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.488Z",
+      "route": "/api/workbench/jobs/f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.383Z",
+        "updatedAt": "2026-09-22T15:41:13.384Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.518Z",
+      "route": "/api/workbench/jobs/f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.383Z",
+        "updatedAt": "2026-09-22T15:41:13.384Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.550Z",
+      "route": "/api/workbench/jobs/f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.383Z",
+        "updatedAt": "2026-09-22T15:41:13.384Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.581Z",
+      "route": "/api/workbench/jobs/f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "f6fd330e-d77e-443c-a08a-50ba0b9341ac",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+          "version": 1
+        },
+        "state": "failed",
+        "createdAt": "2026-09-22T15:41:13.383Z",
+        "updatedAt": "2026-09-22T15:41:13.581Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 1,
+          "total": 1,
+          "unit": "pages"
+        },
+        "outputFileIds": [],
+        "issues": [
+          {
+            "code": "empty-response",
+            "unitId": "file:0b9b139a-e8fc-4efd-a60c-89fc60f05612:page:1",
+            "field": null,
+            "detail": "提取结果不完整，请对照原稿继续。"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.586Z",
+      "route": "/api/modules/questions/v2/imports/dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "dee8d7e4-c18f-4a44-a11a-af1bcae58de2",
+        "version": 2,
+        "createdAt": "2026-09-22T15:41:13.382Z",
+        "updatedAt": "2026-09-22T15:41:13.580Z",
+        "deletedAt": null,
+        "title": "whitespace",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "0b9b139a-e8fc-4efd-a60c-89fc60f05612"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [],
+        "fragments": [],
+        "jobId": "f6fd330e-d77e-443c-a08a-50ba0b9341ac"
+      }
+    }
+  ]
+}

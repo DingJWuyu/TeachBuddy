@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "2b6cbcda934057a89c0443437e03b2e30e850a8d",
+  "identity": "test-principal",
+  "id": "c99b1b16-a4a3-4a1e-90e9-bb12a6d1196d",
+  "v1DocumentPreserved": true,
+  "oldRequestReplayPreserved": true,
+  "restartPreserved": true,
+  "dataDir": "/tmp/r33-upgrade-pVLIOi"
+}

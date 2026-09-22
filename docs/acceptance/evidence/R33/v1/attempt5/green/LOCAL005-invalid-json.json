@@ -1,0 +1,215 @@
+{
+  "directory": "/tmp/r33-local5-api-TinKk0",
+  "trace": [
+    {
+      "at": "2026-09-22T15:38:07.853Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "68f7adce-6cc3-4557-a8bc-8402af98cf97",
+        "name": "triangle.png",
+        "mediaType": "image/png",
+        "byteLength": 16272,
+        "sha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f",
+        "createdAt": "2026-09-22T15:38:07.856Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.860Z",
+      "route": "/api/modules/questions/v2/imports",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "invalid-json",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "68f7adce-6cc3-4557-a8bc-8402af98cf97"
+          ],
+          "pages": []
+        }
+      },
+      "response": {
+        "id": "070c8158-76d5-4bbc-88ba-37b4cd02b5fb",
+        "version": 1,
+        "createdAt": "2026-09-22T15:38:07.862Z",
+        "updatedAt": "2026-09-22T15:38:07.862Z",
+        "deletedAt": null,
+        "title": "invalid-json",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "68f7adce-6cc3-4557-a8bc-8402af98cf97"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [],
+        "fragments": [],
+        "jobId": "524d89cb-f95d-44d7-afb7-80ef8ceb3ae1"
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.866Z",
+      "route": "/api/workbench/jobs/524d89cb-f95d-44d7-afb7-80ef8ceb3ae1",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "524d89cb-f95d-44d7-afb7-80ef8ceb3ae1",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "070c8158-76d5-4bbc-88ba-37b4cd02b5fb",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.862Z",
+        "updatedAt": "2026-09-22T15:38:07.862Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.894Z",
+      "route": "/api/workbench/jobs/524d89cb-f95d-44d7-afb7-80ef8ceb3ae1",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "524d89cb-f95d-44d7-afb7-80ef8ceb3ae1",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "070c8158-76d5-4bbc-88ba-37b4cd02b5fb",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.862Z",
+        "updatedAt": "2026-09-22T15:38:07.862Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.922Z",
+      "route": "/api/workbench/jobs/524d89cb-f95d-44d7-afb7-80ef8ceb3ae1",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "524d89cb-f95d-44d7-afb7-80ef8ceb3ae1",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "070c8158-76d5-4bbc-88ba-37b4cd02b5fb",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.862Z",
+        "updatedAt": "2026-09-22T15:38:07.862Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.950Z",
+      "route": "/api/workbench/jobs/524d89cb-f95d-44d7-afb7-80ef8ceb3ae1",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "524d89cb-f95d-44d7-afb7-80ef8ceb3ae1",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "070c8158-76d5-4bbc-88ba-37b4cd02b5fb",
+          "version": 1
+        },
+        "state": "partial",
+        "createdAt": "2026-09-22T15:38:07.862Z",
+        "updatedAt": "2026-09-22T15:38:07.940Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 1,
+          "total": 1,
+          "unit": "pages"
+        },
+        "outputFileIds": [],
+        "issues": [
+          {
+            "code": "truncated-response",
+            "unitId": "file:68f7adce-6cc3-4557-a8bc-8402af98cf97:page:1",
+            "field": null,
+            "detail": "提取结果不完整，请对照原稿继续。"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.952Z",
+      "route": "/api/modules/questions/v2/imports/070c8158-76d5-4bbc-88ba-37b4cd02b5fb",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "070c8158-76d5-4bbc-88ba-37b4cd02b5fb",
+        "version": 2,
+        "createdAt": "2026-09-22T15:38:07.862Z",
+        "updatedAt": "2026-09-22T15:38:07.939Z",
+        "deletedAt": null,
+        "title": "invalid-json",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "68f7adce-6cc3-4557-a8bc-8402af98cf97"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [],
+        "fragments": [
+          {
+            "id": "430c2963-5a6e-438e-a85b-d14afa20fc37",
+            "text": "not JSON",
+            "locations": [
+              {
+                "kind": "page",
+                "fileId": "68f7adce-6cc3-4557-a8bc-8402af98cf97",
+                "renditionFileId": "68f7adce-6cc3-4557-a8bc-8402af98cf97",
+                "page": 1,
+                "box": null
+              }
+            ],
+            "disposition": "unassigned"
+          }
+        ],
+        "jobId": "524d89cb-f95d-44d7-afb7-80ef8ceb3ae1"
+      }
+    }
+  ]
+}

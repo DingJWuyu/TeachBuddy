@@ -48,3 +48,22 @@ export function createRecoveryMailSender(runtimeEnv) {
     }
   };
 }
+
+// Authentication never falls back to logging a code. Local tests inject fake-mail.
+export function createAuthCodeSender(runtimeEnv) {
+  if (!runtimeEnv.smtpHost || !runtimeEnv.smtpFrom) {
+    throw new Error('SMTP_HOST and SMTP_FROM are required for authentication mail.');
+  }
+  const transport = createSmtpTransport(runtimeEnv);
+  return async ({ purpose, email, verificationCode }) => {
+    const result = await transport.sendMail({
+      from: runtimeEnv.smtpFrom,
+      to: email,
+      subject: purpose === 'registration' ? 'TeachBuddy 注册验证码' : 'TeachBuddy 重置密码验证码',
+      text: `您的验证码是 ${verificationCode}。请勿向他人透露。`
+    });
+    if (!result.accepted?.some(address => String(address).toLowerCase() === email.toLowerCase()) || result.rejected?.length) {
+      throw new Error('Mail provider did not accept the recipient.');
+    }
+  };
+}

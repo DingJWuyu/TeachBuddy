@@ -1,0 +1,12 @@
+[
+  {
+    "directory": "/tmp/teacher-r35-local2-runtime",
+    "sqliteSha256": "b93bc5df2e95b756fa4553db4811caaddbf0ddbaa2d38e589c3d31a54d448811",
+    "sqliteBytes": 1626112
+  },
+  {
+    "directory": "/tmp/teacher-r35-local2-retained",
+    "sqliteSha256": "833f4139a58e5fac81cc83bc86700cb231e1c40daf64996755fcdd3ca5c5c86b",
+    "sqliteBytes": 1454080
+  }
+]

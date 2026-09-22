@@ -1,0 +1,16 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.isDisabled: Timeout 12000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: '删除备课', exact: true })[22m
+
+    at /home/liam_t/项目/TeacherWorkspace-r34-protection-fix/docs/acceptance/evidence/R34/v1/protection-fix/scripts/future.mjs:21:31 {
+  log: [
+    "  - waiting for getByRole('button', { name: '删除备课', exact: true })"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.2

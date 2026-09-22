@@ -1,0 +1,38 @@
+
+Running 1 test using 1 worker
+
+(node:1075185) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-integration.spec.js:25:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 (3.0m)
+
+
+  1) apps/web/e2e/materials-integration.spec.js:25:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 ────────────
+
+    Test timeout of 180000ms exceeded.
+
+    Error: locator.selectOption: Test timeout of 180000ms exceeded.
+    Call log:
+      - waiting for getByLabel('成果', { exact: true })
+
+
+      86 |   let outputCount=0;
+      87 |   for (const kind of ['lesson-plan','handout','practice']) for (const format of ['docx','pdf']) {
+    > 88 |     await page.getByLabel('成果',{exact:true}).selectOption(kind);
+         |                                              ^
+      89 |     await page.getByLabel('格式',{exact:true}).selectOption(format);
+      90 |     await page.getByRole('button',{name:'保存并生成',exact:true}).click();
+      91 |     await expect(page.getByRole('button',{name:'下载',exact:true})).toHaveCount(++outputCount,{timeout:60000});
+        at /home/liam_t/项目/TeacherWorkspace-r34-integration/apps/web/e2e/materials-integration.spec.js:88:46
+
+    Error Context: test-results/r34-integration/browser/materials-integration-真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34-integration/browser/materials-integration-真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34-integration/browser/materials-integration-真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-integration.spec.js:25:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 ─────────────

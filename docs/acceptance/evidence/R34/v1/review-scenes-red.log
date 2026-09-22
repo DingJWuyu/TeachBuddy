@@ -1,0 +1,78 @@
+
+Running 2 tests using 1 worker
+
+(node:1058638) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-lessons.spec.js:206:1 › WB-M018: output round trip restores manuscript scroll (5.7s)
+(node:1058747) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 apps/web/e2e/materials-lessons.spec.js:220:1 › WB-M019: resource comparison previews both adopted and current files (5.7s)
+
+
+  1) apps/web/e2e/materials-lessons.spec.js:206:1 › WB-M018: output round trip restores manuscript scroll
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 450
+    Received: 209
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      213 |   const region=page.locator('[data-region="lesson-scroll"]');
+      214 |   await region.evaluate(el=>{el.scrollTop=450;el.dispatchEvent(new Event('scroll',{bubbles:true}));});
+    > 215 |   await expect.poll(()=>region.evaluate(el=>el.scrollTop)).toBe(450);
+          |                                                            ^
+      216 |   await page.getByRole('button',{name:'输出',exact:true}).click();
+      217 |   await page.getByRole('button',{name:'返回文稿',exact:true}).click();
+      218 |   await expect.poll(()=>region.evaluate(el=>el.scrollTop)).toBe(450);
+        at /home/liam_t/项目/TeacherWorkspace-r34-lessons/apps/web/e2e/materials-lessons.spec.js:215:60
+
+    Error Context: test-results/r34/playwright/materials-lessons-WB-M018--afb3c--restores-manuscript-scroll/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34/playwright/materials-lessons-WB-M018--afb3c--restores-manuscript-scroll/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34/playwright/materials-lessons-WB-M018--afb3c--restores-manuscript-scroll/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) apps/web/e2e/materials-lessons.spec.js:220:1 › WB-M019: resource comparison previews both adopted and current files
+
+    Error: expect(locator).not.toContainText(expected) failed
+
+    Locator: getByRole('dialog', { name: '对照更新', exact: true })
+    Expected substring: not "暂不支持"
+    Received string: "对照更新本课采用版本 1课堂资料.pdf · 打开采用文件文档版本 undefined 暂不支持，原数据只读保留。来源当前版本 2课堂资料.pdf文档版本 undefined 暂不支持，原数据只读保留。采用更新取消"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "not toContainText" getByRole('dialog', { name: '对照更新', exact: true }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: '对照更新', exact: true })
+        14 × locator resolved to <div role="dialog" aria-modal="true" aria-label="对照更新" class="wb-dialog wb-compare-dialog">…</div>
+           - unexpected value "对照更新本课采用版本 1课堂资料.pdf · 打开采用文件文档版本 undefined 暂不支持，原数据只读保留。来源当前版本 2课堂资料.pdf文档版本 undefined 暂不支持，原数据只读保留。采用更新取消"
+
+
+      240 |   await page.getByRole('button',{name:'有更新 · 查看',exact:true}).first().click();
+      241 |   const dialog=page.getByRole('dialog',{name:'对照更新',exact:true});
+    > 242 |   await expect(dialog).not.toContainText('暂不支持');
+          |                            ^
+      243 |   await dialog.getByRole('button',{name:'预览来源当前文件',exact:true}).click();
+      244 |   await expect(page.getByAltText('成品第 1 页')).toBeVisible({timeout:30000});
+      245 |   await page.getByRole('button',{name:'关闭预览',exact:true}).click();
+        at /home/liam_t/项目/TeacherWorkspace-r34-lessons/apps/web/e2e/materials-lessons.spec.js:242:28
+
+    Error Context: test-results/r34/playwright/materials-lessons-WB-M019--82e80-h-adopted-and-current-files/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34/playwright/materials-lessons-WB-M019--82e80-h-adopted-and-current-files/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34/playwright/materials-lessons-WB-M019--82e80-h-adopted-and-current-files/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    apps/web/e2e/materials-lessons.spec.js:206:1 › WB-M018: output round trip restores manuscript scroll
+    apps/web/e2e/materials-lessons.spec.js:220:1 › WB-M019: resource comparison previews both adopted and current files

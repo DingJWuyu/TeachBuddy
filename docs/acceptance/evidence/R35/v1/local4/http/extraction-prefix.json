@@ -1,0 +1,148 @@
+{
+  "inputBodies": [
+    "{\"fragments\":[{\"role\":\"question\",\"label\":\"1.\",\"section\":\"\",\"group\":\"\",\"text\":\"R35完整前缀：求函数的定义域。\",\"content\":[{\"text\":\"R35完整前缀：求函数的定义域。\"}],\"continues\":\"\",\"doubts\":[]},{\"role\":\"question\",\"text\":\"未完整尾部"
+  ],
+  "job": {
+    "id": "7de8333f-b6b0-4c56-a213-5b3038a8374e",
+    "kind": "extraction",
+    "target": {
+      "kind": "import",
+      "id": "412f9bab-568f-40c2-85e5-6d13597d2875",
+      "version": 1
+    },
+    "state": "partial",
+    "createdAt": "2026-09-22T15:58:14.343Z",
+    "updatedAt": "2026-09-22T15:58:14.438Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 1,
+      "total": 1,
+      "unit": "pages"
+    },
+    "outputFileIds": [],
+    "issues": [
+      {
+        "code": "truncated-response",
+        "unitId": "file:6ce6f834-73cf-483c-b182-2f029c31f659:page:1",
+        "field": null,
+        "detail": "提取结果不完整，请对照原稿继续。"
+      }
+    ]
+  },
+  "material": {
+    "id": "412f9bab-568f-40c2-85e5-6d13597d2875",
+    "version": 2,
+    "createdAt": "2026-09-22T15:58:14.343Z",
+    "updatedAt": "2026-09-22T15:58:14.438Z",
+    "deletedAt": null,
+    "title": "独立受控 prefix",
+    "origin": "local adapter only",
+    "input": {
+      "kind": "files",
+      "fileIds": [
+        "6ce6f834-73cf-483c-b182-2f029c31f659"
+      ],
+      "pages": []
+    },
+    "supplementFileIds": [],
+    "drafts": [
+      {
+        "id": "307430d5-200e-4f18-aec8-c2ffa28bfd88",
+        "title": "1.",
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "R35完整前缀：求函数的定义域。"
+                }
+              ]
+            }
+          ]
+        },
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "answerStatus": "unresolved",
+        "typeId": null,
+        "tagIds": [],
+        "parts": [
+          {
+            "role": "body",
+            "locations": [
+              {
+                "kind": "page",
+                "fileId": "6ce6f834-73cf-483c-b182-2f029c31f659",
+                "renditionFileId": "6ce6f834-73cf-483c-b182-2f029c31f659",
+                "page": 1,
+                "box": null
+              }
+            ]
+          }
+        ],
+        "issues": [
+          {
+            "id": "bd4653f0-8260-4e56-ab9b-e88dbd7af683",
+            "code": "unverified-location",
+            "field": "/parts",
+            "locations": [
+              {
+                "kind": "page",
+                "fileId": "6ce6f834-73cf-483c-b182-2f029c31f659",
+                "renditionFileId": "6ce6f834-73cf-483c-b182-2f029c31f659",
+                "page": 1,
+                "box": null
+              }
+            ],
+            "resolution": "open"
+          },
+          {
+            "id": "59e75d73-9291-44c6-a8f1-56b93eef29e9",
+            "code": "incomplete-answer",
+            "field": "/solution",
+            "locations": [
+              {
+                "kind": "page",
+                "fileId": "6ce6f834-73cf-483c-b182-2f029c31f659",
+                "renditionFileId": "6ce6f834-73cf-483c-b182-2f029c31f659",
+                "page": 1,
+                "box": null
+              }
+            ],
+            "resolution": "open"
+          }
+        ],
+        "disposition": "pending",
+        "questionId": null
+      }
+    ],
+    "fragments": [
+      {
+        "id": "1718c049-ab59-40de-a4af-17dd751d7096",
+        "text": "{\"fragments\":[{\"role\":\"question\",\"label\":\"1.\",\"section\":\"\",\"group\":\"\",\"text\":\"R35完整前缀：求函数的定义域。\",\"content\":[{\"text\":\"R35完整前缀：求函数的定义域。\"}],\"continues\":\"\",\"doubts\":[]},{\"role\":\"question\",\"text\":\"未完整尾部",
+        "locations": [
+          {
+            "kind": "page",
+            "fileId": "6ce6f834-73cf-483c-b182-2f029c31f659",
+            "renditionFileId": "6ce6f834-73cf-483c-b182-2f029c31f659",
+            "page": 1,
+            "box": null
+          }
+        ],
+        "disposition": "unassigned"
+      }
+    ],
+    "jobId": "7de8333f-b6b0-4c56-a213-5b3038a8374e"
+  },
+  "sources": [
+    {
+      "id": "6ce6f834-73cf-483c-b182-2f029c31f659",
+      "sha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f"
+    }
+  ],
+  "calls": 1
+}

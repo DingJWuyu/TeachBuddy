@@ -1,0 +1,22 @@
+[
+  {
+    "directory": "/tmp/teacher-r35-local2-candidate",
+    "head": "3a10e0d5108a4950bba0851610bae7d8495dc8ff",
+    "status": ""
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-materials-candidate",
+    "head": "3a10e0d5108a4950bba0851610bae7d8495dc8ff",
+    "status": ""
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r35-local",
+    "head": "4c4b68965e3226e5d66bf8f16ad5f390541cb2da",
+    "status": ""
+  },
+  {
+    "directory": "/tmp/teacher-r35-local-candidate",
+    "head": "6398bf2dae85d1872c929aa8ef32d5705d763687",
+    "status": ""
+  }
+]
