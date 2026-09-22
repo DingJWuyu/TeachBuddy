@@ -1,0 +1,38 @@
+{
+  "handout-student.pdf": {
+    "pages": 2,
+    "all_pages_have_text": true,
+    "visual_review": "all pages reviewed; no clipping or overlap observed",
+    "sha256": "fb4de1e80645e6231002057b01a88c0103c589b5a5d07237f3753e3970adfede"
+  },
+  "handout-teacher.pdf": {
+    "pages": 2,
+    "all_pages_have_text": true,
+    "visual_review": "all pages reviewed; no clipping or overlap observed",
+    "sha256": "0fadfb2a3f8734cc01898bb4bb642109192eff3776ca10ac890c30fc838015d7"
+  },
+  "lesson-student.pdf": {
+    "pages": 2,
+    "all_pages_have_text": true,
+    "visual_review": "all pages reviewed; no clipping or overlap observed",
+    "sha256": "22c04579ff6d0bfb86090b641bdd8133e2eb604ab192a8cc7e4d1faa0bde082b"
+  },
+  "lesson-teacher.pdf": {
+    "pages": 2,
+    "all_pages_have_text": true,
+    "visual_review": "all pages reviewed; no clipping or overlap observed",
+    "sha256": "e790418405ad3e0f70adf9eab95272e72b6fbe7cab162c00eb0ef2c7ebf5a796"
+  },
+  "practice-student.pdf": {
+    "pages": 3,
+    "all_pages_have_text": true,
+    "visual_review": "all pages reviewed; no clipping or overlap observed",
+    "sha256": "b0b6c1df02f3efc0140133be61f69e4cc7ff4dfa86345bf6cde8b958c8631a37"
+  },
+  "practice-teacher.pdf": {
+    "pages": 4,
+    "all_pages_have_text": true,
+    "visual_review": "all pages reviewed; no clipping or overlap observed",
+    "sha256": "344893d8530f5f9bbb3c0d7d916e6ba56485b5aad45002a6c0ec9dc53fa729e6"
+  }
+}

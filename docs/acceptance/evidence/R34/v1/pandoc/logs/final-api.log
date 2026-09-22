@@ -1,0 +1,104 @@
+TAP version 13
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+ok 1 - MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+  ---
+  duration_ms: 238.401104
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+ok 2 - MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+  ---
+  duration_ms: 8487.531737
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+ok 3 - MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+  ---
+  duration_ms: 218.056222
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+ok 4 - MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+  ---
+  duration_ms: 4373.999742
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+ok 5 - MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+  ---
+  duration_ms: 3031.62287
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+ok 6 - MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+  ---
+  duration_ms: 77.343744
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+ok 7 - MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+  ---
+  duration_ms: 1152.234765
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# R34_PANDOC_EVIDENCE /home/liam_t/项目/TeacherWorkspace-r34-pandoc/docs/acceptance/evidence/R34/v1/pandoc/http
+# Subtest: Pandoc real HTTP: six rich questions, 24 outputs, editable math readback, isolation and retained sources
+ok 8 - Pandoc real HTTP: six rich questions, 24 outputs, editable math readback, isolation and retained sources
+  ---
+  duration_ms: 63178.229973
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+ok 9 - stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+  ---
+  duration_ms: 1520.957597
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 63468.136095

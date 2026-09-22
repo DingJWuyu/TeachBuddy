@@ -1,0 +1,31 @@
+TAP version 13
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: Pandoc real HTTP: six rich questions, 24 outputs, editable math readback, isolation and retained sources
+not ok 1 - Pandoc real HTTP: six rich questions, 24 outputs, editable math readback, isolation and retained sources
+  ---
+  duration_ms: 2120.697319
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-pandoc/apps/api/test/materials-pandoc.test.js:22:1'
+  failureType: 'testCodeFailure'
+  error: 'editable formulas lost: 0'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-pandoc/apps/api/test/materials-pandoc.test.js:107:20)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2522.444256

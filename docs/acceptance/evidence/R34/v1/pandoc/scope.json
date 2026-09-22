@@ -1,0 +1,30 @@
+{
+  "main": "5cee96071ac0d47e5a5575b4f6d4dac3ac685143",
+  "fixedInput": "3d5c3f308bfeaa0e038a9fb86e6dab2816b9ec7c",
+  "fixedPoint": "7433f04ba3d7435ff83b772514ceb6c053e98fd4",
+  "finalProduct": "2a159af857e0c97c59ab10443657f877d5ddd39a",
+  "productChanges": [
+    ".gitignore",
+    "README.md",
+    "apps/api/src/modules/lessons/exports.js",
+    "apps/api/src/modules/lessons/formula.js",
+    "apps/api/src/modules/lessons/output.js",
+    "apps/api/src/modules/lessons/pandoc.js",
+    "apps/api/test/materials-lessons.test.js",
+    "apps/api/test/materials-pandoc.test.js",
+    "apps/web/e2e/materials-integration.spec.js"
+  ],
+  "consumptionProductDifference": [
+    "apps/api/test/teaching-time-reminders.test.js (authorized baaeb099)"
+  ],
+  "contractDifference": [],
+  "evidenceRoots": [
+    "docs/acceptance/evidence/R34/v1/pandoc.md",
+    "docs/acceptance/evidence/R34/v1/pandoc",
+    "docs/acceptance/evidence/HUMAN-ACCEPTANCE/20260922"
+  ],
+  "excludedPreparationCommit": "006b4def",
+  "mainMerged": false,
+  "pushed": false,
+  "deployed": false
+}
