@@ -198,28 +198,34 @@ export function useSavableDocument({
 
     return () => {
       cancelled = true;
+      seqRef.current += 1;
     };
   }, [accountKey, enabled, kind, draftId, generation, commit]);
 
-  // Persist the draft, or drop it once the server confirmed the current input.
-  useEffect(() => {
-    if (!enabled || !accountKey || !draftId || !state.input) return;
+  // Saving may be followed immediately by navigation. Persist the latest state
+  // before resolving save(), as the next render/effect may never be mounted.
+  const persistDraft = useCallback((current) => {
+    if (!enabled || !accountKey || !draftId || !current.input) return;
     const name = draftName(kind, draftId);
-    if (state.pending || keepsDraft(state.status)) {
+    if (current.pending || keepsDraft(current.status)) {
       const stored = writeLocal(accountKey, name, {
-        input: state.input,
-        baselineId: state.baseline?.id ?? null,
-        baselineVersion: state.baseline?.version ?? null,
-        pending: state.pending,
-        status: state.status,
-        savedAt: state.savedAt
+        input: current.input,
+        baselineId: current.baseline?.id ?? null,
+        baselineVersion: current.baseline?.version ?? null,
+        pending: current.pending,
+        status: current.status,
+        savedAt: current.savedAt
       });
-      if (stored !== state.localDraft) commit({ localDraft: stored });
-    } else if (isSettled(state.status)) {
+      if (stored !== current.localDraft) commit({ localDraft: stored });
+    } else if (isSettled(current.status)) {
       removeLocal(accountKey, name);
-      if (state.localDraft) commit({ localDraft: false });
+      if (current.localDraft) commit({ localDraft: false });
     }
-  }, [accountKey, commit, draftId, enabled, kind, state.baseline, state.input, state.localDraft, state.pending, state.savedAt, state.status]);
+  }, [accountKey, commit, draftId, enabled, kind]);
+
+  useEffect(() => {
+    persistDraft(stateRef.current);
+  }, [persistDraft, state]);
 
   const setInput = useCallback((updater) => {
     commit((current) => {
@@ -293,6 +299,7 @@ export function useSavableDocument({
               },
               savedAt: Date.now()
             }));
+            persistDraft(stateRef.current);
             return result;
           }
         } catch (error) {
@@ -312,6 +319,7 @@ export function useSavableDocument({
         savedAt: Date.now(),
         localDraft: !unchanged
       }));
+      persistDraft(stateRef.current);
       return result;
     } catch (error) {
       if (seq !== seqRef.current || generationRef.current !== generation) return null;
@@ -338,7 +346,7 @@ export function useSavableDocument({
       }
       return null;
     }
-  }, [commit, enabled, generation]);
+  }, [commit, enabled, generation, kind, mode, persistDraft]);
 
   /** Re-read the server object and adopt it, dropping the local draft. */
   const adoptServer = useCallback(async () => {
@@ -385,13 +393,19 @@ export function useSavableDocument({
     save: submit,
     retryConfirm: () => submit({ retry: true }),
     adoptServer,
-    checkpoint: (id = draftId) => {
+    checkpoint: (id = draftId, { move = false } = {}) => {
       const current = stateRef.current;
-      return writeLocal(accountKey, draftName(kind, id), {
+      const stored = writeLocal(accountKey, draftName(kind, id), {
         input: current.input, baselineId: current.baseline?.id ?? null,
         baselineVersion: current.baseline?.version ?? null, pending: current.pending,
         status: current.status, savedAt: current.savedAt
       });
+      // Transfer only this confirmed creation, and only after its newer input
+      // is safe under the server identity. Other drafts and pending requests stay.
+      if (stored && move && id !== draftId && !current.pending && current.baseline?.id === id) {
+        removeLocal(accountKey, draftName(kind, draftId));
+      }
+      return stored;
     },
     compareServer: (object) => commit({ status: 'conflict', serverObject: object, problem: { kind: 'conflict', currentVersion: object.version, message: '内容已在别处修改' } }),
     discardDraft,

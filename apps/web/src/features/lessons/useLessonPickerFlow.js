@@ -71,6 +71,11 @@ export function useLessonPickerFlow({
         return;
       }
       lessonId = saved.id;
+      if (isNew && !savable.checkpoint(lessonId, { move: true })) {
+        setEntering(false);
+        setProblem({ message: "无法保留备课现场，请检查浏览器存储后再取题" });
+        return;
+      }
     }
     setEntering(false);
     if (!lessonId) return;

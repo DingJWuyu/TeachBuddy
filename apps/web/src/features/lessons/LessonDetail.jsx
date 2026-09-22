@@ -157,7 +157,10 @@ export default function LessonDetail({ id }) {
   ]);
 
   useEffect(() => {
-    if (isNew && saveStatus === "saved" && baseline?.id) {
+    if (isNew && baseline?.id && ["saved", "dirty"].includes(saveStatus)) {
+      // Confirmation may leave newer edits. Move them to the created lesson
+      // before leaving /new, so the next save updates that same lesson.
+      if (saveStatus === "dirty" && !savable.checkpoint(baseline.id, { move: true })) return;
       navigate(`/lessons/${baseline.id}`, { replace: true });
     }
   }, [baseline?.id, isNew, saveStatus]);
