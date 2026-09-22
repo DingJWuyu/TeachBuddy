@@ -1,0 +1,5 @@
+[workbench] modules discovered: questions, resources, lessons
+[workbench] migrations applied 0, skipped 7
+[workbench] modules enabled: questions, resources, lessons
+R34 real-auth / fake-mail: https://127.0.0.1:49935
+本地验证码: /tmp/teacher-r35-local2-runtime/mail.json

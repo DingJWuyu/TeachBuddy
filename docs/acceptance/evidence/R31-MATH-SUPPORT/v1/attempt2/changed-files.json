@@ -1,0 +1,12 @@
+[
+  "README.md",
+  "apps/api/src/workbench/moduleImplementations.js",
+  "apps/api/test/fixtures/auth-integration/harness.js",
+  "apps/api/test/r31-math-composition.test.js",
+  "apps/web/e2e/fixtures/r31-math-support/main.jsx",
+  "apps/web/e2e/r31-math-support.spec.js",
+  "apps/web/src/features/modules/moduleRegistry.js",
+  "packages/shared/scripts/verify-catalog.mjs",
+  "packages/shared/src/index.js",
+  "packages/shared/src/moduleCatalog.js"
+]

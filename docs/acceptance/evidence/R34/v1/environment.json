@@ -1,0 +1,25 @@
+{
+  "recordedAt": "2026-09-22T11:41:54.934234+00:00",
+  "node": "v22.23.2",
+  "platform": "Linux-7.2.4-3-cachyos-x86_64-with-glibc2.44",
+  "identityMode": "test-principal",
+  "accounts": [
+    "r34-a",
+    "r34-b"
+  ],
+  "ports": {
+    "fixture": 48434,
+    "outputVerification": 48435,
+    "browser": 49434,
+    "officeUNO": 49435
+  },
+  "display": ":134",
+  "officeVersion": "LibreOffice 26.8.0.3 bce0998afefdbc355585ca324285661a2170ba77",
+  "officeRoot": "/home/liam_t/项目/TeacherWorkspace-c22/experiments/C22/deps/libreoffice/opt/opt/libreoffice26.8",
+  "font": "Noto Sans CJK SC Regular (NotoSansCJK-Regular.ttc)",
+  "productRevision": "9767e4feeae24d6adabbe7b87ff4876b418fc80d",
+  "outputs": 24,
+  "pdfPageImages": 24,
+  "fixtureData": "test-results/r34/data",
+  "officeProfile": "/home/liam_t/r34-office-profile"
+}

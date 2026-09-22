@@ -1,0 +1,511 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1281388,
+  "argv": [
+    "/home/liam_t/.local/share/pi-node/node-v22.23.2-linux-x64/bin/node",
+    "/tmp/m43-suite/apps/api/test/materials-questions-migration.test.js"
+  ],
+  "cwd": "/tmp/m43-suite/apps/api",
+  "events": [
+    {
+      "ms": 1865.353962,
+      "event": "server:listen",
+      "server": 1,
+      "port": 0,
+      "host": "localhost"
+    },
+    {
+      "ms": 1888.571941,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "::1",
+        "family": "IPv6",
+        "port": 42041
+      }
+    },
+    {
+      "ms": 1894.268026,
+      "event": "request:create",
+      "request": 2,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "origin": "http://localhost:42041"
+    },
+    {
+      "ms": 1896.84719,
+      "event": "server:socket",
+      "socket": 3,
+      "localPort": 42041,
+      "remotePort": 49194,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1897.94358,
+      "event": "client:socket",
+      "socket": 4,
+      "localPort": 49194,
+      "remotePort": 42041,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1897.96015,
+      "event": "client:send",
+      "request": 2,
+      "socket": 4,
+      "localPort": 49194,
+      "remotePort": 42041,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1903.933663,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "socket": 3,
+      "localPort": 42041,
+      "remotePort": 49194,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1918.039717,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 3,
+      "localPort": 42041,
+      "remotePort": 49194,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1919.64187,
+      "event": "request:headers",
+      "request": 2,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "origin": "http://localhost:42041",
+      "status": 201
+    },
+    {
+      "ms": 1921.314404,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 1921.657776,
+      "event": "server:close",
+      "server": 1
+    },
+    {
+      "ms": 2027.274205,
+      "event": "server:listen",
+      "server": 5,
+      "port": 0,
+      "host": "localhost"
+    },
+    {
+      "ms": 2028.774557,
+      "event": "server:close",
+      "socket": 3,
+      "remotePort": 49194,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 2031.242668,
+      "event": "client:end",
+      "socket": 4,
+      "remotePort": 42041,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 2031.447645,
+      "event": "client:error",
+      "socket": 4,
+      "remotePort": 42041,
+      "destroyed": true,
+      "readableEnded": true,
+      "error": {
+        "name": "SocketError",
+        "message": "other side closed",
+        "code": "UND_ERR_SOCKET",
+        "socket": {
+          "localAddress": "::1",
+          "localPort": 49194,
+          "remoteAddress": "::1",
+          "remotePort": 42041,
+          "remoteFamily": "IPv6",
+          "bytesWritten": 654,
+          "bytesRead": 634
+        }
+      }
+    },
+    {
+      "ms": 2032.762601,
+      "event": "server:listening",
+      "server": 5,
+      "address": {
+        "address": "::1",
+        "family": "IPv6",
+        "port": 39701
+      }
+    },
+    {
+      "ms": 2033.887222,
+      "event": "request:create",
+      "request": 6,
+      "method": "GET",
+      "path": "/api/modules/questions/v2/items/8b6800cb-bdaf-4a84-9a4d-3bcb72fd2fcc",
+      "origin": "http://localhost:39701"
+    },
+    {
+      "ms": 2045.739092,
+      "event": "client:close",
+      "socket": 4,
+      "remotePort": 42041,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 2046.722072,
+      "event": "server:socket",
+      "socket": 7,
+      "localPort": 39701,
+      "remotePort": 39454,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2047.048582,
+      "event": "client:socket",
+      "socket": 8,
+      "localPort": 39454,
+      "remotePort": 39701,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2047.060506,
+      "event": "client:send",
+      "request": 6,
+      "socket": 8,
+      "localPort": 39454,
+      "remotePort": 39701,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2047.321957,
+      "event": "server:request",
+      "server": 5,
+      "method": "GET",
+      "path": "/api/modules/questions/v2/items/8b6800cb-bdaf-4a84-9a4d-3bcb72fd2fcc",
+      "socket": 7,
+      "localPort": 39701,
+      "remotePort": 39454,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2097.335743,
+      "event": "server:response",
+      "server": 5,
+      "status": 200,
+      "socket": 7,
+      "localPort": 39701,
+      "remotePort": 39454,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2097.860619,
+      "event": "request:headers",
+      "request": 6,
+      "method": "GET",
+      "path": "/api/modules/questions/v2/items/8b6800cb-bdaf-4a84-9a4d-3bcb72fd2fcc",
+      "origin": "http://localhost:39701",
+      "status": 200
+    },
+    {
+      "ms": 2099.724411,
+      "event": "request:create",
+      "request": 9,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "origin": "http://localhost:39701"
+    },
+    {
+      "ms": 2102.081763,
+      "event": "server:socket",
+      "socket": 10,
+      "localPort": 39701,
+      "remotePort": 39468,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2102.296678,
+      "event": "client:socket",
+      "socket": 11,
+      "localPort": 39468,
+      "remotePort": 39701,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2102.307367,
+      "event": "client:send",
+      "request": 9,
+      "socket": 11,
+      "localPort": 39468,
+      "remotePort": 39701,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2102.793778,
+      "event": "server:request",
+      "server": 5,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "socket": 10,
+      "localPort": 39701,
+      "remotePort": 39468,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2108.202149,
+      "event": "server:response",
+      "server": 5,
+      "status": 201,
+      "socket": 10,
+      "localPort": 39701,
+      "remotePort": 39468,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2111.568583,
+      "event": "request:headers",
+      "request": 9,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "origin": "http://localhost:39701",
+      "status": 201
+    },
+    {
+      "ms": 2113.001534,
+      "event": "server:close-called",
+      "server": 5
+    },
+    {
+      "ms": 2113.224201,
+      "event": "server:close",
+      "server": 5
+    },
+    {
+      "ms": 2125.806428,
+      "event": "server:listen",
+      "server": 12,
+      "port": 0,
+      "host": "localhost"
+    },
+    {
+      "ms": 2126.204517,
+      "event": "server:close",
+      "socket": 10,
+      "remotePort": 39468,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 2126.220885,
+      "event": "server:close",
+      "socket": 7,
+      "remotePort": 39454,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 2126.629686,
+      "event": "client:end",
+      "socket": 11,
+      "remotePort": 39701,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 2126.683604,
+      "event": "client:error",
+      "socket": 11,
+      "remotePort": 39701,
+      "destroyed": true,
+      "readableEnded": true,
+      "error": {
+        "name": "SocketError",
+        "message": "other side closed",
+        "code": "UND_ERR_SOCKET",
+        "socket": {
+          "localAddress": "::1",
+          "localPort": 39468,
+          "remoteAddress": "::1",
+          "remotePort": 39701,
+          "remoteFamily": "IPv6",
+          "bytesWritten": 654,
+          "bytesRead": 634
+        }
+      }
+    },
+    {
+      "ms": 2126.823516,
+      "event": "client:end",
+      "socket": 8,
+      "remotePort": 39701,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 2126.842412,
+      "event": "client:error",
+      "socket": 8,
+      "remotePort": 39701,
+      "destroyed": true,
+      "readableEnded": true,
+      "error": {
+        "name": "SocketError",
+        "message": "other side closed",
+        "code": "UND_ERR_SOCKET",
+        "socket": {
+          "localAddress": "::1",
+          "localPort": 39454,
+          "remoteAddress": "::1",
+          "remotePort": 39701,
+          "remoteFamily": "IPv6",
+          "bytesWritten": 456,
+          "bytesRead": 679
+        }
+      }
+    },
+    {
+      "ms": 2127.009667,
+      "event": "client:close",
+      "socket": 8,
+      "remotePort": 39701,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 2127.02911,
+      "event": "client:close",
+      "socket": 11,
+      "remotePort": 39701,
+      "destroyed": true,
+      "readableEnded": true
+    },
+    {
+      "ms": 2127.136283,
+      "event": "server:listening",
+      "server": 12,
+      "address": {
+        "address": "::1",
+        "family": "IPv6",
+        "port": 41463
+      }
+    },
+    {
+      "ms": 2127.859277,
+      "event": "request:create",
+      "request": 13,
+      "method": "GET",
+      "path": "/api/modules/questions/v2/items/8b6800cb-bdaf-4a84-9a4d-3bcb72fd2fcc",
+      "origin": "http://localhost:41463"
+    },
+    {
+      "ms": 2135.42177,
+      "event": "server:socket",
+      "socket": 14,
+      "localPort": 41463,
+      "remotePort": 36706,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2135.761993,
+      "event": "client:socket",
+      "socket": 15,
+      "localPort": 36706,
+      "remotePort": 41463,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2135.775365,
+      "event": "client:send",
+      "request": 13,
+      "socket": 15,
+      "localPort": 36706,
+      "remotePort": 41463,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2136.096431,
+      "event": "server:request",
+      "server": 12,
+      "method": "GET",
+      "path": "/api/modules/questions/v2/items/8b6800cb-bdaf-4a84-9a4d-3bcb72fd2fcc",
+      "socket": 14,
+      "localPort": 41463,
+      "remotePort": 36706,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2137.98497,
+      "event": "server:response",
+      "server": 12,
+      "status": 200,
+      "socket": 14,
+      "localPort": 41463,
+      "remotePort": 36706,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2138.701273,
+      "event": "request:headers",
+      "request": 13,
+      "method": "GET",
+      "path": "/api/modules/questions/v2/items/8b6800cb-bdaf-4a84-9a4d-3bcb72fd2fcc",
+      "origin": "http://localhost:41463",
+      "status": 200
+    },
+    {
+      "ms": 2139.959249,
+      "event": "server:close-called",
+      "server": 12
+    },
+    {
+      "ms": 2140.147057,
+      "event": "server:close",
+      "server": 12
+    },
+    {
+      "ms": 2141.714507,
+      "event": "server:close",
+      "socket": 14,
+      "remotePort": 36706,
+      "destroyed": true,
+      "readableEnded": false
+    }
+  ]
+}

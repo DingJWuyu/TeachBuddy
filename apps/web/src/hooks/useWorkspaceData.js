@@ -6,7 +6,6 @@ import { localizeError, localizeText } from '../utils/labels.js';
 export function useWorkspaceData() {
   const { authToken, setSession, setActiveModuleId } = useAppStore();
   const authTokenRef = useRef(authToken);
-  const [serverModules, setServerModules] = useState([]);
   const [workspaceLayout, setWorkspaceLayout] = useState(null);
   const [error, setError] = useState('');
   const [flash, setFlash] = useState('');
@@ -33,14 +32,16 @@ export function useWorkspaceData() {
     setError('');
 
     try {
-      const [modules, me, layout] = await Promise.all([
-        fetchJson('/modules'),
+      // The legacy shell's module directory endpoint is retired: B15 mounted
+      // the workbench catalog handler on `GET /api/modules`, so this shell has
+      // no server module list (its own registry is empty by design). Only the
+      // Bearer-authenticated account and layout calls remain.
+      const [me, layout] = await Promise.all([
         fetchJson('/auth/me'),
         fetchJson('/workspace/layout')
       ]);
 
       if (authTokenRef.current !== authToken) return;
-      setServerModules(modules.items);
       setWorkspaceLayout(layout);
       setSession({ token: authToken, user: me.user });
     } catch (loadError) {
@@ -59,7 +60,6 @@ export function useWorkspaceData() {
     if (authToken) {
       loadData();
     } else {
-      setServerModules([]);
       setWorkspaceLayout(null);
       setLoading(false);
     }
@@ -117,7 +117,6 @@ export function useWorkspaceData() {
   }
 
   return {
-    serverModules,
     workspaceLayout,
     error,
     flash,

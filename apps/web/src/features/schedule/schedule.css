@@ -1,0 +1,740 @@
+/**
+ * Schedule module styles.
+ *
+ * Values follow the agreed compact baseline (13px text, 36px rows, 44px hour
+ * cells, 160px minimum day column, 1px #e3e3e3 lines, 8-10px radii). The grid
+ * owns its two-axis scroll; the page itself never scrolls horizontally.
+ */
+
+/* The feature owns its box model so the grid geometry is identical inside the
+   shell (global reset) and inside the isolated browser harness. */
+.sch-page,
+.sch-page *,
+.sch-aux,
+.sch-aux * {
+  box-sizing: border-box;
+}
+
+.sch-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  min-width: 0;
+  padding: 10px 12px 12px;
+  --sch-line: var(--wb-line, #e3e3e3);
+  --sch-line-soft: var(--wb-line-soft, #efefef);
+  --sch-ink: var(--wb-ink, #2d3037);
+  --sch-muted: var(--wb-muted, #7c8089);
+  --sch-purple: var(--wb-purple, #7963bd);
+  --sch-purple-soft: var(--wb-purple-soft, #f3f0fa);
+  --sch-surface: var(--wb-surface, #ffffff);
+  --sch-danger: var(--wb-danger, #b4344a);
+  --sch-shadow: var(--wb-shadow, 0 4px 12px 0 #0000000d, 0 2px 4px -1px #00000008);
+  color: var(--sch-ink);
+  font-size: 13px;
+}
+
+.sch-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: none;
+}
+
+.sch-range,
+.sch-toolbar-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sch-range-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sch-range-field.is-days {
+  width: 74px;
+}
+
+.sch-range .wb-input {
+  height: 30px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+.sch-sub-label,
+.sch-label {
+  font-size: 10px;
+  line-height: 15px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sch-muted);
+}
+
+.sch-range-label {
+  color: var(--sch-muted);
+  font-size: 12px;
+  padding-bottom: 6px;
+}
+
+.sch-body {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.sch-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.sch-side {
+  flex: none;
+  width: 328px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sch-grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 220px;
+  min-width: 0;
+  border: 1px solid var(--sch-line);
+  border-radius: 10px;
+  background: var(--sch-surface);
+  box-shadow: var(--sch-shadow);
+  overflow: hidden;
+}
+
+.sch-grid-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.sch-grid-inner {
+  min-width: 100%;
+}
+
+.sch-grid-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: grid;
+  background: var(--sch-surface);
+  box-shadow: inset 0 -1px 0 var(--sch-line);
+}
+
+.sch-spacer {
+  display: block;
+}
+
+.sch-gutter-head {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--sch-surface);
+}
+
+.sch-day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 6px 8px;
+  border-left: 1px solid var(--sch-line-soft);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.sch-day-head.is-today {
+  color: var(--sch-purple);
+  font-weight: 600;
+}
+
+.sch-day-week {
+  font-weight: 600;
+}
+
+.sch-day-date {
+  color: var(--sch-muted);
+  font-size: 11px;
+}
+
+.sch-grid-body {
+  display: grid;
+}
+
+.sch-gutter {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--sch-surface);
+}
+
+.sch-hour-label {
+  height: 44px;
+  padding-right: 6px;
+  text-align: right;
+  font-size: 10px;
+  color: var(--sch-muted);
+  transform: translateY(-6px);
+}
+
+.sch-day {
+  position: relative;
+  border-left: 1px solid var(--sch-line-soft);
+  touch-action: none;
+  outline: none;
+}
+
+.sch-day:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--sch-purple-soft);
+}
+
+.sch-hour-label:first-child {
+  transform: none;
+  padding-top: 3px;
+}
+
+.sch-hour-cell {
+  height: 44px;
+  border-bottom: 1px solid var(--sch-line-soft);
+}
+
+.sch-hour-cell:nth-child(even) {
+  border-bottom-style: dashed;
+}
+
+.sch-selection {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  border-radius: 6px;
+  background: rgba(121, 99, 189, 0.16);
+  box-shadow: inset 0 0 0 1px var(--sch-purple);
+  pointer-events: none;
+}
+
+.sch-event {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  align-items: flex-start;
+  padding: 3px 6px;
+  border: none;
+  border-left: 2px solid var(--sch-purple);
+  border-radius: 6px;
+  background: var(--sch-purple-soft);
+  color: var(--sch-ink);
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+  font: inherit;
+}
+
+.sch-event:hover {
+  background: #ebe5f8;
+}
+
+.sch-event.is-muted {
+  background: #f4f4f5;
+  border-left-color: #b9bbc0;
+  color: var(--sch-muted);
+}
+
+.sch-event-time {
+  font-size: 10px;
+  color: var(--sch-muted);
+}
+
+.sch-event-title {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.sch-lists {
+  display: flex;
+  gap: 10px;
+  flex: none;
+  min-height: 0;
+  /* Share one list viewport while keeping most of the workspace for the grid. */
+  max-height: 45%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-items: flex-start;
+}
+
+.sch-list {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--sch-line);
+  border-radius: 10px;
+  background: var(--sch-surface);
+  box-shadow: var(--sch-shadow);
+  overflow: hidden;
+}
+
+.sch-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: none;
+  background: transparent;
+  color: var(--sch-ink);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sch-list-head:hover {
+  background: var(--sch-line-soft);
+}
+
+.sch-caret {
+  color: var(--sch-muted);
+}
+
+.sch-unscheduled,
+.sch-unscheduled ul,
+.sch-priority,
+.sch-priority ul,
+.sch-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sch-unscheduled {
+  padding: 0 10px 8px;
+}
+
+.sch-unscheduled-entry + .sch-unscheduled-entry {
+  border-top: 1px solid var(--sch-line-soft);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.sch-unscheduled-title {
+  border: none;
+  background: transparent;
+  color: var(--sch-ink);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.sch-unscheduled-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  flex-wrap: wrap;
+}
+
+.sch-item-text {
+  flex: 1;
+  min-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sch-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sch-move-target {
+  height: 28px;
+  max-width: 190px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+.sch-move-state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sch-danger);
+  font-size: 12px;
+}
+
+.sch-priority {
+  padding: 0 10px 8px;
+}
+
+.sch-priority-group + .sch-priority-group {
+  margin-top: 6px;
+}
+
+.sch-priority-label {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--sch-muted);
+  text-transform: uppercase;
+}
+
+.sch-priority-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 4px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sch-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sch-priority-row:hover {
+  background: var(--sch-line-soft);
+}
+
+.sch-priority-text {
+  flex: 1;
+  min-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sch-overview,
+.sch-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--sch-line);
+  border-radius: 10px;
+  background: var(--sch-surface);
+  box-shadow: var(--sch-shadow);
+  padding: 10px 12px 12px;
+}
+
+.sch-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sch-editor-head h2,
+.sch-overview-block h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sch-scope {
+  display: flex;
+  gap: 4px;
+}
+
+.sch-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sch-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sch-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--sch-ink);
+}
+
+.sch-toggle input {
+  width: auto;
+}
+
+.sch-time-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.sch-time-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sch-time-grid .wb-input,
+.sch-editor .wb-input {
+  height: 30px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+.sch-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sch-item-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 74px auto;
+  gap: 4px;
+  align-items: center;
+}
+
+.sch-reminder,
+.sch-course {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sch-reminder .wb-input,
+.sch-course .wb-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.sch-course {
+  flex-direction: column;
+}
+
+.sch-records {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--sch-line-soft);
+  border-radius: 8px;
+}
+
+.sch-records legend {
+  padding: 0 4px;
+}
+
+.sch-exceptions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sch-exception {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.sch-note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--sch-muted);
+}
+
+.sch-editor-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sch-save {
+  margin: 0;
+  font-size: 12px;
+}
+
+.sch-save.is-ok {
+  color: #2f7a52;
+}
+
+.sch-save.is-warn,
+.sch-save.is-error {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  color: var(--sch-danger);
+}
+
+.sch-save.is-busy {
+  color: var(--sch-muted);
+}
+
+.sch-month header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sch-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.sch-month-week {
+  font-size: 10px;
+  color: var(--sch-muted);
+  text-align: center;
+}
+
+.sch-month-day {
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sch-ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sch-month-day:hover {
+  background: var(--sch-line-soft);
+}
+
+.sch-month-day.is-inside {
+  background: var(--sch-purple-soft);
+}
+
+.sch-month-day.is-edge {
+  background: var(--sch-purple);
+  color: #fff;
+}
+
+.sch-stale,
+.sch-action-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fdf3f5;
+  color: var(--sch-danger);
+  font-size: 12px;
+  flex: none;
+}
+
+.sch-action-state {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  box-shadow: var(--sch-shadow);
+  transform-origin: bottom right;
+  animation: sch-appear 180ms var(--wb-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sch-aux,
+  .sch-action-state {
+    animation: none;
+  }
+}
+
+/* Overlays fade and scale in (never out), on the shared easing; reduced motion
+   lands on the final state instead of a shorter animation. */
+@keyframes sch-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.sch-aux {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px;
+  transform-origin: top right;
+  animation: sch-appear 180ms var(--wb-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+@media (max-width: 1080px) {
+  /* Narrow layout: the shell swaps between main content and the panel, so the
+     page itself is the one scroll region and the grid keeps a workable height. */
+  .sch-page {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .sch-body {
+    flex-direction: column;
+    flex: none;
+  }
+
+  .sch-main {
+    flex: none;
+  }
+
+  .sch-grid {
+    flex: none;
+    min-height: 360px;
+    height: 360px;
+  }
+
+  .sch-side {
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .sch-lists {
+    flex-direction: column;
+    align-items: stretch;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .sch-list {
+    flex: none;
+    width: 100%;
+  }
+}

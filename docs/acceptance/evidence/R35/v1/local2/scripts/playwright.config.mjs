@@ -1,0 +1,2 @@
+import { defineConfig } from '/tmp/teacher-r35-local2-candidate/node_modules/@playwright/test/index.mjs';
+export default defineConfig({testDir:'.',testMatch:'local2-*.spec.mjs',workers:1,retries:0,timeout:180000,expect:{timeout:15000},reporter:[['list']],outputDir:'/tmp/teacher-r35-local2-e2e/results',use:{launchOptions:{executablePath:'/opt/google/chrome/chrome'},ignoreHTTPSErrors:true,viewport:{width:1440,height:900}}});

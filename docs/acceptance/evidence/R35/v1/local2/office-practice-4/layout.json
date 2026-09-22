@@ -1,0 +1,408 @@
+{
+  "pages": 4,
+  "paragraphs": [
+    {
+      "text": "R35 丢响应后保留",
+      "page": 1,
+      "y": 0,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "1. W-Q1 独立材料",
+      "page": 1,
+      "y": 1104,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "求函数  的定义域。",
+      "page": 1,
+      "y": 2208,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "A ",
+      "page": 1,
+      "y": 3639,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "B ",
+      "page": 1,
+      "y": 5136,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "C ",
+      "page": 1,
+      "y": 6634,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "D ",
+      "page": 1,
+      "y": 8132,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 1,
+      "y": 9236,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 1,
+      "y": 10340,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 1,
+      "y": 11444,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 1,
+      "y": 12548,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "2. W-Q2 独立材料",
+      "page": 1,
+      "y": 13653,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "已知 ，配坐标轴与抛物线图，标出顶点和两个横轴交点。",
+      "page": 1,
+      "y": 14757,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "1 求零点",
+      "page": 1,
+      "y": 15861,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "2 写出单调递增区间。",
+      "page": 1,
+      "y": 16965,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "图中红点为 、、。",
+      "page": 1,
+      "y": 18069,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "",
+      "page": 2,
+      "y": 30201,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 35407,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 36511,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 37615,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 38719,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "3. W-Q3 独立材料",
+      "page": 2,
+      "y": 39823,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "。若 ，求 a 和 。",
+      "page": 2,
+      "y": 40928,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 42460,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 43565,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 44669,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 45773,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "4. W-Q4 独立材料",
+      "page": 2,
+      "y": 46877,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "解不等式 。",
+      "page": 2,
+      "y": 47981,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 49086,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 50190,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 51294,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 2,
+      "y": 52398,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "5. W-Q5 独立材料",
+      "page": 2,
+      "y": 53502,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "如图，直角三角形 ABC，。求 BC 的长及 。",
+      "page": 2,
+      "y": 54606,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "图示 A 在左下、B 在右下、C 在左上；AB 边标 4，AC 边标 3。",
+      "page": 3,
+      "y": 60403,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "",
+      "page": 3,
+      "y": 61507,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 3,
+      "y": 68644,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 3,
+      "y": 69748,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 3,
+      "y": 70852,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 3,
+      "y": 71956,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "6. W-Q6 独立材料",
+      "page": 3,
+      "y": 73060,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "正方体  的棱长为 2。",
+      "page": 3,
+      "y": 74164,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "1 求体对角线  的长",
+      "page": 3,
+      "y": 75269,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "2 求体积。",
+      "page": 3,
+      "y": 76373,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": "",
+      "page": 4,
+      "y": 90604,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 4,
+      "y": 97000,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 4,
+      "y": 98104,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 4,
+      "y": 99208,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "page": 4,
+      "y": 100312,
+      "height": 125,
+      "mode": 0,
+      "bottomMargin": 212
+    }
+  ],
+  "formulas": 17,
+  "images": 3,
+  "printPreview": true
+}

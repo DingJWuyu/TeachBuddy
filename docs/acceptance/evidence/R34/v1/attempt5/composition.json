@@ -1,0 +1,31 @@
+{
+  "mainBasedStart": "dfb3b4adf35f2657c8f001fd6c1ad6c8cc26726f",
+  "assemblyCommits": [
+    "5957cfe205c397c3f627d16c84dc52990dc3f29b",
+    "88d610f07b627533201ba59ac1d176d6bd1059ae"
+  ],
+  "fixedPoint": "88d610f07b627533201ba59ac1d176d6bd1059ae",
+  "codeCandidate": "18a80073380116e1d30165f0001a86e5fdb2304c",
+  "inputs": [
+    "880e6e68be0855b3289dea8db3c87e8c67bc1042",
+    "813c97fce9fa483d1094d8c4e5ad5fc37c9b3349"
+  ],
+  "method": "fixed trees, not merge ancestry; preserve existing docs and add missing evidence; output.js and lessons-pagination from 813c97f",
+  "codeDifferencesFrom880e6e6": [
+    "apps/api/src/modules/lessons/output.js",
+    "apps/web/e2e/fixtures/lessons-pagination/6c470f0e-d3d5-4ede-8873-10414075d5cf.png",
+    "apps/web/e2e/fixtures/lessons-pagination/94ce89e9-d524-4917-83ba-ca3b78096041.png",
+    "apps/web/e2e/fixtures/lessons-pagination/bd46323b-b78b-4ad7-9b64-ff0ea1213d1f.png",
+    "apps/web/e2e/fixtures/lessons-pagination/inspect-office.py",
+    "apps/web/e2e/fixtures/lessons-pagination/lesson.json",
+    "apps/web/e2e/fixtures/lessons-pagination/render.mjs",
+    "apps/web/e2e/fixtures/lessons-pagination/reproduce.mjs",
+    "apps/web/src/features/lessons/ExportsPanel.jsx",
+    "apps/web/src/features/lessons/materials.css"
+  ],
+  "controlsUnchanged": {
+    "AGENTS.md": true,
+    "docs/plans/run-state.md": true,
+    "docs/plans/mvp-dag.md": true
+  }
+}

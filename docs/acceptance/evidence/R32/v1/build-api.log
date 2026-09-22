@@ -1,0 +1,9 @@
+
+> refatos-v1@0.3.0 build:api
+> npm --workspace @refatos/api run build
+
+
+> @refatos/api@0.3.0 build
+> node src/scripts/verify-storage.js
+
+Storage verified at isolated build database /tmp/teacher-workspace-build-2tfdie/data/build.sqlite (modules: questions, lessons; migrations applied: 4)

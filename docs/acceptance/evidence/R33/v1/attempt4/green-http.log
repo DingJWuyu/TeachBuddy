@@ -1,0 +1,19 @@
+TAP version 13
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: selected original pages merge a unique question and independently located answer
+ok 1 - selected original pages merge a unique question and independently located answer
+  ---
+  duration_ms: 254.796727
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 595.3731

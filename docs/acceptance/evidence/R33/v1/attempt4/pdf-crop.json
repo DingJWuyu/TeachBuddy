@@ -1,0 +1,109 @@
+{
+  "id": "4966fc25-3056-4c9c-ab7a-969fa87f8f1a",
+  "version": 2,
+  "createdAt": "2026-09-22T13:13:23.996Z",
+  "updatedAt": "2026-09-22T13:13:24.991Z",
+  "deletedAt": null,
+  "title": "合成控制流，不计识别质量",
+  "origin": "",
+  "input": {
+    "kind": "files",
+    "fileIds": [
+      "c8476e2b-2421-4c48-91e4-a215166ea4dc"
+    ],
+    "pages": [
+      {
+        "fileId": "c8476e2b-2421-4c48-91e4-a215166ea4dc",
+        "pages": [
+          1
+        ]
+      }
+    ]
+  },
+  "supplementFileIds": [],
+  "drafts": [
+    {
+      "id": "d8908f30-51f5-46cc-a319-621e4db50ee0",
+      "title": "Q2.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "如图，求函数性质。"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "fileId": "d45b34ce-13e5-4db5-9c72-d886f0ee97ad",
+            "alt": "本原稿配图，需对照核验标签完整性",
+            "widthMm": 100
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": []
+      },
+      "answerStatus": "absent",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "c8476e2b-2421-4c48-91e4-a215166ea4dc",
+              "renditionFileId": "c8476e2b-2421-4c48-91e4-a215166ea4dc",
+              "page": 1,
+              "box": null
+            }
+          ]
+        },
+        {
+          "role": "figure",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "c8476e2b-2421-4c48-91e4-a215166ea4dc",
+              "renditionFileId": "c8476e2b-2421-4c48-91e4-a215166ea4dc",
+              "page": 1,
+              "box": {
+                "x": 0.17373737373737375,
+                "y": 0.205,
+                "width": 0.6545454545454545,
+                "height": 0.23714285714285716
+              }
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "d15d7955-a959-4a25-a412-8669c570b0fb",
+          "code": "unverified-location",
+          "field": "/parts",
+          "locations": [
+            {
+              "kind": "page",
+              "fileId": "c8476e2b-2421-4c48-91e4-a215166ea4dc",
+              "renditionFileId": "c8476e2b-2421-4c48-91e4-a215166ea4dc",
+              "page": 1,
+              "box": null
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    }
+  ],
+  "fragments": [],
+  "jobId": "759b73f5-377f-4dd1-81df-4f8a7091a1ed"
+}

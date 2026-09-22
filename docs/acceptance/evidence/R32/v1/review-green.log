@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:1050854) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/materials-resources.spec.js:390:1 › 分类草稿在辅助栏关闭和刷新后保留 (484ms)
+  ✓  2 apps/web/e2e/materials-resources.spec.js:411:1 › 预览阅读位置随文件和页恢复 (592ms)
+  ✓  3 apps/web/e2e/materials-resources.spec.js:438:1 › 备课目标快速切换不被迟到响应覆盖 (330ms)
+
+  3 passed (1.8s)

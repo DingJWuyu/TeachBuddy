@@ -1,0 +1,83 @@
+/*
+ * Minimal shell for the contract harness. It only needs to look like a
+ * protected workbench surface: an account row, a settings logout action and a
+ * runner for the protected operations.
+ */
+body {
+  background: #10131c;
+}
+
+.harness-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.harness-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .04);
+}
+
+.harness-topbar button {
+  margin-left: auto;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #e8ecf3;
+  color: #10131c;
+  font-weight: 600;
+}
+
+.harness-topbar button:disabled {
+  opacity: .6;
+}
+
+[data-harness-nickname] {
+  font-weight: 600;
+}
+
+[data-harness-account-key] {
+  font-size: 12px;
+  opacity: .7;
+}
+
+[data-harness-logout-error] {
+  margin: 12px 0 0;
+  color: #ffb4c2;
+}
+
+.harness-panel {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .03);
+}
+
+.harness-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.harness-actions button {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+}
+
+[data-harness-results] {
+  margin: 14px 0 0;
+  min-height: 40px;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: pre-wrap;
+}

@@ -1,0 +1,52 @@
+
+Running 6 tests using 1 worker
+
+(node:1307598) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1307598) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1307598) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1307598) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1307598) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/math-integration.spec.js:24:1 › real-auth: specified lesson section -> saved formula -> v3 return keeps draft and AI (11.8s)
+(node:1307598) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 apps/web/e2e/math-integration.spec.js:120:1 › real-auth: dynamic and exact external HTML final downloads cold start with service stopped and network disabled (3.7s)
+(node:1309052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1309052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 apps/web/e2e/math-integration.spec.js:169:1 › real-auth: unsaved new section survives the workshop return (2.5s)
+(node:1309052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1309052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1309052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 apps/web/e2e/math-integration.spec.js:190:1 › real-auth: rejected second save can cancel, reuse, and retry an independent replacement (3.1s)
+  ✓  5 apps/web/e2e/math-integration.spec.js:249:1 › real-auth: an old v2 unknown request confirms on its original path after the UI upgrade (1.1s)
+(node:1309052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  6 apps/web/e2e/math-integration.spec.js:283:1 › real-auth: scroll and selected section survive; a concurrent removal requires explicit retargeting (2.5s)
+
+
+  1) apps/web/e2e/math-integration.spec.js:120:1 › real-auth: dynamic and exact external HTML final downloads cold start with service stopped and network disabled 
+
+    Error: Object with guid response@59fe840c61a02841356bd9680c80b19a was not bound in the connection
+
+    Error Context: test-results/m43/browser/math-integration-real-auth-8f984-topped-and-network-disabled/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m43/browser/math-integration-real-auth-8f984-topped-and-network-disabled/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m43/browser/math-integration-real-auth-8f984-topped-and-network-disabled/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/math-integration.spec.js:120:1 › real-auth: dynamic and exact external HTML final downloads cold start with service stopped and network disabled 
+  5 passed (26.3s)

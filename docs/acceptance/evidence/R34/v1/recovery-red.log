@@ -1,0 +1,66 @@
+TAP version 13
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+ok 1 - MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+  ---
+  duration_ms: 59.667213
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+ok 2 - MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+  ---
+  duration_ms: 856.575677
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+ok 3 - MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+  ---
+  duration_ms: 9.139277
+  type: 'test'
+  ...
+# Subtest: MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+not ok 4 - MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+  ---
+  duration_ms: 827.390306
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-lessons/apps/api/test/materials-lessons.test.js:82:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"type":"/problems/materials/job-not-retryable","field":"","detail":""}
+
+    422 !== 409
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 409
+  actual: 422
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-lessons/apps/api/test/materials-lessons.test.js:99:97)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2106.445978

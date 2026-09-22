@@ -1,0 +1,49 @@
+
+Running 9 tests using 1 worker
+
+(node:1297837) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[workbench] modules discovered: questions, resources, lessons
+[workbench] migrations applied 7, skipped 0
+[workbench] modules enabled: questions, resources, lessons
+  ✓  1 apps/web/e2e/materials-questions-fragments.spec.js:6:1 › synthetic page fragments use real upload, review, independent answer navigation and reload (4.0s)
+  ✓  2 apps/web/e2e/materials-questions-quality.spec.js:5:3 › T untouched native quality and editable formula persistence (1.7s)
+  ✓  3 apps/web/e2e/materials-questions-quality.spec.js:5:3 › W untouched native quality and editable formula persistence (3.8s)
+  ✓  4 apps/web/e2e/materials-questions.spec.js:2:1 › teacher imports text, edits formula, confirms and reopens persistent question (894ms)
+  ✓  5 apps/web/e2e/materials-questions.spec.js:43:1 › unsaved collection form survives refresh (212ms)
+  ✘  6 apps/web/e2e/materials-questions.spec.js:53:1 › Word original and formulas are available for review (7.8s)
+(node:1298498) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  7 apps/web/e2e/materials-questions.spec.js:71:1 › asset job is restored after refresh (3.3s)
+  ✓  8 apps/web/e2e/materials-questions.spec.js:96:1 › image failure retains original and supports explicit local crop correction (3.3s)
+  ✓  9 apps/web/e2e/materials-questions.spec.js:134:1 › concurrent edit keeps local work and offers explicit version comparison (3.9s)
+
+
+  1) apps/web/e2e/materials-questions.spec.js:53:1 › Word original and formulas are available for review 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.q-original img')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.q-original img') with timeout 5000ms
+      - waiting for locator('.q-original img')
+
+
+      63 |   await expect(page.getByLabel("草稿标题")).toBeVisible({ timeout: 25000 });
+      64 |   await expect(page.locator(".q-original")).toContainText("段落");
+    > 65 |   await expect(page.locator(".q-original img")).toBeVisible();
+         |                                                 ^
+      66 |   await page.screenshot({
+      67 |     path: "docs/acceptance/evidence/R33/v1/attempt2/word-review.png",
+      68 |   });
+        at /home/liam_t/r33-attempt5-runtime/regression/apps/web/e2e/materials-questions.spec.js:65:49
+
+    Error Context: test-results/r33/e2e/materials-questions-Word-o-e71a7-as-are-available-for-review/error-context.md
+
+  1 failed
+    apps/web/e2e/materials-questions.spec.js:53:1 › Word original and formulas are available for review 
+  8 passed (30.8s)

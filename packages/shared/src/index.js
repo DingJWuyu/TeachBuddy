@@ -1,11 +1,36 @@
 /**
- * The shared package defines the neutral registration contract used by future
- * teacher modules. The current product deliberately ships with no modules.
+ * The shared package owns the neutral registration contract used by the
+ * teacher modules: the single static module catalog (ADR 0001), its build-time
+ * checks, and the runtime vocabulary of the frozen workbench contract that both
+ * Web and API consume.
  */
-export const moduleCatalog = Object.freeze([]);
+export {
+  moduleCatalog,
+  mathSupportCatalog,
+  moduleCatalogVersion,
+  moduleCatalogIdPattern,
+  moduleCatalogPathPattern,
+  moduleCatalogNavigationValues,
+  modulePorts
+} from './moduleCatalog.js';
 
-// Kept as an empty alias for consumers that use the catalog as a seed list.
-export const starterModules = moduleCatalog;
+export {
+  validateModuleCatalog,
+  assertModuleCatalog,
+  projectModuleCatalog,
+  assertModuleDependencies
+} from './moduleCatalogValidation.js';
+
+export {
+  workbenchPaths,
+  workbenchHeaders,
+  workbenchMediaTypes,
+  workbenchLimits,
+  workbenchCacheControl,
+  workbenchProblemTypes,
+  workbenchProblemStatus,
+  workbenchInvalidInputReasons
+} from './contract.js';
 
 export function getModuleMetadata(moduleId) {
   const moduleItem = moduleCatalog.find((item) => item.id === moduleId);
@@ -15,24 +40,4 @@ export function getModuleMetadata(moduleId) {
   return moduleItem;
 }
 
-/**
- * Build a module manifest without prescribing how a module contributes to the
- * home page. A module may describe its identity, sidebar entry, own panel and
- * backend capabilities through its own neutral fields.
- */
-export function buildManifest(moduleConfig = {}) {
-  if (!moduleConfig || typeof moduleConfig !== 'object' || Array.isArray(moduleConfig)) {
-    throw new TypeError('Module configuration must be an object.');
-  }
-  if (typeof moduleConfig.id !== 'string' || !moduleConfig.id.trim()) {
-    throw new TypeError('A module ID is required.');
-  }
-
-  return {
-    version: '0.3.0',
-    enabled: true,
-    capabilities: [],
-    ...moduleConfig,
-    id: moduleConfig.id.trim()
-  };
-}
+export { canRenderMath, supportedDocument, questionDocuments, lessonDocuments } from './materials/content.js';

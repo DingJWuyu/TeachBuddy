@@ -1,0 +1,41 @@
+
+Running 2 tests using 1 worker
+
+(node:1073017) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[workbench] modules discovered: questions, lessons
+[workbench] migrations applied 5, skipped 0
+[workbench] modules enabled: questions, lessons
+  ✓  1 apps/web/e2e/materials-questions-local.spec.js:39:1 › cancel ignores a late provider result and explicit retry retains teacher correction (8.6s)
+  ✘  2 apps/web/e2e/materials-questions-local.spec.js:52:1 › dispersed answer location can be selected independently of the question (5.5s)
+
+
+  1) apps/web/e2e/materials-questions-local.spec.js:52:1 › dispersed answer location can be selected independently of the question 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.q-original mark')
+    Expected substring: "答案 x=4"
+    Received string:    "1. 求 x+2=6 的解。"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('.q-original mark') with timeout 5000ms
+      - waiting for locator('.q-original mark')
+        14 × locator resolved to <mark>1. 求 x+2=6 的解。</mark>
+           - unexpected value "1. 求 x+2=6 的解。"
+
+
+      52 | test('dispersed answer location can be selected independently of the question',async({page})=>{
+      53 |  await textImport(page,'1. 求 x+2=6 的解。\n参考答案\n1. 答案 x=4。');
+    > 54 |  const positions=page.locator('.q-original .q-tools button');await expect(positions).toHaveCount(2);await positions.nth(1).click();await expect(page.locator('.q-original mark')).toContainText('答案 x=4');
+         |                                                                                                                                                                                   ^
+      55 | });
+      56 |
+        at /home/liam_t/项目/TeacherWorkspace-r33-local-fix/apps/web/e2e/materials-questions-local.spec.js:54:179
+
+    Error Context: test-results/r33-attempt2/e2e/materials-questions-local--7f731-dependently-of-the-question/error-context.md
+
+  1 failed
+    apps/web/e2e/materials-questions-local.spec.js:52:1 › dispersed answer location can be selected independently of the question 
+  1 passed (14.6s)

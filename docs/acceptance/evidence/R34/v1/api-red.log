@@ -1,0 +1,37 @@
+TAP version 13
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 4, skipped 0
+# [workbench] modules enabled: questions, lessons
+# {"title":"函数定义域","intro":{"version":2,"blocks":[]},"sections":[{"id":"00000000-0000-4000-8000-000000000201","title":"自主探究","content":{"version":2,"blocks":[{"type":"paragraph","runs":[{"type":"text","text":"写出判断条件。"}]},{"type":"teacher-note","blocks":[{"type":"paragraph","runs":[{"type":"text","text":"TEACHER-ONLY：追问分母。"}]}]}]},"references":[{"id":"00000000-0000-4000-8000-000000000301","kind":"question","questionId":"00000000-0000-4000-8000-000000000001","questionVersion":1,"note":"先独立完成"},{"id":"00000000-0000-4000-8000-000000000302","kind":"resource","resourceId":"00000000-0000-4000-8000-000000000400","resourceVersion":1,"note":"课前打开"}]}],"materials":[]}
+# Subtest: MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+not ok 1 - MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+  ---
+  duration_ms: 20.868268
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-lessons/apps/api/test/materials-lessons.test.js:27:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"type":"/problems/workbench/not-found"}
+
+    404 !== 201
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 201
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-lessons/apps/api/test/materials-lessons.test.js:37:56)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 313.924256

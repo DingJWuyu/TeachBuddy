@@ -1,0 +1,1198 @@
+{
+  "directory": "/tmp/r33-local5-api-PnOKUG",
+  "trace": [
+    {
+      "at": "2026-09-22T15:41:14.999Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "ccecd4e5-39bd-4ec3-b7bf-0ea272f03940",
+        "name": "height-1000.png",
+        "mediaType": "image/png",
+        "byteLength": 32627,
+        "sha256": "439472397e3fba89af4ccf15bcd0f5f91dc305f065d961c14cb305f564d2edea",
+        "createdAt": "2026-09-22T15:41:15.006Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.026Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "32c76186-c9e1-4707-8905-7a189fd4bd3d",
+        "name": "height-1287.png",
+        "mediaType": "image/png",
+        "byteLength": 41941,
+        "sha256": "7d373f87171ce5853f88e535bb49da1ee5d7662f76dbdf07e3e68746359cc043",
+        "createdAt": "2026-09-22T15:41:15.030Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.037Z",
+      "route": "/api/modules/questions/v2/items",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "边界2399",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "image",
+              "fileId": "ccecd4e5-39bd-4ec3-b7bf-0ea272f03940",
+              "alt": "边界色块",
+              "widthMm": 100
+            },
+            {
+              "type": "image",
+              "fileId": "32c76186-c9e1-4707-8905-7a189fd4bd3d",
+              "alt": "边界色块",
+              "widthMm": 100
+            }
+          ]
+        }
+      },
+      "response": {
+        "id": "cb10d1a6-5dce-4c0d-9413-233bbf4a5288",
+        "version": 1,
+        "createdAt": "2026-09-22T15:41:15.042Z",
+        "updatedAt": "2026-09-22T15:41:15.042Z",
+        "deletedAt": null,
+        "title": "边界2399",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "image",
+              "fileId": "ccecd4e5-39bd-4ec3-b7bf-0ea272f03940",
+              "alt": "边界色块",
+              "widthMm": 100
+            },
+            {
+              "type": "image",
+              "fileId": "32c76186-c9e1-4707-8905-7a189fd4bd3d",
+              "alt": "边界色块",
+              "widthMm": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.043Z",
+      "route": "/api/modules/questions/v2/items/cb10d1a6-5dce-4c0d-9413-233bbf4a5288/assets",
+      "method": "POST",
+      "status": 202,
+      "request": {
+        "baseVersion": 1,
+        "includeAnswers": false,
+        "mode": "question-png",
+        "figureFileId": null
+      },
+      "response": {
+        "id": "7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "cb10d1a6-5dce-4c0d-9413-233bbf4a5288",
+          "version": 1
+        },
+        "state": "queued",
+        "createdAt": "2026-09-22T15:41:15.044Z",
+        "updatedAt": "2026-09-22T15:41:15.044Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.046Z",
+      "route": "/api/workbench/jobs/7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "cb10d1a6-5dce-4c0d-9413-233bbf4a5288",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.044Z",
+        "updatedAt": "2026-09-22T15:41:15.045Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.075Z",
+      "route": "/api/workbench/jobs/7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "cb10d1a6-5dce-4c0d-9413-233bbf4a5288",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.044Z",
+        "updatedAt": "2026-09-22T15:41:15.045Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.105Z",
+      "route": "/api/workbench/jobs/7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "cb10d1a6-5dce-4c0d-9413-233bbf4a5288",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.044Z",
+        "updatedAt": "2026-09-22T15:41:15.045Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.134Z",
+      "route": "/api/workbench/jobs/7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "cb10d1a6-5dce-4c0d-9413-233bbf4a5288",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.044Z",
+        "updatedAt": "2026-09-22T15:41:15.045Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.173Z",
+      "route": "/api/workbench/jobs/7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "7a3fd8ae-b295-4ca0-b832-86eda3e3788d",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "cb10d1a6-5dce-4c0d-9413-233bbf4a5288",
+          "version": 1
+        },
+        "state": "succeeded",
+        "createdAt": "2026-09-22T15:41:15.044Z",
+        "updatedAt": "2026-09-22T15:41:15.152Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 1,
+          "total": 1,
+          "unit": "stages"
+        },
+        "outputFileIds": [
+          "399ff3d7-2758-4a18-b718-ad7a6b0befb9"
+        ],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.176Z",
+      "route": "/api/workbench/files/399ff3d7-2758-4a18-b718-ad7a6b0befb9/content",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "bytes": 75135
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.194Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "c71cab32-4166-4e1c-8b18-e60d265174b6",
+        "name": "height-1288.png",
+        "mediaType": "image/png",
+        "byteLength": 41973,
+        "sha256": "2ab0aebed580a9785be4a00ea5af059cfcabfdac80a2427d4977b2567dc38e57",
+        "createdAt": "2026-09-22T15:41:15.198Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.206Z",
+      "route": "/api/modules/questions/v2/items",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "边界2400",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "image",
+              "fileId": "ccecd4e5-39bd-4ec3-b7bf-0ea272f03940",
+              "alt": "边界色块",
+              "widthMm": 100
+            },
+            {
+              "type": "image",
+              "fileId": "c71cab32-4166-4e1c-8b18-e60d265174b6",
+              "alt": "边界色块",
+              "widthMm": 100
+            }
+          ]
+        }
+      },
+      "response": {
+        "id": "741c79d0-97ff-4195-a84c-2108374b6741",
+        "version": 1,
+        "createdAt": "2026-09-22T15:41:15.210Z",
+        "updatedAt": "2026-09-22T15:41:15.210Z",
+        "deletedAt": null,
+        "title": "边界2400",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "image",
+              "fileId": "ccecd4e5-39bd-4ec3-b7bf-0ea272f03940",
+              "alt": "边界色块",
+              "widthMm": 100
+            },
+            {
+              "type": "image",
+              "fileId": "c71cab32-4166-4e1c-8b18-e60d265174b6",
+              "alt": "边界色块",
+              "widthMm": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.211Z",
+      "route": "/api/modules/questions/v2/items/741c79d0-97ff-4195-a84c-2108374b6741/assets",
+      "method": "POST",
+      "status": 202,
+      "request": {
+        "baseVersion": 1,
+        "includeAnswers": false,
+        "mode": "question-png",
+        "figureFileId": null
+      },
+      "response": {
+        "id": "bf9a0b9e-34b2-4dc1-8e0f-c7c671736d99",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "741c79d0-97ff-4195-a84c-2108374b6741",
+          "version": 1
+        },
+        "state": "queued",
+        "createdAt": "2026-09-22T15:41:15.214Z",
+        "updatedAt": "2026-09-22T15:41:15.214Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.216Z",
+      "route": "/api/workbench/jobs/bf9a0b9e-34b2-4dc1-8e0f-c7c671736d99",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "bf9a0b9e-34b2-4dc1-8e0f-c7c671736d99",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "741c79d0-97ff-4195-a84c-2108374b6741",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.214Z",
+        "updatedAt": "2026-09-22T15:41:15.215Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.245Z",
+      "route": "/api/workbench/jobs/bf9a0b9e-34b2-4dc1-8e0f-c7c671736d99",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "bf9a0b9e-34b2-4dc1-8e0f-c7c671736d99",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "741c79d0-97ff-4195-a84c-2108374b6741",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.214Z",
+        "updatedAt": "2026-09-22T15:41:15.215Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.275Z",
+      "route": "/api/workbench/jobs/bf9a0b9e-34b2-4dc1-8e0f-c7c671736d99",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "bf9a0b9e-34b2-4dc1-8e0f-c7c671736d99",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "741c79d0-97ff-4195-a84c-2108374b6741",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.214Z",
+        "updatedAt": "2026-09-22T15:41:15.215Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.306Z",
+      "route": "/api/workbench/jobs/bf9a0b9e-34b2-4dc1-8e0f-c7c671736d99",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "bf9a0b9e-34b2-4dc1-8e0f-c7c671736d99",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "741c79d0-97ff-4195-a84c-2108374b6741",
+          "version": 1
+        },
+        "state": "succeeded",
+        "createdAt": "2026-09-22T15:41:15.214Z",
+        "updatedAt": "2026-09-22T15:41:15.306Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 1,
+          "total": 1,
+          "unit": "stages"
+        },
+        "outputFileIds": [
+          "6fa340b7-09b8-439f-93ba-60daf687ac2e"
+        ],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.311Z",
+      "route": "/api/workbench/files/6fa340b7-09b8-439f-93ba-60daf687ac2e/content",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "bytes": 75167
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.323Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "88cafdd9-f6dd-4db6-a636-b24f0c1c8165",
+        "name": "height-1289.png",
+        "mediaType": "image/png",
+        "byteLength": 42005,
+        "sha256": "d0184bc5a30f593a6d9ac197f26cc7edda7dbd6dc8b536dcd33fe225eb6927ad",
+        "createdAt": "2026-09-22T15:41:15.325Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.330Z",
+      "route": "/api/modules/questions/v2/items",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "边界2401",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "image",
+              "fileId": "ccecd4e5-39bd-4ec3-b7bf-0ea272f03940",
+              "alt": "边界色块",
+              "widthMm": 100
+            },
+            {
+              "type": "image",
+              "fileId": "88cafdd9-f6dd-4db6-a636-b24f0c1c8165",
+              "alt": "边界色块",
+              "widthMm": 100
+            }
+          ]
+        }
+      },
+      "response": {
+        "id": "1bf6cb56-63ef-4fd6-978c-5b45fe4bd357",
+        "version": 1,
+        "createdAt": "2026-09-22T15:41:15.331Z",
+        "updatedAt": "2026-09-22T15:41:15.331Z",
+        "deletedAt": null,
+        "title": "边界2401",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "image",
+              "fileId": "ccecd4e5-39bd-4ec3-b7bf-0ea272f03940",
+              "alt": "边界色块",
+              "widthMm": 100
+            },
+            {
+              "type": "image",
+              "fileId": "88cafdd9-f6dd-4db6-a636-b24f0c1c8165",
+              "alt": "边界色块",
+              "widthMm": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.331Z",
+      "route": "/api/modules/questions/v2/items/1bf6cb56-63ef-4fd6-978c-5b45fe4bd357/assets",
+      "method": "POST",
+      "status": 202,
+      "request": {
+        "baseVersion": 1,
+        "includeAnswers": false,
+        "mode": "question-png",
+        "figureFileId": null
+      },
+      "response": {
+        "id": "5b88187a-6116-4abe-ba20-5132a5a22708",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "1bf6cb56-63ef-4fd6-978c-5b45fe4bd357",
+          "version": 1
+        },
+        "state": "queued",
+        "createdAt": "2026-09-22T15:41:15.333Z",
+        "updatedAt": "2026-09-22T15:41:15.333Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.335Z",
+      "route": "/api/workbench/jobs/5b88187a-6116-4abe-ba20-5132a5a22708",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "5b88187a-6116-4abe-ba20-5132a5a22708",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "1bf6cb56-63ef-4fd6-978c-5b45fe4bd357",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.333Z",
+        "updatedAt": "2026-09-22T15:41:15.334Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.362Z",
+      "route": "/api/workbench/jobs/5b88187a-6116-4abe-ba20-5132a5a22708",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "5b88187a-6116-4abe-ba20-5132a5a22708",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "1bf6cb56-63ef-4fd6-978c-5b45fe4bd357",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.333Z",
+        "updatedAt": "2026-09-22T15:41:15.334Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.390Z",
+      "route": "/api/workbench/jobs/5b88187a-6116-4abe-ba20-5132a5a22708",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "5b88187a-6116-4abe-ba20-5132a5a22708",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "1bf6cb56-63ef-4fd6-978c-5b45fe4bd357",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.333Z",
+        "updatedAt": "2026-09-22T15:41:15.334Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.418Z",
+      "route": "/api/workbench/jobs/5b88187a-6116-4abe-ba20-5132a5a22708",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "5b88187a-6116-4abe-ba20-5132a5a22708",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "1bf6cb56-63ef-4fd6-978c-5b45fe4bd357",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.333Z",
+        "updatedAt": "2026-09-22T15:41:15.334Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.451Z",
+      "route": "/api/workbench/jobs/5b88187a-6116-4abe-ba20-5132a5a22708",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "5b88187a-6116-4abe-ba20-5132a5a22708",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "1bf6cb56-63ef-4fd6-978c-5b45fe4bd357",
+          "version": 1
+        },
+        "state": "succeeded",
+        "createdAt": "2026-09-22T15:41:15.333Z",
+        "updatedAt": "2026-09-22T15:41:15.425Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 2,
+          "total": 2,
+          "unit": "stages"
+        },
+        "outputFileIds": [
+          "1471cf63-93a2-48de-b0bd-8c1b8dbb87a3",
+          "3f112cc4-c79c-45df-a2dd-70703777eb55"
+        ],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.453Z",
+      "route": "/api/workbench/files/1471cf63-93a2-48de-b0bd-8c1b8dbb87a3/content",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "bytes": 33308
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.458Z",
+      "route": "/api/workbench/files/3f112cc4-c79c-45df-a2dd-70703777eb55/content",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "bytes": 42604
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.479Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "9932663a-d575-437a-be59-0b9c722545fd",
+        "name": "height-5000.png",
+        "mediaType": "image/png",
+        "byteLength": 162443,
+        "sha256": "a34bd9fecd19ac62d1681cc621121b5476501c3a62beee29c6758d3d4c14c9d5",
+        "createdAt": "2026-09-22T15:41:15.482Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.496Z",
+      "route": "/api/modules/questions/v2/items",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "超高单图",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "image",
+              "fileId": "9932663a-d575-437a-be59-0b9c722545fd",
+              "alt": "超高图",
+              "widthMm": 100
+            }
+          ]
+        }
+      },
+      "response": {
+        "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+        "version": 1,
+        "createdAt": "2026-09-22T15:41:15.499Z",
+        "updatedAt": "2026-09-22T15:41:15.499Z",
+        "deletedAt": null,
+        "title": "超高单图",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "image",
+              "fileId": "9932663a-d575-437a-be59-0b9c722545fd",
+              "alt": "超高图",
+              "widthMm": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.500Z",
+      "route": "/api/modules/questions/v2/items/0980c44e-843d-4644-b65c-db920a75b34d/assets",
+      "method": "POST",
+      "status": 202,
+      "request": {
+        "baseVersion": 1,
+        "includeAnswers": false,
+        "mode": "question-png",
+        "figureFileId": null
+      },
+      "response": {
+        "id": "d5c08deb-1318-4e6e-adcc-f25363d2b979",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "queued",
+        "createdAt": "2026-09-22T15:41:15.504Z",
+        "updatedAt": "2026-09-22T15:41:15.504Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.506Z",
+      "route": "/api/workbench/jobs/d5c08deb-1318-4e6e-adcc-f25363d2b979",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "d5c08deb-1318-4e6e-adcc-f25363d2b979",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.504Z",
+        "updatedAt": "2026-09-22T15:41:15.504Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.533Z",
+      "route": "/api/workbench/jobs/d5c08deb-1318-4e6e-adcc-f25363d2b979",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "d5c08deb-1318-4e6e-adcc-f25363d2b979",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.504Z",
+        "updatedAt": "2026-09-22T15:41:15.504Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.560Z",
+      "route": "/api/workbench/jobs/d5c08deb-1318-4e6e-adcc-f25363d2b979",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "d5c08deb-1318-4e6e-adcc-f25363d2b979",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.504Z",
+        "updatedAt": "2026-09-22T15:41:15.504Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.591Z",
+      "route": "/api/workbench/jobs/d5c08deb-1318-4e6e-adcc-f25363d2b979",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "d5c08deb-1318-4e6e-adcc-f25363d2b979",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "succeeded",
+        "createdAt": "2026-09-22T15:41:15.504Z",
+        "updatedAt": "2026-09-22T15:41:15.585Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 1,
+          "total": 1,
+          "unit": "stages"
+        },
+        "outputFileIds": [
+          "c4f583e1-939f-4b63-9c26-6555e1a88459"
+        ],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.593Z",
+      "route": "/api/workbench/files/c4f583e1-939f-4b63-9c26-6555e1a88459/content",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "bytes": 46901
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.597Z",
+      "route": "/api/modules/questions/v2/items/0980c44e-843d-4644-b65c-db920a75b34d/assets",
+      "method": "POST",
+      "status": 202,
+      "request": {
+        "baseVersion": 1,
+        "includeAnswers": false,
+        "mode": "figure-png",
+        "figureFileId": "9932663a-d575-437a-be59-0b9c722545fd"
+      },
+      "response": {
+        "id": "a9bbe6a9-67d5-42bb-9c31-4509ba47fd56",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "queued",
+        "createdAt": "2026-09-22T15:41:15.599Z",
+        "updatedAt": "2026-09-22T15:41:15.599Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.601Z",
+      "route": "/api/workbench/jobs/a9bbe6a9-67d5-42bb-9c31-4509ba47fd56",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "a9bbe6a9-67d5-42bb-9c31-4509ba47fd56",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.599Z",
+        "updatedAt": "2026-09-22T15:41:15.600Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.629Z",
+      "route": "/api/workbench/jobs/a9bbe6a9-67d5-42bb-9c31-4509ba47fd56",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "a9bbe6a9-67d5-42bb-9c31-4509ba47fd56",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.599Z",
+        "updatedAt": "2026-09-22T15:41:15.600Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.656Z",
+      "route": "/api/workbench/jobs/a9bbe6a9-67d5-42bb-9c31-4509ba47fd56",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "a9bbe6a9-67d5-42bb-9c31-4509ba47fd56",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:15.599Z",
+        "updatedAt": "2026-09-22T15:41:15.600Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.683Z",
+      "route": "/api/workbench/jobs/a9bbe6a9-67d5-42bb-9c31-4509ba47fd56",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "a9bbe6a9-67d5-42bb-9c31-4509ba47fd56",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "0980c44e-843d-4644-b65c-db920a75b34d",
+          "version": 1
+        },
+        "state": "succeeded",
+        "createdAt": "2026-09-22T15:41:15.599Z",
+        "updatedAt": "2026-09-22T15:41:15.686Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 1,
+          "total": 1,
+          "unit": "stages"
+        },
+        "outputFileIds": [
+          "d55e6fb7-7fbd-4288-a564-8b5b27e988bd"
+        ],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:15.687Z",
+      "route": "/api/workbench/files/d55e6fb7-7fbd-4288-a564-8b5b27e988bd/content",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "bytes": 46901
+      }
+    }
+  ]
+}
