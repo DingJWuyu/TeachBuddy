@@ -1,0 +1,229 @@
+{
+  "id": "736dc00c-7e78-4a41-bfb6-0270e270fd96",
+  "version": 2,
+  "createdAt": "2026-09-22T13:22:31.681Z",
+  "updatedAt": "2026-09-22T13:22:32.487Z",
+  "deletedAt": null,
+  "title": "复杂OMML",
+  "origin": "",
+  "input": {
+    "kind": "files",
+    "fileIds": [
+      "44a12f40-ea9b-4517-8fc0-46661512ac62"
+    ],
+    "pages": []
+  },
+  "supplementFileIds": [],
+  "drafts": [
+    {
+      "id": "8550c3da-0d6c-491e-ae36-ba16878c19ad",
+      "title": "23.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "求 "
+              },
+              {
+                "type": "math",
+                "latex": "\\frac{\\sqrt{7z+2}}{z-8}"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": []
+      },
+      "answerStatus": "absent",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "44a12f40-ea9b-4517-8fc0-46661512ac62",
+              "part": "word/document.xml",
+              "paragraph": 1,
+              "runStart": 0,
+              "runEnd": 2
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "b32bfa9b-e1d5-4123-b1f3-2adef28aa827",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "44a12f40-ea9b-4517-8fc0-46661512ac62",
+              "part": "word/document.xml",
+              "paragraph": 1,
+              "runStart": 0,
+              "runEnd": 2
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "ec534402-cb87-4f31-a0c1-a5661b44cc07",
+      "title": "24.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "分段表达式 "
+              },
+              {
+                "type": "math",
+                "latex": "\\left\\{\\begin{matrix}z+3 & z<5\\\\{z}^{3} & z\\ge 5\\end{matrix}\\right."
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": []
+      },
+      "answerStatus": "absent",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "44a12f40-ea9b-4517-8fc0-46661512ac62",
+              "part": "word/document.xml",
+              "paragraph": 2,
+              "runStart": 0,
+              "runEnd": 2
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "9229279f-e519-4e1d-9cb7-41b4b8f0ad66",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "44a12f40-ea9b-4517-8fc0-46661512ac62",
+              "part": "word/document.xml",
+              "paragraph": 2,
+              "runStart": 0,
+              "runEnd": 2
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "58b75928-38ff-4f4b-ac63-753ec66a6593",
+      "title": "25.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "核对特殊结构 "
+              },
+              {
+                "type": "math",
+                "latex": "q+9"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": []
+      },
+      "answerStatus": "absent",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "44a12f40-ea9b-4517-8fc0-46661512ac62",
+              "part": "word/document.xml",
+              "paragraph": 3,
+              "runStart": 0,
+              "runEnd": 2
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "94cbce77-92a5-4635-88cd-1a92be2d6464",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "44a12f40-ea9b-4517-8fc0-46661512ac62",
+              "part": "word/document.xml",
+              "paragraph": 3,
+              "runStart": 0,
+              "runEnd": 2
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "b750af68-3fd7-4efc-a81e-b40b87569fae",
+          "code": "uncertain-formula",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "44a12f40-ea9b-4517-8fc0-46661512ac62",
+              "part": "word/document.xml",
+              "paragraph": 3,
+              "runStart": 0,
+              "runEnd": 2
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    }
+  ],
+  "fragments": [],
+  "jobId": "e42903c0-2820-4f7c-8b16-36d04b295d0f"
+}

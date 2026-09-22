@@ -1,0 +1,15 @@
+{
+  "owner": "A11/public authentication",
+  "fixture": "real.mjs",
+  "steps": [
+    "login",
+    "logout last session",
+    "same document login rejected",
+    "refresh document",
+    "login succeeds"
+  ],
+  "status": 409,
+  "problemType": "/problems/auth/browser-context-required",
+  "recoveredAfterRefresh": true,
+  "changedAuthInternals": false
+}

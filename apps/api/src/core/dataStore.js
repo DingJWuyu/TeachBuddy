@@ -164,10 +164,18 @@ function sortByUpdatedDesc(items) {
   return [...items].sort((a, b) => (getComparableTime(a) < getComparableTime(b) ? 1 : -1));
 }
 
-export function createDataStore(runtimeEnv = defaultEnv) {
+/**
+ * Baseline account/shell storage. The workbench composition passes its single
+ * isolated `better-sqlite3` instance so shell tables and workbench tables share
+ * one database and one connection; when no instance is supplied the store opens
+ * its own file, which keeps the legacy entry points usable on their own.
+ */
+export function createDataStore(runtimeEnv = defaultEnv, options = {}) {
   ensureDirectories(runtimeEnv);
-  const db = new Database(runtimeEnv.sqlitePath);
-  db.pragma('journal_mode = WAL');
+  const db = options.db ?? new Database(runtimeEnv.sqlitePath);
+  if (!options.db) {
+    db.pragma('journal_mode = WAL');
+  }
   ensureSchema(db);
 
   const findUserByEmailStatement = db.prepare('SELECT * FROM users WHERE email = ? COLLATE NOCASE');
@@ -324,8 +332,10 @@ export function createDataStore(runtimeEnv = defaultEnv) {
     },
 
     close() {
-      db.close();
+      if (db.open) db.close();
     },
+
+    db,
 
     paths: {
       dataFile: runtimeEnv.sqlitePath,
