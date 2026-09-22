@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
@@ -8,7 +9,7 @@ import { startQuestionsFixture } from '../../web/e2e/fixtures/materials-question
 
 const evidence = process.env.R33_LOCAL5_EVIDENCE;
 async function world(t, provider) {
-  const directory = fs.mkdtempSync('/tmp/r33-local5-api-');
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'r33-local5-api-'));
   const runtime = await startQuestionsFixture({ dataDir: directory, port: 0, provider });
   const origin = `http://localhost:${runtime.server.address().port}`;
   const trace = [];

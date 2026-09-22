@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 const evidence = path.resolve(process.env.R33_LOCAL5_EVIDENCE ?? 'test-results/r33-attempt5/screenshots');
 let world;
 test.beforeEach(async ({ page }) => {
   fs.mkdirSync(evidence, { recursive: true });
-  world = await createIntegration({ directory: fs.mkdtempSync('/tmp/r33-local5-browser-') });
+  world = await createIntegration({ directory: fs.mkdtempSync(path.join(os.tmpdir(), 'r33-local5-browser-')) });
   await page.goto(world.origin);
   await page.getByRole('button', { name: '创建账户' }).click();
   await page.getByLabel('昵称', { exact: true }).fill('分类管理老师');
@@ -67,7 +68,10 @@ test('LOCAL004-single-line-controls', async ({ page }) => {
   const saved = page.waitForResponse(r => r.url().endsWith('/questions/v2/taxonomy') && r.request().method() === 'PUT');
   await page.getByRole('button', { name: '保存分类', exact: true }).click();
   expect((await saved).status()).toBe(200);
-  await page.reload();
+  // M43 routes the real module to /questions; this isolated auth fixture serves
+  // its SPA entry at /. Re-enter through that entry for a full-page reload.
+  await page.goto(world.origin);
+  await page.locator('.wb-sidebar').getByRole('link', { name: '题库', exact: true }).click();
   // The frozen shell uses a full workspace overlay at 1024px.
   await page.getByRole('complementary', { name: '辅助栏', exact: true }).getByRole('button', { name: '关闭辅助栏', exact: true }).click();
   await page.getByRole('button', { name: '分类管理', exact: true }).click();
