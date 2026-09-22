@@ -39,11 +39,12 @@
 | 唯一设计 | `73d68c2e1ec864faac8ee49a8b5f9e6361e82964:docs/contracts/auth-recovery.md`；同版架构 `docs/arch/auth-recovery.md` 和BDD `docs/acceptance/auth-recovery.feature` |
 | 实现/交接短包 | `767f949dc9f15a960c5146ebb367dd2f1e827b4f:docs/plans/tasks/auth-recovery.md`；作者回执 `docs/acceptance/evidence/AUTH-RECOVERY-DESIGN/v1/author.md` |
 | A10设计独立接受 | `a3d5b5ec80d4823ec978e3b9b331b8fa266302be:docs/acceptance/evidence/A10/v1/recovery-review.md` |
-| 可运行操作self | 实现 `627bf878d9b2ec57e8bc88a227337744c697a9ce`；完整 `070def5a928ae5c87d37be646d652c56cf5a5e0f:docs/acceptance/evidence/AUTH-RECOVERY-IMPLEMENTATION/v1/author.md`。恢复28/28、认证98/98，待A10独立交接。 |
+| 可运行操作self | 实现 `627bf878d9b2ec57e8bc88a227337744c697a9ce`；完整 `070def5a928ae5c87d37be646d652c56cf5a5e0f:docs/acceptance/evidence/AUTH-RECOVERY-IMPLEMENTATION/v1/author.md`。作者恢复28/28、认证98/98。 |
+| A10可运行交接 | `bda25ea14b2df0e683d8252110b884ae3b71eefd:docs/acceptance/evidence/A10/v1/recovery-handoff.md`。限定independent PASS，固定操作、七项迁移与F62调用前置；恢复28/28及四种journal独立探针通过。 |
 | 原认证冻结 | `6f3003250d170b44e89f6ac9b0a74f91d658a357:docs/contracts/auth.md`；独立 `63bfe8f7900b4a2bb7fc9ab5a4145f1c89a6f73b:docs/acceptance/evidence/AUTH-CONTRACT/v1/correction-review.md` |
 | 原恢复责任与外部条件 | `c966447f1e2dea83bd11871bca82d7981b276cb1:docs/arch/auth-handoff.md`；已满足的旧前置以run-state和新固定回执为准 |
 
-auth-recovery/1已独立接受，离线 `prepareRestoredAuth({db})` 已交self候选，支持冻结的七项认证迁移；A10正在固定可运行交接。认证后端拥有内部操作，F62拥有停服、完整恢复、调用和最后开放。F62须取得固定实现及A10交接，不能自行补认证SQL。
+auth-recovery/1已独立接受，离线 `prepareRestoredAuth({db})` 的固定实现及七项认证迁移已由A10独立接受。认证后端拥有内部操作，F62拥有停服、完整恢复、调用和最后开放。F62按上述报告导入固定实现并复核新组合，不自行补认证SQL；WB-AR008、完整文件/配置切换仍未代验。
 
 上述认证操作候选完整API为335/336，唯一TT-C7旧预期遗漏已由产品候选表中的测试修复闭环。该修复未合入070def5；后继合流再跑包含恢复28项的完整套件，不能将308/308原产品结果写成336/336。
 
