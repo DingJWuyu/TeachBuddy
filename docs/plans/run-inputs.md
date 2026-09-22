@@ -57,8 +57,9 @@ OPS-001需F62候选及A12真实恢复专项，11条BDD的设计覆盖PASS不等�
 | --- | --- |
 | 已采纳入口裁决 | `8b796c47ee2517fad00ddc7eb2c40afeb914156c:docs/arch/reliability-entry.md`；独立 `43366f20bd9e76f1490cd7c434f2a745a0234995:docs/acceptance/evidence/RELIABILITY-ENTRY/v1/review.md`；入口已同步main |
 | F60完整候选 | 完整 `619494d5e115d4d1a4bc9e7ee9c83b553fd246dc`；设计 `a6a044466da18eca8cb7274d4c99d43d596453b6`；入口 `docs/arch/reliability.md`、`docs/plans/tasks/reliability/README.md`，作者 `docs/acceptance/evidence/F60/v1/attempt2.md` |
+| 完整设计独立结果 | `a5c272a866a02e97ac58361fb4157aeeea105c4d:docs/acceptance/evidence/F60/v1/review.md` 及review/复现。FAIL，唯一F60-REV-001：36个新版只读工具被旧名称分类器误归写操作；影响工具卡、Snapshot/SSE及个人包。G-AUTH独立通过。 |
 
-完整候选self检查涵盖81工具、37条WB-F、11条WB-AR及18行范围，已消费固定认证设计和A10设计接受；G-AUTH仅设计接合由作者关闭，独立冻结正在进行。候选固定旧业务267cf51；最新认证实现、R35复验和TT-C7归属已交reviewer区分，后继按根固定版本集成，不把设计当运行实证。
+候选的81工具、37条WB-F和18行范围已独立核对，完整冻结仍被上述schema矛盾阻断。F60正在修订该缺口及实际传播；下一轮限定复验读写分类、旧历史兼容及影响面，沿用未变范围与G-AUTH结论。业务输入仍固定267cf51，后继按根固定的新运行组合集成。
 
 F60独立冻结后才派F61-F63。F62可运行self后进行A12恢复专项，不等F65/D72；完整A12、T54、R35/M43/M44及其他原前置仍在F64前汇合。认证操作、全范围恢复和交付环境恢复是不同验收责任。
 
