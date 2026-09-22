@@ -84,6 +84,7 @@
 | MATERIALS-TEACHING-ACCEPTANCE | 新会话，attempt 1 | gpt-6-astra / medium | 已交5c3ae84并停写，WB-MTA001-007 independent PASS，原选择及保存422关闭 | `01a0ca2d-43e1-70f1-a422-75400d67487d` | `.scratch/dag-dispatch/MATERIALS-TEACHING-ACCEPTANCE/1/` |
 | RELIABILITY-ENTRY | 新会话，attempt 1 | gpt-6-astra / high | 已交8b796c4；43366f2独立PASS，根已采纳，待入口同步再派F60 | `01a0ca3a-3294-7611-9efa-1d456501e4b7` | `.scratch/dag-dispatch/RELIABILITY-ENTRY/1/` |
 | RELIABILITY-ENTRY-REVIEW | 新会话，attempt 1 | gpt-6-astra / high | 已交43366f2并停写，依赖提案independent PASS，无必修 | `01a0ca42-e30f-7db3-9ccb-0d19b887211b` | `.scratch/dag-dispatch/RELIABILITY-ENTRY-REVIEW/1/` |
+| RELIABILITY-ENTRY-SYNC | 新会话，attempt 1 | gpt-6-sol / medium | 已启动，同步已采纳提案与调度入口，随后才派F60 | `01a0ca50-3d35-7541-829d-f80db1a820e0` | `.scratch/dag-dispatch/RELIABILITY-ENTRY-SYNC/1/` |
 | MATERIALS-TEACHING-FIX | 新会话，attempt 1 | gpt-6-astra / low | 已交c5b0a59并停写，WB-MTA001-007 self PASS；Git确认未消费数学CSS补充，已交限定合流 | `01a0c9f9-6b66-7b12-a440-a7f61788dfb1` | `.scratch/dag-dispatch/MATERIALS-TEACHING-FIX/1/` |
 | MATERIALS-TEACHING-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已交5548338并停写，限定independent PASS；根采纳冻结，无设计必修 | `01a0c9eb-f1a8-7861-aaf3-a252cb1ff9fd` | `.scratch/dag-dispatch/MATERIALS-TEACHING-REVIEW/1/` |
 | MATERIALS-TEACHING-ALIGNMENT | 新会话，attempt 1 | gpt-6-astra / high | 已交1a60db5并停写，已获5548338限定独立冻结；待新候选实施 | `01a0c9e0-1b88-70b0-a048-9a6d6f45df40` | `.scratch/dag-dispatch/MATERIALS-TEACHING-ALIGNMENT/1/` |
