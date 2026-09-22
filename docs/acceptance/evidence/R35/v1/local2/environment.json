@@ -1,0 +1,33 @@
+{
+  "timeUtc": "2026-09-22T14:42:45.369993+00:00",
+  "task": "R35-LOCAL@1",
+  "attempt": 2,
+  "runner": "Codex / gpt-6-astra / medium",
+  "sessionId": "01a0c983-29a6-7103-9cdf-d2e74e499d65",
+  "candidate": "3a10e0d5108a4950bba0851610bae7d8495dc8ff",
+  "product": "18a80073380116e1d30165f0001a86e5fdb2304c",
+  "checkout": "/tmp/teacher-r35-local2-candidate",
+  "reportBranch": "review/r35-local-recheck",
+  "reportBase": "83045e038084925dcef96fdc0b1a3489f7e845a7",
+  "platform": "Linux-7.2.4-3-cachyos-x86_64-with-glibc2.44",
+  "node": "v22.23.2",
+  "chrome": "152.0.7977.64",
+  "office": "LibreOffice 26.8.0.3, Linux Writer, gen VCL",
+  "officeProfile": "/tmp/teacher-r35-local2-office-final",
+  "officePort": 49938,
+  "display": ":1352",
+  "runtime": "/tmp/teacher-r35-local2-runtime",
+  "origin": "https://127.0.0.1:49935",
+  "retained": "/tmp/teacher-r35-local2-retained",
+  "retainedOrigin": "https://127.0.0.1:49934",
+  "productsModelRequests": 0,
+  "productModelSecretReads": 0,
+  "identity": "real-auth/fake-mail; synthetic fragment + math fixture test-principal separately marked",
+  "finishedAtUtc": "2026-09-22T14:46:55.334934+00:00",
+  "stoppedProcesses": {
+    "mainServer": 1231394,
+    "office": 1240311,
+    "xvfb": 1232552
+  },
+  "axiSession": "r35-local2, stopped"
+}

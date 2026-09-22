@@ -1,0 +1,841 @@
+{
+  "id": "82556b7c-9818-4557-8d63-e4d3cc1f7c65",
+  "version": 3,
+  "createdAt": "2026-09-22T12:08:47.766Z",
+  "updatedAt": "2026-09-22T12:08:48.554Z",
+  "deletedAt": null,
+  "title": "收录文字",
+  "origin": "",
+  "input": {
+    "kind": "text",
+    "text": "C21 固定批次：函数与空间几何\n\n【第1页】\nQ1. 求函数 f(x)=√(2x−1)/(x−2) 的定义域。\nA. [1/2,+∞)    B. [1/2,2)∪(2,+∞)    C. (1/2,2)∪(2,+∞)    D. (−∞,2)∪(2,+∞)\n\nQ2. 已知 f(x)=x²−2x−3，配坐标轴与抛物线图，标出顶点和两个横轴交点。\n（1）求零点；（2）写出单调递增区间。\n[图：抛物线经过 (−1,0)、(1,−4)、(3,0)，标出顶点和两个横轴交点]\n\n【第2页】\nQ3. f(x)={ ax+1, x<0; x²−1, x≥0 }。若 f(−2)=3，求 a 和 f(1)。\n\nQ4. 解不等式 log₂(x−1)≤1。\n\n【第3页】\nQ5. 如图，直角三角形 ABC，∠A=90°。求 BC 的长及 tan B。\n图示 A 在左下、B 在右下、C 在左上；AB 边标 4，AC 边标 3。\n\nQ6. 正方体 ABCD-A₁B₁C₁D₁ 的棱长为 2。\n（1）求体对角线 AC₁ 的长；（2）求体积。\n[图：带顶点标注和遮挡棱虚线的空间示意图，AC₁ 用红线强调]\n\n【第4页：原有答案解析】\nQ1. 答案 B。根号内非负且分母不为零。\nQ2. 解析 f(x)=(x−1)²−4；零点为 −1、3；单调递增区间为 [1,+∞)。\nQ3. 答案 a=−1，f(1)=0。代入负数分支求 a，再代入非负分支。\nQ4. 先有 x>1，底数 2 大于 1，故 x−1≤2，答案 1<x≤3。\nQ5. 答案 BC=5，tan B=3/4；由勾股定理和正切定义得到。\nQ6. 原稿未提供答案解析。\n"
+  },
+  "supplementFileIds": [],
+  "drafts": [
+    {
+      "id": "d457b52b-15f3-4bd7-b227-d6bf6030dc21",
+      "title": "Q1.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "求函数 "
+              },
+              {
+                "type": "math",
+                "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x+2}"
+              },
+              {
+                "type": "text",
+                "text": " 的定义域。"
+              }
+            ]
+          },
+          {
+            "type": "list",
+            "role": "options",
+            "items": [
+              {
+                "label": "A",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "math",
+                        "latex": "[\\frac{1}{2},+\\infty )"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "B",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "math",
+                        "latex": "[\\frac{1}{2},2)\\cup (2,+\\infty )"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "C",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "math",
+                        "latex": "(\\frac{1}{2},2)\\cup (2,+\\infty )"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "D",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "math",
+                        "latex": "(-\\infty ,2)\\cup (2,+\\infty )"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "答案 B。根号内非负且分母不为零。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 24,
+              "end": 130
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 509,
+              "end": 530
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "0fdb4827-6f14-4513-9097-6d1ab69efe14",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 24,
+              "end": 130
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "3f816ad0-ce25-4e17-9aa2-f7ffea3b45a5",
+      "title": "Q2.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "已知 "
+              },
+              {
+                "type": "math",
+                "latex": "f(x)=x^{2}-2x-3"
+              },
+              {
+                "type": "text",
+                "text": "，配坐标轴与抛物线图，标出顶点和两个横轴交点。"
+              }
+            ]
+          },
+          {
+            "type": "list",
+            "role": "subquestions",
+            "items": [
+              {
+                "label": "1",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "求零点"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "2",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "写出单调递增区间。"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "[图：抛物线经过 "
+              },
+              {
+                "type": "math",
+                "latex": "(-1,0)"
+              },
+              {
+                "type": "text",
+                "text": "、"
+              },
+              {
+                "type": "math",
+                "latex": "(1,-4)"
+              },
+              {
+                "type": "text",
+                "text": "、"
+              },
+              {
+                "type": "math",
+                "latex": "(3,0)"
+              },
+              {
+                "type": "text",
+                "text": "，标出顶点和两个横轴交点]"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "解析 "
+              },
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^{2}-4"
+              },
+              {
+                "type": "text",
+                "text": "；零点为 −1、3；单调递增区间为 "
+              },
+              {
+                "type": "math",
+                "latex": "[1,+\\infty )"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 132,
+              "end": 236
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 531,
+              "end": 576
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "5a7dd06e-8ca6-4ad5-9ae7-33da48702253",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 132,
+              "end": 236
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "612372e3-e465-4f64-bd09-3b7e7c121e19",
+          "code": "missing-figure",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 132,
+              "end": 236
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "0df8da55-a164-41fa-8258-e6da9e2eea89",
+      "title": "Q3.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "math",
+                "latex": "f(x)=\\begin{cases}ax+1 & x<0 \\\\ x^{2}-1 & x\\ge 0\\end{cases}"
+              },
+              {
+                "type": "text",
+                "text": "。若 "
+              },
+              {
+                "type": "math",
+                "latex": "f(-2)=3"
+              },
+              {
+                "type": "text",
+                "text": "，求 a 和 "
+              },
+              {
+                "type": "math",
+                "latex": "f(1)"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "答案 "
+              },
+              {
+                "type": "math",
+                "latex": "a=-1"
+              },
+              {
+                "type": "text",
+                "text": "，"
+              },
+              {
+                "type": "math",
+                "latex": "f(1)=0"
+              },
+              {
+                "type": "text",
+                "text": "。代入负数分支求 a，再代入非负分支。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 244,
+              "end": 299
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 577,
+              "end": 614
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "baaf2afe-88dc-4882-8a16-4844a64b3863",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 244,
+              "end": 299
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "b6f807da-ab6e-48f0-b56f-2962dfb65a57",
+      "title": "Q4.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "解不等式 "
+              },
+              {
+                "type": "math",
+                "latex": "\\log _{2}(x-1)\\le 1"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "先有 "
+              },
+              {
+                "type": "math",
+                "latex": "x>1"
+              },
+              {
+                "type": "text",
+                "text": "，底数 2 大于 1，故 "
+              },
+              {
+                "type": "math",
+                "latex": "x-1\\le 2"
+              },
+              {
+                "type": "text",
+                "text": "，答案 "
+              },
+              {
+                "type": "math",
+                "latex": "1<x\\le 3"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 301,
+              "end": 322
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 615,
+              "end": 653
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "b785ebd5-cf97-4ccf-8361-3a9fa64dfbe7",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 301,
+              "end": 322
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "26d2922d-be7e-4e7e-9702-63f4c17615e1",
+      "title": "Q5.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "如图，直角三角形 ABC，"
+              },
+              {
+                "type": "math",
+                "latex": "\\angle A=90^{\\circ}"
+              },
+              {
+                "type": "text",
+                "text": "。求 BC 的长及 "
+              },
+              {
+                "type": "math",
+                "latex": "\\tan  B"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "图示 A 在左下、B 在右下、C 在左上；AB 边标 4，AC 边标 3。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "答案 "
+              },
+              {
+                "type": "math",
+                "latex": "BC=5"
+              },
+              {
+                "type": "text",
+                "text": "，"
+              },
+              {
+                "type": "math",
+                "latex": "\\tan  B=\\frac{3}{4}"
+              },
+              {
+                "type": "text",
+                "text": "；由勾股定理和正切定义得到。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 330,
+              "end": 407
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 654,
+              "end": 689
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "ef385fd9-9317-4b5b-a009-96b843136ef4",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 330,
+              "end": 407
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "cbfd8db0-b467-4be9-99e9-c5733d3d2ce3",
+          "code": "missing-figure",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 330,
+              "end": 407
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "5488887d-4967-4c5e-89e4-3d993f094bb5",
+      "title": "Q6.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "正方体 "
+              },
+              {
+                "type": "math",
+                "latex": "ABCD-A_{1}B_{1}C_{1}D_{1}"
+              },
+              {
+                "type": "text",
+                "text": " 的棱长为 2。"
+              }
+            ]
+          },
+          {
+            "type": "list",
+            "role": "subquestions",
+            "items": [
+              {
+                "label": "1",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "求体对角线 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "AC_{1}"
+                      },
+                      {
+                        "type": "text",
+                        "text": " 的长"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "2",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "求体积。"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "[图：带顶点标注和遮挡棱虚线的空间示意图，"
+              },
+              {
+                "type": "math",
+                "latex": "AC_{1}"
+              },
+              {
+                "type": "text",
+                "text": " 用红线强调]"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": []
+      },
+      "answerStatus": "absent",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 409,
+              "end": 494
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 690,
+              "end": 704
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "4bccd5a9-50ef-4f9a-a363-d3dafd6053aa",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 409,
+              "end": 494
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "7b3240c2-36d7-434e-be51-26fb6999093c",
+          "code": "missing-figure",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "text",
+              "start": 409,
+              "end": 494
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    }
+  ],
+  "fragments": [
+    {
+      "id": "934051d5-7fa5-4911-9335-f7c1b1c59417",
+      "text": "C21 固定批次：函数与空间几何",
+      "locations": [
+        {
+          "kind": "text",
+          "start": 0,
+          "end": 16
+        }
+      ],
+      "disposition": "unassigned"
+    }
+  ],
+  "jobId": "e40598b5-a807-4122-bb71-976a61714bf1"
+}

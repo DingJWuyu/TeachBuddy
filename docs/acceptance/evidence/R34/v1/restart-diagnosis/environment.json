@@ -1,0 +1,25 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "execPath": "/home/liam_t/.local/share/pi-node/node-v22.23.2-linux-x64/bin/node",
+  "sourceSHA256": "23afac367c8b223ddb999828ed3f7f4420dbb59ceaa790f3d4a66f53329ca2de",
+  "task": "R34-RESTART-DIAGNOSIS@1",
+  "attempt": 1,
+  "session_id": "01a0c921-e31a-7c70-92e3-c9a931403c30",
+  "runner": "Codex gpt-6-astra high (dispatch)",
+  "composition": "56845c217442acc24bcabfb8c3508424192c0a65",
+  "input_revision": "6398bf2dae85d1872c929aa8ef32d5705d763687",
+  "input_product_revision": "a0bde5546eeedf50498888da0ed9c5941fa1d76a",
+  "source_failure": "cd31bf4f4d0bf5f7cd6f35cd1f912b81a16d680c:docs/acceptance/evidence/R33/v1/attempt2/api-reviewed.log",
+  "ports": [
+    47415,
+    48564,
+    47412,
+    47414
+  ],
+  "identity": "test-principal; existing formula regression uses real-auth/fake-mail",
+  "product_model_requests": 0,
+  "keys_read": 0,
+  "browser": "not used: transport/API diagnosis",
+  "at_utc": "2026-09-22T12:50:45.100888+00:00"
+}

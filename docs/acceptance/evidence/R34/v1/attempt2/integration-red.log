@@ -1,0 +1,31 @@
+TAP version 13
+# Subtest: material composition serves the frozen v2 catalog through real page-bound identity
+not ok 1 - material composition serves the frozen v2 catalog through real page-bound identity
+  ---
+  duration_ms: 338.189722
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-integration/apps/api/test/materials-integration.test.js:10:1'
+  failureType: 'testCodeFailure'
+  error: 'Workbench contract error 422 /problems/workbench/invalid-input'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ContractError'
+  stack: |-
+    contractError (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-integration/apps/api/src/workbench/problems.js:71:10)
+    invalidInput (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-integration/apps/api/src/workbench/problems.js:75:10)
+    walk (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-integration/apps/api/src/workbench/content/schema.js:105:11)
+    walk (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-integration/apps/api/src/workbench/content/schema.js:83:14)
+    validateSchema (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-integration/apps/api/src/workbench/content/schema.js:110:10)
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-integration/apps/api/test/materials-integration.test.js:23:3)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 582.760128

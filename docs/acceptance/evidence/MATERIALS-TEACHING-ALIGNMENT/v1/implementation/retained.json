@@ -1,0 +1,1013 @@
+{
+  "fixed": "2682475041aa187e3cd50ad743dc5e5bc243feda",
+  "folder": "/home/liam_t/.cache/mta-fix/tmp/mta-retained-0bQCWH",
+  "original": "/home/liam_t/.cache/mta-fix/tmp/mta-retained-0bQCWH/original",
+  "candidate": "/home/liam_t/.cache/mta-fix/tmp/mta-retained-0bQCWH/candidate",
+  "seed": {
+    "item": {
+      "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+      "version": 1,
+      "createdAt": "2026-09-22T17:02:58.528Z",
+      "updatedAt": "2026-09-22T17:02:58.528Z",
+      "deletedAt": null,
+      "title": "首次旧标题",
+      "body": {
+        "version": 1,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "求二次函数的零点"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 1,
+        "blocks": []
+      },
+      "note": "原始私密笔记",
+      "starred": false,
+      "source": {
+        "kind": "manual"
+      }
+    },
+    "classroom": {
+      "id": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+      "version": 1,
+      "createdAt": "2026-09-22T17:02:58.529Z",
+      "updatedAt": "2026-09-22T17:02:58.529Z",
+      "deletedAt": null,
+      "name": "旧库一班"
+    },
+    "body": {
+      "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+      "recordedOn": "2026-09-22",
+      "note": "旧库原文不改",
+      "position": "",
+      "unfinished": "",
+      "commonIssues": "",
+      "nextNote": "",
+      "sources": [
+        {
+          "kind": "question",
+          "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc"
+        }
+      ]
+    },
+    "key": "d5fa35a5-7cdc-4b5f-8b30-76174c53dd42",
+    "saved": {
+      "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+      "version": 1,
+      "createdAt": "2026-09-22T17:02:58.531Z",
+      "updatedAt": "2026-09-22T17:02:58.531Z",
+      "deletedAt": null,
+      "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+      "recordedOn": "2026-09-22",
+      "note": "旧库原文不改",
+      "position": "",
+      "unfinished": "",
+      "commonIssues": "",
+      "nextNote": "",
+      "sources": [
+        {
+          "kind": "question",
+          "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+          "labelAtLink": "首次旧标题",
+          "currentLabel": "首次旧标题",
+          "deleted": false
+        }
+      ]
+    },
+    "lesson": {
+      "id": "f1960f6e-dfe0-429b-8acc-7321146dd971",
+      "version": 1,
+      "createdAt": "2026-09-22T17:02:58.660Z",
+      "updatedAt": "2026-09-22T17:02:58.660Z",
+      "deletedAt": null,
+      "title": "保留备课",
+      "intro": {
+        "version": 1,
+        "blocks": []
+      },
+      "sections": [],
+      "materials": []
+    },
+    "math": {
+      "id": "db08c75e-8772-4936-b60e-894ce5e14f41",
+      "version": 1,
+      "title": "formula",
+      "source": {
+        "schemaVersion": 1,
+        "kind": "formula",
+        "latex": "x_{1,2}=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
+        "caption": "判别式 D=b²-4ac",
+        "includeCaption": true,
+        "color": "#172033",
+        "fontSize": 28
+      },
+      "originalFileId": null,
+      "render": {
+        "state": "ready",
+        "posterFileId": "3aac545b-416a-46c7-a78a-3858fd13992a",
+        "presentationFileId": null,
+        "reason": null
+      },
+      "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated",
+      "createdAt": "2026-09-22T17:02:58.929Z",
+      "updatedAt": "2026-09-22T17:02:58.929Z",
+      "deletedAt": null
+    },
+    "mixed": {
+      "id": "bc192e8f-2dcf-4c83-a41a-6a1bf4cf07e8",
+      "version": 1,
+      "createdAt": "2026-09-22T17:02:58.931Z",
+      "updatedAt": "2026-09-22T17:02:58.931Z",
+      "deletedAt": null,
+      "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+      "recordedOn": "2026-09-22",
+      "note": "旧库数学引用",
+      "position": "",
+      "unfinished": "",
+      "commonIssues": "",
+      "nextNote": "",
+      "sources": [
+        {
+          "kind": "math",
+          "id": "db08c75e-8772-4936-b60e-894ce5e14f41",
+          "labelAtLink": "formula",
+          "currentLabel": "formula",
+          "deleted": false
+        },
+        {
+          "kind": "lesson",
+          "id": "f1960f6e-dfe0-429b-8acc-7321146dd971",
+          "labelAtLink": "保留备课",
+          "currentLabel": "保留备课",
+          "deleted": false
+        }
+      ]
+    },
+    "mathKey": "09a175c3-c87f-4697-aea3-c42d2db75394",
+    "mathBody": {
+      "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+      "recordedOn": "2026-09-22",
+      "note": "旧库数学引用",
+      "position": "",
+      "unfinished": "",
+      "commonIssues": "",
+      "nextNote": "",
+      "sources": [
+        {
+          "kind": "math",
+          "id": "db08c75e-8772-4936-b60e-894ce5e14f41"
+        },
+        {
+          "kind": "lesson",
+          "id": "f1960f6e-dfe0-429b-8acc-7321146dd971"
+        }
+      ]
+    }
+  },
+  "oldRows": {
+    "classes_items": "be34ba8554f075105f5d66688ba7cf585b5fcaf051933977e6f49a7c4827cf1b",
+    "classes_record_sources": "9b8ebf8f6426d13fb35b6abb1b362e584063926e51cfbcff1ead1ebaeec7c9f3",
+    "classes_records": "ed7693cdf064b882af58b5661a8680e79e20eaa349b60010bfa3d95b61c16f24",
+    "lesson_exports": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "lesson_items": "5f291fb349d0bb71f644ffa5058d4ab7f76eb95e40ab7706ac8ba32a2d1db55f",
+    "lesson_references": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "lesson_sections": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "materials_files": "4722c29c09023af26c82be7fdae6b18f301497fae1a6a9513dd7269d9e020214",
+    "math_exports": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "math_revisions": "c646502a9fac1a897ed5b47aa94e2c8c28f17491621ad0a673e4ea4f3bc141f9",
+    "math_works": "501b1b06e52b6928ab76e99a7eec580b727b08c9b9e95b7df8e4f5f6156dad89",
+    "question_items": "5e4531fc5653951f42d0dfca40066ca64b393b42b3aaa5249a60cafe3302cb28",
+    "questions_materials_imports": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "questions_materials_meta": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "questions_materials_tasks": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "questions_materials_taxonomy": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "workbench_mutation_keys": "689224985239c2c2c15b583e1aedc554c307fbf764b284537491fcfb380011f9"
+  },
+  "oldFiles": {
+    "blobs/3aac545b-416a-46c7-a78a-3858fd13992a.blob": "9a42b125c3aac27e155ebea225551d9169fe42520a61e18d6c339d4843a54a1f"
+  },
+  "afterExplicitWrites": {
+    "classes_items": "be34ba8554f075105f5d66688ba7cf585b5fcaf051933977e6f49a7c4827cf1b",
+    "classes_record_sources": "7d68cee146a5198579a0b0289573fd6e07dfbcd280f96913cc7b83e4592c10fe",
+    "classes_records": "12212568793bd89fe1a1c5159a76c4454b8ccd0495331b3abf17831e11990bd2",
+    "lesson_exports": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "lesson_items": "5f291fb349d0bb71f644ffa5058d4ab7f76eb95e40ab7706ac8ba32a2d1db55f",
+    "lesson_references": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "lesson_sections": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "materials_files": "4722c29c09023af26c82be7fdae6b18f301497fae1a6a9513dd7269d9e020214",
+    "math_exports": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "math_revisions": "c646502a9fac1a897ed5b47aa94e2c8c28f17491621ad0a673e4ea4f3bc141f9",
+    "math_works": "501b1b06e52b6928ab76e99a7eec580b727b08c9b9e95b7df8e4f5f6156dad89",
+    "question_items": "0c9c164e07b25dbe2253b3812a3aa9a16228a1ace32bfc52cc095b94bb737afa",
+    "questions_materials_imports": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "questions_materials_meta": "437321730e6c030c3cd3ab638217f5af8005810a83a8552f53b35a5ad6df0c46",
+    "questions_materials_tasks": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "questions_materials_taxonomy": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "workbench_mutation_keys": "61c108fd22ddb2688d08d469169cfe72c52ac2f7a23ad30387fe4a09aa1fc266"
+  },
+  "readAndRestartUnchanged": true,
+  "trace": [
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/v2/records/c63b8540-e629-4618-8f79-ed6dbb9623e5",
+      "status": 200,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:58.531Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库原文不改",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "首次旧标题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "8cb63d8e-666b-40e3-b54d-845aa8151fd1"
+    },
+    {
+      "method": "POST",
+      "url": "/api/modules/classes/records",
+      "request": {
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库原文不改",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc"
+          }
+        ]
+      },
+      "status": 201,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:58.531Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库原文不改",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "首次旧标题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "d5fa35a5-7cdc-4b5f-8b30-76174c53dd42"
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/questions/v2/items/3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+      "request": {
+        "title": "同 ID 丰富题",
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "正文升级"
+                }
+              ]
+            }
+          ]
+        },
+        "solution": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "答案保留"
+                }
+              ]
+            }
+          ]
+        },
+        "answerStatus": "present",
+        "note": "原始私密笔记",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "baseVersion": 1
+      },
+      "status": 200,
+      "response": {
+        "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+        "version": 2,
+        "createdAt": "2026-09-22T17:02:58.528Z",
+        "updatedAt": "2026-09-22T17:02:59.292Z",
+        "deletedAt": null,
+        "title": "同 ID 丰富题",
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "正文升级"
+                }
+              ]
+            }
+          ]
+        },
+        "solution": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "答案保留"
+                }
+              ]
+            }
+          ]
+        },
+        "note": "原始私密笔记",
+        "starred": false,
+        "source": {
+          "kind": "manual"
+        },
+        "answerStatus": "present",
+        "typeId": null,
+        "tagIds": []
+      },
+      "key": "10e7bcfe-71aa-469f-b157-190269f9ceaf"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/v2/records/c63b8540-e629-4618-8f79-ed6dbb9623e5",
+      "status": 200,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:58.531Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库原文不改",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "同 ID 丰富题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "bafa2b94-c8da-4935-b102-93368b2a9eee"
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/v2/records/c63b8540-e629-4618-8f79-ed6dbb9623e5",
+      "request": {
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "显式改文字",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc"
+          }
+        ],
+        "expectedVersion": 1
+      },
+      "status": 200,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 2,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:59.294Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "显式改文字",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "同 ID 丰富题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "42ded790-a3b9-4173-858e-22b6d82ef06c"
+    },
+    {
+      "method": "POST",
+      "url": "/api/modules/classes/v2/records/c63b8540-e629-4618-8f79-ed6dbb9623e5/deletion",
+      "request": {
+        "expectedVersion": 2,
+        "deleted": true
+      },
+      "status": 200,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 3,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:59.296Z",
+        "deletedAt": "2026-09-22T17:02:59.296Z",
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "显式改文字",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "同 ID 丰富题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "699e4e92-c5d9-402f-8319-cd07027b5429"
+    },
+    {
+      "method": "POST",
+      "url": "/api/modules/classes/v2/records/c63b8540-e629-4618-8f79-ed6dbb9623e5/deletion",
+      "request": {
+        "expectedVersion": 3,
+        "deleted": false
+      },
+      "status": 200,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 4,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:59.297Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "显式改文字",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "同 ID 丰富题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "bd506314-c8a9-48fd-9558-17dc3b3108b4"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/questions/v2/items/3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+      "status": 200,
+      "response": {
+        "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+        "version": 2,
+        "createdAt": "2026-09-22T17:02:58.528Z",
+        "updatedAt": "2026-09-22T17:02:59.292Z",
+        "deletedAt": null,
+        "title": "同 ID 丰富题",
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "正文升级"
+                }
+              ]
+            }
+          ]
+        },
+        "solution": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "答案保留"
+                }
+              ]
+            }
+          ]
+        },
+        "note": "原始私密笔记",
+        "starred": false,
+        "source": {
+          "kind": "manual"
+        },
+        "answerStatus": "present",
+        "typeId": null,
+        "tagIds": []
+      },
+      "key": "c72f404a-a06c-41ec-8f98-e04740b7f3af"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/v2/records/c63b8540-e629-4618-8f79-ed6dbb9623e5",
+      "status": 200,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 4,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:59.297Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "显式改文字",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "同 ID 丰富题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "15e8299e-c097-4316-bc09-6d8dd3a79179"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/v2/records/bc192e8f-2dcf-4c83-a41a-6a1bf4cf07e8",
+      "status": 200,
+      "response": {
+        "id": "bc192e8f-2dcf-4c83-a41a-6a1bf4cf07e8",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.931Z",
+        "updatedAt": "2026-09-22T17:02:58.931Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库数学引用",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "math",
+            "id": "db08c75e-8772-4936-b60e-894ce5e14f41",
+            "labelAtLink": "formula",
+            "currentLabel": "formula",
+            "deleted": false
+          },
+          {
+            "kind": "lesson",
+            "id": "f1960f6e-dfe0-429b-8acc-7321146dd971",
+            "labelAtLink": "保留备课",
+            "currentLabel": "保留备课",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "02abc0e5-b437-4f68-b788-c0b75f5cda10"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/math/v1/works/db08c75e-8772-4936-b60e-894ce5e14f41",
+      "status": 200,
+      "response": {
+        "id": "db08c75e-8772-4936-b60e-894ce5e14f41",
+        "version": 1,
+        "title": "formula",
+        "source": {
+          "schemaVersion": 1,
+          "kind": "formula",
+          "latex": "x_{1,2}=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
+          "caption": "判别式 D=b²-4ac",
+          "includeCaption": true,
+          "color": "#172033",
+          "fontSize": 28
+        },
+        "originalFileId": null,
+        "render": {
+          "state": "ready",
+          "posterFileId": "3aac545b-416a-46c7-a78a-3858fd13992a",
+          "presentationFileId": null,
+          "reason": null
+        },
+        "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated",
+        "createdAt": "2026-09-22T17:02:58.929Z",
+        "updatedAt": "2026-09-22T17:02:58.929Z",
+        "deletedAt": null
+      },
+      "key": "75bf2aeb-0d43-4d51-b288-47d6f0976785"
+    },
+    {
+      "method": "POST",
+      "url": "/api/modules/classes/records",
+      "request": {
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库原文不改",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc"
+          }
+        ]
+      },
+      "status": 201,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:58.531Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库原文不改",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "首次旧标题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "d5fa35a5-7cdc-4b5f-8b30-76174c53dd42"
+    },
+    {
+      "method": "POST",
+      "url": "/api/modules/classes/v2/records",
+      "request": {
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库数学引用",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "math",
+            "id": "db08c75e-8772-4936-b60e-894ce5e14f41"
+          },
+          {
+            "kind": "lesson",
+            "id": "f1960f6e-dfe0-429b-8acc-7321146dd971"
+          }
+        ]
+      },
+      "status": 201,
+      "response": {
+        "id": "bc192e8f-2dcf-4c83-a41a-6a1bf4cf07e8",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.931Z",
+        "updatedAt": "2026-09-22T17:02:58.931Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库数学引用",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "math",
+            "id": "db08c75e-8772-4936-b60e-894ce5e14f41",
+            "labelAtLink": "formula",
+            "currentLabel": "formula",
+            "deleted": false
+          },
+          {
+            "kind": "lesson",
+            "id": "f1960f6e-dfe0-429b-8acc-7321146dd971",
+            "labelAtLink": "保留备课",
+            "currentLabel": "保留备课",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "09a175c3-c87f-4697-aea3-c42d2db75394"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/questions/v2/items/3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+      "status": 200,
+      "response": {
+        "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+        "version": 2,
+        "createdAt": "2026-09-22T17:02:58.528Z",
+        "updatedAt": "2026-09-22T17:02:59.292Z",
+        "deletedAt": null,
+        "title": "同 ID 丰富题",
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "正文升级"
+                }
+              ]
+            }
+          ]
+        },
+        "solution": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "答案保留"
+                }
+              ]
+            }
+          ]
+        },
+        "note": "原始私密笔记",
+        "starred": false,
+        "source": {
+          "kind": "manual"
+        },
+        "answerStatus": "present",
+        "typeId": null,
+        "tagIds": []
+      },
+      "key": "254b0a3f-e902-420d-9431-da13a4710676"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/v2/records/c63b8540-e629-4618-8f79-ed6dbb9623e5",
+      "status": 200,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 4,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:59.297Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "显式改文字",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "同 ID 丰富题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "d5238b3f-90da-44d6-aa5d-893f21dd9bc4"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/v2/records/bc192e8f-2dcf-4c83-a41a-6a1bf4cf07e8",
+      "status": 200,
+      "response": {
+        "id": "bc192e8f-2dcf-4c83-a41a-6a1bf4cf07e8",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.931Z",
+        "updatedAt": "2026-09-22T17:02:58.931Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库数学引用",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "math",
+            "id": "db08c75e-8772-4936-b60e-894ce5e14f41",
+            "labelAtLink": "formula",
+            "currentLabel": "formula",
+            "deleted": false
+          },
+          {
+            "kind": "lesson",
+            "id": "f1960f6e-dfe0-429b-8acc-7321146dd971",
+            "labelAtLink": "保留备课",
+            "currentLabel": "保留备课",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "f184d005-9f3b-4f5d-a58d-6667290112f9"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/math/v1/works/db08c75e-8772-4936-b60e-894ce5e14f41",
+      "status": 200,
+      "response": {
+        "id": "db08c75e-8772-4936-b60e-894ce5e14f41",
+        "version": 1,
+        "title": "formula",
+        "source": {
+          "schemaVersion": 1,
+          "kind": "formula",
+          "latex": "x_{1,2}=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
+          "caption": "判别式 D=b²-4ac",
+          "includeCaption": true,
+          "color": "#172033",
+          "fontSize": 28
+        },
+        "originalFileId": null,
+        "render": {
+          "state": "ready",
+          "posterFileId": "3aac545b-416a-46c7-a78a-3858fd13992a",
+          "presentationFileId": null,
+          "reason": null
+        },
+        "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated",
+        "createdAt": "2026-09-22T17:02:58.929Z",
+        "updatedAt": "2026-09-22T17:02:58.929Z",
+        "deletedAt": null
+      },
+      "key": "fc1eb076-4910-4f22-864d-98c3ebf27e5b"
+    },
+    {
+      "method": "POST",
+      "url": "/api/modules/classes/records",
+      "request": {
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库原文不改",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc"
+          }
+        ]
+      },
+      "status": 201,
+      "response": {
+        "id": "c63b8540-e629-4618-8f79-ed6dbb9623e5",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.531Z",
+        "updatedAt": "2026-09-22T17:02:58.531Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库原文不改",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "3dade604-f4c1-42b3-b2d6-f8eeb8bc08fc",
+            "labelAtLink": "首次旧标题",
+            "currentLabel": "首次旧标题",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "d5fa35a5-7cdc-4b5f-8b30-76174c53dd42"
+    },
+    {
+      "method": "POST",
+      "url": "/api/modules/classes/v2/records",
+      "request": {
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库数学引用",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "math",
+            "id": "db08c75e-8772-4936-b60e-894ce5e14f41"
+          },
+          {
+            "kind": "lesson",
+            "id": "f1960f6e-dfe0-429b-8acc-7321146dd971"
+          }
+        ]
+      },
+      "status": 201,
+      "response": {
+        "id": "bc192e8f-2dcf-4c83-a41a-6a1bf4cf07e8",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.931Z",
+        "updatedAt": "2026-09-22T17:02:58.931Z",
+        "deletedAt": null,
+        "classId": "78e0afd5-99aa-47af-b550-0d5f5ecc6245",
+        "recordedOn": "2026-09-22",
+        "note": "旧库数学引用",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "math",
+            "id": "db08c75e-8772-4936-b60e-894ce5e14f41",
+            "labelAtLink": "formula",
+            "currentLabel": "formula",
+            "deleted": false
+          },
+          {
+            "kind": "lesson",
+            "id": "f1960f6e-dfe0-429b-8acc-7321146dd971",
+            "labelAtLink": "保留备课",
+            "currentLabel": "保留备课",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "09a175c3-c87f-4697-aea3-c42d2db75394"
+    }
+  ],
+  "retainedArtifacts": {
+    "original": "retained/original",
+    "candidate": "retained/candidate"
+  }
+}

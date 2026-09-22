@@ -1,0 +1,42 @@
+[
+  {
+    "type": "before",
+    "callId": "call@1015",
+    "startTime": 47909.792,
+    "class": "APIRequestContext",
+    "method": "fetch",
+    "params": {
+      "url": "https://127.0.0.1:35817/api/modules/lessons/v3/33fad5ed-5718-4961-9e4b-4ad4f258e2b0",
+      "method": "GET",
+      "headers": [
+        {
+          "name": "X-TeachBuddy-Page",
+          "value": "71fb098b915198015381ace2d457e5cf"
+        }
+      ]
+    },
+    "stepId": "pw:api@71"
+  },
+  {
+    "type": "after",
+    "callId": "call@1015",
+    "endTime": 47912.917
+  },
+  {
+    "type": "before",
+    "callId": "call@1017",
+    "startTime": 47913.771,
+    "class": "Page",
+    "method": "screenshot",
+    "params": {
+      "type": "png",
+      "animations": "disabled"
+    },
+    "stepId": "pw:api@73"
+  },
+  {
+    "type": "after",
+    "callId": "call@1017",
+    "endTime": 47949.785
+  }
+]

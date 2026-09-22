@@ -1,0 +1,45 @@
+(node:1231541) Warning: Failed to load the ES module: /tmp/teacher-r35-local2-candidate/apps/api/src/config/env.js. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1231541) Warning: Failed to load the ES module: /tmp/teacher-r35-local2-candidate/apps/api/src/config/env.js. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(node:1231541) Warning: Failed to load the ES module: /tmp/teacher-r35-local2-candidate/apps/web/e2e/fixtures/materials-questions/server.mjs. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+SyntaxError: Cannot use 'import.meta' outside a module
+
+   at ../../../../../../../../../../../tmp/teacher-r35-local2-candidate/apps/api/src/app.js:4
+
+  2 | import path from 'node:path';
+  3 | import { workbenchPaths } from '@refatos/shared';
+> 4 | import { createEnv, env as defaultEnv } from './config/env.js';
+    | ^
+  5 | import { createDataStore } from './core/dataStore.js';
+  6 | import { createAuthCodeSender } from './core/mail.js';
+  7 | import { notFound } from './middleware/notFound.js';
+    at Object.<anonymous> (/tmp/teacher-r35-local2-candidate/apps/api/src/app.js:4:1)
+    at Object.<anonymous> (/tmp/teacher-r35-local2-candidate/apps/api/test/fixtures/auth-integration/harness.js:5:1)
+    at Object.<anonymous> (/home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-integration-navigation.spec.js:4:1)
+SyntaxError: Cannot use 'import.meta' outside a module
+
+   at ../../../../../../../../../../../tmp/teacher-r35-local2-candidate/apps/api/src/app.js:4
+
+  2 | import path from 'node:path';
+  3 | import { workbenchPaths } from '@refatos/shared';
+> 4 | import { createEnv, env as defaultEnv } from './config/env.js';
+    | ^
+  5 | import { createDataStore } from './core/dataStore.js';
+  6 | import { createAuthCodeSender } from './core/mail.js';
+  7 | import { notFound } from './middleware/notFound.js';
+    at Object.<anonymous> (/tmp/teacher-r35-local2-candidate/apps/api/src/app.js:4:1)
+    at Object.<anonymous> (/tmp/teacher-r35-local2-candidate/apps/api/test/fixtures/auth-integration/harness.js:5:1)
+    at Object.<anonymous> (/home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-integration.spec.js:4:1)
+SyntaxError: Cannot use 'import.meta' outside a module
+
+   at local2-materials-questions-fragments.spec.js:4
+
+  2 | import fs from "node:fs";
+  3 | import path from "node:path";
+> 4 | import { startQuestionsFixture } from "/tmp/teacher-r35-local2-candidate/apps/web/e2e/fixtures/materials-questions/server.mjs";
+    | ^
+  5 | const out = "/home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/e2e";
+  6 | test("synthetic page fragments use real upload, review, independent answer navigation and reload", async ({
+  7 |   page,
+    at Object.<anonymous> (/home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-questions-fragments.spec.js:4:1)
+

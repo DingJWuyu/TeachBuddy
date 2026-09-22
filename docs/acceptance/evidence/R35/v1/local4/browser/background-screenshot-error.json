@@ -1,0 +1,4 @@
+{
+  "message": "page.screenshot: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+  "stack": "page.screenshot: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at capture (/home/liam_t/项目/TeacherWorkspace-r35-local-fixes/docs/acceptance/evidence/R35/v1/local4/scripts/consume-browser.mjs:13:36)\n    at /home/liam_t/项目/TeacherWorkspace-r35-local-fixes/docs/acceptance/evidence/R35/v1/local4/scripts/consume-browser.mjs:32:9"
+}

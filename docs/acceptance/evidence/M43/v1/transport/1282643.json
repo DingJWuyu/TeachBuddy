@@ -1,0 +1,936 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1282643,
+  "argv": [
+    "/home/liam_t/.local/share/pi-node/node-v22.23.2-linux-x64/bin/node",
+    "/tmp/m43-suite/apps/api/test/workbench-mutations.test.js"
+  ],
+  "cwd": "/tmp/m43-suite/apps/api",
+  "events": [
+    {
+      "ms": 730.478567,
+      "event": "server:listen",
+      "server": 1,
+      "port": 0
+    },
+    {
+      "ms": 734.344362,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 33323
+      }
+    },
+    {
+      "ms": 736.182047,
+      "event": "server:socket",
+      "socket": 2,
+      "localPort": 33323,
+      "remotePort": 44530,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 738.261474,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 2,
+      "localPort": 33323,
+      "remotePort": 44530,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 747.144276,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 2,
+      "localPort": 33323,
+      "remotePort": 44530,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 747.731456,
+      "event": "server:close",
+      "socket": 2,
+      "remotePort": 44530,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 749.054533,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 749.170916,
+      "event": "server:close",
+      "server": 1
+    },
+    {
+      "ms": 749.348912,
+      "event": "server:listen",
+      "server": 3,
+      "port": 0
+    },
+    {
+      "ms": 750.007221,
+      "event": "server:listening",
+      "server": 3,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 41777
+      }
+    },
+    {
+      "ms": 750.495101,
+      "event": "server:socket",
+      "socket": 4,
+      "localPort": 41777,
+      "remotePort": 37508,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 750.672944,
+      "event": "server:request",
+      "server": 3,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 4,
+      "localPort": 41777,
+      "remotePort": 37508,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 751.579593,
+      "event": "server:response",
+      "server": 3,
+      "status": 201,
+      "socket": 4,
+      "localPort": 41777,
+      "remotePort": 37508,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 751.699658,
+      "event": "server:close",
+      "socket": 4,
+      "remotePort": 37508,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 752.009051,
+      "event": "server:close-called",
+      "server": 3
+    },
+    {
+      "ms": 752.046104,
+      "event": "server:close",
+      "server": 3
+    },
+    {
+      "ms": 752.59498,
+      "event": "server:listen",
+      "server": 5,
+      "port": 0
+    },
+    {
+      "ms": 753.117432,
+      "event": "server:listening",
+      "server": 5,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 34645
+      }
+    },
+    {
+      "ms": 753.409602,
+      "event": "server:socket",
+      "socket": 6,
+      "localPort": 34645,
+      "remotePort": 37310,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 753.512686,
+      "event": "server:request",
+      "server": 5,
+      "method": "GET",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 6,
+      "localPort": 34645,
+      "remotePort": 37310,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 754.195892,
+      "event": "server:response",
+      "server": 5,
+      "status": 200,
+      "socket": 6,
+      "localPort": 34645,
+      "remotePort": 37310,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 754.369706,
+      "event": "server:close",
+      "socket": 6,
+      "remotePort": 37310,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 754.570796,
+      "event": "server:close-called",
+      "server": 5
+    },
+    {
+      "ms": 754.60118,
+      "event": "server:close",
+      "server": 5
+    },
+    {
+      "ms": 763.502713,
+      "event": "server:listen",
+      "server": 7,
+      "port": 0
+    },
+    {
+      "ms": 764.270831,
+      "event": "server:listening",
+      "server": 7,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 44663
+      }
+    },
+    {
+      "ms": 764.851461,
+      "event": "server:socket",
+      "socket": 8,
+      "localPort": 44663,
+      "remotePort": 58036,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 764.99446,
+      "event": "server:request",
+      "server": 7,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 8,
+      "localPort": 44663,
+      "remotePort": 58036,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 765.831858,
+      "event": "server:response",
+      "server": 7,
+      "status": 201,
+      "socket": 8,
+      "localPort": 44663,
+      "remotePort": 58036,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 765.95444,
+      "event": "server:close",
+      "socket": 8,
+      "remotePort": 58036,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 766.161016,
+      "event": "server:close-called",
+      "server": 7
+    },
+    {
+      "ms": 766.192135,
+      "event": "server:close",
+      "server": 7
+    },
+    {
+      "ms": 766.250073,
+      "event": "server:listen",
+      "server": 9,
+      "port": 0
+    },
+    {
+      "ms": 766.638988,
+      "event": "server:listening",
+      "server": 9,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 39019
+      }
+    },
+    {
+      "ms": 766.866901,
+      "event": "server:socket",
+      "socket": 10,
+      "localPort": 39019,
+      "remotePort": 53742,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 766.96731,
+      "event": "server:request",
+      "server": 9,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 10,
+      "localPort": 39019,
+      "remotePort": 53742,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 767.580677,
+      "event": "server:response",
+      "server": 9,
+      "status": 201,
+      "socket": 10,
+      "localPort": 39019,
+      "remotePort": 53742,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 767.697677,
+      "event": "server:close",
+      "socket": 10,
+      "remotePort": 53742,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 767.88149,
+      "event": "server:close-called",
+      "server": 9
+    },
+    {
+      "ms": 767.907181,
+      "event": "server:close",
+      "server": 9
+    },
+    {
+      "ms": 767.98323,
+      "event": "server:listen",
+      "server": 11,
+      "port": 0
+    },
+    {
+      "ms": 768.362374,
+      "event": "server:listening",
+      "server": 11,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 34155
+      }
+    },
+    {
+      "ms": 768.552757,
+      "event": "server:socket",
+      "socket": 12,
+      "localPort": 34155,
+      "remotePort": 37924,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 768.627568,
+      "event": "server:request",
+      "server": 11,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 12,
+      "localPort": 34155,
+      "remotePort": 37924,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 769.491639,
+      "event": "server:response",
+      "server": 11,
+      "status": 409,
+      "socket": 12,
+      "localPort": 34155,
+      "remotePort": 37924,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 769.5891,
+      "event": "server:close",
+      "socket": 12,
+      "remotePort": 37924,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 769.795765,
+      "event": "server:close-called",
+      "server": 11
+    },
+    {
+      "ms": 769.821626,
+      "event": "server:close",
+      "server": 11
+    },
+    {
+      "ms": 777.279951,
+      "event": "server:listen",
+      "server": 13,
+      "port": 0
+    },
+    {
+      "ms": 778.046836,
+      "event": "server:listening",
+      "server": 13,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 37343
+      }
+    },
+    {
+      "ms": 784.60634,
+      "event": "server:socket",
+      "socket": 14,
+      "localPort": 37343,
+      "remotePort": 35194,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 785.574773,
+      "event": "server:request",
+      "server": 13,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items/00000000-0000-4000-8000-000000000000/fail",
+      "socket": 14,
+      "localPort": 37343,
+      "remotePort": 35194,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 786.764269,
+      "event": "server:response",
+      "server": 13,
+      "status": 503,
+      "socket": 14,
+      "localPort": 37343,
+      "remotePort": 35194,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 786.892228,
+      "event": "server:close",
+      "socket": 14,
+      "remotePort": 35194,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 787.098382,
+      "event": "server:close-called",
+      "server": 13
+    },
+    {
+      "ms": 787.12934,
+      "event": "server:close",
+      "server": 13
+    },
+    {
+      "ms": 787.274503,
+      "event": "server:listen",
+      "server": 15,
+      "port": 0
+    },
+    {
+      "ms": 787.728759,
+      "event": "server:listening",
+      "server": 15,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 33013
+      }
+    },
+    {
+      "ms": 787.962361,
+      "event": "server:socket",
+      "socket": 16,
+      "localPort": 33013,
+      "remotePort": 38552,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 788.052908,
+      "event": "server:request",
+      "server": 15,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 16,
+      "localPort": 33013,
+      "remotePort": 38552,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 788.67242,
+      "event": "server:response",
+      "server": 15,
+      "status": 201,
+      "socket": 16,
+      "localPort": 33013,
+      "remotePort": 38552,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 788.750591,
+      "event": "server:close",
+      "socket": 16,
+      "remotePort": 38552,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 788.870789,
+      "event": "server:close-called",
+      "server": 15
+    },
+    {
+      "ms": 788.891578,
+      "event": "server:close",
+      "server": 15
+    },
+    {
+      "ms": 795.996156,
+      "event": "server:listen",
+      "server": 17,
+      "port": 0
+    },
+    {
+      "ms": 797.180149,
+      "event": "server:listening",
+      "server": 17,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 45133
+      }
+    },
+    {
+      "ms": 797.769046,
+      "event": "server:socket",
+      "socket": 18,
+      "localPort": 45133,
+      "remotePort": 33458,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 797.926403,
+      "event": "server:request",
+      "server": 17,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 18,
+      "localPort": 45133,
+      "remotePort": 33458,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 798.911838,
+      "event": "server:response",
+      "server": 17,
+      "status": 201,
+      "socket": 18,
+      "localPort": 45133,
+      "remotePort": 33458,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 799.055989,
+      "event": "server:close",
+      "socket": 18,
+      "remotePort": 33458,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 799.319361,
+      "event": "server:close-called",
+      "server": 17
+    },
+    {
+      "ms": 799.371676,
+      "event": "server:close",
+      "server": 17
+    },
+    {
+      "ms": 799.479438,
+      "event": "server:listen",
+      "server": 19,
+      "port": 0
+    },
+    {
+      "ms": 799.861755,
+      "event": "server:listening",
+      "server": 19,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 41143
+      }
+    },
+    {
+      "ms": 800.073857,
+      "event": "server:socket",
+      "socket": 20,
+      "localPort": 41143,
+      "remotePort": 37622,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 800.164957,
+      "event": "server:request",
+      "server": 19,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 20,
+      "localPort": 41143,
+      "remotePort": 37622,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 800.888068,
+      "event": "server:response",
+      "server": 19,
+      "status": 201,
+      "socket": 20,
+      "localPort": 41143,
+      "remotePort": 37622,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 800.964301,
+      "event": "server:close",
+      "socket": 20,
+      "remotePort": 37622,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 801.119556,
+      "event": "server:close-called",
+      "server": 19
+    },
+    {
+      "ms": 801.145428,
+      "event": "server:close",
+      "server": 19
+    },
+    {
+      "ms": 806.85949,
+      "event": "server:listen",
+      "server": 21,
+      "port": 0
+    },
+    {
+      "ms": 807.122186,
+      "event": "server:listen",
+      "server": 22,
+      "port": 0
+    },
+    {
+      "ms": 807.612328,
+      "event": "server:listening",
+      "server": 21,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 45735
+      }
+    },
+    {
+      "ms": 807.620316,
+      "event": "server:listening",
+      "server": 22,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 37419
+      }
+    },
+    {
+      "ms": 808.22672,
+      "event": "server:socket",
+      "socket": 23,
+      "localPort": 45735,
+      "remotePort": 53494,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 808.260408,
+      "event": "server:socket",
+      "socket": 24,
+      "localPort": 37419,
+      "remotePort": 45138,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 808.377308,
+      "event": "server:request",
+      "server": 21,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 23,
+      "localPort": 45735,
+      "remotePort": 53494,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 809.145644,
+      "event": "server:response",
+      "server": 21,
+      "status": 201,
+      "socket": 23,
+      "localPort": 45735,
+      "remotePort": 53494,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 809.231235,
+      "event": "server:request",
+      "server": 22,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 24,
+      "localPort": 37419,
+      "remotePort": 45138,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 809.652353,
+      "event": "server:response",
+      "server": 22,
+      "status": 201,
+      "socket": 24,
+      "localPort": 37419,
+      "remotePort": 45138,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 809.739559,
+      "event": "server:close",
+      "socket": 24,
+      "remotePort": 45138,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 809.742827,
+      "event": "server:close",
+      "socket": 23,
+      "remotePort": 53494,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 809.885032,
+      "event": "server:close-called",
+      "server": 21
+    },
+    {
+      "ms": 809.96024,
+      "event": "server:close",
+      "server": 21
+    },
+    {
+      "ms": 810.058417,
+      "event": "server:close-called",
+      "server": 22
+    },
+    {
+      "ms": 810.073039,
+      "event": "server:close",
+      "server": 22
+    },
+    {
+      "ms": 816.64417,
+      "event": "server:listen",
+      "server": 25,
+      "port": 0
+    },
+    {
+      "ms": 817.246548,
+      "event": "server:listening",
+      "server": 25,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 43773
+      }
+    },
+    {
+      "ms": 817.806452,
+      "event": "server:socket",
+      "socket": 26,
+      "localPort": 43773,
+      "remotePort": 56372,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 817.903275,
+      "event": "server:request",
+      "server": 25,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 26,
+      "localPort": 43773,
+      "remotePort": 56372,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 818.583493,
+      "event": "server:response",
+      "server": 25,
+      "status": 201,
+      "socket": 26,
+      "localPort": 43773,
+      "remotePort": 56372,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 818.67389,
+      "event": "server:close",
+      "socket": 26,
+      "remotePort": 56372,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 818.793214,
+      "event": "server:close-called",
+      "server": 25
+    },
+    {
+      "ms": 818.813143,
+      "event": "server:close",
+      "server": 25
+    },
+    {
+      "ms": 822.444668,
+      "event": "server:listen",
+      "server": 27,
+      "port": 0
+    },
+    {
+      "ms": 822.907963,
+      "event": "server:listening",
+      "server": 27,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 39707
+      }
+    },
+    {
+      "ms": 823.252527,
+      "event": "server:socket",
+      "socket": 28,
+      "localPort": 39707,
+      "remotePort": 37012,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 823.35037,
+      "event": "server:request",
+      "server": 27,
+      "method": "POST",
+      "path": "/api/modules/workbench-probe/items",
+      "socket": 28,
+      "localPort": 39707,
+      "remotePort": 37012,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 823.925547,
+      "event": "server:response",
+      "server": 27,
+      "status": 201,
+      "socket": 28,
+      "localPort": 39707,
+      "remotePort": 37012,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 824.039165,
+      "event": "server:close",
+      "socket": 28,
+      "remotePort": 37012,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 824.16118,
+      "event": "server:close-called",
+      "server": 27
+    },
+    {
+      "ms": 824.178756,
+      "event": "server:close",
+      "server": 27
+    }
+  ]
+}

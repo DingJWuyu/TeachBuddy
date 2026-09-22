@@ -1,0 +1,12 @@
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+response.json: Protocol error (Network.getResponseBody): No resource with given identifier found
+Response body is not available for a response that was navigated away from. Read response.body() before triggering any navigation.
+    at _Page.<anonymous> (/home/liam_t/项目/TeacherWorkspace-r35-local-fixes/docs/acceptance/evidence/R35/v1/local4/scripts/browser.mjs:17:157) {
+  log: [],
+  name: 'Error'
+}
+
+Node.js v22.23.2

@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const root=process.env.CANDIDATE,out=process.env.EVIDENCE;
+const {chromium}=await import(pathToFileURL(path.join(root,'node_modules/playwright/index.mjs')));
+fs.mkdirSync(path.join(out,'views'),{recursive:true});
+const names=['long-0','long-1','long-2','math-figure-0','figure-only-0','math-with-answer-1','boundary-2400-0','tall-figure-png-0'];
+const html='<!doctype html><meta charset="utf-8"><title>R35 local4 原PNG白底查看</title><style>body{margin:0;background:#eee;font:16px sans-serif}figure{margin:20px;width:1600px}figcaption{padding:8px}img{display:block;background:white;width:1600px;height:auto}</style>'+names.map(n=>`<figure><figcaption>${n}，原PNG按1600px宽显示，白底只属于浏览器查看层</figcaption><img id="${n}" src="../http/${n}.png"></figure>`).join('');
+fs.writeFileSync(path.join(out,'views/index.html'),html);
+const b=await chromium.connectOverCDP('http://127.0.0.1:50436');const p=await b.contexts()[0].newPage();
+await p.setViewportSize({width:1640,height:2500});await p.goto(pathToFileURL(path.join(out,'views/index.html')).href);
+await p.locator('img').evaluateAll(images=>Promise.all(images.map(i=>i.decode())));
+for(const n of names)await p.locator('#'+n).screenshot({path:path.join(out,'views',n+'-white.png')});
+fs.writeFileSync(path.join(out,'views/render.json'),JSON.stringify(await p.locator('img').evaluateAll(images=>images.map(i=>({file:i.src,naturalWidth:i.naturalWidth,naturalHeight:i.naturalHeight,displayWidth:i.width,displayHeight:i.height}))),null,2));
+await p.close();await b.close();

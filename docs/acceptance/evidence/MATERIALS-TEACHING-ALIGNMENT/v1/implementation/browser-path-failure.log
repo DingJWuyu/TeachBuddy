@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+(node:1367613) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-teaching.spec.js:8:1 › WB-MTA001: rich question can be selected in a teaching record (1ms)
+
+
+  1) apps/web/e2e/materials-teaching.spec.js:8:1 › WB-MTA001: rich question can be selected in a teaching record
+
+    Error: browserType.launch: Target page, context or browser has been closed
+    Browser logs:
+
+    <launching> /opt/google/chrome/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/home/liam_t/项目/TeacherWorkspace-materials-teaching-fix/.work/mta/tmp/playwright_chromiumdev_profile-Zk3mG9 --remote-debugging-pipe --no-startup-window
+    <launched> pid=1367683
+    [pid=1367683][err] [0922/124020.795249:WARNING:chrome/app/chrome_main_linux.cc:84] Read channel stable from /opt/google/chrome/CHROME_VERSION_EXTRA
+    [pid=1367683][err] [1367683:1367683:0922/124020.826086:FATAL:chrome/browser/process_singleton_posix.cc:313] Socket path too long: /home/liam_t/项目/TeacherWorkspace-materials-teaching-fix/.work/mta/tmp/com.google.Chrome.yFQsDv/SingletonSocket.
+    Call log:
+      - <launching> /opt/google/chrome/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/home/liam_t/项目/TeacherWorkspace-materials-teaching-fix/.work/mta/tmp/playwright_chromiumdev_profile-Zk3mG9 --remote-debugging-pipe --no-startup-window
+      - <launched> pid=1367683
+      - [pid=1367683][err] [0922/124020.795249:WARNING:chrome/app/chrome_main_linux.cc:84] Read channel stable from /opt/google/chrome/CHROME_VERSION_EXTRA
+      - [pid=1367683][err] [1367683:1367683:0922/124020.826086:FATAL:chrome/browser/process_singleton_posix.cc:313] Socket path too long: /home/liam_t/项目/TeacherWorkspace-materials-teaching-fix/.work/mta/tmp/com.google.Chrome.yFQsDv/SingletonSocket.
+      - [pid=1367683] <gracefully close start>
+      - [pid=1367683] <kill>
+      - [pid=1367683] <will force kill>
+      - [pid=1367683] <process did exit: exitCode=null, signal=SIGABRT>
+      - [pid=1367683] starting temporary directories cleanup
+      - [pid=1367683] finished temporary directories cleanup
+      - [pid=1367683] <gracefully close end>
+
+
+    Error Context: test-results/mta/materials-teaching-WB-MTA0-30556-lected-in-a-teaching-record/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/mta/materials-teaching-WB-MTA0-30556-lected-in-a-teaching-record/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/mta/materials-teaching-WB-MTA0-30556-lected-in-a-teaching-record/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-teaching.spec.js:8:1 › WB-MTA001: rich question can be selected in a teaching record
