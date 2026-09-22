@@ -6,7 +6,7 @@
 
 1. 读取根 [AGENTS.md](../../AGENTS.md)、本页的当前批次和对应任务包。
 2. 依据固定候选与正式回执判断依赖；区分 `self`、`independent` 和用户验收。
-3. 当前处于完整 DAG 执行状态。C25 工具公开投影修订已交 self 候选 18293e9，正在限定独立冻结；材料新窗口和 R31 基础分段启动均已 independent PASS，C21 新制品已 self PASS 并交独立消费，新增请求空正文仍保留；R31 基础切片已 self PASS；C22 的旧 DOC 规范化预览、LaTeX 结构/固定渲染及角色/打印已独立通过；完整 DOCX 编辑与 Q2 文内校对标记仍失败，已有 Astra high 按 C20 限定包接手；R30 原缺口仍未关闭。M40 冻结交接已完成，M41 先行依赖提案正限定独立核验，尚未放行实现；A12 本地认证定向独立复验已 PASS，两项缺陷关闭；真实邮件与目标设备仍待提供；T54 三项原缺陷独立关闭，D04 滚动返回修复 dd53c44 已 self PASS，T54 attempt 3 正定向独立复验；真实作品关联仍待依赖。依据下面派发记录接续，不重复派发，不主动轮询。
+3. 当前处于完整 DAG 执行状态。C25 工具公开投影修订已交 self 候选 18293e9，正在限定独立冻结；材料新窗口和 R31 基础分段启动均已 independent PASS，C21 新制品已 self PASS 并交独立消费，新增请求空正文仍保留；R31 基础切片已 self PASS；C22 的旧 DOC 规范化预览、LaTeX 结构/固定渲染及角色/打印已独立通过；C22 editing-1 在第一轮保存重开后的减号断言处 self FAIL，第二轮/PDF仍缺；C20 正裁定验证表示差异与最小接续；R30 原缺口仍未关闭。M40 冻结交接已完成，M41 先行依赖提案正限定独立核验，尚未放行实现；A12 本地认证定向独立复验已 PASS，两项缺陷关闭；真实邮件与目标设备仍待提供；T54 三项原缺陷独立关闭，D04 滚动返回修复 dd53c44 已 self PASS，T54 attempt 3 正定向独立复验；真实作品关联仍待依赖。依据下面派发记录接续，不重复派发，不主动轮询。
 4. 权威材料确实缺少已作出的决定时，再查根 transcript：thread `01a0be12-5c28-7823-a7ed-644df825467f`，文件 `/home/liam_t/.codex/sessions/2026/09/20/rollout-2026-09-20T05-07-49-01a0be12-5c28-7823-a7ed-644df825467f.jsonl`。
 
 ## 当前用户授权与调度决定
@@ -46,9 +46,10 @@
 | MATERIALS-NEXT-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，两项 independent PASS | `01a0c7d7-ed98-7031-9c26-aa9df00b7834` | `.scratch/dag-dispatch/MATERIALS-NEXT-REVIEW/1/` |
 | C21-MATERIALS-NEXT | 原会话接续，attempt 1 / resume 1 | gpt-6-astra / low | 已完成，原 EX 门槛 self PASS，待独立消费 | `01a0c7e0-6919-7c50-8ad4-091bb7f35bf8` | `.scratch/dag-dispatch/C21-MATERIALS-NEXT/1/resume-1/` |
 | R30-C21-CONSUME | 新会话，attempt 1 | gpt-6-astra / medium | 已启动，待主动回执 | `01a0c80b-253e-7993-a699-dddb4c59e48c` | `.scratch/dag-dispatch/R30-C21-CONSUME/1/` |
-| C22-MATERIALS-NEXT | 新会话，attempt 2 / editing-1 | gpt-6-astra / high | 已启动，待主动回执 | `01a0c804-318e-7f73-9f71-f0560f2c8894` | `.scratch/dag-dispatch/C22-MATERIALS-NEXT/2/` |
+| C22-MATERIALS-NEXT | 新会话，attempt 2 / editing-1 | gpt-6-astra / high | 已完成，self FAIL，窗口关闭 | `01a0c804-318e-7f73-9f71-f0560f2c8894` | `.scratch/dag-dispatch/C22-MATERIALS-NEXT/2/` |
 | R30-C22-CONSUME | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent 分项 PASS / REV-002 FAIL | `01a0c7f9-be05-75b0-88e3-697f7ebdaa2a` | `.scratch/dag-dispatch/R30-C22-CONSUME/1/` |
 | C20-C22-EDITING-PLAN | 新会话，attempt 1 | gpt-6-astra / high | 已完成，限定裁决 self PASS | `01a0c7f9-be0a-77e1-b9e3-5ef3087c30e9` | `.scratch/dag-dispatch/C20-C22-EDITING-PLAN/1/` |
+| C20-C22-VALIDATION-DECISION | 新会话，attempt 1 | gpt-6-astra / high | 已启动，待主动回执 | `01a0c815-df89-7b80-9b36-b5829906a875` | `.scratch/dag-dispatch/C20-C22-VALIDATION-DECISION/1/` |
 | R31-FOUNDATION | 新会话，attempt 1 | gpt-6-astra / low | 已完成，基础切片 self PASS | `01a0c7e0-691d-75a1-9e6e-49758af3daeb` | `.scratch/dag-dispatch/R31-FOUNDATION/1/` |
 | M41-DEPENDENCY-PLAN | 新会话，attempt 1 | gpt-6-astra / high | 已完成，READY_FOR_REVIEW / self | `01a0c802-4422-7f60-8eb2-5eaeb0be0b7c` | `.scratch/dag-dispatch/M41-DEPENDENCY-PLAN/1/` |
 | M41-DEPENDENCY-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已启动，待主动回执 | `01a0c813-49a7-7532-89ae-652ff3ae08a3` | `.scratch/dag-dispatch/M41-DEPENDENCY-REVIEW/1/` |
@@ -62,7 +63,7 @@
 | 规划、入口与设计：P00/P01/G00、B10/B11、C20 | 规划与入口已完成；B11、C20 已独立冻结。G00 实施许可已恢复完整执行。 | 沿用现有设计与实验标准，不重新规划或重跑准备。 |
 | 首条题库与备课：B12-B16 | 最新组合经 B16 independent PASS；真实保存、引用、重启恢复、隔离、失败恢复、桌面/Pad 已验证。 | 身份仍为 test-principal；不代表真实认证或完整题库范围通过。 |
 | 认证：AUTH-CONTRACT、两端、A10-A12 | A12 本地 independent PASS：新候选 9ecabbf 的双页退出、恢复卡及必要退出/会话回归通过；未受影响的正常认证、隔离和持久重启结论沿用。 | 两项本地缺陷关闭，可供后续固定认证接线消费。A12 整体仍受真实邮件、目标设备/可信证书阻塞；备份恢复归可靠性阶段。 |
-| 材料：C21/C22、R30-R35 | 原 R30 独立缺口仍开放。C21 新制品 9230895 的来源、评分、编辑与恢复达到作者自验门槛，正由 R30-C21-CONSUME 独立核验；三次新请求均空正文，不证明新材料在线提取。R31 基础切片 self PASS。 | C22 next-1 的旧 DOC 规范化预览、LaTeX 结构/固定渲染、角色隔离与分页/打印已独立通过；完整 DOCX 编辑与 Q2 文内提示仍失败，既有 editing-1 正补这两项。两项 REV 尚未独立关闭；完整 R31 和 R32-R35 仍待材料门槛。 |
+| 材料：C21/C22、R30-R35 | 原 R30 独立缺口仍开放。C21 新制品 9230895 的来源、评分、编辑与恢复达到作者自验门槛，正由 R30-C21-CONSUME 独立核验；三次新请求均空正文，不证明新材料在线提取。R31 基础切片 self PASS。 | C22 next-1 的旧 DOC 规范化预览、LaTeX 结构/固定渲染、角色隔离与分页/打印已独立通过；editing-1 已恢复选区且第一轮三项改动落盘，作者因减号码位断言停止；六份 DOCX 有提示，但第二轮/PDF/全页检查未完成。C20 正裁定工具修复边界，完整编辑与新输出仍未通过。两项 REV 尚未独立关闭；完整 R31 和 R32-R35 仍待材料门槛。 |
 | 数学：C23、M40-M44 | M40/v1 设计已完成冻结交接，候选 1a5dd01；三项实验阻断 independent 关闭，交接动作仅 self 文档自检。 | M41 先行提案 2e67961 已 self 交付，正做限定独立核验；当前启动边未改。提案只放宽隔离模块先行，公共渲染依赖和页面身份仍需固定支持。M42 待 M41，M43 待 M42/R35；教学记录作品新版 a44587b 已独立冻结，T51-MATH 已派发局部实现。数学产品尚未实现。 |
 | 班级与日程：T50-T54 | D01/D02/D03 已 independent 关闭；D04 主区返回与网格加载时序已修复，产品 dd53c44，10项定向 E2E/build/internal review self PASS。 | T54 attempt 3 正独立复验 D04 及必要滚动回归，完整 T54 尚未通过。T51-MATH 独立分支继续补接，后续合流仍需真实提供方及 M44/WB-T020、认证与目标设备。 |
 | Agent：C24-C27 | C24 PI-03/04 定向补验 self PASS，候选 e8fdf9a；旧 PI-01/02 有 self 证据。副本读回已修复，pi 错误标志语义已实测。 | C25-D01 修订候选 18293e9 已补 ToolCall 公开状态与持久关联，39 schemas/99 样本/23 BDD self 通过，正做限定 independent 冻结；C26/C27 尚未启动。 |
@@ -77,7 +78,7 @@
 | --- | --- | --- |
 | M40 / T50 / T51 | T50 新版独立 PASS 已接收，派 T51-MATH 局部补接和来源错误语义修正。 | 局部 self 供 M43 接入组件；真实提供方和 M44 到达后再汇合验证完整 WB-T020。M41 仍待完整 R31；T51-MATH 固定输入不随 T54 滚动修复静默切换。 |
 | C24 / C25 | C25 修订 self 已接收；C25-CORRECTION-REVIEW 独立判断公开工具投影与恢复语义，沿用未变设计。 | 新固定候选做限定独立冻结，沿用未变设计/实验结论；通过后固定认证与共享写者再派 C26。 |
-| R30 / C20 / R31 | C22 分项 independent 结果已接收，未新增修复归属；完整编辑与 Q2 标记仍由已派 C22 attempt 2 / editing-1 补齐，不重复派工；C21 新制品已交 R30-C21-CONSUME，R31 基础切片 self 交付；剩余 R31 等待材料门槛。 | C22 原窗口不重置，editing-1 不变更契约且无额外设计复审；收到 editing-1 新制品后仅消费未关闭项及必要输出回归，已通过切片绑定固定文件沿用。R31 整体与 M41 仍需原门槛。 |
+| R30 / C20 / R31 | C22 editing-1 self FAIL 已接收；C20-C22-VALIDATION-DECISION 静态裁定减号表示及回读/替换/未改公式比较，给最小接续，不重复验收半成品。C21 正独立消费，R31 基础 self 交付。 | editing-1 窗口关闭；明确新接续边界后才修工具/补剩余验证，旧 DOC/结构等按固定独立证据沿用。完整新编辑与输出到齐后交 R30；依赖仍按当前 DAG。 |
 | R31 / M41 | 已接收 M41-DEPENDENCY-PLAN 的先行提案，派 M41-DEPENDENCY-REVIEW 核对真实接缝、写权、支持输入与门禁。 | independent PASS 后才同步唯一启动边，按公共单写者提供依赖/身份支持并派隔离 M41。当前不启动数学实现；完整 M41 到 M42、R35 到 M43 及正式启动门槛保留，不重审 R31 全基础。 |
 | A11 / A12 | 已接收本地 independent PASS，关闭 A12-LOCAL-001/002，无新增缺陷，不再派重复复验。 | C26 等后续组合消费固定 9ecabbf 与 aaa3d77 报告；外部邮件和目标设备输入到达后补真实验收，不提前解除 A12 整体及 F60 门禁。 |
 | T52 / T53 / T54 | D01/D02/D03 已独立关闭，T52-SCROLL-FIX self 回执已接收，dd53c44 交 T54 attempt 3。 | 新固定候选只复验 D04 与必要滚动回归；与独立 T51-MATH 后续合流，真实作品/认证/目标设备门槛仍保留。 |
@@ -108,6 +109,7 @@
 | R31 文件内容基础 | 产品 `5f696b8ce611e67d940ce149ce13946a50b65510`；回执 `c08fa62d434efffc89b471151faa73308e3ce716:docs/acceptance/evidence/R31-FOUNDATION/v1/author.md` 及同目录 integration.md；文件 HTTP/重启/迁移/文档编辑 self PASS，完整 R31 与转换未完成，正式启动保护保留。 |
 | M41 先行依赖提案 | 设计 `2e67961b01f4ce90ab07dad1feb823b1f595266d:docs/arch/math-foundation-dependency.md`；作者 `76151489f28cfe1ccaddd8afa28db3c613f3c6a5:docs/acceptance/evidence/M41-DEPENDENCY-PLAN/v1/author.md`。建议在真实文件基础做隔离制作/保存/导出，仍待独立冻结；公共依赖/身份有归属，未改 DAG 或开始 M41。 |
 | C22 editing-1 裁决 | 设计 `d5cb05bd306f1855d78f14096fd840f72cae3ec4:docs/arch/capability-checks/C22-editing-next.md`；作者 `5fae85f4b00a413581951776dae111898f455bbf`。仅修验证工具与既有校对提示，契约/范围/依赖不变；Astra high 一次有界接手，首次 Office 起30分钟、无后续失败复测、零模型；旧窗口及消耗保留。 |
+| C22 editing-1 结果 | 制品 `1ef7bf378dfad77a46d6b6f282a5db4d3a1e9fd2`；回执 `8ab93a37455400c8f54c7a331727dc428936a9fb:docs/acceptance/evidence/C22-MATERIALS-NEXT/v1/attempt2.md`。self FAIL；第一轮三项编辑 DOCX 重开值保留，减号断言中止，第二轮/PDF/全页未做。1复现/1候选/1链尝试/0追加复测，Office含保全253.645秒，零产品请求/费用；窗口关闭，全部现场保留。 |
 
 ## 当前材料阻塞与外部输入
 
@@ -115,7 +117,7 @@
 
 - C24 真业务累计 32 次 DeepSeek provider 请求、93,970 total tokens；本轮修复新增 7 次、36,651 tokens。PI-01/02 消耗另有原账本，不能混成全部实验总量。副本读回补验已通过，计费余额/extra credits 状态仍未知；cost=0 不证明免费。
 - R30 整体仍 CHANGES_REQUIRED：原失败 `16d4b01` 的 C21 缺口待新 9230895 独立消费；C22 当前分项依据为 `179f353`，旧 DOC 规范化预览和一般 LaTeX 结构缺口限定关闭，完整编辑与 Q2 标记未关闭。旧报告不覆盖更新切片，新切片也不能转签为完整 R30 或产品 PASS。
-- C21 来源、逐题评分与一致编辑的独立判断归 R30；C22 剩余编辑和正文标记归已派 editing-1，实现未返回前不重派。旧 DOC、结构与打印的独立结论只适用于绑定制品，Windows/WPS 目标环境仍待输入。原 REV 必须由 R30 据新证据逐项关闭。
+- C21 来源、逐题评分与一致编辑的独立判断归 R30；C22 editing-1 已返回，剩余校验与第二轮/输出归 C22；C20 先判断表示差异和必要接续，不自动重置已耗窗口或把自验回读当独立闭环。旧 DOC、结构与打印的独立结论只适用于绑定制品，Windows/WPS 目标环境仍待输入。原 REV 必须由 R30 据新证据逐项关闭。
 - C22 制品完整 SHA 以本页固定索引及独立报告为准；原作者回执的完整 SHA、XML 哈希说明有误，原证据保留，当前引用已纠正。
 - 旧材料实验窗口已关闭，其失败结论与消耗保留。用户已要求恢复完整工作，已据此冻结新的有界计划，不能自动重置原尝试或削减支持范围；需要真实外部环境或范围变更时再明确升级。
 - 模型 API 已有真实连通和探针证据。账户余额与实际计费细节、完整部署、大陆网络、Windows/WPS/Edge/Chrome 目标流程仍未形成最终验收证据。
