@@ -6,7 +6,7 @@
 
 1. 读取根 [AGENTS.md](../../AGENTS.md)、本页的当前批次和对应任务包。
 2. 依据固定候选与正式回执判断依赖；区分 `self`、`independent` 和用户验收。
-3. 当前五项中 R30 已接收 independent FAIL，C23 修正独立核验 PASS；C24、T53、A11 三项待主动回执。不要因恢复上下文再派同一任务，也不要据此主动轮询运行状态。
+3. 当前五项中 R30 已接收 independent FAIL，C23 修正独立核验 PASS；C24 因模型容量异常中断、草稿未归档；T53/A11 两项待主动回执。不要因恢复上下文再派同一任务，也不要据此主动轮询运行状态。
 4. 权威材料确实缺少已作出的决定时，再查根 transcript：thread `01a0be12-5c28-7823-a7ed-644df825467f`，文件 `/home/liam_t/.codex/sessions/2026/09/20/rollout-2026-09-20T05-07-49-01a0be12-5c28-7823-a7ed-644df825467f.jsonl`。
 
 ## 当前用户授权与调度决定
@@ -25,7 +25,7 @@
 
 | 任务 | 接续方式 | 实际模型 / effort | 状态 | session | 原始派发与回执目录 |
 | --- | --- | --- | --- | --- | --- |
-| C24-BUSINESS | 新会话，attempt 2 | gpt-5.6-sol / medium | 已启动，待主动回执 | `01a0c7a8-94e5-7da1-bfe0-aa537396c067` | `.scratch/dag-dispatch/C24-BUSINESS/2/` |
+| C24-BUSINESS | 新会话，attempt 2 | gpt-5.6-sol / medium | 异常退出：model at capacity；未完成归档 | `01a0c7a8-94e5-7da1-bfe0-aa537396c067` | `.scratch/dag-dispatch/C24-BUSINESS/2/` |
 | R30-RECOVERY-REVIEW | 恢复原会话，attempt 1 | gpt-6-astra / medium | 已完成，independent FAIL | `01a0c642-8129-7c11-84d1-f64a3fa85255` | `.scratch/dag-dispatch/R30-RECOVERY-REVIEW/1/resume-1/` |
 | C23-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent PASS（限定） | `01a0c7a8-9494-7672-9e16-cfa5034ea18d` | `.scratch/dag-dispatch/C23-MATH-REVIEW/1/` |
 | T53 | 新会话，attempt 2 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7a8-94b2-7e93-923a-f71728265455` | `.scratch/dag-dispatch/T53/2/` |
@@ -43,7 +43,7 @@
 | 材料：C21/C22、R30-R35 | R30 补证独立验收 FAIL。C22 角色隔离和三类打印缺口已关闭，参数化输出与本机编辑仅按报告限定范围沿用。 | C21 公式按题号回填、P/I/PS 图资产借自样本，逐题评分与一致编辑证明不足；C22 旧 DOC 与一般 LaTeX 转换仍欠证。两项 REV 均开放，R31-R35 未启动。 |
 | 数学：C23、M40-M44 | C23 修正 independent PASS，M40-DR-001/002/003 均关闭；原 M40 未变设计审查沿用。 | M40 尚需把实验消费引用更新为 `d149053` 与新独立报告，完成冻结文档交接。M41 仍待 R31，M43 仍待 R35；数学产品实现未启动。 |
 | 班级与日程：T50-T54 | T50 independent 冻结；T51 普通班级能力与 T52 日程 self PASS，T53 正合流与实现提醒。 | T51 完整作品关联仍待 M40/M44/WB-T020；T54 全阶段验收未启动，不以普通能力通过替代作品场景。 |
-| Agent：C24-C27 | PI-01/02 正常回答、只读工具和会话重开已有 self 证据；PI-03/04 真业务实验正在接续。 | C24 整体尚未完成；C25-C27 尚未启动，不能把实验探针当产品 Agent。 |
+| Agent：C24-C27 | PI-01/02 已有 self 证据；业务实验草稿报告 PI-03 PASS、PI-04 多个恢复/冲突切片 PASS，但模型读回副本 FAIL。 | Sol medium 以 `Selected model is at capacity` 退出，未形成最终回执或新提交。实验读取适配器缺陷与 harness 容量异常分别记录；C24 未完成，C25-C27 未启动。 |
 | 可靠性：F60-F65 | 尚未启动。 | 等待 T54、C27、A12 的真实交付，再补全模块工具、现场、恢复和整日集成。 |
 | 最终交付：D70-D75、G73/G76 | 尚未启动，未部署、未用户验收。 | 等待全范围验收、可用目标环境及具体交付动作授权。 |
 
@@ -53,7 +53,7 @@
 
 | 当前任务 | 回执要解决的问题 | 接到回执后的下一判断 |
 | --- | --- | --- |
-| C24-BUSINESS | PI-03/04 是否真实读写、失败不假报成功、冲突与重开恢复成立，消耗是否仍在既定窗口内。 | 成功则列出 C25 可消费输入；失败记录实验/环境归属，不重置窗口或重复 PI-01/02。 |
+| C24-BUSINESS | 已接收 exit 1：Sol 容量异常，非已证实的 usage limit。草稿自报 PI-04 读取工具把可读 ID 限为原题，阻止模型读回副本。 | 保留未提交制品与两份报告草稿；待获准接续时先补最终归档，再按已有请求/修正窗口处理适配器与定向复验，不重跑已通过切片、不自动换模型或重置窗口。 |
 | R30-RECOVERY-REVIEW | 已接收报告 `16d4b01`，两项完整 REV 均未关闭。 | 原窗口保持关闭；C20/C21/C22/R30 各按报告归属等待新输入，R31/M41 不放行。当前不追加修复、实验或审查。 |
 | C23-MATH-REVIEW | 已接收 `b01bc73` 限定 independent PASS，三项实验缺口关闭。 | M40 待更新 `math-evidence.md` 与交接回执中的固定实验引用；仅为文档交接，不重审未变设计、不重跑实验。本轮不自动派发该交接或 M41。 |
 | T53 | 提醒、补呈现、通知跳转及 T51/T52 合流是否形成真实候选。 | 记录 self 候选及未决项，核对 T54 条件；T51 真实作品未到时不宣称完整教学链路通过。 |
@@ -73,10 +73,11 @@
 | R30 / 限定接缝 | 原设计 `ae9a395`、review `0467f46`；恢复方案 `7789974` + review `c82cd69` 仅放行材料补验和 M40 设计接缝。 |
 | 材料补证 | C21 制品 `cfbbc1d` + 回执 `96be500`；C22 实际制品 `f29a7afc5254fc852811c9a9e2368f46cce3e01e` + 回执 `c8c089c`；受审组合 `8d48af5`；独立报告 `16d4b013b17b1e8d8c240c0d15a8b5366102024b:docs/acceptance/evidence/R30/v1/recovery-review.md`。 |
 | M40 / C23 修正 | M40 设计 `a6a495a` + 作者 `b626a93` + 原 review `3da472e`；修正受测 `d1490531e014ef437374c2f5a23cf3073baeef56`；独立 PASS `b01bc73954cbbc13e464738e0f6f8aa6c6f12084:docs/acceptance/evidence/M40/v1/correction-review.md`。 |
-| C24 探针 / 业务草稿 | 探针 `e7f979bd80ab83aaab7cc2cf936250123d7742a3`；保留草稿在 `TeacherWorkspace-c24/experiments/C24/business/`，不能当已提交成果。 |
+| C24 探针 / 业务草稿 | 已提交 HEAD 仍为 `e7f979bd80ab83aaab7cc2cf936250123d7742a3`；`TeacherWorkspace-c24/experiments/C24/business/`、`docs/arch/evidence/C24-business.md`、`docs/acceptance/evidence/C24/v1/business.md` 均未提交；外层 `receipt.md` 不存在。 |
 
 ## 当前材料阻塞与外部输入
 
+- C24 当前是两个不同问题：开发 harness 的 Sol 容量异常导致收尾中断；实验草稿自报读取适配器拒绝恢复后的副本。草稿累计 25 次 DeepSeek provider 请求、57,319 total tokens，尚未正式归档核定；接续必须沿用原账本，不把开发模型异常当产品模型额度不足，也不把草稿 PASS 当正式完成。
 - 当前权威结论为 [R30 恢复独立报告](/home/liam_t/项目/TeacherWorkspace-r30-recovery-review/docs/acceptance/evidence/R30/v1/recovery-review.md)，报告提交 `16d4b01`，受审组合 `8d48af5`。进程正常退出不改变本次 independent FAIL。C21 作者的“直接可用 6/6”只能视为结构性自验，不能据此关闭 EX-02。
 - C21 公式/图资产来源、可信逐题评分及一致编辑证据归 C21/C20；C22 的一般 LaTeX 转换与旧 DOC 缺口归 C22/C20，R30 负责后续独立消费。新证据或明确范围决定到达前保持阻塞，不把实验欠账交给 R31/R34 首次验证。
 - C22 制品完整 SHA 以本页固定索引及独立报告为准；原作者回执的完整 SHA、XML 哈希说明有误，原证据保留，当前引用已纠正。
