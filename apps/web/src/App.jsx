@@ -1,108 +1,50 @@
-import { useEffect } from 'react';
-import LoginCard from './components/LoginCard.jsx';
-import WorkspaceSidebar from './components/WorkspaceSidebar.jsx';
-import { frontendModules } from './features/modules/moduleRegistry.js';
-import WorkspaceSettingsPanel from './features/settings/WorkspaceSettingsPanel.jsx';
-import { useWorkspaceData } from './hooks/useWorkspaceData.js';
-import { useAppStore } from './store/useAppStore.js';
-import { localizeText } from './utils/labels.js';
+import { useCallback, useEffect, useState } from 'react';
+import { AuthProvider, AuthGate, useAuth } from './features/auth/index.jsx';
+import WorkbenchRoot from './features/workbench/WorkbenchRoot.jsx';
+
+function PrepareLogin({ onReady }) {
+  const { request } = useAuth();
+  const [attempt, setAttempt] = useState(0);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let live = true;
+    const controller = new AbortController();
+    setFailed(false);
+    void (async () => {
+      try {
+        const init = { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]) };
+        const created = await request('/api/auth/session', {
+          ...init, method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'bootstrap' })
+        });
+        if (!created.ok) throw new Error('Browser context unavailable');
+        const checked = await request('/api/auth/session', init);
+        if (!checked.ok || (await checked.json()).browserReady !== true) throw new Error('Cookie unavailable');
+        // Deliberately do not restore rememberedSession: this page signed out.
+        if (live) onReady();
+      } catch {
+        if (live) setFailed(true);
+      }
+    })();
+    return () => { live = false; controller.abort(); };
+  }, [attempt, request, onReady]);
+  return <div className="wb-gate"><div className="wb-gate-card" aria-busy={!failed}>
+    <h1>{failed ? '暂时无法准备登录' : '正在准备登录'}</h1>
+    {failed && <button className="wb-button" onClick={() => setAttempt(value => value + 1)}>重试</button>}
+  </div></div>;
+}
+
+function AuthenticatedWorkspace() {
+  const { status } = useAuth();
+  const [needsBrowserContext, setNeedsBrowserContext] = useState(false);
+  useEffect(() => {
+    if (status === 'active') setNeedsBrowserContext(true);
+  }, [status]);
+  const entryReady = useCallback(() => setNeedsBrowserContext(false), []);
+  if (status === 'anonymous' && needsBrowserContext) return <PrepareLogin onReady={entryReady} />;
+  return <AuthGate><WorkbenchRoot /></AuthGate>;
+}
 
 export default function App() {
-  const { activeModuleId, setActiveModuleId, authToken, currentUser, setSession } = useAppStore();
-  const {
-    workspaceLayout,
-    error,
-    flash,
-    loading,
-    loadData,
-    toggleModuleVisibility,
-    updateWorkspaceLayout,
-    login,
-    register,
-    requestPasswordReset,
-    confirmPasswordReset
-  } = useWorkspaceData();
-
-  const moduleById = new Map(frontendModules.map((moduleItem) => [moduleItem.id, moduleItem]));
-  const layoutOrder = workspaceLayout
-    ? [
-        ...(workspaceLayout.groups || []).flatMap((group) => group.moduleIds),
-        ...(workspaceLayout.ungroupedModuleIds || []),
-        ...frontendModules.map((moduleItem) => moduleItem.id)
-      ]
-    : frontendModules.map((moduleItem) => moduleItem.id);
-  const orderedModules = [...new Set(layoutOrder)]
-    .map((moduleId) => moduleById.get(moduleId))
-    .filter(Boolean);
-  const hiddenModuleIds = new Set(workspaceLayout?.hiddenModuleIds || []);
-  const visibleModules = orderedModules.filter((moduleItem) => !hiddenModuleIds.has(moduleItem.id));
-  const activeModule = orderedModules.find((moduleItem) => moduleItem.id === activeModuleId);
-  const ActivePanel = activeModule?.panel;
-
-  useEffect(() => {
-    if (
-      workspaceLayout
-      && activeModuleId !== 'dashboard'
-      && activeModuleId !== 'settings'
-      && !visibleModules.some((moduleItem) => moduleItem.id === activeModuleId)
-    ) {
-      setActiveModuleId('dashboard');
-    }
-  }, [workspaceLayout, activeModuleId, visibleModules, setActiveModuleId]);
-
-  if (!authToken) {
-    return (
-      <LoginCard
-        onLogin={login}
-        onRegister={register}
-        onRequestPasswordReset={requestPasswordReset}
-        onConfirmPasswordReset={confirmPasswordReset}
-        error={error}
-      />
-    );
-  }
-
-  return (
-    <div className="app-shell">
-      <WorkspaceSidebar
-        modules={orderedModules}
-        layout={workspaceLayout}
-        activeModuleId={activeModuleId}
-        onSelectModule={setActiveModuleId}
-        onUpdateLayout={updateWorkspaceLayout}
-      />
-
-      <main className="main-content">
-        <header className="topbar card">
-          <div>
-            <p className="eyebrow">教师个人工作台</p>
-            <h1>个人教学事务工作空间</h1>
-          </div>
-          <div className="topbar-meta">
-            <span className="badge">{localizeText(currentUser?.name || '教师')}</span>
-            <button className="ghost-button" onClick={loadData}>刷新</button>
-            <button className="ghost-button" onClick={() => setSession({ token: '', user: null })}>退出登录</button>
-          </div>
-        </header>
-
-        {flash && <div className="card flash-card">{flash}</div>}
-        {error && <div className="card error-card">{error}</div>}
-        {loading && <div className="card muted">正在加载工作台...</div>}
-
-        {!loading && (
-          activeModuleId === 'dashboard' ? (
-            <section className="workspace-home" aria-label="工作台首页" />
-          ) : activeModuleId === 'settings' ? (
-            <WorkspaceSettingsPanel
-              modules={orderedModules}
-              layout={workspaceLayout}
-              onToggleVisibility={toggleModuleVisibility}
-            />
-          ) : (
-            ActivePanel ? <ActivePanel module={activeModule} /> : null
-          )
-        )}
-      </main>
-    </div>
-  );
+  return <AuthProvider><AuthenticatedWorkspace /></AuthProvider>;
 }

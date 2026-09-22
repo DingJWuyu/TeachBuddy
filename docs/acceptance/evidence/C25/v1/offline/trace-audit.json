@@ -1,0 +1,40 @@
+{
+  "sourceRevision": "e8fdf9a139e429c05590925647a433a9da382579",
+  "kind": "offline fixed evidence audit, no live HTTP or model calls",
+  "providerRequests": 0,
+  "slices": [
+    {
+      "slice": "pi03",
+      "id": "abb1d2a3-2b00-4819-9c9d-fa9f9914c408",
+      "sourceVersion": 1,
+      "prefixPreserved": true,
+      "originalSha256": "8a2fe71ac9d6a516af2191b4788fe1ac068b0555b1565ad477c4bd4c6a3d8666",
+      "fullToolResultEqualsReportedHttpObject": true,
+      "copyTupleStable": true,
+      "newCopyCalls": 0
+    },
+    {
+      "slice": "pi04-interrupt",
+      "id": "e25f7693-bea2-416d-a378-cb8da249f40e",
+      "sourceVersion": 2,
+      "prefixPreserved": true,
+      "originalSha256": "277d93d7cfb0fbc41c47d4c7d11868edae15d1b978728e1243d54d0c5789c1e8",
+      "fullToolResultEqualsReportedHttpObject": true,
+      "copyTupleStable": true,
+      "newCopyCalls": 1
+    }
+  ],
+  "conflict": {
+    "status": 409,
+    "elapsedMs": 8,
+    "type": "/problems/workbench/version-conflict",
+    "currentVersion": 2
+  },
+  "oldAggregate": "FAIL",
+  "unknownCliModelRequestRecorded": true,
+  "limitations": [
+    "Reported HTTP object and historical page checks reused; no fresh HTTP/browser validation",
+    "Synthetic runtime error checks do not prove model behavior",
+    "SDK reopen with credential removed restores messages but model is unknown; readiness must be checked separately"
+  ]
+}

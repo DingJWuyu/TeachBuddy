@@ -1,68 +1,33 @@
 # TeachBuddy 教师个人工作台
 
-送给一位中国大陆重点高中高一数学实习教师的个人工作台。目标是让他收集题目、组织备课、制作数学演示、复用资料、安排时间，并留下课堂反馈。首页是能操作这些内容的 Agent 工作区。
+面向高中数学教师的个人教学工作台。首页和业务右栏共用一个 Agent，可查询、录入、改编题目并组织备课。
 
-**当前尚未交付真实 MVP。** 固定交付候选 `feat/b15-first-flow@612f0a9868743a1d5eea7e6f236d3ff903752439` 已在 [B16 独立验收报告](docs/acceptance/evidence/B16/v1/attempt2.md) 中通过录题、复制改编、备课引用、持久重启、失败恢复及桌面/Pad 验收，身份仍为 `test-principal`。该候选尚未合入 `main`，因此不改变下方主干代码状态；完整 MVP、真实认证、真实 AI、材料和部署仍未通过。仓库同时保留旧的可运行应用和新的交互原型，两者的进展不能混为一谈。已确认的完整交付范围以 [MVP 产品范围](docs/PRODUCT_SCOPE.md) 为准。
+当前分支为 C26 作者候选，尚未合入 main，未通过 C27 独立验收。已集成固定 A11 认证产品和 B16 题库/备课，新增 pi 0.85.1、持久对话/草稿/引用、13 个共用业务操作、工具结果和写入核实。DeepSeek 与 GLM 均已用真实模型完成查找、复制改编、加入指定备课环节的业务链。详细版本、请求账、场景证据和局限见 [C26 作者回执](docs/acceptance/evidence/C26/v1/author.md)。
 
-## 当前状态
+认证自验使用真实 Cookie、页面绑定及 HTTPS，邮件由本地替身接收。真实邮件和目标物理设备仍未通过 A12；模拟视口不是物理设备验收。其他四模块、材料提取、部署及完整 MVP 尚未交付。范围由 [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) 拥有，编排状态见 [run-state](docs/plans/run-state.md)。
 
-下表描述 2026-09-21 整理时的代码状态，代码基线为 `911e624`；认证文档当前消费候选为认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2`。后续功能落地时同步更新本表；节点依赖和授权停止点见[交付 DAG](docs/plans/mvp-dag.md)，当前编排状态见[运行台账](docs/plans/run-state.md)，[路线图](docs/ROADMAP.md)提供状态导航。
+## 运行与复验
 
-| 部分 | 已有内容 | 距离目标的差距 |
-| --- | --- | --- |
-| `apps/web`、`apps/api` | 旧 React/Express 应用；Bearer 认证、密码找回、SQLite 账户与布局保存 | 未接入本轮已验收的账户 UI；业务模块为空，不是目标 MVP |
-| `packages/shared` | 中性模块描述工具和空模块目录 | 尚无工作台业务接口定义；已有模块边界决议也未全部实现 |
-| `prototype/` 账户入口 | 登录、注册、找回、会话恢复及失败分支已验收；此前行为缺口已补齐 | 使用模拟服务；正式认证契约已冻结，但真实认证服务尚未交付 |
-| `prototype/` 工作台 | 既有侧栏与顶栏基线；已合入 Agent 首页、六模块及跨模块交互草稿 | 模块为内存数据，AI 为固定回复；模块稿尚未通过整体视觉与交互验收 |
-| `docs/contracts/` | 认证 `1.0.0-rc.2`、工作台 `0.1.0-candidate.2` 及对应用例 | 认证契约已冻结；认证前后端及 A11 本地真实接线已自验，真实外部条件与 A12 独立验收尚未完成 |
+Node.js 22.23.2，首次 `npm ci`，随后 `npm run build`。API 需要独立 SQLite、同源 HTTPS 和认证配置，变量见 `.env.example`。模型配置仅由 API 进程读取 `COMMANDCODE_API_KEY` 和 `COMMANDCODE_BASE_URL=https://api.commandcode.ai/provider/v1`；白名单固定为 `deepseek/deepseek-v4.1-flash` 与 `z-ai/glm-5.3-flash`。缺配置时历史与草稿仍可用，发送禁用；不自动换模型。
 
-认证契约已冻结为 `1.0.0-rc.2`，工作台 HTTP 契约为 `0.1.0-candidate.2`；认证前后端已按同版契约分别自验，A11 固定候选 `7958e6d` 已完成真实应用接线的本地自验（real-api/fake-mail）；真实邮件、部署和认证整体独立验收尚未交付，产品候选仍未合入 main。旧 B11/v1 的 `test-principal` 首流仍按旧固定输入推进，不能据此宣称 `real-auth`；设置退出由 A11 接入。旧应用中的退出和 Bearer API 不代表新的真实交接已完成。
+本地独立复验可沿用作者保留库，启动入口和账户见 [C26 作者回执](docs/acceptance/evidence/C26/v1/author.md)。`npm run review:agent -- <独占数据目录> <HTTPS端口>` 服务构建产物，默认不发送邮件、不配置模型。常规测试不调用真实 provider。
 
-## 从哪里开始读
-
-| 要了解的内容 | 唯一入口 |
+| 命令 | 验证范围 |
 | --- | --- |
-| MVP 必须做什么、哪些不做 | [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) |
-| 阶段、节点依赖、角色分工和授权停止点 | [交付 DAG](docs/plans/mvp-dag.md) |
-| 当前编排状态和下一步 | [运行台账](docs/plans/run-state.md) |
-| 页面共识、教师工作过程和跨模块联系 | [WORKBENCH_DESIGN](docs/WORKBENCH_DESIGN.md) |
-| 美学、滚动、现场保留和验证要求 | [设计规则](docs/rules/design-and-verification.md) |
-| 领域词汇 | [CONTEXT](CONTEXT.md) |
-| 认证行为、场景和原型证据 | [原型行为索引](prototype/behavior/manifest.md) |
-| 认证契约、版本消费和实现接缝 | [认证契约](docs/contracts/auth.md)；[认证实现架构](docs/arch/auth-implementation.md) |
-| B10/B11 首条流程交接基线与旧 test-principal 边界 | [执行基线](docs/arch/execution-baseline.md) |
-| 固定交付候选的首条流程、恢复和设备验收 | [B16 独立报告](docs/acceptance/evidence/B16/v1/attempt2.md)；[既有验收 runner](docs/acceptance/evidence/B16/v1/attempt2/run-acceptance.mjs) |
-| 代码结构、旧底座与可复用部分 | [架构说明](docs/ARCHITECTURE.md) |
+| `npm run test:api` | 认证、工作台首流、迁移、幂等与 Agent HTTP/真实 SDK 集成 |
+| `npm run test:e2e` | A11 真实 HTTPS 账户及首流回归 |
+| `npm run test:agent` | Agent 恢复、隔离、事件、错误与请求上限，provider 使用明确替身 |
+| `npm run test:agent:e2e` | 首页/右栏、草稿冲突、失败恢复、保留 live 库的浏览器读取；需要作者证据中的保留库 |
+| `npm run build` | 静态目录、隔离 SQLite 迁移和生产 Web 构建 |
 
-已确认的产品要求指导新实现；原型代码用于参考交互，旧应用用于参考可复用底座。冻结的认证契约只定义实现边界，不证明真实服务已交付；原型证据只证明对应原型版本，正式应用的旧测试只证明其旧行为。
+真实模型验证 runner 为 `apps/api/test/fixtures/c26/live.mjs`，须另有当次费用授权才执行，不属于上述测试。已执行请求的账本不可覆盖；只展示 provider 已报告 usage，实际费用与余额未知。
 
-## 运行
+## 仓库入口
 
-使用 Node.js 22.23.2 和 npm 可复现此前运行环境。首次执行 `npm install`，其他环境要求见[安装与运行](docs/SETUP.md)。
+- `apps/web/`、`apps/api/`：真实前后端；`packages/shared/`：静态模块目录与公共常量。
+- `prototype/`：交互参考，不是生产依赖，也不证明真实交付。
+- [C26/C27 冻结任务包](docs/plans/tasks/agent-implementation.md)：本批边界与独立验收入口。
+- [Agent 契约](docs/contracts/agent.md)、[工作台契约](docs/contracts/workbench.md)、[认证契约](docs/contracts/auth.md)：对应行为及唯一 schema 入口。
+- [工作台设计](docs/WORKBENCH_DESIGN.md)、[设计验证规则](docs/rules/design-and-verification.md)、[CONTEXT](CONTEXT.md)：布局、现场保留和共同词汇。
 
-| 查看什么 | 命令 | 默认入口 |
-| --- | --- | --- |
-| 当前交互原型，无需 API | `npm run prototype:sidebar` | `http://localhost:4174/` |
-| 旧应用及真实 API | `npm run dev` | Web `http://localhost:5173/`；API `http://localhost:4000/` |
-
-原型示例登录：`example@example.com` / `teachbuddy`。旧应用使用自身数据库中的账户，与原型模拟账户互不相通。
-
-## 仓库边界
-
-```text
-apps/web/          真实前端的实现位置，目前仍是旧应用
-apps/api/          真实后端的实现位置，目前仅账户与布局底座
-packages/shared/   前后端确实需要共享的目录与契约代码
-prototype/         交互参考、已验收的账户/外壳行为及模块草稿
-docs/              产品范围、执行计划、契约、设计规则和技术说明
-CONTEXT.md         领域术语
-.agents/skills/    显式选用的原型评审、契约讨论流程
-```
-
-后续 MVP 直接在 `apps/` 实现。已验收的界面可按需迁入，迁入后由正式应用独立维护，生产代码不依赖原型源码。原型不会成为另一套需要同步开发的产品。旧执行计划 `PROJECT_PLAN.md` 已撤下，当前计划只维护在[交付 DAG](docs/plans/mvp-dag.md)，ROADMAP 仅作导航。
-
-## 验证与部署
-
-当前可用命令为 `npm run test:api`、`npm run test:e2e`、`npm run build`、`npm run prototype:build`。它们尚未覆盖目标 MVP；`build:api` 会检查并可能创建 SQLite 文件，详见安装指南。原型脚本的适用范围以行为索引为准，不能把旧空首页、九模块断言套到最新模块稿。
-
-[API 指南](docs/API.md)描述旧 Bearer 应用；[旧部署说明](docs/DEPLOY_INFINITYFREE_RENDER.md)也仅供旧底座参考。认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2` 已冻结，前后端实施中；MVP 还需接通真实服务、持久文件和备份恢复，当前没有通过验证的真实认证或 MVP 部署方案。可交付标准见[验收矩阵](docs/acceptance/mvp-matrix.md)。
+原 B16 独立结论与 A12 本地 independent PASS 只在其固定输入和未受影响范围内沿用，本分支的接线与恢复以 C26 自验及后续 C27 为准。旧 Bearer API/部署说明和原型账户不作为当前生产入口。

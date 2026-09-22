@@ -1,0 +1,31 @@
+// Child-process fault fixture: real HTTPS/auth/SQLite/SDK, substituted provider only.
+import fs from 'node:fs';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { createIntegration } from './harness.js';
+import { provider } from './provider.js';
+import { manualQuestionSample, variantCopySample } from '../../first-flow-harness.js';
+const [directory, checkpoint] = process.argv.slice(2);
+let source;
+const p=await provider([()=>[{type:'toolCall',id:'crash-copy',name:'wb_copy_question',arguments:{id:source.id,body:variantCopySample(1)}}]]);
+const w=await createIntegration({directory,agent:p.config});const c=w.client();
+const write=(method,url,body)=>c.request(method,url,{body,headers:{'Idempotency-Key':randomUUID()}});
+await write('POST','/api/auth/session',{action:'bootstrap'});
+const email='crash@example.test';const challenge=await write('POST','/api/auth/registration-codes',{email});
+const registered=await write('POST','/api/auth/register',{email,nickname:'恢复验证',password:'password-c26',termsAccepted:true,rememberMe:true,challengeId:challenge.json.challengeId,verificationCode:w.mailer.lastCode('registration',email)});
+await write('POST','/api/auth/session',{action:'activate',sessionId:registered.json.id,rememberMe:true});
+source=(await write('POST','/api/modules/questions/items',manualQuestionSample())).json;
+const conversation=(await write('POST','/api/agent/conversations',{})).json.conversation;
+const endpoint='/api/agent/conversations/'+conversation.id;
+await write('PUT',endpoint+'/draft',{baseVersion:1,text:'复制题目',references:[]});
+fs.writeFileSync(path.join(directory,'checkpoint.json'),JSON.stringify({source,conversation,accountKey:registered.json.account.accountKey}));
+const store=w.workbench.agent.store;const update=store.update.bind(store);
+store.update=(account,id,change)=>{
+ const before=store.read(account,id).snapshot.toolCalls[0];
+ if(checkpoint==='committed'&&before?.state==='executing'&&w.workbench.db.prepare('SELECT count(*) AS count FROM question_items').get().count===2)process.kill(process.pid,'SIGKILL');
+ const value=update(account,id,change);const call=store.read(account,id).snapshot.toolCalls[0];
+ if((checkpoint==='prepared'&&call?.state==='prepared')||(checkpoint==='result'&&call?.state==='confirmed'))process.kill(process.pid,'SIGKILL');
+ return value;
+};
+await write('POST',endpoint+'/turns',{draftVersion:2,modelId:'deepseek/deepseek-v4.1-flash'});
+setTimeout(()=>process.exit(2),10000);

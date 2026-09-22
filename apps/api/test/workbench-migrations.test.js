@@ -1,0 +1,178 @@
+/**
+ * WB-019 public responsibility: migrations on an empty database and on a
+ * database that already holds an account and layout, with startup failing
+ * instead of serving a half-migrated database.
+ */
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import test from 'node:test';
+import request from 'supertest';
+import { createMigrationRunner, prefixForModule } from '../src/workbench/migrations.js';
+import { openWorkbenchDatabase } from '../src/workbench/storage.js';
+import { createWorkbench } from '../src/workbench/index.js';
+import { createEnv } from '../src/config/env.js';
+import { createDataStore } from '../src/core/dataStore.js';
+import { hashPassword } from '../src/core/auth.js';
+import { moduleCatalog } from '@refatos/shared';
+import { startServer } from '../src/server.js';
+import { ACCOUNT_A, createTempRoot, createWorkbenchContext } from './workbench-test-context.js';
+import { resolveFixtureSets } from './fixtures/first-flow/catalog.js';
+
+const PRODUCT_MIGRATIONS = ['questions_0001_question_items', 'lessons_0001_lesson_tables'];
+
+test('an empty database applies migrations once and records them in the ledger', async () => {
+  const context = await createWorkbenchContext();
+  try {
+    assert.deepEqual(
+      context.workbench.migrations.appliedIds(),
+      [...PRODUCT_MIGRATIONS, 'workbench_probe_init', 'agent_001_conversations']
+    );
+
+    const table = context.workbench.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'workbench_probe_items'")
+      .get();
+    assert.ok(table, 'the fixture migration table must exist');
+
+    // A second startup on the same database re-runs nothing.
+    const migrationResult = context.workbench.migrations.run(context.workbench.loader.moduleMigrations(), { knownModuleIds: context.workbench.loader.enabledIds() });
+    assert.deepEqual(migrationResult.applied, []);
+    assert.deepEqual(migrationResult.skipped, [...PRODUCT_MIGRATIONS, 'workbench_probe_init']);
+  } finally {
+    context.cleanup();
+  }
+});
+
+test('an existing account and layout database is upgraded without losing its data', async () => {
+  const rootDir = createTempRoot('teacher-workspace-upgrade-');
+  const sqlitePath = path.join(rootDir, 'data', 'workspace.sqlite');
+  const layout = {
+    hiddenModuleIds: [],
+    groups: [{ id: 'focus', name: '专注', moduleIds: [] }],
+    ungroupedModuleIds: []
+  };
+
+  // Before the workbench exists, the database holds only the shell account and
+  // layout tables; the module migrations must add their tables next to them.
+  const legacy = createDataStore({ sqlitePath });
+  const user = legacy.createUser({
+    name: 'Old Teacher',
+    email: 'old-teacher@example.test',
+    passwordHash: hashPassword('old teacher password'),
+    role: 'teacher'
+  });
+  legacy.forAccount(user.id).create('workspaceLayouts', layout);
+  legacy.close();
+
+  // Second start: the workbench applies its migrations on the same file.
+  const upgraded = await createWorkbenchContext({ rootDir, sqlitePath });
+  try {
+    assert.deepEqual(
+      upgraded.workbench.migrations.appliedIds(),
+      [...PRODUCT_MIGRATIONS, 'workbench_probe_init', 'agent_001_conversations']
+    );
+
+    assert.equal(upgraded.dataStore.findUserByEmail('old-teacher@example.test').id, user.id);
+    const stored = upgraded.dataStore.forAccount(user.id).list('workspaceLayouts')[0];
+    for (const key of Object.keys(layout)) assert.deepEqual(stored[key], layout[key]);
+  } finally {
+    upgraded.dataStore.close();
+    fs.rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('startServer refuses to open the port when a migration fails', async () => {
+  const rootDir = createTempRoot('teacher-workspace-startup-');
+  const { implementations, entries } = resolveFixtureSets(['workbench-broken']);
+  const runtimeEnv = createEnv({
+    nodeEnv: 'test',
+    port: 0,
+    sqlitePath: path.join(rootDir, 'data', 'workspace.sqlite'),
+    workbench: {
+      mode: 'test-principal',
+      testPrincipals: [ACCOUNT_A],
+      trustedOrigins: ['https://workbench.test'],
+      catalogOverride: [...moduleCatalog, ...entries],
+      extraImplementations: implementations
+    }
+  });
+
+  try {
+    await assert.rejects(startServer({ env: runtimeEnv }), /fixture migration failed on purpose/);
+  } finally {
+    fs.rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('a failing migration leaves no ledger row and no partial table', async () => {
+  const rootDir = createTempRoot('teacher-workspace-broken-');
+  const sqlitePath = path.join(rootDir, 'data', 'workspace.sqlite');
+  const { implementations, entries } = resolveFixtureSets(['workbench-broken']);
+  const runtimeEnv = createEnv({
+    nodeEnv: 'test',
+    sqlitePath,
+    workbench: {
+      mode: 'test-principal',
+      testPrincipals: [ACCOUNT_A],
+      trustedOrigins: ['https://workbench.test'],
+      catalogOverride: [...moduleCatalog, ...entries],
+      extraImplementations: implementations
+    }
+  });
+
+  const workbench = createWorkbench({ env: runtimeEnv });
+  try {
+    await assert.rejects(workbench.initialize(), /fixture migration failed on purpose/);
+    // The product migrations ran before the failing fixture one; the failed
+    // migration itself left neither a ledger row nor a partial table.
+    assert.deepEqual(workbench.migrations.appliedIds(), PRODUCT_MIGRATIONS);
+    const table = workbench.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'workbench_broken_probe'")
+      .get();
+    assert.equal(table, undefined, 'the failed migration DDL must be rolled back');
+  } finally {
+    workbench.close();
+    fs.rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('the runner validates migration IDs, prefixes and removals', () => {
+  const rootDir = createTempRoot('teacher-workspace-migration-runner-');
+  const db = openWorkbenchDatabase({ sqlitePath: path.join(rootDir, 'runner.sqlite') });
+  const runner = createMigrationRunner({ db });
+  try {
+    assert.equal(prefixForModule('workbench-probe'), 'workbench_probe_');
+
+    assert.throws(
+      () => runner.run([{ moduleId: 'questions', migrations: [{ id: 'lessons_init', up() {} }] }]),
+      /must use the questions prefix/
+    );
+    assert.throws(
+      () => runner.run([{ moduleId: 'questions', migrations: [{ id: 'questions_init' }] }]),
+      /synchronous up/
+    );
+    assert.throws(
+      () => runner.run([
+        { moduleId: 'questions', migrations: [{ id: 'questions_init', up() {} }] },
+        { moduleId: 'questions', migrations: [{ id: 'questions_init', up() {} }] }
+      ]),
+      /Duplicate migration ID/
+    );
+    assert.throws(
+      () => runner.run([{ moduleId: 'Bad Id', migrations: [] }]),
+      /Invalid migration module ID/
+    );
+
+    const applied = runner.run([{ moduleId: 'questions', migrations: [{ id: 'questions_init', up() {} }] }]);
+    assert.deepEqual(applied.applied, ['questions_init']);
+
+    // An applied migration that is no longer defined means schema drift.
+    assert.throws(
+      () => runner.run([{ moduleId: 'questions', migrations: [] }]),
+      /Applied migrations are no longer defined: questions_init/
+    );
+  } finally {
+    db.close();
+    fs.rmSync(rootDir, { recursive: true, force: true });
+  }
+});

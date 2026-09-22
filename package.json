@@ -20,7 +20,10 @@
     "build": "npm-run-all build:shared build:api build:web",
     "build:shared": "npm --workspace @refatos/shared run build",
     "build:api": "npm --workspace @refatos/api run build",
-    "build:web": "npm --workspace @refatos/web run build"
+    "build:web": "npm --workspace @refatos/web run build",
+    "test:agent": "node --test apps/api/test/agent.test.js",
+    "test:agent:e2e": "playwright test -c apps/web/e2e/c26/agent.config.mjs",
+    "review:agent": "node apps/api/test/fixtures/c26/serve.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

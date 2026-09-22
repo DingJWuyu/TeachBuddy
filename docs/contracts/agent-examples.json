@@ -1,0 +1,5417 @@
+{
+  "contract": "agent.openapi.json",
+  "description": "示例与反例仅由 agent.openapi.json 校验；恢复链供静态事件与 snapshot 对照，不是产品验收证据。",
+  "cases": [
+    {
+      "name": "创建对话",
+      "schema": "#/components/schemas/CreateConversation",
+      "valid": true,
+      "value": {}
+    },
+    {
+      "name": "初始快照",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "新对话",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 1,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [],
+        "turns": [],
+        "operations": [],
+        "lastEventSeq": 0,
+        "toolCalls": []
+      }
+    },
+    {
+      "name": "保存引用草稿",
+      "schema": "#/components/schemas/DraftInput",
+      "valid": true,
+      "value": {
+        "baseVersion": 1,
+        "text": "请保留原题复制改编，并加入函数课的例题环节。",
+        "references": [
+          {
+            "kind": "question",
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "发送已保存版本",
+      "schema": "#/components/schemas/SubmitTurn",
+      "valid": true,
+      "value": {
+        "draftVersion": 2,
+        "modelId": "deepseek/deepseek-v4.1-flash"
+      }
+    },
+    {
+      "name": "持久接受发送",
+      "schema": "#/components/schemas/AcceptedTurn",
+      "valid": true,
+      "value": {
+        "turn": {
+          "id": "30000000-0000-4000-8000-000000000001",
+          "conversationId": "20000000-0000-4000-8000-000000000001",
+          "userMessageId": "40000000-0000-4000-8000-000000000001",
+          "modelId": "deepseek/deepseek-v4.1-flash",
+          "state": "running",
+          "reason": null,
+          "createdAt": "2026-09-22T06:00:00Z",
+          "endedAt": null,
+          "usage": {
+            "input": null,
+            "output": null,
+            "cacheRead": null,
+            "cacheWrite": null,
+            "reasoning": null,
+            "totalTokens": null,
+            "actualCost": null,
+            "requestsStarted": 0,
+            "requestsReported": 0,
+            "complete": true
+          }
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "message": {
+          "id": "40000000-0000-4000-8000-000000000001",
+          "turnId": "30000000-0000-4000-8000-000000000001",
+          "role": "user",
+          "text": "请保留原题复制改编，并加入函数课的例题环节。",
+          "references": [
+            {
+              "input": {
+                "kind": "question",
+                "id": "10000000-0000-4000-8000-000000000001",
+                "version": 1
+              },
+              "title": "二次函数最小值",
+              "snapshot": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "version": 1,
+                "createdAt": "2026-09-21T12:00:00Z",
+                "updatedAt": "2026-09-21T12:00:00Z",
+                "deletedAt": null,
+                "title": "二次函数最小值",
+                "body": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知函数 "
+                        },
+                        {
+                          "type": "math",
+                          "latex": "f(x)=x^2-2x"
+                        },
+                        {
+                          "type": "text",
+                          "text": "，求最小值，并说明理由。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "f(x)=(x-1)^2-1\\geq -1"
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "当 x=1 时取等号。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "note": "先让学生尝试配方。",
+                "starred": true,
+                "source": {
+                  "kind": "paste",
+                  "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+                }
+              },
+              "capturedAt": "2026-09-22T06:00:00Z"
+            }
+          ],
+          "state": "complete",
+          "createdAt": "2026-09-22T06:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "复制请求参数",
+      "schema": "#/components/schemas/Tool_copyQuestion",
+      "valid": true,
+      "value": {
+        "id": "10000000-0000-4000-8000-000000000001",
+        "body": {
+          "baseVersion": 1,
+          "title": "二次函数变式",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "",
+          "starred": false
+        }
+      }
+    },
+    {
+      "name": "已确认业务操作",
+      "schema": "#/components/schemas/Operation",
+      "valid": true,
+      "value": {
+        "id": "50000000-0000-4000-8000-000000000001",
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "tool-call-1",
+        "request": {
+          "operationId": "copyQuestion",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "body": {
+              "baseVersion": 1,
+              "title": "二次函数变式",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "",
+              "starred": false
+            }
+          }
+        },
+        "state": "confirmed",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000002",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "copy",
+            "questionId": "10000000-0000-4000-8000-000000000001",
+            "questionVersion": 1,
+            "snapshot": {
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "problem": null,
+        "createdAt": "2026-09-22T06:00:00Z",
+        "updatedAt": "2026-09-22T06:00:00Z"
+      }
+    },
+    {
+      "name": "已确认工具结果",
+      "schema": "#/components/schemas/ToolOutcome",
+      "valid": true,
+      "value": {
+        "state": "confirmed",
+        "operationId": "50000000-0000-4000-8000-000000000001",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000002",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "copy",
+            "questionId": "10000000-0000-4000-8000-000000000001",
+            "questionVersion": 1,
+            "snapshot": {
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "原业务冲突",
+      "schema": "#/components/schemas/Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/version-conflict",
+        "currentVersion": 2
+      }
+    },
+    {
+      "name": "被拒工具结果",
+      "schema": "#/components/schemas/ToolOutcome",
+      "valid": true,
+      "value": {
+        "state": "rejected",
+        "operationId": "50000000-0000-4000-8000-000000000001",
+        "problem": {
+          "type": "/problems/workbench/version-conflict",
+          "currentVersion": 2
+        }
+      }
+    },
+    {
+      "name": "冲突操作",
+      "schema": "#/components/schemas/Operation",
+      "valid": true,
+      "value": {
+        "id": "50000000-0000-4000-8000-000000000001",
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "tool-call-1",
+        "request": {
+          "operationId": "copyQuestion",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "body": {
+              "baseVersion": 1,
+              "title": "二次函数变式",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "",
+              "starred": false
+            }
+          }
+        },
+        "state": "rejected",
+        "result": null,
+        "problem": {
+          "type": "/problems/workbench/version-conflict",
+          "currentVersion": 2
+        },
+        "createdAt": "2026-09-22T06:00:00Z",
+        "updatedAt": "2026-09-22T06:00:00Z"
+      }
+    },
+    {
+      "name": "未确认操作",
+      "schema": "#/components/schemas/Operation",
+      "valid": true,
+      "value": {
+        "id": "50000000-0000-4000-8000-000000000001",
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "tool-call-1",
+        "request": {
+          "operationId": "copyQuestion",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "body": {
+              "baseVersion": 1,
+              "title": "二次函数变式",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "",
+              "starred": false
+            }
+          }
+        },
+        "state": "unconfirmed",
+        "result": null,
+        "problem": {
+          "type": "/problems/agent/operation-unconfirmed",
+          "status": 503,
+          "title": "写入结果待确认"
+        },
+        "createdAt": "2026-09-22T06:00:00Z",
+        "updatedAt": "2026-09-22T06:00:00Z"
+      }
+    },
+    {
+      "name": "草稿冲突",
+      "schema": "#/components/schemas/Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/agent/draft-conflict",
+        "status": 409,
+        "title": "草稿已被修改",
+        "currentVersion": 4
+      }
+    },
+    {
+      "name": "引用冲突",
+      "schema": "#/components/schemas/Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/agent/reference-conflict",
+        "status": 409,
+        "title": "引用已改变",
+        "field": "/references/0",
+        "currentVersion": 2
+      }
+    },
+    {
+      "name": "缺配置仍可看历史",
+      "schema": "#/components/schemas/Configuration",
+      "valid": true,
+      "value": {
+        "models": [
+          {
+            "id": "deepseek/deepseek-v4.1-flash",
+            "state": "unconfigured"
+          },
+          {
+            "id": "z-ai/glm-5.3-flash",
+            "state": "unconfigured"
+          }
+        ],
+        "defaultModelId": "deepseek/deepseek-v4.1-flash",
+        "activeTurn": null,
+        "billing": {
+          "actualCost": null,
+          "balance": null
+        }
+      }
+    },
+    {
+      "name": "持久事件-message",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 1,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "message",
+        "value": {
+          "id": "40000000-0000-4000-8000-000000000001",
+          "turnId": "30000000-0000-4000-8000-000000000001",
+          "role": "user",
+          "text": "请保留原题复制改编，并加入函数课的例题环节。",
+          "references": [
+            {
+              "input": {
+                "kind": "question",
+                "id": "10000000-0000-4000-8000-000000000001",
+                "version": 1
+              },
+              "title": "二次函数最小值",
+              "snapshot": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "version": 1,
+                "createdAt": "2026-09-21T12:00:00Z",
+                "updatedAt": "2026-09-21T12:00:00Z",
+                "deletedAt": null,
+                "title": "二次函数最小值",
+                "body": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知函数 "
+                        },
+                        {
+                          "type": "math",
+                          "latex": "f(x)=x^2-2x"
+                        },
+                        {
+                          "type": "text",
+                          "text": "，求最小值，并说明理由。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "f(x)=(x-1)^2-1\\geq -1"
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "当 x=1 时取等号。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "note": "先让学生尝试配方。",
+                "starred": true,
+                "source": {
+                  "kind": "paste",
+                  "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+                }
+              },
+              "capturedAt": "2026-09-22T06:00:00Z"
+            }
+          ],
+          "state": "complete",
+          "createdAt": "2026-09-22T06:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "持久事件-operation",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 1,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "operation",
+        "value": {
+          "id": "50000000-0000-4000-8000-000000000001",
+          "turnId": "30000000-0000-4000-8000-000000000001",
+          "toolCallId": "tool-call-1",
+          "request": {
+            "operationId": "copyQuestion",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "body": {
+                "baseVersion": 1,
+                "title": "二次函数变式",
+                "body": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知函数 "
+                        },
+                        {
+                          "type": "math",
+                          "latex": "f(x)=x^2-2x"
+                        },
+                        {
+                          "type": "text",
+                          "text": "，求最小值，并说明理由。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "f(x)=(x-1)^2-1\\geq -1"
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "当 x=1 时取等号。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "note": "",
+                "starred": false
+              }
+            }
+          },
+          "state": "confirmed",
+          "result": {
+            "id": "10000000-0000-4000-8000-000000000002",
+            "version": 1,
+            "createdAt": "2026-09-21T12:00:00Z",
+            "updatedAt": "2026-09-21T12:00:00Z",
+            "deletedAt": null,
+            "title": "二次函数最小值",
+            "body": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "已知函数 "
+                    },
+                    {
+                      "type": "math",
+                      "latex": "f(x)=x^2-2x"
+                    },
+                    {
+                      "type": "text",
+                      "text": "，求最小值，并说明理由。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "solution": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "math",
+                  "latex": "f(x)=(x-1)^2-1\\geq -1"
+                },
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "当 x=1 时取等号。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "note": "先让学生尝试配方。",
+            "starred": true,
+            "source": {
+              "kind": "copy",
+              "questionId": "10000000-0000-4000-8000-000000000001",
+              "questionVersion": 1,
+              "snapshot": {
+                "title": "二次函数最小值",
+                "body": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知函数 "
+                        },
+                        {
+                          "type": "math",
+                          "latex": "f(x)=x^2-2x"
+                        },
+                        {
+                          "type": "text",
+                          "text": "，求最小值，并说明理由。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "f(x)=(x-1)^2-1\\geq -1"
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "当 x=1 时取等号。"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "problem": null,
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "持久事件-turn",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 1,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "turn",
+        "value": {
+          "id": "30000000-0000-4000-8000-000000000001",
+          "conversationId": "20000000-0000-4000-8000-000000000001",
+          "userMessageId": "40000000-0000-4000-8000-000000000001",
+          "modelId": "deepseek/deepseek-v4.1-flash",
+          "state": "running",
+          "reason": null,
+          "createdAt": "2026-09-22T06:00:00Z",
+          "endedAt": null,
+          "usage": {
+            "input": null,
+            "output": null,
+            "cacheRead": null,
+            "cacheWrite": null,
+            "reasoning": null,
+            "totalTokens": null,
+            "actualCost": null,
+            "requestsStarted": 0,
+            "requestsReported": 0,
+            "complete": true
+          }
+        }
+      }
+    },
+    {
+      "name": "持久事件-draft",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 1,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "draft",
+        "value": {
+          "version": 1,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "持久事件-conversation",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 1,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "conversation",
+        "value": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "新对话",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "完整快照",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请保留原题复制改编，并加入函数课的例题环节。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请保留原题复制改编，并加入函数课的例题环节。",
+            "references": [
+              {
+                "input": {
+                  "kind": "question",
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "version": 1
+                },
+                "title": "二次函数最小值",
+                "snapshot": {
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "version": 1,
+                  "createdAt": "2026-09-21T12:00:00Z",
+                  "updatedAt": "2026-09-21T12:00:00Z",
+                  "deletedAt": null,
+                  "title": "二次函数最小值",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "note": "先让学生尝试配方。",
+                  "starred": true,
+                  "source": {
+                    "kind": "paste",
+                    "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+                  }
+                },
+                "capturedAt": "2026-09-22T06:00:00Z"
+              }
+            ],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "interrupted",
+            "reason": "server-restart",
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": "2026-09-22T06:00:00Z",
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "tool-call-1",
+            "request": {
+              "operationId": "copyQuestion",
+              "arguments": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "body": {
+                  "baseVersion": 1,
+                  "title": "二次函数变式",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "note": "",
+                  "starred": false
+                }
+              }
+            },
+            "state": "confirmed",
+            "result": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "copy",
+                "questionId": "10000000-0000-4000-8000-000000000001",
+                "questionVersion": 1,
+                "snapshot": {
+                  "title": "二次函数最小值",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "problem": null,
+            "createdAt": "2026-09-22T06:00:00Z",
+            "updatedAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "lastEventSeq": 6,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "tool-call-1",
+            "ordinal": 1,
+            "name": "wb_copy_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "body": {
+                "baseVersion": 1,
+                "title": "二次函数变式",
+                "body": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知函数 "
+                        },
+                        {
+                          "type": "math",
+                          "latex": "f(x)=x^2-2x"
+                        },
+                        {
+                          "type": "text",
+                          "text": "，求最小值，并说明理由。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "f(x)=(x-1)^2-1\\geq -1"
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "当 x=1 时取等号。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "note": "",
+                "starred": false
+              }
+            },
+            "operationId": "50000000-0000-4000-8000-000000000001",
+            "state": "confirmed",
+            "result": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "copy",
+                "questionId": "10000000-0000-4000-8000-000000000001",
+                "questionVersion": 1,
+                "snapshot": {
+                  "title": "二次函数最小值",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "problem": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "只有部分请求报告用量",
+      "schema": "#/components/schemas/Usage",
+      "valid": true,
+      "value": {
+        "input": 251,
+        "output": 69,
+        "cacheRead": 768,
+        "cacheWrite": 0,
+        "reasoning": 0,
+        "totalTokens": 1088,
+        "actualCost": null,
+        "requestsStarted": 2,
+        "requestsReported": 1,
+        "complete": false
+      }
+    },
+    {
+      "name": "业务参数-createQuestion",
+      "schema": "#/components/schemas/Tool_createQuestion",
+      "valid": true,
+      "value": {
+        "body": {
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "manual"
+          }
+        }
+      }
+    },
+    {
+      "name": "业务参数-updateQuestion",
+      "schema": "#/components/schemas/Tool_updateQuestion",
+      "valid": true,
+      "value": {
+        "body": {
+          "baseVersion": 1,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先配方，再联系顶点。",
+          "starred": true
+        },
+        "id": "10000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "业务参数-copyQuestion",
+      "schema": "#/components/schemas/Tool_copyQuestion",
+      "valid": true,
+      "value": {
+        "body": {
+          "baseVersion": 1,
+          "title": "二次函数变式",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "",
+          "starred": false
+        },
+        "id": "10000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "业务参数-setQuestionDeletion",
+      "schema": "#/components/schemas/Tool_setQuestionDeletion",
+      "valid": true,
+      "value": {
+        "body": {
+          "baseVersion": 1,
+          "deleted": true
+        },
+        "id": "10000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "业务参数-createLesson",
+      "schema": "#/components/schemas/Tool_createLesson",
+      "valid": true,
+      "value": {
+        "body": {
+          "title": "二次函数的最值",
+          "intro": {
+            "version": 1,
+            "blocks": []
+          },
+          "sections": [
+            {
+              "id": "00000000-0000-4000-8000-000000000201",
+              "title": "例题讨论",
+              "content": {
+                "version": 1,
+                "blocks": []
+              },
+              "references": []
+            }
+          ],
+          "materials": []
+        }
+      }
+    },
+    {
+      "name": "业务参数-updateLesson",
+      "schema": "#/components/schemas/Tool_updateLesson",
+      "valid": true,
+      "value": {
+        "body": {
+          "title": "二次函数的最值",
+          "intro": {
+            "version": 1,
+            "blocks": []
+          },
+          "sections": [
+            {
+              "id": "00000000-0000-4000-8000-000000000201",
+              "title": "例题讨论",
+              "content": {
+                "version": 1,
+                "blocks": []
+              },
+              "references": [
+                {
+                  "id": "00000000-0000-4000-8000-000000000301",
+                  "questionId": "00000000-0000-4000-8000-000000000001",
+                  "questionVersion": 1,
+                  "note": "先讨论配方，再提问顶点位置。"
+                }
+              ]
+            }
+          ],
+          "materials": [],
+          "baseVersion": 1
+        },
+        "id": "10000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "业务参数-setLessonDeletion",
+      "schema": "#/components/schemas/Tool_setLessonDeletion",
+      "valid": true,
+      "value": {
+        "body": {
+          "baseVersion": 1,
+          "deleted": true
+        },
+        "id": "10000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "业务参数-listQuestions",
+      "schema": "#/components/schemas/Tool_listQuestions",
+      "valid": true,
+      "value": {
+        "query": {
+          "q": "函数",
+          "state": "active",
+          "starred": false
+        }
+      }
+    },
+    {
+      "name": "业务参数-getQuestion",
+      "schema": "#/components/schemas/Tool_getQuestion",
+      "valid": true,
+      "value": {
+        "id": "10000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "业务参数-listDerivatives",
+      "schema": "#/components/schemas/Tool_listDerivatives",
+      "valid": true,
+      "value": {
+        "id": "10000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "业务参数-listLessons",
+      "schema": "#/components/schemas/Tool_listLessons",
+      "valid": true,
+      "value": {}
+    },
+    {
+      "name": "业务参数-getLesson",
+      "schema": "#/components/schemas/Tool_getLesson",
+      "valid": true,
+      "value": {
+        "id": "10000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "业务参数-listQuestionUsages",
+      "schema": "#/components/schemas/Tool_listQuestionUsages",
+      "valid": true,
+      "value": {
+        "questionId": "10000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "未知模型拒绝",
+      "schema": "#/components/schemas/SubmitTurn",
+      "valid": false,
+      "value": {
+        "draftVersion": 2,
+        "modelId": "not-allowed-model"
+      }
+    },
+    {
+      "name": "账户伪造拒绝",
+      "schema": "#/components/schemas/SubmitTurn",
+      "valid": false,
+      "value": {
+        "draftVersion": 2,
+        "modelId": "deepseek/deepseek-v4.1-flash",
+        "accountKey": "other"
+      }
+    },
+    {
+      "name": "客户端凭据拒绝",
+      "schema": "#/components/schemas/CreateConversation",
+      "valid": false,
+      "value": {
+        "apiKey": "non-secret-invalid-fixture"
+      }
+    },
+    {
+      "name": "模型自带幂等键拒绝",
+      "schema": "#/components/schemas/Tool_copyQuestion",
+      "valid": false,
+      "value": {
+        "id": "10000000-0000-4000-8000-000000000001",
+        "body": {
+          "baseVersion": 1,
+          "title": "二次函数变式",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "",
+          "starred": false
+        },
+        "idempotencyKey": "50000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "实验故障参数拒绝",
+      "schema": "#/components/schemas/Tool_copyQuestion",
+      "valid": false,
+      "value": {
+        "id": "10000000-0000-4000-8000-000000000001",
+        "body": {
+          "baseVersion": 1,
+          "title": "二次函数变式",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "",
+          "starred": false
+        },
+        "drop_response": true
+      }
+    },
+    {
+      "name": "题目不得有环节",
+      "schema": "#/components/schemas/ReferenceInput",
+      "valid": false,
+      "value": {
+        "kind": "question",
+        "id": "10000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "sectionId": "50000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "失败不得带成功结果",
+      "schema": "#/components/schemas/Operation",
+      "valid": false,
+      "value": {
+        "id": "50000000-0000-4000-8000-000000000001",
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "tool-call-1",
+        "request": {
+          "operationId": "copyQuestion",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "body": {
+              "baseVersion": 1,
+              "title": "二次函数变式",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "",
+              "starred": false
+            }
+          }
+        },
+        "state": "rejected",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "paste",
+            "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+          }
+        },
+        "problem": {
+          "type": "/problems/workbench/version-conflict",
+          "currentVersion": 2
+        },
+        "createdAt": "2026-09-22T06:00:00Z",
+        "updatedAt": "2026-09-22T06:00:00Z"
+      }
+    },
+    {
+      "name": "确认结果不得为空",
+      "schema": "#/components/schemas/Operation",
+      "valid": false,
+      "value": {
+        "id": "50000000-0000-4000-8000-000000000001",
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "tool-call-1",
+        "request": {
+          "operationId": "copyQuestion",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "body": {
+              "baseVersion": 1,
+              "title": "二次函数变式",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "",
+              "starred": false
+            }
+          }
+        },
+        "state": "confirmed",
+        "result": null,
+        "problem": null,
+        "createdAt": "2026-09-22T06:00:00Z",
+        "updatedAt": "2026-09-22T06:00:00Z"
+      }
+    },
+    {
+      "name": "错误状态码拒绝",
+      "schema": "#/components/schemas/Problem",
+      "valid": false,
+      "value": {
+        "type": "/problems/agent/draft-conflict",
+        "status": 200,
+        "title": "冲突",
+        "currentVersion": 4
+      }
+    },
+    {
+      "name": "unknown 不是模型选择",
+      "schema": "#/components/schemas/ModelId",
+      "valid": false,
+      "value": "unknown"
+    },
+    {
+      "name": "查询长度保持旧边界",
+      "schema": "#/components/schemas/Tool_listQuestions",
+      "valid": false,
+      "value": {
+        "query": {
+          "q": "字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字字"
+        }
+      }
+    },
+    {
+      "name": "虚构费用零拒绝",
+      "schema": "#/components/schemas/Usage",
+      "valid": false,
+      "value": {
+        "input": null,
+        "output": null,
+        "cacheRead": null,
+        "cacheWrite": null,
+        "reasoning": null,
+        "totalTokens": null,
+        "actualCost": 0,
+        "requestsStarted": 0,
+        "requestsReported": 0,
+        "complete": true
+      }
+    },
+    {
+      "name": "失败不可无原因",
+      "schema": "#/components/schemas/Turn",
+      "valid": false,
+      "value": {
+        "id": "30000000-0000-4000-8000-000000000001",
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "userMessageId": "40000000-0000-4000-8000-000000000001",
+        "modelId": "deepseek/deepseek-v4.1-flash",
+        "state": "failed",
+        "reason": null,
+        "createdAt": "2026-09-22T06:00:00Z",
+        "endedAt": "2026-09-22T06:00:00Z",
+        "usage": {
+          "input": null,
+          "output": null,
+          "cacheRead": null,
+          "cacheWrite": null,
+          "reasoning": null,
+          "totalTokens": null,
+          "actualCost": null,
+          "requestsStarted": 0,
+          "requestsReported": 0,
+          "complete": true
+        }
+      }
+    },
+    {
+      "name": "空列表工具结果",
+      "schema": "#/components/schemas/ToolOutcome",
+      "valid": true,
+      "value": {
+        "state": "read",
+        "result": {
+          "items": []
+        }
+      }
+    },
+    {
+      "name": "读取越权失败",
+      "schema": "#/components/schemas/ToolOutcome",
+      "valid": true,
+      "value": {
+        "state": "rejected",
+        "operationId": null,
+        "problem": {
+          "type": "/problems/workbench/not-found"
+        }
+      }
+    },
+    {
+      "name": "公开成功-wb_list_questions",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-1",
+        "ordinal": 1,
+        "name": "wb_list_questions",
+        "arguments": {
+          "query": {
+            "q": "函数",
+            "state": "active",
+            "starred": false
+          }
+        },
+        "operationId": null,
+        "state": "read",
+        "result": {
+          "items": [
+            {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "paste",
+                "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+              }
+            }
+          ]
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开开始-wb_get_question",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-2",
+        "ordinal": 2,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "prepared",
+        "result": null,
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_get_question",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-2",
+        "ordinal": 2,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "read",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "paste",
+            "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+          }
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开拒绝-wb_get_question",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-2",
+        "ordinal": 2,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "rejected",
+        "result": null,
+        "problem": {
+          "type": "/problems/workbench/not-found"
+        }
+      }
+    },
+    {
+      "name": "无效参数-wb_get_question",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-2",
+        "ordinal": 2,
+        "name": "wb_get_question",
+        "arguments": null,
+        "operationId": null,
+        "state": "rejected",
+        "result": null,
+        "problem": {
+          "type": "/problems/workbench/invalid-input",
+          "field": "/arguments",
+          "reason": "invalid-type"
+        }
+      }
+    },
+    {
+      "name": "无效参数不可执行-wb_get_question",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": false,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-2",
+        "ordinal": 2,
+        "name": "wb_get_question",
+        "arguments": null,
+        "operationId": null,
+        "state": "executing",
+        "result": null,
+        "problem": {
+          "type": "/problems/workbench/invalid-input",
+          "field": "/arguments",
+          "reason": "invalid-type"
+        }
+      }
+    },
+    {
+      "name": "公开成功-wb_list_derivatives",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-3",
+        "ordinal": 3,
+        "name": "wb_list_derivatives",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "read",
+        "result": {
+          "items": [
+            {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "paste",
+                "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+              }
+            }
+          ]
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_create_question",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-4",
+        "ordinal": 4,
+        "name": "wb_create_question",
+        "arguments": {
+          "body": {
+            "title": "二次函数最小值",
+            "body": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "已知函数 "
+                    },
+                    {
+                      "type": "math",
+                      "latex": "f(x)=x^2-2x"
+                    },
+                    {
+                      "type": "text",
+                      "text": "，求最小值，并说明理由。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "solution": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "math",
+                  "latex": "f(x)=(x-1)^2-1\\geq -1"
+                },
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "当 x=1 时取等号。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "note": "先让学生尝试配方。",
+            "starred": true,
+            "source": {
+              "kind": "manual"
+            }
+          }
+        },
+        "operationId": "50000000-0000-4000-8000-000000000004",
+        "state": "confirmed",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "paste",
+            "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+          }
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_update_question",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-5",
+        "ordinal": 5,
+        "name": "wb_update_question",
+        "arguments": {
+          "body": {
+            "baseVersion": 1,
+            "title": "二次函数最小值",
+            "body": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "已知函数 "
+                    },
+                    {
+                      "type": "math",
+                      "latex": "f(x)=x^2-2x"
+                    },
+                    {
+                      "type": "text",
+                      "text": "，求最小值，并说明理由。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "solution": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "math",
+                  "latex": "f(x)=(x-1)^2-1\\geq -1"
+                },
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "当 x=1 时取等号。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "note": "先配方，再联系顶点。",
+            "starred": true
+          },
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": "50000000-0000-4000-8000-000000000005",
+        "state": "confirmed",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "paste",
+            "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+          }
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_copy_question",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-6",
+        "ordinal": 6,
+        "name": "wb_copy_question",
+        "arguments": {
+          "body": {
+            "baseVersion": 1,
+            "title": "二次函数变式",
+            "body": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "已知函数 "
+                    },
+                    {
+                      "type": "math",
+                      "latex": "f(x)=x^2-2x"
+                    },
+                    {
+                      "type": "text",
+                      "text": "，求最小值，并说明理由。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "solution": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "math",
+                  "latex": "f(x)=(x-1)^2-1\\geq -1"
+                },
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "当 x=1 时取等号。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "note": "",
+            "starred": false
+          },
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": "50000000-0000-4000-8000-000000000006",
+        "state": "confirmed",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "paste",
+            "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+          }
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_set_question_deletion",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-7",
+        "ordinal": 7,
+        "name": "wb_set_question_deletion",
+        "arguments": {
+          "body": {
+            "baseVersion": 1,
+            "deleted": true
+          },
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": "50000000-0000-4000-8000-000000000007",
+        "state": "confirmed",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "paste",
+            "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+          }
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_list_lessons",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-8",
+        "ordinal": 8,
+        "name": "wb_list_lessons",
+        "arguments": {},
+        "operationId": null,
+        "state": "read",
+        "result": {
+          "items": [
+            {
+              "id": "60000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "createdAt": "2026-09-22T06:00:00Z",
+              "updatedAt": "2026-09-22T06:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数的最值",
+              "intro": {
+                "version": 1,
+                "blocks": []
+              },
+              "sections": [
+                {
+                  "id": "00000000-0000-4000-8000-000000000201",
+                  "title": "例题讨论",
+                  "content": {
+                    "version": 1,
+                    "blocks": []
+                  },
+                  "references": []
+                }
+              ],
+              "materials": []
+            }
+          ]
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_get_lesson",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-9",
+        "ordinal": 9,
+        "name": "wb_get_lesson",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "read",
+        "result": {
+          "id": "60000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数的最值",
+          "intro": {
+            "version": 1,
+            "blocks": []
+          },
+          "sections": [
+            {
+              "id": "00000000-0000-4000-8000-000000000201",
+              "title": "例题讨论",
+              "content": {
+                "version": 1,
+                "blocks": []
+              },
+              "references": []
+            }
+          ],
+          "materials": []
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_create_lesson",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-10",
+        "ordinal": 10,
+        "name": "wb_create_lesson",
+        "arguments": {
+          "body": {
+            "title": "二次函数的最值",
+            "intro": {
+              "version": 1,
+              "blocks": []
+            },
+            "sections": [
+              {
+                "id": "00000000-0000-4000-8000-000000000201",
+                "title": "例题讨论",
+                "content": {
+                  "version": 1,
+                  "blocks": []
+                },
+                "references": []
+              }
+            ],
+            "materials": []
+          }
+        },
+        "operationId": "50000000-0000-4000-8000-000000000010",
+        "state": "confirmed",
+        "result": {
+          "id": "60000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数的最值",
+          "intro": {
+            "version": 1,
+            "blocks": []
+          },
+          "sections": [
+            {
+              "id": "00000000-0000-4000-8000-000000000201",
+              "title": "例题讨论",
+              "content": {
+                "version": 1,
+                "blocks": []
+              },
+              "references": []
+            }
+          ],
+          "materials": []
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_update_lesson",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-11",
+        "ordinal": 11,
+        "name": "wb_update_lesson",
+        "arguments": {
+          "body": {
+            "title": "二次函数的最值",
+            "intro": {
+              "version": 1,
+              "blocks": []
+            },
+            "sections": [
+              {
+                "id": "00000000-0000-4000-8000-000000000201",
+                "title": "例题讨论",
+                "content": {
+                  "version": 1,
+                  "blocks": []
+                },
+                "references": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000301",
+                    "questionId": "00000000-0000-4000-8000-000000000001",
+                    "questionVersion": 1,
+                    "note": "先讨论配方，再提问顶点位置。"
+                  }
+                ]
+              }
+            ],
+            "materials": [],
+            "baseVersion": 1
+          },
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": "50000000-0000-4000-8000-000000000011",
+        "state": "confirmed",
+        "result": {
+          "id": "60000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数的最值",
+          "intro": {
+            "version": 1,
+            "blocks": []
+          },
+          "sections": [
+            {
+              "id": "00000000-0000-4000-8000-000000000201",
+              "title": "例题讨论",
+              "content": {
+                "version": 1,
+                "blocks": []
+              },
+              "references": []
+            }
+          ],
+          "materials": []
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_set_lesson_deletion",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-12",
+        "ordinal": 12,
+        "name": "wb_set_lesson_deletion",
+        "arguments": {
+          "body": {
+            "baseVersion": 1,
+            "deleted": true
+          },
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": "50000000-0000-4000-8000-000000000012",
+        "state": "confirmed",
+        "result": {
+          "id": "60000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数的最值",
+          "intro": {
+            "version": 1,
+            "blocks": []
+          },
+          "sections": [
+            {
+              "id": "00000000-0000-4000-8000-000000000201",
+              "title": "例题讨论",
+              "content": {
+                "version": 1,
+                "blocks": []
+              },
+              "references": []
+            }
+          ],
+          "materials": []
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "公开成功-wb_list_question_usages",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "call-13",
+        "ordinal": 13,
+        "name": "wb_list_question_usages",
+        "arguments": {
+          "questionId": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "read",
+        "result": {
+          "items": []
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "只读-executing",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "executing",
+        "result": null,
+        "problem": null
+      }
+    },
+    {
+      "name": "只读-cancelled",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "cancelled",
+        "result": null,
+        "problem": null
+      }
+    },
+    {
+      "name": "只读-interrupted",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "interrupted",
+        "result": null,
+        "problem": null
+      }
+    },
+    {
+      "name": "只读异常",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": true,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "failed",
+        "result": null,
+        "problem": {
+          "type": "/problems/agent/tool-failed",
+          "status": 500,
+          "title": "工具读取失败，请重新发送后再试。"
+        }
+      }
+    },
+    {
+      "name": "只读异常原生映射",
+      "schema": "#/components/schemas/ToolOutcome",
+      "valid": true,
+      "value": {
+        "state": "failed",
+        "operationId": null,
+        "problem": {
+          "type": "/problems/agent/tool-failed",
+          "status": 500,
+          "title": "工具读取失败，请重新发送后再试。"
+        }
+      }
+    },
+    {
+      "name": "只读原生-cancelled",
+      "schema": "#/components/schemas/ToolOutcome",
+      "valid": true,
+      "value": {
+        "state": "cancelled",
+        "operationId": null
+      }
+    },
+    {
+      "name": "只读原生-interrupted",
+      "schema": "#/components/schemas/ToolOutcome",
+      "valid": true,
+      "value": {
+        "state": "interrupted",
+        "operationId": null
+      }
+    },
+    {
+      "name": "只读不得关联写操作",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": false,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": "50000000-0000-4000-8000-000000000001",
+        "state": "prepared",
+        "result": null,
+        "problem": null
+      }
+    },
+    {
+      "name": "只读不得待确认",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": false,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "unconfirmed",
+        "result": null,
+        "problem": {
+          "type": "/problems/agent/operation-unconfirmed",
+          "status": 503,
+          "title": "写入结果待确认"
+        }
+      }
+    },
+    {
+      "name": "只读成功必须有结果",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": false,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "read",
+        "result": null,
+        "problem": null
+      }
+    },
+    {
+      "name": "只读失败必须有Problem",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": false,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "rejected",
+        "result": null,
+        "problem": null
+      }
+    },
+    {
+      "name": "只读不得伪造确认写入",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": false,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "confirmed",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "paste",
+            "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+          }
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "只读不接受其他工具结果",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": false,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "read",
+        "result": {
+          "id": "60000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数的最值",
+          "intro": {
+            "version": 1,
+            "blocks": []
+          },
+          "sections": [
+            {
+              "id": "00000000-0000-4000-8000-000000000201",
+              "title": "例题讨论",
+              "content": {
+                "version": 1,
+                "blocks": []
+              },
+              "references": []
+            }
+          ],
+          "materials": []
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "未执行不得带结果",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": false,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "wb_get_question",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "prepared",
+        "result": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "createdAt": "2026-09-21T12:00:00Z",
+          "updatedAt": "2026-09-21T12:00:00Z",
+          "deletedAt": null,
+          "title": "二次函数最小值",
+          "body": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "已知函数 "
+                  },
+                  {
+                    "type": "math",
+                    "latex": "f(x)=x^2-2x"
+                  },
+                  {
+                    "type": "text",
+                    "text": "，求最小值，并说明理由。"
+                  }
+                ]
+              }
+            ]
+          },
+          "solution": {
+            "version": 1,
+            "blocks": [
+              {
+                "type": "math",
+                "latex": "f(x)=(x-1)^2-1\\geq -1"
+              },
+              {
+                "type": "paragraph",
+                "runs": [
+                  {
+                    "type": "text",
+                    "text": "当 x=1 时取等号。"
+                  }
+                ]
+              }
+            ]
+          },
+          "note": "先让学生尝试配方。",
+          "starred": true,
+          "source": {
+            "kind": "paste",
+            "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+          }
+        },
+        "problem": null
+      }
+    },
+    {
+      "name": "工具名称封闭",
+      "schema": "#/components/schemas/ToolCall",
+      "valid": false,
+      "value": {
+        "turnId": "30000000-0000-4000-8000-000000000001",
+        "toolCallId": "read-only-404",
+        "ordinal": 1,
+        "name": "shell",
+        "arguments": {
+          "id": "10000000-0000-4000-8000-000000000001"
+        },
+        "operationId": null,
+        "state": "prepared",
+        "result": null,
+        "problem": null
+      }
+    },
+    {
+      "name": "只读失败链-开始快照",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请查询这道题。",
+            "references": [],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "running",
+            "reason": null,
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": null,
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [],
+        "lastEventSeq": 5,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "read-only-404",
+            "ordinal": 1,
+            "name": "wb_get_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001"
+            },
+            "operationId": null,
+            "state": "prepared",
+            "result": null,
+            "problem": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "只读失败链-恢复快照",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:01Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请查询这道题。",
+            "references": [],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "failed",
+            "reason": "tool-rejected",
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": "2026-09-22T06:00:01Z",
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [],
+        "lastEventSeq": 9,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "read-only-404",
+            "ordinal": 1,
+            "name": "wb_get_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001"
+            },
+            "operationId": null,
+            "state": "rejected",
+            "result": null,
+            "problem": {
+              "type": "/problems/workbench/not-found"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "只读失败链-事件-6",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 6,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "toolCall",
+        "value": {
+          "turnId": "30000000-0000-4000-8000-000000000001",
+          "toolCallId": "read-only-404",
+          "ordinal": 1,
+          "name": "wb_get_question",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001"
+          },
+          "operationId": null,
+          "state": "executing",
+          "result": null,
+          "problem": null
+        }
+      }
+    },
+    {
+      "name": "只读失败链-事件-7",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 7,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "toolCall",
+        "value": {
+          "turnId": "30000000-0000-4000-8000-000000000001",
+          "toolCallId": "read-only-404",
+          "ordinal": 1,
+          "name": "wb_get_question",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001"
+          },
+          "operationId": null,
+          "state": "rejected",
+          "result": null,
+          "problem": {
+            "type": "/problems/workbench/not-found"
+          }
+        }
+      }
+    },
+    {
+      "name": "只读失败链-事件-8",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 8,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "turn",
+        "value": {
+          "id": "30000000-0000-4000-8000-000000000001",
+          "conversationId": "20000000-0000-4000-8000-000000000001",
+          "userMessageId": "40000000-0000-4000-8000-000000000001",
+          "modelId": "deepseek/deepseek-v4.1-flash",
+          "state": "failed",
+          "reason": "tool-rejected",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "endedAt": "2026-09-22T06:00:01Z",
+          "usage": {
+            "input": null,
+            "output": null,
+            "cacheRead": null,
+            "cacheWrite": null,
+            "reasoning": null,
+            "totalTokens": null,
+            "actualCost": null,
+            "requestsStarted": 0,
+            "requestsReported": 0,
+            "complete": true
+          }
+        }
+      }
+    },
+    {
+      "name": "只读恢复-read",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请查询这道题。",
+            "references": [],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "completed",
+            "reason": null,
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": "2026-09-22T06:00:01Z",
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [],
+        "lastEventSeq": 7,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "read-only-404",
+            "ordinal": 1,
+            "name": "wb_get_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001"
+            },
+            "operationId": null,
+            "state": "read",
+            "result": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "paste",
+                "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+              }
+            },
+            "problem": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "只读结果事件-read",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 6,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "toolCall",
+        "value": {
+          "turnId": "30000000-0000-4000-8000-000000000001",
+          "toolCallId": "read-only-404",
+          "ordinal": 1,
+          "name": "wb_get_question",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001"
+          },
+          "operationId": null,
+          "state": "read",
+          "result": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "createdAt": "2026-09-21T12:00:00Z",
+            "updatedAt": "2026-09-21T12:00:00Z",
+            "deletedAt": null,
+            "title": "二次函数最小值",
+            "body": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "已知函数 "
+                    },
+                    {
+                      "type": "math",
+                      "latex": "f(x)=x^2-2x"
+                    },
+                    {
+                      "type": "text",
+                      "text": "，求最小值，并说明理由。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "solution": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "math",
+                  "latex": "f(x)=(x-1)^2-1\\geq -1"
+                },
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "当 x=1 时取等号。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "note": "先让学生尝试配方。",
+            "starred": true,
+            "source": {
+              "kind": "paste",
+              "text": "已知函数 f(x)=x^2-2x，求最小值，并说明理由。\n答案：-1；配方求解。"
+            }
+          },
+          "problem": null
+        }
+      }
+    },
+    {
+      "name": "只读恢复-failed",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请查询这道题。",
+            "references": [],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "failed",
+            "reason": "tool-failed",
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": "2026-09-22T06:00:01Z",
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [],
+        "lastEventSeq": 7,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "read-only-404",
+            "ordinal": 1,
+            "name": "wb_get_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001"
+            },
+            "operationId": null,
+            "state": "failed",
+            "result": null,
+            "problem": {
+              "type": "/problems/agent/tool-failed",
+              "status": 500,
+              "title": "工具读取失败，请重新发送后再试。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "只读结果事件-failed",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 6,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "toolCall",
+        "value": {
+          "turnId": "30000000-0000-4000-8000-000000000001",
+          "toolCallId": "read-only-404",
+          "ordinal": 1,
+          "name": "wb_get_question",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001"
+          },
+          "operationId": null,
+          "state": "failed",
+          "result": null,
+          "problem": {
+            "type": "/problems/agent/tool-failed",
+            "status": 500,
+            "title": "工具读取失败，请重新发送后再试。"
+          }
+        }
+      }
+    },
+    {
+      "name": "只读恢复-cancelled",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请查询这道题。",
+            "references": [],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "stopped",
+            "reason": "user-stop",
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": "2026-09-22T06:00:01Z",
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [],
+        "lastEventSeq": 7,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "read-only-404",
+            "ordinal": 1,
+            "name": "wb_get_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001"
+            },
+            "operationId": null,
+            "state": "cancelled",
+            "result": null,
+            "problem": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "只读结果事件-cancelled",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 6,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "toolCall",
+        "value": {
+          "turnId": "30000000-0000-4000-8000-000000000001",
+          "toolCallId": "read-only-404",
+          "ordinal": 1,
+          "name": "wb_get_question",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001"
+          },
+          "operationId": null,
+          "state": "cancelled",
+          "result": null,
+          "problem": null
+        }
+      }
+    },
+    {
+      "name": "只读恢复-interrupted",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请查询这道题。",
+            "references": [],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "interrupted",
+            "reason": "server-restart",
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": "2026-09-22T06:00:01Z",
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [],
+        "lastEventSeq": 7,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "read-only-404",
+            "ordinal": 1,
+            "name": "wb_get_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001"
+            },
+            "operationId": null,
+            "state": "interrupted",
+            "result": null,
+            "problem": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "只读结果事件-interrupted",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 6,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "toolCall",
+        "value": {
+          "turnId": "30000000-0000-4000-8000-000000000001",
+          "toolCallId": "read-only-404",
+          "ordinal": 1,
+          "name": "wb_get_question",
+          "arguments": {
+            "id": "10000000-0000-4000-8000-000000000001"
+          },
+          "operationId": null,
+          "state": "interrupted",
+          "result": null,
+          "problem": null
+        }
+      }
+    },
+    {
+      "name": "写入恢复-待确认",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请查询这道题。",
+            "references": [],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "interrupted",
+            "reason": "server-restart",
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": "2026-09-22T06:00:01Z",
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "tool-call-1",
+            "request": {
+              "operationId": "copyQuestion",
+              "arguments": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "body": {
+                  "baseVersion": 1,
+                  "title": "二次函数变式",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "note": "",
+                  "starred": false
+                }
+              }
+            },
+            "state": "unconfirmed",
+            "result": null,
+            "problem": {
+              "type": "/problems/agent/operation-unconfirmed",
+              "status": 503,
+              "title": "写入结果待确认"
+            },
+            "createdAt": "2026-09-22T06:00:00Z",
+            "updatedAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "lastEventSeq": 12,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "tool-call-1",
+            "ordinal": 1,
+            "name": "wb_copy_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "body": {
+                "baseVersion": 1,
+                "title": "二次函数变式",
+                "body": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知函数 "
+                        },
+                        {
+                          "type": "math",
+                          "latex": "f(x)=x^2-2x"
+                        },
+                        {
+                          "type": "text",
+                          "text": "，求最小值，并说明理由。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "f(x)=(x-1)^2-1\\geq -1"
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "当 x=1 时取等号。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "note": "",
+                "starred": false
+              }
+            },
+            "operationId": "50000000-0000-4000-8000-000000000001",
+            "state": "unconfirmed",
+            "result": null,
+            "problem": {
+              "type": "/problems/agent/operation-unconfirmed",
+              "status": 503,
+              "title": "写入结果待确认"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "写入恢复-核实后",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请查询这道题。",
+            "references": [],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "interrupted",
+            "reason": "server-restart",
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": "2026-09-22T06:00:01Z",
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "tool-call-1",
+            "request": {
+              "operationId": "copyQuestion",
+              "arguments": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "body": {
+                  "baseVersion": 1,
+                  "title": "二次函数变式",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "note": "",
+                  "starred": false
+                }
+              }
+            },
+            "state": "confirmed",
+            "result": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "copy",
+                "questionId": "10000000-0000-4000-8000-000000000001",
+                "questionVersion": 1,
+                "snapshot": {
+                  "title": "二次函数最小值",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "problem": null,
+            "createdAt": "2026-09-22T06:00:00Z",
+            "updatedAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "lastEventSeq": 12,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "tool-call-1",
+            "ordinal": 1,
+            "name": "wb_copy_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "body": {
+                "baseVersion": 1,
+                "title": "二次函数变式",
+                "body": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知函数 "
+                        },
+                        {
+                          "type": "math",
+                          "latex": "f(x)=x^2-2x"
+                        },
+                        {
+                          "type": "text",
+                          "text": "，求最小值，并说明理由。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "f(x)=(x-1)^2-1\\geq -1"
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "当 x=1 时取等号。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "note": "",
+                "starred": false
+              }
+            },
+            "operationId": "50000000-0000-4000-8000-000000000001",
+            "state": "confirmed",
+            "result": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "copy",
+                "questionId": "10000000-0000-4000-8000-000000000001",
+                "questionVersion": 1,
+                "snapshot": {
+                  "title": "二次函数最小值",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "problem": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "复用已确认写入",
+      "schema": "#/components/schemas/Snapshot",
+      "valid": true,
+      "value": {
+        "conversation": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "draft": {
+          "version": 3,
+          "text": "",
+          "references": [],
+          "updatedAt": "2026-09-22T06:00:00Z"
+        },
+        "messages": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "role": "user",
+            "text": "请查询这道题。",
+            "references": [],
+            "state": "complete",
+            "createdAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "turns": [
+          {
+            "id": "30000000-0000-4000-8000-000000000001",
+            "conversationId": "20000000-0000-4000-8000-000000000001",
+            "userMessageId": "40000000-0000-4000-8000-000000000001",
+            "modelId": "deepseek/deepseek-v4.1-flash",
+            "state": "completed",
+            "reason": null,
+            "createdAt": "2026-09-22T06:00:00Z",
+            "endedAt": "2026-09-22T06:00:01Z",
+            "usage": {
+              "input": null,
+              "output": null,
+              "cacheRead": null,
+              "cacheWrite": null,
+              "reasoning": null,
+              "totalTokens": null,
+              "actualCost": null,
+              "requestsStarted": 0,
+              "requestsReported": 0,
+              "complete": true
+            }
+          }
+        ],
+        "operations": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "tool-call-1",
+            "request": {
+              "operationId": "copyQuestion",
+              "arguments": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "body": {
+                  "baseVersion": 1,
+                  "title": "二次函数变式",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "note": "",
+                  "starred": false
+                }
+              }
+            },
+            "state": "confirmed",
+            "result": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "copy",
+                "questionId": "10000000-0000-4000-8000-000000000001",
+                "questionVersion": 1,
+                "snapshot": {
+                  "title": "二次函数最小值",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "problem": null,
+            "createdAt": "2026-09-22T06:00:00Z",
+            "updatedAt": "2026-09-22T06:00:00Z"
+          }
+        ],
+        "lastEventSeq": 12,
+        "toolCalls": [
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "tool-call-1",
+            "ordinal": 1,
+            "name": "wb_copy_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "body": {
+                "baseVersion": 1,
+                "title": "二次函数变式",
+                "body": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知函数 "
+                        },
+                        {
+                          "type": "math",
+                          "latex": "f(x)=x^2-2x"
+                        },
+                        {
+                          "type": "text",
+                          "text": "，求最小值，并说明理由。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "f(x)=(x-1)^2-1\\geq -1"
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "当 x=1 时取等号。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "note": "",
+                "starred": false
+              }
+            },
+            "operationId": "50000000-0000-4000-8000-000000000001",
+            "state": "confirmed",
+            "result": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "copy",
+                "questionId": "10000000-0000-4000-8000-000000000001",
+                "questionVersion": 1,
+                "snapshot": {
+                  "title": "二次函数最小值",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "problem": null
+          },
+          {
+            "turnId": "30000000-0000-4000-8000-000000000001",
+            "toolCallId": "deduplicated-call",
+            "ordinal": 2,
+            "name": "wb_copy_question",
+            "arguments": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "body": {
+                "baseVersion": 1,
+                "title": "二次函数变式",
+                "body": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知函数 "
+                        },
+                        {
+                          "type": "math",
+                          "latex": "f(x)=x^2-2x"
+                        },
+                        {
+                          "type": "text",
+                          "text": "，求最小值，并说明理由。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 1,
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "f(x)=(x-1)^2-1\\geq -1"
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "当 x=1 时取等号。"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "note": "",
+                "starred": false
+              }
+            },
+            "operationId": "50000000-0000-4000-8000-000000000001",
+            "state": "confirmed",
+            "result": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "createdAt": "2026-09-21T12:00:00Z",
+              "updatedAt": "2026-09-21T12:00:00Z",
+              "deletedAt": null,
+              "title": "二次函数最小值",
+              "body": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "已知函数 "
+                      },
+                      {
+                        "type": "math",
+                        "latex": "f(x)=x^2-2x"
+                      },
+                      {
+                        "type": "text",
+                        "text": "，求最小值，并说明理由。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "solution": {
+                "version": 1,
+                "blocks": [
+                  {
+                    "type": "math",
+                    "latex": "f(x)=(x-1)^2-1\\geq -1"
+                  },
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "当 x=1 时取等号。"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "note": "先让学生尝试配方。",
+              "starred": true,
+              "source": {
+                "kind": "copy",
+                "questionId": "10000000-0000-4000-8000-000000000001",
+                "questionVersion": 1,
+                "snapshot": {
+                  "title": "二次函数最小值",
+                  "body": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "已知函数 "
+                          },
+                          {
+                            "type": "math",
+                            "latex": "f(x)=x^2-2x"
+                          },
+                          {
+                            "type": "text",
+                            "text": "，求最小值，并说明理由。"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "solution": {
+                    "version": 1,
+                    "blocks": [
+                      {
+                        "type": "math",
+                        "latex": "f(x)=(x-1)^2-1\\geq -1"
+                      },
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "当 x=1 时取等号。"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "problem": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "只读失败链-事件-9",
+      "schema": "#/components/schemas/Event",
+      "valid": true,
+      "value": {
+        "seq": 9,
+        "conversationId": "20000000-0000-4000-8000-000000000001",
+        "type": "conversation",
+        "value": {
+          "id": "20000000-0000-4000-8000-000000000001",
+          "title": "请查询这道题。",
+          "createdAt": "2026-09-22T06:00:00Z",
+          "updatedAt": "2026-09-22T06:00:01Z"
+        }
+      }
+    }
+  ]
+}

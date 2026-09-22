@@ -1,8 +1,13 @@
-import { moduleCatalog } from '@refatos/shared';
-
-// The module directory is intentionally empty in the workspace baseline.
-// Keeping registration as a small seam lets a future module contribute its
-// manifest and private backend routes without changing the application shell.
+/**
+ * Legacy workspace-shell registry.
+ *
+ * The workspace-layout routes validate module ids against this list, and it is
+ * empty: the first-flow catalog lives in `@refatos/shared` and is projected by
+ * the workbench composition (`apps/api/src/workbench/`), which owns the exact
+ * `GET /api/modules` contract path and mounts modules under
+ * `/api/modules/<id>`. Filling this with stub modules to satisfy a check would
+ * be wrong.
+ */
 const registeredModules = [];
 
 export function getModuleManifests() {
@@ -13,10 +18,4 @@ export function registerModules(context) {
   for (const moduleItem of registeredModules) {
     moduleItem.register(context);
   }
-}
-
-// Make an accidental catalog/registry mismatch explicit when a module is
-// introduced without its backend contribution.
-if (registeredModules.length !== moduleCatalog.length) {
-  throw new Error('The module directory and shared module catalog must agree.');
 }
