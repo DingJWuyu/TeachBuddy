@@ -6,7 +6,7 @@
 
 1. 读取根 [AGENTS.md](../../AGENTS.md)、本页的当前批次和对应任务包。
 2. 依据固定候选与正式回执判断依赖；区分 `self`、`independent` 和用户验收。
-3. 当前五项中 R30 已接收 independent FAIL，C23 修正独立核验 PASS；C24 获准在容量异常后恢复原会话，草稿仍待归档；当前 C24、T53、A11 待主动回执。不要因恢复上下文再派同一任务，也不要据此主动轮询运行状态。
+3. 当前五项中 R30 independent FAIL，C23 修正 independent PASS，A11 本地真实认证接线 self PASS；C24 容量异常后原会话已恢复，当前 C24/T53 两项待主动回执。不要因恢复上下文再派同一任务，也不要据此主动轮询运行状态。
 4. 权威材料确实缺少已作出的决定时，再查根 transcript：thread `01a0be12-5c28-7823-a7ed-644df825467f`，文件 `/home/liam_t/.codex/sessions/2026/09/20/rollout-2026-09-20T05-07-49-01a0be12-5c28-7823-a7ed-644df825467f.jsonl`。
 
 ## 当前用户授权与调度决定
@@ -29,7 +29,7 @@
 | R30-RECOVERY-REVIEW | 恢复原会话，attempt 1 | gpt-6-astra / medium | 已完成，independent FAIL | `01a0c642-8129-7c11-84d1-f64a3fa85255` | `.scratch/dag-dispatch/R30-RECOVERY-REVIEW/1/resume-1/` |
 | C23-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent PASS（限定） | `01a0c7a8-9494-7672-9e16-cfa5034ea18d` | `.scratch/dag-dispatch/C23-MATH-REVIEW/1/` |
 | T53 | 新会话，attempt 2 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7a8-94b2-7e93-923a-f71728265455` | `.scratch/dag-dispatch/T53/2/` |
-| A11 | 新会话，attempt 2 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7a8-94c8-7d91-9794-28a8ec499bfa` | `.scratch/dag-dispatch/A11/2/` |
+| A11 | 新会话，attempt 2 | gpt-6-astra / low | 已完成，self PASS（本地真实认证） | `01a0c7a8-94c8-7d91-9794-28a8ec499bfa` | `.scratch/dag-dispatch/A11/2/` |
 
 ## 项目进度与当前门槛
 
@@ -39,7 +39,7 @@
 | --- | --- | --- |
 | 规划、入口与设计：P00/P01/G00、B10/B11、C20 | 规划与入口已完成；B11、C20 已独立冻结。G00 实施许可仍受当前恢复范围约束。 | 沿用现有设计与实验标准，不重新规划或重跑准备。 |
 | 首条题库与备课：B12-B16 | 最新组合经 B16 independent PASS；真实保存、引用、重启恢复、隔离、失败恢复、桌面/Pad 已验证。 | 身份仍为 test-principal；不代表真实认证或完整题库范围通过。 |
-| 认证：AUTH-CONTRACT、两端、A10-A12 | 同版契约已冻结，前后端分别 self PASS；A10 接线边界已由 AUTH-FLOW 澄清，A11 正在接线。 | 原 A10 BLOCKED 不改写为 PASS。A11 本地真实 Cookie 链路、A12 独立验收以及真实邮件/设备/部署/恢复条件仍待交付。 |
+| 认证：AUTH-CONTRACT、两端、A10-A12 | A11 本地真实应用接线 self PASS，代码 `7958e6d`；真实 Cookie/SQLite/本地 HTTPS，邮件边界仍为 fake-mail。内部双轴 PASS。 | A12 尚未独立验收。真实邮件、目标设备/跨设备、可信证书、生产迁移/部署及备份恢复仍未完成；不改写原 A10 BLOCKED。 |
 | 材料：C21/C22、R30-R35 | R30 补证独立验收 FAIL。C22 角色隔离和三类打印缺口已关闭，参数化输出与本机编辑仅按报告限定范围沿用。 | C21 公式按题号回填、P/I/PS 图资产借自样本，逐题评分与一致编辑证明不足；C22 旧 DOC 与一般 LaTeX 转换仍欠证。两项 REV 均开放，R31-R35 未启动。 |
 | 数学：C23、M40-M44 | C23 修正 independent PASS，M40-DR-001/002/003 均关闭；原 M40 未变设计审查沿用。 | M40 尚需把实验消费引用更新为 `d149053` 与新独立报告，完成冻结文档交接。M41 仍待 R31，M43 仍待 R35；数学产品实现未启动。 |
 | 班级与日程：T50-T54 | T50 independent 冻结；T51 普通班级能力与 T52 日程 self PASS，T53 正合流与实现提醒。 | T51 完整作品关联仍待 M40/M44/WB-T020；T54 全阶段验收未启动，不以普通能力通过替代作品场景。 |
@@ -57,7 +57,7 @@
 | R30-RECOVERY-REVIEW | 已接收报告 `16d4b01`，两项完整 REV 均未关闭。 | 原窗口保持关闭；C20/C21/C22/R30 各按报告归属等待新输入，R31/M41 不放行。当前不追加修复、实验或审查。 |
 | C23-MATH-REVIEW | 已接收 `b01bc73` 限定 independent PASS，三项实验缺口关闭。 | M40 待更新 `math-evidence.md` 与交接回执中的固定实验引用；仅为文档交接，不重审未变设计、不重跑实验。本轮不自动派发该交接或 M41。 |
 | T53 | 提醒、补呈现、通知跳转及 T51/T52 合流是否形成真实候选。 | 记录 self 候选及未决项，核对 T54 条件；T51 真实作品未到时不宣称完整教学链路通过。 |
-| A11 | 真实应用的认证前后端、Cookie、principal、账号与退出是否已接通。 | 记录本地 self 候选，核对 A12 场景与外部条件；fake-mail 不替代真实邮件或最终 real-auth 验收。 |
+| A11 | 已接收 `7958e6d` self PASS；回执 `6bac186`。API 142、真实 HTTPS 浏览器 8、认证替身 61 与构建通过。 | A10-INT-001/002、AUTH-ALIGN-003 仅在本地 self 范围关闭。后续 A12 使用固定候选及真实外部条件；不重复内部 diff review，本轮不自动派发 A12。 |
 
 ## 固定候选与必要证据
 
@@ -68,7 +68,7 @@
 | 首流受测组合 / 独立报告 | `612f0a9868743a1d5eea7e6f236d3ff903752439`；报告 `d1ef0d5:docs/acceptance/evidence/B16/v1/attempt2.md`，已在 main 归档。 |
 | B11 / C20 冻结 | B11 `9aee091` + review `b62034e`；C20 `cff6f97` + review `2acb283`。 |
 | 认证冻结 / 两端候选 | 设计 `6f30032` + review `63bfe8f`；后端 `281716f`（代码 `471f35c`），前端 `cff597e`（代码 `1601bcc`）。 |
-| A11 准备 / 启动边界 | 准备 `e351677492bc0ea9901c1807a97a0f09a3da9a85`；澄清 `4f9985f:docs/acceptance/evidence/AUTH-FLOW-CLARIFICATION/v1/author.md`。 |
+| A11 候选 / 回执 / 启动边界 | 产品 `7958e6d21220e95bfa6c7f5f4b9643c7fdabf211`；回执 `6bac18602e0177cfd80b4770178d3d0f971aa1ca:docs/acceptance/evidence/A11/v1/author.md`；基线 `e351677`，启动澄清 `4f9985f`。 |
 | T50 / T51 / T52 | 冻结 `afda1c5` + review `f9eb35f`；T51 代码 `fdf03fd`、回执 `56cbfd6`；T52 `14e18ed`。 |
 | R30 / 限定接缝 | 原设计 `ae9a395`、review `0467f46`；恢复方案 `7789974` + review `c82cd69` 仅放行材料补验和 M40 设计接缝。 |
 | 材料补证 | C21 制品 `cfbbc1d` + 回执 `96be500`；C22 实际制品 `f29a7afc5254fc852811c9a9e2368f46cce3e01e` + 回执 `c8c089c`；受审组合 `8d48af5`；独立报告 `16d4b013b17b1e8d8c240c0d15a8b5366102024b:docs/acceptance/evidence/R30/v1/recovery-review.md`。 |
