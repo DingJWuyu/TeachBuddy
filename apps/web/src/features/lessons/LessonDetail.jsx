@@ -476,7 +476,7 @@ export default function LessonDetail({ id }) {
       {saveStatus === "conflict" && (
         <ConflictResolution
           savable={savable}
-          onAdopt={savable.adoptServer}
+          onAdopt={async () => { const current = await savable.adoptServer(); if (current) mathReturn.adoptBaseline(current.version); }}
           hint="当前备课草稿保留在这里。采用服务器版本会丢弃本地输入，请先对照。"
           renderServer={(server) => (
             <>

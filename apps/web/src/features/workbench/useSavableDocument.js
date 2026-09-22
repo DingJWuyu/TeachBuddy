@@ -385,6 +385,14 @@ export function useSavableDocument({
     save: submit,
     retryConfirm: () => submit({ retry: true }),
     adoptServer,
+    checkpoint: (id = draftId) => {
+      const current = stateRef.current;
+      return writeLocal(accountKey, draftName(kind, id), {
+        input: current.input, baselineId: current.baseline?.id ?? null,
+        baselineVersion: current.baseline?.version ?? null, pending: current.pending,
+        status: current.status, savedAt: current.savedAt
+      });
+    },
     compareServer: (object) => commit({ status: 'conflict', serverObject: object, problem: { kind: 'conflict', currentVersion: object.version, message: '内容已在别处修改' } }),
     discardDraft,
     isSaving: state.status === 'saving'

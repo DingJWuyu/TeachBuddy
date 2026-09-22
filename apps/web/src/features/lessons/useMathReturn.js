@@ -14,6 +14,7 @@ export function useMathReturn({ shell, savable, id }) {
     let saved = savable.baseline;
     if (!saved?.id) saved = await savable.save();
     if (!saved) return;
+    if (!savable.checkpoint(saved.id)) { setProblem('无法保留备课现场，请检查浏览器存储后再进入工坊'); return; }
     patch({ target: {
       lessonId: saved.id, sectionId: target.sectionId ?? null, baseVersion: saved.version,
       sectionWasSaved: saved.sections.some(section => section.id === target.sectionId),
@@ -36,7 +37,7 @@ export function useMathReturn({ shell, savable, id }) {
     try {
       const server = await getLesson(id);
       if (server.deletedAt) { setProblem('目标备课已删除，请恢复或重新选择备课'); return; }
-      if (server.version !== savable.baseline.version || savable.status === 'conflict') {
+      if (server.version !== target.baseVersion || server.version !== savable.baseline.version || savable.status === 'conflict') {
         savable.compareServer(server); setProblem('备课有更新，请先对照并处理版本冲突，再确认带回'); return;
       }
       if (target.sectionId && (
@@ -82,5 +83,6 @@ export function useMathReturn({ shell, savable, id }) {
       patch({ target: null, result: null, inserted: false });
   }, [savable.status]);
   return { enter, problem, busy: busy || Boolean(savable.pending), pending: scene.result && scene.target?.lessonId === id,
+    adoptBaseline: version => { if (scene.target?.lessonId === id) patch({ target: { ...scene.target, baseVersion: version }, inserted: false }); },
     retry: () => apply(), toMaterials: () => apply({ ...scene.target, sectionId: null, replaceId: null, replacement: null }), cancel };
 }

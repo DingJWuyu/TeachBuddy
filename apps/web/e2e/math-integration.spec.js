@@ -279,3 +279,43 @@ test('real-auth: an old v2 unknown request confirms on its original path after t
  await expect(page.getByLabel('课题',{exact:true})).toHaveValue('旧请求已写入但响应丢失');
  fs.writeFileSync(path.join(evidence,'old-request-confirmed.json'),JSON.stringify({oldPath,id,fixture:'actual v2 commit plus pre-v3 pending shape',confirmed:true},null,2));
 });
+
+test('real-auth: scroll and selected section survive; a concurrent removal requires explicit retargeting',async({page})=>{
+ await registerPage(page);
+ await page.locator('.wb-sidebar').getByRole('link',{name:'备课',exact:true}).click();
+ await page.getByRole('button',{name:'新建备课',exact:true}).click();
+ await page.getByLabel('课题',{exact:true}).fill('长课现场');
+ for(let i=1;i<=8;i++) {await page.getByRole('button',{name:'添加环节',exact:true}).click();await page.getByLabel(`环节名称 ${i}`,{exact:true}).fill(`环节${i}`);}
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('已保存');
+ const id=page.url().split('/').at(-1);
+ await page.getByLabel('课题',{exact:true}).fill('长课未提交现场');
+ const target=page.locator('[data-section-id]').last();
+ const sectionId=await target.getAttribute('data-section-id');
+ await target.getByRole('button',{name:'制作数学作品',exact:true}).scrollIntoViewIfNeeded();
+ const scroll=await page.locator('.wb-lesson-scroll').evaluate(e=>e.scrollTop);expect(scroll).toBeGreaterThan(0);
+ await target.getByRole('button',{name:'制作数学作品',exact:true}).click();
+ await page.getByRole('button',{name:'新建公式',exact:true}).click();await page.getByLabel('作品名称').fill('末环节公式');await page.getByLabel('LaTeX',{exact:true}).fill('a+b');
+ await page.getByRole('button',{name:'保存',exact:true}).click();await expect(page.getByRole('status').first()).toContainText('已保存');
+ await page.getByRole('button',{name:'带回备课',exact:true}).click();await expect(page.getByRole('status').first()).toContainText('已保存');
+ await expect(page.locator(`[data-section-id="${sectionId}"] [data-reference-id]`)).toHaveCount(1);
+ const restored=await page.locator('.wb-lesson-scroll').evaluate(e=>e.scrollTop);expect(Math.abs(restored-scroll)).toBeLessThan(50);
+ await expect(page.getByLabel('课题',{exact:true})).toHaveValue('长课未提交现场');
+ await target.getByRole('button',{name:'制作数学作品',exact:true}).click();
+ // A concurrent writer uses the real public lesson operation on the same DB.
+ const principal={accountKey:world.workbench.db.prepare('SELECT accountKey FROM auth_accounts WHERE email=?').get('m43@example.test').accountKey};
+ const operations=world.workbench.loader.get('lessons').port.operations;
+ const saved=(await operations.getLessonV3({principal,id})).body;
+ const {buildUpdateLessonPayload,lessonInputFrom}=await import('../src/features/lessons/model.js');
+ const input=lessonInputFrom(saved);input.sections=input.sections.filter(s=>s.id!==sectionId);
+ await operations.updateLessonV3({principal,id,key:crypto.randomUUID(),input:buildUpdateLessonPayload(input,saved)});
+ await page.getByRole('button',{name:'带回备课',exact:true}).click();
+ await expect(page.locator('[data-region="conflict"]')).toBeVisible();
+ page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'采用服务器版本',exact:true}).click();
+ await page.getByRole('button',{name:'确认带回',exact:true}).click();
+ await expect(page.getByText('目标环节已删除，请明确选择本课材料或取消带回',{exact:true})).toBeVisible();
+ await expect(page.locator('[data-reference-id]')).toHaveCount(0);
+ await page.getByRole('button',{name:'放入本课材料',exact:true}).click();await expect(page.getByRole('status').first()).toContainText('已保存');
+ await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+ fs.writeFileSync(path.join(evidence,'scene-conflict.json'),JSON.stringify({id,sectionId,scroll,restored,concurrentWriter:'real lessons port',explicitRetarget:true},null,2));
+});
