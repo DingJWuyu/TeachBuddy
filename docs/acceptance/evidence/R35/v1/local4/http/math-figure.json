@@ -1,0 +1,90 @@
+{
+  "question": {
+    "id": "a6ea24b3-c678-4886-8750-8baf0aa3e098",
+    "version": 1,
+    "createdAt": "2026-09-22T15:59:28.653Z",
+    "updatedAt": "2026-09-22T15:59:28.653Z",
+    "deletedAt": null,
+    "title": "实际数学与配图",
+    "source": {
+      "kind": "manual"
+    },
+    "note": "R35_PRIVATE_MUST_NOT_RENDER",
+    "starred": false,
+    "typeId": null,
+    "tagIds": [],
+    "answerStatus": "present",
+    "solution": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "ANSWER_ONLY_SEPARATE"
+            }
+          ]
+        }
+      ]
+    },
+    "body": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "独立复验：求下列函数定义域，并观察三角形。"
+            }
+          ]
+        },
+        {
+          "type": "math",
+          "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+        },
+        {
+          "type": "image",
+          "fileId": "27218eb5-edbc-4f82-a3d6-a2ab161e9e85",
+          "alt": "三角形",
+          "widthMm": 100
+        }
+      ]
+    }
+  },
+  "job": {
+    "id": "a951b512-ac6d-47f7-880a-aa83dfc0f9de",
+    "kind": "question-asset",
+    "target": {
+      "kind": "question",
+      "id": "a6ea24b3-c678-4886-8750-8baf0aa3e098",
+      "version": 1
+    },
+    "state": "succeeded",
+    "createdAt": "2026-09-22T15:59:28.656Z",
+    "updatedAt": "2026-09-22T15:59:28.704Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 1,
+      "total": 1,
+      "unit": "stages"
+    },
+    "outputFileIds": [
+      "8865f631-a35b-42a7-8ff4-cf80ab41a783"
+    ],
+    "issues": []
+  },
+  "files": [
+    {
+      "file": "math-figure-0.png",
+      "id": "8865f631-a35b-42a7-8ff4-cf80ab41a783",
+      "width": 1600,
+      "height": 504,
+      "alpha": true,
+      "transparent": 641417,
+      "visible": 164983,
+      "sha256": "d5d763bf8d021e135d41821e451e1b063e3c60eed89cf9f59703cf285624a4a9"
+    }
+  ]
+}
