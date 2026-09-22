@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:1568459) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/c26/agent.spec.js:147:1 › WB-AG-002/009: Agent写入不覆盖手工未保存题面，保存时可对照冲突 (12.2s)
+
+  1 passed (23.6s)

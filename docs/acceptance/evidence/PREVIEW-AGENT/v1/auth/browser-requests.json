@@ -1,0 +1,182 @@
+[
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "POST",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/auth/registration-codes",
+    "method": "POST",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/auth/register",
+    "method": "POST",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "POST",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/workbench/context",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/modules",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/modules/schedule/notifications",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/modules/schedule/settings",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/agent/conversations",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/agent/configuration",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/modules/schedule/settings",
+    "method": "GET",
+    "page": "d0dff4fdd831e179debd729d883f8c3c"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "page": "3cc73287ce862ab37dbd2c881b7be248"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "POST",
+    "page": "3cc73287ce862ab37dbd2c881b7be248"
+  },
+  {
+    "path": "/api/workbench/context",
+    "method": "GET",
+    "page": "3cc73287ce862ab37dbd2c881b7be248"
+  },
+  {
+    "path": "/api/modules",
+    "method": "GET",
+    "page": "3cc73287ce862ab37dbd2c881b7be248"
+  },
+  {
+    "path": "/api/modules/schedule/notifications",
+    "method": "GET",
+    "page": "3cc73287ce862ab37dbd2c881b7be248"
+  },
+  {
+    "path": "/api/modules/schedule/settings",
+    "method": "GET",
+    "page": "3cc73287ce862ab37dbd2c881b7be248"
+  },
+  {
+    "path": "/api/agent/conversations",
+    "method": "GET",
+    "page": "3cc73287ce862ab37dbd2c881b7be248"
+  },
+  {
+    "path": "/api/agent/configuration",
+    "method": "GET",
+    "page": "3cc73287ce862ab37dbd2c881b7be248"
+  },
+  {
+    "path": "/api/auth/logout",
+    "method": "POST",
+    "page": "3cc73287ce862ab37dbd2c881b7be248"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "POST",
+    "page": "9bff1f80e6e39bc491d3e5b61bedc002"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "page": "9bff1f80e6e39bc491d3e5b61bedc002"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "page": "5aa6a8ed28b8d99a351d14c3c11f2881"
+  },
+  {
+    "path": "/api/auth/login",
+    "method": "POST",
+    "page": "5aa6a8ed28b8d99a351d14c3c11f2881"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "POST",
+    "page": "5aa6a8ed28b8d99a351d14c3c11f2881"
+  },
+  {
+    "path": "/api/workbench/context",
+    "method": "GET",
+    "page": "5aa6a8ed28b8d99a351d14c3c11f2881"
+  },
+  {
+    "path": "/api/modules",
+    "method": "GET",
+    "page": "5aa6a8ed28b8d99a351d14c3c11f2881"
+  },
+  {
+    "path": "/api/modules/schedule/notifications",
+    "method": "GET",
+    "page": "5aa6a8ed28b8d99a351d14c3c11f2881"
+  },
+  {
+    "path": "/api/modules/schedule/settings",
+    "method": "GET",
+    "page": "5aa6a8ed28b8d99a351d14c3c11f2881"
+  },
+  {
+    "path": "/api/agent/conversations",
+    "method": "GET",
+    "page": "5aa6a8ed28b8d99a351d14c3c11f2881"
+  },
+  {
+    "path": "/api/agent/configuration",
+    "method": "GET",
+    "page": "5aa6a8ed28b8d99a351d14c3c11f2881"
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "page": "2f73c7c9d4b7c78a9edd728e8c335276"
+  }
+]
