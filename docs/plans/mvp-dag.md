@@ -189,7 +189,7 @@ flowchart TD
 
   class P00,P01,G00,B10,B11,B12,B13,B14,B15,B16,A11,C20,C24,C25,C26,C27,R30,M40,T50,T52,T53 done;
   class C22,C23 human;
-  class C21,R33,R34 running;
+  class C21,R33,R34,F60 running;
   class R35,T54 blocked;
   class A10,A12,R31,R32,M41,M42,M43,M44,T51 delivered;
   %% 未开工：F60,F61,F62,F63,F64,F65,D70,D71,D72,G73,D74,D75,G76。
