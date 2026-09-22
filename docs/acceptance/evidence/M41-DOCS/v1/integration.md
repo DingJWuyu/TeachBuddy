@@ -8,20 +8,22 @@ attempt: 1
 role: documentation-integration
 status: PASS
 verification_level: self
-finished_at_utc: "2026-09-22T08:13:34Z"
+finished_at_utc: "2026-09-22T08:20:18Z"
 session_id: unavailable
 runner: "Codex CLI / gpt-5.6-sol / medium"
 skills_used: [writing-for-agents, code-review]
 base_revision: "c85d073a9582b6aab19c5db66f83ec4fdc6ad355"
 combination_baseline: "dcab84ced029473548cadb1f0f4c8b7ab5088d4c"
-result_revision: "本文件所在候选提交；完整 SHA 由最终回执固定"
+result_revision: "d70506d1b0f942bce4443f10143b82bedb22fd7e:docs/acceptance/evidence/M41-DOCS/v1/integration.md；审查后回执修正的完整 HEAD 由最终回执固定"
 review_target:
   fixed_point: "c85d073a9582b6aab19c5db66f83ec4fdc6ad355"
-  commit_range: "c85d073a9582b6aab19c5db66f83ec4fdc6ad355...HEAD"
-  standards: pending
-  spec: pending
-  aggregate: "本文件的内部审查段，候选提交后固定"
-internal_reviewers: pending
+  commit_range: "c85d073a9582b6aab19c5db66f83ec4fdc6ad355...d70506d1b0f942bce4443f10143b82bedb22fd7e"
+  standards: FAIL
+  spec: FAIL
+  aggregate: "两轴共 3 项回执收尾问题，均在审查后回执修正中解决；无依赖边、范围或节点问题"
+internal_reviewers:
+  - "Standards /root/standards_review；继承调用 session 的 gpt-5.6-sol medium / Codex"
+  - "Spec /root/spec_review；继承调用 session 的 gpt-5.6-sol medium / Codex"
 inputs:
   - "依赖提案 2e67961b01f4ce90ab07dad1feb823b1f595266d"
   - "提案作者回执 76151489f28cfe1ccaddd8afa28db3c613f3c6a5"
@@ -47,9 +49,9 @@ checks:
   - "git diff --check、改动范围和禁用字符检查：PASS"
 identity_mode: "不适用：纯文档整合"
 open_items:
-  - "公共支持、M41 产品实现、完整 R31 与后续独立验收按原门禁由外层继续"
+  - "完整 R31、后续独立验收及产品门禁仍未完成；根跟踪已另行派发的公共支持和 M41 实现"
 failure_owner: null
-next_condition: "外层以本候选完整 SHA 更新根 run-state；隔离 M41 派发须同时固定 R31 基础、M40 冻结、依赖 independent PASS 和模块独占权"
+next_condition: "外层以本候选完整 SHA 更新根 run-state，继续跟踪已另行派发的公共支持和 M41 实现；本 docs 候选不是新业务节点或额外前置"
 authorization_used: "用户 M41-DOCS@1 / attempt 1；只在本 worktree 引入固定文档并修改授权调度入口，提交候选，不合 main/push/部署，不写根 run-state"
 ```
 
@@ -67,4 +69,16 @@ authorization_used: "用户 M41-DOCS@1 / attempt 1；只在本 worktree 引入�
 
 ## 内部审查
 
-候选提交后固定 Standards 与 Spec 两轴结果。
+### Standards
+
+`FAIL`，1 项硬违规：候选回执已声明 PASS 和使用 `code-review`，但两轴结果、reviewer、聚合和完整候选引用仍为占位。这违反执行协议 implementation 第 6 条和 receipt 的实际值要求。其余范围、原文 blob、50 节点、禁用字符和 Git 规则通过，无 baseline smell。
+
+### Spec
+
+`FAIL`，2 项：一是回执的候选 SHA、两轴结果和 reviewer 尚未固定；二是把公共支持和 M41 实现写成尚待外层继续，而用户已明确它们已另行派发、由根负责状态。其余引入范围、原文一致性、50 节点和依赖门禁通过。
+
+### 修正与聚合
+
+本回执已固定受审候选 `d70506d1b0f942bce4443f10143b82bedb22fd7e`、两轴实际结论和 reviewer，并将接续表述更正为根跟踪已另行派发的两项工作。这些修正未改动依赖边或新增范围，按 skill 路由只做定向自检，不重复同一评论。
+
+汇总：Standards 1 项，最严重为回执含占位值；Spec 2 项，最严重为未固定完整回执。三项均已修正，没有依赖边或产品门禁缺口。
