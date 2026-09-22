@@ -44,6 +44,8 @@
 
 .wb-shell[data-route='home'] .wb-ai.agent-workspace { max-width: 872px; padding: 0; }
 .agent-message .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+/* KaTeX keeps each mathematical base intact; oversized atoms scroll in their paragraph. */
+.agent-message p:has(.katex) { overflow-x: auto; }
 .agent-message p + p { margin-top: 10px; }
 .agent-message ul, .agent-message ol { padding-left: 22px; }
 .agent-message pre { background: #f1f0f4; border-radius: 6px; padding: 10px; }
