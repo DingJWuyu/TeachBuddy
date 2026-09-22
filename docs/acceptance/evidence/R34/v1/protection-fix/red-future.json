@@ -1,0 +1,262 @@
+[
+  {
+    "kind": "question",
+    "id": "6c546688-70e3-4987-bbd5-5606f73ef66c",
+    "future": {
+      "version": 99,
+      "blocks": [
+        {
+          "type": "future-node",
+          "payload": {
+            "text": "不得丢弃-006",
+            "unknown": [
+              1,
+              {
+                "a": "完整原节点"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "disabled": false,
+    "afterUi": {
+      "id": "6c546688-70e3-4987-bbd5-5606f73ef66c",
+      "version": 2,
+      "createdAt": "2026-09-22T18:17:13.893Z",
+      "updatedAt": "2026-09-22T18:17:14.131Z",
+      "deletedAt": "2026-09-22T18:17:14.131Z",
+      "title": "未来保护-question-red-1790101033823",
+      "body": {
+        "version": 99,
+        "blocks": [
+          {
+            "type": "future-node",
+            "payload": {
+              "text": "不得丢弃-006",
+              "unknown": [
+                1,
+                {
+                  "a": "完整原节点"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": []
+      },
+      "note": "",
+      "starred": false,
+      "source": {
+        "kind": "manual"
+      },
+      "answerStatus": "absent",
+      "typeId": null,
+      "tagIds": []
+    },
+    "deletion": {
+      "status": 409,
+      "value": {
+        "type": "/problems/workbench/object-deleted"
+      }
+    },
+    "overwrite": {
+      "status": 200,
+      "value": {
+        "id": "6c546688-70e3-4987-bbd5-5606f73ef66c",
+        "version": 4,
+        "createdAt": "2026-09-22T18:17:13.893Z",
+        "updatedAt": "2026-09-22T18:17:14.240Z",
+        "deletedAt": null,
+        "title": "未来保护-question-red-1790101033823",
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "原始题干"
+                }
+              ]
+            }
+          ]
+        },
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "note": "",
+        "starred": false,
+        "source": {
+          "kind": "manual"
+        },
+        "answerStatus": "absent",
+        "typeId": null,
+        "tagIds": []
+      }
+    },
+    "before": {
+      "id": "6c546688-70e3-4987-bbd5-5606f73ef66c",
+      "accountKey": "usr_gerf8N4n7uSANUs_GesCNTGzB9COdY8K",
+      "version": 1,
+      "createdAt": "2026-09-22T18:17:13.893Z",
+      "updatedAt": "2026-09-22T18:17:13.893Z",
+      "deletedAt": null,
+      "title": "未来保护-question-red-1790101033823",
+      "body": "{\"version\":99,\"blocks\":[{\"type\":\"future-node\",\"payload\":{\"text\":\"不得丢弃-006\",\"unknown\":[1,{\"a\":\"完整原节点\"}]}}]}",
+      "solution": "{\"version\":2,\"blocks\":[]}",
+      "note": "",
+      "starred": 0,
+      "source": "{\"kind\":\"manual\"}",
+      "sourceQuestionId": null
+    },
+    "after": {
+      "id": "6c546688-70e3-4987-bbd5-5606f73ef66c",
+      "accountKey": "usr_gerf8N4n7uSANUs_GesCNTGzB9COdY8K",
+      "version": 4,
+      "createdAt": "2026-09-22T18:17:13.893Z",
+      "updatedAt": "2026-09-22T18:17:14.240Z",
+      "deletedAt": null,
+      "title": "未来保护-question-red-1790101033823",
+      "body": "{\"version\":2,\"blocks\":[{\"type\":\"paragraph\",\"runs\":[{\"type\":\"text\",\"text\":\"原始题干\"}]}]}",
+      "solution": "{\"version\":2,\"blocks\":[]}",
+      "note": "",
+      "starred": 0,
+      "source": "{\"kind\":\"manual\"}",
+      "sourceQuestionId": null
+    },
+    "preserved": false
+  },
+  {
+    "kind": "lesson",
+    "id": "3a031783-d3c9-4969-b57a-b2e56ef1a926",
+    "future": {
+      "version": 99,
+      "blocks": [
+        {
+          "type": "future-node",
+          "payload": {
+            "text": "不得丢弃-006",
+            "unknown": [
+              1,
+              {
+                "a": "完整原节点"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "disabled": false,
+    "afterUi": {
+      "id": "3a031783-d3c9-4969-b57a-b2e56ef1a926",
+      "version": 1,
+      "createdAt": "2026-09-22T18:17:14.244Z",
+      "updatedAt": "2026-09-22T18:17:14.244Z",
+      "deletedAt": null,
+      "title": "未来保护-lesson-red-1790101034243",
+      "intro": {
+        "version": 99,
+        "blocks": [
+          {
+            "type": "future-node",
+            "payload": {
+              "text": "不得丢弃-006",
+              "unknown": [
+                1,
+                {
+                  "a": "完整原节点"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "sections": [],
+      "materials": []
+    },
+    "deletion": {
+      "status": 200,
+      "value": {
+        "id": "3a031783-d3c9-4969-b57a-b2e56ef1a926",
+        "version": 2,
+        "createdAt": "2026-09-22T18:17:14.244Z",
+        "updatedAt": "2026-09-22T18:17:14.726Z",
+        "deletedAt": "2026-09-22T18:17:14.726Z",
+        "title": "未来保护-lesson-red-1790101034243",
+        "intro": {
+          "version": 99,
+          "blocks": [
+            {
+              "type": "future-node",
+              "payload": {
+                "text": "不得丢弃-006",
+                "unknown": [
+                  1,
+                  {
+                    "a": "完整原节点"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "sections": [],
+        "materials": []
+      }
+    },
+    "overwrite": {
+      "status": 200,
+      "value": {
+        "id": "3a031783-d3c9-4969-b57a-b2e56ef1a926",
+        "version": 4,
+        "createdAt": "2026-09-22T18:17:14.244Z",
+        "updatedAt": "2026-09-22T18:17:14.755Z",
+        "deletedAt": null,
+        "title": "未来保护-lesson-red-1790101034243",
+        "intro": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "原始备课"
+                }
+              ]
+            }
+          ]
+        },
+        "sections": [],
+        "materials": []
+      }
+    },
+    "before": {
+      "id": "3a031783-d3c9-4969-b57a-b2e56ef1a926",
+      "accountKey": "usr_gerf8N4n7uSANUs_GesCNTGzB9COdY8K",
+      "version": 1,
+      "createdAt": "2026-09-22T18:17:14.244Z",
+      "updatedAt": "2026-09-22T18:17:14.244Z",
+      "deletedAt": null,
+      "title": "未来保护-lesson-red-1790101034243",
+      "intro": "{\"version\":99,\"blocks\":[{\"type\":\"future-node\",\"payload\":{\"text\":\"不得丢弃-006\",\"unknown\":[1,{\"a\":\"完整原节点\"}]}}]}"
+    },
+    "after": {
+      "id": "3a031783-d3c9-4969-b57a-b2e56ef1a926",
+      "accountKey": "usr_gerf8N4n7uSANUs_GesCNTGzB9COdY8K",
+      "version": 4,
+      "createdAt": "2026-09-22T18:17:14.244Z",
+      "updatedAt": "2026-09-22T18:17:14.755Z",
+      "deletedAt": null,
+      "title": "未来保护-lesson-red-1790101034243",
+      "intro": "{\"version\":2,\"blocks\":[{\"type\":\"paragraph\",\"runs\":[{\"type\":\"text\",\"text\":\"原始备课\"}]}]}"
+    },
+    "preserved": false
+  }
+]

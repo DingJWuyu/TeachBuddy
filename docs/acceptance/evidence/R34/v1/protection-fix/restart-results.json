@@ -1,0 +1,49 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "kind": "question",
+      "id": "8bf65f62-c453-4cc7-b4ae-c1fb633ce731",
+      "rowUnchanged": true,
+      "document": {
+        "version": 99,
+        "blocks": [
+          {
+            "type": "future-node",
+            "payload": {
+              "text": "不得丢弃-006",
+              "unknown": [
+                1,
+                {
+                  "a": "完整原节点"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "lesson",
+      "id": "912e5a79-d07e-4f7a-96d2-0378c920848e",
+      "rowUnchanged": true,
+      "document": {
+        "version": 99,
+        "blocks": [
+          {
+            "type": "future-node",
+            "payload": {
+              "text": "不得丢弃-006",
+              "unknown": [
+                1,
+                {
+                  "a": "完整原节点"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

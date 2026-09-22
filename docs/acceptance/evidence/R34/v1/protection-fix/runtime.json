@@ -1,0 +1,17 @@
+{
+  "stoppedAt": "2026-09-22T18:33:04Z",
+  "candidate": "c2cdd9d12428dadb6ac405ff5b8081d15b51f0d6",
+  "sessionId": "01a0ca52-ca2d-78b1-9d5b-e2343804c867",
+  "data": "/home/liam_t/r34p6/data",
+  "profile": "/home/liam_t/r34p6/chrome",
+  "TMPDIR": "/home/liam_t/r34p6/tmp",
+  "servicePort": 50635,
+  "browserPort": 50636,
+  "listenerCheck": "State Recv-Q Send-Q Local Address:Port Peer Address:Port\n",
+  "serviceStopped": true,
+  "browserStopped": true,
+  "axiStopped": true,
+  "failedEvidenceRetained": true,
+  "productModelRequests": 0,
+  "productModelKeyReads": 0
+}
