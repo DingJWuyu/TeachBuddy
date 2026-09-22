@@ -1,0 +1,18 @@
+UTC 2026-09-22T07:48:32.598855+00:00
+Scope: static Git/blob/schema checks only; no product execution or experiments.
+Proposal unchanged in author receipt: PASS; sha256=a2fb8ef148f424b79542c2ec124ec935ed046f9f83a67b50808565674fb8ce15
+R31 product -> evidence changes evidence only: PASS (NUL-delimited paths)
+R31 evidence digest integrity: 31/31 PASS; not runtime verification
+Schema identity R31/M40/materials: PASS docs/contracts/workbench/materials.openapi.yaml
+Schema identity R31/M40/materials: PASS docs/contracts/workbench/first-flow.openapi.yaml
+FormulaSource transitive local types: Color, FormulaSource
+PlaneSource transitive local types: Color, Curve, Element, Ellipse, Expr, Key, Label, Line, PlaneSource, Point, Polyline, Scene, Style, Text, Viewport, XY
+SpaceSource transitive local types: Color, Key, Label, SpaceSource, SpatialEdge, SpatialPoint, Style, Viewport
+WorkExport.File reference: {"$ref": "../materials.openapi.yaml#/components/schemas/File"}
+R31 lock has no MathJax: CONFIRMED missing product input
+R31 apps/api/src/modules/math: empty
+R31 apps/web/src/features/math: empty
+R31 packages/shared/src/math: empty
+Auth product 9ecabbf60cbbaecce2e9be8191d270068eb675cf
+Auth report aaa3d77accbfc743f47edfb1ffc385735b2bf3db
+Auth product ancestor of R31: False; runtime identity seam separately inspected
