@@ -32,6 +32,7 @@
 | 任务 | 接续方式 | 实际模型 / effort | 状态 | session | 原始派发与回执目录 |
 | --- | --- | --- | --- | --- | --- |
 | C21-REUSE-RESEARCH | 新会话，attempt 1 | gpt-5.6-sol / medium | 已交c2f9e21并停写，研究完成；推荐PaddleOCR局部适配，尚未实测 | `01a0ca35-ab77-75c1-97a3-347b03548eaa` | `.scratch/dag-dispatch/C21-REUSE-RESEARCH/1/` |
+| C20-C21-REUSE-PLAN | 新会话，attempt 1 | gpt-6-astra / high | 已启动，制定开源页解析有界方案与真实准入条件；未开始实验 | `01a0ca55-9db2-7d12-9694-51fc6c597678` | `.scratch/dag-dispatch/C20-C21-REUSE-PLAN/1/` |
 | C24-BUSINESS | 原 session 接续，attempt 2 / resume 1 | gpt-5.6-sol / medium | 已完成，self FAIL，制品 d826b72 | `01a0c7a8-94e5-7da1-bfe0-aa537396c067` | `.scratch/dag-dispatch/C24-BUSINESS/2/resume-1/` |
 | R30-RECOVERY-REVIEW | 恢复原会话，attempt 1 | gpt-6-astra / medium | 已完成，independent FAIL | `01a0c642-8129-7c11-84d1-f64a3fa85255` | `.scratch/dag-dispatch/R30-RECOVERY-REVIEW/1/resume-1/` |
 | C23-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent PASS（限定） | `01a0c7a8-9494-7672-9e16-cfa5034ea18d` | `.scratch/dag-dispatch/C23-MATH-REVIEW/1/` |
