@@ -21,7 +21,8 @@ import {
   seedLegacy,
 } from "./teaching-time-classes-materials-fixture.js";
 const evidence = path.resolve(
-  "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
+  process.env.MTA_EVIDENCE ??
+    "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
 );
 fs.mkdirSync(evidence, { recursive: true });
 async function setup(t, name) {

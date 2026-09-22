@@ -14,8 +14,10 @@ import {
   question,
 } from "../../api/test/teaching-time-classes-materials-fixture.js";
 const evidence = path.resolve(
-  "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
+  process.env.MTA_EVIDENCE ??
+    "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
 );
+fs.mkdirSync(evidence, { recursive: true });
 async function login(page, origin, email) {
   await page.goto(origin);
   await page.getByLabel("邮箱", { exact: true }).fill(email);
@@ -29,7 +31,12 @@ test("WB-MTA001/003: rich selection, two-class feedback and exact scene roundtri
 }) => {
   const world = await createIntegration(
     process.env.MTA_RED
-      ? { webDist: path.resolve(".work/mta/fixed/apps/web/dist") }
+      ? {
+          webDist: path.resolve(
+            process.env.MTA_BASELINE_WEB_DIST ??
+              ".work/mta/fixed/apps/web/dist",
+          ),
+        }
       : {},
   );
   const responses = [],
@@ -213,6 +220,15 @@ test("WB-MTA001/003: rich selection, two-class feedback and exact scene roundtri
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
+    await page.getByLabel(/长期笔记/).fill("丰富题保存后正文答案和文件保持");
+    await page.getByRole("button", { name: "保存题目", exact: true }).click();
+    await expect
+      .poll(async () => (await call("GET", `${Q}/${seeded.rich.id}`)).version)
+      .toBe(2);
+    const editedRich = await call("GET", `${Q}/${seeded.rich.id}`);
+    expect(editedRich.body).toEqual(seeded.rich.body);
+    expect(editedRich.solution).toEqual(seeded.rich.solution);
+    expect(editedRich.source).toEqual(seeded.rich.source);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page
       .getByRole("button", { name: "返回教学记录", exact: true })
@@ -237,13 +253,11 @@ test("WB-MTA001/003: rich selection, two-class feedback and exact scene roundtri
       JSON.stringify(
         {
           before: scroll,
-          after: await page
-            .locator(".c-detail-scroll")
-            .evaluate((n) => ({
-              top: n.scrollTop,
-              height: n.clientHeight,
-              scrollHeight: n.scrollHeight,
-            })),
+          after: await page.locator(".c-detail-scroll").evaluate((n) => ({
+            top: n.scrollTop,
+            height: n.clientHeight,
+            scrollHeight: n.scrollHeight,
+          })),
         },
         null,
         2,

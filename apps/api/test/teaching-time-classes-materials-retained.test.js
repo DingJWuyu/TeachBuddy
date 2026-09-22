@@ -17,8 +17,10 @@ import {
 const fixed = "2682475041aa187e3cd50ad743dc5e5bc243feda";
 const root = path.resolve("."),
   evidence = path.resolve(
-    "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
+    process.env.MTA_EVIDENCE ??
+      "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
   );
+fs.mkdirSync(evidence, { recursive: true });
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 function snapshot(directory) {
   const db = new Database(path.join(directory, "workspace.sqlite"), {
