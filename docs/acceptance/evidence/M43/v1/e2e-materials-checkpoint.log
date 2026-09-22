@@ -1,0 +1,52 @@
+
+Running 7 tests using 1 worker
+
+(node:1307999) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/materials-integration-navigation.spec.js:85:1 › 题库使用位置可前往实际环节并返回题库现场 (3.3s)
+  ✓  2 apps/web/e2e/materials-integration-navigation.spec.js:110:1 › 题库主动加入后保留成功反馈及前往备课入口 (2.6s)
+  ✓  3 apps/web/e2e/materials-integration-navigation.spec.js:129:1 › 加入备课响应丢失后确认原请求仍提供前往入口且不重复 (2.4s)
+  ✘  4 apps/web/e2e/materials-integration-navigation.spec.js:151:1 › 最新原生Word校对在真实外壳保存恢复并引用输出 (4.4s)
+(node:1309044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 apps/web/e2e/materials-integration-restart.spec.js:8:1 › 独立普通进程重启保持同一origin、未知上传原键和新浏览器持久数据 (4.9s)
+  ✓  6 apps/web/e2e/materials-integration.spec.js:30:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 (24.7s)
+  ✓  7 apps/web/e2e/materials-integration.spec.js:283:1 › 真实身份边界及保存丢响应：同键恢复、草稿保留、退出后拒绝旧页面 (1.4s)
+
+
+  1) apps/web/e2e/materials-integration-navigation.spec.js:151:1 › 最新原生Word校对在真实外壳保存恢复并引用输出 ────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByLabel('草稿标题')
+    Expected: visible
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByLabel('草稿标题') with timeout 60000ms
+      - waiting for getByLabel('草稿标题')
+      - Protocol error (Runtime.callFunctionOn): Page crashed.
+
+
+      158 |   await page.getByLabel("选择原稿").setInputFiles("apps/web/e2e/fixtures/materials-questions/W.docx");
+      159 |   await page.getByRole("button", { name: "保存原稿并整理" }).click();
+    > 160 |   await expect(page.getByLabel("草稿标题")).toBeVisible({ timeout: 60000 });
+          |                                         ^
+      161 |   const source = page.locator(".q-review-result textarea").first();
+      162 |   await expect(source).toHaveValue(/x-2/);
+      163 |   await source.fill((await source.inputValue()).replace("x-2", "x+2"));
+        at /tmp/m43-suite/apps/web/e2e/materials-integration-navigation.spec.js:160:41
+
+    Error Context: test-results/r34-integration/browser/materials-integration-navigation-最新原生Word校对在真实外壳保存恢复并引用输出/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34-integration/browser/materials-integration-navigation-最新原生Word校对在真实外壳保存恢复并引用输出/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34-integration/browser/materials-integration-navigation-最新原生Word校对在真实外壳保存恢复并引用输出/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-integration-navigation.spec.js:151:1 › 最新原生Word校对在真实外壳保存恢复并引用输出 ─────────
+  6 passed (45.3s)

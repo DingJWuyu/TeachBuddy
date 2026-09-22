@@ -1,0 +1,540 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1290161,
+  "argv": [
+    "/home/liam_t/.local/share/pi-node/node-v22.23.2-linux-x64/bin/node",
+    "/tmp/m43-suite/apps/api/test/teaching-time-classes-migrations.test.js"
+  ],
+  "cwd": "/tmp/m43-suite/apps/api",
+  "events": [
+    {
+      "ms": 968.33477,
+      "event": "server:listen",
+      "server": 1,
+      "port": 0
+    },
+    {
+      "ms": 974.698472,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 39319
+      }
+    },
+    {
+      "ms": 982.826107,
+      "event": "server:socket",
+      "socket": 2,
+      "localPort": 39319,
+      "remotePort": 41620,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 984.959743,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "socket": 2,
+      "localPort": 39319,
+      "remotePort": 41620,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 995.121726,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 2,
+      "localPort": 39319,
+      "remotePort": 41620,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 995.728761,
+      "event": "server:close",
+      "socket": 2,
+      "remotePort": 41620,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 997.581888,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 997.768961,
+      "event": "server:close",
+      "server": 1
+    },
+    {
+      "ms": 998.061061,
+      "event": "server:listen",
+      "server": 3,
+      "port": 0
+    },
+    {
+      "ms": 998.894929,
+      "event": "server:listening",
+      "server": 3,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 37793
+      }
+    },
+    {
+      "ms": 999.628384,
+      "event": "server:socket",
+      "socket": 4,
+      "localPort": 37793,
+      "remotePort": 45930,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 999.919631,
+      "event": "server:request",
+      "server": 3,
+      "method": "POST",
+      "path": "/api/modules/lessons/items",
+      "socket": 4,
+      "localPort": 37793,
+      "remotePort": 45930,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1002.263299,
+      "event": "server:response",
+      "server": 3,
+      "status": 201,
+      "socket": 4,
+      "localPort": 37793,
+      "remotePort": 45930,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1002.453836,
+      "event": "server:close",
+      "socket": 4,
+      "remotePort": 45930,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 1002.869773,
+      "event": "server:close-called",
+      "server": 3
+    },
+    {
+      "ms": 1002.927593,
+      "event": "server:close",
+      "server": 3
+    },
+    {
+      "ms": 1037.599909,
+      "event": "server:listen",
+      "server": 5,
+      "port": 0
+    },
+    {
+      "ms": 1038.50561,
+      "event": "server:listening",
+      "server": 5,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 42393
+      }
+    },
+    {
+      "ms": 1039.372176,
+      "event": "server:socket",
+      "socket": 6,
+      "localPort": 42393,
+      "remotePort": 33992,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1039.652522,
+      "event": "server:request",
+      "server": 5,
+      "method": "GET",
+      "path": "/api/modules/questions/items/4784c134-af7f-40a8-95af-f43ae5e38589",
+      "socket": 6,
+      "localPort": 42393,
+      "remotePort": 33992,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1041.264929,
+      "event": "server:response",
+      "server": 5,
+      "status": 200,
+      "socket": 6,
+      "localPort": 42393,
+      "remotePort": 33992,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1041.619844,
+      "event": "server:close",
+      "socket": 6,
+      "remotePort": 33992,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 1042.061421,
+      "event": "server:close-called",
+      "server": 5
+    },
+    {
+      "ms": 1042.134159,
+      "event": "server:close",
+      "server": 5
+    },
+    {
+      "ms": 1042.266416,
+      "event": "server:listen",
+      "server": 7,
+      "port": 0
+    },
+    {
+      "ms": 1043.10156,
+      "event": "server:listening",
+      "server": 7,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 38037
+      }
+    },
+    {
+      "ms": 1043.578588,
+      "event": "server:socket",
+      "socket": 8,
+      "localPort": 38037,
+      "remotePort": 39602,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1043.73368,
+      "event": "server:request",
+      "server": 7,
+      "method": "GET",
+      "path": "/api/modules/lessons/items/cda9b8e8-d6c7-4905-848e-27b57411a284",
+      "socket": 8,
+      "localPort": 38037,
+      "remotePort": 39602,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1044.716786,
+      "event": "server:response",
+      "server": 7,
+      "status": 200,
+      "socket": 8,
+      "localPort": 38037,
+      "remotePort": 39602,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1044.928479,
+      "event": "server:close",
+      "socket": 8,
+      "remotePort": 39602,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 1045.249348,
+      "event": "server:close-called",
+      "server": 7
+    },
+    {
+      "ms": 1045.296673,
+      "event": "server:close",
+      "server": 7
+    },
+    {
+      "ms": 1045.458847,
+      "event": "server:listen",
+      "server": 9,
+      "port": 0
+    },
+    {
+      "ms": 1046.017808,
+      "event": "server:listening",
+      "server": 9,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 36917
+      }
+    },
+    {
+      "ms": 1046.423369,
+      "event": "server:socket",
+      "socket": 10,
+      "localPort": 36917,
+      "remotePort": 52270,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1046.590208,
+      "event": "server:request",
+      "server": 9,
+      "method": "POST",
+      "path": "/api/modules/classes/items",
+      "socket": 10,
+      "localPort": 36917,
+      "remotePort": 52270,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1048.577982,
+      "event": "server:response",
+      "server": 9,
+      "status": 201,
+      "socket": 10,
+      "localPort": 36917,
+      "remotePort": 52270,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1048.822754,
+      "event": "server:close",
+      "socket": 10,
+      "remotePort": 52270,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 1049.168335,
+      "event": "server:close-called",
+      "server": 9
+    },
+    {
+      "ms": 1049.21361,
+      "event": "server:close",
+      "server": 9
+    },
+    {
+      "ms": 1049.33498,
+      "event": "server:listen",
+      "server": 11,
+      "port": 0
+    },
+    {
+      "ms": 1049.948614,
+      "event": "server:listening",
+      "server": 11,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 37149
+      }
+    },
+    {
+      "ms": 1056.269286,
+      "event": "server:socket",
+      "socket": 12,
+      "localPort": 37149,
+      "remotePort": 41856,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1057.477999,
+      "event": "server:request",
+      "server": 11,
+      "method": "POST",
+      "path": "/api/modules/classes/records",
+      "socket": 12,
+      "localPort": 37149,
+      "remotePort": 41856,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1060.958587,
+      "event": "server:response",
+      "server": 11,
+      "status": 201,
+      "socket": 12,
+      "localPort": 37149,
+      "remotePort": 41856,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1061.214901,
+      "event": "server:close",
+      "socket": 12,
+      "remotePort": 41856,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 1061.686023,
+      "event": "server:close-called",
+      "server": 11
+    },
+    {
+      "ms": 1061.748824,
+      "event": "server:close",
+      "server": 11
+    },
+    {
+      "ms": 1074.105293,
+      "event": "server:listen",
+      "server": 13,
+      "port": 0
+    },
+    {
+      "ms": 1075.166976,
+      "event": "server:listening",
+      "server": 13,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 32807
+      }
+    },
+    {
+      "ms": 1076.17259,
+      "event": "server:socket",
+      "socket": 14,
+      "localPort": 32807,
+      "remotePort": 51286,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1076.4009,
+      "event": "server:request",
+      "server": 13,
+      "method": "GET",
+      "path": "/api/modules/classes/records/ec3cd5ea-002b-4cf7-ad1c-0cc7342ad3e4",
+      "socket": 14,
+      "localPort": 32807,
+      "remotePort": 51286,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1078.081588,
+      "event": "server:response",
+      "server": 13,
+      "status": 200,
+      "socket": 14,
+      "localPort": 32807,
+      "remotePort": 51286,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1078.364127,
+      "event": "server:close",
+      "socket": 14,
+      "remotePort": 51286,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 1078.675428,
+      "event": "server:close-called",
+      "server": 13
+    },
+    {
+      "ms": 1078.715385,
+      "event": "server:close",
+      "server": 13
+    },
+    {
+      "ms": 1078.818476,
+      "event": "server:listen",
+      "server": 15,
+      "port": 0
+    },
+    {
+      "ms": 1079.459498,
+      "event": "server:listening",
+      "server": 15,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 40809
+      }
+    },
+    {
+      "ms": 1079.85467,
+      "event": "server:socket",
+      "socket": 16,
+      "localPort": 40809,
+      "remotePort": 43006,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1079.979885,
+      "event": "server:request",
+      "server": 15,
+      "method": "GET",
+      "path": "/api/modules/questions/items/4784c134-af7f-40a8-95af-f43ae5e38589",
+      "socket": 16,
+      "localPort": 40809,
+      "remotePort": 43006,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1080.695121,
+      "event": "server:response",
+      "server": 15,
+      "status": 200,
+      "socket": 16,
+      "localPort": 40809,
+      "remotePort": 43006,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1080.921158,
+      "event": "server:close",
+      "socket": 16,
+      "remotePort": 43006,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 1081.150214,
+      "event": "server:close-called",
+      "server": 15
+    },
+    {
+      "ms": 1081.18292,
+      "event": "server:close",
+      "server": 15
+    }
+  ]
+}

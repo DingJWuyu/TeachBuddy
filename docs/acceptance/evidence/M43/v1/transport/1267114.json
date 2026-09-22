@@ -1,0 +1,3114 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1267114,
+  "argv": [
+    "/home/liam_t/.local/share/pi-node/node-v22.23.2-linux-x64/bin/node",
+    "/tmp/m43-suite/apps/api/test/teaching-time-schedule-ports.test.js"
+  ],
+  "cwd": "/tmp/m43-suite/apps/api",
+  "events": [
+    {
+      "ms": 584.701121,
+      "event": "server:listen",
+      "server": 1,
+      "port": 0
+    },
+    {
+      "ms": 589.359983,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 45855
+      }
+    },
+    {
+      "ms": 592.966598,
+      "event": "server:socket",
+      "socket": 2,
+      "localPort": 45855,
+      "remotePort": 34868,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 598.576681,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 2,
+      "localPort": 45855,
+      "remotePort": 34868,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 650.825227,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 2,
+      "localPort": 45855,
+      "remotePort": 34868,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 651.49656,
+      "event": "server:close",
+      "socket": 2,
+      "remotePort": 34868,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 653.119149,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 653.273808,
+      "event": "server:close",
+      "server": 1
+    },
+    {
+      "ms": 665.691382,
+      "event": "server:listen",
+      "server": 3,
+      "port": 0
+    },
+    {
+      "ms": 666.469531,
+      "event": "server:listening",
+      "server": 3,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 40687
+      }
+    },
+    {
+      "ms": 667.254049,
+      "event": "server:socket",
+      "socket": 4,
+      "localPort": 40687,
+      "remotePort": 42000,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 667.517732,
+      "event": "server:request",
+      "server": 3,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 4,
+      "localPort": 40687,
+      "remotePort": 42000,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 669.487907,
+      "event": "server:response",
+      "server": 3,
+      "status": 201,
+      "socket": 4,
+      "localPort": 40687,
+      "remotePort": 42000,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 669.690644,
+      "event": "server:close",
+      "socket": 4,
+      "remotePort": 42000,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 670.150132,
+      "event": "server:close-called",
+      "server": 3
+    },
+    {
+      "ms": 670.214497,
+      "event": "server:close",
+      "server": 3
+    },
+    {
+      "ms": 672.040554,
+      "event": "server:listen",
+      "server": 5,
+      "port": 0
+    },
+    {
+      "ms": 673.033156,
+      "event": "server:listening",
+      "server": 5,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 34059
+      }
+    },
+    {
+      "ms": 673.55868,
+      "event": "server:socket",
+      "socket": 6,
+      "localPort": 34059,
+      "remotePort": 47756,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 673.804339,
+      "event": "server:request",
+      "server": 5,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 6,
+      "localPort": 34059,
+      "remotePort": 47756,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 676.082677,
+      "event": "server:response",
+      "server": 5,
+      "status": 422,
+      "socket": 6,
+      "localPort": 34059,
+      "remotePort": 47756,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 676.260792,
+      "event": "server:close",
+      "socket": 6,
+      "remotePort": 47756,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 676.68231,
+      "event": "server:close-called",
+      "server": 5
+    },
+    {
+      "ms": 676.743382,
+      "event": "server:close",
+      "server": 5
+    },
+    {
+      "ms": 676.89335,
+      "event": "server:listen",
+      "server": 7,
+      "port": 0
+    },
+    {
+      "ms": 677.420269,
+      "event": "server:listening",
+      "server": 7,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 41111
+      }
+    },
+    {
+      "ms": 677.74885,
+      "event": "server:socket",
+      "socket": 8,
+      "localPort": 41111,
+      "remotePort": 36376,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 677.88954,
+      "event": "server:request",
+      "server": 7,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 8,
+      "localPort": 41111,
+      "remotePort": 36376,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 679.848504,
+      "event": "server:response",
+      "server": 7,
+      "status": 201,
+      "socket": 8,
+      "localPort": 41111,
+      "remotePort": 36376,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 680.005138,
+      "event": "server:close",
+      "socket": 8,
+      "remotePort": 36376,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 680.301827,
+      "event": "server:close-called",
+      "server": 7
+    },
+    {
+      "ms": 680.34054,
+      "event": "server:close",
+      "server": 7
+    },
+    {
+      "ms": 684.757788,
+      "event": "server:listen",
+      "server": 9,
+      "port": 0
+    },
+    {
+      "ms": 685.518298,
+      "event": "server:listening",
+      "server": 9,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 45809
+      }
+    },
+    {
+      "ms": 686.484812,
+      "event": "server:socket",
+      "socket": 10,
+      "localPort": 45809,
+      "remotePort": 59996,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 686.771601,
+      "event": "server:request",
+      "server": 9,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 10,
+      "localPort": 45809,
+      "remotePort": 59996,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 689.473854,
+      "event": "server:response",
+      "server": 9,
+      "status": 201,
+      "socket": 10,
+      "localPort": 45809,
+      "remotePort": 59996,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 689.761397,
+      "event": "server:close",
+      "socket": 10,
+      "remotePort": 59996,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 690.171682,
+      "event": "server:close-called",
+      "server": 9
+    },
+    {
+      "ms": 690.226242,
+      "event": "server:close",
+      "server": 9
+    },
+    {
+      "ms": 690.369487,
+      "event": "server:listen",
+      "server": 11,
+      "port": 0
+    },
+    {
+      "ms": 690.879127,
+      "event": "server:listening",
+      "server": 11,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 35839
+      }
+    },
+    {
+      "ms": 691.242798,
+      "event": "server:socket",
+      "socket": 12,
+      "localPort": 35839,
+      "remotePort": 47018,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 691.381487,
+      "event": "server:request",
+      "server": 11,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 12,
+      "localPort": 35839,
+      "remotePort": 47018,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 693.400553,
+      "event": "server:response",
+      "server": 11,
+      "status": 422,
+      "socket": 12,
+      "localPort": 35839,
+      "remotePort": 47018,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 693.604932,
+      "event": "server:close",
+      "socket": 12,
+      "remotePort": 47018,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 693.882519,
+      "event": "server:close-called",
+      "server": 11
+    },
+    {
+      "ms": 693.9202,
+      "event": "server:close",
+      "server": 11
+    },
+    {
+      "ms": 707.339273,
+      "event": "server:listen",
+      "server": 13,
+      "port": 0
+    },
+    {
+      "ms": 708.147363,
+      "event": "server:listening",
+      "server": 13,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 39097
+      }
+    },
+    {
+      "ms": 710.575281,
+      "event": "server:socket",
+      "socket": 14,
+      "localPort": 39097,
+      "remotePort": 36646,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 710.897913,
+      "event": "server:request",
+      "server": 13,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 14,
+      "localPort": 39097,
+      "remotePort": 36646,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 714.422418,
+      "event": "server:response",
+      "server": 13,
+      "status": 201,
+      "socket": 14,
+      "localPort": 39097,
+      "remotePort": 36646,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 714.622684,
+      "event": "server:close",
+      "socket": 14,
+      "remotePort": 36646,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 714.961854,
+      "event": "server:close-called",
+      "server": 13
+    },
+    {
+      "ms": 715.013235,
+      "event": "server:close",
+      "server": 13
+    },
+    {
+      "ms": 715.198979,
+      "event": "server:listen",
+      "server": 15,
+      "port": 0
+    },
+    {
+      "ms": 715.803333,
+      "event": "server:listening",
+      "server": 15,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 46025
+      }
+    },
+    {
+      "ms": 716.158679,
+      "event": "server:socket",
+      "socket": 16,
+      "localPort": 46025,
+      "remotePort": 55934,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 716.281371,
+      "event": "server:request",
+      "server": 15,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/f1ee93e7-1698-4faa-910a-c02fd20c1751",
+      "socket": 16,
+      "localPort": 46025,
+      "remotePort": 55934,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 718.187928,
+      "event": "server:response",
+      "server": 15,
+      "status": 200,
+      "socket": 16,
+      "localPort": 46025,
+      "remotePort": 55934,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 718.33099,
+      "event": "server:close",
+      "socket": 16,
+      "remotePort": 55934,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 718.545587,
+      "event": "server:close-called",
+      "server": 15
+    },
+    {
+      "ms": 718.581751,
+      "event": "server:close",
+      "server": 15
+    },
+    {
+      "ms": 718.774831,
+      "event": "server:listen",
+      "server": 17,
+      "port": 0
+    },
+    {
+      "ms": 719.577176,
+      "event": "server:listening",
+      "server": 17,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 37009
+      }
+    },
+    {
+      "ms": 720.020376,
+      "event": "server:socket",
+      "socket": 18,
+      "localPort": 37009,
+      "remotePort": 33142,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 720.210298,
+      "event": "server:request",
+      "server": 17,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/f1ee93e7-1698-4faa-910a-c02fd20c1751",
+      "socket": 18,
+      "localPort": 37009,
+      "remotePort": 33142,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 722.082887,
+      "event": "server:response",
+      "server": 17,
+      "status": 200,
+      "socket": 18,
+      "localPort": 37009,
+      "remotePort": 33142,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 722.26619,
+      "event": "server:close",
+      "socket": 18,
+      "remotePort": 33142,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 722.727946,
+      "event": "server:close-called",
+      "server": 17
+    },
+    {
+      "ms": 722.80207,
+      "event": "server:close",
+      "server": 17
+    },
+    {
+      "ms": 723.005216,
+      "event": "server:listen",
+      "server": 19,
+      "port": 0
+    },
+    {
+      "ms": 723.585954,
+      "event": "server:listening",
+      "server": 19,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 44087
+      }
+    },
+    {
+      "ms": 724.000289,
+      "event": "server:socket",
+      "socket": 20,
+      "localPort": 44087,
+      "remotePort": 59586,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 724.185472,
+      "event": "server:request",
+      "server": 19,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/f1ee93e7-1698-4faa-910a-c02fd20c1751",
+      "socket": 20,
+      "localPort": 44087,
+      "remotePort": 59586,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 726.037379,
+      "event": "server:response",
+      "server": 19,
+      "status": 422,
+      "socket": 20,
+      "localPort": 44087,
+      "remotePort": 59586,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 726.205119,
+      "event": "server:close",
+      "socket": 20,
+      "remotePort": 59586,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 728.480298,
+      "event": "server:close-called",
+      "server": 19
+    },
+    {
+      "ms": 728.56007,
+      "event": "server:close",
+      "server": 19
+    },
+    {
+      "ms": 728.795735,
+      "event": "server:listen",
+      "server": 21,
+      "port": 0
+    },
+    {
+      "ms": 729.213978,
+      "event": "server:listening",
+      "server": 21,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 44851
+      }
+    },
+    {
+      "ms": 729.581843,
+      "event": "server:socket",
+      "socket": 22,
+      "localPort": 44851,
+      "remotePort": 36534,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 729.721698,
+      "event": "server:request",
+      "server": 21,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/f1ee93e7-1698-4faa-910a-c02fd20c1751",
+      "socket": 22,
+      "localPort": 44851,
+      "remotePort": 36534,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 731.874368,
+      "event": "server:response",
+      "server": 21,
+      "status": 200,
+      "socket": 22,
+      "localPort": 44851,
+      "remotePort": 36534,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 732.021076,
+      "event": "server:close",
+      "socket": 22,
+      "remotePort": 36534,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 732.253028,
+      "event": "server:close-called",
+      "server": 21
+    },
+    {
+      "ms": 732.29029,
+      "event": "server:close",
+      "server": 21
+    },
+    {
+      "ms": 736.643409,
+      "event": "server:listen",
+      "server": 23,
+      "port": 0
+    },
+    {
+      "ms": 737.285818,
+      "event": "server:listening",
+      "server": 23,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 41089
+      }
+    },
+    {
+      "ms": 738.089888,
+      "event": "server:socket",
+      "socket": 24,
+      "localPort": 41089,
+      "remotePort": 37394,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 738.246369,
+      "event": "server:request",
+      "server": 23,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 24,
+      "localPort": 41089,
+      "remotePort": 37394,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 740.413879,
+      "event": "server:response",
+      "server": 23,
+      "status": 201,
+      "socket": 24,
+      "localPort": 41089,
+      "remotePort": 37394,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 740.581555,
+      "event": "server:close",
+      "socket": 24,
+      "remotePort": 37394,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 740.886499,
+      "event": "server:close-called",
+      "server": 23
+    },
+    {
+      "ms": 740.925103,
+      "event": "server:close",
+      "server": 23
+    },
+    {
+      "ms": 741.019594,
+      "event": "server:listen",
+      "server": 25,
+      "port": 0
+    },
+    {
+      "ms": 741.393299,
+      "event": "server:listening",
+      "server": 25,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 41455
+      }
+    },
+    {
+      "ms": 741.689269,
+      "event": "server:socket",
+      "socket": 26,
+      "localPort": 41455,
+      "remotePort": 45666,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 741.795691,
+      "event": "server:request",
+      "server": 25,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/36b024b4-6882-4b5d-b72b-5d2082074294",
+      "socket": 26,
+      "localPort": 41455,
+      "remotePort": 45666,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 743.227465,
+      "event": "server:response",
+      "server": 25,
+      "status": 200,
+      "socket": 26,
+      "localPort": 41455,
+      "remotePort": 45666,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 743.363014,
+      "event": "server:close",
+      "socket": 26,
+      "remotePort": 45666,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 743.615908,
+      "event": "server:close-called",
+      "server": 25
+    },
+    {
+      "ms": 743.66911,
+      "event": "server:close",
+      "server": 25
+    },
+    {
+      "ms": 747.718303,
+      "event": "server:listen",
+      "server": 27,
+      "port": 0
+    },
+    {
+      "ms": 748.177471,
+      "event": "server:listening",
+      "server": 27,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 45853
+      }
+    },
+    {
+      "ms": 748.852983,
+      "event": "server:socket",
+      "socket": 28,
+      "localPort": 45853,
+      "remotePort": 47598,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 748.975196,
+      "event": "server:request",
+      "server": 27,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 28,
+      "localPort": 45853,
+      "remotePort": 47598,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 750.434738,
+      "event": "server:response",
+      "server": 27,
+      "status": 201,
+      "socket": 28,
+      "localPort": 45853,
+      "remotePort": 47598,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 750.580684,
+      "event": "server:close",
+      "socket": 28,
+      "remotePort": 47598,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 750.80851,
+      "event": "server:close-called",
+      "server": 27
+    },
+    {
+      "ms": 750.842813,
+      "event": "server:close",
+      "server": 27
+    },
+    {
+      "ms": 750.9277,
+      "event": "server:listen",
+      "server": 29,
+      "port": 0
+    },
+    {
+      "ms": 751.258685,
+      "event": "server:listening",
+      "server": 29,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 42855
+      }
+    },
+    {
+      "ms": 751.490914,
+      "event": "server:socket",
+      "socket": 30,
+      "localPort": 42855,
+      "remotePort": 48464,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 751.583194,
+      "event": "server:request",
+      "server": 29,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/ba59c43f-9340-41c5-ba5d-a52159f5af57/exceptions/2026-09-28",
+      "socket": 30,
+      "localPort": 42855,
+      "remotePort": 48464,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 753.609863,
+      "event": "server:response",
+      "server": 29,
+      "status": 200,
+      "socket": 30,
+      "localPort": 42855,
+      "remotePort": 48464,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 753.753471,
+      "event": "server:close",
+      "socket": 30,
+      "remotePort": 48464,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 753.95151,
+      "event": "server:close-called",
+      "server": 29
+    },
+    {
+      "ms": 753.983398,
+      "event": "server:close",
+      "server": 29
+    },
+    {
+      "ms": 754.051064,
+      "event": "server:listen",
+      "server": 31,
+      "port": 0
+    },
+    {
+      "ms": 754.391177,
+      "event": "server:listening",
+      "server": 31,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 39383
+      }
+    },
+    {
+      "ms": 754.615564,
+      "event": "server:socket",
+      "socket": 32,
+      "localPort": 39383,
+      "remotePort": 44244,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 754.724571,
+      "event": "server:request",
+      "server": 31,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/ba59c43f-9340-41c5-ba5d-a52159f5af57/exceptions/2026-10-05",
+      "socket": 32,
+      "localPort": 39383,
+      "remotePort": 44244,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 755.883162,
+      "event": "server:response",
+      "server": 31,
+      "status": 200,
+      "socket": 32,
+      "localPort": 39383,
+      "remotePort": 44244,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 756.025789,
+      "event": "server:close",
+      "socket": 32,
+      "remotePort": 44244,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 756.182913,
+      "event": "server:close-called",
+      "server": 31
+    },
+    {
+      "ms": 756.207185,
+      "event": "server:close",
+      "server": 31
+    },
+    {
+      "ms": 769.080486,
+      "event": "server:listen",
+      "server": 33,
+      "port": 0
+    },
+    {
+      "ms": 771.967485,
+      "event": "server:listening",
+      "server": 33,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 42675
+      }
+    },
+    {
+      "ms": 782.100434,
+      "event": "server:socket",
+      "socket": 34,
+      "localPort": 42675,
+      "remotePort": 54126,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 782.707891,
+      "event": "server:request",
+      "server": 33,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 34,
+      "localPort": 42675,
+      "remotePort": 54126,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 787.502913,
+      "event": "server:response",
+      "server": 33,
+      "status": 201,
+      "socket": 34,
+      "localPort": 42675,
+      "remotePort": 54126,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 787.706796,
+      "event": "server:close",
+      "socket": 34,
+      "remotePort": 54126,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 787.894848,
+      "event": "server:close-called",
+      "server": 33
+    },
+    {
+      "ms": 787.926609,
+      "event": "server:close",
+      "server": 33
+    },
+    {
+      "ms": 791.618009,
+      "event": "server:listen",
+      "server": 35,
+      "port": 0
+    },
+    {
+      "ms": 792.010343,
+      "event": "server:listening",
+      "server": 35,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 37467
+      }
+    },
+    {
+      "ms": 792.690281,
+      "event": "server:socket",
+      "socket": 36,
+      "localPort": 37467,
+      "remotePort": 60264,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 792.799932,
+      "event": "server:request",
+      "server": 35,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 36,
+      "localPort": 37467,
+      "remotePort": 60264,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 793.946622,
+      "event": "server:response",
+      "server": 35,
+      "status": 201,
+      "socket": 36,
+      "localPort": 37467,
+      "remotePort": 60264,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 794.05078,
+      "event": "server:close",
+      "socket": 36,
+      "remotePort": 60264,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 794.200909,
+      "event": "server:close-called",
+      "server": 35
+    },
+    {
+      "ms": 794.228121,
+      "event": "server:close",
+      "server": 35
+    },
+    {
+      "ms": 794.293559,
+      "event": "server:listen",
+      "server": 37,
+      "port": 0
+    },
+    {
+      "ms": 794.524033,
+      "event": "server:listening",
+      "server": 37,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 45041
+      }
+    },
+    {
+      "ms": 794.724929,
+      "event": "server:socket",
+      "socket": 38,
+      "localPort": 45041,
+      "remotePort": 50344,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 794.79573,
+      "event": "server:request",
+      "server": 37,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries/1c327112-3dbc-4b48-815b-25973ad07e1d/deletion",
+      "socket": 38,
+      "localPort": 45041,
+      "remotePort": 50344,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 795.874316,
+      "event": "server:response",
+      "server": 37,
+      "status": 200,
+      "socket": 38,
+      "localPort": 45041,
+      "remotePort": 50344,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 795.976076,
+      "event": "server:close",
+      "socket": 38,
+      "remotePort": 50344,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 796.14138,
+      "event": "server:close-called",
+      "server": 37
+    },
+    {
+      "ms": 796.165528,
+      "event": "server:close",
+      "server": 37
+    },
+    {
+      "ms": 796.374652,
+      "event": "server:listen",
+      "server": 39,
+      "port": 0
+    },
+    {
+      "ms": 796.690228,
+      "event": "server:listening",
+      "server": 39,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 46795
+      }
+    },
+    {
+      "ms": 796.924172,
+      "event": "server:socket",
+      "socket": 40,
+      "localPort": 46795,
+      "remotePort": 59644,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 797.009419,
+      "event": "server:request",
+      "server": 39,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries/1c327112-3dbc-4b48-815b-25973ad07e1d/deletion",
+      "socket": 40,
+      "localPort": 46795,
+      "remotePort": 59644,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 797.69146,
+      "event": "server:response",
+      "server": 39,
+      "status": 200,
+      "socket": 40,
+      "localPort": 46795,
+      "remotePort": 59644,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 797.841402,
+      "event": "server:close",
+      "socket": 40,
+      "remotePort": 59644,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 797.992825,
+      "event": "server:close-called",
+      "server": 39
+    },
+    {
+      "ms": 798.014888,
+      "event": "server:close",
+      "server": 39
+    },
+    {
+      "ms": 802.164915,
+      "event": "server:listen",
+      "server": 41,
+      "port": 0
+    },
+    {
+      "ms": 802.532521,
+      "event": "server:listening",
+      "server": 41,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 42329
+      }
+    },
+    {
+      "ms": 803.112921,
+      "event": "server:socket",
+      "socket": 42,
+      "localPort": 42329,
+      "remotePort": 58466,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 803.245533,
+      "event": "server:request",
+      "server": 41,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 42,
+      "localPort": 42329,
+      "remotePort": 58466,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 804.253657,
+      "event": "server:response",
+      "server": 41,
+      "status": 201,
+      "socket": 42,
+      "localPort": 42329,
+      "remotePort": 58466,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 804.402834,
+      "event": "server:close",
+      "socket": 42,
+      "remotePort": 58466,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 804.586459,
+      "event": "server:close-called",
+      "server": 41
+    },
+    {
+      "ms": 804.61655,
+      "event": "server:close",
+      "server": 41
+    },
+    {
+      "ms": 805.194558,
+      "event": "server:listen",
+      "server": 43,
+      "port": 0
+    },
+    {
+      "ms": 805.584496,
+      "event": "server:listening",
+      "server": 43,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 32889
+      }
+    },
+    {
+      "ms": 805.915221,
+      "event": "server:socket",
+      "socket": 44,
+      "localPort": 32889,
+      "remotePort": 39562,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 806.031464,
+      "event": "server:request",
+      "server": 43,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 44,
+      "localPort": 32889,
+      "remotePort": 39562,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 807.351905,
+      "event": "server:response",
+      "server": 43,
+      "status": 201,
+      "socket": 44,
+      "localPort": 32889,
+      "remotePort": 39562,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 807.461885,
+      "event": "server:close",
+      "socket": 44,
+      "remotePort": 39562,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 807.661497,
+      "event": "server:close-called",
+      "server": 43
+    },
+    {
+      "ms": 807.689946,
+      "event": "server:close",
+      "server": 43
+    },
+    {
+      "ms": 812.319014,
+      "event": "server:listen",
+      "server": 45,
+      "port": 0
+    },
+    {
+      "ms": 812.895579,
+      "event": "server:listening",
+      "server": 45,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 38163
+      }
+    },
+    {
+      "ms": 813.408503,
+      "event": "server:socket",
+      "socket": 46,
+      "localPort": 38163,
+      "remotePort": 58602,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 813.508092,
+      "event": "server:request",
+      "server": 45,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 46,
+      "localPort": 38163,
+      "remotePort": 58602,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 814.914659,
+      "event": "server:response",
+      "server": 45,
+      "status": 201,
+      "socket": 46,
+      "localPort": 38163,
+      "remotePort": 58602,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 815.06467,
+      "event": "server:close",
+      "socket": 46,
+      "remotePort": 58602,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 815.283797,
+      "event": "server:close-called",
+      "server": 45
+    },
+    {
+      "ms": 815.320701,
+      "event": "server:close",
+      "server": 45
+    },
+    {
+      "ms": 815.474521,
+      "event": "server:listen",
+      "server": 47,
+      "port": 0
+    },
+    {
+      "ms": 815.848119,
+      "event": "server:listening",
+      "server": 47,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 42449
+      }
+    },
+    {
+      "ms": 816.149035,
+      "event": "server:socket",
+      "socket": 48,
+      "localPort": 42449,
+      "remotePort": 48972,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 816.263721,
+      "event": "server:request",
+      "server": 47,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 48,
+      "localPort": 42449,
+      "remotePort": 48972,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 817.080454,
+      "event": "server:response",
+      "server": 47,
+      "status": 201,
+      "socket": 48,
+      "localPort": 42449,
+      "remotePort": 48972,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 817.189444,
+      "event": "server:close",
+      "socket": 48,
+      "remotePort": 48972,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 817.372954,
+      "event": "server:close-called",
+      "server": 47
+    },
+    {
+      "ms": 817.404409,
+      "event": "server:close",
+      "server": 47
+    },
+    {
+      "ms": 817.540884,
+      "event": "server:listen",
+      "server": 49,
+      "port": 0
+    },
+    {
+      "ms": 817.955567,
+      "event": "server:listening",
+      "server": 49,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 41545
+      }
+    },
+    {
+      "ms": 818.206849,
+      "event": "server:socket",
+      "socket": 50,
+      "localPort": 41545,
+      "remotePort": 50542,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 818.300137,
+      "event": "server:request",
+      "server": 49,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/c6d505ad-68ce-494a-938f-fdd32100f0b8",
+      "socket": 50,
+      "localPort": 41545,
+      "remotePort": 50542,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 819.434429,
+      "event": "server:response",
+      "server": 49,
+      "status": 409,
+      "socket": 50,
+      "localPort": 41545,
+      "remotePort": 50542,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 819.553555,
+      "event": "server:close",
+      "socket": 50,
+      "remotePort": 50542,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 819.790153,
+      "event": "server:close-called",
+      "server": 49
+    },
+    {
+      "ms": 819.824066,
+      "event": "server:close",
+      "server": 49
+    },
+    {
+      "ms": 819.990768,
+      "event": "server:listen",
+      "server": 51,
+      "port": 0
+    },
+    {
+      "ms": 820.28339,
+      "event": "server:listening",
+      "server": 51,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 35853
+      }
+    },
+    {
+      "ms": 820.537812,
+      "event": "server:socket",
+      "socket": 52,
+      "localPort": 35853,
+      "remotePort": 36600,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 820.647913,
+      "event": "server:request",
+      "server": 51,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 52,
+      "localPort": 35853,
+      "remotePort": 36600,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 821.973702,
+      "event": "server:response",
+      "server": 51,
+      "status": 503,
+      "socket": 52,
+      "localPort": 35853,
+      "remotePort": 36600,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 822.089944,
+      "event": "server:close",
+      "socket": 52,
+      "remotePort": 36600,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 822.31276,
+      "event": "server:close-called",
+      "server": 51
+    },
+    {
+      "ms": 822.343288,
+      "event": "server:close",
+      "server": 51
+    },
+    {
+      "ms": 828.692541,
+      "event": "server:listen",
+      "server": 53,
+      "port": 0
+    },
+    {
+      "ms": 829.259347,
+      "event": "server:listening",
+      "server": 53,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 46391
+      }
+    },
+    {
+      "ms": 830.024193,
+      "event": "server:socket",
+      "socket": 54,
+      "localPort": 46391,
+      "remotePort": 47692,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 830.180822,
+      "event": "server:request",
+      "server": 53,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 54,
+      "localPort": 46391,
+      "remotePort": 47692,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 832.013366,
+      "event": "server:response",
+      "server": 53,
+      "status": 201,
+      "socket": 54,
+      "localPort": 46391,
+      "remotePort": 47692,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 832.192212,
+      "event": "server:close",
+      "socket": 54,
+      "remotePort": 47692,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 832.432866,
+      "event": "server:close-called",
+      "server": 53
+    },
+    {
+      "ms": 832.477713,
+      "event": "server:close",
+      "server": 53
+    },
+    {
+      "ms": 832.639318,
+      "event": "server:listen",
+      "server": 55,
+      "port": 0
+    },
+    {
+      "ms": 833.019317,
+      "event": "server:listening",
+      "server": 55,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 35845
+      }
+    },
+    {
+      "ms": 833.348574,
+      "event": "server:socket",
+      "socket": 56,
+      "localPort": 35845,
+      "remotePort": 42556,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 833.464536,
+      "event": "server:request",
+      "server": 55,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/d9d35677-4aaa-42d2-9f7c-6f04e02828bb",
+      "socket": 56,
+      "localPort": 35845,
+      "remotePort": 42556,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 834.925019,
+      "event": "server:response",
+      "server": 55,
+      "status": 503,
+      "socket": 56,
+      "localPort": 35845,
+      "remotePort": 42556,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 835.05851,
+      "event": "server:close",
+      "socket": 56,
+      "remotePort": 42556,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 835.275947,
+      "event": "server:close-called",
+      "server": 55
+    },
+    {
+      "ms": 835.311206,
+      "event": "server:close",
+      "server": 55
+    },
+    {
+      "ms": 835.419127,
+      "event": "server:listen",
+      "server": 57,
+      "port": 0
+    },
+    {
+      "ms": 835.733926,
+      "event": "server:listening",
+      "server": 57,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 42193
+      }
+    },
+    {
+      "ms": 835.966746,
+      "event": "server:socket",
+      "socket": 58,
+      "localPort": 42193,
+      "remotePort": 34480,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 836.058416,
+      "event": "server:request",
+      "server": 57,
+      "method": "GET",
+      "path": "/api/modules/schedule/entries/d9d35677-4aaa-42d2-9f7c-6f04e02828bb",
+      "socket": 58,
+      "localPort": 42193,
+      "remotePort": 34480,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 836.749841,
+      "event": "server:response",
+      "server": 57,
+      "status": 200,
+      "socket": 58,
+      "localPort": 42193,
+      "remotePort": 34480,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 836.884088,
+      "event": "server:close",
+      "socket": 58,
+      "remotePort": 34480,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 837.082448,
+      "event": "server:close-called",
+      "server": 57
+    },
+    {
+      "ms": 837.114717,
+      "event": "server:close",
+      "server": 57
+    },
+    {
+      "ms": 837.246425,
+      "event": "server:listen",
+      "server": 59,
+      "port": 0
+    },
+    {
+      "ms": 837.51309,
+      "event": "server:listening",
+      "server": 59,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 37835
+      }
+    },
+    {
+      "ms": 837.748236,
+      "event": "server:socket",
+      "socket": 60,
+      "localPort": 37835,
+      "remotePort": 33288,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 837.846699,
+      "event": "server:request",
+      "server": 59,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/d9d35677-4aaa-42d2-9f7c-6f04e02828bb",
+      "socket": 60,
+      "localPort": 37835,
+      "remotePort": 33288,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 838.971135,
+      "event": "server:response",
+      "server": 59,
+      "status": 200,
+      "socket": 60,
+      "localPort": 37835,
+      "remotePort": 33288,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 839.08362,
+      "event": "server:close",
+      "socket": 60,
+      "remotePort": 33288,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 839.24254,
+      "event": "server:close-called",
+      "server": 59
+    },
+    {
+      "ms": 839.268137,
+      "event": "server:close",
+      "server": 59
+    },
+    {
+      "ms": 842.631542,
+      "event": "server:listen",
+      "server": 61,
+      "port": 0
+    },
+    {
+      "ms": 843.136919,
+      "event": "server:listening",
+      "server": 61,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 44907
+      }
+    },
+    {
+      "ms": 844.482279,
+      "event": "server:socket",
+      "socket": 62,
+      "localPort": 44907,
+      "remotePort": 37530,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 844.641861,
+      "event": "server:request",
+      "server": 61,
+      "method": "POST",
+      "path": "/api/modules/lessons/items",
+      "socket": 62,
+      "localPort": 44907,
+      "remotePort": 37530,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 845.795878,
+      "event": "server:response",
+      "server": 61,
+      "status": 201,
+      "socket": 62,
+      "localPort": 44907,
+      "remotePort": 37530,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 845.950532,
+      "event": "server:close",
+      "socket": 62,
+      "remotePort": 37530,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 846.164406,
+      "event": "server:close-called",
+      "server": 61
+    },
+    {
+      "ms": 846.196489,
+      "event": "server:close",
+      "server": 61
+    },
+    {
+      "ms": 846.281795,
+      "event": "server:listen",
+      "server": 63,
+      "port": 0
+    },
+    {
+      "ms": 846.629233,
+      "event": "server:listening",
+      "server": 63,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 43587
+      }
+    },
+    {
+      "ms": 846.912474,
+      "event": "server:socket",
+      "socket": 64,
+      "localPort": 43587,
+      "remotePort": 36502,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 847.009688,
+      "event": "server:request",
+      "server": 63,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 64,
+      "localPort": 43587,
+      "remotePort": 36502,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 848.324028,
+      "event": "server:response",
+      "server": 63,
+      "status": 201,
+      "socket": 64,
+      "localPort": 43587,
+      "remotePort": 36502,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 848.45253,
+      "event": "server:close",
+      "socket": 64,
+      "remotePort": 36502,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 848.668789,
+      "event": "server:close-called",
+      "server": 63
+    },
+    {
+      "ms": 848.7037,
+      "event": "server:close",
+      "server": 63
+    },
+    {
+      "ms": 848.776685,
+      "event": "server:listen",
+      "server": 65,
+      "port": 0
+    },
+    {
+      "ms": 849.015974,
+      "event": "server:listening",
+      "server": 65,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 42015
+      }
+    },
+    {
+      "ms": 849.3261,
+      "event": "server:socket",
+      "socket": 66,
+      "localPort": 42015,
+      "remotePort": 47022,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 849.405279,
+      "event": "server:request",
+      "server": 65,
+      "method": "GET",
+      "path": "/api/modules/schedule/entries/2c045cd4-8ed5-49c0-b472-c790e95a36fc",
+      "socket": 66,
+      "localPort": 42015,
+      "remotePort": 47022,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 850.010608,
+      "event": "server:response",
+      "server": 65,
+      "status": 503,
+      "socket": 66,
+      "localPort": 42015,
+      "remotePort": 47022,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 850.142894,
+      "event": "server:close",
+      "socket": 66,
+      "remotePort": 47022,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 850.336158,
+      "event": "server:close-called",
+      "server": 65
+    },
+    {
+      "ms": 850.364146,
+      "event": "server:close",
+      "server": 65
+    },
+    {
+      "ms": 850.430388,
+      "event": "server:listen",
+      "server": 67,
+      "port": 0
+    },
+    {
+      "ms": 850.640151,
+      "event": "server:listening",
+      "server": 67,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 46427
+      }
+    },
+    {
+      "ms": 850.897449,
+      "event": "server:socket",
+      "socket": 68,
+      "localPort": 46427,
+      "remotePort": 59828,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 850.968582,
+      "event": "server:request",
+      "server": 67,
+      "method": "GET",
+      "path": "/api/modules/schedule/entries/2c045cd4-8ed5-49c0-b472-c790e95a36fc",
+      "socket": 68,
+      "localPort": 46427,
+      "remotePort": 59828,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 851.436096,
+      "event": "server:response",
+      "server": 67,
+      "status": 200,
+      "socket": 68,
+      "localPort": 46427,
+      "remotePort": 59828,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 851.547336,
+      "event": "server:close",
+      "socket": 68,
+      "remotePort": 59828,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 851.709578,
+      "event": "server:close-called",
+      "server": 67
+    },
+    {
+      "ms": 851.734741,
+      "event": "server:close",
+      "server": 67
+    },
+    {
+      "ms": 855.534142,
+      "event": "server:listen",
+      "server": 69,
+      "port": 0
+    },
+    {
+      "ms": 856.148742,
+      "event": "server:listening",
+      "server": 69,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 45729
+      }
+    },
+    {
+      "ms": 857.177615,
+      "event": "server:socket",
+      "socket": 70,
+      "localPort": 45729,
+      "remotePort": 38316,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 857.35445,
+      "event": "server:request",
+      "server": 69,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 70,
+      "localPort": 45729,
+      "remotePort": 38316,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 858.913184,
+      "event": "server:response",
+      "server": 69,
+      "status": 201,
+      "socket": 70,
+      "localPort": 45729,
+      "remotePort": 38316,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 859.057292,
+      "event": "server:close",
+      "socket": 70,
+      "remotePort": 38316,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 859.269145,
+      "event": "server:close-called",
+      "server": 69
+    },
+    {
+      "ms": 859.305256,
+      "event": "server:close",
+      "server": 69
+    },
+    {
+      "ms": 859.36953,
+      "event": "server:listen",
+      "server": 71,
+      "port": 0
+    },
+    {
+      "ms": 859.644518,
+      "event": "server:listening",
+      "server": 71,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 46731
+      }
+    },
+    {
+      "ms": 859.90584,
+      "event": "server:socket",
+      "socket": 72,
+      "localPort": 46731,
+      "remotePort": 35136,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 860.001066,
+      "event": "server:request",
+      "server": 71,
+      "method": "GET",
+      "path": "/api/modules/schedule/entries/7fe4602b-1692-4607-b97d-7a752ba647a1",
+      "socket": 72,
+      "localPort": 46731,
+      "remotePort": 35136,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 860.601799,
+      "event": "server:response",
+      "server": 71,
+      "status": 404,
+      "socket": 72,
+      "localPort": 46731,
+      "remotePort": 35136,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 860.751811,
+      "event": "server:close",
+      "socket": 72,
+      "remotePort": 35136,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 860.924901,
+      "event": "server:close-called",
+      "server": 71
+    },
+    {
+      "ms": 860.953121,
+      "event": "server:close",
+      "server": 71
+    },
+    {
+      "ms": 861.012855,
+      "event": "server:listen",
+      "server": 73,
+      "port": 0
+    },
+    {
+      "ms": 861.223282,
+      "event": "server:listening",
+      "server": 73,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 41169
+      }
+    },
+    {
+      "ms": 861.435587,
+      "event": "server:socket",
+      "socket": 74,
+      "localPort": 41169,
+      "remotePort": 54420,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 861.515922,
+      "event": "server:request",
+      "server": 73,
+      "method": "GET",
+      "path": "/api/modules/schedule/entries",
+      "socket": 74,
+      "localPort": 41169,
+      "remotePort": 54420,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 862.223284,
+      "event": "server:response",
+      "server": 73,
+      "status": 200,
+      "socket": 74,
+      "localPort": 41169,
+      "remotePort": 54420,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 862.354621,
+      "event": "server:close",
+      "socket": 74,
+      "remotePort": 54420,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 862.495562,
+      "event": "server:close-called",
+      "server": 73
+    },
+    {
+      "ms": 862.524015,
+      "event": "server:close",
+      "server": 73
+    },
+    {
+      "ms": 862.592913,
+      "event": "server:listen",
+      "server": 75,
+      "port": 0
+    },
+    {
+      "ms": 863.237763,
+      "event": "server:listening",
+      "server": 75,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 35451
+      }
+    },
+    {
+      "ms": 863.477789,
+      "event": "server:socket",
+      "socket": 76,
+      "localPort": 35451,
+      "remotePort": 50748,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 863.548161,
+      "event": "server:request",
+      "server": 75,
+      "method": "GET",
+      "path": "/api/modules/schedule/occurrences?from=2026-09-21&to=2026-10-01",
+      "socket": 76,
+      "localPort": 35451,
+      "remotePort": 50748,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 864.519417,
+      "event": "server:response",
+      "server": 75,
+      "status": 200,
+      "socket": 76,
+      "localPort": 35451,
+      "remotePort": 50748,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 864.987776,
+      "event": "server:close",
+      "socket": 76,
+      "remotePort": 50748,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 865.159993,
+      "event": "server:close-called",
+      "server": 75
+    },
+    {
+      "ms": 865.18616,
+      "event": "server:close",
+      "server": 75
+    },
+    {
+      "ms": 865.427321,
+      "event": "server:listen",
+      "server": 77,
+      "port": 0
+    },
+    {
+      "ms": 865.690434,
+      "event": "server:listening",
+      "server": 77,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 46291
+      }
+    },
+    {
+      "ms": 865.938074,
+      "event": "server:socket",
+      "socket": 78,
+      "localPort": 46291,
+      "remotePort": 40646,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 866.028697,
+      "event": "server:request",
+      "server": 77,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 78,
+      "localPort": 46291,
+      "remotePort": 40646,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 866.963874,
+      "event": "server:response",
+      "server": 77,
+      "status": 201,
+      "socket": 78,
+      "localPort": 46291,
+      "remotePort": 40646,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 867.046153,
+      "event": "server:close",
+      "socket": 78,
+      "remotePort": 40646,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 867.185717,
+      "event": "server:close-called",
+      "server": 77
+    },
+    {
+      "ms": 867.21166,
+      "event": "server:close",
+      "server": 77
+    },
+    {
+      "ms": 867.264623,
+      "event": "server:listen",
+      "server": 79,
+      "port": 0
+    },
+    {
+      "ms": 867.475182,
+      "event": "server:listening",
+      "server": 79,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 41471
+      }
+    },
+    {
+      "ms": 867.716772,
+      "event": "server:socket",
+      "socket": 80,
+      "localPort": 41471,
+      "remotePort": 39472,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 867.815958,
+      "event": "server:request",
+      "server": 79,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 80,
+      "localPort": 41471,
+      "remotePort": 39472,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 868.572861,
+      "event": "server:response",
+      "server": 79,
+      "status": 201,
+      "socket": 80,
+      "localPort": 41471,
+      "remotePort": 39472,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 868.659648,
+      "event": "server:close",
+      "socket": 80,
+      "remotePort": 39472,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 868.788147,
+      "event": "server:close-called",
+      "server": 79
+    },
+    {
+      "ms": 868.812392,
+      "event": "server:close",
+      "server": 79
+    },
+    {
+      "ms": 872.375922,
+      "event": "server:listen",
+      "server": 81,
+      "port": 0
+    },
+    {
+      "ms": 872.83034,
+      "event": "server:listening",
+      "server": 81,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 37691
+      }
+    },
+    {
+      "ms": 873.494834,
+      "event": "server:socket",
+      "socket": 82,
+      "localPort": 37691,
+      "remotePort": 33544,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 873.648768,
+      "event": "server:request",
+      "server": 81,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 82,
+      "localPort": 37691,
+      "remotePort": 33544,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 875.06297,
+      "event": "server:response",
+      "server": 81,
+      "status": 201,
+      "socket": 82,
+      "localPort": 37691,
+      "remotePort": 33544,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 875.202284,
+      "event": "server:close",
+      "socket": 82,
+      "remotePort": 33544,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 875.389978,
+      "event": "server:close-called",
+      "server": 81
+    },
+    {
+      "ms": 875.421854,
+      "event": "server:close",
+      "server": 81
+    },
+    {
+      "ms": 875.517268,
+      "event": "server:listen",
+      "server": 83,
+      "port": 0
+    },
+    {
+      "ms": 875.816525,
+      "event": "server:listening",
+      "server": 83,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 42523
+      }
+    },
+    {
+      "ms": 876.07662,
+      "event": "server:socket",
+      "socket": 84,
+      "localPort": 42523,
+      "remotePort": 37928,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 876.176786,
+      "event": "server:request",
+      "server": 83,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/a87c3f23-3108-4202-99b7-6012be7bbc31",
+      "socket": 84,
+      "localPort": 42523,
+      "remotePort": 37928,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 877.278821,
+      "event": "server:response",
+      "server": 83,
+      "status": 200,
+      "socket": 84,
+      "localPort": 42523,
+      "remotePort": 37928,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 877.390875,
+      "event": "server:close",
+      "socket": 84,
+      "remotePort": 37928,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 877.563017,
+      "event": "server:close-called",
+      "server": 83
+    },
+    {
+      "ms": 877.592802,
+      "event": "server:close",
+      "server": 83
+    },
+    {
+      "ms": 877.677042,
+      "event": "server:listen",
+      "server": 85,
+      "port": 0
+    },
+    {
+      "ms": 877.942505,
+      "event": "server:listening",
+      "server": 85,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 39519
+      }
+    },
+    {
+      "ms": 878.179181,
+      "event": "server:socket",
+      "socket": 86,
+      "localPort": 39519,
+      "remotePort": 42306,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 878.269698,
+      "event": "server:request",
+      "server": 85,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/a87c3f23-3108-4202-99b7-6012be7bbc31",
+      "socket": 86,
+      "localPort": 39519,
+      "remotePort": 42306,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 879.784618,
+      "event": "server:response",
+      "server": 85,
+      "status": 422,
+      "socket": 86,
+      "localPort": 39519,
+      "remotePort": 42306,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 879.918915,
+      "event": "server:close",
+      "socket": 86,
+      "remotePort": 42306,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 880.129525,
+      "event": "server:close-called",
+      "server": 85
+    },
+    {
+      "ms": 880.162931,
+      "event": "server:close",
+      "server": 85
+    },
+    {
+      "ms": 884.481363,
+      "event": "server:listen",
+      "server": 87,
+      "port": 0
+    },
+    {
+      "ms": 884.970937,
+      "event": "server:listening",
+      "server": 87,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 44425
+      }
+    },
+    {
+      "ms": 885.586742,
+      "event": "server:socket",
+      "socket": 88,
+      "localPort": 44425,
+      "remotePort": 52362,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 885.785203,
+      "event": "server:request",
+      "server": 87,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries",
+      "socket": 88,
+      "localPort": 44425,
+      "remotePort": 52362,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 887.2049,
+      "event": "server:response",
+      "server": 87,
+      "status": 201,
+      "socket": 88,
+      "localPort": 44425,
+      "remotePort": 52362,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 887.379954,
+      "event": "server:close",
+      "socket": 88,
+      "remotePort": 52362,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 887.627882,
+      "event": "server:close-called",
+      "server": 87
+    },
+    {
+      "ms": 887.674823,
+      "event": "server:close",
+      "server": 87
+    },
+    {
+      "ms": 887.774234,
+      "event": "server:listen",
+      "server": 89,
+      "port": 0
+    },
+    {
+      "ms": 888.084991,
+      "event": "server:listening",
+      "server": 89,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 40847
+      }
+    },
+    {
+      "ms": 888.391269,
+      "event": "server:socket",
+      "socket": 90,
+      "localPort": 40847,
+      "remotePort": 52286,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 888.503327,
+      "event": "server:request",
+      "server": 89,
+      "method": "PUT",
+      "path": "/api/modules/schedule/entries/12f96b33-3413-4ac5-92b7-cf32f671cd7c",
+      "socket": 90,
+      "localPort": 40847,
+      "remotePort": 52286,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 889.820205,
+      "event": "server:response",
+      "server": 89,
+      "status": 200,
+      "socket": 90,
+      "localPort": 40847,
+      "remotePort": 52286,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 889.941458,
+      "event": "server:close",
+      "socket": 90,
+      "remotePort": 52286,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 890.132673,
+      "event": "server:close-called",
+      "server": 89
+    },
+    {
+      "ms": 890.16688,
+      "event": "server:close",
+      "server": 89
+    },
+    {
+      "ms": 890.286387,
+      "event": "server:listen",
+      "server": 91,
+      "port": 0
+    },
+    {
+      "ms": 890.687824,
+      "event": "server:listening",
+      "server": 91,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 37453
+      }
+    },
+    {
+      "ms": 890.972481,
+      "event": "server:socket",
+      "socket": 92,
+      "localPort": 37453,
+      "remotePort": 49726,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 891.072198,
+      "event": "server:request",
+      "server": 91,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries/12f96b33-3413-4ac5-92b7-cf32f671cd7c/deletion",
+      "socket": 92,
+      "localPort": 37453,
+      "remotePort": 49726,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 893.420991,
+      "event": "server:response",
+      "server": 91,
+      "status": 200,
+      "socket": 92,
+      "localPort": 37453,
+      "remotePort": 49726,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 893.562147,
+      "event": "server:close",
+      "socket": 92,
+      "remotePort": 49726,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 893.798404,
+      "event": "server:close-called",
+      "server": 91
+    },
+    {
+      "ms": 893.833829,
+      "event": "server:close",
+      "server": 91
+    },
+    {
+      "ms": 893.91689,
+      "event": "server:listen",
+      "server": 93,
+      "port": 0
+    },
+    {
+      "ms": 894.226091,
+      "event": "server:listening",
+      "server": 93,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 45505
+      }
+    },
+    {
+      "ms": 894.471268,
+      "event": "server:socket",
+      "socket": 94,
+      "localPort": 45505,
+      "remotePort": 45180,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 894.566094,
+      "event": "server:request",
+      "server": 93,
+      "method": "POST",
+      "path": "/api/modules/schedule/entries/12f96b33-3413-4ac5-92b7-cf32f671cd7c/deletion",
+      "socket": 94,
+      "localPort": 45505,
+      "remotePort": 45180,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 895.348848,
+      "event": "server:response",
+      "server": 93,
+      "status": 200,
+      "socket": 94,
+      "localPort": 45505,
+      "remotePort": 45180,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 895.450967,
+      "event": "server:close",
+      "socket": 94,
+      "remotePort": 45180,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 895.639912,
+      "event": "server:close-called",
+      "server": 93
+    },
+    {
+      "ms": 895.674015,
+      "event": "server:close",
+      "server": 93
+    }
+  ]
+}
