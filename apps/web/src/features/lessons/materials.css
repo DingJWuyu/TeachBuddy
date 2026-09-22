@@ -35,10 +35,21 @@
   margin: 20px 0;
   align-items: center;
 }
-.r34-export-options label {
+.r34-export-options label,
+.r34-exports fieldset label {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+.r34-export-options label {
+  white-space: nowrap;
+}
+.r34-export-options select,
+.r34-exports input[type="checkbox"] {
+  width: auto;
+}
+.r34-export-options input[type="number"] {
+  width: 5rem;
 }
 .r34-exports fieldset {
   border: 1px solid #e3e3e3;

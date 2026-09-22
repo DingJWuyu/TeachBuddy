@@ -191,6 +191,7 @@ export function ExportsPanel({ savable, onClose }) {
           <label>
             作答空白行
             <input
+              className="wb-input"
               type="number"
               min="0"
               max="20"
