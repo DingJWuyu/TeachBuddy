@@ -72,9 +72,18 @@ export function exportTree(lesson, options) {
         { ...para(`${number}. ${ref.snapshot.title}`), keepNext: true },
         ...filter(ref.snapshot.body.blocks, `${field}/snapshot/body/blocks`),
       );
-      if (options.kind !== "lesson-plan")
+      if (options.kind !== "lesson-plan" && options.answerSpaceLines > 0) {
+        // Keep the initial writing area with the question ending. Four lines
+        // fit below even our tallest image on A4; longer spaces must be free
+        // to continue across pages instead of forming an oversized keep chain.
+        const attachedLines = Math.min(options.answerSpaceLines, 4);
+        blocks.at(-1).keepNext = true;
         for (let i = 0; i < options.answerSpaceLines; i++)
-          blocks.push(para(" "));
+          blocks.push({
+            ...para(" "),
+            keepNext: i < attachedLines - 1,
+          });
+      }
       if (options.includeAnswers && ref.snapshot.solution.blocks.length)
         answers.push(
           para(`${number}.`),
@@ -136,9 +145,10 @@ export async function generateDocx(blocks, { files, principal }) {
     r.type === "math"
       ? ImportedXmlComponent.fromXmlString(formulaOmml(r.latex))
       : new TextRun({ text: r.text, font: "Noto Sans CJK SC", size: 22 });
-  async function render(items) {
+  async function render(items, keepLastNext = false) {
     const result = [];
-    for (const b of items) {
+    for (const [index, b] of items.entries()) {
+      const keepNext = b.keepNext || (keepLastNext && index === items.length - 1);
       if (b.type === "paragraph" || b.type === "heading")
         result.push(
           new Paragraph({
@@ -151,7 +161,7 @@ export async function generateDocx(blocks, { files, principal }) {
                 : undefined,
             spacing: { after: 120, line: 300 },
             widowControl: true,
-            keepNext: b.type === "heading" || b.keepNext,
+            keepNext: b.type === "heading" || keepNext,
           }),
         );
       else if (b.type === "math")
@@ -162,6 +172,7 @@ export async function generateDocx(blocks, { files, principal }) {
             ],
             spacing: { before: 100, after: 140 },
             keepLines: true,
+            keepNext,
           }),
         );
       else if (b.type === "image") {
@@ -191,40 +202,53 @@ export async function generateDocx(blocks, { files, principal }) {
               }),
             ],
             keepLines: true,
+            keepNext,
           }),
         );
       } else if (b.type === "list") {
-        for (const item of b.items) {
+        for (const [itemIndex, item] of b.items.entries()) {
+          const keepItemNext = keepNext && itemIndex === b.items.length - 1;
           const [first, ...rest] = item.blocks;
           if (first?.type === "paragraph")
             result.push(
-              ...(await render([
-                {
-                  ...first,
-                  runs: [
-                    { type: "text", text: item.label + " " },
-                    ...first.runs,
-                  ],
-                },
-                ...rest,
-              ])),
+              ...(await render(
+                [
+                  {
+                    ...first,
+                    runs: [
+                      { type: "text", text: item.label + " " },
+                      ...first.runs,
+                    ],
+                  },
+                  ...rest,
+                ],
+                keepItemNext,
+              )),
             );
           else
             result.push(
               new Paragraph({ text: item.label, keepNext: true }),
-              ...(await render(item.blocks)),
+              ...(await render(item.blocks, keepItemNext)),
             );
         }
       } else if (b.type === "table") {
         const rows = [];
-        for (const row of b.rows) {
+        for (const [rowIndex, row] of b.rows.entries()) {
           const cells = [];
           for (const cell of row)
             cells.push(
               new TableCell({
                 children: cell.blocks.length
-                  ? await render(cell.blocks)
-                  : [new Paragraph("")],
+                  ? await render(
+                      cell.blocks,
+                      keepNext && rowIndex === b.rows.length - 1,
+                    )
+                  : [
+                      new Paragraph({
+                        text: "",
+                        keepNext: keepNext && rowIndex === b.rows.length - 1,
+                      }),
+                    ],
               }),
             );
           rows.push(new TableRow({ children: cells, cantSplit: true }));
