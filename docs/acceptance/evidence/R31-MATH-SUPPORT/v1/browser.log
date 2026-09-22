@@ -1,0 +1,16 @@
+
+Running 2 tests using 1 worker
+
+(node:793982) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Local MathJax 3.2.2 and Noto Sans SC assets: /home/liam_t/项目/TeacherWorkspace-r31-math-support/apps/web/public/vendor/math/
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+Local MathJax 3.2.2 and Noto Sans SC assets: /home/liam_t/项目/TeacherWorkspace-r31-math-support/test-results/r31-math-support/offline/vendor
+  ✓  1 apps/web/e2e/r31-math-support.spec.js:24:1 › local distribution renders MathJax and Chinese fonts in a network-disabled cold browser (427ms)
+  ✓  2 apps/web/e2e/r31-math-support.spec.js:56:1 › real A11 page transport uploads, displays, downloads and restores R31 files; logout rejects old binding (1.1s)
+
+  2 passed (2.8s)

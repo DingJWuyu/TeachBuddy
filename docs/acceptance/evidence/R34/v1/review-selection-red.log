@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+(node:1061516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-lessons.spec.js:190:1 › WB-M020: deleted output selections do not block a fresh output (30.9s)
+
+
+  1) apps/web/e2e/materials-lessons.spec.js:190:1 › WB-M020: deleted output selections do not block a fresh output
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: '下载', exact: true })
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: '下载', exact: true }) with timeout 30000ms
+      - waiting for getByRole('button', { name: '下载', exact: true })
+
+
+      203 |   await page.getByRole("button", { name: "输出", exact: true }).click();
+      204 |   await page.getByRole("button", { name: "保存并生成", exact: true }).click();
+    > 205 |   await expect(page.getByRole("button", { name: "下载", exact: true })).toBeVisible({timeout: 30000});
+          |                                                                       ^
+      206 | });
+      207 | test("WB-M018: output round trip restores manuscript scroll", async ({page}) => {
+      208 |   await page.goto('/fixture/session');
+        at /home/liam_t/项目/TeacherWorkspace-r34-lessons/apps/web/e2e/materials-lessons.spec.js:205:71
+
+    Error Context: test-results/r34/playwright/materials-lessons-WB-M020--4545f-do-not-block-a-fresh-output/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34/playwright/materials-lessons-WB-M020--4545f-do-not-block-a-fresh-output/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34/playwright/materials-lessons-WB-M020--4545f-do-not-block-a-fresh-output/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-lessons.spec.js:190:1 › WB-M020: deleted output selections do not block a fresh output

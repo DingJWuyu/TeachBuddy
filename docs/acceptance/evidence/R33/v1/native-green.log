@@ -1,0 +1,28 @@
+TAP version 13
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: fixed native T and W preserve six question boundaries and existing answer roles
+ok 1 - fixed native T and W preserve six question boundaries and existing answer roles
+  ---
+  duration_ms: 1221.808052
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: Word answer-only image stays in solution and out of student asset snapshot
+ok 2 - Word answer-only image stays in solution and out of student asset snapshot
+  ---
+  duration_ms: 813.160777
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2388.012052

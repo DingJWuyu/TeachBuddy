@@ -1,0 +1,45 @@
+
+Running 1 test using 1 worker
+
+(node:1139967) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-integration-navigation.spec.js:85:1 › 题库使用位置可前往实际环节并返回题库现场 (19.8s)
+
+
+  1) apps/web/e2e/materials-integration-navigation.spec.js:85:1 › 题库使用位置可前往实际环节并返回题库现场 ─────────────
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: '真实材料整合课 自主探究', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: '真实材料整合课 自主探究', exact: true }) with timeout 15000ms
+      - waiting for getByRole('link', { name: '真实材料整合课 自主探究', exact: true })
+        34 × locator resolved to <a class="q-usage-link" href="/lessons/bbdfa092-5764-4710-aad5-3423e05ccdf9">真实材料整合课 自主探究</a>
+           - unexpected value "inactive"
+
+
+      103 |   await expect(page.getByLabel("搜索题目")).toHaveValue("集成");
+      104 |   await expect(page.getByRole("link", { name: "真实材料整合课 自主探究", exact: true })).toBeVisible();
+    > 105 |   await expect(usageLink).toBeFocused();
+          |                           ^
+      106 |   await usageLink.scrollIntoViewIfNeeded();
+      107 |   await page.screenshot({ path: path.join(evidence, "usage-return.png"), animations: "disabled" });
+      108 | });
+        at /home/liam_t/项目/TeacherWorkspace-material-closure/apps/web/e2e/materials-integration-navigation.spec.js:105:27
+
+    Error Context: test-results/r34-integration/browser/materials-integration-navigation-题库使用位置可前往实际环节并返回题库现场/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34-integration/browser/materials-integration-navigation-题库使用位置可前往实际环节并返回题库现场/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34-integration/browser/materials-integration-navigation-题库使用位置可前往实际环节并返回题库现场/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-integration-navigation.spec.js:85:1 › 题库使用位置可前往实际环节并返回题库现场 ──────────────

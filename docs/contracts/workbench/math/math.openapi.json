@@ -1,0 +1,3706 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TeachBuddy math and consumer extensions",
+    "version": "1.0.0-candidate.1",
+    "description": "M40/v1 设计候选，外层独立冻结后按固定 SHA 消费；旧材料和认证定义只外引。"
+  },
+  "x-contract-status": "READY_FOR_REVIEW",
+  "x-source-revision": "0b7f8968d088b50e569af0e58dce36e36bb93b74",
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "SessionCookie": []
+    }
+  ],
+  "paths": {
+    "/api/modules/math/v1/works": {
+      "get": {
+        "operationId": "listWorks",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "active",
+                "deleted"
+              ]
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "formula",
+                "plane",
+                "space",
+                "dynamic",
+                "html"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createWork",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Work"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWork"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/math/v1/works/{id}": {
+      "get": {
+        "operationId": "getWork",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Work"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateWork",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Work"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWork"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/math/v1/works/{id}/deletion": {
+      "post": {
+        "operationId": "setWorkDeletion",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Work"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetDeletion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/math/v1/works/{id}/copy": {
+      "post": {
+        "operationId": "copyWork",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Work"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopyWork"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/math/v1/works/{id}/versions": {
+      "get": {
+        "operationId": "listWorkVersions",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules/math/v1/works/{id}/versions/{version}": {
+      "get": {
+        "operationId": "getWorkVersion",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules/math/v1/works/{id}/exports": {
+      "post": {
+        "operationId": "exportWork",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkExport"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportWork"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/math/v1/works/{id}/reference": {
+      "get": {
+        "operationId": "readWorkForReference",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceReadWork"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules/lessons/v3": {
+      "get": {
+        "operationId": "listLessonsV3",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "active",
+                "deleted"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonListV3"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createLessonV3",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonV3"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLessonV3"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/lessons/v3/{id}": {
+      "get": {
+        "operationId": "getLessonV3",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonV3"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateLessonV3",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonV3"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLessonV3"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/lessons/v3/{id}/deletion": {
+      "post": {
+        "operationId": "setLessonDeletionV3",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonV3"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetDeletion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/lessons/v3/{id}/exports": {
+      "post": {
+        "operationId": "exportLessonV3",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportRecord"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportInput"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listLessonExportsV3",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules/lessons/v3/usages": {
+      "get": {
+        "operationId": "listUsagesV3",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "question",
+                "resource",
+                "math"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules": {
+      "get": {
+        "operationId": "getMathModuleCatalog",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleCatalogV3"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SessionCookie": {
+        "$ref": "../../auth.openapi.yaml#/components/securitySchemes/SessionCookie"
+      }
+    },
+    "schemas": {
+      "Id": {
+        "$ref": "../materials.openapi.yaml#/components/schemas/Id"
+      },
+      "Version": {
+        "$ref": "../materials.openapi.yaml#/components/schemas/Version"
+      },
+      "Timestamp": {
+        "$ref": "../materials.openapi.yaml#/components/schemas/Timestamp"
+      },
+      "File": {
+        "$ref": "../materials.openapi.yaml#/components/schemas/File"
+      },
+      "Document": {
+        "$ref": "../materials.openapi.yaml#/components/schemas/Document"
+      },
+      "UsageList": {
+        "$ref": "../materials.openapi.yaml#/components/schemas/UsageList"
+      },
+      "ExportInput": {
+        "$ref": "../materials.openapi.yaml#/components/schemas/ExportInput"
+      },
+      "ExportRecord": {
+        "$ref": "../materials.openapi.yaml#/components/schemas/ExportRecord"
+      },
+      "Name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "pattern": "\\S"
+      },
+      "Key": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 40,
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+      },
+      "Expr": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000,
+        "description": "math.md 的封闭数学表达式语法；禁止 JS/eval，常量亦用字符串。"
+      },
+      "Color": {
+        "type": "string",
+        "pattern": "^#[0-9a-fA-F]{6}$"
+      },
+      "Style": {
+        "type": "object",
+        "properties": {
+          "stroke": {
+            "$ref": "#/components/schemas/Color"
+          },
+          "fill": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Color"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "width": {
+            "type": "number",
+            "minimum": 0.5,
+            "maximum": 12
+          },
+          "dash": {
+            "enum": [
+              "solid",
+              "dashed",
+              "dotted"
+            ]
+          },
+          "fontSize": {
+            "type": "number",
+            "minimum": 8,
+            "maximum": 72
+          }
+        },
+        "required": [
+          "stroke",
+          "fill",
+          "width",
+          "dash",
+          "fontSize"
+        ],
+        "additionalProperties": false
+      },
+      "Viewport": {
+        "type": "object",
+        "properties": {
+          "xMin": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "xMax": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "yMin": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "yMax": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 2400
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 2400
+          },
+          "axes": {
+            "type": "boolean"
+          },
+          "grid": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "xMin",
+          "xMax",
+          "yMin",
+          "yMax",
+          "width",
+          "height",
+          "axes",
+          "grid"
+        ],
+        "additionalProperties": false
+      },
+      "XY": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "$ref": "#/components/schemas/Expr"
+          },
+          "y": {
+            "$ref": "#/components/schemas/Expr"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "additionalProperties": false
+      },
+      "Label": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 300
+          },
+          "dx": {
+            "type": "number",
+            "minimum": -500,
+            "maximum": 500
+          },
+          "dy": {
+            "type": "number",
+            "minimum": -500,
+            "maximum": 500
+          }
+        },
+        "required": [
+          "text",
+          "dx",
+          "dy"
+        ],
+        "additionalProperties": false
+      },
+      "Point": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          },
+          "type": {
+            "const": "point"
+          },
+          "at": {
+            "$ref": "#/components/schemas/XY"
+          },
+          "label": {
+            "$ref": "#/components/schemas/Label"
+          }
+        },
+        "required": [
+          "id",
+          "style",
+          "type",
+          "at",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "Line": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          },
+          "type": {
+            "const": "line"
+          },
+          "from": {
+            "$ref": "#/components/schemas/XY"
+          },
+          "to": {
+            "$ref": "#/components/schemas/XY"
+          },
+          "arrow": {
+            "enum": [
+              "none",
+              "end",
+              "both"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "style",
+          "type",
+          "from",
+          "to",
+          "arrow"
+        ],
+        "additionalProperties": false
+      },
+      "Polyline": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          },
+          "type": {
+            "const": "polyline"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/XY"
+            },
+            "minItems": 2,
+            "maxItems": 100
+          },
+          "closed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "style",
+          "type",
+          "points",
+          "closed"
+        ],
+        "additionalProperties": false
+      },
+      "Ellipse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          },
+          "type": {
+            "const": "ellipse"
+          },
+          "center": {
+            "$ref": "#/components/schemas/XY"
+          },
+          "rx": {
+            "$ref": "#/components/schemas/Expr"
+          },
+          "ry": {
+            "$ref": "#/components/schemas/Expr"
+          }
+        },
+        "required": [
+          "id",
+          "style",
+          "type",
+          "center",
+          "rx",
+          "ry"
+        ],
+        "additionalProperties": false
+      },
+      "Text": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          },
+          "type": {
+            "const": "text"
+          },
+          "at": {
+            "$ref": "#/components/schemas/XY"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "id",
+          "style",
+          "type",
+          "at",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "Curve": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          },
+          "type": {
+            "const": "function"
+          },
+          "expression": {
+            "$ref": "#/components/schemas/Expr"
+          },
+          "domain": {
+            "type": "object",
+            "properties": {
+              "min": {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              "max": {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "min",
+              "max"
+            ],
+            "additionalProperties": false
+          },
+          "label": {
+            "$ref": "#/components/schemas/Label"
+          }
+        },
+        "required": [
+          "id",
+          "style",
+          "type",
+          "expression",
+          "domain",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "Element": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Point"
+          },
+          {
+            "$ref": "#/components/schemas/Line"
+          },
+          {
+            "$ref": "#/components/schemas/Polyline"
+          },
+          {
+            "$ref": "#/components/schemas/Ellipse"
+          },
+          {
+            "$ref": "#/components/schemas/Text"
+          },
+          {
+            "$ref": "#/components/schemas/Curve"
+          }
+        ]
+      },
+      "Scene": {
+        "type": "object",
+        "properties": {
+          "viewport": {
+            "$ref": "#/components/schemas/Viewport"
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Element"
+            },
+            "minItems": 1,
+            "maxItems": 300
+          }
+        },
+        "required": [
+          "viewport",
+          "elements"
+        ],
+        "additionalProperties": false
+      },
+      "FormulaSource": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          },
+          "kind": {
+            "const": "formula"
+          },
+          "latex": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "caption": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000
+          },
+          "includeCaption": {
+            "type": "boolean"
+          },
+          "color": {
+            "$ref": "#/components/schemas/Color"
+          },
+          "fontSize": {
+            "type": "number",
+            "minimum": 8,
+            "maximum": 96
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "kind",
+          "latex",
+          "caption",
+          "includeCaption",
+          "color",
+          "fontSize"
+        ],
+        "additionalProperties": false
+      },
+      "PlaneSource": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          },
+          "kind": {
+            "const": "plane"
+          },
+          "scene": {
+            "$ref": "#/components/schemas/Scene"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "kind",
+          "scene"
+        ],
+        "additionalProperties": false
+      },
+      "SpatialPoint": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "x": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "y": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "z": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "label": {
+            "$ref": "#/components/schemas/Label"
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          }
+        },
+        "required": [
+          "id",
+          "x",
+          "y",
+          "z",
+          "label",
+          "style"
+        ],
+        "additionalProperties": false
+      },
+      "SpatialEdge": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "from": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "to": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          }
+        },
+        "required": [
+          "id",
+          "from",
+          "to",
+          "style"
+        ],
+        "additionalProperties": false
+      },
+      "SpaceSource": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          },
+          "kind": {
+            "const": "space"
+          },
+          "viewport": {
+            "$ref": "#/components/schemas/Viewport"
+          },
+          "azimuth": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "elevation": {
+            "type": "number",
+            "minimum": -89,
+            "maximum": 89
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpatialPoint"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpatialEdge"
+            },
+            "minItems": 1,
+            "maxItems": 300
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "kind",
+          "viewport",
+          "azimuth",
+          "elevation",
+          "points",
+          "edges"
+        ],
+        "additionalProperties": false
+      },
+      "Parameter": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "min": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "max": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "step": {
+            "type": "number",
+            "minimum": 1e-06,
+            "maximum": 1000000
+          },
+          "initial": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "min",
+          "max",
+          "step",
+          "initial"
+        ],
+        "additionalProperties": false
+      },
+      "ParameterValue": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "value": {
+            "type": "number",
+            "minimum": -1000000,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "Drag": {
+        "type": "object",
+        "properties": {
+          "pointId": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "xParameter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Key"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "yParameter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Key"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "pointId",
+          "xParameter",
+          "yParameter"
+        ],
+        "additionalProperties": false
+      },
+      "Step": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "visibleIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Key"
+            },
+            "minItems": 1,
+            "maxItems": 300
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParameterValue"
+            },
+            "minItems": 0,
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "visibleIds",
+          "values"
+        ],
+        "additionalProperties": false
+      },
+      "DynamicSource": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          },
+          "kind": {
+            "const": "dynamic"
+          },
+          "scene": {
+            "$ref": "#/components/schemas/Scene"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Parameter"
+            },
+            "minItems": 1,
+            "maxItems": 20
+          },
+          "drags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Drag"
+            },
+            "minItems": 0,
+            "maxItems": 30
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            },
+            "minItems": 0,
+            "maxItems": 30
+          },
+          "initialStepId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Key"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "kind",
+          "scene",
+          "parameters",
+          "drags",
+          "steps",
+          "initialStepId"
+        ],
+        "additionalProperties": false
+      },
+      "HtmlSource": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          },
+          "kind": {
+            "const": "html"
+          },
+          "fileId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "kind",
+          "fileId"
+        ],
+        "additionalProperties": false
+      },
+      "Source": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/FormulaSource"
+          },
+          {
+            "$ref": "#/components/schemas/PlaneSource"
+          },
+          {
+            "$ref": "#/components/schemas/SpaceSource"
+          },
+          {
+            "$ref": "#/components/schemas/DynamicSource"
+          },
+          {
+            "$ref": "#/components/schemas/HtmlSource"
+          }
+        ]
+      },
+      "Render": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "const": "ready"
+              },
+              "posterFileId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "presentationFileId": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reason": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "state",
+              "posterFileId",
+              "presentationFileId",
+              "reason"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "const": "invalid"
+              },
+              "posterFileId": {
+                "type": "null"
+              },
+              "presentationFileId": {
+                "type": "null"
+              },
+              "reason": {
+                "enum": [
+                  "invalid-formula",
+                  "invalid-expression",
+                  "invalid-geometry",
+                  "render-failed"
+                ]
+              }
+            },
+            "required": [
+              "state",
+              "posterFileId",
+              "presentationFileId",
+              "reason"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "const": "source-only"
+              },
+              "posterFileId": {
+                "type": "null"
+              },
+              "presentationFileId": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reason": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "state",
+              "posterFileId",
+              "presentationFileId",
+              "reason"
+            ]
+          }
+        ]
+      },
+      "CreateWork": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "originalFileId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "source",
+          "originalFileId"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateWork": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          }
+        },
+        "required": [
+          "baseVersion",
+          "title",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "SetDeletion": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "deleted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "baseVersion",
+          "deleted"
+        ],
+        "additionalProperties": false
+      },
+      "CopyWork": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          }
+        },
+        "required": [
+          "baseVersion",
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "WorkRevision": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "originalFileId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "render": {
+            "$ref": "#/components/schemas/Render"
+          },
+          "rendererVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "title",
+          "source",
+          "originalFileId",
+          "render",
+          "rendererVersion",
+          "createdAt"
+        ]
+      },
+      "Work": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "originalFileId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "render": {
+            "$ref": "#/components/schemas/Render"
+          },
+          "rendererVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "deletedAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "title",
+          "source",
+          "originalFileId",
+          "render",
+          "rendererVersion",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "WorkList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Work"
+            },
+            "minItems": 0,
+            "maxItems": 100000
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "RevisionList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkRevision"
+            },
+            "minItems": 0,
+            "maxItems": 100000
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ExportWork": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "format": {
+            "enum": [
+              "png",
+              "svg",
+              "source",
+              "html"
+            ]
+          },
+          "background": {
+            "enum": [
+              "transparent",
+              "white"
+            ]
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 4800
+          }
+        },
+        "required": [
+          "version",
+          "format",
+          "background",
+          "width"
+        ],
+        "additionalProperties": false
+      },
+      "WorkExport": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "workId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "workVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "format": {
+            "enum": [
+              "png",
+              "svg",
+              "source",
+              "html"
+            ]
+          },
+          "file": {
+            "$ref": "#/components/schemas/File"
+          },
+          "offline": {
+            "enum": [
+              "not-applicable",
+              "self-contained",
+              "unverified"
+            ]
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "workId",
+          "workVersion",
+          "format",
+          "file",
+          "offline",
+          "createdAt"
+        ]
+      },
+      "WorkSnapshot": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "workVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "posterFileId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rendererVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "presentationFileId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "workVersion",
+          "source",
+          "posterFileId",
+          "rendererVersion",
+          "presentationFileId"
+        ]
+      },
+      "ReferenceReadWork": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "deletedAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/WorkSnapshot"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "deletedAt",
+          "snapshot"
+        ]
+      },
+      "TeachingWork": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "deletedAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "title",
+          "deletedAt"
+        ]
+      },
+      "MathReferenceInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "kind": {
+            "const": "math"
+          },
+          "workId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "workVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "workId",
+          "workVersion",
+          "note"
+        ],
+        "additionalProperties": false
+      },
+      "MathReference": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "kind": {
+            "const": "math"
+          },
+          "workId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "workVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 20000
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/WorkSnapshot"
+          },
+          "sourceState": {
+            "enum": [
+              "active",
+              "deleted"
+            ]
+          },
+          "latestVersion": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "workId",
+          "workVersion",
+          "note",
+          "snapshot",
+          "sourceState",
+          "latestVersion"
+        ]
+      },
+      "ReferenceInputV3": {
+        "oneOf": [
+          {
+            "$ref": "../materials.openapi.yaml#/components/schemas/QuestionReferenceInput"
+          },
+          {
+            "$ref": "../materials.openapi.yaml#/components/schemas/ResourceReferenceInput"
+          },
+          {
+            "$ref": "#/components/schemas/MathReferenceInput"
+          }
+        ]
+      },
+      "ReferenceV3": {
+        "oneOf": [
+          {
+            "$ref": "../materials.openapi.yaml#/components/schemas/QuestionReference"
+          },
+          {
+            "$ref": "../materials.openapi.yaml#/components/schemas/ResourceReference"
+          },
+          {
+            "$ref": "#/components/schemas/MathReference"
+          }
+        ]
+      },
+      "SectionInputV3": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "content": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReferenceInputV3"
+            },
+            "minItems": 0,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "references"
+        ],
+        "additionalProperties": false
+      },
+      "SectionV3": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "content": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReferenceV3"
+            },
+            "minItems": 0,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "references"
+        ]
+      },
+      "CreateLessonV3": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "intro": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SectionInputV3"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReferenceInputV3"
+            },
+            "minItems": 0,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "title",
+          "intro",
+          "sections",
+          "materials"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateLessonV3": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "intro": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SectionInputV3"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReferenceInputV3"
+            },
+            "minItems": 0,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "baseVersion",
+          "title",
+          "intro",
+          "sections",
+          "materials"
+        ],
+        "additionalProperties": false
+      },
+      "LessonV3": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "deletedAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "intro": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SectionV3"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReferenceV3"
+            },
+            "minItems": 0,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "title",
+          "intro",
+          "sections",
+          "materials"
+        ]
+      },
+      "LessonListV3": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LessonV3"
+            },
+            "minItems": 0,
+            "maxItems": 100000
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ExportList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportRecord"
+            },
+            "minItems": 0,
+            "maxItems": 100000
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ReturnTarget": {
+        "type": "object",
+        "properties": {
+          "lessonId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "sectionId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "baseVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "referenceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "lessonId",
+          "sectionId",
+          "baseVersion",
+          "referenceId"
+        ],
+        "additionalProperties": false
+      },
+      "TeachingMathInput": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "const": "math"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "TeachingMathSource": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "const": "math"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "labelAtLink": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 300
+          },
+          "currentLabel": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 300
+          },
+          "deleted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "labelAtLink",
+          "currentLabel",
+          "deleted"
+        ]
+      },
+      "ModuleDescriptorV3": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "enum": [
+              "questions",
+              "lessons",
+              "math",
+              "resources",
+              "classes",
+              "schedule"
+            ]
+          },
+          "name": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^/[a-z][a-z0-9-]*$"
+          },
+          "navigation": {
+            "enum": [
+              "sidebar",
+              "top"
+            ]
+          },
+          "auxiliaryPanel": {
+            "type": "boolean"
+          },
+          "requires": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "questions.readForReference",
+                "questions.readForReferenceV2",
+                "resources.readForReferenceV2",
+                "math.readForReferenceV1",
+                "math.readForTeachingLinkV1",
+                "lessons.readForTeachingLink",
+                "classes.readClass",
+                "classes.readRecord"
+              ]
+            },
+            "minItems": 0,
+            "maxItems": 20,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "path",
+          "navigation",
+          "auxiliaryPanel",
+          "requires"
+        ]
+      },
+      "ModuleCatalogV3": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "const": 3
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModuleDescriptorV3"
+            },
+            "minItems": 0,
+            "maxItems": 6
+          }
+        },
+        "required": [
+          "version",
+          "items"
+        ]
+      },
+      "MathProblem": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/MathProblem409"
+          },
+          {
+            "$ref": "#/components/schemas/MathProblem413"
+          },
+          {
+            "$ref": "#/components/schemas/MathProblem422"
+          },
+          {
+            "$ref": "#/components/schemas/MathProblem503"
+          }
+        ]
+      },
+      "Problem": {
+        "anyOf": [
+          {
+            "$ref": "../materials.openapi.yaml#/components/schemas/Problem"
+          },
+          {
+            "$ref": "#/components/schemas/MathProblem"
+          }
+        ]
+      },
+      "MathProblem413": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "/problems/math/source-too-large"
+              },
+              "status": {
+                "const": 413
+              },
+              "title": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "field",
+              "reason"
+            ]
+          }
+        ]
+      },
+      "MathProblem422": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "/problems/math/work-not-ready"
+              },
+              "status": {
+                "const": 422
+              },
+              "title": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "field",
+              "reason"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "/problems/math/unsupported-work-version"
+              },
+              "status": {
+                "const": 422
+              },
+              "title": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "field",
+              "reason"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "/problems/math/unsupported-export"
+              },
+              "status": {
+                "const": 422
+              },
+              "title": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "field",
+              "reason"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "/problems/math/invalid-math-source"
+              },
+              "status": {
+                "const": 422
+              },
+              "title": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "field",
+              "reason"
+            ]
+          }
+        ]
+      },
+      "MathProblem503": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "/problems/math/render-unavailable"
+              },
+              "status": {
+                "const": 503
+              },
+              "title": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          }
+        ]
+      },
+      "MathProblem409": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "const": "/problems/math/reference-version-conflict"
+          },
+          "kind": {
+            "const": "math"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "currentVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "status": {
+            "const": 409
+          }
+        },
+        "required": [
+          "type",
+          "kind",
+          "id",
+          "currentVersion"
+        ]
+      }
+    },
+    "responses": {
+      "400": {
+        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "../materials.openapi.yaml#/components/schemas/Problem400"
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "../materials.openapi.yaml#/components/schemas/Problem401"
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "../materials.openapi.yaml#/components/schemas/Problem403"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "../materials.openapi.yaml#/components/schemas/Problem404"
+            }
+          }
+        }
+      },
+      "409": {
+        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "../materials.openapi.yaml#/components/schemas/Problem409"
+                },
+                {
+                  "$ref": "#/components/schemas/MathProblem409"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "413": {
+        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "../materials.openapi.yaml#/components/schemas/Problem413"
+                },
+                {
+                  "$ref": "#/components/schemas/MathProblem413"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "415": {
+        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "../materials.openapi.yaml#/components/schemas/Problem415"
+            }
+          }
+        }
+      },
+      "422": {
+        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "../materials.openapi.yaml#/components/schemas/Problem422"
+                },
+                {
+                  "$ref": "#/components/schemas/MathProblem422"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "503": {
+        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "../materials.openapi.yaml#/components/schemas/Problem503"
+                },
+                {
+                  "$ref": "#/components/schemas/MathProblem503"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "originalSha256": "b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a",
+  "byteLength": 1115735,
+  "requestedPages": [
+    7,
+    8
+  ],
+  "job": {
+    "id": "13f1bf6d-a98b-40f7-9b4f-60c6bc583494",
+    "kind": "extraction",
+    "target": {
+      "kind": "import",
+      "id": "ee2179fa-9ff1-4cff-a84d-f47d5b13fcf2",
+      "version": 1
+    },
+    "state": "failed",
+    "createdAt": "2026-09-22T13:13:27.413Z",
+    "updatedAt": "2026-09-22T13:13:31.013Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 0,
+      "total": null,
+      "unit": "stages"
+    },
+    "outputFileIds": [],
+    "issues": [
+      {
+        "code": "provider-unavailable",
+        "unitId": "file:44024524-bb2a-40c9-a750-a595373f2ee7:page:7",
+        "field": null,
+        "detail": "在线识别尚未接入，原稿已保存，可补充原稿并继续校对。"
+      },
+      {
+        "code": "provider-unavailable",
+        "unitId": "file:44024524-bb2a-40c9-a750-a595373f2ee7:page:8",
+        "field": null,
+        "detail": "在线识别尚未接入，原稿已保存，可补充原稿并继续校对。"
+      }
+    ]
+  },
+  "onlineCalls": 0
+}

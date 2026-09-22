@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "2b6cbcda934057a89c0443437e03b2e30e850a8d",
+  "identity": "test-principal",
+  "id": "480083fe-fb52-4b41-af38-fb4d514d5d6e",
+  "v1DocumentPreserved": true,
+  "oldRequestReplayPreserved": true,
+  "restartPreserved": true,
+  "dataDir": "/tmp/r33-upgrade-k2NMPx"
+}

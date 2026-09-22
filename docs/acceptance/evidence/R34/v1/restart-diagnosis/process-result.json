@@ -1,0 +1,109 @@
+{
+  "status": "PASS",
+  "pids": [
+    1145779,
+    1145791,
+    1145805
+  ],
+  "dataDir": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/r34-restart-diagnosis/process-209b953d-dd30-4e2c-b868-10fa84610389",
+  "port": 48564,
+  "restarts": 2,
+  "question": {
+    "id": "db86d30a-102e-425c-a965-80cd3b34b342",
+    "version": 1,
+    "createdAt": "2026-09-22T12:49:13.307Z",
+    "updatedAt": "2026-09-22T12:49:13.307Z",
+    "deletedAt": null,
+    "title": "自建题目",
+    "body": {
+      "version": 1,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "计算 "
+            },
+            {
+              "type": "math",
+              "latex": "1+1"
+            }
+          ]
+        }
+      ]
+    },
+    "solution": {
+      "version": 1,
+      "blocks": []
+    },
+    "note": "",
+    "starred": false,
+    "source": {
+      "kind": "manual"
+    }
+  },
+  "file": {
+    "id": "b177a6bd-9a65-4674-bed4-627abc4521fa",
+    "name": "original.json",
+    "mediaType": "text/plain",
+    "byteLength": 94,
+    "sha256": "8890f5d7a6304740f8e2d88c90ef217328ba886d0b2fdd891ae9bdafdbfe22e9",
+    "createdAt": "2026-09-22T12:49:13.345Z",
+    "duplicateOfFileId": null
+  },
+  "before": {
+    "migrations": [
+      {
+        "id": "materials_files_001",
+        "moduleId": "materials-files",
+        "appliedAt": "2026-09-22T12:49:13.280Z"
+      },
+      {
+        "id": "materials_jobs_001",
+        "moduleId": "materials-jobs",
+        "appliedAt": "2026-09-22T12:49:13.280Z"
+      },
+      {
+        "id": "questions_0001_question_items",
+        "moduleId": "questions",
+        "appliedAt": "2026-09-22T12:49:13.280Z"
+      },
+      {
+        "id": "questions_materials_001",
+        "moduleId": "questions",
+        "appliedAt": "2026-09-22T12:49:13.280Z"
+      },
+      {
+        "id": "resources_001",
+        "moduleId": "resources",
+        "appliedAt": "2026-09-22T12:49:13.281Z"
+      },
+      {
+        "id": "lessons_0001_lesson_tables",
+        "moduleId": "lessons",
+        "appliedAt": "2026-09-22T12:49:13.281Z"
+      },
+      {
+        "id": "lessons_materials_001",
+        "moduleId": "lessons",
+        "appliedAt": "2026-09-22T12:49:13.281Z"
+      }
+    ],
+    "document": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "旧 R31 文档"
+            }
+          ]
+        }
+      ]
+    },
+    "integrity": "ok"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "runtime": "/tmp/teacher-r34-attempt4",
+  "origin": "https://127.0.0.1:49644",
+  "source": "/tmp/teacher-r35-local-retained-copy",
+  "identity": "real-auth: copied retained database, fresh UI login; original fake-mail/self-signed HTTPS",
+  "node": "22.23.2",
+  "chrome": "152.0.7977.64",
+  "office": "LibreOffice 26.8.0.3 Linux",
+  "officeProfile": "/tmp/teacher-r34-attempt4-office3",
+  "officePort": 49645,
+  "display": ":144",
+  "productModelCalls": 0,
+  "productKeysRead": 0,
+  "WindowsWPS": "unverified"
+}

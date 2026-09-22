@@ -1,0 +1,809 @@
+{
+  "id": "922baeb4-53ef-45d2-8a25-84c743103767",
+  "version": 2,
+  "createdAt": "2026-09-22T11:37:52.590Z",
+  "updatedAt": "2026-09-22T11:37:53.656Z",
+  "deletedAt": null,
+  "title": "W.docx",
+  "origin": "C21 fixed original",
+  "input": {
+    "kind": "files",
+    "fileIds": [
+      "398b9bed-f326-40cd-bdaf-64eb7b815dbd"
+    ],
+    "pages": []
+  },
+  "supplementFileIds": [],
+  "drafts": [
+    {
+      "id": "201f4570-711e-4915-a16f-15b14b0173c4",
+      "title": "Q1.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "求函数 "
+              },
+              {
+                "type": "math",
+                "latex": "f(x)=\\frac{√(2x−1)}{x−2}"
+              },
+              {
+                "type": "text",
+                "text": " 的定义域。"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "A. [1/2,+∞)    B. [1/2,2)∪(2,+∞)    C. (1/2,2)∪(2,+∞)    D. (−∞,2)∪(2,+∞)"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "答案 B。根号内非负且分母不为零。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 2,
+              "runStart": 0,
+              "runEnd": 3
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 3,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 21,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "4b3c4c6d-756b-4b30-8765-cb3f3f974f2e",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 2,
+              "runStart": 0,
+              "runEnd": 3
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 3,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "0ac01d98-3475-4d4d-98ef-0f67cd58308c",
+      "title": "Q2.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "已知 "
+              },
+              {
+                "type": "math",
+                "latex": "f(x)={x}^{2}−2x−3"
+              },
+              {
+                "type": "text",
+                "text": "，配坐标轴与抛物线图，标出顶点和两个横轴交点。"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "（1）求零点；（2）写出单调递增区间。"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "图中红点为 (−1,0)、(1,−4)、(3,0)。"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "fileId": "0102a91b-6921-4043-aa05-bb38fbfda445",
+            "alt": "原稿配图",
+            "widthMm": 100
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "解析 f(x)=(x−1)²−4；零点为 −1、3；单调递增区间为 [1,+∞)。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 4,
+              "runStart": 0,
+              "runEnd": 3
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 5,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 6,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 7,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 22,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "2f6c48f9-4d87-4b70-86f2-a54049f9836a",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 4,
+              "runStart": 0,
+              "runEnd": 3
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 5,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 6,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 7,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "69ec474b-6b97-48a9-a247-6c5a2f01585f",
+      "title": "Q3.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "math",
+                "latex": "f(x)={ax+1, x<0; {x}^{2}−1, x≥0}"
+              },
+              {
+                "type": "text",
+                "text": "。若 "
+              },
+              {
+                "type": "math",
+                "latex": "f(−2)=3"
+              },
+              {
+                "type": "text",
+                "text": "，求 a 和 f(1)。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "答案 a=−1，f(1)=0。代入负数分支求 a，再代入非负分支。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 9,
+              "runStart": 0,
+              "runEnd": 5
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 23,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "9a58fb18-782b-4cc3-b5ef-3baafd173d11",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 9,
+              "runStart": 0,
+              "runEnd": 5
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "61e7f02f-0427-4417-a3a9-f75c49d3f54c",
+      "title": "Q4.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "解不等式 "
+              },
+              {
+                "type": "math",
+                "latex": "{log}_{2}(x−1)≤1"
+              },
+              {
+                "type": "text",
+                "text": "。"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "保留真正两行分段公式的 OMML 源，不将公式转成图片。"
+              }
+            ]
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "先有 x>1，底数 2 大于 1，故 x−1≤2，答案 1<x≤3。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 10,
+              "runStart": 0,
+              "runEnd": 3
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 11,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 24,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "25958694-acd9-4260-92b9-7277c321463c",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 10,
+              "runStart": 0,
+              "runEnd": 3
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 11,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "0f909038-3c8e-489d-9cea-a4b41e6df958",
+      "title": "Q5.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "如图，直角三角形 ABC，∠A=90°。求 BC 的长及 tan B。"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "图示 A 在左下、B 在右下、C 在左上；AB 边标 4，AC 边标 3。"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "fileId": "2fd8a43d-0410-4912-92bd-d29cf760f5ac",
+            "alt": "原稿配图",
+            "widthMm": 100
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "答案 BC=5，tan B=3/4；由勾股定理和正切定义得到。"
+              }
+            ]
+          }
+        ]
+      },
+      "answerStatus": "present",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 13,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 14,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 15,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 25,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "ed6bffbe-b966-43b7-9510-895486442656",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 13,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 14,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 15,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    },
+    {
+      "id": "64bb74dd-ca7d-4dd2-a809-d2c58c467849",
+      "title": "Q6.",
+      "body": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "正方体 ABCD-A₁B₁C₁D₁ 的棱长为 2。"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "（1）求体对角线 AC₁ 的长；（2）求体积。"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "fileId": "bcf4d998-56af-484b-a713-fe8266934f6c",
+            "alt": "原稿配图",
+            "widthMm": 100
+          }
+        ]
+      },
+      "solution": {
+        "version": 2,
+        "blocks": []
+      },
+      "answerStatus": "absent",
+      "typeId": null,
+      "tagIds": [],
+      "parts": [
+        {
+          "role": "body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 16,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 17,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 18,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        },
+        {
+          "role": "solution",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 26,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "45b78d47-d11c-4669-80c1-a628ef79a66f",
+          "code": "split-boundary",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 16,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 17,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 18,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ],
+          "resolution": "open"
+        },
+        {
+          "id": "d70cc631-4f51-44ad-a7ed-e3e18e803f4b",
+          "code": "uncertain-formula",
+          "field": "/body",
+          "locations": [
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 16,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 17,
+              "runStart": 0,
+              "runEnd": 1
+            },
+            {
+              "kind": "docx",
+              "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+              "part": "word/document.xml",
+              "paragraph": 18,
+              "runStart": 0,
+              "runEnd": 1
+            }
+          ],
+          "resolution": "open"
+        }
+      ],
+      "disposition": "pending",
+      "questionId": null
+    }
+  ],
+  "fragments": [
+    {
+      "id": "138eeb96-decf-4863-a84b-b9fdd0121120",
+      "text": "C21 固定批次：函数与空间几何",
+      "locations": [
+        {
+          "kind": "docx",
+          "fileId": "398b9bed-f326-40cd-bdaf-64eb7b815dbd",
+          "part": "word/document.xml",
+          "paragraph": 1,
+          "runStart": 0,
+          "runEnd": 1
+        }
+      ],
+      "disposition": "unassigned"
+    }
+  ],
+  "jobId": "b18dcfc2-bd9a-48eb-a4c3-2a76d315f3f5"
+}

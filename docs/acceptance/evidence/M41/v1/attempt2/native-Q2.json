@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "kind": "plane",
+  "scene": {
+    "viewport": {
+      "xMin": -6,
+      "xMax": 6,
+      "yMin": -5,
+      "yMax": 5,
+      "width": 960,
+      "height": 720,
+      "axes": true,
+      "grid": true
+    },
+    "elements": [
+      {
+        "id": "f1",
+        "type": "function",
+        "style": {
+          "stroke": "#2855a6",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 18
+        },
+        "expression": "x^2-2*x-2",
+        "domain": {
+          "min": -6,
+          "max": 6
+        },
+        "label": {
+          "text": "",
+          "dx": 10,
+          "dy": -10
+        }
+      }
+    ]
+  }
+}

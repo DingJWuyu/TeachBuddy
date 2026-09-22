@@ -26,6 +26,8 @@
 | Agent 真业务链 | 产品 `687121ec8d9afeccb527d2738f8b1ca22791dd69`、完整候选 `ec5094c00d122c77d2acdb376f4ede96eafb13e0`，`6d48bc7f214a6b27e51b3a8cbdfa6cffc212f4d1:docs/acceptance/evidence/C27/v1/math-recheck.md` 本地 independent PASS | 与原 `34e668ae97e1eb0cd5744550b6b05a4c25aa9301` 中未变的两模型真业务链结论合用；不代表完整 MVP 或外部条件通过 |
 | 静态数学模块 | 产品 `c3ab0dacd1ff172d8557117f028ebdd805235d41`、完整候选 `5a767dbc66ed6efb5fca1bcfe0870b7561c433b5`，self PASS | M42 正在实施；M43、M44 与完整数学关联尚未通过 |
 
+材料统一候选代码 `18a80073380116e1d30165f0001a86e5fdb2304c` 已组合最新 R33 与输出分页修复，完成本轮具名 self 回归；默认四行无纯白页，二十行的必要作答续页判断待 R35 独立复验。运行与边界见 [R34 attempt 5](docs/acceptance/evidence/R34/v1/integration5.md)。两项自然 fetch 失败仍 OPEN，在线和 Windows/WPS 未通过，不改变主干或完整 MVP 状态。
+
 材料 R30 候选 `8b8656ae9f9b6c70303b11ec29fbcf70f3b2a8c1` 已完成最终限定冻结，只冻结设计、实验消费与后续放行边界；完整 R31 已启动，不代表材料产品已交付。真在线 C21 最新制品 `2b10b4ecbfef907de1d0c368c7a29eb49af803c4` 与回执 `4115bb66a5522879421ae8b49cb704b524b80b2c` 仍为 FAIL，因此不声称材料或在线采集已交付。Agent 两批真实模型账本保持分列：C26 为 10 次 / 79,983 totalTokens，C27 为 11 次 / 88,550 totalTokens；排版修复和限定复验没有新增产品模型请求。实际价格、余额和账单仍未知，SDK 中的 `cost=0` 不证明免费。
 
 ## 从哪里开始读

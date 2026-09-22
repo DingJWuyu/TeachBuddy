@@ -1,0 +1,18 @@
+
+Running 8 tests using 1 worker
+
+(node:1217452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/attempt5-materials-integration-navigation.spec.js:85:1 › 题库使用位置可前往实际环节并返回题库现场 (2.6s)
+  ✓  2 apps/web/e2e/attempt5-materials-integration-navigation.spec.js:110:1 › 题库主动加入后保留成功反馈及前往备课入口 (2.4s)
+  ✓  3 apps/web/e2e/attempt5-materials-integration-navigation.spec.js:129:1 › 加入备课响应丢失后确认原请求仍提供前往入口且不重复 (2.3s)
+  ✓  4 apps/web/e2e/attempt5-materials-integration-navigation.spec.js:151:1 › 最新原生Word校对在真实外壳保存恢复并引用输出 (6.6s)
+  ✓  5 apps/web/e2e/attempt5-materials-integration-restart.spec.js:8:1 › 独立普通进程重启保持同一origin、未知上传原键和新浏览器持久数据 (4.5s)
+  ✓  6 apps/web/e2e/attempt5-materials-integration.spec.js:30:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 (23.4s)
+  ✓  7 apps/web/e2e/attempt5-materials-integration.spec.js:283:1 › 真实身份边界及保存丢响应：同键恢复、草稿保留、退出后拒绝旧页面 (1.3s)
+[workbench] modules discovered: questions, resources, lessons
+[workbench] migrations applied 7, skipped 0
+[workbench] modules enabled: questions, resources, lessons
+  ✓  8 apps/web/e2e/attempt5-materials-questions-fragments.spec.js:6:1 › synthetic page fragments use real upload, review, independent answer navigation and reload (3.4s)
+
+  8 passed (48.5s)
