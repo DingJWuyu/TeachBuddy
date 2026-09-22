@@ -1,0 +1,90 @@
+{
+  "question": {
+    "id": "a6ea24b3-c678-4886-8750-8baf0aa3e098",
+    "version": 1,
+    "createdAt": "2026-09-22T15:59:28.653Z",
+    "updatedAt": "2026-09-22T15:59:28.653Z",
+    "deletedAt": null,
+    "title": "实际数学与配图",
+    "source": {
+      "kind": "manual"
+    },
+    "note": "R35_PRIVATE_MUST_NOT_RENDER",
+    "starred": false,
+    "typeId": null,
+    "tagIds": [],
+    "answerStatus": "present",
+    "solution": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "ANSWER_ONLY_SEPARATE"
+            }
+          ]
+        }
+      ]
+    },
+    "body": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "独立复验：求下列函数定义域，并观察三角形。"
+            }
+          ]
+        },
+        {
+          "type": "math",
+          "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+        },
+        {
+          "type": "image",
+          "fileId": "27218eb5-edbc-4f82-a3d6-a2ab161e9e85",
+          "alt": "三角形",
+          "widthMm": 100
+        }
+      ]
+    }
+  },
+  "job": {
+    "id": "1943a907-9c98-4c0b-8e9f-9ee849b3865d",
+    "kind": "question-asset",
+    "target": {
+      "kind": "question",
+      "id": "a6ea24b3-c678-4886-8750-8baf0aa3e098",
+      "version": 1
+    },
+    "state": "succeeded",
+    "createdAt": "2026-09-22T15:59:28.755Z",
+    "updatedAt": "2026-09-22T15:59:28.819Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 1,
+      "total": 1,
+      "unit": "stages"
+    },
+    "outputFileIds": [
+      "efb4cae6-dcb3-4158-a835-74d9d24873bc"
+    ],
+    "issues": []
+  },
+  "files": [
+    {
+      "file": "figure-only-0.png",
+      "id": "efb4cae6-dcb3-4158-a835-74d9d24873bc",
+      "width": 1600,
+      "height": 817,
+      "alpha": true,
+      "transparent": 216800,
+      "visible": 1090400,
+      "sha256": "9ef95e96237d2a6ed08c335089c95d8f2a61963d64d7292a6205962315eb035e"
+    }
+  ]
+}

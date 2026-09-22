@@ -1,0 +1,132 @@
+{
+  "results": [
+    {
+      "name": "empty",
+      "state": "failed",
+      "drafts": 0,
+      "fragments": 0,
+      "result": "PASS",
+      "resumed": true
+    },
+    {
+      "name": "whitespace",
+      "state": "failed",
+      "drafts": 0,
+      "fragments": 0,
+      "result": "PASS",
+      "resumed": true
+    },
+    {
+      "name": "all-empty",
+      "state": "failed",
+      "drafts": 0,
+      "fragments": 0,
+      "result": "PASS",
+      "resumed": true
+    },
+    {
+      "name": "invalid",
+      "state": "partial",
+      "drafts": 0,
+      "fragments": 1,
+      "result": "PASS",
+      "resumed": true
+    },
+    {
+      "name": "prefix",
+      "state": "partial",
+      "drafts": 1,
+      "fragments": 1,
+      "result": "PASS",
+      "resumed": true
+    },
+    {
+      "name": "mixed-success-first",
+      "state": "partial",
+      "drafts": 1,
+      "fragments": 0,
+      "result": "PASS",
+      "resumed": true
+    },
+    {
+      "name": "mixed-empty-first",
+      "state": "partial",
+      "drafts": 1,
+      "fragments": 0,
+      "result": "PASS",
+      "resumed": true
+    },
+    {
+      "name": "historical-prefix",
+      "state": "partial",
+      "drafts": 0,
+      "fragments": 2,
+      "result": "PASS",
+      "resumed": true
+    },
+    {
+      "name": "long",
+      "files": [
+        {
+          "file": "long-0.png",
+          "id": "65965215-01c2-4f1e-961a-f00614a85de8",
+          "width": 1600,
+          "height": 2389,
+          "alpha": true,
+          "transparent": 3682083,
+          "visible": 140317,
+          "sha256": "94a340b3d22b08f1fb06fa0832264640646964e881def3c0d74928d33d514e37"
+        },
+        {
+          "file": "long-1.png",
+          "id": "072eef3e-62ca-4bde-a5a5-4292db3ebc6c",
+          "width": 1600,
+          "height": 2328,
+          "alpha": true,
+          "transparent": 3588070,
+          "visible": 136730,
+          "sha256": "351684138ab122fc55ffb49ab052ee1dbfdb30f8329c4357b1655e5d4e3cf7c8"
+        },
+        {
+          "file": "long-2.png",
+          "id": "e27def87-7cca-4854-8b0a-35f1598ce3f0",
+          "width": 1600,
+          "height": 575,
+          "alpha": true,
+          "transparent": 892685,
+          "visible": 27315,
+          "sha256": "95474926622161e0e568e4fe933b5ce3cc8c4b7087d9e92fe315b363e50ba631"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "name": "boundary-2399",
+      "heights": [
+        2399
+      ],
+      "result": "PASS"
+    },
+    {
+      "name": "boundary-2400",
+      "heights": [
+        2400
+      ],
+      "result": "PASS"
+    },
+    {
+      "name": "boundary-2401",
+      "heights": [
+        1092,
+        1381
+      ],
+      "result": "PASS"
+    }
+  ],
+  "restart": "PASS",
+  "localProviderCalls": 0,
+  "productModelRequests": 0,
+  "productKeyReads": 0,
+  "data": "/home/liam_t/项目/r35-local4-isolated/http-data",
+  "finishedAt": "2026-09-22T15:59:29.042Z"
+}

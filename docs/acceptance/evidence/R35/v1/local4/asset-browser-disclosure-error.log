@@ -1,0 +1,16 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: '用于 PPT', exact: true })[22m
+
+    at /home/liam_t/项目/TeacherWorkspace-r35-local-fixes/docs/acceptance/evidence/R35/v1/local4/scripts/asset-browser.mjs:23:56 {
+  log: [
+    "  - waiting for getByRole('button', { name: '用于 PPT', exact: true })"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.2
