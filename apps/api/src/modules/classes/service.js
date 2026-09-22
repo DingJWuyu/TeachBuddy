@@ -29,7 +29,7 @@ import {
 
 export function createClassesService({ repository, questions, lessons, math, now = () => new Date() }) {
   const sourceReaders = {
-    question: (principal, id) => questions.readForReference(principal, id),
+    question: (principal, id) => questions.readForReferenceV2(principal, id),
     lesson: (principal, id) => lessons.readForTeachingLink(principal, id),
     math: (principal, id) => math.readForTeachingLinkV1(principal, id)
   };

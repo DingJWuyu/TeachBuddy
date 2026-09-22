@@ -3,7 +3,7 @@
  * A deleted class is read-only until it is restored; records keep their own
  * deletion state either way.
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../workbench/icons.jsx';
 import { ConfirmDialog } from '../workbench/overlays.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
@@ -41,6 +41,25 @@ export function ClassDetail({
   const activeRecords = records.active ?? [];
   const position = latestPosition(activeRecords);
   const scroll = useScrollRestore(detailScrollTop || 0, onDetailScrollTop, classroom.id);
+  const pendingScroll = useRef(detailScrollTop || 0);
+
+  useEffect(() => {
+    const node = scroll.ref.current;
+    if (!node || pendingScroll.current <= 0 || recordsStatus !== 'ready') return;
+    // The record list and its editor load separately. Restore only after the
+    // opened editor has its fields, not against the shorter loading placeholder.
+    const restore = () => {
+      if (openRecordId && node.querySelector('[data-region="record-editor"]')
+        && !node.querySelector('[data-region="record-editor"] textarea')) return;
+      node.scrollTop = pendingScroll.current;
+      pendingScroll.current = 0;
+      observer.disconnect();
+    };
+    const observer = new MutationObserver(restore);
+    observer.observe(node, { childList: true, subtree: true });
+    restore();
+    return () => observer.disconnect();
+  }, [recordsStatus, openRecordId, scroll.ref]);
 
   async function saveName() {
     if (name.trim() === '') return;

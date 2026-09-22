@@ -57,11 +57,11 @@ export function useRoute() {
   return route;
 }
 
-export function navigate(path, { replace = false } = {}) {
+export function navigate(path, { replace = false, fromPath } = {}) {
   if (typeof window === 'undefined') return;
   if ((window.location.pathname + window.location.search) === path && !replace) return;
   if (replace) window.history.replaceState(null, '', path);
-  else window.history.pushState({ fromPath: window.location.pathname + window.location.search }, '', path);
+  else window.history.pushState({ fromPath: fromPath ?? window.location.pathname + window.location.search }, '', path);
   window.dispatchEvent(new Event(NAVIGATION_EVENT));
 }
 

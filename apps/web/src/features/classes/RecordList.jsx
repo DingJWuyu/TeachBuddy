@@ -83,7 +83,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
           </p>
         )
         : null))}
-      {record.sources.length > 0 && <SourceChips sources={record.sources} />}
+      {record.sources.length > 0 && <SourceChips sources={record.sources} returnPath={`/classes/${record.classId}/records/${record.id}`} />}
       {deletion.status === 'unconfirmed' && (
         <div className="c-record-problem" data-region="record-action-problem">
           <span>上次操作的结果未确认，请重试确认</span>

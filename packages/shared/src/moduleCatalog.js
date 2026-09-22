@@ -44,7 +44,7 @@ export const moduleCatalog = Object.freeze([
     "navigation": "sidebar",
     "auxiliaryPanel": true,
     "requires": [
-      "questions.readForReference",
+      "questions.readForReferenceV2",
       "lessons.readForTeachingLink",
       "math.readForTeachingLinkV1"
     ]

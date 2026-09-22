@@ -49,6 +49,13 @@ export function listClasses({ state = 'active' } = {}) {
   });
 }
 
+export function listTeachingQuestions({ q = '' } = {}) {
+  return call(async () => {
+    const { body } = await workbenchGet(`/api/modules/questions/v2/items${buildQuery({ q, state: 'active' })}`);
+    return assertList(body, '题目');
+  });
+}
+
 export function createClass({ key, payload }) {
   return call(async () => {
     const { body } = await workbenchPost('/api/modules/classes/items', payload, key);

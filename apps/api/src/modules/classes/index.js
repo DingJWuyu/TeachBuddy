@@ -13,8 +13,8 @@ export function createClassesModule({ db, mutations, questions, lessons, math, e
   if (!mutations || typeof mutations.execute !== 'function') {
     throw new TypeError('createClassesModule requires the mutations.execute seam.');
   }
-  if (!questions || typeof questions.readForReference !== 'function') {
-    throw new TypeError('createClassesModule requires the questions.readForReference port.');
+  if (!questions || typeof questions.readForReferenceV2 !== 'function') {
+    throw new TypeError('createClassesModule requires the questions.readForReferenceV2 port.');
   }
   if (!lessons || typeof lessons.readForTeachingLink !== 'function') {
     throw new TypeError('createClassesModule requires the lessons.readForTeachingLink port.');

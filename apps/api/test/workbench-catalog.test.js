@@ -34,9 +34,11 @@ const catalogEntry = (overrides = {}) => ({
   ...overrides
 });
 
-test('the shared catalog carries exactly the frozen material entries', () => {
+test('the shared catalog applies only the frozen teaching question dependency overlay', () => {
   const sample = JSON.parse(fs.readFileSync(path.join(repoRoot,'docs/contracts/workbench/math/samples.json'))).find(s=>s.id==='catalog-combined-target');
-  assert.deepEqual(moduleCatalog, sample.value.items);
+  const expected = structuredClone(sample.value.items);
+  expected.find(entry => entry.id === 'classes').requires[0] = 'questions.readForReferenceV2';
+  assert.deepEqual(moduleCatalog, expected);
   assert.equal(validateModuleCatalog(moduleCatalog).length, 0);
 });
 

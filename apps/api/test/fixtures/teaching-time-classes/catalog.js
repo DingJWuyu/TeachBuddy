@@ -14,7 +14,7 @@ export const classesCatalogEntry = Object.freeze({
   path: '/classes',
   navigation: 'sidebar',
   auxiliaryPanel: true,
-  requires: Object.freeze(['questions.readForReference'])
+  requires: Object.freeze(['questions.readForReferenceV2'])
 });
 
 export const classesImplementation = Object.freeze({

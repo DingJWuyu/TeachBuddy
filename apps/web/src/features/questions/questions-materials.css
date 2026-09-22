@@ -58,6 +58,10 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+.q-workspace input[type="checkbox"] {
+  width: auto;
+  flex: 0 0 auto;
+}
 .q-finder,
 .q-main {
   background: #fff;

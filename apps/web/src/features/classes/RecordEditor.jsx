@@ -134,6 +134,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
         <span className="wb-label">关联资料</span>
         <SourceChips
           sources={input.sources}
+          returnPath={`/classes/${record.classId}/records/${record.id}`}
           onRemove={(source) => setInput((current) => ({
             ...current,
             sources: current.sources.filter((item) => !(item.kind === source.kind && item.id === source.id))

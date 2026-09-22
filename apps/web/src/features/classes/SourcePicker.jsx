@@ -10,12 +10,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../workbench/icons.jsx';
 import { navigate } from '../workbench/routes.js';
 import { readLocal, writeLocal } from '../workbench/storage.js';
-import { listTeachingWorks } from './api.js';
+import { listTeachingQuestions, listTeachingWorks } from './api.js';
 import { listLessons } from '../lessons/api.js';
-import { listQuestions } from '../questions/api.js';
 import { sourceFallbackLabel, sourceHistoryHint, sourceKindLabel, sourceLabel, sourcePath } from './model.js';
 
-export function SourceChips({ sources, onRemove, onPick, disabled = false }) {
+export function SourceChips({ sources, onRemove, onPick, returnPath, disabled = false }) {
   return (
     <div className="c-sources" data-region="record-sources">
       {sources.length === 0 && <span className="wb-muted">未关联资料</span>}
@@ -36,7 +35,7 @@ export function SourceChips({ sources, onRemove, onPick, disabled = false }) {
               className="c-source-open"
               name="open-source"
               title={`打开${sourceKindLabel(source.kind)}`}
-              onClick={() => navigate(sourcePath(source.kind, source.id))}
+              onClick={() => navigate(sourcePath(source.kind, source.id), { fromPath: returnPath })}
             >
               {label}
             </button>
@@ -91,7 +90,7 @@ export function SourcePicker({ accountKey, value, onCancel, onConfirm }) {
     setStatus('loading');
     setItems([]);
     setError(null);
-    const loader = kind === 'math' ? listTeachingWorks({ q: query, kind: workKind }) : kind === 'lesson' ? listLessons({ q: query, state: 'active' }) : listQuestions({ q: query, state: 'active' });
+    const loader = kind === 'math' ? listTeachingWorks({ q: query, kind: workKind }) : kind === 'lesson' ? listLessons({ q: query, state: 'active' }) : listTeachingQuestions({ q: query });
     loader
       .then((rows) => {
         if (!cancelled) {

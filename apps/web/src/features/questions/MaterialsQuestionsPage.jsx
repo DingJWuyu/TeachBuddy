@@ -43,6 +43,8 @@ export default function MaterialsQuestionsPage({
   requestedId,
   registerTools,
   onOpenTools,
+  onReturnToRecord,
+  renderTeachingFeedback,
 }) {
   const pageNode = useRef(null);
   const collection = useRef(
@@ -1233,6 +1235,7 @@ export default function MaterialsQuestionsPage({
           </>
         ) : (
           <section className="q-question" ref={questionScroll.ref} onScroll={questionScroll.onScroll}>
+            {onReturnToRecord && <button onClick={onReturnToRecord}>返回教学记录</button>}
             <header>
               <strong>
                 {scene.kind === "new" ? "自建题目" : value.title || "题目"}
@@ -1399,6 +1402,15 @@ export default function MaterialsQuestionsPage({
                 ))
               )}
             </details>
+            {value.id && renderTeachingFeedback && (
+              <details open={Boolean(scene.teachingOpen)} onToggle={(event) => {
+                if (event.currentTarget.open !== Boolean(scene.teachingOpen))
+                  patchScene({ teachingOpen: event.currentTarget.open });
+              }}>
+                <summary>教学反馈</summary>
+                {renderTeachingFeedback(value.id)}
+              </details>
+            )}
             {value.id && (
               <details>
                 <summary>用于 PPT</summary>

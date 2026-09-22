@@ -1,8 +1,10 @@
 # TeachBuddy 教师个人工作台
 
-本分支是 **M43 数学工坊与真实材料、教学记录的局部集成候选**，未合入 main，也未完成完整 MVP 验收。固定输入、self 结果、剩余门槛和 M44 复跑入口见 [M43 集成回执](docs/acceptance/evidence/M43/v1/integration.md)。本页只描述该候选，不更新主干、DAG 或独立验收结论。
+本分支是 **材料题目与班级教学关联修订候选**，消费已固定的 M43/R33 组合，未合入 main，也未完成完整 MVP 验收。本次范围、self 证据与独立复跑入口见[实现回执](docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation/author.md)；原数学集成边界见 [M43 集成回执](docs/acceptance/evidence/M43/v1/integration.md)。本页不更新主干、DAG 或独立验收结论。
 
 `apps/` 包含真实认证与 SQLite 服务，以及题库、资源库、备课、数学工坊、班级教学和日程。数学工坊使用固定 M42 的公式、平面、立体、动态和 HTML 能力。备课通过 lessons v3 保存数学版本快照，可以从具体环节进入工坊、复用或另存作品并带回；旧 v2 遇到不可表示的数学内容会拒绝有损读写。教学记录消费真实数学链接端口，数学页装配各班反馈。
+
+班级记录通过题库 v2 选择手工、导入及复制的丰富题目，显式保存关联；题目详情可查看各班反馈并返回原记录草稿、日期、滚动和 AI 输入。classes 的完整来源投影使用 `questions.readForReferenceV2`。旧题库接口仍拒绝不可表示的丰富内容，旧 classes 接口仍拒绝含数学来源的有损表示。
 
 备课输出 DOCX/PDF，公式采用受控数学源，图形和动态作品采用固定海报，HTML 只保留标题及单独文件提示。动态和外部 HTML 可以下载为隔离演示文件。本地验证不等于 Windows、PowerPoint、WPS 或真实课堂设备通过。AI 输入现场可以保留，本候选未调用产品模型，未交付真实 Agent 验收。
 
