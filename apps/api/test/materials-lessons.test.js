@@ -370,6 +370,25 @@ test("MC19/21/22: unsupported formula rejects before acceptance, failed conversi
       baseVersion: 2,
     });
     assert.equal(fixed.status, 200);
+    const pandocPath = process.env.MATERIALS_PANDOC_PATH;
+    try {
+      process.env.MATERIALS_PANDOC_PATH = path.join(h.dir, "missing-pandoc");
+      const unavailable = await h.send("post", url, { ...options, baseVersion: 3 });
+      assert.equal(unavailable.status, 503, JSON.stringify(unavailable.body));
+      assert.equal((await h.send("get", url)).body.items.length, 1);
+      const plain = (await h.send("post", base, {
+        ...input, title: "无公式也需要转换器", intro: { version: 2, blocks: [] },
+      })).body;
+      const acceptedPlain = await h.send("post", `${base}/${plain.id}/exports`, options);
+      assert.equal(acceptedPlain.status, 202);
+      const failedPlain = await wait(acceptedPlain.body.jobId);
+      assert.equal(failedPlain.state, "failed");
+      assert.equal(failedPlain.issues[0].code, "conversion-failed");
+      assert.deepEqual(failedPlain.outputFileIds, []);
+    } finally {
+      if (pandocPath === undefined) delete process.env.MATERIALS_PANDOC_PATH;
+      else process.env.MATERIALS_PANDOC_PATH = pandocPath;
+    }
     const original = process.env.MATERIALS_OFFICE_ROOT;
     process.env.MATERIALS_OFFICE_ROOT = path.join(h.dir, "missing-office");
     const failure = await h.send("post", url, { ...options, baseVersion: 3 });

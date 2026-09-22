@@ -11,7 +11,11 @@
 3. 进入“备课”，点击“新建备课”，填写课题、添加环节，点击环节中的“从题库取题”，勾选题目并“采用所选”，最后保存。
 4. 从侧栏进入资源库、数学工坊或班级教学；顶栏“日程”进入时间安排。
 
-此候选的 AI 发送按钮尚不可用，Agent 由后续固定候选合流。新 F60 工具和完整备份/恢复尚未实现。Pandoc 输出修复由独立任务处理；本次未复验全部导出格式、在线采集、真实邮件投递和物理设备。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
+此候选的 AI 发送按钮尚不可用，Agent 由后续固定候选合流。新 F60 工具和完整备份/恢复尚未实现。在线采集、真实邮件投递和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
+
+## DOCX 输出
+
+本分支已集成 R34 Pandoc 输出修复。Pandoc 3.11 生成可编辑公式 DOCX，再沿既有 LibreOffice 链校验和转换 PDF。服务使用 `MATERIALS_PANDOC_PATH` 指向 Pandoc 可执行文件，并沿用 `MATERIALS_OFFICE_ROOT`；工具二进制不进入仓库。固定候选的验证及 Word/WPS 真人待验条件见 [Pandoc 报告](docs/acceptance/evidence/R34/v1/pandoc.md)。本分支集成自验见 [PREVIEW-OFFICE 回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)。
 
 ## 本机服务与数据
 

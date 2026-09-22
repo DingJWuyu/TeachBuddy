@@ -70,7 +70,7 @@ export function createLessonExports({
       if (!row) throw new Error("Missing accepted export");
       const record = JSON.parse(row.record),
         snapshot = JSON.parse(row.snapshot);
-      let stage = "read";
+      let stage = "generate";
       try {
         if (record.fileId) {
           files.read(principal, record.fileId);
@@ -81,7 +81,7 @@ export function createLessonExports({
           };
         }
         reportProgress({ completed: 0, total: 3, unit: "stages" });
-        const docx = await generateDocx(snapshot.blocks, { files, principal });
+        const docx = await generateDocx(snapshot.blocks, { files, principal, signal });
         signal.throwIfAborted();
         reportProgress({ completed: 1, total: 3, unit: "stages" });
         stage = "convert";
@@ -129,7 +129,7 @@ export function createLessonExports({
             {
               code: signal.aborted
                 ? "cancelled"
-                : stage === "read"
+                : stage === "generate" && !error.pandocFailure
                   ? "missing-asset"
                   : stage === "write"
                     ? "disk-full"

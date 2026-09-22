@@ -2,9 +2,10 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 import { createIntegration } from "../../api/test/fixtures/auth-integration/harness.js";
-const evidence = path.resolve("docs/acceptance/evidence/R34/v1/attempt2");
+const evidence = path.resolve(process.env.R34_BROWSER_EVIDENCE ?? "test-results/r34-integration/evidence");
 const root = path.resolve("test-results/r34-integration");
 fs.mkdirSync(root, { recursive: true });
+fs.mkdirSync(evidence, { recursive: true });
 let world;
 test.afterEach(async ({ context }) => {
   await context.close();

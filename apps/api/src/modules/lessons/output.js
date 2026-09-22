@@ -1,19 +1,6 @@
-import {
-  Document,
-  Paragraph,
-  TextRun,
-  Table,
-  TableRow,
-  TableCell,
-  ImageRun,
-  ImportedXmlComponent,
-  Packer,
-  HeadingLevel,
-  WidthType,
-} from "docx";
-import sharp from "sharp";
-import { formulaOmml } from "./formula.js";
+import { validateFormulas } from "./formula.js";
 import { materialsError } from "../../workbench/jobs/index.js";
+export { generateDocx } from "./pandoc.js";
 const para = (text) => ({ type: "paragraph", runs: [{ type: "text", text }] });
 const heading = (text) => ({
   type: "heading",
@@ -132,169 +119,17 @@ export function exportTree(lesson, options) {
   if (notes.length) blocks.push(heading("教师注记"), ...notes);
   // Validate only the filtered distribution tree. Excluded answers cannot
   // obstruct or leak into student outputs, even when their formula is invalid.
+  const formulas = [];
   const validate = (items) =>
     items.forEach((b) => {
-      if (b.type === "math") formulaOmml(b.latex, b.field);
+      if (b.type === "math") formulas.push({ latex: b.latex, field: b.field });
       b.runs?.forEach((r, i) => {
-        if (r.type === "math") formulaOmml(r.latex, `${b.field}/runs/${i}`);
+        if (r.type === "math") formulas.push({ latex: r.latex, field: `${b.field}/runs/${i}` });
       });
       b.items?.forEach((i) => validate(i.blocks));
       b.rows?.forEach((row) => row.forEach((c) => validate(c.blocks)));
     });
   validate(blocks);
+  validateFormulas(formulas);
   return blocks;
-}
-export async function generateDocx(blocks, { files, principal }) {
-  const bytes = async (id) => {
-    const chunks = [];
-    for await (const chunk of await files.open(principal, id))
-      chunks.push(chunk);
-    return Buffer.concat(chunks);
-  };
-  const inline = (r) =>
-    r.type === "math"
-      ? ImportedXmlComponent.fromXmlString(formulaOmml(r.latex))
-      : new TextRun({ text: r.text, font: "Noto Sans CJK SC", size: 22 });
-  async function render(items, keepLastNext = false) {
-    const result = [];
-    for (const [index, b] of items.entries()) {
-      const keepNext = b.keepNext || (keepLastNext && index === items.length - 1);
-      if (b.type === "paragraph" || b.type === "heading")
-        result.push(
-          new Paragraph({
-            children: b.runs.map(inline),
-            heading:
-              b.type === "heading"
-                ? b.level === 1
-                  ? HeadingLevel.HEADING_1
-                  : HeadingLevel.HEADING_2
-                : undefined,
-            spacing: { after: 120, line: 300 },
-            widowControl: true,
-            keepNext: b.type === "heading" || keepNext,
-          }),
-        );
-      else if (b.type === "math")
-        result.push(
-          new Paragraph({
-            children: [
-              ImportedXmlComponent.fromXmlString(formulaOmml(b.latex, b.field)),
-            ],
-            spacing: { before: 100, after: 140 },
-            keepLines: true,
-            keepNext,
-          }),
-        );
-      else if (b.type === "image") {
-        const raw = await bytes(b.fileId);
-        const image = sharp(raw, { limitInputPixels: 40000000 });
-        const meta = await image.metadata();
-        const scale = Math.min(
-          (b.widthMm * 96) / 25.4 / meta.width,
-          650 / meta.height,
-        );
-        const png = await image.png().toBuffer();
-        result.push(
-          new Paragraph({
-            children: [
-              new ImageRun({
-                type: "png",
-                data: png,
-                transformation: {
-                  width: Math.round(meta.width * scale),
-                  height: Math.round(meta.height * scale),
-                },
-                altText: {
-                  title: b.alt ?? "",
-                  description: b.alt ?? "",
-                  name: "题图",
-                },
-              }),
-            ],
-            keepLines: true,
-            keepNext,
-          }),
-        );
-      } else if (b.type === "list") {
-        for (const [itemIndex, item] of b.items.entries()) {
-          const keepItemNext = keepNext && itemIndex === b.items.length - 1;
-          const [first, ...rest] = item.blocks;
-          if (first?.type === "paragraph")
-            result.push(
-              ...(await render(
-                [
-                  {
-                    ...first,
-                    runs: [
-                      { type: "text", text: item.label + " " },
-                      ...first.runs,
-                    ],
-                  },
-                  ...rest,
-                ],
-                keepItemNext,
-              )),
-            );
-          else
-            result.push(
-              new Paragraph({ text: item.label, keepNext: true }),
-              ...(await render(item.blocks, keepItemNext)),
-            );
-        }
-      } else if (b.type === "table") {
-        const rows = [];
-        for (const [rowIndex, row] of b.rows.entries()) {
-          const cells = [];
-          for (const cell of row)
-            cells.push(
-              new TableCell({
-                children: cell.blocks.length
-                  ? await render(
-                      cell.blocks,
-                      keepNext && rowIndex === b.rows.length - 1,
-                    )
-                  : [
-                      new Paragraph({
-                        text: "",
-                        keepNext: keepNext && rowIndex === b.rows.length - 1,
-                      }),
-                    ],
-              }),
-            );
-          rows.push(new TableRow({ children: cells, cantSplit: true }));
-        }
-        result.push(
-          new Table({ rows, width: { size: 100, type: WidthType.PERCENTAGE } }),
-        );
-      }
-    }
-    return result;
-  }
-  const children = await render(blocks);
-  return Packer.toBuffer(
-    new Document({
-      creator: "",
-      title: "",
-      description: "",
-      styles: {
-        default: {
-          document: {
-            run: { font: "Noto Sans CJK SC", size: 22 },
-            paragraph: { spacing: { line: 300, after: 120 } },
-          },
-        },
-      },
-      sections: [
-        {
-          properties: {
-            page: {
-              size: { width: 11906, height: 16838 },
-              margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 },
-            },
-          },
-          children,
-        },
-      ],
-    }),
-  );
 }
