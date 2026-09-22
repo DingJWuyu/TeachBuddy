@@ -88,12 +88,26 @@ F60独立冻结后才派F61-F63。F62可运行self后进行A12恢复专项，不
 | 数学冻结 | `1a5dd015863d749e5244346f4eaad24ac506670d:docs/acceptance/evidence/M40/v1/handoff.md`；具体旧实现和M41/M42输入可沿交接或M44报告读取。 |
 | 教学时间冻结 | 设计 `afda1c5d8d8c2de93f1e045ff2ad32e2681bd116`；独立 `f9eb35f2180576daee4aedfb114049f4cb357694`。作品扩展设计 `a44587b9bd18618d77df13f7349f5043a297d226`；独立 `3dbead5af93059b0f890c531097b234e5f453fae:docs/acceptance/evidence/T50-MATH-CONTRACT/v1/review.md`。 |
 | 首批Agent契约 | 设计 `18293e9389e739ed8aaf67ee568503ca8e87d475`；独立 `741025bd0a8e09098b5877428b81c2bdd7f357d0:docs/acceptance/evidence/C25/v1/correction-review.md`。F60全模块映射仍待独立冻结和实现。 |
-| C22目标Office验证 | 制品 `7f965c6408a73d30524ff8e11c40484a352232c1`；独立 `f877b6395cbfbde4b2d8aa7e8d3f64496aea22cc:docs/acceptance/evidence/R30-MATERIALS-NEXT/v1/c22-gui-review.md`。本机GUI/可编辑公式/打印已闭环；Windows/WPS、同内容目标PDF仍需实际输入。 |
-| C23目标离线验证 | 制品 `d1490531e014ef437374c2f5a23cf3073baeef56`；独立 `b01bc73954cbbc13e464738e0f6f8aa6c6f12084:docs/acceptance/evidence/M40/v1/correction-review.md`。Windows Edge/Chrome、课堂设备实测仍未交。 |
+| C22目标Office验证 | 制品 `7f965c6408a73d30524ff8e11c40484a352232c1`；独立 `f877b6395cbfbde4b2d8aa7e8d3f64496aea22cc:docs/acceptance/evidence/R30-MATERIALS-NEXT/v1/c22-gui-review.md`。本机GUI/可编辑公式/打印已闭环；用户新到Word/WPS反馈揭示原制品失败，替代Pandoc样例切片通过；正式修复与同内容目标PDF见真人交接。 |
+| C23目标离线验证 | 制品 `d1490531e014ef437374c2f5a23cf3073baeef56`；独立 `b01bc73954cbbc13e464738e0f6f8aa6c6f12084:docs/acceptance/evidence/M40/v1/correction-review.md`。个人Windows Edge/Chrome离线操作已获user反馈；课堂设备仍未交，具体范围见真人交接。 |
 | 材料完整剩余矩阵 | 读取最新R35 local-review6的28行矩阵。Provider未知结果/新在线恢复仍需真实条件；人工补图不替代自动质量；M015仍需同内容目标Office完整PDF及核对采用。 |
 | 历史传输观察 | `880e6e68be0855b3289dea8db3c87e8c67bc1042:docs/acceptance/evidence/R34/v1/restart-diagnosis2.md`。OBS-001/002仍OPEN；无新cause不重派相同诊断，重启成功不构成根因闭环。 |
 
 产品/验证命令从对应候选回执读取，端口、数据库、浏览器及临时目录按新任务隔离；源候选和旧失败现场只读。部署选择、大陆网络、备份独立位置及目标设备通过证据仍未最终交付。
+
+<a id="真人交接"></a>
+## 目标设备与邮件的真人交接
+
+用户提供的[原始记录](/home/liam_t/项目/TeacherWorkspace-office-comparison/experiments/human-acceptance-20260922.md)尚未提交，SHA-256为 `5c09e0cd73facb2c4b9b07394f427bbaa09a5db9a580bf2779917943d28ea65c`。来源只读；78份必要Office材料的路径/摘要固定于控制worktree `.scratch/dag-dispatch/R34-PANDOC/1/input-manifest.json`。R34任务归档必要无秘密副本，不提交依赖或实际认证数据。以下为user反馈，不改标independent或完整节点PASS。
+
+| 项目 | 已接受事实与下一条件 |
+| --- | --- |
+| C22 / R34 | 原7f965c6的学生讲义Word打不开、WPS缺公式；Pandoc 3.11替代小样和完整六稿有Windows Word/WPS具名反馈。编辑轮次、改后PDF、具体版本/保存件未全收集，正式产品仍未替换。R34-PANDOC修正式输出，后继取新候选验收；不能继续标为仅待真人。 |
+| C23 / M44 | `b01bc73954cbbc13e464738e0f6f8aa6c6f12084:docs/acceptance/evidence/M40/v1/correction-evidence/downloads/` 的M-D离线文件等由用户在个人Windows Edge/Chrome断网冷启动并操作参数/拖动/步骤，通过该切片；真实课堂设备仍待验证。 |
+| A12 | 用户在9ecabbf60cbbaecce2e9be8191d270068eb675cf隔离认证UI用QQ真实发信/收件、注册、找回，新密码成功且旧密码拒绝。未收集延迟/截图，不扩大到后继恢复或所有邮件场景。iPad在学校网络打不开入口，路由/本机服务已有检查但原因未确诊；未安装信任证书或开始跨设备认证，不判产品FAIL或PASS。 |
+| EHOST / 现场 | 用户决定后续租服务器和域名，现在仍仅本机开发，不采购/付费/部署。两个临时UFW规则已告知用户删除但未确认；不擅改系统网络。实际凭据/库/短期证书在用户私有配置目录，根不读取或提交；可互访网络就绪后恢复真人测试，证书使用前核对有效期，完成后清理。 |
+
+完整输入、两份Office README及人工覆盖以原记录为准；接收目录 `/home/liam_t/项目/TeacherWorkspace-human-acceptance-20260922/` 保留供用户接续，不因本次状态同步删除。
 
 <a id="模型窗口"></a>
 ## 产品模型窗口与消耗
