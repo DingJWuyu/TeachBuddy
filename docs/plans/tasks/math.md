@@ -42,7 +42,7 @@ M40 的材料输入是 R30 独立冻结包，不是 R35 完整产品；设计可
 
 写入边界：工坊与备课公共端口适配、返回现场、跨模块 E2E 及集成清单，并交付可供 Agent 使用的操作清单。
 
-输入与集成：本地实现启动时，任务包必须固定 M `b0703907a7339513ed34bfed5c1e6787cc65d37d:docs/acceptance/evidence/M42/v1/attempt2.md`、P `6398bf2dae85d1872c929aa8ef32d5705d763687:docs/acceptance/evidence/R34/v1/integration3.md`、D `1a5dd015863d749e5244346f4eaad24ac506670d:docs/acceptance/evidence/M40/v1/handoff.md`、R35 具名本地材料消费切片的 independent PASS 回执，并交接外壳、lessons、目录、迁移入口、manifest 及锁文件等共享路径的唯一写权。目前 R35 仍在验收，这些前置不可预设已满足，M43 也不可记为已启动。完整 M43 self PASS 另需完整 R35 independent PASS。开发替身或仅制作端通过不能替代真实往返、重启与离线验证。
+输入与集成：本地实现启动时，任务包必须固定 M `b0703907a7339513ed34bfed5c1e6787cc65d37d:docs/acceptance/evidence/M42/v1/attempt2.md`、P `6398bf2dae85d1872c929aa8ef32d5705d763687:docs/acceptance/evidence/R34/v1/integration3.md`、D `1a5dd015863d749e5244346f4eaad24ac506670d:docs/acceptance/evidence/M40/v1/handoff.md`、R35 具名本地材料消费切片的 independent PASS 回执，并交接外壳、lessons、目录、迁移入口、manifest 及锁文件等共享路径的唯一写权。这些前置以当次固定回执和派发为准；当前执行状态由[运行台账](../run-state.md)记录，不从任务说明推定已满足。完整 M43 self PASS 另需完整 R35 independent PASS。开发替身或仅制作端通过不能替代真实往返、重启与离线验证。
 
 - 产物/完成：从指定备课环节进入制作，完成带回且草稿/选中/滚动不丢；已有作品可复用，修改影响遵守版本规则。下载动态成果后，在全新浏览器环境断网打开，不靠工作台登录、CDN 缓存或本地服务；静态输出用于外部 PPT 的实际取用可验证。
 

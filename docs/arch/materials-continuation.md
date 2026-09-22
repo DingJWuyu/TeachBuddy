@@ -2,7 +2,7 @@
 
 供后续执行者按范围读取。固定提案 `da23eb680a9c8b214ad18482d4f1fbc8a5f3fded` 已经 `677161bd23e37e2d8e22ae7e47214e2e662011ed:docs/acceptance/evidence/R30-MATERIALS-CONTINUATION/v1/review.md` 限定 independent PASS，根已采纳其 M43/M44 本地启动边例外。**该 PASS 只是依赖设计核验，不是 R35、M43 或 M44 产品 PASS。** 教师仍一次交入完整材料，由系统完成主要录入，再局部校对、入库和用于备课；在线失败不缩减此目标。
 
-结论：当前没有足以重开在线窗口的新证据。可推进的是既有 R33 提取实现缺口和 R35 本地独立验证。R35 具名本地材料消费切片 independent 通过、固定 P/M/D 与共享唯一写权齐备后，可启动 M43 本地实现；M43 固定局部候选可交 M44 本地独立验证。完整 R35、M43、M44 及后续交付门槛保留。R35 当前仍在验收，不能记为已通过或 M43 已开始。执行范围见[接续任务包](../plans/tasks/materials/continuation.md)。
+结论：当前没有足以重开在线窗口的新证据。可推进的是既有 R33 提取实现缺口和 R35 本地独立验证。R35 具名本地材料消费切片 independent 通过、固定 P/M/D 与共享唯一写权齐备后，可启动 M43 本地实现；M43 固定局部候选可交 M44 本地独立验证。完整 R35、M43、M44 及后续交付门槛保留。R35 具名结果与 M43 实际派发以[运行台账](../plans/run-state.md)及固定回执为准，不能由本裁决推定产品通过。执行范围见[接续任务包](../plans/tasks/materials/continuation.md)。
 
 ## 固定输入
 
