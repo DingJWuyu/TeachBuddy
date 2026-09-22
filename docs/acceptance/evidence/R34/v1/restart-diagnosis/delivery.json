@@ -1,0 +1,90 @@
+{
+  "task": "R34-RESTART-DIAGNOSIS@1",
+  "attempt": 1,
+  "role": "implement-diagnosis",
+  "status": "BLOCKED",
+  "verification_level": "self",
+  "session_id": "01a0c921-e31a-7c70-92e3-c9a931403c30",
+  "runner": "Codex gpt-6-astra high (dispatch)",
+  "skills_used": [
+    "diagnosing-bugs",
+    "writing-for-agents",
+    "code-review"
+  ],
+  "base_revision": "6398bf2dae85d1872c929aa8ef32d5705d763687",
+  "composition_revision": "56845c217442acc24bcabfb8c3508424192c0a65",
+  "input_product_revision": "a0bde5546eeedf50498888da0ed9c5941fa1d76a",
+  "result_revision": "59b18d1bf97e50d75e9d18b98d5813d857e74eec",
+  "review_target": {
+    "fixed_point": "56845c217442acc24bcabfb8c3508424192c0a65",
+    "commit_range": "56845c217442acc24bcabfb8c3508424192c0a65...59b18d1bf97e50d75e9d18b98d5813d857e74eec",
+    "standards": "PASS",
+    "spec": "PASS",
+    "aggregate": "docs/acceptance/evidence/R34/v1/restart-diagnosis/review.md"
+  },
+  "internal_reviewers": [
+    {
+      "role": "Standards",
+      "task": "/root/restart_standards",
+      "runner": "Codex, inherited gpt-6-astra high dispatch",
+      "findings": 0,
+      "read_only": true
+    },
+    {
+      "role": "Spec",
+      "task": "/root/restart_spec",
+      "runner": "Codex, inherited gpt-6-astra high dispatch",
+      "findings": 0,
+      "read_only": true
+    }
+  ],
+  "inputs": [
+    "6398bf2dae85d1872c929aa8ef32d5705d763687",
+    "cd31bf4f4d0bf5f7cd6f35cd1f912b81a16d680c:docs/acceptance/evidence/R33/v1/attempt2/api-reviewed.log",
+    "docs/acceptance/evidence/R34/v1/attempt3/math-diagnosis.md",
+    "docs/acceptance/evidence/R34/v1/attempt3/delivery.json",
+    "docs/acceptance/evidence/R34/v1/integration3.md"
+  ],
+  "changed_files": [
+    "apps/api/test/math-static-migration.test.js",
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis.md",
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis/"
+  ],
+  "artifacts": [
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis.md",
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis/review.md",
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis/retained-scenes.json",
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis/environment.json",
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis/refuse-failure.json",
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis/reset-failure.json",
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis/process-result.json",
+    "docs/acceptance/evidence/R34/v1/restart-diagnosis/regression.log"
+  ],
+  "checks": [
+    "original retained-database HTTP path: not reproduced",
+    "two injected errors at replay-math-2: expected FAIL, cause distinguished",
+    "three actual service processes: retained database and file bytes PASS",
+    "four relevant math HTTP/regression tests: 4/4 PASS",
+    "node --check: 3/3 PASS",
+    "git diff --check: PASS",
+    "git ancestry: fixed input and main-based start are ancestors",
+    "git diff: root AGENTS/run-state unchanged; old evidence unchanged; only one test differs in apps/scripts/packages",
+    "ss: task ports no listeners at delivery"
+  ],
+  "identity_mode": "test-principal; existing formula regression uses real-auth/fake-mail",
+  "open_items": [
+    "Historical fetch failed has no recorded cause; natural failure not reproduced; stale socket vs listener/external vs other causes unresolved."
+  ],
+  "failure_owner": "R34 shared restart diagnosis; no evidence assigning business kernel ownership",
+  "next_condition": "Capture a natural failure with failure.json, socket trace, command/runtime and preserved DB; establish causal red before lifecycle repair.",
+  "authorization_used": "User R34-RESTART-DIAGNOSIS@1 attempt 1 scoped diagnosis and branch-only commits",
+  "migration_observation": "OPEN / root cause unconfirmed / no lifecycle fix",
+  "product_model_requests": 0,
+  "keys_read": 0,
+  "main_merged": false,
+  "pushed": false,
+  "deployed": false,
+  "finished_at_utc": "2026-09-22T12:56:15.826025+00:00",
+  "result_revision_meaning": "Fixed reviewed diagnostic code candidate; final evidence-only commit SHA is returned in the outer callback.",
+  "stopped_writing_on_delivery": true
+}

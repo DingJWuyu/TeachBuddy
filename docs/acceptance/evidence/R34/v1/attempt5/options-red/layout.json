@@ -1,0 +1,95 @@
+[
+  {
+    "width": 1440,
+    "labels": [
+      {
+        "text": "成果",
+        "textLines": 2,
+        "width": 151.015625
+      },
+      {
+        "text": "格式",
+        "textLines": 2,
+        "width": 107.015625
+      },
+      {
+        "text": "答案与解析",
+        "textLines": 3,
+        "width": 93.015625
+      },
+      {
+        "text": "教师注记",
+        "textLines": 4,
+        "width": 80.015625
+      },
+      {
+        "text": "作答空白行",
+        "textLines": 2,
+        "width": 170.015625
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "width": 1280,
+    "labels": [
+      {
+        "text": "成果",
+        "textLines": 2,
+        "width": 151.015625
+      },
+      {
+        "text": "格式",
+        "textLines": 2,
+        "width": 107.015625
+      },
+      {
+        "text": "答案与解析",
+        "textLines": 3,
+        "width": 93.015625
+      },
+      {
+        "text": "教师注记",
+        "textLines": 4,
+        "width": 80.015625
+      },
+      {
+        "text": "作答空白行",
+        "textLines": 2,
+        "width": 170.015625
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "width": 1024,
+    "labels": [
+      {
+        "text": "成果",
+        "textLines": 2,
+        "width": 151.015625
+      },
+      {
+        "text": "格式",
+        "textLines": 2,
+        "width": 107.015625
+      },
+      {
+        "text": "答案与解析",
+        "textLines": 3,
+        "width": 93.015625
+      },
+      {
+        "text": "教师注记",
+        "textLines": 4,
+        "width": 80.015625
+      },
+      {
+        "text": "作答空白行",
+        "textLines": 2,
+        "width": 170.015625
+      }
+    ],
+    "overflow": false
+  }
+]

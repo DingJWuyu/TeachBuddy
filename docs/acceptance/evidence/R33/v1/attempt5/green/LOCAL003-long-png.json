@@ -1,0 +1,1517 @@
+{
+  "directory": "/tmp/r33-local5-api-UoK5Ss",
+  "trace": [
+    {
+      "at": "2026-09-22T15:38:07.255Z",
+      "route": "/api/modules/questions/v2/items",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "local3 长题分片",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "NEVER_PRIVATE_NOTE_LOCAL3",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第1段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第2段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第3段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第4段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第5段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第6段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第7段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第8段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第9段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第10段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第11段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第12段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第13段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第14段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第15段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第16段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第17段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第18段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第19段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第20段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第21段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第22段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第23段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第24段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第25段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第26段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第27段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第28段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第29段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第30段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第31段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第32段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第33段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第34段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第35段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第36段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            }
+          ]
+        }
+      },
+      "response": {
+        "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+        "version": 1,
+        "createdAt": "2026-09-22T15:38:07.260Z",
+        "updatedAt": "2026-09-22T15:38:07.260Z",
+        "deletedAt": null,
+        "title": "local3 长题分片",
+        "source": {
+          "kind": "manual"
+        },
+        "note": "NEVER_PRIVATE_NOTE_LOCAL3",
+        "starred": false,
+        "typeId": null,
+        "tagIds": [],
+        "answerStatus": "absent",
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第1段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第2段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第3段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第4段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第5段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第6段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第7段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第8段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第9段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第10段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第11段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第12段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第13段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第14段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第15段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第16段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第17段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第18段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第19段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第20段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第21段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第22段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第23段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第24段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第25段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第26段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第27段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第28段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第29段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第30段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第31段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第32段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第33段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第34段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第35段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "第36段 长题分片可见边界"
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.261Z",
+      "route": "/api/modules/questions/v2/items/5692de5a-3649-4ffe-84db-bfd81384bc5a/assets",
+      "method": "POST",
+      "status": 202,
+      "request": {
+        "baseVersion": 1,
+        "includeAnswers": false,
+        "mode": "question-png",
+        "figureFileId": null
+      },
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "queued",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.263Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.265Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.293Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.321Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.352Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.382Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.408Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.437Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.465Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.493Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.519Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.549Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.579Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.606Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.634Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.662Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.689Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.264Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.718Z",
+      "route": "/api/workbench/jobs/31051e8e-eddd-47c2-b994-3d064095fd82",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "31051e8e-eddd-47c2-b994-3d064095fd82",
+        "kind": "question-asset",
+        "target": {
+          "kind": "question",
+          "id": "5692de5a-3649-4ffe-84db-bfd81384bc5a",
+          "version": 1
+        },
+        "state": "succeeded",
+        "createdAt": "2026-09-22T15:38:07.263Z",
+        "updatedAt": "2026-09-22T15:38:07.717Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 3,
+          "total": 3,
+          "unit": "stages"
+        },
+        "outputFileIds": [
+          "481f0705-b2db-4dbe-8009-792bc0a8aab9",
+          "c6cf48d2-dce9-4fc3-9673-369ef87dfa53",
+          "f1a6a1e8-7875-4827-9ed2-e74e090e5fea"
+        ],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.721Z",
+      "route": "/api/workbench/files/481f0705-b2db-4dbe-8009-792bc0a8aab9/content",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "bytes": 164470
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.731Z",
+      "route": "/api/workbench/files/c6cf48d2-dce9-4fc3-9673-369ef87dfa53/content",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "bytes": 161716
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:07.737Z",
+      "route": "/api/workbench/files/f1a6a1e8-7875-4827-9ed2-e74e090e5fea/content",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "bytes": 34116
+      }
+    }
+  ]
+}

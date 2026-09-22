@@ -1,0 +1,25 @@
+TAP version 13
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# [workbench] modules discovered: questions, resources, lessons, math
+# [workbench] migrations applied 1, skipped 7
+# [workbench] modules enabled: questions, resources, lessons, math
+# [workbench] modules discovered: questions, resources, lessons, math
+# [workbench] migrations applied 0, skipped 8
+# [workbench] modules enabled: questions, resources, lessons, math
+# Subtest: R31 database upgrade retains files, documents, questions and replay across two restarts
+ok 1 - R31 database upgrade retains files, documents, questions and replay across two restarts
+  ---
+  duration_ms: 280.407122
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 540.326403

@@ -1,0 +1,144 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1145791,
+  "events": [
+    {
+      "ms": 371.538193,
+      "event": "server:listen",
+      "server": 1,
+      "port": 48564,
+      "host": "localhost"
+    },
+    {
+      "ms": 377.075318,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "::1",
+        "family": "IPv6",
+        "port": 48564
+      }
+    },
+    {
+      "ms": 380.789393,
+      "event": "server:socket",
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54652,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 381.341386,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54652,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 387.07332,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54652,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 390.059226,
+      "event": "server:socket",
+      "socket": 3,
+      "localPort": 48564,
+      "remotePort": 54666,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 390.213621,
+      "event": "server:request",
+      "server": 1,
+      "method": "GET",
+      "path": "/api/modules/questions/items/db86d30a-102e-425c-a965-80cd3b34b342",
+      "socket": 3,
+      "localPort": 48564,
+      "remotePort": 54666,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 391.976729,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 3,
+      "localPort": 48564,
+      "remotePort": 54666,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 394.783683,
+      "event": "server:request",
+      "server": 1,
+      "method": "GET",
+      "path": "/api/workbench/files/b177a6bd-9a65-4674-bed4-627abc4521fa",
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54652,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 413.325124,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54652,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 415.805463,
+      "event": "server:request",
+      "server": 1,
+      "method": "GET",
+      "path": "/api/workbench/files/b177a6bd-9a65-4674-bed4-627abc4521fa/content",
+      "socket": 3,
+      "localPort": 48564,
+      "remotePort": 54666,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 418.916158,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 3,
+      "localPort": 48564,
+      "remotePort": 54666,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 420.285029,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 420.509229,
+      "event": "server:close",
+      "server": 1
+    }
+  ]
+}

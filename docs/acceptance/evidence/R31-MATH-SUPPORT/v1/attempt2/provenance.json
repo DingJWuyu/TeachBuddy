@@ -1,0 +1,2518 @@
+{
+  "control_base": "0a1b432cb4f56a94ac242114f535936e6176bf17",
+  "composition_base": "4f0d6a9c9c28386297302b48c55bd6f82b4fb317",
+  "product_revision": "7c6e7ade69a7e86cbfd8212def7a5620e8d857d6",
+  "method": "fixed Git blobs: complete support product apps/packages/scripts/manifests/config; add all M41 delta paths from df376b2 to 6a54e55; frozen math docs and both evidence trees; preserve AGENTS and docs/plans",
+  "unchanged_objects": [
+    {
+      "path": "apps/api/src/modules/math",
+      "source": "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+      "source_object": "3dfd25eb1fd69856c6f28f50e4b0d6068ff6f977",
+      "candidate_object": "3dfd25eb1fd69856c6f28f50e4b0d6068ff6f977",
+      "equal": true
+    },
+    {
+      "path": "apps/web/src/features/math",
+      "source": "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+      "source_object": "83a7afd9f2c49111b98b7c9e24411af824b183ed",
+      "candidate_object": "83a7afd9f2c49111b98b7c9e24411af824b183ed",
+      "equal": true
+    },
+    {
+      "path": "packages/shared/src/math",
+      "source": "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+      "source_object": "254cc928bd07d40f4268e72fa1e97c441072d29f",
+      "candidate_object": "254cc928bd07d40f4268e72fa1e97c441072d29f",
+      "equal": true
+    },
+    {
+      "path": "apps/web/e2e/fixtures/math-static",
+      "source": "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+      "source_object": "8b0895204089b8c5cc2e0eb2241a63ddcec5531f",
+      "candidate_object": "8b0895204089b8c5cc2e0eb2241a63ddcec5531f",
+      "equal": true
+    },
+    {
+      "path": "apps/web/e2e/math-static.spec.js",
+      "source": "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+      "source_object": "a9a6406a6742cf877e0a43598af768d8abe49168",
+      "candidate_object": "a9a6406a6742cf877e0a43598af768d8abe49168",
+      "equal": true
+    },
+    {
+      "path": "AGENTS.md",
+      "source": "0a1b432cb4f56a94ac242114f535936e6176bf17",
+      "source_object": "245c58e6483beebf5336e4aa0070c12236d95418",
+      "candidate_object": "245c58e6483beebf5336e4aa0070c12236d95418",
+      "equal": true
+    },
+    {
+      "path": "docs/plans",
+      "source": "0a1b432cb4f56a94ac242114f535936e6176bf17",
+      "source_object": "4545d21f6f519e378183e6b5bc2b452fd3604a00",
+      "candidate_object": "4545d21f6f519e378183e6b5bc2b452fd3604a00",
+      "equal": true
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/author.md",
+      "source": "26c89fb40ece370c3b4b23079543766f9a2da428",
+      "source_object": "d2b7c27119ca1fbd4629230cc2f91cdc1908b43a",
+      "candidate_object": "d2b7c27119ca1fbd4629230cc2f91cdc1908b43a",
+      "equal": true
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/integration.md",
+      "source": "26c89fb40ece370c3b4b23079543766f9a2da428",
+      "source_object": "805461ecfcf7d69b81cb9391beb31a0a9bbcd6a2",
+      "candidate_object": "805461ecfcf7d69b81cb9391beb31a0a9bbcd6a2",
+      "equal": true
+    },
+    {
+      "path": "docs/acceptance/evidence/M41",
+      "source": "953840563d4689cdbefb8ddc43f559493e14e178",
+      "source_object": "31c0920a27eb36ba16c7abec6425d9f07f60cc2b",
+      "candidate_object": "31c0920a27eb36ba16c7abec6425d9f07f60cc2b",
+      "equal": true
+    },
+    {
+      "path": "package.json",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "334d65860131d7af6d9254dc6bcfdf44350f03bc",
+      "candidate_object": "334d65860131d7af6d9254dc6bcfdf44350f03bc",
+      "equal": true
+    },
+    {
+      "path": "package-lock.json",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "7ff1ef25b78a44ac28ddbdfcc4aeac5e48b26ef9",
+      "candidate_object": "7ff1ef25b78a44ac28ddbdfcc4aeac5e48b26ef9",
+      "equal": true
+    },
+    {
+      "path": "apps/api/package.json",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "1660ce5701444b7c06c14304f8918c26eddcd828",
+      "candidate_object": "1660ce5701444b7c06c14304f8918c26eddcd828",
+      "equal": true
+    },
+    {
+      "path": "apps/web/package.json",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "6236508e3f3833018390bc990b80e7dac011b670",
+      "candidate_object": "6236508e3f3833018390bc990b80e7dac011b670",
+      "equal": true
+    },
+    {
+      "path": "apps/api/src/features/auth",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "f18ec6ec2d6e477b55a04099cbe58f2fe1ff8424",
+      "candidate_object": "f18ec6ec2d6e477b55a04099cbe58f2fe1ff8424",
+      "equal": true
+    },
+    {
+      "path": "apps/web/src/features/auth",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "4aa1bd67bb653d20abf67d7454d02128f087a5ae",
+      "candidate_object": "4aa1bd67bb653d20abf67d7454d02128f087a5ae",
+      "equal": true
+    },
+    {
+      "path": "apps/api/src/workbench/files",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "f2efc90c70b3f861bc81d4a12b16ecd1c38e57cb",
+      "candidate_object": "f2efc90c70b3f861bc81d4a12b16ecd1c38e57cb",
+      "equal": true
+    },
+    {
+      "path": "apps/api/src/workbench/content",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "38ee75b246440b42df8e002da96a93b378fe36a5",
+      "candidate_object": "38ee75b246440b42df8e002da96a93b378fe36a5",
+      "equal": true
+    },
+    {
+      "path": "docs/contracts/auth.md",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "319b083cf2b4634b538a95bef0ea972836b1fde1",
+      "candidate_object": "319b083cf2b4634b538a95bef0ea972836b1fde1",
+      "equal": true
+    },
+    {
+      "path": "docs/contracts/auth.openapi.yaml",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "5eb77daa13e26d3b7fb458fe4547021d29220653",
+      "candidate_object": "5eb77daa13e26d3b7fb458fe4547021d29220653",
+      "equal": true
+    },
+    {
+      "path": "docs/contracts/workbench/materials.openapi.yaml",
+      "source": "07aeddc3a15b332cc941a86c340147facdef1425",
+      "source_object": "00000653977b840adb4eb08f7e6c86b162136a1a",
+      "candidate_object": "00000653977b840adb4eb08f7e6c86b162136a1a",
+      "equal": true
+    },
+    {
+      "path": "docs/contracts/workbench/math",
+      "source": "1a5dd015863d749e5244346f4eaad24ac506670d",
+      "source_object": "be38eef6bcd19f5681dea3620cc83aaa0c8e27be",
+      "candidate_object": "be38eef6bcd19f5681dea3620cc83aaa0c8e27be",
+      "equal": true
+    },
+    {
+      "path": "docs/contracts/workbench/math.md",
+      "source": "1a5dd015863d749e5244346f4eaad24ac506670d",
+      "source_object": "3641ebe02983e6b6c004731ba212363ad00f027d",
+      "candidate_object": "3641ebe02983e6b6c004731ba212363ad00f027d",
+      "equal": true
+    },
+    {
+      "path": "docs/arch/math.md",
+      "source": "1a5dd015863d749e5244346f4eaad24ac506670d",
+      "source_object": "4dc706e91023cac21d6cc9bf89ab4190209eae0e",
+      "candidate_object": "4dc706e91023cac21d6cc9bf89ab4190209eae0e",
+      "equal": true
+    }
+  ],
+  "composition_files": [
+    {
+      "path": ".gitignore",
+      "object": "087a7554250f6b08818a994f7b137953502612e4",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/package.json",
+      "object": "1660ce5701444b7c06c14304f8918c26eddcd828",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/app.js",
+      "object": "18ed260284ec9d3515be0fdc733be9865347df22",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/config/env.js",
+      "object": "ec31c39d997ae1d66daaf4d761034520d0d85728",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/core/dataStore.js",
+      "object": "f7e18d018a6d37ba0129c0cc0fa173fb8ef9e376",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/core/mail.js",
+      "object": "549be6f0320e5ee30f02405500e992e4688bae05",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/core/moduleRegistry.js",
+      "object": "c2c6c13451bb79e3070ecb141b984c726f460777",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/features/auth/index.js",
+      "object": "158a9fbca4f0d8c5540490fdf949df9b70d82393",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/features/auth/migrations/index.js",
+      "object": "4a66ad72ce1c2ff3aaa78d4bde7db051eb51df57",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/features/auth/operations.js",
+      "object": "b6bdd63ff3c953e0bee31716a8e765b4563290f2",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/features/auth/passwords.js",
+      "object": "e2412edd83ff99f16740974f38ffe832398d8c00",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/features/auth/problems.js",
+      "object": "0bd8037d9826055804e94f5f59fa0b1ac04d87d7",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/features/auth/protocol.js",
+      "object": "330c7a66ae2f1ff8b2707b165fcd2858c4de69ec",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/features/auth/store.js",
+      "object": "036b81c3ed07abb1c14b43618c7b9f8be1e52ee7",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/features/auth/validation.js",
+      "object": "fb3a40ba6af71b0c846a3f828bd78125707832da",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/lessons/index.js",
+      "object": "30c866136ef497059eae0a8e1332019499ee053a",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/lessons/migrations/index.js",
+      "object": "a8055404d08bc2766d9bfcb10e71a400bb537ad4",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/lessons/repository.js",
+      "object": "61b958402792eb49f73d06708d6f56228feb880d",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/lessons/router.js",
+      "object": "4e452b2e1927e31e93cf957f6fa3c7cd15259d4b",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/lessons/service.js",
+      "object": "e39bf4924c7e517ba2cffe746d869a00caedc418",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/math/contract.js",
+      "object": "abf23721959463f87dfd2dc77918161b06a00dee",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/math/index.js",
+      "object": "1c8d0dbd2f9c5c25a45400f60ac18747ed1fe46b",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/math/migrations.js",
+      "object": "c6b7e508ad67ec0ab06349fcc4f3ff308d21dadf",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/math/render-worker.js",
+      "object": "3f2ad70c2370a349e116e4bc6440c941730ed8df",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/math/render.js",
+      "object": "39416e0c4c07e5ce4f10a5714cb1ab5abb71902d",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/math/service.js",
+      "object": "5155e8718f5d3d88281e3069af977eea36bf465d",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/questions/contract.js",
+      "object": "4cdb3079648d3f0e5bfa02a1626eb2f69f2c6adb",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/questions/index.js",
+      "object": "55232a21ad52665b4fa3551f83ccd49970ff322e",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/questions/migrations/index.js",
+      "object": "6fc071d7075467a646f848b0b1d78cd78ed1ebc6",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/questions/repository.js",
+      "object": "b96715e660aa09fb22b31a813d6494d7489119ef",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/questions/router.js",
+      "object": "3d7a277ab924eb3353790bb69b74afad4fdbc614",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/questions/schema.js",
+      "object": "ddabf3e096b8761969aac8bfea5e84a8c30b0a41",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/modules/questions/service.js",
+      "object": "73cee0b3b44da213292187a2c569b74293c3811f",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/scripts/verify-storage.js",
+      "object": "7c00a0fce5a6c7fd6b5b9737a5669857a6ab0bf5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/server.js",
+      "object": "8c49c598678b03eed73478397c76a79a46f51686",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/content/index.js",
+      "object": "9b0b40d802fcc373c46e1a5a65022bcebc46cd12",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/content/schema.js",
+      "object": "9d569ca57f55544900c92be76ffa6c9352ab3ed8",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/files/index.js",
+      "object": "c917188ca57668fb9639ba43130f702e986d0af9",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/files/migrations.js",
+      "object": "9e40dcc142186eea215ea83fa331b6175bcfa6aa",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/files/router.js",
+      "object": "9d06d7f406e14dc777a06d7bb9a4416d3ef77a98",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/http.js",
+      "object": "d4ee2b84ee1ed40f93b7c9be4a9cdb5994c66c87",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/identity.js",
+      "object": "55d25ebf36ccfc5fe44b4fc78028ce60edb5dea6",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/index.js",
+      "object": "442c91465f9638adaa3821ffb7fd1bccd241da69",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/logger.js",
+      "object": "c6404625a57a273b5f70c15a911116667e373db5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/migrations.js",
+      "object": "afdb4cc61aa22b710994f401e54bcd9d41f2e433",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/moduleImplementations.js",
+      "object": "a1559b69546475a86de491d792176266e00ff099",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/moduleLoader.js",
+      "object": "25292323a514a5d72fe9dc7a74bccf187f04f832",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/mutations.js",
+      "object": "68bd90a93bd10e08a3fe761c08c72cc844055eea",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/problems.js",
+      "object": "65445a90a025a7ec3705a829bd954b7d265a9760",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/schema.js",
+      "object": "75e07e45d8fc3bb5d9595b232e8dc876cafa2f63",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/src/workbench/storage.js",
+      "object": "e8f57d7a698c9a41c157cf902afabf39397c5ccc",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/api.test.js",
+      "object": "d6d4d53965868a951f10fa7e3c7289e7644f7bb0",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/auth-contract-accounts.test.js",
+      "object": "e77397f140ab224924496c2deda597c9856428b0",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/auth-contract-faults.test.js",
+      "object": "4755986238e0b3e39167cef687f442401c56aff1",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/auth-contract-https.test.js",
+      "object": "4bd2c029a140320f771242a6e8b0a5420eb59445",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/auth-contract-migration.test.js",
+      "object": "ae22c52a0394e877f124e022656f687604cc038b",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/auth-contract-protocol.test.js",
+      "object": "1e126703bec00f72897222527d3b44447e88d151",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/auth-contract-sessions.test.js",
+      "object": "74f6bf575b1a75ea478ff0dbf102afd6681f4ea6",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/auth-integration.test.js",
+      "object": "729563882dec41c4bb292ffeabea14d07f0377a6",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/first-flow-harness.js",
+      "object": "6a89dcbe7385415b9cfe559683d5046e7c5b05ce",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/first-flow-lessons.test.js",
+      "object": "52ea3cb9cb126d0bf4e89ac2726faf20f63c5472",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/first-flow-migrations.test.js",
+      "object": "d42dda189388333d90b42b99f52e3d43d35ff0d3",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/first-flow-protocol.test.js",
+      "object": "697d9224faa578f5f99855f0939c0335a930c3fb",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/first-flow-questions.test.js",
+      "object": "fdc5aa1fdeaa2ebb3eb6598eb170a441a50f9bc4",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/first-flow-real-runner.mjs",
+      "object": "0eb274fe286a5f286453cb917ad47935ad715962",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/fixtures/auth-contract/harness.js",
+      "object": "80ff1f4c88af8bc828e6a62fc35bab9115b85980",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/fixtures/auth-contract/https-smoke.mjs",
+      "object": "238547ef7641293ee2605ba37acd77d4cac8b32f",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/fixtures/auth-integration/harness.js",
+      "object": "f974df1a4f16232851a94836e6ea9c5c1cbbcdd3",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/fixtures/first-flow/accounts.js",
+      "object": "f797528b46d81f7192f6071201007a34150c3a8f",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/fixtures/first-flow/broken/workbench-broken/index.js",
+      "object": "f5a2713b83277038c127a6738ffa3001f7e181f5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/fixtures/first-flow/broken/workbench-broken/migrations/index.js",
+      "object": "cfea39775bc95428f6e44eeb287103ccf220a4e2",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/fixtures/first-flow/catalog.js",
+      "object": "405b527827ea1066f9ca7d81304aa4146c48bdf5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/fixtures/first-flow/modules/workbench-probe/index.js",
+      "object": "792571529505b13c9669b41e350aaa673226dd36",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/fixtures/first-flow/modules/workbench-probe/migrations/index.js",
+      "object": "27168498391ee4b59858c37ee0c6ad36e2f16b6c",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/materials-foundation.test.js",
+      "object": "eb7f537e928ebd3efdf5df7a46b328606ec886b3",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/math-contract.test.js",
+      "object": "5c6ee6dfb901119d94abc284fc867bb8333c835f",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/math-static-migration.test.js",
+      "object": "9e89529a9afd13865157cf61e8212f230e93e9b7",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/math-static-output.test.js",
+      "object": "4445e690465217f1e8fc94092f95bd8d3dec5071",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/math-static.test.js",
+      "object": "bd6441d310d3cef271ab65a0aabb45be088ab041",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/r31-math-support.test.js",
+      "object": "e9571088c437fa355d14f3479132428506e34dec",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/workbench-catalog.test.js",
+      "object": "a7b8577afe82b4869cbf224147ec68c48bf9db09",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/workbench-http.test.js",
+      "object": "aeb7e6b8c887fea3475df571ef1502ca4da4d907",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/workbench-identity.test.js",
+      "object": "ec967c456a7fdcb47ba0e2355f3779d729a6cced",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/workbench-migrations.test.js",
+      "object": "463376906fe0f2cdcf6e0c39c3ae44338f925df1",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/workbench-mutations.test.js",
+      "object": "1fe1966a52e88b19c2b067a89dc1c3c33d12031b",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/api/test/workbench-schema.test.js",
+      "object": "a3f9ee94aa0a139aeeb2559bde0ff0fa93a536ee",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/api/test/workbench-test-context.js",
+      "object": "4cb9b0fb598fe1f429514d1f593dcb14a32e27ff",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/api-server.mjs",
+      "object": "f04c420b7f5820be6c52a046ad921dfbf096550d",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/auth-contract-entry.spec.js",
+      "object": "1cfa4632d9a8e81a6a1650a7af2d96f44f3df8c6",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/auth-contract-session.spec.js",
+      "object": "2b842d56ebbd815180232b34ffc07d494b0b8104",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/auth-contract-transport.spec.js",
+      "object": "a932ff9632a54016ac36c58de4a2b6f56f90a5fa",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/auth-contract-visual.spec.js",
+      "object": "bb3b93f396ff9e810d122fc5149cd9b9f4df2385",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/auth-integration.config.mjs",
+      "object": "2107c6ffe9119d2494f1bc7764f60a34f5296c75",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/auth-integration.spec.js",
+      "object": "41b4064f62286e9a8e3a8c85834fb37c0ea70424",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/first-flow-ui-substitute.mjs",
+      "object": "cd94d65745af0b3096b1be48aebdc4f521607455",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/first-flow-ui.spec.js",
+      "object": "8f917a6b253e7bda946f9465782617247cdc7f2e",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/first-flow.spec.js",
+      "object": "9024dafc9900536444057fc86135a071584ff84d",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/first-flow/faults.js",
+      "object": "b873f90e8598971a09f4fc91af8fb195b5118dee",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/first-flow/service.js",
+      "object": "91a5051925056002bf1855a02814c6b6bbcad4de",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/auth-contract/fixture-control.mjs",
+      "object": "bf3b58b9575c0f5a86b1f0f4cb4d564929a8ec77",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/auth-contract/harness-build.mjs",
+      "object": "d68e2b34eaa7866b9c5d2fff050ccc0c1541fa32",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/auth-contract/harness/harness.css",
+      "object": "a7ef0f7e37c17a3b4e3ba0aacd217867d91e11f5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/auth-contract/harness/index.html",
+      "object": "5e5f7b7da90db2e1eb3af4bb8d5aa56694c8a973",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/auth-contract/harness/main.jsx",
+      "object": "8f5b8e217cc9aea07bb714e7105a46bde5dcde9a",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/auth-contract/playwright.config.mjs",
+      "object": "858d5fa6b1da5e928cd863aa024bc5dfb831d95f",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/auth-contract/substitute-server.mjs",
+      "object": "4298bf2975774a79e7552ed65daf73bf43869c8f",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/auth-contract/workbench-operations.mjs",
+      "object": "728de9fc532ee645cb571a5907665e5867600a10",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/first-flow/identity.js",
+      "object": "1340d8479ebf2e369e2fcb8bce93d673d2be6c8e",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/materials/index.html",
+      "object": "7854ca796a77e3f3e73c81686c29b3e97104c4bc",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/materials/main.jsx",
+      "object": "541d284f70dd96c297d9a1d824f95a9b118d2e6e",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/materials/style.css",
+      "object": "c1ece1e823a59814b9234c209a9391d8803e86ba",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/math-static/build.mjs",
+      "object": "9c9dd96212cc3bc3ee59687519bd555ff0bbc780",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/math-static/index.html",
+      "object": "c498a334c0337422a77c480c9ee3425a96657137",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/math-static/main.jsx",
+      "object": "7fcad8d9dd275141d669f080cae2ccd2cedd11de",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/math-static/playwright.config.mjs",
+      "object": "f1f5b820d413dea2cc1432358c67ce7b043420b4",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/math-static/server.mjs",
+      "object": "5667671f1a9413c3acaf53f7af621233a05daad7",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/r31-math-support/index.html",
+      "object": "0d667e08edef6d6267a97f6726587a1961bdbad2",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/fixtures/r31-math-support/main.jsx",
+      "object": "975a0bb6d70ff1f2f2d530f6c2eace223c55eefc",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/math-static.spec.js",
+      "object": "a9a6406a6742cf877e0a43598af768d8abe49168",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/module-registry.spec.js",
+      "object": "fe1ba0ccdb00dd0ed2ed0bae8c894badd351ab65",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/r31-math-support.config.mjs",
+      "object": "6f425df6d98ae9467d7f2e73c4702decbc563566",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/r31-math-support.spec.js",
+      "object": "7d25380a1d2782aa851f5fe725788b00bbd29c63",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/e2e/workspace-acceptance.spec.js",
+      "object": "fa6d051d359f44a113b1108cc1a22ef3e301fe66",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/package.json",
+      "object": "6236508e3f3833018390bc990b80e7dac011b670",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/App.jsx",
+      "object": "33447c21039c40ad23ba33b1d3556456c29072c2",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/AuthGate.jsx",
+      "object": "8ebbe97498be2ac3c4dbf80011a2d66d72d58fcf",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/AuthProvider.jsx",
+      "object": "b12e3a60c29bb64d93417bfb4b3ea5f5110bb96e",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/AuthSurface.jsx",
+      "object": "b815213bbd4a039f9679b70b13098766fc8e9215",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/BrandMark.jsx",
+      "object": "45e6aa355b8bb4108e0fd96ef8c3eeb8f63eb2d4",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/PasswordToggle.jsx",
+      "object": "2771af23976dbd809ecbbabf4db2df7b2a58ef83",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/RestoreView.jsx",
+      "object": "a86347c8e95a747c3ae524bdda66f864456f4435",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/api.js",
+      "object": "5703499fec59baa34107ef15ed747942fbb23886",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/auth.css",
+      "object": "263607c17c53cd48f65dfe4a86a93f40b3ad37c0",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/index.jsx",
+      "object": "b5e78bd99a770be52ea9b52bb51cd318e6922173",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/pageContext.js",
+      "object": "03b857b88cbe2acb61abe119d66530494eca9fe5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/presentation.js",
+      "object": "0f7f08880072afca1d591fb2692829511fca2636",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/auth/rules.js",
+      "object": "ccd8dfd58ddf693b85ff62704fb40b95334624af",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/lessons/LessonDetail.jsx",
+      "object": "fc72f2f6de4c7d0959b0815ec5379777efb8c453",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/lessons/LessonPanels.jsx",
+      "object": "45b9365ca6a646f81154706fbeb9ec079bede825",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/lessons/QuestionPicker.jsx",
+      "object": "f98a25f0c3956d73af6643d370aa79c51d37df03",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/lessons/ReferenceCard.jsx",
+      "object": "a9aa438c2f446b4fbd1b805d1525a040a830754e",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/lessons/api.js",
+      "object": "b9d304feefe0cfd03068c84c4ce42a683e734a8d",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/lessons/index.jsx",
+      "object": "a9b126e972d2cdfd889ae6e4baa1d63639cd0bf1",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/lessons/model.js",
+      "object": "7915eb3b603795baff202945717815f9fc2ec306",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/lessons/useLessonPickerFlow.js",
+      "object": "58cd13e1fa0ece024d16bb41c69a9d1de81ab3d5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/math/api.js",
+      "object": "dda85931a6b3144bcf75ef328fdfdd16f3a4a7dc",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/math/index.jsx",
+      "object": "e92baf6e27b0bda333fdd1d9f0ad73d5dbc6e39d",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/math/math.css",
+      "object": "aa557f5e9f89c8afd30aabca734b2a536c848d48",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/math/model.js",
+      "object": "3bc8108f218a2457bea2a4b4ec9845d585ee764e",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/modules/moduleRegistry.js",
+      "object": "7e4ba105f135c54f51e7da86fa5e9db1656360cf",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/questions/AddToLessonDialog.jsx",
+      "object": "7d750a334be39ab2f750cbd8d2086ed0f240072b",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/questions/QuestionDetail.jsx",
+      "object": "cae9cdbbf07c78bdadb63aad957e09115e3818bf",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/questions/QuestionEditor.jsx",
+      "object": "e95c02c79512f69d22a1034d5ecd101391808d79",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/questions/QuestionList.jsx",
+      "object": "972db2911f0ad2f7e1200198607062183a38ff55",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/questions/QuestionReader.jsx",
+      "object": "a0728e6ad3b04b1158b4e98b17782d845b1ff03a",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/questions/api.js",
+      "object": "a1a2a0704a4851d088be63da92ede55307ac5c8c",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/questions/index.jsx",
+      "object": "47d0dbcf433d2d7e812bd2ceb85e58341ec7125e",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/questions/model.js",
+      "object": "7689b9248f9e0a2ba37e950a4d50a22798ad55ef",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/AuxiliaryPanel.jsx",
+      "object": "4e7075ca8565d297d2f34ed6390c1ed4d99f09a9",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/ConflictResolution.jsx",
+      "object": "bf51e1613f9e2a196923a2c83cc372455d2ab1cc",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/DocumentEditor.jsx",
+      "object": "54bb4694cd5367f295d0c39d2dadcaa94de53fd5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/MathText.jsx",
+      "object": "dcbeb884aa9de5bf9001a237353a7766076adae8",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/SaveStatus.jsx",
+      "object": "2d9a1b830545feac51530a1e7236ebee43f1551c",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/WorkbenchApp.jsx",
+      "object": "c1e8765b55a43e17ea09db47b748c307504125f7",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/WorkbenchRoot.jsx",
+      "object": "4cf8125229a496883797bad6f72946d5accb5e94",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/WorkbenchSettings.jsx",
+      "object": "c5610b35ff1841e6a088c3fc36075b08eaffd5ab",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/apiClient.js",
+      "object": "ebd401714fb7dde01d18868376e88a7c4a92e206",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/documents.js",
+      "object": "eac314615a51897f814ef42f6cbe8f37078b1cf4",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/icons.jsx",
+      "object": "e4b71923eaf83700f0802aac7f610b4397241d15",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/materials/DocumentEditor.jsx",
+      "object": "a3c63a931d6dfc0d3a921920042406ae7d8f1a8f",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/materials/DocumentView.jsx",
+      "object": "6ddf121de326bbd8cb469046e892532b92b62ca4",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/materials/index.js",
+      "object": "de6a577358acdbaa9ecdab48a80fedf83457cae3",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/materials/materials.css",
+      "object": "1ce824e96e97922f9bc1c71726418f1f5930b32d",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/overlays.jsx",
+      "object": "c69ef7ae33d21d035efbf4d7ba5999fe072d19c4",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/problems.js",
+      "object": "824d958e5cae8ff3d1fe495b66ebad38875c9db9",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/routes.js",
+      "object": "7f72a7914a3e0bd50679541feddf6212f0aa967a",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/saveStates.js",
+      "object": "3bf7e5a63558588906aa0252c430752ca09b1b49",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/shellContext.js",
+      "object": "f9a1059e01a08fd07d95f52d4f8543ceea7af348",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/storage.js",
+      "object": "62ed24028b1d1c1225bef84128844d4ac99b05a6",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/useIdempotentSubmit.js",
+      "object": "fd51b685ea89d3f6dd2ac0f553b62e386701df7d",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/useSavableDocument.js",
+      "object": "cc5133234fae27a66322938d8731c3e487fedaf2",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/useSaveShortcut.js",
+      "object": "5e14f8e53bccfb00e98c1cd7a9cf6532e7e8c9e5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/useScene.js",
+      "object": "82528cb0c6632ab54ea0be05abf6dbdee55ffd7b",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/useScrollRestore.js",
+      "object": "4b6bd2cc608c4eb38db23ce9fa7c0786ccfe1331",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/uuid.js",
+      "object": "8f2f4a2398d6ff9c75e360d6c17660d9c964cc69",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "apps/web/src/features/workbench/workbench.css",
+      "object": "1e0bb0801eb94dbdaf987c463e04894e0e6f31a3",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "apps/web/src/hooks/useWorkspaceData.js",
+      "object": "a13082458a14d023beb41684b25fddc520930933",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/1024.png",
+      "object": "196543647e7a9d62256727027003496a93212db3",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/390.png",
+      "object": "65226391ee17cc44c262ca2d27aab502df364ac1",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q2.json",
+      "object": "59c455dc3c8dcbbd71a6410c7f3601c2715f83bc",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q2.png",
+      "object": "d15779da12c816bed3d32f5e89a55d5bfc6d928c",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q2.svg",
+      "object": "9e88d324069f9d643c2345f554e7e39089712525",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q5-ui.svg",
+      "object": "640913b616f793cf0a3bd7693eb6692b07dfdd11",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q5.json",
+      "object": "20e1196f09ae15d03362837ecb429ad48ef5d5ff",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q5.png",
+      "object": "86c9b551a6d4a100d6554f673a6d151ec9f872a1",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q5.svg",
+      "object": "27500b8cee40067aa0e74a26529b544ee0a3601b",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q6.json",
+      "object": "7e9317d3eea68bdf81a384ed25df878cb9ff1cf8",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q6.png",
+      "object": "136ff035e4e7211b805f218943058879f25943ff",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/Q6.svg",
+      "object": "df21866280828a4c358e79470fb092199b7a8bf9",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/api-build.log",
+      "object": "8afed03df3e51b3204d4e82e22112bd23f93f941",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/browser-final.log",
+      "object": "357151618ad62c4cccc6607340d665324a207b95",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/common-api-final.log",
+      "object": "543bcf0ffbb2b5d14b47d8fddfba13b860e08a3d",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/common-build-final.log",
+      "object": "7fe777719b913ac4bbd0b59dfa920aa5def0acb2",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/desktop.png",
+      "object": "68bc1aabcf544ac3f64da3ebe1314a4122326761",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/export-race-red.log",
+      "object": "155dd834ec91a47dae818ea84617504a09a2f839",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/fixture-build-final.log",
+      "object": "5e86756414a1b6ab8baa834d58d8f81b810cfae9",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/math-final.log",
+      "object": "bf97271647a675da715467391d23e36063f18e49",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/native-transactions.json",
+      "object": "c4411c9cc5bd29044dee0fcaaf32d589b8842371",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/pyramid.png",
+      "object": "64b5bff6bff6faff3e9bd6082d9defa16ff2e5f9",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/space.png",
+      "object": "211d7c7f54efa1258aeaacd7bc9f989093aefd38",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/triangle.png",
+      "object": "894642f199edc1f9db1676759697b4e557956d41",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/artifacts/web-build.log",
+      "object": "e77be26481d14110166fe9baeb13af223e6ffe9a",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/author.md",
+      "object": "8761cd1ad035a7ed4abaff864638b3c1b8c81169",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/changed-files.json",
+      "object": "d0c6845cf18b75225f44a2e734419e5468047b87",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/hashes.json",
+      "object": "19478ebbf343e376f41276bc6ee038b0e2e1e526",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/integration.md",
+      "object": "55a1999d33362c55f429564e76ca98c697da8125",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/M41/v1/internal-review.md",
+      "object": "89d6564a96f911a6e1475949925ed276a648e01b",
+      "matching_sources": [
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/app-browser.log",
+      "object": "fa3ff7656f9e80510b088c245b9af1fb0a27e32f",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/app-settings.png",
+      "object": "c399f86854833a24aaaa19a7cac6f8a3f8ccbac3",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/assets-sha256.json",
+      "object": "9c924243154bdff8d380964043b8b9771b3d4df8",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/audit.json",
+      "object": "3dfcdca83e1d3c132df4711630f13cf0614d18c9",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/author.md",
+      "object": "d2b7c27119ca1fbd4629230cc2f91cdc1908b43a",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/browser-red.log",
+      "object": "6eb9d4932105777e2c9d9c1556b170396a0222be",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/browser.log",
+      "object": "57cea7cccd4b33041c674634eef3c8a318181234",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/build.log",
+      "object": "82acca933f0bf4435fe3ab6f9dfebbab1c9a8cd4",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/changed-files.json",
+      "object": "2d86ec36388a81d52cfaa1a66df7791953707d7a",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/common-api.log",
+      "object": "e9880f7d92b006ea8f4394f81419a2ae9d5db37e",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/composition-provenance.json",
+      "object": "0c72c83331ff18da9aff28bc4f8b693ad50c5061",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/environment.json",
+      "object": "ce6092bb4a69d8713809d5684b53fd60b2931a50",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/install.log",
+      "object": "cd4525dcf412b7ffbb8bbabde5083e02a72a2c6b",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/integration.md",
+      "object": "805461ecfcf7d69b81cb9391beb31a0a9bbcd6a2",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/offline-assets.json",
+      "object": "f59484a72aec02d790aba743ed023d4f9cd4d437",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/offline-assets.png",
+      "object": "5e9cdd5be7278c90e06e164e73acc74c4b9211b0",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/page-files.json",
+      "object": "c87c4111dcc4dfe92055929271ddfffac9ce8683",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/production-refusal.log",
+      "object": "2b776c851e30f151e7411ebad54fa84a4dbc9f82",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/real-page-files.png",
+      "object": "8e462dc3e4091b6b8b9b83720f99c7ec71fabe32",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/sha256.json",
+      "object": "79c38a7d6946d978d5cf0b376a1016aa2274999d",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/support-api.log",
+      "object": "eb5eeb00601d2995a99e3797d38b91992ce7d07e",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/R31-MATH-SUPPORT/v1/upgrade.log",
+      "object": "efc11fa4b4328bfaa79de0020da12ba1b07eabfd",
+      "matching_sources": [
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "docs/acceptance/math.feature",
+      "object": "5cfcc83e4f5bdab0e36448c746245cf6c7075d26",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/arch/math-evidence.md",
+      "object": "9e93ed9386716634302eebae71ba9967ac86a918",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/arch/math.md",
+      "object": "4dc706e91023cac21d6cc9bf89ab4190209eae0e",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/contracts/workbench/materials.openapi.yaml",
+      "object": "00000653977b840adb4eb08f7e6c86b162136a1a",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/contracts/workbench/math.md",
+      "object": "3641ebe02983e6b6c004731ba212363ad00f027d",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/contracts/workbench/math/cases.md",
+      "object": "0ff1ec034a56188d5bbfe020e0b8fa23a38b5064",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/contracts/workbench/math/math.openapi.json",
+      "object": "9a5635c631d3f43ddb89d832e6c331600988fa66",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/contracts/workbench/math/samples.json",
+      "object": "5a044641d388d75ff6a76624cdd266df76311d5a",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/contracts/workbench/math/teaching-time-extension.md",
+      "object": "af0ac3a8b91c9a05c56deef280eb4c7875a19e73",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "docs/ux/math.md",
+      "object": "6a82046e216cf4a3256370293085f4681131c6eb",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "object": "7ff1ef25b78a44ac28ddbdfcc4aeac5e48b26ef9",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "package.json",
+      "object": "334d65860131d7af6d9254dc6bcfdf44350f03bc",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "packages/shared/package.json",
+      "object": "0f1c9245de641738ce9fe504bf99678eaf05de47",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "packages/shared/scripts/verify-catalog.mjs",
+      "object": "c8446307fdc321e666a8c8204c0e28fae38dfbc6",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "packages/shared/src/contract.js",
+      "object": "cb6dd3cecb79f4c5777febd234f3fcd24ad0b2fc",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "packages/shared/src/index.js",
+      "object": "168349ee2812d77e5fde4c98b296bd5bb2bf85e8",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "packages/shared/src/materials/content.js",
+      "object": "43cd1503162c73379a229e397a6fe6de9caed3ac",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "packages/shared/src/math/expression.js",
+      "object": "e9c19e6bec57463d6fcd99b5de9f1bd3b737149e",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "packages/shared/src/math/graphics.js",
+      "object": "f8324db5b3dde11d880a24e5522208a4b631f688",
+      "matching_sources": [
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "packages/shared/src/moduleCatalog.js",
+      "object": "3f945e22d84477efb827288adbc7345050333a0d",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "packages/shared/src/moduleCatalogValidation.js",
+      "object": "e836f5b7853826aea38b46f595394fba38ffd873",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/first-flow/check.mjs",
+      "object": "dee8241d139e6a6d9ebaca21545620419cc7b071",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/first-flow/e2e-server.mjs",
+      "object": "bedd8f54fdb0516455d8c2bc91652e66c8db1024",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/first-flow/lib/runner.mjs",
+      "object": "d82a2cd35572e8473fca6b4540070807a932dd8e",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/first-flow/start.mjs",
+      "object": "3740bf27c4d4aee0e55d62366b0cdd5ad4cd9752",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/materials/build.mjs",
+      "object": "b9519cf3b4e1ba1955646d70624bb9bddd254c1a",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/materials/fixture.mjs",
+      "object": "6390033f0287b32106299778c6a13b8d44dc5477",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/materials/start.mjs",
+      "object": "052fccf8b8c2003531d8846835315c3eb32967a5",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/materials/verify-browser.mjs",
+      "object": "67ec659c0d38c3a1ee0fed043cd6b44221ba3610",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/materials/verify-migration.mjs",
+      "object": "1b1a872b04200f323ead20736c9d8160fd990c93",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "6a54e55a36e9efec65381ad9ceaa7af0c8228f36",
+        "26c89fb40ece370c3b4b23079543766f9a2da428",
+        "953840563d4689cdbefb8ddc43f559493e14e178"
+      ]
+    },
+    {
+      "path": "scripts/math-support/prepare-assets.mjs",
+      "object": "b0e55adb326a1e97be09b91444baec24f7efc678",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    },
+    {
+      "path": "scripts/math-support/verify-upgrade.mjs",
+      "object": "892c3a3c2cbee0aae9495d841952ab10693542da",
+      "matching_sources": [
+        "07aeddc3a15b332cc941a86c340147facdef1425",
+        "26c89fb40ece370c3b4b23079543766f9a2da428"
+      ]
+    }
+  ]
+}
