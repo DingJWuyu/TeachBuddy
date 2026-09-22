@@ -87,7 +87,7 @@
 | RELIABILITY-ENTRY | 新会话，attempt 1 | gpt-6-astra / high | 已交8b796c4；43366f2独立PASS，根已采纳并同步入口 | `01a0ca3a-3294-7611-9efa-1d456501e4b7` | `.scratch/dag-dispatch/RELIABILITY-ENTRY/1/` |
 | RELIABILITY-ENTRY-REVIEW | 新会话，attempt 1 | gpt-6-astra / high | 已交43366f2并停写，依赖提案independent PASS，无必修 | `01a0ca42-e30f-7db3-9ccb-0d19b887211b` | `.scratch/dag-dispatch/RELIABILITY-ENTRY-REVIEW/1/` |
 | RELIABILITY-ENTRY-SYNC | 新会话，attempt 1 | gpt-6-sol / medium | 已交0db2f5c并停写；入口文档已集成629ab7d，可派F60完整设计 | `01a0ca50-3d35-7541-829d-f80db1a820e0` | `.scratch/dag-dispatch/RELIABILITY-ENTRY-SYNC/1/` |
-| F60 | 新会话，attempt 1 | gpt-6-astra / high | 已启动，全范围可靠性设计；A10恢复设计已独立接受并投递固定输入 | `01a0ca59-54cb-7b23-a8b2-6d71f53f3bfd` | `.scratch/dag-dispatch/F60/1/` |
+| F60 | 新会话，attempt 2 | gpt-6-astra / high | 已启动，固定d8779e9补齐已接受的认证恢复交接；再送完整冻结 | `01a0ca7a-ccda-7a43-8fa7-4082f339ce17` | `.scratch/dag-dispatch/F60/2/` |
 | AUTH-RECOVERY-DESIGN | 新会话，attempt 1 | gpt-6-astra / high | 已交767f949并停写；auth-recovery/1已由a3d5b5e独立接受 | `01a0ca59-54d2-7f80-a3bb-05e745a82b90` | `.scratch/dag-dispatch/AUTH-RECOVERY-DESIGN/1/` |
 | A10-RECOVERY-REVIEW | 新会话，attempt 1 | gpt-6-astra / high | 已交a3d5b5e并停写，设计交接independent PASS；操作实现与恢复实证待交 | `01a0ca63-e531-7720-88eb-16e57e8c3c97` | `.scratch/dag-dispatch/A10-RECOVERY-REVIEW/1/` |
 | AUTH-RECOVERY-IMPLEMENTATION | 新会话，attempt 1 | gpt-6-astra / low | 已启动，按auth-recovery/1交付认证离线操作和真实SQLite/HTTP自验 | `01a0ca70-8866-7e40-aa0c-6d74430a4efa` | `.scratch/dag-dispatch/AUTH-RECOVERY-IMPLEMENTATION/1/` |
@@ -116,7 +116,7 @@
 | 数学：C23、M40-M44 | 固定a13d7e8经7032043本地切片independent PASS，M44-LOCAL-001关闭。三尺寸滚动、完整制作保存重启、分段式、已删HTML快照恢复、本机Impress取用及下载离线通过；未变具名结果沿用e30ec1a。 | 完整M44仍待完整材料门槛和目标设备；统一教学接缝已由5c3ae84独立通过。旧传输和验收环境观察保持OPEN；本地PASS不代签完整节点。 |
 | 班级与日程：T50-T54 | 统一候选267cf51经5c3ae84教学接缝independent PASS；丰富题选择及保存422关闭。七项、五来源保存/重启、两班反馈/现场/数学往返通过。 | 完整T51/T54、WB-T020及目标门槛未签；不重复七项验收。后继与完整数学/材料证据一起按原范围接续。 |
 | Agent：C24-C27 | C25设计冻结，C26产品687121e/完整ec5094c经C27独立6d48bc7关闭D01；与原34e668a未变真实模型链/持久/隔离结论合用，本地阶段independent PASS。 | 阶段文档已整合，无需新增审查或模型调用。两条未变moderate依赖公告作为C27-O01交后续依赖维护，未证可达产品缺陷，不阻断本地阶段。F60入口按已采纳依赖提案同步；未合主干或完成整体MVP。 |
-| 可靠性：F60-F65 | F60全范围设计继续；认证恢复设计767f949经a3d5b5e独立接受，认证操作实现并行；依赖提案及入口同步完成。F60设计及冻结不等完整A12/T54，F62后做A12恢复专项，完整条件在F64前汇合。 | F60已获固定认证恢复设计及独立接受，继续全范围冻结；认证实现另交A10固定可运行输入，OPS-001待F62/A12真实恢复。F60独立冻结、F61-F63串行、F64/F65/D72全部真实门槛保留。 |
+| 可靠性：F60-F65 | F60已交d8779e9主体候选，81工具/33BDD/18行覆盖自检通过，但未消费已到认证交接；attempt 2显式纳入767f949及a3d5b5e。认证操作实现并行。F60设计及冻结不等完整A12/T54，F62后做A12恢复专项，完整条件在F64前汇合。 | F60 attempt 2补齐交接后再独立冻结完整候选，不重做未变主体；认证实现另交A10固定可运行输入，OPS-001待F62/A12真实恢复。F60独立冻结、F61-F63串行、F64/F65/D72全部真实门槛保留。 |
 | 最终交付：D70-D75、G73/G76 | 尚未启动，未部署、未用户验收。 | 等待全范围验收、可用目标环境及具体交付动作授权。 |
 
 ## 下一步与回执处理
@@ -139,7 +139,8 @@
 
 | 对象 | 当前固定索引 |
 | --- | --- |
-| 认证恢复设计候选 | `767f949dc9f15a960c5146ebb367dd2f1e827b4f:docs/acceptance/evidence/AUTH-RECOVERY-DESIGN/v1/author.md`，设计 `73d68c2e1ec864faac8ee49a8b5f9e6361e82964`。18:30:15Z退出停写，仅五份专属文档，self PASS。auth-recovery/1提出认证后端提供离线 `prepareRestoredAuth({db})`，隔离库原子清理全部旧会话/容器/页面/挑战；F62负责停服、迁移检查、调用及最后开放。11条BDD尚未运行。a3d5b5e已独立接受设计，操作实现中、OPS-001未关闭；作者零产品运行/模型/密钥。根已通过通知01a0ca6f-989d-7e42-ae89-bccbae862c4f向F60交固定接受结果；投递不代表已消费或F60已冻结。 |
+| F60完整主体候选与接续 | `d8779e96d60523ee0453b0d825c27752d96932fd:docs/acceptance/evidence/F60/v1/author.md`，设计 `1cb19f083e72efa5798fdcc47df1a3534db967da`。18:55:41Z退出停写，self静态检查通过：81工具绑定、33BDD、18行范围、F61-F64短包；作者标记G-AUTH阻断，固定候选没有消费先前投递的认证方案。A10实际已由a3d5b5e接受，无需用户或认证方重复交付；新F60 attempt 2只补固定auth-recovery/1及真实传播影响，再送完整独立冻结。旧报告不改，零产品测试/请求/密钥；F61-F64尚未放行。 |
+| 认证恢复设计候选 | `767f949dc9f15a960c5146ebb367dd2f1e827b4f:docs/acceptance/evidence/AUTH-RECOVERY-DESIGN/v1/author.md`，设计 `73d68c2e1ec864faac8ee49a8b5f9e6361e82964`。18:30:15Z退出停写，仅五份专属文档，self PASS。auth-recovery/1提出认证后端提供离线 `prepareRestoredAuth({db})`，隔离库原子清理全部旧会话/容器/页面/挑战；F62负责停服、迁移检查、调用及最后开放。11条BDD尚未运行。a3d5b5e已独立接受设计，操作实现中、OPS-001未关闭；作者零产品运行/模型/密钥。根已通过通知01a0ca6f-989d-7e42-ae89-bccbae862c4f向F60交固定接受结果；旧候选d8779e9未消费该投递，不能据queue成功关闭门禁；F60 attempt 2已在任务包直接固定接受结果，仍待实际候选消费和独立冻结。 |
 | 认证恢复独立设计接受 | `a3d5b5ec80d4823ec978e3b9b331b8fa266302be:docs/acceptance/evidence/A10/v1/recovery-review.md`，18:39:50Z退出停写。independent PASS，无阻断设计缺陷；13项和11条BDD均为静态设计覆盖，未运行。接受auth-recovery/1及73d68c2/767f949固定输入；F60可消费，F62仍需真实操作交接及原前置，OPS-001/外部条件保持开放。AUTH-RECOVERY-IMPLEMENTATION从fae8fe9建独立分支，运行固定产品3d5c3f3；只实现认证内部离线操作与隔离SQLite/HTTP验证，不抢F62共享入口。 |
 | C21开源实验设计候选 | `d690372c8f552e37690648f5688e04e1b68c4ae9:docs/acceptance/evidence/C20-C21-REUSE-PLAN/v1/author.md`；设计 `b0e44a8daf70ee2e17f767f38e54550099ac90ef`，18:30:20Z退出停写，self PASS。只选PaddleOCR完整本地管线，固定I1-3/PS4/E7-8六页，最多七次解析，A原始/B自动归并/C人工分列；成功只形成待R30消费的实验候选，不签完整C21/R35。两具名权重约2.06GB，候选准备限10GiB下载/20GiB目录/90分钟、每页含加载15分钟；这些为待核验方案而非既有产品权限。436f261已独立冻结方法；用户一次实验许可和当次空闲资源待落实，当前零安装/下载/推理/产品请求。 |
 | C21开源实验独立冻结 | `436f2612b62cd40bb7f074ad68568d5bdd951f65:docs/acceptance/evidence/C20-C21-REUSE-PLAN/v1/review.md`，18:40:57Z退出停写，independent PASS，无必修。只接受d690372/设计b0e44a8的判别方法；不证明PaddleOCR本机可用、A/B内容或自动归并通过。OPEN-01为用户具名权重实验许可，OPEN-02为当次资源/实际环境锁单，OPEN-03为执行后的质量证据及R30消费。两模型约2.06GB，只本机六页最多七次、推理禁网，配套准备下载总量10GiB/目录20GiB/90分钟；不含API、其他权重或产品接入。许可待答期间不启动实验，其余flow继续。 |
