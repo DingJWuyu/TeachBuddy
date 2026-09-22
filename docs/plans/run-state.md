@@ -38,7 +38,7 @@
 | C25 | 新会话，attempt 1 | gpt-6-astra / high | 已启动，待主动回执 | `01a0c7d2-7a74-7050-8c8a-e28df0188772` | `.scratch/dag-dispatch/C25/1/` |
 | T50-MATH-CONTRACT | 新会话，attempt 1 | gpt-6-astra / high | 已启动，待主动回执 | `01a0c7d5-b6d8-7232-b045-9ef61d8c46cb` | `.scratch/dag-dispatch/T50-MATH-CONTRACT/1/` |
 | MATERIALS-NEXT-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，两项 independent PASS | `01a0c7d7-ed98-7031-9c26-aa9df00b7834` | `.scratch/dag-dispatch/MATERIALS-NEXT-REVIEW/1/` |
-| C21-MATERIALS-NEXT | 新会话，attempt 1 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7e0-6919-7c50-8ad4-091bb7f35bf8` | `.scratch/dag-dispatch/C21-MATERIALS-NEXT/1/` |
+| C21-MATERIALS-NEXT | 原会话接续，attempt 1 / resume 1 | gpt-6-astra / low | 同会话已恢复，待主动回执 | `01a0c7e0-6919-7c50-8ad4-091bb7f35bf8` | `.scratch/dag-dispatch/C21-MATERIALS-NEXT/1/resume-1/` |
 | C22-MATERIALS-NEXT | 新会话，attempt 1 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7e0-690e-71d1-aa96-cd3fe8d07e73` | `.scratch/dag-dispatch/C22-MATERIALS-NEXT/1/` |
 | R31-FOUNDATION | 新会话，attempt 1 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7e0-691d-75a1-9e6e-49758af3daeb` | `.scratch/dag-dispatch/R31-FOUNDATION/1/` |
 
@@ -90,6 +90,8 @@
 | C24 探针 / 业务实验 | 探针 `e7f979bd80ab83aaab7cc2cf936250123d7742a3`；旧业务 FAIL `d826b72`；修复与 self PASS `e8fdf9a139e429c05590925647a433a9da382579:docs/acceptance/evidence/C24/v1/business-fix.md`。 |
 
 ## 当前材料阻塞与外部输入
+
+- C21-MATERIALS-NEXT 首轮被明确 `model at capacity` 中断，未形成实验结论；按用户许可恢复原 session、Astra low 和原任务窗口。开发容量异常不计作产品模型额度不足或新实验尝试。
 
 - C24 真业务累计 32 次 DeepSeek provider 请求、93,970 total tokens；本轮修复新增 7 次、36,651 tokens。PI-01/02 消耗另有原账本，不能混成全部实验总量。副本读回补验已通过，计费余额/extra credits 状态仍未知；cost=0 不证明免费。
 - 当前权威结论为 [R30 恢复独立报告](/home/liam_t/项目/TeacherWorkspace-r30-recovery-review/docs/acceptance/evidence/R30/v1/recovery-review.md)，报告提交 `16d4b01`，受审组合 `8d48af5`。进程正常退出不改变本次 independent FAIL。C21 作者的“直接可用 6/6”只能视为结构性自验，不能据此关闭 EX-02。
