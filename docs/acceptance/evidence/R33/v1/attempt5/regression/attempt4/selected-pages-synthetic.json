@@ -1,0 +1,130 @@
+{
+  "job": {
+    "id": "b8797408-da84-4512-a0db-d2047388316d",
+    "kind": "extraction",
+    "target": {
+      "kind": "import",
+      "id": "2a9efd34-9d74-40bc-916b-f644746afaca",
+      "version": 1
+    },
+    "state": "succeeded",
+    "createdAt": "2026-09-22T15:41:15.144Z",
+    "updatedAt": "2026-09-22T15:41:19.110Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 2,
+      "total": 2,
+      "unit": "pages"
+    },
+    "outputFileIds": [],
+    "issues": []
+  },
+  "material": {
+    "id": "2a9efd34-9d74-40bc-916b-f644746afaca",
+    "version": 3,
+    "createdAt": "2026-09-22T15:41:15.144Z",
+    "updatedAt": "2026-09-22T15:41:19.110Z",
+    "deletedAt": null,
+    "title": "合成控制流，不计识别质量",
+    "origin": "",
+    "input": {
+      "kind": "files",
+      "fileIds": [
+        "95064117-6fc9-433b-bd29-5247418ef81c"
+      ],
+      "pages": [
+        {
+          "fileId": "95064117-6fc9-433b-bd29-5247418ef81c",
+          "pages": [
+            8,
+            7
+          ]
+        }
+      ]
+    },
+    "supplementFileIds": [],
+    "drafts": [
+      {
+        "id": "111c28c5-2629-43d7-a7f2-995947280bad",
+        "title": "7.",
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "合成题面。"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "合成续文。"
+                }
+              ]
+            }
+          ]
+        },
+        "solution": {
+          "version": 2,
+          "blocks": []
+        },
+        "answerStatus": "absent",
+        "typeId": null,
+        "tagIds": [],
+        "parts": [
+          {
+            "role": "body",
+            "locations": [
+              {
+                "kind": "page",
+                "fileId": "95064117-6fc9-433b-bd29-5247418ef81c",
+                "renditionFileId": "95064117-6fc9-433b-bd29-5247418ef81c",
+                "page": 7,
+                "box": null
+              }
+            ]
+          },
+          {
+            "role": "body",
+            "locations": [
+              {
+                "kind": "page",
+                "fileId": "95064117-6fc9-433b-bd29-5247418ef81c",
+                "renditionFileId": "95064117-6fc9-433b-bd29-5247418ef81c",
+                "page": 8,
+                "box": null
+              }
+            ]
+          }
+        ],
+        "issues": [
+          {
+            "id": "059dfc82-53cb-4fbd-a177-88a3aa22b225",
+            "code": "unverified-location",
+            "field": "/parts",
+            "locations": [
+              {
+                "kind": "page",
+                "fileId": "95064117-6fc9-433b-bd29-5247418ef81c",
+                "renditionFileId": "95064117-6fc9-433b-bd29-5247418ef81c",
+                "page": 7,
+                "box": null
+              }
+            ],
+            "resolution": "open"
+          }
+        ],
+        "disposition": "pending",
+        "questionId": null
+      }
+    ],
+    "fragments": [],
+    "jobId": "b8797408-da84-4512-a0db-d2047388316d"
+  }
+}

@@ -1,0 +1,33 @@
+
+Running 2 tests using 1 worker
+
+(node:1299077) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/materials-questions-local5.spec.js:30:1 › LOCAL002-open-tool (4.4s)
+  ✘  2 apps/web/e2e/materials-questions-local5.spec.js:43:1 › LOCAL004-single-line-controls (1.6s)
+
+
+  1) apps/web/e2e/materials-questions-local5.spec.js:43:1 › LOCAL004-single-line-controls ──────────
+
+    Error: locator.click: Error: strict mode violation: locator('header').getByRole('button', { name: '关闭辅助栏', exact: true }) resolved to 2 elements:
+        1) <button type="button" aria-pressed="true" class="wb-button wb-panel-toggle">…</button> aka getByText('关闭辅助栏')
+        2) <button type="button" title="关闭辅助栏" aria-label="关闭辅助栏" class="wb-icon-button">…</button> aka getByRole('button', { name: '关闭辅助栏', description: '关闭辅助栏' })
+
+    Call log:
+      - waiting for locator('header').getByRole('button', { name: '关闭辅助栏', exact: true })
+
+
+      70 |   await page.reload();
+      71 |   // The frozen shell uses a full workspace overlay at 1024px.
+    > 72 |   await page.locator('header').getByRole('button', { name: '关闭辅助栏', exact: true }).click();
+         |                                                                                    ^
+      73 |   await page.getByRole('button', { name: '分类管理', exact: true }).click();
+      74 |   await expect(page.getByLabel('分类名称').first()).toHaveValue('几何证明');
+      75 |   page.on('dialog', dialog => dialog.accept());
+        at /home/liam_t/项目/TeacherWorkspace-r33-attempt5/apps/web/e2e/materials-questions-local5.spec.js:72:84
+
+    Error Context: test-results/r33-attempt5/e2e/materials-questions-local5-LOCAL004-single-line-controls/error-context.md
+
+  1 failed
+    apps/web/e2e/materials-questions-local5.spec.js:43:1 › LOCAL004-single-line-controls ───────────
+  1 passed (6.8s)
