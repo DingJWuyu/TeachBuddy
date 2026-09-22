@@ -27,6 +27,30 @@ identity_mode: "UI real-auth/fake-mail；API test-principal"
 product_model_calls: 0
 product_key_reads: 0
 public_wiring_required: false
+inputs:
+  - "3a10e0d5108a4950bba0851610bae7d8495dc8ff 固定P及R33任务包"
+  - "45c229de2040e82ee7cbbb10452015d6890b2d91 R35/local-review3"
+  - "55654c2d59f0130aeb31e24d5f52c04b4323f0a4 R35/local-review2"
+changed_files:
+  - "apps/api/src/modules/questions/assets.js"
+  - "apps/api/src/modules/questions/extraction.js"
+  - "apps/web/src/features/questions/index.jsx"
+  - "apps/web/src/features/questions/MaterialsQuestionsPage.jsx"
+  - "apps/web/src/features/questions/questions-materials.css"
+  - "apps/api/test/materials-questions-local5.test.js"
+  - "apps/web/e2e/materials-questions-local5.spec.js"
+  - "apps/web/e2e/fixtures/materials-questions/attempt5.config.mjs"
+  - "docs/acceptance/evidence/R33/v1/attempt5/及本回执/integration5.md"
+artifacts: ["attempt5/manifest.json", "attempt5/composition.json", "attempt5/runtime.json"]
+checks:
+  - "M009/M024 真实HTTP定向8/8，attempt5/api-green.log"
+  - "M010/M028 真实认证浏览器2/2，attempt5/ui-green.log"
+  - "T/W与片段等原E2E 8项加Word定向1项通过，保留首次配置失败日志"
+  - "全API219/219，attempt5/full-api.log；构建PASS，attempt5/build-green.log"
+open_items:
+  - "四缺陷待R35 independent复验；完整R33/R35未通过"
+  - "历史R35-LOCAL-OBS-001/002仍OPEN"
+  - "在线提取、新材料、目标Office/打印/物理设备未通过"
 failure_owner: null
 next_condition: "由独立R35在固定候选复验四项；见integration5.md"
 authorization_used: "本session用户指定R33@1 attempt5、限定写权、任务分支提交、零模型调用"
