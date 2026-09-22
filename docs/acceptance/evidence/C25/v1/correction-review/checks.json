@@ -1,0 +1,2057 @@
+{
+  "utc": "2026-09-22T07:41:54.644427+00:00",
+  "candidate": "18293e9389e739ed8aaf67ee568503ca8e87d475",
+  "author": "5e1193524c9d1d91c3a35adec3df3c832313819b",
+  "scope": "Independent static contract audit only; zero product/runtime/model execution",
+  "openapi": "PASS",
+  "schemas": 39,
+  "examples": [
+    {
+      "name": "创建对话",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "初始快照",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "保存引用草稿",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "发送已保存版本",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "持久接受发送",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "复制请求参数",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "已确认业务操作",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "已确认工具结果",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "原业务冲突",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "被拒工具结果",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "冲突操作",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "未确认操作",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "草稿冲突",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "引用冲突",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "缺配置仍可看历史",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "持久事件-message",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "持久事件-operation",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "持久事件-turn",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "持久事件-draft",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "持久事件-conversation",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "完整快照",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只有部分请求报告用量",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-createQuestion",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-updateQuestion",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-copyQuestion",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-setQuestionDeletion",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-createLesson",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-updateLesson",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-setLessonDeletion",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-listQuestions",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-getQuestion",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-listDerivatives",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-listLessons",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-getLesson",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "业务参数-listQuestionUsages",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "未知模型拒绝",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "账户伪造拒绝",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "客户端凭据拒绝",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "模型自带幂等键拒绝",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "实验故障参数拒绝",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "题目不得有环节",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "失败不得带成功结果",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "确认结果不得为空",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "错误状态码拒绝",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "unknown 不是模型选择",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "查询长度保持旧边界",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "虚构费用零拒绝",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "失败不可无原因",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "空列表工具结果",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "读取越权失败",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_list_questions",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开开始-wb_get_question",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_get_question",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开拒绝-wb_get_question",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "无效参数-wb_get_question",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "无效参数不可执行-wb_get_question",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "公开成功-wb_list_derivatives",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_create_question",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_update_question",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_copy_question",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_set_question_deletion",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_list_lessons",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_get_lesson",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_create_lesson",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_update_lesson",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_set_lesson_deletion",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "公开成功-wb_list_question_usages",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读-executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读-cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读-interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读异常",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读异常原生映射",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读原生-cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读原生-interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读不得关联写操作",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "只读不得待确认",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "只读成功必须有结果",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "只读失败必须有Problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "只读不得伪造确认写入",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "只读不接受其他工具结果",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "未执行不得带结果",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "工具名称封闭",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "只读失败链-开始快照",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读失败链-恢复快照",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读失败链-事件-6",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读失败链-事件-7",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读失败链-事件-8",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读恢复-read",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读结果事件-read",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读恢复-failed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读结果事件-failed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读恢复-cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读结果事件-cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读恢复-interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读结果事件-interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "写入恢复-待确认",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "写入恢复-核实后",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "复用已确认写入",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "只读失败链-事件-9",
+      "expected": true,
+      "actual": true
+    }
+  ],
+  "independentMutations": [
+    {
+      "case": "wb_list_questions missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_questions state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_questions state read",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_questions state confirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_questions state failed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_questions state unconfirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_questions state interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_questions invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_questions missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_questions wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_question state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_question state read",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_question state confirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_question state failed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_question state unconfirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_question state interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_question invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_question missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_question wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_derivatives state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_derivatives state read",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_derivatives state confirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_derivatives state failed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_derivatives state unconfirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_derivatives state interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_derivatives invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_derivatives missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_derivatives wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_question state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_question state read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question state confirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_question state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_question state failed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question state unconfirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_question state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_question state interrupted",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_question missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_question wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_question state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_question state read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question state confirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_question state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_question state failed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question state unconfirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_question state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_question state interrupted",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_question missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_question wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_copy_question state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_copy_question state read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question state confirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_copy_question state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_copy_question state failed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question state unconfirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_copy_question state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_copy_question state interrupted",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_copy_question missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_copy_question wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_question_deletion state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_question_deletion state read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion state confirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_question_deletion state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_question_deletion state failed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion state unconfirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_question_deletion state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_question_deletion state interrupted",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_question_deletion missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_question_deletion wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_lessons state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_lessons state read",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_lessons state confirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_lessons state failed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_lessons state unconfirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_lessons state interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_lessons invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_lessons missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_lessons wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_lesson state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_lesson state read",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_lesson state confirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_lesson state failed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_lesson state unconfirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_lesson state interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_lesson invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_get_lesson missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_get_lesson wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_lesson state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_lesson state read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson state confirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_lesson state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_lesson state failed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson state unconfirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_lesson state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_lesson state interrupted",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_create_lesson missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_create_lesson wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_lesson state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_lesson state read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson state confirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_lesson state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_lesson state failed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson state unconfirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_lesson state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_lesson state interrupted",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_update_lesson missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_update_lesson wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_lesson_deletion state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_lesson_deletion state read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion state confirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_lesson_deletion state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_lesson_deletion state failed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion state unconfirmed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_lesson_deletion state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_lesson_deletion state interrupted",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_set_lesson_deletion missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_set_lesson_deletion wrong journal association",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages missing turnId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages missing toolCallId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages missing ordinal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages missing name",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages missing arguments",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages missing operationId",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages missing state",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages missing result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages missing problem",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages state prepared",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_question_usages state executing",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_question_usages state read",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_question_usages state confirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages state rejected",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_question_usages state failed",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_question_usages state unconfirmed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages state cancelled",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_question_usages state interrupted",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_question_usages invalid successful arguments None",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages invalid successful arguments {'principal': 'injected'}",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages invalid-input rejection",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "case": "wb_list_question_usages missing success result",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "case": "wb_list_question_usages wrong journal association",
+      "expected": false,
+      "actual": false
+    }
+  ],
+  "replayDisconnectBoundaries": 5,
+  "snapshotJoins": [
+    "初始快照",
+    "完整快照",
+    "只读失败链-开始快照",
+    "只读失败链-恢复快照",
+    "只读恢复-read",
+    "只读恢复-failed",
+    "只读恢复-cancelled",
+    "只读恢复-interrupted",
+    "写入恢复-待确认",
+    "写入恢复-核实后",
+    "复用已确认写入"
+  ],
+  "stopRestartSamples": "PASS",
+  "writeReconcileAndAlias": "PASS",
+  "bddIds": [
+    "@WB-AG-001",
+    "@WB-AG-002",
+    "@WB-AG-003",
+    "@WB-AG-004",
+    "@WB-AG-005",
+    "@WB-AG-006",
+    "@WB-AG-007",
+    "@WB-AG-008",
+    "@WB-AG-009",
+    "@WB-AG-010",
+    "@WB-AG-011",
+    "@WB-AG-012",
+    "@WB-AG-013",
+    "@WB-AG-014",
+    "@WB-AG-015",
+    "@WB-AG-016",
+    "@WB-AG-017",
+    "@WB-AG-018",
+    "@WB-AG-019",
+    "@WB-AG-020",
+    "@WB-AG-021",
+    "@WB-AG-022",
+    "@WB-AG-023"
+  ],
+  "WB-AG-022Rows": 6,
+  "unchangedInputs": "PASS",
+  "sha256": {
+    "docs/contracts/agent.openapi.json": "8b56748212447c00b13a5858b1305ad1fce4580d5185a2a463d7466c53fb3f1e",
+    "docs/contracts/auth.openapi.yaml": "545565db5f7f997a92c11cfb72c483c4b204e479cbe6713aaaa12363fef93235",
+    "docs/contracts/workbench/first-flow.openapi.yaml": "34a5e4323ecca5ebb4cfb18ab74536d27742d671bd3b449cfd373a7bdbd20797",
+    "docs/contracts/agent-examples.json": "41a902d77e51157ac093a3fcf647e749c54f419e63f35af6668d51119dd43b53",
+    "docs/contracts/agent.md": "7ce6208b43a2ad194cadf2bf5481316be91594baa9f797445dae35b23ad01d35",
+    "docs/arch/agent.md": "6840435a78511a02be6a31ed0bb045717c2766679b82f05d6e23ed1816be8b8b",
+    "docs/ux/agent.md": "c212c895690d331d6bc00358bbdad03e7605116feac751eb2000b1ad10d9c8ee",
+    "docs/user-stories/agent.md": "76ce10902fe5708e27c2c7e1730ac227bf0351f584685d9ea8c256d94bf5722e",
+    "docs/acceptance/agent.feature": "2e74ae33387e2c4cab14199572e29fa9f40c7e31c057624b36669ef8cdfe273a",
+    "docs/plans/tasks/agent-implementation.md": "2b4d28da0214f0994dfd9587eb91c0bd95ef0633522af5644653141fc8e2a551"
+  }
+}

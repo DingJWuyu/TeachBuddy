@@ -1,0 +1,53 @@
+.agent-workspace { min-width: 0; position: relative; }
+.agent-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; flex: 0 0 auto; }
+.agent-head > strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.agent-thread { padding: 16px; overflow: auto; min-height: 0; overscroll-behavior: contain; }
+.agent-empty { margin: auto; padding: 40px 12px; color: #76757e; }
+.agent-empty h1 { color: #303039; font-size: 24px; font-weight: 500; }
+.agent-turn { margin-bottom: 24px; min-width: 0; width: 100%; }
+.agent-message { line-height: 1.65; margin: 12px 0; overflow-wrap: anywhere; }
+.agent-message p { white-space: pre-wrap; margin: 0; }
+.agent-message.is-user { background: #f3f2f6; padding: 12px 16px; border-radius: 12px; }
+.agent-tool { border: 1px solid #e3e3e3; border-radius: 10px; padding: 10px 12px; margin: 10px 0; min-width: 0; }
+.agent-tool header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.agent-tool header span, .agent-turn-status { color: #77737f; font-size: 12px; }
+.agent-tool .wb-button { margin: 8px 6px 4px 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.agent-tool[data-tool-state='rejected'], .agent-tool[data-tool-state='unconfirmed'], .agent-tool[data-tool-state='failed'] { border-color: #d9b9a8; }
+.agent-workspace details { font-size: 12px; margin-top: 8px; }
+.agent-workspace summary { cursor: pointer; color: #787281; }
+.agent-workspace pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
+.agent-turn-status { display: flex; gap: 14px; align-items: baseline; }
+.agent-turn-status details { margin: 0; }
+.agent-notice, .agent-conflict { padding: 10px 16px; background: #fff6ed; font-size: 13px; overflow-wrap: anywhere; }
+.agent-notice .wb-button { margin-left: 8px; }
+.agent-conflict > div { max-height: 160px; overflow: auto; }
+.agent-references { display: flex; flex-wrap: wrap; gap: 6px; }
+.agent-references > span { border-radius: 6px; background: #eee9f7; padding: 2px 4px; }
+.agent-references button { border: 0; background: transparent; cursor: pointer; color: #5d437a; font-size: 12px; }
+.agent-workspace .wb-ai-actions { gap: 8px; align-items: center; flex-wrap: wrap; }
+.agent-workspace .wb-ai-actions > span { margin-right: auto; font-size: 11px; color: #85808b; }
+.agent-workspace select { font: inherit; font-size: 12px; border: 0; background: transparent; max-width: 110px; }
+.agent-unavailable { font-size: 12px; color: #85808b; }
+.agent-new { align-self: center; }
+.wb-shell[data-route='home'] .agent-workspace { width: 100%; max-width: 872px; height: 100%; margin: 0 auto; padding: 0; }
+.wb-shell[data-route='home'] .agent-thread { min-height: 0; }
+.agent-head .wb-menu-item { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 480px) { .agent-head { padding: 10px; gap: 4px; } .agent-thread { padding: 10px; } .agent-head > strong { font-size: 12px; } }
+.wb-shell.has-panel .wb-workspace { gap: 12px; }
+.wb-shell.has-panel .wb-aux { border-radius: 12px; margin: 12px 12px 12px 0; border: 1px solid #e3e3e3; overflow: hidden; }
+@media (max-width: 1080px) { .wb-shell.has-panel .wb-aux { margin: 0; border-radius: 0; } }
+
+.wb-shell[data-route='home'] .wb-ai-thread.agent-thread { display: block; min-width: 0; place-items: normal; }
+.agent-workspace[data-variant='home'] .wb-ai-composer { margin: 0 16px 16px; }
+
+.wb-sidebar.is-collapsed .wb-ai-entry span { display: none; }
+
+.wb-shell[data-route='home'] .wb-ai.agent-workspace { max-width: 872px; padding: 0; }
+.agent-message .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+/* KaTeX keeps each mathematical base intact; oversized atoms scroll in their paragraph. */
+.agent-message p:has(.katex) { overflow-x: auto; }
+.agent-message p + p { margin-top: 10px; }
+.agent-message ul, .agent-message ol { padding-left: 22px; }
+.agent-message pre { background: #f1f0f4; border-radius: 6px; padding: 10px; }
+
+.wb-shell.is-panel-overlay .wb-aux { position: absolute; inset: 0; width: auto; z-index: 6; margin: 0; border-radius: 0; }

@@ -1,0 +1,25 @@
+{
+  "gherkinSyntax": "PASS",
+  "scenarios": 18,
+  "uniqueStableIds": [
+    "@WB-AG-001",
+    "@WB-AG-002",
+    "@WB-AG-003",
+    "@WB-AG-004",
+    "@WB-AG-005",
+    "@WB-AG-006",
+    "@WB-AG-007",
+    "@WB-AG-008",
+    "@WB-AG-009",
+    "@WB-AG-010",
+    "@WB-AG-011",
+    "@WB-AG-012",
+    "@WB-AG-013",
+    "@WB-AG-014",
+    "@WB-AG-015",
+    "@WB-AG-016",
+    "@WB-AG-017",
+    "@WB-AG-018"
+  ],
+  "allStoriesCovered": true
+}

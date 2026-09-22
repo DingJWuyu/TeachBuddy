@@ -1,0 +1,35 @@
+{
+  "providerRequests": 0,
+  "scriptedAssistant": true,
+  "runtime": "pi 0.85.1",
+  "results": [
+    {
+      "mode": "returned-isError",
+      "nestedResultIsError": true,
+      "eventIsError": false,
+      "persistentToolResultIsError": false,
+      "details": {
+        "kind": "business-failure"
+      },
+      "sessionFile": "2026-09-22T06-36-31-472Z_01a0c7d4-8f70-75fa-b072-de2016d39bca.jsonl"
+    },
+    {
+      "mode": "throws",
+      "nestedResultIsError": null,
+      "eventIsError": true,
+      "persistentToolResultIsError": true,
+      "details": {},
+      "sessionFile": "2026-09-22T06-36-31-475Z_01a0c7d4-8f73-75fa-b072-de237f361569.jsonl"
+    },
+    {
+      "mode": "afterToolCall-override",
+      "nestedResultIsError": true,
+      "eventIsError": true,
+      "persistentToolResultIsError": true,
+      "details": {
+        "kind": "business-failure"
+      },
+      "sessionFile": "2026-09-22T06-36-31-475Z_01a0c7d4-8f73-75fa-b072-de2599c773c7.jsonl"
+    }
+  ]
+}
