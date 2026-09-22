@@ -21,6 +21,7 @@ export default function QuestionsPage({ route }) {
         accountKey={shell.accountKey}
         requestedId={route?.id}
         registerTools={shell.registerTools}
+        onOpenTools={() => shell.openPanel("questions-classification")}
         transport={auth.request}
         onAddToLesson={setQuestions}
         onOpenLesson={openLesson}

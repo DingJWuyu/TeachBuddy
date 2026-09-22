@@ -611,8 +611,11 @@ export function createExtractionHandler({
         );
       }
     }
+    // A processed empty response is not partial success. Earlier retained
+    // candidates (including teacher edits) still count when a retry fails.
+    const hasContent = Boolean(m.drafts.length || m.fragments.length);
     return {
-      state: issues.length ? (completed ? "partial" : "failed") : "succeeded",
+      state: issues.length ? (hasContent ? "partial" : "failed") : "succeeded",
       outputFileIds: [],
       issues,
     };
