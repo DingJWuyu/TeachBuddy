@@ -19,6 +19,18 @@
 - 认证与工作台由根编排者统一协调，延续现有 OpenAPI 和 HTTP 状态码约定；认证事实调查已完成，原 session 最后保存回复停在 partial；根已发一次新的写入归属调整通知，安排独立 AUTH-CONTRACT 接续。不把通知投递当确认，也不覆盖任何未交付旧成果。
 - 产品只允许 `deepseek/deepseek-v4.1-flash`、`z-ai/glm-5.3-flash`；C24 探针已 self 验证正常回答、只读工具循环与 SDK 会话重开。C24 业务首场景因浏览器上下文提前关闭而未形成证据，随后 Luna 会话触发自身使用额度上限；真实业务读写、模型拒绝边界、完整部署和大陆访问仍未验收。
 
+## 当前恢复批次
+
+以下五项是本轮获准运行的全部任务。已完成的准备任务与 T51/T52 self 成果沿用；T53/A11 的旧 dsh 执行已取消，当前由新 session 接手。其余节点和定时 check 保持停止。配置提交为 `2158976`。
+
+| 任务 | 接续方式 | 实际模型 / effort | 状态 | session | 原始派发与回执目录（文档 worktree） |
+| --- | --- | --- | --- | --- | --- |
+| C24-BUSINESS | 新会话，attempt 2 | gpt-5.6-sol / medium | running | `01a0c7a8-94e5-7da1-bfe0-aa537396c067` | `.scratch/dag-dispatch/C24-BUSINESS/2/` |
+| R30-RECOVERY-REVIEW | 恢复原会话，attempt 1 | gpt-6-astra / medium | running | `01a0c642-8129-7c11-84d1-f64a3fa85255` | `.scratch/dag-dispatch/R30-RECOVERY-REVIEW/1/resume-1/` |
+| C23-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | running | `01a0c7a8-9494-7672-9e16-cfa5034ea18d` | `.scratch/dag-dispatch/C23-MATH-REVIEW/1/` |
+| T53 | 新会话，attempt 2 | gpt-6-astra / low | running | `01a0c7a8-94b2-7e93-923a-f71728265455` | `.scratch/dag-dispatch/T53/2/` |
+| A11 | 新会话，attempt 2 | gpt-6-astra / low | running | `01a0c7a8-94c8-7d91-9794-28a8ec499bfa` | `.scratch/dag-dispatch/A11/2/` |
+
 ## 低频 check 与回执监测
 
 - 根已在本机用户 systemd 建立定时任务，已按用户 `2026-09-22T03:05:57.576Z` 指令停止并禁用：timer `teacherworkspace-check-01a0be12.timer`，service `teacherworkspace-check-01a0be12.service`；当前为 `inactive/disabled`。
@@ -44,7 +56,7 @@
 
 ## 当前实施任务
 
-本节为活动节点的唯一列表；上方前置任务表是已交付资料索引。每个节点按对应任务包执行，不因旧前置回执里的“未授权”字样忽略当前 G00。
+本节保留节点产物和回执索引；当前实际派发以“当前恢复批次”为准，上方前置任务表是已交付资料索引。每个节点按对应任务包执行，不因旧前置回执里的“未授权”字样忽略当前 G00。
 
 当前生效的并行依赖固定在 `14b8cb7c216fafc8e0a278a3900c8decf8172075:docs/plans/mvp-dag.md`，已随冻结文档集成 main `420312f`。B11 已独立冻结；当前四个下游任务的固定输入仍为 `b938f8af0b8152718f5063d4326d494bf8b5426c`，不因 main 更新漂移。首批可并行 B12/B13/B14/C20；首流汇合 B15、独立验收 B16 保留，不以替身自验替代最终真实链路。 材料恢复的限定更新为 `ab67d97:docs/plans/mvp-dag.md`，由 `c82cd69` 独立核验：仅 R30 接缝 PASS 即可启动 M40 设计，R31/R30 整体及其余实现门槛不变。
 
@@ -109,8 +121,8 @@
 | T50-IMPLEMENTATION-PREP@1 / attempt 1 | 异常失败（无正式回执，组合已由根接续完成） | main `3bbb5be` + 产品`612f0a9` + B16`d1ef0d5` + T50`f9eb35f` | Codex Luna max；session `01a0c63c-e47d-7342-9e86-09122a1e1821`；`/home/liam_t/项目/TeacherWorkspace-teaching-time-base`；`integration/teaching-time-base` | `.scratch/dag-dispatch/T50-IMPLEMENTATION-PREP/1/events.jsonl`、`stderr.log`、`exit.json`；退出 `2026-09-21T23:21:26.088524+00:00` | 会话在完成产品/B16/T50 合并后因使用额度上限退出；根已完成必要 Git 收尾并固定共同候选 `0dff83c7af7ab27fb3d43709a5a6d3cfebecc1bc`，不重复普通 Git 审查 |
 | T51@1 / attempt 1 | 完成，self PASS；已按用户指令暂停后续派发 | 共同候选 `0dff83c7af7ab27fb3d43709a5a6d3cfebecc1bc` | dsh headless；`/home/liam_t/项目/TeacherWorkspace-t51`；`feat/t51-teaching-time` | 候选 `fdf03fd7d5d56d7a5b81388867372eb178b0087b`；回执 `56cbfd6:docs/acceptance/evidence/T51/v1/author.md`；完成 `2026-09-22T00:10:00Z` | 普通班级能力 self PASS；作品关联仍需 M40/M44/WB-T020；独立 T54 前不继续派发 |
 | T52@1 / attempt 1 | 完成，self PASS；已按用户指令暂停后续派发 | 共同候选 `0dff83c7af7ab27fb3d43709a5a6d3cfebecc1bc` | dsh headless；`/home/liam_t/项目/TeacherWorkspace-t52`；`feat/t52-teaching-time` | 候选 `14e18ed8f6db3c61961dd3c816ac648542f16ce4`；回执 `14e18ed:docs/acceptance/evidence/T52/v1/author.md`；完成 `2026-09-22T00:35:22.013454Z` | 日程普通能力 self PASS；提醒和共享装配交 T53，当前不继续派发 |
-| T53@1 / attempt 1 | 用户暂停，已终止 dsh；无正式回执 | T51 `fdf03fd` + T52 `14e18ed` | dsh headless；`/home/liam_t/项目/TeacherWorkspace-t53`；`integration/t53-teaching-time` | `.scratch/dag-dispatch/T53/1/task.md`；进程于 `2026-09-22T03:05:57.576Z` 被用户指令回收，未生成 exit/receipt | 未产生可消费候选；worktree 保留，待用户决定是否恢复 | 用户明确停止派发与回收当前任务 |
-| A11@1 / attempt 1 | 用户暂停，已终止 dsh；无正式回执 | A11 准备候选 `e351677` + B16 `612f0a9` | dsh headless；`/home/liam_t/项目/TeacherWorkspace-a11`；`integration/a11-auth` | `.scratch/dag-dispatch/A11/1/task.md`；进程于 `2026-09-22T03:05:57.576Z` 被用户指令回收，未生成 exit/receipt | 未产生可消费候选；worktree 保留，待用户决定是否恢复 | 用户明确停止派发与回收当前任务 |
+| T53@1 / attempt 1 | 用户暂停，已终止 dsh；无正式回执 | T51 `fdf03fd` + T52 `14e18ed` | dsh headless；`/home/liam_t/项目/TeacherWorkspace-t53`；`integration/t53-teaching-time` | `.scratch/dag-dispatch/T53/1/task.md`；进程被用户指令回收，`exit.json` 记录 `2026-09-22T03:05:43.302Z` / 130；无正式回执 | 未产生可消费候选；旧执行已取消，由当前恢复批次的新 session 接手 | 用户明确停止派发与回收当前任务 |
+| A11@1 / attempt 1 | 用户暂停，已终止 dsh；无正式回执 | A11 准备候选 `e351677` + B16 `612f0a9` | dsh headless；`/home/liam_t/项目/TeacherWorkspace-a11`；`integration/a11-auth` | `.scratch/dag-dispatch/A11/1/task.md`；进程被用户指令回收，`exit.json` 记录 `2026-09-22T03:05:43.306Z` / 130；无正式回执 | 未产生可消费候选；旧执行已取消，由当前恢复批次的新 session 接手 | 用户明确停止派发与回收当前任务 |
 | AUTH-FLOW-CLARIFICATION@1 / attempt 1 | 异常失败（无正式回执） | `1d3cc86834ec5da82ea23a0f778f299df6aa15b9`；A10`c966447`、B16`d1ef0d5` | Codex Astra high；session `01a0c640-7b40-7b60-a58c-a8d93e628fdd`；`/home/liam_t/项目/TeacherWorkspace-auth-flow`；`design/auth-flow-clarification` | `.scratch/dag-dispatch/AUTH-FLOW-CLARIFICATION/1/events.jsonl`、`stderr.log`、`exit.json`；退出 `2026-09-21T23:21:21.541706+00:00` | 已写入 7 个未提交文档改动，最后校验阶段触发 Codex 使用额度上限；不把未提交改动当正式回执，交 attempt 2 接续 |
 | AUTH-FLOW-CLARIFICATION@1 / attempt 2 | 完成，self PASS | attempt 1 保留的文档改动；基线 `1d3cc86834ec5da82ea23a0f778f299df6aa15b9` | dsh headless；`/home/liam_t/项目/TeacherWorkspace-auth-flow`；`design/auth-flow-clarification` | 回执 `4f9985f:docs/acceptance/evidence/AUTH-FLOW-CLARIFICATION/v1/author.md`；完成 `2026-09-21T23:39:13Z` | A11 启动门禁澄清完成；不把 A10 原 BLOCKED 改写为 PASS |
 | AUTH-INTEGRATION-PREP@1 / attempt 1 | 完成，根机械收尾 self PASS | main`dcb7096` + B16`612f0a9` + 两端`281716f/cff597e` + A10`c966447` | Codex Luna max；原 session 因使用额度上限异常退出，无正式回执；根在 `/home/liam_t/项目/TeacherWorkspace-auth-integration` 完成固定 Git 组合与文档冲突收尾，`integration/auth-real-app` | 最终候选 `e351677492bc0ea9901c1807a97a0f09a3da9a85`（组合 `fbae581`，台账 `56b821e`）；正式回执 `e351677:docs/acceptance/evidence/A11/v1/preparation.md`；实际退出 `2026-09-21T23:21:48.373603Z` | 只完成固定候选组合、README/ARCHITECTURE 冲突处理和静态检查；未接线、未运行产品或邮件、未放行 A11；产品候选不合 main，等待澄清与正式接线节点 | dsh 实现，普通 Git 收尾由根处理，不追加未变契约审查 |
