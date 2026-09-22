@@ -1,0 +1,43 @@
+{
+  "fixedPoint": "2682475041aa187e3cd50ad743dc5e5bc243feda",
+  "candidate": "72143e6b2d6a444057ae87fec801ca2b3d7ff0ad",
+  "protectedPathsUnchanged": [
+    "AGENTS.md",
+    "docs/plans/run-state.md",
+    "docs/plans/mvp-dag.md",
+    "docs/plans/execution-protocol.md",
+    "docs/plans/skill-routing.md",
+    "docs/acceptance/evidence/M43",
+    "docs/acceptance/evidence/R33",
+    "docs/acceptance/evidence/R35",
+    "apps/api/src/modules/questions"
+  ],
+  "catalogDeltaOnly": "classes.requires[0]: questions.readForReference -> questions.readForReferenceV2",
+  "oldEvidenceRestoration": "Inherited math API export wrote five M43/output files; new outputs copied to math-output, originals restored byte-for-byte from fixed point. Final protected diff is empty.",
+  "implementationCandidate": "6ab25c0e094e0ac58e4b50caa9a0d13a4b99167c",
+  "changedFiles": [
+    "README.md",
+    "apps/api/src/modules/classes/index.js",
+    "apps/api/src/modules/classes/service.js",
+    "apps/api/test/fixtures/teaching-time-classes/catalog.js",
+    "apps/api/test/teaching-time-classes-materials-fixture.js",
+    "apps/api/test/teaching-time-classes-materials-retained.test.js",
+    "apps/api/test/teaching-time-classes-materials.test.js",
+    "apps/api/test/teaching-time-classes-ports.test.js",
+    "apps/api/test/workbench-catalog.test.js",
+    "apps/web/e2e/fixtures/math-integration/materials-teaching-manual.mjs",
+    "apps/web/e2e/fixtures/math-integration/materials-teaching.config.mjs",
+    "apps/web/e2e/materials-teaching.spec.js",
+    "apps/web/src/features/classes/ClassDetail.jsx",
+    "apps/web/src/features/classes/RecordEditor.jsx",
+    "apps/web/src/features/classes/RecordList.jsx",
+    "apps/web/src/features/classes/SourcePicker.jsx",
+    "apps/web/src/features/classes/api.js",
+    "apps/web/src/features/questions/MaterialsQuestionsPage.jsx",
+    "apps/web/src/features/questions/index.jsx",
+    "apps/web/src/features/questions/questions-materials.css",
+    "apps/web/src/features/workbench/routes.js",
+    "packages/shared/src/moduleCatalog.js"
+  ],
+  "rootAndR33ByteChecks": true
+}

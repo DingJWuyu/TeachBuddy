@@ -1,0 +1,36 @@
+
+Running 1 test using 1 worker
+
+(node:1377714) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-teaching.spec.js:8:1 › WB-MTA001: rich question can be selected in a teaching record (3.6s)
+
+
+  1) apps/web/e2e/materials-teaching.spec.js:8:1 › WB-MTA001: rich question can be selected in a teaching record
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 422
+
+      37 |  const saved=await saving;
+      38 |  fs.writeFileSync(path.join(evidence,process.env.MTA_RED?'red-save.json':'green-save.json'),JSON.stringify({status:saved.status(),body:await saved.json()},null,2));
+    > 39 |  expect(saved.status()).toBe(201);
+         |                         ^
+      40 |  await expect(page.locator('[data-record-id]').first()).toContainText('零点还需再练');
+      41 |  } finally {await context.close();await world.close();}
+      42 | });
+        at /home/liam_t/项目/TeacherWorkspace-materials-teaching-fix/apps/web/e2e/materials-teaching.spec.js:39:25
+
+    Error Context: test-results/mta/materials-teaching-WB-MTA0-30556-lected-in-a-teaching-record/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/mta/materials-teaching-WB-MTA0-30556-lected-in-a-teaching-record/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/mta/materials-teaching-WB-MTA0-30556-lected-in-a-teaching-record/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-teaching.spec.js:8:1 › WB-MTA001: rich question can be selected in a teaching record
