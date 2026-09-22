@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: real A11 HTTPS page identity protects previews, crops and jobs across restart and logout
+ok 1 - real A11 HTTPS page identity protects previews, crops and jobs across restart and logout
+  ---
+  duration_ms: 664.494393
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 896.750537

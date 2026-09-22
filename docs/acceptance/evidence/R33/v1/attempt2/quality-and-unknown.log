@@ -1,0 +1,30 @@
+
+Running 3 tests using 1 worker
+
+(node:1109063) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-questions-local.spec.js:286:1 › lost confirmation response replays the original request after reload without duplicating a question (3.4s)
+(node:1109952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 apps/web/e2e/materials-questions-quality.spec.js:5:3 › T untouched native quality and editable formula persistence (1.6s)
+  ✓  3 apps/web/e2e/materials-questions-quality.spec.js:5:3 › W untouched native quality and editable formula persistence (3.8s)
+
+
+  1) apps/web/e2e/materials-questions-local.spec.js:286:1 › lost confirmation response replays the original request after reload without duplicating a question 
+
+    TypeError: Cannot read properties of undefined (reading 'questions')
+
+      288 |  let committed;
+      289 |  await page.route('**/questions/v2/imports/*/commit',async route=>{committed=await(await route.fetch()).json();await route.abort('failed');},{times:1});
+    > 290 |  await page.getByRole('button',{name:'确认收录',exact:true}).click();await expect(page.getByRole('button',{name:'确认上次请求',exact:true})).toBeVisible();expect(committed.questions).toHaveLength(1);
+          |                                                                                                                                                                   ^
+      291 |  await page.reload();await page.getByRole('button',{name:'确认上次请求',exact:true}).click();await expect(page.locator('.q-message')).toContainText('原请求已确认');await page.reload();await expect(page.getByRole('button',{name:'查看已入库题目'})).toBeVisible();
+      292 |  const material=await(await page.request.get(`/api/modules/questions/v2/imports/${committed.import.id}`)).json();expect(material.drafts[0].questionId).toBe(committed.questions[0].id);
+      293 |  const questions=await(await page.request.get('/api/modules/questions/v2/items')).json();expect(questions.items.filter(q=>q.source.kind==='import'&&q.source.importId===material.id)).toHaveLength(1);
+        at /home/liam_t/项目/TeacherWorkspace-r33-local-fix/apps/web/e2e/materials-questions-local.spec.js:290:163
+
+    Error Context: test-results/r33-attempt2/e2e/materials-questions-local--982b0-hout-duplicating-a-question/error-context.md
+
+  1 failed
+    apps/web/e2e/materials-questions-local.spec.js:286:1 › lost confirmation response replays the original request after reload without duplicating a question 
+  2 passed (9.9s)

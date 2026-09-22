@@ -1,0 +1,8 @@
+{
+  "status": 422,
+  "body": {
+    "type": "/problems/workbench/invalid-input",
+    "field": "/body/version",
+    "reason": "unsupported-content-version"
+  }
+}

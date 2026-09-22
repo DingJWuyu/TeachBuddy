@@ -1,0 +1,13 @@
+
+Running 6 tests using 1 worker
+
+(node:1061152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/materials-questions.spec.js:2:1 › teacher imports text, edits formula, confirms and reopens persistent question (1.0s)
+  ✓  2 apps/web/e2e/materials-questions.spec.js:43:1 › unsaved collection form survives refresh (212ms)
+  ✓  3 apps/web/e2e/materials-questions.spec.js:53:1 › Word original and formulas are available for review (2.9s)
+  ✓  4 apps/web/e2e/materials-questions.spec.js:71:1 › asset job is restored after refresh (582ms)
+  ✓  5 apps/web/e2e/materials-questions.spec.js:96:1 › image failure retains original and supports explicit local crop correction (3.5s)
+  ✓  6 apps/web/e2e/materials-questions.spec.js:134:1 › concurrent edit keeps local work and offers explicit version comparison (3.8s)
+
+  6 passed (12.4s)

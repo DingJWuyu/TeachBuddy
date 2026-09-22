@@ -1,0 +1,12 @@
+v22.23.2
+10.9.8
+refatos-v1@0.3.0 /home/liam_t/项目/TeacherWorkspace-c26
+└─┬ @refatos/api@0.3.0 -> ./apps/api
+  ├─┬ @earendil-works/pi-agent-core@0.85.1
+  │ └── @earendil-works/pi-ai@0.85.1 deduped
+  ├── @earendil-works/pi-ai@0.85.1
+  └─┬ @earendil-works/pi-coding-agent@0.85.1
+    ├─┬ @earendil-works/pi-agent-core@0.85.1
+    │ └── @earendil-works/pi-ai@0.85.1 deduped
+    └── @earendil-works/pi-ai@0.85.1
+

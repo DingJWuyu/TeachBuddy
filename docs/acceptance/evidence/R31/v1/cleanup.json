@@ -1,0 +1,13 @@
+{
+  "status": "complete",
+  "removedOwnTemporaryDirectories": [
+    "test-results/r31-complete",
+    "test-results/r31-foundation",
+    "apps/api/test-results/r31-complete",
+    "apps/api/test-results/r31-foundation",
+    "apps/api/test-results/m41"
+  ],
+  "preserved": "formal evidence, fixed fixtures, installed dependencies and product build outputs",
+  "sourceWorktrees": "read-only",
+  "publicWriting": "stopped after receipt commit"
+}

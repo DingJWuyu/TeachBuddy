@@ -1,0 +1,16 @@
+{
+  "verifiedFiles": 794,
+  "restoredFiles": [
+    "docs/acceptance/evidence/R33/v1/attempt2/E-pages.json",
+    "docs/acceptance/evidence/R33/v1/attempt2/adapter-replay.json",
+    "docs/acceptance/evidence/R33/v1/attempt2/complex-omml.json",
+    "docs/acceptance/evidence/R33/v1/attempt2/migration.json",
+    "docs/acceptance/evidence/R33/v1/attempt2/native-T.txt.json",
+    "docs/acceptance/evidence/R33/v1/attempt2/native-W.docx.json",
+    "docs/acceptance/evidence/R33/v1/attempt4/first-http.json",
+    "docs/acceptance/evidence/R33/v1/attempt4/old-response-replay.json",
+    "docs/acceptance/evidence/R33/v1/attempt4/pdf-crop.json",
+    "docs/acceptance/evidence/R33/v1/attempt4/selected-pages-synthetic.json"
+  ],
+  "allOriginalHashesMatch": true
+}

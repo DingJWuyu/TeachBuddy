@@ -1,0 +1,25 @@
+{
+  "task": [
+    "R34@1 attempt3",
+    "R33@1 attempt3"
+  ],
+  "verification_level": "self",
+  "finished_at_utc": "2026-09-22T12:36:49.681550+00:00",
+  "product_revision": "a0bde5546eeedf50498888da0ed9c5941fa1d76a",
+  "composition_fixed_point": "ec3a44f024c5d18c13954fa9ee809ccbfb7a9a70",
+  "review_target": "9d096389ce1e8f1364aca83c6069f29a8f3a703d",
+  "standards_findings": 0,
+  "spec_findings": 1,
+  "author_verified_resolved": 1,
+  "api": "201/201",
+  "browser": "4/4 browser-reviewed.log; focus follow-up 2/2 focus-green.log",
+  "build": "PASS build-focus.log",
+  "diff_check": "PASS product range",
+  "migration_observation": "OPEN / not reproduced / root cause unconfirmed",
+  "product_model_requests": 0,
+  "keys_read": 0,
+  "scope": "two UX gaps and fixed material integration only",
+  "complete_R33": "FAIL",
+  "complete_R34": "BLOCKED",
+  "R35": "not independently verified"
+}

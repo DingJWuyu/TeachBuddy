@@ -1,0 +1,208 @@
+TAP version 13
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC05/06/11: real composition preserves math snapshots, v2 replay and restart
+ok 1 - MC05/06/11: real composition preserves math snapshots, v2 replay and restart
+  ---
+  duration_ms: 1114.663934
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC06/10: adopted snapshots survive deletion; real classes reverse links preserve linked labels
+ok 2 - MC06/10: adopted snapshots survive deletion; real classes reverse links preserve linked labels
+  ---
+  duration_ms: 409.290755
+  type: 'test'
+  ...
+# Subtest: MC07: all five math kinds produce real DOCX and PDF without private notes
+ok 3 - MC07: all five math kinds produce real DOCX and PDF without private notes
+  ---
+  duration_ms: 7972.90731
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T001: 班级只有名称，可建可改名可删可恢复，重复名允许
+ok 4 - TT-C1/WB-T001: 班级只有名称，可建可改名可删可恢复，重复名允许
+  ---
+  duration_ms: 309.436247
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T001: 一句话就是一条有效记录，刷新与保留库重启后仍在
+ok 5 - TT-C1/WB-T001: 一句话就是一条有效记录，刷新与保留库重启后仍在
+  ---
+  duration_ms: 76.754263
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T002: 补充实际位置、按班级隔离并按日期排序
+ok 6 - TT-C1/WB-T002: 补充实际位置、按班级隔离并按日期排序
+  ---
+  duration_ms: 69.912598
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T003/WB-T019: 备课链接保存时标题，两班反馈独立，改删来源不破坏记录
+ok 7 - TT-C1/WB-T003/WB-T019: 备课链接保存时标题，两班反馈独立，改删来源不破坏记录
+  ---
+  duration_ms: 90.540948
+  type: 'test'
+  ...
+# Subtest: TT-C1.6/WB-T002/WB-T019: 删班记录只读，恢复保留原 ID 与来源，记录单独恢复
+ok 8 - TT-C1.6/WB-T002/WB-T019: 删班记录只读，恢复保留原 ID 与来源，记录单独恢复
+  ---
+  duration_ms: 81.938964
+  type: 'test'
+  ...
+# Subtest: TT-C1/WB-T019: 空标题只影响显示回退，labelAtLink 保存服务器读取的原文
+ok 9 - TT-C1/WB-T019: 空标题只影响显示回退，labelAtLink 保存服务器读取的原文
+  ---
+  duration_ms: 65.09747
+  type: 'test'
+  ...
+# Subtest: WB-T017/TT-C5: 同键重放返回原结果、同键改体 409、无部分写入
+ok 10 - WB-T017/TT-C5: 同键重放返回原结果、同键改体 409、无部分写入
+  ---
+  duration_ms: 62.194762
+  type: 'test'
+  ...
+# Subtest: WB-T017/WB-T018: 存储失败 503 不留业务/幂等记录，恢复后同键只写一次
+ok 11 - WB-T017/WB-T018: 存储失败 503 不留业务/幂等记录，恢复后同键只写一次
+  ---
+  duration_ms: 58.459321
+  type: 'test'
+  ...
+# Subtest: WB-T018: 来源保护、身份与账户隔离
+ok 12 - WB-T018: 来源保护、身份与账户隔离
+  ---
+  duration_ms: 66.989317
+  type: 'test'
+  ...
+# Subtest: WB-MTA002: immutable old candidate database, normal rich upgrade and two retained restarts
+ok 13 - WB-MTA002: immutable old candidate database, normal rich upgrade and two retained restarts
+  ---
+  duration_ms: 2107.94031
+  type: 'test'
+  ...
+# Subtest: WB-MTA001/006/007: rich, imported, copied and mixed sources through public HTTP
+ok 14 - WB-MTA001/006/007: rich, imported, copied and mixed sources through public HTTP
+  ---
+  duration_ms: 958.560762
+  type: 'test'
+  ...
+# Subtest: WB-MTA002/004/005/007: transactions, tombstones, failures, replay and isolation
+ok 15 - WB-MTA002/004/005/007: transactions, tombstones, failures, replay and isolation
+  ---
+  duration_ms: 396.829361
+  type: 'test'
+  ...
+# Subtest: TM-C1/C5 fixed T53 SQLite upgrade preserves old links and successful receipt
+ok 16 - TM-C1/C5 fixed T53 SQLite upgrade preserves old links and successful receipt
+  ---
+  duration_ms: 515.35568
+  type: 'test'
+  ...
+# Subtest: TM-C6 HTTP: question 404 must not become a tombstone
+ok 17 - TM-C6 HTTP: question 404 must not become a tombstone
+  ---
+  duration_ms: 295.318024
+  type: 'test'
+  ...
+# Subtest: TM-C6 HTTP: lesson 404 must not become a tombstone
+ok 18 - TM-C6 HTTP: lesson 404 must not become a tombstone
+  ---
+  duration_ms: 79.602669
+  type: 'test'
+  ...
+# Subtest: TM-C1/C2: v2 current titles, tombstones, retained links, remove/relink and restart
+ok 19 - TM-C1/C2: v2 current titles, tombstones, retained links, remove/relink and restart
+  ---
+  duration_ms: 82.67891
+  type: 'test'
+  ...
+# Subtest: TM-C4/C5: shared records, legacy loss guards and original successful receipt after restart
+ok 20 - TM-C4/C5: shared records, legacy loss guards and original successful receipt after restart
+  ---
+  duration_ms: 125.385259
+  type: 'test'
+  ...
+# Subtest: TM-C3/C6: complete reverse feedback, ownership and rollback of mutations/receipts
+ok 21 - TM-C3/C6: complete reverse feedback, ownership and rollback of mutations/receipts
+  ---
+  duration_ms: 84.313159
+  type: 'test'
+  ...
+# Subtest: TM-C6 strict sources, empty titles, invalid render and v2 replay
+ok 22 - TM-C6 strict sources, empty titles, invalid render and v2 replay
+  ---
+  duration_ms: 73.544879
+  type: 'test'
+  ...
+# Subtest: TM-C7 schedule RecordReference remains readable when math projection fails
+ok 23 - TM-C7 schedule RecordReference remains readable when math projection fails
+  ---
+  duration_ms: 107.999073
+  type: 'test'
+  ...
+# Subtest: TM-C6 restoration projection failure rolls back deletion state and receipt
+ok 24 - TM-C6 restoration projection failure rolls back deletion state and receipt
+  ---
+  duration_ms: 58.385139
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数据保持可读
+ok 25 - classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数据保持可读
+  ---
+  duration_ms: 336.024164
+  type: 'test'
+  ...
+# Subtest: 公共端口：readClass/readRecord 允许 tombstone，外账户统一 404
+ok 26 - 公共端口：readClass/readRecord 允许 tombstone，外账户统一 404
+  ---
+  duration_ms: 285.251563
+  type: 'test'
+  ...
+# Subtest: 公共端口：readRecord 的 label 取首个非空文字并截前 300 个 code point
+ok 27 - 公共端口：readRecord 的 label 取首个非空文字并截前 300 个 code point
+  ---
+  duration_ms: 81.351457
+  type: 'test'
+  ...
+# Subtest: 公共端口：listSourceRecords 与 HTTP 同语义，返回活动记录与活动班级顺序
+ok 28 - 公共端口：listSourceRecords 与 HTTP 同语义，返回活动记录与活动班级顺序
+  ---
+  duration_ms: 85.015747
+  type: 'test'
+  ...
+# Subtest: 来源读取失败使本次读取失败，404 同样传播而非伪删除
+ok 29 - 来源读取失败使本次读取失败，404 同样传播而非伪删除
+  ---
+  duration_ms: 78.005359
+  type: 'test'
+  ...
+# Subtest: 直接业务调用同样拒绝非法输入，不依赖 HTTP 层
+ok 30 - 直接业务调用同样拒绝非法输入，不依赖 HTTP 层
+  ---
+  duration_ms: 52.60961
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9895.900883

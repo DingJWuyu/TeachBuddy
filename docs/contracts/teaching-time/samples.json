@@ -1,0 +1,1749 @@
+{
+  "description": "T50/v1 同版契约正反例；valid只表示schema预期，跨字段业务规则见cases。目录反例的 expectedStaticValidation 只记录跨条目校验预期，不替代 value 的 JSON Schema 检查。",
+  "samples": [
+    {
+      "id": "class-create",
+      "schema": "ClassInput",
+      "valid": true,
+      "value": {
+        "name": "高一(1)班"
+      }
+    },
+    {
+      "id": "class-saved",
+      "schema": "Class",
+      "valid": true,
+      "value": {
+        "id": "10000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null,
+        "name": "高一(1)班"
+      }
+    },
+    {
+      "id": "record-create",
+      "schema": "RecordInput",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "record-quick",
+      "schema": "RecordInput",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": []
+      }
+    },
+    {
+      "id": "record-saved",
+      "schema": "Record",
+      "valid": true,
+      "value": {
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null,
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "record-update",
+      "schema": "RecordUpdate",
+      "valid": true,
+      "value": {
+        "expectedVersion": 1,
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unscheduled-create",
+      "schema": "EntryInput",
+      "valid": true,
+      "value": {
+        "title": "",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": null,
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": null
+      }
+    },
+    {
+      "id": "entry-create",
+      "schema": "EntryInput",
+      "valid": true,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      }
+    },
+    {
+      "id": "entry-saved",
+      "schema": "Entry",
+      "valid": true,
+      "value": {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null,
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        },
+        "courseState": {
+          "classroom": null,
+          "lesson": null,
+          "records": []
+        }
+      }
+    },
+    {
+      "id": "entry-update",
+      "schema": "EntryUpdate",
+      "valid": true,
+      "value": {
+        "expectedVersion": 1,
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      }
+    },
+    {
+      "id": "series-create",
+      "schema": "EntryInput",
+      "valid": true,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": {
+          "until": "2026-10-05"
+        },
+        "course": {
+          "classId": "10000000-0000-4000-8000-000000000001",
+          "lessonId": "20000000-0000-4000-8000-000000000001",
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      }
+    },
+    {
+      "id": "reminder-title-fallback-entry",
+      "schema": "EntryInput",
+      "valid": true,
+      "value": {
+        "title": "  ",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000002",
+            "text": "长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事😀尾",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      }
+    },
+    {
+      "id": "override",
+      "schema": "ExceptionInput",
+      "valid": true,
+      "value": {
+        "expectedVersion": 1,
+        "mode": "override",
+        "content": {
+          "title": "备课",
+          "items": [
+            {
+              "id": "50000000-0000-4000-8000-000000000001",
+              "text": "选例题",
+              "priority": "normal"
+            }
+          ],
+          "time": {
+            "date": "2026-09-29",
+            "startTime": "16:00",
+            "timeZone": "Asia/Shanghai",
+            "durationMinutes": 90
+          },
+          "course": {
+            "classId": null,
+            "lessonId": null,
+            "recordIds": []
+          },
+          "reminder": {
+            "side": "before",
+            "minutes": 10
+          }
+        }
+      }
+    },
+    {
+      "id": "cancelled",
+      "schema": "ExceptionInput",
+      "valid": true,
+      "value": {
+        "expectedVersion": 2,
+        "mode": "cancelled"
+      }
+    },
+    {
+      "id": "inherit",
+      "schema": "ExceptionInput",
+      "valid": true,
+      "value": {
+        "expectedVersion": 3,
+        "mode": "inherit"
+      }
+    },
+    {
+      "id": "occurrence",
+      "schema": "Occurrence",
+      "valid": true,
+      "value": {
+        "key": {
+          "entryId": "40000000-0000-4000-8000-000000000001",
+          "originDate": null
+        },
+        "entryVersion": 1,
+        "exception": false,
+        "state": "active",
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "startsAt": "2026-09-21T07:00:00Z",
+        "endsAt": "2026-09-21T08:30:00Z",
+        "timeAdjusted": false,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "courseState": {
+          "classroom": null,
+          "lesson": null,
+          "records": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        },
+        "dueAt": "2026-09-21T08:20:00Z"
+      }
+    },
+    {
+      "id": "occurrence-list",
+      "schema": "OccurrenceList",
+      "valid": true,
+      "value": {
+        "timeZone": "Asia/Shanghai",
+        "items": [
+          {
+            "key": {
+              "entryId": "40000000-0000-4000-8000-000000000001",
+              "originDate": null
+            },
+            "entryVersion": 1,
+            "exception": false,
+            "state": "active",
+            "title": "备课",
+            "items": [
+              {
+                "id": "50000000-0000-4000-8000-000000000001",
+                "text": "选例题",
+                "priority": "normal"
+              }
+            ],
+            "time": {
+              "date": "2026-09-21",
+              "startTime": "15:00",
+              "timeZone": "Asia/Shanghai",
+              "durationMinutes": 90
+            },
+            "startsAt": "2026-09-21T07:00:00Z",
+            "endsAt": "2026-09-21T08:30:00Z",
+            "timeAdjusted": false,
+            "course": {
+              "classId": null,
+              "lessonId": null,
+              "recordIds": []
+            },
+            "courseState": {
+              "classroom": null,
+              "lesson": null,
+              "records": []
+            },
+            "reminder": {
+              "side": "before",
+              "minutes": 10
+            },
+            "dueAt": "2026-09-21T08:20:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "id": "move-new-unscheduled",
+      "schema": "MoveItem",
+      "valid": true,
+      "value": {
+        "itemId": "50000000-0000-4000-8000-000000000001",
+        "fromEntryId": "40000000-0000-4000-8000-000000000001",
+        "fromVersion": 1,
+        "toEntryId": null,
+        "toVersion": null,
+        "toIndex": 0
+      }
+    },
+    {
+      "id": "notice",
+      "schema": "Notification",
+      "valid": true,
+      "value": {
+        "id": "60000000-0000-4000-8000-000000000001",
+        "key": {
+          "entryId": "40000000-0000-4000-8000-000000000001",
+          "originDate": null
+        },
+        "title": "备课",
+        "dueAt": "2026-09-21T08:20:00Z",
+        "readAt": null,
+        "dismissedAt": null
+      }
+    },
+    {
+      "id": "notices",
+      "schema": "NotificationList",
+      "valid": true,
+      "value": {
+        "items": [
+          {
+            "id": "60000000-0000-4000-8000-000000000001",
+            "key": {
+              "entryId": "40000000-0000-4000-8000-000000000001",
+              "originDate": null
+            },
+            "title": "备课",
+            "dueAt": "2026-09-21T08:20:00Z",
+            "readAt": null,
+            "dismissedAt": null
+          }
+        ],
+        "unreadCount": 1
+      }
+    },
+    {
+      "id": "read",
+      "schema": "NoticeAction",
+      "valid": true,
+      "value": {
+        "action": "read"
+      }
+    },
+    {
+      "id": "dismiss-list",
+      "schema": "NoticeBatch",
+      "valid": true,
+      "value": {
+        "ids": [
+          "60000000-0000-4000-8000-000000000001"
+        ],
+        "action": "dismiss"
+      }
+    },
+    {
+      "id": "settings",
+      "schema": "Settings",
+      "valid": true,
+      "value": {
+        "timeZone": "Asia/Shanghai",
+        "version": 1
+      }
+    },
+    {
+      "id": "settings-update",
+      "schema": "SettingsUpdate",
+      "valid": true,
+      "value": {
+        "timeZone": "America/New_York",
+        "expectedVersion": 1
+      }
+    },
+    {
+      "id": "delete",
+      "schema": "Deletion",
+      "valid": true,
+      "value": {
+        "expectedVersion": 1,
+        "deleted": true
+      }
+    },
+    {
+      "id": "class-port",
+      "schema": "ClassReference",
+      "valid": true,
+      "value": {
+        "id": "10000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "name": "高一(1)班",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "record-port",
+      "schema": "RecordReference",
+      "valid": true,
+      "value": {
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "label": "例2没讲，任意性还需强调",
+        "deletedAt": null,
+        "classDeletedAt": null
+      }
+    },
+    {
+      "id": "lesson-port",
+      "schema": "LessonReference",
+      "valid": true,
+      "value": {
+        "id": "20000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "title": "函数单调性",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "catalog-v2",
+      "schema": "ModuleCatalogV2",
+      "valid": true,
+      "value": {
+        "version": 2,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference"
+            ]
+          },
+          {
+            "id": "classes",
+            "name": "班级",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "catalog-v2-reject-duplicate-id",
+      "schema": "ModuleCatalogV2",
+      "valid": true,
+      "value": {
+        "version": 2,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference"
+            ]
+          },
+          {
+            "id": "questions",
+            "name": "班级",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "field": "/items/2/id",
+        "reason": "duplicate-id"
+      }
+    },
+    {
+      "id": "catalog-v2-reject-duplicate-path",
+      "schema": "ModuleCatalogV2",
+      "valid": true,
+      "value": {
+        "version": 2,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference"
+            ]
+          },
+          {
+            "id": "classes",
+            "name": "班级",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/lessons",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "field": "/items/3/path",
+        "reason": "duplicate-id"
+      }
+    },
+    {
+      "id": "catalog-v2-reject-missing-dependency",
+      "schema": "ModuleCatalogV2",
+      "valid": true,
+      "value": {
+        "version": 2,
+        "items": [
+          {
+            "id": "other",
+            "name": "题库",
+            "path": "/other",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference"
+            ]
+          },
+          {
+            "id": "classes",
+            "name": "班级",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "field": "/items/1/requires/0",
+        "reason": "invalid-reference"
+      }
+    },
+    {
+      "id": "catalog-v2-reject-cycle",
+      "schema": "ModuleCatalogV2",
+      "valid": true,
+      "value": {
+        "version": 2,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass"
+            ]
+          },
+          {
+            "id": "classes",
+            "name": "班级",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "field": "/items",
+        "reason": "invalid-reference"
+      }
+    },
+    {
+      "id": "reminder-port",
+      "schema": "ReminderCandidate",
+      "valid": true,
+      "value": {
+        "key": {
+          "entryId": "40000000-0000-4000-8000-000000000001",
+          "originDate": null
+        },
+        "title": "备课",
+        "dueAt": "2026-09-21T08:20:00Z",
+        "armedAt": "2026-09-21T06:00:00Z"
+      }
+    },
+    {
+      "id": "reminder-title-fallback-candidate",
+      "schema": "ReminderCandidate",
+      "valid": true,
+      "value": {
+        "key": {
+          "entryId": "40000000-0000-4000-8000-000000000002",
+          "originDate": null
+        },
+        "title": "长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事😀",
+        "dueAt": "2026-09-21T08:20:00Z",
+        "armedAt": "2026-09-21T06:00:00Z"
+      }
+    },
+    {
+      "id": "reminder-title-fallback-notification",
+      "schema": "Notification",
+      "valid": true,
+      "value": {
+        "id": "60000000-0000-4000-8000-000000000002",
+        "key": {
+          "entryId": "40000000-0000-4000-8000-000000000002",
+          "originDate": null
+        },
+        "title": "长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事项长事😀",
+        "dueAt": "2026-09-21T08:20:00Z",
+        "readAt": null,
+        "dismissedAt": null
+      }
+    },
+    {
+      "id": "problem-malformed-json",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/malformed-json",
+        "status": 400
+      }
+    },
+    {
+      "id": "problem-unauthenticated",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/unauthenticated",
+        "status": 401
+      }
+    },
+    {
+      "id": "problem-request-not-allowed",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/request-not-allowed",
+        "status": 403
+      }
+    },
+    {
+      "id": "problem-not-found",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/not-found",
+        "status": 404
+      }
+    },
+    {
+      "id": "problem-version-conflict",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/version-conflict",
+        "status": 409,
+        "currentVersion": 2,
+        "objectId": "40000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "id": "problem-idempotency-key-reused",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/idempotency-key-reused",
+        "status": 409
+      }
+    },
+    {
+      "id": "problem-object-deleted",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/object-deleted",
+        "status": 409
+      }
+    },
+    {
+      "id": "problem-reference-deleted",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/reference-deleted",
+        "status": 409
+      }
+    },
+    {
+      "id": "problem-class-mismatch",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/class-mismatch",
+        "status": 409
+      }
+    },
+    {
+      "id": "problem-immutable-series",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/immutable-series",
+        "status": 409
+      }
+    },
+    {
+      "id": "problem-invalid-move",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-move",
+        "status": 409
+      }
+    },
+    {
+      "id": "problem-payload-too-large",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/payload-too-large",
+        "status": 413
+      }
+    },
+    {
+      "id": "problem-unsupported-media-type",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/unsupported-media-type",
+        "status": 415
+      }
+    },
+    {
+      "id": "problem-invalid-input",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/time",
+        "reason": "out-of-range"
+      }
+    },
+    {
+      "id": "problem-invalid-time-zone",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-time-zone",
+        "status": 422,
+        "field": "/time"
+      }
+    },
+    {
+      "id": "problem-reminder-not-future",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/reminder-not-future",
+        "status": 422,
+        "field": "/reminder"
+      }
+    },
+    {
+      "id": "problem-temporarily-unavailable",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/temporarily-unavailable",
+        "status": 503
+      }
+    },
+    {
+      "id": "reject-entry-items-unknown",
+      "schema": "EntryInput",
+      "valid": false,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal",
+            "unexpected": true
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/items/0/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-entry-time-unknown",
+      "schema": "EntryInput",
+      "valid": false,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90,
+          "unexpected": true
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/time/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-entry-repeat-unknown",
+      "schema": "EntryInput",
+      "valid": false,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": {
+          "until": "2026-10-05",
+          "unexpected": true
+        },
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/repeat/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-entry-course-unknown",
+      "schema": "EntryInput",
+      "valid": false,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": [],
+          "unexpected": true
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/course/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-entry-reminder-unknown",
+      "schema": "EntryInput",
+      "valid": false,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10,
+          "unexpected": true
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/reminder/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-entry-update-items-unknown",
+      "schema": "EntryUpdate",
+      "valid": false,
+      "value": {
+        "expectedVersion": 1,
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal",
+            "unexpected": true
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/items/0/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-entry-update-time-unknown",
+      "schema": "EntryUpdate",
+      "valid": false,
+      "value": {
+        "expectedVersion": 1,
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90,
+          "unexpected": true
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/time/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-entry-update-repeat-unknown",
+      "schema": "EntryUpdate",
+      "valid": false,
+      "value": {
+        "expectedVersion": 1,
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": {
+          "until": "2026-10-05",
+          "unexpected": true
+        },
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/repeat/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-entry-update-course-unknown",
+      "schema": "EntryUpdate",
+      "valid": false,
+      "value": {
+        "expectedVersion": 1,
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": [],
+          "unexpected": true
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/course/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-entry-update-reminder-unknown",
+      "schema": "EntryUpdate",
+      "valid": false,
+      "value": {
+        "expectedVersion": 1,
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10,
+          "unexpected": true
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/reminder/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-override-items-unknown",
+      "schema": "Override",
+      "valid": false,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal",
+            "unexpected": true
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/items/0/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-override-course-unknown",
+      "schema": "Override",
+      "valid": false,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": [],
+          "unexpected": true
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/course/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-override-reminder-unknown",
+      "schema": "Override",
+      "valid": false,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10,
+          "unexpected": true
+        }
+      },
+      "expectedProblem": {
+        "status": 422,
+        "field": "/reminder/unexpected",
+        "reason": "unknown-field"
+      }
+    },
+    {
+      "id": "reject-task-status",
+      "schema": "EntryInput",
+      "valid": false,
+      "value": {
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        },
+        "status": "done"
+      }
+    },
+    {
+      "id": "reject-unknown-work",
+      "schema": "SourceInput",
+      "valid": false,
+      "value": {
+        "kind": "work",
+        "id": "20000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "id": "reject-missing-body-field",
+      "schema": "ClassInput",
+      "valid": false,
+      "value": {}
+    },
+    {
+      "id": "reject-zero-duration",
+      "schema": "Time",
+      "valid": false,
+      "value": {
+        "date": "2026-09-21",
+        "startTime": "15:00",
+        "timeZone": "Asia/Shanghai",
+        "durationMinutes": 0
+      }
+    },
+    {
+      "id": "reject-invalid-clock",
+      "schema": "Time",
+      "valid": false,
+      "value": {
+        "date": "2026-09-21",
+        "startTime": "24:00",
+        "timeZone": "Asia/Shanghai",
+        "durationMinutes": 90
+      }
+    },
+    {
+      "id": "reject-numeric-string",
+      "schema": "Time",
+      "valid": false,
+      "value": {
+        "date": "2026-09-21",
+        "startTime": "15:00",
+        "timeZone": "Asia/Shanghai",
+        "durationMinutes": "90"
+      }
+    },
+    {
+      "id": "reject-invalid-date",
+      "schema": "Time",
+      "valid": false,
+      "value": {
+        "date": "2026-02-30",
+        "startTime": "15:00",
+        "timeZone": "Asia/Shanghai",
+        "durationMinutes": 90
+      }
+    },
+    {
+      "id": "reject-no-conflict-version",
+      "schema": "Problem",
+      "valid": false,
+      "value": {
+        "type": "/problems/workbench/version-conflict",
+        "status": 409
+      }
+    },
+    {
+      "id": "reject-wrong-status",
+      "schema": "Problem",
+      "valid": false,
+      "value": {
+        "type": "/problems/workbench/not-found",
+        "status": 200
+      }
+    },
+    {
+      "id": "reject-body-inherit",
+      "schema": "ExceptionInput",
+      "valid": false,
+      "value": {
+        "expectedVersion": 1,
+        "mode": "inherit",
+        "content": {
+          "title": "备课",
+          "items": [
+            {
+              "id": "50000000-0000-4000-8000-000000000001",
+              "text": "选例题",
+              "priority": "normal"
+            }
+          ],
+          "time": {
+            "date": "2026-09-29",
+            "startTime": "16:00",
+            "timeZone": "Asia/Shanghai",
+            "durationMinutes": 90
+          },
+          "course": {
+            "classId": null,
+            "lessonId": null,
+            "recordIds": []
+          },
+          "reminder": {
+            "side": "before",
+            "minutes": 10
+          }
+        }
+      }
+    },
+    {
+      "id": "accept-additive-response",
+      "schema": "Entry",
+      "valid": true,
+      "value": {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null,
+        "title": "备课",
+        "items": [
+          {
+            "id": "50000000-0000-4000-8000-000000000001",
+            "text": "选例题",
+            "priority": "normal"
+          }
+        ],
+        "time": {
+          "date": "2026-09-21",
+          "startTime": "15:00",
+          "timeZone": "Asia/Shanghai",
+          "durationMinutes": 90,
+          "extra": true
+        },
+        "repeat": null,
+        "course": {
+          "classId": null,
+          "lessonId": null,
+          "recordIds": []
+        },
+        "reminder": {
+          "side": "before",
+          "minutes": 10
+        },
+        "courseState": {
+          "classroom": null,
+          "lesson": null,
+          "records": []
+        },
+        "extra": true
+      }
+    },
+    {
+      "id": "accept-b11-error-without-status",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/temporarily-unavailable"
+      }
+    },
+    {
+      "id": "reject-invalid-input-without-reason",
+      "schema": "Problem",
+      "valid": false,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "field": "/title"
+      }
+    }
+  ]
+}

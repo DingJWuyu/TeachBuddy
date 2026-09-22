@@ -1,0 +1,73 @@
+
+Running 2 tests using 1 worker
+
+(node:1131094) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-integration-navigation.spec.js:82:1 › 题库使用位置可前往实际环节并返回题库现场 (7.5s)
+(node:1131283) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 apps/web/e2e/materials-integration-navigation.spec.js:93:1 › 题库主动加入后保留成功反馈及前往备课入口 (6.0s)
+
+
+  1) apps/web/e2e/materials-integration-navigation.spec.js:82:1 › 题库使用位置可前往实际环节并返回题库现场 ─────────────
+
+    TimeoutError: locator.click: Timeout 3000ms exceeded.
+    Call log:
+      - waiting for getByRole('link', { name: '真实材料整合课 自主探究', exact: true })
+
+
+      84 |   await page.getByText("使用位置", { exact: true }).click();
+      85 |   await page.screenshot({ path: path.join(evidence, "usage-before.png"), animations: "disabled" });
+    > 86 |   await page.getByRole("link", { name: "真实材料整合课 自主探究", exact: true }).click({ timeout: 3000 });
+         |                                                                       ^
+      87 |   await expect(page.getByLabel("课题", { exact: true })).toHaveValue("真实材料整合课");
+      88 |   await expect(page.locator("[data-reference-id]")).toHaveCount(1);
+      89 |   await page.getByRole("button", { name: "返回题库现场" }).click();
+        at /home/liam_t/项目/TeacherWorkspace-material-closure/apps/web/e2e/materials-integration-navigation.spec.js:86:71
+
+    Error Context: test-results/r34-integration/browser/materials-integration-navigation-题库使用位置可前往实际环节并返回题库现场/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34-integration/browser/materials-integration-navigation-题库使用位置可前往实际环节并返回题库现场/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34-integration/browser/materials-integration-navigation-题库使用位置可前往实际环节并返回题库现场/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) apps/web/e2e/materials-integration-navigation.spec.js:93:1 › 题库主动加入后保留成功反馈及前往备课入口 ─────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('link', { name: '前往备课' })
+    Expected: visible
+    Timeout: 3000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('link', { name: '前往备课' }) with timeout 3000ms
+      - waiting for getByRole('link', { name: '前往备课' })
+
+
+       97 |   await page.getByRole("button", { name: "加入", exact: true }).click();
+       98 |   await page.screenshot({ path: path.join(evidence, "add-before.png"), animations: "disabled" });
+    >  99 |   await expect(page.getByRole("link", { name: "前往备课" })).toBeVisible({ timeout: 3000 });
+          |                                                          ^
+      100 |   await page.getByRole("link", { name: "前往备课" }).click();
+      101 |   await expect(page.getByLabel("课题", { exact: true })).toHaveValue("真实材料整合课");
+      102 |   await page.getByRole("button", { name: "返回题库现场" }).click();
+        at /home/liam_t/项目/TeacherWorkspace-material-closure/apps/web/e2e/materials-integration-navigation.spec.js:99:58
+
+    Error Context: test-results/r34-integration/browser/materials-integration-navigation-题库主动加入后保留成功反馈及前往备课入口/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34-integration/browser/materials-integration-navigation-题库主动加入后保留成功反馈及前往备课入口/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34-integration/browser/materials-integration-navigation-题库主动加入后保留成功反馈及前往备课入口/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    apps/web/e2e/materials-integration-navigation.spec.js:82:1 › 题库使用位置可前往实际环节并返回题库现场 ──────────────
+    apps/web/e2e/materials-integration-navigation.spec.js:93:1 › 题库主动加入后保留成功反馈及前往备课入口 ──────────────

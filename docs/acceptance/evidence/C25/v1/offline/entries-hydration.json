@@ -1,0 +1,18 @@
+{
+  "providerRequests": 0,
+  "method": "SessionManager.inMemory(cwd, undefined, entries) compared to SessionManager.open",
+  "results": [
+    {
+      "file": "pi03-deepseek.jsonl",
+      "sessionId": "01a0c645-90f6-775c-82bd-84241e46a497",
+      "messages": 29,
+      "contextEqual": true
+    },
+    {
+      "file": "pi04-interrupt-deepseek.jsonl",
+      "sessionId": "01a0c7ad-f188-745f-b011-2c9db4fe619a",
+      "messages": 24,
+      "contextEqual": true
+    }
+  ]
+}

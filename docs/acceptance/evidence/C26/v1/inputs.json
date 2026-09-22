@@ -1,0 +1,13 @@
+{
+  "task": "C26@1",
+  "attempt": 1,
+  "main": "e365dea9813eb73a0de8967e8ce8b271cd773fff",
+  "product": "9ecabbf60cbbaecce2e9be8191d270068eb675cf",
+  "design": "18293e9389e739ed8aaf67ee568503ca8e87d475",
+  "freeze": "741025bd0a8e09098b5877428b81c2bdd7f357d0",
+  "authEvidence": "aaa3d77accbfc743f47edfb1ffc385735b2bf3db",
+  "identity": "real-api/fake-mail",
+  "model": "gpt-6-astra",
+  "effort": "low",
+  "harness": "Codex CLI"
+}

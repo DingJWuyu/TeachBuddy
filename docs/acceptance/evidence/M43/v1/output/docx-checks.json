@@ -1,0 +1,24 @@
+{
+  "lesson-plan.docx": {
+    "omml": 1,
+    "images": 3,
+    "htmlHint": true,
+    "privateNoteAbsent": true,
+    "embeddedMedia": {
+      "word/media/293a6943ebddcd9f3301069b024fe7997fc9d6b2.png": "07f067122c2729bbed8b8f950046ab4e8a98631b507323fdc789cde34c2553a5",
+      "word/media/aba86b5fe85743d9cba399163b5adc34f503a0f3.png": "d78869a1f83b1e607131482b9425db0dfb5ec7758cf13a1587161e75bbcad878",
+      "word/media/fa485a1d57f7880fc39a81d13e47ff290411f10c.png": "70d9d49a7405b4b48b5a9863fb0b7f94e2fec04cd4a1bc940a76015fc4203dd9"
+    }
+  },
+  "handout.docx": {
+    "omml": 1,
+    "images": 3,
+    "htmlHint": true,
+    "privateNoteAbsent": true,
+    "embeddedMedia": {
+      "word/media/293a6943ebddcd9f3301069b024fe7997fc9d6b2.png": "07f067122c2729bbed8b8f950046ab4e8a98631b507323fdc789cde34c2553a5",
+      "word/media/aba86b5fe85743d9cba399163b5adc34f503a0f3.png": "d78869a1f83b1e607131482b9425db0dfb5ec7758cf13a1587161e75bbcad878",
+      "word/media/fa485a1d57f7880fc39a81d13e47ff290411f10c.png": "70d9d49a7405b4b48b5a9863fb0b7f94e2fec04cd4a1bc940a76015fc4203dd9"
+    }
+  }
+}

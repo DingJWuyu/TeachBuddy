@@ -1,0 +1,11 @@
+{
+  "stoppedManualServer": true,
+  "removedOwnWorkspacePaths": [
+    "test-results/m41",
+    "apps/api/test-results/m41",
+    "apps/web/e2e/fixtures/math-static/dist",
+    "apps/web/dist",
+    "apps/web/public/vendor/math"
+  ],
+  "retained": "正式证据、旧证据及安装依赖；未清理其他 session 或归属不明的 /tmp 目录"
+}

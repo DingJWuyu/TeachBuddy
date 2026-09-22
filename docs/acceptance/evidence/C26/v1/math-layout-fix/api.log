@@ -1,0 +1,1239 @@
+
+> refatos-v1@0.3.0 test:api
+> npm --workspace @refatos/api run test
+
+
+> @refatos/api@0.3.0 test
+> node --test test/*.test.js
+
+TAP version 13
+# Subtest: WB-AG-019/020: 真实SDK只读404无assistant仍保存卡片，另一账户404
+ok 1 - WB-AG-019/020: 真实SDK只读404无assistant仍保存卡片，另一账户404
+  ---
+  duration_ms: 881.903284
+  type: 'test'
+  ...
+# Subtest: WB-AG-019: 空读取结果和SDK成功标志、实际usage
+ok 2 - WB-AG-019: 空读取结果和SDK成功标志、实际usage
+  ---
+  duration_ms: 122.043794
+  type: 'test'
+  ...
+# Subtest: WB-AG-023: 重复写调用关联同一operation，业务只写一次
+ok 3 - WB-AG-023: 重复写调用关联同一operation，业务只写一次
+  ---
+  duration_ms: 291.397173
+  type: 'test'
+  ...
+# Subtest: WB-AG-005/010/016: 草稿冲突、发送同键重放、白名单和缺配置不产生请求
+ok 4 - WB-AG-005/010/016: 草稿冲突、发送同键重放、白名单和缺配置不产生请求
+  ---
+  duration_ms: 128.886834
+  type: 'test'
+  ...
+# Subtest: WB-AG-006: 发送前核验版本与软删除，历史引用冻结
+ok 5 - WB-AG-006: 发送前核验版本与软删除，历史引用冻结
+  ---
+  duration_ms: 190.355782
+  type: 'test'
+  ...
+# Subtest: WB-AG-012/023: 业务提交后journal失败，原题更新后核实仍是原键原体
+ok 6 - WB-AG-012/023: 业务提交后journal失败，原题更新后核实仍是原键原体
+  ---
+  duration_ms: 187.285741
+  type: 'test'
+  ...
+# Subtest: WB-AG-021: 读取异常映射安全失败，同批后续工具取消
+ok 7 - WB-AG-021: 读取异常映射安全失败，同批后续工具取消
+  ---
+  duration_ms: 180.07553
+  type: 'test'
+  ...
+# Subtest: WB-AG-013/017: 停止后无新请求，用量不完整，保留已接受输入
+ok 8 - WB-AG-013/017: 停止后无新请求，用量不完整，保留已接受输入
+  ---
+  duration_ms: 147.01044
+  type: 'test'
+  ...
+# Subtest: WB-AG-022/004: 保留库重启取消prepared、中断executing读取并补同ID原生结果
+ok 9 - WB-AG-022/004: 保留库重启取消prepared、中断executing读取并补同ID原生结果
+  ---
+  duration_ms: 190.51205
+  type: 'test'
+  ...
+# Subtest: WB-AG-023: 无效完整参数只生成拒绝卡，没有非法journal
+ok 10 - WB-AG-023: 无效完整参数只生成拒绝卡，没有非法journal
+  ---
+  duration_ms: 100.433939
+  type: 'test'
+  ...
+# Subtest: WB-AG-008: 工具布尔标记筛选与手工HTTP字面true保持一致
+ok 11 - WB-AG-008: 工具布尔标记筛选与手工HTTP字面true保持一致
+  ---
+  duration_ms: 127.530525
+  type: 'test'
+  ...
+# Subtest: WB-AG-011/020: HTTPS SSE各游标补发与snapshot一致，无额外请求
+ok 12 - WB-AG-011/020: HTTPS SSE各游标补发与snapshot一致，无额外请求
+  ---
+  duration_ms: 179.827167
+  type: 'test'
+  ...
+# Subtest: WB-AG-015: provider返回前撤销真实身份，后续工具取消且不写业务
+ok 13 - WB-AG-015: provider返回前撤销真实身份，后续工具取消且不写业务
+  ---
+  duration_ms: 129.539444
+  type: 'test'
+  ...
+# Subtest: WB-AG-018: 12次provider上限停止，无自动重置窗口
+ok 14 - WB-AG-018: 12次provider上限停止，无自动重置窗口
+  ---
+  duration_ms: 159.220354
+  type: 'test'
+  ...
+# Subtest: WB-AG-009/014: 复制已保存而备课版本冲突，保留副本和真实失败结果
+ok 15 - WB-AG-009/014: 复制已保存而备课版本冲突，保留副本和真实失败结果
+  ---
+  duration_ms: 163.652111
+  type: 'test'
+  ...
+# Subtest: WB-AG-018/021: 业务响应不匹配契约为只读failed，损坏entries保留原记录
+ok 16 - WB-AG-018/021: 业务响应不匹配契约为只读failed，损坏entries保留原记录
+  ---
+  duration_ms: 128.362742
+  type: 'test'
+  ...
+# fatal: not a git repository (or any parent up to mount point /)
+# Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+# Subtest: WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键核实
+ok 17 - WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键核实
+  ---
+  duration_ms: 3021.74968
+  type: 'test'
+  ...
+# Subtest: WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持
+not ok 18 - WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持
+  ---
+  duration_ms: 16.152472
+  type: 'test'
+  location: '/tmp/c26-math-regression/apps/api/test/agent.test.js:282:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Command failed: git archive 9ecabbf60cbbaecce2e9be8191d270068eb675cf apps/api packages package.json
+    fatal: not a git repository (or any parent up to mount point /)
+    Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+    
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    genericNodeError (node:internal/errors:983:15)
+    wrappedFn (node:internal/errors:537:14)
+    checkExecSyncError (node:child_process:916:11)
+    execFileSync (node:child_process:952:15)
+    TestContext.<anonymous> (file:///tmp/c26-math-regression/apps/api/test/agent.test.js:284:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  ...
+# Subtest: WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+ok 19 - WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+  ---
+  duration_ms: 228.86603
+  type: 'test'
+  ...
+# Subtest: WB-AG-016/017: SDK未知或替换模型零请求，额度错误不重试且usage不完整
+ok 20 - WB-AG-016/017: SDK未知或替换模型零请求，额度错误不重试且usage不完整
+  ---
+  duration_ms: 368.904097
+  type: 'test'
+  ...
+# Subtest: WB-AG-018: prepared落盘失败不能执行业务或发出未保存toolCall事件
+ok 21 - WB-AG-018: prepared落盘失败不能执行业务或发出未保存toolCall事件
+  ---
+  duration_ms: 87.766649
+  type: 'test'
+  ...
+# Subtest: WB-AG-013/022: 首个写入已确认后停止，同批未开始调用取消且不回滚
+ok 22 - WB-AG-013/022: 首个写入已确认后停止，同批未开始调用取消且不回滚
+  ---
+  duration_ms: 173.584844
+  type: 'test'
+  ...
+# Subtest: application requires explicit persistent code-secret and HTTPS origin
+ok 23 - application requires explicit persistent code-secret and HTTPS origin
+  ---
+  duration_ms: 0.908906
+  type: 'test'
+  ...
+# Subtest: legacy bearer, me, password-reset and layout routes cannot authorize the product
+ok 24 - legacy bearer, me, password-reset and layout routes cannot authorize the product
+  ---
+  duration_ms: 156.993139
+  type: 'test'
+  ...
+# Subtest: CC-HAPPY 账户、注册与服务失败
+    # Subtest: H01 空容器匿名、bootstrap 建立 Cookie、GET 确认真实携带
+    ok 1 - H01 空容器匿名、bootstrap 建立 Cookie、GET 确认真实携带
+      ---
+      duration_ms: 21.914448
+      type: 'test'
+      ...
+    # Subtest: H02 登录创建 pending 不授权，activate 后才得到固定 accountKey
+    ok 2 - H02 登录创建 pending 不授权，activate 后才得到固定 accountKey
+      ---
+      duration_ms: 173.799015
+      type: 'test'
+      ...
+    # Subtest: H03 注册原子提交，重启后同账户键可登录
+    ok 3 - H03 注册原子提交，重启后同账户键可登录
+      ---
+      duration_ms: 176.159747
+      type: 'test'
+      ...
+    # Subtest: H04 昵称按 code point 保存完整值，不从邮箱派生
+    ok 4 - H04 昵称按 code point 保存完整值，不从邮箱派生
+      ---
+      duration_ms: 175.343145
+      type: 'test'
+      ...
+    1..4
+ok 25 - CC-HAPPY 账户、注册与服务失败
+  ---
+  duration_ms: 563.917902
+  type: 'suite'
+  ...
+# Subtest: CC-INPUT / CC-BOUNDARY 精确输入
+    # Subtest: IN01 各操作独立拒绝非法字段且无账户/预算副作用
+    ok 1 - IN01 各操作独立拒绝非法字段且无账户/预算副作用
+      ---
+      duration_ms: 12.211099
+      type: 'test'
+      ...
+    # Subtest: IN02 缺 challengeId、空字符串与未知 id 各自定位
+    ok 2 - IN02 缺 challengeId、空字符串与未知 id 各自定位
+      ---
+      duration_ms: 5.417928
+      type: 'test'
+      ...
+    # Subtest: B01 邮箱规范化与边界
+    ok 3 - B01 邮箱规范化与边界
+      ---
+      duration_ms: 88.089207
+      type: 'test'
+      ...
+    # Subtest: B02 昵称 trim、40/41 code points 与全空白
+    ok 4 - B02 昵称 trim、40/41 code points 与全空白
+      ---
+      duration_ms: 85.738682
+      type: 'test'
+      ...
+    # Subtest: B03 密码按原始字符串处理，不 trim/不归一化
+    ok 5 - B03 密码按原始字符串处理，不 trim/不归一化
+      ---
+      duration_ms: 481.793808
+      type: 'test'
+      ...
+    # Subtest: B04 验证码是六位字符串，前导零保留且不隐式转数
+    ok 6 - B04 验证码是六位字符串，前导零保留且不隐式转数
+      ---
+      duration_ms: 81.758817
+      type: 'test'
+      ...
+    # Subtest: B05 验证码形状与条款先于值判断
+    ok 7 - B05 验证码形状与条款先于值判断
+      ---
+      duration_ms: 3.121178
+      type: 'test'
+      ...
+    # Subtest: L01 不存在邮箱与错误密码使用同一拒绝
+    ok 8 - L01 不存在邮箱与错误密码使用同一拒绝
+      ---
+      duration_ms: 227.583413
+      type: 'test'
+      ...
+    1..8
+ok 26 - CC-INPUT / CC-BOUNDARY 精确输入
+  ---
+  duration_ms: 989.669408
+  type: 'suite'
+  ...
+# Subtest: CC-SEND / CC-CODE 发码与验证码生命周期
+    # Subtest: S01 注册占用与找回未注册按各自入口披露，均不投递
+    ok 1 - S01 注册占用与找回未注册按各自入口披露，均不投递
+      ---
+      duration_ms: 59.365117
+      type: 'test'
+      ...
+    # Subtest: S02 冷却拒绝不换码，重发成功替换旧挑战，并发只投递一次
+    ok 2 - S02 冷却拒绝不换码，重发成功替换旧挑战，并发只投递一次
+      ---
+      duration_ms: 3.960126
+      type: 'test'
+      ...
+    # Subtest: S03 投递失败不激活新码、不改变旧码与冷却
+    ok 3 - S03 投递失败不激活新码、不改变旧码与冷却
+      ---
+      duration_ms: 55.894573
+      type: 'test'
+      ...
+    # Subtest: S04 成功发码只承诺提供者接受，响应与存储都不含验证码
+    ok 4 - S04 成功发码只承诺提供者接受，响应与存储都不含验证码
+      ---
+      duration_ms: 1.038024
+      type: 'test'
+      ...
+    # Subtest: C01 前四次错码剩余4..1，第五次耗尽且正确码也被拒绝
+    ok 5 - C01 前四次错码剩余4..1，第五次耗尽且正确码也被拒绝
+      ---
+      duration_ms: 4.453566
+      type: 'test'
+      ...
+    # Subtest: C01 错码预算跨进程重启不重置
+    ok 6 - C01 错码预算跨进程重启不重置
+      ---
+      duration_ms: 4.07278
+      type: 'test'
+      ...
+    # Subtest: C02 到期、替换与新id旧值语义
+    ok 7 - C02 到期、替换与新id旧值语义
+      ---
+      duration_ms: 3.314615
+      type: 'test'
+      ...
+    # Subtest: C03 绑定错误不扣预算，原用途仍可成功
+    ok 8 - C03 绑定错误不扣预算，原用途仍可成功
+      ---
+      duration_ms: 54.875512
+      type: 'test'
+      ...
+    # Subtest: C04 挑战只消费一次，并发正确提交只有一个成功
+    ok 9 - C04 挑战只消费一次，并发正确提交只有一个成功
+      ---
+      duration_ms: 55.673323
+      type: 'test'
+      ...
+    1..9
+ok 27 - CC-SEND / CC-CODE 发码与验证码生命周期
+  ---
+  duration_ms: 244.912336
+  type: 'suite'
+  ...
+# Subtest: CC-STORE 事务回滚
+    # Subtest: ST01 I03 账户/消费/pending 三个失败点统一回滚且同码重试
+    ok 1 - ST01 I03 账户/消费/pending 三个失败点统一回滚且同码重试
+      ---
+      duration_ms: 583.782705
+      type: 'test'
+      ...
+    # Subtest: ST01 I05 密码/撤销/消费三个失败点统一回滚且同码重试
+    ok 2 - ST01 I05 密码/撤销/消费三个失败点统一回滚且同码重试
+      ---
+      duration_ms: 892.93934
+      type: 'test'
+      ...
+    # Subtest: ST02 账户存储不可读/结构损坏返回503，不种子化也不伪装匿名
+    ok 3 - ST02 账户存储不可读/结构损坏返回503，不种子化也不伪装匿名
+      ---
+      duration_ms: 60.365849
+      type: 'test'
+      ...
+    # Subtest: ST02 昵称缺口返回503而不是邮箱派生身份
+    ok 4 - ST02 昵称缺口返回503而不是邮箱派生身份
+      ---
+      duration_ms: 110.771392
+      type: 'test'
+      ...
+    # Subtest: RA03 activate 与撤销按提交顺序裁决，已撤销目标不可复活
+    ok 5 - RA03 activate 与撤销按提交顺序裁决，已撤销目标不可复活
+      ---
+      duration_ms: 164.997003
+      type: 'test'
+      ...
+    # Subtest: RA01/RA02 并发提交使用请求快照且只产生一个业务结果
+    ok 6 - RA01/RA02 并发提交使用请求快照且只产生一个业务结果
+      ---
+      duration_ms: 163.983509
+      type: 'test'
+      ...
+    1..6
+ok 28 - CC-STORE 事务回滚
+  ---
+  duration_ms: 1991.115342
+  type: 'suite'
+  ...
+# Subtest: CC-UNKNOWN 响应丢失后的恢复
+    # Subtest: UN01 注册已提交但响应丢失：登录可恢复且同码重试为已消费
+    ok 1 - UN01 注册已提交但响应丢失：登录可恢复且同码重试为已消费
+      ---
+      duration_ms: 107.351813
+      type: 'test'
+      ...
+    # Subtest: UN01 请求未达服务端时没有副作用，原码仍可用
+    ok 2 - UN01 请求未达服务端时没有副作用，原码仍可用
+      ---
+      duration_ms: 54.002551
+      type: 'test'
+      ...
+    # Subtest: UN02 重置已提交但响应丢失：不自动重试，旧密码失效且只改一次
+    ok 3 - UN02 重置已提交但响应丢失：不自动重试，旧密码失效且只改一次
+      ---
+      duration_ms: 205.178244
+      type: 'test'
+      ...
+    # Subtest: UN03 发码响应丢失后冷却仍有效，旧挑战可继续使用
+    ok 4 - UN03 发码响应丢失后冷却仍有效，旧挑战可继续使用
+      ---
+      duration_ms: 4.540312
+      type: 'test'
+      ...
+    # Subtest: O02 退出已提交但响应丢失：重试同目标安全
+    ok 5 - O02 退出已提交但响应丢失：重试同目标安全
+      ---
+      duration_ms: 57.839626
+      type: 'test'
+      ...
+    # Subtest: P04 所有成功与失败响应结构符合操作schema
+    ok 6 - P04 所有成功与失败响应结构符合操作schema
+      ---
+      duration_ms: 55.134084
+      type: 'test'
+      ...
+    1..6
+ok 29 - CC-UNKNOWN 响应丢失后的恢复
+  ---
+  duration_ms: 486.511644
+  type: 'suite'
+  ...
+# Subtest: 同源 HTTPS 与 Cookie 固定属性
+    # Subtest: HTTPS 建立容器与 remembered Cookie，属性固定且无跨源头
+    ok 1 - HTTPS 建立容器与 remembered Cookie，属性固定且无跨源头
+      ---
+      duration_ms: 124.418468
+      type: 'test'
+      ...
+    # Subtest: 真实浏览器在同源 HTTPS 下固定 Cookie 属性且 HttpOnly 不可见
+    ok 2 - 真实浏览器在同源 HTTPS 下固定 Cookie 属性且 HttpOnly 不可见
+      ---
+      duration_ms: 425.847696
+      type: 'test'
+      ...
+    1..2
+ok 30 - 同源 HTTPS 与 Cookie 固定属性
+  ---
+  duration_ms: 617.219347
+  type: 'suite'
+  ...
+# Subtest: 认证迁移
+    # Subtest: 空库：迁移可重复执行且新账户路径可独立完成
+    ok 1 - 空库：迁移可重复执行且新账户路径可独立完成
+      ---
+      duration_ms: 123.148504
+      type: 'test'
+      ...
+    # Subtest: 旧库：保留稳定账户键与昵称，缺口显式登记且不派生邮箱
+    ok 2 - 旧库：保留稳定账户键与昵称，缺口显式登记且不派生邮箱
+      ---
+      duration_ms: 386.562897
+      type: 'test'
+      ...
+    # Subtest: 上一阶段库：遗留的验证码密钥表被新增迁移删除
+    ok 3 - 上一阶段库：遗留的验证码密钥表被新增迁移删除
+      ---
+      duration_ms: 1.833159
+      type: 'test'
+      ...
+    # Subtest: 旧库迁移不覆盖已有认证账户，也不改动baseline表
+    ok 4 - 旧库迁移不覆盖已有认证账户，也不改动baseline表
+      ---
+      duration_ms: 40.320095
+      type: 'test'
+      ...
+    1..4
+ok 31 - 认证迁移
+  ---
+  duration_ms: 552.788284
+  type: 'suite'
+  ...
+# Subtest: CC-PROTOCOL 来源、媒体类型与请求形状
+    # Subtest: P01 缺保护头、错误/null 来源统一403且无副作用，Origin缺失时才回退Referer
+    ok 1 - P01 缺保护头、错误/null 来源统一403且无副作用，Origin缺失时才回退Referer
+      ---
+      duration_ms: 42.122587
+      type: 'test'
+      ...
+    # Subtest: P02 媒体类型先于JSON解析，破损/空body为400
+    ok 2 - P02 媒体类型先于JSON解析，破损/空body为400
+      ---
+      duration_ms: 6.965379
+      type: 'test'
+      ...
+    # Subtest: P03 根值、未知字段、必填与类型按协议顺序对每个操作适用
+    ok 3 - P03 根值、未知字段、必填与类型按协议顺序对每个操作适用
+      ---
+      duration_ms: 56.036161
+      type: 'test'
+      ...
+    # Subtest: P03 命令根对象先拒绝联合外属性，再判 action，再按分支拒绝
+    ok 4 - P03 命令根对象先拒绝联合外属性，再判 action，再按分支拒绝
+      ---
+      duration_ms: 9.421924
+      type: 'test'
+      ...
+    # Subtest: P05 全部响应no-store、204无body、无跨源允许头、GET不改变状态
+    ok 5 - P05 全部响应no-store、204无body、无跨源允许头、GET不改变状态
+      ---
+      duration_ms: 223.826506
+      type: 'test'
+      ...
+    # Subtest: P06 页面头缺失/非法为409，伪造身份不能授权
+    ok 6 - P06 页面头缺失/非法为409，伪造身份不能授权
+      ---
+      duration_ms: 146.095836
+      type: 'test'
+      ...
+    1..6
+ok 32 - CC-PROTOCOL 来源、媒体类型与请求形状
+  ---
+  duration_ms: 499.761292
+  type: 'suite'
+  ...
+# Subtest: CC-SESSION / CC-PENDING / CC-RESTORE 会话寿命与恢复
+    # Subtest: SE01 page 身份只绑定当前页面，刷新换页不能继承
+    ok 1 - SE01 page 身份只绑定当前页面，刷新换页不能继承
+      ---
+      duration_ms: 308.572284
+      type: 'test'
+      ...
+    # Subtest: SE02 remembered 恢复不延期，第7天边界401，独立设备无目标
+    ok 2 - SE02 remembered 恢复不延期，第7天边界401，独立设备无目标
+      ---
+      duration_ms: 101.115448
+      type: 'test'
+      ...
+    # Subtest: PN01 remembered 持久失败保留 pending，可继续当前页或重试保存
+    ok 3 - PN01 remembered 持久失败保留 pending，可继续当前页或重试保存
+      ---
+      duration_ms: 175.777105
+      type: 'test'
+      ...
+    # Subtest: PN01 注册后的 pending 保存失败不否定账户与验证码消费
+    ok 4 - PN01 注册后的 pending 保存失败不否定账户与验证码消费
+      ---
+      duration_ms: 90.842773
+      type: 'test'
+      ...
+    # Subtest: PN02 保存失败期间账户被重置或目标被撤销后不能进入
+    ok 5 - PN02 保存失败期间账户被重置或目标被撤销后不能进入
+      ---
+      duration_ms: 400.518021
+      type: 'test'
+      ...
+    # Subtest: PN03 放弃旧目标后新页面上下文不被旧事件清除
+    ok 6 - PN03 放弃旧目标后新页面上下文不被旧事件清除
+      ---
+      duration_ms: 203.184367
+      type: 'test'
+      ...
+    # Subtest: PN04 已提交的不同选择为409，同参重试不延期
+    ok 7 - PN04 已提交的不同选择为409，同参重试不延期
+      ---
+      duration_ms: 71.990263
+      type: 'test'
+      ...
+    # Subtest: RE01 restore 存储故障可重试且不续期
+    ok 8 - RE01 restore 存储故障可重试且不续期
+      ---
+      duration_ms: 62.971655
+      type: 'test'
+      ...
+    # Subtest: RE02 到期、撤销、被替换与数据损坏的恢复结果
+    ok 9 - RE02 到期、撤销、被替换与数据损坏的恢复结果
+      ---
+      duration_ms: 167.423034
+      type: 'test'
+      ...
+    1..9
+ok 33 - CC-SESSION / CC-PENDING / CC-RESTORE 会话寿命与恢复
+  ---
+  duration_ms: 1604.094232
+  type: 'suite'
+  ...
+# Subtest: CC-RESET / CC-ISOLATION 重置撤销与账户隔离
+    # Subtest: R01 重置撤销A全部旧会话且不清B，A账户键保持
+    ok 1 - R01 重置撤销A全部旧会话且不清B，A账户键保持
+      ---
+      duration_ms: 375.505257
+      type: 'test'
+      ...
+    # Subtest: IS02 无关账户的重置通知不退出另一账户
+    ok 2 - IS02 无关账户的重置通知不退出另一账户
+      ---
+      duration_ms: 158.906701
+      type: 'test'
+      ...
+    # Subtest: IS03 accountKey 只来自服务器绑定的会话
+    ok 3 - IS03 accountKey 只来自服务器绑定的会话
+      ---
+      duration_ms: 103.924726
+      type: 'test'
+      ...
+    1..3
+ok 34 - CC-RESET / CC-ISOLATION 重置撤销与账户隔离
+  ---
+  duration_ms: 640.97674
+  type: 'suite'
+  ...
+# Subtest: CC-CLOSED 注册关闭
+    # Subtest: CL01 关闭只阻止新注册与注册发码，重开后同码可用
+    ok 1 - CL01 关闭只阻止新注册与注册发码，重开后同码可用
+      ---
+      duration_ms: 52.411429
+      type: 'test'
+      ...
+    # Subtest: CL01 发码等待期间关闭注册不激活挑战
+    ok 2 - CL01 发码等待期间关闭注册不激活挑战
+      ---
+      duration_ms: 0.999314
+      type: 'test'
+      ...
+    # Subtest: CL02 关闭后既有账户登录、找回、重置正常，已创建账户保留
+    ok 3 - CL02 关闭后既有账户登录、找回、重置正常，已创建账户保留
+      ---
+      duration_ms: 151.345888
+      type: 'test'
+      ...
+    1..3
+ok 35 - CC-CLOSED 注册关闭
+  ---
+  duration_ms: 206.714742
+  type: 'suite'
+  ...
+# Subtest: CC-LOGOUT 退出交换
+    # Subtest: O01 定向撤销、重复、无会话与外容器id均安全
+    ok 1 - O01 定向撤销、重复、无会话与外容器id均安全
+      ---
+      duration_ms: 155.340565
+      type: 'test'
+      ...
+    # Subtest: O01 无 Cookie 退出仍返回204与清除头
+    ok 2 - O01 无 Cookie 退出仍返回204与清除头
+      ---
+      duration_ms: 0.578475
+      type: 'test'
+      ...
+    # Subtest: O02 撤销写入失败回滚为503，重试成功且旧请求不影响新会话
+    ok 3 - O02 撤销写入失败回滚为503，重试成功且旧请求不影响新会话
+      ---
+      duration_ms: 101.616976
+      type: 'test'
+      ...
+    # Subtest: O03 退出后刷新无旧身份，重新登录可恢复业务
+    ok 4 - O03 退出后刷新无旧身份，重新登录可恢复业务
+      ---
+      duration_ms: 101.936247
+      type: 'test'
+      ...
+    1..4
+ok 36 - CC-LOGOUT 退出交换
+  ---
+  duration_ms: 361.338098
+  type: 'suite'
+  ...
+# Subtest: A11 HTTPS: pending refuses workbench; active shares accountKey
+ok 37 - A11 HTTPS: pending refuses workbench; active shares accountKey
+  ---
+  duration_ms: 242.102218
+  type: 'test'
+  ...
+# Subtest: C19/C20: all 15 operations use real principal; page rejection precedes data and writes
+ok 38 - C19/C20: all 15 operations use real principal; page rejection precedes data and writes
+  ---
+  duration_ms: 225.656897
+  type: 'test'
+  ...
+# Subtest: C21: refresh requires explicit restore; expiry/revocation 401 and both stores 503
+ok 39 - C21: refresh requires explicit restore; expiry/revocation 401 and both stores 503
+  ---
+  duration_ms: 251.127243
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 2, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: old database retains stable accountKey, credentials, layout and migration ledger after restart
+# RefatOS API running on https://localhost:34775
+ok 40 - old database retains stable accountKey, credentials, layout and migration ledger after restart
+  ---
+  duration_ms: 309.671788
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 0, skipped 2
+# [workbench] modules enabled: questions, lessons
+# Subtest: legacy nickname gap stops startup without deriving a nickname from email
+ok 41 - legacy nickname gap stops startup without deriving a nickname from email
+  ---
+  duration_ms: 139.418336
+  type: 'test'
+  ...
+# Subtest: real server waits for all migrations and refuses missing TLS configuration
+ok 42 - real server waits for all migrations and refuses missing TLS configuration
+  ---
+  duration_ms: 97.396194
+  type: 'test'
+  ...
+# Subtest: WB-005: a lesson keeps stable section ids, order and server snapshots
+ok 43 - WB-005: a lesson keeps stable section ids, order and server snapshots
+  ---
+  duration_ms: 67.453948
+  type: 'test'
+  ...
+# Subtest: WB-007: moving a reference keeps its id, snapshot and note
+ok 44 - WB-007: moving a reference keeps its id, snapshot and note
+  ---
+  duration_ms: 23.644045
+  type: 'test'
+  ...
+# Subtest: WB-006/013: stale reference versions reject the whole lesson atomically
+ok 45 - WB-006/013: stale reference versions reject the whole lesson atomically
+  ---
+  duration_ms: 15.331225
+  type: 'test'
+  ...
+# Subtest: WB-008: a question update never silently changes prepared content
+ok 46 - WB-008: a question update never silently changes prepared content
+  ---
+  duration_ms: 14.738753
+  type: 'test'
+  ...
+# Subtest: WB-009: question deletion keeps prepared snapshots and blocks new references
+ok 47 - WB-009: question deletion keeps prepared snapshots and blocks new references
+  ---
+  duration_ms: 24.691029
+  type: 'test'
+  ...
+# Subtest: WB-009: lesson deletion and restore keep sections, references and questions
+ok 48 - WB-009: lesson deletion and restore keep sections, references and questions
+  ---
+  duration_ms: 40.76641
+  type: 'test'
+  ...
+# Subtest: WB-014/016: lesson reference identity and ownership are enforced
+ok 49 - WB-014/016: lesson reference identity and ownership are enforced
+  ---
+  duration_ms: 23.44458
+  type: 'test'
+  ...
+# Subtest: WB-005: lesson search covers title and body text but not snapshots or notes
+ok 50 - WB-005: lesson search covers title and body text but not snapshots or notes
+  ---
+  duration_ms: 12.743312
+  type: 'test'
+  ...
+# Subtest: WB-005: section order is server-side and reordering keeps stable ids
+ok 51 - WB-005: section order is server-side and reordering keeps stable ids
+  ---
+  duration_ms: 11.608411
+  type: 'test'
+  ...
+# Subtest: C11/WB-013: stale lesson base versions conflict on update, delete and restore
+ok 52 - C11/WB-013: stale lesson base versions conflict on update, delete and restore
+  ---
+  duration_ms: 15.114109
+  type: 'test'
+  ...
+# Subtest: WB-019: a fresh database applies both module migrations once and survives restart
+ok 53 - WB-019: a fresh database applies both module migrations once and survives restart
+  ---
+  duration_ms: 58.867476
+  type: 'test'
+  ...
+# Subtest: WB-019: a previous-stage account and layout database upgrades without losing rows
+ok 54 - WB-019: a previous-stage account and layout database upgrades without losing rows
+  ---
+  duration_ms: 17.098376
+  type: 'test'
+  ...
+# Subtest: WB-012: committed writes survive restart and replay without duplicating objects
+ok 55 - WB-012: committed writes survive restart and replay without duplicating objects
+  ---
+  duration_ms: 62.270562
+  type: 'test'
+  ...
+# Subtest: WB-012: one key is bound to one logical request per account
+ok 56 - WB-012: one key is bound to one logical request per account
+  ---
+  duration_ms: 17.769722
+  type: 'test'
+  ...
+# Subtest: WB-018: a failing write rolls back fully and the key stays reusable
+ok 57 - WB-018: a failing write rolls back fully and the key stays reusable
+  ---
+  duration_ms: 15.15431
+  type: 'test'
+  ...
+# Subtest: WB-012: concurrent requests with one key still commit once
+ok 58 - WB-012: concurrent requests with one key still commit once
+  ---
+  duration_ms: 13.32442
+  type: 'test'
+  ...
+# Subtest: WB-016/018: write protection matches the trusted origin exactly
+ok 59 - WB-016/018: write protection matches the trusted origin exactly
+  ---
+  duration_ms: 17.273291
+  type: 'test'
+  ...
+# Subtest: WB-014/018: transport and query failures use the contract problem types
+ok 60 - WB-014/018: transport and query failures use the contract problem types
+  ---
+  duration_ms: 34.524323
+  type: 'test'
+  ...
+# Subtest: WB-012: a real HTTP listener keeps the same persisted result across restart
+ok 61 - WB-012: a real HTTP listener keeps the same persisted result across restart
+  ---
+  duration_ms: 12.936664
+  type: 'test'
+  ...
+# Subtest: WB-001/002: a pasted question keeps its original text and can be found again
+ok 62 - WB-001/002: a pasted question keeps its original text and can be found again
+  ---
+  duration_ms: 53.565709
+  type: 'test'
+  ...
+# Subtest: WB-003/013: editing keeps the same id, bumps the version and replays idempotently
+ok 63 - WB-003/013: editing keeps the same id, bumps the version and replays idempotently
+  ---
+  duration_ms: 11.080094
+  type: 'test'
+  ...
+# Subtest: WB-004: a copy keeps the original snapshot and both questions evolve independently
+ok 64 - WB-004: a copy keeps the original snapshot and both questions evolve independently
+  ---
+  duration_ms: 23.40647
+  type: 'test'
+  ...
+# Subtest: WB-009: question deletion hides the item but keeps tombstones and stable ids
+ok 65 - WB-009: question deletion hides the item but keeps tombstones and stable ids
+  ---
+  duration_ms: 15.088887
+  type: 'test'
+  ...
+# Subtest: WB-014: invalid question payloads are rejected without touching stored data
+ok 66 - WB-014: invalid question payloads are rejected without touching stored data
+  ---
+  duration_ms: 17.445628
+  type: 'test'
+  ...
+# Subtest: WB-016: another account cannot reach a question and forged identity is ignored
+ok 67 - WB-016: another account cannot reach a question and forged identity is ignored
+  ---
+  duration_ms: 11.858017
+  type: 'test'
+  ...
+# Subtest: WB-001: list search covers title, body and note only, and starred filters apply
+ok 68 - WB-001: list search covers title, body and note only, and starred filters apply
+  ---
+  duration_ms: 14.694256
+  type: 'test'
+  ...
+# Subtest: C11/WB-013: every question write trigger rejects a stale base version with the current version
+ok 69 - C11/WB-013: every question write trigger rejects a stale base version with the current version
+  ---
+  duration_ms: 11.161267
+  type: 'test'
+  ...
+# Subtest: the shared catalog carries exactly the frozen two entries
+ok 70 - the shared catalog carries exactly the frozen two entries
+  ---
+  duration_ms: 1.132634
+  type: 'test'
+  ...
+# Subtest: catalog validation reports duplicates, missing dependencies and cycles
+ok 71 - catalog validation reports duplicates, missing dependencies and cycles
+  ---
+  duration_ms: 0.585625
+  type: 'test'
+  ...
+# Subtest: catalog projection enables only implemented modules and rejects orphans
+ok 72 - catalog projection enables only implemented modules and rejects orphans
+  ---
+  duration_ms: 0.411766
+  type: 'test'
+  ...
+# Subtest: the shared contract vocabulary stays in the frozen OpenAPI documents
+ok 73 - the shared contract vocabulary stays in the frozen OpenAPI documents
+  ---
+  duration_ms: 0.539798
+  type: 'test'
+  ...
+# Subtest: the loader refuses an implementation without a catalog mapping
+ok 74 - the loader refuses an implementation without a catalog mapping
+  ---
+  duration_ms: 0.34573
+  type: 'test'
+  ...
+# Subtest: the loader names factories by convention and requires {router, port}
+ok 75 - the loader names factories by convention and requires {router, port}
+  ---
+  duration_ms: 1.519147
+  type: 'test'
+  ...
+# Subtest: the loader wires a required public port and enforces its presence
+ok 76 - the loader wires a required public port and enforces its presence
+  ---
+  duration_ms: 0.278078
+  type: 'test'
+  ...
+# Subtest: a module that requires a missing provider stops composition
+ok 77 - a module that requires a missing provider stops composition
+  ---
+  duration_ms: 0.151548
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: the context response is JSON and never cached
+ok 78 - the context response is JSON and never cached
+  ---
+  duration_ms: 54.909204
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: a write without the fixed browser protection header is refused before any change
+ok 79 - a write without the fixed browser protection header is refused before any change
+  ---
+  duration_ms: 20.600478
+  type: 'test'
+  ...
+# [workbench] unhandled POST /api/modules/workbench-probe/items: SyntaxError: Unexpected end of JSON input
+#     at JSON.parse (<anonymous>)
+#     at parse (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/body-parser/lib/types/json.js:91:21)
+#     at /home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/body-parser/lib/read.js:162:18
+#     at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+#     at invokeCallback (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/raw-body/index.js:238:16)
+#     at done (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/raw-body/index.js:227:7)
+#     at IncomingMessage.onEnd (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/raw-body/index.js:287:7)
+#     at IncomingMessage.emit (node:events:519:28)
+#     at endReadableNT (node:internal/streams/readable:1698:12)
+#     at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+#   expose: true,
+#   statusCode: 400,
+#   status: 400,
+#   body: '{"value":',
+#   type: 'entity.parse.failed'
+# }
+# [workbench] unhandled POST /api/modules/workbench-probe/items: PayloadTooLargeError: request entity too large
+#     at readStream (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/raw-body/index.js:163:17)
+#     at getRawBody (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/raw-body/index.js:116:12)
+#     at read (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/body-parser/lib/read.js:113:3)
+#     at jsonParser (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/body-parser/lib/types/json.js:60:5)
+#     at Layer.handleRequest (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/router/lib/layer.js:152:17)
+#     at trimPrefix (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/router/index.js:342:13)
+#     at /home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/router/index.js:297:9
+#     at processParams (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/router/index.js:582:12)
+#     at next (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/router/index.js:291:5)
+#     at logRequest (file:///tmp/c26-math-regression/apps/api/src/workbench/logger.js:70:12) {
+#   expected: 2097228,
+#   length: 2097228,
+#   limit: 2097152,
+#   type: 'entity.too.large'
+# }
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: media type, malformed JSON and payload size map to their contract statuses
+ok 80 - media type, malformed JSON and payload size map to their contract statuses
+  ---
+  duration_ms: 26.893132
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: the idempotency key header is required and must be a UUID
+ok 81 - the idempotency key header is required and must be a UUID
+  ---
+  duration_ms: 7.71532
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: invalid input returns exactly one located error in the frozen order
+ok 82 - invalid input returns exactly one located error in the frozen order
+  ---
+  duration_ms: 11.477399
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: unknown fields are reported before field content, ordered by key ascending
+ok 83 - unknown fields are reported before field content, ordered by key ascending
+  ---
+  duration_ms: 5.218402
+  type: 'test'
+  ...
+# [workbench] unhandled POST /api/modules/workbench-probe/items/00000000-0000-4000-8000-000000000000/explode: Error: simulated unknown storage failure
+#     at write (file:///tmp/c26-math-regression/apps/api/test/fixtures/first-flow/modules/workbench-probe/index.js:93:13)
+#     at file:///tmp/c26-math-regression/apps/api/src/workbench/http.js:164:13
+#     at Function.<anonymous> (file:///tmp/c26-math-regression/apps/api/src/workbench/mutations.js:88:22)
+#     at Function.sqliteTransaction (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/better-sqlite3/lib/methods/transaction.js:65:24)
+#     at Object.execute (file:///tmp/c26-math-regression/apps/api/src/workbench/mutations.js:110:24)
+#     at file:///tmp/c26-math-regression/apps/api/src/workbench/http.js:156:30
+#     at handle (file:///tmp/c26-math-regression/apps/api/src/workbench/http.js:40:23)
+#     at Layer.handleRequest (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/router/lib/layer.js:152:17)
+#     at next (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/router/lib/route.js:157:13)
+#     at Route.dispatch (/home/liam_t/项目/TeacherWorkspace-c26-math-layout/node_modules/router/lib/route.js:117:3)
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: an unknown storage failure rolls back and maps to temporarily-unavailable
+ok 84 - an unknown storage failure rolls back and maps to temporarily-unavailable
+  ---
+  duration_ms: 7.813968
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: workbench module paths are owned only for catalog module IDs
+ok 85 - workbench module paths are owned only for catalog module IDs
+  ---
+  duration_ms: 12.366192
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 2, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: the composed app mounts the catalog handler on the exact contract path
+ok 86 - the composed app mounts the catalog handler on the exact contract path
+  ---
+  duration_ms: 15.912906
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: an anonymous workbench request is unauthenticated and never cached
+ok 87 - an anonymous workbench request is unauthenticated and never cached
+  ---
+  duration_ms: 56.860593
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: write source protection rejects a wrong, null or missing origin before identity
+ok 88 - write source protection rejects a wrong, null or missing origin before identity
+  ---
+  duration_ms: 53.829831
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: reads carry no source requirement in the frozen contract
+ok 89 - reads carry no source requirement in the frozen contract
+  ---
+  duration_ms: 7.601116
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: the test runner binds two independent identities and rejects forged identity input
+ok 90 - the test runner binds two independent identities and rejects forged identity input
+  ---
+  duration_ms: 14.047769
+  type: 'test'
+  ...
+# Subtest: another account cannot read or list an account object and never sees its content
+ok 91 - another account cannot read or list an account object and never sees its content
+  ---
+  duration_ms: 8.045905
+  type: 'test'
+  ...
+# Subtest: a production process refuses the test-principal identity mode
+ok 92 - a production process refuses the test-principal identity mode
+  ---
+  duration_ms: 0.581458
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# [workbench] modules discovered: questions, lessons, workbench-broken
+# [workbench] modules discovered: questions, lessons, workbench-broken
+# Subtest: an empty database applies migrations once and records them in the ledger
+ok 93 - an empty database applies migrations once and records them in the ledger
+  ---
+  duration_ms: 19.799495
+  type: 'test'
+  ...
+# Subtest: an existing account and layout database is upgraded without losing its data
+ok 94 - an existing account and layout database is upgraded without losing its data
+  ---
+  duration_ms: 40.608631
+  type: 'test'
+  ...
+# Subtest: startServer refuses to open the port when a migration fails
+ok 95 - startServer refuses to open the port when a migration fails
+  ---
+  duration_ms: 3.46877
+  type: 'test'
+  ...
+# Subtest: a failing migration leaves no ledger row and no partial table
+ok 96 - a failing migration leaves no ledger row and no partial table
+  ---
+  duration_ms: 1.803361
+  type: 'test'
+  ...
+# Subtest: the runner validates migration IDs, prefixes and removals
+ok 97 - the runner validates migration IDs, prefixes and removals
+  ---
+  duration_ms: 0.770063
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: replaying the same key and request returns the original result exactly once
+ok 98 - replaying the same key and request returns the original result exactly once
+  ---
+  duration_ms: 39.437533
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: object key order does not change the request fingerprint but the body does
+ok 99 - object key order does not change the request fingerprint but the body does
+  ---
+  duration_ms: 10.165382
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: a failed write rolls back the business row and the confirmed-request record
+ok 100 - a failed write rolls back the business row and the confirmed-request record
+  ---
+  duration_ms: 19.309095
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: the same key in another account is an independent request
+ok 101 - the same key in another account is an independent request
+  ---
+  duration_ms: 13.172819
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 3, skipped 0
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: concurrent identical requests commit only once and both see the confirmed result
+ok 102 - concurrent identical requests commit only once and both see the confirmed result
+  ---
+  duration_ms: 6.897735
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, workbench-probe
+# [workbench] migrations applied 0, skipped 3
+# [workbench] modules enabled: questions, lessons, workbench-probe
+# Subtest: a confirmed request replays after the API process restarts on the same database
+ok 103 - a confirmed request replays after the API process restarts on the same database
+  ---
+  duration_ms: 10.742135
+  type: 'test'
+  ...
+# Subtest: mutations.execute rejects an asynchronous write callback inside the transaction
+ok 104 - mutations.execute rejects an asynchronous write callback inside the transaction
+  ---
+  duration_ms: 0.955129
+  type: 'test'
+  ...
+# Subtest: a well-formed document passes with inline and block math
+ok 105 - a well-formed document passes with inline and block math
+  ---
+  duration_ms: 1.034947
+  type: 'test'
+  ...
+# Subtest: an unknown document version or node type is an unsupported content version
+ok 106 - an unknown document version or node type is an unsupported content version
+  ---
+  duration_ms: 0.42707
+  type: 'test'
+  ...
+# Subtest: document errors pick the deepest, first-in-order location
+ok 107 - document errors pick the deepest, first-in-order location
+  ---
+  duration_ms: 0.18842
+  type: 'test'
+  ...
+# Subtest: sources accept the frozen kinds and reject an unknown one
+ok 108 - sources accept the frozen kinds and reject an unknown one
+  ---
+  duration_ms: 0.324954
+  type: 'test'
+  ...
+# Subtest: reference and section inputs use the shared ID, version and note shapes
+ok 109 - reference and section inputs use the shared ID, version and note shapes
+  ---
+  duration_ms: 0.236467
+  type: 'test'
+  ...
+# Subtest: the boolean branch matches the frozen starred field
+ok 110 - the boolean branch matches the frozen starred field
+  ---
+  duration_ms: 0.07188
+  type: 'test'
+  ...
+# Subtest: scalar primitives reject implicit conversion and empty content
+ok 111 - scalar primitives reject implicit conversion and empty content
+  ---
+  duration_ms: 0.150343
+  type: 'test'
+  ...
+# Subtest: validateBody throws the contract 422 problem a module can reuse
+ok 112 - validateBody throws the contract 422 problem a module can reuse
+  ---
+  duration_ms: 0.32163
+  type: 'test'
+  ...
+1..112
+# tests 164
+# suites 12
+# pass 163
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8634.402737
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /tmp/c26-math-regression/apps/api
+npm error workspace @refatos/api@0.3.0
+npm error location /tmp/c26-math-regression/apps/api
+npm error command failed
+npm error command sh -c node --test test/*.test.js

@@ -1,0 +1,18 @@
+Script started on 2026-09-22 13:19:18-04:00 [COMMAND="npx playwright test -c apps/web/e2e/fixtures/math-integration/materials-teaching.config.mjs --reporter=json" <not executed on terminal>]
+
+Running 2 tests using 1 worker
+
+(node:1430193) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/2] apps/web/e2e/materials-teaching.spec.js:28:1 › WB-MTA001/003: rich selection, two-class feedback and exact scene roundtrip
+apps/web/e2e/materials-teaching.spec.js:28:1 › WB-MTA001/003: rich selection, two-class feedback and exact scene roundtrip
+(node:1430193) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[2/2] apps/web/e2e/materials-teaching.spec.js:338:1 › WB-MTA004/005: failed feedback, lost response, conflict and identity keep the rich-linked draft
+  2 passed (9.8s)
+
+Script done on 2026-09-22 13:19:28-04:00 [COMMAND_EXIT_CODE="0"]

@@ -1,0 +1,45 @@
+
+Running 1 test using 1 worker
+
+(node:1115456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-integration.spec.js:30:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 (22.3s)
+
+
+  1) apps/web/e2e/materials-integration.spec.js:30:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 ────────────
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('alert')
+    Expected substring: "无法打开指定资料"
+    Received string:    "草稿无法保留，请先保存"
+    Timeout: 15000ms
+
+    Call log:
+      - Expect "toContainText" getByRole('alert') with timeout 15000ms
+      - waiting for getByRole('alert')
+        34 × locator resolved to <div role="alert" class="wb-storage-warning" data-region="storage-warning">草稿无法保留，请先保存</div>
+           - unexpected value "草稿无法保留，请先保存"
+
+
+      141 |     .getByRole("button", { name: /来源|原题/ })
+      142 |     .click();
+    > 143 |   await expect(page.getByRole('alert')).toContainText('无法打开指定资料');
+          |                                         ^
+      144 |   await page.evaluate(() => { Storage.prototype.setItem = window.r34OriginalSetItem; delete window.r34OriginalSetItem; });
+      145 |   await page.getByRole('button', {name:'重试打开资料'}).click();
+      146 |   await expect(page.getByLabel("资源名称")).toHaveValue("集成课堂课件");
+        at /home/liam_t/项目/TeacherWorkspace-r34-integration/apps/web/e2e/materials-integration.spec.js:143:41
+
+    Error Context: test-results/r34-integration/browser/materials-integration-真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34-integration/browser/materials-integration-真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34-integration/browser/materials-integration-真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-integration.spec.js:30:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 ─────────────

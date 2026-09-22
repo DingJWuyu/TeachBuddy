@@ -1,0 +1,115 @@
+{
+  "directory": "/home/liam_t/tmitmpMuTu/a11-r1k2Kg",
+  "requests": [
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/v2/records/6c679e59-5fcd-473d-ad7a-a30f7c695c7b",
+      "key": "91805888-8ca9-47ab-a307-79acdeead594",
+      "body": {
+        "expectedVersion": 1,
+        "classId": "963374d1-8993-41b9-a7c3-4357bff9822b",
+        "recordedOn": "2026-09-22",
+        "note": "已提交但丢响应",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "07d3b8d8-3eb7-45c5-9bc7-14f61a69a816"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/v2/records/6c679e59-5fcd-473d-ad7a-a30f7c695c7b",
+      "key": "91805888-8ca9-47ab-a307-79acdeead594",
+      "body": {
+        "expectedVersion": 1,
+        "classId": "963374d1-8993-41b9-a7c3-4357bff9822b",
+        "recordedOn": "2026-09-22",
+        "note": "已提交但丢响应",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "07d3b8d8-3eb7-45c5-9bc7-14f61a69a816"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/v2/records/6c679e59-5fcd-473d-ad7a-a30f7c695c7b",
+      "key": "09151ce2-5ab4-4217-8107-8cc0e9c1efcc",
+      "body": {
+        "expectedVersion": 2,
+        "classId": "963374d1-8993-41b9-a7c3-4357bff9822b",
+        "recordedOn": "2026-09-22",
+        "note": "确认期间新草稿",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "07d3b8d8-3eb7-45c5-9bc7-14f61a69a816"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/v2/records/6c679e59-5fcd-473d-ad7a-a30f7c695c7b",
+      "key": "cb6b8f20-2e2e-4caf-b6b0-b4489c645648",
+      "body": {
+        "expectedVersion": 3,
+        "classId": "963374d1-8993-41b9-a7c3-4357bff9822b",
+        "recordedOn": "2026-09-22",
+        "note": "本地冲突草稿",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "07d3b8d8-3eb7-45c5-9bc7-14f61a69a816"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/v2/records/6c679e59-5fcd-473d-ad7a-a30f7c695c7b",
+      "key": "ab57bc2b-85ea-4a80-a105-545bc4e6e140",
+      "body": {
+        "expectedVersion": 4,
+        "classId": "963374d1-8993-41b9-a7c3-4357bff9822b",
+        "recordedOn": "2026-09-22",
+        "note": "对照后新键保存",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "07d3b8d8-3eb7-45c5-9bc7-14f61a69a816"
+          }
+        ]
+      }
+    }
+  ],
+  "unknownResultCommittedOnce": true,
+  "conflictCompared": true,
+  "feedbackFailureRetained": true,
+  "deletedFeedback": true,
+  "identityDraftLocked": true
+}

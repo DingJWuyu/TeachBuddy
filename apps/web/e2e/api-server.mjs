@@ -6,7 +6,9 @@ import { startServer } from '../../api/src/server.js';
 const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teacher-workspace-e2e-'));
 const captureFile = path.resolve(process.cwd(), 'apps/web/e2e/.password-recovery-mail.jsonl');
 fs.rmSync(captureFile, { force: true });
-const context = startServer({
+// startServer is asynchronous: it loads module implementations and applies
+// pending migrations before the socket opens.
+const context = await startServer({
   env: {
     nodeEnv: 'test',
     port: 4100,

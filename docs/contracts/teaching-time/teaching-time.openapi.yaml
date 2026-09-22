@@ -1,0 +1,2244 @@
+openapi: 3.2.1
+info:
+  title: TeachBuddy teaching-time
+  version: 1.0.0-candidate.1
+  description: T50/v1 READY_FOR_REVIEW。跨操作语义见 ../teaching-time.md；请求严格，响应容忍额外字段。请求上限2MiB；UUID不作为权限。所有操作使用可信账户与no-store。
+x-source-revision: 32af4eb53f78d83780c55fd83821733b000f393b
+servers:
+- url: /
+security:
+- SessionCookie: []
+paths:
+  /api/modules/classes/items:
+    get:
+      operationId: listClasses
+      description: listClasses
+      parameters:
+      - &id002
+        $ref: '#/components/parameters/State'
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: &id001
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+    post:
+      operationId: createClass
+      description: createClass
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '201':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassInput'
+  /api/modules/classes/items/{id}:
+    get:
+      operationId: getClass
+      description: getClass
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+    put:
+      operationId: updateClass
+      description: updateClass
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassUpdate'
+  /api/modules/classes/items/{id}/deletion:
+    post:
+      operationId: setClassDeletion
+      description: setClassDeletion
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Deletion'
+  /api/modules/classes/records:
+    get:
+      operationId: listRecords
+      description: listRecords
+      parameters:
+      - name: classId
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - *id002
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+    post:
+      operationId: createRecord
+      description: createRecord
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '201':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordInput'
+  /api/modules/classes/records/{id}:
+    get:
+      operationId: getRecord
+      description: getRecord
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+    put:
+      operationId: updateRecord
+      description: updateRecord
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordUpdate'
+  /api/modules/classes/records/{id}/deletion:
+    post:
+      operationId: setRecordDeletion
+      description: setRecordDeletion
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Deletion'
+  /api/modules/classes/source-records/{kind}/{id}:
+    get:
+      operationId: listSourceRecords
+      description: 确认来源属于当前账户后，返回活动班级下活动记录中的当前链接。源已删除仍可查询；外账户/不存在 404。
+      parameters:
+      - $ref: '#/components/parameters/kind'
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+  /api/modules/schedule/settings:
+    get:
+      operationId: getScheduleSettings
+      description: getScheduleSettings
+      parameters: []
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+    put:
+      operationId: updateScheduleSettings
+      description: updateScheduleSettings
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdate'
+  /api/modules/schedule/entries:
+    get:
+      operationId: listEntries
+      description: 返回完整模板，不展开重复。updatedAt 降序、id 升序。未排期用 placement=unscheduled。
+      parameters:
+      - *id002
+      - name: placement
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - all
+          - unscheduled
+          default: all
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+    post:
+      operationId: createEntry
+      description: createEntry
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '201':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntryInput'
+  /api/modules/schedule/entries/{id}:
+    get:
+      operationId: getEntry
+      description: getEntry
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+    put:
+      operationId: updateEntry
+      description: updateEntry
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntryUpdate'
+  /api/modules/schedule/entries/{id}/deletion:
+    post:
+      operationId: setEntryDeletion
+      description: setEntryDeletion
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Deletion'
+  /api/modules/schedule/entries/{id}/exceptions:
+    get:
+      operationId: listExceptions
+      description: listExceptions
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+  /api/modules/schedule/entries/{id}/exceptions/{originDate}:
+    put:
+      operationId: setException
+      description: override/取消/恢复继承；成功返回该实例以及递增后的 entryVersion。
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/originDate'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Occurrence'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExceptionInput'
+  /api/modules/schedule/entries/{id}/occurrence:
+    get:
+      operationId: getOccurrence
+      description: 重复必须 originDate；非重复必须省略。未排期或不符合原始周节律404；取消/删除返回可辨认内容。符合节律但超过until（有无例外均同）返回outside-series供旧通知定位。
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/Origin'
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Occurrence'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+  /api/modules/schedule/occurrences:
+    get:
+      operationId: listOccurrences
+      description: listOccurrences
+      parameters:
+      - name: from
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Date'
+      - name: to
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Date'
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OccurrenceList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+  /api/modules/schedule/item-moves:
+    post:
+      operationId: moveItem
+      description: moveItem
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoveResult'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveItem'
+  /api/modules/schedule/notifications:
+    get:
+      operationId: listNotifications
+      description: T53：结算到期后返回未 dismissed 的全部记录和未读计数；不展示生成时间。
+      parameters: []
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationList'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+  /api/modules/schedule/notifications/{id}:
+    post:
+      operationId: changeNotification
+      description: T53：单条 read/dismiss；重复已读保留第一次 readAt。dismiss 不删除唯一痕迹。
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoticeAction'
+  /api/modules/schedule/notification-actions:
+    post:
+      operationId: changeNotifications
+      description: T53：全部已读/清空传当前展示的明确 ID 集合，新到通知不被吞。任一外账户/不存在 ID 404 且整体不写。
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoticeBatchResult'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoticeBatch'
+  /api/modules:
+    get:
+      operationId: getTeachingModuleCatalog
+      description: T53 组合后的目录 v2；仅此响应由本批加法扩展取代 B11 v1，原文件保持冻结。
+      parameters: []
+      responses:
+        '200':
+          description: 当前账户结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleCatalogV2'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+components:
+  securitySchemes:
+    SessionCookie:
+      $ref: ../auth.openapi.yaml#/components/securitySchemes/SessionCookie
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    classId:
+      name: classId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    originDate:
+      name: originDate
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Date'
+    kind:
+      name: kind
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - lesson
+        - question
+    State:
+      name: state
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - active
+        - deleted
+        default: active
+    Origin:
+      name: originDate
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Date'
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    BrowserRequestProtection:
+      $ref: ../auth.openapi.yaml#/components/parameters/BrowserRequestProtection
+    RequestOrigin:
+      $ref: ../auth.openapi.yaml#/components/parameters/RequestOrigin
+    RequestReferer:
+      $ref: ../auth.openapi.yaml#/components/parameters/RequestReferer
+  responses:
+    '400':
+      description: malformed-json
+      headers: *id001
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Problem'
+            - properties:
+                type:
+                  enum: &id023
+                  - /problems/workbench/malformed-json
+    '401':
+      description: unauthenticated
+      headers: *id001
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Problem'
+            - properties:
+                type:
+                  enum: &id024
+                  - /problems/workbench/unauthenticated
+    '403':
+      description: request-not-allowed
+      headers: *id001
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Problem'
+            - properties:
+                type:
+                  enum: &id025
+                  - /problems/workbench/request-not-allowed
+    '404':
+      description: not-found
+      headers: *id001
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Problem'
+            - properties:
+                type:
+                  enum: &id026
+                  - /problems/workbench/not-found
+    '409':
+      description: version-conflict / idempotency-key-reused / object-deleted / reference-deleted / class-mismatch
+        / immutable-series / invalid-move
+      headers: *id001
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Problem'
+            - properties:
+                type:
+                  enum: &id027
+                  - /problems/workbench/version-conflict
+                  - /problems/workbench/idempotency-key-reused
+                  - /problems/workbench/object-deleted
+                  - /problems/workbench/reference-deleted
+                  - /problems/workbench/class-mismatch
+                  - /problems/workbench/immutable-series
+                  - /problems/workbench/invalid-move
+    '413':
+      description: payload-too-large
+      headers: *id001
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Problem'
+            - properties:
+                type:
+                  enum: &id028
+                  - /problems/workbench/payload-too-large
+    '415':
+      description: unsupported-media-type
+      headers: *id001
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Problem'
+            - properties:
+                type:
+                  enum: &id029
+                  - /problems/workbench/unsupported-media-type
+    '422':
+      description: invalid-input / invalid-time-zone / reminder-not-future
+      headers: *id001
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Problem'
+            - properties:
+                type:
+                  enum: &id030
+                  - /problems/workbench/invalid-input
+                  - /problems/workbench/invalid-time-zone
+                  - /problems/workbench/reminder-not-future
+    '503':
+      description: temporarily-unavailable
+      headers: *id001
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Problem'
+            - properties:
+                type:
+                  enum: &id031
+                  - /problems/workbench/temporarily-unavailable
+  schemas:
+    Id:
+      type: string
+      format: uuid
+    Version:
+      type: integer
+      minimum: 1
+    Date:
+      type: string
+      format: date
+      pattern: ^(19\d{2}|20\d{2}|2100)-\d{2}-\d{2}$
+      description: 有效公历日期 1900-01-01 至 2100-12-31，语义仍校验月日。
+    Timestamp:
+      type: string
+      format: date-time
+      pattern: Z$
+    Zone:
+      type: string
+      minLength: 1
+      maxLength: 100
+      description: 有效 IANA 时区；初始 Asia/Shanghai。
+    Time:
+      type: object
+      properties:
+        date:
+          $ref: '#/components/schemas/Date'
+        startTime:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        timeZone:
+          $ref: '#/components/schemas/Zone'
+        durationMinutes:
+          type: integer
+          minimum: 1
+          maximum: 1440
+      required:
+      - date
+      - startTime
+      - timeZone
+      - durationMinutes
+      additionalProperties: false
+    Reminder:
+      type: object
+      properties:
+        side:
+          type: string
+          enum:
+          - before
+          - after
+        minutes:
+          type: integer
+          minimum: 0
+          maximum: 10080
+      required:
+      - side
+      - minutes
+      additionalProperties: false
+    Repeat:
+      type: object
+      properties:
+        until:
+          $ref: '#/components/schemas/Date'
+      required:
+      - until
+      additionalProperties: false
+    Item:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        text:
+          type: string
+          maxLength: 4000
+          minLength: 1
+        priority:
+          type: string
+          enum:
+          - low
+          - normal
+          - high
+      required:
+      - id
+      - text
+      - priority
+      additionalProperties: false
+    SourceInput:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+          - lesson
+          - question
+        id:
+          $ref: '#/components/schemas/Id'
+      required:
+      - kind
+      - id
+      additionalProperties: false
+    Source:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+          - lesson
+          - question
+        id:
+          $ref: '#/components/schemas/Id'
+        labelAtLink:
+          type: string
+          maxLength: 300
+        currentLabel:
+          type: string
+          maxLength: 300
+        deleted:
+          type: boolean
+      required:
+      - kind
+      - id
+      - labelAtLink
+      - currentLabel
+      - deleted
+    Course:
+      type: object
+      properties:
+        classId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        lessonId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        recordIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          uniqueItems: true
+          maxItems: 100
+      required:
+      - classId
+      - lessonId
+      - recordIds
+      additionalProperties: false
+    LinkedObject:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        labelAtLink:
+          type: string
+          maxLength: 300
+        currentLabel:
+          type: string
+          maxLength: 300
+        deleted:
+          type: boolean
+      required:
+      - id
+      - labelAtLink
+      - currentLabel
+      - deleted
+    CourseState:
+      type: object
+      properties:
+        classroom:
+          anyOf:
+          - $ref: '#/components/schemas/LinkedObject'
+          - type: 'null'
+        lesson:
+          anyOf:
+          - $ref: '#/components/schemas/LinkedObject'
+          - type: 'null'
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedObject'
+      required:
+      - classroom
+      - lesson
+      - records
+    ClassInput:
+      type: object
+      properties:
+        name: &id003
+          type: string
+          maxLength: 100
+          minLength: 1
+      required:
+      - name
+      additionalProperties: false
+    ClassUpdate:
+      type: object
+      properties:
+        expectedVersion:
+          $ref: '#/components/schemas/Version'
+        name: *id003
+      required:
+      - expectedVersion
+      - name
+      additionalProperties: false
+    Class:
+      type: object
+      properties:
+        id: &id012
+          $ref: '#/components/schemas/Id'
+        version: &id013
+          $ref: '#/components/schemas/Version'
+        createdAt: &id014
+          $ref: '#/components/schemas/Timestamp'
+        updatedAt: &id015
+          $ref: '#/components/schemas/Timestamp'
+        deletedAt: &id016
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+        name: *id003
+      required:
+      - id
+      - version
+      - createdAt
+      - updatedAt
+      - deletedAt
+      - name
+    ClassList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Class'
+      required:
+      - items
+    RecordInput:
+      type: object
+      properties:
+        classId: &id004
+          $ref: '#/components/schemas/Id'
+        recordedOn: &id005
+          $ref: '#/components/schemas/Date'
+        note: &id006
+          type: string
+          maxLength: 10000
+        position: &id007
+          type: string
+          maxLength: 10000
+        unfinished: &id008
+          type: string
+          maxLength: 10000
+        commonIssues: &id009
+          type: string
+          maxLength: 10000
+        nextNote: &id010
+          type: string
+          maxLength: 10000
+        sources: &id011
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceInput'
+          maxItems: 100
+      required:
+      - classId
+      - recordedOn
+      - note
+      - position
+      - unfinished
+      - commonIssues
+      - nextNote
+      - sources
+      additionalProperties: false
+      description: 至少一个文字项去空白非空；sources kind+id 唯一。classId 创建后不可改变。
+    RecordUpdate:
+      type: object
+      properties:
+        expectedVersion:
+          $ref: '#/components/schemas/Version'
+        classId: *id004
+        recordedOn: *id005
+        note: *id006
+        position: *id007
+        unfinished: *id008
+        commonIssues: *id009
+        nextNote: *id010
+        sources: *id011
+      required:
+      - expectedVersion
+      - classId
+      - recordedOn
+      - note
+      - position
+      - unfinished
+      - commonIssues
+      - nextNote
+      - sources
+      additionalProperties: false
+    Record:
+      type: object
+      properties:
+        id: *id012
+        version: *id013
+        createdAt: *id014
+        updatedAt: *id015
+        deletedAt: *id016
+        classId: *id004
+        recordedOn: *id005
+        note: *id006
+        position: *id007
+        unfinished: *id008
+        commonIssues: *id009
+        nextNote: *id010
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+      required:
+      - id
+      - version
+      - createdAt
+      - updatedAt
+      - deletedAt
+      - classId
+      - recordedOn
+      - note
+      - position
+      - unfinished
+      - commonIssues
+      - nextNote
+      - sources
+    RecordList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+      required:
+      - items
+    Deletion:
+      type: object
+      properties:
+        expectedVersion:
+          $ref: '#/components/schemas/Version'
+        deleted:
+          type: boolean
+      required:
+      - expectedVersion
+      - deleted
+      additionalProperties: false
+    EntryInput:
+      type: object
+      properties:
+        title: &entryTitle
+          type: string
+          maxLength: 300
+        items: &entryItems
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+          maxItems: 200
+        time: &entryTime
+          anyOf:
+          - $ref: '#/components/schemas/Time'
+          - type: 'null'
+        repeat: &entryRepeat
+          anyOf:
+          - $ref: '#/components/schemas/Repeat'
+          - type: 'null'
+        course: &entryCourse
+          $ref: '#/components/schemas/Course'
+        reminder: &entryReminder
+          anyOf:
+          - $ref: '#/components/schemas/Reminder'
+          - type: 'null'
+      required:
+      - title
+      - items
+      - time
+      - repeat
+      - course
+      - reminder
+      additionalProperties: false
+      description: 标题非空或至少一个非空事项；事项 ID 在本 Entry 唯一。未排期 time=null 时 repeat/reminder=null，recordIds=[]。repeat 非空必须有
+        time，模板 recordIds=[]。完整跨字段规则见契约入口。
+    EntryUpdate:
+      type: object
+      properties:
+        expectedVersion:
+          $ref: '#/components/schemas/Version'
+        title: *entryTitle
+        items: *entryItems
+        time: *entryTime
+        repeat: *entryRepeat
+        course: *entryCourse
+        reminder: *entryReminder
+      required:
+      - expectedVersion
+      - title
+      - items
+      - time
+      - repeat
+      - course
+      - reminder
+      additionalProperties: false
+    Entry:
+      type: object
+      properties:
+        id: *id012
+        version: *id013
+        createdAt: *id014
+        updatedAt: *id015
+        deletedAt: *id016
+        title:
+          type: string
+          maxLength: 300
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemView'
+          maxItems: 200
+        time:
+          anyOf:
+          - $ref: '#/components/schemas/TimeView'
+          - type: 'null'
+        repeat:
+          anyOf:
+          - $ref: '#/components/schemas/RepeatView'
+          - type: 'null'
+        course:
+          $ref: '#/components/schemas/CourseView'
+        reminder:
+          anyOf:
+          - $ref: '#/components/schemas/ReminderView'
+          - type: 'null'
+        courseState:
+          $ref: '#/components/schemas/CourseState'
+      required:
+      - id
+      - version
+      - createdAt
+      - updatedAt
+      - deletedAt
+      - title
+      - items
+      - time
+      - repeat
+      - course
+      - reminder
+      - courseState
+    EntryList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entry'
+      required:
+      - items
+    Settings:
+      type: object
+      properties:
+        timeZone:
+          $ref: '#/components/schemas/Zone'
+        version:
+          $ref: '#/components/schemas/Version'
+      required:
+      - timeZone
+      - version
+    SettingsUpdate:
+      type: object
+      properties:
+        timeZone:
+          $ref: '#/components/schemas/Zone'
+        expectedVersion:
+          $ref: '#/components/schemas/Version'
+      required:
+      - timeZone
+      - expectedVersion
+      additionalProperties: false
+    OccurrenceKey:
+      type: object
+      properties:
+        entryId:
+          $ref: '#/components/schemas/Id'
+        originDate:
+          anyOf:
+          - $ref: '#/components/schemas/Date'
+          - type: 'null'
+      required:
+      - entryId
+      - originDate
+      additionalProperties: false
+    Override:
+      type: object
+      properties:
+        title: *entryTitle
+        items: *entryItems
+        time:
+          $ref: '#/components/schemas/Time'
+        course: *entryCourse
+        reminder: *entryReminder
+      required:
+      - title
+      - items
+      - time
+      - course
+      - reminder
+      additionalProperties: false
+    SetOverride:
+      type: object
+      properties:
+        expectedVersion:
+          $ref: '#/components/schemas/Version'
+        mode:
+          const: override
+        content:
+          $ref: '#/components/schemas/Override'
+      required:
+      - expectedVersion
+      - mode
+      - content
+      additionalProperties: false
+    SetCancelled:
+      type: object
+      properties:
+        expectedVersion:
+          $ref: '#/components/schemas/Version'
+        mode:
+          const: cancelled
+      required:
+      - expectedVersion
+      - mode
+      additionalProperties: false
+    ResetException:
+      type: object
+      properties:
+        expectedVersion:
+          $ref: '#/components/schemas/Version'
+        mode:
+          const: inherit
+      required:
+      - expectedVersion
+      - mode
+      additionalProperties: false
+    ExceptionInput:
+      oneOf:
+      - $ref: '#/components/schemas/SetOverride'
+      - $ref: '#/components/schemas/SetCancelled'
+      - $ref: '#/components/schemas/ResetException'
+    Exception:
+      type: object
+      properties:
+        originDate:
+          $ref: '#/components/schemas/Date'
+        mode:
+          type: string
+          enum:
+          - override
+          - cancelled
+        eligible:
+          type: boolean
+        content:
+          anyOf:
+          - $ref: '#/components/schemas/OverrideView'
+          - type: 'null'
+      required:
+      - originDate
+      - mode
+      - eligible
+      - content
+    ExceptionList:
+      type: object
+      properties:
+        entryId:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Exception'
+      required:
+      - entryId
+      - version
+      - items
+    Occurrence:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/OccurrenceKeyView'
+        entryVersion:
+          $ref: '#/components/schemas/Version'
+        exception:
+          type: boolean
+        state:
+          type: string
+          enum:
+          - active
+          - cancelled
+          - deleted
+          - outside-series
+        title:
+          type: string
+          maxLength: 300
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemView'
+        time:
+          $ref: '#/components/schemas/TimeView'
+        startsAt:
+          $ref: '#/components/schemas/Timestamp'
+        endsAt:
+          $ref: '#/components/schemas/Timestamp'
+        timeAdjusted:
+          type: boolean
+        course:
+          $ref: '#/components/schemas/CourseView'
+        courseState:
+          $ref: '#/components/schemas/CourseState'
+        reminder:
+          anyOf:
+          - $ref: '#/components/schemas/ReminderView'
+          - type: 'null'
+        dueAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+      required:
+      - key
+      - entryVersion
+      - exception
+      - state
+      - title
+      - items
+      - time
+      - startsAt
+      - endsAt
+      - timeAdjusted
+      - course
+      - courseState
+      - reminder
+      - dueAt
+      description: 活动实例与通知定位。取消/删除/范围外保留可识别内容，dueAt 只表示配置所得时刻，不表示仍会产生通知；timeAdjusted 表示 DST 缺失时刻发生了调整。
+    OccurrenceList:
+      type: object
+      properties:
+        timeZone:
+          $ref: '#/components/schemas/Zone'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Occurrence'
+      required:
+      - timeZone
+      - items
+    MoveItem:
+      type: object
+      properties:
+        itemId:
+          $ref: '#/components/schemas/Id'
+        fromEntryId:
+          $ref: '#/components/schemas/Id'
+        fromVersion:
+          $ref: '#/components/schemas/Version'
+        toEntryId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        toVersion:
+          anyOf:
+          - $ref: '#/components/schemas/Version'
+          - type: 'null'
+        toIndex:
+          type: integer
+          minimum: 0
+      required:
+      - itemId
+      - fromEntryId
+      - fromVersion
+      - toEntryId
+      - toVersion
+      - toIndex
+      additionalProperties: false
+      description: 不同的两个非重复 Entry；toEntryId=null 时 toVersion=null、toIndex=0，否则 toVersion 必填非空且 toIndex<=目标长度。
+    MoveResult:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/Entry'
+        to:
+          $ref: '#/components/schemas/Entry'
+      required:
+      - from
+      - to
+    Notification:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        key:
+          $ref: '#/components/schemas/OccurrenceKeyView'
+        title:
+          type: string
+          maxLength: 300
+          description: 由 projectReminderTitle(entry) 投影；标题去首尾空白后为空时取首项事项，再按 Unicode code point 取前300个字符且不追加省略号。
+        dueAt:
+          $ref: '#/components/schemas/Timestamp'
+        readAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+        dismissedAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+      required:
+      - id
+      - key
+      - title
+      - dueAt
+      - readAt
+      - dismissedAt
+    NotificationList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        unreadCount:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - unreadCount
+    NoticeAction:
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+          - read
+          - dismiss
+      required:
+      - action
+      additionalProperties: false
+    NoticeBatch:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          minItems: 1
+          uniqueItems: true
+        action:
+          type: string
+          enum:
+          - read
+          - dismiss
+      required:
+      - ids
+      - action
+      additionalProperties: false
+    NoticeBatchResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+      required:
+      - items
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - /problems/workbench/malformed-json
+          - /problems/workbench/unauthenticated
+          - /problems/workbench/request-not-allowed
+          - /problems/workbench/not-found
+          - /problems/workbench/version-conflict
+          - /problems/workbench/idempotency-key-reused
+          - /problems/workbench/object-deleted
+          - /problems/workbench/invalid-input
+          - /problems/workbench/payload-too-large
+          - /problems/workbench/unsupported-media-type
+          - /problems/workbench/temporarily-unavailable
+          - /problems/workbench/invalid-time-zone
+          - /problems/workbench/reminder-not-future
+          - /problems/workbench/reference-deleted
+          - /problems/workbench/class-mismatch
+          - /problems/workbench/immutable-series
+          - /problems/workbench/invalid-move
+        status:
+          type: integer
+        currentVersion:
+          $ref: '#/components/schemas/Version'
+        objectId:
+          $ref: '#/components/schemas/Id'
+        field:
+          type: string
+          description: RFC6901 JSON Pointer，查询为 /query/<name>，请求头为 /headers/<name>。
+        reason:
+          type: string
+          enum:
+          - required
+          - unknown-field
+          - invalid-type
+          - out-of-range
+          - empty-content
+          - duplicate-id
+          - invalid-reference
+          - unsupported-content-version
+      required:
+      - type
+      description: B11公共错误形状保持；status可省略，若有则与HTTP一致。version-conflict必须currentVersion，冲突对象有UUID时另有objectId；settings冲突不带objectId。invalid-input必须field/reason；本批时间错误必须field。校验顺序见契约；单个确定错误按请求字段顺序返回，移动先源版本再目标版本。
+      allOf:
+      - if:
+          properties:
+            type:
+              const: /problems/workbench/version-conflict
+        then:
+          required:
+          - currentVersion
+      - if:
+          properties:
+            type:
+              enum:
+              - /problems/workbench/invalid-input
+              - /problems/workbench/invalid-time-zone
+              - /problems/workbench/reminder-not-future
+        then:
+          required:
+          - field
+      - if:
+          properties:
+            type:
+              enum: *id023
+        then:
+          properties:
+            status:
+              const: 400
+      - if:
+          properties:
+            type:
+              enum: *id024
+        then:
+          properties:
+            status:
+              const: 401
+      - if:
+          properties:
+            type:
+              enum: *id025
+        then:
+          properties:
+            status:
+              const: 403
+      - if:
+          properties:
+            type:
+              enum: *id026
+        then:
+          properties:
+            status:
+              const: 404
+      - if:
+          properties:
+            type:
+              enum: *id027
+        then:
+          properties:
+            status:
+              const: 409
+      - if:
+          properties:
+            type:
+              enum: *id028
+        then:
+          properties:
+            status:
+              const: 413
+      - if:
+          properties:
+            type:
+              enum: *id029
+        then:
+          properties:
+            status:
+              const: 415
+      - if:
+          properties:
+            type:
+              enum: *id030
+        then:
+          properties:
+            status:
+              const: 422
+      - if:
+          properties:
+            type:
+              enum: *id031
+        then:
+          properties:
+            status:
+              const: 503
+      - if:
+          properties:
+            type:
+              const: /problems/workbench/invalid-input
+        then:
+          required:
+          - reason
+    ClassReference:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        name:
+          type: string
+          maxLength: 100
+        deletedAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+      required:
+      - id
+      - version
+      - name
+      - deletedAt
+    RecordReference:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        classId:
+          $ref: '#/components/schemas/Id'
+        label:
+          type: string
+          maxLength: 300
+        deletedAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+        classDeletedAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+      required:
+      - id
+      - version
+      - classId
+      - label
+      - deletedAt
+      - classDeletedAt
+    LessonReference:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        title:
+          type: string
+          maxLength: 300
+        deletedAt:
+          anyOf:
+          - $ref: '#/components/schemas/Timestamp'
+          - type: 'null'
+      required:
+      - id
+      - version
+      - title
+      - deletedAt
+    ReminderCandidate:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/OccurrenceKeyView'
+        title:
+          type: string
+          maxLength: 300
+          description: 由 projectReminderTitle(entry) 投影；标题去首尾空白后为空时取首项事项，再按 Unicode code point 取前300个字符且不追加省略号。
+        dueAt:
+          $ref: '#/components/schemas/Timestamp'
+        armedAt:
+          $ref: '#/components/schemas/Timestamp'
+      required:
+      - key
+      - title
+      - dueAt
+      - armedAt
+    ModuleDescriptorV2:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z][a-z0-9-]*$
+        name:
+          type: string
+          minLength: 1
+        path:
+          type: string
+          pattern: ^/[a-z][a-z0-9-]*$
+        navigation:
+          type: string
+          enum:
+          - sidebar
+          - top
+        auxiliaryPanel:
+          type: boolean
+        requires:
+          type: array
+          items:
+            type: string
+            enum:
+            - questions.readForReference
+            - lessons.readForTeachingLink
+            - classes.readClass
+            - classes.readRecord
+          uniqueItems: true
+      required:
+      - id
+      - name
+      - path
+      - navigation
+      - auxiliaryPanel
+      - requires
+    ModuleCatalogV2:
+      type: object
+      properties:
+        version:
+          const: 2
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleDescriptorV2'
+      required:
+      - version
+      - items
+    ReminderView:
+      type: object
+      properties:
+        side:
+          type: string
+          enum:
+          - before
+          - after
+        minutes:
+          type: integer
+          minimum: 0
+          maximum: 10080
+      required:
+      - side
+      - minutes
+    OverrideView:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 300
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemView'
+          maxItems: 200
+        time:
+          $ref: '#/components/schemas/TimeView'
+        course:
+          $ref: '#/components/schemas/CourseView'
+        reminder:
+          anyOf:
+          - $ref: '#/components/schemas/ReminderView'
+          - type: 'null'
+      required:
+      - title
+      - items
+      - time
+      - course
+      - reminder
+    RepeatView:
+      type: object
+      properties:
+        until:
+          $ref: '#/components/schemas/Date'
+      required:
+      - until
+    OccurrenceKeyView:
+      type: object
+      properties:
+        entryId:
+          $ref: '#/components/schemas/Id'
+        originDate:
+          anyOf:
+          - $ref: '#/components/schemas/Date'
+          - type: 'null'
+      required:
+      - entryId
+      - originDate
+    TimeView:
+      type: object
+      properties:
+        date:
+          $ref: '#/components/schemas/Date'
+        startTime:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        timeZone:
+          $ref: '#/components/schemas/Zone'
+        durationMinutes:
+          type: integer
+          minimum: 1
+          maximum: 1440
+      required:
+      - date
+      - startTime
+      - timeZone
+      - durationMinutes
+    CourseView:
+      type: object
+      properties:
+        classId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        lessonId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        recordIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          uniqueItems: true
+          maxItems: 100
+      required:
+      - classId
+      - lessonId
+      - recordIds
+    ItemView:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        text:
+          type: string
+          maxLength: 4000
+          minLength: 1
+        priority:
+          type: string
+          enum:
+          - low
+          - normal
+          - high
+      required:
+      - id
+      - text
+      - priority

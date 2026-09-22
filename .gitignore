@@ -13,3 +13,6 @@ test-results
 # work in progress and can be absent from a checkout, so repository artifacts
 # must never reference or depend on them.
 .scratch
+
+# Generated from pinned npm assets by the web prebuild/predev scripts.
+apps/web/public/vendor/math/

@@ -1,0 +1,66 @@
+{
+  "identity": "real-auth",
+  "file": {
+    "id": "60ced561-1ff5-430d-8371-3148d3c0229e",
+    "name": "function-graph.png",
+    "mediaType": "image/png",
+    "byteLength": 16272,
+    "sha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f",
+    "createdAt": "2026-09-22T16:04:51.022Z",
+    "duplicateOfFileId": null
+  },
+  "question": {
+    "id": "debc8107-1cb0-45a3-954b-847b214981d5",
+    "version": 1,
+    "createdAt": "2026-09-22T16:04:51.156Z",
+    "updatedAt": "2026-09-22T16:04:51.156Z",
+    "deletedAt": null,
+    "title": "R35 数学与函数图素材",
+    "source": {
+      "kind": "manual"
+    },
+    "note": "R35_PRIVATE_MUST_NOT_RENDER",
+    "starred": false,
+    "typeId": null,
+    "tagIds": [],
+    "answerStatus": "present",
+    "solution": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "ANSWER_ONLY_SEPARATE"
+            }
+          ]
+        }
+      ]
+    },
+    "body": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "显示对照：公式与函数图。"
+            }
+          ]
+        },
+        {
+          "type": "math",
+          "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+        },
+        {
+          "type": "image",
+          "fileId": "60ced561-1ff5-430d-8371-3148d3c0229e",
+          "alt": "固定函数图",
+          "widthMm": 100
+        }
+      ]
+    }
+  }
+}

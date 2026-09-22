@@ -1,0 +1,130 @@
+[
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/E-pages.json",
+    "sha256": "aa623dd5e62a8f77165255051121a35659b3cb3e3db1569e5131d1bbf37d4a39"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/adapter-replay.json",
+    "sha256": "74968d46cbe4fb57a26e88605d970edf04ac56cf0ae866638a67792aab04f5e5"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/browser-corrected-T.json",
+    "sha256": "8e083fc84ebd51833bbc39bdc670cc9dd6d9a2745c466ba0201bab5d0d100321"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/browser-corrected-W.json",
+    "sha256": "7f3561967c3d2a453bb7394f618e282d5db1e27b4c7297f49675d8c13c7ee213"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/browser-native-T.json",
+    "sha256": "321c2cd6994388af9c5c6ae98cf35755e14f3217401395862774911dc08cbbda"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/browser-native-W.json",
+    "sha256": "64a338220158964c31f313ebc15b936c5f41369dab997b11d7b0adfe5ddf1b97"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/complex-omml.json",
+    "sha256": "e527df82bef9fd21c1003a921883b230c8d19bfb327954a9096d462f8483275b"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/image-recovery-crop.png",
+    "sha256": "2d4c1351eace78772cdbfc78de2897426aea52ed9fc9c890ed9e7380b0528536"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/migration.json",
+    "sha256": "efeae8ed7f96d57f892745748528eea2b5aede54a6d557caef828d8adc5f67e2"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/native-T.txt.json",
+    "sha256": "5f2a0d2457de11e0aed6a502d3961774499c12270e2c174aea3da5be04b1405b"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/native-W.docx.json",
+    "sha256": "2baf26bed796fe8a19b45feced509906e50fa124634db369df1a188b0479372d"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-T-1.png",
+    "sha256": "25cd31a06e2b423ce28982306c41fef5169fe595ccadcbc6fec2c39199488060"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-T-2.png",
+    "sha256": "b743685e8865b053dcf748eaa1f4f144c861245008b3e36682d9e582ebc76331"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-T-3.png",
+    "sha256": "aa98485a98edd53e9cadf50bfa6f0cee4c46d77d38593b18d6494d3498be24ca"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-T-4.png",
+    "sha256": "eaf884e3c573220157b07833126d59567059c12a24633197c73943c3d67be45c"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-T-5.png",
+    "sha256": "de00afe8f071bd7c992395d92d41fcf01c5864bb8b4353c3858745f8fcdf830e"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-T-6.png",
+    "sha256": "a4f3398af0e00523f8cc1ac34c48a7af2abf7f24c7472e294a00f145e1160cfe"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-W-1.png",
+    "sha256": "5cb8533d1395b15ca4fcc1312d4c9afd536eacaaf64d2f9709126828c1b5a132"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-W-1280.png",
+    "sha256": "a0abfe72ce98d9d4ecd071f83d47e844e2297714f2c55566878c7e1cddc93e16"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-W-2.png",
+    "sha256": "1d49db92c097edae8218b290b32821985ebb958349950e4a7705cf04418ef8c4"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-W-3.png",
+    "sha256": "facca835fd94457f6411bad2389f4874aaf81499480bade47b5f9fa74052c458"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-W-4.png",
+    "sha256": "c423f2b456475d08523e0948010c1aa080b5a63a26d1e8147b3a171f9301b50b"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-W-5.png",
+    "sha256": "732d7edf9b9abb547f1e9eda0c93511e598911894e1c2385a175d17aec1f6e38"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/quality-W-6.png",
+    "sha256": "3a9c7942408c5ba860c9f772c4295438426829db73c41e6d77c7548ac6b21ae4"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/question-pad.png",
+    "sha256": "3d9299efd506ee032ed789e3905d5cd1425a87675fd1409f3028fb9e9daca54f"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt2/text-review-desktop.png",
+    "sha256": "1e2aa63fda27e2c2e0f6de84c3f2f721f875b19991981630285925367b2ad581"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt4/browser-synthetic.json",
+    "sha256": "757ddac13fa66b7655166b3148cb156c9547744b32f0e4f92761a06501a9a3ac"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt4/first-http.json",
+    "sha256": "ff1849591c4e451a3978e13bd57d845da3582630a3b471823293b648726bc24b"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt4/fragments-1440.png",
+    "sha256": "44b6637a36e172a4064ff48d456c78e99178a67fce1dc1b57ed8623750d59bbe"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt4/old-response-replay.json",
+    "sha256": "ecad6c942fc79a50b96732ee030f581271445ad9811810bb08179d6720f59533"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt4/pdf-crop.json",
+    "sha256": "5bf0585ff773e78919abeed24c3a39b3498f6d9c1d0f1d18b486ce83fcf6c936"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/attempt5/regression/attempt4/selected-pages-synthetic.json",
+    "sha256": "aad6ca8eb086b81c44ca77d69cba51caddfae639f2461abf9e664f1d8f5e2394"
+  }
+]

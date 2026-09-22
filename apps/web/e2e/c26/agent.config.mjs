@@ -1,0 +1,3 @@
+import { defineConfig } from '@playwright/test';
+export default defineConfig({ testDir: '.', testMatch: '*.spec.js', workers: 1, timeout: 45000,
+  outputDir: '../../../../test-results/c26', use: { browserName: 'chromium', ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 }, trace: 'retain-on-failure' } });

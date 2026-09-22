@@ -1,0 +1,15 @@
+body {
+  margin: 0;
+  background: #eef0eb;
+  padding: 18px;
+}
+#root {
+  height: calc(100vh - 36px);
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #6a865c;
+  outline-offset: 2px;
+}
