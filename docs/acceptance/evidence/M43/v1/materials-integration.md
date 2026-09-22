@@ -8,12 +8,12 @@ attempt: 1
 role: integration
 status: PASS
 verification_level: self
-finished_at_utc: "2026-09-22T16:29:06Z"
+finished_at_utc: "2026-09-22T16:31:53Z"
 session_id: unavailable
 runner: "Codex / gpt-5.6-sol / medium"
 skills_used: [writing-for-agents]
 base_revision: "6c4f5a90377787186732eccf3cc34a32cd0f06db"
-composition_revision: "d63c5eed4c3c6e3b5881197f8eda8941244e0204"
+composition_revision: "5de862e40ace52839df2be937459a9b76c050a7d"
 product_revision: "2bdb865d6923e6aedb744d2f631ee5b5ef106541"
 result_revision: "由最终交回消息固定本文件所在完整提交"
 review_target:
