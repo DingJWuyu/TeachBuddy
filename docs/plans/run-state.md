@@ -32,8 +32,8 @@
 | 任务 | 接续方式 | 实际模型 / effort | 状态 | session | 原始派发与回执目录 |
 | --- | --- | --- | --- | --- | --- |
 | C21-REUSE-RESEARCH | 新会话，attempt 1 | gpt-5.6-sol / medium | 已交c2f9e21并停写，研究完成；推荐PaddleOCR局部适配，尚未实测 | `01a0ca35-ab77-75c1-97a3-347b03548eaa` | `.scratch/dag-dispatch/C21-REUSE-RESEARCH/1/` |
-| C20-C21-REUSE-PLAN | 新会话，attempt 1 | gpt-6-astra / high | 已交d690372并停写，设计self PASS；六页/最多七次本地解析，待独立冻结与许可 | `01a0ca55-9db2-7d12-9694-51fc6c597678` | `.scratch/dag-dispatch/C20-C21-REUSE-PLAN/1/` |
-| C20-C21-REUSE-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已启动，核验固定本地六页实验包；不启动下载或推理 | `01a0ca66-3215-72d3-938b-e4790a5c7da7` | `.scratch/dag-dispatch/C20-C21-REUSE-REVIEW/1/` |
+| C20-C21-REUSE-PLAN | 新会话，attempt 1 | gpt-6-astra / high | 已交d690372并停写，已由436f261独立冻结；实验待一次具名权重许可 | `01a0ca55-9db2-7d12-9694-51fc6c597678` | `.scratch/dag-dispatch/C20-C21-REUSE-PLAN/1/` |
+| C20-C21-REUSE-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已交436f261并停写，实验方法independent PASS；未执行安装/下载/推理 | `01a0ca66-3215-72d3-938b-e4790a5c7da7` | `.scratch/dag-dispatch/C20-C21-REUSE-REVIEW/1/` |
 | C24-BUSINESS | 原 session 接续，attempt 2 / resume 1 | gpt-5.6-sol / medium | 已完成，self FAIL，制品 d826b72 | `01a0c7a8-94e5-7da1-bfe0-aa537396c067` | `.scratch/dag-dispatch/C24-BUSINESS/2/resume-1/` |
 | R30-RECOVERY-REVIEW | 恢复原会话，attempt 1 | gpt-6-astra / medium | 已完成，independent FAIL | `01a0c642-8129-7c11-84d1-f64a3fa85255` | `.scratch/dag-dispatch/R30-RECOVERY-REVIEW/1/resume-1/` |
 | C23-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent PASS（限定） | `01a0c7a8-9494-7672-9e16-cfa5034ea18d` | `.scratch/dag-dispatch/C23-MATH-REVIEW/1/` |
@@ -126,10 +126,10 @@
 | 工作 | 本轮动作 | 下游判断 |
 | --- | --- | --- |
 | M40 / T50 / T51 | 统一候选267cf51已有5c3ae84独立教学七项PASS，真实旧422缺口关闭，数学直接影响同步回归。 | 复用已验固定结果，不重复接缝审查；完整节点与目标设备仍保留原条件。 |
-| C24 / C25 / C26 / C27 | 独立6d48bc7关闭D01，本地C27 PASS；未变live证据及文档保持。M43尚未集成C26或全模块Agent。 | C21复用方案独立核验、R35/6定向独立复验继续；43366f2独立PASS及入口同步已完成；F60完整设计与认证离线操作实现并行，不提前派F61-F63实施。 |
+| C24 / C25 / C26 / C27 | 独立6d48bc7关闭D01，本地C27 PASS；未变live证据及文档保持。M43尚未集成C26或全模块Agent。 | C21方案436f261已独立冻结，实验待用户许可；R35/6定向独立复验继续；43366f2独立PASS及入口同步已完成；F60完整设计与认证离线操作实现并行，不提前派F61-F63实施。 |
 | R30 / C20 / R31 | R35的001-005及具名八项消费通过结论保留；材料/教学/数学修复已统一至267cf51。 | R35/5已在267cf51补齐具名本地余项，新增006/007已交3d5c3f3修复候选；R35/6固定该版做定向独立复验。在线/设备缺口保持，未变已验范围不重跑。 |
 | R31 / M41 / M42 | 数学本地7032043保持；统一候选267cf51的教学/数学往返、三尺寸滚动由5c3ae84补验通过。 | 按逐文件未变和具名范围复用数学证据；旧传输/环境观察和完整节点门槛不变。 |
-| C21 定位 / 在线 | 全部在线窗口关闭，许可新增请求0，19次及未知usage账保留。C21-REUSE-RESEARCH已交c2f9e21，建议PaddleOCR完整本地页解析管线与现有归并适配；质量、资源与本地模型准入未证。 | d690372已给六页/最多七次本地解析方案，先独立核验。冻结后向用户一次确认两具名权重实验许可，再按实际空闲资源执行；当前零下载/安装/推理/API，不扩大产品白名单或重开旧窗口。 |
+| C21 定位 / 在线 | 全部在线窗口关闭，许可新增请求0，19次及未知usage账保留。C21-REUSE-RESEARCH已交c2f9e21，建议PaddleOCR完整本地页解析管线与现有归并适配；质量、资源与本地模型准入未证。 | d690372六页/最多七次本地解析方案已由436f261独立冻结。当前向用户确认PaddleOCR-VL-1.6与PP-DocLayoutV3一次本地实验许可；许可到达后按固定包及实际空闲资源派gpt-6-sol medium。当前零下载/安装/推理/API，不扩大产品白名单或重开旧窗口。 |
 | A11 / A12 | M42 attempt 2在固定诊断上实际复现2项RED并修复：同页登录/注册保存、准备失败重试、两账户隔离及不自动restore通过。当前integration2纠正前轮旧归属，正式认证和App均未改。 | 不重复已闭环登录fixture或A12本地流程。767f949提供OPS-001具体操作设计，a3d5b5e已独立接受并交F60；认证操作正在实现，交A10固定后供F62。真实恢复专项等F62，原外部条件仍待输入。 |
 | T52 / T53 / T54 | 旧本地真实认证ab19d5d、数学7032043及新教学接缝5c3ae84独立通过。 | 未把三份局部结果直接拼成完整T54或WB-T020；依赖澄清确定可做后继，真实设备条件等待对应输入。 |
 
@@ -141,7 +141,8 @@
 | --- | --- |
 | 认证恢复设计候选 | `767f949dc9f15a960c5146ebb367dd2f1e827b4f:docs/acceptance/evidence/AUTH-RECOVERY-DESIGN/v1/author.md`，设计 `73d68c2e1ec864faac8ee49a8b5f9e6361e82964`。18:30:15Z退出停写，仅五份专属文档，self PASS。auth-recovery/1提出认证后端提供离线 `prepareRestoredAuth({db})`，隔离库原子清理全部旧会话/容器/页面/挑战；F62负责停服、迁移检查、调用及最后开放。11条BDD尚未运行。a3d5b5e已独立接受设计，操作实现中、OPS-001未关闭；作者零产品运行/模型/密钥。根已通过通知01a0ca6f-989d-7e42-ae89-bccbae862c4f向F60交固定接受结果；投递不代表已消费或F60已冻结。 |
 | 认证恢复独立设计接受 | `a3d5b5ec80d4823ec978e3b9b331b8fa266302be:docs/acceptance/evidence/A10/v1/recovery-review.md`，18:39:50Z退出停写。independent PASS，无阻断设计缺陷；13项和11条BDD均为静态设计覆盖，未运行。接受auth-recovery/1及73d68c2/767f949固定输入；F60可消费，F62仍需真实操作交接及原前置，OPS-001/外部条件保持开放。AUTH-RECOVERY-IMPLEMENTATION从fae8fe9建独立分支，运行固定产品3d5c3f3；只实现认证内部离线操作与隔离SQLite/HTTP验证，不抢F62共享入口。 |
-| C21开源实验设计候选 | `d690372c8f552e37690648f5688e04e1b68c4ae9:docs/acceptance/evidence/C20-C21-REUSE-PLAN/v1/author.md`；设计 `b0e44a8daf70ee2e17f767f38e54550099ac90ef`，18:30:20Z退出停写，self PASS。只选PaddleOCR完整本地管线，固定I1-3/PS4/E7-8六页，最多七次解析，A原始/B自动归并/C人工分列；成功只形成待R30消费的实验候选，不签完整C21/R35。两具名权重约2.06GB，候选准备限10GiB下载/20GiB目录/90分钟、每页含加载15分钟；这些为待核验方案而非既有产品权限。独立冻结、用户一次实验许可和当次空闲资源待落实，当前零安装/下载/推理/产品请求。 |
+| C21开源实验设计候选 | `d690372c8f552e37690648f5688e04e1b68c4ae9:docs/acceptance/evidence/C20-C21-REUSE-PLAN/v1/author.md`；设计 `b0e44a8daf70ee2e17f767f38e54550099ac90ef`，18:30:20Z退出停写，self PASS。只选PaddleOCR完整本地管线，固定I1-3/PS4/E7-8六页，最多七次解析，A原始/B自动归并/C人工分列；成功只形成待R30消费的实验候选，不签完整C21/R35。两具名权重约2.06GB，候选准备限10GiB下载/20GiB目录/90分钟、每页含加载15分钟；这些为待核验方案而非既有产品权限。436f261已独立冻结方法；用户一次实验许可和当次空闲资源待落实，当前零安装/下载/推理/产品请求。 |
+| C21开源实验独立冻结 | `436f2612b62cd40bb7f074ad68568d5bdd951f65:docs/acceptance/evidence/C20-C21-REUSE-PLAN/v1/review.md`，18:40:57Z退出停写，independent PASS，无必修。只接受d690372/设计b0e44a8的判别方法；不证明PaddleOCR本机可用、A/B内容或自动归并通过。OPEN-01为用户具名权重实验许可，OPEN-02为当次资源/实际环境锁单，OPEN-03为执行后的质量证据及R30消费。两模型约2.06GB，只本机六页最多七次、推理禁网，配套准备下载总量10GiB/目录20GiB/90分钟；不含API、其他权重或产品接入。许可待答期间不启动实验，其余flow继续。 |
 | C21开源复用调查 | `c2f9e21e39dcf005f373a374becd6018e305cea6:docs/research/c21-open-source-reuse.md`，18:08:48Z退出停写，研究成果已归档。建议PaddleOCR 3.7.0/PaddleOCR-VL 1.6局部页解析，保留现有领域归并；MinerU为备选。报告仅公开一手资料与固定源码调查，未运行样本；六页实验是建议，原门槛和模型准入由C20说明后再决定执行。本机硬件可行性、OCR新权重与产品白名单边界未实证，零安装/权重下载/模型请求/材料上传。 |
 | 材料006/007修复候选 | `3d5c3f308bfeaa0e038a9fb86e6dab2816b9ec7c:docs/acceptance/evidence/R34/v1/protection-fix.md`及protection-fix/，产品 `c2cdd9d12428dadb6ac405ff5b8081d15b51f0d6`。18:33:57Z退出停写，self PASS。未知已存Document保护涵盖题/答案/复制快照、备课v2/v3/引用快照及相关分类移除，正常路径与重放次序保持；标题/保存状态换行、冲突文案去重。真实UI/HTTP红绿、同库重启、31项不同定向API、build和内部双轴通过。real-auth/fake-mail，零模型/密钥；现场 `/home/liam_t/r34p6/` 保留，50635/50636已停。独立复验由R35/6消费完整3d5c3f3；未签完整材料或其他阶段，旧外部/历史观察保持。 |
 | 材料剩余本地验收及修复 | `7e2796e0613b6b71e3965039d9f9a84100c8d84f:docs/acceptance/evidence/R35/v1/local-review5.md` 及local5/；固定267cf51，18:02:38Z退出停写，independent FAIL。新006为未知版本题目/备课可删除或有损覆盖，007为1280px冲突态课题约35px，交R34/6统一修复。其余具名收录失响应、复制/分类/删除恢复UI、七格式返回现场、同文档迟到读写及重启补验通过，001-005关闭保持；完整28行剩余矩阵以本报告为准。零模型/密钥，现场 `/home/liam_t/r35l5/` 只读保留，50535/50536已停；在线、目标同内容Office PDF、Windows/WPS/物理设备/真实邮件及历史传输观察保持。 |
@@ -209,7 +210,7 @@
 | 共享重启诊断固定交付 | 完整 `c915f5939cb9e4102bbc9d84d4b83608b72eda52:docs/acceptance/evidence/R34/v1/restart-diagnosis.md` 与restart-diagnosis/delivery.json；诊断实现 `59b18d1bf97e50d75e9d18b98d5813d857e74eec`，组合 `56845c217442acc24bcabfb8c3508424192c0a65`。原异常未复现/根因OPEN，完成一次Astra high有界接手并停写。仅产品树的math-static-migration.test.js新增可隔离端口、cause/阶段/监听/现场诊断，原错误重抛，全部断言保留，无重试、无生命周期或业务改动。真实三进程重启/持久字节通过，相关回归4/4，两轴0发现；人工ECONNREFUSED/UND_ERR_SOCKET校准不冒充自然复现。0模型/0密钥，14份现场保留；不据绿灯销观察。 |
 | 共享诊断后继消费 | 两项共享自然fetch失败保持OPEN，拥有者R34。当前880e6e6未改业务/fixture/生命周期，证据目录已有只观察、不注入且不自动接入产品的trace-preload.mjs。后续必要运行可显式记录cause、请求/socket对应、监听代次、环境/负载及保留库，不能重建旧丢失数据。无新因果输入不再派同构诊断，不凭两个入口共同结构认定连接池问题；原次数保留。下一唯一集成者明确固定组合，不静默更换受验版本。 |
 | 材料剩余路线与依赖提案 | 固定 `da23eb680a9c8b214ad18482d4f1fbc8a5f3fded:docs/arch/materials-continuation.md`、docs/plans/tasks/materials/continuation.md及作者回执，文档整合598209b。R33原范围零调用接续可做；限定本地启动例外已由677161b独立通过并获根采纳。没有新网络方向实证，不重开窗口。完整R35→M43→M44和M44→T51/T54→F60完成要求不变。 |
-| 本地材料接续派发 | 教学接缝5c3ae84已independent PASS并停写；R35/5已交7e2796e，006/007修复3d5c3f3交R35/6独立复验；C21复用方案独立核验与可靠性/认证恢复设计并行。均不改活动输入、不互聊、不轮询。 |
+| 本地材料接续派发 | 教学接缝5c3ae84已independent PASS并停写；R35/5已交7e2796e，006/007修复3d5c3f3交R35/6独立复验；C21复用方法已冻结待实验许可，可靠性设计/认证操作实现及R35复验并行。均不改活动输入、不互聊、不轮询。 |
 | 材料启动例外独立结论 | 原报告 `677161bd23e37e2d8e22ae7e47214e2e662011ed:docs/acceptance/evidence/R30-MATERIALS-CONTINUATION/v1/review.md`，文档整合7632355870fd786108c5e5b7a42783d7492bbd29。2026-09-22T12:56:53Z结束；limited independent PASS，根已采纳。材料实际消费接口、迁移版本/目录、唯一共享写者、重启故障条件、本地/完整M44区分及联合依赖无环均通过设计核验，未执行产品验收。M43仍须R35所列消费切片独立通过；若有影响集成的真实持久化/隔离/恢复缺陷，不得以局部绿灯越过。 |
 | 材料启动入口同步 | 固定候选 `911c1fffc9dbb495fb94da6b9cddb0bd620bb242:docs/acceptance/evidence/R30-MATERIALS-CONTINUATION/v1/entry-sync.md`，根文档整合 `7cbef0f865fcb171fdc16f9219f1b6178ea41852`。2026-09-22T13:22:37Z结束，Sol medium已停写。六份获准文档同步限定本地启动边、P/M/D及具名消费切片，完整完成边保留。范围、链接/固定引用、节点/依赖和diff自检通过；根核对范围和run-state未被改动后整合，不新增审查。无产品代码/测试/调用/设备通过声明；后续派发状态见当前记录。 |
 | T原始输入限定裁决 | 原固定 `43b117c7ed6fe5aa408422351db46e23a6ea6f3e:docs/arch/capability-checks/T-native-input.md` 与C20-T-INPUT/v1/author.md，普通文档整合98dac617。self PASS，仅事实/适用性澄清，无冻结语义变化；T已有内容按作者分项6/6、图项不适用，原联合3/6及三题缺图入库阻断保留。R35仍需实际验证。通知01a0c911未被R34/3消费，不用其旧T文字否定本已固定说明；新材料设计初始包已含43b117c。0产品调用/密钥/测试，不追加审查。 |
