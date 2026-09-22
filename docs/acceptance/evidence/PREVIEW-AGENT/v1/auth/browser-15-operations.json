@@ -1,0 +1,82 @@
+{
+  "GET /api/workbench/context": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75"
+  },
+  "GET /api/modules": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75"
+  },
+  "GET /api/modules/schedule/notifications": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75"
+  },
+  "GET /api/modules/schedule/settings": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75"
+  },
+  "GET /api/modules/questions/v2/items": {
+    "page": "3ebfe139aabc1939e0ab908db3893364"
+  },
+  "GET /api/modules/questions/v2/imports": {
+    "page": "3ebfe139aabc1939e0ab908db3893364"
+  },
+  "GET /api/modules/questions/v2/taxonomy": {
+    "page": "3ebfe139aabc1939e0ab908db3893364"
+  },
+  "POST /api/modules/questions/v2/items": {
+    "page": "501badd35622198fbd81e1d0a402841d",
+    "key": "220adb6d-4f3a-4fd2-8c1e-4faef6f69966",
+    "protection": "1"
+  },
+  "GET /api/modules/questions/v2/items/:id": {
+    "page": "3ebfe139aabc1939e0ab908db3893364"
+  },
+  "GET /api/modules/lessons/v2/question-usages/:id": {
+    "page": "3ebfe139aabc1939e0ab908db3893364"
+  },
+  "GET /api/modules/questions/v2/items/:id/copies": {
+    "page": "3ebfe139aabc1939e0ab908db3893364"
+  },
+  "GET /api/modules/classes/items": {
+    "page": "3ebfe139aabc1939e0ab908db3893364"
+  },
+  "GET /api/modules/classes/v2/source-records/question/:id": {
+    "page": "3ebfe139aabc1939e0ab908db3893364"
+  },
+  "PUT /api/modules/questions/v2/items/:id": {
+    "page": "501badd35622198fbd81e1d0a402841d",
+    "key": "092cdda9-5cbf-44ce-a0ae-47ef09a2fdeb",
+    "protection": "1"
+  },
+  "POST /api/modules/questions/v2/items/:id/copies": {
+    "page": "501badd35622198fbd81e1d0a402841d",
+    "key": "2d393dfb-fdc6-4d74-9ef4-9e65bac8d70f",
+    "protection": "1"
+  },
+  "POST /api/modules/questions/v2/items/:id/deletion": {
+    "page": "3ebfe139aabc1939e0ab908db3893364",
+    "key": "7ea22031-3062-4859-ba3e-995cf7793dc2",
+    "protection": "1"
+  },
+  "GET /api/modules/lessons/v3/new": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75"
+  },
+  "POST /api/modules/lessons/v3": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75",
+    "key": "3765418e-b3f0-4252-afbd-3e28fe3166dc",
+    "protection": "1"
+  },
+  "GET /api/modules/lessons/v3/:id": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75"
+  },
+  "PUT /api/modules/lessons/v3/:id": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75",
+    "key": "b76917a7-c09c-4d2b-85e1-59a3f1141989",
+    "protection": "1"
+  },
+  "POST /api/modules/lessons/v3/:id/deletion": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75",
+    "key": "615b0999-7c55-434f-aefe-0762964b3084",
+    "protection": "1"
+  },
+  "GET /api/modules/lessons/v3": {
+    "page": "17e0726c2c94b95ec279107ee7d46a75"
+  }
+}

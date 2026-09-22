@@ -14,8 +14,15 @@ export async function startMathFixture({
   if (process.env.NODE_ENV === "production" || !dataDir)
     throw new Error("Explicit isolated non-production dataDir required");
   fs.mkdirSync(dataDir, { recursive: true });
-  const origin = `http://localhost:${port}`;
-  const context = createApp({
+  const server = createServer();
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, "localhost", resolve);
+  });
+  const origin = `http://localhost:${server.address().port}`;
+  let context;
+  try {
+    context = createApp({
     env: {
       nodeEnv: "test",
       sqlitePath: path.resolve(dataDir, "workbench.sqlite"),
@@ -37,7 +44,12 @@ export async function startMathFixture({
       },
     },
   });
-  await context.workbench.initialize();
+    await context.workbench.initialize();
+  } catch (error) {
+    server.close();
+    context?.workbench.close();
+    throw error;
+  }
   const app = express();
   app.get("/fixture/session", (req, res) => {
     res.set(
@@ -50,18 +62,14 @@ export async function startMathFixture({
   });
   if (webDist) app.use(express.static(webDist));
   app.use(context.app);
-  const server = createServer(app);
-  await new Promise((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(port, "localhost", resolve);
-  });
+  server.on("request", app);
   return {
     ...context,
     server,
     origin,
     close: async () => {
       await new Promise((resolve) => server.close(resolve));
-      context.dataStore.close();
+      context.workbench.close();
     },
   };
 }

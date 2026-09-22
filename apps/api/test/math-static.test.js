@@ -1,3 +1,5 @@
+import os from 'node:os';
+import path from 'node:path';
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -10,7 +12,7 @@ import {
   newElement,
   cubeSource,
 } from "../../web/src/features/math/model.js";
-const dataDir = "test-results/m41/api";
+const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "preview-math-api-"));
 fs.mkdirSync(dataDir, { recursive: true });
 let f;
 const source = () => {
@@ -44,7 +46,7 @@ async function request(
   return { status: response.status, body: await response.json() };
 }
 test("real HTTP: source, history, replay, exports, restart and failures", async () => {
-  f = await startMathFixture({ dataDir, port: 47412 });
+  f = await startMathFixture({ dataDir, port: 0 });
   try {
     const key = randomUUID(),
       input = { title: "Q2 函数", source: source(), originalFileId: null };
@@ -151,7 +153,7 @@ test("real HTTP: source, history, replay, exports, restart and failures", async 
       ),
     );
     await f.close();
-    f = await startMathFixture({ dataDir, port: 47412 });
+    f = await startMathFixture({ dataDir, port: 0 });
     assert.deepEqual(await request("POST", "", input, key), created);
     assert.equal((await request("GET", `/${w.id}`)).body.version, 3);
     assert.equal(

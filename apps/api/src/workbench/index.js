@@ -1,3 +1,5 @@
+import { connectBusinessOperations } from '../agent/business.js';
+import { createAgent, migrations as agentMigrations } from '../agent/index.js';
 import { createJobs } from "./jobs/index.js";
 import { jobMigrations } from "./jobs/migrations.js";
 import { unconnectedHandlers } from "./jobs/fixtures.js";
@@ -135,6 +137,7 @@ export function createWorkbench({
     logger,
   });
   let initialization = null;
+  let agent;
 
   function initialize() {
     initialization ??= (async () => {
@@ -167,6 +170,9 @@ export function createWorkbench({
             throw new Error(`Materials production startup requires ${kind} handler.`);
         }
       }
+      migrations.run([{ moduleId: 'agent', migrations: agentMigrations }], { knownModuleIds: ['agent'] });
+      const operations = connectBusinessOperations(loader);
+      agent = createAgent({ db, mutations, identity, trustedOrigins: workbenchEnv.trustedOrigins ?? [], operations, config: env.agent });
       jobs.start(handlers);
       return migrationResult;
     })();
@@ -174,6 +180,7 @@ export function createWorkbench({
   }
 
   return {
+    get agent() { return agent; },
     db,
     files,
     content,
@@ -193,6 +200,7 @@ export function createWorkbench({
     initialize,
 
     close() {
+      agent?.close();
       jobs.close();
       db.close();
     },

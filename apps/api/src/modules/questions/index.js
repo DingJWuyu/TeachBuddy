@@ -1,3 +1,4 @@
+import { createQuestionsOperations } from "./operations.js";
 import { createAssetHandler } from "./assets.js";
 import { createWordReader } from "./native-word.js";
 import { createMaterialsStore } from "./materials-store.js";
@@ -32,8 +33,12 @@ export function createQuestionsModule({
   }
 
   const repository = createQuestionsRepository(db);
-  const service = createQuestionsService({ repository, now });
-  const router = createQuestionsRouter({ service, mutations });
+  // Document v1 can belong to a current material question. Its metadata is
+  // authoritative: the legacy shape cannot represent answer state or taxonomy.
+  const materialMetadata = db.prepare('SELECT 1 FROM questions_materials_meta WHERE id=?');
+  const service = createQuestionsService({ repository, now, hasMaterialMetadata: id => Boolean(materialMetadata.get(id)) });
+  const operations = createQuestionsOperations({ service, mutations });
+  const router = createQuestionsRouter({ operations });
 
   const store = createMaterialsStore(db, repository, now);
   const materials = createMaterialsService({ store, files, content, jobs });
@@ -54,6 +59,7 @@ export function createQuestionsModule({
 
   return {
     router,
+    operations,
     jobHandlers,
     port: {
       operations: v2.operations,

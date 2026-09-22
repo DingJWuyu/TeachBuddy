@@ -1,0 +1,298 @@
+TAP version 13
+# Subtest: WB-AG-019/020: 真实SDK只读404无assistant仍保存卡片，另一账户404
+ok 1 - WB-AG-019/020: 真实SDK只读404无assistant仍保存卡片，另一账户404
+  ---
+  duration_ms: 1283.199125
+  type: 'test'
+  ...
+# Subtest: WB-AG-019: 空读取结果和SDK成功标志、实际usage
+ok 2 - WB-AG-019: 空读取结果和SDK成功标志、实际usage
+  ---
+  duration_ms: 166.933747
+  type: 'test'
+  ...
+# Subtest: WB-AG-023: 重复写调用关联同一operation，业务只写一次
+ok 3 - WB-AG-023: 重复写调用关联同一operation，业务只写一次
+  ---
+  duration_ms: 328.206414
+  type: 'test'
+  ...
+# Subtest: WB-AG-005/010/016: 草稿冲突、发送同键重放、白名单和缺配置不产生请求
+ok 4 - WB-AG-005/010/016: 草稿冲突、发送同键重放、白名单和缺配置不产生请求
+  ---
+  duration_ms: 158.323625
+  type: 'test'
+  ...
+# Subtest: WB-AG-006: 发送前核验版本与软删除，历史引用冻结
+ok 5 - WB-AG-006: 发送前核验版本与软删除，历史引用冻结
+  ---
+  duration_ms: 161.46747
+  type: 'test'
+  ...
+# Subtest: WB-AG-012/023: 业务提交后journal失败，原题更新后核实仍是原键原体
+ok 6 - WB-AG-012/023: 业务提交后journal失败，原题更新后核实仍是原键原体
+  ---
+  duration_ms: 276.847173
+  type: 'test'
+  ...
+# Subtest: WB-AG-021: 读取异常映射安全失败，同批后续工具取消
+ok 7 - WB-AG-021: 读取异常映射安全失败，同批后续工具取消
+  ---
+  duration_ms: 234.896099
+  type: 'test'
+  ...
+# Subtest: WB-AG-013/017: 停止后无新请求，用量不完整，保留已接受输入
+ok 8 - WB-AG-013/017: 停止后无新请求，用量不完整，保留已接受输入
+  ---
+  duration_ms: 156.313141
+  type: 'test'
+  ...
+# Subtest: WB-AG-022/004: 保留库重启取消prepared、中断executing读取并补同ID原生结果
+ok 9 - WB-AG-022/004: 保留库重启取消prepared、中断executing读取并补同ID原生结果
+  ---
+  duration_ms: 476.188363
+  type: 'test'
+  ...
+# Subtest: WB-AG-023: 无效完整参数只生成拒绝卡，没有非法journal
+ok 10 - WB-AG-023: 无效完整参数只生成拒绝卡，没有非法journal
+  ---
+  duration_ms: 170.562299
+  type: 'test'
+  ...
+# Subtest: WB-AG-008: 工具布尔标记筛选与手工HTTP字面true保持一致
+ok 11 - WB-AG-008: 工具布尔标记筛选与手工HTTP字面true保持一致
+  ---
+  duration_ms: 209.932804
+  type: 'test'
+  ...
+# Subtest: WB-AG-011/020: HTTPS SSE各游标补发与snapshot一致，无额外请求
+ok 12 - WB-AG-011/020: HTTPS SSE各游标补发与snapshot一致，无额外请求
+  ---
+  duration_ms: 257.193546
+  type: 'test'
+  ...
+# Subtest: WB-AG-015: provider返回前撤销真实身份，后续工具取消且不写业务
+ok 13 - WB-AG-015: provider返回前撤销真实身份，后续工具取消且不写业务
+  ---
+  duration_ms: 255.645314
+  type: 'test'
+  ...
+# Subtest: WB-AG-018: 12次provider上限停止，无自动重置窗口
+ok 14 - WB-AG-018: 12次provider上限停止，无自动重置窗口
+  ---
+  duration_ms: 225.0942
+  type: 'test'
+  ...
+# Subtest: WB-AG-009/014: 复制已保存而备课版本冲突，保留副本和真实失败结果
+ok 15 - WB-AG-009/014: 复制已保存而备课版本冲突，保留副本和真实失败结果
+  ---
+  duration_ms: 208.267414
+  type: 'test'
+  ...
+# Subtest: WB-AG-018/021: 业务响应不匹配契约为只读failed，损坏entries保留原记录
+ok 16 - WB-AG-018/021: 业务响应不匹配契约为只读failed，损坏entries保留原记录
+  ---
+  duration_ms: 340.092481
+  type: 'test'
+  ...
+# Subtest: WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键核实
+ok 17 - WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键核实
+  ---
+  duration_ms: 7144.831739
+  type: 'test'
+  ...
+# Subtest: WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持
+ok 18 - WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持
+  ---
+  duration_ms: 552.586641
+  type: 'test'
+  ...
+# Subtest: WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+ok 19 - WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+  ---
+  duration_ms: 330.738595
+  type: 'test'
+  ...
+# Subtest: WB-AG-016/017: SDK未知或替换模型零请求，额度错误不重试且usage不完整
+ok 20 - WB-AG-016/017: SDK未知或替换模型零请求，额度错误不重试且usage不完整
+  ---
+  duration_ms: 1026.137564
+  type: 'test'
+  ...
+# Subtest: WB-AG-018: prepared落盘失败不能执行业务或发出未保存toolCall事件
+ok 21 - WB-AG-018: prepared落盘失败不能执行业务或发出未保存toolCall事件
+  ---
+  duration_ms: 250.469404
+  type: 'test'
+  ...
+# Subtest: WB-AG-013/022: 首个写入已确认后停止，同批未开始调用取消且不回滚
+ok 22 - WB-AG-013/022: 首个写入已确认后停止，同批未开始调用取消且不回滚
+  ---
+  duration_ms: 393.08517
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+ok 23 - stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+  ---
+  duration_ms: 601.627217
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: text import preserves original, produces editable drafts and commits once
+ok 24 - text import preserves original, produces editable drafts and commits once
+  ---
+  duration_ms: 157.694086
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: taxonomy and v2 editing, copies, legacy refusal, account isolation and restart
+ok 25 - taxonomy and v2 editing, copies, legacy refusal, account isolation and restart
+  ---
+  duration_ms: 71.305102
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: blocked provider keeps real image, retry preserves review and supplement originals
+ok 26 - blocked provider keeps real image, retry preserves review and supplement originals
+  ---
+  duration_ms: 396.269916
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: PPT assets use persisted snapshot, transparent bounded PNG and exclude note
+ok 27 - PPT assets use persisted snapshot, transparent bounded PNG and exclude note
+  ---
+  duration_ms: 489.232553
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: fixed native T and W preserve six question boundaries and existing answer roles
+ok 28 - fixed native T and W preserve six question boundaries and existing answer roles
+  ---
+  duration_ms: 498.017427
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: truncated Provider retains complete candidates; retry never replaces saved review
+ok 29 - truncated Provider retains complete candidates; retry never replaces saved review
+  ---
+  duration_ms: 1018.200985
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: Word answer-only image stays in solution and out of student asset snapshot
+ok 30 - Word answer-only image stays in solution and out of student asset snapshot
+  ---
+  duration_ms: 478.454763
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: frozen old visual response runs through Adapter as replay, not live recognition
+ok 31 - frozen old visual response runs through Adapter as replay, not live recognition
+  ---
+  duration_ms: 819.512847
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: review protects confirmed mappings, invalid taxonomy and explicit source range
+ok 32 - review protects confirmed mappings, invalid taxonomy and explicit source range
+  ---
+  duration_ms: 56.0324
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: PNG table keeps cell grid, transparency and bounded dimensions
+ok 33 - PNG table keeps cell grid, transparency and bounded dimensions
+  ---
+  duration_ms: 131.509916
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: external E selected pages remain 7 and 8 and original stays complete without online calls
+ok 34 - external E selected pages remain 7 and 8 and original stays complete without online calls
+  ---
+  duration_ms: 4823.829621
+  type: 'test'
+  ...
+# Subtest: native math generalizes across changed labels and values without solving missing answers
+ok 35 - native math generalizes across changed labels and values without solving missing answers
+  ---
+  duration_ms: 55.41391
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: complex native OMML keeps nested structures and flags unsupported nodes
+ok 36 - complex native OMML keeps nested structures and flags unsupported nodes
+  ---
+  duration_ms: 297.484649
+  type: 'test'
+  ...
+# Subtest: native nested checks and explanation separation protect confirmation
+ok 37 - native nested checks and explanation separation protect confirmation
+  ---
+  duration_ms: 62.827431
+  type: 'test'
+  ...
+# Subtest: preview: current question v2 and lesson v3 use the 13-tool journal, preserve rich fields and replay once
+ok 38 - preview: current question v2 and lesson v3 use the 13-tool journal, preserve rich fields and replay once
+  ---
+  duration_ms: 1473.834675
+  type: 'test'
+  ...
+# Subtest: preview: unknown document writes are rejected without replacing or deleting data
+ok 39 - preview: unknown document writes are rejected without replacing or deleting data
+  ---
+  duration_ms: 209.461522
+  type: 'test'
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 16549.446746

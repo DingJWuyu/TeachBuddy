@@ -91,54 +91,61 @@ for (const [name, viewport] of [['tablet', { width: 820, height: 1180 }], ['mobi
 
 const field = (page, label) => page.locator(`input[aria-label="${label}"], textarea[aria-label="${label}"]`);
 async function newQuestion(page, title) {
-  await page.goto(`${world.origin}/questions/new-manual`);
-  await field(page, '标题').fill(title);
-  await page.locator('[data-document-editor="题面"]').getByRole('button', { name: '段落', exact: true }).click();
-  await field(page, '题面段落 1').fill('已知 f(x)=x²-2x，求最小值。');
+  await page.goto(`${world.origin}/questions`);
+  await page.getByRole('button', { name: '自建', exact: true }).click();
+  await field(page, '题目标题').fill(title);
+  await page.locator('.q-question').getByRole('button', { name: '段落', exact: true }).click();
+  await field(page, '文稿段落 1').fill('已知 f(x)=x²-2x，求最小值。');
 }
 async function saveQuestion(page) {
-  await page.locator('button[name="save"]').click();
-  await expect(page.locator('[data-region="question-reader"]')).toBeVisible();
-  return page.url().split('/questions/')[1];
+  const saved = page.waitForResponse(response => /\/questions\/v2\/items(?:\/[a-f0-9-]{36})?$/.test(new URL(response.url()).pathname) && ['POST', 'PUT'].includes(response.request().method()));
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  const item = await (await saved).json();
+  await expect(page.locator('.q-message')).toContainText('已保存');
+  return item.id;
 }
 
 test('真实业务保存、响应丢失幂等重试、刷新、草稿账户分区与迟到结果', async ({ page }) => {
   await register(page);
   await newQuestion(page, '真实 Cookie 题目');
   let committed;
-  await page.route('**/api/modules/questions/items', async route => {
+  await page.route('**/api/modules/questions/v2/items', async route => {
     if (route.request().method() !== 'POST') return route.continue();
     committed = { key: route.request().headers()['idempotency-key'], body: route.request().postData() };
     await route.fetch();
     await route.abort();
   });
-  await page.locator('button[name="save"]').click();
-  await expect(page.locator('[data-save-status]').first()).toContainText('暂时无法确认');
-  await page.unroute('**/api/modules/questions/items');
-  const retry = page.waitForRequest(request => request.method() === 'POST' && request.url().endsWith('/questions/items'));
-  await page.locator('button[name="retry-confirm"]').click();
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('button', { name: '确认上次请求' })).toBeVisible();
+  await page.unroute('**/api/modules/questions/v2/items');
+  const retry = page.waitForRequest(request => request.method() === 'POST' && request.url().endsWith('/questions/v2/items'));
+  await page.getByRole('button', { name: '确认上次请求' }).click();
   const repeated = await retry;
   expect(repeated.headers()['idempotency-key']).toBe(committed.key);
   expect(repeated.postData()).toBe(committed.body);
-  await expect(page.locator('[data-region="question-reader"]')).toBeVisible();
-  const id = page.url().split('/questions/')[1];
+  await expect(page.locator('.q-message')).toContainText('原请求已确认');
+  const saved = await (await page.request.get(world.origin + '/api/modules/questions/v2/items', { headers: { 'X-TeachBuddy-Page': repeated.headers()['x-teachbuddy-page'] } })).json();
+  const id = saved.items.find(item => item.title === '真实 Cookie 题目').id;
+  await page.goto(`${world.origin}/questions/${id}`);
   await page.reload();
-  await expect(page.locator('[data-region="question-reader"]')).toContainText('真实 Cookie 题目');
+  await expect(field(page, '题目标题')).toHaveValue('真实 Cookie 题目');
   await newQuestion(page, 'A 的未上传草稿');
   await settings(page);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
   await register(page, 'second@example.test', '第二位教师');
-  await page.goto(`${world.origin}/questions/new-manual`);
-  await expect(field(page, '标题')).toHaveValue('');
+  await page.goto(`${world.origin}/questions`);
+  await expect(field(page, '题目标题')).toHaveCount(0);
+  await page.getByRole('button', { name: '自建', exact: true }).click();
+  await expect(field(page, '题目标题')).toHaveValue('');
   await settings(page);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
   await login(page);
-  await page.goto(`${world.origin}/questions/new-manual`);
-  await expect(field(page, '标题')).toHaveValue('A 的未上传草稿');
+  await page.goto(`${world.origin}/questions`);
+  await expect(field(page, '题目标题')).toHaveValue('A 的未上传草稿');
   let release;
   let received;
   const arrived = new Promise(resolve => { received = resolve; });
-  await page.route(`**/api/modules/questions/items/${id}`, async route => {
+  await page.route(`**/api/modules/questions/v2/items/${id}`, async route => {
     const response = await route.fetch();
     received();
     await new Promise(resolve => { release = resolve; });
@@ -167,20 +174,19 @@ test('15 个工作台操作从实际界面经认证 transport 发送页面头', 
   await register(page);
   await newQuestion(page, '十五操作原题');
   const id = await saveQuestion(page);
-  await page.locator('button[name="edit"]').click();
-  await field(page, '标题').fill('十五操作更新');
-  await page.locator('button[name="save"]').click();
-  await expect(page.locator('[data-save-status]').first()).toContainText('已保存');
-  await page.getByRole('button', { name: '返回阅读' }).click();
-  await page.getByRole('button', { name: '更多操作' }).click();
-  await page.getByRole('menuitem', { name: '复制修改' }).click();
-  await field(page, '标题').fill('十五操作变式');
+  await field(page, '题目标题').fill('十五操作更新');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.locator('.q-message')).toContainText('已保存');
+  const copied = page.waitForResponse(response => response.url().endsWith(`/questions/v2/items/${id}/copies`) && response.request().method() === 'POST');
+  await page.getByRole('button', { name: '复制改编', exact: true }).click();
+  expect((await copied).status()).toBe(201);
+  await expect(page.getByRole('button', { name: '保存题目', exact: true })).toBeEnabled();
+  await expect(field(page, '题目标题')).toHaveValue('十五操作更新');
+  await field(page, '题目标题').fill('十五操作变式');
   await saveQuestion(page);
   await page.goto(`${world.origin}/questions/${id}`);
-  await page.getByRole('button', { name: '更多操作' }).click();
-  await page.getByRole('menuitem', { name: '删除题目' }).click();
-  await page.locator('button[name="dialog-confirm"]').click();
-  await expect(page.locator('[data-region="question-deleted"]')).toBeVisible();
+  await page.getByRole('button', { name: '删除题目', exact: true }).click();
+  await expect(page.getByRole('button', { name: '恢复题目', exact: true })).toBeVisible();
   await page.goto(`${world.origin}/lessons/new`);
   await field(page, '课题').fill('十五操作备课');
   await page.locator('button[name="save"]').click();
@@ -192,18 +198,18 @@ test('15 个工作台操作从实际界面经认证 transport 发送页面头', 
   await page.getByRole('menuitem', { name: '删除备课' }).click();
   await page.locator('button[name="dialog-confirm"]').click();
   await expect(page.locator('[data-region="lesson-deleted"]')).toBeVisible();
-  const listing = page.waitForResponse(response => response.url().includes('/api/modules/lessons/items?') && response.request().method() === 'GET');
+  const listing = page.waitForResponse(response => response.url().includes('/api/modules/lessons/v3?') && response.request().method() === 'GET');
   await page.locator('button[name="open-lesson-index"]').click();
   await listing;
   const expected = [
     'GET /api/workbench/context', 'GET /api/modules',
-    'GET /api/modules/questions/items', 'POST /api/modules/questions/items',
-    'GET /api/modules/questions/items/:id', 'PUT /api/modules/questions/items/:id',
-    'GET /api/modules/questions/items/:id/copies', 'POST /api/modules/questions/items/:id/copies',
-    'POST /api/modules/questions/items/:id/deletion',
-    'GET /api/modules/lessons/items', 'POST /api/modules/lessons/items',
-    'GET /api/modules/lessons/items/:id', 'PUT /api/modules/lessons/items/:id',
-    'POST /api/modules/lessons/items/:id/deletion', 'GET /api/modules/lessons/question-usages/:id'
+    'GET /api/modules/questions/v2/items', 'POST /api/modules/questions/v2/items',
+    'GET /api/modules/questions/v2/items/:id', 'PUT /api/modules/questions/v2/items/:id',
+    'GET /api/modules/questions/v2/items/:id/copies', 'POST /api/modules/questions/v2/items/:id/copies',
+    'POST /api/modules/questions/v2/items/:id/deletion',
+    'GET /api/modules/lessons/v3', 'POST /api/modules/lessons/v3',
+    'GET /api/modules/lessons/v3/:id', 'PUT /api/modules/lessons/v3/:id',
+    'POST /api/modules/lessons/v3/:id/deletion', 'GET /api/modules/lessons/v2/question-usages/:id'
   ];
   for (const operation of expected) {
     expect(seen.has(operation), operation).toBe(true);

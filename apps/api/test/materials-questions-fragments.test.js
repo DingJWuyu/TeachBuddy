@@ -1,3 +1,4 @@
+import os from 'node:os';
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -22,7 +23,7 @@ const fragment = (role, text, extra = {}) => ({
 });
 async function setup(t, responses, options = {}) {
   let calls = 0;
-  const dataDir = fs.mkdtempSync("/tmp/r33-attempt4-");
+  const dataDir = fs.mkdtempSync(os.tmpdir() + "/r33-attempt4-");
   const provider = {
     extract: async () => {
       const result = responses[calls++];
@@ -413,7 +414,7 @@ function twoColumnPdf() {
   return Buffer.from(pdf);
 }
 test("two same-height column anchors cannot claim the same figure", async (t) => {
-  const dir = fs.mkdtempSync("/tmp/r33-columns-");
+  const dir = fs.mkdtempSync(os.tmpdir() + "/r33-columns-");
   const file = path.join(dir, "columns.pdf");
   fs.writeFileSync(file, twoColumnPdf());
   const e = await setup(

@@ -1,3 +1,4 @@
+import os from 'node:os';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -18,7 +19,7 @@ for(const [name,source,file,account] of [
  ['M',process.env.M43_M_LIBRARY??'/tmp/m43-original-m-library','workbench.sqlite','m41-a']
 ])test(`MC11: fixed ${name} library copy preserves rows, files and receipts across two restarts`,async()=>{
  assert.ok(fs.existsSync(path.join(source,file)),`Required retained source: ${source}`);
- const directory=fs.mkdtempSync(`/tmp/m43-migration-${name}-`);fs.cpSync(source,directory,{recursive:true});
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(), `m43-migration-${name}-`));fs.cpSync(source,directory,{recursive:true});
  const sqlitePath=path.join(directory,file);const before=businessState(sqlitePath);const original=businessState(path.join(source,file));
  const inspect=new Database(sqlitePath,{readonly:true});
  const owner=account??inspect.prepare('SELECT accountKey FROM lesson_items LIMIT 1').get().accountKey;inspect.close();

@@ -143,3 +143,26 @@ export function buildQuery(params) {
   const query = search.toString();
   return query ? `?${query}` : '';
 }
+/** Fetch SSE through the same page-bound, generation-scoped auth transport. */
+export async function workbenchEvents(path, signal, onEvent) {
+  const current = binding;
+  if (!current) throw new Error('身份未确认');
+  const response = await current.transport(path, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'text/event-stream' },
+    signal: AbortSignal.any([signal, current.controller.signal]) });
+  if (response.status === 401) identityLostListener?.();
+  if (!response.ok) throw new Error('无法读取对话');
+  const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = '';
+  try {
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      if (binding !== current || current.controller.signal.aborted) break;
+      buffer += decoder.decode(value, { stream: true });
+      let end;
+      while ((end = buffer.indexOf('\n\n')) >= 0) {
+        const frame = buffer.slice(0, end); buffer = buffer.slice(end + 2);
+        const data = frame.split('\n').find(line => line.startsWith('data: '));
+        if (data) onEvent(JSON.parse(data.slice(6)));
+      }
+    }
+  } finally { await reader.cancel().catch(() => {}); }
+}

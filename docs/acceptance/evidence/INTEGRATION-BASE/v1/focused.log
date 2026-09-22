@@ -1,0 +1,88 @@
+TAP version 13
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+ok 1 - stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+  ---
+  duration_ms: 588.932315
+  type: 'test'
+  ...
+# Subtest: real composition exposes scheduled notifications with no implicit reminder
+ok 2 - real composition exposes scheduled notifications with no implicit reminder
+  ---
+  duration_ms: 187.476603
+  type: 'test'
+  ...
+# Subtest: WB-T012/014: before, after, original due time and stable identities survive repeated restarts
+ok 3 - WB-T012/014: before, after, original due time and stable identities survive repeated restarts
+  ---
+  duration_ms: 25.570961
+  type: 'test'
+  ...
+# Subtest: WB-T013: changing before due recalculates; changing after due captures old title and original time atomically
+ok 4 - WB-T013: changing before due recalculates; changing after due captures old title and original time atomically
+  ---
+  duration_ms: 16.545051
+  type: 'test'
+  ...
+# Subtest: WB-T015/017/018: reads, dismissal snapshots, atomic foreign-ID rejection, replay and isolation
+ok 5 - WB-T015/017/018: reads, dismissal snapshots, atomic foreign-ID rejection, replay and isolation
+  ---
+  duration_ms: 22.122035
+  type: 'test'
+  ...
+# Subtest: WB-T013/018: real SQLite failure rolls back pre-change notification capture and the schedule write
+ok 6 - WB-T013/018: real SQLite failure rolls back pre-change notification capture and the schedule write
+  ---
+  duration_ms: 10.989776
+  type: 'test'
+  ...
+# Subtest: WB-T012: Unicode fallback title matches the public candidate projection without truncating saved input
+ok 7 - WB-T012: Unicode fallback title matches the public candidate projection without truncating saved input
+  ---
+  duration_ms: 9.746287
+  type: 'test'
+  ...
+# Subtest: WB-T010/016: moved weekly instances, cancellation recovery, deletion and outside-series targets
+ok 8 - WB-T010/016: moved weekly instances, cancellation recovery, deletion and outside-series targets
+  ---
+  duration_ms: 14.316891
+  type: 'test'
+  ...
+# Subtest: TT-C7: production catalog matches combined v3 with the frozen teaching question overlay and rejects all four invalid static inputs
+ok 9 - TT-C7: production catalog matches combined v3 with the frozen teaching question overlay and rejects all four invalid static inputs
+  ---
+  duration_ms: 6.089593
+  type: 'test'
+  ...
+# Subtest: WB-T016: cancelling before due and restoring after due is quiet; deleting after due captures the old notification
+ok 10 - WB-T016: cancelling before due and restoring after due is quiet; deleting after due captures the old notification
+  ---
+  duration_ms: 13.025374
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: TT-C5: notification actions reject malformed, unknown and duplicate input before writing
+ok 11 - TT-C5: notification actions reject malformed, unknown and duplicate input before writing
+  ---
+  duration_ms: 19.287764
+  type: 'test'
+  ...
+# Subtest: B16 database upgrades into the real four-module composition without losing linked sources
+ok 12 - B16 database upgrades into the real four-module composition without losing linked sources
+  ---
+  duration_ms: 14.828525
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 868.174385

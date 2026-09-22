@@ -1,3 +1,4 @@
+import { createLessonsOperations } from "./operations.js";
 import { createMaterialsLessons } from "./materials.js";
 // Lessons module entry point. The workbench composition root mounts the
 // returned router under /api/modules/lessons and passes the questions port.
@@ -39,7 +40,8 @@ export function createLessonsModule({
 
   const repository = createLessonsRepository(db);
   const service = createLessonsService({ repository, questions, now });
-  const router = createLessonsRouter({ service, mutations });
+  const operations = createLessonsOperations({ service, mutations });
+  const router = createLessonsRouter({ operations });
 
   const materials = createMaterialsLessons({
     repository,
@@ -55,7 +57,7 @@ export function createLessonsModule({
   router.use("/v2", materials.router);
   const v3 = math ? createMaterialsLessons({ version: 3, math, repository, mutations, questions, resources, content, db, jobs, files, now }) : null;
   if (v3) router.use("/v3", v3.router);
-  return { router, port: { ...materials.port, operations: { ...materials.port.operations, ...v3?.port.operations },
+  return { router, operations, port: { ...materials.port, operations: { ...materials.port.operations, ...v3?.port.operations },
     ...(v3 ? { listUsagesV3: v3.port.listUsages } : {}),
     readForTeachingLink(principal, id) { const { id: lessonId, version, title, deletedAt } = materials.requireLesson(principal,id); return { id: lessonId, version, title, deletedAt }; }
   }, jobHandlers: materials.jobHandlers };

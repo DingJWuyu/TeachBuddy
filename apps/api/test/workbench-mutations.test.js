@@ -158,7 +158,7 @@ test('a confirmed request replays after the API process restarts on the same dat
     assert.equal(restarted.workbench.mutations.count(ACCOUNT_A), 1);
     assert.deepEqual(
       restarted.workbench.migrations.appliedIds(),
-      ['materials_files_001', 'materials_jobs_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'classes_0001_class_tables', 'schedule_0001_settings_entries', 'schedule_reminders_0001_notifications', 'workbench_probe_init']
+      ['materials_files_001', 'materials_jobs_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'classes_0001_class_tables', 'schedule_0001_settings_entries', 'schedule_reminders_0001_notifications', 'workbench_probe_init', 'agent_001_conversations']
     );
   } finally {
     restarted.dataStore.close();

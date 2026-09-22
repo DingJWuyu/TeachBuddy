@@ -4,6 +4,8 @@
 
 题库自建、编辑保存、备课引用以及刷新和服务重启恢复已通过真实浏览器自验。资源库、数学工坊、班级教学和日程可以进入。固定候选、证据和限制见 [预览交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md)。这不是完整 MVP 验收通过声明，也不改变 main 的交付状态。
 
+本分支已在六模块与真实 Cookie 认证上接入首页和共享 AI 右栏。登录后可使用持久对话、草稿、引用和原有 13 个题库/备课工具；服务端仅开放 `deepseek/deepseek-v4.1-flash` 与 `z-ai/glm-5.3-flash`。工具连接当前题目 v2、备课 v3 的业务端口，未知文档版本保持只读保护。模型回复及写入结果仍需在业务页面核对。接线来源和已有模型自验见 [PREVIEW-AGENT 回执](docs/acceptance/evidence/PREVIEW-AGENT/v1/receipt.md)，本预览的组合验证见 [集成回执](docs/acceptance/evidence/PREVIEW-AGENT-INTEGRATION/v1/receipt.md)。
+
 ## 最短体验路径
 
 1. 打开上述地址，注册并登录；需要刷新后恢复会话时勾选“记住我”。
@@ -11,7 +13,7 @@
 3. 进入“备课”，点击“新建备课”，填写课题并先保存，再添加环节，点击环节中的“从题库取题”，勾选题目并“采用所选”，最后保存。
 4. 从侧栏进入资源库、数学工坊或班级教学；顶栏“日程”进入时间安排。
 
-此候选的 AI 发送按钮尚不可用，Agent 由后续固定候选合流。新 F60 工具和完整备份/恢复尚未实现。在线采集、真实邮件投递和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
+登录后可在首页或六模块右栏打开 AI 对话，选择模型、输入需求并发送。新 F60 工具、F61 全工具集和完整备份/恢复尚未实现。在线采集、真实邮件投递和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
 
 ## DOCX 输出
 
@@ -44,6 +46,7 @@ systemd-run --user --unit=teacherworkspace-preview \
 - `data/workspace.sqlite` 及 WAL：账户和业务数据。
 - `files/`：持久原文件和制品。
 - `runtime.env`、`start.sh`：受限运行配置及直接服务器启动入口。
+- `.env`：工作树根目录的受限 Provider 凭据和两种模型配置，仅服务端读取，Git 忽略。
 - `logs/`、`tmp/`：构建记录、业务日志和转换临时目录。
 
 服务器只读加载 `~/.config/teacherworkspace-acceptance/qq-mail.env`，复用其 `runtime/server.pem`、`runtime/server-key.pem`。现有认证测试库未读写。Office 二进制复用已有 C22 目录。接手时保留这些路径，在本分支串行合入固定候选、构建后重启同一服务；保留持久目录，避免另起占用同端口的进程。

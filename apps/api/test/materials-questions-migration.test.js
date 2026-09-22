@@ -1,3 +1,4 @@
+import os from 'node:os';
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -19,7 +20,7 @@ test("fixed R31 v1 database upgrades preserving original request replay, IDs and
   const { startFixture } = await import(
     source + "/scripts/materials/fixture.mjs"
   );
-  const dataDir = fs.mkdtempSync("/tmp/r33-upgrade-");
+  const dataDir = fs.mkdtempSync(os.tmpdir() + "/r33-upgrade-");
   let runtime = await startFixture({ dataDir, port: 0 });
   t.after(() => runtime.close());
   const request = async (path, body, method = "POST", key = randomUUID()) => {
