@@ -6,7 +6,7 @@
 
 1. 读取根 [AGENTS.md](../../AGENTS.md)、本页的当前批次和对应任务包。
 2. 依据固定候选与正式回执判断依赖；区分 `self`、`independent` 和用户验收。
-3. 当前处于完整 DAG 执行状态。C25 工具公开投影修订已交 self 候选 18293e9，正在限定独立冻结；材料新窗口和 R31 基础分段启动均已 independent PASS，C21 新制品已 self PASS 并交独立消费，新增请求空正文仍保留；R31 基础切片已 self PASS；C22 的旧 DOC 规范化预览、LaTeX 结构/固定渲染及角色/打印已独立通过；完整 DOCX 编辑与 Q2 文内校对标记仍失败，已有 Astra high 按 C20 限定包接手；R30 原缺口仍未关闭。M40 冻结交接已完成，A12 本地认证定向独立复验已 PASS，两项缺陷关闭；真实邮件与目标设备仍待提供；T54 三项原缺陷独立关闭，新发现的日程主区滚动返回丢失 D04 正交 T52 修复；真实作品关联仍待依赖。依据下面派发记录接续，不重复派发，不主动轮询。
+3. 当前处于完整 DAG 执行状态。C25 工具公开投影修订已交 self 候选 18293e9，正在限定独立冻结；材料新窗口和 R31 基础分段启动均已 independent PASS，C21 新制品已 self PASS 并交独立消费，新增请求空正文仍保留；R31 基础切片已 self PASS；C22 的旧 DOC 规范化预览、LaTeX 结构/固定渲染及角色/打印已独立通过；完整 DOCX 编辑与 Q2 文内校对标记仍失败，已有 Astra high 按 C20 限定包接手；R30 原缺口仍未关闭。M40 冻结交接已完成，A12 本地认证定向独立复验已 PASS，两项缺陷关闭；真实邮件与目标设备仍待提供；T54 三项原缺陷独立关闭，D04 滚动返回修复 dd53c44 已 self PASS，T54 attempt 3 正定向独立复验；真实作品关联仍待依赖。依据下面派发记录接续，不重复派发，不主动轮询。
 4. 权威材料确实缺少已作出的决定时，再查根 transcript：thread `01a0be12-5c28-7823-a7ed-644df825467f`，文件 `/home/liam_t/.codex/sessions/2026/09/20/rollout-2026-09-20T05-07-49-01a0be12-5c28-7823-a7ed-644df825467f.jsonl`。
 
 ## 当前用户授权与调度决定
@@ -34,8 +34,8 @@
 | C24-BUSINESS-FIX | 新会话，attempt 1 | gpt-6-astra / low | 已完成，self PASS | `01a0c7c8-833e-7f12-9ecf-5dce76b8c2b7` | `.scratch/dag-dispatch/C24-BUSINESS-FIX/1/` |
 | MATERIALS-NEXT-PLAN | 新会话，attempt 1 | gpt-6-astra / high | 已完成，方案已独立冻结 | `01a0c7c8-8353-7113-b827-5e82f5bbf02d` | `.scratch/dag-dispatch/MATERIALS-NEXT-PLAN/1/` |
 | A12-LOCAL | 新会话，attempt 2 | gpt-6-astra / medium | 已完成，本地 independent PASS / 外部 BLOCKED | `01a0c7ea-45a9-7ee0-8373-a849de8e660a` | `.scratch/dag-dispatch/A12-LOCAL/2/` |
-| T54 | 新会话，attempt 2 | gpt-6-astra / medium | 已完成，independent FAIL（新 D04） | `01a0c7f3-6299-79d1-8655-8a5e4dd0ca09` | `.scratch/dag-dispatch/T54/2/` |
-| T52-SCROLL-FIX | 新会话，attempt 1 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7fb-bb99-7bb2-83b4-0cccd29d0bc0` | `.scratch/dag-dispatch/T52-SCROLL-FIX/1/` |
+| T54 | 新会话，attempt 3 | gpt-6-astra / medium | 已启动，定向复验 D04，待主动回执 | `01a0c810-eba8-70a2-b840-d4adc285310a` | `.scratch/dag-dispatch/T54/3/` |
+| T52-SCROLL-FIX | 新会话，attempt 1 | gpt-6-astra / low | 已完成，D04 修复 self PASS | `01a0c7fb-bb99-7bb2-83b4-0cccd29d0bc0` | `.scratch/dag-dispatch/T52-SCROLL-FIX/1/` |
 | C25 | 新会话，attempt 1 | gpt-6-astra / high | 已交候选，独立核验需修订 | `01a0c7d2-7a74-7050-8c8a-e28df0188772` | `.scratch/dag-dispatch/C25/1/` |
 | C25-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，CHANGES_REQUIRED / independent | `01a0c7ee-7965-75f0-bad4-e0c38c979e51` | `.scratch/dag-dispatch/C25-REVIEW/1/` |
 | C25-CORRECTION | 新会话，attempt 1 | gpt-6-astra / high | 已完成，READY_FOR_REVIEW / self | `01a0c7f6-fb1f-7e90-91f0-f78ed22857f6` | `.scratch/dag-dispatch/C25-CORRECTION/1/` |
@@ -63,7 +63,7 @@
 | 认证：AUTH-CONTRACT、两端、A10-A12 | A12 本地 independent PASS：新候选 9ecabbf 的双页退出、恢复卡及必要退出/会话回归通过；未受影响的正常认证、隔离和持久重启结论沿用。 | 两项本地缺陷关闭，可供后续固定认证接线消费。A12 整体仍受真实邮件、目标设备/可信证书阻塞；备份恢复归可靠性阶段。 |
 | 材料：C21/C22、R30-R35 | 原 R30 独立缺口仍开放。C21 新制品 9230895 的来源、评分、编辑与恢复达到作者自验门槛，正由 R30-C21-CONSUME 独立核验；三次新请求均空正文，不证明新材料在线提取。R31 基础切片 self PASS。 | C22 next-1 的旧 DOC 规范化预览、LaTeX 结构/固定渲染、角色隔离与分页/打印已独立通过；完整 DOCX 编辑与 Q2 文内提示仍失败，既有 editing-1 正补这两项。两项 REV 尚未独立关闭；完整 R31 和 R32-R35 仍待材料门槛。 |
 | 数学：C23、M40-M44 | M40/v1 设计已完成冻结交接，候选 1a5dd01；三项实验阻断 independent 关闭，交接动作仅 self 文档自检。 | M41 仍待完整 R31；M41-DEPENDENCY-PLAN 正基于真实基础候选核对能否有界先行，尚未放行。M42 待 M41，M43 待 M42/R35；教学记录作品新版 a44587b 已独立冻结，T51-MATH 已派发局部实现。数学产品尚未实现。 |
-| 班级与日程：T50-T54 | 新候选 ff24814 的 D01/D02/D03 全部 independent 关闭；当前 FAIL 仅新 D04：平板日程主区切模块返回丢失滚动位置，归 T52。 | T52-SCROLL-FIX 正定向修复，已通过场景沿用。T51-MATH 在独立分支局部补接，后续合流仍需真实提供方及 M44/WB-T020。 |
+| 班级与日程：T50-T54 | D01/D02/D03 已 independent 关闭；D04 主区返回与网格加载时序已修复，产品 dd53c44，10项定向 E2E/build/internal review self PASS。 | T54 attempt 3 正独立复验 D04 及必要滚动回归，完整 T54 尚未通过。T51-MATH 独立分支继续补接，后续合流仍需真实提供方及 M44/WB-T020、认证与目标设备。 |
 | Agent：C24-C27 | C24 PI-03/04 定向补验 self PASS，候选 e8fdf9a；旧 PI-01/02 有 self 证据。副本读回已修复，pi 错误标志语义已实测。 | C25-D01 修订候选 18293e9 已补 ToolCall 公开状态与持久关联，39 schemas/99 样本/23 BDD self 通过，正做限定 independent 冻结；C26/C27 尚未启动。 |
 | 可靠性：F60-F65 | 尚未启动。 | 等待 T54、C27、A12 的真实交付，再补全模块工具、现场、恢复和整日集成。 |
 | 最终交付：D70-D75、G73/G76 | 尚未启动，未部署、未用户验收。 | 等待全范围验收、可用目标环境及具体交付动作授权。 |
@@ -74,12 +74,12 @@
 
 | 工作 | 本轮动作 | 下游判断 |
 | --- | --- | --- |
-| M40 / T50 / T51 | T50 新版独立 PASS 已接收，派 T51-MATH 局部补接和来源错误语义修正。 | 局部 self 供 M43 接入组件；真实提供方和 M44 到达后再汇合验证完整 WB-T020。M41 仍待完整 R31，当前 T54 候选不变。 |
+| M40 / T50 / T51 | T50 新版独立 PASS 已接收，派 T51-MATH 局部补接和来源错误语义修正。 | 局部 self 供 M43 接入组件；真实提供方和 M44 到达后再汇合验证完整 WB-T020。M41 仍待完整 R31；T51-MATH 固定输入不随 T54 滚动修复静默切换。 |
 | C24 / C25 | C25 修订 self 已接收；C25-CORRECTION-REVIEW 独立判断公开工具投影与恢复语义，沿用未变设计。 | 新固定候选做限定独立冻结，沿用未变设计/实验结论；通过后固定认证与共享写者再派 C26。 |
 | R30 / C20 / R31 | C22 分项 independent 结果已接收，未新增修复归属；完整编辑与 Q2 标记仍由已派 C22 attempt 2 / editing-1 补齐，不重复派工；C21 新制品已交 R30-C21-CONSUME，R31 基础切片 self 交付；剩余 R31 等待材料门槛。 | C22 原窗口不重置，editing-1 不变更契约且无额外设计复审；收到 editing-1 新制品后仅消费未关闭项及必要输出回归，已通过切片绑定固定文件沿用。R31 整体与 M41 仍需原门槛。 |
 | R31 / M41 | R31 基础 self PASS 已接收；派 M41-DEPENDENCY-PLAN 检查数学对剩余转换的真实依赖。 | 仅提出裁决，改变启动依赖需限定独立冻结；未核定前仍不派 M41，不新加基础重复审查。 |
 | A11 / A12 | 已接收本地 independent PASS，关闭 A12-LOCAL-001/002，无新增缺陷，不再派重复复验。 | C26 等后续组合消费固定 9ecabbf 与 aaa3d77 报告；外部邮件和目标设备输入到达后补真实验收，不提前解除 A12 整体及 F60 门禁。 |
-| T52 / T53 / T54 | D01/D02/D03 已独立关闭，D04 交 T52-SCROLL-FIX 修复主区现场返回。 | 新固定候选只复验 D04 与必要滚动回归；与独立 T51-MATH 后续合流，真实作品/认证/目标设备门槛仍保留。 |
+| T52 / T53 / T54 | D01/D02/D03 已独立关闭，T52-SCROLL-FIX self 回执已接收，dd53c44 交 T54 attempt 3。 | 新固定候选只复验 D04 与必要滚动回归；与独立 T51-MATH 后续合流，真实作品/认证/目标设备门槛仍保留。 |
 
 ## 固定候选与必要证据
 
@@ -94,7 +94,7 @@
 | A12 本地独立报告 | `aaa3d77accbfc743f47edfb1ffc385735b2bf3db:docs/acceptance/evidence/A12/v1/local-recheck.md`；受测 `9ecabbf`，本地 PASS、外部 BLOCKED；未变结论沿用 `8bd41a5:docs/acceptance/evidence/A12/v1/local-review.md`，旧现场保留。 |
 | T50 / T51 / T52 | 冻结 `afda1c5` + review `f9eb35f`；T51 代码 `fdf03fd`、回执 `56cbfd6`；T52 `14e18ed`。 |
 | T50 作品关联候选 | 设计 `a44587b9bd18618d77df13f7349f5043a297d226`；作者 `6e1afef26a95c49ad559ed3790502313aa341dd7:docs/acceptance/evidence/T50-MATH-CONTRACT/v1/author.md`；独立冻结 `3dbead5af93059b0f890c531097b234e5f453fae:docs/acceptance/evidence/T50-MATH-CONTRACT/v1/review.md`，T51 局部可实施，完整关联保留真实提供方/M44 门槛。 |
-| T53 真实组合 / 回执 | 修复产品 `ff248141ac60668cca958b1212bcc2dfcf799490`；回执 `680117f076b548ed997bfd11e4687614666a0b85:docs/acceptance/evidence/T53/v1/attempt3.md`；定向 11、教学 8、首流 18、API 147 及构建 self 通过，身份 test-principal。 |
+| T53 / T52 当前真实组合 | 最新滚动修复产品 `dd53c44af2952029530c7f65832f3cca22be80a2`；self 回执 `b8e9df704b47cfdd9f9adee5f9408953130c3f0f:docs/acceptance/evidence/T52/v1/scroll-fix.md`。包含原产品 `ff248141ac60668cca958b1212bcc2dfcf799490` 与 `680117f076b548ed997bfd11e4687614666a0b85` 所述三项修复；10项滚动自验通过，仍 test-principal。 |
 | T54 独立报告 | `ae0f34c228c0cd52f356a5cbf1d21708c6e5e954:docs/acceptance/evidence/T54/v1/recheck.md`；受测 `ff24814`，D01/D02/D03 关闭，19 PASS/1 FAIL 为新 D04；原报告 `488c3b8` 沿用未变结论，身份 test-principal。 |
 | R30 / 限定接缝 | 原设计 `ae9a395`、review `0467f46`；恢复方案 `7789974` + review `c82cd69` 仅放行材料补验和 M40 设计接缝。 |
 | 材料补证 | C21 制品 `cfbbc1d` + 回执 `96be500`；C22 实际制品 `f29a7afc5254fc852811c9a9e2368f46cce3e01e` + 回执 `c8c089c`；受审组合 `8d48af5`；独立报告 `16d4b013b17b1e8d8c240c0d15a8b5366102024b:docs/acceptance/evidence/R30/v1/recovery-review.md`。 |
