@@ -371,7 +371,7 @@ export function createMaterialsLessons({
   for (const [name, method, oldPath, schema, status, action] of definitions) {
     const path = version === 3 ? oldPath.replace("/items", "") || "/" : oldPath;
     const operationName = version === 3 ? ({createLessonExport: "exportLessonV3", listLessonExports: "listLessonExportsV3", listUsagesV3: "listUsagesV3"}[name] ?? name.replace("V2", "V3")) : name;
-    operations[operationName] = async ({ principal, key, input, id, query }) => {
+    operations[operationName] = ({ principal, key, input, id, query }) => {
       account(principal);
       if (path.includes(":id")) validateIdPath(id);
       if (schema) { validateNoQuery(query ?? {}); validate(schema, input); }

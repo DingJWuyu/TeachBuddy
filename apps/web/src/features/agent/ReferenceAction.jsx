@@ -6,7 +6,7 @@ export function ReferenceAction({ route, onAdded }) {
   const agent = useAgent(); const [lesson, setLesson] = useState(null);
   useEffect(() => {
     let live = true; setLesson(null);
-    if (route.name === 'lesson') workbenchGet(`/api/modules/lessons/items/${route.id}`).then(r => { if (live) setLesson(r.body); }).catch(() => {});
+    if (route.name === 'lesson') workbenchGet(`/api/modules/lessons/v3/${route.id}`).then(r => { if (live) setLesson(r.body); }).catch(() => {});
     return () => { live = false; };
   }, [route.id, route.name]);
   if (!['question','lesson'].includes(route.name) || !/^[a-f0-9-]{36}$/i.test(route.id)) return null;

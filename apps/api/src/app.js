@@ -71,6 +71,9 @@ export function createApp(options = {}) {
   dataStore.close = () => { workbench.jobs?.close(); closeStore(); };
   const app = express();
   if (authModule) app.use('/api/auth', authModule.router);
+  app.use('/api/agent', (req, res, next) => {
+    workbench.initialize().then(() => workbench.agent.router(req, res, next)).catch(next);
+  });
   if (!testIdentity && (!workbench.filesRouter || !workbench.jobsRouter))
     throw new Error('The authenticated composition requires files and jobs.');
   if (workbench.filesRouter) app.use('/api/workbench/files', workbench.filesRouter);

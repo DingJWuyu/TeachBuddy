@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../../api/test/fixtures/c26/harness.js';
+const evidence = process.env.AGENT_EVIDENCE_DIR ?? 'docs/acceptance/evidence/C26/v1';
 let world;
 test.beforeEach(async () => { world = await createIntegration(); });
 test.afterEach(async ({ page }) => { await page.close(); await world.close(); });
@@ -27,7 +28,7 @@ test('WB-AG-001/004: 同一持久草稿从首页到右栏再刷新', async ({ pa
   await expect(page.getByRole('textbox', { name: 'AI 输入' })).toHaveValue('请帮我准备等差数列的课堂练习');
   await page.reload();
   await expect(page.getByRole('textbox', { name: 'AI 输入' })).toHaveValue('请帮我准备等差数列的课堂练习');
-  await page.screenshot({ path: 'docs/acceptance/evidence/C26/v1/desktop-draft.png' });
+  await page.screenshot({ path: `${evidence}/desktop-draft.png` });
 });
 
 for (const tag of ['deepseek','glm']) test(`WB-AG-003/007: ${tag} live模型结果保留库重启，桌面Pad窄屏打开实际题目和备课`,async({page})=>{
@@ -37,25 +38,25 @@ for (const tag of ['deepseek','glm']) test(`WB-AG-003/007: ${tag} live模型结�
  world=await createIntegration({directory});
  await page.goto(world.origin);await page.getByLabel('邮箱',{exact:true}).fill(`c26-${tag}@example.test`);await page.getByLabel('密码',{exact:true}).fill('c26-live-local-password');await page.getByRole('button',{name:'登录',exact:true}).click();
  await expect(page.locator('.agent-tool')).toHaveCount(6);await expect(page.getByText('已完成',{exact:true})).toBeVisible();
- await page.screenshot({path:`docs/acceptance/evidence/C26/v1/${tag}-home-desktop.png`});
+ await page.screenshot({path:`${evidence}/${tag}-home-desktop.png`});
  for(const [width,height,name]of [[1440,900,'desktop'],[820,1180,'pad'],[390,844,'mobile']]){
   await page.setViewportSize({width,height});
   await expect.poll(()=>page.locator('.wb-sidebar').evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(width <= 1080 ? 72 : 256);
   await expect(page.locator('.agent-tool')).toHaveCount(6);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await expect.poll(()=>page.locator('.agent-thread').evaluate(el=>{const frame=el.getBoundingClientRect();return [...el.querySelectorAll('.agent-tool,.agent-message')].filter(item=>{const box=item.getBoundingClientRect();return box.left<frame.left-1||box.right>frame.right+1;}).map(item=>({width:el.clientWidth,display:getComputedStyle(el).display,left:item.getBoundingClientRect().left-frame.left,right:item.getBoundingClientRect().right-frame.right}));})).toEqual([]);
-  await page.screenshot({path:`docs/acceptance/evidence/C26/v1/${tag}-home-${name}.png`});
+  await page.screenshot({path:`${evidence}/${tag}-home-${name}.png`});
  }
  await page.setViewportSize({width:1440,height:900});
  await page.locator('.agent-tool[data-tool-state="confirmed"]').first().getByRole('button',{name:/打开题目/}).click();
  await expect(page).toHaveURL(/\/questions\//);
  await expect(page.getByText(`数列进阶-${tag}`,{exact:true}).first()).toBeVisible();
- await page.screenshot({path:`docs/acceptance/evidence/C26/v1/${tag}-copy-open.png`});
+ await page.screenshot({path:`${evidence}/${tag}-copy-open.png`});
  await page.locator('.wb-ai-entry').click();
  await expect(page.locator('.agent-tool')).toHaveCount(6);
  await page.locator('.agent-tool[data-tool-state="confirmed"]').last().getByRole('button',{name:/打开备课/}).click();
  await expect(page).toHaveURL(/\/lessons\//);await expect(page.getByRole('textbox',{name:'环节名称 2'})).toHaveValue('小组挑战');
- await page.screenshot({path:`docs/acceptance/evidence/C26/v1/${tag}-lesson-open.png`});
+ await page.screenshot({path:`${evidence}/${tag}-lesson-open.png`});
 });
 
 test('WB-AG-005: 独立浏览器草稿冲突保留双方内容，明确选择后保存',async({page,browser})=>{
@@ -71,7 +72,7 @@ test('WB-AG-005: 独立浏览器草稿冲突保留双方内容，明确选择后
  await page.unroute('**/api/agent/conversations/*/draft');await page.getByRole('button',{name:'重试',exact:true}).click();
  await expect(page.getByText('草稿已在其他设备修改',{exact:true})).toBeVisible();
  await expect(page.getByRole('textbox',{name:'AI 输入'})).toHaveValue('本机尚未上传的课堂设想');
- await page.screenshot({path:'docs/acceptance/evidence/C26/v1/draft-conflict.png'});
+ await page.screenshot({path: `${evidence}/draft-conflict.png`});
  await page.getByRole('button',{name:'保留本机内容',exact:true}).click();await expect(page.getByText('草稿已保存',{exact:true})).toBeVisible();
  await second.reload();await expect(second.getByRole('textbox',{name:'AI 输入'})).toHaveValue('本机尚未上传的课堂设想');
  } finally {await other.close();}
@@ -86,7 +87,7 @@ test('WB-AG-020: 无assistant的真实SDK 404工具卡刷新仍在',async({page}
  await expect(page.locator('.agent-tool[data-tool-state="rejected"]')).toHaveCount(1);
  await expect(page.locator('.agent-message:not(.is-user)')).toHaveCount(0);
  await page.reload();await expect(page.locator('.agent-tool[data-tool-state="rejected"]')).toHaveCount(1);expect(p.requests()).toBe(1);
- await page.screenshot({path:'docs/acceptance/evidence/C26/v1/read-failure-restored.png'});
+ await page.screenshot({path: `${evidence}/read-failure-restored.png`});
  await page.getByRole('button',{name:'对话历史',exact:true}).click();await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'对话历史',exact:true})).toBeFocused();
 });
 
@@ -152,12 +153,13 @@ test('WB-AG-002/009: Agent写入不覆盖手工未保存题面，保存时可对
  page.on('request',request=>{pageId=request.headers()['x-teachbuddy-page']??pageId;});await register(page);
  const response=await page.request.post(world.origin+'/api/modules/questions/items',{headers:{Origin:world.origin,'X-TeachBuddy-Request':'1','X-TeachBuddy-Page':pageId,'Idempotency-Key':crypto.randomUUID()},data:manualQuestionSample()});expect(response.status()).toBe(201);question=await response.json();
  await page.getByRole('button',{name:'新对话',exact:true}).click();await expect(page.getByRole('textbox',{name:'AI 输入'})).toBeVisible();
- await page.goto(world.origin+'/questions/'+question.id);await page.locator('button[name="edit"]').click();await page.getByRole('textbox',{name:'题面段落 1',exact:true}).fill('老师正在输入而尚未保存的内容');
+ await page.goto(world.origin+'/questions/'+question.id);await page.getByRole('textbox',{name:'题目标题',exact:true}).fill('老师正在输入而尚未保存的内容');
  await page.locator('.wb-ai-entry').click();await page.getByRole('textbox',{name:'AI 输入'}).fill('请把当前题面的保存版本改为Agent已保存的题面');await expect(page.getByText('草稿已保存',{exact:true})).toBeVisible();await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.locator('.agent-tool[data-tool-state="confirmed"]')).toHaveCount(1);
- await expect(page.getByRole('textbox',{name:'题面段落 1',exact:true})).toHaveValue('老师正在输入而尚未保存的内容');
- await expect(page.locator('[data-region="conflict"]')).toBeVisible();
- await page.getByRole('button',{name:'查看服务器版本'}).click();await expect(page.locator('[data-region="server-version"]')).toContainText('Agent已保存的题面');
- await expect(page.getByRole('textbox',{name:'题面段落 1',exact:true})).toHaveValue('老师正在输入而尚未保存的内容');
- await page.screenshot({path:'docs/acceptance/evidence/C26/v1/editor-agent-conflict.png'});
+ await expect(page.getByRole('textbox',{name:'题目标题',exact:true})).toHaveValue('老师正在输入而尚未保存的内容');
+ await page.getByRole('button',{name:'保存题目',exact:true}).click();
+ await expect(page.getByRole('region',{name:'版本冲突对照'})).toBeVisible();
+ await page.getByText('服务器当前内容',{exact:true}).click();await expect(page.getByRole('region',{name:'版本冲突对照'})).toContainText('Agent已保存的题面');
+ await expect(page.getByRole('textbox',{name:'题目标题',exact:true})).toHaveValue('老师正在输入而尚未保存的内容');
+ await page.screenshot({path: `${evidence}/editor-agent-conflict.png`});
 });

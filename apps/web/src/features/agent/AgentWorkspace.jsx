@@ -18,7 +18,7 @@ function ObjectLink({ object, kind }) {
   const [error, setError] = useState('');
   if (!object?.id) return null;
   return <><button className="wb-button" onClick={async () => {
-    try { await workbenchGet(`/api/modules/${kind}/items/${object.id}`); navigate(`/${kind}/${object.id}`); }
+    try { await workbenchGet(`/api/modules/${kind === 'questions' ? 'questions/v2/items' : 'lessons/v3'}/${object.id}`); navigate(`/${kind}/${object.id}`); }
     catch { setError('当前内容不可用'); }
   }}>打开{kind === 'questions' ? '题目' : '备课'} · {object.title || '查看内容'}</button>{error && <span role="status">{error}</span>}</>;
 }

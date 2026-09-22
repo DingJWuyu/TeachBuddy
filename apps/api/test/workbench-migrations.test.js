@@ -1,3 +1,4 @@
+import { migrations as agentMigrations } from '../src/agent/store.js';
 import { jobMigrations } from '../src/workbench/jobs/migrations.js';
 /**
  * WB-019 public responsibility: migrations on an empty database and on a
@@ -28,7 +29,7 @@ test('an empty database applies migrations once and records them in the ledger',
   try {
     assert.deepEqual(
       context.workbench.migrations.appliedIds(),
-      [...PRODUCT_MIGRATIONS, 'workbench_probe_init']
+      [...PRODUCT_MIGRATIONS, 'workbench_probe_init', 'agent_001_conversations']
     );
 
     const table = context.workbench.db
@@ -37,9 +38,9 @@ test('an empty database applies migrations once and records them in the ledger',
     assert.ok(table, 'the fixture migration table must exist');
 
     // A second startup on the same database re-runs nothing.
-    const migrationResult = context.workbench.migrations.run([...fileMigrations, ...jobMigrations, ...context.workbench.loader.moduleMigrations()]);
+    const migrationResult = context.workbench.migrations.run([...fileMigrations, ...jobMigrations, ...context.workbench.loader.moduleMigrations(), { moduleId: 'agent', migrations: agentMigrations }]);
     assert.deepEqual(migrationResult.applied, []);
-    assert.deepEqual(migrationResult.skipped, [...PRODUCT_MIGRATIONS, 'workbench_probe_init']);
+    assert.deepEqual(migrationResult.skipped, [...PRODUCT_MIGRATIONS, 'workbench_probe_init', 'agent_001_conversations']);
   } finally {
     context.cleanup();
   }
@@ -71,7 +72,7 @@ test('an existing account and layout database is upgraded without losing its dat
   try {
     assert.deepEqual(
       upgraded.workbench.migrations.appliedIds(),
-      [...PRODUCT_MIGRATIONS, 'workbench_probe_init']
+      [...PRODUCT_MIGRATIONS, 'workbench_probe_init', 'agent_001_conversations']
     );
 
     assert.equal(upgraded.dataStore.findUserByEmail('old-teacher@example.test').id, user.id);

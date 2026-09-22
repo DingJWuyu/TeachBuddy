@@ -8,32 +8,11 @@
 
 import { useRef } from 'react';
 import { Icon } from './icons.jsx';
-import { useScene } from './useScene.js';
+import { AgentWorkspace } from '../agent/AgentWorkspace.jsx';
 import { useWorkbenchShell } from './shellContext.js';
 
 export function AiWorkspace({ variant = 'panel' }) {
-  const shell = useWorkbenchShell();
-  const [scene, patchScene] = useScene(shell.accountKey, 'ai', { draft: '' });
-  const draft = scene.draft || '';
-
-  return (
-    <section className="wb-ai" data-region="ai-workspace" data-variant={variant}>
-      <div className="wb-ai-thread" data-ai-thread="" aria-label="AI 对话" />
-      <form className="wb-ai-composer" onSubmit={(event) => event.preventDefault()}>
-        <textarea
-          className="wb-input wb-ai-input"
-          aria-label="AI 输入"
-          placeholder="向 AI 描述你要做的工作"
-          rows={variant === 'home' ? 3 : 2}
-          value={draft}
-          onChange={(event) => patchScene({ draft: event.target.value })}
-        />
-        <div className="wb-ai-actions">
-          <button type="submit" className="wb-button is-primary" disabled>发送</button>
-        </div>
-      </form>
-    </section>
-  );
+  return <AgentWorkspace variant={variant} />;
 }
 
 const MIN_WIDTH = 260;

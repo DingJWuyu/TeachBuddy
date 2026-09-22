@@ -4,6 +4,14 @@
 
 **`main` 尚未交付真实 MVP。** 当前主干 `e9c3b58adf99a41e347947cccef646d85a3cd143` 的 `apps/` 仍是旧应用；已验证的首流、认证、教学时间、Agent 和静态数学能力都在独立任务分支，未合入 `main`。因此这些候选的 `self` 或 `independent` 结论不改变主干的运行方式，也不代表完整 MVP 通过。完整交付范围以 [MVP 产品范围](docs/PRODUCT_SCOPE.md) 为准，候选 SHA、验证级别和未决项以 [运行台账](docs/plans/run-state.md) 为准。
 
+## 本分支的组合预览
+
+本分支在六模块与真实 Cookie 认证组合上接入 C26 首页和共享 AI 右栏，支持持久对话、草稿、引用及原有 13 个题库/备课工具。工具复用当前题目 v2、备课 v3 的业务端口，兼容原首流输入；不包含 F61 全工具集或新的 F60 能力。未知文档版本继续只读保护。下文主干表描述 `main`，不代表这个未合入候选的运行状态。
+
+使用 Node 22.23.2，执行 `npm ci && npm run build`，按 `.env.example` 配置独立数据库、同源 HTTPS 与认证服务，再执行 `node --env-file=.env apps/api/src/server.js`。Agent 只从服务端读取 `COMMANDCODE_API_KEY` 与固定 `COMMANDCODE_BASE_URL`；未配置时仍可打开业务和历史对话，不能发送模型请求。预览测试使用 fake-mail，不发外部邮件。
+
+本轮固定输入、独立库的零模型重开方式、实际模型账本、通过范围和未决见 [PREVIEW-AGENT 回执](docs/acceptance/evidence/PREVIEW-AGENT/v1/receipt.md)。本分支尚未合入 main、推送或部署；模型回复需要以实际工具结果和业务页面核对。
+
 ## 当前状态
 
 下表描述 2026-09-22 的主干代码状态，基线为 `e9c3b58adf99a41e347947cccef646d85a3cd143`；认证文档当前消费候选为认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2`。节点依赖和授权停止点见[交付 DAG](docs/plans/mvp-dag.md)，当前编排状态见[运行台账](docs/plans/run-state.md)，[路线图](docs/ROADMAP.md)只提供状态导航。

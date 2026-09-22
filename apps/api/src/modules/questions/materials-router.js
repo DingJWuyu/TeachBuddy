@@ -30,7 +30,7 @@ export function createMaterialsRouter({ service, mutations }) {
       const status = Number(
         Object.keys(operation.responses).find((x) => /^2/.test(x)),
       );
-      operations[operation.operationId] = async ({
+      operations[operation.operationId] = ({
         principal,
         key,
         input,

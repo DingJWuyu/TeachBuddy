@@ -1,3 +1,5 @@
+import { AgentProvider, useAgent } from '../agent/AgentProvider.jsx';
+import { ReferenceAction } from '../agent/ReferenceAction.jsx';
 /**
  * Workbench shell: stable sidebar and topbar, module routes from the static
  * catalog, and the shared auxiliary panel. Business content lives in the module
@@ -61,6 +63,11 @@ function NavigationRow({ href, active, icon, label, collapsed, onNavigate }) {
 }
 
 export default function WorkbenchApp({ boot }) {
+  return <AgentProvider key={boot.accountKey} accountKey={boot.accountKey}><WorkbenchContent boot={boot} /></AgentProvider>;
+}
+
+function WorkbenchContent({ boot }) {
+  const agent = useAgent();
   const { logout, accountKey, nickname, generation, storageFailed, reportIdentityLost, transport } = boot;
   const route = useRoute();
   const narrow = useIsNarrow();
@@ -95,7 +102,7 @@ export default function WorkbenchApp({ boot }) {
     logout,
     accountKey,
     nickname,
-    generation,
+    generation: `${generation}:${agent.businessRevision}`,
     storageFailed,
     narrow,
     timeZone, setTimeZone,
@@ -117,7 +124,7 @@ export default function WorkbenchApp({ boot }) {
       navigate(lessonPath);
     },
     openMaterialSource: (path, lessonPath) => { setMaterialNavigation({ sourcePath: path, lessonPath }); navigate(path); }
-  }), [logout, accountKey, nickname, generation, storageFailed, narrow, scene.panelMode, scene.panelOpen, scene.panelWidth,
+  }), [logout, accountKey, nickname, generation, agent.businessRevision, storageFailed, narrow, scene.panelMode, scene.panelOpen, scene.panelWidth,
     tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone]);
 
   const collapsed = narrow ? !scene.drawerOpen : Boolean(scene.sidebarCollapsed);
@@ -172,6 +179,7 @@ export default function WorkbenchApp({ boot }) {
           <div className="wb-topbar-spacer" />
           <a className="wb-button" href="/calendar" onClick={event => followAnchor(event, '/calendar')}><Icon name="calendar" />日程</a>
           <Notifications key={accountKey} />
+          <ReferenceAction route={route} onAdded={() => openPanel('ai')} />
           {hasPanel && (
             <button
               type="button"

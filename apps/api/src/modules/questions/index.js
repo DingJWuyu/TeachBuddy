@@ -1,3 +1,4 @@
+import { createQuestionsOperations } from "./operations.js";
 import { createAssetHandler } from "./assets.js";
 import { createWordReader } from "./native-word.js";
 import { createMaterialsStore } from "./materials-store.js";
@@ -33,7 +34,8 @@ export function createQuestionsModule({
 
   const repository = createQuestionsRepository(db);
   const service = createQuestionsService({ repository, now });
-  const router = createQuestionsRouter({ service, mutations });
+  const operations = createQuestionsOperations({ service, mutations });
+  const router = createQuestionsRouter({ operations });
 
   const store = createMaterialsStore(db, repository, now);
   const materials = createMaterialsService({ store, files, content, jobs });
@@ -54,6 +56,7 @@ export function createQuestionsModule({
 
   return {
     router,
+    operations,
     jobHandlers,
     port: {
       operations: v2.operations,

@@ -144,7 +144,7 @@ export function AgentProvider({ accountKey, children }) {
   async function addReference(kind, objectId, sectionId) {
     if (!id) { setError('请先新建对话'); return; }
     try {
-      const { body } = await workbenchGet(`/api/modules/${kind === 'question' ? 'questions' : 'lessons'}/items/${objectId}`);
+      const { body } = await workbenchGet(`/api/modules/${kind === 'question' ? 'questions/v2/items' : 'lessons/v3'}/${objectId}`);
       const input = { kind, id: objectId, version: body.version, ...(sectionId ? { sectionId } : {}) };
       const refs = draftRef.current?.references ?? [];
       edit({ references: [...refs.filter(r => !(r.kind === kind && r.id === objectId && r.sectionId === sectionId)), input] });

@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -15,7 +16,7 @@ import {
   writable,
 } from "./teaching-time-classes-materials-fixture.js";
 const fixed = "2682475041aa187e3cd50ad743dc5e5bc243feda";
-const root = path.resolve("."),
+const root = fileURLToPath(new URL("../../../", import.meta.url)),
   evidence = path.resolve(
     process.env.MTA_EVIDENCE ??
       "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
@@ -78,7 +79,7 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
         "docs/contracts",
         "package.json",
       ],
-      { maxBuffer: 40 * 1024 * 1024 },
+      { cwd: root, maxBuffer: 40 * 1024 * 1024 },
     ),
   });
   fs.mkdirSync(path.join(old, "node_modules/@refatos"), { recursive: true });

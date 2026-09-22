@@ -282,7 +282,13 @@ const repoRoot=fileURLToPath(new URL('../../../',import.meta.url));
 test('WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持',async()=>{
  const source=fs.mkdtempSync(nodePath.join(os.tmpdir(),'c26-a11-source-'));
  const archive=execFileSync('git',['archive','9ecabbf60cbbaecce2e9be8191d270068eb675cf','apps/api','packages','package.json'],{cwd:repoRoot});
- execFileSync('tar',['-x','-C',source],{input:archive});fs.symlinkSync(nodePath.join(repoRoot,'node_modules'),nodePath.join(source,'node_modules'),'dir');
+ execFileSync('tar',['-x','-C',source],{input:archive});
+ // Resolve the archived workspace package, not today's six-module catalog.
+ fs.mkdirSync(nodePath.join(source,'node_modules/@refatos'),{recursive:true});
+ for (const entry of fs.readdirSync(nodePath.join(repoRoot,'node_modules'))) {
+  if (entry !== '@refatos') fs.symlinkSync(nodePath.join(repoRoot,'node_modules',entry),nodePath.join(source,'node_modules',entry));
+ }
+ fs.symlinkSync(nodePath.join(source,'packages/shared'),nodePath.join(source,'node_modules/@refatos/shared'),'dir');
  const {createApp:oldApp}=await import(pathToFileURL(nodePath.join(source,'apps/api/src/app.js')));
  let w=await createIntegration({appFactory:oldApp});const directory=w.directory;
  try {

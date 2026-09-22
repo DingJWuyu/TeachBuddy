@@ -68,6 +68,7 @@ export function createEnv(overrides = {}) {
   const sqlitePath = path.isAbsolute(sqlitePathInput) ? sqlitePathInput : path.resolve(process.cwd(), sqlitePathInput);
 
   return {
+    agent: overrides.agent ?? { apiKey: process.env.COMMANDCODE_API_KEY ?? '', baseUrl: process.env.COMMANDCODE_BASE_URL ?? 'https://api.commandcode.ai/provider/v1' },
     appName: overrides.appName ?? 'RefatOS API',
     nodeEnv,
     port,

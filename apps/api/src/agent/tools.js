@@ -93,7 +93,7 @@ export function createToolExecutor({ store, operations }) {
       if (response?.then || ![200, 201].includes(response?.status) || !tool.response(response.body)) throw new Error('Unexpected business response');
       state = tool.mutation ? 'confirmed' : 'read'; result = response.body;
     } catch (error) {
-      if (error.problem?.type?.startsWith('/problems/workbench/') && [400,403,404,409,422].includes(error.status)) { state = 'rejected'; problem = error.problem; }
+      if (['/problems/workbench/', '/problems/materials/', '/problems/math/'].some(prefix => error.problem?.type?.startsWith(prefix)) && [400,403,404,409,422].includes(error.status)) { state = 'rejected'; problem = error.problem; }
       else { state = tool.mutation ? 'unconfirmed' : 'failed'; problem = agentProblem(tool.mutation ? 'operation-unconfirmed' : 'tool-failed'); }
     }
     return store.update(account, conversationId, (d, emit) => {
@@ -117,7 +117,7 @@ export function createToolExecutor({ store, operations }) {
         if (![200,201].includes(response?.status) || !tool.response(response.body)) throw new Error('Unexpected business response');
         patch = { state: 'confirmed', result: response.body, problem: null };
       } catch (error) {
-        patch = error.problem?.type?.startsWith('/problems/workbench/') && [400,403,404,409,422].includes(error.status)
+        patch = ['/problems/workbench/', '/problems/materials/', '/problems/math/'].some(prefix => error.problem?.type?.startsWith(prefix)) && [400,403,404,409,422].includes(error.status)
           ? { state: 'rejected', result: null, problem: error.problem }
           : { state: 'unconfirmed', result: null, problem: agentProblem('operation-unconfirmed') };
       }
