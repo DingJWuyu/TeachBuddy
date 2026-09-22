@@ -6,7 +6,10 @@ const evidence = path.resolve("docs/acceptance/evidence/R34/v1/attempt2");
 const root = path.resolve("test-results/r34-integration");
 fs.mkdirSync(root, { recursive: true });
 let world;
-test.afterEach(async () => world?.close());
+test.afterEach(async ({ context }) => {
+  await context.close();
+  await world?.close();
+});
 async function register(page) {
   await page.goto(world.origin);
   await page.getByRole("button", { name: "创建账户" }).click();
