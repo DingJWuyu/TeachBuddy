@@ -54,9 +54,9 @@ OPS-001需F62候选及A12真实恢复专项，11条BDD的设计覆盖PASS不等�
 | 输入 | 固定引用与用途 |
 | --- | --- |
 | 已采纳入口裁决 | `8b796c47ee2517fad00ddc7eb2c40afeb914156c:docs/arch/reliability-entry.md`；独立 `43366f20bd9e76f1490cd7c434f2a745a0234995:docs/acceptance/evidence/RELIABILITY-ENTRY/v1/review.md`；入口已同步main |
-| F60主体候选 | 完整 `d8779e96d60523ee0453b0d825c27752d96932fd`；设计 `1cb19f083e72efa5798fdcc47df1a3534db967da`；入口 `docs/arch/reliability.md`、`docs/plans/tasks/reliability/README.md`，作者 `docs/acceptance/evidence/F60/v1/author.md` |
+| F60完整候选 | 完整 `619494d5e115d4d1a4bc9e7ee9c83b553fd246dc`；设计 `a6a044466da18eca8cb7274d4c99d43d596453b6`；入口 `docs/arch/reliability.md`、`docs/plans/tasks/reliability/README.md`，作者 `docs/acceptance/evidence/F60/v1/attempt2.md` |
 
-主体self静态检查已有81工具、33BDD和18行范围覆盖；尚未独立冻结。旧作者记录G-AUTH未收到，但A10实际已接受。F60 attempt 2已在任务包直接固定上述认证输入，负责补齐接缝；旧queue投递未被原候选消费，不据此认为设计已经完成。
+完整候选self检查涵盖81工具、37条WB-F、11条WB-AR及18行范围，已消费固定认证设计和A10设计接受；G-AUTH仅设计接合由作者关闭，独立冻结正在进行。候选固定旧业务267cf51；最新认证实现、R35复验和TT-C7归属已交reviewer区分，后继按根固定版本集成，不把设计当运行实证。
 
 F60独立冻结后才派F61-F63。F62可运行self后进行A12恢复专项，不等F65/D72；完整A12、T54、R35/M43/M44及其他原前置仍在F64前汇合。认证操作、全范围恢复和交付环境恢复是不同验收责任。
 
