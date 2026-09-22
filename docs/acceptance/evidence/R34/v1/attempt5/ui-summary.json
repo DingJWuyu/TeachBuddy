@@ -1,0 +1,38 @@
+[
+  {
+    "kind": "practice",
+    "format": "docx",
+    "lines": 20,
+    "exit": 0
+  },
+  {
+    "kind": "practice",
+    "format": "pdf",
+    "lines": 4,
+    "exit": 0
+  },
+  {
+    "kind": "practice",
+    "format": "docx",
+    "lines": 4,
+    "exit": 0
+  },
+  {
+    "kind": "handout",
+    "format": "pdf",
+    "lines": 4,
+    "exit": 0
+  },
+  {
+    "kind": "handout",
+    "format": "docx",
+    "lines": 4,
+    "exit": 0
+  },
+  {
+    "kind": "lesson-plan",
+    "format": "pdf",
+    "lines": 4,
+    "exit": 1
+  }
+]
