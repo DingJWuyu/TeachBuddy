@@ -40,4 +40,4 @@ export function getModuleMetadata(moduleId) {
   return moduleItem;
 }
 
-export { canRenderMath, supportedDocument } from './materials/content.js';
+export { canRenderMath, supportedDocument, questionDocuments, lessonDocuments } from './materials/content.js';

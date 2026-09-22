@@ -1,12 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { startQuestionsFixture as startFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
 
 test("text import preserves original, produces editable drafts and commits once", async (t) => {
   const runtime = await startFixture({
-    dataDir: fs.mkdtempSync("/tmp/r33-api-"),
+    dataDir: fs.mkdtempSync(path.join(os.tmpdir(), "r33-api-")),
     port: 0,
   });
   t.after(() => runtime.close());
@@ -73,7 +75,7 @@ test("text import preserves original, produces editable drafts and commits once"
 });
 
 async function environment(t, provider) {
-  const dir = fs.mkdtempSync("/tmp/r33-cases-");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "r33-cases-"));
   let runtime = await startFixture({ dataDir: dir, port: 0, provider });
   t.after(() => runtime.close());
   const call = async (

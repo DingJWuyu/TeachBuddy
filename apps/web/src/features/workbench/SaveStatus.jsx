@@ -35,6 +35,7 @@ export function SaveStatus({ savable, showDraftHint = true }) {
   // alone, while a distinct cause (an unreachable service, a rejected field, a
   // conflict) still shows next to it.
   const reason = problem?.message && problem.message !== text ? problem.message : null;
+  const detailedStatus = reason?.startsWith(`${text}（`) ? reason : null;
 
   async function copyInput() {
     const payload = typeof input === 'string' ? input : JSON.stringify(input, null, 2);
@@ -48,8 +49,8 @@ export function SaveStatus({ savable, showDraftHint = true }) {
 
   return (
     <div className="wb-save-block" data-save-status={status}>
-      <span className="wb-save-status" role="status" aria-live="polite">{text}</span>
-      {reason && (
+      <span className="wb-save-status" role="status" aria-live="polite">{detailedStatus || text}</span>
+      {reason && !detailedStatus && (
         <span className="wb-save-reason">{reason}</span>
       )}
       {showDraftHint && localDraft && keepsDraft(status) && (

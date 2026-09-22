@@ -1,4 +1,5 @@
 import { casefold } from "./casefold.js";
+import { questionDocuments, supportedDocument } from "@refatos/shared";
 import { randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import {
@@ -17,6 +18,10 @@ import {
 } from "./materials-content.js";
 const busy = new Set(["queued", "running", "cancelling"]);
 export function createMaterialsService({ store: s, files, content, jobs }) {
+  const assertWritable = (question) => {
+    const unsupported = questionDocuments(question).find(([, document]) => !supportedDocument(document));
+    if (unsupported) throw invalidInput(`${unsupported[0]}/version`, "unsupported-content-version");
+  };
   const snapshot = (q) => ({
     title: q.title,
     body: q.body,
@@ -114,8 +119,10 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
         const tagIds = q.tagIds.filter((id) =>
           next.tags.some((t) => t.id === id),
         );
-        if (typeId !== q.typeId || tagIds.length !== q.tagIds.length)
+        if (typeId !== q.typeId || tagIds.length !== q.tagIds.length) {
+          assertWritable(q);
           s.writeQuestion(p, { ...s.bump(q), typeId, tagIds });
+        }
       }
       return s.saveTaxonomy(p, next);
     },
@@ -136,6 +143,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
     updateQuestionV2({ principal: p, id, input }) {
       const q = s.question(p, id);
       s.check(q, input.baseVersion);
+      assertWritable(q);
       validate(p, input);
       const { baseVersion, ...fields } = input;
       return s.writeQuestion(p, { ...s.bump(q), ...fields });
@@ -143,6 +151,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
     copyQuestionV2({ principal: p, id, input }) {
       const q = s.question(p, id);
       s.check(q, input.baseVersion);
+      assertWritable(q);
       validate(p, input);
       const { baseVersion, ...fields } = input;
       return s.writeQuestion(p, {
@@ -183,6 +192,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
       const q = s.question(p, id);
       s.check(q, input.baseVersion, false);
       if (input.deleted && q.deletedAt) throw objectDeleted();
+      assertWritable(q);
       return s.writeQuestion(p, {
         ...s.bump(q),
         deletedAt: input.deleted ? s.stamp() : null,
@@ -191,6 +201,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
     relocateQuestion({ principal: p, id, input }) {
       const q = s.question(p, id);
       s.check(q, input.baseVersion);
+      assertWritable(q);
       if (q.source.kind !== "import")
         throw invalidInput("/source", "out-of-range");
       locations(p, s.get("imports", p, q.source.importId), input.parts);

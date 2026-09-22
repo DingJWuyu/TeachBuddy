@@ -13,7 +13,7 @@ import { excerptFor } from "../workbench/documents.js";
 import { readSource } from "./api.js";
 import { openLessonFile } from "./files.js";
 
-function UpdateCompareDialog({ reference, onAdopt, onClose }) {
+function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
   const [current, setCurrent] = useState(null);
   const [previewFile, setPreviewFile] = useState(null);
   const [error, setError] = useState(null);
@@ -119,6 +119,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose }) {
             className="wb-button is-primary"
             name="adopt-update"
             disabled={
+              readOnly ||
               !current ||
               current.version ===
                 (reference.workVersion ?? reference.questionVersion ?? reference.resourceVersion)
@@ -147,6 +148,7 @@ export function ReferenceCard({
   onPlaceAgain,
   onOpenLesson,
   onCopyWork,
+  readOnly = false,
 }) {
   const [compareOpen, setCompareOpen] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
@@ -192,6 +194,7 @@ export function ReferenceCard({
             aria-label="再放一次"
             title="再放一次"
             name="place-again"
+            disabled={readOnly}
             onClick={onPlaceAgain}
           >
             <Icon name="copy" size={15} />
@@ -200,6 +203,7 @@ export function ReferenceCard({
             <select
               className="wb-input wb-move-select"
               aria-label="移动引用"
+              disabled={readOnly}
               value={position}
               onChange={(event) => onMove(event.target.value)}
             >
@@ -217,6 +221,7 @@ export function ReferenceCard({
             aria-label="移出引用"
             title="移出引用"
             name="remove-reference"
+            disabled={readOnly}
             onClick={onRemove}
           >
             <Icon name="trash" size={15} />
@@ -261,11 +266,12 @@ export function ReferenceCard({
           className="wb-input"
           rows={2}
           aria-label={`本课备注 ${excerpt}`}
+          readOnly={readOnly}
           value={reference.note || ""}
           onChange={(event) => onNoteChange(event.target.value)}
         />
       </label>
-      {onCopyWork && <button className="wb-text-button" onClick={onCopyWork}>另存作品并替换本处</button>}
+      {onCopyWork && <button className="wb-text-button" disabled={readOnly} onClick={onCopyWork}>另存作品并替换本处</button>}
       {onOpenLesson && (
         <button type="button" className="wb-text-button" onClick={onOpenLesson}>
           查看来源
@@ -279,6 +285,7 @@ export function ReferenceCard({
       )}
       {compareOpen && (
         <UpdateCompareDialog
+          readOnly={readOnly}
           reference={reference}
           onClose={() => setCompareOpen(false)}
           onAdopt={(version) => {

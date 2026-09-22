@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { questionDocuments, supportedDocument } from "@refatos/shared";
 import { DocumentEditor, DocumentView } from "../workbench/materials/index.js";
 import { readLocal, writeLocal, removeLocal } from "../workbench/storage.js";
 import {
@@ -88,6 +89,9 @@ export default function MaterialsQuestionsPage({
     (top) => patchScene({ questionScroll: top }),
     value?.id,
   );
+  const unsupportedQuestion = value && scene.kind !== "import" && value.body
+    ? questionDocuments(value).some(([, document]) => !supportedDocument(document))
+    : false;
   useEffect(() => {
     writeLocal(accountKey, "questions-collection", {
       capture,
@@ -1243,7 +1247,7 @@ export default function MaterialsQuestionsPage({
               <div className="q-tools">
                 <button
                   className="primary"
-                  disabled={busy}
+                  disabled={busy || unsupportedQuestion}
                   onClick={() =>
                     action(async () => {
                       if (scene.kind === "new") {
@@ -1260,6 +1264,7 @@ export default function MaterialsQuestionsPage({
                 {value.id && (
                   <>
                     <button
+                      disabled={unsupportedQuestion}
                       onClick={() =>
                         action(async () => {
                           const q = await mutate(
@@ -1279,6 +1284,7 @@ export default function MaterialsQuestionsPage({
                       复制改编
                     </button>
                     <button
+                      disabled={unsupportedQuestion}
                       onClick={() =>
                         action(async () => {
                           setValue(
@@ -1294,7 +1300,7 @@ export default function MaterialsQuestionsPage({
                       {value.deletedAt ? "恢复题目" : "删除题目"}
                     </button>
                     {onAddToLesson && (
-                      <button data-return-focus="add-to-lesson" onClick={() => onAddToLesson([value])}>
+                      <button disabled={unsupportedQuestion} data-return-focus="add-to-lesson" onClick={() => onAddToLesson([value])}>
                         加入备课
                       </button>
                     )}
@@ -1302,7 +1308,10 @@ export default function MaterialsQuestionsPage({
                 )}
               </div>
             </header>
-            <fieldset disabled={busy || Boolean(value.deletedAt)}>
+            {unsupportedQuestion && (
+              <p role="status">题目包含暂不支持的文档版本，原数据只读保留。</p>
+            )}
+            <fieldset disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}>
               <input
                 aria-label="题目标题"
                 placeholder="题目标题"
@@ -1332,7 +1341,7 @@ export default function MaterialsQuestionsPage({
                   <option value="present">已有答案</option>
                 </select>
               </label>
-              {value.answerStatus === "present" && (
+              {(value.answerStatus === "present" || !supportedDocument(value.solution)) && (
                 <DocumentEditor
                   value={value.solution}
                   onChange={(solution) => change({ ...value, solution })}

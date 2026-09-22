@@ -83,7 +83,7 @@ export function LessonIndex({ currentId }) {
   );
 }
 
-export function LessonOutline({ input, onFocus, onMove }) {
+export function LessonOutline({ input, onFocus, onMove, readOnly = false }) {
   const sections = input.sections || [];
   if (sections.length === 0) {
     return <p className="wb-empty-note" data-region="outline-empty">还没有环节</p>;
@@ -99,7 +99,7 @@ export function LessonOutline({ input, onFocus, onMove }) {
             type="button"
             className="wb-icon-button"
             aria-label={`大纲上移 ${section.title}`}
-            disabled={index === 0}
+            disabled={readOnly || index === 0}
             onClick={() => onMove(section.id, -1)}
           >
             ↑
@@ -108,7 +108,7 @@ export function LessonOutline({ input, onFocus, onMove }) {
             type="button"
             className="wb-icon-button"
             aria-label={`大纲下移 ${section.title}`}
-            disabled={index === sections.length - 1}
+            disabled={readOnly || index === sections.length - 1}
             onClick={() => onMove(section.id, 1)}
           >
             ↓

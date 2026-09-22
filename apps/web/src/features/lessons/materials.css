@@ -1,3 +1,24 @@
+.wb-lesson-head {
+  flex-wrap: wrap;
+}
+.wb-lesson-head .wb-object-title-input {
+  flex: 1 1 14em;
+  width: auto;
+  min-width: 0;
+}
+.wb-lesson-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.wb-lesson-head > .wb-save-block {
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .r34-picker-columns {
   display: grid;
   grid-template-columns: minmax(240px, 35%) minmax(0, 1fr);

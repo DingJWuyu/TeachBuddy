@@ -1,4 +1,5 @@
 import { useMathReturn } from "./useMathReturn.js";
+import { lessonDocuments, supportedDocument } from "@refatos/shared";
 import { ExportsPanel } from "./ExportsPanel.jsx";
 import { MaterialsPicker } from "./MaterialsPicker.jsx";
 import "./materials.css";
@@ -91,6 +92,9 @@ export default function LessonDetail({ id }) {
   const input = savable.input || emptyLessonInput();
   const baseline = savable.baseline;
   const deleted = Boolean(baseline?.deletedAt);
+  const unsupported = [baseline, input].filter(Boolean).some((lesson) =>
+    lessonDocuments(lesson).some(([, document]) => !supportedDocument(document)),
+  );
   const saveStatus = savable.status;
 
   const pickerFlow = useLessonPickerFlow({
@@ -136,6 +140,7 @@ export default function LessonDetail({ id }) {
       render: () => (
         <LessonOutline
           input={input}
+          readOnly={unsupported}
           onFocus={(sectionId) =>
             document
               .getElementById(`section-${sectionId}`)
@@ -158,6 +163,7 @@ export default function LessonDetail({ id }) {
   }, [baseline?.id, isNew, saveStatus]);
 
   function handleSave(options = {}) {
+    if (unsupported && !options.retry) return;
     if (!options.retry) {
       const problem = validateLessonInput(input);
       if (problem) {
@@ -171,10 +177,11 @@ export default function LessonDetail({ id }) {
 
   useSaveShortcut(
     () => handleSave(),
-    saveStatus !== "identity" && saveStatus !== "deleted",
+    !unsupported && saveStatus !== "identity" && saveStatus !== "deleted",
   );
 
   async function handleDeletion(nextDeleted) {
+    if (unsupported) return;
     const result = await deleteSubmit.submit(
       ({ key, payload }) =>
         setLessonDeletion({ key, id: baseline.id, payload: payload.body ?? payload, version: payload.apiVersion ?? 2 }),
@@ -328,6 +335,7 @@ export default function LessonDetail({ id }) {
     const position = positionOf(reference.id);
     return (
       <ReferenceCard
+        readOnly={unsupported}
         key={reference.id}
         reference={reference}
         position={position}
@@ -382,10 +390,11 @@ export default function LessonDetail({ id }) {
         <button className="wb-button" disabled={mathReturn.busy} onClick={mathReturn.toMaterials}>放入本课材料</button>
         <button className="wb-button" disabled={mathReturn.busy} onClick={mathReturn.cancel}>取消带回</button>
       </div>}
-      <header className="wb-object-head">
+      <header className="wb-object-head wb-lesson-head">
         <input
           className="wb-input wb-object-title-input"
           aria-label="课题"
+          readOnly={unsupported}
           value={input.title}
           maxLength={200}
           onChange={(event) =>
@@ -395,71 +404,75 @@ export default function LessonDetail({ id }) {
             }))
           }
         />
+        <div className="wb-lesson-actions">
+          <button
+            className="wb-button"
+            onClick={() => patchScene({ exportsOpen: true })}
+          >
+            输出
+          </button>
+          <SaveActions savable={savable} onSave={handleSave} disabled={unsupported} />
+          <button
+            type="button"
+            className="wb-button"
+            name="open-lesson-index"
+            onClick={() => shell.openPanel("lessons-index")}
+          >
+            <Icon name="prep" size={15} />
+            我的备课
+          </button>
+          <Popover label="更多操作">
+            {({ close }) => (
+              <>
+                <MenuItem
+                  onClick={() => {
+                    close();
+                    shell.openPanel("lesson-outline");
+                  }}
+                >
+                  本课大纲
+                </MenuItem>
+                {deleted ? (
+                  <MenuItem
+                    disabled={unsupported}
+                    icon="back"
+                    onClick={() => {
+                      close();
+                      handleDeletion(false);
+                    }}
+                  >
+                    恢复备课
+                  </MenuItem>
+                ) : (
+                  <MenuItem
+                    icon="trash"
+                    disabled={unsupported}
+                    danger
+                    onClick={() => {
+                      close();
+                      setDialog("delete");
+                    }}
+                  >
+                    删除备课
+                  </MenuItem>
+                )}
+                {baseline && savable.localDraft && (
+                  <MenuItem
+                    icon="back"
+                    onClick={() => {
+                      close();
+                      if (window.confirm("放弃未保存的草稿，回到已保存版本？"))
+                        savable.discardDraft();
+                    }}
+                  >
+                    放弃草稿
+                  </MenuItem>
+                )}
+              </>
+            )}
+          </Popover>
+        </div>
         <SaveStatus savable={savable} />
-        <button
-          className="wb-button"
-          onClick={() => patchScene({ exportsOpen: true })}
-        >
-          输出
-        </button>
-        <SaveActions savable={savable} onSave={handleSave} />
-        <button
-          type="button"
-          className="wb-button"
-          name="open-lesson-index"
-          onClick={() => shell.openPanel("lessons-index")}
-        >
-          <Icon name="prep" size={15} />
-          我的备课
-        </button>
-        <Popover label="更多操作">
-          {({ close }) => (
-            <>
-              <MenuItem
-                onClick={() => {
-                  close();
-                  shell.openPanel("lesson-outline");
-                }}
-              >
-                本课大纲
-              </MenuItem>
-              {deleted ? (
-                <MenuItem
-                  icon="back"
-                  onClick={() => {
-                    close();
-                    handleDeletion(false);
-                  }}
-                >
-                  恢复备课
-                </MenuItem>
-              ) : (
-                <MenuItem
-                  icon="trash"
-                  danger
-                  onClick={() => {
-                    close();
-                    setDialog("delete");
-                  }}
-                >
-                  删除备课
-                </MenuItem>
-              )}
-              {baseline && savable.localDraft && (
-                <MenuItem
-                  icon="back"
-                  onClick={() => {
-                    close();
-                    if (window.confirm("放弃未保存的草稿，回到已保存版本？"))
-                      savable.discardDraft();
-                  }}
-                >
-                  放弃草稿
-                </MenuItem>
-              )}
-            </>
-          )}
-        </Popover>
       </header>
 
       {deleted && (
@@ -525,6 +538,7 @@ export default function LessonDetail({ id }) {
           <h3>开头文稿</h3>
           <DocumentEditor
             label="开头文稿"
+            readOnly={unsupported}
             value={input.intro}
             onChange={(intro) =>
               savable.setInput((current) => ({ ...current, intro }))
@@ -543,6 +557,7 @@ export default function LessonDetail({ id }) {
               <input
                 className="wb-input wb-section-title"
                 aria-label={`环节名称 ${index + 1}`}
+                readOnly={unsupported}
                 value={section.title}
                 maxLength={200}
                 onChange={(event) =>
@@ -555,7 +570,7 @@ export default function LessonDetail({ id }) {
                 type="button"
                 className="wb-icon-button"
                 aria-label={`上移环节 ${section.title}`}
-                disabled={index === 0}
+                disabled={unsupported || index === 0}
                 onClick={() =>
                   savable.setInput((current) =>
                     moveSection(current, section.id, -1),
@@ -568,7 +583,7 @@ export default function LessonDetail({ id }) {
                 type="button"
                 className="wb-icon-button"
                 aria-label={`下移环节 ${section.title}`}
-                disabled={index === (input.sections || []).length - 1}
+                disabled={unsupported || index === (input.sections || []).length - 1}
                 onClick={() =>
                   savable.setInput((current) =>
                     moveSection(current, section.id, 1),
@@ -577,12 +592,12 @@ export default function LessonDetail({ id }) {
               >
                 ↓
               </button>
-              <button type="button" className="wb-button" onClick={() => mathReturn.enter({type:"section",sectionId:section.id})}>制作数学作品</button>
+              <button type="button" className="wb-button" disabled={unsupported} onClick={() => mathReturn.enter({type:"section",sectionId:section.id})}>制作数学作品</button>
               <button
                 type="button"
                 className="wb-button"
                 name="pick-section"
-                disabled={pickerFlow.entering}
+                disabled={unsupported || pickerFlow.entering}
                 onClick={() =>
                   pickerFlow.enter({ type: "section", sectionId: section.id })
                 }
@@ -591,6 +606,7 @@ export default function LessonDetail({ id }) {
               </button>
               <button
                 className="wb-button"
+                disabled={unsupported}
                 onClick={() =>
                   pickerFlow.enter(
                     { type: "section", sectionId: section.id },
@@ -605,6 +621,7 @@ export default function LessonDetail({ id }) {
                 type="button"
                 className="wb-icon-button"
                 aria-label={`删除环节 ${section.title}`}
+                disabled={unsupported}
                 onClick={() =>
                   setDialog({ type: "delete-section", sectionId: section.id })
                 }
@@ -614,6 +631,7 @@ export default function LessonDetail({ id }) {
             </header>
             <DocumentEditor
               label={`环节文稿 ${index + 1}`}
+              readOnly={unsupported}
               value={section.content}
               onChange={(content) =>
                 savable.setInput((current) => ({
@@ -636,6 +654,7 @@ export default function LessonDetail({ id }) {
           type="button"
           className="wb-button wb-inline-action"
           name="add-section"
+          disabled={unsupported}
           onClick={() =>
             savable.setInput((current) => ({
               ...current,
@@ -652,9 +671,10 @@ export default function LessonDetail({ id }) {
         >
           <header className="wb-section-head">
             <h3>本课材料</h3>
-            <button type="button" className="wb-button" onClick={() => mathReturn.enter({type:"materials"})}>制作数学作品</button>
+            <button type="button" className="wb-button" disabled={unsupported} onClick={() => mathReturn.enter({type:"materials"})}>制作数学作品</button>
             <button
               className="wb-button"
+              disabled={unsupported}
               onClick={() =>
                 pickerFlow.enter({ type: "materials" }, "resource")
               }
@@ -665,7 +685,7 @@ export default function LessonDetail({ id }) {
               type="button"
               className="wb-button"
               name="pick-materials"
-              disabled={pickerFlow.entering}
+              disabled={unsupported || pickerFlow.entering}
               onClick={() => pickerFlow.enter({ type: "materials" })}
             >
               从题库取题

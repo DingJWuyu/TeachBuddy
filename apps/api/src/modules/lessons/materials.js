@@ -1,4 +1,5 @@
 import { validate as validateMath } from "../../workbench/content/mathSchema.js";
+import { lessonDocuments, supportedDocument } from "@refatos/shared";
 import { normalizeSearchQuery, matchesSearch } from "../questions/contract.js";
 import { createLessonExports } from "./exports.js";
 import { materialErrors } from "../../workbench/jobs/router.js";
@@ -41,6 +42,19 @@ export function createMaterialsLessons({
   const validate = (name, value) => version === 3 ? validateMath(name === "CreateLesson" || name === "UpdateLesson" ? `${name}V3` : name, value) : validateSchema(name, value);
   const assertRepresentable = (id) => {
     if (version < 3 && repository.listReferences(id).some(r => r.kind === "math")) throw invalidInput("/materials", "unsupported-content-version");
+  };
+  const assertWritable = (record) => {
+    const references = repository.listReferences(record.id);
+    const documents = lessonDocuments({
+      ...record,
+      sections: repository.listSections(record.id).map((section) => ({
+        ...section,
+        references: references.filter((reference) => reference.sectionId === section.sectionId),
+      })),
+      materials: references.filter((reference) => reference.sectionId === null),
+    });
+    const unsupported = documents.find(([, document]) => !supportedDocument(document));
+    if (unsupported) throw invalidInput(`${unsupported[0]}/version`, "unsupported-content-version");
   };
   const account = (p) => {
     if (!p?.accountKey) throw contractError(problems.unauthenticated());
@@ -208,6 +222,7 @@ export function createMaterialsLessons({
       throw contractError(problems.versionConflict(prior.version));
     if (prior) assertRepresentable(id);
     if (prior?.deletedAt) throw contractError(problems.objectDeleted());
+    if (prior) assertWritable(prior);
     const at = now().toISOString();
     const record = {
       id: id ?? randomUUID(),
@@ -230,6 +245,7 @@ export function createMaterialsLessons({
     assertRepresentable(id);
     if (r.deletedAt && input.deleted)
       throw contractError(problems.objectDeleted());
+    assertWritable(r);
     const at = now().toISOString();
     const next = {
       ...r,
