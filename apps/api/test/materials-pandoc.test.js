@@ -104,7 +104,10 @@ test("Pandoc real HTTP: six rich questions, 24 outputs, editable math readback, 
             const xml = await zip.file("word/document.xml").async("string");
             const ast = JSON.parse(execFileSync(binary, [target, "--fail-if-warnings", "-t", "json"], { maxBuffer: 8 * 1024 * 1024 }));
             formulas = walk(ast, "Math").map(m => m.c[1]);
-            assert.ok(formulas.length >= 17, `editable formulas lost: ${formulas.length}`);
+            // Fixed six-question source: 17 body formulas, 9 answer formulas,
+            // plus the table formula in lesson-plan/handout.
+            const expectedFormulas = (kind === "practice" ? 17 : 18) + (includeAnswers ? 9 : 0);
+            assert.equal(formulas.length, expectedFormulas, `editable formulas lost: ${formulas.length}`);
             assert.ok(formulas.some(f => f.includes("\\frac")));
             assert.ok(formulas.some(f => f.includes("\\sqrt")));
             assert.ok(formulas.some(f => f.includes("\\begin{matrix}")));
