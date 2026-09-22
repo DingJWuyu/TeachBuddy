@@ -60,10 +60,12 @@
 | R31-FOUNDATION | 新会话，attempt 1 | gpt-6-astra / low | 已完成，基础切片 self PASS | `01a0c7e0-691d-75a1-9e6e-49758af3daeb` | `.scratch/dag-dispatch/R31-FOUNDATION/1/` |
 | R31 | 新会话，attempt 1 | gpt-6-astra / low | 已完成，完整公共底座self PASS并停写，交R32-R34 | `01a0c8a3-5856-7701-97e3-87ddd9055fb7` | `.scratch/dag-dispatch/R31/1/` |
 | R32 | 新会话，attempt 1 | gpt-6-astra / low | 已交付并停写；模块自验通过，总构建BLOCKED归R34注册 | `01a0c8c0-4a2b-76c3-8690-7bbeba9d3bd4` | `.scratch/dag-dispatch/R32/1/` |
-| R33 | attempt 3，与R34同一session限定接手 | gpt-6-astra / low | 已交付6398bf2并停写；两处导航self关闭，完整节点未通过 | `01a0c90e-b273-76c1-bb08-16f3462f4c12` | `.scratch/dag-dispatch/R34/3/`（共用一次回执） |
+| R33 | 新会话，attempt 4 | gpt-6-astra / low | 已派原包零调用片段/跨页/来源接续；在线仍BLOCKED | `01a0c92c-d458-7810-ab1e-dd642ce89558` | `.scratch/dag-dispatch/R33/4/` |
 | R34 | 新会话，attempt 3 | gpt-6-astra / low | 已完成，限定组合self通过/完整BLOCKED；重启异常仍OPEN | `01a0c90e-b273-76c1-bb08-16f3462f4c12` | `.scratch/dag-dispatch/R34/3/` |
 | R34-RESTART-DIAGNOSIS | 新会话，attempt 1 | gpt-6-astra / high | 已派一次困难接手，限定共享重启异常 | `01a0c921-e31a-7c70-92e3-c9a931403c30` | `.scratch/dag-dispatch/R34-RESTART-DIAGNOSIS/1/` |
-| R30-MATERIALS-CONTINUATION | 新会话，attempt 1 | gpt-6-astra / high | 已派现有产品剩余路线及依赖裁决，零产品调用 | `01a0c921-e325-7290-85da-dd0a0ca167ef` | `.scratch/dag-dispatch/R30-MATERIALS-CONTINUATION/1/` |
+| R30-MATERIALS-CONTINUATION | 新会话，attempt 1 | gpt-6-astra / high | 已交self提案da23eb6，零调用接续可做；启动边例外待独立 | `01a0c921-e325-7290-85da-dd0a0ca167ef` | `.scratch/dag-dispatch/R30-MATERIALS-CONTINUATION/1/` |
+| R30-CONTINUATION-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已派限定M43/M44启动边独立核验 | `01a0c92c-d460-7e40-b4dc-82b1df431ca7` | `.scratch/dag-dispatch/R30-CONTINUATION-REVIEW/1/` |
+| R35-LOCAL | 新会话，attempt 1 | gpt-6-astra / medium | 已派固定6398bf2本地真实材料独立采证，完整节点未验 | `01a0c92c-d454-75f3-b5ba-f04773146d15` | `.scratch/dag-dispatch/R35-LOCAL/1/` |
 | C20-T-INPUT | 新会话，attempt 1 | gpt-6-astra / high | 已完成self PASS，既有判据适用澄清，无冻结变化 | `01a0c909-005c-7393-90b2-8c774a402004` | `.scratch/dag-dispatch/C20-T-INPUT/1/` |
 | M41-DEPENDENCY-PLAN | 新会话，attempt 1 | gpt-6-astra / high | 已完成，READY_FOR_REVIEW / self | `01a0c802-4422-7f60-8eb2-5eaeb0be0b7c` | `.scratch/dag-dispatch/M41-DEPENDENCY-PLAN/1/` |
 | M41-DEPENDENCY-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，限定 independent PASS | `01a0c813-49a7-7532-89ae-652ff3ae08a3` | `.scratch/dag-dispatch/M41-DEPENDENCY-REVIEW/1/` |
@@ -87,8 +89,8 @@
 | 规划、入口与设计：P00/P01/G00、B10/B11、C20 | 规划与入口已完成；B11、C20 已独立冻结。G00 实施许可已恢复完整执行。 | 沿用现有设计与实验标准，不重新规划或重跑准备。 |
 | 首条题库与备课：B12-B16 | 最新组合经 B16 independent PASS；真实保存、引用、重启恢复、隔离、失败恢复、桌面/Pad 已验证。 | 身份仍为 test-principal；不代表真实认证或完整题库范围通过。 |
 | 认证：AUTH-CONTRACT、两端、A10-A12 | 固定9ecabbf经A12本地independent PASS。911e7b8确认正式App正常、遗漏归math fixture；M42补修b070390已self关闭同页退出后重登/注册准备，认证产品未修改。 | 不重开认证设计或A12审查。真实邮件/目标设备/可信证书和备份恢复等原外部边界保留。 |
-| 材料：C21/C22、R30-R35 | 最新真实组合6398bf2已消费R34 f7ae8f8和R33 cd31bf4，关闭两处导航/返回/焦点，API201、浏览器4+焦点2、build通过；real-auth/fake-mail，模型0。T已有内容按固定43b117c解释6/6，缺图阻断保留。 | 完整R33/R34未过。共享重启异常low未复现，已交一次Astra high困难诊断；R30另行判断实际在线接续与可并行边界，零产品请求、不自行改DAG。R35/目标设备与在线门槛保持，M43未提前放行。 |
-| 数学：C23、M40-M44 | M41静态与M42动态/HTML隔离/离线成果均self固定。M42完整候选b070390包含fixture补修aa8b3ac，正式数学产品仍689a194；已停写，无新增产品模型调用。 | M43等待R35固定材料候选及公共装配授权，到齐后消费b070390显式汇合。M44与Windows/Edge/WPS/触屏/课堂设备未验，当前不提前派发M43或重复内部审查。 |
+| 材料：C21/C22、R30-R35 | 6398bf2真实组合/两项导航self通过，T既有内容按43b117c解释；R30新提案da23eb6确认仍缺网络Provider及内部片段/跨页/答案/题图适配，无新在线窗口依据。 | R33/4零调用补原包内部实现，R35-LOCAL独立验固定6398bf2本地消费切片，与共享重启困难诊断并行、彼此隔离。M43本地启动例外由独立review核验中，未采纳前旧依赖有效。完整R33/R34/R35、在线/设备未通过。 |
+| 数学：C23、M40-M44 | M41/M42原自验固定并停写，完整M42 b070390含fixture补修aa8b3ac，数学产品689a194。R30 da23eb6仅提议R35本地消费切片独立通过后启动M43本地实现。 | 需限定independent PASS和根采纳该启动例外，且指定材料消费切片逐项独立通过、共享唯一写权到齐；当前M43未派。完整R35/M43/M44及Windows/Edge/WPS/触屏/课堂条件保持，不由局部通过替代。 |
 | 班级与日程：T50-T54 | D01-D05均independent关闭；bad090f经T54 attempt 4独立22项PASS，桌面/窄桌面/平板滚动、返回刷新及账户现场通过，仍test-principal。 | T53真实认证产品f811a27经T54报告ab19d5d本地independent PASS：37项及独立Chrome手动保存/进程重启通过，身份、隔离、迟到响应和D01-D05传播无新缺陷。T51-MATH局部self仍待真实math与v2同批装配，M43收齐前置接入；完整T54保留M44/WB-T020与目标设备条件。 |
 | Agent：C24-C27 | C25设计冻结，C26产品687121e/完整ec5094c经C27独立6d48bc7关闭D01；与原34e668a未变真实模型链/持久/隔离结论合用，本地阶段independent PASS。 | 阶段文档已整合，无需新增审查或模型调用。两条未变moderate依赖公告作为C27-O01交后续依赖维护，未证可达产品缺陷，不阻断本地阶段。F60仍受完整T54/A12条件约束，未合主干或完成整体MVP。 |
 | 可靠性：F60-F65 | 尚未启动；C27本地阶段已independent PASS。 | 仍待完整T54数学关联/目标条件及A12真实外部交付，随后按原节点补全模块工具、现场、恢复和整日集成；C27通过不单独满足全部启动依赖。 |
@@ -101,10 +103,10 @@
 | 工作 | 本轮动作 | 下游判断 |
 | --- | --- | --- |
 | M40 / T50 / T51 | 已接收 T51-MATH 产品 af19869 与回执 9fc6337，v2 记录、来源错误语义和反馈出口局部 self 通过；不追加相同 diff 审查。 | 真实 math 与 M43 前置到齐后由唯一装配者采用目录v3/同步端口/稳定路由；不能将升级 Web 单独接到仍只有旧 API 的候选。M44 后在新组合交 T54 验完整 WB-T020，当前滚动复验输入不变。 |
-| C24 / C25 / C26 / C27 | 独立6d48bc7关闭D01，本地C27 PASS；旧live/持久/隔离结论按固定版本沿用。LOCAL-STAGES-DOCS文档已整合，明确任务分支与main旧代码边界。 | 不追加普通审查或新模型调用。C27-O01留后续维护，F60仍需完整T54/A12。当前共享重启诊断和材料剩余路线/依赖裁决并行；等待主动回执。 |
-| R30 / C20 / R31 | R34/R33完整6398bf2已停止写入，实际组合固定ec3a44f；公共接线和限定导航通过，在线/设备未过。43b117c补充未被前任消费，原回执T字面结论过期，根固定说明继续有效。 | R34-RESTART-DIAGNOSIS独占该候选后继代码，仅诊断重启生命周期；R30-MATERIALS-CONTINUATION只读6398bf2及43b117c，区分真实实现缺失/旧失败/依赖，给最小接续或具体外部缺口。不再安排普通整合或重复导航审查。 |
-| R31 / M41 / M42 | R31完整底座2b6cbcd、M42完整b070390均self停写，数学产品689a194与fixtureaa8b3ac分开固定。当前R34材料组合仍沿2b6cbcd原M41代码，不隐式混入M42。 | R34收尾后按实际质量条件交R35，随后M43显式汇合材料与b070390、接正式数学往返。M44未验，不能将分支self当整体通过；当前shared重启测试观察不等于已证math业务缺陷。 |
-| C21 定位 / 在线 | REV-001独立d990f43关闭、在线旧失败及消耗保留。固定43b117c澄清T原输入无图，已有内容/边界可按作者证据6/6，原联合3/6与missing-figure仍存，不计提图成功。 | 真实产品现在具备原生读取、预览/校对/引用/输出，网络Provider仍未交付。R30只读评估是否有新证据支持不同路线和可执行包，不能把旧页级方案小调参重开或擅自消费新请求；本次模型窗口仍关闭。R35实际验收与含图/补充来源义务保持。 |
+| C24 / C25 / C26 / C27 | 独立6d48bc7关闭D01，本地C27 PASS，旧live/持久/隔离结论按固定版本沿用；文档已整合。 | 不追加普通审查或产品模型调用，C27-O01待后续维护，F60原依赖保持。当前R33本地接续、R35独立采证、启动边核验及原共享重启诊断并行；等待主动回执。 |
+| R30 / C20 / R31 | 提案 `da23eb6` 文档整合 `598209b`，没有新语义或在线预算；缺失实现归既有R33。仅M43/M44本地启动例外需限定独立核验，设计作者未自行冻结。 | R33和R35本地工作可沿原范围接续，已派；新启动边由R30-CONTINUATION-REVIEW核验，结果到齐再决定采纳/文档同步。不得把正在核验提案写成M43已放行或新增窗口，正式门禁继续有效。 |
+| R31 / M41 / M42 | R31底座2b6cbcd、M42完整b070390均已self停写。R35-LOCAL只受测材料6398bf2，未加入M42；共享重启困难诊断另在固定候选上执行，不将活动修复混进受测版本。 | 当前M43原R35前置不变。若限定提案获independent PASS并根采纳，才在材料消费切片独立通过、固定M42/M40与共享独占权齐备后派本地M43；新R33或诊断代码进入组合须显式更新候选并做受影响回归。 |
+| C21 定位 / 在线 | da23eb6复查原始失败/Provider资料后仍无足够新证据；所有旧窗口关闭，新增请求/completion许可0，19次及未知usage账不清零。T澄清43b117c保持，缺图草稿仍阻断。 | 现有产品内部fragments适配、选页归并、答案页未完成语义、body/solution分别定位和自身图源可零调用实现，已交R33/4。重放/合成/原生结果分开；生产网络Provider待有依据的路线，不把已接handler当真实模型可用。外部提供方与解除证据见固定提案。 |
 | A11 / A12 | M42 attempt 2在固定诊断上实际复现2项RED并修复：同页登录/注册保存、准备失败重试、两账户隔离及不自动restore通过。当前integration2纠正前轮旧归属，正式认证和App均未改。 | fixture缺口已self闭环，无需新的认证任务或重复A12验收；原A12外部条件仍待输入。M43/M44按固定新候选接续原实际流程验收。 |
 | T52 / T53 / T54 | 已接收独立报告ab19d5d，本地身份组合PASS，无新缺陷；D01-D05传播和真实保存/退出重登/隔离/保留库重启通过。无需修复回流或重复核验。 | 后续业务汇合消费教学产品f811a27、作者4a6b773和独立ab19d5d。T51-MATH v2、M43真实接线/M44/WB-T020及外部设备仍未完成；完整T54与F60门槛保留，当前材料三消费者并行，数学固定成果等待材料前置。 |
 
@@ -158,7 +160,9 @@
 | R34备课/输出阶段交付 | 产品 `9767e4feeae24d6adabbe7b87ff4876b418fc80d`，完整 `9269a3326ed300fc66aab5a31bb1ac9cff7b19d5:docs/acceptance/evidence/R34/v1/author.md` 与 integration.md；组合 `401e56d0e68de54891f2f0bda18d66a4407f043b`。parallel-stage self PASS，完整R34未PASS：177API/6E2E、六输出与四开关24件、构建、内部双轴闭环通过；Linux LibreOffice可见GUI经UNO编辑保存重开/三类打印，未代签鼠标逐字操作或Windows/WPS。身份test-principal，题/资源为Adapter，R32/R33补充未消费。新增lessons_materials_001、export handler及共享错误/迁移必要适配；已停写，完整未完故现场保留。 |
 | R34实际集成交付 | 完整 `f7ae8f866401520c45235af7143f4306704345c9:docs/acceptance/evidence/R34/v1/attempt2.md` 与 integration2.md；产品 `dc1afe54e2848920f459fffd12bc2c5015b9cd28`，组合 `aa7744ca1af4edf80a974e7429b7e72508db7af2`。shared-integration self PASS / 完整BLOCKED，2026-09-22T12:17:04Z结束并停写。实际消费9269a33/c074ad3/c47937c/2b6cbcd，未消费新cd31bf4。目录v2真实三模块、四handlers、六迁移断言、xmldom直接依赖、API198/浏览器3/build、24输出及12PDF全页、真实引用/替换/丢响应/重启通过；浏览器real-auth/fake-mail/自签HTTPS，HTTPtest-principal，无跨模块Adapter；模型0/密钥0。题库导航缺口交后继，不代签质量/在线/Windows/WPS。 |
 | R33/R34限定收尾交付 | 完整 `6398bf2dae85d1872c929aa8ef32d5705d763687:docs/acceptance/evidence/R34/v1/attempt3.md`、integration3.md及R33/v1/attempt3.md；产品 `a0bde5546eeedf50498888da0ed9c5941fa1d76a`，组合 `ec3a44f024c5d18c13954fa9ee809ccbfb7a9a70`。2026-09-22T12:37:17Z结束停写。实际消费f7ae8f8+cd31bf4，未消费43b117c后发澄清。限定导航/返回现场/焦点及原键丢响应恢复self通过，201API/4浏览器+2焦点/build；真实W一题修改到DOCX5个OMML通过，不重评分全样本或代签设备。math原异常单次+30次+全套未复现，未改测试/未降断言，仍OPEN。完整R33 FAIL/R34 BLOCKED；0模型/0密钥，现场保留。 |
-| 当前共享诊断与材料设计派发 | 两任务从main `cb966d9457feadcee2a0d313ed9057caa6b28bfb` 创建独立worktree，固定6398bf2/a0bde55及cd31bf4/43b117c。`R34-RESTART-DIAGNOSIS`于2026-09-22T12:40:36Z启动Astra high（一次困难接手），worktree `/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis`，只写测试/直接生命周期设施与新诊断证据，不重复30次盲跑、不降断言。`R30-MATERIALS-CONTINUATION`于2026-09-22T12:40:36Z启动Astra high，worktree `/home/liam_t/项目/TeacherWorkspace-materials-continuation`，只写剩余路线/任务提案和回执。两者不互聊、不等待、不读对方活动分支；产品请求均0，旧调用账不清零，设计不自行放行依赖。 |
+| 当前共享重启诊断 | `R34-RESTART-DIAGNOSIS@1`保持已派状态，session `01a0c921-e31a-7c70-92e3-c9a931403c30`，worktree `/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis`；main基线cb966d9，固定6398bf2/a0bde55、原cd31bf4失败。Astra high一次困难接手，只写共享测试/直接生命周期设施和新证据，不重复盲跑或减断言。R33独占questions，R35只读固定版本，三者不互改或联络，不从未有回执推定诊断完成。 |
+| 材料剩余路线与依赖提案 | 固定 `da23eb680a9c8b214ad18482d4f1fbc8a5f3fded:docs/arch/materials-continuation.md`、docs/plans/tasks/materials/continuation.md及作者回执，普通文档整合 `598209b94c13e3f345638de298b0928388b3f9c6`。self PASS仅设计交付；R33原范围零调用接续可做，M43/M44本地启动例外待独立核验及根采纳。没有新网络方向实证，不重开窗口；保留完整R35→M43→M44和M44→T51/T54→F60完成门槛。 |
+| 本地材料接续三项派发 | 三项均从main `598209b94c13e3f345638de298b0928388b3f9c6` 建独立worktree，固定6398bf2/da23eb6/43b117c。R33/4 Astra low于2026-09-22T12:52:33Z启动，`/home/liam_t/项目/TeacherWorkspace-r33-fragments`仅questions/自有测试；R35-LOCAL Astra medium于2026-09-22T12:52:33Z启动，`/home/liam_t/项目/TeacherWorkspace-r35-local`只读候选并产local-review.md及local/；R30-CONTINUATION-REVIEW Astra medium于2026-09-22T12:52:33Z启动，`/home/liam_t/项目/TeacherWorkspace-materials-continuation-review`只写指定review.md。三者产品请求0，不等待/通信、不消费活动分支；回执尚未生成。 |
 | T原始输入限定裁决 | 原固定 `43b117c7ed6fe5aa408422351db46e23a6ea6f3e:docs/arch/capability-checks/T-native-input.md` 与C20-T-INPUT/v1/author.md，普通文档整合98dac617。self PASS，仅事实/适用性澄清，无冻结语义变化；T已有内容按作者分项6/6、图项不适用，原联合3/6及三题缺图入库阻断保留。R35仍需实际验证。通知01a0c911未被R34/3消费，不用其旧T文字否定本已固定说明；新材料设计初始包已含43b117c。0产品调用/密钥/测试，不追加审查。 |
 | M41 先行依赖冻结 | 设计 `2e67961b01f4ce90ab07dad1feb823b1f595266d:docs/arch/math-foundation-dependency.md`；作者 `76151489f28cfe1ccaddd8afa28db3c613f3c6a5`；独立报告 `3783208100703efc6b00f14eaf9709ff501705a2:docs/acceptance/evidence/M41-DEPENDENCY-PLAN/v1/review.md`。限定允许固定文件基础上的隔离 M41；公共依赖/身份须实际装配，完整 R31、M41→M42、R35→M43 等门禁保留。三项新派发均从 `c85d073a9582b6aab19c5db66f83ec4fdc6ad355` 建隔离分支，固定输入见各 launch.json。 |
 | R31 数学公共支持 | 产品 `07aeddc3a15b332cc941a86c340147facdef1425`；证据 `26c89fb40ece370c3b4b23079543766f9a2da428:docs/acceptance/evidence/R31-MATH-SUPPORT/v1/author.md` 及同目录 integration.md；组合基线 `1e8ec794ec4a19e05f3ca43800d3c7bedfc79d51`。真实文件/页面身份、MathJax3.2.2和本地中文资产 self PASS，内部两轴已完成；该版公共写入已停止。向M41投递 `01a0c845-06eb-7e10-8830-735a03b3fb6e` 成功但交付候选未消费；当前由attempt 2显式整合。仍fake-mail/自签HTTPS，四handler拒启保护保留。 |
@@ -182,7 +186,7 @@
 - C21定位制品c7022e0经独立d990f43通过，EX-02/REV-001关闭。最新页级方案仍因首个页length/正文不完整而FAIL，其余页未发。累计19次/16份usage/108777已知completion，历史3份usage缺失及online-1预留8000未知不变。按原C20裁决停止该固定路线，在线能力待支持新方向的证据再交C20，不另开无依据的重试或重复设计。R33/R34继续，R32已固定交接，M42待材料链；不把在线问题转签为成功或永久手工录入。
 
 - C24 真业务累计 32 次 DeepSeek provider 请求、93,970 total tokens；本轮修复新增 7 次、36,651 tokens。PI-01/02 消耗另有原账本，不能混成全部实验总量。副本读回补验已通过，计费余额/extra credits 状态仍未知；cost=0 不证明免费。
-- R30候选8b8656a已由88a89f0独立冻结，最新材料组合6398bf2停写。仅共享重启诊断拥有后继代码写权，材料设计只读固定输入。原T判据已由43b117c澄清，无须修不存在的图；在线和目标设备仍未交付。新设计未返回/冻结前，原R35→M43及后续完成门槛不变。
+- R30原契约8b8656a已独立冻结，最新材料6398bf2停写。当前R33零调用内部接续与共享重启诊断各自独占范围，R35-LOCAL固定版本只读验收，M43启动例外另作限定独立核验。提案未采纳前旧依赖不变；在线/设备及各完整节点门槛始终保留。
 - C21定位/评分和C22本机编辑/输出均已有独立通过结论。C22源制品未改，原GUI失败不作为已证实内容错误；困难验收者已完成独立操作闭环。Windows/WPS仍待真实外部输入，本机LibreOffice通过不替代目标环境。
 - C22 制品完整 SHA 以本页固定索引及独立报告为准；原作者回执的完整 SHA、XML 哈希说明有误，原证据保留，当前引用已纠正。
 - 旧材料实验窗口已关闭，其失败结论与消耗保留。用户已要求恢复完整工作，已据此冻结新的有界计划，不能自动重置原尝试或削减支持范围；需要真实外部环境或范围变更时再明确升级。
