@@ -13,6 +13,13 @@
 - 精简前的完整版本索引可按需读取 `cace6592db76c194e279babe92cf92edc4f16dce:docs/plans/run-state.md`。旧过程继续保留在Git和原正式回执，不另建历史台账。
 - `.env`、运行库、浏览器profile与未完实验材料均留在各自隔离目录。不得把凭据写入回执；未完成用途的现场保持，不因本次整理删除。
 
+<a id="体验分支"></a>
+## 当前体验分支
+
+- 分支 `preview/usable-mvp`，worktree `/home/liam_t/项目/TeacherWorkspace-preview`。任务输入固定为下表主业务3d5c3f3和单个测试修复baaeb09。
+- 首次运行入口、候选与数据目录以 `.scratch/dag-dispatch/PREVIEW-DELIVERY/1/receipt.md` 实际回执为准，目前尚未交付。用户最迟体验时间由运行台账维护。
+- 专用服务交付后保持运行；后继先取得原写者回执再串行更新，保留预览持久数据。Agent合流与Pandoc修复只消费固定回执，禁止读取其活动HEAD。
+
 <a id="产品候选"></a>
 ## 当前产品候选与本地验收
 
@@ -56,10 +63,10 @@ OPS-001需F62候选及A12真实恢复专项，11条BDD的设计覆盖PASS不等�
 | 输入 | 固定引用与用途 |
 | --- | --- |
 | 已采纳入口裁决 | `8b796c47ee2517fad00ddc7eb2c40afeb914156c:docs/arch/reliability-entry.md`；独立 `43366f20bd9e76f1490cd7c434f2a745a0234995:docs/acceptance/evidence/RELIABILITY-ENTRY/v1/review.md`；入口已同步main |
-| F60完整候选 | 完整 `619494d5e115d4d1a4bc9e7ee9c83b553fd246dc`；设计 `a6a044466da18eca8cb7274d4c99d43d596453b6`；入口 `docs/arch/reliability.md`、`docs/plans/tasks/reliability/README.md`，作者 `docs/acceptance/evidence/F60/v1/attempt2.md` |
+| F60修订候选 | 完整 `31575c5c9d386c03a1f9fcde38b9a216f87a5b08`；设计 `ae5a0ff102bb2c9d4dfbacbb3ce8788fbe9034a2`；入口 `docs/arch/reliability.md`、`docs/plans/tasks/reliability/README.md`，作者 `docs/acceptance/evidence/F60/v1/correction.md` |
 | 完整设计独立结果 | `a5c272a866a02e97ac58361fb4157aeeea105c4d:docs/acceptance/evidence/F60/v1/review.md` 及review/复现。FAIL，唯一F60-REV-001：36个新版只读工具被旧名称分类器误归写操作；影响工具卡、Snapshot/SSE及个人包。G-AUTH独立通过。 |
 
-候选的81工具、37条WB-F和18行范围已独立核对，完整冻结仍被上述schema矛盾阻断。F60正在修订该缺口及实际传播；下一轮限定复验读写分类、旧历史兼容及影响面，沿用未变范围与G-AUTH结论。业务输入仍固定267cf51，后继按根固定的新运行组合集成。
+候选的81工具、37条WB-F和18行范围已独立核对，完整冻结仍被上述schema矛盾阻断。修订候选self已校验2187组分类及37个正反例的四容器传播；独立复验读写分类、旧历史兼容及影响面，沿用未变范围与G-AUTH结论。业务输入仍固定267cf51，后继按根固定的新运行组合集成。
 
 F60独立冻结后才派F61-F63。F62可运行self后进行A12恢复专项，不等F65/D72；完整A12、T54、R35/M43/M44及其他原前置仍在F64前汇合。认证操作、全范围恢复和交付环境恢复是不同验收责任。
 
