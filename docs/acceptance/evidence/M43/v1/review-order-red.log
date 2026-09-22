@@ -1,0 +1,51 @@
+
+Running 1 test using 1 worker
+
+(node:1286956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1286956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1286956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1286956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/math-integration.spec.js:190:1 › real-auth: rejected second save can cancel, reuse, and retry an independent replacement (20.8s)
+
+
+  1) apps/web/e2e/math-integration.spec.js:190:1 › real-auth: rejected second save can cancel, reuse, and retry an independent replacement 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('[data-reference-id]').nth(1)
+    Expected substring: "独立替换稿"
+    Received string:    "可复用公式采用版本 1移到…本课材料a2+b2=c2本课备注另存作品并替换本处查看来源"
+    Timeout: 15000ms
+
+    Call log:
+      - Expect "toContainText" locator('[data-reference-id]').nth(1) with timeout 15000ms
+      - waiting for locator('[data-reference-id]').nth(1)
+        34 × locator resolved to <article class="wb-reference" data-source-state="active" data-reference-id="ae95d6f5-18a9-4968-8a0a-37f0c9e287c9">…</article>
+           - unexpected value "可复用公式采用版本 1移到…本课材料a2+b2=c2本课备注另存作品并替换本处查看来源"
+
+
+      241 |  await expect(page.getByRole('status').first()).toContainText('已保存');
+      242 |  await expect(page.locator('[data-reference-id]')).toHaveCount(3);
+    > 243 |  await expect(page.locator('[data-reference-id]').nth(1)).toContainText('独立替换稿');
+          |                                                           ^
+      244 |  const afterIds=await page.locator('[data-reference-id]').evaluateAll(rows=>rows.map(r=>r.dataset.referenceId));
+      245 |  expect(afterIds[0]).toBe(beforeIds[0]);expect(afterIds[2]).toBe(beforeIds[2]);
+      246 |  await page.screenshot({path:path.join(evidence,'replacement-recovered.png')});
+        at /home/liam_t/项目/TeacherWorkspace-m43/apps/web/e2e/math-integration.spec.js:243:59
+
+    Error Context: test-results/m43/browser/math-integration-real-auth-afc42--an-independent-replacement/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m43/browser/math-integration-real-auth-afc42--an-independent-replacement/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m43/browser/math-integration-real-auth-afc42--an-independent-replacement/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/math-integration.spec.js:190:1 › real-auth: rejected second save can cancel, reuse, and retry an independent replacement 

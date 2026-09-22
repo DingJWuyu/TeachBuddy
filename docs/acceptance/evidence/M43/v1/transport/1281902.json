@@ -1,0 +1,841 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1281902,
+  "argv": [
+    "/home/liam_t/.local/share/pi-node/node-v22.23.2-linux-x64/bin/node",
+    "/tmp/m43-suite/apps/api/test/math-static-output.test.js"
+  ],
+  "cwd": "/tmp/m43-suite/apps/api",
+  "events": [
+    {
+      "ms": 1043.363479,
+      "event": "server:listen",
+      "server": 1,
+      "port": 47414,
+      "host": "localhost"
+    },
+    {
+      "ms": 1073.594057,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "::1",
+        "family": "IPv6",
+        "port": 47414
+      }
+    },
+    {
+      "ms": 1084.047175,
+      "event": "request:create",
+      "request": 2,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 1088.79677,
+      "event": "server:socket",
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1090.400289,
+      "event": "client:socket",
+      "socket": 4,
+      "localPort": 59966,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1090.429087,
+      "event": "client:send",
+      "request": 2,
+      "socket": 4,
+      "localPort": 59966,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1094.504902,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works",
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2117.350438,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2120.836424,
+      "event": "request:headers",
+      "request": 2,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works",
+      "origin": "http://localhost:47414",
+      "status": 201
+    },
+    {
+      "ms": 2126.144751,
+      "event": "request:create",
+      "request": 5,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/43ad0099-5af9-4358-aab4-165025eba9e4/exports",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 2131.059959,
+      "event": "server:socket",
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2131.320748,
+      "event": "client:socket",
+      "socket": 7,
+      "localPort": 59976,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2131.366226,
+      "event": "client:send",
+      "request": 5,
+      "socket": 7,
+      "localPort": 59976,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2131.995967,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/43ad0099-5af9-4358-aab4-165025eba9e4/exports",
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2441.370097,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2442.097811,
+      "event": "request:headers",
+      "request": 5,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/43ad0099-5af9-4358-aab4-165025eba9e4/exports",
+      "origin": "http://localhost:47414",
+      "status": 201
+    },
+    {
+      "ms": 2443.289376,
+      "event": "request:create",
+      "request": 8,
+      "method": "GET",
+      "path": "/api/workbench/files/30de2b9c-4c16-4753-b1dc-2b5eb2ea1238/content",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 2445.347051,
+      "event": "client:send",
+      "request": 8,
+      "socket": 4,
+      "localPort": 59966,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2445.764168,
+      "event": "server:request",
+      "server": 1,
+      "method": "GET",
+      "path": "/api/workbench/files/30de2b9c-4c16-4753-b1dc-2b5eb2ea1238/content",
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2461.551699,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2462.564747,
+      "event": "request:headers",
+      "request": 8,
+      "method": "GET",
+      "path": "/api/workbench/files/30de2b9c-4c16-4753-b1dc-2b5eb2ea1238/content",
+      "origin": "http://localhost:47414",
+      "status": 200
+    },
+    {
+      "ms": 2496.48266,
+      "event": "request:create",
+      "request": 9,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/43ad0099-5af9-4358-aab4-165025eba9e4/exports",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 2498.244543,
+      "event": "client:send",
+      "request": 9,
+      "socket": 7,
+      "localPort": 59976,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2498.974697,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/43ad0099-5af9-4358-aab4-165025eba9e4/exports",
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2754.924548,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2755.360168,
+      "event": "request:headers",
+      "request": 9,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/43ad0099-5af9-4358-aab4-165025eba9e4/exports",
+      "origin": "http://localhost:47414",
+      "status": 201
+    },
+    {
+      "ms": 2756.01507,
+      "event": "request:create",
+      "request": 10,
+      "method": "GET",
+      "path": "/api/workbench/files/329985ae-2291-4614-b01d-636dae793c31/content",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 2757.37408,
+      "event": "client:send",
+      "request": 10,
+      "socket": 4,
+      "localPort": 59966,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2757.796677,
+      "event": "server:request",
+      "server": 1,
+      "method": "GET",
+      "path": "/api/workbench/files/329985ae-2291-4614-b01d-636dae793c31/content",
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2759.075349,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2759.310648,
+      "event": "request:headers",
+      "request": 10,
+      "method": "GET",
+      "path": "/api/workbench/files/329985ae-2291-4614-b01d-636dae793c31/content",
+      "origin": "http://localhost:47414",
+      "status": 200
+    },
+    {
+      "ms": 2764.225122,
+      "event": "request:create",
+      "request": 11,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 2765.602362,
+      "event": "client:send",
+      "request": 11,
+      "socket": 7,
+      "localPort": 59976,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2766.023739,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works",
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2940.624171,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2940.814748,
+      "event": "request:headers",
+      "request": 11,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works",
+      "origin": "http://localhost:47414",
+      "status": 201
+    },
+    {
+      "ms": 2941.543341,
+      "event": "request:create",
+      "request": 12,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/139a4b76-0615-4ecc-a46e-829e665685c6/exports",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 2943.381772,
+      "event": "client:send",
+      "request": 12,
+      "socket": 4,
+      "localPort": 59966,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 2944.115523,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/139a4b76-0615-4ecc-a46e-829e665685c6/exports",
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3175.989412,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3176.401517,
+      "event": "request:headers",
+      "request": 12,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/139a4b76-0615-4ecc-a46e-829e665685c6/exports",
+      "origin": "http://localhost:47414",
+      "status": 201
+    },
+    {
+      "ms": 3177.144997,
+      "event": "request:create",
+      "request": 13,
+      "method": "GET",
+      "path": "/api/workbench/files/6f5a7f35-dfb4-4898-b484-d35f846420f9/content",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 3179.327655,
+      "event": "client:send",
+      "request": 13,
+      "socket": 7,
+      "localPort": 59976,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3179.716342,
+      "event": "server:request",
+      "server": 1,
+      "method": "GET",
+      "path": "/api/workbench/files/6f5a7f35-dfb4-4898-b484-d35f846420f9/content",
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3189.53096,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3190.057058,
+      "event": "request:headers",
+      "request": 13,
+      "method": "GET",
+      "path": "/api/workbench/files/6f5a7f35-dfb4-4898-b484-d35f846420f9/content",
+      "origin": "http://localhost:47414",
+      "status": 200
+    },
+    {
+      "ms": 3196.065743,
+      "event": "request:create",
+      "request": 14,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/139a4b76-0615-4ecc-a46e-829e665685c6/exports",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 3198.162649,
+      "event": "client:send",
+      "request": 14,
+      "socket": 4,
+      "localPort": 59966,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3198.906468,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/139a4b76-0615-4ecc-a46e-829e665685c6/exports",
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3429.252511,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3429.498946,
+      "event": "request:headers",
+      "request": 14,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/139a4b76-0615-4ecc-a46e-829e665685c6/exports",
+      "origin": "http://localhost:47414",
+      "status": 201
+    },
+    {
+      "ms": 3431.051321,
+      "event": "request:create",
+      "request": 15,
+      "method": "GET",
+      "path": "/api/workbench/files/d64febbb-7217-42fc-823a-fa5475c5098b/content",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 3432.574758,
+      "event": "client:send",
+      "request": 15,
+      "socket": 7,
+      "localPort": 59976,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3432.962972,
+      "event": "server:request",
+      "server": 1,
+      "method": "GET",
+      "path": "/api/workbench/files/d64febbb-7217-42fc-823a-fa5475c5098b/content",
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3434.16818,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3435.116453,
+      "event": "request:headers",
+      "request": 15,
+      "method": "GET",
+      "path": "/api/workbench/files/d64febbb-7217-42fc-823a-fa5475c5098b/content",
+      "origin": "http://localhost:47414",
+      "status": 200
+    },
+    {
+      "ms": 3439.474016,
+      "event": "request:create",
+      "request": 16,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 3440.94202,
+      "event": "client:send",
+      "request": 16,
+      "socket": 4,
+      "localPort": 59966,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3441.690646,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works",
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3609.77981,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3609.993603,
+      "event": "request:headers",
+      "request": 16,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works",
+      "origin": "http://localhost:47414",
+      "status": 201
+    },
+    {
+      "ms": 3610.742751,
+      "event": "request:create",
+      "request": 17,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/a4fc0cf0-3518-423c-85c7-6d7448d66722/exports",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 3612.129525,
+      "event": "client:send",
+      "request": 17,
+      "socket": 7,
+      "localPort": 59976,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3612.571231,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/a4fc0cf0-3518-423c-85c7-6d7448d66722/exports",
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3746.7392,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3747.070665,
+      "event": "request:headers",
+      "request": 17,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/a4fc0cf0-3518-423c-85c7-6d7448d66722/exports",
+      "origin": "http://localhost:47414",
+      "status": 201
+    },
+    {
+      "ms": 3747.467656,
+      "event": "request:create",
+      "request": 18,
+      "method": "GET",
+      "path": "/api/workbench/files/cf830bec-ad50-4037-bebd-21a9de27c423/content",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 3748.623266,
+      "event": "client:send",
+      "request": 18,
+      "socket": 4,
+      "localPort": 59966,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3748.724723,
+      "event": "server:request",
+      "server": 1,
+      "method": "GET",
+      "path": "/api/workbench/files/cf830bec-ad50-4037-bebd-21a9de27c423/content",
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3751.497581,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3751.723177,
+      "event": "request:headers",
+      "request": 18,
+      "method": "GET",
+      "path": "/api/workbench/files/cf830bec-ad50-4037-bebd-21a9de27c423/content",
+      "origin": "http://localhost:47414",
+      "status": 200
+    },
+    {
+      "ms": 3755.039354,
+      "event": "request:create",
+      "request": 19,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/a4fc0cf0-3518-423c-85c7-6d7448d66722/exports",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 3756.235342,
+      "event": "client:send",
+      "request": 19,
+      "socket": 7,
+      "localPort": 59976,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3756.544807,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/a4fc0cf0-3518-423c-85c7-6d7448d66722/exports",
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3899.850479,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 6,
+      "localPort": 47414,
+      "remotePort": 59976,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3900.00745,
+      "event": "request:headers",
+      "request": 19,
+      "method": "POST",
+      "path": "/api/modules/math/v1/works/a4fc0cf0-3518-423c-85c7-6d7448d66722/exports",
+      "origin": "http://localhost:47414",
+      "status": 201
+    },
+    {
+      "ms": 3900.405673,
+      "event": "request:create",
+      "request": 20,
+      "method": "GET",
+      "path": "/api/workbench/files/d2c3b326-dc72-442e-aff5-81506279ef7f/content",
+      "origin": "http://localhost:47414"
+    },
+    {
+      "ms": 3901.588266,
+      "event": "client:send",
+      "request": 20,
+      "socket": 4,
+      "localPort": 59966,
+      "remotePort": 47414,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3901.723634,
+      "event": "server:request",
+      "server": 1,
+      "method": "GET",
+      "path": "/api/workbench/files/d2c3b326-dc72-442e-aff5-81506279ef7f/content",
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3902.267592,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 3,
+      "localPort": 47414,
+      "remotePort": 59966,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 3902.396009,
+      "event": "request:headers",
+      "request": 20,
+      "method": "GET",
+      "path": "/api/workbench/files/d2c3b326-dc72-442e-aff5-81506279ef7f/content",
+      "origin": "http://localhost:47414",
+      "status": 200
+    },
+    {
+      "ms": 3904.897888,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 3905.172663,
+      "event": "server:close",
+      "server": 1
+    },
+    {
+      "ms": 3906.28784,
+      "event": "server:close",
+      "socket": 6,
+      "remotePort": 59976,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 3906.296959,
+      "event": "server:close",
+      "socket": 3,
+      "remotePort": 59966,
+      "destroyed": true,
+      "readableEnded": false
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+
+Running 7 tests using 1 worker
+
+(node:1315305) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  pw:browser <launching> /opt/google/chrome/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/home/liam_t/.cache/m43-validation/playwright_chromiumdev_profile-k8CqVk --remote-debugging-pipe --no-startup-window +0ms
+  pw:browser <launched> pid=1315354 +6ms
+  pw:browser [pid=1315354][err] [0922/115513.285884:WARNING:chrome/app/chrome_main_linux.cc:84] Read channel stable from /opt/google/chrome/CHROME_VERSION_EXTRA +23ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115514.101866:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +816ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115514.123321:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +21ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115514.225333:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +103ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115514.227399:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +4ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115516.414246:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2s
+  pw:browser [pid=1315354][err] [1315354:1315387:0922/115516.913162:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: QUOTA_EXCEEDED +499ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115517.571525:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +660ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115517.857708:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +286ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115517.860158:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +4ms
+  ✓  1 apps/web/e2e/materials-integration-navigation.spec.js:85:1 › 题库使用位置可前往实际环节并返回题库现场 (5.1s)
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115518.566628:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +703ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115518.578230:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +12ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115519.117859:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +543ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115519.120656:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +0ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115519.127234:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +8ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115520.327573:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +1s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115520.330831:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +4ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115520.337912:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +10ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.111774:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +771ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.118994:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +5ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.120951:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2ms
+  ✓  2 apps/web/e2e/materials-integration-navigation.spec.js:110:1 › 题库主动加入后保留成功反馈及前往备课入口 (2.7s)
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.333079:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +212ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.347276:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +14ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.435102:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +88ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.818960:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +384ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.914855:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +96ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.915934:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +1ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.916401:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +0ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115521.918667:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115523.024646:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +1s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115523.027989:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +1ms
+  ✓  3 apps/web/e2e/materials-integration-navigation.spec.js:129:1 › 加入备课响应丢失后确认原请求仍提供前往入口且不重复 (2.4s)
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115523.744005:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +716ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115523.755917:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +12ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115524.272198:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +517ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115524.274795:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115527.136897:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +3s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115527.207364:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +73ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115527.209308:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +0ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115527.213048:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +3ms
+  ✓  4 apps/web/e2e/materials-integration-navigation.spec.js:151:1 › 最新原生Word校对在真实外壳保存恢复并引用输出 (6.7s)
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115530.956389:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +4s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115530.969910:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +14ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115531.566516:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +597ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115531.571084:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +4ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115532.176953:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +606ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115532.190696:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +13ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115532.285049:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +95ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115532.285753:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +0ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115532.286388:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +1ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115532.286999:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +1ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115532.414967:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +128ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115532.415238:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +0ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115534.873839:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115534.890462:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +17ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115535.003806:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +113ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115535.006178:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +3ms
+  ✓  5 apps/web/e2e/materials-integration-restart.spec.js:8:1 › 独立普通进程重启保持同一origin、未知上传原键和新浏览器持久数据 (4.7s)
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115535.223598:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +217ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115535.233780:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +10ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115535.758870:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +529ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115535.760224:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +0ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115535.824169:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +63ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115535.827244:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115538.192988:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115539.732128:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115540.076669:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +348ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115540.204683:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +125ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115547.803291:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +8s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115549.822364:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115550.226231:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +405ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115550.231213:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +3ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115552.241687:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115552.242961:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +0ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115552.666231:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +422ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115554.679636:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +2s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115558.404622:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +4s
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115558.416244:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +11ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115558.502330:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +86ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115558.552409:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +54ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115558.555004:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +0ms
+  ✓  6 apps/web/e2e/materials-integration.spec.js:30:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 (23.6s)
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115558.839444:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +283ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115558.851330:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +12ms
+  pw:browser [pid=1315354][err] [1315406:1315411:0922/115559.889419:ERROR:net/socket/ssl_client_socket_impl.cc:962] handshake failed; returned -1, SSL error code 1, net_error -202 +1s
+  pw:browser [pid=1315354] <gracefully close start> +3m
+  pw:browser [pid=1315354] <process did exit: exitCode=0, signal=null> +75ms
+  pw:browser [pid=1315354] starting temporary directories cleanup +0ms
+  pw:browser [pid=1315354] finished temporary directories cleanup +6ms
+  pw:browser [pid=1315354] <gracefully close end> +0ms
+  ✘  7 apps/web/e2e/materials-integration.spec.js:283:1 › 真实身份边界及保存丢响应：同键恢复、草稿保留、退出后拒绝旧页面 (3.0m)
+
+
+  1) apps/web/e2e/materials-integration.spec.js:283:1 › 真实身份边界及保存丢响应：同键恢复、草稿保留、退出后拒绝旧页面 ────────────
+
+    Test timeout of 180000ms exceeded while running "afterEach" hook.
+
+       7 | fs.mkdirSync(root, { recursive: true });
+       8 | let world;
+    >  9 | test.afterEach(async ({ context }) => {
+         |      ^
+      10 |   await context.close();
+      11 |   await world?.close();
+      12 | });
+        at /tmp/m43-suite/apps/web/e2e/materials-integration.spec.js:9:6
+
+    Error Context: test-results/r34-integration/browser/materials-integration-真实身份边界及保存丢响应：同键恢复、草稿保留、退出后拒绝旧页面/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34-integration/browser/materials-integration-真实身份边界及保存丢响应：同键恢复、草稿保留、退出后拒绝旧页面/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34-integration/browser/materials-integration-真实身份边界及保存丢响应：同键恢复、草稿保留、退出后拒绝旧页面/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-integration.spec.js:283:1 › 真实身份边界及保存丢响应：同键恢复、草稿保留、退出后拒绝旧页面 ─────────────
+  6 passed (3.8m)

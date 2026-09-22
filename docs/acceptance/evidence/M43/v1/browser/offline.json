@@ -1,0 +1,11 @@
+{
+  "origin": "https://127.0.0.1:39821",
+  "serviceStopped": true,
+  "newBrowser": true,
+  "offline": true,
+  "browser": "152.0.7977.64",
+  "platform": "linux",
+  "requests": [],
+  "dynamic": "/home/liam_t/项目/TeacherWorkspace-m43/docs/acceptance/evidence/M43/v1/browser/dynamic.html",
+  "external": "/home/liam_t/项目/TeacherWorkspace-m43/docs/acceptance/evidence/M43/v1/browser/external.html"
+}
