@@ -36,7 +36,8 @@
 | A12-LOCAL | 新会话，attempt 2 | gpt-6-astra / medium | 已启动，待主动回执 | `01a0c7ea-45a9-7ee0-8373-a849de8e660a` | `.scratch/dag-dispatch/A12-LOCAL/2/` |
 | T54 | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent FAIL（三项缺陷） | `01a0c7cb-3875-7fa0-b80f-2fcd66e0e26c` | `.scratch/dag-dispatch/T54/1/` |
 | C25 | 新会话，attempt 1 | gpt-6-astra / high | 已启动，待主动回执 | `01a0c7d2-7a74-7050-8c8a-e28df0188772` | `.scratch/dag-dispatch/C25/1/` |
-| T50-MATH-CONTRACT | 新会话，attempt 1 | gpt-6-astra / high | 已启动，待主动回执 | `01a0c7d5-b6d8-7232-b045-9ef61d8c46cb` | `.scratch/dag-dispatch/T50-MATH-CONTRACT/1/` |
+| T50-MATH-CONTRACT | 新会话，attempt 1 | gpt-6-astra / high | 已完成，self 候选待冻结 | `01a0c7d5-b6d8-7232-b045-9ef61d8c46cb` | `.scratch/dag-dispatch/T50-MATH-CONTRACT/1/` |
+| T50-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已启动，待主动回执 | `01a0c7ec-38af-7142-91bf-78f8c33d253b` | `.scratch/dag-dispatch/T50-MATH-REVIEW/1/` |
 | MATERIALS-NEXT-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，两项 independent PASS | `01a0c7d7-ed98-7031-9c26-aa9df00b7834` | `.scratch/dag-dispatch/MATERIALS-NEXT-REVIEW/1/` |
 | C21-MATERIALS-NEXT | 原会话接续，attempt 1 / resume 1 | gpt-6-astra / low | 同会话已恢复，待主动回执 | `01a0c7e0-6919-7c50-8ad4-091bb7f35bf8` | `.scratch/dag-dispatch/C21-MATERIALS-NEXT/1/resume-1/` |
 | C22-MATERIALS-NEXT | 新会话，attempt 1 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7e0-690e-71d1-aa96-cd3fe8d07e73` | `.scratch/dag-dispatch/C22-MATERIALS-NEXT/1/` |
@@ -52,7 +53,7 @@
 | 首条题库与备课：B12-B16 | 最新组合经 B16 independent PASS；真实保存、引用、重启恢复、隔离、失败恢复、桌面/Pad 已验证。 | 身份仍为 test-principal；不代表真实认证或完整题库范围通过。 |
 | 认证：AUTH-CONTRACT、两端、A10-A12 | A12 在 7958e6d 独立通过正常认证、隔离和持久重启等场景，但整体本地 FAIL：共享会话双页退出进入错误卡、恢复失败卡间距异常。 | A11 attempt 3 两项修复 self PASS，新候选 9ecabbf 正交 A12 attempt 2 定向复验。真实邮件、目标设备/可信证书等外部条件仍 BLOCKED，备份恢复仍归可靠性阶段。 |
 | 材料：C21/C22、R30-R35 | R30 补证独立验收 FAIL。C22 角色隔离和三类打印缺口已关闭，参数化输出与本机编辑仅按报告限定范围沿用。 | C21 公式按题号回填、P/I/PS 图资产借自样本，逐题评分与一致编辑证明不足；C22 旧 DOC 与一般 LaTeX 转换仍欠证。两项 REV 均开放；新窗口与 R31 基础依赖已由 0fb32a6 独立冻结，C21/C22 修复及 R31 基础实施已并行启动。完整 R31 与 R32-R35 尚未完成。 |
-| 数学：C23、M40-M44 | M40/v1 设计已完成冻结交接，候选 1a5dd01；三项实验阻断 independent 关闭，交接动作仅 self 文档自检。 | M41 仍待 R31，M42 待 M41，M43 待 M42/R35；教学记录作品扩展由 T50-MATH-CONTRACT 先行设计。数学产品尚未实现。 |
+| 数学：C23、M40-M44 | M40/v1 设计已完成冻结交接，候选 1a5dd01；三项实验阻断 independent 关闭，交接动作仅 self 文档自检。 | M41 仍待 R31，M42 待 M41，M43 待 M42/R35；教学记录作品新版 a44587b 已形成候选，T50-MATH-REVIEW 正独立核验。数学产品尚未实现。 |
 | 班级与日程：T50-T54 | T54 普通课程、提醒和反馈主链独立通过；当前整体 FAIL：D03 新草稿被迟到响应清空、D01 平板通知遮挡、D02 未排期列表裁切。 | 原归属 T51/T53/T52，交 T53 attempt 3 在同一候选统一修复，之后定向独立复验。真实作品仍待教学时间新版与 M44/WB-T020。 |
 | Agent：C24-C27 | C24 PI-03/04 定向补验 self PASS，候选 e8fdf9a；旧 PI-01/02 有 self 证据。副本读回已修复，pi 错误标志语义已实测。 | C25 已启动设计与独立证据消费，产品错误映射/模型白名单由其冻结；C26/C27 尚未启动，不把实验当产品通过。 |
 | 可靠性：F60-F65 | 尚未启动。 | 等待 T54、C27、A12 的真实交付，再补全模块工具、现场、恢复和整日集成。 |
@@ -64,7 +65,7 @@
 
 | 工作 | 本轮动作 | 下游判断 |
 | --- | --- | --- |
-| M40 / T50 | M40 冻结交接已接收；派 T50-MATH-CONTRACT 产出教学记录作品关联新版。 | 不重复 M40 审查；新教学契约独立冻结后可接 T51。M41 的 R31 前置、完整作品的 M44 门槛仍保留。 |
+| M40 / T50 | T50 作品关联完整候选已接收，派 T50-MATH-REVIEW 独立核验本次扩展。 | 不重复 M40 审查；新教学契约独立冻结后可接 T51。M41 的 R31 前置、完整作品的 M44 门槛仍保留。 |
 | C24 / C25 | 修复 self PASS 已接收，派 C25 消费实验并设计持久对话与首批工具。 | 设计候选独立冻结后派 C26；证据缺口明确归属，不重复已有实验或把作者自检代替冻结。 |
 | R30 / C20 / R31 | 两项冻结已通过，按短包并行派 C21/C22 修复、R31 基础实现。 | 收到实验新制品即交 R30 分项独立消费；R31 基础交付保留转换待接，不提前放行完整 R31 或 M41。 |
 | A11 / A12 | 已接收 A11 两项修复及新固定候选，派 A12 attempt 2 定向独立复验。 | 新固定候选交 A12 定向复验，沿用未受影响结论；外部邮件/目标设备仍单列，不宣称 A12 整体 PASS。 |
@@ -82,6 +83,7 @@
 | A11 候选 / 回执 / 启动边界 | 修复产品 `9ecabbf60cbbaecce2e9be8191d270068eb675cf`；self 回执 `4f45b40a323ff3db56e39d647367269bee63c214:docs/acceptance/evidence/A11/v1/attempt3.md`；基线 `6bac186` 保留原集成，启动澄清 `4f9985f`。 |
 | A12 本地独立报告 | `8bd41a55af991ddc70017cc19950b425fbd2df55:docs/acceptance/evidence/A12/v1/local-review.md`；受测 `7958e6d`，本地 FAIL、外部 BLOCKED；真实复现与隔离环境入口均在报告，旧现场只读保留。 |
 | T50 / T51 / T52 | 冻结 `afda1c5` + review `f9eb35f`；T51 代码 `fdf03fd`、回执 `56cbfd6`；T52 `14e18ed`。 |
+| T50 作品关联候选 | 设计 `a44587b9bd18618d77df13f7349f5043a297d226`；作者 `6e1afef26a95c49ad559ed3790502313aa341dd7:docs/acceptance/evidence/T50-MATH-CONTRACT/v1/author.md`；138 样本、22 HTTP 交换及30 BDD 场景结构自检通过，待独立冻结。 |
 | T53 真实组合 / 回执 | 产品 `89fe81bcd9c93e0b2c6af10b595cdf22eb5c75bd`；回执 `c8bd75a151fc1f3b405d8f58b6de182c5fa76be9:docs/acceptance/evidence/T53/v1/author.md`；API 147、浏览器 26、构建 self 通过，身份 test-principal。 |
 | T54 独立报告 | `488c3b87ac02f4835544b65ad5f30f5718712b9c:docs/acceptance/evidence/T54/v1/review.md`；受测 `89fe81b`，independent FAIL，三项最小复现与场景矩阵已归档；身份 test-principal。 |
 | R30 / 限定接缝 | 原设计 `ae9a395`、review `0467f46`；恢复方案 `7789974` + review `c82cd69` 仅放行材料补验和 M40 设计接缝。 |
