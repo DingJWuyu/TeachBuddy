@@ -91,16 +91,18 @@ for (const [name, viewport] of [['tablet', { width: 820, height: 1180 }], ['mobi
 
 const field = (page, label) => page.locator(`input[aria-label="${label}"], textarea[aria-label="${label}"]`);
 async function newQuestion(page, title) {
-  await page.goto(`${world.origin}/questions/new-manual`);
+  await page.goto(`${world.origin}/questions`);
+  await page.getByRole('button', { name: '自建', exact: true }).click();
   await field(page, '题目标题').fill(title);
   await page.locator('.q-question').getByRole('button', { name: '段落', exact: true }).click();
   await field(page, '文稿段落 1').fill('已知 f(x)=x²-2x，求最小值。');
 }
 async function saveQuestion(page) {
+  const saved = page.waitForResponse(response => /\/questions\/v2\/items(?:\/[a-f0-9-]{36})?$/.test(new URL(response.url()).pathname) && ['POST', 'PUT'].includes(response.request().method()));
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
-  await expect(page).toHaveURL(/\/questions\/[a-f0-9-]{36}$/);
+  const item = await (await saved).json();
   await expect(page.locator('.q-message')).toContainText('已保存');
-  return page.url().split('/questions/')[1];
+  return item.id;
 }
 
 test('真实业务保存、响应丢失幂等重试、刷新、草稿账户分区与迟到结果', async ({ page }) => {
@@ -122,7 +124,7 @@ test('真实业务保存、响应丢失幂等重试、刷新、草稿账户分�
   expect(repeated.headers()['idempotency-key']).toBe(committed.key);
   expect(repeated.postData()).toBe(committed.body);
   await expect(page.locator('.q-message')).toContainText('原请求已确认');
-  const saved = await (await page.request.get(world.origin + '/api/modules/questions/v2/items', { headers: { 'X-TeachBuddy-Page': (await repeated).headers()['x-teachbuddy-page'] } })).json();
+  const saved = await (await page.request.get(world.origin + '/api/modules/questions/v2/items', { headers: { 'X-TeachBuddy-Page': repeated.headers()['x-teachbuddy-page'] } })).json();
   const id = saved.items.find(item => item.title === '真实 Cookie 题目').id;
   await page.goto(`${world.origin}/questions/${id}`);
   await page.reload();
@@ -131,12 +133,14 @@ test('真实业务保存、响应丢失幂等重试、刷新、草稿账户分�
   await settings(page);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
   await register(page, 'second@example.test', '第二位教师');
-  await page.goto(`${world.origin}/questions/new-manual`);
+  await page.goto(`${world.origin}/questions`);
+  await expect(field(page, '题目标题')).toHaveCount(0);
+  await page.getByRole('button', { name: '自建', exact: true }).click();
   await expect(field(page, '题目标题')).toHaveValue('');
   await settings(page);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
   await login(page);
-  await page.goto(`${world.origin}/questions/new-manual`);
+  await page.goto(`${world.origin}/questions`);
   await expect(field(page, '题目标题')).toHaveValue('A 的未上传草稿');
   let release;
   let received;
@@ -173,8 +177,11 @@ test('15 个工作台操作从实际界面经认证 transport 发送页面头', 
   await field(page, '题目标题').fill('十五操作更新');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
   await expect(page.locator('.q-message')).toContainText('已保存');
+  const copied = page.waitForResponse(response => response.url().endsWith(`/questions/v2/items/${id}/copies`) && response.request().method() === 'POST');
   await page.getByRole('button', { name: '复制改编', exact: true }).click();
-  await expect(page).not.toHaveURL(`${world.origin}/questions/${id}`);
+  expect((await copied).status()).toBe(201);
+  await expect(page.getByRole('button', { name: '保存题目', exact: true })).toBeEnabled();
+  await expect(field(page, '题目标题')).toHaveValue('十五操作更新');
   await field(page, '题目标题').fill('十五操作变式');
   await saveQuestion(page);
   await page.goto(`${world.origin}/questions/${id}`);
