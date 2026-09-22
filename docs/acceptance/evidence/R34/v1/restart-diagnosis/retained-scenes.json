@@ -1,0 +1,160 @@
+[
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-1aa43b12-17a3-45de-8fe6-38dc9b266be1",
+    "failure.json": {
+      "bytes": 1488,
+      "sha256": "e394286f5b0d6fddb477d2a07065e96ade8e6027cadec02c367585cc211e8f6b"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "c1bff9d42cd5e8aae52ea1fa033a1ff3a173c0838bb1b610f682c485090f829c"
+    },
+    "phase": "replay-math-2",
+    "cause": "UND_ERR_SOCKET"
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-2655c845-8503-4b9d-a571-93486ec51c52",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "eeda854a23a2eecb54f351fc22080266810fafd9aa22edf3e1a476fab909cb02"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "f5152f972b3ece23f7a7431919edf5b500d53c9549c56478cc8330dbcbb47189"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-373e408e-6fee-4f90-8dcf-eebb95f81323",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "71a4c76f367a247b4586454c6f7a86929ebc43e5becc012cb9ba4a34fca4eb33"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "8809928e1a6834145a25cfe9be3118cdeb5c45a6c594d23b020227949b0b46cf"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-63e60b64-c1ed-4a00-bfef-0b43dd5c66b5",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "8425d0160134427e1cc3daee894a9989c2c6a8bdf0c7cea37837fb51b23d7656"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "9e72958e34996c7cc33f6152733f10ef487f0e84a208b88b07639ff8b80dabc8"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-739e3eb8-e796-4895-8e4d-ac0b067419b7",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "ec11e53e17a3e647fc573885ff1f581005e9d603a685545b66bb2aa53c44c917"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "c3341d004251701b848f493bba1db98791055cd9b5dac81c80dbf1efde53504d"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-7efa4bb9-6683-4011-81ef-f335a999b5ac",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "7757298cc756872e43da89e3d78761dbfb65b9e6d39aec31967849c8dfcbc1b2"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "c43a554cbc30aa932be00584d0399755592adca5e6cf6fe85492874c2e64a576"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-92e3170e-4edd-4f30-9903-b81e8f356373",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "9cc28114ee350bfdf0ad53cbf6312af14649736f4f8ed86ef7c4d211995b4150"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "6517d9ade56b45bcf6dc4f4b4a5ce9edf8b3fae147c1dfc88fe224a8467fdb6f"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-952175ec-6fe3-4386-ab61-44a7c4a67996",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "34f4a7d78930349b4675530ebcdaa237e2c6256ee790e661b40bce60e4f8f96b"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "df1a654f148961946aba71b8dd42bc287affe87d5146f0becdc01e09ebcce0a1"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-98760a9a-cda1-4bad-b64f-11e025b748b2",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "fdef308a126b62dfab1310055eaa6884f18495cfc591b63ae6289403ded1375f"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "eab9d45746fa9cb41c3bfbf72aad15431d46252c869a54245f933ee1e4046893"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-a7410ebb-d56f-4c48-a16f-c91ad6117f64",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "d12281beadabf28311b4132ee988292eddc52c058d85da378e6987e79c3f020e"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "e9deb8f986d59cd1f1ec02eef43c57fe1299fb29dd8a046622f9ce6c2fea2e9e"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-b1cd24da-bf22-4abe-af9a-4b1b0e762e95",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "a0cb0ab7d3b6c24bf0cacaac08633ec6bdfa948a577b231264494c5db52eeab8"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "54e8dc1c3149b6d730135dc4f8147e50ffafb3642a2c0fbf918f0cb1f01182cc"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-b9fb5b0c-1d4c-40e4-9879-e64c9c048a18",
+    "failure.json": {
+      "bytes": 2135,
+      "sha256": "441c520035150b15db16978164dbcabfb0ac960c97c8bfb87d54393899da0fd3"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "93004fb7135f5ff9a518a756b5325d7f66173fe9affdfe2b70584aec1c274e23"
+    },
+    "phase": "replay-math-2",
+    "cause": "ECONNREFUSED"
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-d7f0613b-881b-4c8a-aa4d-f4bcc6ffba52",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "4830d5d58af56fa065eaf11747c01e00a1ba84152faa0e862fc6d2265030038b"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "0fc3fdb2193e709334a5276cc82a45d0128a33c4215e9900b2871192d53d97d0"
+    }
+  },
+  {
+    "directory": "/home/liam_t/项目/TeacherWorkspace-r34-restart-diagnosis/test-results/m41/migration-f4c530f9-c0f2-47e6-a845-92a111762a1e",
+    "result.json": {
+      "bytes": 1954,
+      "sha256": "3c436e1660c2a9f8463f9340a05ec2b1f3426838533c61c9acc5800782a5dfaa"
+    },
+    "workbench.sqlite": {
+      "bytes": 278528,
+      "sha256": "534d56076d013c96d946bdc078f11ef37e2f14a51edd56b4e5dcd01af77cd95c"
+    }
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+    "source": "docs/contracts/teaching-time.md",
+    "local": "docs/contracts/teaching-time.md",
+    "gitBlob": "7d37b8c10105bafcb8be01da4157fc254870f346"
+  },
+  {
+    "revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+    "source": "docs/contracts/teaching-time/teaching-time.openapi.yaml",
+    "local": "docs/contracts/teaching-time/teaching-time.openapi.yaml",
+    "gitBlob": "19e33ce53a4106dcc9f4ab76037228813b5dfd7b"
+  },
+  {
+    "revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+    "source": "docs/contracts/teaching-time/samples.json",
+    "local": "docs/contracts/teaching-time/samples.json",
+    "gitBlob": "f4b36adf1dfb246deeaab57feb00af0be5674425"
+  },
+  {
+    "revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+    "source": "docs/contracts/teaching-time/cases.md",
+    "local": "docs/contracts/teaching-time/cases.md",
+    "gitBlob": "8b85fa6562cf1ed616110791a6c92186b28f5019"
+  },
+  {
+    "revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+    "source": "docs/arch/teaching-time.md",
+    "local": "docs/arch/teaching-time.md",
+    "gitBlob": "805ba2357acb6d3a070b0930e5b2fba7ab5eebd8"
+  },
+  {
+    "revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+    "source": "docs/ux/teaching-time.md",
+    "local": "docs/ux/teaching-time.md",
+    "gitBlob": "905670982baf8c106a2f50f3b480e8225fabba36"
+  },
+  {
+    "revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+    "source": "docs/user-stories/teaching-time.md",
+    "local": "docs/user-stories/teaching-time.md",
+    "gitBlob": "502db2c650aba0ad4521c06f9256c6c608aff2b6"
+  },
+  {
+    "revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+    "source": "docs/acceptance/teaching-time.feature",
+    "local": "docs/acceptance/teaching-time.feature",
+    "gitBlob": "b3446af6072b45c728d563dd0b6ece81bd24d944"
+  },
+  {
+    "revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+    "source": "docs/plans/tasks/teaching-time-implementation.md",
+    "local": "docs/plans/tasks/teaching-time-implementation.md",
+    "gitBlob": "53813e7f744143a58d000d5296df68c7b865b284"
+  },
+  {
+    "revision": "1a5dd015863d749e5244346f4eaad24ac506670d",
+    "source": "docs/contracts/workbench/math/math.openapi.json",
+    "local": "docs/contracts/teaching-time/inputs/m40/docs/contracts/workbench/math/math.openapi.json",
+    "gitBlob": "9a5635c631d3f43ddb89d832e6c331600988fa66"
+  },
+  {
+    "revision": "1a5dd015863d749e5244346f4eaad24ac506670d",
+    "source": "docs/contracts/auth.openapi.yaml",
+    "local": "docs/contracts/teaching-time/inputs/m40/docs/contracts/auth.openapi.yaml",
+    "gitBlob": "5eb77daa13e26d3b7fb458fe4547021d29220653"
+  },
+  {
+    "revision": "1a5dd015863d749e5244346f4eaad24ac506670d",
+    "source": "docs/contracts/workbench/first-flow.openapi.yaml",
+    "local": "docs/contracts/teaching-time/inputs/m40/docs/contracts/workbench/first-flow.openapi.yaml",
+    "gitBlob": "f201b4858d9018ed92b8ce605dc401c3c0113d8c"
+  },
+  {
+    "revision": "1a5dd015863d749e5244346f4eaad24ac506670d",
+    "source": "docs/contracts/workbench/materials.openapi.yaml",
+    "local": "docs/contracts/teaching-time/inputs/m40/docs/contracts/workbench/materials.openapi.yaml",
+    "gitBlob": "00000653977b840adb4eb08f7e6c86b162136a1a"
+  },
+  {
+    "revision": "1a5dd015863d749e5244346f4eaad24ac506670d",
+    "source": "docs/contracts/workbench/math/teaching-time-extension.md",
+    "local": "docs/contracts/teaching-time/inputs/m40/docs/contracts/workbench/math/teaching-time-extension.md",
+    "gitBlob": "af0ac3a8b91c9a05c56deef280eb4c7875a19e73"
+  }
+]

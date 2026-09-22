@@ -1,0 +1,343 @@
+{
+  "directory": "/tmp/r33-local5-api-wHVlmi",
+  "trace": [
+    {
+      "at": "2026-09-22T15:41:13.960Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "a0172d99-1459-43cc-813d-65d9b1339e08",
+        "name": "triangle.png",
+        "mediaType": "image/png",
+        "byteLength": 16272,
+        "sha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f",
+        "createdAt": "2026-09-22T15:41:13.968Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.973Z",
+      "route": "/api/modules/questions/v2/imports",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "complete-prefix",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "a0172d99-1459-43cc-813d-65d9b1339e08"
+          ],
+          "pages": []
+        }
+      },
+      "response": {
+        "id": "1212c561-5141-47a8-abf8-e1e7e3c62a8d",
+        "version": 1,
+        "createdAt": "2026-09-22T15:41:13.979Z",
+        "updatedAt": "2026-09-22T15:41:13.979Z",
+        "deletedAt": null,
+        "title": "complete-prefix",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "a0172d99-1459-43cc-813d-65d9b1339e08"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [],
+        "fragments": [],
+        "jobId": "48b1ee30-878c-4f33-a53e-577dea32f168"
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:13.997Z",
+      "route": "/api/workbench/jobs/48b1ee30-878c-4f33-a53e-577dea32f168",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "48b1ee30-878c-4f33-a53e-577dea32f168",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "1212c561-5141-47a8-abf8-e1e7e3c62a8d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.979Z",
+        "updatedAt": "2026-09-22T15:41:13.980Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:14.029Z",
+      "route": "/api/workbench/jobs/48b1ee30-878c-4f33-a53e-577dea32f168",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "48b1ee30-878c-4f33-a53e-577dea32f168",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "1212c561-5141-47a8-abf8-e1e7e3c62a8d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.979Z",
+        "updatedAt": "2026-09-22T15:41:13.980Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:14.068Z",
+      "route": "/api/workbench/jobs/48b1ee30-878c-4f33-a53e-577dea32f168",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "48b1ee30-878c-4f33-a53e-577dea32f168",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "1212c561-5141-47a8-abf8-e1e7e3c62a8d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.979Z",
+        "updatedAt": "2026-09-22T15:41:13.980Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:14.099Z",
+      "route": "/api/workbench/jobs/48b1ee30-878c-4f33-a53e-577dea32f168",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "48b1ee30-878c-4f33-a53e-577dea32f168",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "1212c561-5141-47a8-abf8-e1e7e3c62a8d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.979Z",
+        "updatedAt": "2026-09-22T15:41:13.980Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:14.137Z",
+      "route": "/api/workbench/jobs/48b1ee30-878c-4f33-a53e-577dea32f168",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "48b1ee30-878c-4f33-a53e-577dea32f168",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "1212c561-5141-47a8-abf8-e1e7e3c62a8d",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:13.979Z",
+        "updatedAt": "2026-09-22T15:41:13.980Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:14.172Z",
+      "route": "/api/workbench/jobs/48b1ee30-878c-4f33-a53e-577dea32f168",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "48b1ee30-878c-4f33-a53e-577dea32f168",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "1212c561-5141-47a8-abf8-e1e7e3c62a8d",
+          "version": 1
+        },
+        "state": "partial",
+        "createdAt": "2026-09-22T15:41:13.979Z",
+        "updatedAt": "2026-09-22T15:41:14.172Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 1,
+          "total": 1,
+          "unit": "pages"
+        },
+        "outputFileIds": [],
+        "issues": [
+          {
+            "code": "truncated-response",
+            "unitId": "file:a0172d99-1459-43cc-813d-65d9b1339e08:page:1",
+            "field": null,
+            "detail": "提取结果不完整，请对照原稿继续。"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:14.178Z",
+      "route": "/api/modules/questions/v2/imports/1212c561-5141-47a8-abf8-e1e7e3c62a8d",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "1212c561-5141-47a8-abf8-e1e7e3c62a8d",
+        "version": 2,
+        "createdAt": "2026-09-22T15:41:13.979Z",
+        "updatedAt": "2026-09-22T15:41:14.171Z",
+        "deletedAt": null,
+        "title": "complete-prefix",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "a0172d99-1459-43cc-813d-65d9b1339e08"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [
+          {
+            "id": "a9f779ee-426b-4a74-ad7f-ce92fbd9c7ea",
+            "title": "1.",
+            "body": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "完整题干"
+                    }
+                  ]
+                }
+              ]
+            },
+            "solution": {
+              "version": 2,
+              "blocks": []
+            },
+            "answerStatus": "unresolved",
+            "typeId": null,
+            "tagIds": [],
+            "parts": [
+              {
+                "role": "body",
+                "locations": [
+                  {
+                    "kind": "page",
+                    "fileId": "a0172d99-1459-43cc-813d-65d9b1339e08",
+                    "renditionFileId": "a0172d99-1459-43cc-813d-65d9b1339e08",
+                    "page": 1,
+                    "box": null
+                  }
+                ]
+              }
+            ],
+            "issues": [
+              {
+                "id": "718cb49b-dbc9-413f-ae53-2590e6f7ad87",
+                "code": "unverified-location",
+                "field": "/parts",
+                "locations": [
+                  {
+                    "kind": "page",
+                    "fileId": "a0172d99-1459-43cc-813d-65d9b1339e08",
+                    "renditionFileId": "a0172d99-1459-43cc-813d-65d9b1339e08",
+                    "page": 1,
+                    "box": null
+                  }
+                ],
+                "resolution": "open"
+              },
+              {
+                "id": "335c29fe-8767-4f9d-aa2f-e2c7fe2ba189",
+                "code": "incomplete-answer",
+                "field": "/solution",
+                "locations": [
+                  {
+                    "kind": "page",
+                    "fileId": "a0172d99-1459-43cc-813d-65d9b1339e08",
+                    "renditionFileId": "a0172d99-1459-43cc-813d-65d9b1339e08",
+                    "page": 1,
+                    "box": null
+                  }
+                ],
+                "resolution": "open"
+              }
+            ],
+            "disposition": "pending",
+            "questionId": null
+          }
+        ],
+        "fragments": [
+          {
+            "id": "42ec7f86-a3dc-4219-a1fe-562466bcad4b",
+            "text": "{\"fragments\":[{\"role\":\"question\",\"label\":\"1.\",\"section\":\"\",\"group\":\"\",\"text\":\"完整题干\",\"content\":[{\"text\":\"完整题干\"}],\"continues\":\"\",\"doubts\":[]},{\"role\":\"question\"",
+            "locations": [
+              {
+                "kind": "page",
+                "fileId": "a0172d99-1459-43cc-813d-65d9b1339e08",
+                "renditionFileId": "a0172d99-1459-43cc-813d-65d9b1339e08",
+                "page": 1,
+                "box": null
+              }
+            ],
+            "disposition": "unassigned"
+          }
+        ],
+        "jobId": "48b1ee30-878c-4f33-a53e-577dea32f168"
+      }
+    }
+  ]
+}

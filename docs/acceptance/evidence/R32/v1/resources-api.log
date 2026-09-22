@@ -1,0 +1,76 @@
+TAP version 13
+# [workbench] modules discovered: questions, lessons, resources
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons, resources
+# [workbench] modules discovered: questions, lessons, resources
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons, resources
+# [workbench] modules discovered: questions, lessons, resources
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons, resources
+# Subtest: MC02 上传后真实收录，重启仍可读取同一资源和原文件
+ok 1 - MC02 上传后真实收录，重启仍可读取同一资源和原文件
+  ---
+  duration_ms: 266.482737
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, resources
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons, resources
+# Subtest: MC12 分类移动删除、组合检索及跨账户隔离
+ok 2 - MC12 分类移动删除、组合检索及跨账户隔离
+  ---
+  duration_ms: 97.372472
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, resources
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons, resources
+# Subtest: MC13-15 替换、补充预览、固定快照、删除恢复及幂等
+ok 3 - MC13-15 替换、补充预览、固定快照、删除恢复及幂等
+  ---
+  duration_ms: 859.308973
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, resources
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons, resources
+# [workbench] modules discovered: questions, lessons, resources
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons, resources
+# Subtest: MC14 lessons Adapter 通过 HTTP 固定采用、拒绝过期、显式更新和重启
+ok 4 - MC14 lessons Adapter 通过 HTTP 固定采用、拒绝过期、显式更新和重启
+  ---
+  duration_ms: 156.770199
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 4, skipped 0
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons, resources
+# [workbench] migrations applied 1, skipped 4
+# [workbench] modules enabled: questions, lessons, resources
+# Subtest: MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与 HTTP 等价
+ok 5 - MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与 HTTP 等价
+  ---
+  duration_ms: 155.534763
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons, resources
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons, resources
+# Subtest: R31旧库追加resources迁移后原文件与数据仍可读取
+ok 6 - R31旧库追加resources迁移后原文件与数据仍可读取
+  ---
+  duration_ms: 153.425007
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1987.797333

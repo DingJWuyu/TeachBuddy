@@ -1,0 +1,1127 @@
+[
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/auth/registration-codes",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/auth/register",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/context",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085/preview",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/resource-usages/ea5aa44d-467a-4fc0-8116-89089b7da5a3",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/ad320431-2bb2-44df-b8e1-0386e7e6afab",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/ad320431-2bb2-44df-b8e1-0386e7e6afab",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/bf85e4bc-a3e3-4e47-8a3f-7a051935f622/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items/ea5aa44d-467a-4fc0-8116-89089b7da5a3",
+    "method": "PUT",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/resource-usages/ea5aa44d-467a-4fc0-8116-89089b7da5a3",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/resource-usages/ea5aa44d-467a-4fc0-8116-89089b7da5a3",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/bf85e4bc-a3e3-4e47-8a3f-7a051935f622/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports/ebdf184f-1ddb-4a32-b7f8-496d146c307f",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/735874d1-e71f-4caf-90e9-9dc2d2172f37",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports/ebdf184f-1ddb-4a32-b7f8-496d146c307f",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports/ebdf184f-1ddb-4a32-b7f8-496d146c307f",
+    "method": "PUT",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports/ebdf184f-1ddb-4a32-b7f8-496d146c307f",
+    "method": "PUT",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports/ebdf184f-1ddb-4a32-b7f8-496d146c307f/commit",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items/38bbebbf-54cd-4122-8475-9865960762ce",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items/38bbebbf-54cd-4122-8475-9865960762ce/copies",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/question-usages/38bbebbf-54cd-4122-8475-9865960762ce",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items/38bbebbf-54cd-4122-8475-9865960762ce/for-reference",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe",
+    "method": "PUT",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items/ea5aa44d-467a-4fc0-8116-89089b7da5a3/for-reference",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe",
+    "method": "PUT",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe",
+    "method": "PUT",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/imports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items/38bbebbf-54cd-4122-8475-9865960762ce",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/questions/v2/items/38bbebbf-54cd-4122-8475-9865960762ce/copies",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/question-usages/38bbebbf-54cd-4122-8475-9865960762ce",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/resource-usages/ea5aa44d-467a-4fc0-8116-89089b7da5a3",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/e9fc0c59-2e77-4836-a2df-98c110848085/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/ad320431-2bb2-44df-b8e1-0386e7e6afab",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/bf85e4bc-a3e3-4e47-8a3f-7a051935f622/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/bf85e4bc-a3e3-4e47-8a3f-7a051935f622/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items/ea5aa44d-467a-4fc0-8116-89089b7da5a3/file",
+    "method": "PUT",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c/preview",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/resource-usages/ea5aa44d-467a-4fc0-8116-89089b7da5a3",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/resource-usages/ea5aa44d-467a-4fc0-8116-89089b7da5a3",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/resource-usages/ea5aa44d-467a-4fc0-8116-89089b7da5a3",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/5a3739ac-1046-469a-80e6-203b0a94415e",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/15f45c65-e11d-4a02-b7bc-51ccb19eb428/preview",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/15f45c65-e11d-4a02-b7bc-51ccb19eb428",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/15f45c65-e11d-4a02-b7bc-51ccb19eb428/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/resource-usages/72ae11be-f54f-4f85-a076-7f01de38f143",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/15f45c65-e11d-4a02-b7bc-51ccb19eb428/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/bbaed67b-3b47-47a7-b680-8eab5cfb02ed",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/auth/session",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/context",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/taxonomy",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/resources/items",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/15f45c65-e11d-4a02-b7bc-51ccb19eb428",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/15f45c65-e11d-4a02-b7bc-51ccb19eb428/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/resource-usages/72ae11be-f54f-4f85-a076-7f01de38f143",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/15f45c65-e11d-4a02-b7bc-51ccb19eb428/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/3058123f-cff0-47e9-86db-1c5141cc929c/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/bbaed67b-3b47-47a7-b680-8eab5cfb02ed",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/6e2c5e1a-c221-4358-a3b0-3b74e33f3ee8/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/faff93ef-d5fc-4ba4-b383-982e4343450e/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/f17340f3-39f2-4696-8497-b780f9981527",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/f17340f3-39f2-4696-8497-b780f9981527",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/aef89ea1-c544-403c-9d89-3c00ddb550f6/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/e01a28f9-eba2-4001-af61-c95fb573ccdd",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/f17340f3-39f2-4696-8497-b780f9981527",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/e01a28f9-eba2-4001-af61-c95fb573ccdd",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/f17340f3-39f2-4696-8497-b780f9981527",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/83e0024b-4314-4f2d-b2e2-5f89889e3998/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/d62981b1-d07f-44ce-b313-64e88ee1cde9",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/e01a28f9-eba2-4001-af61-c95fb573ccdd",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/f17340f3-39f2-4696-8497-b780f9981527",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/d62981b1-d07f-44ce-b313-64e88ee1cde9",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/e01a28f9-eba2-4001-af61-c95fb573ccdd",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/f17340f3-39f2-4696-8497-b780f9981527",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/a6d751c1-04d5-4152-afe4-7607f0977fba/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/b4c0beef-b7a8-46ad-a227-aa9e623519f4",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/d62981b1-d07f-44ce-b313-64e88ee1cde9",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/e01a28f9-eba2-4001-af61-c95fb573ccdd",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/f17340f3-39f2-4696-8497-b780f9981527",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/modules/lessons/v2/items/d58c3f2e-8fe4-4d86-baee-bc297fedd0fe/exports",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/b4c0beef-b7a8-46ad-a227-aa9e623519f4",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/d62981b1-d07f-44ce-b313-64e88ee1cde9",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/e01a28f9-eba2-4001-af61-c95fb573ccdd",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/f17340f3-39f2-4696-8497-b780f9981527",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/1129da43-c563-43bf-9fda-104a6c497626",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/jobs/7569bbee-3b0b-4a9c-9ade-2457c4805e7a",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/ab122eed-e6cb-4a78-bd2f-51d6581e5eab/content",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/ab122eed-e6cb-4a78-bd2f-51d6581e5eab/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/ab122eed-e6cb-4a78-bd2f-51d6581e5eab/preview",
+    "method": "POST",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/ab122eed-e6cb-4a78-bd2f-51d6581e5eab/preview",
+    "method": "GET",
+    "pageBound": true
+  },
+  {
+    "path": "/api/workbench/files/109f38ce-9b9c-4fae-9e05-77ba638de6e8/content",
+    "method": "GET",
+    "pageBound": true
+  }
+]

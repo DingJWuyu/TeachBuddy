@@ -1,0 +1,121 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1145779,
+  "events": [
+    {
+      "ms": 403.675036,
+      "event": "server:listen",
+      "server": 1,
+      "port": 48564,
+      "host": "localhost"
+    },
+    {
+      "ms": 410.362136,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "::1",
+        "family": "IPv6",
+        "port": 48564
+      }
+    },
+    {
+      "ms": 421.000931,
+      "event": "server:socket",
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54634,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 422.300311,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54634,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 428.579985,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54634,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 435.159499,
+      "event": "server:socket",
+      "socket": 3,
+      "localPort": 48564,
+      "remotePort": 54642,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 435.274812,
+      "event": "server:request",
+      "server": 1,
+      "method": "PUT",
+      "path": "/fixture/document",
+      "socket": 3,
+      "localPort": 48564,
+      "remotePort": 54642,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 454.163563,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 3,
+      "localPort": 48564,
+      "remotePort": 54642,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 459.128166,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/workbench/files",
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54634,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 485.929243,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 2,
+      "localPort": 48564,
+      "remotePort": 54634,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 490.038668,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 490.277204,
+      "event": "server:close",
+      "server": 1
+    }
+  ]
+}

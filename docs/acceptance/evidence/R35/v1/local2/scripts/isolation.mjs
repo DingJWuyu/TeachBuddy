@@ -1,0 +1,18 @@
+import {chromium,expect} from '/tmp/teacher-r35-local2-candidate/node_modules/@playwright/test/index.mjs';
+import fs from 'node:fs';import path from 'node:path';import {spawn} from 'node:child_process';import crypto from 'node:crypto';
+const base='/tmp/teacher-r35-local2-candidate', dir='/tmp/teacher-r35-local2-retained', origin='https://127.0.0.1:49934';
+const out=path.resolve(import.meta.dirname,'../isolation');fs.mkdirSync(out,{recursive:true});
+const login=JSON.parse(fs.readFileSync('/tmp/teacher-r35-local2-tools/login.json'));
+let child,browser; const pids=[]; const http=[];
+async function start(){child=spawn(process.execPath,['apps/web/e2e/fixtures/materials-integration/server.mjs'],{cwd:base,env:{...process.env,R34_PORT:'49934',R34_DATA_DIR:dir},stdio:['ignore','pipe','pipe']});pids.push(child.pid);await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('startup timeout')),15000);child.once('exit',code=>{clearTimeout(timer);reject(Error('early server exit '+code));});child.stdout.on('data',b=>{fs.appendFileSync(out+'/server.log',b);if(b.toString().includes('R34 real-auth')){clearTimeout(timer);resolve();}});child.stderr.on('data',b=>fs.appendFileSync(out+'/server.log',b));});}
+async function stop(){if(child&&child.exitCode===null){const c=child;await new Promise(r=>{c.once('exit',r);c.kill('SIGTERM');});}}
+async function signIn(page){await page.goto(origin);await page.getByLabel('邮箱',{exact:true}).fill(login.email);await page.getByLabel('密码',{exact:true}).fill(login.password);await page.getByRole('button',{name:'登录',exact:true}).click();await expect(page.locator('.wb-shell')).toBeVisible();}
+function observe(page){let pid;page.on('request',r=>{if(r.url().includes('/api/')){const id=r.headers()['x-teachbuddy-page'];if(id)pid=id;}});page.on('response',r=>{if(r.url().includes('/api/modules/')||r.url().includes('/api/workbench/'))http.push({at:new Date().toISOString(),method:r.request().method(),path:new URL(r.url()).pathname,status:r.status()});});return()=>pid;}
+try {
+ await start();browser=await chromium.launch({headless:true,executablePath:'/opt/google/chrome/chrome'});
+ const a=await browser.newContext({ignoreHTTPSErrors:true});const pa=await a.newPage();const aid=observe(pa);await signIn(pa);
+ const b=await browser.newContext({ignoreHTTPSErrors:true});const pb=await b.newPage();const bid=observe(pb);await pb.goto(origin);await pb.getByLabel('邮箱',{exact:true}).fill('local2-b@example.test');await pb.getByLabel('密码',{exact:true}).fill('local2-fixture-password');await pb.getByRole('button',{name:'登录',exact:true}).click();await expect(pb.locator('.wb-shell')).toBeVisible();
+ const anon=await browser.newContext({ignoreHTTPSErrors:true});const p0=await anon.newPage();const zid=observe(p0);await p0.goto(origin);await expect(p0.getByRole('heading',{name:'登录',exact:true})).toBeVisible();
+ const previous=JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname,'../retained/result.json')));const checks=[];
+ for(const item of previous.isolation){const url=item.path.replace('/resources/v1/','/resources/');const ra=await pa.request.get(origin+url,{headers:{'X-TeachBuddy-Page':aid()}});const rb=await pb.request.get(origin+url,{headers:{'X-TeachBuddy-Page':bid()}});const rz=await p0.request.get(origin+url,{headers:{'X-TeachBuddy-Page':zid()}});checks.push({path:url,owner:ra.status(),other:rb.status(),anonymous:rz.status()});fs.writeFileSync(out+'/result.json',JSON.stringify(checks,null,2));expect(ra.status()).toBe(200);expect(rb.status()).toBe(404);expect(rz.status()).toBe(401);}
+}finally{await browser?.close();await stop();}

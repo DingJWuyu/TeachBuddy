@@ -1,0 +1,105 @@
+- banner:
+  - button "收起侧栏" [expanded]
+  - link "TeachBuddy":
+    - /url: /
+  - button "AI 助理"
+  - text: 独立验收老师
+- complementary "模块导航":
+  - text: 独立验收老师
+  - navigation:
+    - link "工作台首页":
+      - /url: /
+    - link "题库":
+      - /url: /questions
+    - link "资源库":
+      - /url: /resources
+    - link "备课":
+      - /url: /lessons
+  - link "设置":
+    - /url: /settings
+  - button "AI 助理"
+- main:
+  - complementary:
+    - strong: 题库
+    - button "收录"
+    - button "自建"
+    - textbox "搜索题目":
+      - /placeholder: 搜索题干、公式或笔记
+      - text: R35 数学与函数图素材
+    - combobox "删除状态":
+      - option "全部题目" [selected]
+      - option "已删除"
+    - checkbox "标记"
+    - text: 标记
+    - button "分类管理"
+    - group: 待整理材料 · 0
+    - 'button "R35 数学与函数图素材 显示对照：公式与函数图。 f(x)=\\frac{\\sqrt{2x-1}}{x-2}"':
+      - strong: R35 数学与函数图素材
+      - text: "显示对照：公式与函数图。 f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+  - main:
+    - strong: R35 数学与函数图素材
+    - button "保存题目"
+    - button "复制改编"
+    - button "删除题目"
+    - button "加入备课"
+    - group:
+      - textbox "题目标题": R35 数学与函数图素材
+      - textbox "文稿段落 1": 显示对照：公式与函数图。
+      - button "上移文稿段落 1" [disabled]: ↑
+      - button "下移文稿段落 1": ↓
+      - button "删除文稿段落 1": ×
+      - textbox "文稿公式 1源": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+      - button "上移文稿公式 1": ↑
+      - button "下移文稿公式 1": ↓
+      - button "删除文稿公式 1": ×
+      - img "固定函数图"
+      - text: 图像说明
+      - textbox "文稿图片 1说明": 固定函数图
+      - text: 宽度（毫米）
+      - spinbutton "文稿图片 1宽度": "100"
+      - button "替换图片"
+      - button "上移文稿图片 1": ↑
+      - button "下移文稿图片 1" [disabled]: ↓
+      - button "删除文稿图片 1": ×
+      - button "段落"
+      - button "公式"
+      - button "图片"
+      - button "标题"
+      - button "列表"
+      - button "表格"
+      - button "教师注记"
+      - text: 答案状态
+      - combobox "答案状态":
+        - option "未提供答案"
+        - option "已有答案" [selected]
+      - textbox "文稿段落 1": ANSWER_ONLY_SEPARATE
+      - button "上移文稿段落 1" [disabled]: ↑
+      - button "下移文稿段落 1" [disabled]: ↓
+      - button "删除文稿段落 1": ×
+      - button "段落"
+      - button "公式"
+      - button "图片"
+      - button "标题"
+      - button "列表"
+      - button "表格"
+      - button "教师注记"
+      - text: 题型
+      - combobox "题型":
+        - option "未分类" [selected]
+      - text: 长期笔记
+      - textbox "长期笔记": R35_PRIVATE_MUST_NOT_RENDER
+      - checkbox "标记题目"
+      - text: 标记题目
+    - group: 使用位置
+    - group:
+      - text: 用于 PPT
+      - checkbox "包含答案（单独分片）"
+      - text: 包含答案（单独分片）
+      - button "复制文字与公式源"
+      - button "生成透明题面 PNG"
+      - button "查看生成结果"
+      - button "生成配图 1 PNG"
+      - button "公式 1 源"
+      - textbox "可复制文字公式源": "显示对照：公式与函数图。 f(x)=\\frac{\\sqrt{2x-1}}{x-2}"
+      - paragraph: 素材已生成
+      - button "下载分片 1"

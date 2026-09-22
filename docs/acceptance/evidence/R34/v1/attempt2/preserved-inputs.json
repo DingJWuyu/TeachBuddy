@@ -1,0 +1,42 @@
+[
+  {
+    "path": "AGENTS.md",
+    "unchanged_from_composition": true,
+    "sha256": "defcac13fb9d3acb7b8680db5e5c4a358e6c9bdb23cf458e63c68d39fc70c03b"
+  },
+  {
+    "path": "docs/plans/run-state.md",
+    "unchanged_from_composition": true,
+    "sha256": "940f84d4618d6a33c0bdc909395fe6877e1d48b36c2849c3ab8c1f0968cefffe"
+  },
+  {
+    "path": "docs/acceptance/evidence/R32/v1/author.md",
+    "unchanged_from_composition": true,
+    "sha256": "4f3fccac19f5809516053c66f795c0a2013f98310584ca2f7f13a314cc3934c8"
+  },
+  {
+    "path": "docs/acceptance/evidence/R32/v1/integration.md",
+    "unchanged_from_composition": true,
+    "sha256": "7d9da9bd5b3b7948b4a2029e9c53f5cd7d2e7f82276856b21892bf257f01c134"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/author.md",
+    "unchanged_from_composition": true,
+    "sha256": "82ce53dc0ffd50fd794baf5f264ff29b5954aee6647302099bbfc44e643b8f61"
+  },
+  {
+    "path": "docs/acceptance/evidence/R33/v1/integration.md",
+    "unchanged_from_composition": true,
+    "sha256": "bb095c7cc2f6c60b88b3c8375964a342d871992d07923e5bba6109c1d4e4f2d4"
+  },
+  {
+    "path": "docs/acceptance/evidence/R34/v1/author.md",
+    "unchanged_from_composition": true,
+    "sha256": "0c17797089a88a09f23a97f9b4ed577499dc3ccd0776a71e823afbe1f6484c9e"
+  },
+  {
+    "path": "docs/acceptance/evidence/R34/v1/integration.md",
+    "unchanged_from_composition": true,
+    "sha256": "d835dfa0283ac8cde21893372bd9d9ff541a3a7df69c77510b875c83d19c67f3"
+  }
+]

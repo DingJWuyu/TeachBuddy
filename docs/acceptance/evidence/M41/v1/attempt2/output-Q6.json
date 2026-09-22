@@ -1,0 +1,336 @@
+{
+  "id": "6ac789d6-86fe-4db4-b534-3a22f971d7df",
+  "version": 1,
+  "title": "Q6",
+  "source": {
+    "schemaVersion": 1,
+    "kind": "space",
+    "viewport": {
+      "xMin": -3,
+      "xMax": 3,
+      "yMin": -3,
+      "yMax": 3,
+      "width": 800,
+      "height": 720,
+      "axes": false,
+      "grid": false
+    },
+    "azimuth": -30,
+    "elevation": 25,
+    "points": [
+      {
+        "id": "A",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "label": {
+          "text": "A",
+          "dx": 12,
+          "dy": -12
+        },
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "B",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "label": {
+          "text": "B",
+          "dx": 12,
+          "dy": -12
+        },
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "C",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "label": {
+          "text": "C",
+          "dx": 12,
+          "dy": -12
+        },
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "D",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "label": {
+          "text": "D",
+          "dx": 12,
+          "dy": -12
+        },
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "A1",
+        "x": 0,
+        "y": 0,
+        "z": 2,
+        "label": {
+          "text": "A1",
+          "dx": 12,
+          "dy": -12
+        },
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "B1",
+        "x": 2,
+        "y": 0,
+        "z": 2,
+        "label": {
+          "text": "B1",
+          "dx": 12,
+          "dy": -12
+        },
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "C1",
+        "x": 2,
+        "y": 2,
+        "z": 2,
+        "label": {
+          "text": "C1",
+          "dx": 12,
+          "dy": -12
+        },
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "D1",
+        "x": 0,
+        "y": 2,
+        "z": 2,
+        "label": {
+          "text": "D1",
+          "dx": 12,
+          "dy": -12
+        },
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "A_B",
+        "from": "A",
+        "to": "B",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "B_C",
+        "from": "B",
+        "to": "C",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "C_D",
+        "from": "C",
+        "to": "D",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "dashed",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "D_A",
+        "from": "D",
+        "to": "A",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "dashed",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "A1_B1",
+        "from": "A1",
+        "to": "B1",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "B1_C1",
+        "from": "B1",
+        "to": "C1",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "C1_D1",
+        "from": "C1",
+        "to": "D1",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "D1_A1",
+        "from": "D1",
+        "to": "A1",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "A_A1",
+        "from": "A",
+        "to": "A1",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "B_B1",
+        "from": "B",
+        "to": "B1",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "C_C1",
+        "from": "C",
+        "to": "C1",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "solid",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "D_D1",
+        "from": "D",
+        "to": "D1",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "dashed",
+          "fontSize": 16
+        }
+      },
+      {
+        "id": "A_C1",
+        "from": "A",
+        "to": "C1",
+        "style": {
+          "stroke": "#2563eb",
+          "fill": null,
+          "width": 2,
+          "dash": "dashed",
+          "fontSize": 16
+        }
+      }
+    ]
+  },
+  "originalFileId": null,
+  "render": {
+    "state": "ready",
+    "posterFileId": "59af835a-f65f-48ca-8158-cd7c403b8079",
+    "presentationFileId": null,
+    "reason": null
+  },
+  "rendererVersion": "math-v2-mathjax3.2.2-noto-sc5.2.9-native",
+  "createdAt": "2026-09-22T09:51:48.368Z",
+  "updatedAt": "2026-09-22T09:51:48.368Z",
+  "deletedAt": null
+}

@@ -1,0 +1,306 @@
+{
+  "directory": "/tmp/r33-local5-api-bQWO4G",
+  "trace": [
+    {
+      "at": "2026-09-22T15:38:08.266Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "c7a5f57a-4c2d-4919-b580-2701fb5a54b1",
+        "name": "triangle.png",
+        "mediaType": "image/png",
+        "byteLength": 16272,
+        "sha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f",
+        "createdAt": "2026-09-22T15:38:08.268Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.272Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "ab628078-dd2f-4eb5-b8d4-f042ccd8b830",
+        "name": "triangle.png",
+        "mediaType": "image/png",
+        "byteLength": 16272,
+        "sha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f",
+        "createdAt": "2026-09-22T15:38:08.274Z",
+        "duplicateOfFileId": "c7a5f57a-4c2d-4919-b580-2701fb5a54b1"
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.278Z",
+      "route": "/api/modules/questions/v2/imports",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "all-empty",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "c7a5f57a-4c2d-4919-b580-2701fb5a54b1",
+            "ab628078-dd2f-4eb5-b8d4-f042ccd8b830"
+          ],
+          "pages": []
+        }
+      },
+      "response": {
+        "id": "6d4ceee8-337e-4474-b5c2-016be6a01591",
+        "version": 1,
+        "createdAt": "2026-09-22T15:38:08.280Z",
+        "updatedAt": "2026-09-22T15:38:08.280Z",
+        "deletedAt": null,
+        "title": "all-empty",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "c7a5f57a-4c2d-4919-b580-2701fb5a54b1",
+            "ab628078-dd2f-4eb5-b8d4-f042ccd8b830"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [],
+        "fragments": [],
+        "jobId": "65860474-ea59-4ba8-ab02-09e11b7c1ce2"
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.285Z",
+      "route": "/api/workbench/jobs/65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "6d4ceee8-337e-4474-b5c2-016be6a01591",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:08.280Z",
+        "updatedAt": "2026-09-22T15:38:08.280Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.312Z",
+      "route": "/api/workbench/jobs/65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "6d4ceee8-337e-4474-b5c2-016be6a01591",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:08.280Z",
+        "updatedAt": "2026-09-22T15:38:08.280Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.340Z",
+      "route": "/api/workbench/jobs/65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "6d4ceee8-337e-4474-b5c2-016be6a01591",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:08.280Z",
+        "updatedAt": "2026-09-22T15:38:08.280Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.367Z",
+      "route": "/api/workbench/jobs/65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "6d4ceee8-337e-4474-b5c2-016be6a01591",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:08.280Z",
+        "updatedAt": "2026-09-22T15:38:08.280Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.394Z",
+      "route": "/api/workbench/jobs/65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "6d4ceee8-337e-4474-b5c2-016be6a01591",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:08.280Z",
+        "updatedAt": "2026-09-22T15:38:08.280Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.422Z",
+      "route": "/api/workbench/jobs/65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "6d4ceee8-337e-4474-b5c2-016be6a01591",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:38:08.280Z",
+        "updatedAt": "2026-09-22T15:38:08.280Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.450Z",
+      "route": "/api/workbench/jobs/65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "65860474-ea59-4ba8-ab02-09e11b7c1ce2",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "6d4ceee8-337e-4474-b5c2-016be6a01591",
+          "version": 1
+        },
+        "state": "failed",
+        "createdAt": "2026-09-22T15:38:08.280Z",
+        "updatedAt": "2026-09-22T15:38:08.440Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 2,
+          "total": 2,
+          "unit": "pages"
+        },
+        "outputFileIds": [],
+        "issues": [
+          {
+            "code": "empty-response",
+            "unitId": "file:c7a5f57a-4c2d-4919-b580-2701fb5a54b1:page:1",
+            "field": null,
+            "detail": "提取结果不完整，请对照原稿继续。"
+          },
+          {
+            "code": "empty-response",
+            "unitId": "file:ab628078-dd2f-4eb5-b8d4-f042ccd8b830:page:1",
+            "field": null,
+            "detail": "提取结果不完整，请对照原稿继续。"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-09-22T15:38:08.453Z",
+      "route": "/api/modules/questions/v2/imports/6d4ceee8-337e-4474-b5c2-016be6a01591",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "6d4ceee8-337e-4474-b5c2-016be6a01591",
+        "version": 3,
+        "createdAt": "2026-09-22T15:38:08.280Z",
+        "updatedAt": "2026-09-22T15:38:08.440Z",
+        "deletedAt": null,
+        "title": "all-empty",
+        "origin": "local provider control",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "c7a5f57a-4c2d-4919-b580-2701fb5a54b1",
+            "ab628078-dd2f-4eb5-b8d4-f042ccd8b830"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [],
+        "fragments": [],
+        "jobId": "65860474-ea59-4ba8-ab02-09e11b7c1ce2"
+      }
+    }
+  ]
+}

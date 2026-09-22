@@ -1,0 +1,18 @@
+
+Running 8 tests using 1 worker
+
+(node:1231873) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ../../home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-integration-navigation.spec.mjs:85:1 › 题库使用位置可前往实际环节并返回题库现场 (4.7s)
+  ✓  2 ../../home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-integration-navigation.spec.mjs:110:1 › 题库主动加入后保留成功反馈及前往备课入口 (2.4s)
+  ✓  3 ../../home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-integration-navigation.spec.mjs:129:1 › 加入备课响应丢失后确认原请求仍提供前往入口且不重复 (2.2s)
+  ✓  4 ../../home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-integration-navigation.spec.mjs:151:1 › 最新原生Word校对在真实外壳保存恢复并引用输出 (6.5s)
+  ✓  5 ../../home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-integration-restart.spec.mjs:8:1 › 独立普通进程重启保持同一origin、未知上传原键和新浏览器持久数据 (4.4s)
+  ✓  6 ../../home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-integration.spec.mjs:30:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 (41.7s)
+  ✓  7 ../../home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-integration.spec.mjs:283:1 › 真实身份边界及保存丢响应：同键恢复、草稿保留、退出后拒绝旧页面 (1.2s)
+[workbench] modules discovered: questions, resources, lessons
+[workbench] migrations applied 7, skipped 0
+[workbench] modules enabled: questions, resources, lessons
+  ✓  8 ../../home/liam_t/项目/TeacherWorkspace-r35-local-recheck/docs/acceptance/evidence/R35/v1/local2/scripts/local2-materials-questions-fragments.spec.mjs:6:1 › synthetic page fragments use real upload, review, independent answer navigation and reload (3.3s)
+
+  8 passed (1.1m)

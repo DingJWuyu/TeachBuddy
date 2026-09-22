@@ -1,0 +1,136 @@
+TAP version 13
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: text import preserves original, produces editable drafts and commits once
+ok 1 - text import preserves original, produces editable drafts and commits once
+  ---
+  duration_ms: 81.215641
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: taxonomy and v2 editing, copies, legacy refusal, account isolation and restart
+ok 2 - taxonomy and v2 editing, copies, legacy refusal, account isolation and restart
+  ---
+  duration_ms: 39.941596
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: blocked provider keeps real image, retry preserves review and supplement originals
+ok 3 - blocked provider keeps real image, retry preserves review and supplement originals
+  ---
+  duration_ms: 108.988262
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: PPT assets use persisted snapshot, transparent bounded PNG and exclude note
+ok 4 - PPT assets use persisted snapshot, transparent bounded PNG and exclude note
+  ---
+  duration_ms: 60.793428
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: fixed native T and W preserve six question boundaries and existing answer roles
+ok 5 - fixed native T and W preserve six question boundaries and existing answer roles
+  ---
+  duration_ms: 1107.382347
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons
+# Subtest: truncated Provider retains complete candidates; retry never replaces saved review
+ok 6 - truncated Provider retains complete candidates; retry never replaces saved review
+  ---
+  duration_ms: 600.099479
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: Word answer-only image stays in solution and out of student asset snapshot
+ok 7 - Word answer-only image stays in solution and out of student asset snapshot
+  ---
+  duration_ms: 828.037999
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: frozen old visual response runs through Adapter as replay, not live recognition
+ok 8 - frozen old visual response runs through Adapter as replay, not live recognition
+  ---
+  duration_ms: 594.321075
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: review protects confirmed mappings, invalid taxonomy and explicit source range
+ok 9 - review protects confirmed mappings, invalid taxonomy and explicit source range
+  ---
+  duration_ms: 24.757905
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: PNG table keeps cell grid, transparency and bounded dimensions
+ok 10 - PNG table keeps cell grid, transparency and bounded dimensions
+  ---
+  duration_ms: 61.536409
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: external E selected pages remain 7 and 8 and original stays complete without online calls
+ok 11 - external E selected pages remain 7 and 8 and original stays complete without online calls
+  ---
+  duration_ms: 3522.968237
+  type: 'test'
+  ...
+# Subtest: native math generalizes across changed labels and values without solving missing answers
+ok 12 - native math generalizes across changed labels and values without solving missing answers
+  ---
+  duration_ms: 9.896709
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: complex native OMML keeps nested structures and flags unsupported nodes
+ok 13 - complex native OMML keeps nested structures and flags unsupported nodes
+  ---
+  duration_ms: 799.639541
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8202.902727

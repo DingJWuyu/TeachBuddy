@@ -1,0 +1,2398 @@
+{
+  "description": "T50-MATH-CONTRACT@1；samples.valid 为 schema 判断；exchanges 为未运行的 HTTP 预期，前置见 math-cases.md。",
+  "samples": [
+    {
+      "id": "create-mixed",
+      "schema": "RecordInputV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "create-quick-v2",
+      "schema": "RecordInputV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": []
+      }
+    },
+    {
+      "id": "old-record-create-v2",
+      "schema": "RecordInputV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "math-input",
+      "schema": "SourceInputV2",
+      "valid": true,
+      "value": {
+        "kind": "math",
+        "id": "60000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "id": "math-source",
+      "schema": "SourceV2",
+      "valid": true,
+      "value": {
+        "kind": "math",
+        "id": "60000000-0000-4000-8000-000000000001",
+        "labelAtLink": "函数图象",
+        "currentLabel": "函数图象",
+        "deleted": false
+      }
+    },
+    {
+      "id": "record-linked",
+      "schema": "RecordV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002",
+            "labelAtLink": "例题",
+            "currentLabel": "例题",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数图象",
+            "currentLabel": "函数图象",
+            "deleted": false
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "record-renamed",
+      "schema": "RecordV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002",
+            "labelAtLink": "例题",
+            "currentLabel": "例题",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数图象",
+            "currentLabel": "二次函数图象",
+            "deleted": false
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "record-work-deleted",
+      "schema": "RecordV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002",
+            "labelAtLink": "例题",
+            "currentLabel": "例题",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数图象",
+            "currentLabel": "二次函数图象",
+            "deleted": true
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "update-retaining-deleted",
+      "schema": "RecordUpdateV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2已补讲，下次练习参数变化",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          }
+        ],
+        "expectedVersion": 1
+      }
+    },
+    {
+      "id": "record-retained-update",
+      "schema": "RecordV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2已补讲，下次练习参数变化",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002",
+            "labelAtLink": "例题",
+            "currentLabel": "例题",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数图象",
+            "currentLabel": "二次函数图象",
+            "deleted": true
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 2,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:01:00Z",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "record-deleted",
+      "schema": "RecordV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2已补讲，下次练习参数变化",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002",
+            "labelAtLink": "例题",
+            "currentLabel": "例题",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数图象",
+            "currentLabel": "二次函数图象",
+            "deleted": true
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 3,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:02:00Z",
+        "deletedAt": "2026-09-21T06:02:00Z"
+      }
+    },
+    {
+      "id": "record-restored",
+      "schema": "RecordV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2已补讲，下次练习参数变化",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002",
+            "labelAtLink": "例题",
+            "currentLabel": "例题",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数图象",
+            "currentLabel": "二次函数图象",
+            "deleted": true
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 4,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:03:00Z",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "reverse-two-classes",
+      "schema": "RecordListV2",
+      "valid": true,
+      "value": {
+        "items": [
+          {
+            "classId": "10000000-0000-4000-8000-000000000002",
+            "recordedOn": "2026-09-21",
+            "note": "二班需要先复习坐标",
+            "position": "",
+            "unfinished": "",
+            "commonIssues": "",
+            "nextNote": "",
+            "sources": [
+              {
+                "kind": "lesson",
+                "id": "20000000-0000-4000-8000-000000000001",
+                "labelAtLink": "函数单调性",
+                "currentLabel": "函数单调性",
+                "deleted": false
+              },
+              {
+                "kind": "question",
+                "id": "20000000-0000-4000-8000-000000000002",
+                "labelAtLink": "例题",
+                "currentLabel": "例题",
+                "deleted": false
+              },
+              {
+                "kind": "math",
+                "id": "60000000-0000-4000-8000-000000000001",
+                "labelAtLink": "函数图象",
+                "currentLabel": "函数图象",
+                "deleted": false
+              }
+            ],
+            "id": "30000000-0000-4000-8000-000000000002",
+            "version": 1,
+            "createdAt": "2026-09-21T06:01:00Z",
+            "updatedAt": "2026-09-21T06:01:00Z",
+            "deletedAt": null
+          },
+          {
+            "classId": "10000000-0000-4000-8000-000000000001",
+            "recordedOn": "2026-09-21",
+            "note": "例2没讲，任意性还需强调",
+            "position": "",
+            "unfinished": "",
+            "commonIssues": "",
+            "nextNote": "",
+            "sources": [
+              {
+                "kind": "lesson",
+                "id": "20000000-0000-4000-8000-000000000001",
+                "labelAtLink": "函数单调性",
+                "currentLabel": "函数单调性",
+                "deleted": false
+              },
+              {
+                "kind": "question",
+                "id": "20000000-0000-4000-8000-000000000002",
+                "labelAtLink": "例题",
+                "currentLabel": "例题",
+                "deleted": false
+              },
+              {
+                "kind": "math",
+                "id": "60000000-0000-4000-8000-000000000001",
+                "labelAtLink": "函数图象",
+                "currentLabel": "函数图象",
+                "deleted": false
+              }
+            ],
+            "id": "30000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "createdAt": "2026-09-21T06:00:00Z",
+            "updatedAt": "2026-09-21T06:00:00Z",
+            "deletedAt": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reverse-class-deleted",
+      "schema": "RecordListV2",
+      "valid": true,
+      "value": {
+        "items": [
+          {
+            "classId": "10000000-0000-4000-8000-000000000001",
+            "recordedOn": "2026-09-21",
+            "note": "例2没讲，任意性还需强调",
+            "position": "",
+            "unfinished": "",
+            "commonIssues": "",
+            "nextNote": "",
+            "sources": [
+              {
+                "kind": "lesson",
+                "id": "20000000-0000-4000-8000-000000000001",
+                "labelAtLink": "函数单调性",
+                "currentLabel": "函数单调性",
+                "deleted": false
+              },
+              {
+                "kind": "question",
+                "id": "20000000-0000-4000-8000-000000000002",
+                "labelAtLink": "例题",
+                "currentLabel": "例题",
+                "deleted": false
+              },
+              {
+                "kind": "math",
+                "id": "60000000-0000-4000-8000-000000000001",
+                "labelAtLink": "函数图象",
+                "currentLabel": "函数图象",
+                "deleted": false
+              }
+            ],
+            "id": "30000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "createdAt": "2026-09-21T06:00:00Z",
+            "updatedAt": "2026-09-21T06:00:00Z",
+            "deletedAt": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reverse-empty",
+      "schema": "RecordListV2",
+      "valid": true,
+      "value": {
+        "items": []
+      }
+    },
+    {
+      "id": "old-response-v2",
+      "schema": "RecordV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002",
+            "labelAtLink": "例题",
+            "currentLabel": "例题",
+            "deleted": false
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "reject-v1-math-input",
+      "schema": "RecordInput",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-v1-math-record",
+      "schema": "Record",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002",
+            "labelAtLink": "例题",
+            "currentLabel": "例题",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数图象",
+            "currentLabel": "函数图象",
+            "deleted": false
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "reject-v1-math-list",
+      "schema": "RecordList",
+      "valid": false,
+      "value": {
+        "items": [
+          {
+            "classId": "10000000-0000-4000-8000-000000000001",
+            "recordedOn": "2026-09-21",
+            "note": "例2没讲，任意性还需强调",
+            "position": "",
+            "unfinished": "",
+            "commonIssues": "",
+            "nextNote": "",
+            "sources": [
+              {
+                "kind": "lesson",
+                "id": "20000000-0000-4000-8000-000000000001",
+                "labelAtLink": "函数单调性",
+                "currentLabel": "函数单调性",
+                "deleted": false
+              },
+              {
+                "kind": "question",
+                "id": "20000000-0000-4000-8000-000000000002",
+                "labelAtLink": "例题",
+                "currentLabel": "例题",
+                "deleted": false
+              },
+              {
+                "kind": "math",
+                "id": "60000000-0000-4000-8000-000000000001",
+                "labelAtLink": "函数图象",
+                "currentLabel": "函数图象",
+                "deleted": false
+              }
+            ],
+            "id": "30000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "createdAt": "2026-09-21T06:00:00Z",
+            "updatedAt": "2026-09-21T06:00:00Z",
+            "deletedAt": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-workVersion",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "workVersion": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-accountId",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "accountId": "teacher-a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-labelAtLink",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "labelAtLink": "伪造标题"
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-attrs",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "attrs": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-work",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "work",
+            "id": "60000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-missing-id",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math"
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-bad-id",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "not-a-uuid"
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-null",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          null
+        ]
+      }
+    },
+    {
+      "id": "reject-null-sources",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": null
+      }
+    },
+    {
+      "id": "reject-too-many",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "reject-record-unknown",
+      "schema": "RecordInputV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          }
+        ],
+        "unexpected": true
+      }
+    },
+    {
+      "id": "reject-update-missing-version",
+      "schema": "RecordUpdateV2",
+      "valid": false,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2已补讲，下次练习参数变化",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "shape-valid-duplicate",
+      "schema": "RecordInputV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "shape-valid-empty-text",
+      "schema": "RecordInputV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "response-additive",
+      "schema": "RecordV2",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002",
+            "labelAtLink": "例题",
+            "currentLabel": "例题",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "60000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数图象",
+            "currentLabel": "函数图象",
+            "deleted": false,
+            "futureResponseField": true
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null,
+        "futureResponseField": true
+      }
+    },
+    {
+      "id": "provider-title-0",
+      "schema": "TeachingWork",
+      "valid": false,
+      "value": {
+        "id": "60000000-0000-4000-8000-000000000001",
+        "version": 2,
+        "title": "",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "provider-title-200",
+      "schema": "TeachingWork",
+      "valid": true,
+      "value": {
+        "id": "60000000-0000-4000-8000-000000000001",
+        "version": 2,
+        "title": "图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "provider-title-201",
+      "schema": "TeachingWork",
+      "valid": false,
+      "value": {
+        "id": "60000000-0000-4000-8000-000000000001",
+        "version": 2,
+        "title": "图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图图",
+        "deletedAt": null
+      }
+    },
+    {
+      "id": "provider-tombstone",
+      "schema": "TeachingWork",
+      "valid": true,
+      "value": {
+        "id": "60000000-0000-4000-8000-000000000001",
+        "version": 3,
+        "title": "二次函数图象",
+        "deletedAt": "2026-09-21T06:00:00Z"
+      }
+    },
+    {
+      "id": "error-v1-record",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/sources",
+        "reason": "unsupported-content-version"
+      }
+    },
+    {
+      "id": "error-v1-list",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/items",
+        "reason": "unsupported-content-version"
+      }
+    },
+    {
+      "id": "error-deleted",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/reference-deleted",
+        "status": 409
+      }
+    },
+    {
+      "id": "error-version",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/version-conflict",
+        "status": 409,
+        "currentVersion": 2,
+        "objectId": "30000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "id": "error-key-reused",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/idempotency-key-reused",
+        "status": 409
+      }
+    },
+    {
+      "id": "error-not-found",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/not-found",
+        "status": 404
+      }
+    },
+    {
+      "id": "error-unavailable",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/temporarily-unavailable",
+        "status": 503
+      }
+    },
+    {
+      "id": "error-duplicate",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/sources/1/id",
+        "reason": "duplicate-id"
+      }
+    },
+    {
+      "id": "error-empty",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/note",
+        "reason": "empty-content"
+      }
+    },
+    {
+      "id": "error-math-v1-input",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/sources/2/kind",
+        "reason": "invalid-reference"
+      }
+    },
+    {
+      "id": "error-math-v1-query",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/path/kind",
+        "reason": "invalid-reference"
+      }
+    },
+    {
+      "id": "catalog-combined-target",
+      "schema": "ModuleCatalogV3",
+      "valid": true,
+      "value": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReferenceV2",
+              "resources.readForReferenceV2",
+              "math.readForReferenceV1"
+            ]
+          },
+          {
+            "id": "math",
+            "name": "数学工坊",
+            "path": "/math",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "classes",
+            "name": "班级教学",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink",
+              "math.readForTeachingLinkV1"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "catalog-duplicate-id",
+      "schema": "ModuleCatalogV3",
+      "valid": true,
+      "value": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReferenceV2",
+              "resources.readForReferenceV2",
+              "math.readForReferenceV1"
+            ]
+          },
+          {
+            "id": "math",
+            "name": "数学工坊",
+            "path": "/math",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "questions",
+            "name": "班级教学",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink",
+              "math.readForTeachingLinkV1"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "type": "/problems/workbench/invalid-input",
+        "field": "/items/4/id",
+        "reason": "duplicate-id"
+      }
+    },
+    {
+      "id": "catalog-duplicate-path",
+      "schema": "ModuleCatalogV3",
+      "valid": true,
+      "value": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReferenceV2",
+              "resources.readForReferenceV2",
+              "math.readForReferenceV1"
+            ]
+          },
+          {
+            "id": "math",
+            "name": "数学工坊",
+            "path": "/math",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "classes",
+            "name": "班级教学",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink",
+              "math.readForTeachingLinkV1"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/lessons",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "type": "/problems/workbench/invalid-input",
+        "field": "/items/5/path",
+        "reason": "duplicate-id"
+      }
+    },
+    {
+      "id": "catalog-missing-math",
+      "schema": "ModuleCatalogV3",
+      "valid": true,
+      "value": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReferenceV2",
+              "resources.readForReferenceV2",
+              "math.readForReferenceV1"
+            ]
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "classes",
+            "name": "班级教学",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink",
+              "math.readForTeachingLinkV1"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "type": "/problems/workbench/invalid-input",
+        "field": "/items/1/requires/2",
+        "reason": "invalid-reference"
+      }
+    },
+    {
+      "id": "catalog-cycle",
+      "schema": "ModuleCatalogV3",
+      "valid": true,
+      "value": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReferenceV2",
+              "resources.readForReferenceV2",
+              "math.readForReferenceV1"
+            ]
+          },
+          {
+            "id": "math",
+            "name": "数学工坊",
+            "path": "/math",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass"
+            ]
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "classes",
+            "name": "班级教学",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReference",
+              "lessons.readForTeachingLink",
+              "math.readForTeachingLinkV1"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "type": "/problems/workbench/invalid-input",
+        "field": "/items",
+        "reason": "invalid-reference"
+      }
+    },
+    {
+      "id": "old-overwrite",
+      "schema": "RecordUpdate",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          }
+        ],
+        "expectedVersion": 2
+      }
+    },
+    {
+      "id": "delete-current",
+      "schema": "Deletion",
+      "valid": true,
+      "value": {
+        "expectedVersion": 2,
+        "deleted": true
+      }
+    },
+    {
+      "id": "restore-current",
+      "schema": "Deletion",
+      "valid": true,
+      "value": {
+        "expectedVersion": 3,
+        "deleted": false
+      }
+    },
+    {
+      "id": "old-stale",
+      "schema": "RecordUpdate",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001"
+          },
+          {
+            "kind": "question",
+            "id": "20000000-0000-4000-8000-000000000002"
+          }
+        ],
+        "expectedVersion": 1
+      }
+    },
+    {
+      "id": "old-success-response",
+      "schema": "Record",
+      "valid": true,
+      "value": {
+        "classId": "10000000-0000-4000-8000-000000000001",
+        "recordedOn": "2026-09-21",
+        "note": "例2没讲，任意性还需强调",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "lesson",
+            "id": "20000000-0000-4000-8000-000000000001",
+            "labelAtLink": "函数单调性",
+            "currentLabel": "函数单调性",
+            "deleted": false
+          }
+        ],
+        "id": "30000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "createdAt": "2026-09-21T06:00:00Z",
+        "updatedAt": "2026-09-21T06:00:00Z",
+        "deletedAt": null
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "id": "create",
+      "case": "TM-C1",
+      "precondition": "A 的 C1/L1/Q1/W1 均活动；时间06:00Z",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/v2/records",
+        "sample": "create-mixed"
+      },
+      "response": {
+        "status": 201,
+        "sample": "record-linked"
+      }
+    },
+    {
+      "id": "renamed",
+      "case": "TM-C1",
+      "precondition": "W1已改名，R1未再次写入",
+      "request": {
+        "method": "GET",
+        "path": "/api/modules/classes/v2/records/30000000-0000-4000-8000-000000000001"
+      },
+      "response": {
+        "status": 200,
+        "sample": "record-renamed"
+      }
+    },
+    {
+      "id": "source-deleted",
+      "case": "TM-C2",
+      "precondition": "W1已改名并软删除，R1未再次写入",
+      "request": {
+        "method": "GET",
+        "path": "/api/modules/classes/v2/records/30000000-0000-4000-8000-000000000001"
+      },
+      "response": {
+        "status": 200,
+        "sample": "record-work-deleted"
+      }
+    },
+    {
+      "id": "retain-deleted",
+      "case": "TM-C2",
+      "precondition": "R1/version1，W1已删，时间06:01Z",
+      "request": {
+        "method": "PUT",
+        "path": "/api/modules/classes/v2/records/30000000-0000-4000-8000-000000000001",
+        "sample": "update-retaining-deleted"
+      },
+      "response": {
+        "status": 200,
+        "sample": "record-retained-update"
+      }
+    },
+    {
+      "id": "new-deleted",
+      "case": "TM-C2",
+      "precondition": "W1已软删除，尚无该新记录",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/v2/records",
+        "sample": "create-mixed"
+      },
+      "response": {
+        "status": 409,
+        "sample": "error-deleted"
+      }
+    },
+    {
+      "id": "reverse",
+      "case": "TM-C3",
+      "precondition": "两班活动记录与样本相同，来源均活动",
+      "request": {
+        "method": "GET",
+        "path": "/api/modules/classes/v2/source-records/math/60000000-0000-4000-8000-000000000001"
+      },
+      "response": {
+        "status": 200,
+        "sample": "reverse-two-classes"
+      }
+    },
+    {
+      "id": "v1-detail",
+      "case": "TM-C4",
+      "precondition": "R1含math",
+      "request": {
+        "method": "GET",
+        "path": "/api/modules/classes/records/30000000-0000-4000-8000-000000000001"
+      },
+      "response": {
+        "status": 422,
+        "sample": "error-v1-record"
+      }
+    },
+    {
+      "id": "v1-list",
+      "case": "TM-C4",
+      "precondition": "C1活动记录含R1且R1含math",
+      "request": {
+        "method": "GET",
+        "path": "/api/modules/classes/records?classId=10000000-0000-4000-8000-000000000001"
+      },
+      "response": {
+        "status": 422,
+        "sample": "error-v1-list"
+      }
+    },
+    {
+      "id": "v1-reverse",
+      "case": "TM-C4",
+      "precondition": "R1含L1与math",
+      "request": {
+        "method": "GET",
+        "path": "/api/modules/classes/source-records/lesson/20000000-0000-4000-8000-000000000001"
+      },
+      "response": {
+        "status": 422,
+        "sample": "error-v1-list"
+      }
+    },
+    {
+      "id": "v1-overwrite",
+      "case": "TM-C4",
+      "precondition": "R1/version2含math，使用新键",
+      "request": {
+        "method": "PUT",
+        "path": "/api/modules/classes/records/30000000-0000-4000-8000-000000000001",
+        "sample": "old-overwrite"
+      },
+      "response": {
+        "status": 422,
+        "sample": "error-v1-record"
+      }
+    },
+    {
+      "id": "v1-delete",
+      "case": "TM-C4",
+      "precondition": "R1/version2含math，使用新键",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/records/30000000-0000-4000-8000-000000000001/deletion",
+        "sample": "delete-current"
+      },
+      "response": {
+        "status": 422,
+        "sample": "error-v1-record"
+      }
+    },
+    {
+      "id": "v2-delete",
+      "case": "TM-C2",
+      "precondition": "R1已保留删除作品更新为version2，时间06:02Z",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/v2/records/30000000-0000-4000-8000-000000000001/deletion",
+        "sample": "delete-current"
+      },
+      "response": {
+        "status": 200,
+        "sample": "record-deleted"
+      }
+    },
+    {
+      "id": "v2-restore",
+      "case": "TM-C2",
+      "precondition": "R1/version3已删除，C1活动，时间06:03Z",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/v2/records/30000000-0000-4000-8000-000000000001/deletion",
+        "sample": "restore-current"
+      },
+      "response": {
+        "status": 200,
+        "sample": "record-restored"
+      }
+    },
+    {
+      "id": "v1-stale",
+      "case": "TM-C4",
+      "precondition": "R1/version2含math，使用新键",
+      "request": {
+        "method": "PUT",
+        "path": "/api/modules/classes/records/30000000-0000-4000-8000-000000000001",
+        "sample": "old-stale"
+      },
+      "response": {
+        "status": 409,
+        "sample": "error-version"
+      }
+    },
+    {
+      "id": "v1-reject-input",
+      "case": "TM-C4",
+      "precondition": "旧请求基本schema不允许math",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/records",
+        "sample": "create-mixed"
+      },
+      "response": {
+        "status": 422,
+        "sample": "error-math-v1-input"
+      }
+    },
+    {
+      "id": "v1-reject-kind",
+      "case": "TM-C4",
+      "precondition": "旧反查kind封闭",
+      "request": {
+        "method": "GET",
+        "path": "/api/modules/classes/source-records/math/60000000-0000-4000-8000-000000000001"
+      },
+      "response": {
+        "status": 422,
+        "sample": "error-math-v1-query"
+      }
+    },
+    {
+      "id": "old-replay",
+      "case": "TM-C5",
+      "precondition": "K1旧创建已成功丢响应，当前R1/version2含math；重启后原键原体",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/records",
+        "sample": "old-record-create-v2"
+      },
+      "response": {
+        "status": 201,
+        "sample": "old-success-response"
+      }
+    },
+    {
+      "id": "cross-path-key",
+      "case": "TM-C5",
+      "precondition": "K1已绑定旧创建方法/路径/体，重投v2",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/v2/records",
+        "sample": "old-record-create-v2"
+      },
+      "response": {
+        "status": 409,
+        "sample": "error-key-reused"
+      }
+    },
+    {
+      "id": "foreign",
+      "case": "TM-C6",
+      "precondition": "W1属于B",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/v2/records",
+        "sample": "create-mixed"
+      },
+      "response": {
+        "status": 404,
+        "sample": "error-not-found"
+      }
+    },
+    {
+      "id": "provider-failure",
+      "case": "TM-C6",
+      "precondition": "math同步读取抛503",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/v2/records",
+        "sample": "create-mixed"
+      },
+      "response": {
+        "status": 503,
+        "sample": "error-unavailable"
+      }
+    },
+    {
+      "id": "duplicate",
+      "case": "TM-C6",
+      "precondition": "W1活动但sources重复",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/v2/records",
+        "sample": "shape-valid-duplicate"
+      },
+      "response": {
+        "status": 422,
+        "sample": "error-duplicate"
+      }
+    },
+    {
+      "id": "empty",
+      "case": "TM-C6",
+      "precondition": "全部文字空，即使有合法来源",
+      "request": {
+        "method": "POST",
+        "path": "/api/modules/classes/v2/records",
+        "sample": "shape-valid-empty-text"
+      },
+      "response": {
+        "status": 422,
+        "sample": "error-empty"
+      }
+    }
+  ]
+}

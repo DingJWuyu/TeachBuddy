@@ -1,0 +1,61 @@
+TAP version 13
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+ok 1 - MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+  ---
+  duration_ms: 60.297488
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+ok 2 - MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+  ---
+  duration_ms: 833.557745
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+ok 3 - MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+  ---
+  duration_ms: 10.029185
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 0, skipped 5
+# [workbench] modules enabled: questions, lessons
+# [workbench] modules discovered: questions, lessons
+# [workbench] migrations applied 5, skipped 0
+# [workbench] modules enabled: questions, lessons
+# Subtest: MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+ok 4 - MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+  ---
+  duration_ms: 829.661829
+  type: 'test'
+  ...
+# Subtest: MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+ok 5 - MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+  ---
+  duration_ms: 2253.566114
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4343.2079

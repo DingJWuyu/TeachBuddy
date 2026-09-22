@@ -1,0 +1,49 @@
+
+Running 2 tests using 1 worker
+
+(node:1057060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-lessons.spec.js:3:1 › WB-M018/M019/M020: edit manuscript, select references, reopen and generate actual output (11.0s)
+(node:1057806) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 apps/web/e2e/materials-lessons.spec.js:190:1 › WB-M020: deleted output selections do not block a fresh output (3.2s)
+
+
+  1) apps/web/e2e/materials-lessons.spec.js:3:1 › WB-M018/M019/M020: edit manuscript, select references, reopen and generate actual output
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  getByLabel('预览缩放')
+    Expected: "150"
+    Received: "100"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveValue" getByLabel('预览缩放') with timeout 5000ms
+      - waiting for getByLabel('预览缩放')
+        14 × locator resolved to <select aria-label="预览缩放">…</select>
+           - unexpected value "100"
+
+
+      69 |   await page.getByRole("button", { name: "关闭预览", exact: true }).click();
+      70 |   await page.getByRole("button", { name: "预览成品", exact: true }).click();
+    > 71 |   await expect(page.getByLabel("预览缩放")).toHaveValue("150");
+         |                                         ^
+      72 |   await page.getByRole("button", { name: "关闭预览", exact: true }).click();
+      73 |   await page.getByRole("button", { name: "返回文稿", exact: true }).click();
+      74 |   await page.setViewportSize({ width: 1280, height: 800 });
+        at /home/liam_t/项目/TeacherWorkspace-r34-lessons/apps/web/e2e/materials-lessons.spec.js:71:41
+
+    Error Context: test-results/r34/playwright/materials-lessons-WB-M018--cc043--and-generate-actual-output/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34/playwright/materials-lessons-WB-M018--cc043--and-generate-actual-output/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34/playwright/materials-lessons-WB-M018--cc043--and-generate-actual-output/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-lessons.spec.js:3:1 › WB-M018/M019/M020: edit manuscript, select references, reopen and generate actual output
+  1 passed (15.0s)

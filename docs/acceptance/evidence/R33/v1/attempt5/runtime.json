@@ -1,0 +1,97 @@
+{
+  "services": "stopped",
+  "axiSession": "r33-attempt5 (stopped)",
+  "ui": {
+    "port": 50251,
+    "directory": "/tmp/r33-attempt5-ui",
+    "identity": "real-auth/fake-mail"
+  },
+  "regression": {
+    "copy": "/home/liam_t/r33-attempt5-runtime/regression",
+    "plainFixture": {
+      "port": 50252,
+      "directory": "/home/liam_t/r33-attempt5-runtime/questions",
+      "office": "not configured; failed Word preview retained"
+    },
+    "officeFixture": {
+      "port": 50253,
+      "directory": "/home/liam_t/r33-attempt5-runtime/questions-office"
+    }
+  },
+  "httpScenes": [
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/red/LOCAL005-empty.json",
+      "directory": "/tmp/r33-local5-api-MlbiUO"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/red/LOCAL003-long-png.json",
+      "directory": "/tmp/r33-local5-api-UYdcNZ"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/green/LOCAL005-empty.json",
+      "directory": "/tmp/r33-local5-api-IDPYF3"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/green/LOCAL003-long-png.json",
+      "directory": "/tmp/r33-local5-api-UoK5Ss"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/green/LOCAL005-whitespace.json",
+      "directory": "/tmp/r33-local5-api-RG8Uhl"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/green/LOCAL005-invalid-json.json",
+      "directory": "/tmp/r33-local5-api-TinKk0"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/green/LOCAL005-complete-prefix.json",
+      "directory": "/tmp/r33-local5-api-98UlE9"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/green/LOCAL005-success-and-empty.json",
+      "directory": "/tmp/r33-local5-api-QgRnbT"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/green/LOCAL005-all-empty.json",
+      "directory": "/tmp/r33-local5-api-bQWO4G"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/green/LOCAL003-height-boundaries.json",
+      "directory": "/tmp/r33-local5-api-t4xrp9"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/regression-local5/LOCAL005-empty.json",
+      "directory": "/tmp/r33-local5-api-LoJ7zU"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/regression-local5/LOCAL003-long-png.json",
+      "directory": "/tmp/r33-local5-api-ZOjAR9"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/regression-local5/LOCAL005-whitespace.json",
+      "directory": "/tmp/r33-local5-api-acVlJV"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/regression-local5/LOCAL005-invalid-json.json",
+      "directory": "/tmp/r33-local5-api-ypKBRh"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/regression-local5/LOCAL005-complete-prefix.json",
+      "directory": "/tmp/r33-local5-api-wHVlmi"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/regression-local5/LOCAL005-success-and-empty.json",
+      "directory": "/tmp/r33-local5-api-kFGvjO"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/regression-local5/LOCAL005-all-empty.json",
+      "directory": "/tmp/r33-local5-api-2LhyQW"
+    },
+    {
+      "evidence": "docs/acceptance/evidence/R33/v1/attempt5/regression-local5/LOCAL003-height-boundaries.json",
+      "directory": "/tmp/r33-local5-api-PnOKUG"
+    }
+  ],
+  "productModelRequests": 0,
+  "productKeyReads": 0
+}
