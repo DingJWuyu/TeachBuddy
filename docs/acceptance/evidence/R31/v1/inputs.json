@@ -1,0 +1,44 @@
+{
+  "candidate": "6225fc07a895113a667b5a41092a7a69e2f2fefa",
+  "fixedPoint": "b1d2b283ab210994fab639f6d822a86b8a23693f",
+  "base": "31471d4e880232666e05fc9c2c5ba2f139282ee9",
+  "code": "5a767dbc66ed6efb5fca1bcfe0870b7561c433b5",
+  "design": "8b8656ae9f9b6c70303b11ec29fbcf70f3b2a8c1",
+  "freeze": "88a89f00b78dd301ca9893a191277eb9970c4c18",
+  "preservedRootFiles": [
+    "AGENTS.md",
+    "docs/plans/run-state.md"
+  ],
+  "unchangedSinceComposition": [
+    "apps/api/src/features/auth",
+    "apps/api/src/modules",
+    "apps/web/src/features/auth",
+    "apps/web/src/features/math",
+    "packages/shared/src/math",
+    "docs/contracts",
+    "docs/arch/materials.md",
+    "README.md"
+  ],
+  "samples": [
+    {
+      "file": "apps/web/e2e/fixtures/materials/samples/c22.pdf",
+      "sha256": "1765c8eb71355cd1dabdfb168bf166b52b5f8e99b3d0c7429af36da31efcaf9a",
+      "source": "443688d31b2d39959142b93f4d2925fb8a20346e:experiments/C22/outputs/slides/c22.pdf"
+    },
+    {
+      "file": "apps/web/e2e/fixtures/materials/samples/c22.pptx",
+      "sha256": "aef72e0f60ee578a4d1029dd3aa0f9ac7941df116ff65a3fc63bf8bf1c74fe15",
+      "source": "443688d31b2d39959142b93f4d2925fb8a20346e:experiments/C22/outputs/slides/c22.pptx"
+    },
+    {
+      "file": "apps/web/e2e/fixtures/materials/samples/c22.ppt",
+      "sha256": "a32a7c1cc01a504ccdd797e2fe06279894b8fe8a25f6642882915d6c83637dac",
+      "source": "443688d31b2d39959142b93f4d2925fb8a20346e:experiments/C22/outputs/legacy/c22.ppt"
+    },
+    {
+      "file": "apps/web/e2e/fixtures/materials/samples/w.doc",
+      "sha256": "9180ee8f911e1cbbaecd144e832bb033de35d6fd9fc30fad84a28e986dffc3e2",
+      "source": "443688d31b2d39959142b93f4d2925fb8a20346e:experiments/C22/outputs/legacy/w.doc"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+
+Running 3 tests using 1 worker
+
+(node:1416967) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1416967) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1416967) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1416967) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1416967) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ../项目/TeacherWorkspace-materials-teaching-fix/apps/web/e2e/math-integration.spec.js:24:1 › real-auth: specified lesson section -> saved formula -> v3 return keeps draft and AI (12.4s)
+  ✓  2 ../项目/TeacherWorkspace-materials-teaching-fix/apps/web/e2e/math-integration.spec.js:249:1 › real-auth: an old v2 unknown request confirms on its original path after the UI upgrade (1.3s)
+(node:1416967) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 ../项目/TeacherWorkspace-materials-teaching-fix/apps/web/e2e/math-integration.spec.js:283:1 › real-auth: scroll and selected section survive; a concurrent removal requires explicit retargeting (2.6s)
+
+  3 passed (17.2s)

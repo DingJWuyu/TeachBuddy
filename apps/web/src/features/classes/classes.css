@@ -1,0 +1,556 @@
+/**
+ * Classes feature styles.
+ *
+ * Values follow the agreed compact EMStudio-derived baseline already used by the
+ * workbench shell: 13px body text, 6-12px radii, 1px #e3e3e3 lines, small
+ * two-layer cards and equal gaps between related controls. Overlays reuse the
+ * shell dialog primitives, so their progressive appearance is unchanged.
+ */
+
+.c-classes .wb-split {
+  grid-template-columns: 30fr 70fr;
+}
+
+/* ------------------------------------------------------------------- list */
+
+.c-class-pane .wb-list-head {
+  gap: 8px;
+}
+
+.c-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.c-create-class {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.c-create-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.c-class-row.is-active {
+  background: var(--wb-purple-soft);
+  box-shadow: inset 0 0 0 1px #ded5f2;
+}
+
+.c-field-error {
+  margin: 0;
+  color: var(--wb-danger);
+  font-size: 12px;
+}
+
+.c-pane-note {
+  padding: 10px;
+}
+
+/* ----------------------------------------------------------------- detail */
+
+.c-class-detail {
+  position: relative;
+}
+
+.c-class-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: none;
+  min-height: 48px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--wb-line-soft);
+}
+
+.c-class-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.c-head-spacer {
+  flex: 1;
+}
+
+.c-rename {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.c-rename .wb-input {
+  max-width: 240px;
+}
+
+.c-detail-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px;
+}
+
+.c-position {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--wb-purple-soft);
+}
+
+.c-position-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.c-deleted-note {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fdf3f5;
+  color: var(--wb-danger);
+  font-size: 12px;
+}
+
+/* --------------------------------------------------------------- composer */
+
+.c-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--wb-line), var(--wb-shadow);
+  background: var(--wb-surface);
+}
+
+.c-composer-input {
+  min-height: 54px;
+  resize: vertical;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.c-composer-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.c-date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.c-date-field .wb-input {
+  width: 138px;
+}
+
+.c-composer-spacer {
+  flex: 1;
+}
+
+.c-composer-extra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 12px;
+  padding-top: 4px;
+  border-top: 1px solid var(--wb-line-soft);
+}
+
+.c-composer-extra .wb-field:last-child {
+  grid-column: 1 / -1;
+}
+
+.c-textarea {
+  resize: vertical;
+  min-height: 46px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.c-composer-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 18px;
+  font-size: 12px;
+}
+
+.c-composer-status.is-saved .c-status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #2f7d54;
+}
+
+.c-composer-status.is-unconfirmed .c-status-text {
+  color: #a0641f;
+}
+
+.c-composer-status.is-error .c-status-text {
+  color: var(--wb-danger);
+}
+
+/* ---------------------------------------------------------------- sources */
+
+.c-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.c-source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  padding: 2px 6px 2px 8px;
+  border-radius: 7px;
+  background: #f4f4f5;
+  font-size: 12px;
+}
+
+.c-source-chip.is-deleted {
+  background: #fdf3f5;
+}
+
+.c-source-kind {
+  color: var(--wb-muted);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.c-source-label,
+.c-source-open {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.c-source-open {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.c-source-open:hover {
+  color: var(--wb-purple);
+  text-decoration: underline;
+}
+
+.c-source-hint {
+  color: var(--wb-muted);
+  font-size: 11px;
+}
+
+.c-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--wb-muted);
+  cursor: pointer;
+}
+
+.c-chip-remove:hover {
+  background: #e7e7e9;
+  color: var(--wb-ink);
+}
+
+.c-pick-button {
+  min-height: 24px;
+  padding: 1px 8px;
+  font-size: 12px;
+}
+
+/* ----------------------------------------------------------------- picker */
+
+.c-source-picker {
+  width: min(520px, 92vw);
+}
+
+.c-picker-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px 8px;
+}
+
+.c-picker-search {
+  margin: 0 16px 8px;
+}
+
+.c-picker-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 46vh;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 0 12px 8px;
+}
+
+.c-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.c-picker-row:hover {
+  background: #f5f5f6;
+}
+
+.c-picker-row.is-selected {
+  background: var(--wb-purple-soft);
+}
+
+.c-picker-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--wb-line);
+  border-radius: 4px;
+  color: var(--wb-purple);
+  flex: none;
+}
+
+.c-picker-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- records */
+
+.c-records {
+  margin-top: 16px;
+}
+
+.c-records-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.c-section-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.c-record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.c-record {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--wb-surface);
+  box-shadow: inset 0 0 0 1px var(--wb-line);
+}
+
+.c-record.is-deleted {
+  background: #fbfbfb;
+}
+
+.c-record-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.c-record-date {
+  font-weight: 600;
+}
+
+.c-record-spacer {
+  flex: 1;
+}
+
+.c-record-note {
+  margin-top: 4px;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.c-record-field {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.c-record-field .wb-label {
+  flex: none;
+  padding-top: 2px;
+}
+
+.c-record .c-sources {
+  margin-top: 6px;
+}
+
+.c-record-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #fbfafd;
+  box-shadow: inset 0 0 0 1px #e7e1f4;
+}
+
+.c-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.c-record-problem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: #a0641f;
+  font-size: 12px;
+}
+
+/* --------------------------------------------------------------- feedback */
+
+.c-feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.c-feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 10px;
+  background: var(--wb-surface);
+  box-shadow: inset 0 0 0 1px var(--wb-line);
+  text-align: left;
+  cursor: pointer;
+}
+
+.c-feedback-row:hover {
+  background: #fafafa;
+}
+
+.c-feedback-class {
+  flex: none;
+  font-weight: 500;
+}
+
+.c-feedback-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------- record selector */
+
+.c-record-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.c-record-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.c-record-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.c-record-option:hover {
+  background: #f5f5f6;
+}
+
+.c-record-option span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------------- responsive */
+
+@media (max-width: 1080px) {
+  .c-classes .wb-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .c-classes .wb-split[data-view='list'] .wb-content-pane,
+  .c-classes .wb-split[data-view='detail'] .wb-list-pane {
+    display: none;
+  }
+
+  .c-class-detail {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .c-composer-extra {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

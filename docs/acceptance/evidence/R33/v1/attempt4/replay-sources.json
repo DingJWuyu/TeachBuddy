@@ -1,0 +1,16 @@
+[
+  {
+    "commit": "2b10b4ecbfef907de1d0c368c7a29eb49af803c4",
+    "path": "experiments/C21/page-transcription-1/page-2.content.txt",
+    "fixture": "apps/web/e2e/fixtures/materials-questions/attempt4/old-page-2.content.txt",
+    "sha256": "62368dd37226edcac2cd20c0f9fc4fbac230d096e67b343a0202f7b43e284ed2",
+    "bytes": 492
+  },
+  {
+    "commit": "2b10b4ecbfef907de1d0c368c7a29eb49af803c4",
+    "path": "experiments/C21/page-transcription-1/pages/I/2.png",
+    "fixture": "apps/web/e2e/fixtures/materials-questions/attempt4/old-page-2.png",
+    "sha256": "c46fda5c6be0337e5b2fbda252100a580e1d95ca382818b90d7ab48a8d28fd80",
+    "bytes": 161865
+  }
+]

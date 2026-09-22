@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:1137792) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/materials-integration-navigation.spec.js:82:1 › 题库使用位置可前往实际环节并返回题库现场 (40.6s)
+  ✓  2 apps/web/e2e/materials-integration-navigation.spec.js:104:1 › 题库主动加入后保留成功反馈及前往备课入口 (3.1s)
+  ✓  3 apps/web/e2e/materials-integration-navigation.spec.js:122:1 › 加入备课响应丢失后确认原请求仍提供前往入口且不重复 (1.1m)
+  ✓  4 apps/web/e2e/materials-integration-navigation.spec.js:144:1 › 最新原生Word校对在真实外壳保存恢复并引用输出 (6.9s)
+
+  4 passed (2.0m)

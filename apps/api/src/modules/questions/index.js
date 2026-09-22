@@ -1,0 +1,73 @@
+import { createAssetHandler } from "./assets.js";
+import { createWordReader } from "./native-word.js";
+import { createMaterialsStore } from "./materials-store.js";
+import { createMaterialsService } from "./materials-service.js";
+import { createMaterialsRouter } from "./materials-router.js";
+import { createExtractionHandler } from "./extraction.js";
+// Questions module entry point. The workbench composition root mounts the
+// returned router under /api/modules/questions and hands the port to lessons.
+import { createQuestionsRepository } from "./repository.js";
+import { createQuestionsRouter } from "./router.js";
+import { createQuestionsService } from "./service.js";
+import { migrations } from "./migrations/index.js";
+
+export function createQuestionsModule({
+  db,
+  mutations,
+  now,
+  files,
+  content,
+  jobs,
+  provider,
+} = {}) {
+  if (!db || typeof db.prepare !== "function") {
+    throw new TypeError(
+      "createQuestionsModule requires a better-sqlite3 Database instance.",
+    );
+  }
+  if (!mutations || typeof mutations.execute !== "function") {
+    throw new TypeError(
+      "createQuestionsModule requires the mutations.execute seam.",
+    );
+  }
+
+  const repository = createQuestionsRepository(db);
+  const service = createQuestionsService({ repository, now });
+  const router = createQuestionsRouter({ service, mutations });
+
+  const store = createMaterialsStore(db, repository, now);
+  const materials = createMaterialsService({ store, files, content, jobs });
+  const v2 = createMaterialsRouter({ service: materials.service, mutations });
+  router.use(v2.router);
+  const jobHandlers = {
+    "question-asset": createAssetHandler({ store, files }),
+    extraction: createExtractionHandler({
+      store,
+      files,
+      jobs,
+      provider,
+      content,
+      validateLocations: materials.locations,
+      readWord: files ? createWordReader(files) : undefined,
+    }),
+  };
+
+  return {
+    router,
+    jobHandlers,
+    port: {
+      operations: v2.operations,
+      readForReferenceV2(principal, id) {
+        return materials.service.readQuestionForReferenceV2({ principal, id });
+      },
+      readForReference(principal, questionId) {
+        return service.readForReference(principal, questionId);
+      },
+    },
+  };
+}
+
+export { migrations };
+// Callable business surface for future agent adapters (C25/C26); it has no
+// HTTP dependency, so a caller can invoke the same operations the API uses.
+export { createQuestionsService } from "./service.js";

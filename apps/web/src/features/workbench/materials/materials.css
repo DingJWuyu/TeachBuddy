@@ -1,0 +1,105 @@
+.material-document,
+.material-editor {
+  min-width: 0;
+  color: var(--tb-text, #27272a);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.material-document figure {
+  margin: 12px 0;
+}
+.material-document img,
+.material-editor img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.material-image {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.material-list {
+  list-style: none;
+  padding: 0;
+}
+.material-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+}
+.material-note {
+  border-left: 2px solid #94a3b8;
+  padding: 4px 12px;
+  margin: 12px 0;
+  background: #f8fafc;
+}
+.material-note > span {
+  color: #64748b;
+  font-size: 12px;
+}
+.material-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.material-table-scroll table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.material-table-scroll td {
+  min-width: 120px;
+  border: 1px solid #e3e3e3;
+  padding: 8px;
+  vertical-align: top;
+}
+.material-edit-block {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin: 12px 0;
+  align-items: start;
+}
+.material-editor textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 32px;
+}
+.material-editor input,
+.material-editor select {
+  max-width: 100%;
+  border: 1px solid #e3e3e3;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font: inherit;
+}
+.material-editor button {
+  border: 1px solid #e3e3e3;
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: white;
+  font: inherit;
+  cursor: pointer;
+}
+.material-editor button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.material-editor button:focus-visible {
+  outline: 2px solid #64748b;
+  outline-offset: 2px;
+}
+.material-editor .wb-block-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.material-list-item {
+  padding-left: 10px;
+  border-left: 1px solid #e3e3e3;
+}
+.material-unknown pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,1403 @@
+{
+  "directory": "/home/liam_t/.cache/mta-fix/tmp/a11-4xtmLZ",
+  "identity": "real-auth",
+  "trace": [
+    {
+      "method": "GET",
+      "url": "/api/modules/questions/v2/items?state=active",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "0354ce10-524f-4426-b1eb-94d003e8902c",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.386Z",
+            "updatedAt": "2026-09-22T17:02:58.386Z",
+            "deletedAt": null,
+            "title": "1.",
+            "body": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "求 "
+                    },
+                    {
+                      "type": "math",
+                      "latex": "x^2=4"
+                    },
+                    {
+                      "type": "text",
+                      "text": " 的解。"
+                    }
+                  ]
+                }
+              ]
+            },
+            "solution": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "math",
+                      "latex": "x=\\pm2"
+                    }
+                  ]
+                }
+              ]
+            },
+            "note": "",
+            "starred": false,
+            "source": {
+              "kind": "import",
+              "importId": "0528d291-62e8-48fe-93a0-61141473aac7",
+              "draftId": "6f663765-f9ff-47d9-aedf-a1d032cb24eb",
+              "parts": [
+                {
+                  "role": "body",
+                  "locations": [
+                    {
+                      "kind": "text",
+                      "start": 0,
+                      "end": 17
+                    }
+                  ]
+                },
+                {
+                  "role": "solution",
+                  "locations": [
+                    {
+                      "kind": "text",
+                      "start": 17,
+                      "end": 28
+                    }
+                  ]
+                }
+              ]
+            },
+            "answerStatus": "present",
+            "typeId": null,
+            "tagIds": []
+          },
+          {
+            "id": "6ae56a63-7e5c-48b7-9711-1199f25ae5dc",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.370Z",
+            "updatedAt": "2026-09-22T17:02:58.370Z",
+            "deletedAt": null,
+            "title": "丰富复制题",
+            "body": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "求二次函数的零点"
+                    }
+                  ]
+                },
+                {
+                  "type": "image",
+                  "fileId": "44f034b6-0572-429f-a11c-12860b097c49",
+                  "alt": "零点三角形配图",
+                  "widthMm": 60
+                },
+                {
+                  "type": "table",
+                  "rows": [
+                    [
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "x"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "y"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "2"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "0"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "type": "list",
+                  "role": "options",
+                  "items": [
+                    {
+                      "label": "A",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "两个零点"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "B",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "没有零点"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "math",
+                  "latex": "x^2-4=0"
+                }
+              ]
+            },
+            "solution": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "答案：两个零点，分别为 -2 与 2"
+                    }
+                  ]
+                }
+              ]
+            },
+            "note": "原始私密笔记",
+            "starred": false,
+            "source": {
+              "kind": "copy",
+              "questionId": "32e68cf2-108f-4f11-a193-10c9ee7d3484",
+              "questionVersion": 1,
+              "snapshot": {
+                "title": "丰富题目：零点与图形",
+                "body": {
+                  "version": 2,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "求二次函数的零点"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "image",
+                      "fileId": "44f034b6-0572-429f-a11c-12860b097c49",
+                      "alt": "零点三角形配图",
+                      "widthMm": 60
+                    },
+                    {
+                      "type": "table",
+                      "rows": [
+                        [
+                          {
+                            "blocks": [
+                              {
+                                "type": "paragraph",
+                                "runs": [
+                                  {
+                                    "type": "text",
+                                    "text": "x"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "blocks": [
+                              {
+                                "type": "paragraph",
+                                "runs": [
+                                  {
+                                    "type": "text",
+                                    "text": "y"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "blocks": [
+                              {
+                                "type": "paragraph",
+                                "runs": [
+                                  {
+                                    "type": "text",
+                                    "text": "2"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "blocks": [
+                              {
+                                "type": "paragraph",
+                                "runs": [
+                                  {
+                                    "type": "text",
+                                    "text": "0"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "role": "options",
+                      "items": [
+                        {
+                          "label": "A",
+                          "blocks": [
+                            {
+                              "type": "paragraph",
+                              "runs": [
+                                {
+                                  "type": "text",
+                                  "text": "两个零点"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "B",
+                          "blocks": [
+                            {
+                              "type": "paragraph",
+                              "runs": [
+                                {
+                                  "type": "text",
+                                  "text": "没有零点"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "math",
+                      "latex": "x^2-4=0"
+                    }
+                  ]
+                },
+                "solution": {
+                  "version": 2,
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "答案：两个零点，分别为 -2 与 2"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "answerStatus": "present"
+              }
+            },
+            "answerStatus": "present",
+            "typeId": null,
+            "tagIds": []
+          },
+          {
+            "id": "224d3c19-46e7-40bc-a485-86fed7a876a0",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.368Z",
+            "updatedAt": "2026-09-22T17:02:58.368Z",
+            "deletedAt": null,
+            "title": "手工旧题",
+            "body": {
+              "version": 1,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "求二次函数的零点"
+                    }
+                  ]
+                }
+              ]
+            },
+            "solution": {
+              "version": 1,
+              "blocks": []
+            },
+            "note": "原始私密笔记",
+            "starred": false,
+            "source": {
+              "kind": "manual"
+            },
+            "answerStatus": "absent",
+            "typeId": null,
+            "tagIds": []
+          },
+          {
+            "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.366Z",
+            "updatedAt": "2026-09-22T17:02:58.366Z",
+            "deletedAt": null,
+            "title": "丰富题目：零点与图形",
+            "body": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "求二次函数的零点"
+                    }
+                  ]
+                },
+                {
+                  "type": "image",
+                  "fileId": "44f034b6-0572-429f-a11c-12860b097c49",
+                  "alt": "零点三角形配图",
+                  "widthMm": 60
+                },
+                {
+                  "type": "table",
+                  "rows": [
+                    [
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "x"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "y"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "2"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "0"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "type": "list",
+                  "role": "options",
+                  "items": [
+                    {
+                      "label": "A",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "两个零点"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "B",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "没有零点"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "math",
+                  "latex": "x^2-4=0"
+                }
+              ]
+            },
+            "solution": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "答案：两个零点，分别为 -2 与 2"
+                    }
+                  ]
+                }
+              ]
+            },
+            "note": "原始私密笔记",
+            "starred": false,
+            "source": {
+              "kind": "manual"
+            },
+            "answerStatus": "present",
+            "typeId": null,
+            "tagIds": []
+          }
+        ]
+      },
+      "key": "fb351022-70fd-4dcc-a039-bd1016aac644"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/questions/v2/items?q=%E4%B8%B0%E5%AF%8C%E9%A2%98%E7%9B%AE%EF%BC%9A%E9%9B%B6%E7%82%B9%E4%B8%8E%E5%9B%BE%E5%BD%A2&state=active",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.366Z",
+            "updatedAt": "2026-09-22T17:02:58.366Z",
+            "deletedAt": null,
+            "title": "丰富题目：零点与图形",
+            "body": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "求二次函数的零点"
+                    }
+                  ]
+                },
+                {
+                  "type": "image",
+                  "fileId": "44f034b6-0572-429f-a11c-12860b097c49",
+                  "alt": "零点三角形配图",
+                  "widthMm": 60
+                },
+                {
+                  "type": "table",
+                  "rows": [
+                    [
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "x"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "y"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "2"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "blocks": [
+                          {
+                            "type": "paragraph",
+                            "runs": [
+                              {
+                                "type": "text",
+                                "text": "0"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "type": "list",
+                  "role": "options",
+                  "items": [
+                    {
+                      "label": "A",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "两个零点"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "B",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "没有零点"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "math",
+                  "latex": "x^2-4=0"
+                }
+              ]
+            },
+            "solution": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "答案：两个零点，分别为 -2 与 2"
+                    }
+                  ]
+                }
+              ]
+            },
+            "note": "原始私密笔记",
+            "starred": false,
+            "source": {
+              "kind": "manual"
+            },
+            "answerStatus": "present",
+            "typeId": null,
+            "tagIds": []
+          }
+        ]
+      },
+      "key": "c75c7f52-ef63-4ca6-8d20-454175155337"
+    },
+    {
+      "method": "POST",
+      "url": "/api/modules/classes/v2/records",
+      "request": {
+        "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+        "recordedOn": "2026-09-22",
+        "note": "零点还需再练",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484"
+          },
+          {
+            "kind": "lesson",
+            "id": "32ba5fef-7431-4b70-9e71-fc9c33ba4524"
+          },
+          {
+            "kind": "math",
+            "id": "8ce04436-869d-442b-a4ae-c8a68b2b5fb9"
+          }
+        ]
+      },
+      "status": 201,
+      "response": {
+        "id": "4c5c0c06-385f-42ac-8ccf-c7380f734248",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.853Z",
+        "updatedAt": "2026-09-22T17:02:58.853Z",
+        "deletedAt": null,
+        "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+        "recordedOn": "2026-09-22",
+        "note": "零点还需再练",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484",
+            "labelAtLink": "丰富题目：零点与图形",
+            "currentLabel": "丰富题目：零点与图形",
+            "deleted": false
+          },
+          {
+            "kind": "lesson",
+            "id": "32ba5fef-7431-4b70-9e71-fc9c33ba4524",
+            "labelAtLink": "保留备课",
+            "currentLabel": "保留备课",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "8ce04436-869d-442b-a4ae-c8a68b2b5fb9",
+            "labelAtLink": "formula",
+            "currentLabel": "formula",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "9e3f7fe3-920b-4d91-bcc5-7f00acc55ec8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/v2/source-records/question/32e68cf2-108f-4f11-a193-10c9ee7d3484",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "4c5c0c06-385f-42ac-8ccf-c7380f734248",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.853Z",
+            "updatedAt": "2026-09-22T17:02:58.853Z",
+            "deletedAt": null,
+            "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+            "recordedOn": "2026-09-22",
+            "note": "零点还需再练",
+            "position": "",
+            "unfinished": "",
+            "commonIssues": "",
+            "nextNote": "",
+            "sources": [
+              {
+                "kind": "question",
+                "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484",
+                "labelAtLink": "丰富题目：零点与图形",
+                "currentLabel": "丰富题目：零点与图形",
+                "deleted": false
+              },
+              {
+                "kind": "lesson",
+                "id": "32ba5fef-7431-4b70-9e71-fc9c33ba4524",
+                "labelAtLink": "保留备课",
+                "currentLabel": "保留备课",
+                "deleted": false
+              },
+              {
+                "kind": "math",
+                "id": "8ce04436-869d-442b-a4ae-c8a68b2b5fb9",
+                "labelAtLink": "formula",
+                "currentLabel": "formula",
+                "deleted": false
+              }
+            ]
+          }
+        ]
+      },
+      "key": "2ce82399-0df2-4992-be13-fcf583c3d134"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/v2/source-records/lesson/32ba5fef-7431-4b70-9e71-fc9c33ba4524",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "4c5c0c06-385f-42ac-8ccf-c7380f734248",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.853Z",
+            "updatedAt": "2026-09-22T17:02:58.853Z",
+            "deletedAt": null,
+            "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+            "recordedOn": "2026-09-22",
+            "note": "零点还需再练",
+            "position": "",
+            "unfinished": "",
+            "commonIssues": "",
+            "nextNote": "",
+            "sources": [
+              {
+                "kind": "question",
+                "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484",
+                "labelAtLink": "丰富题目：零点与图形",
+                "currentLabel": "丰富题目：零点与图形",
+                "deleted": false
+              },
+              {
+                "kind": "lesson",
+                "id": "32ba5fef-7431-4b70-9e71-fc9c33ba4524",
+                "labelAtLink": "保留备课",
+                "currentLabel": "保留备课",
+                "deleted": false
+              },
+              {
+                "kind": "math",
+                "id": "8ce04436-869d-442b-a4ae-c8a68b2b5fb9",
+                "labelAtLink": "formula",
+                "currentLabel": "formula",
+                "deleted": false
+              }
+            ]
+          },
+          {
+            "id": "e2baef2e-fca1-4290-bfb7-069858433481",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.850Z",
+            "updatedAt": "2026-09-22T17:02:58.850Z",
+            "deletedAt": null,
+            "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+            "recordedOn": "2026-09-22",
+            "note": "旧库数学引用",
+            "position": "",
+            "unfinished": "",
+            "commonIssues": "",
+            "nextNote": "",
+            "sources": [
+              {
+                "kind": "math",
+                "id": "8ce04436-869d-442b-a4ae-c8a68b2b5fb9",
+                "labelAtLink": "formula",
+                "currentLabel": "formula",
+                "deleted": false
+              },
+              {
+                "kind": "lesson",
+                "id": "32ba5fef-7431-4b70-9e71-fc9c33ba4524",
+                "labelAtLink": "保留备课",
+                "currentLabel": "保留备课",
+                "deleted": false
+              }
+            ]
+          }
+        ]
+      },
+      "key": "79b09f16-d520-4937-b9a2-467e920bd1a2"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/v2/source-records/math/8ce04436-869d-442b-a4ae-c8a68b2b5fb9",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "4c5c0c06-385f-42ac-8ccf-c7380f734248",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.853Z",
+            "updatedAt": "2026-09-22T17:02:58.853Z",
+            "deletedAt": null,
+            "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+            "recordedOn": "2026-09-22",
+            "note": "零点还需再练",
+            "position": "",
+            "unfinished": "",
+            "commonIssues": "",
+            "nextNote": "",
+            "sources": [
+              {
+                "kind": "question",
+                "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484",
+                "labelAtLink": "丰富题目：零点与图形",
+                "currentLabel": "丰富题目：零点与图形",
+                "deleted": false
+              },
+              {
+                "kind": "lesson",
+                "id": "32ba5fef-7431-4b70-9e71-fc9c33ba4524",
+                "labelAtLink": "保留备课",
+                "currentLabel": "保留备课",
+                "deleted": false
+              },
+              {
+                "kind": "math",
+                "id": "8ce04436-869d-442b-a4ae-c8a68b2b5fb9",
+                "labelAtLink": "formula",
+                "currentLabel": "formula",
+                "deleted": false
+              }
+            ]
+          },
+          {
+            "id": "e2baef2e-fca1-4290-bfb7-069858433481",
+            "version": 1,
+            "createdAt": "2026-09-22T17:02:58.850Z",
+            "updatedAt": "2026-09-22T17:02:58.850Z",
+            "deletedAt": null,
+            "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+            "recordedOn": "2026-09-22",
+            "note": "旧库数学引用",
+            "position": "",
+            "unfinished": "",
+            "commonIssues": "",
+            "nextNote": "",
+            "sources": [
+              {
+                "kind": "math",
+                "id": "8ce04436-869d-442b-a4ae-c8a68b2b5fb9",
+                "labelAtLink": "formula",
+                "currentLabel": "formula",
+                "deleted": false
+              },
+              {
+                "kind": "lesson",
+                "id": "32ba5fef-7431-4b70-9e71-fc9c33ba4524",
+                "labelAtLink": "保留备课",
+                "currentLabel": "保留备课",
+                "deleted": false
+              }
+            ]
+          }
+        ]
+      },
+      "key": "a264efd2-a385-4dcf-ae9d-aabc227fd7fd"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/questions/items",
+      "status": 422,
+      "response": {
+        "type": "/problems/workbench/invalid-input",
+        "field": "/body/version",
+        "reason": "unsupported-content-version"
+      },
+      "key": "5987b4e9-ff32-45c6-8157-53a46234250f"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/questions/items/32e68cf2-108f-4f11-a193-10c9ee7d3484",
+      "status": 422,
+      "response": {
+        "type": "/problems/workbench/invalid-input",
+        "field": "/body/version",
+        "reason": "unsupported-content-version"
+      },
+      "key": "06f38a25-1451-42fe-8d1e-d70507d76db1"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/records/4c5c0c06-385f-42ac-8ccf-c7380f734248",
+      "status": 422,
+      "response": {
+        "type": "/problems/workbench/invalid-input",
+        "field": "/sources",
+        "reason": "unsupported-content-version"
+      },
+      "key": "3d0c8e39-1552-4aaf-aae0-00ade8e25f61"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/records?classId=0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+      "status": 422,
+      "response": {
+        "type": "/problems/workbench/invalid-input",
+        "field": "/items",
+        "reason": "unsupported-content-version"
+      },
+      "key": "03a7b8d9-b2e4-416c-a8e6-ee5bba8599d9"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/classes/source-records/question/32e68cf2-108f-4f11-a193-10c9ee7d3484",
+      "status": 422,
+      "response": {
+        "type": "/problems/workbench/invalid-input",
+        "field": "/items",
+        "reason": "unsupported-content-version"
+      },
+      "key": "7d96d629-c258-469a-8d59-5dbb6937edb9"
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/records/4c5c0c06-385f-42ac-8ccf-c7380f734248",
+      "request": {
+        "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+        "recordedOn": "2026-09-22",
+        "note": "零点还需再练",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [],
+        "expectedVersion": 0
+      },
+      "status": 422,
+      "response": {
+        "type": "/problems/workbench/invalid-input",
+        "field": "/expectedVersion",
+        "reason": "out-of-range"
+      },
+      "key": "5077dbeb-bebe-421c-87c1-8b3b7d04dd46"
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/v2/records/4c5c0c06-385f-42ac-8ccf-c7380f734248",
+      "request": {
+        "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+        "recordedOn": "2026-09-22",
+        "note": "新版文字",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484"
+          },
+          {
+            "kind": "lesson",
+            "id": "32ba5fef-7431-4b70-9e71-fc9c33ba4524"
+          },
+          {
+            "kind": "math",
+            "id": "8ce04436-869d-442b-a4ae-c8a68b2b5fb9"
+          }
+        ],
+        "expectedVersion": 1
+      },
+      "status": 200,
+      "response": {
+        "id": "4c5c0c06-385f-42ac-8ccf-c7380f734248",
+        "version": 2,
+        "createdAt": "2026-09-22T17:02:58.853Z",
+        "updatedAt": "2026-09-22T17:02:58.862Z",
+        "deletedAt": null,
+        "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+        "recordedOn": "2026-09-22",
+        "note": "新版文字",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [
+          {
+            "kind": "question",
+            "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484",
+            "labelAtLink": "丰富题目：零点与图形",
+            "currentLabel": "丰富题目：零点与图形",
+            "deleted": false
+          },
+          {
+            "kind": "lesson",
+            "id": "32ba5fef-7431-4b70-9e71-fc9c33ba4524",
+            "labelAtLink": "保留备课",
+            "currentLabel": "保留备课",
+            "deleted": false
+          },
+          {
+            "kind": "math",
+            "id": "8ce04436-869d-442b-a4ae-c8a68b2b5fb9",
+            "labelAtLink": "formula",
+            "currentLabel": "formula",
+            "deleted": false
+          }
+        ]
+      },
+      "key": "5248d4b8-4d06-40c6-9db1-65709d005b33"
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/records/4c5c0c06-385f-42ac-8ccf-c7380f734248",
+      "request": {
+        "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+        "recordedOn": "2026-09-22",
+        "note": "零点还需再练",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [],
+        "expectedVersion": 1
+      },
+      "status": 409,
+      "response": {
+        "type": "/problems/workbench/version-conflict",
+        "currentVersion": 2,
+        "objectId": "4c5c0c06-385f-42ac-8ccf-c7380f734248"
+      },
+      "key": "4197db20-9833-4e3c-9062-cc197a4c9c82"
+    },
+    {
+      "method": "PUT",
+      "url": "/api/modules/classes/records/4c5c0c06-385f-42ac-8ccf-c7380f734248",
+      "request": {
+        "classId": "0cb31448-63d7-4c85-b62e-4d8a7352dd86",
+        "recordedOn": "2026-09-22",
+        "note": "零点还需再练",
+        "position": "",
+        "unfinished": "",
+        "commonIssues": "",
+        "nextNote": "",
+        "sources": [],
+        "expectedVersion": 2
+      },
+      "status": 422,
+      "response": {
+        "type": "/problems/workbench/invalid-input",
+        "field": "/sources",
+        "reason": "unsupported-content-version"
+      },
+      "key": "2d07aff3-9dc3-4133-a053-b83926b62705"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules/questions/v2/items/32e68cf2-108f-4f11-a193-10c9ee7d3484",
+      "status": 200,
+      "response": {
+        "id": "32e68cf2-108f-4f11-a193-10c9ee7d3484",
+        "version": 1,
+        "createdAt": "2026-09-22T17:02:58.366Z",
+        "updatedAt": "2026-09-22T17:02:58.366Z",
+        "deletedAt": null,
+        "title": "丰富题目：零点与图形",
+        "body": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "求二次函数的零点"
+                }
+              ]
+            },
+            {
+              "type": "image",
+              "fileId": "44f034b6-0572-429f-a11c-12860b097c49",
+              "alt": "零点三角形配图",
+              "widthMm": 60
+            },
+            {
+              "type": "table",
+              "rows": [
+                [
+                  {
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "x"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "y"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                [
+                  {
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "2"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "paragraph",
+                        "runs": [
+                          {
+                            "type": "text",
+                            "text": "0"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            },
+            {
+              "type": "list",
+              "role": "options",
+              "items": [
+                {
+                  "label": "A",
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "两个零点"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "B",
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "没有零点"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "math",
+              "latex": "x^2-4=0"
+            }
+          ]
+        },
+        "solution": {
+          "version": 2,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "答案：两个零点，分别为 -2 与 2"
+                }
+              ]
+            }
+          ]
+        },
+        "note": "原始私密笔记",
+        "starred": false,
+        "source": {
+          "kind": "manual"
+        },
+        "answerStatus": "present",
+        "typeId": null,
+        "tagIds": []
+      },
+      "key": "2661332a-7209-4ec5-9888-7ce8c25071d2"
+    },
+    {
+      "method": "GET",
+      "url": "/api/modules",
+      "status": 200,
+      "response": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "lessons",
+            "name": "备课",
+            "path": "/lessons",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReferenceV2",
+              "resources.readForReferenceV2",
+              "math.readForReferenceV1"
+            ]
+          },
+          {
+            "id": "math",
+            "name": "数学工坊",
+            "path": "/math",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "classes",
+            "name": "班级教学",
+            "path": "/classes",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "questions.readForReferenceV2",
+              "lessons.readForTeachingLink",
+              "math.readForTeachingLinkV1"
+            ]
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": [
+              "classes.readClass",
+              "classes.readRecord",
+              "lessons.readForTeachingLink"
+            ]
+          }
+        ]
+      },
+      "key": "eff891af-af8f-4934-bac9-77fcfcba7d89"
+    }
+  ]
+}

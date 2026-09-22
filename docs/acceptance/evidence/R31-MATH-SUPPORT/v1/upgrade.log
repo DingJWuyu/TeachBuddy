@@ -1,0 +1,5 @@
+[workbench] modules discovered: questions, lessons
+[workbench] migrations applied 3, skipped 0
+[workbench] modules enabled: questions, lessons
+Upgrade restart 1: real login, original file bytes, question replay, all legacy rows and ledger unchanged
+Upgrade restart 2: real login, original file bytes, question replay, all legacy rows and ledger unchanged

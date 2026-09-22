@@ -1,0 +1,11 @@
+import path from 'node:path';
+import fs from 'node:fs';
+import { createIntegration } from '../../../../api/test/fixtures/auth-integration/harness.js';
+import { registerMath } from '../math-static/real.mjs';
+const directory=path.resolve(process.env.M43_DATA_DIR ?? '/tmp/teacher-m43-manual');
+fs.mkdirSync(directory,{recursive:true});
+const world=await createIntegration({directory});
+const email='m43@example.test';
+if(!world.workbench.db.prepare('SELECT id FROM auth_accounts WHERE email=?').get(email)) await registerMath(world,email);
+console.log(`${world.origin}\nreal-auth / fake-mail / isolated M43\n${email} / math-password\n${directory}`);
+for(const signal of ['SIGINT','SIGTERM'])process.once(signal,async()=>{await world.close();process.exit(0);});

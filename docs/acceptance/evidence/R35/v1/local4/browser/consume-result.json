@@ -1,0 +1,81 @@
+{
+  "result": "PASS",
+  "rows": [
+    {
+      "name": "empty",
+      "result": "PASS",
+      "identity": "test-principal",
+      "source": "earlier completed browser capture"
+    },
+    {
+      "name": "invalid",
+      "result": "PASS",
+      "identity": "test-principal",
+      "source": "earlier completed browser capture"
+    },
+    {
+      "name": "prefix",
+      "result": "PASS",
+      "identity": "test-principal",
+      "source": "earlier completed browser capture"
+    },
+    {
+      "name": "mixed-success-first",
+      "result": "PASS",
+      "identity": "test-principal",
+      "source": "earlier completed browser capture"
+    },
+    {
+      "name": "mixed-empty-first",
+      "result": "PASS",
+      "identity": "test-principal",
+      "source": "earlier completed browser capture"
+    },
+    {
+      "name": "historical-prefix",
+      "result": "PASS",
+      "identity": "test-principal",
+      "source": "earlier completed browser capture"
+    }
+  ],
+  "source": "显示对照：公式与函数图。\nf(x)=\\frac{\\sqrt{2x-1}}{x-2}",
+  "downloads": [
+    {
+      "name": "download-question",
+      "suggestedFilename": "题面-1.png",
+      "width": 1600,
+      "height": 503,
+      "alpha": true,
+      "sha256": "32eaf05f4e6d9c4d8ee6ce77f65cba348561124656dd46a2cc2e16918d91e5e6"
+    },
+    {
+      "name": "download-figure",
+      "suggestedFilename": "题面-1.png",
+      "width": 1600,
+      "height": 817,
+      "alpha": true,
+      "sha256": "9ef95e96237d2a6ed08c335089c95d8f2a61963d64d7292a6205962315eb035e"
+    }
+  ],
+  "figureJob": {
+    "id": "283c5a5e-6a07-4673-bf21-323b1566fb08",
+    "kind": "question-asset",
+    "target": {
+      "kind": "question",
+      "id": "debc8107-1cb0-45a3-954b-847b214981d5",
+      "version": 1
+    },
+    "state": "queued",
+    "createdAt": "2026-09-22T16:09:53.504Z",
+    "updatedAt": "2026-09-22T16:09:53.504Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 0,
+      "total": null,
+      "unit": "stages"
+    },
+    "outputFileIds": [],
+    "issues": []
+  },
+  "identity": "shell real-auth; controlled views test-principal"
+}

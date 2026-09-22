@@ -1,0 +1,67 @@
+{
+  "question": {
+    "id": "90ab47b1-2c99-4ddd-81d7-6b9da9e068af",
+    "version": 1,
+    "createdAt": "2026-09-22T15:59:28.231Z",
+    "updatedAt": "2026-09-22T15:59:28.231Z",
+    "deletedAt": null,
+    "title": "超高单图",
+    "source": {
+      "kind": "manual"
+    },
+    "note": "R35_PRIVATE_MUST_NOT_RENDER",
+    "starred": false,
+    "typeId": null,
+    "tagIds": [],
+    "answerStatus": "absent",
+    "solution": {
+      "version": 2,
+      "blocks": []
+    },
+    "body": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "image",
+          "fileId": "5f81d80d-54fe-4aae-b7f4-1637f9cf44f3",
+          "alt": "超高图",
+          "widthMm": 100
+        }
+      ]
+    }
+  },
+  "job": {
+    "id": "aa52eb91-7a2e-4318-bc1f-2d71e1b25d1a",
+    "kind": "question-asset",
+    "target": {
+      "kind": "question",
+      "id": "90ab47b1-2c99-4ddd-81d7-6b9da9e068af",
+      "version": 1
+    },
+    "state": "succeeded",
+    "createdAt": "2026-09-22T15:59:28.422Z",
+    "updatedAt": "2026-09-22T15:59:28.610Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 1,
+      "total": 1,
+      "unit": "stages"
+    },
+    "outputFileIds": [
+      "cb5f4f33-66ee-41b2-bb65-d191d7f747b7"
+    ],
+    "issues": []
+  },
+  "files": [
+    {
+      "file": "tall-figure-png-0.png",
+      "id": "cb5f4f33-66ee-41b2-bb65-d191d7f747b7",
+      "width": 1600,
+      "height": 2292,
+      "alpha": true,
+      "transparent": 2210800,
+      "visible": 1456400,
+      "sha256": "67688283f978479f81b1d85ec9a4e15c73ca592af7701a04f3ddf2221eaa767f"
+    }
+  ]
+}
