@@ -69,6 +69,8 @@
 
 ### 启动与主动通知
 
+收到明确的 `model at capacity` 退出回执时，按用户许可恢复原 session，保持模型、effort、任务和已有成果；不视为 usage limit，不自动降级，也不重置业务修复次数或实验请求窗口。这是异常回执触发的接续，不主动轮询或建立重试循环。
+
 仅在授权后按模型表使用 `codex exec`；用户指定恢复原 session 时使用 `codex exec resume`。参数遵循本机帮助，记录 worktree、实际模型/effort、session 和回执位置。开发任务停用 dsh，额度不足时保留现场并报告，不静默降级或新增自动回退。困难实现按上表升级；内部助手继承调用 session 的模型与 effort。
 
 外层负责在进程结束后按本机 `codex queue --help` 的通知接口主动发回编排者 thread。正常结束发送结构化 `PASS` 或 `FAIL`；正常 `FAIL` 按本节点既有失败归属处理。异常通知只用于回执可能丢失的情况，例如子进程或运行环境异常退出且未生成回执，或结果已落盘但队列投递失败；异常通知附退出码、日志或回执路径，不能把正常 `FAIL` 混成异常。skill 若要求内部助手，调用 session 按 skill 创建和管理，使用所选 harness 的内部助手能力；内部助手继承调用 session 的模型与 effort，不另设模型选择验证门禁。无法提供内部助手能力时按协议回执 `BLOCKED`，不开发 wrapper 或假定能力。此责任不授予 worker 联系其他 session 的权限，也不要求建立 watcher 或调度平台。

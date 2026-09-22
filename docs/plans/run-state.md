@@ -6,7 +6,7 @@
 
 1. 读取根 [AGENTS.md](../../AGENTS.md)、本页的当前批次和对应任务包。
 2. 依据固定候选与正式回执判断依赖；区分 `self`、`independent` 和用户验收。
-3. 当前五项中 R30 已接收 independent FAIL，C23 修正独立核验 PASS；C24 因模型容量异常中断、草稿未归档；T53/A11 两项待主动回执。不要因恢复上下文再派同一任务，也不要据此主动轮询运行状态。
+3. 当前五项中 R30 已接收 independent FAIL，C23 修正独立核验 PASS；C24 获准在容量异常后恢复原会话，草稿仍待归档；当前 C24、T53、A11 待主动回执。不要因恢复上下文再派同一任务，也不要据此主动轮询运行状态。
 4. 权威材料确实缺少已作出的决定时，再查根 transcript：thread `01a0be12-5c28-7823-a7ed-644df825467f`，文件 `/home/liam_t/.codex/sessions/2026/09/20/rollout-2026-09-20T05-07-49-01a0be12-5c28-7823-a7ed-644df825467f.jsonl`。
 
 ## 当前用户授权与调度决定
@@ -16,7 +16,7 @@
 - 产品设计、代码、自验和独立验收仍归相应 session。根只调度、核对回执元数据、维护台账与自身规则，不代做实质审查。
 - 任务分支候选提交、本地运行验证和文档 main 合并已有许可。产品代码留在候选分支；本轮不包括产品合入 main、push、公开部署、发布、采购或额外付费。
 - 已允许使用现有 GOAT 套餐进行必要实验；产品模型限 `deepseek/deepseek-v4.1-flash`、`z-ai/glm-5.3-flash`。计费条件不明或需要额外付费时停止相应调用，保留已有消耗记录。
-- 开发模型按[唯一映射](execution-protocol.md#模型与固定派发)执行；停用 dsh 与自动降级。内部 skill 助手继承调用 session。R30 恢复原会话是本次用户明确要求的例外，session ID 不变。
+- 开发模型按[唯一映射](execution-protocol.md#模型与固定派发)执行；停用 dsh 与自动降级。内部 skill 助手继承调用 session。R30 原会话恢复及明确 `model at capacity` 后恢复原会话已有用户许可，session ID 不变；保持模型与 effort，不增加自动降级。
 - 可独立的已授权任务并行使用 worktree；共享文件在各候选内由一个写者集成。派发 prompt 最小必要，失败归原拥有者，不以增加审查或换模型代替诊断。
 
 ## 当前恢复批次
@@ -25,7 +25,7 @@
 
 | 任务 | 接续方式 | 实际模型 / effort | 状态 | session | 原始派发与回执目录 |
 | --- | --- | --- | --- | --- | --- |
-| C24-BUSINESS | 新会话，attempt 2 | gpt-5.6-sol / medium | 异常退出：model at capacity；未完成归档 | `01a0c7a8-94e5-7da1-bfe0-aa537396c067` | `.scratch/dag-dispatch/C24-BUSINESS/2/` |
+| C24-BUSINESS | 原 session 接续，attempt 2 / resume 1 | gpt-5.6-sol / medium | 原会话已恢复，待主动回执 | `01a0c7a8-94e5-7da1-bfe0-aa537396c067` | `.scratch/dag-dispatch/C24-BUSINESS/2/resume-1/` |
 | R30-RECOVERY-REVIEW | 恢复原会话，attempt 1 | gpt-6-astra / medium | 已完成，independent FAIL | `01a0c642-8129-7c11-84d1-f64a3fa85255` | `.scratch/dag-dispatch/R30-RECOVERY-REVIEW/1/resume-1/` |
 | C23-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent PASS（限定） | `01a0c7a8-9494-7672-9e16-cfa5034ea18d` | `.scratch/dag-dispatch/C23-MATH-REVIEW/1/` |
 | T53 | 新会话，attempt 2 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7a8-94b2-7e93-923a-f71728265455` | `.scratch/dag-dispatch/T53/2/` |
@@ -43,7 +43,7 @@
 | 材料：C21/C22、R30-R35 | R30 补证独立验收 FAIL。C22 角色隔离和三类打印缺口已关闭，参数化输出与本机编辑仅按报告限定范围沿用。 | C21 公式按题号回填、P/I/PS 图资产借自样本，逐题评分与一致编辑证明不足；C22 旧 DOC 与一般 LaTeX 转换仍欠证。两项 REV 均开放，R31-R35 未启动。 |
 | 数学：C23、M40-M44 | C23 修正 independent PASS，M40-DR-001/002/003 均关闭；原 M40 未变设计审查沿用。 | M40 尚需把实验消费引用更新为 `d149053` 与新独立报告，完成冻结文档交接。M41 仍待 R31，M43 仍待 R35；数学产品实现未启动。 |
 | 班级与日程：T50-T54 | T50 independent 冻结；T51 普通班级能力与 T52 日程 self PASS，T53 正合流与实现提醒。 | T51 完整作品关联仍待 M40/M44/WB-T020；T54 全阶段验收未启动，不以普通能力通过替代作品场景。 |
-| Agent：C24-C27 | PI-01/02 已有 self 证据；业务实验草稿报告 PI-03 PASS、PI-04 多个恢复/冲突切片 PASS，但模型读回副本 FAIL。 | Sol medium 以 `Selected model is at capacity` 退出，未形成最终回执或新提交。实验读取适配器缺陷与 harness 容量异常分别记录；C24 未完成，C25-C27 未启动。 |
+| Agent：C24-C27 | PI-01/02 已有 self 证据；业务实验草稿报告 PI-03 PASS、PI-04 多个恢复/冲突切片 PASS，但模型读回副本 FAIL。 | Sol medium 容量异常后获准原会话接续，最终回执和新提交仍待产生。实验读取适配器缺陷与 harness 容量异常分别记录；C24 未完成，C25-C27 未启动。 |
 | 可靠性：F60-F65 | 尚未启动。 | 等待 T54、C27、A12 的真实交付，再补全模块工具、现场、恢复和整日集成。 |
 | 最终交付：D70-D75、G73/G76 | 尚未启动，未部署、未用户验收。 | 等待全范围验收、可用目标环境及具体交付动作授权。 |
 
@@ -53,7 +53,7 @@
 
 | 当前任务 | 回执要解决的问题 | 接到回执后的下一判断 |
 | --- | --- | --- |
-| C24-BUSINESS | 已接收 exit 1：Sol 容量异常，非已证实的 usage limit。草稿自报 PI-04 读取工具把可读 ID 限为原题，阻止模型读回副本。 | 保留未提交制品与两份报告草稿；待获准接续时先补最终归档，再按已有请求/修正窗口处理适配器与定向复验，不重跑已通过切片、不自动换模型或重置窗口。 |
+| C24-BUSINESS | 已接收 exit 1：Sol 容量异常，非已证实的 usage limit。草稿自报 PI-04 读取工具把可读 ID 限为原题，阻止模型读回副本。 | 用户已允许同一 Sol 会话继续，先接续已有工作与最终回执；适配器和定向复验仍受原请求/修正窗口约束，不重跑已通过切片、不换模型或重置窗口。 |
 | R30-RECOVERY-REVIEW | 已接收报告 `16d4b01`，两项完整 REV 均未关闭。 | 原窗口保持关闭；C20/C21/C22/R30 各按报告归属等待新输入，R31/M41 不放行。当前不追加修复、实验或审查。 |
 | C23-MATH-REVIEW | 已接收 `b01bc73` 限定 independent PASS，三项实验缺口关闭。 | M40 待更新 `math-evidence.md` 与交接回执中的固定实验引用；仅为文档交接，不重审未变设计、不重跑实验。本轮不自动派发该交接或 M41。 |
 | T53 | 提醒、补呈现、通知跳转及 T51/T52 合流是否形成真实候选。 | 记录 self 候选及未决项，核对 T54 条件；T51 真实作品未到时不宣称完整教学链路通过。 |
