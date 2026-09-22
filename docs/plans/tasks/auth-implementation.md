@@ -4,7 +4,7 @@
 
 本次必须新增的定向验证：后端 ST01 对 I03 的账户、挑战消费及 pending 写入分别注入失败，统一 account-store-unavailable 且完整回滚，撤故障同码重试；前端依据同版 I03 503 集合映射已知回滚与未知结果。两侧按工作台 [C19-C21](../../contracts/workbench/first-flow-cases.md#真实认证页面接缝)验证 transport/身份接缝，其中15个操作的页面头声明、缺失/非法拒绝及恢复前后身份不可省略。真实浏览器联调留给集成者，替身与fake-mail结果单列。
 
-前后端基于同版契约可并行。默认代码实现调用 dsh headless，额度不足才 Luna max；失败接手、必要review和回执按 [implementation](../execution-protocol.md#implementation)、[receipt](../execution-protocol.md#receipt)及根模型路由。只在任务分支提交，合main/push/外部写入仍由根单独授权。必读材料中的链接可直接进入本包范围，不要求通读DAG。
+前后端基于同版契约可并行。模型和 effort 按[统一模型映射](../execution-protocol.md#模型与固定派发)选择；失败接手、必要review和回执按 [implementation](../execution-protocol.md#implementation)、[receipt](../execution-protocol.md#receipt)及根模型路由。只在任务分支提交，合main/push/外部写入仍由根单独授权。必读材料中的链接可直接进入本包范围，不要求通读DAG。
 
 ## 后端包
 
