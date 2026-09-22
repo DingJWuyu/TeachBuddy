@@ -19,7 +19,7 @@ import {
   validateUpdateQuestion,
 } from "./schema.js";
 
-export function createQuestionsService({ repository, now = () => new Date() }) {
+export function createQuestionsService({ repository, now = () => new Date(), hasMaterialMetadata = () => false }) {
   function timestamp() {
     return now().toISOString();
   }
@@ -46,6 +46,7 @@ export function createQuestionsService({ repository, now = () => new Date() }) {
 
   function assertLegacy(record) {
     if (
+      hasMaterialMetadata(record.id) ||
       record.body.version !== 1 ||
       record.solution.version !== 1 ||
       record.source.kind === "import" ||

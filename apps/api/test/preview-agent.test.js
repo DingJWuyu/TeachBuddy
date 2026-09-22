@@ -44,10 +44,12 @@ test('preview: current question v2 and lesson v3 use the 13-tool journal, preser
     [{ type: 'text', text: '已保存改编题和备课引用。' }],
   ]);
   const world = await createIntegration({ agent: p.config });
-  const questionInput = { title: '材料版原题', body: document('原题'), solution: document('解析'), answerStatus: 'present', note: '教师备注', starred: true, typeId: null, tagIds: [], source: { kind: 'manual' } };
+  const typeId = randomUUID(), tagId = randomUUID();
+  const questionInput = { title: '材料版原题', body: { ...document('原题'), version: 1 }, solution: { ...document('解析'), version: 1 }, answerStatus: 'present', note: '教师备注', starred: true, typeId, tagIds: [tagId], source: { kind: 'manual' } };
   const lessonInput = { title: '材料版备课', intro: document('保留开头'), sections: [{ id: randomUUID(), title: '小组挑战', content: document('保留环节文稿'), references: [] }], materials: [] };
   try {
     const client = await register(world);
+    assert.equal((await write(client, 'PUT', '/api/modules/questions/v2/taxonomy', { baseVersion: 1, types: [{ id: typeId, name: '证明题' }], tags: [{ id: tagId, name: '数列' }] })).status, 200);
     question = (await write(client, 'POST', '/api/modules/questions/v2/items', questionInput)).json;
     lesson = (await write(client, 'POST', '/api/modules/lessons/v3', lessonInput)).json;
     const snapshot = await run(client, [{ kind: 'question', id: question.id, version: question.version }]);
@@ -55,8 +57,15 @@ test('preview: current question v2 and lesson v3 use the 13-tool journal, preser
     assert.equal(valid('Snapshot', snapshot), true);
     assert.equal(snapshot.toolCalls.length, 8);
     assert.equal(snapshot.toolCalls.at(-1).result.items[0].questionVersion, copied.version);
-    assert.equal(copied.body.version, 2);
+    assert.equal(snapshot.toolCalls.find(c => c.toolCallId === 'read-q').result.answerStatus, 'present');
+    assert.equal(copied.body.version, 1);
+    assert.equal(copied.source.snapshot.answerStatus, 'present');
     assert.equal(copied.note, question.note);
+    assert.equal(copied.typeId, typeId);
+    assert.deepEqual(copied.tagIds, [tagId]);
+    const legacyUpdate = await write(client, 'PUT', '/api/modules/questions/items/' + question.id, { baseVersion: 1, title: question.title, body: question.body, solution: { version: 1, blocks: [] }, note: question.note, starred: question.starred });
+    assert.equal(legacyUpdate.status, 422);
+    assert.equal(legacyUpdate.json.reason, 'unsupported-content-version');
     assert.deepEqual((await client.request('GET', '/api/modules/questions/v2/items/' + question.id)).json, question);
     const saved = (await client.request('GET', '/api/modules/lessons/v3/' + lesson.id)).json;
     assert.deepEqual(saved.intro, lesson.intro);

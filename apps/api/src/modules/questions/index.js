@@ -33,7 +33,10 @@ export function createQuestionsModule({
   }
 
   const repository = createQuestionsRepository(db);
-  const service = createQuestionsService({ repository, now });
+  // Document v1 can belong to a current material question. Its metadata is
+  // authoritative: the legacy shape cannot represent answer state or taxonomy.
+  const materialMetadata = db.prepare('SELECT 1 FROM questions_materials_meta WHERE id=?');
+  const service = createQuestionsService({ repository, now, hasMaterialMetadata: id => Boolean(materialMetadata.get(id)) });
   const operations = createQuestionsOperations({ service, mutations });
   const router = createQuestionsRouter({ operations });
 
