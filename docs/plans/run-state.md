@@ -6,7 +6,7 @@
 
 1. 读取根 [AGENTS.md](../../AGENTS.md)、本页的当前批次和对应任务包。
 2. 依据固定候选与正式回执判断依赖；区分 `self`、`independent` 和用户验收。
-3. 当前处于完整 DAG 执行状态。C25 独立核验发现只读工具公开投影缺口，正由 C25-CORRECTION 定向修订；材料新窗口和 R31 基础分段启动均已 independent PASS，C21 新制品已 self PASS 并交独立消费，新增请求空正文仍保留；R31 基础切片已 self PASS；C22 已交切片正独立核验；C20 裁定未变方案内修验证脚本与校对提示，已派 Astra high 一次有界接手；R30 原缺口仍未关闭。M40 冻结交接已完成，A12 本地认证定向独立复验已 PASS，两项缺陷关闭；真实邮件与目标设备仍待提供；T54 三项原缺陷独立关闭，新发现的日程主区滚动返回丢失 D04 正交 T52 修复；真实作品关联仍待依赖。依据下面派发记录接续，不重复派发，不主动轮询。
+3. 当前处于完整 DAG 执行状态。C25 工具公开投影修订已交 self 候选 18293e9，正在限定独立冻结；材料新窗口和 R31 基础分段启动均已 independent PASS，C21 新制品已 self PASS 并交独立消费，新增请求空正文仍保留；R31 基础切片已 self PASS；C22 已交切片正独立核验；C20 裁定未变方案内修验证脚本与校对提示，已派 Astra high 一次有界接手；R30 原缺口仍未关闭。M40 冻结交接已完成，A12 本地认证定向独立复验已 PASS，两项缺陷关闭；真实邮件与目标设备仍待提供；T54 三项原缺陷独立关闭，新发现的日程主区滚动返回丢失 D04 正交 T52 修复；真实作品关联仍待依赖。依据下面派发记录接续，不重复派发，不主动轮询。
 4. 权威材料确实缺少已作出的决定时，再查根 transcript：thread `01a0be12-5c28-7823-a7ed-644df825467f`，文件 `/home/liam_t/.codex/sessions/2026/09/20/rollout-2026-09-20T05-07-49-01a0be12-5c28-7823-a7ed-644df825467f.jsonl`。
 
 ## 当前用户授权与调度决定
@@ -38,7 +38,8 @@
 | T52-SCROLL-FIX | 新会话，attempt 1 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7fb-bb99-7bb2-83b4-0cccd29d0bc0` | `.scratch/dag-dispatch/T52-SCROLL-FIX/1/` |
 | C25 | 新会话，attempt 1 | gpt-6-astra / high | 已交候选，独立核验需修订 | `01a0c7d2-7a74-7050-8c8a-e28df0188772` | `.scratch/dag-dispatch/C25/1/` |
 | C25-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，CHANGES_REQUIRED / independent | `01a0c7ee-7965-75f0-bad4-e0c38c979e51` | `.scratch/dag-dispatch/C25-REVIEW/1/` |
-| C25-CORRECTION | 新会话，attempt 1 | gpt-6-astra / high | 已启动，待主动回执 | `01a0c7f6-fb1f-7e90-91f0-f78ed22857f6` | `.scratch/dag-dispatch/C25-CORRECTION/1/` |
+| C25-CORRECTION | 新会话，attempt 1 | gpt-6-astra / high | 已完成，READY_FOR_REVIEW / self | `01a0c7f6-fb1f-7e90-91f0-f78ed22857f6` | `.scratch/dag-dispatch/C25-CORRECTION/1/` |
+| C25-CORRECTION-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已启动，待主动回执 | `01a0c80d-5c5d-7e00-a062-3b573395024b` | `.scratch/dag-dispatch/C25-CORRECTION-REVIEW/1/` |
 | T50-MATH-CONTRACT | 新会话，attempt 1 | gpt-6-astra / high | 已完成，设计已独立冻结 | `01a0c7d5-b6d8-7232-b045-9ef61d8c46cb` | `.scratch/dag-dispatch/T50-MATH-CONTRACT/1/` |
 | T50-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent PASS | `01a0c7ec-38af-7142-91bf-78f8c33d253b` | `.scratch/dag-dispatch/T50-MATH-REVIEW/1/` |
 | T51-MATH | 新会话，attempt 1 | gpt-6-astra / low | 已启动，待主动回执 | `01a0c7f5-6025-7861-96db-7a113115ff68` | `.scratch/dag-dispatch/T51-MATH/1/` |
@@ -63,7 +64,7 @@
 | 材料：C21/C22、R30-R35 | 原 R30 独立缺口仍开放。C21 新制品 9230895 的来源、评分、编辑与恢复达到作者自验门槛，正由 R30-C21-CONSUME 独立核验；三次新请求均空正文，不证明新材料在线提取。R31 基础切片 self PASS。 | C22 next-1 的 DOC/结构/角色/打印正独立消费；编辑闭环和正文校对提示由 Astra high 按 editing-1 有界补证。两项 REV 尚未独立关闭；完整 R31 和 R32-R35 仍待材料门槛。 |
 | 数学：C23、M40-M44 | M40/v1 设计已完成冻结交接，候选 1a5dd01；三项实验阻断 independent 关闭，交接动作仅 self 文档自检。 | M41 仍待完整 R31；M41-DEPENDENCY-PLAN 正基于真实基础候选核对能否有界先行，尚未放行。M42 待 M41，M43 待 M42/R35；教学记录作品新版 a44587b 已独立冻结，T51-MATH 已派发局部实现。数学产品尚未实现。 |
 | 班级与日程：T50-T54 | 新候选 ff24814 的 D01/D02/D03 全部 independent 关闭；当前 FAIL 仅新 D04：平板日程主区切模块返回丢失滚动位置，归 T52。 | T52-SCROLL-FIX 正定向修复，已通过场景沿用。T51-MATH 在独立分支局部补接，后续合流仍需真实提供方及 M44/WB-T020。 |
-| Agent：C24-C27 | C24 PI-03/04 定向补验 self PASS，候选 e8fdf9a；旧 PI-01/02 有 self 证据。副本读回已修复，pi 错误标志语义已实测。 | C25 独立 CHANGES_REQUIRED：只读工具开始/结果/失败缺公开投影与刷新恢复字段（C25-D01），设计者正定向补齐；C26/C27 尚未启动。 |
+| Agent：C24-C27 | C24 PI-03/04 定向补验 self PASS，候选 e8fdf9a；旧 PI-01/02 有 self 证据。副本读回已修复，pi 错误标志语义已实测。 | C25-D01 修订候选 18293e9 已补 ToolCall 公开状态与持久关联，39 schemas/99 样本/23 BDD self 通过，正做限定 independent 冻结；C26/C27 尚未启动。 |
 | 可靠性：F60-F65 | 尚未启动。 | 等待 T54、C27、A12 的真实交付，再补全模块工具、现场、恢复和整日集成。 |
 | 最终交付：D70-D75、G73/G76 | 尚未启动，未部署、未用户验收。 | 等待全范围验收、可用目标环境及具体交付动作授权。 |
 
@@ -74,7 +75,7 @@
 | 工作 | 本轮动作 | 下游判断 |
 | --- | --- | --- |
 | M40 / T50 / T51 | T50 新版独立 PASS 已接收，派 T51-MATH 局部补接和来源错误语义修正。 | 局部 self 供 M43 接入组件；真实提供方和 M44 到达后再汇合验证完整 WB-T020。M41 仍待完整 R31，当前 T54 候选不变。 |
-| C24 / C25 | C25-D01 已交 C25-CORRECTION 定向补齐公开工具投影，不交实现者猜字段。 | 新固定候选做限定独立冻结，沿用未变设计/实验结论；通过后固定认证与共享写者再派 C26。 |
+| C24 / C25 | C25 修订 self 已接收；C25-CORRECTION-REVIEW 独立判断公开工具投影与恢复语义，沿用未变设计。 | 新固定候选做限定独立冻结，沿用未变设计/实验结论；通过后固定认证与共享写者再派 C26。 |
 | R30 / C20 / R31 | C22 新制品交 R30-C22-CONSUME 分项核验，编辑与校对缺口已有 C20 裁决，C22 attempt 2 按 editing-1 一批接手；C21 新制品已交 R30-C21-CONSUME，R31 基础切片 self 交付；剩余 R31 等待材料门槛。 | C22 原窗口不重置，editing-1 不变更契约且无额外设计复审；新制品交 R30 消费新增证据。R31 整体与 M41 仍需原门槛。 |
 | R31 / M41 | R31 基础 self PASS 已接收；派 M41-DEPENDENCY-PLAN 检查数学对剩余转换的真实依赖。 | 仅提出裁决，改变启动依赖需限定独立冻结；未核定前仍不派 M41，不新加基础重复审查。 |
 | A11 / A12 | 已接收本地 independent PASS，关闭 A12-LOCAL-001/002，无新增缺陷，不再派重复复验。 | C26 等后续组合消费固定 9ecabbf 与 aaa3d77 报告；外部邮件和目标设备输入到达后补真实验收，不提前解除 A12 整体及 F60 门禁。 |
@@ -100,7 +101,7 @@
 | 材料新方案 | 内容 `cd751b68e5001999b5a5f7544254c41d804f058a`；完整交付 `68f66587d4d625ee9c8f75516eafa61913b57e40:docs/arch/capability-checks/materials-next.md`；短包 `docs/plans/tasks/materials/next.md`；独立分项冻结 `0fb32a6e31d4ea0a6673bcce15423137a9a68b0a:docs/acceptance/evidence/MATERIALS-NEXT-PLAN/v1/review.md`。 |
 | M40 / C23 修正 | 冻结交接 `1a5dd015863d749e5244346f4eaad24ac506670d:docs/acceptance/evidence/M40/v1/handoff.md`；M40 设计 `a6a495a` + 作者 `b626a93` + 原 review `3da472e`；修正受测 `d1490531e014ef437374c2f5a23cf3073baeef56`；独立 PASS `b01bc73954cbbc13e464738e0f6f8aa6c6f12084:docs/acceptance/evidence/M40/v1/correction-review.md`。 |
 | C24 探针 / 业务实验 | 探针 `e7f979bd80ab83aaab7cc2cf936250123d7742a3`；旧业务 FAIL `d826b72`；修复与 self PASS `e8fdf9a139e429c05590925647a433a9da382579:docs/acceptance/evidence/C24/v1/business-fix.md`。 |
-| C25 首批 Agent 候选 | 设计 `cadc61aa4ff36156b4a03fb9ba3401aba9783f9a`；作者 `b7732f80a74111c5c30b1758335707324e5e7563:docs/acceptance/evidence/C25/v1/author.md`；独立报告 `e0b2c23fc1e37c357831cefacb0817c07ae3cafd:docs/acceptance/evidence/C25/v1/review.md`，仅 C25-D01 公开只读工具投影阻断，待定向修订。 |
+| C25 首批 Agent 候选 | 当前设计 `18293e9389e739ed8aaf67ee568503ca8e87d475`；作者 `5e1193524c9d1d91c3a35adec3df3c832313819b:docs/acceptance/evidence/C25/v1/correction.md`，self、待限定独立冻结。原设计 `cadc61a` 与独立报告 `e0b2c23fc1e37c357831cefacb0817c07ae3cafd:docs/acceptance/evidence/C25/v1/review.md` 的未变结论沿用；C25-D01 尚未独立关闭。 |
 | C21 next-1 新结果 | 制品 `9230895a802ac46dfa3ceefc660659dd8bc8abf7`；作者 `ecd1ed6d8f974fba20ac92d40d5b6b943a3b0170:docs/acceptance/evidence/C21-MATERIALS-NEXT/v1/author.md`。五入口主要内容自评分6/5/6/4/6，七入口编辑/重启回读及 E/F 恢复 self PASS；新请求全部空正文，机器/人工版本及失败分列，待 R30 独立判断。 |
 | C22 next-1 新结果 | 制品 `d2b324520064dbae663a46acb7045c84bd55a890`；作者 `a05324d7886b2603d5caaf19af3e46ce93dce973:docs/acceptance/evidence/C22-MATERIALS-NEXT/v1/author.md`。DOC 刷新、LaTeX 结构和角色/打印 self 通过；编辑复测失败、正文疑点标记缺失。零模型，窗口关闭，全部失败现场保留。 |
 | R31 文件内容基础 | 产品 `5f696b8ce611e67d940ce149ce13946a50b65510`；回执 `c08fa62d434efffc89b471151faa73308e3ce716:docs/acceptance/evidence/R31-FOUNDATION/v1/author.md` 及同目录 integration.md；文件 HTTP/重启/迁移/文档编辑 self PASS，完整 R31 与转换未完成，正式启动保护保留。 |
