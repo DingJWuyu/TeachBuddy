@@ -229,7 +229,10 @@ export function createAssetHandler({ store: s, files }) {
           }
           for (const input of section) {
             const meta = await sharp(input).metadata();
-            if (top + meta.height + 24 > 2400) await flush();
+            // top includes the 20px gap after each tile, including the last.
+            if (48 + meta.height + 20 + 24 > 2400)
+              throw Error("单个内容块超过素材尺寸");
+            if (top + meta.height + 20 + 24 > 2400) await flush();
             placed.push({ input, left: 48, top });
             top += meta.height + 20;
           }

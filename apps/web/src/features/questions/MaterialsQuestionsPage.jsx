@@ -42,6 +42,7 @@ export default function MaterialsQuestionsPage({
   usageRevision,
   requestedId,
   registerTools,
+  onOpenTools,
 }) {
   const pageNode = useRef(null);
   const collection = useRef(
@@ -431,8 +432,7 @@ export default function MaterialsQuestionsPage({
     });
   }
   const taxonomyTools = (
-    <>
-      {" "}
+    <div className="q-taxonomy-tools">
       <select
         aria-label="筛选题型"
         value={scene.typeId ?? ""}
@@ -490,7 +490,7 @@ export default function MaterialsQuestionsPage({
           }
         />
       )}
-    </>
+    </div>
   );
   const toolsRef = useRef(taxonomyTools);
   toolsRef.current = taxonomyTools;
@@ -569,7 +569,14 @@ export default function MaterialsQuestionsPage({
             />
             标记
           </label>
-          <button onClick={() => setManage(!manage)}>分类管理</button>
+          <button
+            onClick={() => {
+              setManage(onOpenTools ? true : !manage);
+              onOpenTools?.();
+            }}
+          >
+            分类管理
+          </button>
         </div>
         {!registerTools && taxonomyTools}
         <div

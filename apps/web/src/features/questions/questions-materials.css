@@ -201,7 +201,37 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.q-taxonomy-tools {
+  min-width: 0;
+  padding: 10px;
+  font: 14px/20px system-ui, sans-serif;
+}
+.q-taxonomy-tools :is(input, select, button) {
+  box-sizing: border-box;
+  min-width: 0;
+  border: 1px solid #e3e3e3;
+  border-radius: 6px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  padding: 5px 9px;
+}
+.q-taxonomy-tools button {
+  flex: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.q-taxonomy-tools > select {
+  width: 100%;
+  margin-bottom: 8px;
+}
+.q-taxonomy-tools label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .q-taxonomy {
+  margin-top: 8px;
   padding: 10px;
   border: 1px solid #e3e3e3;
   border-radius: 8px;
@@ -211,7 +241,13 @@
 }
 .q-taxonomy > div {
   display: flex;
+  width: 100%;
+  min-width: 0;
   gap: 6px;
+}
+.q-taxonomy input {
+  flex: 1;
+  width: 100%;
 }
 .q-error {
   padding: 8px 10px;
