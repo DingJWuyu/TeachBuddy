@@ -18,14 +18,19 @@ function parseRoute(pathname) {
     if (segments[0] === 'questions') return { name: 'questions', path: '/questions' };
     if (segments[0] === 'lessons') return { name: 'lessons', path: '/lessons' };
     if (segments[0] === 'resources') return { name: 'resources', path: '/resources' };
+    if (segments[0] === 'math') return { name: 'math', path, workId: new URLSearchParams(window.location.search).get('workId') };
+    if (segments[0] === 'classes') return { name: 'classes', path };
+    if (segments[0] === 'calendar') return { name: 'schedule', path, search: window.location.search };
     if (segments[0] === 'settings') return { name: 'settings', path: '/settings' };
   }
   if (segments.length === 2) {
     const id = decodeURIComponent(segments[1]);
+    if (segments[0] === 'classes') return { name: 'class', classId: id, path };
     if (segments[0] === 'resources') return { name: 'resource', id, path: `/resources/${segments[1]}` };
     if (segments[0] === 'questions') return { name: 'question', id, path: `/questions/${segments[1]}` };
     if (segments[0] === 'lessons') return { name: 'lesson', id, path: `/lessons/${segments[1]}` };
   }
+  if (segments.length === 4 && segments[0] === 'classes' && segments[2] === 'records') return { name: 'class-record', classId: decodeURIComponent(segments[1]), recordId: decodeURIComponent(segments[3]), path };
   return { name: 'unknown', path };
 }
 
@@ -54,9 +59,9 @@ export function useRoute() {
 
 export function navigate(path, { replace = false } = {}) {
   if (typeof window === 'undefined') return;
-  if (window.location.pathname === path && !replace) return;
+  if ((window.location.pathname + window.location.search) === path && !replace) return;
   if (replace) window.history.replaceState(null, '', path);
-  else window.history.pushState(null, '', path);
+  else window.history.pushState({ fromPath: window.location.pathname + window.location.search }, '', path);
   window.dispatchEvent(new Event(NAVIGATION_EVENT));
 }
 

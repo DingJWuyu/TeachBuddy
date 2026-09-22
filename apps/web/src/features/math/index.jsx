@@ -1,9 +1,11 @@
+import { ShellContext } from "../workbench/shellContext.js";
+import { MathTools, MathIntegration } from "./Integration.jsx";
 import { uploadDraft } from "./uploadDraft.js";
 import DynamicPreview from "./DynamicPreview.jsx";
 import DynamicTools from "./DynamicTools.jsx";
 import HtmlEditor from "./HtmlEditor.jsx";
 import { dynamicSource } from "./model.js";
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
 import { renderGraphic } from "../../../../../packages/shared/src/math/graphics.js";
 import {
   emptySource,
@@ -191,18 +193,20 @@ function Fields({ value, onChange, prefix = "" }) {
     </div>
   );
 }
-export function MathWorkbench({ transport } = {}) {
+export function MathWorkbench({ transport, route } = {}) {
   return transport ? (
-    <MathSession transport={transport} />
+    <MathSession transport={transport} route={route} />
   ) : (
-    <AuthenticatedMath />
+    <AuthenticatedMath route={route} />
   );
 }
-function AuthenticatedMath() {
+function AuthenticatedMath({ route }) {
   const { request, account } = useAuth();
-  return <MathSession key={account.accountKey} transport={request} />;
+  return <MathSession key={account.accountKey} transport={request} route={route} />;
 }
-function MathSession({ transport }) {
+function MathSession({ transport, route }) {
+  const shell = useContext(ShellContext);
+  const Tools = shell ? MathTools : "aside";
   const [font, setFont] = useState(null);
   const [fontError, setFontError] = useState("");
   const [fontAttempt, setFontAttempt] = useState(0);
@@ -362,6 +366,9 @@ function MathSession({ transport }) {
       const saved = JSON.parse(localStorage.getItem(storage));
       if (saved) {
         setDraft(saved.draft);
+        setSelected(saved.selected ?? 0);
+        setSearch(saved.search ?? "");
+        setDeleted(saved.deleted ?? false);
         setPending(saved.pending);
         setStatus(
           saved.pending &&
@@ -378,13 +385,19 @@ function MathSession({ transport }) {
       try {
         localStorage.setItem(
           storage,
-          JSON.stringify({ draft, pending, status }),
+          JSON.stringify({ draft, pending, status, selected, search, deleted }),
         );
       } catch {
         setMessage("设备草稿空间不足，请保存到服务端");
       }
     }
-  }, [draft, pending, status, storage, loadedStorage, locked]);
+  }, [draft, pending, status, storage, loadedStorage, locked, selected, search, deleted]);
+  const routeLoaded = useRef(null);
+  useEffect(() => {
+    if (!route?.workId || !storage || loadedStorage !== storage || routeLoaded.current === route.workId) return;
+    routeLoaded.current = route.workId;
+    if (draft?.id !== route.workId) open({id:route.workId});
+  }, [route?.workId, storage, loadedStorage]);
   async function refresh() {
     const epoch = generation.current;
     try {
@@ -771,6 +784,7 @@ function MathSession({ transport }) {
       <section className="math-main">
         <header>
           <strong>数学工坊</strong>
+          {shell && <button onClick={() => shell.openPanel("math-tools")}>作品与工具</button>}
           <input
             ref={importFile}
             type="file"
@@ -819,6 +833,7 @@ function MathSession({ transport }) {
             </>
           )}
         </header>
+        {shell && <MathIntegration work={draft} saved={status === "已保存" && !pending} busy={busy} client={client} onError={handleError} />}
         {fontError && (
           <div role="alert" className="math-message">
             {fontError}
@@ -1032,7 +1047,7 @@ function MathSession({ transport }) {
           </footer>
         )}
       </section>
-      <aside>
+      <Tools>
         <div className="math-new">
           {["formula", "plane", "space", "dynamic"].map((kind) => (
             <button key={kind} onClick={() => newDraft(kind)}>
@@ -1254,7 +1269,7 @@ function MathSession({ transport }) {
               )}
             </>
           )}
-      </aside>
+      </Tools>
     </main>
   );
 }

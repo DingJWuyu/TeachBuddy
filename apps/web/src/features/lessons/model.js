@@ -18,14 +18,14 @@ export function emptyLessonInput() {
   };
 }
 
-function referenceInputFrom(reference) {
+export function referenceInputFrom(reference) {
   return {
     id: reference.id,
     kind: reference.kind ?? "question",
-    [(reference.kind ?? "question") + "Id"]:
-      reference[(reference.kind ?? "question") + "Id"],
-    [(reference.kind ?? "question") + "Version"]:
-      reference[(reference.kind ?? "question") + "Version"],
+    [(reference.kind === "math" ? "work" : reference.kind ?? "question") + "Id"]:
+      reference[(reference.kind === "math" ? "work" : reference.kind ?? "question") + "Id"],
+    [(reference.kind === "math" ? "work" : reference.kind ?? "question") + "Version"]:
+      reference[(reference.kind === "math" ? "work" : reference.kind ?? "question") + "Version"],
     note: reference.note || "",
   };
 }
@@ -370,6 +370,6 @@ export function adoptReferenceVersion(input, referenceId, latestVersion) {
     ];
     const reference = all.find((item) => item.id === referenceId);
     if (reference)
-      reference[`${reference.kind ?? "question"}Version`] = latestVersion;
+      reference[`${reference.kind === "math" ? "work" : reference.kind ?? "question"}Version`] = latestVersion;
   });
 }

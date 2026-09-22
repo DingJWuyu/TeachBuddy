@@ -26,17 +26,7 @@ export async function startMathFixture({
         trustedOrigins: [origin],
         filesDir: path.resolve(dataDir, "files"),
         logDir: path.resolve(dataDir, "logs"),
-        catalogOverride: [
-          ...moduleCatalog,
-          {
-            id: "math",
-            name: "数学工坊",
-            path: "/math",
-            navigation: "sidebar",
-            auxiliaryPanel: true,
-            requires: [],
-          },
-        ],
+        catalogOverride: moduleCatalog,
         extraImplementations: {
           math: {
             factory: () => import("../../../../api/src/modules/math/index.js"),

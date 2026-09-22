@@ -21,7 +21,7 @@ export default function WorkbenchRoot() {
         const { body } = await getWorkbenchContext();
         if (body.accountKey !== account.accountKey) throw new Error('Account mismatch');
         const catalog = (await workbenchGet('/api/modules')).body;
-        if (catalog.version !== 2) throw new Error('Unsupported module catalog version');
+        if (catalog.version !== 3) throw new Error('Unsupported module catalog version');
         if (live) setBoot({ account, mode: 'ready' });
       } catch (error) {
         if (live) setBoot({ account, mode: error.problem?.kind === 'identity' ? 'identity' : 'unavailable' });

@@ -1,21 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-function inputReference(ref) {
-  return ref.kind === "resource"
-    ? {
-        id: ref.id,
-        kind: ref.kind,
-        resourceId: ref.resourceId,
-        resourceVersion: ref.resourceVersion,
-        note: ref.note,
-      }
-    : {
-        id: ref.id,
-        kind: ref.kind,
-        questionId: ref.questionId,
-        questionVersion: ref.questionVersion,
-        note: ref.note,
-      };
-}
+import { referenceInputFrom as inputReference } from '../lessons/model.js';
 export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
   const sequence = useRef(0);
   const [selectedId, setSelectedId] = useState("");
@@ -26,7 +10,7 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
   useEffect(() => {
     let active = true;
     client
-      .request("/api/modules/lessons/v2/items")
+      .request("/api/modules/lessons/v3")
       .then((r) => active && setLessons(r.items))
       .catch((e) => active && setError(e.message));
     return () => {
@@ -43,7 +27,7 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
     if (!id) return;
     try {
       const result = await client.request(
-        `/api/modules/lessons/v2/items/${id}`,
+        `/api/modules/lessons/v3/${id}`,
       );
       if (request === sequence.current) setLesson(result);
     } catch (e) {

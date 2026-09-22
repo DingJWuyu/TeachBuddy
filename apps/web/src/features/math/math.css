@@ -1,24 +1,24 @@
-:root {
+:is(.math-workbench, .math-tools-panel) {
   font-family: Inter, "Noto Sans CJK SC", system-ui, sans-serif;
   color: #253047;
   background: #f1f3f6;
   font-size: 14px;
   font-synthesis: none;
 }
-* {
+:is(.math-workbench, .math-tools-panel) * {
   box-sizing: border-box;
 }
-body {
+.math-workbench {
   margin: 0;
 }
-button,
-input,
-select,
-textarea {
+:is(.math-workbench, .math-tools-panel) button,
+:is(.math-workbench, .math-tools-panel) input,
+:is(.math-workbench, .math-tools-panel) select,
+:is(.math-workbench, .math-tools-panel) textarea {
   font: inherit;
 }
-button,
-select {
+:is(.math-workbench, .math-tools-panel) button,
+:is(.math-workbench, .math-tools-panel) select {
   min-height: 30px;
   border: 1px solid #dfe3e9;
   background: #fff;
@@ -26,18 +26,18 @@ select {
   padding: 4px 10px;
   color: inherit;
 }
-button {
+:is(.math-workbench, .math-tools-panel) button {
   cursor: pointer;
 }
-button:hover {
+:is(.math-workbench, .math-tools-panel) button:hover {
   background: #edf2fa;
 }
-button:disabled {
+:is(.math-workbench, .math-tools-panel) button:disabled {
   opacity: 0.5;
   cursor: default;
 }
-input,
-textarea {
+:is(.math-workbench, .math-tools-panel) input,
+:is(.math-workbench, .math-tools-panel) textarea {
   min-width: 0;
   border: 1px solid #dfe3e9;
   border-radius: 6px;
@@ -45,10 +45,10 @@ textarea {
   background: white;
   color: inherit;
 }
-input:focus,
-textarea:focus,
-button:focus-visible,
-select:focus {
+:is(.math-workbench, .math-tools-panel) input:focus,
+:is(.math-workbench, .math-tools-panel) textarea:focus,
+:is(.math-workbench, .math-tools-panel) button:focus-visible,
+:is(.math-workbench, .math-tools-panel) select:focus {
   outline: 2px solid #638acc;
   outline-offset: 2px;
 }
@@ -293,3 +293,19 @@ select:focus {
 .math-presenting { animation: math-present-in 180ms var(--tb-ease, ease-out); transform-origin: center; }
 @keyframes math-present-in { from { opacity: 0; transform: translateY(4px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .math-presenting { animation: none; } }
+
+.wb-main > .math-workbench { flex: 1; min-height: 0; height: auto; display: flex; padding: 0; }
+.wb-main .math-main { flex: 1; min-width: 0; }
+.math-tools-panel { min-width: 0; }
+.math-tools-panel label { display: grid; gap: 4px; margin: 6px 0; }
+.math-tools-panel input, .math-tools-panel select, .math-tools-panel textarea { max-width: 100%; }
+.math-integration { padding: 4px 12px; }
+
+.math-main footer select { width: auto; }
+.math-formula input[type="checkbox"] { width: auto; margin-right: 8px; }
+.math-formula input[type="color"] { width: 100%; height: 30px; }
+.math-main header input { height: 34px; }
+.math-tools-panel nav { display: grid; gap: 4px; max-height: 240px; overflow: auto; }
+.math-tools-panel nav button { display: flex; justify-content: space-between; gap: 8px; text-align: left; }
+.math-tools-panel details { padding: 8px 0; }
+.wb-reference > .wb-text-button + .wb-text-button { margin-left: 12px; }

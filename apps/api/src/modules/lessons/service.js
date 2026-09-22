@@ -87,7 +87,7 @@ export function createLessonsService({
       ...repository.listSections(record.id).map((s) => s.content),
     ];
     for (const reference of repository.listReferences(record.id)) {
-      if (reference.kind === "resource")
+      if (reference.kind === "resource" || reference.kind === "math")
         throw invalidInput("/materials", "unsupported-content-version");
       documents.push(reference.snapshot.body, reference.snapshot.solution);
     }
@@ -207,12 +207,12 @@ export function createLessonsService({
     const items = [];
     for (const record of repository.listLessonsForAccount(accountKey)) {
       if ((record.deletedAt !== null) !== wantDeleted) continue;
-      assertLegacy(record);
       const parts = [record.title, flattenDocumentText(record.intro)];
       for (const section of repository.listSections(record.id)) {
         parts.push(flattenDocumentText(section.content));
       }
       if (!matchesSearch(search, parts)) continue;
+      assertLegacy(record);
       items.push(toSummary(record));
     }
     return { items: items.sort(compareByUpdatedDescThenId) };

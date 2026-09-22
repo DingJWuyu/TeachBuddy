@@ -263,14 +263,15 @@ export function useSavableDocument({
         id: targetId,
         payload,
         submittedInput,
+        apiVersion: retry ? current.pending?.apiVersion : (kind === "lesson" ? 3 : undefined),
         createdAt: Date.now()
       }
     });
 
     try {
       const result = targetId
-        ? await apiRef.current.update({ key, id: targetId, payload })
-        : await apiRef.current.create({ key, payload });
+        ? await apiRef.current.update({ key, id: targetId, payload, version: retry ? current.pending?.apiVersion ?? 2 : 3 })
+        : await apiRef.current.create({ key, payload, version: retry ? current.pending?.apiVersion ?? 2 : 3 });
       // A late response never touches newer input, another object or a newer identity.
       if (seq !== seqRef.current || generationRef.current !== generation) return null;
       if (retry && targetId && apiRef.current.load) {
@@ -384,6 +385,7 @@ export function useSavableDocument({
     save: submit,
     retryConfirm: () => submit({ retry: true }),
     adoptServer,
+    compareServer: (object) => commit({ status: 'conflict', serverObject: object, problem: { kind: 'conflict', currentVersion: object.version, message: '内容已在别处修改' } }),
     discardDraft,
     isSaving: state.status === 'saving'
   };

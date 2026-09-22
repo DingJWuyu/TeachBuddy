@@ -63,7 +63,17 @@ export function exportTree(lesson, options) {
       return [next];
     });
   const reference = (ref, field) => {
-    if (ref.kind === "resource") {
+    if (ref.kind === "math") {
+      if (options.kind !== "practice") {
+        const source = ref.snapshot.source;
+        blocks.push(para(ref.snapshot.title));
+        if (source.kind === "formula") {
+          blocks.push({ type: "math", latex: source.latex, field: `${field}/snapshot/source/latex` });
+          if (source.includeCaption && source.caption) blocks.push(para(source.caption));
+        } else if (source.kind === "html") blocks.push(para("交互演示见单独文件"));
+        else blocks.push({ type: "image", fileId: ref.snapshot.posterFileId, alt: ref.snapshot.title, widthMm: 150, field });
+      }
+    } else if (ref.kind === "resource") {
       if (options.kind !== "practice")
         blocks.push(para(`${ref.snapshot.title} · ${ref.snapshot.fileName}`));
     } else {

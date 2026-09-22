@@ -13,6 +13,8 @@ test("R31 database upgrade retains files, documents, questions and replay across
     const response = await fetch(f.origin + path, {
       method,
       headers: {
+      // Do not carry a pooled socket across the fixture server lifecycle.
+      Connection: "close",
         Cookie: f.workbench.identity
           .testPrincipalCookie("r31-a")
           .header.split(";")[0],

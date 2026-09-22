@@ -62,7 +62,7 @@ export function ExportsPanel({ savable, onClose }) {
       try {
         const rows = (
           await workbenchGet(
-            `/api/modules/lessons/v2/items/${lesson.id}/exports`,
+            `/api/modules/lessons/v3/${lesson.id}/exports`,
           )
         ).body.items;
         const items = await Promise.all(
@@ -93,7 +93,7 @@ export function ExportsPanel({ savable, onClose }) {
   const send = async ({ key, payload }) => {
     const body = (
       await workbenchPost(
-        `/api/modules/lessons/v2/items/${payload.id}/exports`,
+        `${payload.apiVersion === 3 ? "/api/modules/lessons/v3" : "/api/modules/lessons/v2/items"}/${payload.id}/exports`,
         payload.options,
         key,
       )
@@ -115,6 +115,7 @@ export function ExportsPanel({ savable, onClose }) {
     }
     const result = await submit.submit(send, {
       id: saved.id,
+      apiVersion: 3,
       options: { baseVersion: saved.version, ...options },
     });
     if (result) setRevision((n) => n + 1);

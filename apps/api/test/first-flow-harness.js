@@ -12,6 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import request from 'supertest';
+import { createB16Workbench } from './fixtures/first-flow/b16-workbench.js';
 import { createApp } from '../src/app.js';
 import { createEnv } from '../src/config/env.js';
 import { createWorkbenchLogger } from '../src/workbench/logger.js';
@@ -64,6 +65,8 @@ export async function createFirstFlowHarness(options = {}) {
   async function openRuntime() {
     runtime = createApp({
       env,
+      workbenchClock: options.clock,
+      ...(options.baselineOnly ? { workbench: createB16Workbench({env}) } : {}),
       workbenchLogger: createWorkbenchLogger({
         logDir: path.join(rootDir, 'logs'),
         consoleOutput: false
@@ -130,6 +133,8 @@ export async function createFirstFlowHarness(options = {}) {
     raw() {
       return request(runtime.app);
     },
+
+    injectFault(sql) { runtime.workbench.db.exec(sql); },
 
     query(sql, ...params) {
       return runtime.workbench.db.prepare(sql).all(...params);

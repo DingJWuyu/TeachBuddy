@@ -16,7 +16,7 @@ import {
 
 const QUESTIONS = '/api/modules/questions/items';
 const LESSONS = '/api/modules/lessons/items';
-const MIGRATION_IDS = ['lessons_0001_lesson_tables', 'lessons_materials_001', 'materials_files_001', 'materials_jobs_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001'];
+const MIGRATION_IDS = ['classes_0001_class_tables', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'materials_files_001', 'materials_jobs_001', 'math_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'schedule_0001_settings_entries', 'schedule_reminders_0001_notifications'];
 
 function appliedMigrations(harness) {
   return harness

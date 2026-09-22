@@ -155,7 +155,33 @@ function findDependencyCycles(entries, seenIds) {
 export function assertModuleCatalog(entries = moduleCatalog) {
   const problems = validateModuleCatalog(entries);
   if (problems.length) {
-    throw new Error(`Invalid module catalog:\n- ${problems.join('\n- ')}`);
+    const error = new Error(`Invalid module catalog:\n- ${problems.join('\n- ')}`);
+    let field = '/items';
+    let reason = 'invalid-reference';
+    const ids = new Set();
+    const paths = new Set();
+    for (const [index, entry] of (Array.isArray(entries) ? entries : []).entries()) {
+      if (ids.has(entry?.id) || paths.has(entry?.path)) {
+        field = `/items/${index}/${ids.has(entry?.id) ? 'id' : 'path'}`;
+        reason = 'duplicate-id';
+        break;
+      }
+      ids.add(entry?.id);
+      paths.add(entry?.path);
+    }
+    if (reason !== 'duplicate-id' && Array.isArray(entries)) {
+      outer: for (const [index, entry] of entries.entries()) {
+        for (const [position, port] of (Array.isArray(entry?.requires) ? entry.requires : []).entries()) {
+          if (!modulePorts[port] || !ids.has(modulePorts[port].provider)) {
+            field = `/items/${index}/requires/${position}`;
+            break outer;
+          }
+        }
+      }
+    }
+    error.status = 422;
+    error.problem = { type: '/problems/workbench/invalid-input', field, reason };
+    throw error;
   }
   return entries;
 }

@@ -42,6 +42,7 @@ export function createWorkbench({
   identity: identityOverride,
   logger: loggerOverride,
   clock,
+  implementations = moduleImplementations,
 } = {}) {
   if (!env)
     throw new Error("createWorkbench requires the resolved environment.");
@@ -91,10 +92,10 @@ export function createWorkbench({
   const loader = createModuleLoader({
     catalog,
     implementations: {
-      ...moduleImplementations,
+      ...implementations,
       ...(workbenchEnv.extraImplementations ?? {}),
     },
-    dependencies: { db, mutations, files, content, jobs },
+    dependencies: { db, mutations, files, content, jobs, clock: { now: () => (clock ? clock() : new Date()).toISOString() } },
     logger,
   });
 

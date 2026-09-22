@@ -1,6 +1,10 @@
 /** Line icons for the workbench shell, sized to the 36px navigation rows. */
 
 const PATHS = {
+  math: 'M3 14l3 3 4-13h7M12 9l5 6M17 9l-5 6',
+  calendar: 'M4 5h12v12H4zM4 8h12M7 3v4M13 3v4M7 11h1M11 11h1M7 14h1',
+  bell: 'M5 13h10l-1-2V8a4 4 0 0 0-8 0v3zM8 16h4',
+  classes: 'M3 5h14v9H3zM6 17l2-3M14 17l-2-3M6 8h8M6 11h5',
   folder: 'M3 6h5l2 2h7v8H3zM3 6V4h5l2 2h7v2',
   home: 'M4 10.5 10 5l6 5.5V16a1 1 0 0 1-1 1h-3v-4H8v4H5a1 1 0 0 1-1-1z',
   bank: 'M4 8.5 10 5l6 3.5v1H4zM5.5 10.5V15M9 10.5V15M11 10.5V15M14.5 10.5V15M4 16h12',

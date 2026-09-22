@@ -1,3 +1,4 @@
+import { MathSnapshot } from "./MathSnapshot.jsx";
 import { FilePreview } from "./FilePreview.jsx";
 /**
  * One reference inside a lesson: the adopted snapshot, this lesson's note, the
@@ -21,7 +22,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose }) {
     let cancelled = false;
     readSource(
       reference.kind ?? "question",
-      reference.questionId ?? reference.resourceId,
+      reference.workId ?? reference.questionId ?? reference.resourceId,
     )
       .then((question) => {
         if (!cancelled) setCurrent({ ...question, ...question.snapshot });
@@ -32,7 +33,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose }) {
     return () => {
       cancelled = true;
     };
-  }, [reference.questionId, reference.resourceId, reference.kind]);
+  }, [reference.workId, reference.questionId, reference.resourceId, reference.kind]);
 
   return (
     <div className="wb-dialog-host" data-overlay="dialog">
@@ -59,9 +60,9 @@ function UpdateCompareDialog({ reference, onAdopt, onClose }) {
           <section className="wb-compare-side" data-region="reference-old">
             <h3>
               本课采用版本{" "}
-              {reference.questionVersion ?? reference.resourceVersion}
+              {reference.workVersion ?? reference.questionVersion ?? reference.resourceVersion}
             </h3>
-            {reference.kind === "resource" ? (
+            {reference.kind === "math" ? <MathSnapshot snapshot={reference.snapshot} /> : reference.kind === "resource" ? (
               <button
                 className="wb-text-button"
                 onClick={() =>
@@ -84,7 +85,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose }) {
             <h3>来源当前版本 {current?.version ?? "…"}</h3>
             {current && (
               <>
-                {reference.kind === "resource" ? (
+                {reference.kind === "math" ? <MathSnapshot snapshot={current.snapshot} /> : reference.kind === "resource" ? (
                   <button
                     className="wb-text-button"
                     onClick={() =>
@@ -120,7 +121,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose }) {
             disabled={
               !current ||
               current.version ===
-                (reference.questionVersion ?? reference.resourceVersion)
+                (reference.workVersion ?? reference.questionVersion ?? reference.resourceVersion)
             }
             onClick={() => onAdopt(current.version)}
           >
@@ -145,6 +146,7 @@ export function ReferenceCard({
   onAdopt,
   onPlaceAgain,
   onOpenLesson,
+  onCopyWork,
 }) {
   const [compareOpen, setCompareOpen] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
@@ -155,7 +157,7 @@ export function ReferenceCard({
     reference.sourceState === "active" &&
     Number.isInteger(reference.latestVersion) &&
     reference.latestVersion >
-      (reference.questionVersion ?? reference.resourceVersion);
+      (reference.workVersion ?? reference.questionVersion ?? reference.resourceVersion);
 
   return (
     <article
@@ -166,7 +168,7 @@ export function ReferenceCard({
       <header className="wb-reference-head">
         <h4>{excerpt}</h4>
         <span className="wb-muted">
-          采用版本 {reference.questionVersion ?? reference.resourceVersion}
+          采用版本 {reference.workVersion ?? reference.questionVersion ?? reference.resourceVersion}
         </span>
         {reference.sourceState === "deleted" && (
           <span className="wb-tag is-deleted" data-region="source-deleted">
@@ -222,7 +224,7 @@ export function ReferenceCard({
         </div>
       </header>
       <div className="wb-reference-body">
-        {reference.kind === "resource" ? (
+        {reference.kind === "math" ? <MathSnapshot snapshot={reference.snapshot} /> : reference.kind === "resource" ? (
           <>
             <button
               className="wb-text-button"
@@ -263,6 +265,7 @@ export function ReferenceCard({
           onChange={(event) => onNoteChange(event.target.value)}
         />
       </label>
+      {onCopyWork && <button className="wb-text-button" onClick={onCopyWork}>另存作品并替换本处</button>}
       {onOpenLesson && (
         <button type="button" className="wb-text-button" onClick={onOpenLesson}>
           查看来源

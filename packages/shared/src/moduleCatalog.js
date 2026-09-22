@@ -1,68 +1,102 @@
-/**
- * Authoritative static module catalog for the workbench (ADR 0001).
- *
- * This is pure data: Web and API each project it into their own local code
- * mapping. Entries are enabled at runtime only after the matching module
- * implementation is imported, so a catalog entry never stands in for a module
- * that does not exist yet. The exact format and material entries are
- * fixed by docs/contracts/workbench/materials.openapi.yaml (ModuleCatalog and
- * the same-named example); do not add fields or entries without a new frozen
- * contract revision.
- */
-
-export const moduleCatalogVersion = 2;
-
+/** Frozen M40 v3 catalog, projected only into real implementations. */
+export const moduleCatalogVersion = 3;
 export const moduleCatalog = Object.freeze([
-  Object.freeze({
-    id: 'questions',
-    name: '题库',
-    path: '/questions',
-    navigation: 'sidebar',
-    auxiliaryPanel: true,
-    requires: Object.freeze([])
-  }),
-  Object.freeze({
-    id: 'resources', name: '资源库', path: '/resources',
-    navigation: 'sidebar', auxiliaryPanel: true, requires: Object.freeze([])
-  }),
-  Object.freeze({
-    id: 'lessons',
-    name: '备课',
-    path: '/lessons',
-    navigation: 'sidebar',
-    auxiliaryPanel: true,
-    requires: Object.freeze(['questions.readForReferenceV2', 'resources.readForReferenceV2'])
-  })
-]);
-
-/**
- * Public ports a module may depend on. The catalog's `requires` enum is closed:
- * a dependency names exactly one port, and the port names the module that
- * provides it. `lessons` requires the questions reference-read port.
- */
+  {
+    "id": "questions",
+    "name": "题库",
+    "path": "/questions",
+    "navigation": "sidebar",
+    "auxiliaryPanel": true,
+    "requires": []
+  },
+  {
+    "id": "lessons",
+    "name": "备课",
+    "path": "/lessons",
+    "navigation": "sidebar",
+    "auxiliaryPanel": true,
+    "requires": [
+      "questions.readForReferenceV2",
+      "resources.readForReferenceV2",
+      "math.readForReferenceV1"
+    ]
+  },
+  {
+    "id": "math",
+    "name": "数学工坊",
+    "path": "/math",
+    "navigation": "sidebar",
+    "auxiliaryPanel": true,
+    "requires": []
+  },
+  {
+    "id": "resources",
+    "name": "资源库",
+    "path": "/resources",
+    "navigation": "sidebar",
+    "auxiliaryPanel": true,
+    "requires": []
+  },
+  {
+    "id": "classes",
+    "name": "班级教学",
+    "path": "/classes",
+    "navigation": "sidebar",
+    "auxiliaryPanel": true,
+    "requires": [
+      "questions.readForReference",
+      "lessons.readForTeachingLink",
+      "math.readForTeachingLinkV1"
+    ]
+  },
+  {
+    "id": "schedule",
+    "name": "日程",
+    "path": "/calendar",
+    "navigation": "top",
+    "auxiliaryPanel": true,
+    "requires": [
+      "classes.readClass",
+      "classes.readRecord",
+      "lessons.readForTeachingLink"
+    ]
+  }
+].map(entry => Object.freeze({...entry, requires: Object.freeze(entry.requires)})));
 export const modulePorts = Object.freeze({
-  'questions.readForReferenceV2': Object.freeze({ provider: 'questions', port: 'readForReferenceV2' }),
-  'resources.readForReferenceV2': Object.freeze({ provider: 'resources', port: 'readForReferenceV2' }),
-  'questions.readForReference': Object.freeze({ provider: 'questions', port: 'readForReference' })
+  "questions.readForReferenceV2": {
+    "provider": "questions",
+    "port": "readForReferenceV2"
+  },
+  "resources.readForReferenceV2": {
+    "provider": "resources",
+    "port": "readForReferenceV2"
+  },
+  "math.readForReferenceV1": {
+    "provider": "math",
+    "port": "readForReferenceV1"
+  },
+  "questions.readForReference": {
+    "provider": "questions",
+    "port": "readForReference"
+  },
+  "lessons.readForTeachingLink": {
+    "provider": "lessons",
+    "port": "readForTeachingLink"
+  },
+  "math.readForTeachingLinkV1": {
+    "provider": "math",
+    "port": "readForTeachingLinkV1"
+  },
+  "classes.readClass": {
+    "provider": "classes",
+    "port": "readClass"
+  },
+  "classes.readRecord": {
+    "provider": "classes",
+    "port": "readRecord"
+  }
 });
-
 export const moduleCatalogIdPattern = /^[a-z][a-z0-9-]*$/;
 export const moduleCatalogPathPattern = /^\/[a-z][a-z0-9-]*$/;
 export const moduleCatalogNavigationValues = Object.freeze(['sidebar', 'top']);
-
-/**
- * Isolated M41 composition authorized by math-foundation-dependency.md.
- * The default first-flow catalog stays unchanged until M43 integrates v3.
- * This descriptor maps the real native module, not a replacement renderer.
- */
-export const mathSupportCatalog = Object.freeze([
-  ...moduleCatalog,
-  Object.freeze({
-    id: 'math',
-    name: '数学工坊',
-    path: '/math',
-    navigation: 'sidebar',
-    auxiliaryPanel: true,
-    requires: Object.freeze([])
-  })
-]);
+export const mathSupportCatalog = moduleCatalog;

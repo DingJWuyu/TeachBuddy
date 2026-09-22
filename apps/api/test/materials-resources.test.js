@@ -53,6 +53,8 @@ async function request(
   const response = await fetch(fixture.origin + route, {
     method,
     headers: {
+      // Do not carry a pooled socket across the fixture server lifecycle.
+      Connection: "close",
       Cookie: fixture.workbench.identity
         .testPrincipalCookie(account)
         .header.split(";")[0],
@@ -489,7 +491,7 @@ test("MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与
         .status,
       422,
     );
-    const response = await fetch(fixture.origin + base);
+    const response = await fetch(fixture.origin + base, { headers: { Connection: "close" } });
     assert.equal(response.status, 401);
     assert.equal(
       (
@@ -502,6 +504,8 @@ test("MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与
     const foreign = await fetch(fixture.origin + base, {
       method: "PUT",
       headers: {
+      // Do not carry a pooled socket across the fixture server lifecycle.
+      Connection: "close",
         Origin: "http://evil.invalid",
         "Content-Type": "application/json",
         "X-TeachBuddy-Request": "1",

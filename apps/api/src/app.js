@@ -36,7 +36,7 @@ export function createApp(options = {}) {
       }
     };
   }
-  const workbench = options.workbench ?? createWorkbench({ env: runtimeEnv, logger: options.workbenchLogger });
+  const workbench = options.workbench ?? createWorkbench({ env: runtimeEnv, logger: options.workbenchLogger, clock: options.workbenchClock });
   let dataStore;
   try {
     // A preconstructed fixture must use the same real page/session verification
@@ -68,11 +68,13 @@ export function createApp(options = {}) {
     throw error;
   }
   const closeStore = dataStore.close.bind(dataStore);
-  dataStore.close = () => { workbench.jobs.close(); closeStore(); };
+  dataStore.close = () => { workbench.jobs?.close(); closeStore(); };
   const app = express();
   if (authModule) app.use('/api/auth', authModule.router);
-  app.use('/api/workbench/files', workbench.filesRouter);
-  app.use('/api/workbench/jobs', workbench.jobsRouter);
+  if (!testIdentity && (!workbench.filesRouter || !workbench.jobsRouter))
+    throw new Error('The authenticated composition requires files and jobs.');
+  if (workbench.filesRouter) app.use('/api/workbench/files', workbench.filesRouter);
+  if (workbench.jobsRouter) app.use('/api/workbench/jobs', workbench.jobsRouter);
   app.use(workbenchPaths.context, workbench.contextRouter);
   app.use(workbenchPaths.modules, workbench.modulesRouter);
   app.get(workbenchPaths.modules, ...workbench.catalogHandler);

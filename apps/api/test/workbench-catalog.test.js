@@ -35,25 +35,8 @@ const catalogEntry = (overrides = {}) => ({
 });
 
 test('the shared catalog carries exactly the frozen material entries', () => {
-  assert.deepEqual(moduleCatalog, [
-    {
-      id: 'questions',
-      name: '题库',
-      path: '/questions',
-      navigation: 'sidebar',
-      auxiliaryPanel: true,
-      requires: []
-    },
-    { id: 'resources', name: '资源库', path: '/resources', navigation: 'sidebar', auxiliaryPanel: true, requires: [] },
-    {
-      id: 'lessons',
-      name: '备课',
-      path: '/lessons',
-      navigation: 'sidebar',
-      auxiliaryPanel: true,
-      requires: ['questions.readForReferenceV2', 'resources.readForReferenceV2']
-    }
-  ]);
+  const sample = JSON.parse(fs.readFileSync(path.join(repoRoot,'docs/contracts/workbench/math/samples.json'))).find(s=>s.id==='catalog-combined-target');
+  assert.deepEqual(moduleCatalog, sample.value.items);
   assert.equal(validateModuleCatalog(moduleCatalog).length, 0);
 });
 
@@ -90,11 +73,11 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
 });
 
 test('catalog projection enables only implemented modules and rejects orphans', () => {
-  assert.deepEqual(projectModuleCatalog([]), { version: 2, items: [] });
+  assert.deepEqual(projectModuleCatalog([]), { version: 3, items: [] });
 
   const lessonsOnly = projectModuleCatalog(['lessons']);
   assert.deepEqual(lessonsOnly.items.map((entry) => entry.id), ['lessons']);
-  assert.deepEqual(lessonsOnly.items[0].requires, ['questions.readForReferenceV2', 'resources.readForReferenceV2']);
+  assert.deepEqual(lessonsOnly.items[0].requires, ['questions.readForReferenceV2', 'resources.readForReferenceV2', 'math.readForReferenceV1']);
 
   assert.throws(
     () => projectModuleCatalog(['questions', 'unknown-module']),
@@ -105,7 +88,7 @@ test('catalog projection enables only implemented modules and rejects orphans', 
     () => assertModuleDependencies(['lessons']),
     /Module lessons requires questions.readForReferenceV2 but provider module questions is not enabled/
   );
-  assert.doesNotThrow(() => assertModuleDependencies(['questions', 'resources', 'lessons']));
+  assert.doesNotThrow(() => assertModuleDependencies(['questions', 'resources', 'math', 'lessons']));
 });
 
 test('the shared contract vocabulary stays in the frozen OpenAPI documents', () => {
@@ -113,13 +96,14 @@ test('the shared contract vocabulary stays in the frozen OpenAPI documents', () 
     path.join(repoRoot, 'docs', 'contracts', 'workbench', 'first-flow.openapi.yaml'),
     'utf-8'
   );
+  const allOpenapi = openapi + fs.readFileSync(path.join(repoRoot,'docs/contracts/teaching-time/teaching-time.openapi.yaml'),'utf8');
   const authOpenapi = fs.readFileSync(
     path.join(repoRoot, 'docs', 'contracts', 'auth.openapi.yaml'),
     'utf-8'
   );
 
   for (const problemType of Object.values(workbenchProblemTypes)) {
-    assert.ok(openapi.includes(problemType), `problem type ${problemType} is missing from the frozen OpenAPI`);
+    assert.ok(allOpenapi.includes(problemType), `problem type ${problemType} is missing from the frozen OpenAPI`);
   }
   for (const authVocabulary of [workbenchHeaders.sessionCookie, workbenchHeaders.browserProtection]) {
     assert.ok(
@@ -200,7 +184,7 @@ test('the loader wires a required public port and enforces its presence', async 
     }
   };
   const dependencies = { db: { name: 'db' }, mutations: { name: 'mutations' } };
-  const loader = createModuleLoader({ implementations, dependencies });
+  const loader = createModuleLoader({ catalog: moduleCatalog.filter(e=>['questions','resources','lessons'].includes(e.id)).map(e=>({...e,requires:e.requires.filter(p=>!p.startsWith('math.'))})), implementations, dependencies });
   await loader.instantiate();
 
   assert.deepEqual(loader.enabledIds(), ['questions', 'resources', 'lessons']);

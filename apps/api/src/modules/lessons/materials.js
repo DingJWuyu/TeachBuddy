@@ -1,3 +1,4 @@
+import { validate as validateMath } from "../math/contract.js";
 import { normalizeSearchQuery, matchesSearch } from "../questions/contract.js";
 import { createLessonExports } from "./exports.js";
 import { materialErrors } from "../../workbench/jobs/router.js";
@@ -6,6 +7,7 @@ import { Router } from "express";
 import { validateSchema } from "../../workbench/content/schema.js";
 import {
   ContractError,
+  sendProblem,
   invalidInput,
   contractError,
   problems,
@@ -20,10 +22,12 @@ import {
 
 const fail = (status, type, extra = {}) =>
   new ContractError(status, {
-    type: `/problems/${type.startsWith("materials/") ? type : `workbench/${type}`}`,
+    type: `/problems/${(type.startsWith("materials/") || type.startsWith("math/")) ? type : `workbench/${type}`}`,
     ...extra,
   });
 export function createMaterialsLessons({
+  version = 2,
+  math,
   repository,
   mutations,
   questions,
@@ -34,6 +38,10 @@ export function createMaterialsLessons({
   files,
   now = () => new Date(),
 }) {
+  const validate = (name, value) => version === 3 ? validateMath(name === "CreateLesson" || name === "UpdateLesson" ? `${name}V3` : name, value) : validateSchema(name, value);
+  const assertRepresentable = (id) => {
+    if (version < 3 && repository.listReferences(id).some(r => r.kind === "math")) throw invalidInput("/materials", "unsupported-content-version");
+  };
   const account = (p) => {
     if (!p?.accountKey) throw contractError(problems.unauthenticated());
     return p.accountKey;
@@ -44,6 +52,7 @@ export function createMaterialsLessons({
     return r;
   };
   const source = (p, kind, id) => {
+    if (kind === "math") return math.readForReferenceV1(p, id);
     const port = kind === "question" ? questions : resources;
     if (!port?.readForReferenceV2) throw fail(503, "temporarily-unavailable");
     return port.readForReferenceV2(p, id);
@@ -67,8 +76,8 @@ export function createMaterialsLessons({
     return {
       id: r.referenceId,
       kind,
-      [`${kind}Id`]: r.questionId,
-      [`${kind}Version`]: r.questionVersion,
+      [kind === "math" ? "workId" : `${kind}Id`]: r.questionId,
+      [kind === "math" ? "workVersion" : `${kind}Version`]: r.questionVersion,
       note: r.note,
       snapshot,
       latestVersion,
@@ -76,6 +85,7 @@ export function createMaterialsLessons({
     };
   };
   const read = (p, r) => {
+    assertRepresentable(r.id);
     const refs = repository.listReferences(r.id);
     const { accountKey, ...record } = r;
     return {
@@ -110,8 +120,8 @@ export function createMaterialsLessons({
       if (ids.size > 1000) throw invalidInput("/materials", "out-of-range");
       const prior = old.get(r.id),
         kind = r.kind,
-        sourceId = r[`${kind}Id`],
-        version = r[`${kind}Version`];
+        sourceId = r[kind === "math" ? "workId" : `${kind}Id`],
+        version = r[kind === "math" ? "workVersion" : `${kind}Version`];
       if (
         prior &&
         ((prior.kind ?? "question") !== kind || prior.questionId !== sourceId)
@@ -122,11 +132,16 @@ export function createMaterialsLessons({
         const s = source(p, kind, sourceId);
         if (s.deletedAt !== null) throw contractError(problems.objectDeleted());
         if (s.version !== version)
-          throw fail(409, "materials/reference-version-conflict", {
+          throw fail(409, `${kind === "math" ? "math" : "materials"}/reference-version-conflict`, {
             kind,
             id: sourceId,
             currentVersion: s.version,
           });
+        if (kind === "math") {
+          validateMath("ReferenceReadWork", s);
+          if (s.snapshot.render?.state === "invalid" || (!s.snapshot.posterFileId && s.snapshot.source.kind !== "html")) throw fail(422, "math/work-not-ready");
+          snapshot = structuredClone(s.snapshot);
+        } else {
         validateSchema(
           kind === "question"
             ? "ReferenceReadQuestion"
@@ -148,6 +163,7 @@ export function createMaterialsLessons({
                 mediaType: s.snapshot.mediaType,
                 supplementPreviewFileId: s.snapshot.supplementPreviewFileId,
               };
+        }
       }
       references.push({
         lessonId: id,
@@ -190,6 +206,7 @@ export function createMaterialsLessons({
     const prior = id ? requireLesson(p, id) : null;
     if (prior && input.baseVersion !== prior.version)
       throw contractError(problems.versionConflict(prior.version));
+    if (prior) assertRepresentable(id);
     if (prior?.deletedAt) throw contractError(problems.objectDeleted());
     const at = now().toISOString();
     const record = {
@@ -210,6 +227,7 @@ export function createMaterialsLessons({
     const r = requireLesson(p, id);
     if (r.version !== input.baseVersion)
       throw contractError(problems.versionConflict(r.version));
+    assertRepresentable(id);
     if (r.deletedAt && input.deleted)
       throw contractError(problems.objectDeleted());
     const at = now().toISOString();
@@ -236,14 +254,14 @@ export function createMaterialsLessons({
       items: repository
         .listLessonsForAccount(account(p))
         .filter((r) => (r.deletedAt !== null) === (query.state === "deleted"))
-        .map((r) => read(p, r))
         .filter((r) =>
           matchesSearch(q, [
             r.title,
             ...text(r.intro.blocks),
-            ...r.sections.flatMap((s) => text(s.content.blocks)),
+            ...repository.listSections(r.id).flatMap((s) => text(s.content.blocks)),
           ]),
-        ),
+        )
+        .map((r) => read(p, r)),
     };
   }
   function listUsages(p, { kind, id }) {
@@ -330,11 +348,21 @@ export function createMaterialsLessons({
       (p, b, id) => listUsages(p, { kind: "resource", id }),
     ],
   ];
-  for (const [name, method, path, schema, status, action] of definitions) {
-    operations[name] = async ({ principal, key, input, id, query }) => {
+  if (version === 3) {
+    definitions.splice(7);
+    definitions.unshift(["listUsagesV3", "get", "/usages", null, 200, (p,b,id,q) => listUsages(p,q)]);
+  }
+  for (const [name, method, oldPath, schema, status, action] of definitions) {
+    const path = version === 3 ? oldPath.replace("/items", "") || "/" : oldPath;
+    const operationName = version === 3 ? ({createLessonExport: "exportLessonV3", listLessonExports: "listLessonExportsV3", listUsagesV3: "listUsagesV3"}[name] ?? name.replace("V2", "V3")) : name;
+    operations[operationName] = async ({ principal, key, input, id, query }) => {
       account(principal);
       if (path.includes(":id")) validateIdPath(id);
-      if (schema) validateSchema(schema, input);
+      if (schema) { validateNoQuery(query ?? {}); validate(schema, input); }
+      else if (name === "listUsagesV3") {
+        if (Object.keys(query ?? {}).some(k => !["kind", "id"].includes(k)) || !["question", "resource", "math"].includes(query?.kind)) throw invalidInput("/query", "invalid-reference");
+        validateIdPath(query?.id);
+      }
       else if (name === "listLessonsV2") validateLessonsQuery(query ?? {});
       else validateNoQuery(query ?? {});
       const run = () => ({ status, body: action(principal, input, id, query) });
@@ -344,7 +372,7 @@ export function createMaterialsLessons({
               principal,
               key,
               method: method.toUpperCase(),
-              path: `/api/modules/lessons/v2${path.replace(":id", id)}`,
+              path: `/api/modules/lessons/v${version}${path === "/" ? "" : path.replace(":id", id)}`,
               body: input,
             },
             run,
@@ -360,7 +388,7 @@ export function createMaterialsLessons({
           validate: (b, req) => {
             if (path.includes(":id")) validateIdPath(req.params.id);
             validateNoQuery(req.query);
-            return validateSchema(schema, b);
+            return validate(schema, b);
           },
           write: ({ principal, body, request }) => ({
             status,
@@ -372,7 +400,7 @@ export function createMaterialsLessons({
       router.get(
         path,
         asyncHandler(async (req, res) => {
-          const result = await operations[name]({
+          const result = await operations[operationName]({
             principal: req.workbenchPrincipal,
             id: req.params.id,
             query: req.query,
@@ -381,6 +409,7 @@ export function createMaterialsLessons({
         }),
       );
   }
+  router.use((error, req, res, next) => error.problem?.type?.startsWith("/problems/math/") ? sendProblem(res,error.status,error.problem) : next(error));
   materialErrors(router);
   return {
     router,

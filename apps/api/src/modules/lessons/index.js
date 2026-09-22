@@ -11,6 +11,7 @@ export function createLessonsModule({
   mutations,
   questions,
   resources,
+  math,
   content,
   jobs,
   files,
@@ -52,7 +53,12 @@ export function createLessonsModule({
     now,
   });
   router.use("/v2", materials.router);
-  return { router, port: materials.port, jobHandlers: materials.jobHandlers };
+  const v3 = math ? createMaterialsLessons({ version: 3, math, repository, mutations, questions, resources, content, db, jobs, files, now }) : null;
+  if (v3) router.use("/v3", v3.router);
+  return { router, port: { ...materials.port, operations: { ...materials.port.operations, ...v3?.port.operations },
+    ...(v3 ? { listUsagesV3: v3.port.listUsages } : {}),
+    readForTeachingLink(principal, id) { const { id: lessonId, version, title, deletedAt } = materials.requireLesson(principal,id); return { id: lessonId, version, title, deletedAt }; }
+  }, jobHandlers: materials.jobHandlers };
 }
 
 export { migrations };

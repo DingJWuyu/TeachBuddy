@@ -829,7 +829,7 @@ function ResourceWorkspace({
           disabled={disabled}
           onClose={() => setAddToLesson(null)}
           onSave={(id, input) =>
-            write(`/api/modules/lessons/v2/items/${id}`, input, "lesson")
+            write(`/api/modules/lessons/v3/${id}`, input, "lesson")
           }
         />
       )}

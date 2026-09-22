@@ -1,3 +1,4 @@
+import { useMathReturn } from "./useMathReturn.js";
 import { ExportsPanel } from "./ExportsPanel.jsx";
 import { MaterialsPicker } from "./MaterialsPicker.jsx";
 import "./materials.css";
@@ -77,6 +78,8 @@ export default function LessonDetail({ id }) {
     inputFromObject: lessonInputFrom,
     prepareDraft: async () => ({ input: emptyLessonInput(), baseline: null }),
   });
+
+  const mathReturn = useMathReturn({ shell, savable, id });
 
   const deleteSubmit = useIdempotentSubmit({
     accountKey: shell.accountKey,
@@ -174,8 +177,8 @@ export default function LessonDetail({ id }) {
   async function handleDeletion(nextDeleted) {
     const result = await deleteSubmit.submit(
       ({ key, payload }) =>
-        setLessonDeletion({ key, id: baseline.id, payload }),
-      { baseVersion: baseline.version, deleted: nextDeleted },
+        setLessonDeletion({ key, id: baseline.id, payload: payload.body ?? payload, version: payload.apiVersion ?? 2 }),
+      { apiVersion: 3, body: { baseVersion: baseline.version, deleted: nextDeleted } },
     );
     if (result) {
       setDialog(null);
@@ -354,9 +357,10 @@ export default function LessonDetail({ id }) {
             ]),
           )
         }
+        onCopyWork={reference.kind === "math" ? () => mathReturn.enter(targetFromValue(position), reference) : undefined}
         onOpenLesson={() =>
           (shell.openMaterialSource ?? navigate)(
-            reference.kind === "resource"
+            reference.kind === "math" ? `/math?workId=${reference.workId}` : reference.kind === "resource"
               ? `/resources/${reference.resourceId}`
               : `/questions/${reference.questionId}`,
             `/lessons/${id}`,
@@ -372,6 +376,12 @@ export default function LessonDetail({ id }) {
       data-region="lesson-editor"
       data-lesson-id={baseline?.id || id}
     >
+      {mathReturn.pending && <div className="wb-inline-error" role="status">
+        <span>{mathReturn.problem || '作品已保存，正在确认加入备课'}</span>
+        <button className="wb-button" onClick={mathReturn.retry}>确认带回</button>
+        <button className="wb-button" onClick={mathReturn.toMaterials}>放入本课材料</button>
+        <button className="wb-button" onClick={mathReturn.cancel}>取消带回</button>
+      </div>}
       <header className="wb-object-head">
         <input
           className="wb-input wb-object-title-input"
@@ -492,7 +502,7 @@ export default function LessonDetail({ id }) {
               name="retry-confirm"
               onClick={() =>
                 deleteSubmit.retry(({ key, payload }) =>
-                  setLessonDeletion({ key, id: baseline.id, payload }),
+                  setLessonDeletion({ key, id: baseline.id, payload: payload.body ?? payload, version: payload.apiVersion ?? 2 }),
                 )
               }
             >
@@ -567,6 +577,7 @@ export default function LessonDetail({ id }) {
               >
                 ↓
               </button>
+              <button type="button" className="wb-button" onClick={() => mathReturn.enter({type:"section",sectionId:section.id})}>制作数学作品</button>
               <button
                 type="button"
                 className="wb-button"
@@ -641,6 +652,7 @@ export default function LessonDetail({ id }) {
         >
           <header className="wb-section-head">
             <h3>本课材料</h3>
+            <button type="button" className="wb-button" onClick={() => mathReturn.enter({type:"materials"})}>制作数学作品</button>
             <button
               className="wb-button"
               onClick={() =>

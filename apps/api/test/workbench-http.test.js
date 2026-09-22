@@ -189,9 +189,9 @@ test('workbench module paths are owned only for catalog module IDs', async () =>
   // identity and source checks apply, then the object is not found.
   const context = await createWorkbenchContext({
     extraCatalogEntries: [{
-      id: 'schedule',
+      id: 'unavailable',
       name: '日程',
-      path: '/schedule',
+      path: '/unavailable',
       navigation: 'top',
       auxiliaryPanel: false,
       requires: []
@@ -199,13 +199,13 @@ test('workbench module paths are owned only for catalog module IDs', async () =>
   });
   try {
     const notEnabled = await request(context.app)
-      .get('/api/modules/schedule/items')
+      .get('/api/modules/unavailable/items')
       .set(workbenchRequestHeaders(context))
       .expect(404);
     assert.deepEqual(notEnabled.body, { type: '/problems/workbench/not-found' });
 
     const anonymous = await request(context.app)
-      .get('/api/modules/schedule/items')
+      .get('/api/modules/unavailable/items')
       .set('Origin', TEST_ORIGIN)
       .expect(401);
     assert.deepEqual(anonymous.body, { type: '/problems/workbench/unauthenticated' });
@@ -246,10 +246,10 @@ test('the composed app mounts the catalog handler on the exact contract path', a
       .expect(200);
 
     assert.equal(response.headers['cache-control'], 'no-store');
-    assert.equal(response.body.version, 2);
+    assert.equal(response.body.version, 3);
     // Only mapped implementations are enabled: the fixture probe and the two
     // product modules of this branch.
-    assert.deepEqual(response.body.items.map((entry) => entry.id), ['questions', 'resources', 'lessons', 'workbench-probe']);
+    assert.deepEqual(response.body.items.map((entry) => entry.id), ['questions', 'lessons', 'math', 'resources', 'classes', 'schedule', 'workbench-probe']);
 
     // The retired legacy Bearer route never answers this path: a bearer token is
     // not a workbench identity, so the contract 401 problem is returned.

@@ -14,7 +14,11 @@ import ResourcesPage from '../resources/index.jsx';
 import LessonsPage from '../lessons/index.jsx';
 import { MathWorkbench } from '../math/index.jsx';
 
+import ClassesPage from '../classes/index.jsx';
+import SchedulePage from '../schedule/index.jsx';
 const localRegistry = {
+  classes: { Page: ClassesPage, icon: 'classes' },
+  schedule: { Page: SchedulePage, icon: 'calendar' },
   questions: { Page: QuestionsPage, icon: 'bank' },
   resources: { Page: ResourcesPage, icon: 'folder' },
   lessons: { Page: LessonsPage, icon: 'prep' },

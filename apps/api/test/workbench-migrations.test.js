@@ -21,7 +21,7 @@ import { startServer } from '../src/server.js';
 import { ACCOUNT_A, createTempRoot, createWorkbenchContext } from './workbench-test-context.js';
 import { resolveFixtureSets } from './fixtures/first-flow/catalog.js';
 
-const PRODUCT_MIGRATIONS = ['materials_files_001', 'materials_jobs_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'lessons_0001_lesson_tables', 'lessons_materials_001'];
+const PRODUCT_MIGRATIONS = ['materials_files_001', 'materials_jobs_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'classes_0001_class_tables', 'schedule_0001_settings_entries', 'schedule_reminders_0001_notifications'];
 
 test('an empty database applies migrations once and records them in the ledger', async () => {
   const context = await createWorkbenchContext();

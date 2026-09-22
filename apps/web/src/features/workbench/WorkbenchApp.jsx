@@ -16,6 +16,11 @@ import { resolveWorkbenchModules } from '../modules/moduleRegistry.js';
 import ResourceRoute from './ResourceRoute.jsx';
 import QuestionsPage from '../questions/index.jsx';
 import LessonsPage from '../lessons/index.jsx';
+import ClassesPage from '../classes/index.jsx';
+import SchedulePage from '../schedule/index.jsx';
+import Notifications from '../schedule/notifications/Notifications.jsx';
+import { MathWorkbench } from '../math/index.jsx';
+import { workbenchGet } from './apiClient.js';
 import './workbench.css';
 
 function useIsNarrow() {
@@ -68,6 +73,17 @@ export default function WorkbenchApp({ boot }) {
   });
   const [materialNavigation, setMaterialNavigation] = useScene(accountKey, 'material-navigation', {});
   const [tools, setTools] = useState([]);
+  const [timeZone, setTimeZone] = useState(null);
+  const [timeZoneError, setTimeZoneError] = useState(null);
+  const [timeZoneReload, setTimeZoneReload] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    setTimeZoneError(null);
+    workbenchGet('/api/modules/schedule/settings').then(({ body }) => {
+      if (!cancelled) setTimeZone(body.timeZone);
+    }).catch(error => { if (!cancelled) setTimeZoneError(error.message); });
+    return () => { cancelled = true; };
+  }, [route.path, generation, timeZoneReload]);
   const modules = useMemo(() => resolveWorkbenchModules(), []);
 
   const registerTools = useCallback((next) => setTools(next), []);
@@ -82,6 +98,7 @@ export default function WorkbenchApp({ boot }) {
     generation,
     storageFailed,
     narrow,
+    timeZone, setTimeZone,
     isPanelOpen: Boolean(scene.panelOpen),
     panelMode: scene.panelMode || 'ai',
     panelWidth: scene.panelWidth || 300,
@@ -101,11 +118,11 @@ export default function WorkbenchApp({ boot }) {
     },
     openMaterialSource: (path, lessonPath) => { setMaterialNavigation({ sourcePath: path, lessonPath }); navigate(path); }
   }), [logout, accountKey, nickname, generation, storageFailed, narrow, scene.panelMode, scene.panelOpen, scene.panelWidth,
-    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage]);
+    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone]);
 
   const collapsed = narrow ? !scene.drawerOpen : Boolean(scene.sidebarCollapsed);
   const hasPanel = route.name === 'questions' || route.name === 'question'
-    || route.name === 'lessons' || route.name === 'lesson' || route.name === 'resources' || route.name === 'resource';
+    || route.name === 'lessons' || route.name === 'lesson' || route.name === 'resources' || route.name === 'resource' || ['math', 'classes', 'class', 'class-record', 'schedule'].includes(route.name);
   const panelOpen = hasPanel && Boolean(scene.panelOpen);
 
   function toggleSidebar() {
@@ -118,12 +135,17 @@ export default function WorkbenchApp({ boot }) {
   else if (route.name === 'questions' || route.name === 'question') page = <QuestionsPage route={route} />;
   else if (route.name === 'lessons' || route.name === 'lesson') page = <LessonsPage route={route} />;
   else if (route.name === 'resources' || route.name === 'resource') page = <ResourceRoute key={route.path} route={route} transport={transport} />;
+  else if (['classes', 'class', 'class-record'].includes(route.name)) page = timeZoneError ? <div className="wb-inline-error" role="alert">
+    <p>时区读取失败：{timeZoneError}</p><button className="wb-button" onClick={() => setTimeZoneReload(value => value + 1)}>重试读取时区</button>
+  </div> : timeZone ? <ClassesPage route={route} timeZone={timeZone} /> : <p className="wb-muted">正在读取账户时区…</p>;
+  else if (route.name === 'schedule') page = <SchedulePage route={route} />;
+  else if (route.name === 'math') page = <MathWorkbench route={route} />;
   else if (route.name === 'settings') page = <WorkbenchSettings />;
   else page = <NotFound />;
 
   const activeModuleId = route.name === 'questions' || route.name === 'question'
     ? 'questions'
-    : route.name === 'lessons' || route.name === 'lesson' ? 'lessons' : route.name === 'resources' || route.name === 'resource' ? 'resources' : null;
+    : route.name === 'lessons' || route.name === 'lesson' ? 'lessons' : route.name === 'resources' || route.name === 'resource' ? 'resources' : route.name === 'math' ? 'math' : route.name.startsWith('class') ? 'classes' : null;
 
   return (
     <ShellContext.Provider value={shell}>
@@ -148,6 +170,8 @@ export default function WorkbenchApp({ boot }) {
             TeachBuddy
           </a>
           <div className="wb-topbar-spacer" />
+          <a className="wb-button" href="/calendar" onClick={event => followAnchor(event, '/calendar')}><Icon name="calendar" />日程</a>
+          <Notifications key={accountKey} />
           {hasPanel && (
             <button
               type="button"

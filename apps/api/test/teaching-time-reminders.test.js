@@ -154,11 +154,11 @@ test('WB-T010/016: moved weekly instances, cancellation recovery, deletion and o
   assert.equal((await f.getNotices()).items.length, 2);
 }));
 
-test('TT-C7: production catalog matches frozen v2 and rejects all four invalid static inputs', async () => {
+test('TT-C7: production catalog matches frozen combined v3 and rejects all four invalid static inputs', async () => {
   const { readFileSync } = await import('node:fs');
   const { assertModuleCatalog, projectModuleCatalog } = await import('@refatos/shared');
   const samples = JSON.parse(readFileSync(new URL('../../../docs/contracts/teaching-time/samples.json', import.meta.url))).samples;
-  const expected = samples.find(s => s.id === 'catalog-v2').value;
+  const expected = JSON.parse(readFileSync(new URL('../../../docs/contracts/workbench/math/samples.json', import.meta.url))).find(s=>s.id==='catalog-combined-target').value;
   await fixture(async f => assert.deepEqual((await f.a.get('/api/modules')).body, expected));
   for (const sample of samples.filter(s => s.id.startsWith('catalog-v2-reject-'))) {
     assert.throws(() => assertModuleCatalog(sample.value.items), error => {
@@ -167,7 +167,7 @@ test('TT-C7: production catalog matches frozen v2 and rejects all four invalid s
       return true;
     });
   }
-  assert.deepEqual(projectModuleCatalog(expected.items.map(i => i.id), expected.items.map(i => ({ ...i, future: true }))), expected);
+  assert.deepEqual(projectModuleCatalog(expected.items.map(i => i.id), expected.items), expected);
 });
 
 test('WB-T016: cancelling before due and restoring after due is quiet; deleting after due captures the old notification', async () => fixture(async f => {
