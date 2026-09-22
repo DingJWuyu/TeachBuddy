@@ -16,7 +16,7 @@
 - 产品设计、代码、自验和独立验收仍归相应 session。根只调度、核对回执元数据、维护台账与自身规则，不代做实质审查。
 - 任务分支候选提交、本地运行验证和文档 main 合并已有许可。产品代码留在候选分支；本轮不包括产品合入 main、push、公开部署、发布、采购或额外付费。
 - 已允许使用现有 GOAT 套餐进行必要实验；产品模型限 `deepseek/deepseek-v4.1-flash`、`z-ai/glm-5.3-flash`。计费条件不明或需要额外付费时停止相应调用，保留已有消耗记录。
-- C26 本批必要真实自验已明确授权，限现有 GOAT 套餐和两个允许模型；逐次记录请求与实际 usage。C25/旧实验的零请求限制不传播成本次禁止使用模型；不得重跑旧窗口、无界试探或新增费用。
+- C26必要自验已结束，两模型共10次/79,983 totalTokens，未完成调用0，费用与余额未知。C27本次独立live已按现有GOAT许可派发，两允许模型各一条新业务链，沿产品请求上限、逐次记账，不循环付费重试或重跑C24/C26旧链；其余故障使用标明的受控替身。真实费用异常或需要额外付费时停止对应调用，继续零模型工作。
 - C21 online-1 已关闭：新增I一次因Provider拒绝none返回HTTP400，PS未发。usage缺失按8000completion预留未知，不将拒绝视为免费；未用机会不转借。C20-C21-PROVIDER零调用调查已完成。根依据现有GOAT及完整执行授权采纳其单次I建议，另开online-low窗口：只将固定请求none改为low，最多1次/8000completion/120秒，不发PS、不重试；异常即结束窗口。旧消耗保留，未用机会不转借，不影响C26自己的已授权窗口。
 - 开发模型按[唯一映射](execution-protocol.md#模型与固定派发)执行；停用 dsh 与自动降级。内部 skill 助手继承调用 session。R30 原会话恢复及明确 `model at capacity` 后恢复原会话已有用户许可，session ID 不变；保持模型与 effort，不增加自动降级。
 - 可独立的已授权任务并行使用 worktree；共享文件在各候选内由一个写者集成。派发 prompt 最小必要，失败归原拥有者，不以增加审查或换模型代替诊断。
@@ -42,7 +42,8 @@
 | C25-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，CHANGES_REQUIRED / independent | `01a0c7ee-7965-75f0-bad4-e0c38c979e51` | `.scratch/dag-dispatch/C25-REVIEW/1/` |
 | C25-CORRECTION | 新会话，attempt 1 | gpt-6-astra / high | 已完成，READY_FOR_REVIEW / self | `01a0c7f6-fb1f-7e90-91f0-f78ed22857f6` | `.scratch/dag-dispatch/C25-CORRECTION/1/` |
 | C25-CORRECTION-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent PASS，D01 关闭 | `01a0c80d-5c5d-7e00-a062-3b573395024b` | `.scratch/dag-dispatch/C25-CORRECTION-REVIEW/1/` |
-| C26 | 新会话，attempt 1 | gpt-6-astra / low | 已启动，固定输入集成与产品实现，待主动回执 | `01a0c819-d958-7c31-bc69-0833f485fc83` | `.scratch/dag-dispatch/C26/1/` |
+| C26 | 新会话，attempt 1 | gpt-6-astra / low | 已完成，产品127c7e5 / self PASS，已交C27 | `01a0c819-d958-7c31-bc69-0833f485fc83` | `.scratch/dag-dispatch/C26/1/` |
+| C27 | 新会话，attempt 1 | gpt-6-astra / medium | 已启动，首批Agent实际流程独立验收 | `01a0c866-5aa6-7d81-a0c7-c20b158145c1` | `.scratch/dag-dispatch/C27/1/` |
 | T50-MATH-CONTRACT | 新会话，attempt 1 | gpt-6-astra / high | 已完成，设计已独立冻结 | `01a0c7d5-b6d8-7232-b045-9ef61d8c46cb` | `.scratch/dag-dispatch/T50-MATH-CONTRACT/1/` |
 | T50-MATH-REVIEW | 新会话，attempt 1 | gpt-6-astra / medium | 已完成，independent PASS | `01a0c7ec-38af-7142-91bf-78f8c33d253b` | `.scratch/dag-dispatch/T50-MATH-REVIEW/1/` |
 | T51-MATH | 新会话，attempt 1 | gpt-6-astra / low | 已完成，局部 self PASS，待真实 math 装配 | `01a0c7f5-6025-7861-96db-7a113115ff68` | `.scratch/dag-dispatch/T51-MATH/1/` |
@@ -76,7 +77,7 @@
 | 材料：C21/C22、R30-R35 | C21 EX-02补证经d990f43 independent PASS，REV-001关闭；未变EX-01/03/04沿用。C22 control-1本机self PASS，两轮编辑和八组输出已交独立验收。R31基础和数学公共支持self已交付。 | REV-002独立验收进行中，通过后交R30汇总冻结再放行完整R31及后续消费者。Provider调查完成，单次I的low验证已派发，不改变已通过的原EX结论；产品收录和Windows/WPS尚未通过。 |
 | 数学：C23、M40-M44 | M40/v1 设计已完成冻结交接，候选 1a5dd01；三项实验阻断 independent 关闭，交接动作仅 self 文档自检。 | M41原生图形候选6a54e55已交，保存/历史/下载/恢复等self通过；整体BLOCKED，公式与完整MC09未完成。公共支持07aeddc虽已self交付，原queue消息未被该候选消费。已派R31-MATH-SUPPORT attempt 2唯一公共写者整合两份固定成果及目录构建接线；固定组合到齐后再派M41接续，不先放行M42。M43仍待M42/R35，T51-MATH消费者af19869待真实提供方。 |
 | 班级与日程：T50-T54 | D01-D05均independent关闭；bad090f经T54 attempt 4独立22项PASS，桌面/窄桌面/平板滚动、返回刷新及账户现场通过，仍test-principal。 | 已派T53 attempt 4在独立候选串联固定A11真实认证，先消除现有班级/日程/通知身份组合缺口，不等待数学。T51-MATH局部self仍待真实math与v2同批装配，M43收齐前置接入；完整T54保留M44/WB-T020与目标设备条件。 |
-| Agent：C24-C27 | C24 业务实验 self PASS；C25 修订设计 18293e9 经 741025b independent PASS，工具公开投影缺口关闭，未变设计沿用。 | C26 正基于 A11 9ecabbf 与本地认证独立证据实现首页/共用右栏、持久对话和13个业务工具；本候选共享文件由 C26 独占。C27 等固定产品、自验与运行入口，真实外部条件另列。 |
+| Agent：C24-C27 | C24 业务实验 self PASS；C25 修订设计 18293e9 经 741025b independent PASS，工具公开投影缺口关闭，未变设计沿用。 | C26产品127c7e5及证据31ade74已self PASS，164 API/19浏览器与10次真实模型请求已记录；作者停写。C27正对固定候选独立验证新题业务链、持久恢复/隔离与界面，真实邮件/设备边界另列；self不提前放行F60。 |
 | 可靠性：F60-F65 | 尚未启动。 | 等待 T54、C27、A12 的真实交付，再补全模块工具、现场、恢复和整日集成。 |
 | 最终交付：D70-D75、G73/G76 | 尚未启动，未部署、未用户验收。 | 等待全范围验收、可用目标环境及具体交付动作授权。 |
 
@@ -87,7 +88,7 @@
 | 工作 | 本轮动作 | 下游判断 |
 | --- | --- | --- |
 | M40 / T50 / T51 | 已接收 T51-MATH 产品 af19869 与回执 9fc6337，v2 记录、来源错误语义和反馈出口局部 self 通过；不追加相同 diff 审查。 | 真实 math 与 M43 前置到齐后由唯一装配者采用目录v3/同步端口/稳定路由；不能将升级 Web 单独接到仍只有旧 API 的候选。M44 后在新组合交 T54 验完整 WB-T020，当前滚动复验输入不变。 |
-| C24 / C25 / C26 | 已接收 C25 独立冻结，直接派 C26 固定输入整合与实现，不增设普通Git准备审查。C26 记录组合基线后在本候选独占公共接线。 | 收到 C26 self 后按固定产品派 C27 独立实际流程验收；本轮必要live已按现有套餐授权，仅两个允许模型，逐次记账，不重跑 C24 或扩大费用。 |
+| C24 / C25 / C26 / C27 | 已接收C26产品127c7e5、完整交付31ade74及self PASS；差异仅证据，作者工作区干净，内部双轴已完成，不重复diff审查。C27独立session已从固定main启动，运行隔离的固定候选。 | 按C27实际分项结论关闭阶段或将缺陷退回C26/C25；真实邮件/设备归A12。两模型各一条新的必要业务链已授权，用量单列，不把自验或实验当独立通过；未满足其他前置不启动F60。 |
 | R30 / C20 / R31 | 已接收C22 control-1制品7f965c6/回执a34798d，本机self PASS；R30-C22-CONSUME attempt 2因明确model at capacity退出且无最终回执，已按原session/model/effort恢复resume 1，沿用已有证据完成剩余独立核验；不据容量中断宣告验收FAIL。C21已获d990f43 independent PASS，REV-001关闭；在线单次low验证独立推进；R31基础与数学公共支持self已交付。 | 依据新独立结论决定REV-002关闭或修复归属，保留未变旧结论和目标环境限制。REV-001已关闭，REV-002也独立关闭后交R30汇总冻结，再放行完整R31；不等待新增在线成功，也不以self提前放行。 |
 | R31 / M41 | 已接收M41切片6a54e55/证据9538405，实际未消费07aeddc支持且共同构建报告缺math映射。R31-MATH-SUPPORT attempt 2已从固定main启动，原样保留math业务，整合既有公共输入并处理公共目录/构建接线。 | 新固定组合交付后，派新的M41接续公式、本地字体、页面身份及完整自验；将全部输入放入启动任务包，不依赖未确认的在途queue消息。M41无公共写权，公共写者归本支持任务；不提前做M43、不绕过四handler拒启，完整M41停写后才交M42。 |
 | C21 定位 / 在线 | 已接收独立报告d990f43，EX-02剩余定位缺口及REV-001关闭；未变EX-01/03/04沿用原裁决，不再派重复核验。online-1因none参数HTTP400已关闭，零调用调查a1999e3已交付；已采纳单次I的low建议并派发attempt 4。 | 材料门槛只剩C22/REV-002独立结论与R30汇总冻结。在线收到实际结果后记录请求/usage及新响应可用性，失败按归属处理，不自动再试；不回滚或阻塞原EX结论，不将一份I验证视为通用产品收录通过。 |
@@ -118,6 +119,7 @@
 | C24 探针 / 业务实验 | 探针 `e7f979bd80ab83aaab7cc2cf936250123d7742a3`；旧业务 FAIL `d826b72`；修复与 self PASS `e8fdf9a139e429c05590925647a433a9da382579:docs/acceptance/evidence/C24/v1/business-fix.md`。 |
 | C25 首批 Agent 冻结 | 设计 `18293e9389e739ed8aaf67ee568503ca8e87d475`；作者 `5e1193524c9d1d91c3a35adec3df3c832313819b`；独立冻结 `741025bd0a8e09098b5877428b81c2bdd7f357d0:docs/acceptance/evidence/C25/v1/correction-review.md`，C25-D01 关闭。原独立 `e0b2c23fc1e37c357831cefacb0817c07ae3cafd` 的未变结论沿用。 |
 | C26 固定实现输入 | C25 设计/冻结见上；A11 产品 `9ecabbf60cbbaecce2e9be8191d270068eb675cf` 已包含 B16 `612f0a9`；A11 作者 `4f45b40`、A12 本地独立 `aaa3d77`。C26 分支 `feat/c26-agent`，初始主干 `e365dea`，worker 负责输入组合并记录实现前完整 SHA；不读取活动业务分支替换，认证外部条件仍开放。 |
+| C26 产品 / C27受测交付 | 产品 `127c7e55b006acd5a06ad460f3380963cb51bce0`；完整交付 `31ade74207bf593260f8740be80882c936c97152:docs/acceptance/evidence/C26/v1/author.md`，差异仅证据；组合基线 `5614cf99f8b7ad9ff1f6dbf0467dd30eaf922545`。164 API/19浏览器/build及内部两轴self通过；真实API/Cookie/HTTPS、fake-mail。DeepSeek5次39,150tokens、GLM5次40,833tokens，合计79,983，未完成0。作者保留库和复现命令见回执；C27从 `46694d98a0db4ddccbe14806ec5d5f9b6764e5ea` 建独立验收分支，固定运行上述候选，不写产品。 |
 | C21 next-1 新结果 | 制品 `9230895a802ac46dfa3ceefc660659dd8bc8abf7`；作者 `ecd1ed6d8f974fba20ac92d40d5b6b943a3b0170:docs/acceptance/evidence/C21-MATERIALS-NEXT/v1/author.md`。独立报告 `dd6b2b8c57d776798d1cfbb2c087bbf5a6a8ad76:docs/acceptance/evidence/R30-MATERIALS-NEXT/v1/c21-review.md`：EX-01/03/04及真实来源/编辑/重启分项PASS沿用；该版EX-02定位失败已由新制品c7022e0和独立d990f43闭环。原在线0/3失败保留。 |
 | C21 定位/在线接续 | 候选 `05a919b998e72eb2a6d1a79b32fb62113cfe4c5b:docs/arch/capability-checks/C21-continuation.md`；作者 `b8824812e8e46f2a5cce0fb170b55c91ac6dffc5`。定位零请求局部修复沿原语义，可直接实施；在线拟仅在原DeepSeek请求新增reasoning_effort=none，I可用才PS，各1次/8000/120秒，总最多2次16000completion；Provider转发与可用性待实际证明，限定独立报告 `bf96f71427d4fcd3df11ff22fa345480c94d877b:docs/acceptance/evidence/C20-C21-CONTINUATION/v1/review.md` 已PASS。在线attempt 3基线 `19390e83d54e739f829b52261aea6ad5ebaff92e`，原定位/窗口核验派发基线 `d2dcaff42665f22eff04a9e12096012a05fc285b`。 |
 | C21 定位修复 | 制品 `c7022e03be1af4d6b2ca5ca1b5a12441bc8835f8`；回执 `bdc83152872e50c4ac6ba36cc63c532be74cba1e:docs/acceptance/evidence/C21-CONTINUATION/v1/author-location.md`。self PASS：六题自身响应定位、Q3编辑保存/刷新/服务重启、未知位置及必要共享回归通过；机器/人工差异保留，新增请求0。独立 `d990f43baa98d9b125a6606b1fab56e9b5c77e98:docs/acceptance/evidence/R30-C21-CONTINUATION/v1/review-location.md` 已PASS，关闭EX-02剩余缺口及REV-001；机器主要内容4/6与人工6/6保持分列。单独在线失败不变。 |
