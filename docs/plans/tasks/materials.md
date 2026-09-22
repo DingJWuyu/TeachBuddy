@@ -6,7 +6,7 @@
 
 R30 读取 [PRODUCT_SCOPE](../../PRODUCT_SCOPE.md) 的题库、备课、资源库及基础交付段落，相关 [工作台行为](../../WORKBENCH_DESIGN.md)，首条流程冻结契约，以及 C21/C22 原材料和输出。实现者只读取任务包指定的契约操作和本节点说明。
 
-R30 不等待 B16，可以先冻结材料设计；R31 实现仍取 B16 固定的运行/迁移基线。R30 独立冻结包必须提供 R32/R33/R34 共用的文件、内容、引用端口与成功/失败样本，并分配共享入口、依赖与迁移文件的唯一写者。R31 完成后这三个消费者并行，不以资源 UI 或自动收题全部完成作为备课输出启动条件。未来文件接缝尚未冻结，因此本安排保留 R31 到消费者的启动边。
+R30 不等待 B16，可以先冻结材料设计；R31 实现仍取 B16 固定的运行/迁移基线。R30 独立冻结包必须提供 R32/R33/R34 共用的文件、内容、引用端口与成功/失败样本，并分配共享入口、依赖与迁移文件的唯一写者。R31 完成后这三个消费者并行，不以资源 UI 或自动收题全部完成作为备课输出启动条件。文件/内容基础接缝已取得下述限定冻结；完整 R31 到消费者的启动边仍保留。
 
 R32/R33/R34 各自修改 resources/questions/lessons；未到达的跨模块输入使用同版契约样本或测试 adapter，只记录对应 self 结果。R34 接收 R31-R33 的固定候选并独占本批集成，再报完整 self PASS；R35 的真实材料流程与独立验收要求不变。跨 flow 的备课适配和共享入口按根指定的单写者交接，不覆盖其他候选的变更。
 
@@ -24,6 +24,14 @@ R32/R33/R34 各自修改 resources/questions/lessons；未到达的跨模块输�
 
 <a id="r31"></a>
 ## R31 实现持久文件与必要转换公共底座
+
+<a id="r31-基础分段启动"></a>
+### R31 基础分段启动
+
+按计划 `68f66587d4d625ee9c8f75516eafa61913b57e40:docs/arch/capability-checks/materials-next.md` 与[独立冻结报告](/home/liam_t/项目/TeacherWorkspace-materials-next-review/docs/acceptance/evidence/MATERIALS-NEXT-PLAN/v1/review.md) `0fb32a6e31d4ea0a6673bcce15423137a9a68b0a`，R31 的 files.store/read/open、上传/读取/下载、File/Location 与 Document/content、公共编辑原语可在固定 B16 基线上先实施，与 C21/C22 修复并行。短包为同计划提交的 `docs/plans/tasks/materials/R31-foundation.md`；精确材料输入固定 `8d48af595b1d80a9169d8db55ee7c8969b60c605`。
+
+只允许基础切片和隔离 fixture，不提前开放 Preview/Job/crop/识别/Office/导出，不绕过正式启动完整性要求。R31 仍为同一节点、单一公共写者；剩余转换与完整交付需两个 REV 关闭及 R30 整体 independent PASS。R32-R35/M41 仍等完整 R31，不能以基础 self PASS 放行。
+
 
 写入边界：API 文件存储/转换接缝、相应迁移、受控上传/下载、必要编辑器/转换依赖与锁文件、材料测试数据及集成清单。
 
