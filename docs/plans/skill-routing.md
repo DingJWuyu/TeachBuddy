@@ -42,10 +42,6 @@
 4. 调用 session 同时启动 Standards 和 Spec 两个 subagent。无规格时只能按 skill 明示跳过 Spec 轴，不能把 Standards 结果冒充双轴 PASS。
 5. 调用者保留两轴分离结果并聚合一次。实现者修复发现后运行定向自检；只有修复引入实质新范围或新风险时才再审，不默认重复同一评论。
 
-### dsh headless 的内部审查收尾
-
-使用 dsh headless 时，在同一轮并行调用 Standards 和 Spec 两个 `subagent`，每个调用显式设置 `run_in_background:false`。两个调用返回实际结果后，父 session 才聚合并结束；只收到 child ID 不代表完成。本机默认后台模式只等待父 Agent 空闲，可能随父进程退出丢失审查结果，依据见 [headless 调查](../research/dsh-headless-review.md)。
-
 ## 项目约束对 skill 的覆盖
 
 - `tdd` 的“先与用户确认 seam”由已冻结契约、场景和任务包满足；缺少时交设计拥有者，不让用户逐测试决定。UI 不写单元测试，其他单元测试仅在没有更合适的公开 seam 且确有必要时使用；优先集成和 E2E 行为。
@@ -59,4 +55,4 @@
 - `code-review` 的 Standards/Spec 内部助手继承调用 session 的模型、effort 和 harness 能力；不另设根级模型验证项。实际能力缺口单独回报并处理，不以此更换前后端代码实现模型，也不重复已有审查。
 - `grilling` 只在用户明确要求压力测试，或任务遇到上述必须升级的决策时调用。`prototype` 只用于回答明确的逻辑/外观设计问题。`wizard` 只用于必须由人执行的凭据、第三方界面或迁移流程。
 - 只在已授权的 merge/rebase 正处于冲突时调用 `resolving-merge-conflicts`。其“完成并提交”不能越过 Git 权限。
-- 代码实现、额度回退和其他任务的路由统一见[执行协议](execution-protocol.md#模型与固定派发)，skill 不新增更换实现模型的理由。dsh 调用形式及配置归属见[根 AGENTS 的 DeepSeek Harness 条款](../../AGENTS.md)，已查明的能力及实测边界见[dsh 调研](../research/dsh-receipts.md)。
+- 开发任务统一使用 Codex CLI；模型选择与困难升级见[执行协议](execution-protocol.md#模型与固定派发)，skill 不新增模型回退规则。

@@ -32,15 +32,9 @@
 
 ## Agent skills
 
-### DeepSeek Harness
+### 开发模型路由
 
-前后端代码实现默认使用 `dsh`；dsh 明确报告额度不足或触发限额时，回退 Codex Luna max。任务确实困难、当前 dsh 或 Luna 反复尝试仍无法解决时，可升级 Codex Sol high 接手，前后端都适用。调研、文档和集成仍使用 Luna max。具体路由见 [MVP 执行协议](docs/plans/execution-protocol.md#模型与固定派发)。调用时，在任务 worktree 中将最小必要任务说明作为单个参数交给一次性 Headless profile：
-
-```bash
-dsh --profile headless "<task>"
-```
-
-该命令使用 `~/.dsh/settings.yaml` 中当前配置的 Provider、模型和 reasoning effort；选择和回执规则见 [MVP 执行协议](docs/plans/execution-protocol.md#orchestration)。
+派发任务或恢复执行时，按 [MVP 执行协议的模型映射](docs/plans/execution-protocol.md#模型与固定派发)选择 Codex CLI 模型与 effort，并记录到任务包和回执。开发任务停用 dsh，不设自动降级；skill 内部助手继承调用 session。产品内的 pi runtime 与产品模型白名单另行约束。
 
 ### Issue tracker
 

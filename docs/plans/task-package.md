@@ -25,7 +25,7 @@
 - 任务版本、attempt、实际 harness/model/effort、session 和回执位置。
 - 固定输入版本与候选版本；Git 管理的资料用 commit + path，未提交材料或外部样本才按需记录校验值。
 - 依赖、并行 worktree、共享写入归属、已有授权和下一步负责人。
-- 实现回退 Luna 时记录额度或限额依据；困难实现升级 Sol high 时记录失败证据、已尝试方法和可接续的成果。
+- 额度中断时记录原因及保留成果，不自动降级；困难实现升级 Astra high 时记录失败证据、已尝试方法和可接续的成果。
 
 任务记录可放在 `.scratch/dag-dispatch/<节点>/<attempt>/task.md`。模型路由、回执和恢复规则见[执行协议](execution-protocol.md#orchestration)，当前状态见[运行台账](run-state.md)。不为任务包创建分发工具。
 
