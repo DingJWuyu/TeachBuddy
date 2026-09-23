@@ -36,7 +36,18 @@ export async function deviceRequestStore({ database, storeName, account, name, a
     const referenced = listLocalNames(account).some(name => {
       try { return localStorage.getItem(prefix + name)?.includes(JSON.stringify(key)); } catch { return true; }
     });
-    if (!referenced) await transact('delete', key);
+    if (referenced) return;
+    // Recovery archives still own these bytes after active pointers are removed.
+    const archivePrefix = `teachbuddy:data-recovery-archive:${account}:`;
+    try {
+      for (const name of Object.keys(localStorage)) {
+        if (!name.startsWith(archivePrefix)) continue;
+        const archive = JSON.parse(localStorage.getItem(name));
+        if (Object.values(archive.records ?? {}).some(raw =>
+          typeof raw === 'string' && raw.includes(JSON.stringify(key)))) return;
+      }
+    } catch { return; }
+    await transact('delete', key);
   }
   try {
     const previous = readLocal(account, name);

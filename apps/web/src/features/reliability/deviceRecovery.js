@@ -3,8 +3,9 @@
 const tracker = (account) => `teachbuddy:data-recovery:${account}`;
 const prefix = (account) => `teachbuddy:data-recovery-archive:${account}:`;
 const stores = [
-  ["teachbuddy-resources-pending", "requests"],
-  ["teachbuddy.math.uploads", "pending"],
+  ["teachbuddy-resources-pending", "requests", "pending:resources"],
+  ["teachbuddy.math.uploads", "pending", "pending:math-upload"],
+  ["teachbuddy.questions.uploads", "pending", "pending:questions-upload"],
 ];
 function database(name, store) {
   return new Promise((resolve, reject) => {
@@ -106,18 +107,33 @@ export function recoveryArchives(account) {
 }
 export async function archivedUploads(account, recoveryId) {
   const result = [];
-  for (const [name, storeName] of stores) {
+  const archive = recoveryArchives(account).find(item => item.to === recoveryId);
+  for (const [name, storeName, logicalName] of stores) {
+    const keys = new Set([`${account}:recovery:${recoveryId}`]);
+    // New requests keep immutable binary records behind legacy or branch pointers.
+    // Read the archived pointers, including restores completed before this reader existed.
+    for (const [recordName, raw] of Object.entries(archive?.records ?? {})) {
+      if (!recordName.startsWith(`tb.workbench.v1:${account}:`) ||
+          !recordName.endsWith(`:${logicalName}`)) continue;
+      try {
+        const record = JSON.parse(raw);
+        const pointer = record?.formatVersion === 2 ? record.value : record;
+        if (typeof pointer?.idbKey === "string" && pointer.idbKey.startsWith(`${account}:`))
+          keys.add(pointer.idbKey);
+      } catch {
+        // Unrecognized draft text remains available through the original archive.
+      }
+    }
     const db = await database(name, storeName);
     try {
-      const value = await new Promise((resolve, reject) => {
-        const request = db
-          .transaction(storeName)
-          .objectStore(storeName)
-          .get(`${account}:recovery:${recoveryId}`);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-      if (value !== undefined) result.push({ store: name, value });
+      for (const key of keys) {
+        const value = await new Promise((resolve, reject) => {
+          const request = db.transaction(storeName).objectStore(storeName).get(key);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        if (value !== undefined) result.push({ store: name, value });
+      }
     } finally {
       db.close();
     }
