@@ -280,6 +280,10 @@ test('数学预览参数和工具展开位置重开，不改作品源码', async
   await page.getByRole('link', { name: '数学工坊', exact: true }).click();
   await page.getByRole('button', { name: '新建演示', exact: true }).first().click();
   await page.getByLabel('作品名称').fill('独立预览参数');
+  // 演示从空画布开始，先选含 a 参数的真实起点。
+  await page.getByRole('button', { name: '作品与工具', exact: true }).click();
+  await page.getByRole('button', { name: '二次函数起点', exact: true }).click();
+  await page.getByRole('button', { name: '作品与工具', exact: true }).click();
   await page.getByRole('button', { name: '保存', exact: true }).click();
   await expect(page.getByRole('status').first()).toContainText('已保存');
   await page.getByLabel('a 数值', { exact: true }).fill('2.5');

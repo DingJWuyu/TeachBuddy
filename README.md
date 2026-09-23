@@ -2,7 +2,7 @@
 
 统一可体验产品运行在 `/home/liam_t/项目/TeacherWorkspace-preview` 的 `preview/usable-mvp` 分支，入口为 **https://localhost:50880**。六线手动业务组合起点为 `7aceca1f95bba95e7dccbae7cf144929b1fe90ad`，备课更新对照预览修复已接入；预览服务沿用原账户、数据库、文件和配置。首次使用时点击“创建账户”，由使用者在 UI 发送邮件验证码并注册；已有认证测试库的账户不会自动进入预览库。
 
-当前预览已接入题库、资源、备课、数学、教学与数据管理的手动能力：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程安排，以及个人资料导出、误删恢复和部署备份工具。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前入口的部署检查见 [手动业务预览回执](docs/acceptance/evidence/MANUAL-INTEGRATION/v1/preview-fix.md)。DATA 六线组合已通过[独立验收](docs/acceptance/evidence/MANUAL-DATA/v1/independent.md)。SUPPORT 偏好、帮助和设备现场已接入；新格式上传的恢复前原文件找回修复已合流，独立 SUPPORT 验收仍待结论。
+当前预览已接入题库、资源、备课、数学、教学与数据管理的手动能力：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程安排，以及个人资料导出、误删恢复和部署备份工具。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前入口的部署检查见 [七线预览回执](docs/acceptance/evidence/MANUAL-INTEGRATION/v1/support-preview.md)。DATA 六线组合已通过[独立验收](docs/acceptance/evidence/MANUAL-DATA/v1/independent.md)。SUPPORT 偏好、帮助和设备现场已接入；其[独立报告](docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent.md)确认设置、偏好、已测现场和 DATA 接缝通过，旧候选的上传归档缺口已修复，独立定向复验仍待结论。
 
 班级教学与日程的手动操作支持分班反馈、三类资料关联、连续日期拖选、多事项排序与优先级、未排期、周重复与单次调课、自选结束前后提醒，以及重进工作台后的补提醒定位。操作范围、保存恢复和已知限制见 [班级与日程回执](docs/acceptance/evidence/MANUAL-TEACHING/v1/receipt.md)。
 
@@ -21,7 +21,7 @@
 
 数学演示从空白画布开始，可自行添加函数、点、图形、参数、拖动绑定和讲解步骤，也可选择“二次函数起点”。修改参数后点击“应用参数”，再保存作品；步骤说明随离线 HTML 一同保留。外部 HTML 可导入并通过“编辑源码”修改，执行仍遵循隔离和离线依赖边界。手动编辑、透明输出和备课往返的本机验证见 [MANUAL-MATH 回执](docs/acceptance/evidence/MANUAL-MATH/v1/receipt.md)。
 
-数学手动范围的 MM-SPEC-01 已经独立定向复验通过，见 [独立修复证据](docs/acceptance/evidence/MANUAL-MATH/v1/independent-fix.md)。这不代替旧 DAG 或目标设备验收。新 F60 工具和 F61 全工具集尚未实现。在线采集、真实邮件投递和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
+数学手动范围的 MM-SPEC-01 已经独立定向复验通过，见 [独立修复证据](docs/acceptance/evidence/MANUAL-MATH/v1/independent-fix.md)。这不代替旧 DAG 或目标设备验收。新 F60 工具和 F61 全工具集尚未实现。用户调整本机代理后已确认注册验证码可发送；[原故障诊断](docs/acceptance/evidence/MANUAL-MAIL/v1/author.md)留作环境记录。在线采集和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
 
 ## 题库与收录
 
