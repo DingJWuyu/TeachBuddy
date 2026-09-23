@@ -1,10 +1,11 @@
 # MANUAL-TEACHING@1 / attempt 1
 
-状态：实现自验通过，内部双轴审查待返回。`verification_level=self`。
+状态：实现自验通过，内部双轴审查发现已修复并完成定向回归。`verification_level=self`。
 
 - 工作树：`TeacherWorkspace-manual-teaching`；分支：`feat/manual-teaching`。
 - fixed point：`4db937daa4d5abd0a03f69917528665f94ebb001`。
-- 实现候选：待本次提交固定；最终回执补充完整 SHA。
+- 业务实现提交：`fec1dcb93c90a6ab01b70a0937bd6156275e4e94`。
+- 审查修复提交：`81c0afc20ab7a5ecac01dad4a28ee78dbbe0ed0f`。
 - 执行：Codex / `gpt-6-astra` / `low`；session `01a0ccb9-0422-7310-bba1-7dfc19465a29`。
 
 ## 可操作范围
@@ -20,12 +21,17 @@
 
 ## 验证
 
-- [真实认证浏览器 19/19](browser.log)，最终草稿/移动变更的[受影响回归 7/7](scene-regression.log)，合计覆盖 20 个不同 E2E 场景。
+- [真实认证浏览器 19/19](browser.log)，最终草稿/移动变更的[受影响回归 7/7](scene-regression.log)，以及审查修复的[受影响回归 6/6](review-green.log)，合计覆盖 22 个不同 E2E 场景，重复执行不重复计数。
 - [提醒与事项移动公开 HTTP 16/16](api.log)。未改后端业务契约、数据库结构或历史数据。
-- [生产构建](build.log)通过；保留既有大 chunk 提示。仓库没有独立 lint/typecheck 命令。
+- [生产构建](build.log)及最终候选[Web 构建](web-final.log)通过；保留既有大 chunk 提示。仓库没有独立 lint/typecheck 命令。
+- 保存串写与草稿丢失均先真实复现：[慢响应红灯](red-save.log)、[关闭草稿红灯](red-conflict.log)；当前结果见上述绿色回归。
 - 浏览器为真实 Cookie 认证、隔离 SQLite、随机本地 HTTPS 端口、假邮件适配器；服务器业务时钟只在测试中注入。测试命令：`TMPDIR="$PWD/.tmp-mt" npx playwright test -c apps/web/e2e/manual-teaching.config.mjs`，先创建本树 `.tmp-mt` 并完成构建。
 - [桌面班级记录](browser/class-complete-record.png)、[周课单次恢复](browser/weekly-single-restore.png)、[补提醒](browser/catch-up-notifications.png)、[平板日程](browser/schedule-tablet.png)。另以隔离 Chrome DevTools 会话手动查看备课反馈的桌面/平板页面。
 - 既有三类资料往返、丰富题目保存和混合记录后端证据沿用 [MATERIALS-TEACHING-ALIGNMENT](../../MATERIALS-TEACHING-ALIGNMENT/v1/implementation/author.md) 的未变范围。
+
+## 内部审查
+
+[双轴审查结果](review.md)：Standards 提出 2 项、Spec 提出 1 项，重叠后为 2 个不同问题。均先通过浏览器复现，再修复并定向验证；未重新执行完整双轴审查。
 
 ## 公共接线与边界
 
@@ -34,3 +40,5 @@
 - 公共测试 harness 仅新增可选业务时钟参数，不改变生产时钟。
 - 产品 Agent/runtime/tools/skills/plugin/connector 无改动；未访问 50880、用户库、密钥或其他工作树服务；未发送外部邮件、push、合并 main、部署或付费。
 - 本机范围尚欠：当前未发现所属已定功能缺口。目标 Word/WPS、课堂设备、iPad 实机和正式部署按用户要求暂缓；本回执不替代集成者的实际体验或独立验收。
+
+- 本任务隔离浏览器和服务已停止，临时数据库及测试运行目录已清理；正式证据保留在本目录。根注入的 `AGENTS.md` 保留且未纳入提交。
