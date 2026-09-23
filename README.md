@@ -21,6 +21,12 @@
 
 新 F60 工具、F61 全工具集和完整备份/恢复尚未实现。在线采集、真实邮件投递和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
 
+## 题库与收录
+
+题库支持文字、PDF、Word、图片收录，题面、公式、配图和答案编辑，自定义题型/标签、笔记与标记检索，复制改编对照、删除恢复，以及单题或多题加入备课和班级教学反馈。原稿下载保留文件名；题面透明 PNG 使用当前已保存内容生成。
+
+文字与 DOCX 使用原生结构自动拆题；文字层 PDF 使用本机 Poppler 自动提取，并匹配明确的跨页答案和单栏配图。DOCX 没有分页预览时可按原文段落对照公式和配图，不替代 Word 的分页排版。旧版 DOC 的转换仍需要 `MATERIALS_OFFICE_ROOT`。图片、扫描 PDF 的视觉识别尚未配置；原稿、裁图和人工校对可保存，但不计作自动识别完成。复杂数学排版、多栏与跨页续题仍需对照核查。本机验证和具体限制见 [题库交付回执](docs/acceptance/evidence/MANUAL-QUESTIONS/v1/receipt.md)。
+
 ## DOCX 输出
 
 本分支已集成 R34 Pandoc 输出修复。Pandoc 3.11 生成可编辑公式 DOCX，再沿既有 LibreOffice 链校验和转换 PDF。服务使用 `MATERIALS_PANDOC_PATH` 指向 Pandoc 可执行文件，并沿用 `MATERIALS_OFFICE_ROOT`；工具二进制不进入仓库。固定候选的验证及 Word/WPS 真人待验条件见 [Pandoc 报告](docs/acceptance/evidence/R34/v1/pandoc.md)。本分支集成自验见 [PREVIEW-OFFICE 回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)。

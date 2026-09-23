@@ -34,7 +34,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
       .filter(
         (x) =>
           !q.q ||
-          [x.title, x.note ?? "", x.body ? documentText(x.body) : ""]
+          [x.title, x.note ?? "", x.body ? documentText(x.body) : "", x.solution ? documentText(x.solution) : ""]
             .join("\n")
             .toLowerCase()
             .includes(q.q.trim().toLowerCase()),
@@ -248,7 +248,13 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
         fragments: [],
       });
     },
-    getImport: ({ principal: p, id }) => s.get("imports", p, id),
+    getImport: ({ principal: p, id }) => {
+      const material = s.get("imports", p, id);
+      const task = s.get("tasks", p, material.jobId);
+      if (!Object.keys(task.originalDocuments ?? {}).length) return material;
+      return {...material, originalDocuments: Object.entries(task.originalDocuments ?? {})
+        .map(([fileId, paragraphs]) => ({fileId, paragraphs}))};
+    },
     listImports: ({ principal: p, query = {} }) => ({
       items: filtered(s.list("imports", p), query),
     }),

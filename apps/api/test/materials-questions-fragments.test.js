@@ -6,7 +6,8 @@ import { randomUUID, createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const at = (p) => path.resolve(root, p);
+const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), "questions-fragments-evidence-"));
+const at = (p) => p.startsWith("docs/acceptance/evidence/") ? path.join(evidenceDir, path.basename(p)) : path.resolve(root, p);
 import sharp from "sharp";
 import { startQuestionsFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
 
@@ -298,16 +299,14 @@ test("fixed O page 2 replay retains only complete prefix and never invents Q3/Q4
 test(
   "selected actual pages 7 and 8 retain original numbering and explicit continuation",
   {
-    skip: !fs.existsSync(
-      "/home/liam_t/项目/TeacherWorkspace-c21/experiments/C21/data/external/E.pdf",
-    ),
+    skip: !process.env.M33_PRIVATE_PDF,
   },
   async (t) => {
     assert.equal(
       createHash("sha256")
         .update(
           fs.readFileSync(
-            "/home/liam_t/项目/TeacherWorkspace-c21/experiments/C21/data/external/E.pdf",
+            process.env.M33_PRIVATE_PDF,
           ),
         )
         .digest("hex"),
@@ -320,7 +319,7 @@ test(
         [fragment("continuation", "合成续文。", { continues: "7." })],
       ],
       {
-        file: "/home/liam_t/项目/TeacherWorkspace-c21/experiments/C21/data/external/E.pdf",
+        file: process.env.M33_PRIVATE_PDF,
         pages: [8, 7],
       },
     );

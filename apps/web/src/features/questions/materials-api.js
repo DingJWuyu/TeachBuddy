@@ -39,7 +39,8 @@ export async function write(path, body, key, method = "POST") {
     throw error;
   }
 }
-export async function download(id, name = "原稿") {
+export async function download(id, name) {
+  if (!name) name = (await get(`/api/workbench/files/${id}`)).name;
   const blob = await workbenchBlob(`/api/workbench/files/${id}/content`);
   const url = URL.createObjectURL(blob),
     a = document.createElement("a");

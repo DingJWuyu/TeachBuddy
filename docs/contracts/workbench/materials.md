@@ -64,6 +64,8 @@ Document 每层数组及源字符串上限由 schema 给出，另外总块数≤
 
 createImport 先原子持久保存原稿绑定和 extraction Job，然后后台启动；原生读取与视觉提取自动产生 Draft，不直接建立 Question。input.pages 为空代表完整输入；否则给每个 fileId 明确页集合，不接受未列入原件的文件。一次 PDF/Word 与一次图片组不能混为一个输入；text 原文不可变。origin 是老师填写的出处文本或 URL，只保存不抓取。
 
+未配置视觉识别器时，文字层 PDF 使用本机 Poppler 自动读取，复用题号拆分、明确答案匹配和单栏配图定位；扫描页与图片明确报告视觉识别未配置，不将手动补录算成自动完成。多栏、跨页续题及复杂数学排版仍需核对。DOCX 原生提取保留原文段落到任务记录；`GET imports/{id}` 可附带只读 `originalDocuments`，在没有分页预览时展示文字、公式和配图，并按段落定位。该视图不承诺 Word 的分页和排版；原始文件与已有分页预览保留。旧材料没有该字段时仍使用现有预览或下载。
+
 任务输出必须验证 schema、输入覆盖、题边界、公式、实际配图绑定、原有答案角色和原稿定位，不能照抄 Provider 的 needs_review=false。草稿处置由老师控制；机器必须保留未分配片段与疑点。截断响应只采纳前缀中完整、独立可验证对象，记录 truncated-response，禁止补括号后声称整批成功。已有答案和未提供答案严格区分；识别不生成解答。
 
 saveImportReview 全量原子保存当前草稿/片段数组，baseVersion 与 import 比较；running/queued/cancelling 时返回 import-not-editable，先停止或等终态。新草稿 ID 由客户端创建（拆分/手工补充），移除草稿即丢弃该候选，原件保留。已 confirmed 草稿及其 questionId 只读且不可遗漏；客户端不能把 pending 自改为 confirmed，也不能自填 questionId。commitImportDrafts 是唯一入库动作，验证选中草稿无 open 疑点、answerStatus 非 unresolved、正文与图片/公式齐全，在同一事务建立 Questions 并写映射/新 import version。acknowledged 仅用于非阻断的文字/边界复核；missing-figure、uncertain-formula、incomplete-answer、unverified-location 必须 corrected。忽略草稿不能提交。

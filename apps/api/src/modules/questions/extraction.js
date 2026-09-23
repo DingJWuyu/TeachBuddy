@@ -388,6 +388,7 @@ export function createExtractionHandler({
   jobs,
   provider,
   readWord,
+  readPdf,
   content,
   validateLocations,
 }) {
@@ -437,6 +438,8 @@ export function createExtractionHandler({
           }
           const parsed = await readWord(p, file);
           task.paragraphs[id] = parsed.paragraphs;
+          task.originalDocuments ??= {};
+          task.originalDocuments[id] = parsed.original;
           for (const unit of parsed.units)
             units.push({
               ...unit,
@@ -527,12 +530,19 @@ export function createExtractionHandler({
             }),
             [unit.location],
           );
-        else {
+        else if (readPdf && files.read(p, unit.preview.renditionFileId).mediaType === "application/pdf") {
+          result = await readPdf(p, unit, signal);
+          if (!result) {
+            issues.push(issue("provider-unavailable", unit.id,
+              "该页没有可读取的文字层，需要视觉识别。原稿已保存，可先校对或补充文字。"));
+            continue;
+          }
+        } else {
           issues.push(
             issue(
               "provider-unavailable",
               unit.id,
-              "在线识别尚未接入，原稿已保存，可补充原稿并继续校对。",
+              "图片视觉识别尚未配置，原稿已保存，可补充文字并继续校对。",
             ),
           );
           continue;

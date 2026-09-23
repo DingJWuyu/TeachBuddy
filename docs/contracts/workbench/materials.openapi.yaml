@@ -3318,6 +3318,29 @@ components:
     Import:
       type: object
       properties:
+        originalDocuments:
+          description: GET 原稿时可返回 DOCX 原文段落，用于没有分页预览时对照；校对写请求不携带本字段。
+          readOnly: true
+          type: array
+          items:
+            type: object
+            required: [fileId, paragraphs]
+            properties:
+              fileId:
+                $ref: '#/components/schemas/Id'
+              paragraphs:
+                type: array
+                items:
+                  type: object
+                  required: [paragraph, document, uncertain]
+                  properties:
+                    paragraph:
+                      type: integer
+                      minimum: 1
+                    document:
+                      $ref: '#/components/schemas/Document'
+                    uncertain:
+                      type: boolean
         id:
           $ref: '#/components/schemas/Id'
         version:

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), "questions-evidence-"));
 import { startQuestionsFixture as startFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
 
 test("text import preserves original, produces editable drafts and commits once", async (t) => {
@@ -327,12 +328,7 @@ test("fixed native T and W preserve six question boundaries and existing answer 
     await e.job(m.jobId);
     const result = (await e.q("/imports/" + m.id, null, "GET")).body;
     fs.writeFileSync(
-      new URL(
-        "../../../docs/acceptance/evidence/R33/v1/attempt2/native-" +
-          name +
-          ".json",
-        import.meta.url,
-      ),
+      path.join(evidenceDir, "native-" + name + ".json"),
       JSON.stringify(result, null, 2),
     );
     assert.equal(result.drafts.length, 6, name);
@@ -521,10 +517,7 @@ test("frozen old visual response runs through Adapter as replay, not live recogn
   assert.equal(result.drafts[0].answerStatus, "present");
   assert.equal(result.drafts[5].answerStatus, "absent");
   fs.writeFileSync(
-    new URL(
-      "../../../docs/acceptance/evidence/R33/v1/attempt2/adapter-replay.json",
-      import.meta.url,
-    ),
+    path.join(evidenceDir, "adapter-replay.json"),
     JSON.stringify(result, null, 2),
   );
   const commit = await e.q("/imports/" + m.id + "/commit", {
@@ -658,21 +651,18 @@ test("PNG table keeps cell grid, transparency and bounded dimensions", async (t)
   const borderOffset = (49 * info.width + 800) * 4;
   assert.ok(data[borderOffset + 3] > 0, "center column border exists");
   fs.writeFileSync(
-    new URL(
-      "../../../docs/acceptance/evidence/R33/v1/attempt2/table-asset.png",
-      import.meta.url,
-    ),
+    path.join(evidenceDir, "table-asset.png"),
     bytes,
   );
 });
 
 test("external E selected pages remain 7 and 8 and original stays complete without online calls", async (t) => {
-  const source =
-    "/home/liam_t/项目/TeacherWorkspace-c21/experiments/C21/data/external/E.pdf";
-  if (!fs.existsSync(source)) {
+  const source = process.env.M33_PRIVATE_PDF;
+  if (!source) {
     t.skip("fixed private E original unavailable");
     return;
   }
+  assert.ok(fs.existsSync(source), "M33_PRIVATE_PDF must point to an existing fixture");
   const bytes = fs.readFileSync(source);
   const { createHash } = await import("node:crypto");
   assert.equal(
@@ -695,17 +685,13 @@ test("external E selected pages remain 7 and 8 and original stays complete witho
     })
   ).body;
   const job = await e.job(m.jobId);
-  assert.equal(job.state, "failed");
-  assert.deepEqual(
-    job.issues.map((i) => i.unitId),
-    [`file:${file.id}:page:7`, `file:${file.id}:page:8`],
-  );
+  assert.equal(job.state, "succeeded", JSON.stringify(job));
+  const material = (await e.q("/imports/" + m.id, null, "GET")).body;
+  assert.ok(material.drafts.length);
+  assert.deepEqual([...new Set(material.drafts.flatMap(d => d.parts.flatMap(p => p.locations.map(l => l.page))))].sort(), [7, 8]);
   assert.equal((await e.bytes(file.id)).length, 1115735);
   fs.writeFileSync(
-    new URL(
-      "../../../docs/acceptance/evidence/R33/v1/attempt2/E-pages.json",
-      import.meta.url,
-    ),
+    path.join(evidenceDir, "E-pages.json"),
     JSON.stringify(
       {
         originalSha256: file.sha256,
@@ -821,10 +807,7 @@ test("complex native OMML keeps nested structures and flags unsupported nodes", 
     ),
   );
   fs.writeFileSync(
-    new URL(
-      "../../../docs/acceptance/evidence/R33/v1/attempt2/complex-omml.json",
-      import.meta.url,
-    ),
+    path.join(evidenceDir, "complex-omml.json"),
     JSON.stringify(result, null, 2),
   );
 });
@@ -868,4 +851,25 @@ test("native nested checks and explanation separation protect confirmation", asy
       assert.ok(
         ![...text].slice(loc.start, loc.end).join("").includes("格式说明"),
       );
+});
+
+test("native PDF automatically retains six questions, cross-page answers and diagrams", async (t) => {
+  const e = await environment(t);
+  const original = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/P.pdf', import.meta.url));
+  const form = new FormData();
+  form.append('file', new Blob([original]), 'questions.pdf');
+  const file = (await e.call('/api/workbench/files', form)).body;
+  const created = (await e.q('/imports', {title:'原生 PDF', origin:'隔离样本', input:{kind:'files',fileIds:[file.id],pages:[]}})).body;
+  const job = await e.job(created.jobId);
+  assert.equal(job.state, 'succeeded', JSON.stringify(job));
+  const material = (await e.q('/imports/' + created.id, null, 'GET')).body;
+  assert.equal(material.drafts.length, 6);
+  assert.equal(material.drafts[0].answerStatus, 'present');
+  assert.equal(material.drafts[5].answerStatus, 'absent');
+  assert.match(JSON.stringify(material.drafts[0].solution), /根号内非负/);
+  assert.ok(material.drafts[0].parts.some(p => p.role === 'solution' && p.locations.some(l => l.page === 4)));
+  for (const number of [1, 4, 5]) assert.ok(material.drafts[number].body.blocks.some(b => b.type === 'image'), 'diagram for Q' + (number + 1));
+  assert.deepEqual(await e.bytes(file.id), original);
+  await e.restart();
+  assert.deepEqual((await e.q('/imports/' + created.id, null, 'GET')).body, material);
 });

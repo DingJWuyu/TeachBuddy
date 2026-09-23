@@ -91,12 +91,12 @@ export async function locateFigures({
 }) {
   const records = result.records ?? [];
   const questions = records.filter((r) => r.role === "question");
-  if (!questions.length || unit.file.mediaType !== "application/pdf") return;
+  if (!questions.length || files.read(principal, unit.preview.renditionFileId).mediaType !== "application/pdf") return;
   const work = await fs.mkdtemp(path.join(os.tmpdir(), "questions-layout-"));
   try {
     await fs.writeFile(
       path.join(work, "source.pdf"),
-      await bytes(files, principal, unit.file.id),
+      await bytes(files, principal, unit.preview.renditionFileId),
     );
     // Same Poppler installation as preview; parsing has no network or host write access.
     const { stdout } = await execute(
@@ -204,7 +204,7 @@ export async function locateFigures({
           b[1] / info.height > anchor.y && b[3] / info.height < (next?.y ?? 1),
       );
       // Multiple regions may be separate diagrams or formula strokes. Leave ambiguous.
-      if (candidates.length !== 1 || !/如图|[配附]图|图示/.test(q.text))
+      if (candidates.length !== 1 || !/如图|[配附].{0,20}图|图示|正方体|长方体|三角形|棱[锥柱]/.test(q.text))
         continue;
       const [x, y, right, bottom] = candidates[0];
       const preceding = anchors.filter((a) => a.y < y / info.height);

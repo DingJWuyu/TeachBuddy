@@ -285,6 +285,12 @@ export function createWordReader(files) {
         result: parsed,
       },
     ];
-    return { paragraphs: counts, units };
+    return { paragraphs: counts, units,
+      original: records.map(row => ({
+        paragraph: row.location.paragraph,
+        document: {version: 2, blocks: structuredClone(row.blocks)},
+        uncertain: row.unsupported,
+      })),
+    };
   };
 }

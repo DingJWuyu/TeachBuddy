@@ -6,11 +6,12 @@ import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { startQuestionsFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
 test("fixed R31 v1 database upgrades preserving original request replay, IDs and documents", async (t) => {
-  const source = "/home/liam_t/项目/TeacherWorkspace-r31-complete";
-  if (!fs.existsSync(source)) {
+  const source = process.env.M33_R31_SOURCE;
+  if (!source) {
     t.skip("fixed R31 source unavailable");
     return;
   }
+  assert.ok(fs.existsSync(source), "M33_R31_SOURCE must point to an existing fixture checkout");
   assert.equal(
     execFileSync("git", ["-C", source, "rev-parse", "HEAD"], {
       encoding: "utf8",
@@ -101,10 +102,7 @@ test("fixed R31 v1 database upgrades preserving original request replay, IDs and
     migrated,
   );
   fs.writeFileSync(
-    new URL(
-      "../../../docs/acceptance/evidence/R33/v1/attempt2/migration.json",
-      import.meta.url,
-    ),
+    dataDir + "/migration-evidence.json",
     JSON.stringify(
       {
         sourceRevision: "2b6cbcda934057a89c0443437e03b2e30e850a8d",

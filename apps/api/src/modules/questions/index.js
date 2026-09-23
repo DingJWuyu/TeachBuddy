@@ -1,6 +1,7 @@
 import { createQuestionsOperations } from "./operations.js";
 import { createAssetHandler } from "./assets.js";
 import { createWordReader } from "./native-word.js";
+import { createPdfReader } from "./native-pdf.js";
 import { createMaterialsStore } from "./materials-store.js";
 import { createMaterialsService } from "./materials-service.js";
 import { createMaterialsRouter } from "./materials-router.js";
@@ -54,6 +55,7 @@ export function createQuestionsModule({
       content,
       validateLocations: materials.locations,
       readWord: files ? createWordReader(files) : undefined,
+      readPdf: files ? createPdfReader(files) : undefined,
     }),
   };
 

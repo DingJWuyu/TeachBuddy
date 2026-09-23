@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { ControlledImage } from "../workbench/materials/DocumentView.jsx";
+import { ControlledImage, DocumentView } from "../workbench/materials/DocumentView.jsx";
 import { get, write, download } from "./materials-api.js";
 export default function OriginalPane({
   material,
@@ -8,6 +8,7 @@ export default function OriginalPane({
   onCrop,
   scene,
   onScene,
+  readOnly = false,
 }) {
   const files = [
     ...(material.input.fileIds ?? []),
@@ -18,6 +19,17 @@ export default function OriginalPane({
     [box, setBox] = useState(null),
     [locationRole, setLocationRole] = useState("body");
   const start = useRef(null);
+  const [previewAttempt, setPreviewAttempt] = useState(0);
+  const nativePane = useRef(null);
+  const [originalDocuments, setOriginalDocuments] = useState([]);
+  useEffect(() => {
+    let live = true;
+    if (material.originalDocuments) setOriginalDocuments(material.originalDocuments);
+    else get(`/imports/${material.id}`).then(value => {
+      if (live) setOriginalDocuments(value.originalDocuments ?? []);
+    }).catch(() => {});
+    return () => {live = false;};
+  }, [material.id, material.version]);
   const loc = draft?.parts
     .flatMap((p) => p.locations)
     .find((x) => x.kind === "page" || x.kind === "docx");
@@ -47,8 +59,14 @@ export default function OriginalPane({
       active = false;
       clearTimeout(timer);
     };
-  }, [fileId, material.version]);
+  }, [fileId, material.version, previewAttempt]);
   const current = preview?.pages.find((x) => x.page === page);
+  const original = originalDocuments.find(item => item.fileId === fileId);
+  const paragraph = scene.paragraph ?? loc?.paragraph;
+  useEffect(() => {
+    const node = nativePane.current?.querySelector(`[data-paragraph="${Number(paragraph)}"]`);
+    node?.scrollIntoView({block: "nearest"});
+  }, [original, paragraph]);
   const point = (e) => {
     const r = e.currentTarget.getBoundingClientRect();
     return {
@@ -79,6 +97,7 @@ export default function OriginalPane({
         <strong>原始材料</strong>
         {fileId && <button onClick={() => download(fileId)}>下载原稿</button>}
       </header>
+      {material.origin && <p className="q-origin">出处：{material.origin}</p>}
       {material.input.kind === "text" && (
         <pre>
           {(() => {
@@ -113,7 +132,7 @@ export default function OriginalPane({
                 </option>
               ))}
             </select>
-            <select
+            {Boolean(preview?.pages.length) && <><select
               aria-label="原稿页码"
               value={page}
               onChange={(e) => onScene({ page: Number(e.target.value) })}
@@ -132,10 +151,10 @@ export default function OriginalPane({
               <option value="1">适合宽度</option>
               <option value="1.5">150%</option>
               <option value="2">200%</option>
-            </select>
+            </select></>}
           </div>
           {loc?.kind === "docx" && (
-            <p>段落 {scene.paragraph ?? loc.paragraph}（原生结构位置）</p>
+            <p>段落 {scene.paragraph ?? loc.paragraph}</p>
           )}
           {current ? (
             <div className="q-page-scroll">
@@ -178,6 +197,16 @@ export default function OriginalPane({
                 )}
               </div>
             </div>
+          ) : original?.paragraphs.length ? (
+            <div className="q-word-original" ref={nativePane}>
+              <p>原文段落</p>
+              {original.paragraphs.map(item => <article key={item.paragraph}
+                data-paragraph={item.paragraph} className={item.paragraph === paragraph ? "is-current" : ""}>
+                <small>段落 {item.paragraph}</small>
+                <DocumentView value={item.document} />
+                {item.uncertain && <p>此段公式请与下载的原稿核对。</p>}
+              </article>)}
+            </div>
           ) : (
             <p>{error || "原稿已保存，预览尚未就绪"}</p>
           )}
@@ -191,13 +220,13 @@ export default function OriginalPane({
               <option value="solution">答案定位</option>
             </select>
             <button
-              disabled={!box || !draft}
+              disabled={readOnly || !box || !draft}
               onClick={() => onLocation(location(), locationRole)}
             >
               保存选区定位
             </button>
             <button
-              disabled={!box || !draft}
+              disabled={readOnly || !box || !draft}
               onClick={() => onCrop(location())}
             >
               裁图加入题面
@@ -210,7 +239,8 @@ export default function OriginalPane({
                     {},
                     crypto.randomUUID(),
                   );
-                  setError("预览已受理，请稍后重新打开原稿");
+                  setError("");
+                  setPreviewAttempt(value => value + 1);
                 } catch (e) {
                   setError(e.message);
                 }

@@ -296,6 +296,7 @@ function BlockList({
   label,
   leaf = false,
   legacy = false,
+  allowTeacherNotes = true,
   onOpenFile,
   onPickImage
 }) {
@@ -348,6 +349,7 @@ function BlockList({
       })}
       <div className="wb-block-add">
         {Object.entries(kinds)
+          .filter(([type]) => allowTeacherNotes || type !== 'teacher-note')
           .filter(([type]) =>
             legacy
               ? ['paragraph', 'math'].includes(type)
@@ -376,6 +378,7 @@ export function DocumentEditor({
   readOnly = false,
   onOpenFile,
   onPickImage,
+  allowTeacherNotes = true,
   label = '文稿'
 }) {
   const source = value ?? document;
@@ -402,6 +405,7 @@ export function DocumentEditor({
         blocks={source.blocks}
         label={label}
         legacy={value === undefined}
+        allowTeacherNotes={allowTeacherNotes}
         onOpenFile={onOpenFile}
         onPickImage={onPickImage}
         change={(blocks) =>

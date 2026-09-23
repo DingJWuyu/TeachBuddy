@@ -13,6 +13,7 @@ import {
 } from "./materials-api.js";
 import { useScrollRestore } from "../workbench/useScrollRestore.js";
 import OriginalPane from "./OriginalPane.jsx";
+import ResizeDivider from "./ResizeDivider.jsx";
 import "./questions-materials.css";
 const active = new Set(["queued", "running", "cancelling"]);
 const editableFields = (q) => ({
@@ -124,11 +125,15 @@ export default function MaterialsQuestionsPage({
       patchScene({ kind: "question", id: requestedId });
   }, [requestedId]);
   const localKey = `questions-materials-draft:${scene.kind}:${scene.id ?? "new"}`;
+  const editorRef = useRef(null);
+  editorRef.current = {value, scene, localKey};
+  const refreshSequence = useRef(0);
   const change = (next) => {
     setValue(next);
     writeLocal(accountKey, localKey, next);
   };
-  async function refresh(filters = scene) {
+  async function refresh(filters = editorRef.current.scene) {
+    const sequence = ++refreshSequence.current;
     const q = new URLSearchParams({
       q: filters.q ?? "",
       state: filters.state ?? "active",
@@ -141,7 +146,7 @@ export default function MaterialsQuestionsPage({
       get("/imports?state=" + (filters.state ?? "active")),
       get("/taxonomy"),
     ]);
-    if (alive.current) {
+    if (alive.current && sequence === refreshSequence.current) {
       setItems(list.items);
       setImports(mats.items);
       setTaxonomy(tax);
@@ -187,7 +192,8 @@ export default function MaterialsQuestionsPage({
       get(`/${scene.kind === "import" ? "imports" : "items"}/${scene.id}`)
         .then(async (v) => {
           if (!live) return;
-          setValue(readLocal(accountKey, localKey) ?? v);
+          const local = readLocal(accountKey, localKey);
+          setValue(local ? {...local, deletedAt: v.deletedAt} : v);
           if (scene.kind === "import") {
             setSelected(scene.draftId ?? v.drafts[0]?.id);
             const latestJob = await get("/api/workbench/jobs/" + v.jobId);
@@ -322,10 +328,10 @@ export default function MaterialsQuestionsPage({
       throw e;
     }
   }
-  const open = (kind, id) => {
+  const open = (kind, id, compare = false) => {
     if (scene.kind === kind && scene.id === id) return;
     setValue(null);
-    patchScene({ kind, id, draftId: null, original: {} });
+    patchScene({ kind, id, draftId: null, original: {}, compare });
     setMessage("");
   };
   async function save() {
@@ -382,7 +388,7 @@ export default function MaterialsQuestionsPage({
   }
   const draft = value?.drafts?.find((x) => x.id === selected),
     locked =
-      busy || active.has(job?.state) || draft?.disposition === "confirmed";
+      busy || Boolean(value?.deletedAt) || active.has(job?.state) || draft?.disposition === "confirmed";
   const editDraft = (patch) =>
     change({
       ...value,
@@ -395,6 +401,7 @@ export default function MaterialsQuestionsPage({
       <label>
         题型
         <select
+          aria-label="题型"
           value={q.typeId ?? ""}
           onChange={(e) => onChange({ typeId: e.target.value || null })}
         >
@@ -425,14 +432,16 @@ export default function MaterialsQuestionsPage({
     </div>
   );
   async function pickImage() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/png,image/jpeg,image/webp";
-      input.onchange = () =>
-        action(async () =>
-          resolve(input.files[0] ? await uploadFile(input.files[0]) : null),
-        );
+      input.onchange = async () => {
+        setBusy(true);
+        try { resolve(input.files[0] ? await uploadFile(input.files[0]) : null); }
+        catch (error) { reject(error); }
+        finally { if (alive.current) setBusy(false); }
+      };
       input.oncancel = () => resolve(null);
       input.click();
     });
@@ -473,25 +482,48 @@ export default function MaterialsQuestionsPage({
         <Taxonomy
           key={taxonomy.version}
           taxonomy={taxonomy}
-          items={items}
+          disabled={busy}
           onSave={(next) =>
             action(async () => {
+              const editing = editorRef.current;
+              const before = editing.scene.kind === "question" && editing.value?.id
+                ? await get("/items/" + editing.value.id) : null;
               const saved = await mutate(
                 "/taxonomy",
                 { baseVersion: taxonomy.version, ...next },
                 "PUT",
               );
               setTaxonomy(saved);
+              const classify = (q) => ({...q,
+                typeId: saved.types.some(t => t.id === q.typeId) ? q.typeId : null,
+                tagIds: q.tagIds.filter(id => saved.tags.some(t => t.id === id)),
+              });
+              const current = editorRef.current;
+              if (current.scene.kind === editing.scene.kind && current.scene.id === editing.scene.id && current.value) {
+                let nextValue = current.value;
+                if (before) {
+                  const after = await get("/items/" + before.id);
+                  const cleaned = classify(before);
+                  const changed = cleaned.typeId !== before.typeId || cleaned.tagIds.length !== before.tagIds.length;
+                  if (current.value.version === before.version && after.version === before.version + Number(changed))
+                    nextValue = {...classify(current.value), version: after.version, updatedAt: after.updatedAt};
+                  else setConflict(after);
+                } else if (current.scene.kind === "new") nextValue = classify(current.value);
+                else if (current.scene.kind === "import") nextValue = {...current.value, drafts: current.value.drafts.map(classify)};
+                setValue(nextValue);
+                writeLocal(accountKey, current.localKey, nextValue);
+              }
+              const latestScene = editorRef.current.scene;
               const filters = {
-                typeId: saved.types.some((t) => t.id === scene.typeId)
-                  ? scene.typeId
+                typeId: saved.types.some((t) => t.id === latestScene.typeId)
+                  ? latestScene.typeId
                   : "",
-                tagIds: (scene.tagIds ?? []).filter((id) =>
+                tagIds: (latestScene.tagIds ?? []).filter((id) =>
                   saved.tags.some((t) => t.id === id),
                 ),
               };
               patchScene(filters);
-              await refresh({ ...scene, ...filters });
+              await refresh({ ...latestScene, ...filters });
             })
           }
         />
@@ -514,12 +546,19 @@ export default function MaterialsQuestionsPage({
     registerTools,
     taxonomy,
     manage,
+    busy,
     scene.typeId,
     JSON.stringify(scene.tagIds),
     items,
   ]);
   return (
-    <div ref={pageNode} className="q-workspace" data-review={scene.kind === "import"}>
+    <div ref={pageNode} className="q-workspace" data-review={scene.kind === "import"}
+      style={{"--q-ratio": scene.compare ? (scene.compareWidth ?? 0.5) : (scene.listWidth ?? 0.32)}}
+      data-compare={Boolean(scene.compare && value?.source?.kind === "copy")}>
+      {scene.kind !== "import" && <ResizeDivider
+        value={scene.compare ? (scene.compareWidth ?? 0.5) : (scene.listWidth ?? 0.32)}
+        label={scene.compare ? "调整原题对照宽度" : "调整题目列表宽度"}
+        onChange={width => patchScene(scene.compare ? {compareWidth: width} : {listWidth: width})} />}
       <aside className="q-finder">
         <header>
           <strong>题库</strong>
@@ -533,20 +572,7 @@ export default function MaterialsQuestionsPage({
               收录
             </button>
             <button
-              onClick={() => {
-                open("new", null);
-                setValue({
-                  title: "",
-                  body: empty(),
-                  solution: empty(),
-                  answerStatus: "absent",
-                  note: "",
-                  starred: false,
-                  typeId: null,
-                  tagIds: [],
-                  source: { kind: "manual" },
-                });
-              }}
+              onClick={() => open("new", null)}
             >
               自建
             </button>
@@ -616,6 +642,13 @@ export default function MaterialsQuestionsPage({
             ))}
           </details>
           {items.map((q) => (
+            <div className="q-list-entry" key={q.id}>
+            {onAddToLesson && !q.deletedAt && <input type="checkbox"
+              aria-label={`选择题目：${q.title || "未命名题目"}`}
+              checked={(scene.selectedIds ?? []).includes(q.id)}
+              onChange={(event) => patchScene({selectedIds: event.target.checked
+                ? [...(scene.selectedIds ?? []), q.id]
+                : (scene.selectedIds ?? []).filter(id => id !== q.id)})} />}
             <button
               className={scene.id === q.id ? "selected" : ""}
               key={q.id}
@@ -625,11 +658,34 @@ export default function MaterialsQuestionsPage({
                 {q.starred ? "★ " : ""}
                 {q.title || "未命名题目"}
               </strong>
-              <span>{sourceText(q.body).slice(0, 130)}</span>
+              <div className="q-excerpt"><DocumentView value={{version: q.body.version,
+                blocks: q.body.blocks.filter(block => block.type !== "image").slice(0, 1)}} /></div>
+              {documentAssets(q.body).figures[0] && <DocumentView value={{version: 2, blocks: [documentAssets(q.body).figures[0]]}} />}
             </button>
+            </div>
           ))}
         </div>
+        {onAddToLesson && Boolean(scene.selectedIds?.length) && <div className="q-tools">
+          <button disabled={busy} onClick={() => action(async () => {
+            for (const id of scene.selectedIds) {
+              if (readLocal(accountKey, `questions-materials-draft:question:${id}`))
+                throw Error("所选题目有未保存修改，请先打开并保存，再加入备课。");
+            }
+            const selected = await Promise.all(scene.selectedIds.map(id => get("/items/" + id)));
+            if (selected.some(q => q.deletedAt)) throw Error("所选题目中有已删除题目，请取消选择后重试。");
+            onAddToLesson(selected);
+          })}>加入备课（{scene.selectedIds.length} 题）</button>
+          <button onClick={() => patchScene({selectedIds: []})}>取消选择</button>
+        </div>}
       </aside>
+      {scene.compare && value?.source?.kind === "copy" && <section className="q-copy-source" aria-label="原题对照">
+        <header><strong>原题 · 采用版本 {value.source.questionVersion}</strong>
+          <button onClick={() => patchScene({compare: false})}>结束对照</button></header>
+        <h3>{value.source.snapshot.title || "原题"}</h3>
+        <DocumentView value={value.source.snapshot.body} />
+        <details open><summary>答案解析</summary><DocumentView value={value.source.snapshot.solution} /></details>
+        <button onClick={() => open("question", value.source.questionId)}>查看当前原题</button>
+      </section>}
       <main className="q-main">
         <div className="q-message" role="status">
           {message}
@@ -853,8 +909,12 @@ export default function MaterialsQuestionsPage({
                 校对结果
               </button>
             </div>
-            <div className="q-review" data-tab={scene.reviewTab ?? "result"}>
+            <div className="q-review" data-tab={scene.reviewTab ?? "result"}
+              style={{"--q-ratio": scene.reviewWidth ?? 0.5}}>
+              <ResizeDivider value={scene.reviewWidth ?? 0.5} label="调整原稿对照宽度"
+                onChange={reviewWidth => patchScene({reviewWidth})} />
               <OriginalPane
+                readOnly={locked}
                 material={value}
                 draft={draft}
                 scene={scene.original ?? {}}
@@ -939,6 +999,7 @@ export default function MaterialsQuestionsPage({
                       onChange={(e) => editDraft({ title: e.target.value })}
                     />
                     <DocumentEditor
+                      allowTeacherNotes={false}
                       value={draft.body}
                       onChange={(body) => editDraft({ body })}
                       readOnly={locked}
@@ -947,6 +1008,7 @@ export default function MaterialsQuestionsPage({
                     <label>
                       答案状态
                       <select
+                        aria-label="答案状态"
                         value={draft.answerStatus}
                         onChange={(e) =>
                           editDraft({
@@ -964,6 +1026,7 @@ export default function MaterialsQuestionsPage({
                     </label>
                     {draft.answerStatus !== "absent" && (
                       <DocumentEditor
+                        allowTeacherNotes={false}
                         value={draft.solution}
                         onChange={(solution) => editDraft({ solution })}
                         onPickImage={pickImage}
@@ -1247,11 +1310,12 @@ export default function MaterialsQuestionsPage({
               <div className="q-tools">
                 <button
                   className="primary"
-                  disabled={busy || unsupportedQuestion}
+                  disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}
                   onClick={() =>
                     action(async () => {
                       if (scene.kind === "new") {
                         const q = await mutate("/items", value);
+                        removeLocal(accountKey, localKey);
                         await refresh();
                         open("question", q.id);
                         setMessage("题目已保存");
@@ -1264,7 +1328,7 @@ export default function MaterialsQuestionsPage({
                 {value.id && (
                   <>
                     <button
-                      disabled={unsupportedQuestion}
+                      disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}
                       onClick={() =>
                         action(async () => {
                           const q = await mutate(
@@ -1277,22 +1341,23 @@ export default function MaterialsQuestionsPage({
                             },
                           );
                           await refresh();
-                          open("question", q.id);
+                          open("question", q.id, true);
                         })
                       }
                     >
                       复制改编
                     </button>
                     <button
-                      disabled={unsupportedQuestion}
+                      disabled={busy || unsupportedQuestion}
                       onClick={() =>
                         action(async () => {
-                          setValue(
-                            await mutate("/items/" + value.id + "/deletion", {
+                          const edited = Boolean(readLocal(accountKey, localKey));
+                          const result = await mutate("/items/" + value.id + "/deletion", {
                               baseVersion: value.version,
                               deleted: !value.deletedAt,
-                            }),
-                          );
+                            });
+                          if (edited) change({...result, ...editableFields(value)});
+                          else setValue(result);
                           await refresh();
                         })
                       }
@@ -1300,8 +1365,9 @@ export default function MaterialsQuestionsPage({
                       {value.deletedAt ? "恢复题目" : "删除题目"}
                     </button>
                     {onAddToLesson && (
-                      <button disabled={unsupportedQuestion} data-return-focus="add-to-lesson" onClick={() => onAddToLesson([value])}>
-                        加入备课
+                      <button disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} data-return-focus="add-to-lesson"
+                        onClick={() => action(async () => onAddToLesson([readLocal(accountKey, localKey) ? await save() : value]))}>
+                        {readLocal(accountKey, localKey) ? "保存并加入备课" : "加入备课"}
                       </button>
                     )}
                   </>
@@ -1319,6 +1385,7 @@ export default function MaterialsQuestionsPage({
                 onChange={(e) => change({ ...value, title: e.target.value })}
               />
               <DocumentEditor
+                allowTeacherNotes={false}
                 value={value.body}
                 onChange={(body) => change({ ...value, body })}
                 onPickImage={pickImage}
@@ -1326,6 +1393,7 @@ export default function MaterialsQuestionsPage({
               <label>
                 答案状态
                 <select
+                  aria-label="答案状态"
                   value={value.answerStatus}
                   onChange={(e) =>
                     change({
@@ -1343,6 +1411,7 @@ export default function MaterialsQuestionsPage({
               </label>
               {(value.answerStatus === "present" || !supportedDocument(value.solution)) && (
                 <DocumentEditor
+                  allowTeacherNotes={false}
                   value={value.solution}
                   onChange={(solution) => change({ ...value, solution })}
                   onPickImage={pickImage}
@@ -1368,21 +1437,28 @@ export default function MaterialsQuestionsPage({
               </label>
             </fieldset>
             {value.source?.kind === "import" && (
-              <button onClick={() => open("import", value.source.importId)}>
+              <button onClick={() => {
+                open("import", value.source.importId);
+                patchScene({draftId: value.source.draftId});
+              }}>
                 对照原稿
               </button>
             )}
             {value.source?.kind === "copy" && (
               <>
+                <button onClick={() => patchScene({compare: !scene.compare})}>
+                  {scene.compare ? "结束原题对照" : "对照原题"}
+                </button>
                 <button
                   onClick={() => open("question", value.source.questionId)}
                 >
                   查看原题
                 </button>
-                <details>
+                {!scene.compare && <details>
                   <summary>采用时的原题</summary>
                   <DocumentView value={value.source.snapshot.body} />
-                </details>
+                  <DocumentView value={value.source.snapshot.solution} />
+                </details>}
               </>
             )}
             {copies.map((q) => (
@@ -1436,12 +1512,14 @@ export default function MaterialsQuestionsPage({
                     复制文字与公式源
                   </button>
                   <button
+                    disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}
                     onClick={() =>
                       action(async () => {
+                        const current = readLocal(accountKey, localKey) ? await save() : value;
                         const j = await mutate(
                           "/items/" + value.id + "/assets",
                           {
-                            baseVersion: value.version,
+                            baseVersion: current.version,
                             mode: "question-png",
                             figureFileId: null,
                             includeAnswers,
@@ -1475,12 +1553,14 @@ export default function MaterialsQuestionsPage({
                   {documentAssets(value.body).figures.map((figure, i) => (
                     <button
                       key={i}
+                      disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}
                       onClick={() =>
                         action(async () => {
+                          const current = readLocal(accountKey, localKey) ? await save() : value;
                           const job = await mutate(
                             "/items/" + value.id + "/assets",
                             {
-                              baseVersion: value.version,
+                              baseVersion: current.version,
                               mode: "figure-png",
                               figureFileId: figure.fileId,
                               includeAnswers: false,
@@ -1632,13 +1712,15 @@ export default function MaterialsQuestionsPage({
     </div>
   );
 }
-function Taxonomy({ taxonomy, items, onSave }) {
+function Taxonomy({ taxonomy, disabled, onSave }) {
   const [draft, setDraft] = useState({
       types: taxonomy.types,
       tags: taxonomy.tags,
     }),
     [name, setName] = useState(""),
-    [kind, setKind] = useState("types");
+    [kind, setKind] = useState("types"),
+    [deleting, setDeleting] = useState(false),
+    [error, setError] = useState("");
   return (
     <div className="q-taxonomy">
       <select
@@ -1683,7 +1765,11 @@ function Taxonomy({ taxonomy, items, onSave }) {
               }
             />
             <button
+              disabled={disabled || deleting}
               onClick={async () => {
+                setDeleting(true);
+                setError("");
+                try {
                 const lists = await Promise.all([
                   get("/items"),
                   get("/items?state=deleted"),
@@ -1702,6 +1788,8 @@ function Taxonomy({ taxonomy, items, onSave }) {
                     ...draft,
                     [k]: draft[k].filter((x) => x.id !== t.id),
                   });
+                } catch (error) { setError(error.message); }
+                finally { setDeleting(false); }
               }}
             >
               删除
@@ -1709,7 +1797,8 @@ function Taxonomy({ taxonomy, items, onSave }) {
           </div>
         )),
       )}
-      <button onClick={() => onSave(draft)}>保存分类</button>
+      <button disabled={disabled || deleting} onClick={() => onSave(draft)}>保存分类</button>
+      {error && <p role="alert">{error}</p>}
     </div>
   );
 }
