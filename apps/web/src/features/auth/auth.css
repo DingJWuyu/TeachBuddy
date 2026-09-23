@@ -58,8 +58,7 @@ body:has(.ae-page) {
   font: inherit;
 }
 
-.ae-page h1,
-.ae-page p {
+.ae-page h1 {
   margin: 0;
 }
 
@@ -159,6 +158,7 @@ body:has(.ae-page) {
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 7px;
+  line-height: 18px;
 }
 
 .ae-field-head label,
@@ -286,6 +286,8 @@ body:has(.ae-page) {
   position: relative;
   display: block;
   min-width: 0;
+  margin-bottom: 7px;
+  font-weight: 600;
 }
 
 .ae-password input {
@@ -320,6 +322,8 @@ body:has(.ae-page) {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
+  margin-bottom: 7px;
+  font-weight: 600;
 }
 
 .ae-combo input {
@@ -393,6 +397,10 @@ body:has(.ae-page) {
   line-height: 19px;
 }
 
+.ae-check.is-terms > span {
+  line-height: 19px;
+}
+
 .ae-check input {
   flex: none;
   width: 16px;
@@ -415,7 +423,7 @@ body:has(.ae-page) {
   color: var(--ae-danger);
 }
 
-.ae-text-action {
+.ae-page .ae-text-action {
   padding: 0;
   border: 0;
   background: none;
@@ -569,6 +577,21 @@ body:has(.ae-page) {
 }
 
 .ae-switch button:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ae-help {
+  flex: none;
+  margin: 10px 0 0;
+  color: var(--ae-muted);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.ae-help a {
+  color: var(--ae-accent);
   text-decoration: underline;
   text-underline-offset: 2px;
 }

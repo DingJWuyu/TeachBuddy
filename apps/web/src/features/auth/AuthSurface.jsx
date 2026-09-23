@@ -455,6 +455,7 @@ export default function AuthSurface() {
             id="ae-code"
             inputMode="numeric"
             autoComplete="one-time-code"
+            placeholder={isRegistration ? '例如 309614' : '例如 841207'}
             value={verificationCode}
             onChange={(event) => edit(setVerificationCode, event.target.value)}
           />
@@ -468,6 +469,9 @@ export default function AuthSurface() {
           </button>
         </div>
         {renderCodeNote()}
+        {isRecoveryConfirm && (
+          <small className="ae-field-hint">没有收到验证码？冷却结束后可以重新发送，也可以更换邮箱。</small>
+        )}
         {fieldErrorFor('code')}
       </div>
     );
@@ -579,6 +583,7 @@ export default function AuthSurface() {
                     type="text"
                     inputMode="email"
                     autoComplete="email"
+                    placeholder={isRegistration ? '' : 'example@example.com'}
                     value={email}
                     onChange={(event) => {
                       edit(setEmail, event.target.value);
@@ -610,12 +615,7 @@ export default function AuthSurface() {
               )}
 
               {isRegistration && codeSent && renderCodeField('邮箱验证码')}
-              {isRecoveryConfirm && codeSent && (
-                <>
-                  {renderCodeField('验证码')}
-                  <small className="ae-field-hint">没有收到验证码？冷却结束后可以重新发送，也可以更换邮箱。</small>
-                </>
-              )}
+              {isRecoveryConfirm && codeSent && renderCodeField('验证码')}
 
               {!isRecoveryRequest && (
                 <div className={`ae-field${fieldError.field === 'password' ? ' has-error' : ''}`}>
@@ -633,6 +633,7 @@ export default function AuthSurface() {
                       id="ae-password"
                       type={passwordVisible ? 'text' : 'password'}
                       autoComplete={isRegistration || isRecoveryConfirm ? 'new-password' : 'current-password'}
+                      placeholder="至少 8 位"
                       value={password}
                       onChange={(event) => edit(setPassword, event.target.value)}
                     />
@@ -699,6 +700,12 @@ export default function AuthSurface() {
             {closed ? '登录' : copy.switchAction}
           </button>
         </p>
+        {!isRegistration && (
+          <p className="ae-help">
+            登录遇到问题？邮箱联系管理员：
+            <a href="mailto:example@example.com">example@example.com</a>（请一并发送故障截图）
+          </p>
+        )}
       </div>
     </div>
   );
