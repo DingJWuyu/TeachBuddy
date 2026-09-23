@@ -4,9 +4,9 @@
 
 唯一开发树 `/home/liam_t/项目/TeacherWorkspace-preview`，分支 `preview/usable-mvp`。原 `/home/liam_t/项目/TeacherWorkspace` 的 main 保持不动。业务/UI 组合基线 `a1feef7d21bad4afc436044b213316f8c3ddf86e`；当前 HEAD 与未提交修改用 Git 核对，不以文档快照代替。
 
-本轮只授权文档体系重构并提交，根亲自验收。作者交付不等于用户接受，也不放行产品开发。当前不改业务/配置/运行实例，不新建 worktree，不合 main、不 push、不部署。产品 Agent 和全站外壳改造持续暂停；目标 Word/WPS、课堂设备、iPad/大陆网络和正式部署验证暂缓。
+文档体系重构已完成根验收，尚待用户评阅；当前等待用户指定下一项工作。文档通过不放行产品开发，不改业务/配置/运行实例，不新建 worktree，不合 main、不 push、不部署。产品 Agent 和全站外壳改造持续暂停；目标 Word/WPS、课堂设备、iPad/大陆网络和正式部署验证暂缓。
 
-DOCS-REBUILD@1 的作者 session 为 `01a0ce1f-06a9-7521-b89e-68998ff5829c`，Codex CLI / gpt-6-astra / medium。任务与回执在 `.scratch/docs-rebuild-astra/`，根收到主动回执后亲自核对内容和三个任务走读；验收未完成前不标最终通过。无定时 check，不轮询。
+当前无活动派发任务。文档验收依据保存在 `.scratch/docs-rebuild-astra/root-review-final.md`，普通功能任务无需读取。无定时 check，不轮询。
 
 ## 已有能力与尚缺结果
 
@@ -23,6 +23,6 @@ DOCS-REBUILD@1 的作者 session 为 `01a0ce1f-06a9-7521-b89e-68998ff5829c`，Co
 
 ## 接续决定
 
-当前由 DOCS-REBUILD 原作者修正文档中的过期阶段描述，并辨认、退役无当前消费者的历史制品；限定问题及依据在 `.scratch/docs-rebuild-astra/root-review.md`，接续包在 `revision-1/`。主体知识归并与文件保护已核对，修订回执到达后由根继续亲自验收，未通过前保留现场。通过后等待用户指定新工作，不因[DAG 剩余节点](mvp-dag.md)自行开工。
+下一项工作由用户指定。已知业务、环境和 UI 缺口保留在上表及相关功能规格中，不因[DAG 剩余节点](mvp-dag.md)自行开工，也不重新派发已完成的设计与接线。
 
 后续获准任务从[功能规格](../README.md#功能规格)取相关资料，按实际共享文件安排唯一写者。运行维护读[SETUP](../SETUP.md)；需要旧未提交材料才读[工作树恢复索引](worktree-archive.md)。
