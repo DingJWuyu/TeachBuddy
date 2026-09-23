@@ -1,6 +1,6 @@
 # B12-B15 首条流程任务包
 
-状态：B11/v1 已独立冻结，可按固定候选派发 B12-B15。冻结候选为 `9aee091`，独立审查见[回执](../../acceptance/evidence/B11/v1/review.md)。根在每次派发记录中填完整 `base_revision`、本设计包冻结 SHA、前置候选 SHA、worktree、attempt、模型与已有 Git 权限；本页不以动态 main 替代固定输入。[公共写者表](../../arch/first-flow.md#并行写入与集成)是唯一所有权来源。下列任务实现方法自主决定，模型、困难升级和内部 code review 按[执行协议](../execution-protocol.md#模型与固定派发)。
+首条流程已在体验分支，固定证据见[输入索引](../run-inputs.md)。本页是 B12-B15 的职责和验收参考，不授权重做已实现功能；新任务指定实际基线、范围及权限。[公共写者表](../../arch/first-flow.md#并行写入与集成)是唯一所有权来源。下列任务实现方法自主决定，模型、困难升级和内部 code review 按[执行协议](../execution-protocol.md#模型与固定派发)。
 
 版本选择：上述放行只适用于旧冻结契约及运行任务输入 `b938f8af0b8152718f5063d4326d494bf8b5426c`。当前工作区的工作台 `0.1.0-candidate.2` 与认证 `1.0.0-rc.2` 已由限定独立审查冻结，不能无声替换活动任务输入。B12-B16 继续旧测试身份首流或切换新版时，按[消费版本与验收范围](../../contracts/workbench.md#消费版本与验收范围)固定 SHA 和证据级别；旧路径仍保留 B11/v1 与 `test-principal` 边界。真实认证接线归[认证任务包的 A10/A11 条件](auth-implementation.md#集成者与-a10)，本包不接管认证实现。
 

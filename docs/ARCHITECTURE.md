@@ -1,69 +1,46 @@
-# 架构说明：现有代码与迁移边界
+# 当前代码结构
 
-[返回主 README](../README.md)
+本页描述 `TeacherWorkspace-preview` 的实际产品。产品基线与运行限制见[当前台账](plans/run-state.md)；接口精确结构见[API 导航](API.md)，不从旧演示应用推导新契约。
 
-本文描述代码基线 `911e624`，不是已完成的 MVP 架构。固定交付候选 `feat/b15-first-flow@612f0a9868743a1d5eea7e6f236d3ff903752439` 的录题、复制改编、备课引用、持久重启、失败恢复及桌面/Pad 已由 [B16 独立报告](acceptance/evidence/B16/v1/attempt2.md) 独立通过，身份仍为 `test-principal`；该候选未合入 `main`，不改变本文描述的主干结构或交付状态。完整 MVP、真实认证、真实 AI、材料和部署仍未通过。原型与真实应用的状态见 README；实施顺序见[路线图](ROADMAP.md)。B10 固定的 Git 交接、B11 输入和逐文件所有权见[执行基线](arch/execution-baseline.md)。旧应用仍使用 Bearer 认证；目标认证契约已冻结为 `1.0.0-rc.2`，前后端实施中，真实认证服务尚未交付，且不要求新契约兼容旧 Bearer API。
+## 请求与数据路径
 
-## 复用与替换
+```text
+React 页面
+  → 认证 transport（同源 Cookie、页面上下文）
+  → Express / workbench 公共入口
+  → 所属模块服务与公共端口
+  → SQLite 事务、文件存储、转换任务
+```
 
-- 保留 npm workspaces、React/Vite、Express 应用工厂、SQLite 及可注入时钟/邮件的测试底座，随真实流程替换旧页面与接口。
-- `prototype/src/` 提供已验收的账户/外壳界面和待改进的模块稿。界面可按需迁入 `apps/web`，其中内存数据层和固定 AI 回答不迁作真实服务。
-- `packages/shared` 只承载两侧实际需要的共享定义。业务模块在单一应用中实现，保持明确边界，不为六个模块拆六个服务。
-- [ADR 0001](adr/0001-use-a-single-static-module-catalog.md)记录目标模块约束；当前代码还没有完整实现单一目录投影、依赖循环校验或模块故障隔离，不应把决议当作现有能力证明。
-- 工作台业务服务、文件存储、转换、pi 接入、备份恢复尚未实现。具体接口随行为确定；本文在实现变化时更新实际结构。
+这是一个应用和一个 SQLite 持久底座。六模块通过单一静态目录装配，不拆成多服务或动态插件平台。重大约束见 [ADR 0001](adr/0001-use-a-single-static-module-catalog.md)。
 
-## 结构
+| 代码位置 | 当前职责 |
+| --- | --- |
+| `apps/web/src/features/workbench/` | 外壳、共享文稿/保存/冲突/现场与支持页 |
+| `apps/web/src/features/auth/` | 认证页面、会话恢复、请求 transport |
+| `apps/web/src/features/{questions,lessons,resources,math,classes,schedule}/` | 六领域的界面与交互 |
+| `apps/api/src/server.js` | 同源 HTTPS、启动完成后监听、停止连接 |
+| `apps/api/src/app.js` | 组合认证、workbench、API 和 Web 构建产物 |
+| `apps/api/src/features/auth/` | 真实账户、会话、页面绑定、验证码、迁移与恢复操作 |
+| `apps/api/src/workbench/` | 共享身份、校验、幂等、迁移、目录装配、文件和任务底座 |
+| `apps/api/src/modules/` | 题库、备课、资源、数学、班级和日程业务 |
+| `apps/api/src/workbench/reliability/` | 个人资料包、备份、恢复与维护锁 |
+| `packages/shared/` | 两侧消费的静态模块目录及共享定义 |
+| `prototype/` | 已确认 UI/UX 的参考，生产运行不依赖原型源码 |
 
-仓库采用 npm workspaces：
+实际 API 装配映射在 `apps/api/src/workbench/moduleImplementations.js`；前端从对应静态目录消费入口。新增能力先找所属模块，不增加另一套全局注册表。
 
-- apps/web：React + Vite 工作台外壳、账户入口、首页、设置和侧栏布局编辑
-- apps/api：Express 应用工厂、旧认证/密码找回、SQLite 和布局 API；目标认证模块按[认证实现架构](arch/auth-implementation.md)实施
-- packages/shared：中性模块注册契约与当前为空的模块目录
+## 持久化与失败语义
 
-## 旧应用的工作台外壳
+业务通过自己的服务、仓储及迁移处理数据；跨模块采用公开端口，避免直接操作别人的表。保存、版本冲突、幂等与未知结果的共同规则由[工作台契约](contracts/workbench.md)拥有。
 
-工作台外壳始终提供首页和设置。首页不依赖模块数据；模块目录为空时，主内容区域保持空白，不渲染统计、卡片、快捷操作或占位内容。
+SQLite、持久文件目录、认证密钥和外部转换工具各有独立运行配置。UI 本地草稿和现场不等于服务端内容；备份仅复制数据库也不足以恢复文件。当前真实运行位置和保护方式见[运行指南](SETUP.md)。
 
-WorkspaceSidebar 负责教师账户的布局偏好：
+## 修改影响从哪里查
 
-- 创建、重命名和删除分组
-- 分组排序
-- 未来模块在分组或未分组区域中的拖拽、移动和排序
-- 设置页中的模块可见性
+- 业务模块变更：从[领域页](README.md#模块入口)查相关 UI、API、契约和测试。
+- 共享写入、迁移、锁文件或全局样式：单一写者，核对实际消费者。
+- 认证恢复：读取固定恢复操作，不在外层重新实现认证清理。
+- 产品 Agent 代码仍装配，但开发暂停；它的存在不要求手动业务任务继续扩工具。
 
-布局偏好只影响展示，不改变账户认证边界或未来模块的业务行为。
-
-## 现有模块注册代码
-
-共享包导出空的 moduleCatalog 和 buildManifest。buildManifest 只提供中性默认值和模块自身声明的字段，不要求模块向首页贡献任何聚合内容。
-
-未来模块可以在自己的实现中声明：
-
-- 身份信息
-- 侧栏入口
-- 自有面板
-- 后端能力和注册函数
-
-后端、前端与共享包各有空数组。后端只有与共享目录长度一致的检查，尚未实现 ADR 所要求的单一权威目录投影；空数组不是未来需要继续分别维护三份目录的理由。
-
-## 后端边界
-
-apps/api/src/app.js 负责公共路由、认证中间件和布局路由。apps/api/src/core/moduleRegistry.js 只协调未来模块注册，不携带业务实现。
-
-旧应用认证使用 Bearer 令牌。目标认证契约使用同源 Cookie 会话，注册、登录和密码找回仍由账户入口提供；认证前后端正在实施，账户不属于组织，也不包含管理员或成员管理能力。
-
-## 持久化
-
-SQLite 数据存储保留以下基础结构：
-
-- users：教师账户身份和密码摘要
-- passwordResetCodes：短期、一次性的找回密码验证码摘要
-- workspaceLayouts：按账户保存的布局偏好
-
-app_metadata 用于保留通用应用元数据接缝。账户存储通过 dataStore.forAccount(accountId) 提供隔离的列表、读取、创建、更新和删除接口，工作台外壳只使用布局记录。
-
-新建数据库只创建账户认证和工作台底座所需结构，不创建功能模块业务表。
-
-## 运行与验证
-
-API 使用 Node 测试运行器和 supertest，浏览器验收使用真实 Web、API 和临时 SQLite。目前用例覆盖旧账户与布局、空目录，不覆盖目标六模块。仓库尚无 lint 脚本和 CI workflow。构建命令的实际行为及验证入口见[安装指南](SETUP.md)。
+设计文档表达约定，源代码表达实现，具名证据表达已验证结果。发现三者不一致时指出具体位置与影响，不能靠改状态文字消除缺陷。

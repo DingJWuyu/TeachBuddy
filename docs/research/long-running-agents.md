@@ -1,8 +1,7 @@
 # 长程 Agent 构建：失败模式与流程候选
 
 - 访问日期为 2026-09-21。本文是研究笔记，不是已经批准或实施的新计划。
-- 用户当前规则优先于上一轮 ROADMAP：普通实现默认使用 Luna max，困难实现才升级 Sol high；常规核验和 skill 内部 reviewer 使用 Sol high，复杂疑难审查才升级 Astra。顶层 session 由编排者派发和接收聚合回执，业务 session 不自由互聊；skill 明确要求的有界内部助手由调用 session 管理。简单功能先做，逐步覆盖全部 MVP。
-- 本轮未修改产品代码、认证契约或 ROADMAP。
+- 本页不规定当前模型或调度权限；采用的规则只读[执行协议](../plans/execution-protocol.md)，实际状态读[台账](../plans/run-state.md)。
 
 ## 可核实的观察
 

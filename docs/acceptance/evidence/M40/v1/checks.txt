@@ -1,0 +1,16 @@
+PASS all transitive local refs: 140 targets; 743 references
+PASS schema structures: 72
+PASS samples: 35 ; positive= 31 ; negative= 4
+PASS operations: 19 unique; PageContext, write idempotency, no-store
+PASS both catalog examples: unique id/path, dependencies present, no cycles
+PASS input ancestry and frozen sample files unchanged
+C23 app/mathjax-tex-svg.js bytes 2108580 sha256 d4295dc33744836935c1399feece5159577b34c5c8ffb9f1c6324cd82e03a882
+C23 generated/recovery-1/call-2/mx-model-revised.html bytes 5388 sha256 93cfc2b7fe50ec1041f0765105daa96607523755dc90f274929ad50749d4f69f
+C23 generated/recovery-1/M-X-modified.html bytes 5417 sha256 156c6da65c94b5b3cb6a2461a2e70e27234fa03c39466d19184d1290c26206c7
+C23 generated/M-F-quadratic-transparent.png bytes 1594078 sha256 4285af783216986ee41a88afd7666bc2fff327a581173a4ff7f391edb9992287
+PNG IHDR: (14896, 4716, 8, 6, 0, 0, 0)
+C23 generated/M-S-parabola.svg bytes 7786 sha256 4d14f23d437437398b6edbebcf9f94b52685afbf211e85782754dfcef275d6f5
+PASS batch document links and anchors: 61
+PASS 20 unique BDD IDs, no existing batch collision
+PASS document punctuation
+Validator versions: PyYAML=6.0.3, jsonschema=4.26.0

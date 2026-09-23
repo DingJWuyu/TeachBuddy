@@ -1,6 +1,8 @@
 # 早期 Agent 架构与实验裁决
 
-状态：C25/v1 `READY_FOR_REVIEW/self`。本页固定可供 C26 实现的选择；独立冻结归外层。行为见 [UX](../ux/agent.md)，交换语义见[契约](../contracts/agent.md)，精确字段见 [OpenAPI](../contracts/agent.openapi.json)。
+产品 Agent 开发暂停。本页保留设计范围，当前授权及实际交付边界见[Agent 入口](../modules/agent.md)。
+
+本页定义 C25 的技术选择。行为见 [UX](../ux/agent.md)，交换语义见[契约](../contracts/agent.md)，精确字段见 [OpenAPI](../contracts/agent.openapi.json)。
 
 ## 固定输入与裁决
 

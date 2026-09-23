@@ -1,6 +1,6 @@
 # 材料、题库与备课输出任务说明
 
-按任务包指定的节点章节读取；本文件不是整份必读材料。设计输入仅供设计者，实现者从冻结契约和本节点进入。以下均为计划要求，未来产物尚未生成。精确版本、逐文件写入权、验证命令和回执位置由派发给本 session 的任务包固定。产物齐全后按本角色协议自验或交审；下方链接仅定位本节点适用的验收要求，不要求实现者等待整个阶段验收。
+本页保留 DAG 节点的职责、依赖和完成要求，不记录当前是否已实现，也不是本次派发授权。当前状态读 [run-state](../run-state.md)，实现入口读 [模块地图](../../README.md#模块入口)。执行者只读任务包点名的节点章节；已实现节点按实际缺口接续，不从零重做。
 
 ## 设计输入
 
@@ -30,7 +30,7 @@ R35 的具名本地材料消费切片取得 independent PASS 后，可作为 M43
 <a id="r31-基础分段启动"></a>
 ### R31 基础分段启动
 
-按计划 `68f66587d4d625ee9c8f75516eafa61913b57e40:docs/arch/capability-checks/materials-next.md` 与[独立冻结报告](/home/liam_t/项目/TeacherWorkspace-materials-next-review/docs/acceptance/evidence/MATERIALS-NEXT-PLAN/v1/review.md) `0fb32a6e31d4ea0a6673bcce15423137a9a68b0a`，R31 的 files.store/read/open、上传/读取/下载、File/Location 与 Document/content、公共编辑原语可在固定 B16 基线上先实施，与 C21/C22 修复并行。短包为同计划提交的 `docs/plans/tasks/materials/R31-foundation.md`；精确材料输入固定 `8d48af595b1d80a9169d8db55ee7c8969b60c605`。
+按计划 `68f66587d4d625ee9c8f75516eafa61913b57e40:docs/arch/capability-checks/materials-next.md` 与[独立冻结报告](../../acceptance/evidence/MATERIALS-NEXT-PLAN/v1/review.md) `0fb32a6e31d4ea0a6673bcce15423137a9a68b0a`，R31 的 files.store/read/open、上传/读取/下载、File/Location 与 Document/content、公共编辑原语可在固定 B16 基线上先实施，与 C21/C22 修复并行。短包为同计划提交的 `docs/plans/tasks/materials/R31-foundation.md`；精确材料输入固定 `8d48af595b1d80a9169d8db55ee7c8969b60c605`。
 
 只允许基础切片和隔离 fixture，不提前开放 Preview/Job/crop/识别/Office/导出，不绕过正式启动完整性要求。R31 仍为同一节点、单一公共写者；剩余转换与完整交付需两个 REV 关闭及 R30 整体 independent PASS。R32-R35 仍等完整 R31，不能以基础 self PASS 放行。M41 的唯一例外由[文件基础依赖裁决](../../arch/math-foundation-dependency.md)及其[限定 independent PASS](../../acceptance/evidence/M41-DEPENDENCY-PLAN/v1/review.md)固定：还须有 M40 冻结、R31 固定基础候选和 M41 模块独占权，只放行隔离实现/切片自验，不放行正式产品启动、完整 M41 或 M42。
 

@@ -1,6 +1,6 @@
 # Materials 用户故事
 
-状态：R30/v1 候选，READY_FOR_REVIEW；作者自检不构成冻结。固定输入 `e6d2c220796ea0746bec3413db7ba259df4c2d45`。范围依据 [题库](../PRODUCT_SCOPE.md#1-题库)、[备课](../PRODUCT_SCOPE.md#2-备课)、[资源库](../PRODUCT_SCOPE.md#4-资源库)及[基础交付](../PRODUCT_SCOPE.md#基础交付要求)。
+材料设计已冻结，当前状态与固定来源见[输入索引](../plans/run-inputs.md)。本页说明目标行为，不声明全部产品能力完成。范围依据 [题库](../PRODUCT_SCOPE.md#1-题库)、[备课](../PRODUCT_SCOPE.md#2-备课)、[资源库](../PRODUCT_SCOPE.md#4-资源库)及[基础交付](../PRODUCT_SCOPE.md#基础交付要求)。
 
 本批行为由 [UX](../ux/materials.md)拥有，字段与交换从[契约入口](../contracts/workbench/materials.md)进入，实验判断与实现所有权见[架构](../arch/materials.md)，可观察验收见 [BDD](../acceptance/materials.feature)。本批没有新的领域词义，沿用根 CONTEXT 的题目、原始材料、教学资源、教学环节和模块公共端口。
 

@@ -1,6 +1,8 @@
 # 早期 Agent 用户故事
 
-状态：C25/v1，READY_FOR_REVIEW，作者 self；冻结由外层独立审查确认。范围来自 [工作台 Agent](../PRODUCT_SCOPE.md#工作台-agent) 和[现场保留](../WORKBENCH_DESIGN.md#所有现场都保留)。本批先接题库、备课；其他四模块仍属于完整 MVP，由其业务契约就绪后的静态接入完成。
+产品 Agent 开发暂停。本页保留设计范围，当前授权及实际交付边界见[Agent 入口](../modules/agent.md)。
+
+范围来自 [工作台 Agent](../PRODUCT_SCOPE.md#工作台-agent) 和[现场保留](../WORKBENCH_DESIGN.md#所有现场都保留)。本批先接题库、备课；其他四模块仍属于完整 MVP，由其业务契约就绪后的静态接入完成。
 
 | 故事 | 用户价值 | 可观察场景 |
 | --- | --- | --- |

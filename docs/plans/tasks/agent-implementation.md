@@ -1,5 +1,7 @@
 # C26 / C27 早期 Agent 任务包
 
+产品 Agent 开发暂停，本页保留早期节点职责，不是执行授权。恢复时从[Agent 入口](../../modules/agent.md)核对当前组合、冻结设计与调用权限，不直接运行下面的旧批次。
+
 本文件是 C25/v1 候选的一部分。输入版本取 [C25 correction](../../acceptance/evidence/C25/v1/correction.md) 的完整 result_revision，加外层独立冻结回执；作者 self 不能启动已要求冻结的实施。节点依赖归既有 DAG，本文不派 session 或追加节点。旧工作树 dsh/模型路由失效，读取派发时的 [执行协议](../execution-protocol.md) 对应角色段；当前用户固定路由见下文。
 
 ## C26 实现

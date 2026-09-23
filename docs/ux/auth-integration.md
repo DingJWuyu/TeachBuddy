@@ -1,6 +1,6 @@
 # 认证界面接线
 
-状态：`AUTH-CONTRACT@1 / FROZEN`。视觉与行为沿用 [账户入口](../../prototype/behavior/auth.md)及其 CA 场景；不重画已验收卡片。工作台布局、设置及现场沿用 [WORKBENCH_DESIGN](../WORKBENCH_DESIGN.md#1-整体结构)，实现/验收按 [设计规则](../rules/design-and-verification.md)。精确交换见已冻结的[契约](../contracts/auth.md)；认证前后端实施中，真实交接尚未交付。
+状态：`AUTH-CONTRACT@1 / FROZEN`。视觉与行为沿用 [账户入口](../../prototype/behavior/auth.md)及其 CA 场景；不重画已验收卡片。工作台布局、设置及现场沿用 [WORKBENCH_DESIGN](../WORKBENCH_DESIGN.md#1-整体结构)，实现/验收按 [设计规则](../rules/design-and-verification.md)。精确交换见已冻结的[契约](../contracts/auth.md)；当前运行与目标验证边界见[认证入口](../modules/identity.md)。
 
 ## 用户目标
 

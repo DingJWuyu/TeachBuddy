@@ -1,6 +1,6 @@
 # First-flow 交互
 
-状态：B11/v1 已冻结，见[独立契约冻结审查](../acceptance/evidence/B11/v1/review.md)。阅读 [页面共识](../WORKBENCH_DESIGN.md#3-题库) 和 [设计规则](../rules/design-and-verification.md#二美学原则用户反复强调) 后，以本页补齐状态分支。数据字段见 [唯一契约](../contracts/workbench.md)。
+状态：B11/v1 已冻结，见[独立契约冻结审查](../acceptance/evidence/B11/v1/review.md)。阅读 [页面共识](../WORKBENCH_DESIGN.md#3-题库) 和 [设计规则](../rules/design-and-verification.md#尺寸留白与信息) 后，以本页补齐状态分支。数据字段见 [唯一契约](../contracts/workbench.md)。
 
 ## 工作区域
 
