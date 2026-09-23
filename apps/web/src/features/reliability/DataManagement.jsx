@@ -150,7 +150,8 @@ export function DataManagement({ accountActions, dangerActions }) {
     <SettingsConfirm show={exportOpen} title="导出个人资料" onClose={() => setExportOpen(false)}>
       <p>资料包包含已保存资料、最近删除、原文件与对话。下载后解压，打开 index.html 阅读。</p>
       <p className="wb-note">文件可重新上传，正文与公式可复制；资料包不能覆盖账户或恢复原关联。</p>
-      <button className="wb-button settings-primary" disabled={!!busy || !!action.pending} onClick={createExport}>{busy === 'export' ? '正在受理…' : '生成资料包'}</button>
+      {busy === 'export' && <p role="status">正在生成资料包…</p>}
+      {error && !action.pending && <button className="wb-button" disabled={!!busy} onClick={createExport}>重试生成</button>}
       {exports.length > 0 && <ul className="reliability-list" aria-label="个人资料导出记录">{exports.map(item => <li key={item.id}>
         <div><span>{date(item.snapshotAt)}</span><small>{states[item.state]}</small>{item.problem && <small>{item.problem.detail}</small>}</div>
         {item.state === 'ready' && <button className="wb-button" disabled={!!busy} onClick={() => download(item)}>下载资料包</button>}

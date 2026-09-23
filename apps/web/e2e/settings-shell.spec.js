@@ -39,6 +39,9 @@ test('设置外观、占位边界、真实导出和退出', async ({ page }) => 
   await expect(settings.getByRole('button', { name: '语言', exact: true })).toContainText('English');
   await settings.getByRole('button', { name: '羊皮纸', exact: true }).click();
   await expect(settings).toHaveAttribute('data-settings-background', 'parchment');
+  await settings.getByRole('button', { name: '深色', exact: true }).click();
+  await expect(settings).toHaveCSS('background-color', 'rgb(41, 37, 31)');
+  await settings.getByRole('button', { name: '浅色', exact: true }).click();
   await settings.getByRole('button', { name: '签署协议', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.keyboard.press('Escape');
@@ -113,4 +116,9 @@ test('头像预览与弹层退出具有中间帧，快速反向可操作', async
   await expect(page.getByRole('menu', { name: '选择语言' })).toBeVisible();
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect(language).toContainText('English');
+  await language.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByRole('menuitemradio', { name: 'English', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(language).toBeFocused();
 });

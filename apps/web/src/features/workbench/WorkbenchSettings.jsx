@@ -20,9 +20,16 @@ function LanguageMenu({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const root = useRef(null);
   const trigger = useRef(null);
+  const focusOnOpen = useRef(null);
   const current = LANGUAGES.find(item => item.code === value);
   useEffect(() => {
     if (!open) return;
+    if (focusOnOpen.current) {
+      const options = root.current.querySelectorAll('[role=menuitemradio]');
+      const target = focusOnOpen.current === 'last' ? options[options.length - 1] : options[0];
+      target?.focus({ preventScroll: true });
+      focusOnOpen.current = null;
+    }
     const outside = event => { if (!root.current?.contains(event.target)) setOpen(false); };
     document.addEventListener('pointerdown', outside);
     return () => document.removeEventListener('pointerdown', outside);
@@ -31,14 +38,14 @@ function LanguageMenu({ value, onChange }) {
     if (event.key === 'Escape') { event.stopPropagation(); setOpen(false); trigger.current?.focus(); }
     if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
       event.preventDefault();
-      if (!open) { setOpen(true); return; }
+      if (!open) { focusOnOpen.current = ['ArrowUp', 'End'].includes(event.key) ? 'last' : 'first'; setOpen(true); return; }
       const options = [...root.current.querySelectorAll('[role=menuitemradio]')];
       const index = options.indexOf(document.activeElement);
       const next = event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
       options[next]?.focus();
     }
   }}><button ref={trigger} className="wb-button settings-language-trigger" aria-label="语言" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}><img src={FLAGS[`./chrome/flags/${current.flag}.svg`]} alt="" />{current.native}<svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="m6 8 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6"/></svg></button>
-    <Presence show={open}><div className="settings-language-menu" role="menu" aria-label="选择语言">{LANGUAGES.map(item => <button role="menuitemradio" aria-checked={value === item.code} key={item.code} onClick={() => { onChange(item.code); setOpen(false); trigger.current?.focus(); }}><img src={FLAGS[`./chrome/flags/${item.flag}.svg`]} alt="" /><span>{item.native}{item.english && <small>{item.english}</small>}</span>{value === item.code && <span className="settings-language-check">✓</span>}</button>)}</div></Presence>
+    <Presence show={open}><div className="settings-language-menu" role="menu" aria-label="选择语言">{LANGUAGES.map(item => <button role="menuitemradio" aria-checked={value === item.code} key={item.code} onClick={() => { onChange(item.code); setOpen(false); trigger.current?.focus(); }}><img src={FLAGS[`./chrome/flags/${item.flag}.svg`]} alt="" /><span>{item.native}{item.english && <small>{item.english}</small>}</span>{value === item.code && <span className="settings-language-check" aria-hidden="true">✓</span>}</button>)}</div></Presence>
   </div>;
 }
 
@@ -87,8 +94,8 @@ export function WorkbenchSettings() {
       <Row title="外观" description="切换浅色和深色模式"><Segment label="外观" value={theme} onChange={setTheme} options={[[ 'light', '浅色' ], [ 'dark', '深色' ]]} /></Row>
       <Row title="每周开始于" description="日历中一周的第一天"><Segment label="每周开始于" value={weekStart} onChange={setWeekStart} options={[[ 'sunday', '星期日' ], [ 'monday', '星期一' ]]} /></Row>
       <Row title="语言"><LanguageMenu value={language} onChange={setLanguage} /></Row>
-      <Row title="内容背景" description="自定义内容区的背景" className="settings-background-row"><div className="settings-background-options" role="group" aria-label="内容背景">{backgrounds.map(([value, text]) => <button type="button" key={value} aria-pressed={background === value} onClick={() => setBackground(value)}><span className="settings-background-swatch" data-pattern={value} /><span>{text}</span></button>)}</div></Row>
-      <p className="settings-preview-note settings-preview-scope">外观与背景仅预览本页；每周开始日和语言尚未应用，离开后不保存。</p>
+      <Row title="内容背景" description="自定义内容区的背景" className="settings-background-row"><div className="settings-background-options" role="group" aria-label="内容背景">{backgrounds.map(([value, text]) => <button type="button" key={value} aria-label={text} aria-pressed={background === value} onClick={() => setBackground(value)}><span className="settings-background-swatch" data-pattern={value} /><span>{text}</span></button>)}</div></Row>
+      <p className="settings-preview-note settings-preview-scope">外观与背景仅在本页生效，离开后还原。语言与每周开始日暂不应用。</p>
     </div>
     <DataManagement accountActions={<>
       <Row title="数据处理协议"><button className="wb-button" onClick={() => setModal('agreement')}>签署协议</button></Row>
@@ -98,7 +105,7 @@ export function WorkbenchSettings() {
     </>} dangerActions={<section className="settings-sheet settings-danger-section"><h2>危险操作</h2>
       <Row title="删除账户" description="永久删除账户及其资料" className="settings-danger-row"><button className="wb-button settings-danger-text" onClick={() => setModal('delete')}>删除账户</button></Row>
     </section>} />
-    <SettingsConfirm show={modal === 'agreement'} title="数据处理协议" className="settings-reading-dialog" onClose={() => setModal(null)}><div className="settings-agreement-paper"><h3>TeachBuddy 数据处理协议</h3><p>协议内容待提供。</p></div></SettingsConfirm>
+    <SettingsConfirm show={modal === 'agreement'} title="数据处理协议" className="settings-reading-dialog" onClose={() => setModal(null)}><div className="settings-agreement-paper"><h3>TeachBuddy 数据处理协议</h3><p>协议暂未开放。</p></div></SettingsConfirm>
     <SettingsConfirm show={modal === 'delete'} title="删除账户？" onClose={() => setModal(null)} confirmLabel="永久删除账户" danger confirmDisabled><p>账户删除暂不可用，当前账户和资料不会被删除。</p></SettingsConfirm>
   </div>;
 }
