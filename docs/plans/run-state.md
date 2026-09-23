@@ -4,7 +4,7 @@
 
 唯一开发树 `/home/liam_t/项目/TeacherWorkspace-preview`，分支 `preview/usable-mvp`。原 `/home/liam_t/项目/TeacherWorkspace` 的 main 保持不动。业务/UI 组合基线 `a1feef7d21bad4afc436044b213316f8c3ddf86e`；当前 HEAD 与未提交修改用 Git 核对，不以文档快照代替。
 
-文档收敛已完成，当前等待用户指定下一项工作。本次仅文档授权，不改业务/配置/运行实例，不新建 worktree，不合 main、不 push、不部署。产品 Agent 和全站外壳改造持续暂停；目标 Word/WPS、课堂设备、iPad/大陆网络和正式部署验证暂缓。
+文档及附属资料整理已完成，当前等待用户指定下一项工作。仅资料整理授权，运行和测试输入保持原链路；不改业务/配置/运行实例，不新建 worktree，不合 main、不 push、不部署。产品 Agent 和全站外壳改造持续暂停；目标 Word/WPS、课堂设备、iPad/大陆网络和正式部署验证暂缓。
 
 当前无活动派发任务。无定时 check，不轮询。
 
@@ -68,7 +68,7 @@
 
 原始记录在 `.scratch/worktree-consolidation/human-acceptance-20260922.md`，SHA-256 `5c09e0cd73facb2c4b9b07394f427bbaa09a5db9a580bf2779917943d28ea65c`；定位旧现场才读[恢复索引](worktree-archive.md)。
 
-- 旧 Office 制品有 Word/WPS 失败；Pandoc 样例有具名成功反馈，产品已换路线，但完整目标软件编辑及同内容 PDF 尚未收齐。当前运行另有工具路径失效。
+- 旧 Office 制品有 Word/WPS 失败；Pandoc 小样有真人两轮编辑、重开及打印成功反馈，但软件版本和改后制品未收齐，不能代签六份完整输出。当前产品已换路线，仍有工具路径失效。可用输入与核对方法见[人工 Office 样本](../acceptance/samples.md#人工-office-样本)。
 - 个人 Windows Edge/Chrome 断网冷启动具名切片通过，课堂设备仍未测。
 - 用户真实 QQ 收件、注册、找回及新旧密码验证通过；预览邮件曾受代理影响，用户已自行解决，不因此重改整机网络。
 - iPad/学校网络不可达尚未确诊，暂缓目标验证；不能写为产品已 FAIL 或 PASS。

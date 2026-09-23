@@ -1,7 +1,7 @@
 # language: zh-CN
 功能: WB materials 原稿到备课成果
   # R30/v1 设计场景，尚不是执行 PASS。
-  # 范围/预期来源为 user-stories/materials.md 与 ux/materials.md。
+  # 用户行为见 docs/features/questions.md、resources.md、lessons.md；协议见 docs/contracts/workbench/materials.md。
   # 继承 first-flow.feature WB-001..019；原型仅作布局参考，不继承验收结论。
   背景:
     假如 使用本版契约、隔离数据库和文件目录及可信教师身份 A

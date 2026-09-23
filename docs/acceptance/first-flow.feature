@@ -1,5 +1,5 @@
 Feature: 首条题库到备课真实流程
-  # B11/v1 已冻结。数据/交换入口：../contracts/workbench/first-flow-cases.md。
+  # 基础版本行为；当前身份与交换语义见 docs/contracts/workbench.md 的基础交换用例。
   # 交互参考 prototype/behavior/modules.md 与 shell.md；不继承其验收结论。
   # 实现须把这些场景映射到真实 HTTP / Playwright；本文件本身不是已执行测试。
 

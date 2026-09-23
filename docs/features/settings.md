@@ -28,6 +28,16 @@
 
 `apps/web/src/features/workbench/WorkbenchSettings.jsx`、`settings-shell.css` 拥有设置；`SupportPages.jsx`、`helpContent.js`、`support-shell.css` 拥有帮助。真实导出与恢复在 `apps/web/src/features/reliability/DataManagement.jsx`；退出调用认证 transport。字段和数据保护见[数据管理](data.md)与[认证退出](../contracts/auth.md#退出交换-i07)。
 
-现有页面的[视觉参考](../acceptance/README.md#仍在树内的制品用途)可辅助对比，功能边界以上文为准。交互动效、焦点、参考尺寸见[界面规则](../rules/design-and-verification.md)。修改设置时用 `apps/web/e2e/settings-shell.config.mjs` 的隔离真实认证/可靠性服务；帮助用 `help-shell.config.mjs`。旧 manual-data/support 配置有已移除界面断言，不能据此恢复旧功能。
+现有页面的[视觉参考](#视觉参考)可辅助对比，功能边界以上文为准。交互动效、焦点、参考尺寸见[界面规则](../rules/design-and-verification.md)。修改设置时用 `apps/web/e2e/settings-shell.config.mjs` 的隔离真实认证/可靠性服务；帮助用 `help-shell.config.mjs`。旧 manual-data/support 配置有已移除界面断言，不能据此恢复旧功能。
 
 完成相关 UI 修改应实际检查桌面及 390px 窄屏、主题/背景组合、头像预览/移除、键盘菜单、弹层退出中间态、快速反向和焦点恢复；同时确认真实导出、最近删除保存刷新和退出不被破坏，纯 UI 选择没有意外偏好写请求。帮助另检查搜索空结果、无效文章、刷新返回和目录现场。当前具名验证为设置 4 条、帮助 3 条 E2E 与构建通过，证明范围见[能力证据](../plans/run-state.md#证据边界)，不是全站偏好完成。
+
+## 视觉参考
+
+仅在调整对应页面或对照布局时查看。截图保存已集成页面的外观，不证明纯 UI 设置已具备持久化能力，也不授权恢复用户移除的入口。
+
+| 页面 | 参考 |
+| --- | --- |
+| 设置 | [桌面](assets/settings/desktop.png)、[窄屏](assets/settings/mobile.png)、[暗色预览](assets/settings/dark.png) |
+| 帮助 | [桌面](assets/help/desktop.png)、[窄屏](assets/help/mobile.png)、[文章](assets/help/article.png)、[搜索](assets/help/search.png) |
+| 更新日志 | [空页面图标](assets/help/releases.png) |

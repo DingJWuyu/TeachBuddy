@@ -25,18 +25,20 @@
 
 ## 证据怎么用
 
-[当前证据索引](../plans/run-state.md#证据边界)只列仍可消费的结论。已提交过程报告按索引中的 Git 路径追溯；`evidence/` 仅保留下表的就地用途，不作为历史日志库或待办集合。旧阶段截图、检查结果、修复脚本和输出按固定 Git 来源追溯；测试向某路径写文件不要求保留该路径的旧输出。
+[当前证据索引](../plans/run-state.md#证据边界)只列仍可消费的结论。已提交过程报告按索引中的 Git 路径追溯；测试向某路径写文件不要求保留该路径的旧输出。当前人工样本、自动测试输入与视觉参考分别按下表定位，`evidence/` 不再承担这些资料的入口。
 
 self 是作者验证，independent 是独立验收，user 是具名真人反馈。PASS 只覆盖报告实际范围。新候选涉及改变时验证影响范围，未变部分引用已有证据；环境已暂缓时单列未知，不把它写成已通过。
 
-## 仍在树内的制品用途
+## 样本、参考与保留现场
 
 | 位置 | 使用条件与限制 |
 | --- | --- |
-| `HUMAN-ACCEPTANCE/20260922/` | 具名真人 Office 比较制品、源 Markdown/图片、生成器与原始 manifest，保留为目标 Office 验证输入。来源路径在 manifest 中；包含的检查结果仅对应这些样本，不证明产品全矩阵。 |
-| `R34/v1/outputs/*-docx-00.docx` | 三份文件是 `apps/web/e2e/fixtures/materials-lessons/office.py` 的直接输入；其余输出可由 `verify-outputs.mjs` 重新生成。测试副本不证明当前产品输出质量。 |
-| `C26/v1/live-deepseek.json`、`live-glm.json` | `apps/web/e2e/c26/agent.spec.js` 读取后复制各自 directory。所记旧目录当前不存在，单有 JSON 不能重跑该测试；后续获准恢复 Agent 验证时先按工作树恢复索引找匹配现场，不能因缺输入自行重开模型请求。 |
-| `UI-SETTINGS/`、`UI-HELP/` | 当前设置/帮助页面的桌面、窄屏和交互视觉参考；结合[设置规格](../features/settings.md)使用，截图不定义新功能，也不证明全站偏好生效。 |
-| `M43/v1/output/`、`R33/v1/attempt2/`、`R33/v1/attempt4/` 及已有未跟踪制品 | 保留任务开始时已有用户修改，未改字节；不是本轮新验证。未跟踪的 BUSINESS-MVP、M42 及 apps/api/docs 输出同样保留，由其原任务决定去留。 |
+| [人工 Office 样本](fixtures/office/) | 六份 DOCX、对应 Markdown/公式/图片及源生成器；[操作与预期](samples.md#人工-office-样本)拥有验证方法。样本不是产品全矩阵通过证明。 |
+| `evidence/R34/v1/outputs/*-docx-00.docx` | `verify-outputs.mjs` 生成后由 `office.py` 就地验证，保留原路径。三份现存文件也可作固定样本；验证新产品时必须先生成本次输出，不能用旧文件代替。 |
+| [设置与帮助视觉参考](../features/settings.md#视觉参考) | 页面任务按需查看桌面、窄屏及交互截图；功能边界由规格定义。 |
+| `evidence/C26/v1/live-deepseek.json`、`live-glm.json` | `apps/web/e2e/c26/agent.spec.js` 读取后复制各自 directory。所记旧目录当前不存在，单有 JSON 不能重跑该测试；后续获准恢复 Agent 验证时先按[工作树恢复索引](../plans/worktree-archive.md)找匹配现场，不能因缺输入自行重开模型请求。 |
+| `evidence/M43/v1/output/`、`evidence/R33/v1/attempt2/`、`attempt4/` 及已有未跟踪制品 | 保留任务开始时已有用户修改；未跟踪的 BUSINESS-MVP、M42 及 apps/api/docs 输出同样保留，由其原任务决定去留。它们不是当前能力入口或本轮验证结果。 |
 
-上表路径均相对 `docs/acceptance/evidence/`，代码侧路径除外。生产 schema、固定契约输入闭包及 `apps/` 下的测试样本由各消费者直接读取，独立于这些历史输出。
+上表未链接的 `evidence/` 路径相对本目录。`contracts/` 中的 OpenAPI、JSON Schema、固定引用副本和 samples 由运行代码或契约测试消费，保持原路径；不能按“生成文件”一并删除。
+
+`.feature` 保存场景步骤与稳定编号，目前不由 Cucumber 自动执行。实际验证使用各模块的 HTTP/Playwright 入口；教学基础与作品关联在同一文件的两条 Rule 中，各自保留独立 Background，不能将两组前置条件混用。

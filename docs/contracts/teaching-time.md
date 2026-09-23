@@ -158,7 +158,7 @@ classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2`
 
 当前目录使用 `ModuleCatalogV3`。classes 同步消费 `questions.readForReferenceV2`、`lessons.readForTeachingLink`、`math.readForTeachingLinkV1`；math 服务端不依赖 classes，反馈由前端组合，避免反向等待。目录只注册真实实现，缺依赖/重复/环路阻止装配。
 
-提供方真实 404/503 必须传播，只有成功读取 tombstone 才显示已删除。新版接口和样本可用不等于实际往返已验，验证[教学场景](../acceptance/teaching-time-math.feature)与真实提供方；阶段完成条件见[DAG](../plans/mvp-dag.md)。
+提供方真实 404/503 必须传播，只有成功读取 tombstone 才显示已删除。新版接口和样本可用不等于实际往返已验，验证[教学场景](../acceptance/teaching-time.feature)与真实提供方；阶段完成条件见[DAG](../plans/mvp-dag.md)。
 
 ## 丰富题目关联
 
