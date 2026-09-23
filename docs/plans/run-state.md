@@ -23,6 +23,6 @@ DOCS-REBUILD@1 的作者 session 为 `01a0ce1f-06a9-7521-b89e-68998ff5829c`，Co
 
 ## 接续决定
 
-当前下一步是根验收文档提交及 `.scratch/docs-rebuild-astra/author.md`，用接任进度、修改题库保存、打磨设置三个任务检查知识是否够用。缺陷交回本作者，保留现场；通过后等待用户指定新工作。没有新授权时不因[DAG 剩余节点](mvp-dag.md)自行开工。
+当前由 DOCS-REBUILD 原作者修正文档中的过期阶段描述，并辨认、退役无当前消费者的历史制品；限定问题及依据在 `.scratch/docs-rebuild-astra/root-review.md`，接续包在 `revision-1/`。主体知识归并与文件保护已核对，修订回执到达后由根继续亲自验收，未通过前保留现场。通过后等待用户指定新工作，不因[DAG 剩余节点](mvp-dag.md)自行开工。
 
 后续获准任务从[功能规格](../README.md#功能规格)取相关资料，按实际共享文件安排唯一写者。运行维护读[SETUP](../SETUP.md)；需要旧未提交材料才读[工作树恢复索引](worktree-archive.md)。
