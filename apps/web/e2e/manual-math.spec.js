@@ -208,15 +208,13 @@ test("HTML 导入、源码修改、保存重开及离线交互", async ({
 }, info) => {
   await start(page, "公式");
   page.on("dialog", (dialog) => dialog.accept());
-  await page
-    .getByLabel("导入 HTML 文件")
-    .setInputFiles({
-      name: "外部演示.html",
-      mimeType: "text/html",
-      buffer: Buffer.from(
-        '<!doctype html><meta charset="utf-8"><h1>三角形面积</h1><button onclick="document.querySelector(\'output\').textContent=6">计算</button><output>0</output>',
-      ),
-    });
+  await page.getByLabel("导入 HTML 文件").setInputFiles({
+    name: "外部演示.html",
+    mimeType: "text/html",
+    buffer: Buffer.from(
+      '<!doctype html><meta charset="utf-8"><h1>三角形面积</h1><button onclick="document.querySelector(\'output\').textContent=6">计算</button><output>0</output>',
+    ),
+  });
   await expect(page.getByLabel("作品名称")).toHaveValue("外部演示.html");
   await save(page);
   await page.getByRole("button", { name: "编辑源码", exact: true }).click();
@@ -386,4 +384,15 @@ test("从空白制作拖动点与分步演示，移除全部参数后仍可保�
   await tools(page);
   await expect(page.getByLabel("选择对象").locator("option")).toHaveCount(1);
   await page.screenshot({ path: info.outputPath("from-blank.png") });
+});
+
+test("对象标识冲突保留原点与拖动绑定", async ({ page }) => {
+  await start(page);
+  await page.getByLabel("选择对象").selectOption("1");
+  await page.getByLabel("id", { exact: true }).fill("f");
+  await expect(page.getByRole("alert")).toContainText("对象标识已存在");
+  await expect(page.getByLabel("id", { exact: true })).toHaveValue("P");
+  const saved = await save(page);
+  expect(saved.source.drags[0].pointId).toBe("P");
+  expect(saved.render.state).toBe("ready");
 });

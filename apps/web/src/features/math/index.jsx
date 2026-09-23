@@ -772,6 +772,14 @@ function MathSession({ transport, route }) {
       : (draft?.source.points ?? []);
   function replaceObject(next) {
     const previous = objects[selected];
+    if (
+      objects.some(
+        (object, index) => index !== selected && object.id === next.id,
+      )
+    ) {
+      setMessage("对象标识已存在，请使用不同标识");
+      return;
+    }
     source(
       updateObjects(
         draft.source,
