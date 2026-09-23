@@ -234,7 +234,10 @@ export default function SchedulePage({ route }) {
       ? { ...current.editors, [editorKey(editor)]: editor } : current.editors }));
   }, [editor, patchScene]);
 
-  useEffect(() => { patchScene({ moveState }); }, [moveState, patchScene]);
+  function updateMoveState(next) {
+    setMoveState(next);
+    patchScene({ moveState: next });
+  }
 
   useEffect(() => {
     patchScene({ selection });
@@ -446,8 +449,10 @@ export default function SchedulePage({ route }) {
     function updateTarget(update) {
       patchScene(current => ({
         editor: current.editor && editorKey(current.editor) === targetKey ? update(current.editor) : current.editor,
-        editors: Object.fromEntries(Object.entries(current.editors ?? {}).map(([id, value]) =>
-          [id, editorKey(value) === targetKey ? update(value) : value]))
+        editors: Object.fromEntries(Object.values(current.editors ?? {}).map(value => {
+          const next = editorKey(value) === targetKey ? update(value) : value;
+          return [editorKey(next), next];
+        }))
       }));
       setEditor(current => current && editorKey(current) === targetKey ? update(current) : current);
     }
@@ -627,24 +632,28 @@ export default function SchedulePage({ route }) {
       toIndex: 0
     };
     const key = retry ? moveState.key : newRequestKey();
-    setMoveState({ itemId: item.id, status: 'running', direction: 'out', key, request });
+    updateMoveState({ itemId: item.id, status: 'running', direction: 'out', key, request });
     try {
       await api.moveItem({ key, payload: request });
-      setMoveState({ itemId: item.id, status: 'done' });
+      if (!mounted.current) return;
+      updateMoveState({ itemId: item.id, status: 'done' });
       setSaveState({ status: 'idle' });
       const refreshed = await api.getEntry(entryId);
-      if (refreshed.deletedAt !== null) {
+      if (!mounted.current) return;
+      const stillSelected = editorRef.current?.entryId === entryId;
+      if (refreshed.deletedAt !== null && stillSelected) {
         // An untitled source that lost its last item is soft-deleted; the
         // editor cannot keep editing it.
         setEditor(null);
         setNotice('原安排已移空并删除，可在“已删除”中恢复');
-      } else {
+      } else if (stillSelected) {
         await openEntry(entryId, originDate);
       }
       reload();
     } catch (problem) {
+      if (!mounted.current) return;
       const value = problem.problem ?? {};
-      setMoveState({
+      updateMoveState({
         itemId: item.id,
         status: value.kind === 'unconfirmed' ? 'unconfirmed' : 'error',
         direction: 'out',
@@ -657,11 +666,6 @@ export default function SchedulePage({ route }) {
   }
 
   async function moveUnscheduledItem({ entry, item, toEntryId }, retry = false) {
-    if (retry) {
-      setMoveState({ ...moveState, status: 'running' });
-    } else {
-      setMoveState({ itemId: item.id, status: 'running', request: { entry, item, toEntryId } });
-    }
     const request = retry ? moveState.request : { entry, item, toEntryId };
     const target = occurrences.find((occurrence) => occurrence.key.entryId === toEntryId);
     const key = retry ? moveState.key : newRequestKey();
@@ -673,14 +677,17 @@ export default function SchedulePage({ route }) {
       toVersion: target?.entryVersion ?? null,
       toIndex: target ? target.items.length : 0
     };
+    updateMoveState({ itemId: item.id, status: 'running', direction: 'in', key, request, payload });
     try {
       await api.moveItem({ key, payload });
-      setMoveState({ itemId: item.id, status: 'done' });
-      if (editor?.entryId === entry.id) setEditor(null);
+      if (!mounted.current) return;
+      updateMoveState({ itemId: item.id, status: 'done' });
+      if (editorRef.current?.entryId === entry.id) setEditor(null);
       reload();
     } catch (problem) {
+      if (!mounted.current) return;
       const value = problem.problem ?? {};
-      setMoveState({
+      updateMoveState({
         itemId: item.id,
         status: value.kind === 'unconfirmed' ? 'unconfirmed' : 'error',
         direction: 'in',

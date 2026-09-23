@@ -478,3 +478,52 @@ test('离开后返回的未保存日程草稿不能覆盖期间的服务器变�
   await expect(page.locator('[data-region=save-state]')).toContainText('内容已在别处修改');
   expect((await call('GET', `${E}/${value.id}`)).title).toBe('另一窗口修改');
 });
+
+test('新建保存慢响应后切换安排，后写草稿跟随真实ID恢复', async ({ page }) => {
+  const other = await call('POST', E, entry({ title: '另一安排', time: { ...entry().time, startTime: '18:00' } }), 201);
+  await open(page, other);
+  await page.locator('[data-action=new-unscheduled]').click();
+  await page.locator('[name=entry-title]').fill('临时安排已提交');
+  let release, committed;
+  const gate = new Promise(resolve => { release = resolve; });
+  const done = new Promise(resolve => { committed = resolve; });
+  await page.route(`**${E}`, async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    const response = await route.fetch(); committed(); await gate; await route.fulfill({ response });
+  });
+  await page.locator('[data-action=save]').click(); await done;
+  await page.locator('[name=entry-title]').fill('提交期间后写标题');
+  await page.getByRole('button', { name: '18:00 另一安排', exact: true }).click();
+  const delivered = page.waitForResponse(r => r.url().endsWith(E) && r.request().method() === 'POST');
+  release(); await delivered;
+  await page.locator('[data-region=unscheduled]').getByRole('button', { name: '临时安排已提交', exact: true }).click();
+  await expect(page.locator('[name=entry-title]')).toHaveValue('提交期间后写标题');
+  await save(page);
+  expect((await call('GET', E + '?placement=unscheduled')).items[0].title).toBe('提交期间后写标题');
+});
+
+test('移入请求途中刷新后即使源事项已消失仍可按原键原体确认', async ({ page }) => {
+  const target = await call('POST', E, entry(), 201);
+  await call('POST', E, entry({ title: '', time: null, items: [{ id: randomUUID(), text: '待移入事项', priority: 'normal' }] }), 201);
+  await open(page, target);
+  let release, committed;
+  const gate = new Promise(resolve => { release = resolve; });
+  const done = new Promise(resolve => { committed = resolve; });
+  const requests = [];
+  await page.route('**/api/modules/schedule/item-moves', async route => {
+    requests.push({ key: route.request().headers()['idempotency-key'], body: route.request().postDataJSON() });
+    if (requests.length > 1) return route.continue();
+    const response = await route.fetch(); committed(); await gate;
+    await route.fulfill({ response }).catch(() => {}); // Original document was closed by the user.
+  });
+  const row = page.locator('[data-region=unscheduled] [data-item-id]');
+  await row.getByRole('combobox').selectOption(target.id);
+  await row.getByRole('button', { name: '移入', exact: true }).click(); await done;
+  await page.reload(); release();
+  await expect(page.locator('[data-region=unscheduled] [data-item-id]')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '重试移入时间段', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '重试移入时间段', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试移入时间段', exact: true })).toHaveCount(0);
+  expect(requests[1]).toEqual(requests[0]);
+  expect((await call('GET', `${E}/${target.id}`)).items).toHaveLength(1);
+});

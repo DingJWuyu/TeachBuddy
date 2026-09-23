@@ -52,11 +52,6 @@ function MoveRow({ entry, item, targets, onMove, onOpen, moveState }) {
       {moveState?.itemId === item.id && (
         <span className="sch-move-state" data-region="move-state">
           {moveState.status === 'unconfirmed' ? '移动结果未确认' : moveState.message}
-          {moveState.status === 'unconfirmed' && (
-            <button type="button" className="wb-button" data-action="retry-move" onClick={() => onMove(moveState.request, true)}>
-              重试
-            </button>
-          )}
         </span>
       )}
     </li>
@@ -119,6 +114,10 @@ export default function ScheduleLists({
 
   return (
     <div className="sch-lists" ref={regionRef} onScroll={onScroll}>
+      {moveState?.direction === 'in' && moveState.status === 'unconfirmed' && <div className="sch-save is-warn sch-pending-move" data-region="pending-move">
+        <span>移入时间段的结果未确认</span>
+        <button type="button" className="wb-button" onClick={() => onMove(moveState.request, true)}>重试移入时间段</button>
+      </div>}
       <section className="sch-list" data-region="unscheduled">
         <button
           type="button"
