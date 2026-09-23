@@ -68,14 +68,16 @@ export function createApp(options = {}) {
     throw error;
   }
   const closeStore = dataStore.close.bind(dataStore);
-  dataStore.close = () => { workbench.jobs?.close(); closeStore(); };
+  dataStore.close = () => { workbench.close(); closeStore(); };
   const app = express();
   if (authModule) app.use('/api/auth', authModule.router);
+  if (workbench.agentRecoveryGuard) app.use('/api/agent', workbench.agentRecoveryGuard);
   app.use('/api/agent', (req, res, next) => {
     workbench.initialize().then(() => workbench.agent.router(req, res, next)).catch(next);
   });
   if (!testIdentity && (!workbench.filesRouter || !workbench.jobsRouter))
     throw new Error('The authenticated composition requires files and jobs.');
+  if (workbench.reliabilityRouter) app.use('/api/reliability/v1', workbench.reliabilityRouter);
   if (workbench.filesRouter) app.use('/api/workbench/files', workbench.filesRouter);
   if (workbench.jobsRouter) app.use('/api/workbench/jobs', workbench.jobsRouter);
   app.use(workbenchPaths.context, workbench.contextRouter);

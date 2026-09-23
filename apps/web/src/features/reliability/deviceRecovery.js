@@ -1,0 +1,134 @@
+// Move existing device state out of the active namespaces before mounting any
+// editor after a time-point restore. Values remain byte-for-byte inspectable.
+const tracker = (account) => `teachbuddy:data-recovery:${account}`;
+const prefix = (account) => `teachbuddy:data-recovery-archive:${account}:`;
+const stores = [
+  ["teachbuddy-resources-pending", "requests"],
+  ["teachbuddy.math.uploads", "pending"],
+];
+function database(name, store) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(name, 1);
+    request.onupgradeneeded = () => request.result.createObjectStore(store);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+async function moveUploads(account, recoveryId) {
+  for (const [name, storeName] of stores) {
+    const db = await database(name, storeName);
+    try {
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, "readwrite"),
+          store = tx.objectStore(storeName),
+          request = store.get(account);
+        request.onsuccess = () => {
+          if (request.result !== undefined) {
+            store.put(request.result, `${account}:recovery:${recoveryId}`);
+            store.delete(account);
+          }
+        };
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    } finally {
+      db.close();
+    }
+  }
+}
+async function prepare(account, context) {
+  let previous;
+  try {
+    previous = localStorage.getItem(tracker(account));
+  } catch (error) {
+    if (context.recoveredFrom) throw error;
+    return false;
+  }
+  const changed =
+    previous !== context.recoveryId &&
+    (previous !== null || context.recoveredFrom);
+  if (changed) {
+    const key = prefix(account) + context.recoveryId;
+    const archive = JSON.parse(localStorage.getItem(key) || "null") ?? {
+      from: previous,
+      to: context.recoveryId,
+      createdAt: new Date().toISOString(),
+      records: {},
+    };
+    const names = Object.keys(localStorage).filter(
+      (name) =>
+        name.startsWith(`tb.workbench.v1:${account}:`) ||
+        name === `teachbuddy.math.${account}` ||
+        name.startsWith(`teachbuddy:agent:${account}:`),
+    );
+    for (const name of names)
+      archive.records[name] = localStorage.getItem(name);
+    const bytes = JSON.stringify(archive);
+    localStorage.setItem(key, bytes);
+    if (localStorage.getItem(key) !== bytes)
+      throw new Error("恢复前草稿未能完整保留");
+    await moveUploads(account, context.recoveryId);
+    for (const name of names)
+      if (localStorage.getItem(name) === archive.records[name])
+        localStorage.removeItem(name);
+  }
+  try {
+    localStorage.setItem(tracker(account), context.recoveryId);
+  } catch (error) {
+    if (changed) throw error;
+  }
+  return Boolean(changed);
+}
+export function recoveryArchives(account) {
+  try {
+    return Object.keys(localStorage)
+      .filter((name) => name.startsWith(prefix(account)))
+      .map((name) => {
+        const raw = localStorage.getItem(name);
+        try {
+          const archive = JSON.parse(raw);
+          if (
+            !archive ||
+            typeof archive.to !== "string" ||
+            !archive.records ||
+            typeof archive.records !== "object"
+          )
+            throw new Error("Unknown archive");
+          return archive;
+        } catch {
+          return { to: name, createdAt: null, records: { unrecognized: raw } };
+        }
+      });
+  } catch {
+    return [];
+  }
+}
+export async function archivedUploads(account, recoveryId) {
+  const result = [];
+  for (const [name, storeName] of stores) {
+    const db = await database(name, storeName);
+    try {
+      const value = await new Promise((resolve, reject) => {
+        const request = db
+          .transaction(storeName)
+          .objectStore(storeName)
+          .get(`${account}:recovery:${recoveryId}`);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      if (value !== undefined) result.push({ store: name, value });
+    } finally {
+      db.close();
+    }
+  }
+  return result;
+}
+
+export function prepareDeviceRecovery(account, context) {
+  return navigator.locks
+    ? navigator.locks.request(`teachbuddy-recovery:${account}`, () =>
+        prepare(account, context),
+      )
+    : prepare(account, context);
+}

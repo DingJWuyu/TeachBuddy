@@ -55,7 +55,17 @@ const __filename = fileURLToPath(import.meta.url);
 const isMainModule = process.argv[1] && path.resolve(process.argv[1]) === __filename;
 
 if (isMainModule) {
-  startServer().catch((error) => {
+  startServer().then(context => {
+    let stopping = false;
+    const shutdown = () => {
+      if (stopping) return;
+      stopping = true;
+      context.server.close(() => { context.workbench.close(); });
+      context.server.closeAllConnections();
+    };
+    process.once('SIGTERM', shutdown);
+    process.once('SIGINT', shutdown);
+  }).catch((error) => {
     // Write synchronously so the failure reason survives process.exit.
     fs.writeSync(2, `[startup] ${error?.stack ?? error?.message ?? String(error)}\n`);
     process.exit(1);

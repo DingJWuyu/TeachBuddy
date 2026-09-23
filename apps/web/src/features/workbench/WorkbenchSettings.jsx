@@ -1,5 +1,6 @@
+import { DataManagement } from '../reliability/DataManagement.jsx';
 import { useRef, useState } from 'react';
-import { clearLocalPartition, listLocalNames } from './storage.js';
+import { readLocal, removeLocal, listLocalNames } from './storage.js';
 import { useWorkbenchShell } from './shellContext.js';
 
 function localDraftNames(accountKey) {
@@ -25,9 +26,11 @@ export function WorkbenchSettings() {
   function clearDeviceData() {
     const confirmed = window.confirm('清除本设备保存的草稿与现场？未上传的输入会丢失。');
     if (!confirmed) return;
-    clearLocalPartition(shell.accountKey);
-    setDrafts([]);
-    setCleared(true);
+    const names = listLocalNames(shell.accountKey).filter(name => !name.includes('pending') && !readLocal(shell.accountKey, name)?.pending);
+    if (names.every(name => removeLocal(shell.accountKey, name))) {
+      setDrafts(localDraftNames(shell.accountKey));
+      setCleared(true);
+    }
   }
 
   return (
@@ -47,6 +50,7 @@ export function WorkbenchSettings() {
         {logoutState === 'unknown' && <p role="alert">退出结果暂未确认，业务操作已锁定。请重试确认。</p>}
       </section>
 
+      <DataManagement />
       <section className="wb-panel">
         <h2>本设备草稿</h2>
         <p data-field="draft-count">
@@ -56,7 +60,7 @@ export function WorkbenchSettings() {
         <button type="button" className="wb-button" disabled={drafts.length === 0} onClick={clearDeviceData}>
           清除本设备草稿
         </button>
-        {cleared && <span className="wb-save-status" role="status">本设备草稿已清除</span>}
+        {cleared && <span className="wb-save-status" role="status">可清理的草稿已清除，待确认请求及必要输入仍保留</span>}
       </section>
     </div>
   );

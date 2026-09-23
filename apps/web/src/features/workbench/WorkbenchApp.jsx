@@ -256,6 +256,7 @@ function WorkbenchContent({ boot }) {
 
           <div className="wb-workspace">
             <main className="wb-main" data-region="main">
+              {boot.recoveryChanged && <div className="wb-storage-warning" role="status">工作台已从备份恢复。<a href="/settings" onClick={event=>followAnchor(event,'/settings')}>查看恢复前的本设备草稿</a></div>}
               {storageFailed && (
                 <div className="wb-storage-warning" role="alert" data-region="storage-warning">
                   草稿无法保留，请先保存

@@ -102,10 +102,10 @@ export function workbenchGet(path) {
 }
 
 /** File bytes use the same page binding and account-generation cancellation. */
-export async function workbenchBlob(path, { signal } = {}) {
+export async function workbenchBlob(path, { signal, timeoutMs = READ_TIMEOUT_MS } = {}) {
   const current = binding;
   if (!current) throw new WorkbenchError({ kind: 'identity', message: '请重新登录' });
-  const signals = [current.controller.signal, AbortSignal.timeout(READ_TIMEOUT_MS)];
+  const signals = [current.controller.signal, AbortSignal.timeout(timeoutMs)];
   if (signal) signals.push(signal);
   const response = await current.transport(path, {
     credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.any(signals)

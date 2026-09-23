@@ -1,3 +1,6 @@
+import { createReliability } from './reliability/index.js';
+import { migrations as reliabilityMigrations, acquireLock } from './reliability/storage.js';
+import fs from 'node:fs';
 import { connectBusinessOperations } from '../agent/business.js';
 import { createAgent, migrations as agentMigrations } from '../agent/index.js';
 import { createJobs } from "./jobs/index.js";
@@ -51,7 +54,20 @@ export function createWorkbench({
   assertFoundationRuntime(env);
   const workbenchEnv = env.workbench ?? {};
 
-  const db = openWorkbenchDatabase({ sqlitePath: env.sqlitePath });
+  const releaseLock = acquireLock(env.sqlitePath);
+  let db;
+  let releaseFiles = () => {};
+  try {
+    releaseFiles = acquireLock(path.join(workbenchEnv.filesDir ?? path.join(path.dirname(env.sqlitePath), "files"), ".managed-files"));
+    if (fs.existsSync(path.join(path.dirname(env.sqlitePath), 'recovery-pending.json'))) throw new Error('Recovered data requires explicit activation before startup.');
+    const activationPath = path.join(path.dirname(env.sqlitePath), 'recovery-activated.json');
+    if (fs.existsSync(activationPath)) {
+      const activation = JSON.parse(fs.readFileSync(activationPath, 'utf8'));
+      const configuredFiles = workbenchEnv.filesDir ?? path.join(path.dirname(env.sqlitePath), 'files');
+      if (fs.realpathSync(env.sqlitePath) !== path.join(activation.target, 'workspace.sqlite') || fs.realpathSync(configuredFiles) !== path.join(activation.target, 'files')) throw new Error('Recovered database and files must use the activated target together.');
+    }
+    db = openWorkbenchDatabase({ sqlitePath: env.sqlitePath });
+  } catch (error) { releaseFiles(); releaseLock(); throw error; }
   const logger =
     loggerOverride ??
     createWorkbenchLogger({ logDir: workbenchEnv.logDir, clock });
@@ -136,16 +152,19 @@ export function createWorkbench({
     ready: () => initialize(),
     logger,
   });
+  const reliability = createReliability({ db, loader, mutations, identity, trustedOrigins: workbenchEnv.trustedOrigins ?? [], ready: () => initialize(), filesDirectory: workbenchEnv.filesDir ?? path.join(path.dirname(env.sqlitePath), 'files'), logger });
   let initialization = null;
   let agent;
+  let closed = false;
 
   function initialize() {
     initialization ??= (async () => {
       await loader.discover();
       const migrationResult = migrations.run(
-        [...fileMigrations, ...jobMigrations, ...loader.moduleMigrations()],
+        [...fileMigrations, ...jobMigrations, ...reliabilityMigrations, ...loader.moduleMigrations()],
         {
           knownModuleIds: [
+            "reliability",
             "materials-files",
             "materials-jobs",
             ...catalog.map((entry) => entry.id),
@@ -155,6 +174,7 @@ export function createWorkbench({
       logger.info(
         `migrations applied ${migrationResult.applied.length}, skipped ${migrationResult.skipped.length}`,
       );
+      reliability.initialize();
       files.initialize();
       await loader.instantiate();
       const handlers = {
@@ -185,6 +205,8 @@ export function createWorkbench({
     files,
     content,
     filesRouter,
+    reliabilityRouter: reliability.router,
+    agentRecoveryGuard: reliability.agentRecoveryGuard,
     jobs,
     jobsRouter,
     identity,
@@ -200,9 +222,14 @@ export function createWorkbench({
     initialize,
 
     close() {
+      if (closed) return;
+      closed = true;
+      reliability.close();
       agent?.close();
       jobs.close();
-      db.close();
+      if (db.open) db.close();
+      releaseFiles();
+      releaseLock();
     },
   };
 }

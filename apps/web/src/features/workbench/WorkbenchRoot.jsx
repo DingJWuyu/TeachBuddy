@@ -1,3 +1,4 @@
+import { prepareDeviceRecovery } from '../reliability/deviceRecovery.js';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/index.jsx';
 import { bindWorkbenchTransport, getWorkbenchContext, setIdentityLostListener, workbenchGet } from './apiClient.js';
@@ -20,9 +21,11 @@ export default function WorkbenchRoot() {
       try {
         const { body } = await getWorkbenchContext();
         if (body.accountKey !== account.accountKey) throw new Error('Account mismatch');
+        const recovery = (await workbenchGet('/api/reliability/v1/context')).body;
+        const recoveryChanged = await prepareDeviceRecovery(account.accountKey, recovery);
         const catalog = (await workbenchGet('/api/modules')).body;
         if (catalog.version !== 3) throw new Error('Unsupported module catalog version');
-        if (live) setBoot({ account, mode: 'ready' });
+        if (live) setBoot({ account, mode: 'ready', recoveryChanged });
       } catch (error) {
         if (live) setBoot({ account, mode: error.problem?.kind === 'identity' ? 'identity' : 'unavailable' });
       }
@@ -37,7 +40,7 @@ export default function WorkbenchRoot() {
 
   if (boot?.account === account && boot.mode === 'ready') {
     return <WorkbenchApp key={`${account.accountKey}:${retry}`} boot={{
-      logout, transport: request,
+      logout, transport: request, recoveryChanged: boot.recoveryChanged,
       accountKey: account.accountKey, nickname: account.nickname, generation: retry, storageFailed,
       reportIdentityLost: () => setBoot({ account, mode: 'identity' })
     }} />;

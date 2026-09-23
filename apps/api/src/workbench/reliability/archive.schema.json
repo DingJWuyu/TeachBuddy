@@ -1,0 +1,654 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Frozen manual archive definitions from 31575c5c9d386c03a1f9fcde38b9a216f87a5b08:docs/contracts/reliability.schema.json. Conversation payloads retain their existing native public schema.",
+  "$defs": {
+    "DeploymentManifest": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "teachbuddy-deployment"
+        },
+        "formatVersion": {
+          "const": 1
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "productRevision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FileEntry"
+          }
+        },
+        "backupId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "database": {
+          "$ref": "#/$defs/FileEntry"
+        },
+        "migrationIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "备份时完整有序迁移账本；与实际库及固定候选支持集合逐项核对，未知模块/ID 或缺升级链即停止；认证子集只按 x-auth-recovery 的固定契约。"
+        },
+        "schemas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "version"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "kind",
+        "formatVersion",
+        "createdAt",
+        "productRevision",
+        "files",
+        "backupId",
+        "database",
+        "migrationIds",
+        "schemas"
+      ],
+      "additionalProperties": false,
+      "description": "备份时事实，不含秘密或可复用的认证清理/开放许可。认证操作绑定见 x-auth-recovery；具体配置及兼容/启用顺序归 reliability 架构和契约 E。schemas 列举全部必需内容/数学/Agent 格式版本，版本未知即停止，不能仅凭认证操作成功开放。"
+    },
+    "PortableManifest": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "teachbuddy-personal"
+        },
+        "formatVersion": {
+          "const": 1
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "productRevision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FileEntry"
+          }
+        },
+        "accountLabel": {
+          "type": "string"
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PortableObject"
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relation"
+          }
+        },
+        "excluded": {
+          "const": [
+            "authentication",
+            "secrets",
+            "device-drafts",
+            "device-scenes",
+            "raw-agent-runtime",
+            "export-cache"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "formatVersion",
+        "createdAt",
+        "productRevision",
+        "files",
+        "accountLabel",
+        "objects",
+        "relations",
+        "excluded"
+      ],
+      "additionalProperties": false
+    },
+    "ObjectKey": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "question",
+            "question-taxonomy",
+            "import",
+            "lesson",
+            "resource",
+            "resource-taxonomy",
+            "math",
+            "class",
+            "record",
+            "entry",
+            "notification",
+            "conversation",
+            "preferences",
+            "layout",
+            "schedule-settings",
+            "file",
+            "job",
+            "lesson-export",
+            "math-revision"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "Relation": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/ObjectKey"
+        },
+        "to": {
+          "$ref": "#/$defs/ObjectKey"
+        },
+        "relation": {
+          "enum": [
+            "copy-source",
+            "origin",
+            "reference-snapshot",
+            "current-link",
+            "conversation-reference",
+            "class-record",
+            "course",
+            "exception"
+          ]
+        },
+        "adoptedVersion": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "location": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "relation",
+        "adoptedVersion",
+        "location"
+      ],
+      "additionalProperties": false
+    },
+    "FileEntry": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^\\u0000]+$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mediaType": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "mediaType",
+        "displayName"
+      ],
+      "additionalProperties": false
+    },
+    "PortableObject": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/ObjectKey"
+        },
+        "state": {
+          "enum": [
+            "active",
+            "deleted"
+          ]
+        },
+        "dataPath": {
+          "type": "string"
+        },
+        "readablePath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "state",
+        "dataPath",
+        "readablePath"
+      ],
+      "additionalProperties": false
+    },
+    "Export": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "enum": [
+            "queued",
+            "running",
+            "ready",
+            "failed",
+            "interrupted"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "snapshotAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "downloadPath": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "problem": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Problem"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "state",
+        "createdAt",
+        "snapshotAt",
+        "completedAt",
+        "downloadPath",
+        "problem"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "ready"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "downloadPath": {
+                "type": "string",
+                "pattern": "^/api/reliability/v1/exports/[0-9a-f-]+/content$"
+              },
+              "completedAt": {
+                "$ref": "#/$defs/Timestamp"
+              },
+              "problem": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "downloadPath": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "failed",
+                  "interrupted"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "problem": {
+                "$ref": "#/$defs/Problem"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "ready",
+                  "failed",
+                  "interrupted"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "completedAt": {
+                "$ref": "#/$defs/Timestamp"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "completedAt": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ExportList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Export"
+          }
+        }
+      },
+      "required": [
+        "items"
+      ]
+    },
+    "Problem": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "/problems/reliability/unsupported-agent-version"
+            },
+            "status": {
+              "const": 422
+            },
+            "title": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "currentVersion": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "type",
+            "status",
+            "title"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "/problems/reliability/preference-conflict"
+            },
+            "status": {
+              "const": 409
+            },
+            "title": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "currentVersion": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "type",
+            "status",
+            "title",
+            "currentVersion"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "/problems/reliability/archive-not-ready"
+            },
+            "status": {
+              "const": 409
+            },
+            "title": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "currentVersion": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "type",
+            "status",
+            "title"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "/problems/reliability/archive-invalid"
+            },
+            "status": {
+              "const": 422
+            },
+            "title": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "currentVersion": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "type",
+            "status",
+            "title"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "/problems/reliability/archive-incompatible"
+            },
+            "status": {
+              "const": 422
+            },
+            "title": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "currentVersion": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "type",
+            "status",
+            "title"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "/problems/reliability/recovery-review-required"
+            },
+            "status": {
+              "const": 409
+            },
+            "title": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "currentVersion": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "type",
+            "status",
+            "title"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "/problems/reliability/temporarily-unavailable"
+            },
+            "status": {
+              "const": 503
+            },
+            "title": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "currentVersion": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "type",
+            "status",
+            "title"
+          ]
+        }
+      ]
+    },
+    "Context": {
+      "type": "object",
+      "properties": {
+        "recoveryId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "recoveryId"
+      ]
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
