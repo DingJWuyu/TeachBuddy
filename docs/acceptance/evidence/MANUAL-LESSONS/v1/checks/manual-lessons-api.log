@@ -1,0 +1,163 @@
+TAP version 13
+# Subtest: WB-005: a lesson keeps stable section ids, order and server snapshots
+ok 1 - WB-005: a lesson keeps stable section ids, order and server snapshots
+  ---
+  duration_ms: 219.524745
+  type: 'test'
+  ...
+# Subtest: WB-007: moving a reference keeps its id, snapshot and note
+ok 2 - WB-007: moving a reference keeps its id, snapshot and note
+  ---
+  duration_ms: 54.187696
+  type: 'test'
+  ...
+# Subtest: WB-006/013: stale reference versions reject the whole lesson atomically
+ok 3 - WB-006/013: stale reference versions reject the whole lesson atomically
+  ---
+  duration_ms: 65.367566
+  type: 'test'
+  ...
+# Subtest: WB-008: a question update never silently changes prepared content
+ok 4 - WB-008: a question update never silently changes prepared content
+  ---
+  duration_ms: 51.98246
+  type: 'test'
+  ...
+# Subtest: WB-009: question deletion keeps prepared snapshots and blocks new references
+ok 5 - WB-009: question deletion keeps prepared snapshots and blocks new references
+  ---
+  duration_ms: 58.153889
+  type: 'test'
+  ...
+# Subtest: WB-009: lesson deletion and restore keep sections, references and questions
+ok 6 - WB-009: lesson deletion and restore keep sections, references and questions
+  ---
+  duration_ms: 55.496034
+  type: 'test'
+  ...
+# Subtest: WB-014/016: lesson reference identity and ownership are enforced
+ok 7 - WB-014/016: lesson reference identity and ownership are enforced
+  ---
+  duration_ms: 50.784242
+  type: 'test'
+  ...
+# Subtest: WB-005: lesson search covers title and body text but not snapshots or notes
+ok 8 - WB-005: lesson search covers title and body text but not snapshots or notes
+  ---
+  duration_ms: 51.829159
+  type: 'test'
+  ...
+# Subtest: WB-005: section order is server-side and reordering keeps stable ids
+ok 9 - WB-005: section order is server-side and reordering keeps stable ids
+  ---
+  duration_ms: 67.601973
+  type: 'test'
+  ...
+# Subtest: C11/WB-013: stale lesson base versions conflict on update, delete and restore
+ok 10 - C11/WB-013: stale lesson base versions conflict on update, delete and restore
+  ---
+  duration_ms: 49.784132
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 12
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: lesson order: persistence, owner isolation, conflict and unknown-result replay
+ok 11 - lesson order: persistence, owner isolation, conflict and unknown-result replay
+  ---
+  duration_ms: 382.94259
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 12
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+ok 12 - MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+  ---
+  duration_ms: 250.284358
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+ok 13 - MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+  ---
+  duration_ms: 1125.137902
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+ok 14 - MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+  ---
+  duration_ms: 53.461831
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 12
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+ok 15 - MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+  ---
+  duration_ms: 1262.492386
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+ok 16 - MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+  ---
+  duration_ms: 2999.303683
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+ok 17 - MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+  ---
+  duration_ms: 79.103988
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 12
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+ok 18 - MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+  ---
+  duration_ms: 1363.393352
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+ok 19 - stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+  ---
+  duration_ms: 514.076504
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9098.020881
