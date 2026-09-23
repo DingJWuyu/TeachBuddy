@@ -12,6 +12,7 @@ import { migrations as math } from "../../modules/math/migrations.js";
 import { migrations as classes } from "../../modules/classes/migrations/index.js";
 import { migrations as schedule } from "../teachingTime.js";
 import { migrations as agent } from "../../agent/store.js";
+import { preferenceMigrations } from "../../reliability/preferences.js";
 import { fileMigrations } from "../files/migrations.js";
 import { jobMigrations } from "../jobs/migrations.js";
 import { validateSchema } from "../content/schema.js";
@@ -43,6 +44,7 @@ const supported = [
   ...fileMigrations,
   ...jobMigrations,
   ...migrations,
+  ...preferenceMigrations,
 ];
 const ledger = (db) =>
   db.prepare("SELECT id,moduleId FROM workbench_migrations ORDER BY id").all();

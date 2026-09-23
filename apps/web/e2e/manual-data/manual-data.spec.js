@@ -72,7 +72,7 @@ test("个人资料入口、导出与最近删除", async ({ page }) => {
     .getByRole("list", { name: "已删除资料" })
     .getByRole("button", { name: "恢复", exact: true })
     .click();
-  await expect(page.getByRole("status")).toContainText("已恢复");
+  await expect(page.getByRole("status").filter({ hasText: "已恢复" })).toContainText("已恢复");
   let lost = false;
   await page.route("**/api/reliability/v1/exports", async (route) => {
     if (route.request().method() === "POST" && !lost) {

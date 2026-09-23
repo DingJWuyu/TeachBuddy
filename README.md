@@ -53,7 +53,9 @@ node apps/api/src/scripts/reliability.js activate --target /新恢复目录 --st
 
 已支持当前预览的迁移集合，包括备课排序迁移 `lessons_0003_order`，以及固定起点缺少可靠性模块的基线升级。未知迁移、内容格式、缺文件、摘要不符及未完成认证清理都会停止恢复。集成其他模块新增迁移时，须同步接入备份支持集合再验证。自验范围与证据见 [MANUAL-DATA 回执](docs/acceptance/evidence/MANUAL-DATA/v1/receipt.md)。
 
-## 设置与工作现场
+## 设置与工作现场（集成候选，尚未更新预览）
+
+以下 SUPPORT 能力已进入 `integration/manual-business` 的候选构建，当前 `https://localhost:50880` 仍运行上述六线版本。隔离恢复检查发现新格式上传原文件无法从恢复前草稿页下载，修复和复验后再更新预览。
 
 设置可保存账户阅读字号与减少动效偏好，重新登录或在另一设备打开后生效。帮助按六模块真实操作流程组织。版本页面分别显示正式发布记录与构建时的 Git 提交；当前正式记录为空，不将开发提交冒充发布，也不改写 `CHANGELOG.md`。正式发布流程将经核实的 `ReleaseRecord` 数组写入 `apps/web/src/features/workbench/releases.json`，页面运行不依赖 GitHub 网络或凭据。
 

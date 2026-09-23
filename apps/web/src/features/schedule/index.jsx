@@ -382,7 +382,7 @@ export default function SchedulePage({ route }) {
       const instanceDraft = originDate === null
         ? null
         : draftFromContent({ ...base, content, weekly: false });
-      if (!alive.current || (background && (editorRef.current?.entryId !== entryId || editorRef.current?.pending || saveRunning.current))) return;
+      if (!mounted.current || (background && (editorRef.current?.entryId !== entryId || editorRef.current?.pending || savesInFlight.current.size > 0))) return;
       openEditor(editorState({
         mode: 'entry',
         entryId,
@@ -405,7 +405,7 @@ export default function SchedulePage({ route }) {
   }
 
   useForegroundRefresh(async () => {
-    if (!alive.current || saveRunning.current) return;
+    if (!mounted.current || savesInFlight.current.size > 0) return;
     reload();
     const current = editorRef.current;
     if (current?.entryId && !current.pending) await openEntry(current.entryId, current.originDate, true);

@@ -219,10 +219,11 @@ export function takeSnapshot(db, principal, loader) {
       .prepare("SELECT * FROM reliability_preferences WHERE accountKey=?")
       .get(account);
     if (row)
-      add(
-        "preferences",
-        row.value ? JSON.parse(row.value) : withoutAccount(row),
-      );
+      add("preferences", {
+        version: row.version,
+        values: JSON.parse(row.valuesJson),
+        updatedAt: row.updatedAt,
+      });
   }
   const owner = db
     .prepare("SELECT id,nickname FROM auth_accounts WHERE accountKey=?")
