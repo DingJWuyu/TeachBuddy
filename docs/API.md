@@ -11,11 +11,11 @@
 | 数学作品、渲染、源码与导出 | [数学契约](contracts/workbench/math.md)及其 schema / 案例链接 |
 | 班级、安排、事项、提醒 | [教学时间契约](contracts/teaching-time.md)、[作品扩展](contracts/teaching-time-math.md) |
 | 材料与教学关联 | [接缝](contracts/materials-teaching-alignment.md) |
-| 个人资料导出、恢复、偏好 | [数据管理入口](modules/data.md)，包含不在当前树中的固定设计引用 |
-| 产品 Agent | [Agent 入口](modules/agent.md)，开发暂停 |
+| 个人资料导出、恢复、偏好 | [数据管理入口](features/data.md)，包含不在当前树中的固定设计引用 |
+| 产品 Agent | [Agent 入口](features/agent.md)，开发暂停 |
 
 本页只导航，不复制状态码、字段和样本。`contracts/` 的 schema 是精确结构源，Markdown 解释语义，样本固定正反例；它们不是当前所有场景已经实现的证明。对运行实现的认知先读[能力与证据](plans/run-inputs.md)。
 
-冻结文档中的 `READY_FOR_REVIEW` 等标题保留了该设计产物生成时的状态，不能用来推翻后续独立冻结或启动任务。当前采用版本和通过范围由[输入索引](plans/run-inputs.md)与本次任务包指定。
+采用版本与通过范围见[能力证据](plans/run-inputs.md)。固定输入闭包中的原始版本文字只用于解释来源，执行授权以[当前状态](plans/run-state.md)为准。
 
 修改共享接口时定位所有实际消费者及相关测试；发生不一致时记录具体冲突，保持已有数据和消费版本，不擅自换回旧协议。

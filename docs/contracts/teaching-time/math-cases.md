@@ -1,6 +1,6 @@
 # 数学关联交换用例
 
-状态：READY_FOR_REVIEW/self。精确形状见 [OpenAPI](teaching-time-math.openapi.json)，语义见[契约](../teaching-time-math.md)。[机器样本](math-samples.json)中的 `valid` 只表示 schema 判断，`exchanges` 才记录跨请求的预期；尚未运行产品。
+教学记录 v2 数学关联验收规格。精确形状见 [OpenAPI](teaching-time-math.openapi.json)，语义见[契约](../teaching-time-math.md)。[机器样本](math-samples.json)中的 `valid` 只表示 schema 判断，`exchanges` 才记录跨请求的预期；样本本身不是产品通过记录。
 
 固定账户 A/B 由可信测试入口提供，客户端不提交 accountKey。C1/C2、L1、Q1、R1 复用[旧用例](cases.md)；W1 为 `60000000-0000-4000-8000-000000000001`，R2 为 `30000000-0000-4000-8000-000000000002`。初始时间 `2026-09-21T06:00:00Z`，记录日期 `2026-09-21`，每次写入推进一分钟。W1 初始 title=“函数图象”、version=1、deletedAt=null。真实复验通过公共操作建立对象并映射真实 ID，固定 UUID 仅用于同版替身。
 
@@ -56,4 +56,4 @@
 
 `catalog-combined-target` 逐字值取自固定 M40 样本：version=3，六模块顺序和 requires 相同。生产投影实际模块子集；数学与教学时间真实装配时 classes 必须含 math.readForTeachingLinkV1。静态 duplicate-id/path、缺 math 提供方、依赖环变体按旧 TT-C7 的 field/reason 拒绝，不能用 shape valid 代替语义校验。
 
-原 79 个 T50 样本、schema、时间/提醒/班级操作仍保留；新 schema 的原 60 个 schema 与所有 schedule 操作逐项相等。记录作品更新/删源不重置 armedAt、不结算或生成通知、不写日程。已有日程关联 R1 时仍使用原 RecordReference，math 故障不影响该摘要。实际产品回归由 T51/单写者完成，本次仅作结构比较。
+原 79 个 T50 样本、schema、时间/提醒/班级操作仍保留；新 schema 的原 60 个 schema 与所有 schedule 操作逐项相等。记录作品更新/删源不重置 armedAt、不结算或生成通知、不写日程。已有日程关联 R1 时仍使用原 RecordReference，math 故障不影响该摘要。实现变更须验证这些不变量，当前已测范围见[能力证据](../../plans/run-inputs.md)。

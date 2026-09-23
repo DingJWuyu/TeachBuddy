@@ -1,9 +1,16 @@
-# C21 开源复用调查
+# 自动提取：本地页解析候选与未完成实验
 
-- 调查日期：2026-09-22
-- 调查状态：研究判断，不代表 C21、R35 或产品验收通过
-- 固定产品来源：`267cf5119e05e6caba8f2db58ece3487dc6c3e9d`，只读工作区 `/home/liam_t/项目/TeacherWorkspace-teaching-math-integration`
-- 范围：公开仓库、官方文档、版本化源码、模型卡和官方样例。本轮未安装依赖或权重，未运行项目样本，未调用产品模型或第三方 OCR，未上传材料
+当前手动/原生能力见[题库](../features/questions.md)。本地权重许可未答复，全部旧在线窗口关闭；本页不授权下载、推理或产品接入。公开能力调查固定于 2026-09-22，候选版本、许可证与硬件事实只是当时核对结果，不等于本项目实测。
+
+## 已定实验边界
+
+设计已独立核验，固定全文 `d690372c8f552e37690648f5688e04e1b68c4ae9:docs/arch/capability-checks/C21-reuse.md`，独立依据见[能力证据](../plans/run-inputs.md)。获许可后执行者还需该固定正文中的具体参数、哈希及停止条件；不是再次设计新候选。
+
+只做 PaddleOCR-VL 完整本地管线的一次隔离判别，不并装其他候选。PaddleOCR/PaddleX 3.7.0、VL 1.6 与 PP-DocLayoutV3 固定 revision；隔离 Python 3.12/cu129。准备下载上限 10 GiB、目录增量 20 GiB、90 分钟；最多 7 次页解析，每次含加载 15 分钟，推理全进程禁网。启动预留内存 8 GiB、显存 7 GiB、磁盘 25 GiB，不停其他进程或改驱动/swap。异常、额外权重/许可差异或超限停止，不自动换 CPU/模型/提示。
+
+输入固定为 `ecd1ed6d8f974fba20ac92d40d5b6b943a3b0170:experiments/C21/next-1/` 的 I1/I2/I3、PS4、E7/E8；I1 冷启动重放一次。混合 I+PS 是判别材料，不冒称完整入口成绩；E 保持原 7/8 页号，Q2 原图矛盾按原像素保留。原始页解析、自动映射归并、人工校对分三层评分；映射允许一次有证据的机械修正，不重置推理计数。页块通过而归并失败只解除页解析问题，不放行 C21 产品。
+
+旧在线响应截断和质量失败不能靠接上网络传输解决。重开在线路线须有同 Provider 精确型号控制/预算生效证据，或不同方法对相近数学负载的可审计完整输出，再取得有界窗口；改 token/effort/提示不是自动新增许可。旧消耗在[模型边界](command-code-api.md)。
 
 ## 结论
 
@@ -17,11 +24,11 @@
 
 **建议路线：保留当前产品的 File / Job / Document / Location、DOCX 原生读取和已有归并逻辑，仅把 PaddleOCR 3.7.0 + PaddleOCR-VL 1.6 完整本地管线当作“页块识别器”进行一次最小判别实验。** 不 fork 整个项目，不搭额外平台，不先做常驻 OCR 服务。只有固定材料的机器原始结果达到 C21 门槛，才实现薄适配层。
 
-MinerU 4.0.6 是有价值的备选，但本轮不建议与 PaddleOCR-VL 并行安装对打。它的 4.0 架构在 2026-09-16 才发布，调查当天已到 4.0.6；最新修复仍包括 PDF 文本块丢失和中文段落含行内公式时导出崩溃。这证明维护活跃，也证明当前大版本仍处于快速收敛期。
+MinerU 4.0.6 是有价值的备选，但调查时不建议与 PaddleOCR-VL 并行安装对打。它的 4.0 架构在 2026-09-16 才发布，调查当天已到 4.0.6；最新修复仍包括 PDF 文本块丢失和中文段落含行内公式时导出崩溃。这证明维护活跃，也证明当前大版本仍处于快速收敛期。
 
 ## 判定标准
 
-本调查使用 [C21 四入口标准](../arch/capability-checks/C21.md) 和 [固定样本](../arch/capability-checks/samples.md#提取与-office-共用样本)，而不用 star、项目自评总分或 Markdown 看起来连贯作为可用证据。合格候选至少要为后续适配提供：
+本调查使用 [C21 四入口标准](../acceptance/mvp-matrix.md#extraction) 和 [固定样本](../acceptance/samples.md#提取与-office-共用样本)，而不用 star、项目自评总分或 Markdown 看起来连贯作为可用证据。合格候选至少要为后续适配提供：
 
 | 维度 | 需要的可消费结果 |
 | --- | --- |
@@ -62,7 +69,7 @@ MinerU 4.0.6 是有价值的备选，但本轮不建议与 PaddleOCR-VL 并行�
 | 系统 | 官方手工安装验证 Python 3.9-3.13；PaddlePaddle 3.2.1+；x64 CPU 和多种 GPU 均有路径 | 当前系统 Python 3.14.7 不在验证范围，未来实验应用隔离的 Python 3.12 环境，不污染产品 Node 运行时 |
 | GPU | 官方普通 NVIDIA 路径要求 CC >= 7.0、CUDA >= 11.8，Blackwell 另有专用说明 | 本机 RTX 5060 Laptop，CC 12.0，8,151 MiB VRAM，属 Blackwell 路径。公开文档没有给出该整管线的最低 VRAM，8 GB 能否稳定跑固定页仍未知 |
 | CPU / RAM | 官方支持 x64 CPU，默认 10 线程，但没有公布 VL 1.6 在 x64 CPU 上的最小 RAM 或固定页耗时 | 本机 20 核、14 GiB RAM + 14 GiB swap；可作可行性兜底，不预先宣称速度可用 |
-| 网络 | 默认首次运行会下载权重；官方提供约 10 GB 的离线 GPU 镜像 | 未来准备时可联网下载并校验，正式解析可断网；本轮没有下载 |
+| 网络 | 默认首次运行会下载权重；官方提供约 10 GB 的离线 GPU 镜像 | 未来准备时可联网下载并校验，正式解析可断网；调查时没有下载 |
 | 费用 | 本地开源权重无按次 API 费用 | 只有本机算力、电力和存储成本；不调用文档中的远程商业 endpoint，不上传材料 |
 
 #### 与当前接口的适配点
@@ -77,7 +84,7 @@ MinerU 4.0.6 是有价值的备选，但本轮不建议与 PaddleOCR-VL 并行�
 | `block_order` 与题号文本 | `readTranscription` 所需的 question / continuation / answer / other | 先用题号、“答案/解析”标题和页间唯一续文规则；无唯一证据就留 unassigned |
 | 多页 records | 现有 `mergeExtractions`、`reconcileExtraction` | 复用已有答案唯一匹配、跨页续文、成功页保留、人工版不覆盖和显式重试语义 |
 
-公共 HTTP 契约、File / Job / Import / Draft / Document / Location 不需改。`createExtractionHandler` 当前对文件页只有“注入 Provider 并走 Chat 响应适配”和 `provider-unavailable` 两条路径，因此未来实现需要的是一个内部 extractor 选择点，不是新的公共端点、队列、平台或模型路由层。
+公共 HTTP 契约、File / Job / Import / Draft / Document / Location 不需改。扫描/图像页尚无生产视觉 provider；当前文字层 PDF 已有原生路径，不能将扫描缺口推及全部 PDF，因此未来实现需要的是一个内部 extractor 选择点，不是新的公共端点、队列、平台或模型路由层。
 
 ### MinerU 4.0.6
 
@@ -96,7 +103,7 @@ MinerU 4.0.6 是有价值的备选，但本轮不建议与 PaddleOCR-VL 并行�
 | VLM 权重 | `opendatalab/MinerU2.5-Pro-2605-1.2B` revision `bff20d4a...`，Apache-2.0，约 2.32 GB | 模型卡评测不是项目样本证据 |
 | 小模型包 | `MinerU-4_models_onnx` revision `358310b4...`，约 856 MB，由 PP-DocLayoutV2、PP-OCRv6、PP-FormulaNet 等组成；模型包 README 要求继续适用每个上游权重的原始许可 | ONNX 模型库本身未声明单一 license metadata，正式依赖需按 manifest 复核每个上游 |
 | CPU / GPU | 官方说明 Basic 可在 CPU 运行；Standard/Advanced 依赖 VLM engine、输入和并发。高吞吐本地部署建议至少 16 GB 系统内存，8 GB VRAM 只是起始规划值 | 本机 14 GiB RAM 低于该建议，8 GB VRAM 不保证 Standard 负载；Basic 可行性仍只有官方声明，无项目实测 |
-| 系统 / 网络 / 费用 | Python >=3.10,<3.15；Linux 基础包可用 ONNX CPU + llama.cpp；权重可预下载本地运行 | 无按次 API 费用，但缓存完成前需网络；本轮未下载、未运行 |
+| 系统 / 网络 / 费用 | Python >=3.10,<3.15；Linux 基础包可用 ONNX CPU + llama.cpp；权重可预下载本地运行 | 无按次 API 费用，但缓存完成前需网络；调查时未下载、未运行 |
 
 MinerU 若后续成为候选，也只消费 `ParseResult` / Content List V2，不引入 Doclib、WebUI、Router、Gradio 或它的 Job API。当前产品已有这些边界，引入第二套平台只会重复责任。
 
@@ -134,7 +141,7 @@ PaddleOCR 和 MinerU 都可导出 Markdown/DOCX，但这不等于生成了产品
 
 ## 最小可判别实验
 
-这是后续获得本地权重准入和实验授权后的建议，本轮未执行。
+这是后续获得本地权重准入和实验授权后的建议，调查时未执行。
 
 ### 固定对象
 
@@ -173,7 +180,7 @@ PaddleOCR 和 MinerU 都可导出 Markdown/DOCX，但这不等于生成了产品
 
 ## 仍未知
 
-- PaddleOCR-VL 1.6 在固定中文高中数学 I / PS / E 上的机器原始七项质量，本轮没有项目实测。
+- PaddleOCR-VL 1.6 在固定中文高中数学 I / PS / E 上的机器原始七项质量，调查时没有项目实测。
 - 完整管线在本机 RTX 5060 Laptop 8 GB VRAM / 14 GiB RAM 的耗时、RSS、VRAM 和稳定性。官方支持矩阵不是本机性能证据。
 - PaddleOCR 代码 tag 与后续更新的模型 revision 组合是否能完全重现官方评测；因此必须锁定并记录两者。
 - 任意真实试卷中非标准题号、左右栏交叉、一题多图、图中标注和分离答案册的归属上限。固定样本通过后仍需 R35 真实教师材料。
@@ -187,11 +194,3 @@ PaddleOCR 和 MinerU 都可导出 Markdown/DOCX，但这不等于生成了产品
 - PaddleOCR：[`v3.7.0` release](https://github.com/PaddlePaddle/PaddleOCR/releases/tag/v3.7.0)、[`PaddleOCRVL` 固定源码](https://github.com/PaddlePaddle/PaddleOCR/blob/v3.7.0/paddleocr/_pipelines/paddleocr_vl.py)、[PaddleOCR-VL 官方用法](https://www.paddleocr.ai/latest/en/version3.x/pipeline_usage/PaddleOCR-VL.html)、[PP-StructureV3 官方说明与基准](https://www.paddleocr.ai/main/en/version3.x/algorithm/PP-StructureV3/PP-StructureV3.html)、[PaddleOCR-VL-1.6 权重与许可](https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6)、[PP-DocLayoutV3 权重](https://huggingface.co/PaddlePaddle/PP-DocLayoutV3)
 - MinerU：[`4.0.6` release](https://github.com/opendatalab/MinerU/releases/tag/mineru-4.0.6-released)、[许可](https://github.com/opendatalab/MinerU/blob/mineru-4.0.6-released/LICENSE.md)、[质量档与运行条件](https://opendatalab.github.io/MinerU/usage/tiers/)、[输出契约](https://opendatalab.github.io/MinerU/reference/output_files/)、[Content List V2 固定源码](https://github.com/opendatalab/MinerU/blob/mineru-4.0.6-released/mineru/render/_internal/content_list/v2.py)、[MinerU2.5-Pro-2605 权重与许可](https://huggingface.co/opendatalab/MinerU2.5-Pro-2605-1.2B)、[MinerU 4 ONNX 模型包](https://huggingface.co/opendatalab/MinerU-4_models_onnx)、[上游 revision 和 hash manifest](https://huggingface.co/opendatalab/MinerU-4_models_onnx/blob/main/manifest.json)
 - PDF.js：[`v6.3.289` release](https://github.com/mozilla/pdf.js/releases/tag/v6.3.289)、[Apache-2.0 许可](https://github.com/mozilla/pdf.js/blob/v6.3.289/LICENSE)、[`TextItem` API](https://mozilla.github.io/pdf.js/api/draft/module-pdfjsLib.html#~TextItem)
-
-### 仓库固定来源
-
-- 目标与失败边界：`docs/arch/materials-continuation.md`、`docs/arch/capability-checks/C21.md`、`docs/arch/capability-checks/samples.md`
-- 旧 Provider 参数调查：`a1999e353976a133e76cd47caba9e02e75a2e182:docs/research/c21-provider-controls.md`，本报告只用它避免重复已失败的在线参数路线
-- 当前产品：`267cf5119e05e6caba8f2db58ece3487dc6c3e9d:apps/api/src/modules/questions/{extraction.js,extraction-fragments.js,extraction-figures.js,native-word.js,native-math.js,materials-content.js,index.js}` 和 `apps/api/src/workbench/content/index.js`
-
-官方基准、模型卡和演示样例在本报告中只支持候选与实验设计。TeacherWorkspace 自身效果仍为未知，不从任何公开总分推定。

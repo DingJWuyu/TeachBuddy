@@ -1,8 +1,6 @@
-# Math 唯一契约入口
+# 数学契约：作品、源、版本与导出
 
-状态：M40/v1 `READY_FOR_REVIEW`，作者自检不等于冻结。产品行为由同提交 [故事](../../user-stories/math.md)、[UX](../../ux/math.md)、[BDD](../../acceptance/math.feature)定义；精确 HTTP、字段、联合类型、限制和样本类型只有 [math.openapi.json](math/math.openapi.json) 一份，[samples.json](math/samples.json)是具体值，[cases](math/cases.md)是交换顺序。M41-M43 必须消费外层独立回执固定的完整候选 SHA。
-
-固定输入 `0b7f8968d088b50e569af0e58dce36e36bb93b74`；材料语义取恢复候选 `77899744214f60b489b6728a680abbd2fb5b292e`，限定 independent PASS 为 `c82cd69b84c2c3b4b3730384b951bf3d914cc112:docs/acceptance/evidence/C20-MATERIALS-RECOVERY/v1/review.md`。只消费 File/Document/Location/现有 Reference/Usage 及其传递类型，不继承提取、Office 或 R30 整体 PASS。C23 固定 `bf779db4c4908cb61d25824c1859516ff39e1e0e`，消费裁决见 [math-evidence](../../arch/math-evidence.md)。
+数学设计已采用。字段唯一归 [math.openapi.json](math/math.openapi.json)，[cases](math/cases.md)与[samples](math/samples.json)用于交换验证；制作行为见[工坊规格](../../features/math.md)，技术接缝见[数学架构](../../arch/math.md)。这些定义不声明所有目标环境已经通过。
 
 ## 共同协议与身份
 
@@ -68,13 +66,13 @@ math provider 是业务模块提供方，非 LLM Provider。`readForReferenceV1`
 
 ReturnTarget 是前端设备内协议，不是信任票据或新服务端会话：lessonId、sectionId（null=本课材料）、baseVersion、拟插入referenceId。完整备课草稿及焦点/滚动由 lessons 保存到账户分区现场，不放进URL/作品Source或Agent提示。math只返回已确认的 Work ID/version，lessons据原稿创建MathReferenceInput，再完整PUT v3。返回操作的幂等键属于备课，和作品保存键分开。目标冲突按UX对照，任何失败都保留已保存作品与原稿。没有跨两次保存的分布式事务。
 
-v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公式snapshot转换为现有Document数学节点，caption仅includeCaption=true时为普通内容；plane/space/dynamic用固定PNG初态，html仅标题和单独演示文件提示。本课引用note仍受includeTeacherNotes控制。practice仍只取题目，纯作品选择返回invalid-export-selection。输出前若固定资产缺失则明确失败，不自动取最新作品；HTML不交Office转换器执行。旧v2导出含math拒绝，旧已受理输出快照/文件不改。M43等待R35后接真，不把本设计作为Office已可用证据。
+v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公式snapshot转换为现有Document数学节点，caption仅includeCaption=true时为普通内容；plane/space/dynamic用固定PNG初态，html仅标题和单独演示文件提示。本课引用note仍受includeTeacherNotes控制。practice仍只取题目，纯作品选择返回invalid-export-selection。输出前若固定资产缺失则明确失败，不自动取最新作品；HTML不交Office转换器执行。旧v2导出含math拒绝，旧已受理输出快照/文件不改。输出实现的已测范围与目标 Office 缺口见[能力证据](../../plans/run-inputs.md)。
 
 ## 目录、公共端口与教学反馈
 
 [架构](../../arch/math.md#公共接口与唯一写者)唯一规定 Interface 和写者。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及包含教学时间的组合目标；生产只注册实际接好的模块，按 questions/lessons/math/resources/classes/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖，lessons依赖math读取，classes可以依赖math教学链接；反向反馈仅前端组合，不制造math→classes服务端环。
 
-T50参考仅固定 `acbf48f01b5dc15373546545af80fa2e7e79f0c3`。M40提供教学链接和kind=math的新增分支，详见[扩展交接](math/teaching-time-extension.md)；不修改其候选、不宣称联合schema已冻结或T51已接真。
+教学链接和 kind=math 分支由[教学记录 v2 契约](../teaching-time-math.md)组合；固定 schema 输入与消费版本见该契约，不从其他分支取漂移输入。
 
 ## 错误与恢复
 

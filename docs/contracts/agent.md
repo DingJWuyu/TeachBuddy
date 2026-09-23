@@ -1,6 +1,6 @@
 # 早期 Agent 契约语义
 
-状态：C25/v1 `READY_FOR_REVIEW/self`。精确 HTTP、请求/响应、工具参数和错误对照唯一归 [agent.openapi.json](agent.openapi.json)，有效交换样本见 [agent-examples.json](agent-examples.json)。本页定义请求之间的不变量，不是另一份字段 schema。
+首批 Agent 契约，设计已采用；开发暂停和实现边界见[当前状态](../plans/run-state.md)。精确 HTTP、请求/响应、工具参数和错误对照唯一归 [agent.openapi.json](agent.openapi.json)，有效交换样本见 [agent-examples.json](agent-examples.json)。本页定义请求之间的不变量，不是另一份字段 schema。
 
 输入版本、实验裁决与下游条件见[架构](../arch/agent.md)。已有业务字段继续引用工作台 `0.1.0-candidate.2`，业务语义源为 B11 `9aee091a34ba2eb311b51299d9beed78a032d026`；真实认证源为 `6f3003250d170b44e89f6ac9b0a74f91d658a357`、冻结 `63bfe8f7900b4a2bb7fc9ab5a4145f1c89a6f73b`。Agent 只新增 `/api/agent`，不改 15 个旧工作台操作、认证操作、Cookie 或页面上下文语义。
 
@@ -84,3 +84,67 @@ reconcile 是受当前身份保护的零模型操作：读取原 operation 及�
 所有 provider 密钥只从服务端既有部署配置读取，不进入前端配置或聊天。当前可消费的接线是 command-code/openai-completions、C24 固定 base URL；不声称已验证直连厂商。配置缺失时业务及聊天历史仍可用，模型发送 503。单 turn 最多 12 次 provider 请求、24 次工具调用、180 秒；达到任一限制停止后续动作，保留完成部分并标记 run-limit。该限制是调用上界，不是费用上限，不自动重置预算继续执行。
 
 每次 provider 请求开始即持久记录 request ordinal；按该 ordinal 只记一次已报告 usage。聚合字段为已报告值之和，无任何报告时为 null；complete 仅当所有已发请求都取得完整 usage。token 字段采用原返回语义，reasoning 是细分，不重复加到 totalTokens。流中断、授权失败、网络失败可能已收费但没有 usage，必须标为不完整。当前实际账单/余额未知，配置返回 null，模型元数据 cost=0 不参与费用计算。provider 额度/额外收费授权拒绝立即停止后续请求，无自动充值、换模型或付费重试。
+
+## 六模块扩展契约
+
+本节是已独立冻结的 F60 设计，完整实现暂停。精确扩展 schema 使用 `git show 31575c5c9d386c03a1f9fcde38b9a216f87a5b08:docs/contracts/reliability.schema.json` 获取；其外部引用按 `x-sources` 中 SHA:path 递归读取，不能用当前首批 schema 替代。新增 HTTP 继续使用认证 transport、账户幂等与共享 Problem。所有业务操作只调用各模块公共端口。
+
+### 版本与调用
+
+C25 的 pi runtime、模型白名单、用量/次数上界、工具 journal、SSE 游标、停止与 reconcile 语义原样继承。新增 `/api/agent/v2` 与 v2 snapshot/schema，以便接纳六模块对象和工具；原 `/api/agent` 保留只处理原可表示历史。旧路径读到新工具/丰富引用时整体拒绝 `unsupported-agent-version`，不能丢卡或降级源；旧路径未知写入仍在原路径原键确认。v2 可读取旧历史且不改写其消息/工具/幂等原件，旧未决操作在 v2 核实也执行原 journal 路径。
+
+旧写路径先按原顺序重放已成功请求，再拒绝不可表示的新写入；不能清草稿或开始模型后才报版本不支持。旧 SSE 已连接时，在首个不可表示事件前关闭流，不发送畸形 v1 帧；重读 snapshot 得到版本错误并引导刷新升级，旧游标不伪进位。新 v2 对话和原历史共用同一账户运行锁，不出现两个并行 turn。
+
+新回合仅给模型 schema 中的当前工具清单。旧工具名只用于读取/核实既存历史，不作为新回合的可选操作。工具名固定为 `wb_` 加原 operationId，参数为严格 `{path, query, body}` 组合：仅操作确有的部分可出现，path/query 字段逐项外引原参数定义，body 外引原请求体，必填性保持。没有任意 URL、SQL、shell、本机路径、账户、幂等键或运行时注册字段。新工具绑定调用原 `port.operations`，文件/Job 用其原公共端口适配；同一业务验证只有一个写者。
+
+参数转为原 HTTP 表示时按原参数 style/explode 编码数组，路径逐段编码；journal 保存真实方法、规范路径、解析后的原业务 body 与完整参数，不能把工具包装 `{path,query,body}` 当成业务 body。Job/query/通知等原接口明确的读取副作用仍按原业务规则，工具 `read` 只表示该次查询结果，不改通知结算语义。v2 ToolOutcome 使用 schema 的完整四字段投影，历史 C25 原生结果字节不重写。
+
+Agent v2 引用允许 question、lesson、resource、math、class、record、entry、import、file。业务对象带明确当前版本，file 使用不可变 ID；lesson 可定位 sectionId，entry 可定位 originDate。引用只用于捕获上下文，不是修改权限。捕获完整公开对象及当前引用版本，文件仅捕获元数据与已授权内容投影，不把凭据下载地址传给模型。未知类型拒绝，外账户统一 404。旧引用规则扩展到这些类型：保存输入可保留本账户失效引用，发送要求当前活动版和目标存在；文件须完整可读。当前对象更新不能改变历史快照。
+
+entry 引用快照同时保存 Entry 和选定 Occurrence：有 originDate 时按原实例端口读取真实调课结果，取消/超范围实例拒绝发送；未指定则 occurrence=null，表示整组或非重复 Entry。基线始终是原聚合 version，不能把例外时间当模板内容。去重键为 kind/id 与该类型允许的 sectionId 或 originDate，文件按 id；捕获与发送接受仍在同一一致事务中。
+
+<a id="tool-classification"></a>
+### 工具卡读写分类与传递
+
+老师查询班级得到空列表时仍是一张成功读卡：`wb_listClasses`、`arguments={}`、`state=read`、`result={items:[]}`、`operationId=null`。读取失败或中断保留同一张卡，不制造写入回执。
+
+本扩展设计的 81 个工具以 `x-tool-bindings.mutation` 为读写依据。`AgentToolCall` 新版分支的只读名称枚举必须精确等于其中 36 个 `mutation=false` 名称，其余 45 个为写工具；枚举是标准 JSON Schema 的静态表达，修改绑定时须同时通过集合一致性检查。旧 snake_case 名称只由未变的 C25 历史分支校验，不进入当前工具集合。
+
+| 当前分类 | 允许状态 | operationId |
+| --- | --- | --- |
+| 只读 | prepared、executing、read、rejected、failed、cancelled、interrupted | 始终 null |
+| 写入，参数校验通过 | prepared、executing、confirmed、rejected、unconfirmed、cancelled | 必须为 Operation UUID |
+| 参数校验未通过，读写均适用 | arguments=null，仅 rejected，Problem 为 invalid-input | null，不建立 Operation |
+
+状态不能取代参数和结果校验：read/confirmed 必须有该工具原成功响应形状且 problem=null；其他状态 result=null。rejected/failed/unconfirmed 必须有相应 Problem，failed 使用原 tool-failed 类型；其余状态 problem=null。状态间转换继续沿 C25 与 WB-F008，表格不授权任意跳转，也不改变读取端口的既有通知/Job 语义。
+
+`AgentSnapshot.toolCalls`、`AgentEvent(type=toolCall).value` 和 `PortableData(kind=conversation).value.toolCalls` 均递归消费同一个 `AgentToolCall`，保留名称、参数、顺序、结果及 null operationId。消费者不得按旧名称重新猜测分类、伪造 Operation、丢卡或跳过校验。v2 ToolOutcome 沿既定四字段投影，终态须与对应卡一致。正常重启或部署恢复的只读 executing 标 interrupted、未开始调用标 cancelled；只有执行中的写操作进入 unconfirmed 及原有核实/恢复隔离路径。
+
+设计静态检查的固定结果见[能力证据](../plans/run-inputs.md)；产品运行仍需覆盖六模块业务一致性，静态检查不代替运行证据。
+
+### 手工能力对应表
+
+下表指定行为覆盖；精确工具名、路径和请求 schema 只在 JSON 的 `x-tool-bindings`。同一格中每项都须经真实公开端口实现，不以列出工具名视为已完成。
+
+| 模块/能力 | 业务操作族 | 页面与确认结果 |
+| --- | --- | --- |
+| 题库查找、标记、笔记、自建/直接改/复制、原题双向联系、分类增改删 | questions v2 的 list/get/create/update/copy/copies、taxonomy | 新题/副本可检索；原题未被复制操作改写；标签与长期笔记真实更新 |
+| 图片/PDF/Word/文字收录、定位、裁图、拆合/补原稿、校对、部分入库、停止/重试 | imports 的 create/list/get/saveReview/supplement/commit/deletion、relocateQuestion、cropFileRegion、Job get/list/cancel/retry | 原稿与疑点保留；Job 状态和真正入库分开；老师已校对部分不被重试覆盖 |
+| 题面/PPT 素材与原稿预览下载 | createQuestionAsset、File get/preview/requestPreview，下载由卡片受保护动作提供 | 返回真实 File/Job，PNG 或原件可下载；不把二进制塞进模型 JSON |
+| 备课目录检索、文稿/环节增删排序、选题/资源/作品、未安排材料、采用更新、引用备注 | lessons v3 的 list/get/create/update/usages | 完整读取后一次 PUT 保留未改环节/引用 ID；引用快照按原规则固定，返回原环节 |
+| 三类成果 × Word/PDF、答案/教师注记选项 | exportLessonV3、listLessonExportsV3、Job 与 File | 固定保存版，六种输出可找回；过滤沿原输出规则 |
+| 数学公式、函数、平面/空间、动态制作/修改、参数/标注/样式/步骤、复制/版本 | math works 的 list/get/create/update/copy/versions/reference | 保存可编辑 Source；演示按原隔离方式预览，旧引用固定旧版 |
+| 数学 PNG/SVG/透明公式/源码/离线 HTML，外部 HTML 导入 | exportWork；create/updateWork 消费已上传 File | 卡片打开真实作品和成果；不赋予任意 HTML 结构化编辑承诺 |
+| 资源收录、分类/标签/备注/检索、预览/下载、替换文件/补充预览 | resources 全套 items、taxonomy、file、supplement-preview；File 端口 | 替换保留条目与关联；现有备课显式采用新版 |
+| 班级管理、一句话/进度/共性问题/下一步、题/课/作品关联、两班反馈 | classes items；records v2、source-records v2 | 实际记录可打开来源并返回，反馈按班分开；不把日程当已授课 |
+| 任意连续日期、未排期、多事项、优先级/段内排序、跨段移动、课程关联 | schedule entries、occurrences、moveItem | 返回准确日期/时段及内容，优先级与顺序互不派生 |
+| 周重复/结束日/仅这次/恢复原安排、提醒前后间隔/通知 | exceptions、settings、notifications | 保留 originDate；只通知站内，原 dueAt/去重与修改前结算不变 |
+| 六模块误删恢复 | 原 deletion 操作及 deleted 列表 | 操作卡明确删除或恢复，原 ID/关系保持，不给永久删除工具 |
+
+模型不能上传本机文件；上传是老师操作。已上传 File 与生成的受限数学 Source 才能进入工具。取材选中态、滚动、预览翻页、下载到本机、操作系统 Office 编辑属于 UI/外部环境动作，不伪装成服务端修改；工具卡提供这些动作的真实入口。
+
+### 异步成果与失败
+
+返回 202 的工具 `confirmed` 只确认受理，result 保留 Job/ExportRecord。后续模型可在同一原回合预算内读取一次状态，仍运行则交给现有页面轮询；不新增模型后台等待/自动继续。受理后身份失效阻止后续新工具；已接受 Job 按原 Job 生命周期收尾，不能宣称注销撤销已提交内容。准备中的新操作取消，执行中的写入沿 journal 核实，不把超时当未执行。
+
+Agent 整理/重试会触发原提取服务的模型调用时，仍服从该服务授权及费用限制；C21 旧在线窗口关闭，不因 Agent 工具存在而重开。终端教师要求操作是产品行为授权，开发验收的 live 请求还须任务包明确预算。多步任务无分布式事务：保留已成功对象，失败卡给出原稿、目标与继续入口。

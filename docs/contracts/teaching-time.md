@@ -1,8 +1,6 @@
-# Teaching-time 唯一契约入口
+# 教学与时间契约
 
-状态：T50/v1 修订候选，READY_FOR_REVIEW，待外层独立冻结。修订基线 `32af4eb53f78d83780c55fd83821733b000f393b`，含已独立冻结的 [B11](../acceptance/evidence/B11/v1/review.md) 和 [C20](../acceptance/evidence/C20/v1/review.md)。本包用户行为来源为同一候选的 [TT1-TT7](../user-stories/teaching-time.md) 与 [TT-U1-U11](../ux/teaching-time.md)，不是原型 Accepted 声明。
-
-精确 HTTP/字段/枚举唯一归 [OpenAPI](teaching-time/teaching-time.openapi.yaml)，跨操作规则归本页，固定交换/失败恢复归 [cases](teaching-time/cases.md)，写者与进程内 Interface 归 [架构](../arch/teaching-time.md)。不修改 B11、认证、数学或资源提供方契约。
+[OpenAPI](teaching-time/teaching-time.openapi.yaml)拥有基础字段与操作，[cases](teaching-time/cases.md)拥有交换与失败恢复；[架构](../arch/teaching-time.md)定义进程内接缝。当前记录 v2 另消费[数学关联](teaching-time-math.md)，题目提供方明确采用[丰富题目读取](materials-teaching-alignment.md)。用户行为见[班级与日程](../features/teaching-time.md)。
 
 ## 共同协议
 
@@ -16,7 +14,7 @@
 - 一条记录属于一个不可更换的班级；recordedOn 是实际教学日期，默认账户今天，允许老师补记或纠正日期，不由课程时间生成。note、position、unfinished、commonIssues、nextNote 至少一个去空白后非空，原文字不截断。列表按 recordedOn 降序、updatedAt 降序、ID 升序。
 - 班级顶部实际位置由记录派生，不另设进度表：活动记录中 position 非空的首条；无此项则显示最近活动记录摘录。删除/改日期后重新派生。班级软删除后其记录保留只读，恢复班级不改变记录自己的删除状态。
 - 记录的备课/题目关联是可回看当前对象的链接，不是采用某版教材快照。首次链接保存服务器读取的标题 labelAtLink；读取派生 currentLabel/deleted，不因改题或改备课而改记录文字、版本、保存时标题。新链接要求本账户活动来源；已保留链接可以引用已删除来源。移除后再添加算新链接，不能新连已删除来源。重复 kind+id 拒绝。
-- sources 仅接 B11 已冻结的 lesson/question。classes 拥有关联表和反向查询，题库/备课只读 classes 公共操作，不读其表、不写回备课正文。反向查询默认活动记录及活动班级，按记录顺序返回；查看已删除记录走班级的删除过滤，不混入当前反馈。
+- 基础 sources 为 lesson/question，当前 records v2 另接受 [math](teaching-time-math.md)。classes 拥有关联表和反向查询，题库/备课只读 classes 公共操作，不读其表、不写回备课正文。反向查询默认活动记录及活动班级，按记录顺序返回；查看已删除记录走班级的删除过滤，不混入当前反馈。
 - 日程可以带一个班级、一个备课和多个实际记录。链接已有记录时必须与所选班级相同；classId 为空时 recordIds 必须为空。同一次安排可以关联多条实际记录；写记录与安排关联是两个明确保存步骤，不建立跨模块分布式事务。记录先保存成功后，第二步失败只重试关联。单次实例才能关联实际记录，重复模板 recordIds 必须为空。
 - 删除来源/班级/记录不级联删除任何日程；现存链接继续可读并标已删除。修改无关字段时允许保留失效链接；新增/改指链接时重新检查活动性/归属。更换班级必须同时清除不匹配 recordIds。返回的关联状态由公共读取派生，来源读取失败使本次读取失败，不伪装为“已删除”。
 
@@ -76,7 +74,7 @@ T53 仅在站内通知查询/写入及 schedule 变更时结算；浏览器工�
 
 ## 公共变更与待接边界
 
-B11 没有给出 lessons 的同步引用读取 Interface，也没有 classes/schedule 的目录依赖值。本包以[架构中的两个有消费者扩展](../arch/teaching-time.md#必须的共享变更)交独立核验：T53 增加 lessons.readForTeachingLink 和目录响应 v2，不重定义 B11 题目/备课内容、写入或旧 schema。T51 可先用同版替身检验读取适配，T53 汇合真实提供方。题目的 readForReference 直接复用 B11。
+B11 没有给出 lessons 的同步引用读取 Interface，也没有 classes/schedule 的目录依赖值。本包以[架构中的两个有消费者扩展](../arch/teaching-time.md#模块与-interface)交独立核验：T53 增加 lessons.readForTeachingLink 和目录响应 v2，不重定义 B11 题目/备课内容、写入或旧 schema。T51 可先用同版替身检验读取适配，T53 汇合真实提供方。题目的 readForReference 直接复用 B11。
 
 ### 静态目录 v2
 

@@ -1,52 +1,30 @@
-# 文档地图
+# 项目文档
 
-这里按读者分入口。只展开当前任务所需的资料；目录中的文档存在，不代表该功能已实现或当前获准开工。
-
-## 从哪里开始
-
-| 你要做什么 | 阅读顺序 | 读到哪里可以开始 |
-| --- | --- | --- |
-| 接任编排者 | [当前状态](plans/run-state.md) → [编排操作](agents/orchestrator.md) | 知道工作位置、授权、活动任务、下一动作；派具体任务时再查 DAG 和模块 |
-| 实现或修复一个功能 | 本次任务包 → [实施操作](agents/implementer.md) → 下表对应模块 | 明确目标、相关契约、代码入口和验证方法，不需要项目全过程 |
-| 验收具体改动 | 本次任务包 → [验收操作](agents/verifier.md) → 相关场景 | 明确受测版本、必验行为和结果边界 |
-| 设计公共行为或接口 | 本次任务包 → [设计操作](agents/designer.md) → 对应范围与契约 | 明确消费者、决定和交接结果 |
-| 使用或启动产品 | 根 [README](../README.md) → [运行指南](SETUP.md) | 能区分已有实例与隔离开发环境 |
-| 核实“已经完成” | [能力与证据](plans/run-inputs.md) | 按具体能力读取具名报告，不把总 PASS 当全范围证明 |
-
-## 模块入口
-
-每页只组织该领域的现状、规格、代码位置和验证入口。任务包应指向具体页面及相关章节。
-
-| 工作领域 | 入口 |
+| 资料 | 用途 |
 | --- | --- |
-| 题目、收录、标签、笔记 | [题库](modules/questions.md) |
-| 教学环节、取材、引用更新、Word/PDF 输出 | [备课](modules/lessons.md) |
-| 文件、分类、预览、替换 | [资源库](modules/resources.md) |
-| 公式、图形、动态作品、离线 | [数学工坊](modules/math.md) |
-| 班级反馈、日程、重复例外、提醒 | [教学与时间](modules/teaching-time.md) |
-| 注册、登录、邮件、退出 | [认证](modules/identity.md) |
-| 顶栏、侧栏、首页、设置、帮助、动效 | [外壳与支持页](modules/shell.md) |
-| 个人导出、误删恢复、备份、还原 | [数据管理](modules/data.md) |
-| 产品内助理 | [Agent，暂停](modules/agent.md) |
+| [产品范围](PRODUCT_SCOPE.md) | 用户、六模块目标和非目标 |
+| [当前状态](plans/run-state.md) / [剩余依赖](plans/mvp-dag.md) | 接任进度、当前授权、未完成条件和下一步 |
+| [工作台共同交互](WORKBENCH_DESIGN.md) | 布局、现场和跨模块操作；页面差异在下表 |
+| [架构](ARCHITECTURE.md) / [API](API.md) | 代码责任、公共协议和精确 schema |
+| [运行指南](SETUP.md) | 安装、隔离环境、转换工具与已有实例 |
+| [验证标准](acceptance/README.md) / [能力证据](plans/run-inputs.md) | 如何判定结果，以及当前结论的证据边界 |
 
-## 目录各管什么
+## 功能规格
 
-| 位置 | 职责 | 何时读 |
-| --- | --- | --- |
-| 根 README / CONTEXT / AGENTS | 人类介绍、领域词汇、用户规则 | 入场及规则触发时 |
-| `PRODUCT_SCOPE.md` / `WORKBENCH_DESIGN.md` | 完整产品目标、页面和跨模块行为 | 只读本次涉及的段落；不作为已实现证明 |
-| `modules/` | 执行者的领域入口 | 单模块任务第一站 |
-| `plans/` | 当前台账、依赖、固定输入、模型路由和任务包 | 编排者；执行者只读任务包点名部分 |
-| `agents/` | 角色步骤及按需工作约定 | 只读自己的角色 |
-| `contracts/` | 字段、HTTP、schema、样本、案例 | 接口实现或变更；入口见 [API](API.md) |
-| `arch/` / `adr/` | 领域技术约束与稳定决策 | 技术决策涉及该领域时 |
-| `ux/` / `user-stories/` / `rules/` | 用户流程、界面规则 | 本次有行为或 UI 变化时 |
-| `acceptance/` | 可观察场景、范围映射与证据 | 验证具体行为时 |
-| `research/` | 尚有消费者的调研结论 | 当前方案真的需要该外部能力时 |
+每页包含实际用户行为、未完成能力、相关接口与验证入口；只展开任务涉及的接缝。
 
-## 权威边界
+| 任务涉及 | 资料 |
+| --- | --- |
+| 录题、修改保存、分类、原稿、改编 | [题库](features/questions.md) |
+| 教学环节、取材、引用更新、成果输出 | [备课](features/lessons.md) |
+| 文件、分类、预览、替换 | [资源库](features/resources.md) |
+| 公式、图形、动态作品、源码、离线 | [数学工坊](features/math.md) |
+| 班级实际反馈、时间、重复、提醒 | [班级教学与日程](features/teaching-time.md) |
+| 头像、偏好预览、退出、帮助、更新日志 | [设置与支持页](features/settings.md) |
+| 个人资料包、最近删除、维护备份、恢复隔离 | [数据管理](features/data.md) |
+| 登录注册、邮件、会话、身份交接 | [账户](features/identity.md) |
+| 产品对话与真实工具操作 | [产品 Agent](features/agent.md)，暂停 |
 
-- 当前授权与执行状态只由 [run-state](plans/run-state.md)维护；长期依赖由 [DAG](plans/mvp-dag.md)维护。
-- 产品目标、公共契约、实现事实分别核对。接口冲突给出双方位置与具体行为，交责任设计者决定，不静默改契约。
-- `acceptance/evidence/` 是原始制品与固定版本证明，不是执行命令来源。只通过[具名证据索引](plans/run-inputs.md)进入；旧绝对路径先按[归档索引](plans/worktree-archive.md)定位。
-- 尚未完成、暂停、目标环境暂缓的内容继续保留。重写入口不能删掉这些范围或制造完成状态。
+`contracts/` 的 Markdown 拥有交换语义，OpenAPI/JSON Schema 拥有字段，cases/samples 拥有正反例；`arch/` 仅保留相关技术接缝，`acceptance/*.feature` 保存行为判据。运行和测试实际读取的 schema、固定输入副本与样本必须保持可用。
+
+[执行约定](plans/execution-protocol.md)仅保存项目特有的模型、写入和回执规则；不另设角色教程。领域词义见根 [CONTEXT](../CONTEXT.md)，稳定模块决策见 [ADR](adr/0001-use-a-single-static-module-catalog.md)。已提交过程通过 Git 查找，日常文档不维护逐轮回执。

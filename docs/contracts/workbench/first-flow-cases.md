@@ -1,6 +1,6 @@
 # First-flow 交换与样本
 
-本页消费工作台 `0.1.0-candidate.2` 与认证 `1.0.0-rc.2`，为设计用例，不是运行通过证据。字段和样本值唯一在 [OpenAPI](first-flow.openapi.yaml)；[消费版本](../workbench.md#消费版本与验收范围)区分旧测试身份首流与当前认证接续。前端替身与后端 HTTP 集成都从 `components.examples` 取样本并按下表序列验证，不各造一套模型。
+本页消费工作台 `0.1.0-candidate.2` 与认证 `1.0.0-rc.2`，为设计用例，不是运行通过证据。字段和样本值唯一在 [OpenAPI](first-flow.openapi.yaml)；[消费版本](../workbench.md)区分旧测试身份首流与当前认证接续。前端替身与后端 HTTP 集成都从 `components.examples` 取样本并按下表序列验证，不各造一套模型。
 
 ## 可复现起点
 
@@ -40,7 +40,7 @@
 | C15 / WB-018 | 错 Origin、Origin=null、缺保护头、无 Origin 且无有效 Referer | 403 request-not-allowed；有效 Origin 时不允许 Referer 覆盖，来源按协议/主机/端口完全匹配。 |
 | C16 / WB-014、018 | 非 JSON、错误 Content-Type、超过 2 MiB、未知字段、空白题面、未知文档版本/节点、重复环节/引用 ID、既有引用 ID 改指另一题 | 分别 400 malformed-json、415 unsupported-media-type、413 payload-too-large；其他 422 invalid-input + field/reason。只返回一个错误：按 schema 字段顺序深度优先，数组按索引；根未知字段先于字段内容检查，同级未知字段按键名升序。 |
 | C17 / WB-009 | 复制/编辑已删除 Q；向新引用选择已删除 Q；编辑已删除 L | 409 object-deleted。保留既有引用无需复活源题；GET 本账户已删除对象允许，恢复走 deletion。 |
-| C18 / WB-015、017 | 操作期间 context 变身份；旧响应随后返回；重新登录不同账户 | UI 丢弃旧响应，不能显示旧内容/草稿。返回原身份才解锁本地草稿；真实认证动作待 A11，自本批 runner 可验证边界。 |
+| C18 / WB-015、017 | 操作期间 context 变身份；旧响应随后返回；重新登录不同账户 | UI 丢弃旧响应，不能显示旧内容/草稿。返回原身份才解锁本地草稿；真实认证动作按认证契约验证，替身只能验证该边界。 |
 
 `invalid-input` 的 field 是 JSON Pointer，例如 `/sections/0/references/0/questionId`；缺少键/类型/范围/内容分别用 schema 中的 reason。空白课题/环节名视为 out-of-range，字段只校验不自动 trim；题目 title 可以空。未知版本用 unsupported-content-version；重复 ID 用 duplicate-id；改指引用用 invalid-reference。
 

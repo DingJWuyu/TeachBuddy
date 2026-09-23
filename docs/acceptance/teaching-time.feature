@@ -1,5 +1,5 @@
 Feature: 班级实际反馈与轻量教学时间
-  # T50/v1 修订候选，READY_FOR_REVIEW。产品场景定义，不是自动测试已经通过。
+  # 教学时间 v1 行为规格。产品场景定义，不是自动测试已经通过。
   # 原型参考 prototype/behavior/modules.md 的班级/日程，topbar.md J14；无旧原型 PASS 继承。
   # 固定样本与独立输入见 docs/contracts/teaching-time/cases.md。
   Background:

@@ -1,23 +1,10 @@
 # 账户入口契约
 
-状态：`AUTH-CONTRACT-CORRECTION@1 / FROZEN`。限定独立审查已在候选 `6f3003250d170b44e89f6ac9b0a74f91d658a357` 上通过；本包消费认证 `1.0.0-rc.2` 与工作台 `0.1.0-candidate.2`，供认证前后端实施和 A10/A11 接续。它不是认证实现、真实邮件或 A10/A11/A12 通过声明。实际候选与审查入口见 [correction](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md) 和 [correction-review](../acceptance/evidence/AUTH-CONTRACT/v1/correction-review.md)。
+采用认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 的 PageContext 约定。源版本 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，协议已冻结且真实接入；完整目标环境结果见[账户规格](../features/identity.md)和[能力证据](../plans/run-inputs.md)。
 
-[OpenAPI](auth.openapi.yaml) 唯一拥有方法、地址、字段、类型、状态码、Problem 和样本；本文拥有跨操作语义；[交换用例](auth-cases.md)拥有前后端各自可验证的条件。实现从这三份文件进入。[架构与 A10 交接](../arch/auth-implementation.md)、[UX 接线](../ux/auth-integration.md)、[BDD](../acceptance/auth.feature)和[前后端任务包](../plans/tasks/auth-implementation.md)分别限定实现接缝、界面组合、验收和写入归属。
+[OpenAPI](auth.openapi.yaml)拥有方法、地址、字段、状态码与样本；本文拥有跨操作语义；[交换用例](auth-cases.md)拥有前后端独立验证条件。接线见[认证架构](../arch/auth-implementation.md)，页面见[账户规格](../features/identity.md)。原型 CA/S 编号用于追溯表单场景，入口为[认证行为](../../prototype/behavior/auth.md)，不代表产品已通过对应场景。
 
-## 固定输入与范围
-
-| 输入 | 固定版本与入口 |
-| --- | --- |
-| 原设计输入 | `5b12a9063cc0b692103df73997cb8963506bd9ea`；原设计候选 `fd3f6d5e8d19823aa83a417b99f223c87f4aa713` |
-| 本次修订输入 | `7b86b03fb51fa317dc2fade3b1319a53db9247de`；独立报告 `092d7c89cb1386e913ef245a0a6370bede141947` 的 AUTH-CR-001/002 |
-| 认证行为提交 | `c7420af8c2740ddee5e01caa6da8bf7f57c134e2`；该提交的 prototype tree 是 `6f4a7d30c16a67b44af1e7a9c1157abb6d065b6b` |
-| 集成行为源 | 原设计输入中的 prototype tree `1281d51665a740573a0a6f237b9e37d0335cf2c3`；本次固定输入的认证行为及两份认证场景与 c7420af 字节一致 |
-| 已定协议 | `5757141a61e719c8002736ae5af0ac1778dad054` 中 D01-D14 的已确认部分 |
-| 行为入口 | [manifest](../../prototype/behavior/manifest.md)、[auth](../../prototype/behavior/auth.md)，J11-J13、J25、G01-G06 |
-| 原型证据索引 | [CA01-CA40](../../prototype/behavior/auth-scenarios.md)、[CA41-CA109、CA120](../../prototype/behavior/auth-behavior-scenarios.md)、[输入边界](../../prototype/evidence/verification/input-boundary-report.json)；只是模拟证据 |
-| 工作台消费方 | [版本与验收范围](workbench.md#消费版本与验收范围)固定旧 B11/运行输入及新同版消费；本次授权限定写入页面头声明、相关文字和样本。context/accountKey 与模块接缝保持 |
-
-覆盖登录、开放注册、两类发码、重置、恢复、记住我失败恢复和退出交换。设置退出按钮仍归 A11，CA53 原型暂缺不阻塞其协议设计。注册默认开放，关闭只阻止新注册及注册发码。条款链接不跳转；不新增管理后台、条款版本、刷新令牌、Bearer 或账户管理功能。术语沿用 [CONTEXT](../../CONTEXT.md)；本包的会话、挑战和页面上下文是协议术语，不更改业务词义。
+覆盖登录、开放注册、两类发码、重置、恢复、记住我失败恢复和退出交换。设置退出已接入真实 I07；CA53 编号仍对应退出场景。注册默认开放，关闭只阻止新注册及注册发码。条款链接不跳转；不新增管理后台、条款版本、刷新令牌、Bearer 或账户管理功能。术语沿用 [CONTEXT](../../CONTEXT.md)；本包的会话、挑战和页面上下文是协议术语，不更改业务词义。
 
 ## HTTP 与输入
 
@@ -98,7 +85,7 @@ Cookie 被浏览器完全禁用时，没有任何可用当前会话，应停在�
 | CA72、CA73、CA96、CA97、CA98、CA106 | I06 恢复等待/故障 | CC-RESTORE |
 | CA52、CA99、CA108、CA109 | I05/I06 目标撤销及隔离 | CC-ISOLATION |
 | CA74、CA75、CA110、CA111、CA112、CA113、CA114、CA115、CA116、CA117、CA118、CA119 | 精确输入、规范化、首错 | CC-BOUNDARY |
-| CA53 | 原型入口明确暂缺；I07 协议由本包设计，A11 接入 | CC-LOGOUT |
+| CA53 | 设置退出调用 I07 | CC-LOGOUT |
 
 | 状态 | 契约归属 |
 | --- | --- |
@@ -112,8 +99,83 @@ Cookie 被浏览器完全禁用时，没有任何可用当前会话，应停在�
 | S43-S44 | 注册关闭和业务结果未知 |
 | S45-S47 | I06 的保存失败、恢复等待、恢复失败 |
 
-## 就绪与外部边界
+## 部署恢复的认证撤销
 
-本候选两项修订的结构检查、双向走查与接续条件见 [correction](../acceptance/evidence/AUTH-CONTRACT/v1/correction.md)；[correction-review](../acceptance/evidence/AUTH-CONTRACT/v1/correction-review.md) 已在固定候选上独立 PASS。旧 author/review 只对应各自固定版本，不追认新版消费边界。邮件提供者/发信域/真实收件箱、部署同源 HTTPS、真实持久运行和原账户迁移样本仍需后续交付验证，不能被本包或替身通过替代。
+内部契约 `auth-recovery/1` 已接受且有本地独立切片，固定来源见[能力证据](../plans/run-inputs.md)。这里拥有认证接口、表级不变量和错误；整体停服、复制、两次读回复核、开放及回退流程只归[数据恢复](../features/data.md#部署备份与还原)。它不是 I06 的浏览器 remembered 会话恢复。
 
-技术格式遵循 [OpenAPI 3.2.1](https://spec.openapis.org/oas/v3.2.1.html)、[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html)；Cookie 服务端寿命与浏览器留存分开处理，参见 [RFC 6265](https://httpwg.org/specs/rfc6265.html)。协议版本沿用既定选择，具体会话组合是为当前行为设计的项目约定。
+### 唯一操作接口
+
+内部 Node 导出已实现，CLI 由数据恢复层包装；认证本身不开放恢复 HTTP：
+
+```js
+import { prepareRestoredAuth } from './features/auth/recovery.js';
+
+// 同步调用；db 是已迁移的隔离恢复库的 better-sqlite3 连接。
+const result = prepareRestoredAuth({ db });
+// 仅在 COMMIT 成功后返回：
+// {
+//   contractRevision: 'auth-recovery/1',
+//   outcome: 'cleared',
+//   removed: { pageBindings: 3, sessions: 2, containers: 1, challenges: 4 },
+//   remaining: { pageBindings: 0, sessions: 0, containers: 0, challenges: 0 }
+// }
+```
+
+输入只接受 `db`，不接收 accountKey、Cookie、AUTH_CODE_SECRET、email 或 sessionId。不需创建 auth router，不启动服务，不加载邮件或环境密钥。返回计数为本次事务内非负整数；`remaining` 四项必须均为 0。返回值不是可在其他路径/下一轮恢复中复用的开放许可证。
+
+调用方是 F62 的离线恢复流程，后续 D71 复用。认证实现负责表结构和事务，F62 只知道本接口、恢复顺序及结果；F62 不复制清理 SQL、不反向依赖内部 store。
+
+#### 前置条件与拒绝
+
+1. F62 只传独立恢复副本的连接。原库、备份源与恢复目录必须物理分离，排除同路径、软链接及硬链接别名；原库和原备份均不作恢复写目标。打开目标须要求文件已存在，路径错误不能隐式创建空库。
+2. 目标无其他连接、服务进程、后台作业或流量；关闭旧应用及其所有后台写者，停止自动重启，排空/终止在途请求。数据库写锁不等于服务停用，`offline: true` 一类自报布尔值也不算证明。
+3. F62 通过已有共享 runner 在目标完成支持的迁移、账本兼容和库完整性检查，保留迁移账本。当前支持的认证集是 `auth_0001_accounts`、`auth_0002_challenges`、`auth_0003_containers`、`auth_0004_sessions`、`auth_0005_meta`、`auth_0006_legacy_accounts`、`auth_0007_drop_auth_meta`。更老库先按支持链迁移；未知/缺失认证迁移、缺表/必需列、非空 `auth_legacy_gaps` 均不得继续。迁移导致的账户映射变化必须在此之前由原认证拥有者解决，不从业务引用猜建账户。
+4. 操作检查持久、可写、已打开的主库连接，未嵌套事务；核对上述认证迁移和所需结构。拒绝附加库参与清理、内存库、只读库及不安全的无回滚日志配置；F62 使用可持久提交的正常 SQLite 配置，不以降低同步保证来绕过错误。不存在“自动建表后当成功”分支。
+
+路径与进程独占归 F62；函数无法从一个连接证明系统中没有其他进程。该能力限制是调用前置条件，不隐含新增锁服务或部署平台。
+
+### 原子清理范围
+
+由认证拥有者在一个 `BEGIN IMMEDIATE` 事务中执行下列顺序，全部 SQL 仅指向 `main`。这份清单是认证实现的规范，不是交给 F62 操作者手工执行的配方。
+
+| 次序 | 清理对象 | 必须处理的状态 |
+| --- | --- | --- |
+| 1 | `DELETE FROM auth_page_bindings` | 全部页面，不按账户、pageId 或会话筛选。 |
+| 2 | `DELETE FROM auth_sessions` | pending、page/remembered active、已撤销及已到期会话全部删除。 |
+| 3 | `DELETE FROM auth_containers` | 空容器、所有 Cookie 摘要载体及 rememberedSessionId 指针全部删除。 |
+| 4 | `DELETE FROM auth_challenges` | 注册及重置的活动、已消费、已替换、过期及耗尽挑战全部删除。 |
+
+事务内先记录删除计数，再断言四表均空；保护 `auth_accounts` 的全部列（含 id、accountKey、passwordHash/passwordVersion）及 `auth_legacy_gaps`、迁移账本未变。清理实现不写业务表、文件或旧 `users` 表；如发现结构/关联约束不兼容、保留数据发生变化或任何清理失败，回滚整个事务并抛错。固定 schema 无这些清理表到业务表的级联；未来新增此类依赖须先修订本契约。
+
+COMMIT 是唯一成功分界；提交前的计数或日志不得标记成功。错误时如事务仍活动，显式回滚；已知回滚保留调用前目标数据。I/O/进程中断导致提交结果不可确定时，不承诺一定回滚，必须归为结果未知且保持目标关闭。原库不受影响来自副本隔离，不来自对损坏介质的回滚承诺。
+
+重复调用同一尚未服务的副本是幂等的，第二次 `removed`/`remaining` 均为 0。即使第一次已提交但回执丢失，也可在独占且结构/完整性合格的目标重新执行；目标不可信则从原备份重建新副本。普通启动、已开放目标或登录后的数据库不自动重跑，否则会注销新会话。
+
+#### 错误接口
+
+抛出带 `code` 的 `Error`，消息可提供脱敏的阶段信息；不返回部分成功对象，不降级为继续服务。
+
+| code | 情形 | F62 必须采取的动作 |
+| --- | --- | --- |
+| `AUTH_RECOVERY_PRECONDITION` | 连接/事务/配置条件不符，或调用方发现路径、独占条件不符 | 停止；纠正目标和停服条件后重新开始，不接触原库。 |
+| `AUTH_RECOVERY_SCHEMA` | 认证账本/表/列不支持或 legacy gaps 未处理 | 停止；交认证拥有者迁移或修订，不能跳过缺表。 |
+| `AUTH_RECOVERY_STORAGE` | 锁竞争、读写、删除、提交或回滚失败 | 停止；保留隔离副本及错误阶段。提交结果一律不靠错误码猜测，重开检查后重跑或重建。 |
+| `AUTH_RECOVERY_INVARIANT` | 清理后非空或保留数据变化 | 回滚并停止；归认证实现缺陷/不支持 schema。 |
+
+F62 的复制、文件校验、配置切换或启动错误使用其自身恢复错误分类，但同样不得开放目标。`SQLITE_BUSY` 不能变成跳过清理，也不进行无限重试。日志只保留 revision、阶段、路径标识和计数/错误码，不记录 Cookie、验证码、密码摘要或密钥。
+
+### 恢复后的 HTTP 可观察结果
+
+以下均假定合法页面头、来源、请求形状、可用存储，具体字段仍归冻结 OpenAPI。持有旧 Cookie 的客户端即使保存了旧 pageId/sessionId 也无授权。
+
+| 请求 | 清理后的结果 |
+| --- | --- |
+| 受保护业务读/写 | resolver 返回 null，工作台 401 `unauthenticated`，不执行写入。非法来源仍优先 403。 |
+| I06 GET，携带原 Cookie | 401 `session-invalid`；无 Cookie 的初始 GET 则为匿名 200、browserReady=false。 |
+| I06 activate/restore，携带原 Cookie 和旧 sessionId | 401 `session-invalid`；新 bootstrap 后再提交旧 id 仍为 401。 |
+| I06 bootstrap，携带原 Cookie | 新随机 Cookie 容器，200 匿名，session/rememberedSession 均 null；不沿用旧摘要或绑定。 |
+| I07，携带原 Cookie | 204，可清 Cookie；不泄露旧目标，也不会创建身份。 |
+| I03/I05，使用备份里的旧 challengeId/code | 按既有首错顺序通过其他检查后，422 `verification-code-missing`；重新发码才能继续。I03 须先新 bootstrap。 |
+| 新 bootstrap 后正常登录/激活 | 通过备份内凭据验证，返回原 accountKey；创建全新 sessionId，正常读写恢复内容。 |
+
+前端按现有会话失效流程重新准备登录；同页重新登录、刷新、旧页面并存以及迟到响应都列入恢复后的行为验收。本 revision 没有增加前端实现要求，若实测发现既有流程无法完成，归认证前端拥有者定向修复并复核受影响契约。

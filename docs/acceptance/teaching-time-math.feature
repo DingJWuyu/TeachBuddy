@@ -1,5 +1,5 @@
 Feature: 教学时间消费冻结数学接缝
-  # T50-MATH-CONTRACT@1，设计候选，不是产品测试通过。
+  # 教学时间数学扩展行为规格，不是产品测试通过记录。
   # 扩展 WB-T020/WB-MA018；原 teaching-time.feature 保留。
   Background:
     Given T50 与 M40 固定契约及本新版已由独立 reviewer 冻结

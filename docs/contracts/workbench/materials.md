@@ -1,14 +1,12 @@
-# Materials 契约入口
+# 材料契约：文件、题目、资源与备课
 
-状态：`R30/v1 READY_FOR_REVIEW`，尚未独立冻结。固定输入 `e6d2c220796ea0746bec3413db7ba259df4c2d45`；本候选同提交的[故事](../../user-stories/materials.md)、[行为 U-M1 至 U-M8](../../ux/materials.md)、[BDD](../../acceptance/materials.feature)共同定版。[materials.openapi.yaml](materials.openapi.yaml)是本批唯一 HTTP/数据 schema，[交换用例](materials-cases.md)只引用其中的样本值。实现/验收消费外层独立冻结回执指定的完整候选 SHA，不消费分支名。
-
-先按 UX 确定操作结果，再按本页语义和 schema 实现。处理文件/原稿读“文件与定位”，处理题库读“内容”和“自动收题”，处理备课读“引用和输出”；共用规则、B11 兼容和[架构端口/所有权](../../arch/materials.md)各消费者均必读。
+材料语义已采用，当前能力并非全部达标。精确 HTTP/数据定义在 [materials.openapi.yaml](materials.openapi.yaml)，交换正反例在[案例](materials-cases.md)，技术接缝在[材料架构](../../arch/materials.md)。只处理题目保存时读内容、分类和共享保存；涉及文件才展开文件/任务；涉及备课才展开引用/输出。
 
 ## 共用规则与真实认证边界
 
-[已冻结 B11](../workbench.md)的可信 principal、同源 Cookie、保护头、Origin/Referer 完整校验、no-store、UUID、服务端 UTC、乐观版本、账户作用域幂等、软删除及未知结果语义原样沿用。本包未重新定义认证、登录/退出、会话过期或账户响应。认证源仍是 B11 指明的 partial 版本 `a496c5a4727e2900bd110198819295e068739439`；另行修订的认证候选未被消费。
+[已冻结 B11](../workbench.md)的可信 principal、同源 Cookie、保护头、Origin/Referer 完整校验、no-store、UUID、服务端 UTC、乐观版本、账户作用域幂等、软删除及未知结果语义原样沿用。本包未重新定义认证、登录/退出、会话过期或账户响应。当前真实身份和页面上下文沿[认证契约](../auth.md)，历史 partial 认证说明不用于现有产品。
 
-所有操作，包括文件字节、缩略图、裁图、预览、任务、补充原稿和引用读取，先经 `resolvePrincipal(request)`。无身份 401，本账户不存在或外账户对象统一 404。客户端不传 accountKey/accountId，不发任意下载 URL 给服务器拉取。真实认证负责人后续只替换 principal adapter 并验证账户切换、失效、退出及 Cookie；R31 的可信 test-principal 只用于隔离测试，不能被产品 UI/请求参数启用，不能签真实认证 PASS。
+所有操作，包括文件字节、缩略图、裁图、预览、任务、补充原稿和引用读取，先经 `resolvePrincipal(request)`。无身份 401，本账户不存在或外账户对象统一 404。客户端不传 accountKey/accountId，不发任意下载 URL 给服务器拉取。真实认证已装配；可信 test-principal 只用于隔离测试，不能被产品 UI/请求参数启用，不能签真实认证 PASS。
 
 JSON 写体上限沿用 2 MiB，文件上传例外为一个 multipart file、100 MiB；单材料最多 100 张图片或一个 PDF/Word，总页数最多 500。超过限制明确 413 或 422，原件若已经保存仍可下载；500 页不是一次 Provider 请求。未知字段及类型不转换，使用 B11 首错次序。资源/备课/环节/材料的标题须含非空白字符，空白标题返回422 invalid-input，按输入保存不自动改写；taxonomy名称的归一化另见分类节。JSON schema 后按归属、版本、对象状态、分类/位置/内容/引用顺序校验；引用依数组顺序。响应允许附加字段，不允许必填值缺失或未知状态当成功。
 
@@ -22,9 +20,9 @@ v2 读取旧对象时，原 Document.version=1 原样返回；补充空分类、
 
 旧 B11 操作在其可表示对象上继续满足原 schema；附加分类等元数据在旧请求未提供时保持。若旧客户端访问含 v2 文档、新来源或资源引用的对象，服务器返回 B11 已有的 `422 invalid-input / unsupported-content-version`，不做有损投影。旧列表若匹配到不可表示对象，同样明确要求使用新版入口，不静默漏题；旧 UI 保留草稿并进入升级提示/只读路径。旧写入先重放已成功原请求，再检查当前版本，最后拒绝不可表示对象的覆盖。v2 全部对象可正常读取，故这是客户端协议升级，不是丢失数据。
 
-B11 的 readForReference 端口继续供旧调用方使用，新增 `readForReferenceV2` 支持本批 Snapshot；新 lessons 只消费后者。旧副本来源中的 v1 快照维持 v1。R31 在 B16 固定运行/迁移基线上实施共用设施，R33/R34 分别拥有自身对象适配，禁止从 B13/B14 活动分支推导协议。
+B11 的 readForReference 端口继续供旧调用方使用，新增 `readForReferenceV2` 支持本批 Snapshot；新 lessons 只消费后者。旧副本来源中的 v1 快照维持 v1。题库和备课各自拥有自身对象兼容，未知旧请求沿原路径确认。
 
-静态模块目录仍只有一份。材料整合后 `/api/modules` 读取本版 ModuleCatalog version=2，精确描述与依赖名唯一在本 schema；这是该目录操作的显式版本演进，B11 原定义保留为版本1历史冻结输入，不作为材料版运行响应的竞争定义。支持版本1的旧客户端遇到2必须保留草稿并提示重新加载，不用未知依赖继续装配。未集成 resources 实现前不注册虚假资源模块；R31以目录fixture验证，R34最终注册三模块并检查映射、缺依赖和环路。
+静态模块目录只有一份。材料版历史协议定义 ModuleCatalog version=2；当前完整组合返回数学契约的 version=3。材料版，精确描述与依赖名唯一在本 schema；这是该目录操作的显式版本演进，B11 原定义保留为版本1历史冻结输入，不作为材料版运行响应的竞争定义。支持版本1的旧客户端遇到2必须保留草稿并提示重新加载，不用未知依赖继续装配。当前只注册真实实现并检查映射、缺依赖和环路。
 
 ## 文件与定位
 
@@ -58,7 +56,7 @@ Document 是 B11 v1 或本批 v2 的封闭联合。v2 增加图片、标题、�
 
 Document 每层数组及源字符串上限由 schema 给出，另外总块数≤2000、总数学源≤200000 字符；不得无限递归。正文至少有一项可见文字/公式/图片。answerStatus=absent 时 solution 必须空；present 时 solution 非空。unresolved 仅存在收录草稿，不可入库。教师注记块只用于备课正文；题面和答案不得夹带 teacher-note，长期笔记在 note。旧 v1 文档仍按 B11 规则处理。
 
-内容演进只追加明确版本及迁移，不借存储 JSON 跳过校验。未知 Document.version 在读取端保留原数据并提示只读，在写入端明确拒绝，绝不删掉不认识的节点。以后 M40 可直接使用文档与文件端口保存其已定表达/图，作品自身的模型和提供方字段仍归 M40。
+内容演进只追加明确版本及迁移，不借存储 JSON 跳过校验。未知 Document.version 在读取端保留原数据并提示只读，在写入端明确拒绝，绝不删掉不认识的节点。数学作品使用文档与文件端口；作品源和引用扩展见[数学契约](math.md)。
 
 ## 自动收题与分类
 
@@ -88,15 +86,15 @@ QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不�
 
 ### 材料与导出
 
-题目/资源引用仅两种封闭类型，均由服务器读取本账户当前源建立 snapshot。既有引用 ID/类型/源 ID/采用版本均不变时保存旧快照，不重新解析内容；源已删除仍可编辑备课和导出快照。改变采用版本必须是当前活动源的版本，否则 reference-version-conflict。引用不能换指另一个对象，需要新 ID。资源 snapshot 固定 fileId、补充预览 fileId、标题与原文件名，排除资源备注；题 snapshot 排除长期笔记、标签和标记。
+材料 v2 引用为题目/资源两种封闭类型；当前备课 v3 另接受数学引用。题目/资源引用，均由服务器读取本账户当前源建立 snapshot。既有引用 ID/类型/源 ID/采用版本均不变时保存旧快照，不重新解析内容；源已删除仍可编辑备课和导出快照。改变采用版本必须是当前活动源的版本，否则 reference-version-conflict。引用不能换指另一个对象，需要新 ID。资源 snapshot 固定 fileId、补充预览 fileId、标题与原文件名，排除资源备注；题 snapshot 排除长期笔记、标签和标记。
 
 所有新/更新引用校验与备课写入同一 SQLite 事务。每份备课所有环节 ID、引用 ID 全局唯一，总引用数≤1000；顺序以数组为准。环节删除/移动、本课材料投影及显式重复沿用 B11。使用位置由 lessons 公共查询提供，包含活动备课位置及采用版本，不让 questions/resources 读 lessons 表。
 
 导出 POST 先检查 baseVersion，冻结该保存版本的完整服务端快照和选项，返回 ExportRecord + jobId。新源更新不影响已受理输出，snapshot 中文件持续保留。sectionIds 必须唯一且属于该备课；输出始终按备课顺序，不按请求乱序。materialReferenceIds 必须来自未安排集合，按其原顺序置末尾。练习只包含题引用；选中集合没有题返回 invalid-export-selection。生成后 listLessonExports 能找到全部历史输出及其保存版本；软删除备课仍可读取已有输出，恢复不重建。
 
-精确组合规则归 [U-M6](../../ux/materials.md#u-m6-六种成果与手工-ppt)。输出器先构造经过选项过滤的内容树，再生成 DOCX/PDF；关闭选项的答案和注记不得留在 DOCX XML、注释、隐藏段落、PDF 文本或附件里。文件属性不写私人笔记。答案区在全文后按导出题号对应，同题显式重复则按各出现位置编号。讲义/练习的 answerSpaceLines 控制每题后的空白行，教案忽略此选项。
+精确组合规则归 [成果规则](../../features/lessons.md#u-m6-六种成果与手工-ppt)。输出器先构造经过选项过滤的内容树，再生成 DOCX/PDF；关闭选项的答案和注记不得留在 DOCX XML、注释、隐藏段落、PDF 文本或附件里。文件属性不写私人笔记。答案区在全文后按导出题号对应，同题显式重复则按各出现位置编号。讲义/练习的 answerSpaceLines 控制每题后的空白行，教案忽略此选项。
 
-Word 输出是 DOCX；PDF 从同一过滤后内容和 DOCX 版式转换。页型 A4、正文可打印宽 170 mm、默认 20 mm 页边距；嵌入可分发中文字体或实测可用替代，公式/题图不跨页裁切，长题按段落继续并保留题号。环节和段落可自然分页，不强行每题一页。数学必需支持范围与目标编辑器证据见[实验裁决](../../arch/materials-evidence.md)。输出页数和布局在最终内容上校验，失败保留快照与原件，不能返回坏文件下载成功。
+Word 输出是 DOCX；PDF 从同一过滤后内容和 DOCX 版式转换。页型 A4、正文可打印宽 170 mm、默认 20 mm 页边距；嵌入可分发中文字体或实测可用替代，公式/题图不跨页裁切，长题按段落继续并保留题号。环节和段落可自然分页，不强行每题一页。数学必需支持范围与目标编辑器证据见[输出验收](../../acceptance/mvp-matrix.md#office)。输出页数和布局在最终内容上校验，失败保留快照与原件，不能返回坏文件下载成功。
 
 用于 PPT 的 question-asset Job 冻结题目版本。question-png 生成透明背景题面分片，includeAnswers=true 时答案另成分片，不含长期笔记；figure-png 必须给属于该快照的 figureFileId，其他模式该字段为 null。PNG 宽度 1600 px，按块分片且单片高度不超过 2400 px；超高单个图等比缩小，公式保持完整。outputFileIds 按显示顺序排列。文字/公式复制直接从 Document 读取，不新增服务端端口。
 
