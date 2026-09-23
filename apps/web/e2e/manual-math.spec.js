@@ -15,7 +15,7 @@ test.afterEach(async ({ page }, info) => {
     world = null;
   }
 });
-async function start(page, kind = "演示") {
+async function start(page, kind = "演示", useStartingPoint = true) {
   world = await createIntegration();
   await register(page, world, "manual-math@example.test");
   await page
@@ -27,7 +27,7 @@ async function start(page, kind = "演示") {
     .first()
     .click();
   await page.getByRole("button", { name: "作品与工具", exact: true }).click();
-  if (kind === "演示")
+  if (kind === "演示" && useStartingPoint)
     await page
       .getByRole("button", { name: "二次函数起点", exact: true })
       .click();
@@ -395,4 +395,77 @@ test("对象标识冲突保留原点与拖动绑定", async ({ page }) => {
   const saved = await save(page);
   expect(saved.source.drags[0].pointId).toBe("P");
   expect(saved.render.state).toBe("ready");
+});
+
+for (const content of ["纯文字步骤", "已应用参数", "参数编辑稿"]) {
+  test(`二次函数起点保护${content}并允许明确替换`, async ({ page }) => {
+    await start(page, "演示", false);
+    if (content === "纯文字步骤") {
+      await section(page, "步骤");
+      await page.getByRole("button", { name: "添加步骤", exact: true }).click();
+      await page.getByLabel("步骤 1 标题").fill("判别式讨论");
+      await page.getByLabel("步骤 1 说明").fill("先讨论判别式小于零的情况，再添加图形。");
+    } else {
+      await section(page, "参数");
+      await page.getByLabel("parameter-0-name", { exact: true }).fill("t");
+      await page.getByLabel("parameter-0-min", { exact: true }).fill("-7");
+      if (content === "已应用参数")
+        await page.getByRole("button", { name: "应用参数 1", exact: true }).click();
+    }
+    await expect(page.getByLabel("选择对象").locator("option")).toHaveCount(0);
+    const checkPreserved = async () => {
+      if (content === "纯文字步骤") {
+        await section(page, "步骤");
+        await expect(page.getByLabel("步骤 1 标题")).toHaveValue("判别式讨论");
+        await expect(page.getByLabel("步骤 1 说明")).toHaveValue("先讨论判别式小于零的情况，再添加图形。");
+      } else {
+        await section(page, "参数");
+        await expect(page.getByLabel("parameter-0-name", { exact: true })).toHaveValue("t");
+        await expect(page.getByLabel("parameter-0-min", { exact: true })).toHaveValue("-7");
+        await expect(page.getByRole("button", { name: "应用参数 1", exact: true }))[
+          content === "参数编辑稿" ? "toBeEnabled" : "toBeDisabled"
+        ]();
+      }
+      await expect(page.getByLabel("选择对象").locator("option")).toHaveCount(0);
+    };
+    const dialogs = [];
+    let accept = false;
+    page.on("dialog", async (dialog) => {
+      dialogs.push(dialog.message());
+      await (accept ? dialog.accept() : dialog.dismiss());
+    });
+    await page.getByRole("button", { name: "二次函数起点", exact: true }).click();
+    expect(dialogs).toHaveLength(1);
+    expect(dialogs[0]).toContain("替换当前演示");
+    await checkPreserved();
+    await page.reload();
+    await checkPreserved();
+    accept = true;
+    await page.getByRole("button", { name: "二次函数起点", exact: true }).click();
+    expect(dialogs).toHaveLength(2);
+    await section(page, "步骤");
+    await expect(page.getByLabel("步骤 1 标题")).toHaveValue("母函数");
+    await expect(page.getByLabel("步骤 1 说明")).toHaveValue("");
+    const saved = await save(page);
+    expect(saved.source.scene.elements).toHaveLength(2);
+    expect(saved.source.parameters.map((p) => p.name)).toEqual(["a", "h", "k"]);
+    await page.reload();
+    await section(page, "步骤");
+    await expect(page.getByLabel("步骤 1 标题")).toHaveValue("母函数");
+    await expect(page.getByLabel("步骤 1 说明")).toHaveValue("");
+  });
+}
+
+test("二次函数起点直接填充真正空白稿", async ({ page }) => {
+  await start(page, "演示", false);
+  const dialogs = [];
+  page.on("dialog", async (dialog) => {
+    dialogs.push(dialog.message());
+    await dialog.dismiss();
+  });
+  await page.getByRole("button", { name: "二次函数起点", exact: true }).click();
+  await expect(page.getByLabel("选择对象").locator("option")).toHaveCount(2);
+  expect(dialogs).toEqual([]);
+  const saved = await save(page);
+  expect(saved.source.steps[0].title).toBe("母函数");
 });

@@ -1130,9 +1130,11 @@ function MathSession({ transport, route }) {
             <button
               onClick={() => {
                 if (
-                  !draft.source.scene.elements.length ||
+                  (JSON.stringify(draft.source) ===
+                    JSON.stringify(emptyDynamicSource()) &&
+                    !Object.keys(draft.parameterEdits ?? {}).length) ||
                   window.confirm(
-                    "使用二次函数起点会替换当前演示内容，是否继续？",
+                    "使用二次函数起点会替换当前演示的图形、参数和步骤，并丢弃未应用的参数编辑。是否继续？",
                   )
                 ) {
                   edit({
