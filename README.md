@@ -1,10 +1,10 @@
 # TeachBuddy 教师个人工作台
 
-本分支 `preview/usable-mvp` 提供真实六模块本机预览，入口为 **https://localhost:50880**。首次点击“创建账户”，由使用者在 UI 发送邮件验证码并注册。此预览使用独立新库，已有认证测试库的账户不会自动进入新库。
+统一可体验产品运行在 `/home/liam_t/项目/TeacherWorkspace-preview` 的 `preview/usable-mvp` 分支，入口为 **https://localhost:50880**。当前 `integration/manual-business` 工作树用于接入后续固定业务成果，不承载该地址的服务或用户数据。首次使用预览时点击“创建账户”，由使用者在 UI 发送邮件验证码并注册；已有认证测试库的账户不会自动进入预览库。
 
-六模块的手动基本业务已通过真实认证浏览器自验：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程拖选与保存。保存内容经过刷新或保库重启检查。实际场景、候选和限制见 [基本业务回执](docs/acceptance/evidence/BUSINESS-MVP/v1/receipt.md)。这不是包含自动提取、Agent 全工具与备份恢复的完整 MVP 验收声明。
+预览已有六模块基础手动业务：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程拖选与保存。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前集成基线的扩展浏览器用例见 [business-mvp.spec.js](apps/web/e2e/business-mvp.spec.js)。这些材料覆盖基本流程，不代表全部手动业务已经集成或验收。
 
-本分支已在六模块与真实 Cookie 认证上接入首页和共享 AI 右栏。登录后可使用持久对话、草稿、引用和原有 13 个题库/备课工具；服务端仅开放 `deepseek/deepseek-v4.1-flash` 与 `z-ai/glm-5.3-flash`。工具连接当前题目 v2、备课 v3 的业务端口，未知文档版本保持只读保护。模型回复及写入结果仍需在业务页面核对。接线来源和已有模型自验见 [PREVIEW-AGENT 回执](docs/acceptance/evidence/PREVIEW-AGENT/v1/receipt.md)，本预览的组合验证见 [集成回执](docs/acceptance/evidence/PREVIEW-AGENT-INTEGRATION/v1/receipt.md)。
+预览保留已经接入的首页和共享 AI 右栏、真实 Cookie 认证及原有 13 个题库/备课工具。产品 Agent 后续开发已暂停，当前交付重点是补齐全部手动业务。现有 Agent 的接线与组合验证见 [集成回执](docs/acceptance/evidence/PREVIEW-AGENT-INTEGRATION/v1/receipt.md)；模型写入结果仍需在业务页面核对。
 
 ## 最短体验路径
 
@@ -15,7 +15,7 @@
 5. 数学工坊新建公式、平面图形、空间图形或演示，点击“作品与工具”调整内容并保存。公式和图形可下载 PNG/SVG，演示可下载 HTML 离线打开。从备课“制作数学作品”进入时，可将已保存作品带回原环节。
 6. 班级教学中创建班级，写一句课后情况并保存，需要时补充关联资料。日程中拖出时间段，填写安排并保存；下次从网格点击该安排继续编辑。
 
-登录后可在首页或六模块右栏打开 AI 对话，选择模型、输入需求并发送。新 F60 工具、F61 全工具集和完整备份/恢复尚未实现。在线采集、真实邮件投递和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
+新 F60 工具、F61 全工具集和完整备份/恢复尚未实现。在线采集、真实邮件投递和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
 
 ## DOCX 输出
 
@@ -43,7 +43,7 @@ systemd-run --user --unit=teacherworkspace-preview \
   /home/liam_t/项目/TeacherWorkspace-preview/.scratch/preview/start.sh
 ```
 
-专用数据位于本 worktree 的 `.scratch/preview/`，已被 Git 忽略且限制访问：
+专用数据位于预览工作树的 `.scratch/preview/`，已被 Git 忽略且限制访问：
 
 - `data/workspace.sqlite` 及 WAL：账户和业务数据。
 - `files/`：持久原文件和制品。
@@ -51,11 +51,11 @@ systemd-run --user --unit=teacherworkspace-preview \
 - `.env`：工作树根目录的受限 Provider 凭据和两种模型配置，仅服务端读取，Git 忽略。
 - `logs/`、`tmp/`：构建记录、业务日志和转换临时目录。
 
-服务器只读加载 `~/.config/teacherworkspace-acceptance/qq-mail.env`，复用其 `runtime/server.pem`、`runtime/server-key.pem`。现有认证测试库未读写。Office 二进制复用已有 C22 目录。接手时保留这些路径，在本分支串行合入固定候选、构建后重启同一服务；保留持久目录，避免另起占用同端口的进程。
+服务器只读加载 `~/.config/teacherworkspace-acceptance/qq-mail.env`，复用其 `runtime/server.pem`、`runtime/server-key.pem`。现有认证测试库未读写。Office 二进制复用已有 C22 目录。收到预览树写权交接后，先将固定候选接入集成树并用隔离数据验证，再在预览分支串行合入、构建、重启同一服务；全程保留 `.scratch/preview/`。
 
 ## 开发与范围入口
 
-使用 Node.js 22.23.2，依赖安装 `npm ci`。构建时显式使用预览配置，避免默认 SQLite 路径：
+使用 Node.js 22.23.2，依赖安装 `npm ci`。预览工作树构建时显式加载其运行配置，保留原数据路径：
 
 ```bash
 cd /home/liam_t/项目/TeacherWorkspace-preview
@@ -64,6 +64,15 @@ source .scratch/preview/runtime.env
 set +a
 npm run build
 systemctl --user restart teacherworkspace-preview
+```
+
+集成工作树自检使用独立临时目录和测试端口，不加载预览的 `runtime.env` 或 `.env`：
+
+```bash
+cd /home/liam_t/项目/TeacherWorkspace-manual-integration
+mkdir -p .scratch/manual-integration/tmp
+npm ci --no-audit --no-fund
+TMPDIR="$PWD/.scratch/manual-integration/tmp" npm run build
 ```
 
 `apps/` 是真实实现，`prototype/` 是交互参考。范围见 [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md)，页面共识见 [WORKBENCH_DESIGN](docs/WORKBENCH_DESIGN.md)，契约见 [workbench](docs/contracts/workbench.md) 和 [auth](docs/contracts/auth.md)。完整 DAG 与编排状态由 [mvp-dag](docs/plans/mvp-dag.md) 和 [run-state](docs/plans/run-state.md) 维护，本任务不改写这两份台账。
