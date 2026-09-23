@@ -1,8 +1,8 @@
 # TeachBuddy 教师个人工作台
 
-统一可体验产品运行在 `/home/liam_t/项目/TeacherWorkspace-preview` 的 `preview/usable-mvp` 分支，入口为 **https://localhost:50880**。当前 `integration/manual-business` 工作树用于接入后续固定业务成果，不承载该地址的服务或用户数据。首次使用预览时点击“创建账户”，由使用者在 UI 发送邮件验证码并注册；已有认证测试库的账户不会自动进入预览库。
+统一可体验产品运行在 `/home/liam_t/项目/TeacherWorkspace-preview` 的 `preview/usable-mvp` 分支，入口为 **https://localhost:50880**。当前手动业务产品组合固定于 `7aceca1f95bba95e7dccbae7cf144929b1fe90ad`；预览服务沿用原账户、数据库、文件和配置。首次使用时点击“创建账户”，由使用者在 UI 发送邮件验证码并注册；已有认证测试库的账户不会自动进入预览库。
 
-预览已有六模块基础手动业务：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程拖选与保存。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前集成基线的扩展浏览器用例见 [business-mvp.spec.js](apps/web/e2e/business-mvp.spec.js)。这些材料覆盖基本流程，不代表全部手动业务已经集成或验收。
+当前预览已接入题库、资源、备课、数学、教学与数据管理的手动能力：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程安排，以及个人资料导出、误删恢复和部署备份工具。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前入口的部署检查见 [手动业务预览回执](docs/acceptance/evidence/MANUAL-INTEGRATION/v1/preview.md)。SUPPORT 偏好能力尚未接入，数据能力的最终组合独立验收仍待完成。
 
 班级教学与日程的手动操作支持分班反馈、三类资料关联、连续日期拖选、多事项排序与优先级、未排期、周重复与单次调课、自选结束前后提醒，以及重进工作台后的补提醒定位。操作范围、保存恢复和已知限制见 [班级与日程回执](docs/acceptance/evidence/MANUAL-TEACHING/v1/receipt.md)。
 
@@ -13,7 +13,7 @@
 1. 打开上述地址，注册并登录；需要刷新后恢复会话时勾选“记住我”。
 2. 进入“题库”，点击“自建”，填写题目标题，通过“段落”或“公式”添加正文，点击“保存题目”。已有题目可直接编辑并再次保存。
 3. 进入“备课”，点击“新建备课”，填写课题、添加环节，点击环节中的“从题库取题”，勾选题目并“采用所选”。点击“输出”，选择“导学案与讲义”和 DOCX 或 PDF，按需要勾选答案解析与教师注记，点击“保存并生成”，完成后下载。
-4. 资源库上传 PPT/PPTX、DOC/DOCX、PDF、PNG/JPEG/WebP 后可查看真实页图、命名并保存，通过“文件夹与标签”整理，再在备课中复用。更新文件保留原条目与关联；转换失败后可重试。旧 DOC 仍提示对象丢失风险，可补充 PDF 核对。验证范围见 [资源手动能力回执](docs/acceptance/evidence/MANUAL-RESOURCES/v1/receipt.md)。
+4. 资源库上传 PPT/PPTX、DOC/DOCX、PDF、PNG/JPEG/WebP 后可查看真实页图、命名并保存，通过“文件夹与标签”整理，再在备课中复用。更新文件保留原条目与关联；转换失败后可重试。旧 DOC 仍提示对象丢失风险，可补充 PDF 核对。普通文件预览可用，MF-UI-01 对照预览裁切更新尚待接入。验证范围见 [资源手动能力回执](docs/acceptance/evidence/MANUAL-RESOURCES/v1/receipt.md)。
 5. 数学工坊新建公式、平面图形、空间图形或演示，点击“作品与工具”调整内容并保存。公式和图形可下载 PNG/SVG，演示可下载 HTML 离线打开。从备课“制作数学作品”进入时，可将已保存作品带回原环节。
 6. 班级教学中创建班级，写一句课后情况并保存，需要时补充关联资料。日程中拖出时间段，填写安排并保存；下次从网格点击该安排继续编辑。
 
@@ -21,7 +21,7 @@
 
 数学演示从空白画布开始，可自行添加函数、点、图形、参数、拖动绑定和讲解步骤，也可选择“二次函数起点”。修改参数后点击“应用参数”，再保存作品；步骤说明随离线 HTML 一同保留。外部 HTML 可导入并通过“编辑源码”修改，执行仍遵循隔离和离线依赖边界。手动编辑、透明输出和备课往返的本机验证见 [MANUAL-MATH 回执](docs/acceptance/evidence/MANUAL-MATH/v1/receipt.md)。
 
-新 F60 工具和 F61 全工具集尚未实现。在线采集、真实邮件投递和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
+数学手动范围的 MM-SPEC-01 已经独立定向复验通过，见 [独立修复证据](docs/acceptance/evidence/MANUAL-MATH/v1/independent-fix.md)。这不代替旧 DAG 或目标设备验收。新 F60 工具和 F61 全工具集尚未实现。在线采集、真实邮件投递和物理设备仍待验证。证书复用已有本机测试 TLS 文件，自动化忽略证书信任错误，不宣称所有设备都已信任。
 
 ## 题库与收录
 
@@ -31,8 +31,7 @@
 
 ## 个人资料与恢复
 
-
-当前集成分支在设置页提供“导出个人资料”和“最近删除”。构建并启动本分支后可使用；预览地址的部署状态单独维护。
+当前预览的设置页提供“导出个人资料”和“最近删除”。
 
 - 个人 ZIP 包含当前账户的活动及已删除资料、原文件、数学历史源码、已保存对话和关联索引。解压后打开 `index.html` 阅读。认证凭据、内部 Agent 运行条目、密钥和本设备草稿不进入个人包。原文件可重新上传，正文和公式可复制；个人 ZIP 不覆盖账户，也不还原原 ID。
 - 最近删除支持题目、备课、资源、数学作品、班级、教学记录、日程和收录资料。恢复沿用原 ID 与关联；班级和独立删除的记录分别恢复，没有永久删除或自动清理。
@@ -52,7 +51,7 @@ node apps/api/src/scripts/reliability.js activate --target /新恢复目录 --st
 
 恢复点改变时，本设备旧草稿、未确认请求与待上传文件原样隔离，可从设置页查看和下载，需对照当前资料后重新操作。历史对话原始存储保持；恢复前未确认的 Agent 操作拒绝重新执行，专用 Agent 核实与放弃流程仍属暂停线路。个人包缓存不进入部署备份，恢复后需重新导出。
 
-已支持本集成分支当前迁移集合，包括备课排序迁移 `lessons_0003_order`，以及固定起点缺少可靠性模块的基线升级。未知迁移、内容格式、缺文件、摘要不符及未完成认证清理都会停止恢复。集成其他模块新增迁移时，须同步接入备份支持集合再验证。自验范围与证据见 [MANUAL-DATA 回执](docs/acceptance/evidence/MANUAL-DATA/v1/receipt.md)。
+已支持当前预览的迁移集合，包括备课排序迁移 `lessons_0003_order`，以及固定起点缺少可靠性模块的基线升级。未知迁移、内容格式、缺文件、摘要不符及未完成认证清理都会停止恢复。集成其他模块新增迁移时，须同步接入备份支持集合再验证。自验范围与证据见 [MANUAL-DATA 回执](docs/acceptance/evidence/MANUAL-DATA/v1/receipt.md)。
 
 ## DOCX 输出
 
@@ -72,7 +71,7 @@ systemctl --user status teacherworkspace-preview
 journalctl --user -u teacherworkspace-preview
 ```
 
-这是 transient unit，机器重启后若 unit 不存在，运行：
+这是 transient unit，停止服务后 unit 也可能消失。若 `start` 提示 unit 不存在，运行：
 
 ```bash
 systemd-run --user --unit=teacherworkspace-preview \
@@ -88,7 +87,7 @@ systemd-run --user --unit=teacherworkspace-preview \
 - `.env`：工作树根目录的受限 Provider 凭据和两种模型配置，仅服务端读取，Git 忽略。
 - `logs/`、`tmp/`：构建记录、业务日志和转换临时目录。
 
-服务器只读加载 `~/.config/teacherworkspace-acceptance/qq-mail.env`，复用其 `runtime/server.pem`、`runtime/server-key.pem`。现有认证测试库未读写。Office 二进制复用已有 C22 目录。收到预览树写权交接后，先将固定候选接入集成树并用隔离数据验证，再在预览分支串行合入、构建、重启同一服务；全程保留 `.scratch/preview/`。
+服务器只读加载 `~/.config/teacherworkspace-acceptance/qq-mail.env`，复用其 `runtime/server.pem`、`runtime/server-key.pem`。现有认证测试库未读写。Office 二进制复用已有 C22 目录。后续固定成果继续在隔离集成树验证，再串行接入预览并保留 `.scratch/preview/`。
 
 ## 开发与范围入口
 
