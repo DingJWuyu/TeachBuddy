@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { addReferences, newReference } from "./model.js";
+import { addReferences, newReference, removeReference } from "./model.js";
 
 export function useLessonPickerFlow({
   savable,
@@ -85,6 +85,7 @@ export function useLessonPickerFlow({
         target,
         kind,
         selected:
+          scene.lastPicker?.lessonId === lessonId &&
           scene.lastPicker?.kind === kind &&
           JSON.stringify(scene.lastPicker.target) === JSON.stringify(target)
             ? scene.lastPicker.selected
@@ -95,7 +96,7 @@ export function useLessonPickerFlow({
   }
 
   function confirm(items) {
-    if (!picker) return;
+    if (!picker || savable.pending) return;
     const byId = new Map(items.map((item) => [item.id, item]));
     const references = picker.selected
       .map((questionId) => byId.get(questionId))
@@ -105,9 +106,26 @@ export function useLessonPickerFlow({
       patchScene({ picker: null });
       return;
     }
-    const nextInput = addReferences(savable.input, picker.target, references);
+    const nextInput = addReferences(withoutAttempt(savable.input), picker.target, references);
+    patchScene({ picker: { ...picker, attemptedReferenceIds: references.map(reference => reference.id) } });
     setPendingConfirm(true);
     savable.save({ input: nextInput });
+  }
+
+  function withoutAttempt(input) {
+    return (picker?.attemptedReferenceIds ?? []).reduce((current, id) => removeReference(current, id), input);
+  }
+
+  function retryConfirm() {
+    setProblem(null);
+    setPendingConfirm(true);
+    savable.retryConfirm();
+  }
+
+  function cancel() {
+    if (savable.pending || saveStatus === "saving") return;
+    savable.setInput(withoutAttempt);
+    patchScene({ lastPicker: picker && { ...picker, attemptedReferenceIds: [] }, picker: null });
   }
 
   /** Take the server version after an explicit confirmation, then re-check the target. */
@@ -116,6 +134,8 @@ export function useLessonPickerFlow({
     setConflict(false);
     const adopted = await savable.adoptServer();
     if (!adopted || !target) return;
+    setProblem(null);
+    patchScene({ picker: { ...picker, attemptedReferenceIds: [] } });
     if (
       target.type === "section" &&
       !(adopted.sections || []).some(
@@ -134,8 +154,9 @@ export function useLessonPickerFlow({
     targetGone,
     enter,
     confirm,
+    retryConfirm,
     takeServerVersion,
-    cancel: () => patchScene({ lastPicker: picker, picker: null }),
+    cancel,
     moveToMaterials: () => {
       setTargetGone(false);
       patchScene({

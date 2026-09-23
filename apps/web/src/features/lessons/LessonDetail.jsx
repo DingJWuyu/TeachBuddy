@@ -279,12 +279,14 @@ export default function LessonDetail({ id }) {
           kind={picker.kind}
           lessonTitle={input.title}
           targetLabel={targetLabel(input, picker.target)}
-          existingQuestionIds={targetReferences.map(
+          existingQuestionIds={targetReferences.filter(reference => !picker.attemptedReferenceIds?.includes(reference.id)).map(
             (reference) => reference.workId ?? reference.questionId ?? reference.resourceId,
           )}
           selected={picker.selected}
           busy={pickerFlow.pendingConfirm || saveStatus === "saving"}
-          problem={pickerFlow.problem}
+          awaitingConfirmation={Boolean(savable.pending)}
+          onRetry={pickerFlow.retryConfirm}
+          problem={pickerFlow.problem || savable.problem}
           onToggle={(questionId) =>
             pickerFlow.setSelection(
               picker.selected.includes(questionId)

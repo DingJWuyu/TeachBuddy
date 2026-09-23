@@ -12,9 +12,12 @@ export function MaterialsPicker({
   targetLabel,
   selected,
   onToggle,
+  onRemoveSelection,
   onConfirm,
   onCancel,
   busy,
+  awaitingConfirmation = false,
+  onRetry,
   problem,
   existingQuestionIds = [],
 }) {
@@ -66,7 +69,7 @@ export function MaterialsPicker({
     };
   }, [kind, query]);
   async function confirm() {
-    if (confirming || busy) return;
+    if (confirming || busy || awaitingConfirmation) return;
     setConfirming(true);
     setError("");
     try {
@@ -89,16 +92,17 @@ export function MaterialsPicker({
           {kind === "math" ? "取数学作品" : kind === "resource" ? "取资源" : "取题"} · {lessonTitle} /{" "}
           {targetLabel}
         </h2>
-        <button className="wb-button" disabled={busy || confirming} onClick={onCancel}>
+        <button className="wb-button" disabled={busy || confirming || awaitingConfirmation} onClick={onCancel}>
           取消
         </button>
-        <button
+        {!!selected.length && onRemoveSelection && <button className="wb-button" disabled={busy || confirming || awaitingConfirmation} onClick={() => onRemoveSelection(selected)}>清空选择</button>}
+        {awaitingConfirmation ? <button className="wb-button is-primary" disabled={busy || confirming} onClick={onRetry}>重试确认取材</button> : <button
           className="wb-button is-primary"
           disabled={busy || confirming || !selection.length}
           onClick={confirm}
         >
           采用所选 {selection.length} 项
-        </button>
+        </button>}
       </header>
       {(error || problem) && <p role="alert">{error || problem.message}</p>}
       <div className="r34-picker-columns">
@@ -117,7 +121,7 @@ export function MaterialsPicker({
                 type="checkbox"
                 aria-label={`选择 ${item.title}`}
                 checked={selection.includes(item.id)}
-                disabled={busy || confirming || existingQuestionIds.includes(item.id)}
+                disabled={busy || confirming || awaitingConfirmation || existingQuestionIds.includes(item.id)}
                 onChange={() => onToggle(item.id)}
               />
               <button

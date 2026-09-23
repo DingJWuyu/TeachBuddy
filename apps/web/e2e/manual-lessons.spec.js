@@ -61,6 +61,72 @@ test('当前环节可就地取已有数学作品', async ({ page }) => {
   await expect(page.getByRole('checkbox', { name: '选择 定义域公式', exact: true })).toBeDisabled();
 });
 
+test('取材写入后断线，刷新仍可原键确认且不重复加入', async ({ page }) => {
+  const { call, lesson } = await setup(page);
+  await call('POST', Q, question('断线取题'), 201);
+  await page.locator('[data-section-id]').getByRole('button', { name: '从题库取题', exact: true }).click();
+  await page.getByRole('checkbox', { name: '选择 断线取题', exact: true }).check();
+  const attempts = [];
+  await page.route(`**/api/modules/lessons/v3/${lesson.id}`, async route => {
+    if (route.request().method() !== 'PUT') return route.continue();
+    attempts.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
+    if (attempts.length === 1) { await route.fetch(); await route.abort('failed'); }
+    else await route.continue();
+  });
+  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试确认取材', exact: true })).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: '重试确认取材', exact: true }).click();
+  await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+  expect(attempts).toHaveLength(2);
+  expect(attempts[1]).toEqual(attempts[0]);
+  expect((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).sections[0].references).toHaveLength(1);
+});
+
+test('取材明确拒绝后可重试或取消，取消不留下待采用引用', async ({ page }) => {
+  const { call, lesson } = await setup(page);
+  await call('POST', Q, question('第一份材料'), 201);
+  await call('POST', Q, question('第二份材料'), 201);
+  let reject = true;
+  await page.route(`**/api/modules/lessons/v3/${lesson.id}`, async route => {
+    if (route.request().method() !== 'PUT' || !reject) return route.continue();
+    // Exercise an explicit rejection from the real API, without storing a batch.
+    const response = await route.fetch({ postData: JSON.stringify({ ...route.request().postDataJSON(), title: '' }) });
+    expect(response.status()).toBe(422);
+    await route.fulfill({ response });
+  });
+  await page.locator('[data-section-id]').getByRole('button', { name: '从题库取题', exact: true }).click();
+  await page.getByRole('checkbox', { name: '选择 第一份材料', exact: true }).check();
+  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  reject = false;
+  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+  reject = true;
+  await page.locator('[data-section-id]').getByRole('button', { name: '从题库取题', exact: true }).click();
+  await page.getByRole('checkbox', { name: '选择 第二份材料', exact: true }).check();
+  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await page.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+  await expect(page.locator('.wb-reference h4')).toHaveText(['第一份材料']);
+  expect((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).sections[0].references).toHaveLength(1);
+});
+
+test('已选来源删除后仍可清空隐藏选择并重新取材', async ({ page }) => {
+  const { call } = await setup(page);
+  const q = await call('POST', Q, question('稍后删除的来源'), 201);
+  await page.locator('[data-section-id]').getByRole('button', { name: '从题库取题', exact: true }).click();
+  await page.getByRole('checkbox', { name: '选择 稍后删除的来源', exact: true }).check();
+  await call('POST', `${Q}/${q.id}/deletion`, { baseVersion: q.version, deleted: true });
+  await page.reload();
+  await expect(page.getByRole('checkbox', { name: '选择 稍后删除的来源', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '清空选择', exact: true }).click();
+  await expect(page.getByRole('button', { name: '采用所选 0 项', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(page.locator('[data-reference-id]')).toHaveCount(0);
+});
+
 test('取题、环节排序、来源采用及三成果的学生教师 Word/PDF', async ({ page }) => {
   test.setTimeout(240000);
   const errors = []; page.on('pageerror', error => errors.push(error.message));
