@@ -124,7 +124,7 @@
   margin: 0;
   color: #a13232;
 }
-.r34-preview {
+.wb-dialog.r34-preview {
   width: min(900px, 94vw);
   height: 90vh;
   display: flex;

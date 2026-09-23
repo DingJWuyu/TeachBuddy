@@ -1,8 +1,8 @@
 # TeachBuddy 教师个人工作台
 
-统一可体验产品运行在 `/home/liam_t/项目/TeacherWorkspace-preview` 的 `preview/usable-mvp` 分支，入口为 **https://localhost:50880**。当前手动业务产品组合固定于 `7aceca1f95bba95e7dccbae7cf144929b1fe90ad`；预览服务沿用原账户、数据库、文件和配置。首次使用时点击“创建账户”，由使用者在 UI 发送邮件验证码并注册；已有认证测试库的账户不会自动进入预览库。
+统一可体验产品运行在 `/home/liam_t/项目/TeacherWorkspace-preview` 的 `preview/usable-mvp` 分支，入口为 **https://localhost:50880**。六线手动业务组合起点为 `7aceca1f95bba95e7dccbae7cf144929b1fe90ad`，备课更新对照预览修复已接入；预览服务沿用原账户、数据库、文件和配置。首次使用时点击“创建账户”，由使用者在 UI 发送邮件验证码并注册；已有认证测试库的账户不会自动进入预览库。
 
-当前预览已接入题库、资源、备课、数学、教学与数据管理的手动能力：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程安排，以及个人资料导出、误删恢复和部署备份工具。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前入口的部署检查见 [手动业务预览回执](docs/acceptance/evidence/MANUAL-INTEGRATION/v1/preview.md)。SUPPORT 偏好能力尚未接入，数据能力的最终组合独立验收仍待完成。
+当前预览已接入题库、资源、备课、数学、教学与数据管理的手动能力：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程安排，以及个人资料导出、误删恢复和部署备份工具。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前入口的部署检查见 [手动业务预览回执](docs/acceptance/evidence/MANUAL-INTEGRATION/v1/preview-fix.md)。DATA 六线组合已通过[独立验收](docs/acceptance/evidence/MANUAL-DATA/v1/independent.md)。SUPPORT 偏好、帮助和设备现场已接入；新格式上传的恢复前原文件找回修复已合流，独立 SUPPORT 验收仍待结论。
 
 班级教学与日程的手动操作支持分班反馈、三类资料关联、连续日期拖选、多事项排序与优先级、未排期、周重复与单次调课、自选结束前后提醒，以及重进工作台后的补提醒定位。操作范围、保存恢复和已知限制见 [班级与日程回执](docs/acceptance/evidence/MANUAL-TEACHING/v1/receipt.md)。
 
@@ -13,7 +13,7 @@
 1. 打开上述地址，注册并登录；需要刷新后恢复会话时勾选“记住我”。
 2. 进入“题库”，点击“自建”，填写题目标题，通过“段落”或“公式”添加正文，点击“保存题目”。已有题目可直接编辑并再次保存。
 3. 进入“备课”，点击“新建备课”，填写课题、添加环节，点击环节中的“从题库取题”，勾选题目并“采用所选”。点击“输出”，选择“导学案与讲义”和 DOCX 或 PDF，按需要勾选答案解析与教师注记，点击“保存并生成”，完成后下载。
-4. 资源库上传 PPT/PPTX、DOC/DOCX、PDF、PNG/JPEG/WebP 后可查看真实页图、命名并保存，通过“文件夹与标签”整理，再在备课中复用。更新文件保留原条目与关联；转换失败后可重试。旧 DOC 仍提示对象丢失风险，可补充 PDF 核对。普通文件预览可用，MF-UI-01 对照预览裁切更新尚待接入。验证范围见 [资源手动能力回执](docs/acceptance/evidence/MANUAL-RESOURCES/v1/receipt.md)。
+4. 资源库上传 PPT/PPTX、DOC/DOCX、PDF、PNG/JPEG/WebP 后可查看真实页图、命名并保存，通过“文件夹与标签”整理，再在备课中复用。更新文件保留原条目与关联；转换失败后可重试。旧 DOC 仍提示对象丢失风险，可补充 PDF 核对。备课更新对照中的新旧文件预览可翻页、缩放并在采用后保存重开，MF-UI-01 已[独立定向复验通过](docs/acceptance/evidence/MANUAL-FLOW/v1/recheck.md)。验证范围见 [资源手动能力回执](docs/acceptance/evidence/MANUAL-RESOURCES/v1/receipt.md)。
 5. 数学工坊新建公式、平面图形、空间图形或演示，点击“作品与工具”调整内容并保存。公式和图形可下载 PNG/SVG，演示可下载 HTML 离线打开。从备课“制作数学作品”进入时，可将已保存作品带回原环节。
 6. 班级教学中创建班级，写一句课后情况并保存，需要时补充关联资料。日程中拖出时间段，填写安排并保存；下次从网格点击该安排继续编辑。
 
@@ -53,9 +53,7 @@ node apps/api/src/scripts/reliability.js activate --target /新恢复目录 --st
 
 已支持当前预览的迁移集合，包括备课排序迁移 `lessons_0003_order`，以及固定起点缺少可靠性模块的基线升级。未知迁移、内容格式、缺文件、摘要不符及未完成认证清理都会停止恢复。集成其他模块新增迁移时，须同步接入备份支持集合再验证。自验范围与证据见 [MANUAL-DATA 回执](docs/acceptance/evidence/MANUAL-DATA/v1/receipt.md)。
 
-## 设置与工作现场（集成候选，尚未更新预览）
-
-以下 SUPPORT 能力已进入 `integration/manual-business` 的候选构建，当前 `https://localhost:50880` 仍运行上述六线版本。隔离恢复检查发现新格式上传原文件无法从恢复前草稿页下载，修复和复验后再更新预览。
+## 设置与工作现场
 
 设置可保存账户阅读字号与减少动效偏好，重新登录或在另一设备打开后生效。帮助按六模块真实操作流程组织。版本页面分别显示正式发布记录与构建时的 Git 提交；当前正式记录为空，不将开发提交冒充发布，也不改写 `CHANGELOG.md`。正式发布流程将经核实的 `ReleaseRecord` 数组写入 `apps/web/src/features/workbench/releases.json`，页面运行不依赖 GitHub 网络或凭据。
 

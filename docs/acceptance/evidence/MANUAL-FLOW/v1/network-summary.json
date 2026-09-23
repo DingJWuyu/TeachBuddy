@@ -1,0 +1,198 @@
+{
+  "requests": 412,
+  "pageErrors": [],
+  "httpErrors": [
+    {
+      "status": 422,
+      "method": "GET",
+      "url": "https://127.0.0.1:32965/api/modules/lessons/v3/new"
+    }
+  ],
+  "mutations": [
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/login"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 201,
+      "path": "/api/workbench/files"
+    },
+    {
+      "method": "POST",
+      "status": 201,
+      "path": "/api/modules/resources/items"
+    },
+    {
+      "method": "POST",
+      "status": 202,
+      "path": "/api/workbench/files/04746e02-9ce0-4842-8536-ff5640dda10c/preview"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/resources/items/c51ba95f-34c0-422d-83b6-c685e1930ecb"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/resources/taxonomy"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/resources/taxonomy"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/resources/items/c51ba95f-34c0-422d-83b6-c685e1930ecb"
+    },
+    {
+      "method": "POST",
+      "status": 201,
+      "path": "/api/modules/questions/v2/items"
+    },
+    {
+      "method": "POST",
+      "status": 201,
+      "path": "/api/modules/lessons/v3"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587"
+    },
+    {
+      "method": "POST",
+      "status": 201,
+      "path": "/api/modules/math/v1/works"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 201,
+      "path": "/api/workbench/files"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/resources/items/c51ba95f-34c0-422d-83b6-c685e1930ecb/file"
+    },
+    {
+      "method": "POST",
+      "status": 202,
+      "path": "/api/workbench/files/62872587-cff8-48d8-9884-79ba276d87c8/preview"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/questions/v2/items/c2227ebc-31e9-4247-83d5-b4b3cdb44828"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/math/v1/works/22c95a0c-f47d-4478-9fe1-0061d15d2239"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587"
+    },
+    {
+      "method": "POST",
+      "status": 202,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587/exports"
+    },
+    {
+      "method": "POST",
+      "status": 202,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587/exports"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/resources/items/c51ba95f-34c0-422d-83b6-c685e1930ecb"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/lessons/v3/df2d3e14-c4fc-4974-bd7a-beb4a56d4587"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/login"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "path": "/api/modules/resources/items/c51ba95f-34c0-422d-83b6-c685e1930ecb"
+    }
+  ]
+}

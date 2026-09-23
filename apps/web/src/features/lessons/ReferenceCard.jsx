@@ -106,13 +106,6 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
             )}
           </section>
         </div>
-        {previewFile && (
-          <FilePreview
-            key={previewFile}
-            fileId={previewFile}
-            onClose={() => setPreviewFile(null)}
-          />
-        )}
         <div className="wb-dialog-actions">
           <button
             type="button"
@@ -133,6 +126,13 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
           </button>
         </div>
       </div>
+      {previewFile && (
+        <FilePreview
+          key={previewFile}
+          fileId={previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
     </div>
   );
 }
