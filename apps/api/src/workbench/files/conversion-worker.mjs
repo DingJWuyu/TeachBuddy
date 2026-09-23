@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import sharp from "sharp";
 import yauzl from "yauzl";
+import { DOMParser } from "@xmldom/xmldom";
 const [mime] = process.argv.slice(2);
 const input = "/input/source";
 const maxExpanded = 512 * 1024 * 1024;
@@ -41,13 +42,28 @@ async function inspectZip() {
           });
           stream.on("error", fail);
           stream.on("end", () => {
-            if (
-              parts.length &&
-              /TargetMode\s*=\s*["']External["']/i.test(
-                Buffer.concat(parts).toString(),
-              )
-            )
-              return fail(new Error("External relationship"));
+            if (parts.length) {
+              try {
+                const xml = Buffer.concat(parts).toString();
+                if (/<!DOCTYPE|<!ENTITY/i.test(xml))
+                  throw new Error("Unsupported relationship XML");
+                const document = new DOMParser().parseFromString(xml, "application/xml");
+                for (const relationship of Array.from(document.getElementsByTagNameNS("*", "Relationship"))) {
+                  if (relationship.getAttribute("TargetMode") !== "External") continue;
+                  // A normal hyperlink is not a fetched document dependency.
+                  // Conversion remains offline; linked images/objects stay rejected.
+                  const type = relationship.getAttribute("Type");
+                  const target = relationship.getAttribute("Target");
+                  if (![
+                    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+                    "http://purl.oclc.org/ooxml/officeDocument/relationships/hyperlink",
+                  ].includes(type) || !/^https?:\/\//i.test(target))
+                    throw new Error("External relationship");
+                }
+              } catch (error) {
+                return fail(error);
+              }
+            }
             zip.readEntry();
           });
         });

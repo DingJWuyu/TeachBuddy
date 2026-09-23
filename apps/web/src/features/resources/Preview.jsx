@@ -53,20 +53,25 @@ export function Preview({
     setError("");
     async function load() {
       try {
-        const result = await client.request(
+        let result = await client.request(
           `/api/workbench/files/${fileId}/preview`,
         );
         if (!active) return;
-        setPreview(result);
         const currentJob = result.jobId
           ? await client.request(`/api/workbench/jobs/${result.jobId}`)
           : null;
+        // The job can finish between the two reads. Read its committed rendition
+        // once more before stopping, rather than displaying the older snapshot.
+        if (["succeeded", "partial"].includes(currentJob?.state))
+          result = await client.request(`/api/workbench/files/${fileId}/preview`);
         if (!active) return;
+        setPreview(result);
         setJob(currentJob);
+        // Retrying keeps the previous rendition/state until conversion finishes.
+        // Follow the new job even when the previous preview is failed or limited.
         if (
-          result.state === "pending" &&
-          (!currentJob ||
-            !["failed", "cancelled", "interrupted"].includes(currentJob.state))
+          ["queued", "running", "cancelling"].includes(currentJob?.state) ||
+          (result.state === "pending" && !currentJob)
         )
           timer = setTimeout(load, 2000);
       } catch (e) {

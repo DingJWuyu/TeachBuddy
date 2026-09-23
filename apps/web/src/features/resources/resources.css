@@ -505,3 +505,18 @@
     animation: none;
   }
 }
+
+.res-metadata fieldset > label,
+.res-tax-row > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.res-workspace input[type="checkbox"],
+.res-tools input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}

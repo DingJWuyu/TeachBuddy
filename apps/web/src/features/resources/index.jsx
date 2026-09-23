@@ -405,6 +405,11 @@ function ResourceWorkspace({
               {breadcrumbs.join(" / ") || "全部资料"} · {items.length} 份
             </span>
           </div>
+          {shell.openPanel && (
+            <button onClick={() => shell.openPanel("resource-taxonomy")}>
+              文件夹与标签
+            </button>
+          )}
           <label
             className={`res-button res-primary ${disabled ? "is-disabled" : ""}`}
           >

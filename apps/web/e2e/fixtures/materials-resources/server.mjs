@@ -90,7 +90,7 @@ export async function startResourcesFixture({
   const resources = workbench.loader.get("resources");
   app.use("/api/modules/resources", resources.router);
   app.use(
-    ["/fixture/adopt", "/fixture/references", "/api/modules/lessons/v2"],
+    ["/fixture/adopt", "/fixture/references", "/api/modules/lessons/v2", "/api/modules/lessons/v3"],
     guards.protectionGuard,
     guards.identityGuard,
     express.json(),

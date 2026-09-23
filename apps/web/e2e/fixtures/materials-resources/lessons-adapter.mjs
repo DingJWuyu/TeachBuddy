@@ -35,13 +35,15 @@ export function lessonsAdapter({ db, resources, mutations }) {
           materials: [],
         };
   };
-  router.get("/api/modules/lessons/v2/items", (req, res) =>
+  // The resource picker now uses v3. This resource-only adapter exposes the
+  // same lesson at both paths; real v3 composition is covered separately.
+  router.get(["/api/modules/lessons/v2/items", "/api/modules/lessons/v3"], (req, res) =>
     res.json({ items: [readLesson(req.workbenchPrincipal)] }),
   );
-  router.get("/api/modules/lessons/v2/items/:id", (req, res) =>
+  router.get(["/api/modules/lessons/v2/items/:id", "/api/modules/lessons/v3/:id"], (req, res) =>
     res.json(readLesson(req.workbenchPrincipal)),
   );
-  router.put("/api/modules/lessons/v2/items/:id", (req, res, next) => {
+  router.put(["/api/modules/lessons/v2/items/:id", "/api/modules/lessons/v3/:id"], (req, res, next) => {
     try {
       validateSchema("UpdateLesson", req.body);
       const result = mutations.execute(
