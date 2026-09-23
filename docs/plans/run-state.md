@@ -4,7 +4,7 @@
 
 唯一开发树 `/home/liam_t/项目/TeacherWorkspace-preview`，分支 `preview/usable-mvp`。原 `/home/liam_t/项目/TeacherWorkspace` 的 main 保持不动。业务/UI 组合基线 `a1feef7d21bad4afc436044b213316f8c3ddf86e`；当前 HEAD 与未提交修改用 Git 核对，不以文档快照代替。
 
-文档及附属资料整理已完成，当前等待用户指定下一项工作。仅资料整理授权，运行和测试输入保持原链路；不改业务/配置/运行实例，不新建 worktree，不合 main、不 push、不部署。产品 Agent 和全站外壳改造持续暂停；目标 Word/WPS、课堂设备、iPad/大陆网络和正式部署验证暂缓。
+下一项开发由用户指定。资料维护可调整导航和测试输出归属，保持运行依赖及固定输入完整；不改用户运行实例，不新建 worktree，不合 main、不 push、不部署。产品 Agent 和全站外壳改造持续暂停；目标 Word/WPS、课堂设备、iPad/大陆网络和正式部署验证暂缓。
 
 当前无活动派发任务。无定时 check，不轮询。
 
@@ -32,7 +32,7 @@
 <details>
 <summary>核查能力结论或固定输入时展开</summary>
 
-下面概括上表结论所依据的具名结果，仅在核查能力声明或复用固定输入时展开。报告中的 PASS 只适用于其受测版本与范围。文档整理未运行产品，不新增产品 PASS。
+下面概括上表结论所依据的具名结果，仅在核查能力声明或复用固定输入时展开。报告中的 PASS 只适用于其受测版本与范围。验证结果仅覆盖其实际候选和范围。
 
 ### 手动与界面
 
@@ -48,21 +48,13 @@
 | 六模块 UI | independent 定向页面、编辑器、取材及渐进交互；不是全产品回归 | `docs/acceptance/evidence/UI-MODULES/independent.md` |
 | 设置/帮助 | 作者具名构建及 4/3 条真实隔离 E2E；纯 UI 预览项未计后端完成 | `docs/acceptance/evidence/UI-SETTINGS/status.md`、`UI-HELP/status.md` |
 
-### 契约与尚有消费者的固定来源
+### 专项边界
 
-`SHA:路径` 用 `git show <SHA>:<路径>` 读取。当前 Markdown 已整理，原固定候选的字节和独立判断仍由 Git 保存。
+- 认证的 real-auth/fake-mail 独立结果：`aaa3d77accbfc743f47edfb1ffc385735b2bf3db:docs/acceptance/evidence/A12/v1/local-recheck.md`。接口源版本由[认证契约](../contracts/auth.md)维护，恢复操作见[数据管理](../features/data.md#部署备份与还原)。
+- 完整材料缺口：`efd3b071a603d38902688b0b4dd68289e8516c69:docs/acceptance/evidence/R35/v1/local-review6.md`；OBS-001/002 仍未以因果证据关闭，原观察为 `880e6e68be0855b3289dea8db3c87e8c67bc1042:docs/acceptance/evidence/R34/v1/restart-diagnosis2.md`。
+- 全六模块 Agent 的有效设计输入由[扩展契约](../contracts/agent.md#六模块扩展契约)维护。首批具名结果 `6d48bc7f214a6b27e51b3a8cbdfa6cffc212f4d1:docs/acceptance/evidence/C27/v1/math-recheck.md` 不证明完整工具已交付。
 
-| 定义 / 结果 | 固定来源 |
-| --- | --- |
-| 真实认证 rc.2 | `6f3003250d170b44e89f6ac9b0a74f91d658a357:docs/contracts/auth.md`；本地 real-auth/fake-mail 独立报告 `aaa3d77accbfc743f47edfb1ffc385735b2bf3db:docs/acceptance/evidence/A12/v1/local-recheck.md` |
-| 认证恢复操作与交接 | `73d68c2e1ec864faac8ee49a8b5f9e6361e82964:docs/contracts/auth-recovery.md`；操作实现 `627bf878d9b2ec57e8bc88a227337744c697a9ce`；`bda25ea14b2df0e683d8252110b884ae3b71eefd:docs/acceptance/evidence/A10/v1/recovery-handoff.md` |
-| 完整可靠性 F60 已冻结 | `31575c5c9d386c03a1f9fcde38b9a216f87a5b08:docs/contracts/reliability.md`及同提交 schema；独立 `68f799f93dfe254238ffe558c22273aa895ae5a4:docs/acceptance/evidence/F60/v1/correction-review.md`。手动有效语义已汇入[数据管理](../features/data.md)，Agent 暂停 |
-| 首批 Agent 具名结果 | `6d48bc7f214a6b27e51b3a8cbdfa6cffc212f4d1:docs/acceptance/evidence/C27/v1/math-recheck.md`，不证明 F61 全模块 |
-| 材料定义及完整缺口 | 设计 `8b8656ae9f9b6c70303b11ec29fbcf70f3b2a8c1`，独立 `88a89f00b78dd301ca9893a191277eb9970c4c18:docs/acceptance/evidence/R30/v1/final-review.md`；完整矩阵 `efd3b071a603d38902688b0b4dd68289e8516c69:docs/acceptance/evidence/R35/v1/local-review6.md`。仅消费未变具名项 |
-| OBS-001/002 未关闭观察 | `880e6e68be0855b3289dea8db3c87e8c67bc1042:docs/acceptance/evidence/R34/v1/restart-diagnosis2.md`；新增错误可区分不等于根因已证实 |
-| 数学设计 | `1a5dd015863d749e5244346f4eaad24ac506670d:docs/acceptance/evidence/M40/v1/handoff.md` |
-| 教学时间与数学扩展 | 基础 `afda1c5d8d8c2de93f1e045ff2ad32e2681bd116`，独立 `f9eb35f2180576daee4aedfb114049f4cb357694:docs/acceptance/evidence/T50/v1/correction2-review.md`；扩展 `a44587b9bd18618d77df13f7349f5043a297d226`，独立 `3dbead5af93059b0f890c531097b234e5f453fae:docs/acceptance/evidence/T50-MATH-CONTRACT/v1/review.md` |
-| 本地 OCR 实验方案 | `d690372c8f552e37690648f5688e04e1b68c4ae9:docs/arch/capability-checks/C21-reuse.md`，独立 `436f2612b62cd40bb7f074ad68568d5bdd951f65:docs/acceptance/evidence/C20-C21-REUSE-PLAN/v1/review.md`；固定六页 `ecd1ed6d8f974fba20ac92d40d5b6b943a3b0170:experiments/C21/next-1/`。本地权重未获许可 |
+`SHA:路径` 使用 `git show <SHA>:<路径>` 读取；过程记录不再复制到当前文档。
 
 ### 真人与目标环境
 

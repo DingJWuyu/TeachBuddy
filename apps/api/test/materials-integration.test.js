@@ -52,7 +52,7 @@ test("material composition serves the frozen v3 catalog through real page-bound 
 import { randomUUID } from "node:crypto";
 import { startMaterialsHttp } from "../../web/e2e/fixtures/materials-integration/server.mjs";
 import { createWorkbench } from "../src/workbench/index.js";
-const evidence = path.resolve("../../docs/acceptance/evidence/R34/v1/attempt2");
+const evidence = path.resolve("../../test-results/evidence/R34/v1/attempt2");
 const empty = { version: 2, blocks: [] };
 const doc = (text) => ({
   version: 2,

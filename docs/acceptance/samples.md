@@ -47,9 +47,9 @@ O-L/O-H/O-X 都分别输出学生 DOCX/PDF 与教师 DOCX/PDF，共12个小文�
 
 ### 人工 Office 样本
 
-固定文件在 [fixtures/office](fixtures/office/)：`docx/` 含教案、讲义、练习的学生/教师六份 DOCX；`source/` 含对应 Markdown、公式和配图。`make-sources.py` 重建 Markdown 源，不生成 DOCX，也不代表产品转换器。目标环境验证暂缓，只有获准的对应任务才执行以下操作。
+固定文件在 [Office fixtures](../../apps/web/e2e/fixtures/office/)：`docx/` 含教案、讲义、练习的学生/教师六份 DOCX；`source/` 含对应 Markdown、公式和配图。`make-sources.py` 重建 Markdown 源，不生成 DOCX，也不代表产品转换器。目标环境验证暂缓，只有获准的对应任务才执行以下操作。
 
-1. 在 Word、WPS 中分别从 [学生讲义](fixtures/office/docx/handout-student.docx) 原件开始。确认中文、分式、根式、分段函数、对数公式和配图完整。
+1. 在 Word、WPS 中分别从 [学生讲义](../../apps/web/e2e/fixtures/office/docx/handout-student.docx) 原件开始。确认中文、分式、根式、分段函数、对数公式和配图完整。
 2. 第一轮改“我的判断”的中文、例 1 分母 `x-2` 为 `x-5`、第二页根式内指数 `2` 为 `3`。另存带软件名的新 DOCX，关闭重开，核对修改及公式可编辑性。
 3. 第二轮再次改中文，分母改为 `x-7`、指数改为 `4`，另存、关闭重开。查看完整打印预览，导出 PDF 并核对这三处修改。
 4. 其余五份分别逐页预览。中文/公式/配图无缺失、裁切、重叠或无内容空页；学生版无教师注记和答案解析。练习 Q5 的三角形、Q6 的立体图及教师版“原材料未提供答案”说明保持。

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import Database from "better-sqlite3";
 import JSZip from "jszip";
@@ -13,7 +14,7 @@ import {
   activate,
 } from "../src/workbench/reliability/backup.js";
 import { sha256 } from "../src/workbench/reliability/storage.js";
-const root = path.resolve(".tmp-md");
+const root = fileURLToPath(new URL("../../../test-results/reliability-api/", import.meta.url));
 fs.mkdirSync(root, { recursive: true });
 async function account(world, email = "data@example.test") {
   const client = world.client();
@@ -611,7 +612,7 @@ test("CLI executes legacy manual backup upgrade; missing files, tampering and un
   const command = (args) =>
     spawnSync(
       process.execPath,
-      ["apps/api/src/scripts/reliability.js", ...args],
+      [fileURLToPath(new URL("../src/scripts/reliability.js", import.meta.url)), ...args],
       { encoding: "utf8", env: { ...process.env, TMPDIR: root } },
     );
   const backupPath = directory + "-backup",

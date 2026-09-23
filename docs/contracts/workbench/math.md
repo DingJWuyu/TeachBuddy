@@ -70,9 +70,25 @@ v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公�
 
 ## 目录、公共端口与教学反馈
 
-[公共接口](../../features/math.md#公共接口与唯一写者)唯一规定 Interface 和写者。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及包含教学时间的组合目标；生产只注册实际接好的模块，按 questions/lessons/math/resources/classes/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖，lessons依赖math读取，classes可以依赖math教学链接；反向反馈仅前端组合，不制造math→classes服务端环。
+进程内协作见[公共端口](#公共端口)。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及包含教学时间的组合目标；生产只注册实际接好的模块，按 questions/lessons/math/resources/classes/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖，lessons依赖math读取，classes可以依赖math教学链接；反向反馈仅前端组合，不制造math→classes服务端环。
 
 教学链接和 kind=math 分支由[教学记录 v2 契约](../teaching-time.md#数学作品关联)组合；固定 schema 输入与消费版本见该契约，不从其他分支取漂移输入。
+
+## 公共端口
+
+具体工厂和操作签名以 `apps/api/src/modules/math/index.js` 及 lessons/classes 的模块入口为准；DTO 使用本目录 schema。只读提供方同步投影已保存结果，供同一 SQLite 事务调用，不经 HTTP 回环或跨模块读表。
+
+| 端口 | 唯一语义与消费者 |
+| --- | --- |
+| `math.port.operations` | 与 HTTP 相同的校验、版本、幂等和错误；手工与 Agent 共用 |
+| `math.readForReferenceV1` | 本账户当前作品及 tombstone；不现场生成文件，invalid 仍可读，由引用方判断是否可新增引用；lessons 消费 |
+| `math.readForTeachingLinkV1` | 作品 ID、版本、标题、删除态，不含源/文件；classes 消费 |
+| `lessons.listUsagesV3` | question/resource/math 使用位置；原旧版端口保持兼容 |
+| `classes.listSourceRecordsV2` | 教学记录列表，不借用备课 UsageList；由工坊的可选反馈容器消费 |
+
+文件字节与重渲染在事务外准备，随后重新校验版本，在同一 mutations 事务保存 Work/Revision/成功回执。冲突留下的 File 按材料保留规则处理，用户原件不回滚。复用[材料端口](materials.md#公共端口)，导出采用有界本地任务，不新增通用工作流。
+
+返回目标和备课草稿归 lessons，math 只返回已保存 ID/version；先保存作品再保存备课，分别报告结果。URL 不携带完整备课，也不新增跨模块事务表。
 
 ## 错误与恢复
 

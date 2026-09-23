@@ -10,6 +10,7 @@
 | 真人 Office 验收原始笔记 | `TeacherWorkspace-preview/.scratch/worktree-consolidation/human-acceptance-20260922.md` |
 | 旧控制树完整现场 | 私有归档中的 `home__liam_t__项目__TeacherWorkspace-mvp/` |
 | Office 对照材料与输出 | 私有归档中的 `home__liam_t__项目__TeacherWorkspace-office-comparison/` |
+| 本地保留的验证产物 | `.scratch/docs-retained-20260923/`；`docs-evidence/` 与 `api-evidence/` 分别保留原文档目录和 API 工作目录中的产物，避开测试自动清理目录 |
 | 未完成分支现场 | 按完整路径在 `archive-index.json` 查其归档目录 |
 
 恢复时先从 `head.txt` 确认原提交，按 `files.list0` 与 `files.tar` 取回所需文件；已提交内容从保留的 Git 分支或 detached 恢复引用读取。归档文件不直接写回正在运行的预览数据目录。

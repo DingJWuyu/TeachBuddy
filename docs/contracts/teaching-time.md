@@ -74,7 +74,19 @@ T53 仅在站内通知查询/写入及 schedule 变更时结算；浏览器工�
 
 ## 公共端口与协议版本
 
-classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2` 和 `math.readForTeachingLinkV1` 读取真实来源；schedule 使用班级/记录摘要与备课端口。具体同步 Interface 见[进程内端口](../features/teaching-time.md#模块与-interface)。业务事务和旧协议的字段约束继续保留。
+classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2` 和 `math.readForTeachingLinkV1` 读取真实来源；schedule 使用班级/记录摘要与备课端口。进程内端口与 HTTP 使用同名 schema，具体工厂签名以模块入口代码为准；以下约束适用于共同 SQLite 事务。
+
+| 同步端口 | 约束 |
+| --- | --- |
+| `classes.readClass/readRecord` | 返回本账户摘要，允许 tombstone；记录 label 依次取 note、position、unfinished、commonIssues、nextNote 的首个非空值，最多 300 个 Unicode 字符。readRecord 不加载数学源，不因作品服务故障阻断日程读取。 |
+| `classes.listSourceRecords/V2` | 分别保留旧联合及 v2 来源语义，反向索引由 classes 独占维护 |
+| `schedule.readOccurrence` | 无时间、无权或不符合原始周节律返回 404；符合节律但超出 until 返回 outside-series |
+| `schedule.listReminderCandidates` | 当前活动实例中 `armedAt < dueAt <= now`，按 dueAt、entryId、originDate 排序；只读，不写通知 |
+| `reminders.captureDue` | 同事务按唯一实例键结算；异常随原写入回滚 |
+
+`beforeChange` 在逻辑安排变更的归属、版本、领域校验通过后，实际修改前同步调用一次；幂等重放不再调用。组合先以闭包注入 schedule，再构造 reminders，最后挂路由；工厂构造不执行业务调用，生产缺依赖即启动失败。clock 由组合入口提供，HTTP 不接收调用者的 now。
+
+来源提供方与 classes 使用同一数据库连接；404/503 按原语义传播，写事务中不网络请求。新增数学来源保留原 ID、版本、链接顺序和首次标题；旧成功回执原样保留，不迁移旧键绑定路径，v2 纯读不批量改旧行。来源删除与记录保存由同一同步事务串行化，不另设事件总线或异步补关联。
 
 ### 静态目录 v2 与当前 v3
 

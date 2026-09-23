@@ -15,7 +15,7 @@ import {
 } from "../../api/test/teaching-time-classes-materials-fixture.js";
 const evidence = path.resolve(
   process.env.MTA_EVIDENCE ??
-    "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
+    "test-results/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
 );
 fs.mkdirSync(evidence, { recursive: true });
 async function login(page, origin, email) {

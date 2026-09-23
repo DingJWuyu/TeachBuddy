@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import path from "node:path";
 const evidence = path.resolve(
-  process.env.R32_EVIDENCE_DIR ?? "docs/acceptance/evidence/R32/v1",
+  process.env.R32_EVIDENCE_DIR ?? "test-results/evidence/R32/v1",
 );
 const samples = path.resolve("apps/web/e2e/fixtures/materials/samples");
 test("WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复", async ({ page }) => {

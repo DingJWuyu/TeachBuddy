@@ -9,7 +9,7 @@
  *
  *   node scripts/first-flow/check.mjs
  *
- * Evidence lands in `docs/acceptance/evidence/B12/v1/`; a later node that
+ * Evidence lands in `test-results/evidence/B12/v1/`; a later node that
  * re-runs these public checks on an integrated candidate sets
  * FIRST_FLOW_EVIDENCE_DIR instead, so B12's own evidence stays untouched. Raw
  * isolated state stays under test-results/first-flow/check/. Exit code 0 only
@@ -35,7 +35,7 @@ import { bootstrapPrincipal, readTestPrincipals } from '../../apps/web/e2e/fixtu
 
 const evidenceDir = process.env.FIRST_FLOW_EVIDENCE_DIR
   ? path.resolve(process.env.FIRST_FLOW_EVIDENCE_DIR)
-  : path.join(repoRoot, 'docs', 'acceptance', 'evidence', 'B12', 'v1');
+  : path.join(repoRoot, 'test-results', 'evidence', 'B12', 'v1');
 const runRoot = path.join(repoRoot, 'test-results', 'first-flow', 'check');
 const accounts = { a: FIRST_FLOW_ACCOUNTS[0], b: FIRST_FLOW_ACCOUNTS[1] };
 const PROBE_ITEMS_PATH = `${workbenchPaths.modules}/workbench-probe/items`;

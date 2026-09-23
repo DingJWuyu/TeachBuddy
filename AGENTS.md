@@ -4,7 +4,7 @@
 
 - 核对实际能力或运行状态时读 `README.md`；`prototype/` 是交互参考，`apps/` 才是真实产品实现位置，旧演示 API 不约束新契约。
 - 编排 MVP 时从 `docs/plans/mvp-dag.md` 进入调度视图；了解总体进度时可从 `docs/ROADMAP.md` 导航。
-- 当前编排状态和下一步读取 `docs/plans/run-state.md`；它只维护执行台账，不替代 DAG 的依赖与授权视图。
+- 当前编排状态和下一步读取 `docs/plans/run-state.md`；它只维护执行台账，不替代 DAG 的依赖与授权视图。唯一开发树为当前 `TeacherWorkspace-preview`；旧任务现场按 `docs/plans/worktree-archive.md` 查找。
 - 仅编排者：效率优先，在依赖与权限允许时并行使用 worktree；某条 flow 等用户时继续其他可推进的 flow。派发 prompt 保持最小必要，模型路由和具体规则见 `docs/plans/execution-protocol.md#orchestration`，任务包见 `docs/plans/task-package.md`。
 - 需要选择或解释 skill 流程时读取 `docs/plans/skill-routing.md`；任务包点名 skill 时，完整读取其 `SKILL.md` 及直接引用。业务 session 之间不互聊、不扩 DAG；skill 明确要求的有界内部 subagent 由调用 session 管理并聚合，只是该规则的有限例外，不单列 DAG 节点。
 - 接到设计、实现或独立验收任务时，从本次任务包的必读清单进入对应节点、规格和 `docs/plans/execution-protocol.md` 的本角色章节；按触发条件补读，不要求通读 DAG 或其他模块。
@@ -47,3 +47,9 @@
 ### Domain docs
 
 使用 single-context 布局：根目录 `CONTEXT.md` 和 `docs/adr/`。参见 `docs/agents/domain.md`。
+
+## 文档维护边界
+
+- `AGENTS.md` 可以追加内容；非用户明确指示，禁止改写或删除既有内容。
+- 非用户明确指示，禁止修改或删除 setup-matt-pocock-skills 规定的 `docs/agents/issue-tracker.md`、`docs/agents/triage-labels.md`、`docs/agents/domain.md`。
+- 整理文档以“人和 agent 能否更快找到唯一、准确、足够的信息，并且运行和验证链路仍然完整”为完成标准。按 `writing-for-agents` 使用渐进式披露：入口说明何时读什么，详细规则只在权威位置维护。

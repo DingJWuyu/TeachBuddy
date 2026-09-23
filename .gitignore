@@ -9,6 +9,9 @@ apps/api/dist
 apps/api/src/data/*.sqlite
 apps/api/src/data/*.sqlite-*
 test-results
+.tmp-bm
+.tmp-md/
+.tmp-ms/
 # Session packages from the product behavior design workflow. They hold local
 # work in progress and can be absent from a checkout, so repository artifacts
 # must never reference or depend on them.

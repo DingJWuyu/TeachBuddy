@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 import { startQuestionsFixture } from "./fixtures/materials-questions/server.mjs";
-const out = "docs/acceptance/evidence/R33/v1/attempt4";
+const out = "test-results/evidence/R33/v1/attempt4";
 test("synthetic page fragments use real upload, review, independent answer navigation and reload", async ({
   page,
 }) => {

@@ -133,7 +133,7 @@ try {
     assert.deepEqual(snapshot(world.workbench.db), before);
   } finally { await world.close(); }
   fs.writeFileSync(
-    'docs/acceptance/evidence/R31/v1/migration.json',
+    'test-results/evidence/R31/v1/migration.json',
     JSON.stringify(
       {
         status: 'PASS',

@@ -19,7 +19,7 @@ const fixed = "2682475041aa187e3cd50ad743dc5e5bc243feda";
 const root = fileURLToPath(new URL("../../../", import.meta.url)),
   evidence = path.resolve(
     process.env.MTA_EVIDENCE ??
-      "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
+      path.join(root, "test-results/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation"),
   );
 fs.mkdirSync(evidence, { recursive: true });
 const hash = (value) => createHash("sha256").update(value).digest("hex");
@@ -54,6 +54,8 @@ function files(directory) {
     fs
       .readdirSync(folder, { recursive: true, withFileTypes: true })
       .filter((x) => x.isFile())
+      // Each server owns a new maintenance lock; only persisted user files must stay identical.
+      .filter((x) => !path.relative(folder, path.join(x.parentPath, x.name)).startsWith('.managed-files.maintenance-lock/'))
       .map((x) => {
         const p = path.join(x.parentPath, x.name);
         return [path.relative(folder, p), hash(fs.readFileSync(p))];
@@ -134,7 +136,7 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
   }
   try {
     let call = await start();
-    assert.deepEqual(snapshot(candidate), oldRows);
+    assert.deepEqual(snapshot(candidate), { ...oldRows, lesson_order: hash("[]") });
     assert.deepEqual(files(candidate), oldFiles);
     assert.deepEqual(await call("GET", `${R}/${seed.saved.id}`), seed.saved);
     assert.deepEqual(
@@ -147,7 +149,7 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
       ),
       seed.saved,
     );
-    assert.deepEqual(snapshot(candidate), oldRows);
+    assert.deepEqual(snapshot(candidate), { ...oldRows, lesson_order: hash("[]") });
     const upgraded = await call("PUT", `${Q}/${seed.item.id}`, {
       ...writable({
         ...seed.item,

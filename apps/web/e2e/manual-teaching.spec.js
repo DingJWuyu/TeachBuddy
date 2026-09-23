@@ -7,7 +7,7 @@ import { createIntegration } from '../../api/test/fixtures/auth-integration/harn
 import { registerMath } from './fixtures/math-static/real.mjs';
 import { http, seedLegacy, C, R, record } from '../../api/test/teaching-time-classes-materials-fixture.js';
 
-const evidence = path.resolve('docs/acceptance/evidence/MANUAL-TEACHING/v1/browser');
+const evidence = path.resolve('test-results/evidence/MANUAL-TEACHING/v1/browser');
 const E = '/api/modules/schedule/entries';
 let world, call, client, businessNow;
 const workbenchClock = () => new Date(businessNow);
@@ -22,6 +22,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByLabel('密码', { exact: true }).fill('math-password');
   await page.getByRole('button', { name: '登录', exact: true }).click();
   await expect(page.locator('.wb-shell')).toBeVisible();
+  await page.getByRole('button', { name: '知道了', exact: true }).click();
 });
 test.afterEach(async ({ context }) => { await context.close(); await world?.close(); });
 const entry = (overrides = {}) => ({ title: '函数课程', items: [],
@@ -119,6 +120,8 @@ test('日程可选当前备课与含数学作品的实际记录', async ({ page 
 async function range(page, from, to) {
   await page.locator('[name=range-from]').fill(from);
   await page.locator('[name=range-to]').fill(to);
+  // Navigation can leave the hover menu open above the range controls.
+  await page.keyboard.press('Escape');
   await page.locator('[data-action=apply-range]').click();
   await expect(page.locator('[data-region=range-label]')).toContainText(`${Number(from.slice(5, 7))}月${Number(from.slice(8))}日`);
 }
@@ -214,22 +217,29 @@ test('相对结束提醒随调时变化，关闭后补提醒保留原时刻并�
   try {
     const reopened = await context.newPage();
     await reopened.goto(world.origin + '/classes');
+    await reopened.getByRole('button', { name: '知道了', exact: true }).click();
     await reopened.getByRole('button', { name: /^通知/ }).click();
-    const notices = reopened.locator('[data-notification-id]');
+    const panel = reopened.getByRole('dialog', { name: '通知', exact: true });
+    const notices = panel.locator('.tb-notification');
     await expect(notices).toHaveCount(2);
-    await expect(notices.filter({ hasText: '函数课程' }).locator('time')).toHaveAttribute('datetime', '2026-09-23T09:20:00Z');
-    await expect(notices.filter({ hasText: '课后整理' }).locator('time')).toHaveAttribute('datetime', '2026-09-23T08:50:00Z');
+    await expect(notices.filter({ hasText: '函数课程' }).locator('.tb-row-meta')).toHaveText('9/23 17:20');
+    await expect(notices.filter({ hasText: '课后整理' }).locator('.tb-row-meta')).toHaveText('9/23 16:50');
     await shot(reopened, 'catch-up-notifications');
     await notices.filter({ hasText: '函数课程' }).click();
     await expect(reopened).toHaveURL(new RegExp(`entry=${value.id}`));
     await expect(reopened.locator('[name=entry-start]')).toHaveValue('16:00');
     await reopened.locator('[data-action=cancel]').click();
     await reopened.getByRole('button', { name: /^通知/ }).click();
-    await reopened.locator('[data-notification-id]').filter({ hasText: '函数课程' }).click();
+    await notices.filter({ hasText: '函数课程' }).click();
     await expect(reopened.locator('[name=entry-start]')).toHaveValue('16:00');
     await reopened.getByRole('button', { name: /^通知/ }).click();
-    await expect(reopened.locator('[data-notification-id][data-unread=false]')).toHaveCount(1);
-    await reopened.getByRole('button', { name: '清空', exact: true }).click();
+    await expect(panel.locator('.tb-notification.is-read')).toHaveCount(1);
+    await panel.getByRole('button', { name: '全部已读', exact: true }).click();
+    await expect(panel.locator('.tb-notification.is-read')).toHaveCount(2);
+    for (let remaining = 2; remaining > 0; remaining--) {
+      await notices.first().dragTo(panel.locator('.tb-notification-trash'));
+      await expect(notices).toHaveCount(remaining - 1);
+    }
     await expect(reopened.getByText('暂无通知', { exact: true })).toBeVisible();
     await reopened.reload();
     await reopened.getByRole('button', { name: /^通知/ }).click();
@@ -239,8 +249,8 @@ test('相对结束提醒随调时变化，关闭后补提醒保留原时刻并�
 
 test('班级管理、一句话后补充进度问题和三类关联、保存重开', async ({ page }) => {
   const seeded = await seedLegacy(client);
-  await page.locator('.wb-sidebar').getByRole('link', { name: '班级教学', exact: true }).click();
-  await page.getByRole('button', { name: '新建班级', exact: true }).click();
+  await page.getByRole('complementary', { name: '工作台导航' }).locator('a[href="/classes"]').click();
+  await page.locator('[name=new-class]').click();
   await page.getByLabel('班级名称', { exact: true }).fill('高二一班');
   await page.getByRole('button', { name: '创建', exact: true }).click();
   await page.getByLabel('写一句', { exact: true }).fill('定义中的任意性还需强调');
@@ -260,7 +270,7 @@ test('班级管理、一句话后补充进度问题和三类关联、保存重�
   await picker.locator(`[data-source-id="${seeded.item.id}"]`).click();
   await picker.getByRole('tab', { name: '数学作品', exact: true }).click();
   await picker.locator(`[data-source-id="${seeded.math.id}"]`).click();
-  await picker.getByRole('button', { name: '确定', exact: true }).click();
+  await picker.getByRole('button', { name: '关联 3 项', exact: true }).click();
   await editor.getByRole('button', { name: '保存', exact: true }).click();
   await expect(editor).toContainText('已保存');
   const recordId = await row.getAttribute('data-record-id');
@@ -270,12 +280,14 @@ test('班级管理、一句话后补充进度问题和三类关联、保存重�
   await expect(page.getByLabel('教学位置', { exact: true })).toHaveValue('第一章例2');
   await expect(page.getByLabel('共性问题', { exact: true })).toHaveValue('量词与定义域');
   await expect(page.locator('[data-region=latest-position]')).toContainText('第一章例2');
-  await page.getByRole('button', { name: '改名', exact: true }).click();
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '重命名', exact: true }).click();
   await page.getByLabel('班级名称', { exact: true }).fill('高二实验班');
   await page.locator('[name=save-class-name]').click();
   await expect(page.getByRole('heading', { name: '高二实验班', exact: true })).toBeVisible();
   await shot(page, 'class-complete-record');
-  await page.locator('[name=delete-class]').click();
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '删除班级', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '删除', exact: true }).click();
   await expect(page.locator('[data-region=class-deleted-note]')).toBeVisible();
   await expect(page.locator('[data-region=record-editor]')).toHaveCount(0);

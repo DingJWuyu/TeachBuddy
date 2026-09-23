@@ -71,7 +71,7 @@
 
 遵守 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。权威静态目录位于 `packages/shared/src/`，基础格式见 OpenAPI 的 ModuleCatalog 与同名样本，扩展目录由材料及数学契约定义。当前六模块目录及接缝在 `packages/shared/src/`，日程为 top 类型。questions 无业务依赖，lessons 必需 questions 的引用读取端口。目录纯数据，Web/API 从同一目录投影到各自本地代码映射；构建检查缺映射、重复 ID/路径、缺依赖与环路，启动前检查迁移。停用或隐藏导航不代表拒绝模块 API。
 
-下表描述基础 v1 接缝。当前模块工厂另注入材料及数学依赖，具体参数见[材料公共端口](workbench/materials.md#公共端口)与[数学公共接口](../features/math.md#公共接口与唯一写者)；`readForReference` 保留供旧调用方，当前丰富引用使用 `readForReferenceV2`。模块内部文件、组件和 SQL 由所属模块维护。
+下表描述基础 v1 接缝。当前模块工厂另注入材料及数学依赖，具体参数见[材料公共端口](workbench/materials.md#公共端口)与[数学公共接口](workbench/math.md#公共端口)；`readForReference` 保留供旧调用方，当前丰富引用使用 `readForReferenceV2`。模块内部文件、组件和 SQL 由所属模块维护。
 
 | 接缝 | 约定 | 写者/消费者 |
 | --- | --- | --- |

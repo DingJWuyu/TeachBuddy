@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
-const out = "docs/acceptance/evidence/R33/v1/attempt2";
+const out = "test-results/evidence/R33/v1/attempt2";
 for (const kind of ["T", "W"])
   test(`${kind} untouched native quality and editable formula persistence`, async ({
     page,

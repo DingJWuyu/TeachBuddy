@@ -5,7 +5,7 @@ import { chromium, expect } from '@playwright/test';
 import sharp from 'sharp';
 import Database from 'better-sqlite3';
 
-const evidence = path.resolve('docs/acceptance/evidence/R31/v1');
+const evidence = path.resolve('test-results/evidence/R31/v1');
 const dataDir = path.resolve('test-results/r31-complete/browser-data');
 const port = 48331,
   origin = `http://localhost:${port}`;

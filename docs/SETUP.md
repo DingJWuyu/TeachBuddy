@@ -19,7 +19,7 @@
 已验证的开发基线使用 Node.js 22.23.2 和 npm workspaces；依赖版本由锁文件固定。新环境从仓库根 `npm ci`，不在运行着的用户实例中做依赖重装。
 
 1. 准备独立端口、数据库、文件目录与 HTTPS 证书。优先使用相应模块已有测试 harness，它们有隔离数据和邮件替身。
-2. 构建实际受测候选。现有 `build:shared` 检查静态目录，`build:api` 使用系统临时目录验证装配和迁移，`build:web` 生成 Web 产物。
+2. 构建实际受测候选。现有 `build:shared` 检查静态目录，`build:api` 使用系统临时目录验证装配和迁移。Web 隔离构建用 `npm --workspace @refatos/web run build -- --outDir /absolute/test/web-dist`；真实认证测试 harness 可通过 `WORKBENCH_WEB_DIST` 选择该产物。构建路径避免隐藏目录（如 `.scratch/`），否则 Express 的 `sendFile` 默认拒绝 SPA 回退请求。
 3. 独立真实认证实例按 [.env.example](../.env.example)配置并补充下面的文件目录；密钥、SMTP 和证书内容不写进提交。
 4. 从仓库根启动：
 
@@ -31,17 +31,7 @@ Web 与 `/api` 由同一个 HTTPS origin 提供。默认 `npm run dev` 不会替
 
 ## 必需配置的来源
 
-| 配置 | 含义 |
-| --- | --- |
-| `SQLITE_PATH` | 实例的持久 SQLite 绝对路径 |
-| `WORKBENCH_FILES_DIR` | 同一实例的持久原文件和制品目录 |
-| `WORKBENCH_PUBLIC_ORIGIN` | 精确 HTTPS origin，需和访问地址一致 |
-| `WORKBENCH_TLS_CERT` / `WORKBENCH_TLS_KEY` | HTTPS 证书与私钥路径 |
-| `WORKBENCH_WEB_DIST` | 本次候选实际 Web 构建目录 |
-| `AUTH_CODE_SECRET` | 持久认证密钥；保持现有实例的值 |
-| `SMTP_*` | 邮件投递配置；测试收件器和真实投递分开记录 |
-
-完整变量与默认行为以 `apps/api/src/config/env.js` 和 [.env.example](../.env.example)为准。生产不能使用 `test-principal`；测试身份只用于明确隔离的场景。
+变量、默认值与校验以 `apps/api/src/config/env.js` 和 [.env.example](../.env.example) 为准。每个隔离实例配置自己的 SQLite、文件目录、同源 HTTPS 和 Web 构建路径；测试收件器与真实邮件分开。已有实例保持其认证密钥，生产不使用 test-principal。
 
 <a id="文件转换工具"></a>
 ## 文件转换工具
@@ -53,7 +43,7 @@ Web 与 `/api` 由同一个 HTTPS origin 提供。默认 `npm run dev` 不会替
 - 转换还调用 `bwrap` 和相应格式工具；准确命令从同目录的 `conversion-worker.mjs` 核对。
 - 工具路径应稳定独立于短期 worktree。归档中的工具包存在不代表运行配置已经指向它。
 
-当前实例的两个路径失效，修复归属见台账。本指南记录问题，不暗示已安装或已验证恢复。
+当前实例的工具可用性与待处理项由[台账](plans/run-state.md)维护；修改运行配置后必须实际转换并打开文件验证。
 
 ## 验证与原型
 
@@ -71,13 +61,9 @@ Web 与 `/api` 由同一个 HTTPS origin 提供。默认 `npm run dev` 不会替
 
 优先核对单主机端到端路径。已有持续联网主机加 Tunnel 可作为候选，但主机关机/休眠即不可访问，稳定 URL、域名、备份与中国大陆网络仍需验证。拆成 Workers/D1/R2 加独立 pi/Office 执行节点并未获选；它会改变当前 SQLite/文件接缝，只有具体部署条件需要时再评估，不能把免费额度当作已经兼容。
 
-### 费用、可达性与验证
+### 交付验证
 
-完全免费、无需支付条件或大陆可靠访问均未获实证。Cloudflare 全球服务与 China Network 是不同产品，不能从后一产品的限制推断全球域名必然不可达。平台价格、额度、Node 兼容与网络能力在选定方案时重查。
-
-部署候选应实际验证 DNS/TLS、Cookie 页面绑定、上传/下载、SSE、Office 预览与输出、浏览器离线包、重启持久化、停服一致备份及恢复。Edge/Chrome、iPad/学校网络、Word/WPS 和课堂设备分别报告，不用本机成功代签。
-
-可继续查的一手来源：[Tunnel](https://developers.cloudflare.com/tunnel/)、[Quick Tunnels](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/)、[Workers 限制](https://developers.cloudflare.com/workers/platform/limits/)、[Node 兼容](https://developers.cloudflare.com/workers/runtime-apis/nodejs/)、[D1](https://developers.cloudflare.com/d1/platform/pricing/)、[R2](https://developers.cloudflare.com/r2/get-started/)、[China Network](https://developers.cloudflare.com/china-network/)。
+选定方案后核对其当前价格、额度、Node/系统工具支持及目标网络。实际验证 DNS/TLS、Cookie 页面绑定、上传/下载、SSE、Office 输出、浏览器离线包、重启持久化、停服备份与还原；目标浏览器、平板/学校网络、Word/WPS 和课堂设备分别记录结果。
 
 ## 代码结构
 

@@ -30,7 +30,7 @@ import {
   createTeachingTimeClassesService
 } from './teaching-time-classes/service.js';
 
-const EVIDENCE = path.join(T51_REPO_ROOT, 'docs', 'acceptance', 'evidence', 'T51-MATH', 'v1', 'regression');
+const EVIDENCE = path.join(T51_REPO_ROOT, 'test-results', 'evidence', 'T51-MATH', 'v1', 'regression');
 const PASS_SHOTS = path.join(EVIDENCE, 'pass');
 const FAULT_SHOTS = path.join(EVIDENCE, 'failures');
 

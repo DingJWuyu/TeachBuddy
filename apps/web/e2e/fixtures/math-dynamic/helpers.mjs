@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { expect } from "@playwright/test";
 export const evidence = path.resolve(
-  process.env.M42_EVIDENCE_DIR || "docs/acceptance/evidence/M42/v1/artifacts",
+  process.env.M42_EVIDENCE_DIR || "test-results/evidence/M42/v1/artifacts",
 );
 fs.mkdirSync(evidence, { recursive: true });
 export async function register(page, world, email) {

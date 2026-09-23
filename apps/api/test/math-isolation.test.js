@@ -185,7 +185,7 @@ test("real HTML upload, original/current bytes, large/broken assets, cross-accou
       ? path.resolve(process.env.M42_EVIDENCE_DIR)
       : fileURLToPath(
           new URL(
-            "../../../docs/acceptance/evidence/M42/v1/artifacts/",
+            "../../../test-results/evidence/M42/v1/artifacts/",
             import.meta.url,
           ),
         );

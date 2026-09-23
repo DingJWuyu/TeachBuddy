@@ -1,42 +1,34 @@
-# 项目文档
+# 文档索引
 
-了解产品读根 [README](../README.md)。接续工作读[当前状态](plans/run-state.md)，其中包含已有能力、缺口、授权与必要证据；处理具体功能从下面选一页。
+了解产品读根 [README](../README.md)。接续工作读[当前状态](plans/run-state.md)。日常修改从下表选一个功能，按任务需要继续展开，不要求通读目录。
 
 ## 功能规格
 
-每页集中用户行为、实现位置与验证入口。仅在修改协议或底层实现时，继续读该页指向的契约、schema 和技术段落。
+功能页拥有用户行为、实现入口和局部验证方法。改变交换语义、存储或跨模块调用时才读它指向的契约；核对字段时再进入 OpenAPI 和样本。
 
-| 功能 | 内容 |
+| 修改什么 | 入口 |
 | --- | --- |
-| [题库](features/questions.md) | 录题、自动整理与校对、分类、原稿、改编 |
-| [备课](features/lessons.md) | 教学环节、取材、引用更新、Word/PDF 输出 |
-| [资源库](features/resources.md) | 文件、分类、预览、替换 |
-| [数学工坊](features/math.md) | 公式、图形、动态作品、源码、离线及渲染接缝 |
-| [班级教学与日程](features/teaching-time.md) | 实际反馈、时间、重复、提醒及模块接线 |
-| [设置与支持页](features/settings.md) | 偏好、退出、帮助、更新日志及尚未持久化的预览项 |
-| [数据管理](features/data.md) | 个人资料包、最近删除、维护备份与恢复 |
-| [账户](features/identity.md) | 登录注册、邮件、会话、身份与工作台接线 |
-| [产品 Agent](features/agent.md) | 对话、业务工具、pi 与模型接入，整线暂停 |
+| 录题、提取校对、分类、原稿、改编 | [题库](features/questions.md) |
+| 文稿、环节、取材、引用更新、Word/PDF | [备课](features/lessons.md) |
+| 上传、文件夹、预览、替换 | [资源库](features/resources.md) |
+| 公式、图形、动态作品、源码、离线演示 | [数学工坊](features/math.md) |
+| 班级反馈、日程、重复、提醒 | [教学与时间](features/teaching-time.md) |
+| 偏好、退出、帮助、更新日志 | [设置与帮助](features/settings.md) |
+| 个人资料包、最近删除、备份还原 | [数据管理](features/data.md) |
+| 登录、注册、邮件、身份交接 | [账户](features/identity.md) |
+| 对话、业务工具、模型接入 | [产品 Agent](features/agent.md) |
 
-## 共同资料
+## 按需展开
 
-| 要查什么 | 入口 |
+| 当前问题 | 权威入口 |
 | --- | --- |
-| 做什么、不做什么 | [产品范围](PRODUCT_SCOPE.md)、[领域词义](../CONTEXT.md) |
-| 外壳、布局、保存现场与跨模块交互 | [工作台共同交互](WORKBENCH_DESIGN.md)、[设计与验证规则](rules/design-and-verification.md) |
-| 代码位置、启动配置、隔离开发、转换工具与部署条件 | [运行与代码结构](SETUP.md) |
-| 如何验证、完整质量门槛和样本 | [验证指南](acceptance/README.md) |
-| 剩余工作如何衔接 | [当前状态](plans/run-state.md)、[DAG 剩余依赖](plans/mvp-dag.md) |
+| 是否属于产品范围，术语指什么 | [产品范围](PRODUCT_SCOPE.md)、[领域词义](../CONTEXT.md) |
+| 页面外壳、辅助栏、跨模块往返如何工作 | [共同交互](WORKBENCH_DESIGN.md) |
+| UI 尺寸、动效、参考及浏览器验证如何处理 | [界面规则](rules/design-and-verification.md) |
+| 如何运行、隔离测试、配置转换工具或部署 | [运行指南](SETUP.md) |
+| 验证哪些行为、使用哪些样本 | [验证入口](acceptance/README.md)；完整交付才展开[矩阵](acceptance/mvp-matrix.md) |
+| 当前还有什么缺口、可以执行什么 | [当前状态](plans/run-state.md)；全局依赖见[DAG](plans/mvp-dag.md) |
+| 如何派发、选择模型和接收回执 | [执行约定](plans/execution-protocol.md) |
+| 如何操作 Issue 或调整稳定架构 | [Issue 约定](agents/issue-tracker.md)、[ADR](adr/) |
 
-## 目录职责
-
-| 目录 | 保存什么 | 何时展开 |
-| --- | --- | --- |
-| `features/` | 按功能组织的有效规格、实现接缝和验证入口 | 日常功能任务 |
-| `contracts/` | 交换语义、兼容规则、正反例及精确 OpenAPI/JSON Schema | 修改接口、存储或跨模块调用 |
-| `acceptance/` | 行为判据、完整矩阵、人工样本 `fixtures/` 及尚需保护的现场 | 对应功能或阶段验收 |
-| `plans/` | 当前状态、剩余依赖、执行约定与恢复索引 | 接续进度、派发或恢复工作 |
-| `rules/`、`agents/`、`adr/` | 项目规则、仓库约定与稳定架构决定 | 任务触及相应约束时 |
-| `research/` | 尚未执行的自动提取复用方案与许可边界 | 该路线获准继续时 |
-
-技术接缝随功能或契约保存，不另设架构文档层。机器契约位于 `contracts/`，自动测试输入按测试入口定位，当前截图在对应功能的 `assets/`；它们不是必读材料。已提交过程从 Git 查询，日常文档不维护逐轮回执。
+`contracts/` 保存协议语义、精确 schema、样本和必要的固定输入；部分文件由后端直接读取。`acceptance/` 保存行为判据，测试输入位于对应测试的 `fixtures/`，运行输出位于忽略的 `test-results/`。截图只在对应页面的视觉参考中按需查看。自动提取方案仅在继续该路线时由[题库](features/questions.md)进入。

@@ -1,75 +1,51 @@
-# 开发执行约定
+# 任务执行约定
+
+只在派发、恢复或接收任务时读取。授权与即时下一步由[当前状态](run-state.md)维护，完整交付依赖由[DAG](mvp-dag.md)维护。
 
 <a id="orchestration"></a>
-## 编排与写入
+## 任务包与写入
 
-当前状态及权限以[运行台账](run-state.md)为准，完整未完成依赖以[DAG](mvp-dag.md)为准。当前唯一开发树是 preview；同一共享文件只安排一个写者，等待主动回执，不轮询、不设 check。旧任务分支和节点分工不授予当前写权。
-
-任务 prompt 使用[短任务包](task-package.md)，只带相关功能规格、契约与具体完成条件。收到结果核对固定版本、实际范围和证据等级；退出码 0 不等于 PASS，局部 PASS 不放行完整产品。普通文档整理自检后交根，不追加重复审查。
+当前使用唯一 preview 开发树。按实际模块/目录分配任务，共享文件只有一个写者；旧分支和派工记录不授予当前写权。资料只带相关功能及所需契约，公共语义变化须标明消费者和兼容策略。
 
 <a id="design"></a>
 <a id="implementation"></a>
 <a id="acceptance"></a>
 <a id="integration"></a>
-公共行为与字段分别归功能规格和契约；实现内部取舍由写者决定。共享语义变更须明确消费者和兼容策略。集成只操作已固定候选及获准范围，用户库和在线实例另受[运行指南](../SETUP.md)保护。验收执行[相关行为标准](../acceptance/README.md)，self、independent、user 保持区别。
+设计、实现和验收任务使用同一任务边界；业务规则归功能规格，协议归契约，实际执行与证据归回执。
 
-<a id="模型与固定派发"></a>
+任务 prompt 按[短任务包](task-package.md)填写目标、固定输入、资料、边界、完成条件与回执，并记录实际模型/effort。
+
+固定 Git 输入使用 commit + path；未提交或外部样本按需记录摘要。版本、attempt、session 和过程记录留在任务目录，不积累到长期文档。操作用户实例按[运行指南](../SETUP.md)，合并、push、部署和模型费用各按当前授权。
+
 ## 模型与固定派发
 
-本表是开发任务默认路由，不是产品内模型配置。记录实际模型和 effort，不设自动降级。
+本表是开发默认路由，具体任务的用户指定优先。开发使用 Codex CLI，停用 dsh，不自动降级；skill 内部助手继承调用方。产品模型另见[模型接入](../features/agent.md#模型接入)。
 
-| 工作 | harness | 模型 | effort |
-| --- | --- | --- | --- |
-| 复杂行为、公共契约、架构设计 | Codex CLI | gpt-6-astra | high |
-| 常规独立核验、阶段验收 | Codex CLI | gpt-6-astra | medium |
-| 前后端实现与修复 | Codex CLI | gpt-6-astra | low |
-| 实现反复失败后的困难接手 | Codex CLI | gpt-6-astra | high |
-| 调研、文档、实验调查 | Codex CLI | gpt-6-sol | medium |
-| 当前分支集成维护 | Codex CLI | gpt-6-sol | high |
-| skill 内部助手 | 调用方 harness | 继承调用方 | 继承调用方 |
+| 工作 | 模型 | effort |
+| --- | --- | --- |
+| 复杂行为、公共契约、架构设计 | gpt-6-astra | high |
+| 常规独立核验、阶段验收 | gpt-6-astra | medium |
+| 前后端实现与修复 | gpt-6-astra | low |
+| 实现反复失败后的困难接手 | gpt-6-astra | high |
+| 调研、文档、实验调查 | gpt-6-sol | medium |
+| 当前分支集成维护 | gpt-6-sol | high |
 
-用户对具体任务的指定优先。例如用户曾给 UI 实施任务指定资料调查用 gpt-6-luna max、独立验收/代码审查用 gpt-6-sol high；只有携带该授权的任务才应用该例外，不把它变成全项目自动派发。
+## 技能与验证
 
-用户可直接指定其他模型担任编排或执行；事实来源不变。开发停用 dsh。产品 Agent 的两个模型白名单见[模型接入](../features/agent.md#模型接入)。
+根据当前会话提供的 skill 触发条件选择流程，读取实际 SKILL.md 及直接引用。旧记录不证明技能仍安装，skill 也不扩大任务或外部动作权限。文档使用 `writing-for-agents`；特定技能不可用时如实说明。
 
-<a id="ownership"></a>
-## 写入与版本
+验证方法按[验证入口](../acceptance/README.md)选择。作者自验、独立流程验收和真人反馈分别记 self、independent、user；退出码或局部 PASS 不能代表完整产品。
 
-- 任务边界按模块/目录表达。仅对实际共享入口、锁文件、公共样式、迁移 runner 等明确唯一写者，不穷举全部新文件。
-- Git 中的资料用 commit + path 固定；未提交或外部样本才按需 SHA-256。活动任务的输入不能被后来的文档更改静默替换。
-- 公共契约变化交责任设计者，给受影响消费者新版与必要验证；模块内部取舍交执行者。
-- 当前只保留一个长期开发 worktree，实际并行必须符合当前写入边界和用户许可；旧协议中的每任务新 worktree 不作为当前指令。
+审查固定 diff 时用 `code-review` 的 Standards/Spec 两轴；先核对该 diff 是否包含实际改动，`<fixed-point>...HEAD` 不含未提交内容。根接收一份聚合结果，修复后定向复验；普通文档整理只做必要自检。
 
 ## 失败与接续
 
-普通失败按具体归属修复。实现困难最多先用默认实现者完成首次与一次有证据的修复，再由 Astra high 接手一次；输入/契约问题直接交设计者。相同输入重复失败后需要新证据或新方案，不靠更名重置尝试次数。成熟开源能力可优先复用适配。
+普通失败按归属处理。默认实现者完成首次与一次有证据的修复仍失败时，由 Astra high 接手一次；输入或契约问题交其责任方。同一输入重复失败后先取得新证据或方案。
 
-额度中断保留现场，不降级；明确 model at capacity 可按用户已有许可恢复原会话。任务指定续接时保留 session 和产物，独立验收仍与作者分离。旧实验窗口不因接续重开。
+额度中断保留现场和原模型；恢复已指定任务时保留 session 与产物，独立验收仍与作者分离。等待主动回执，时间经过和队列已投递都不是结果；只有异常通知或用户明确要求时检查状态。
 
-正常完成走主动回执。只有异常通知或用户明确检查时核对一次相关状态；时间经过、无消息、queue 已投递均不证明任务失败或仍在运行。等待期间不轮询、不设置 check。
+## 回执
 
-<a id="receipt"></a>
-## 一份聚合回执
+一份回执足以接续即可：任务及实际 session、harness/model/effort、输入与产物版本（未提交则路径）、变更范围、实际检查与证据、验证等级、未完成项及下一步。涉及运行时写清环境和身份，涉及代码审查补固定基线及两轴结果。
 
-任务包给出保存位置。内容只需足以接续，不为格式补齐再做一次产品审查。
-
-```yaml
-task: "任务 ID"
-revision: "本次任务版本"
-attempt: "本次尝试编号"
-status: "PASS | FAIL | BLOCKED"
-verification_level: "self | independent | user"
-session_id: "实际 session ID；无法取得写 unavailable"
-finished_at_utc: "实际完成时间"
-runner: "实际 harness / model / effort"
-base_revision: "固定输入 commit"
-result_revision: "产物 commit；未提交则路径及必要 hash"
-changed_files: ["实际变化与范围"]
-checks: ["真实操作或命令、结果、证据路径"]
-open_items: ["剩余问题、拥有者、解除条件"]
-next: "下一位的具体动作或等待条件"
-```
-
-涉及实际运行时注明身份和环境；涉及 `code-review` 时补 fixed point、实际 diff 范围与 Standards/Spec 分轴结果。内部结果聚合为一份回执。退出码、self、independent、user 分别表达不同事实。
-
-成功后清理本任务临时材料；失败保留现场。旧证据及仍被程序使用的样本不是一次性垃圾。归档与运行工具按[恢复索引](worktree-archive.md)定位。
+成功后清理本次临时材料；失败保留现场。固定样本、工具与用户成果按真实用途保留，旧未提交现场从[恢复索引](worktree-archive.md)定位。

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { createIntegration } from "./fixtures/auth-integration/harness.js";
@@ -22,7 +23,7 @@ import {
 } from "./teaching-time-classes-materials-fixture.js";
 const evidence = path.resolve(
   process.env.MTA_EVIDENCE ??
-    "docs/acceptance/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation",
+    fileURLToPath(new URL("../../../test-results/evidence/MATERIALS-TEACHING-ALIGNMENT/v1/implementation", import.meta.url)),
 );
 fs.mkdirSync(evidence, { recursive: true });
 async function setup(t, name) {

@@ -4,7 +4,7 @@
 
 ## 已定实验边界
 
-设计已独立核验，固定全文 `d690372c8f552e37690648f5688e04e1b68c4ae9:docs/arch/capability-checks/C21-reuse.md`，独立依据见[能力证据](../plans/run-state.md#证据边界)。获许可后执行者还需该固定正文中的具体参数、哈希及停止条件；不是再次设计新候选。
+设计已独立核验，固定全文 `d690372c8f552e37690648f5688e04e1b68c4ae9:docs/arch/capability-checks/C21-reuse.md`，独立报告 `436f2612b62cd40bb7f074ad68568d5bdd951f65:docs/acceptance/evidence/C20-C21-REUSE-PLAN/v1/review.md`，均以 `git show <SHA>:<路径>` 读取。获许可后执行者还需固定正文中的具体参数、哈希及停止条件。
 
 只做 PaddleOCR-VL 完整本地管线的一次隔离判别，不并装其他候选。PaddleOCR/PaddleX 3.7.0、VL 1.6 与 PP-DocLayoutV3 固定 revision；隔离 Python 3.12/cu129。准备下载上限 10 GiB、目录增量 20 GiB、90 分钟；最多 7 次页解析，每次含加载 15 分钟，推理全进程禁网。启动预留内存 8 GiB、显存 7 GiB、磁盘 25 GiB，不停其他进程或改驱动/swap。异常、额外权重/许可差异或超限停止，不自动换 CPU/模型/提示。
 

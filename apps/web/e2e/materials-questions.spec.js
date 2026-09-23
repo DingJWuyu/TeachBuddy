@@ -19,7 +19,7 @@ test("teacher imports text, edits formula, confirms and reopens persistent quest
   await page.getByRole("button", { name: "保存校对", exact: true }).click();
   await expect(page.locator(".q-message")).toContainText("校对已保存");
   await page.screenshot({
-    path: "docs/acceptance/evidence/R33/v1/attempt2/text-review-desktop.png",
+    path: "test-results/evidence/R33/v1/attempt2/text-review-desktop.png",
   });
   await page.getByRole("button", { name: "确认收录", exact: true }).click();
   await expect(
@@ -31,7 +31,7 @@ test("teacher imports text, edits formula, confirms and reopens persistent quest
   await expect(page.getByLabel("题目标题")).toHaveValue("公式校对题");
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.screenshot({
-    path: "docs/acceptance/evidence/R33/v1/attempt2/question-pad.png",
+    path: "test-results/evidence/R33/v1/attempt2/question-pad.png",
   });
   expect(
     await page.evaluate(
@@ -64,7 +64,7 @@ test("Word original and formulas are available for review", async ({
   await expect(page.locator(".q-original")).toContainText("段落");
   await expect(page.locator(".q-original img")).toBeVisible();
   await page.screenshot({
-    path: "docs/acceptance/evidence/R33/v1/attempt2/word-review.png",
+    path: "test-results/evidence/R33/v1/attempt2/word-review.png",
   });
 });
 
@@ -125,7 +125,7 @@ test("image failure retains original and supports explicit local crop correction
   await page.getByRole("button", { name: "保存校对", exact: true }).click();
   await expect(page.locator(".q-message")).toContainText("校对已保存");
   await page.screenshot({
-    path: "docs/acceptance/evidence/R33/v1/attempt2/image-recovery-crop.png",
+    path: "test-results/evidence/R33/v1/attempt2/image-recovery-crop.png",
   });
   await page.reload();
   await expect(page.locator(".q-review-result img")).toBeVisible();

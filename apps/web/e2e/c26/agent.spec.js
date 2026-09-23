@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../../api/test/fixtures/c26/harness.js';
-const evidence = process.env.AGENT_EVIDENCE_DIR ?? 'docs/acceptance/evidence/C26/v1';
+const evidence = process.env.AGENT_EVIDENCE_DIR ?? 'test-results/evidence/C26/v1';
 let world;
 test.beforeEach(async () => { world = await createIntegration(); });
 test.afterEach(async ({ page }) => { await page.close(); await world.close(); });
@@ -33,7 +33,7 @@ test('WB-AG-001/004: 同一持久草稿从首页到右栏再刷新', async ({ pa
 
 for (const tag of ['deepseek','glm']) test(`WB-AG-003/007: ${tag} live模型结果保留库重启，桌面Pad窄屏打开实际题目和备课`,async({page})=>{
  await world.close();
- const fs=await import('node:fs');const report=JSON.parse(fs.readFileSync(`docs/acceptance/evidence/C26/v1/live-${tag}.json`,'utf8'));
+ const fs=await import('node:fs');const report=JSON.parse(fs.readFileSync(`${evidence}/live-${tag}.json`,'utf8'));
  const os=await import('node:os');const path=await import('node:path');const directory=fs.mkdtempSync(path.join(os.tmpdir(),`c26-browser-live-${tag}-`));fs.cpSync(report.directory,directory,{recursive:true});
  world=await createIntegration({directory});
  await page.goto(world.origin);await page.getByLabel('邮箱',{exact:true}).fill(`c26-${tag}@example.test`);await page.getByLabel('密码',{exact:true}).fill('c26-live-local-password');await page.getByRole('button',{name:'登录',exact:true}).click();

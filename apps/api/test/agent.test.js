@@ -246,6 +246,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import nodePath from 'node:path';
 import { spawn } from 'node:child_process';
+import { unlock } from '../src/workbench/reliability/backup.js';
 test('WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键核实',async()=>{
  for(const checkpoint of ['prepared','committed','result']){
   const directory=fs.mkdtempSync(nodePath.join(os.tmpdir(),'c26-crash-'));
@@ -253,6 +254,8 @@ test('WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键�
   let diagnostics='';child.stderr.on('data',chunk=>diagnostics+=chunk);
   const outcome=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',(code,signal)=>resolve({code,signal}));});
   assert.equal(outcome.signal,'SIGKILL',diagnostics);
+  // The child has exited; review its isolated stale lock through the real maintenance operation.
+  unlock({database:nodePath.join(directory,'workspace.sqlite'),files:nodePath.join(directory,'files'),stopped:true});
   const saved=JSON.parse(fs.readFileSync(nodePath.join(directory,'checkpoint.json'),'utf8'));
   const p=await provider([]);const w=await createIntegration({directory,agent:p.config});
   try {

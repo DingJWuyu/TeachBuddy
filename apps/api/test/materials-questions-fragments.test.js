@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), "questions-fragments-evidence-"));
-const at = (p) => p.startsWith("docs/acceptance/evidence/") ? path.join(evidenceDir, path.basename(p)) : path.resolve(root, p);
+const at = (p) => p.startsWith("test-results/evidence/") ? path.join(evidenceDir, path.basename(p)) : path.resolve(root, p);
 import sharp from "sharp";
 import { startQuestionsFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
 
@@ -146,7 +146,7 @@ test("selected original pages merge a unique question and independently located 
   ]);
   const m = await e.read();
   fs.writeFileSync(
-    at("docs/acceptance/evidence/R33/v1/attempt4/first-http.json"),
+    at("test-results/evidence/R33/v1/attempt4/first-http.json"),
     JSON.stringify({ job: e.job, material: m }, null, 2),
   );
   assert.equal(m.drafts.length, 1);
@@ -238,7 +238,7 @@ test("own PDF layout binds a real crop; unverified image associations remain blo
   );
   const m = await e.read();
   fs.writeFileSync(
-    at("docs/acceptance/evidence/R33/v1/attempt4/pdf-crop.json"),
+    at("test-results/evidence/R33/v1/attempt4/pdf-crop.json"),
     JSON.stringify(m, null, 2),
   );
   const d = m.drafts[0];
@@ -249,7 +249,7 @@ test("own PDF layout binds a real crop; unverified image associations remain blo
   assert.ok(source.box.width > 0.1);
   const crop = d.body.blocks.find((b) => b.type === "image");
   fs.writeFileSync(
-    at("docs/acceptance/evidence/R33/v1/attempt4/own-pdf-crop.png"),
+    at("test-results/evidence/R33/v1/attempt4/own-pdf-crop.png"),
     await e.bytes(crop.fileId),
   );
   const preview = await e.call(
@@ -291,7 +291,7 @@ test("fixed O page 2 replay retains only complete prefix and never invents Q3/Q4
   assert.equal(e.job.issues[0].code, "truncated-response");
   assert.ok(m.fragments.some((f) => f.text === "第2页 · 原题"));
   fs.writeFileSync(
-    at("docs/acceptance/evidence/R33/v1/attempt4/old-response-replay.json"),
+    at("test-results/evidence/R33/v1/attempt4/old-response-replay.json"),
     JSON.stringify({ job: e.job, material: m }, null, 2),
   );
 });
@@ -333,7 +333,7 @@ test(
     assert.equal(m.drafts[0].answerStatus, "absent");
     fs.writeFileSync(
       at(
-        "docs/acceptance/evidence/R33/v1/attempt4/selected-pages-synthetic.json",
+        "test-results/evidence/R33/v1/attempt4/selected-pages-synthetic.json",
       ),
       JSON.stringify({ job: e.job, material: m }, null, 2),
     );

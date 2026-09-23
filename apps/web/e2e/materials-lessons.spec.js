@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-const evidence = "docs/acceptance/evidence/R34/v1";
+const evidence = "test-results/evidence/R34/v1";
 test("WB-M018/M019/M020: edit manuscript, select references, reopen and generate actual output", async ({
   page,
 }) => {

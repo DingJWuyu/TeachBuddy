@@ -12,7 +12,8 @@ const settings = parseEnv(fs.readFileSync('/home/liam_t/项目/TeacherWorkspace-
 if (!settings.COMMANDCODE_API_KEY || settings.COMMANDCODE_BASE_URL !== 'https://api.commandcode.ai/provider/v1') throw Error('Authorized configuration unavailable');
 const tag = model.startsWith('deepseek') ? 'deepseek' : 'glm';
 const directory = path.resolve(`test-results/c26-live-${tag}-${Date.now()}`);fs.mkdirSync(directory,{recursive:true});
-const evidence = path.resolve(`docs/acceptance/evidence/C26/v1/live-${tag}.json`);
+const evidence = path.resolve(process.env.AGENT_EVIDENCE_DIR ?? 'test-results/evidence/C26/v1', `live-${tag}.json`);
+fs.mkdirSync(path.dirname(evidence), { recursive: true });
 if (fs.existsSync(evidence)) throw Error('Existing request ledger must not be overwritten');
 const world=await createIntegration({directory,agent:{apiKey:settings.COMMANDCODE_API_KEY,baseUrl:settings.COMMANDCODE_BASE_URL}});
 const client=world.client();const request=(method,url,body)=>client.request(method,url,{body,headers:{'Idempotency-Key':randomUUID()}});

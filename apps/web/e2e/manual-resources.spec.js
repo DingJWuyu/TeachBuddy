@@ -6,7 +6,7 @@ import { createIntegration } from '../../api/test/fixtures/auth-integration/harn
 import { registerMath } from './fixtures/math-static/real.mjs';
 import { Document, Packer, Paragraph, ExternalHyperlink, TextRun } from 'docx';
 let world;
-const evidence = path.resolve('docs/acceptance/evidence/MANUAL-RESOURCES/v1/browser');
+const evidence = path.resolve('test-results/evidence/MANUAL-RESOURCES/v1/browser');
 test.beforeEach(async ({page}) => {
   world = await createIntegration({directory:fs.mkdtempSync(path.join(os.tmpdir(),'resources-'))});
   await registerMath(world, 'resources@example.test');

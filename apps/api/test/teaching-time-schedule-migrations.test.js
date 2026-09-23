@@ -34,7 +34,8 @@ test('an empty database receives every schedule table and ledger row', async () 
     assert.deepEqual(applied, [
       'classes:classes_fixture_0001',
       'lessons:lessons_fixture_0001',
-      'schedule:schedule_0001_settings_entries'
+      'schedule:schedule_0001_settings_entries',
+      'reliability-preferences:reliability_preferences_001'
     ]);
   } finally {
     harness.close();

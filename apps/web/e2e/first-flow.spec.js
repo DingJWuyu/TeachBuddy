@@ -30,7 +30,7 @@ import {
   createFirstFlowService
 } from './first-flow/service.js';
 
-const EVIDENCE = path.join(B15_REPO_ROOT, 'docs', 'acceptance', 'evidence', 'B15', 'v1');
+const EVIDENCE = path.join(B15_REPO_ROOT, 'test-results', 'evidence', 'B15', 'v1');
 const PASS_SHOTS = path.join(EVIDENCE, 'pass');
 const FAULT_SHOTS = path.join(EVIDENCE, 'failures');
 

@@ -20,6 +20,7 @@ import { createScheduleModule, migrations as scheduleMigrations } from '../../..
 import { fixtureBeforeChange, fixtureClock } from './runtime.js';
 import { createClassesModule, migrations as classesMigrations } from './modules/classes/index.js';
 import { createLessonsModule, migrations as lessonsMigrations } from './modules/lessons/index.js';
+import { createPreferencesRouter, preferenceMigrations } from '../../../src/reliability/preferences.js';
 
 /** Fixture-only descriptors; the real v2 catalog (with requires) is T53's. */
 export const fixtureCatalog = Object.freeze([
@@ -76,7 +77,8 @@ export function createTeachingTimeWorkbench({
     [
       { moduleId: 'classes', migrations: classesMigrations },
       { moduleId: 'lessons', migrations: lessonsMigrations },
-      { moduleId: 'schedule', migrations: scheduleMigrations }
+      { moduleId: 'schedule', migrations: scheduleMigrations },
+      ...preferenceMigrations
     ],
     // A database migrated by the previous stage also carries questions/lessons
     // ledger rows; a caller may narrow the known module set so an upgrade check
@@ -149,6 +151,8 @@ export function createTeachingTimeWorkbench({
     contextRouter,
     modulesRouter,
     catalogHandler,
+    preferencesRouter: createPreferencesRouter({ db, mutations, identity,
+      trustedOrigins: workbenchEnv.trustedOrigins ?? [], ready: initialize, logger }),
     initialize,
     scheduleModule: schedule,
 
