@@ -2,7 +2,7 @@
 
 统一可体验产品运行在 `/home/liam_t/项目/TeacherWorkspace-preview` 的 `preview/usable-mvp` 分支，入口为 **https://localhost:50880**。六线手动业务组合起点为 `7aceca1f95bba95e7dccbae7cf144929b1fe90ad`，备课更新对照预览修复已接入；预览服务沿用原账户、数据库、文件和配置。首次使用时点击“创建账户”，由使用者在 UI 发送邮件验证码并注册；已有认证测试库的账户不会自动进入预览库。
 
-当前预览已接入题库、资源、备课、数学、教学与数据管理的手动能力：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程安排，以及个人资料导出、误删恢复和部署备份工具。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前入口的部署检查见 [七线预览回执](docs/acceptance/evidence/MANUAL-INTEGRATION/v1/support-preview.md)。DATA 六线组合已通过[独立验收](docs/acceptance/evidence/MANUAL-DATA/v1/independent.md)。SUPPORT 偏好、帮助和设备现场已接入；其[独立报告](docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent.md)确认设置、偏好、已测现场和 DATA 接缝通过。旧候选的上传归档缺口已修复，8 份原文件及既有归档的[独立定向复验](docs/acceptance/evidence/MANUAL-SUPPORT/v1/recovery-independent.md)通过；这些结论不代签完整 MVP。
+当前预览已接入题库、资源、备课、数学、教学与数据管理的手动能力：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程安排，以及个人资料导出、误删恢复和部署备份工具。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前入口的部署检查见 [七线预览回执](docs/acceptance/evidence/MANUAL-INTEGRATION/v1/support-preview.md)。DATA 六线组合已通过[独立验收](docs/acceptance/evidence/MANUAL-DATA/v1/independent.md)。SUPPORT 偏好和设备现场的底层机制仍保留，当前设置页只提供资料导出、最近删除和退出等实际操作；原[独立报告](docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent.md)与上传归档[定向复验](docs/acceptance/evidence/MANUAL-SUPPORT/v1/recovery-independent.md)各按受测版本生效，不代签完整 MVP。
 
 班级教学与日程的手动操作支持分班反馈、三类资料关联、连续日期拖选、多事项排序与优先级、未排期、周重复与单次调课、自选结束前后提醒，以及重进工作台后的补提醒定位。操作范围、保存恢复和已知限制见 [班级与日程回执](docs/acceptance/evidence/MANUAL-TEACHING/v1/receipt.md)。
 
@@ -51,15 +51,15 @@ node apps/api/src/scripts/reliability.js activate --target /新恢复目录 --st
 
 恢复失败的副本保持隔离，原目录可作为回退来源。启用后的新副本若已有新资料，应先导出保留再决定切回原目录。异常退出遗留锁时，确认所有写者及自动重启均已停止后，使用 `unlock --database /数据目录/workspace.sqlite --files /文件目录 --stopped`；仍存活的锁拥有者会被拒绝。
 
-恢复点改变时，本设备旧草稿、未确认请求与待上传文件原样隔离，可从设置页查看和下载，需对照当前资料后重新操作。历史对话原始存储保持；恢复前未确认的 Agent 操作拒绝重新执行，专用 Agent 核实与放弃流程仍属暂停线路。个人包缓存不进入部署备份，恢复后需重新导出。
+恢复点改变时，本设备旧草稿、未确认请求与待上传文件仍由底层机制隔离；当前设置页没有这些资料的查看或下载入口，恢复前须保留本设备数据。历史对话原始存储保持；恢复前未确认的 Agent 操作拒绝重新执行，专用 Agent 核实与放弃流程仍属暂停线路。个人包缓存不进入部署备份，恢复后需重新导出。
 
 已支持当前预览的迁移集合，包括备课排序迁移 `lessons_0003_order`，以及固定起点缺少可靠性模块的基线升级。未知迁移、内容格式、缺文件、摘要不符及未完成认证清理都会停止恢复。集成其他模块新增迁移时，须同步接入备份支持集合再验证。自验范围与证据见 [MANUAL-DATA 回执](docs/acceptance/evidence/MANUAL-DATA/v1/receipt.md)。
 
 ## 设置与工作现场
 
-设置可保存账户阅读字号与减少动效偏好，重新登录或在另一设备打开后生效。帮助按六模块真实操作流程组织。版本页面分别显示正式发布记录与构建时的 Git 提交；当前正式记录为空，不将开发提交冒充发布，也不改写 `CHANGELOG.md`。正式发布流程将经核实的 `ReleaseRecord` 数组写入 `apps/web/src/features/workbench/releases.json`，页面运行不依赖 GitHub 网络或凭据。
+设置页按 EMStudio 结构展示账户资料、头像选择、深浅外观、每周开始于、语言、内容背景、数据处理协议与删除账户入口。真实可操作的服务器能力为个人 ZIP 导出、最近删除恢复和退出登录。头像、外观、周起点、语言、背景及协议目前只有本页预览或占位，没有账户持久化、全站应用或协议签署；删除账户最终执行不可用，详见[设置页状态](docs/acceptance/evidence/UI-SETTINGS/status.md)。
 
-本设备输入与现场按账户和编辑分支保存，两个标签页可分别继续自己的草稿。切换模块可回到上次打开的内容。设置可下载本设备 JSON 草稿并清理本机现场，保留待确认请求、相关模块输入及不可自动读取的原文；服务器资料不受清理影响。JSON 草稿用于留存和手工取回内容，不是整体备份或批量导入。
+帮助按六模块真实操作流程组织。版本页面分别显示正式发布记录与构建时的 Git 提交；当前正式记录为空，不将开发提交冒充发布，也不改写 `CHANGELOG.md`。正式发布流程将经核实的 `ReleaseRecord` 数组写入 `apps/web/src/features/workbench/releases.json`，页面运行不依赖 GitHub 网络或凭据。设备草稿与恢复隔离机制保留，但当前设置页已移除查看、下载和清理入口；阅读字号、减少动效和保存偏好入口也已移除。
 
 ## DOCX 输出
 
