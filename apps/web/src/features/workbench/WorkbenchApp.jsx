@@ -215,10 +215,9 @@ function WorkbenchContent({ boot }) {
             onOpenSurface={setSurface} onCloseSurface={() => setSurface(null)} />
           <div className="wb-workspace">
             <main className="wb-main" data-region="main">
-              {boot.recoveryChanged && <div className="wb-storage-warning" role="status">工作台已从备份恢复。<a href="/settings" onClick={event=>followAnchor(event,'/settings')}>查看恢复前的本设备草稿</a></div>}
+              {boot.recoveryChanged && <div className="wb-storage-warning" role="status">工作台已从备份恢复。</div>}
               {recoveryNotice && <div className="wb-recovery-notice" role="status">
                 <span>已恢复本设备的未保存输入，请检查后继续。</span>
-                <a href="/settings" onClick={event => followAnchor(event, '/settings')}>查看设备草稿</a>
                 <button className="wb-icon-button" aria-label="关闭恢复提示" onClick={() => setRecoveryNotice(false)}><Icon name="close" size={14} /></button>
               </div>}
               {storageFailed && (

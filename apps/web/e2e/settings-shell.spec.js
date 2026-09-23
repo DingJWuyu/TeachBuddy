@@ -1,0 +1,116 @@
+import { test, expect } from '@playwright/test';
+import fs from 'node:fs';
+import path from 'node:path';
+import { startTeachingAuth } from './teaching-time-auth/service.mjs';
+import { register, headers } from './teaching-time-auth/helpers.mjs';
+let world, directory;
+test.beforeEach(async ({ page }) => {
+  fs.mkdirSync('.scratch/settings-test', { recursive: true });
+  directory = fs.mkdtempSync(path.resolve('.scratch/settings-test/account-'));
+  world = await startTeachingAuth({ directory });
+  await register(page, world);
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  await page.goto(world.origin + '/settings');
+  await expect(page.locator('[data-region="settings"]')).toBeVisible();
+});
+test.afterEach(async ({}, info) => {
+  await world?.close();
+  if (info.status === info.expectedStatus) fs.rmSync(directory, { recursive: true, force: true });
+});
+test('设置外观、占位边界、真实导出和退出', async ({ page }) => {
+  const settings = page.locator('[data-region="settings"]');
+  const writes = [];
+  page.on('request', request => { if (request.url().includes('/api/') && !['GET', 'HEAD'].includes(request.method())) writes.push(request.url()); });
+  await expect(settings).toContainText('teacher-a@example.test');
+  for (const removed of ['阅读字号', '界面动效', '保存偏好', '本设备草稿与现场', '备份与还原', '当前学期', '当前套餐'])
+    await expect(settings.getByText(removed, { exact: true })).toHaveCount(0);
+  await page.screenshot({ path: '.scratch/settings-test/settings-light.png', animations: 'disabled' });
+  await settings.getByRole('button', { name: '深色', exact: true }).click();
+  await expect(settings.getByRole('button', { name: '深色', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.screenshot({ path: '.scratch/settings-test/settings-dark.png', animations: 'disabled' });
+  await settings.getByRole('button', { name: '浅色', exact: true }).click();
+  await settings.getByRole('button', { name: '星期日', exact: true }).click();
+  await expect(settings.getByRole('button', { name: '星期日', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await settings.getByRole('button', { name: '语言', exact: true }).click();
+  await expect(page.getByRole('menu', { name: '选择语言' })).toBeVisible();
+  await expect(page.getByRole('menuitemradio')).toHaveCount(20);
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await expect(settings.getByRole('button', { name: '语言', exact: true })).toContainText('English');
+  await settings.getByRole('button', { name: '羊皮纸', exact: true }).click();
+  await expect(settings).toHaveAttribute('data-settings-background', 'parchment');
+  await settings.getByRole('button', { name: '签署协议', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await settings.getByRole('button', { name: '删除账户', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByRole('dialog').getByRole('button', { name: /删除/ })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(writes).toEqual([]);
+  await settings.getByRole('button', { name: '导出数据', exact: true }).click();
+  const downloadButton = page.getByRole('button', { name: '下载资料包', exact: true });
+  await expect(downloadButton.first()).toBeVisible({ timeout: 30000 });
+  const downloadEvent = page.waitForEvent('download');
+  await downloadButton.first().click();
+  const download = await downloadEvent;
+  expect(download.suggestedFilename()).toMatch(/TeachBuddy.*zip/);
+  expect(fs.statSync(await download.path()).size).toBeGreaterThan(100);
+  await page.keyboard.press('Escape');
+  await settings.getByRole('button', { name: '退出登录', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+});
+test('窄屏设置可阅读且不横向溢出', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const settings = page.locator('[data-region="settings"]');
+  await expect(settings.getByRole('button', { name: '深色', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(await settings.evaluate(e => e.scrollWidth <= e.clientWidth + 1)).toBe(true);
+  await page.screenshot({ path: '.scratch/settings-test/settings-mobile.png', animations: 'disabled' });
+});
+
+test('最近删除保留真实恢复及刷新后的原ID', async ({ page }) => {
+  const writeHeaders = () => ({ ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() });
+  const created = await page.request.post(world.origin + '/api/modules/classes/items', { headers: writeHeaders(), data: { name: '设置恢复验收班' } });
+  expect(created.status()).toBe(201);
+  const item = await created.json();
+  const deleted = await page.request.post(world.origin + '/api/modules/classes/items/' + item.id + '/deletion', { headers: writeHeaders(), data: { expectedVersion: item.version, deleted: true } });
+  expect(deleted.ok()).toBe(true);
+  await page.getByRole('button', { name: '刷新列表', exact: true }).click();
+  await expect(page.getByText('设置恢复验收班', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '恢复', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: '已恢复' })).toBeVisible();
+  await page.reload();
+  const restored = await page.request.get(world.origin + '/api/modules/classes/items/' + item.id, { headers: headers(page) });
+  expect(restored.ok()).toBe(true);
+  expect((await restored.json()).deletedAt).toBeNull();
+});
+test('头像预览与弹层退出具有中间帧，快速反向可操作', async ({ page }) => {
+  const settings = page.locator('[data-region="settings"]');
+  await settings.locator('input[type="file"]').setInputFiles({ name: 'avatar.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL1sAAAAASUVORK5CYII=', 'base64') });
+  await expect(settings.getByAltText('头像预览')).toBeVisible();
+  await expect(settings).toContainText('头像仅预览，尚未保存');
+  await settings.locator('.settings-avatar').hover();
+  await settings.getByRole('button', { name: '移除头像预览' }).click();
+  await expect(settings.getByAltText('头像预览')).toHaveCount(0);
+  await settings.getByRole('button', { name: '签署协议', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.evaluate(() => {
+    window.settingsFrames = [];
+    const sample = () => {
+      const element = document.querySelector('dialog.settings-confirm');
+      window.settingsFrames.push(element ? Number(getComputedStyle(element).opacity) : -1);
+      if (window.settingsFrames.length < 60) requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(await page.evaluate(() => settingsFrames.some(value => value > 0 && value < 1))).toBe(true);
+  const language = settings.getByRole('button', { name: '语言', exact: true });
+  await language.click(); await language.click(); await language.click();
+  await expect(page.getByRole('menu', { name: '选择语言' })).toBeVisible();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await expect(language).toContainText('English');
+});

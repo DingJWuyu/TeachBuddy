@@ -1,0 +1,6 @@
+.tb-presence { display: contents; }
+.tb-presence > * { animation: none !important; }
+.tb-presence [data-presence="exiting"] { pointer-events: none; }
+.tb-presence [data-presence] { transform-origin: top center; }
+.tb-entry-wrap .tb-presence [data-presence] { transform-origin: top right; }
+.tb-presence [data-presence] [role="dialog"] { animation: none !important; }

@@ -1,4 +1,4 @@
-import { RecoveryDrafts } from "./RecoveryDrafts.jsx";
+import { SettingsConfirm, SettingsDisclosure } from "./SettingsControls.jsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   workbenchGet,
@@ -17,7 +17,7 @@ const states = {
   interrupted: "已中断",
 };
 const date = (value) => new Date(value).toLocaleString("zh-CN");
-export function DataManagement() {
+export function DataManagement({ accountActions, dangerActions }) {
   const [exports, setExports] = useState([]),
     [deleted, setDeleted] = useState([]),
     [error, setError] = useState(""),
@@ -25,6 +25,8 @@ export function DataManagement() {
     [busy, setBusy] = useState(""),
     [filter, setFilter] = useState("all");
   const { accountKey } = useWorkbenchShell();
+  const [exportOpen, setExportOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const action = useIdempotentSubmit({
     accountKey,
     name: "pending:manual-data",
@@ -137,173 +139,34 @@ export function DataManagement() {
       setBusy("");
     }
   }
-  return (
-    <>
-      <RecoveryDrafts accountKey={accountKey} />
-      <section
-        className="wb-panel reliability-data"
-        aria-labelledby="personal-data-title"
-      >
-        <div className="reliability-heading">
-          <h2 id="personal-data-title">个人资料</h2>
-          <button
-            className="wb-button"
-            disabled={!!busy || !!action.pending}
-            onClick={createExport}
-          >
-            {busy === "export" ? "正在受理…" : "导出个人资料"}
-          </button>
-        </div>
-        <p className="wb-note">
-          包含已保存资料、最近删除、原文件与对话。下载后解压，打开 index.html
-          阅读；文件可重新上传，正文与公式可复制。个人包不能覆盖账户或恢复原关联。
-        </p>
-        {(error || action.problem) && (
-          <p role="alert">{error || action.problem.message}</p>
-        )}
-        {action.pending && (
-          <div>
-            <button className="wb-button" disabled={!!busy} onClick={retry}>
-              重试确认操作
-            </button>
-            <details>
-              <summary>查看待确认请求</summary>
-              <pre>{JSON.stringify(action.pending, null, 2)}</pre>
-              <button
-                className="wb-button"
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "放弃重试不会撤销已完成的操作。请保留上方请求并核对当前资料后再开始新操作。",
-                    )
-                  )
-                    action.reset();
-                }}
-              >
-                放弃重试
-              </button>
-            </details>
-          </div>
-        )}
-        {message && <p role="status">{message}</p>}
-        {exports.length > 0 && (
-          <ul className="reliability-list" aria-label="个人资料导出记录">
-            {exports.map((item) => (
-              <li key={item.id}>
-                <div>
-                  <span>{date(item.snapshotAt)}</span>
-                  <small>{states[item.state]}</small>
-                  {item.problem && <small>{item.problem.detail}</small>}
-                </div>
-                {item.state === "ready" && (
-                  <button
-                    className="wb-button"
-                    disabled={!!busy}
-                    onClick={() => download(item)}
-                  >
-                    下载资料包
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-      <section
-        className="wb-panel reliability-data"
-        aria-labelledby="deleted-title"
-      >
-        <div className="reliability-heading">
-          <h2 id="deleted-title">最近删除</h2>
-          <button
-            className="wb-button"
-            disabled={!!busy}
-            onClick={() => refresh().catch((e) => setError(e.message))}
-          >
-            刷新列表
-          </button>
-        </div>
-        <div className="reliability-filter">
-          <label>
-            资料类型{" "}
-            <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-              <option value="all">全部</option>
-              {[
-                ["question", "题目"],
-                ["lesson", "备课"],
-                ["resource", "资源"],
-                ["math", "数学作品"],
-                ["class", "班级"],
-                ["record", "教学记录"],
-                ["entry", "日程"],
-                ["import", "收录"],
-              ].map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <p className="wb-note">
-          恢复保留原有内容和关联。请先恢复班级，再恢复已删除的教学记录。
-        </p>
-        {!deleted.filter((d) => filter === "all" || d.kind === filter)
-          .length ? (
-          <p>暂无已删除资料</p>
-        ) : (
-          <ul className="reliability-list" aria-label="已删除资料">
-            {deleted
-              .filter((d) => filter === "all" || d.kind === filter)
-              .map((item) => (
-                <li key={`${item.kind}:${item.id}`}>
-                  <div>
-                    <strong>{item.title}</strong>
-                    <small>
-                      {item.label} · {date(item.deletedAt)}
-                    </small>
-                  </div>
-                  <button
-                    className="wb-button"
-                    disabled={!!busy || !!action.pending}
-                    onClick={() => restore(item)}
-                  >
-                    恢复
-                  </button>
-                </li>
-              ))}
-          </ul>
-        )}
-      </section>
-      <section className="wb-panel reliability-data">
-        <h2>备份与还原</h2>
-        <p>
-          整体恢复会回到备份时刻。请先导出较新的资料，再由本机维护者停服操作；恢复后需要重新登录。
-        </p>
-        <details>
-          <summary>本机备份操作</summary>
-          <p>
-            停止
-            API、转换任务和自动重启后，在项目目录执行。目标目录必须尚不存在。
-          </p>
-          <pre>
-            node apps/api/src/scripts/reliability.js backup --database
-            /数据目录/workspace.sqlite --files /文件目录 --target
-            /备份目录/本次备份 --stopped
-          </pre>
-          <p>还原到新目录，核对恢复准备结果后显式启用：</p>
-          <pre>
-            node apps/api/src/scripts/reliability.js restore --source
-            /备份目录/本次备份 --target /新恢复目录 --stopped{"\n"}node
-            apps/api/src/scripts/reliability.js activate --target /新恢复目录
-            --stopped
-          </pre>
-          <p>
-            将服务的 SQLITE_PATH 和 WORKBENCH_FILES_DIR
-            指向启用命令输出的路径，沿用必需认证与邮件配置，再启动服务。原数据目录保留以便回退。备份含账户认证资料，应存放在仅本人可访问的位置。
-          </p>
-        </details>
-      </section>
-    </>
-  );
+  return <>
+    <div className="settings-sheet settings-account-sheet"><h2 className="settings-account-title">账户</h2>
+    <section className="settings-row reliability-export-row" aria-labelledby="personal-data-title">
+      <div className="settings-row-copy"><h2 id="personal-data-title">您的数据</h2><p>以 ZIP 文件下载你的 TeachBuddy 个人资料</p></div>
+      <button className="wb-button" disabled={!!busy || !!action.pending} onClick={() => { setExportOpen(true); createExport(); }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5"/></svg>导出数据</button>
+    </section>
+    {accountActions}</div>
+    {dangerActions}
+    <SettingsConfirm show={exportOpen} title="导出个人资料" onClose={() => setExportOpen(false)}>
+      <p>资料包包含已保存资料、最近删除、原文件与对话。下载后解压，打开 index.html 阅读。</p>
+      <p className="wb-note">文件可重新上传，正文与公式可复制；资料包不能覆盖账户或恢复原关联。</p>
+      <button className="wb-button settings-primary" disabled={!!busy || !!action.pending} onClick={createExport}>{busy === 'export' ? '正在受理…' : '生成资料包'}</button>
+      {exports.length > 0 && <ul className="reliability-list" aria-label="个人资料导出记录">{exports.map(item => <li key={item.id}>
+        <div><span>{date(item.snapshotAt)}</span><small>{states[item.state]}</small>{item.problem && <small>{item.problem.detail}</small>}</div>
+        {item.state === 'ready' && <button className="wb-button" disabled={!!busy} onClick={() => download(item)}>下载资料包</button>}
+      </li>)}</ul>}
+      {(error || action.problem) && <p role="alert">{error || action.problem.message}</p>}
+      {action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>重试确认操作</button><SettingsDisclosure title="查看待确认请求"><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>放弃重试</button></SettingsDisclosure></div>}
+    </SettingsConfirm>
+    <section className="settings-sheet settings-deleted reliability-data" aria-labelledby="deleted-title">
+      <div className="reliability-heading"><h2 id="deleted-title">最近删除</h2><button className="wb-text-button" disabled={!!busy} onClick={() => refresh().catch(e => setError(e.message))}>刷新列表</button></div>
+      <div className="reliability-filter"><label>资料类型 <select value={filter} onChange={e => setFilter(e.target.value)}><option value="all">全部</option>{[['question','题目'],['lesson','备课'],['resource','资源'],['math','数学作品'],['class','班级'],['record','教学记录'],['entry','日程'],['import','收录']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></label></div>
+      <p className="wb-note">恢复教学记录前，请先恢复所属班级。</p>
+      {!deleted.filter(d => filter === 'all' || d.kind === filter).length ? <p className="settings-empty">暂无已删除资料</p> : <ul className="reliability-list" aria-label="已删除资料">{deleted.filter(d => filter === 'all' || d.kind === filter).map(item => <li key={`${item.kind}:${item.id}`}><div><strong>{item.title}</strong><small>{item.label} · {date(item.deletedAt)}</small></div><button className="wb-button" disabled={!!busy || !!action.pending} onClick={() => restore(item)}>恢复</button></li>)}</ul>}
+      {message && <p role="status">{message}</p>}
+      {!exportOpen && (error || action.problem) && <p role="alert">{error || action.problem.message}</p>}
+      {!exportOpen && action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>重试确认操作</button><SettingsDisclosure title="查看待确认请求"><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>放弃重试</button></SettingsDisclosure></div>}
+    </section>
+    <SettingsConfirm show={resetOpen} title="放弃重试？" confirmLabel="放弃重试" onClose={() => setResetOpen(false)} onConfirm={() => { action.reset(); setResetOpen(false); }}><p>放弃重试不会撤销已完成的操作。请保留请求并核对当前资料后再开始新操作。</p></SettingsConfirm>
+  </>;
 }
