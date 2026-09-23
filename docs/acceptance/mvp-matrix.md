@@ -1,6 +1,6 @@
 # 完整交付的验收标准
 
-日常任务只取本次影响范围，完整交付才逐项汇合。本页定义判据，[当前证明](../plans/run-inputs.md)说明已测范围，[DAG](../plans/mvp-dag.md)定义依赖。产品目标在[范围](../PRODUCT_SCOPE.md)，不由测试通过数倒推。
+日常任务只取本次影响范围，完整交付才逐项汇合。本页定义判据，[当前证明](../plans/run-state.md#证据边界)说明已测范围，[DAG](../plans/mvp-dag.md)定义依赖。产品目标在[范围](../PRODUCT_SCOPE.md)，不由测试通过数倒推。
 
 ## 行为覆盖
 
@@ -9,8 +9,8 @@
 | 题库基本保存和复用 | [first-flow.feature](first-flow.feature)、[materials.feature](materials.feature) | 自建/修改/复制、独立笔记/标记/分类、原稿联系、保存刷新、幂等/冲突/未知恢复 |
 | 文件与输出 | [materials.feature](materials.feature) | 四入口原稿、预览、分类/替换、混合取材、六输出、角色过滤、删除来源与旧请求 |
 | 数学 | [math.feature](math.feature) | 可改源码、公式/函数/平面/空间/动态、HTML隔离、往返、离线 |
-| 教学与时间 | [teaching-time.feature](teaching-time.feature)、[teaching-time-math.feature](teaching-time-math.feature)、[丰富题目接缝](../contracts/materials-teaching-alignment.md) | 两班反馈、当前对象链接、时间/DST/重复例外、提醒补呈现、旧协议保护 |
-| 身份 | [auth.feature](auth.feature)、[auth.feature](auth.feature)、[auth-cases](../contracts/auth-cases.md) | 真实登录/恢复/退出、邮件与页面绑定、第二设备/账户隔离及恢复后旧身份失效 |
+| 教学与时间 | [teaching-time.feature](teaching-time.feature)、[teaching-time-math.feature](teaching-time-math.feature)、[丰富题目接缝](../contracts/teaching-time.md#丰富题目关联) | 两班反馈、当前对象链接、时间/DST/重复例外、提醒补呈现、旧协议保护 |
+| 身份 | [auth.feature](auth.feature)、[auth-cases](../contracts/auth-cases.md) | 真实登录/恢复/退出、邮件与页面绑定、第二设备/账户隔离及恢复后旧身份失效 |
 | Agent | [agent.feature](agent.feature)、[完整工具设计](../features/agent.md#实现与接续边界) | 真模型真实业务操作、新题而非固定示例、手工冲突/停止/恢复、六模块全部覆盖 |
 | 数据 | [数据管理](../features/data.md) | 可阅读个人包、软删除关系保持、停服一致备份、干净目标还原、旧请求隔离与认证撤销 |
 | 现场与支持页 | [共同交互](../WORKBENCH_DESIGN.md)、[设置](../features/settings.md)、[界面规则](../rules/design-and-verification.md) | 各模块草稿/选择/滚动、失效身份、设置真实生效与当前删减、帮助可达、渐进交互 |

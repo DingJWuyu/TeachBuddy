@@ -19,7 +19,7 @@ API 侧通过真实 HTTP、独立 SQLite、可控时钟和可控投递 adapter �
 | P03，JSON `null`/数组、额外 `confirmPassword`、缺 email、email=123 | 依次 422 invalid-request-body、unknown-field、required-field(field=email)、invalid-field-type(field=email) | 正常 UI 不发送这些请求；替身错误仍能安全呈现 | 对每个适用操作遍历 required 和字段类型，未知字段先于必填，严格拒绝 null 和隐式转换 |
 | P04，返回合法结果带附加属性；再移除必填/改已声明类型/未知 type/未知 HTTP 状态 | 附加属性忽略；其余不当作成功 | I01 为 S36，发码不进入第二步，I03/I05 按 CC-UNKNOWN，I06 不进入工作台 | 产出响应都符合相应操作 schema，错误 status 若存在等于实际状态 |
 | P05，全部成功/失败/204/GET，跨站表单和跨源 fetch | 全部 no-store；204 无 body；跨站 POST 403 | 不从应用缓存/Service Worker 读取身份 | 无跨源允许头；检查 Cookie 固定属性；不因浏览器阻止读取就跳过服务器防护 |
-| P06，认证操作缺/非法页面头；仅伪造页面头、accountKey、Authorization 或别容器 sessionId | 认证操作为409 browser-context-required；有效页面头但无授权按相应匿名/401 结果。工作台结果见 [C19-C21](workbench/first-flow-cases.md#真实认证页面接缝) | 前端 transport 为认证和业务请求附当前 P | 无 Cookie+绑定不授权；Bearer 和客户端 accountKey 不提供身份 |
+| P06，认证操作缺/非法页面头；仅伪造页面头、accountKey、Authorization 或别容器 sessionId | 认证操作为409 browser-context-required；有效页面头但无授权按相应匿名/401 结果。工作台结果见 [C19-C21](workbench.md#真实认证页面接缝) | 前端 transport 为认证和业务请求附当前 P | 无 Cookie+绑定不授权；Bearer 和客户端 accountKey 不提供身份 |
 
 ## CC-HAPPY 登录、注册及身份
 
@@ -105,4 +105,4 @@ API 侧通过真实 HTTP、独立 SQLite、可控时钟和可控投递 adapter �
 | EXT01，真实注册及找回邮件 | 从授权真实收件箱收到当次用途/地址的码，I03/I05接受 | 走正式UI，不显示调试码 | 保存提供者接受和收件证据的去敏索引；模拟投递只能标fake-mail |
 | EXT02，服务进程重启、浏览器重开、两设备A/B、旧库迁移 | 真实密码/昵称/稳定键/会话到期/撤销仍满足上述交换 | 正式三视口E2E及可恢复失败 | 真SQLite事务/迁移/恢复证据；秘密不入日志；真实认证不能以test-principal通过 |
 
-本页定义验收条件；已有真实接线、本地独立切片与真人邮件反馈见[能力证据](../plans/run-inputs.md)。前端替身、真实 API + fake-mail、真实邮件端到端分开表达，未提供的外部条件仍未验证，不用局部结果关闭完整 A12。
+本页定义验收条件；已有真实接线、本地独立切片与真人邮件反馈见[能力证据](../plans/run-state.md#证据边界)。前端替身、真实 API + fake-mail、真实邮件端到端分开表达，未提供的外部条件仍未验证，不用局部结果关闭完整 A12。

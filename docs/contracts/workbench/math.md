@@ -1,6 +1,6 @@
 # 数学契约：作品、源、版本与导出
 
-数学设计已采用。字段唯一归 [math.openapi.json](math/math.openapi.json)，[cases](math/cases.md)与[samples](math/samples.json)用于交换验证；制作行为见[工坊规格](../../features/math.md)，技术接缝见[数学架构](../../arch/math.md)。这些定义不声明所有目标环境已经通过。
+数学设计已采用。字段唯一归 [math.openapi.json](math/math.openapi.json)，[cases](#数学交换用例)与[samples](math/samples.json)用于交换验证；制作行为见[工坊规格](../../features/math.md)，技术接缝见[数学架构](../../features/math.md#制作实现)。这些定义不声明所有目标环境已经通过。
 
 ## 共同协议与身份
 
@@ -66,13 +66,13 @@ math provider 是业务模块提供方，非 LLM Provider。`readForReferenceV1`
 
 ReturnTarget 是前端设备内协议，不是信任票据或新服务端会话：lessonId、sectionId（null=本课材料）、baseVersion、拟插入referenceId。完整备课草稿及焦点/滚动由 lessons 保存到账户分区现场，不放进URL/作品Source或Agent提示。math只返回已确认的 Work ID/version，lessons据原稿创建MathReferenceInput，再完整PUT v3。返回操作的幂等键属于备课，和作品保存键分开。目标冲突按UX对照，任何失败都保留已保存作品与原稿。没有跨两次保存的分布式事务。
 
-v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公式snapshot转换为现有Document数学节点，caption仅includeCaption=true时为普通内容；plane/space/dynamic用固定PNG初态，html仅标题和单独演示文件提示。本课引用note仍受includeTeacherNotes控制。practice仍只取题目，纯作品选择返回invalid-export-selection。输出前若固定资产缺失则明确失败，不自动取最新作品；HTML不交Office转换器执行。旧v2导出含math拒绝，旧已受理输出快照/文件不改。输出实现的已测范围与目标 Office 缺口见[能力证据](../../plans/run-inputs.md)。
+v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公式snapshot转换为现有Document数学节点，caption仅includeCaption=true时为普通内容；plane/space/dynamic用固定PNG初态，html仅标题和单独演示文件提示。本课引用note仍受includeTeacherNotes控制。practice仍只取题目，纯作品选择返回invalid-export-selection。输出前若固定资产缺失则明确失败，不自动取最新作品；HTML不交Office转换器执行。旧v2导出含math拒绝，旧已受理输出快照/文件不改。输出实现的已测范围与目标 Office 缺口见[能力证据](../../plans/run-state.md#证据边界)。
 
 ## 目录、公共端口与教学反馈
 
-[架构](../../arch/math.md#公共接口与唯一写者)唯一规定 Interface 和写者。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及包含教学时间的组合目标；生产只注册实际接好的模块，按 questions/lessons/math/resources/classes/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖，lessons依赖math读取，classes可以依赖math教学链接；反向反馈仅前端组合，不制造math→classes服务端环。
+[公共接口](../../features/math.md#公共接口与唯一写者)唯一规定 Interface 和写者。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及包含教学时间的组合目标；生产只注册实际接好的模块，按 questions/lessons/math/resources/classes/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖，lessons依赖math读取，classes可以依赖math教学链接；反向反馈仅前端组合，不制造math→classes服务端环。
 
-教学链接和 kind=math 分支由[教学记录 v2 契约](../teaching-time-math.md)组合；固定 schema 输入与消费版本见该契约，不从其他分支取漂移输入。
+教学链接和 kind=math 分支由[教学记录 v2 契约](../teaching-time.md#数学作品关联)组合；固定 schema 输入与消费版本见该契约，不从其他分支取漂移输入。
 
 ## 错误与恢复
 
@@ -91,3 +91,45 @@ v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公�
 | 存储或生成临时故障 | 503 temporarily-unavailable / render-unavailable | 结果待确认，同键重试；不新增重复制品 |
 
 基础错误仍沿 `/problems/workbench/`，材料业务错误沿 `/problems/materials/`；新增数学错误沿 `/problems/math/`，各状态的精确联合见schema。新增字段、列和结构只归本版schema，行为变更须新revision再冻结，不能让M41/M42临时猜补。
+
+## 数学交换用例
+
+与同提交 [schema](math/math.openapi.json)、[样本](math/samples.json)一起消费。样本 UUID 是隔离 fixture 标识，不是生产种子。前端替身按下表返回已定义结果；后端从公开 HTTP 用相同顺序断言，均不需要另一侧猜字段。替身只能记 self。
+
+| ID / BDD | 输入、结果与双侧断言 |
+| --- | --- |
+| MC01 / WB-MA001、002 | POST create-formula →201 saved-work；PUT update-formula →200 version=2，原version=1仍可GET；render海报非空。源改为错误TeX仍保存且invalid，只能导出source。公式说明选入时图中有中文，分段式条件逐行正确。 |
+| MC02 / WB-MA003、004 | create-plane/triangle/space 保存；改Q2常数-2，顶点(1,-3)、零点1±sqrt(3)；改三角形标注位置颜色；改AC1线型；重新读取源、PNG/SVG，不能只检查文件扩展名。 |
+| MC03 / WB-MA005、006 | create-dynamic 保存，改a范围[-3,3]、步长0.5、步骤标题后PUT；重启重读相同源。每步visibleIds及完整values决定图/点/标签，回到初步保持初态；自由探索不发写请求。 |
+| MC04 / WB-MA007、008 | 用C23实际M-X字节POST files，得到F1；create-html使用F1两字段。编辑标题及range得到F2，PUT仅source.fileId=F2；originalFileId仍F1，取回逐字相等。上传F2成功、PUT响应丢失，同键重试只得同一revision。 |
+| MC05 / WB-MA009、010 | GET lesson v3基线3；ReturnTarget与备课草稿存设备账户分区；作品201后将math-reference-input加到原section。PUT return-lesson →version4，snapshot来自服务端；模拟断线重放同键仍version4且仅一个referenceId。作品请求键和备课键不同。 |
+| MC06 / WB-MA011、012 | 源从1改2，读取adopted-reference仍version1 snapshot、latestVersion2；显式workVersion=2才更新。源删除后修改引用note仍可保存，新增同源引用拒绝object-deleted。另存并替换本处用新workId与新referenceId，其他课不变。 |
+| MC07 / WB-MA013、014 | export-transparent 返回File及固定workVersion；用透明度/像素、SVG结构和外部PPT实际插入核验。export-html 原生offline=self-contained，外部unverified；UI对应措辞。全新Chrome配置禁网、关闭服务，双击真实下载物，键盘/拖动/步骤仍工作。 |
+| MC08 / WB-MA016 | 两客户端读version1，A写得2，B以1写409 version-conflict；B源保持。A响应丢失时先同键确认，再GET当前版本，不因超时再建作品。同键异体409；服务重启仍可确认。 |
+| MC09 / WB-MA017 | 未绑页面/过期Cookie401；错误Origin403先于业务；另账户读作品/历史/File/导出/引用统一404。身份切换销毁iframe、锁原草稿；迟到回包不显示到新账户。缺文件503，元数据保持。 |
+| MC10 / WB-MA018 | teaching-input 新连活动作品，通过teaching-provider保存labelAtLink；改名后teaching-linked旧label保持、currentLabel更新；删除后已有链接显示deleted，新链接拒绝。反向列表由classes提供，工作版本不进入教学关联。此片为扩展fixture，真实接入等待教学时间新版与M44。 |
+| MC11 / WB-MA019 | v3创建含math备课，v2 GET/列表/PUT/导出422 unsupported-content-version；先重放已成功旧请求。v3读取旧question/resource备课不写库、不变version。旧PDF已受理快照不改。 |
+| MC12 / WB-MA020 | 在隔离测试中math缺提供方、目录重复ID/path或加入必需依赖环，拒绝装配；HTTP fixture 422 invalid-input，reason=invalid-reference或duplicate-id，field指向错误descriptor。材料+math与教学时间组合目录均检查。 |
+| MC13 / WB-MA015 | 无模型直接经port调用list/get/create/update/export，结果同HTTP；传accountId或snapshot拒绝。Agent操作清单只暴露声明操作，不能访问SQL、磁盘路径、Cookie或执行HTML。真实模型制作归后续Agent验收，不由此用例代签。 |
+
+### 结构与数学的反例
+
+schema层反例在samples的valid=false中；业务层以下输入均可由合法样本单字段修改形成。前端定位同一字段，后端返回同一type；不能只靠JSON Schema通过。
+
+| 变体 | 预期 |
+| --- | --- |
+| 参数name重复、min≥max、initial超界、step≤0、初值不在网格 | 422 invalid-math-source，field指第一个参数错误；原version不变 |
+| steps少一个参数值、visibleIds缺对象、拖点绑定不对应坐标表达式 | 同上，分别定位steps/drags |
+| view.xMin=xMax；edge引用不存在点；同source内重复element ID | 同上，不能部分保存 |
+| 公式不闭合；expression为 `x+)`；椭圆rx为 `-1` | 结构合法，200保存且render=invalid/reason，poster=null；不可拿上次海报导出/引用 |
+| `1/x` | x=0处断开，两支不跨原点连线；可保存ready |
+| `sqrt(x)` | x<0不绘制，不生成NaN坐标；可保存ready |
+| `-2^2`、`2^3^2`；负数系数/零系数 | 分别-4、512；标签和有限坐标正确，零系数不得继续称抛物线顶点 |
+| source.kind在更新时改变 | 422 invalid-math-source；另建作品承载另一种源 |
+| 原件F1属于另一账户或F2不存在 | 404，不透露文件存在性；作品无变化 |
+
+### 隔离反例与结果核验
+
+M42建立小型测试HTML，分别尝试读parent.document/document.cookie/localStorage、伪造postMessage写作品、form/fetch/WebSocket、远程script/img、window.open、top导航、iframe/worker、`</script>`闭合和自导航。主账户数据与Cookie/PageContext始终不可读，主应用业务无变更；CSP/sandbox预期阻断的请求记录到网络证据。自导航不应被宣传为完全禁网，必须观察销毁/受限反馈。预览本身不得获得认证API能力。坏脚本停止后源和原文件仍能取回。
+
+先用真实浏览器打开/运行按钮触发，再观察请求/DOM；不得用父页面直接eval代替验证隔离。C23的精确M-X、含CDN HTML、损坏HTML和大于1MiB的HTML分别覆盖可运行、受限、源码保留及大小上限。运行副本中CSP不能被源内meta覆盖。下载原始HTML与隔离包装器分别检验，不拿原始文件的行为冒充包装器行为。

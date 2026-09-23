@@ -1,6 +1,6 @@
 # 教学与时间契约
 
-[OpenAPI](teaching-time/teaching-time.openapi.yaml)拥有基础字段与操作，[cases](teaching-time/cases.md)拥有交换与失败恢复；[架构](../arch/teaching-time.md)定义进程内接缝。当前记录 v2 另消费[数学关联](teaching-time-math.md)，题目提供方明确采用[丰富题目读取](materials-teaching-alignment.md)。用户行为见[班级与日程](../features/teaching-time.md)。
+[OpenAPI](teaching-time/teaching-time.openapi.yaml)拥有基础字段与操作，[cases](teaching-time/cases.md)拥有交换与失败恢复；[教学实现](../features/teaching-time.md#教学实现)定义进程内接缝。当前记录 v2 另消费[数学关联](#数学作品关联)，题目提供方明确采用[丰富题目读取](#丰富题目关联)。用户行为见[班级与日程](../features/teaching-time.md)。
 
 ## 共同协议
 
@@ -14,7 +14,7 @@
 - 一条记录属于一个不可更换的班级；recordedOn 是实际教学日期，默认账户今天，允许老师补记或纠正日期，不由课程时间生成。note、position、unfinished、commonIssues、nextNote 至少一个去空白后非空，原文字不截断。列表按 recordedOn 降序、updatedAt 降序、ID 升序。
 - 班级顶部实际位置由记录派生，不另设进度表：活动记录中 position 非空的首条；无此项则显示最近活动记录摘录。删除/改日期后重新派生。班级软删除后其记录保留只读，恢复班级不改变记录自己的删除状态。
 - 记录的备课/题目关联是可回看当前对象的链接，不是采用某版教材快照。首次链接保存服务器读取的标题 labelAtLink；读取派生 currentLabel/deleted，不因改题或改备课而改记录文字、版本、保存时标题。新链接要求本账户活动来源；已保留链接可以引用已删除来源。移除后再添加算新链接，不能新连已删除来源。重复 kind+id 拒绝。
-- 基础 sources 为 lesson/question，当前 records v2 另接受 [math](teaching-time-math.md)。classes 拥有关联表和反向查询，题库/备课只读 classes 公共操作，不读其表、不写回备课正文。反向查询默认活动记录及活动班级，按记录顺序返回；查看已删除记录走班级的删除过滤，不混入当前反馈。
+- 基础 sources 为 lesson/question，当前 records v2 另接受 [math](#数学作品关联)。classes 拥有关联表和反向查询，题库/备课只读 classes 公共操作，不读其表、不写回备课正文。反向查询默认活动记录及活动班级，按记录顺序返回；查看已删除记录走班级的删除过滤，不混入当前反馈。
 - 日程可以带一个班级、一个备课和多个实际记录。链接已有记录时必须与所选班级相同；classId 为空时 recordIds 必须为空。同一次安排可以关联多条实际记录；写记录与安排关联是两个明确保存步骤，不建立跨模块分布式事务。记录先保存成功后，第二步失败只重试关联。单次实例才能关联实际记录，重复模板 recordIds 必须为空。
 - 删除来源/班级/记录不级联删除任何日程；现存链接继续可读并标已删除。修改无关字段时允许保留失效链接；新增/改指链接时重新检查活动性/归属。更换班级必须同时清除不匹配 recordIds。返回的关联状态由公共读取派生，来源读取失败使本次读取失败，不伪装为“已删除”。
 
@@ -74,7 +74,7 @@ T53 仅在站内通知查询/写入及 schedule 变更时结算；浏览器工�
 
 ## 公共端口与协议版本
 
-classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2` 和 `math.readForTeachingLinkV1` 读取真实来源；schedule 使用班级/记录摘要与备课端口。具体同步 Interface 见[架构](../arch/teaching-time.md#模块与-interface)。业务事务和旧协议的字段约束继续保留。
+classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2` 和 `math.readForTeachingLinkV1` 读取真实来源；schedule 使用班级/记录摘要与备课端口。具体同步 Interface 见[进程内端口](../features/teaching-time.md#模块与-interface)。业务事务和旧协议的字段约束继续保留。
 
 ### 静态目录 v2 与当前 v3
 
@@ -84,7 +84,7 @@ classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2`
 
 ### 记录来源 v1 与 v2
 
-本页基础 schema 的记录 v1 SourceInput 仅含 lesson/question，拒绝 math、work、resource 和任意 JSON 扩展。当前记录使用[教学记录 v2](teaching-time-math.md)：新增 kind=math，真实提供方及前端反向反馈均已接线。v1 读取含 math 对象时的整体拒绝、v2 兼容旧记录、旧键原路径确认均沿该扩展，不能通过删掉 math 字段进行有损降级。真实完整教学验收与目标设备仍按[剩余依赖](../plans/mvp-dag.md)推进，不因接口存在标全范围通过。
+本页基础 schema 的记录 v1 SourceInput 仅含 lesson/question，拒绝 math、work、resource 和任意 JSON 扩展。当前记录使用[教学记录 v2](#数学作品关联)：新增 kind=math，真实提供方及前端反向反馈均已接线。v1 读取含 math 对象时的整体拒绝、v2 兼容旧记录、旧键原路径确认均沿该扩展，不能通过删掉 math 字段进行有损降级。真实完整教学验收与目标设备仍按[剩余依赖](../plans/mvp-dag.md)推进，不因接口存在标全范围通过。
 
 ## 场景与操作映射
 
@@ -97,3 +97,112 @@ classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2`
 | WB-T009、010、011 / U7 | exceptions、settings、日期计算 | T52 |
 | WB-T012 至 016 / U9、U10 | reminder、notifications、captureDue | T52 保存/投影，T53 存储/已读/汇合 |
 | WB-T017、018 / 全部 | B11 协议、Problem、版本/账户保护 | T51/T52/T53 各自，T54 真实复验 |
+
+## 数学作品关联
+
+精确字段见 [OpenAPI](teaching-time/teaching-time-math.openapi.json)，交换场景见 [math-cases](teaching-time/cases.md#数学关联用例)。数学 Source 类型取[固定输入](teaching-time/inputs/README.md)。本节拥有记录链接与兼容行为，不复制数学制作模型。
+
+### 来源与保存
+
+`SourceInputV2 = SourceInput | TeachingMathInput`，`SourceV2 = Source | TeachingMathSource`。数学分支外引 M40 原 schema，精确标识为 `kind=math`，不是 `work`。选择器调用 M40 `listWorks`（`GET /api/modules/math/v1/works`），只选本账户 `state=active`；支持其五种 kind，`render=invalid` 也允许关联。教学反馈不要求导出成功，不使用备课版本快照或 File ID。
+
+首次关联由 classes 在记录写事务中同步调用 `math.readForTeachingLinkV1(principal,id)`；保存服务器读取的 `title` 为 `labelAtLink`，客户端只提交 kind/id。`TeachingWork.version` 只用于提供方投影，不持久化为关联版本，不做 reference-version-conflict。作品在选择后改名，最终以保存事务读取的标题为准；在保存前删除则整个保存失败。
+
+读取时派生 `currentLabel=title`、`deleted=(deletedAt != null)`。同一 `kind+id` 保留原 `labelAtLink`；作品修改、删除、恢复只改变派生字段，不改变记录的 version、updatedAt、文字或 recordedOn。重复 kind+id 在后一个 `/sources/<i>/id` 返回 `422 invalid-input / duplicate-id`；source 顺序沿请求数组保留。空标题只在界面显示“未命名作品”，不改 provider 或 label 字段。
+
+| 作品状态/操作 | 保存和读取结果 |
+| --- | --- |
+| 活动作品首次关联 | 原子保存记录和首次标题；`render=invalid` 不阻断 |
+| 已保留的链接，作品软删除 | 仍可读取并标已删除；编辑原记录其他文字、重排 sources、删除/恢复记录均可保留该链接 |
+| 新链接到已删除作品 | `409 /problems/workbench/reference-deleted`；整条记录不写入 |
+| 成功移除后再添加 | 算新链接；作品仍删除则拒绝，已恢复则以当次 title 重新保存 labelAtLink；同次 PUT 中仍有原 kind/id 算保留 |
+| 作品恢复 | 既有链接 deleted=false，无需重存记录；记录或班级自己的删除状态不随之恢复 |
+| 提供方不存在/外账户 | `404 not-found`，不暴露标题/版本；既有链接读取也返回失败，不制造 tombstone |
+| 提供方存储失败 | `503 temporarily-unavailable`，不显示空列表或已删除；写入及成功幂等回执全部回滚 |
+
+班级删除后记录只读、记录的 classId 不可更换、文字至少一项非空、100 个来源上限及所有排序/版本规则原样继承 T50。新建不要求关联；取消作品选择不写记录。来源异常时可保留草稿重试；显式移除异常来源后按新请求保存，不自动清空 sources。
+
+### 完整操作与新旧兼容
+
+新操作沿用共同身份、保护头、no-store、严格请求/宽容响应、账户幂等与原子事务。schema 中含全部旧操作及下表新增操作。两套路径共享同一 records 数据、ID、version、删除态和幂等账本，没有 v2 记录副本或自动迁移写入。
+
+| 新路径 | 操作/完整结果 |
+| --- | --- |
+| `/api/modules/classes/v2/records` | GET `listRecordsV2`（原 classId/state 参数）与 POST `createRecordV2`；RecordListV2/RecordV2 |
+| `/api/modules/classes/v2/records/{id}` | GET `getRecordV2` 与 PUT `updateRecordV2`；RecordV2 |
+| `/api/modules/classes/v2/records/{id}/deletion` | POST `setRecordDeletionV2`；原 Deletion 请求与完整 RecordV2 响应 |
+| `/api/modules/classes/v2/source-records/{kind}/{id}` | GET `listSourceRecordsV2`；kind 为 lesson/question/math，返回 RecordListV2 |
+
+新客户端所有记录列表、详情、保存、删除恢复和三类反向查询都使用 v2，避免仅数学页升级后备课/题库反馈读不到混合记录。班级 CRUD、`classes.readClass/readRecord`、schedule 的摘要和 HTTP 路径保持原状。
+
+| 请求情形 | 确定结果 |
+| --- | --- |
+| v2 读取或编辑旧 lesson/question 记录 | 不改 ID；纯读取不升版；正常保存只加一次版本，无强制补 math |
+| 旧路径读无 math 的记录或匹配列表 | 原成功形状和语义不变 |
+| 旧 GET 详情读到 math；旧列表/反查的匹配集合含 math | 整次 `422 invalid-input`，`reason=unsupported-content-version`；详情 `field=/sources`，列表/反查 `field=/items`。不省略来源、不漏记录、不返回部分结果 |
+| 旧 PUT/删除恢复目标已含 math，使用新键及当前版本 | `422 invalid-input`，`field=/sources`，`reason=unsupported-content-version`，即使请求试图省掉 math 也不写入 |
+| 旧写目标已含 math，但 expectedVersion 已过时 | 先返回原 `409 version-conflict`（currentVersion/objectId）；获取 v2 对照后再决定 |
+| 旧请求体主动提交 math，或旧反查路径 kind=math | 仍按旧严格请求 schema 拒绝 `422 invalid-input`；kind 非法定位 `/sources/<i>/kind` 或 `/path/kind`，reason=invalid-reference，不把旧接口升级成接受 math |
+| 旧成功请求丢响应，随后记录被 v2 加入 math | 在原方法/路径，以原键原体重放原成功状态和原结果，先于当前版本与可表示性检查；随后 v2 GET 当前内容，不拿旧成功回执覆盖新状态 |
+| 把已成功的旧键用于 v2 路径 | `409 idempotency-key-reused`；键作用域仍为账户并绑定方法/规范路径/原体，不是各路由独立空间 |
+
+处理顺序沿 B11：身份/保护、JSON/基本 schema、成功键重放、对象归属、版本、旧接口可表示性及其他领域校验、同事务写入。旧 schema 不变；可表示性守卫是新服务在旧路由上的保护。v2 读取旧记录后若移除了全部 math，当前对象可再被旧路径表示，但任何旧 expectedVersion 仍正常冲突。已删除记录也受同样保护。
+
+### 反向查询与删除
+
+`classes.listSourceRecordsV2(principal,{kind,id})` 与 HTTP 同语义。先通过对应提供方确认来源属于本账户，允许本账户 tombstone；不存在/外账户 404，读取故障 503。再筛活动记录和活动班级，按 recordedOn 降序、updatedAt 降序、ID 升序返回完整 RecordV2。来源已删除不减少反馈，班级/记录删除则从活动反馈中排除，各自恢复才重新出现；同一记录连同作品多次被拒绝，因此一条记录只返回一次。
+
+反向查询返回的每条记录包含全部来源；任一来源投影失败则整次失败，不降格为“暂无反馈”。记录属于的班级名称由现有 readClass/班级读取获得。数学页面只经组合层使用此接口/反馈组件，不给 math 服务端注入 classes，不产生必需依赖环。
+
+### 目录与组合
+
+当前目录使用 `ModuleCatalogV3`。classes 同步消费 `questions.readForReferenceV2`、`lessons.readForTeachingLink`、`math.readForTeachingLinkV1`；math 服务端不依赖 classes，反馈由前端组合，避免反向等待。目录只注册真实实现，缺依赖/重复/环路阻止装配。
+
+提供方真实 404/503 必须传播，只有成功读取 tombstone 才显示已删除。新版接口和样本可用不等于实际往返已验，验证[教学场景](../acceptance/teaching-time-math.feature)与真实提供方；阶段完成条件见[DAG](../plans/mvp-dag.md)。
+
+## 丰富题目关联
+
+当前 classes 采用 `questions.readForReferenceV2`。选择器确认只改草稿，保存才建立关系；从题目返回原记录，保留文字、日期、展开和滚动；题目可反查各班反馈。本节拥有该消费者接缝，题库正文仍由材料契约定义，教学记录不保存题面快照。
+
+### 当前题目消费规则
+
+本节只约定教学对材料题目的消费，沿用既有 HTTP 操作、字段、来源 kind、内容版本和数据库结构，其余行为见本页基础与数学关联规则。
+
+| 消费位置 | 本约定的确定调用和结果 |
+| --- | --- |
+| 教学题目选择器 | `GET /api/modules/questions/v2/items?q=…&state=active`，操作 `listQuestionsV2`，响应沿材料 `QuestionList`。显示本账户全部匹配题，包括 Document v1/v2、导入来源和复制来源；不按旧端口可表示性筛除题。请求失败显示重试并保留已选项，不显示空题库。 |
+| classes 的题目读取 | 同步 `questions.readForReferenceV2(principal,id)`，返回材料 `ReferenceReadQuestion`。工厂要求该端口，与 classes 使用同一 DB/事务连接；缺端口即装配失败，不能回退旧端口或访问 questions 内部仓储。新建关联、保留关联的响应投影、详情、列表、删除恢复响应及反查归属确认均使用它。 |
+| 来源投影 | 读取 `id/version/deletedAt/snapshot.title`；标题处理沿 T50，首次标题由服务器取得。同一 kind/id 保留原 `labelAtLink`；`currentLabel/deleted`按当前来源派生。返回中其余 snapshot 内容不写入记录，也不作为快照版本承诺。 |
+| classes HTTP 与反向端口 | 新 Web 继续使用现有 classes v2 全套记录操作及 `listSourceRecordsV2`。旧 classes 路径也共用上述题目读取；无 math 的记录仍是旧 schema 可表示的链接，即使题目正文已变丰富。含 math 的旧读写守卫仍按 T50 数学扩展拒绝有损表示。 |
+| 题目打开和反馈 | 使用现有材料 `getQuestionV2` 与丰富内容阅读器；真实题目详情装配 `SourceRecordsPanel(kind=question,id=当前已保存题目ID)`，消费 classes v2 反查。只读删除题仍可查看反馈。题目页内部切题时反馈跟随当前实际题目，不只跟随可能滞后的 URL。 |
+| 其他来源 | 备课保持 `lessons.readForTeachingLink`，选择器保持集成候选的 lessons v3；math 保持 `readForTeachingLinkV1`、真实作品 ID、当前对象链接及原反馈。 |
+
+题目 ID、正文/答案/原稿定位/复制来源/文件、业务 version、笔记、教学记录原文和首次标题均保留。纯读不写回旧行、不增加版本，不复制出“教学专用题”。老师只改教学文字不能重写题目；题目更新不能重写教学记录。标题投影不是内容降级，题目正文始终由题库的 v2 路径无损打开。
+
+旧 questions HTTP、`questions.readForReference`及旧 lessons 请求的成功重放和不可表示性保护全部保留。不要把旧端口改名为 v2 的别名，也不要全局替换旧客户端方法，使未知旧写入改走新路径。classes 的旧成功键仍在原方法/路径按原键原体重放，随后读取 v2 当前记录；schema、版本冲突与账户隔离顺序沿冻结契约。
+
+#### 目录组合
+
+当前 classes descriptor 的 `requires` 精确为：
+
+```json
+["questions.readForReferenceV2", "lessons.readForTeachingLink", "math.readForTeachingLinkV1"]
+```
+
+只替换旧目录 classes.requires 的题目项。仍使用 `ModuleCatalogV3`、`version=3`、原模块顺序与实际注册子集；名称、路径、其余依赖和 `modulePorts` 映射保持。v3 schema 已同时允许两个题目端口名，所需映射已存在，因此无需新目录 schema/version 或新能力发现层。保留旧映射供原调用方使用。classes 缺新版端口或缺提供方、重复 ID/path、依赖环仍阻止装配。
+
+固定输入副本及其 manifest 保留原字节；当前目录组合使用上表新版题目依赖，旧样本不是现行组合的竞争定义。
+
+### 必要成功、失败与恢复用例
+
+以下 `WB-MTA001-007` 是本接缝的增量验收清单，Given/When/Then 为预期，实际已有局部实现/证据，完整范围不能由样本代签。沿用原 TT-U3、WB-T003/017/018 与 WB-TM002/005-009，不复制完整教学或材料验收套件。
+
+| ID | Given / When | Then 与关闭证据 |
+| --- | --- | --- |
+| WB-MTA001 混合题库选择 | Given 同账户有 v1 手工题、v2 图片/表格/选项和公式题、已确认导入题及丰富复制题；另一账户有同名题。When 从班级记录进入题目页签搜索、勾选、取消，再确定并保存。 | GET v2 成功且匹配项完整、外账户不可见；取消不写库，确定仅草稿变化，保存只新增/更新一条记录。网络证据确认不再调用旧 questions/items；记录来源只有 kind/id，首次标题由服务器取得。 |
+| WB-MTA002 已有记录与保库 | Given 旧记录关联 v1 题且有旧成功回执。When 将同 ID 的题目正常编辑为丰富内容，读取记录、保留关联改文字、删除恢复记录，再刷新/保库重启。 | 题目未被降级；纯读保持记录 ID/version/updatedAt/原文/labelAtLink，当前标签反映题目。每次显式记录写只升一次版本；旧无 math 记录仍可由旧 classes 路径表示。DB 行、关联顺序与旧回执保持，旧成功重放不重新读取来源。 |
+| WB-MTA003 来源往返与两班反馈 | Given 两班各自关联同一丰富题，原记录有未保存文字、滚动及 AI 输入。When 打开题目、从产品入口返回记录，并从题目反馈打开另一班记录。 | 原 ID 的丰富正文/答案/图片/表格/公式完整，题目未被打开动作保存；原记录现场恢复，两班文字不覆盖。当前题目详情反馈使用 v2，包含混合 question/lesson/math 来源完整记录；题内切换后不串题。桌面 1440×900、平板 768×1024 截图及操作证据，无遮挡/横溢出。 |
+| WB-MTA004 删除与失败区分 | Given 已保存丰富题关联，另有选择后尚未保存的关联。When 来源软删除、恢复、移除后重连；分别让提供方返回成功 tombstone、真实 404、503。 | 保留链接允许读、改其他文字及记录删除恢复；新连删除题 409 reference-deleted，移除后重连按新链接判断。404/503使整次读取或写入失败，记录与成功回执原子回滚；不假删除、不假空反馈。草稿和已选项保留，可重试或显式移除异常来源。删班/删记录只影响活动反馈筛选。 |
+| WB-MTA005 版本、身份与未知结果 | Given 关联丰富题的记录写入已提交但丢响应，或并发修改使 expectedVersion 过时。When 原键原体在原路径确认，或读取当前版本对照后新键保存；再测试无身份与外账户。 | 原请求只提交一次，后续草稿不被旧回执覆盖；409保留对照，401锁定当前账户草稿，外账户404且不泄漏题目/记录。相同成功键换路径仍409 idempotency-key-reused。 |
+| WB-MTA006 旧协议保护 | Given 新题库含旧接口不可表示题，且一条 records v2 记录同时关联丰富题与真实 math。When 请求旧题目列表/详情/引用，及旧 classes 详情/匹配列表/反查/写；对照请求新版。 | 旧 questions 继续422 unsupported-content-version，不漏题、不删节点；旧 classes 因 math 继续按 /sources 或 /items 拒绝，过时版本先409、已成功键先原样重放。classes v2完整返回所有来源，题库v2无损读取，真实数学往返与反馈保留。 |
+| WB-MTA007 目录与相邻摘要 | Given 新组合使用限定修订目录及真实 questions/lessons/math。When 校验依赖并访问三种来源的记录与反查，再调用日程所用 readRecord 摘要。 | 目录相对固定样本只变 classes 题目依赖，缺 readForReferenceV2 即失败且不回退。题目/备课/数学反查均返回完整记录；readRecord仍不解析完整来源，提供方故障不阻断原日程摘要。 |

@@ -2,7 +2,7 @@
 
 首批 Agent 契约，设计已采用；开发暂停和实现边界见[当前状态](../plans/run-state.md)。精确 HTTP、请求/响应、工具参数和错误对照唯一归 [agent.openapi.json](agent.openapi.json)，有效交换样本见 [agent-examples.json](agent-examples.json)。本页定义请求之间的不变量，不是另一份字段 schema。
 
-输入版本、实验裁决与下游条件见[架构](../arch/agent.md)。已有业务字段继续引用工作台 `0.1.0-candidate.2`，业务语义源为 B11 `9aee091a34ba2eb311b51299d9beed78a032d026`；真实认证源为 `6f3003250d170b44e89f6ac9b0a74f91d658a357`、冻结 `63bfe8f7900b4a2bb7fc9ab5a4145f1c89a6f73b`。Agent 只新增 `/api/agent`，不改 15 个旧工作台操作、认证操作、Cookie 或页面上下文语义。
+输入版本、实验裁决与下游条件见[助理实现](../features/agent.md#助理实现)。已有业务字段继续引用工作台 `0.1.0-candidate.2`，业务语义源为 B11 `9aee091a34ba2eb311b51299d9beed78a032d026`；真实认证源为 `6f3003250d170b44e89f6ac9b0a74f91d658a357`、冻结 `63bfe8f7900b4a2bb7fc9ab5a4145f1c89a6f73b`。Agent 只新增 `/api/agent`，不改 15 个旧工作台操作、认证操作、Cookie 或页面上下文语义。
 
 ## 身份与接受顺序
 
@@ -120,7 +120,7 @@ entry 引用快照同时保存 Entry 和选定 Occurrence：有 originDate 时�
 
 `AgentSnapshot.toolCalls`、`AgentEvent(type=toolCall).value` 和 `PortableData(kind=conversation).value.toolCalls` 均递归消费同一个 `AgentToolCall`，保留名称、参数、顺序、结果及 null operationId。消费者不得按旧名称重新猜测分类、伪造 Operation、丢卡或跳过校验。v2 ToolOutcome 沿既定四字段投影，终态须与对应卡一致。正常重启或部署恢复的只读 executing 标 interrupted、未开始调用标 cancelled；只有执行中的写操作进入 unconfirmed 及原有核实/恢复隔离路径。
 
-设计静态检查的固定结果见[能力证据](../plans/run-inputs.md)；产品运行仍需覆盖六模块业务一致性，静态检查不代替运行证据。
+设计静态检查的固定结果见[能力证据](../plans/run-state.md#证据边界)；产品运行仍需覆盖六模块业务一致性，静态检查不代替运行证据。
 
 ### 手工能力对应表
 

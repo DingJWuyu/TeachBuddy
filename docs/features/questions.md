@@ -58,7 +58,7 @@
 
 单题或多题加入备课时就地选择目标，成功后留在题库，提供“前往备课”。有未保存修改时显式“保存并加入备课”，引用采用真实保存版本；长期笔记不进入引用，某课备注归备课。原题/改编对照在中央并排，退出恢复浏览现场。
 
-班级关联使用 [材料与教学接缝](../contracts/materials-teaching-alignment.md)，从来源返回原记录并保留草稿，当前题目反馈随题目切换。PPT 素材支持复制题面文字与 LaTeX 源、下载透明题面 PNG 分片和单幅配图；具体像素/分片与权限在[材料契约](../contracts/workbench/materials.md#引用和输出)，不承诺自动制作整套 PPT。
+班级关联使用 [材料与教学接缝](../contracts/teaching-time.md#丰富题目关联)，从来源返回原记录并保留草稿，当前题目反馈随题目切换。PPT 素材支持复制题面文字与 LaTeX 源、下载透明题面 PNG 分片和单幅配图；具体像素/分片与权限在[材料契约](../contracts/workbench/materials.md#引用和输出)，不承诺自动制作整套 PPT。
 
 ## 接口、代码与判断结果
 
@@ -67,4 +67,4 @@
 - API `apps/api/src/modules/questions/materials-service.js`、`materials-router.js`、`extraction*.js`、`native-word.js`；共享编辑器 `apps/web/src/features/workbench/materials/DocumentEditor.jsx`。
 - 浏览器 `apps/web/e2e/manual-questions.config.mjs`；HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；保存基例 [WB-003/004/011-018](../acceptance/first-flow.feature)，材料基例 [WB-M001-012/025-028](../acceptance/materials.feature)。
 
-保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前具名证明范围在[能力证据](../plans/run-inputs.md)。
+保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前具名证明范围在[能力证据](../plans/run-state.md#证据边界)。

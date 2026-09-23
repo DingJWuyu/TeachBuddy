@@ -1,30 +1,42 @@
 # 项目文档
 
-| 资料 | 用途 |
-| --- | --- |
-| [产品范围](PRODUCT_SCOPE.md) | 用户、六模块目标和非目标 |
-| [当前状态](plans/run-state.md) / [剩余依赖](plans/mvp-dag.md) | 接任进度、当前授权、未完成条件和下一步 |
-| [工作台共同交互](WORKBENCH_DESIGN.md) | 布局、现场和跨模块操作；页面差异在下表 |
-| [架构](ARCHITECTURE.md) / [API](API.md) | 代码责任、公共协议和精确 schema |
-| [运行指南](SETUP.md) | 安装、隔离环境、转换工具与已有实例 |
-| [验证标准](acceptance/README.md) / [能力证据](plans/run-inputs.md) | 如何判定结果，以及当前结论的证据边界 |
+了解产品读根 [README](../README.md)。接续工作读[当前状态](plans/run-state.md)，其中包含已有能力、缺口、授权与必要证据；处理具体功能从下面选一页。
 
 ## 功能规格
 
-每页包含实际用户行为、未完成能力、相关接口与验证入口；只展开任务涉及的接缝。
+每页集中用户行为、实现位置与验证入口。仅在修改协议或底层实现时，继续读该页指向的契约、schema 和技术段落。
 
-| 任务涉及 | 资料 |
+| 功能 | 内容 |
 | --- | --- |
-| 录题、修改保存、分类、原稿、改编 | [题库](features/questions.md) |
-| 教学环节、取材、引用更新、成果输出 | [备课](features/lessons.md) |
-| 文件、分类、预览、替换 | [资源库](features/resources.md) |
-| 公式、图形、动态作品、源码、离线 | [数学工坊](features/math.md) |
-| 班级实际反馈、时间、重复、提醒 | [班级教学与日程](features/teaching-time.md) |
-| 头像、偏好预览、退出、帮助、更新日志 | [设置与支持页](features/settings.md) |
-| 个人资料包、最近删除、维护备份、恢复隔离 | [数据管理](features/data.md) |
-| 登录注册、邮件、会话、身份交接 | [账户](features/identity.md) |
-| 产品对话与真实工具操作 | [产品 Agent](features/agent.md)，暂停 |
+| [题库](features/questions.md) | 录题、自动整理与校对、分类、原稿、改编 |
+| [备课](features/lessons.md) | 教学环节、取材、引用更新、Word/PDF 输出 |
+| [资源库](features/resources.md) | 文件、分类、预览、替换 |
+| [数学工坊](features/math.md) | 公式、图形、动态作品、源码、离线及渲染接缝 |
+| [班级教学与日程](features/teaching-time.md) | 实际反馈、时间、重复、提醒及模块接线 |
+| [设置与支持页](features/settings.md) | 偏好、退出、帮助、更新日志及尚未持久化的预览项 |
+| [数据管理](features/data.md) | 个人资料包、最近删除、维护备份与恢复 |
+| [账户](features/identity.md) | 登录注册、邮件、会话、身份与工作台接线 |
+| [产品 Agent](features/agent.md) | 对话、业务工具、pi 与模型接入，整线暂停 |
 
-`contracts/` 的 Markdown 拥有交换语义，OpenAPI/JSON Schema 拥有字段，cases/samples 拥有正反例；`arch/` 仅保留相关技术接缝，`acceptance/*.feature` 保存行为判据。运行和测试实际读取的 schema、固定输入副本与样本必须保持可用。
+## 共同资料
 
-[执行约定](plans/execution-protocol.md)仅保存项目特有的模型、写入和回执规则；不另设角色教程。领域词义见根 [CONTEXT](../CONTEXT.md)，稳定模块决策见 [ADR](adr/0001-use-a-single-static-module-catalog.md)。已提交过程通过 Git 查找，日常文档不维护逐轮回执。
+| 要查什么 | 入口 |
+| --- | --- |
+| 做什么、不做什么 | [产品范围](PRODUCT_SCOPE.md)、[领域词义](../CONTEXT.md) |
+| 外壳、布局、保存现场与跨模块交互 | [工作台共同交互](WORKBENCH_DESIGN.md)、[设计与验证规则](rules/design-and-verification.md) |
+| 代码位置、启动配置、隔离开发、转换工具与部署条件 | [运行与代码结构](SETUP.md) |
+| 如何验证、完整质量门槛和样本 | [验证指南](acceptance/README.md) |
+| 剩余工作如何衔接 | [当前状态](plans/run-state.md)、[DAG 剩余依赖](plans/mvp-dag.md) |
+
+## 目录职责
+
+| 目录 | 保存什么 | 何时展开 |
+| --- | --- | --- |
+| `features/` | 按功能组织的有效规格、实现接缝和验证入口 | 日常功能任务 |
+| `contracts/` | 交换语义、兼容规则、正反例及精确 OpenAPI/JSON Schema | 修改接口、存储或跨模块调用 |
+| `acceptance/` | 行为判据、完整矩阵、固定样本及仍有消费者的制品 | 对应功能或阶段验收 |
+| `plans/` | 当前状态、剩余依赖、执行约定与恢复索引 | 接续进度、派发或恢复工作 |
+| `rules/`、`agents/`、`adr/` | 项目规则、仓库约定与稳定架构决定 | 任务触及相应约束时 |
+| `research/` | 尚未执行的自动提取复用方案与许可边界 | 该路线获准继续时 |
+
+技术接缝随功能或契约保存，不另设架构文档层。运行和测试读取的 schema、固定副本和制品保持原路径；它们不是必读材料。已提交过程从 Git 查询，日常文档不维护逐轮回执。

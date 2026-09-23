@@ -1,8 +1,8 @@
 # 账户入口契约
 
-采用认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 的 PageContext 约定。源版本 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，协议已冻结且真实接入；完整目标环境结果见[账户规格](../features/identity.md)和[能力证据](../plans/run-inputs.md)。
+采用认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 的 PageContext 约定。源版本 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，协议已冻结且真实接入；完整目标环境结果见[账户规格](../features/identity.md)和[能力证据](../plans/run-state.md#证据边界)。
 
-[OpenAPI](auth.openapi.yaml)拥有方法、地址、字段、状态码与样本；本文拥有跨操作语义；[交换用例](auth-cases.md)拥有前后端独立验证条件。接线见[认证架构](../arch/auth-implementation.md)，页面见[账户规格](../features/identity.md)。原型 CA/S 编号用于追溯表单场景，入口为[认证行为](../../prototype/behavior/auth.md)，不代表产品已通过对应场景。
+[OpenAPI](auth.openapi.yaml)拥有方法、地址、字段、状态码与样本；本文拥有跨操作语义；[交换用例](auth-cases.md)拥有前后端独立验证条件。接线见[技术接线](../features/identity.md#技术接线)，页面见[账户规格](../features/identity.md)。原型 CA/S 编号用于追溯表单场景，入口为[认证行为](../../prototype/behavior/auth.md)，不代表产品已通过对应场景。
 
 覆盖登录、开放注册、两类发码、重置、恢复、记住我失败恢复和退出交换。设置退出已接入真实 I07；CA53 编号仍对应退出场景。注册默认开放，关闭只阻止新注册及注册发码。条款链接不跳转；不新增管理后台、条款版本、刷新令牌、Bearer 或账户管理功能。术语沿用 [CONTEXT](../../CONTEXT.md)；本包的会话、挑战和页面上下文是协议术语，不更改业务词义。
 
@@ -101,7 +101,7 @@ Cookie 被浏览器完全禁用时，没有任何可用当前会话，应停在�
 
 ## 部署恢复的认证撤销
 
-内部契约 `auth-recovery/1` 已接受且有本地独立切片，固定来源见[能力证据](../plans/run-inputs.md)。这里拥有认证接口、表级不变量和错误；整体停服、复制、两次读回复核、开放及回退流程只归[数据恢复](../features/data.md#部署备份与还原)。它不是 I06 的浏览器 remembered 会话恢复。
+内部契约 `auth-recovery/1` 已接受且有本地独立切片，固定来源见[能力证据](../plans/run-state.md#证据边界)。这里拥有认证接口、表级不变量和错误；整体停服、复制、两次读回复核、开放及回退流程只归[数据恢复](../features/data.md#部署备份与还原)。它不是 I06 的浏览器 remembered 会话恢复。
 
 ### 唯一操作接口
 

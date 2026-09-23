@@ -42,4 +42,4 @@
 
 Web `apps/web/src/features/lessons/`；API `apps/api/src/modules/lessons/`，DOCX 生成在 `pandoc.js`，PDF/预览共用文件转换器。验证入口 `apps/web/e2e/manual-lessons.config.mjs`、`apps/api/test/materials-lessons.test.js`、`materials-pandoc.test.js`。
 
-相关修改走“组织环节 → 取题/资源/作品 → 保存刷新 → 查看来源 → 对照并采用单处更新”。输出修改必须下载并打开真实文件，检查三类成果、答案和注记四种组合、公式可编辑、配图/分页及旧成功输出保留。Linux 结构检查不代替目标 Office 编辑。场景见[材料 BDD](../acceptance/materials.feature)，本地证明见[能力证据](../plans/run-inputs.md)。
+相关修改走“组织环节 → 取题/资源/作品 → 保存刷新 → 查看来源 → 对照并采用单处更新”。输出修改必须下载并打开真实文件，检查三类成果、答案和注记四种组合、公式可编辑、配图/分页及旧成功输出保留。Linux 结构检查不代替目标 Office 编辑。场景见[材料 BDD](../acceptance/materials.feature)，本地证明见[能力证据](../plans/run-state.md#证据边界)。

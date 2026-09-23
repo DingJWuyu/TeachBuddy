@@ -32,8 +32,8 @@ node --env-file=/absolute/private/runtime.env apps/api/src/server.js
 产品实现位于 `apps/web` 与 `apps/api`，`packages/shared` 保存共享目录和定义，`prototype` 提供交互参考。
 
 - [产品范围](docs/PRODUCT_SCOPE.md)：产品目标与边界。
-- [功能规格](docs/README.md)：按功能查行为、契约和验证入口。
-- [架构](docs/ARCHITECTURE.md)与 [API](docs/API.md)：模块、数据和接口。
+- [文档目录](docs/README.md)：按功能查行为、接口和验证方法。
+- [代码结构](docs/SETUP.md#代码结构)：模块、请求路径和数据归属。
 - [当前进度](docs/plans/run-state.md)：已知缺口、授权和下一步。
 
 项目采用 MIT 许可，见 [LICENSE](LICENSE)。
