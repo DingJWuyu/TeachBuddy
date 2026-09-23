@@ -1,0 +1,125 @@
+TAP version 13
+# Subtest: A11 HTTPS: pending refuses workbench; active shares accountKey
+ok 1 - A11 HTTPS: pending refuses workbench; active shares accountKey
+  ---
+  duration_ms: 353.976804
+  type: 'test'
+  ...
+# Subtest: C19/C20: all 15 operations use real principal; page rejection precedes data and writes
+ok 2 - C19/C20: all 15 operations use real principal; page rejection precedes data and writes
+  ---
+  duration_ms: 294.011143
+  type: 'test'
+  ...
+# Subtest: C21: refresh requires explicit restore; expiry/revocation 401 and both stores 503
+ok 3 - C21: refresh requires explicit restore; expiry/revocation 401 and both stores 503
+  ---
+  duration_ms: 315.24069
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 12, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: old database retains stable accountKey, credentials, layout and migration ledger after restart
+# RefatOS API running on https://localhost:39535
+ok 4 - old database retains stable accountKey, credentials, layout and migration ledger after restart
+  ---
+  duration_ms: 503.765498
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 12
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: legacy nickname gap stops startup without deriving a nickname from email
+ok 5 - legacy nickname gap stops startup without deriving a nickname from email
+  ---
+  duration_ms: 233.396463
+  type: 'test'
+  ...
+# Subtest: real server waits for all migrations and refuses missing TLS configuration
+ok 6 - real server waits for all migrations and refuses missing TLS configuration
+  ---
+  duration_ms: 187.596715
+  type: 'test'
+  ...
+# Subtest: WB-001/002: a pasted question keeps its original text and can be found again
+ok 7 - WB-001/002: a pasted question keeps its original text and can be found again
+  ---
+  duration_ms: 247.200338
+  type: 'test'
+  ...
+# Subtest: WB-003/013: editing keeps the same id, bumps the version and replays idempotently
+ok 8 - WB-003/013: editing keeps the same id, bumps the version and replays idempotently
+  ---
+  duration_ms: 53.545642
+  type: 'test'
+  ...
+# Subtest: WB-004: a copy keeps the original snapshot and both questions evolve independently
+ok 9 - WB-004: a copy keeps the original snapshot and both questions evolve independently
+  ---
+  duration_ms: 56.074432
+  type: 'test'
+  ...
+# Subtest: WB-009: question deletion hides the item but keeps tombstones and stable ids
+ok 10 - WB-009: question deletion hides the item but keeps tombstones and stable ids
+  ---
+  duration_ms: 66.329388
+  type: 'test'
+  ...
+# Subtest: WB-014: invalid question payloads are rejected without touching stored data
+ok 11 - WB-014: invalid question payloads are rejected without touching stored data
+  ---
+  duration_ms: 63.791085
+  type: 'test'
+  ...
+# Subtest: WB-016: another account cannot reach a question and forged identity is ignored
+ok 12 - WB-016: another account cannot reach a question and forged identity is ignored
+  ---
+  duration_ms: 68.300667
+  type: 'test'
+  ...
+# Subtest: WB-001: list search covers title, body and note only, and starred filters apply
+ok 13 - WB-001: list search covers title, body and note only, and starred filters apply
+  ---
+  duration_ms: 78.463265
+  type: 'test'
+  ...
+# Subtest: C11/WB-013: every question write trigger rejects a stale base version with the current version
+ok 14 - C11/WB-013: every question write trigger rejects a stale base version with the current version
+  ---
+  duration_ms: 84.802048
+  type: 'test'
+  ...
+# Subtest: real auth export snapshot, secrets exclusion, all files, idempotency and ownership
+ok 15 - real auth export snapshot, secrets exclusion, all files, idempotency and ownership
+  ---
+  duration_ms: 480.802973
+  type: 'test'
+  ...
+# Subtest: offline backup lock, isolated restore, persistent auth cleanup, activation and source preservation
+ok 16 - offline backup lock, isolated restore, persistent auth cleanup, activation and source preservation
+  ---
+  duration_ms: 729.149939
+  type: 'test'
+  ...
+# Subtest: all eight deletion kinds restore through original endpoints, class/record independence and saved relations
+ok 17 - all eight deletion kinds restore through original endpoints, class/record independence and saved relations
+  ---
+  duration_ms: 1163.540018
+  type: 'test'
+  ...
+# Subtest: CLI executes legacy manual backup upgrade; missing files, tampering and unknown migrations fail closed
+ok 18 - CLI executes legacy manual backup upgrade; missing files, tampering and unknown migrations fail closed
+  ---
+  duration_ms: 1775.891342
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5936.540857
