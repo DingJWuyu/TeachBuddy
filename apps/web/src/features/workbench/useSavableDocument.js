@@ -13,6 +13,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { readLocal, removeLocal, writeLocal } from './storage.js';
+import { useForegroundRefresh } from './useForegroundRefresh.js';
 import { unconfirmedProblem } from './problems.js';
 import { keepsDraft, isSettled } from './saveStates.js';
 import { newRequestKey } from './uuid.js';
@@ -409,6 +410,8 @@ export function useSavableDocument({
       return object;
     } catch { return null; }
   }, [commit]);
+
+  useForegroundRefresh(() => enabled && stateRef.current.baseline ? refreshServer() : null);
 
   return {
     ...state,

@@ -5,6 +5,7 @@ import { ShellContext } from "../workbench/shellContext.js";
 import { MathTools, MathIntegration } from "./Integration.jsx";
 import { uploadDraft } from "./uploadDraft.js";
 import { reselectDeviceFile } from '../workbench/deviceRequestStore.js';
+import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import DynamicPreview from "./DynamicPreview.jsx";
 import DynamicTools from "./DynamicTools.jsx";
 import HtmlEditor from "./HtmlEditor.jsx";
@@ -347,6 +348,8 @@ function MathSession({ transport, route }) {
     }
   }
   const inFlight = useRef(null);
+  const liveSave = useRef({ pending, status });
+  liveSave.current = { pending, status };
   const generation = useRef(0),
     draftRef = useRef(draft);
   draftRef.current = draft;
@@ -447,6 +450,18 @@ function MathSession({ transport, route }) {
       if (epoch === generation.current) handleError(e);
     }
   }
+  useForegroundRefresh(async () => {
+    if (!account || locked || inFlight.current) return;
+    const started = draftRef.current;
+    const epoch = generation.current;
+    await refresh();
+    if (!started?.id) return;
+    const saved = await mathRequest(`${base}/${started.id}`);
+    if (epoch !== generation.current || draftRef.current !== started || inFlight.current || liveSave.current.pending) return;
+    if (saved.version === started.version) return;
+    if (liveSave.current.status === '已保存') setDraft(saved);
+    else { setConflict(saved); setMessage('服务器内容已变化，本地稿保留，请对照当前版本'); }
+  });
   useEffect(() => {
     if (account) refresh();
   }, [search, deleted, account]);

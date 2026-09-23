@@ -1737,7 +1737,8 @@
 .wb-help-article ol { margin: 20px 0; padding-left: 22px; }
 .wb-help-article li { margin-bottom: 18px; line-height: 1.8; }
 .wb-release-list { padding: 0; list-style: none; max-width: 900px; }
-.wb-release-list li { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--wb-line); }
+.wb-releases > h2 { margin: 24px 0 8px; }
+.wb-release-list > li { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--wb-line); }
 .wb-release-list h2 { overflow-wrap: anywhere; line-height: 1.6; }
 .wb-release-list code { display: inline-block; margin-top: 6px; color: var(--wb-muted); font-size: 12px; }
 .wb-shell[data-reading-size="large"] .wb-main { font-size: 16px; }
@@ -1749,7 +1750,7 @@
   .wb-help-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .wb-help nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .wb-help-article { overflow: visible; }
-  .wb-release-list li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .wb-release-list > li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
 }
 .wb-shell label.wb-setting-row { display: grid; grid-template-columns: minmax(0, 1fr) 180px; color: var(--wb-text); font-size: 13px; font-weight: 400; }
 .wb-shell label.wb-setting-row > span { color: inherit; }

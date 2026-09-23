@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useWorkbenchShell } from '../workbench/shellContext.js';
 import { useScene } from '../workbench/useScene.js';
+import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import { listLocalNames } from '../workbench/storage.js';
 import { navigate } from '../workbench/routes.js';
 import { Icon } from '../workbench/icons.jsx';
@@ -19,6 +20,7 @@ function LessonsIndex() {
   const [error, setError] = useState(null);
   const [reloadToken, setReloadToken] = useState(0);
   const order = useLessonOrder(() => setReloadToken(token => token + 1));
+  useForegroundRefresh(() => setReloadToken(value => value + 1));
   const [hasDraft, setHasDraft] = useState(() => listLocalNames(shell.accountKey).includes('draft:lesson:new'));
   const seqRef = useRef(0);
   const scroll = useScrollRestore(scene.listScrollTop || 0, (top) => patchScene({ listScrollTop: top }), items.length);

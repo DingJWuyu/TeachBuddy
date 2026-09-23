@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { questionDocuments, supportedDocument } from "@refatos/shared";
 import { DocumentEditor, DocumentView } from "../workbench/materials/index.js";
 import { readLocal, writeLocal, removeLocal } from "../workbench/storage.js";
+import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import {
   get,
   write,
@@ -138,6 +139,20 @@ export default function MaterialsQuestionsPage({
   const editorRef = useRef(null);
   editorRef.current = {value, scene, localKey};
   const refreshSequence = useRef(0);
+  const viewRef = useRef({ scene, value, busy });
+  viewRef.current = { scene, value, busy };
+  useForegroundRefresh(async () => {
+    if (viewRef.current.busy || pending.current) return;
+    const started = viewRef.current;
+    await refresh();
+    if (!started.scene.id) return;
+    const server = await get(`/${started.scene.kind === 'import' ? 'imports' : 'items'}/${started.scene.id}`);
+    const current = viewRef.current;
+    if (!alive.current || current.busy || pending.current || current.scene.id !== started.scene.id || current.scene.kind !== started.scene.kind) return;
+    const draft = readLocal(accountKey, localKey);
+    if (!draft) setValue(server);
+    else if (draft.version !== server.version) setConflict(server);
+  });
   const change = (next) => {
     setValue(next);
     writeLocal(accountKey, localKey, next);

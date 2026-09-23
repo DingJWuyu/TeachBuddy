@@ -415,3 +415,28 @@ test('数学 HTML 上传重开后校验原文件并以原键确认', async ({ pa
   await expect(page.getByLabel('作品名称')).toHaveValue('课堂演示.html');
   await expect(page.getByRole('button', { name: '重选原文件并确认上传' })).toHaveCount(0);
 });
+
+test('返回备课标签页读取最新内容，有本地修改时只显示对照', async ({ page, context }) => {
+  await page.getByRole('link', { name: '备课', exact: true }).click();
+  await page.getByRole('button', { name: '新建备课', exact: true }).click();
+  await page.getByLabel('课题', { exact: true }).fill('前台刷新基线');
+  await page.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(page.locator('[data-save-status]')).toContainText('已保存');
+  const second = await context.newPage(); await second.goto(page.url());
+  await second.getByLabel('课题', { exact: true }).fill('另一标签的第一版');
+  await second.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(second.locator('[data-save-status]')).toContainText('已保存');
+  await page.bringToFront();
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await expect(page.getByLabel('课题', { exact: true })).toHaveValue('另一标签的第一版');
+  await page.getByLabel('课题', { exact: true }).fill('当前标签未保存稿');
+  await second.bringToFront();
+  await second.getByLabel('课题', { exact: true }).fill('另一标签的第二版');
+  await second.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(second.locator('[data-save-status]')).toContainText('已保存');
+  await page.bringToFront();
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await expect(page.getByLabel('课题', { exact: true })).toHaveValue('当前标签未保存稿');
+  await expect(page.locator('[data-region="conflict"]')).toBeVisible();
+  await second.close();
+});

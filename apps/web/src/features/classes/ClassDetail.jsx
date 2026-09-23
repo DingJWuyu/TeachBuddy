@@ -33,9 +33,9 @@ export function ClassDetail({
   detailScrollTop,
   onDetailScrollTop
 }) {
-  const [renameScene, patchRename] = useScene(accountKey, `class-rename:${classroom.id}`, { renaming: false, name: classroom.name });
+  const [renameScene, patchRename] = useScene(accountKey, `class-rename:${classroom.id}`, { renaming: false, name: classroom.name, baseVersion: classroom.version });
   const { renaming, name } = renameScene;
-  const setRenaming = value => patchRename({ renaming: value });
+  const setRenaming = value => patchRename({ renaming: value, ...(value ? { baseVersion: classroom.version } : {}) });
   const setName = value => patchRename({ name: value });
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const renamed = useIdempotentSubmit({ accountKey, name: `pending:class-rename:${classroom.id}` });
@@ -66,7 +66,7 @@ export function ClassDetail({
 
   async function saveName() {
     if (name.trim() === '') return;
-    const payload = { expectedVersion: classroom.version, name };
+    const payload = { expectedVersion: renameScene.baseVersion, name };
     const result = await renamed.submit(
       ({ key, payload: body }) => updateClass({ key, id: classroom.id, payload: body }),
       payload

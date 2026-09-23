@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useWorkbenchShell } from '../workbench/shellContext.js';
 import { useScene } from '../workbench/useScene.js';
+import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import { navigate } from '../workbench/routes.js';
 import { Icon } from '../workbench/icons.jsx';
 import { listClasses, listRecords } from './api.js';
@@ -79,6 +80,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const [recordsStatus, setRecordsStatus] = useState('idle');
   const [recordsError, setRecordsError] = useState(null);
   const [recordReload, setRecordReload] = useState(0);
+  useForegroundRefresh(() => { setClassReload(value => value + 1); setRecordReload(value => value + 1); });
 
   useEffect(() => {
     let cancelled = false;

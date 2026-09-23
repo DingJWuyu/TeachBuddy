@@ -1,4 +1,5 @@
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
+import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 /**
  * Schedule module entry: the single top-level 日程 page.
  *
@@ -357,7 +358,7 @@ export default function SchedulePage({ route }) {
     openEditor(editorState({ mode: 'create', drafts: { group: draft, instance: null } }));
   }
 
-  async function openEntry(entryId, originDate = null) {
+  async function openEntry(entryId, originDate = null, background = false) {
     try {
       const entry = await api.getEntry(entryId);
       let content = null;
@@ -381,6 +382,7 @@ export default function SchedulePage({ route }) {
       const instanceDraft = originDate === null
         ? null
         : draftFromContent({ ...base, content, weekly: false });
+      if (!alive.current || (background && (editorRef.current?.entryId !== entryId || editorRef.current?.pending || saveRunning.current))) return;
       openEditor(editorState({
         mode: 'entry',
         entryId,
@@ -393,7 +395,7 @@ export default function SchedulePage({ route }) {
         drafts: { group: groupDraft, instance: instanceDraft },
         baseline: { group: groupDraft, instance: instanceDraft }
       }));
-      if (shell.openPanel) {
+      if (!background && shell.openPanel) {
         shell.openPanel('schedule');
         shell.setPanelMode?.('schedule');
       }
@@ -401,6 +403,13 @@ export default function SchedulePage({ route }) {
       setError(problem.problem ?? { message: '安排读取失败' });
     }
   }
+
+  useForegroundRefresh(async () => {
+    if (!alive.current || saveRunning.current) return;
+    reload();
+    const current = editorRef.current;
+    if (current?.entryId && !current.pending) await openEntry(current.entryId, current.originDate, true);
+  });
 
   useEffect(() => {
     const query = new URLSearchParams(route?.search ?? '');

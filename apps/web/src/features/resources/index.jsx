@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useScene } from "../workbench/useScene.js";
+import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import { createResourcesClient, pendingStore } from "./client.js";
 import { reselectDeviceFile } from '../workbench/deviceRequestStore.js';
 import { FileImage, Preview } from "./Preview.jsx";
@@ -88,6 +89,7 @@ function ResourceWorkspace({
     pendingRef = useRef(null),
     busyRef = useRef(false);
   const refresh = () => setRevision((n) => n + 1);
+  useForegroundRefresh(() => { if (!busyRef.current && !controller.signal.aborted) refresh(); });
   useEffect(() => {
     pendingStore(shell.accountKey)
       .then((value) => {
