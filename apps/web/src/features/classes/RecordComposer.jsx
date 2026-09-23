@@ -1,3 +1,4 @@
+import { useScene } from '../workbench/useScene.js';
 /**
  * One-line class record composer.
  *
@@ -23,7 +24,9 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
     return stored?.input ?? { ...emptyRecordInput(classId, todayInZone(timeZone)), sources: initialSources };
   });
   const [expanded, setExpanded] = useState(() => readLocal(accountKey, draftName)?.expanded ?? false);
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerScene, patchPicker] = useScene(accountKey, `class-composer-picker:${draftKey ?? classId}`, { open: false });
+  const pickerOpen = pickerScene.open;
+  const setPickerOpen = open => patchPicker({ open });
   const [notice, setNotice] = useState(null);
   const inputRef = useRef(input);
   const alive = useRef(true);
@@ -46,6 +49,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
     setNotice(null);
     inputRef.current = { ...inputRef.current, ...values };
     setInput(inputRef.current);
+    writeLocal(accountKey, draftName, { input: inputRef.current, expanded });
   }
 
   function settle(result, payload) {
@@ -203,6 +207,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
 
       {pickerOpen && (
         <SourcePicker
+          sceneKey={`new:${draftKey ?? classId}`}
           accountKey={accountKey}
           value={input.sources}
           onCancel={() => setPickerOpen(false)}

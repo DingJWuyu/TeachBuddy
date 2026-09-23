@@ -1,3 +1,4 @@
+import { hasRecoveredDrafts } from './storage.js';
 import { usePreferences } from './usePreferences.js';
 import { SupportHelp, SupportReleases } from './SupportPages.jsx';
 import { AgentProvider, useAgent } from '../agent/AgentProvider.jsx';
@@ -73,6 +74,12 @@ function WorkbenchContent({ boot }) {
   const { logout, accountKey, nickname, generation, storageFailed, reportIdentityLost, transport } = boot;
   const route = useRoute();
   const preferences = usePreferences(accountKey, generation);
+  const [recoveryNotice, setRecoveryNotice] = useState(() => hasRecoveredDrafts(accountKey));
+  useEffect(() => {
+    const restored = event => { if (event.detail.account === accountKey) setRecoveryNotice(true); };
+    window.addEventListener('tb:draft-restored', restored);
+    return () => window.removeEventListener('tb:draft-restored', restored);
+  }, [accountKey]);
   const narrow = useIsNarrow();
   const [scene, patchScene] = useScene(accountKey, 'shell', {
     sidebarCollapsed: false,
@@ -275,6 +282,11 @@ function WorkbenchContent({ boot }) {
           <div className="wb-workspace">
             <main className="wb-main" data-region="main">
               {boot.recoveryChanged && <div className="wb-storage-warning" role="status">工作台已从备份恢复。<a href="/settings" onClick={event=>followAnchor(event,'/settings')}>查看恢复前的本设备草稿</a></div>}
+              {recoveryNotice && <div className="wb-recovery-notice" role="status">
+                <span>已恢复本设备的未保存输入，请检查后继续。</span>
+                <a href="/settings" onClick={event => followAnchor(event, '/settings')}>查看设备草稿</a>
+                <button className="wb-icon-button" aria-label="关闭恢复提示" onClick={() => setRecoveryNotice(false)}><Icon name="close" size={14} /></button>
+              </div>}
               {storageFailed && (
                 <div className="wb-storage-warning" role="alert" data-region="storage-warning">
                   草稿无法保留，请先保存

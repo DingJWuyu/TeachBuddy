@@ -10,6 +10,12 @@ export async function get(path) {
     .body;
 }
 export async function write(path, body, key, method = "POST") {
+  const id = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+  const allowed = method === 'PUT'
+    ? new RegExp(`^/(?:taxonomy|(?:items|imports)/${id})$`)
+    : method === 'POST' ? new RegExp(`^/(?:items|imports|items/${id}/(?:copies|deletion|assets)|imports/${id}/(?:deletion|supplements|commit)|api/workbench/files/crops|api/workbench/jobs/${id}/(?:cancel|retry))$`) : null;
+  if (!allowed?.test(path) || typeof key !== 'string' || !body || typeof body !== 'object')
+    throw Object.assign(new Error('原请求格式暂不支持，已保留设备资料，请核对后处理'), { problem: { kind: 'unconfirmed', message: '原请求格式暂不支持，已保留设备资料，请核对后处理' } });
   try {
     return (
       await (method === "PUT" ? workbenchPut : workbenchPost)(
@@ -59,7 +65,7 @@ export async function upload(transport, file, key) {
     credentials: "same-origin",
   });
   const value = await response.json();
-  if (!response.ok) throw Error(value.detail ?? "原稿保存失败，请重试");
+  if (!response.ok) throw Object.assign(Error(value.detail ?? "原稿保存失败，请重试"), { status: response.status });
   return value.file ?? value;
 }
 export const empty = () => ({ version: 2, blocks: [] });

@@ -1,3 +1,4 @@
+import { useScene } from '../workbench/useScene.js';
 /**
  * Class list pane: the only entry when there is no class yet, the deleted
  * filter for restoring one, and the create form. The list keeps its scroll
@@ -23,8 +24,10 @@ export function ClassList({
   scrollTop,
   onScrollTop
 }) {
-  const [creating, setCreating] = useState(false);
-  const [name, setName] = useState('');
+  const [scene, patchScene] = useScene(accountKey, 'class-create', { creating: false, name: '' });
+  const { creating, name } = scene;
+  const setCreating = value => patchScene({ creating: value });
+  const setName = value => patchScene({ name: value });
   const [localError, setLocalError] = useState(null);
   const submit = useIdempotentSubmit({ accountKey, name: 'pending:class-create' });
   const scroll = useScrollRestore(scrollTop || 0, onScrollTop, items.length);

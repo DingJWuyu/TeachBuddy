@@ -1,3 +1,5 @@
+import { useScene } from '../workbench/useScene.js';
+import { useScrollRestore } from '../workbench/useScrollRestore.js';
 /**
  * Material links for a class record: the saved-link chips and the picker.
  *
@@ -9,7 +11,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../workbench/icons.jsx';
 import { navigate } from '../workbench/routes.js';
-import { readLocal, writeLocal } from '../workbench/storage.js';
 import { listTeachingQuestions, listTeachingWorks } from './api.js';
 import { listLessons } from '../lessons/api.js';
 import { sourceFallbackLabel, sourceHistoryHint, sourceKindLabel, sourceLabel, sourcePath } from './model.js';
@@ -65,25 +66,25 @@ export function SourceChips({ sources, onRemove, onPick, returnPath, disabled = 
   );
 }
 
-export function SourcePicker({ accountKey, value, onCancel, onConfirm }) {
-  const [kind, setKind] = useState(() => readLocal(accountKey, 'scene:class-source-picker')?.kind ?? 'lesson');
-  const [query, setQuery] = useState(() => readLocal(accountKey, 'scene:class-source-picker')?.query ?? '');
-  const [workKind, setWorkKind] = useState(() => readLocal(accountKey, 'scene:class-source-picker')?.workKind ?? '');
+export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel: cancel, onConfirm: confirm }) {
+  const [scene, patchScene] = useScene(accountKey, `class-source-picker:${sceneKey}`, {
+    kind: 'lesson', query: '', workKind: '', selected: null, scrollTop: 0
+  });
+  const { kind, query, workKind } = scene;
+  const setKind = kind => patchScene({ kind });
+  const setQuery = query => patchScene({ query });
+  const setWorkKind = workKind => patchScene({ workKind });
+  const onCancel = () => { patchScene({ selected: null }); cancel(); };
+  const onConfirm = value => { patchScene({ selected: null }); confirm(value); };
   const [retry, setRetry] = useState(0);
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState(null);
-  const [selected, setSelected] = useState(() => value.map((source) => ({
-    ...source,
-    label: sourceLabel(source),
-    deleted: Boolean(source.deleted)
-  })));
+  const selected = scene.selected ?? value.map(source => ({ ...source, label: sourceLabel(source), deleted: Boolean(source.deleted) }));
+  const setSelected = change => patchScene({ selected: typeof change === 'function' ? change(selected) : change });
+  const scroll = useScrollRestore(scene.scrollTop, top => patchScene({ scrollTop: top }), items.length);
   const searchRef = useRef(null);
   const dialogRef = useRef(null);
-
-  useEffect(() => {
-    writeLocal(accountKey, 'scene:class-source-picker', {kind, query, workKind});
-  }, [accountKey, kind, query, workKind]);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,7 +195,7 @@ export function SourcePicker({ accountKey, value, onCancel, onConfirm }) {
             <option value="space">立体</option><option value="dynamic">动态</option><option value="html">HTML</option>
           </select>
         </label>}
-        <div className="c-picker-body" data-region="source-picker-rows">
+        <div {...scroll} className="c-picker-body" data-region="source-picker-rows">
           {status === 'loading' && <p className="wb-muted">正在加载…</p>}
           {status === 'error' && <p className="wb-inline-error">{kind === 'math' ? '未能加载作品' : error?.message}<button type="button" className="wb-button" onClick={() => setRetry(token => token + 1)}>重试</button></p>}
           {status === 'ready' && items.length === 0 && <p className="wb-empty-note">{kind === 'math' ? '暂无作品' : '没有可选资料'}</p>}

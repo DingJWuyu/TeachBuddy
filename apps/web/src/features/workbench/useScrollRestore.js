@@ -17,7 +17,7 @@ export function useScrollRestore(initialTop = 0, commit, contentKey = '') {
   useEffect(() => {
     const flush = () => commitRef.current?.(topRef.current);
     window.addEventListener('pagehide', flush);
-    return () => { window.removeEventListener('pagehide', flush); flush(); };
+    return () => { window.removeEventListener('pagehide', flush); };
   }, []);
   const onScroll = useCallback(event => {
     topRef.current = event.currentTarget.scrollTop;

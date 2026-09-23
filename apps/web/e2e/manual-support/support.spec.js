@@ -178,3 +178,240 @@ test('切换模块返回备课编辑现场，数学双标签页草稿独立', as
   await second.reload(); await expect(second.getByLabel('LaTeX', { exact: true })).toHaveValue('y^2+2');
   await second.close();
 });
+
+test('日程保存中重开按原请求确认，后续输入不冒充已保存', async ({ page }) => {
+  await page.getByRole('link', { name: '日程', exact: true }).click();
+  await page.getByRole('button', { name: '记一件事', exact: true }).click();
+  await page.getByLabel('事项 1', { exact: true }).fill('保存中的日程输入');
+  let release; const held = new Promise(resolve => { release = resolve; });
+  let original;
+  await page.route('**/api/modules/schedule/entries', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    original = { key: route.request().headers()['idempotency-key'], body: route.request().postData() };
+    const response = await route.fetch(); await held;
+    await route.fulfill({ response }).catch(() => {});
+  });
+  await page.locator('[data-action="save"]').click();
+  await expect.poll(() => original).toBeTruthy();
+  await page.reload(); release();
+  await page.unroute('**/api/modules/schedule/entries');
+  await expect(page.getByRole('button', { name: '用原请求重试', exact: true })).toBeVisible();
+  await page.getByLabel('事项 1', { exact: true }).fill('确认期间新增的日程输入');
+  const replay = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/schedule/entries'));
+  await page.getByRole('button', { name: '用原请求重试', exact: true }).click();
+  const request = await replay;
+  expect({ key: request.headers()['idempotency-key'], body: request.postData() }).toEqual(original);
+  await expect(page.locator('[data-region="save-state"]')).toContainText('未保存');
+  await expect(page.getByLabel('事项 1', { exact: true })).toHaveValue('确认期间新增的日程输入');
+  await page.locator('[data-action="save"]').click();
+  await expect(page.locator('[data-region="save-state"]')).toHaveText('已保存');
+  await page.reload(); await expect(page.getByLabel('事项 1', { exact: true })).toHaveValue('确认期间新增的日程输入');
+  const list = await (await page.request.get(world.origin + '/api/modules/schedule/entries', { headers: headers(page) })).json();
+  expect(list.items).toHaveLength(1);
+});
+
+test('日程删除响应丢失后刷新仍用原键确认', async ({ page }) => {
+  await page.getByRole('link', { name: '日程', exact: true }).click();
+  await page.getByRole('button', { name: '记一件事', exact: true }).click();
+  await page.getByLabel('事项 1', { exact: true }).fill('需要确认删除的安排');
+  await page.locator('[data-action="save"]').click();
+  await expect(page.locator('[data-region="save-state"]')).toHaveText('已保存');
+  let original;
+  await page.route('**/api/modules/schedule/entries/*/deletion', async route => {
+    original = { key: route.request().headers()['idempotency-key'], body: route.request().postData() };
+    await route.fetch(); await route.abort();
+  });
+  await page.locator('[data-action="delete-entry"]').click();
+  await expect(page.getByRole('button', { name: '用原请求确认', exact: true })).toBeVisible();
+  await page.reload(); await page.unroute('**/api/modules/schedule/entries/*/deletion');
+  await expect(page.getByRole('button', { name: '用原请求确认', exact: true })).toBeVisible();
+  const wait = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/deletion'));
+  await page.getByRole('button', { name: '用原请求确认', exact: true }).click();
+  const request = await wait;
+  expect({ key: request.headers()['idempotency-key'], body: request.postData() }).toEqual(original);
+  await expect(page.getByRole('button', { name: '用原请求确认', exact: true })).toHaveCount(0);
+  const list = await (await page.request.get(world.origin + '/api/modules/schedule/entries?state=deleted', { headers: headers(page) })).json();
+  expect(list.items).toHaveLength(1);
+});
+
+test('日程关闭草稿再打开仍保留原版本，不覆盖别处修改', async ({ page }) => {
+  await page.getByRole('link', { name: '日程', exact: true }).click();
+  await page.getByRole('button', { name: '记一件事', exact: true }).click();
+  await page.getByLabel('事项 1', { exact: true }).fill('日程原始内容');
+  const created = page.waitForResponse(res => res.request().method() === 'POST' && res.url().endsWith('/schedule/entries'));
+  await page.locator('[data-action="save"]').click();
+  const response = await created;
+  const entry = await response.json();
+  const input = response.request().postDataJSON();
+  await expect(page.locator('[data-region="save-state"]')).toHaveText('已保存');
+  await page.getByLabel('事项 1', { exact: true }).fill('本地未保存内容');
+  await page.locator('[data-action="cancel"]').click();
+  const updated = await page.request.put(world.origin + '/api/modules/schedule/entries/' + entry.id, {
+    headers: { ...headers(page), Origin: world.origin, 'Idempotency-Key': crypto.randomUUID(), 'X-TeachBuddy-Request': '1' },
+    data: { ...input, expectedVersion: entry.version, items: entry.items.map(item => ({ ...item, text: '别处已保存内容' })) }
+  });
+  expect(updated.ok(), await updated.text()).toBeTruthy();
+  await page.goto(world.origin + '/calendar?entry=' + entry.id);
+  await expect(page.getByLabel('事项 1', { exact: true })).toHaveValue('本地未保存内容');
+  await page.locator('[data-action="save"]').click();
+  await expect(page.locator('[data-region="save-state"]')).toContainText('内容已在别处修改');
+  const current = await (await page.request.get(world.origin + '/api/modules/schedule/entries/' + entry.id, { headers: headers(page) })).json();
+  expect(current.items[0].text).toBe('别处已保存内容');
+});
+
+test('班级创建输入和记录关联选择刷新恢复', async ({ page }) => {
+  await page.getByRole('link', { name: '班级教学', exact: true }).click();
+  await page.getByRole('button', { name: '新建班级', exact: true }).click();
+  await page.getByLabel('班级名称', { exact: true }).fill('创建中的班级');
+  await page.reload();
+  await expect(page.getByLabel('班级名称', { exact: true })).toHaveValue('创建中的班级');
+  await page.getByRole('button', { name: '创建', exact: true }).click();
+  await page.getByLabel('写一句', { exact: true }).fill('待补充关联资料的记录');
+  await page.getByRole('button', { name: '补充', exact: true }).click();
+  await page.getByRole('button', { name: '关联资料', exact: true }).click();
+  await page.getByRole('tab', { name: '题目', exact: true }).click();
+  await page.getByLabel('搜索资料').fill('保持筛选');
+  await page.reload();
+  await expect(page.getByRole('dialog', { name: '关联资料' })).toBeVisible();
+  await expect(page.getByLabel('搜索资料')).toHaveValue('保持筛选');
+});
+
+test('数学预览参数和工具展开位置重开，不改作品源码', async ({ page }) => {
+  await page.getByRole('link', { name: '数学工坊', exact: true }).click();
+  await page.getByRole('button', { name: '新建演示', exact: true }).first().click();
+  await page.getByLabel('作品名称').fill('独立预览参数');
+  await page.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(page.getByRole('status').first()).toContainText('已保存');
+  await page.getByLabel('a 数值', { exact: true }).fill('2.5');
+  await page.getByRole('button', { name: '作品与工具', exact: true }).click();
+  await page.locator('.math-tools-panel details').filter({ has: page.locator('summary', { hasText: '参数' }) }).first().locator('summary').click();
+  await page.getByLabel('导出格式').selectOption('source');
+  await page.reload();
+  await expect(page.getByLabel('a 数值', { exact: true })).toHaveValue('2.5');
+  await expect(page.getByLabel('导出格式')).toHaveValue('source');
+  const list = await (await page.request.get(world.origin + '/api/modules/math/v1/works', { headers: headers(page) })).json();
+  const work = await (await page.request.get(world.origin + '/api/modules/math/v1/works/' + list.items[0].id, { headers: headers(page) })).json();
+  expect(work.source.parameters.find(parameter => parameter.name === 'a').initial).toBe(1);
+});
+
+test('资源两标签页上传互不覆盖，原文件确认后筛选与视图重开', async ({ page, context }) => {
+  await page.getByRole('link', { name: '资源库', exact: true }).click();
+  await expect(page.getByLabel('上传资料')).toBeEnabled();
+  const second = await context.newPage(); await second.goto(world.origin + '/resources');
+  await expect(second.getByLabel('上传资料')).toBeEnabled();
+  const buffer = fs.readFileSync('apps/web/e2e/fixtures/materials-resources/samples/page.png');
+  let key;
+  await page.route('**/api/workbench/files', async route => {
+    key = route.request().headers()['idempotency-key']; await route.fetch(); await route.abort();
+  });
+  await page.getByLabel('上传资料').setInputFiles({ name: '甲页原图.png', mimeType: 'image/png', buffer });
+  await expect(page.getByRole('button', { name: '重试确认原请求' })).toBeVisible();
+  await second.getByLabel('上传资料').setInputFiles({ name: '乙页原图.png', mimeType: 'image/png', buffer });
+  await expect(second.getByRole('heading', { name: '乙页原图.png', exact: true })).toBeVisible();
+  await page.reload(); await page.unroute('**/api/workbench/files');
+  await expect(page.getByLabel('重新选择原文件')).toBeVisible();
+  let replayCount = 0;
+  page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/workbench/files')) replayCount += 1; });
+  const different = Buffer.from(buffer); different[different.length - 1] ^= 1;
+  await page.getByLabel('重新选择原文件').setInputFiles({ name: '甲页原图.png', mimeType: 'image/png', buffer: different });
+  await expect(page.getByRole('alert')).toContainText('内容不匹配');
+  expect(replayCount).toBe(0);
+  const replay = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/api/workbench/files'));
+  await page.getByLabel('重新选择原文件').setInputFiles({ name: '甲页原图.png', mimeType: 'image/png', buffer });
+  expect((await replay).headers()['idempotency-key']).toBe(key);
+  await expect(page.getByRole('heading', { name: '甲页原图.png', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+  await expect(page.locator('.res-card')).toHaveCount(2);
+  await page.getByLabel('搜索资料').fill('甲页');
+  await page.getByRole('button', { name: '列表视图', exact: true }).click();
+  await page.reload();
+  await expect(page.getByLabel('搜索资料')).toHaveValue('甲页');
+  await expect(page.getByRole('button', { name: '缩略图视图', exact: true })).toBeVisible();
+  await expect(page.locator('.res-card')).toHaveCount(1);
+  await second.close();
+});
+
+test('题库原文件刷新重选以同一摘要和原键确认，不启动整理模型', async ({ page }) => {
+  await page.getByRole('link', { name: '题库', exact: true }).click();
+  await page.getByRole('button', { name: '收录', exact: true }).click();
+  await page.getByRole('button', { name: '图片', exact: true }).click();
+  const file = { name: '待确认题面.png', mimeType: 'image/png', buffer: fs.readFileSync('apps/web/e2e/fixtures/materials-resources/samples/page.png') };
+  const keys = [];
+  const inputs = [];
+  await page.route('**/api/modules/questions/v2/imports', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    inputs.push(route.request().postDataJSON());
+    // Stop before extraction: this test exercises file recovery only.
+    await route.fulfill({ status: 422, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/invalid-input', field: '/input', reason: 'invalid-type' }) });
+  });
+  await page.route('**/api/workbench/files', async route => {
+    keys.push(route.request().headers()['idempotency-key']);
+    const response = await route.fetch();
+    if (keys.length === 1) await route.abort(); else await route.fulfill({ response });
+  });
+  await page.getByLabel('选择原稿').setInputFiles(file);
+  await page.getByRole('button', { name: '保存原稿并整理' }).click();
+  await expect(page.getByRole('button', { name: '保存原稿并整理' })).toBeEnabled();
+  await page.reload();
+  await expect(page.getByRole('dialog', { name: '收录材料' })).toBeVisible();
+  await page.getByLabel('选择原稿').setInputFiles(file);
+  await page.getByRole('button', { name: '保存原稿并整理' }).click();
+  await expect.poll(() => inputs.length).toBe(1);
+  expect(keys).toHaveLength(2); expect(keys[1]).toBe(keys[0]);
+  await page.reload();
+  await page.getByLabel('选择原稿').setInputFiles(file);
+  await page.getByRole('button', { name: '保存原稿并整理' }).click();
+  await expect.poll(() => inputs.length).toBe(2);
+  expect(keys).toHaveLength(2);
+  expect(inputs[1].input).toEqual(inputs[0].input);
+});
+
+test('清理其他标签页时不会由旧输入重新生成草稿', async ({ page, context }) => {
+  await page.getByRole('link', { name: '备课', exact: true }).click();
+  await page.getByRole('button', { name: '新建备课', exact: true }).click();
+  await page.getByLabel('课题', { exact: true }).fill('需要清除的现场');
+  const second = await context.newPage(); await second.goto(world.origin + '/settings');
+  await expect(second.getByRole('button', { name: '清除本设备草稿' })).toBeEnabled();
+  second.once('dialog', dialog => dialog.accept());
+  await second.getByRole('button', { name: '清除本设备草稿' }).click();
+  await expect(second.getByText(/已清除本设备可清理/)).toBeVisible();
+  await expect(page.getByLabel('课题', { exact: true })).not.toHaveValue('需要清除的现场');
+  await page.reload();
+  await expect(page.getByLabel('课题', { exact: true })).not.toHaveValue('需要清除的现场');
+  await second.close();
+});
+
+test('关闭标签页后从设置选择原备课草稿，保留当前分支', async ({ page, context }) => {
+  await page.getByRole('link', { name: '备课', exact: true }).click();
+  await page.getByRole('button', { name: '新建备课', exact: true }).click();
+  await page.getByLabel('课题', { exact: true }).fill('已关闭标签页的甲稿');
+  const second = await context.newPage(); await second.goto(page.url());
+  await second.getByLabel('课题', { exact: true }).fill('仍要保留的乙稿');
+  await page.close();
+  await second.getByRole('link', { name: '设置', exact: true }).click();
+  await second.locator('.wb-recovery-candidates > summary').click();
+  const candidate = second.locator('.wb-recovery-candidates > ul > li').filter({ hasText: '已关闭标签页的甲稿' }).first();
+  second.once('dialog', dialog => dialog.accept());
+  await candidate.getByRole('button', { name: '继续这份备课草稿' }).click();
+  await expect(second.getByLabel('课题', { exact: true })).toHaveValue('已关闭标签页的甲稿');
+  await second.getByRole('link', { name: '设置', exact: true }).click();
+  await second.locator('.wb-recovery-candidates > summary').click();
+  await expect(second.locator('.wb-recovery-candidates > ul > li').filter({ hasText: '仍要保留的乙稿' }).first()).toBeVisible();
+  await second.close();
+});
+
+test('数学 HTML 上传重开后校验原文件并以原键确认', async ({ page }) => {
+  await page.getByRole('link', { name: '数学工坊', exact: true }).click();
+  const file = { name: '课堂演示.html', mimeType: 'text/html', buffer: Buffer.from('<!doctype html><html><body><h1>课堂演示</h1></body></html>') };
+  let key;
+  await page.route('**/api/workbench/files', async route => { key = route.request().headers()['idempotency-key']; await route.fetch(); await route.abort(); });
+  await page.getByLabel('导入 HTML 文件').setInputFiles(file);
+  await expect(page.getByRole('button', { name: '重试原文件上传' })).toBeVisible();
+  await page.reload(); await page.unroute('**/api/workbench/files');
+  await expect(page.getByRole('button', { name: '重选原文件并确认上传' })).toBeVisible();
+  const replay = page.waitForRequest(request => request.method() === 'POST' && request.url().endsWith('/api/workbench/files'));
+  await page.getByLabel('导入 HTML 文件').setInputFiles(file);
+  expect((await replay).headers()['idempotency-key']).toBe(key);
+  await expect(page.getByLabel('作品名称')).toHaveValue('课堂演示.html');
+  await expect(page.getByRole('button', { name: '重选原文件并确认上传' })).toHaveCount(0);
+});

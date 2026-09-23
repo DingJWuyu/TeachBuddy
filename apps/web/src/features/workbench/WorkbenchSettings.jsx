@@ -3,10 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useWorkbenchShell } from './shellContext.js';
 import { SaveActions, SaveStatus } from './SaveStatus.jsx';
 import { ConflictResolution } from './ConflictResolution.jsx';
-import { inspectDeviceData, clearDeviceData, downloadDeviceData } from './deviceData.js';
+import { inspectDeviceData, clearDeviceData, downloadDeviceData, resumeDeviceCandidate } from './deviceData.js';
 
 const sizeNames = { standard: '标准', large: '大字号' };
 const motionNames = { system: '跟随系统', reduce: '减少动效' };
+const moduleNames = { questions: '题库', lessons: '备课', resources: '资源库', math: '数学工坊',
+  classes: '班级教学', schedule: '日程', preferences: '偏好', shell: '工作台' };
 export function WorkbenchSettings() {
   const shell = useWorkbenchShell();
   const preferences = shell.preferences;
@@ -73,6 +75,19 @@ export function WorkbenchSettings() {
       </div>
       {shell.deviceClearNotice && <p role="status">{shell.deviceClearNotice}</p>}
       {deviceError && <p role="alert">{deviceError}</p>}
+      {inventory?.recoveryCandidates.length > 0 && <details className="wb-recovery-candidates">
+        <summary>选择之前的草稿与现场（{inventory.recoveryCandidates.length} 份）</summary>
+        <p className="wb-note">只在当前标签页继续选中的现场。现有草稿及其他标签页仍会保留；恢复后保存时仍须核对服务器版本。</p>
+        <ul>{inventory.recoveryCandidates.map(candidate => <li key={candidate.id}>
+          <div><strong>{moduleNames[candidate.module]}</strong><time dateTime={candidate.updatedAt}>{new Date(candidate.updatedAt).toLocaleString()}</time></div>
+          <details><summary>查看草稿内容</summary><pre>{JSON.stringify(candidate.entries.filter(entry => entry.draft || entry.pending).map(entry => entry.value), null, 2)}</pre></details>
+          <button className="wb-button" onClick={() => {
+            if (!window.confirm('在当前标签页继续这份草稿与现场？当前输入会保留为另一份设备草稿。')) return;
+            try { window.location.assign(resumeDeviceCandidate(shell.accountKey, inventory, candidate)); }
+            catch (error) { setDeviceError(error.message); }
+          }}>继续这份{moduleNames[candidate.module]}草稿</button>
+        </li>)}</ul>
+      </details>}
     </section>
   </div>;
 }

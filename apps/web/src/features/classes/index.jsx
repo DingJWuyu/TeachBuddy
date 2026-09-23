@@ -74,7 +74,8 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const [classesError, setClassesError] = useState(null);
   const [classReload, setClassReload] = useState(0);
   const [records, setRecords] = useState({ classId: null, active: null, deleted: null });
-  const [recordState, setRecordState] = useState('active');
+  const recordState = scene.recordState ?? 'active';
+  const setRecordState = value => patchScene({ recordState: value });
   const [recordsStatus, setRecordsStatus] = useState('idle');
   const [recordsError, setRecordsError] = useState(null);
   const [recordReload, setRecordReload] = useState(0);

@@ -1,4 +1,5 @@
 import build from 'virtual:teachbuddy-build';
+import releases from './releases.json';
 import { followAnchor } from './routes.js';
 import { useScene } from './useScene.js';
 import { useScrollRestore } from './useScrollRestore.js';
@@ -64,7 +65,17 @@ export function SupportHelp() {
 export function SupportReleases() {
   return <div className="wb-support wb-releases" data-region="releases">
     <header><h1>版本记录</h1><p>当前构建 {build.version} · {build.commit.slice(0, 12)}{build.dirty ? ' · 含本地改动' : ''}</p></header>
-    <p className="wb-note">{build.tag ? `发布标记：${build.tag}` : '当前构建未标记正式发布。以下是此构建包含的实际提交记录。'}</p>
+    <h2>正式发布</h2>
+    {releases.length === 0 ? <p className="wb-note">此构建尚未附带经核实的正式发布记录。</p> :
+      <ol className="wb-release-list">{releases.map(release => <li key={release.tag}>
+        <time dateTime={release.publishedAt}>{release.publishedAt.slice(0, 10)}</time>
+        <div><h3><a href={release.url} target="_blank" rel="noreferrer">{release.title}</a></h3>
+          <p>{release.tag} · <code>{release.productRevision}</code></p>
+          <ul>{release.changes.map((change, index) => <li key={index}>{change}</li>)}</ul>
+        </div>
+      </li>)}</ol>}
+    <h2>当前构建的提交</h2>
+    <p className="wb-note">{build.tag ? `Git 标记：${build.tag}。` : '此构建没有 Git 发布标记。'}以下记录来自构建时的代码提交，不代表正式发布。</p>
     <ol className="wb-release-list">{build.changes.map(change => <li key={change.sha}>
       <time dateTime={change.date}>{change.date.slice(0, 10)}</time>
       <div><h2>{change.title}</h2><code>{change.sha.slice(0, 12)}</code></div>

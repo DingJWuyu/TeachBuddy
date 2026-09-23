@@ -1,3 +1,4 @@
+import { useScene } from '../workbench/useScene.js';
 /**
  * Inline editor for one actual record.
  *
@@ -22,7 +23,9 @@ export const RECORD_EXTRA_FIELDS = [
 ];
 
 export function RecordEditor({ accountKey, generation, record, onSaved, onClose }) {
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerScene, patchPicker] = useScene(accountKey, `class-record-picker:${record.id}`, { open: false });
+  const pickerOpen = pickerScene.open;
+  const setPickerOpen = open => patchPicker({ open });
   const notifiedVersionRef = useRef(null);
   const [readWarning, setReadWarning] = useState(null);
   const [reload, setReload] = useState(0);
@@ -164,6 +167,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
       <SaveActions savable={savable} />
       {pickerOpen && (
         <SourcePicker
+          sceneKey={`record:${record.id}`}
           accountKey={accountKey}
           value={input.sources}
           onCancel={() => setPickerOpen(false)}

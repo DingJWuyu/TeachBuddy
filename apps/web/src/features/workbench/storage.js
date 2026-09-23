@@ -6,8 +6,17 @@ import { newRequestKey } from './uuid.js';
 const PREFIX = 'tb.workbench.v1';
 const PROBE_KEY = `${PREFIX}:probe`;
 const branchId = newRequestKey();
+export const currentEditorBranch = () => branchId;
 const selected = new Map();
 const blocked = new Set();
+const recovered = new Set();
+export function hasRecoveredDrafts(account) { return recovered.has(account); }
+function notifyRecovery(account, name, value) {
+  if (/draft|pending|collection/.test(name) || Object.keys(value?.drafts ?? {}).length || value?.editor?.pending || (value?.editor && JSON.stringify(value.editor.drafts) !== JSON.stringify(value.editor.baseline))) {
+    recovered.add(account);
+    queueMicrotask(() => window.dispatchEvent(new CustomEvent('tb:draft-restored', { detail: { account } })));
+  }
+}
 let storageFailureListener = null;
 export function setStorageFailureListener(listener) { storageFailureListener = listener; }
 function report(error) { storageFailureListener?.(error); }
@@ -71,9 +80,9 @@ export function readLocal(account, name) {
     const head = store.getItem(headKey);
     if ((previous && head && JSON.parse(head) === previous) || (!head && store.getItem(key) === JSON.stringify(value)))
       store.setItem(headKey, JSON.stringify(own));
-    // An earlier document in this same tab is now represented by a verified
-    // copy. Never remove a source selected from another tab's latest entry.
-    if (previous && previous !== own && !window.opener) store.removeItem(previous);
+    // Earlier documents remain explicit recovery candidates until the teacher
+    // clears device data. A later successful save only removes its own branch.
+    notifyRecovery(account, name, value);
     return value;
   } catch (error) { blocked.add(key); report(error); return null; }
 }
@@ -118,25 +127,35 @@ export function listLocalNames(account) {
     return Object.keys(store).filter(key => key.startsWith(prefix)).map(key => key.slice(prefix.length));
   } catch (error) { report(error); return []; }
 }
+/** Select existing snapshots for this tab's next document, without modifying
+ * another tab or replacing any saved snapshot. The caller performs a reload. */
+export function selectLocalSnapshots(account, names, snapshots) {
+  const store = storage();
+  if (!store) throw new Error('浏览器存储不可用');
+  for (const snapshot of snapshots) {
+    if (store.getItem(snapshot.key) !== snapshot.raw) throw new Error('这份现场已变化，请重新检查后选择');
+    const value = decode(snapshot.raw);
+    if (value.accountKey !== account || value.formatVersion !== 2 || value.name !== snapshot.logicalName)
+      throw new Error('这份现场无法自动恢复，原资料已保留');
+  }
+  const next = new Map(names.map(name => [pointer(account, name), '']));
+  for (const snapshot of snapshots) next.set(pointer(account, snapshot.logicalName), snapshot.key);
+  const previous = new Map([...next.keys()].map(key => [key, window.sessionStorage.getItem(key)]));
+  try { for (const [key, value] of next) window.sessionStorage.setItem(key, value); }
+  catch (error) {
+    for (const [key, value] of previous) value === null ? window.sessionStorage.removeItem(key) : window.sessionStorage.setItem(key, value);
+    throw error;
+  }
+}
 /** Explicit cleanup is handled by deviceData after pending-operation inspection. */
 export function resetLocalReaders(account) {
-  for (const key of selected.keys()) if (key.startsWith(`${PREFIX}:${account}:`)) selected.delete(key);
-  for (const key of blocked) if (key.startsWith(`${PREFIX}:${account}:`)) blocked.delete(key);
-  for (const key of Object.keys(window.sessionStorage)) if (key.startsWith(`${PREFIX}:continue:${account}:`)) window.sessionStorage.removeItem(key);
-}
-export function clearLocalPartition(account) {
-  // Legacy callers receive an honest failure instead of erasing pending input.
-  const store = storage(); if (!store || !account) return false;
-  try {
-    const names = listLocalNames(account);
-    if (names.some(name => /pending/.test(name))) return false;
-    for (const name of names) {
-      const value = decode(store.getItem(scope(account, name)));
-      if (JSON.stringify(value).includes('"pending":{') || JSON.stringify(value).includes('"pendingRequest":{')) return false;
-    }
-    for (const name of names) store.removeItem(scope(account, name));
-    resetLocalReaders(account); return true;
-  } catch (error) { report(error); return false; }
+  const store = storage();
+  for (const [key, source] of selected) if (key.startsWith(`${PREFIX}:${account}:`) && (!source || store?.getItem(source) === null)) selected.delete(key);
+  for (const key of blocked) if (key.startsWith(`${PREFIX}:${account}:`) && store?.getItem(key) === null) blocked.delete(key);
+  for (const key of Object.keys(window.sessionStorage)) if (key.startsWith(`${PREFIX}:continue:${account}:`)) {
+    const source = window.sessionStorage.getItem(key);
+    if (!source || store?.getItem(source) === null) window.sessionStorage.removeItem(key);
+  }
 }
 
 /** Migrate one legacy module record only after a verified branch copy exists. */

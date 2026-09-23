@@ -353,9 +353,12 @@ export function useSavableDocument({
 
   /** Re-read the server object and adopt it, dropping the local draft. */
   const adoptServer = useCallback(async () => {
-    if (!apiRef.current.load) return null;
+    if (!apiRef.current.load || stateRef.current.pending) return null;
+    const before = stateRef.current.input;
+    const epoch = seqRef.current;
     try {
       const object = await apiRef.current.load();
+      if (epoch !== seqRef.current || !sameInput(before, stateRef.current.input) || stateRef.current.pending) return null;
       const seq = seqRef.current + 1;
       seqRef.current = seq;
       commit({

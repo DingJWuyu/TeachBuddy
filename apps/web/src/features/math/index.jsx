@@ -1,7 +1,10 @@
+import { useScene } from '../workbench/useScene.js';
+import { useScrollRestore } from '../workbench/useScrollRestore.js';
 import { readLocal, writeLocal, migrateLegacyLocal } from '../workbench/storage.js';
 import { ShellContext } from "../workbench/shellContext.js";
 import { MathTools, MathIntegration } from "./Integration.jsx";
 import { uploadDraft } from "./uploadDraft.js";
+import { reselectDeviceFile } from '../workbench/deviceRequestStore.js';
 import DynamicPreview from "./DynamicPreview.jsx";
 import DynamicTools from "./DynamicTools.jsx";
 import HtmlEditor from "./HtmlEditor.jsx";
@@ -264,6 +267,9 @@ function MathSession({ transport, route }) {
     [background, setBackground] = useState("transparent"),
     [exportWidth, setExportWidth] = useState(1600),
     [conflict, setConflict] = useState(null);
+  const [viewScene, patchView] = useScene(account, 'math-view', { canvasTop: 0, canvasLeft: 0 });
+  const canvasScroll = useScrollRestore(viewScene.canvasTop, top => patchView({ canvasTop: top }), `${draft?.id}:${draft?.source.kind}:${Boolean(font)}`);
+  useEffect(() => { if (canvasScroll.ref.current) canvasScroll.ref.current.scrollLeft = viewScene.canvasLeft; }, [account, draft?.id, font]);
   const importFile = useRef(null);
   const [importPending, setImportPending] = useState(null);
   const previousKind = useRef(null);
@@ -292,10 +298,14 @@ function MathSession({ transport, route }) {
   }, [account]);
   async function importHtml(file) {
     if (busy || pending || !account) return;
-    const attempt = file ? { file, key: crypto.randomUUID() } : importPending;
+    let attempt;
+    try { attempt = importPending && file ? await reselectDeviceFile(importPending, file)
+      : file ? { file, key: crypto.randomUUID() } : importPending; }
+    catch (error) { setMessage(error.message); return; }
     if (!attempt) return;
+    if (attempt.requiresReselection) { importFile.current.click(); return; }
     if (
-      file &&
+      file && !importPending &&
       draft &&
       status !== "已保存" &&
       !window.confirm("导入会替换当前未保存稿，是否继续？")
@@ -844,7 +854,7 @@ function MathSession({ transport, route }) {
           </button>
           {importPending && (
             <button disabled={busy} onClick={() => importHtml()}>
-              重试原文件上传
+              {importPending.requiresReselection ? '重选原文件并确认上传' : '重试原文件上传'}
             </button>
           )}
           {draft && (
@@ -909,7 +919,7 @@ function MathSession({ transport, route }) {
             </button>
           </div>
         )}
-        <div className="math-canvas">
+        <div className="math-canvas" ref={canvasScroll.ref} onScroll={event => { canvasScroll.onScroll(event); patchView({ canvasLeft: event.currentTarget.scrollLeft }); }}>
           {!draft ? (
             <div className="math-empty">
               <h1>制作数学作品</h1>
@@ -1097,7 +1107,7 @@ function MathSession({ transport, route }) {
           </footer>
         )}
       </section>
-      <Tools>
+      <Tools {...(shell ? { sceneKey: draft?.id ?? "new" } : {})}>
         <div className="math-new">
           {["formula", "plane", "space", "dynamic"].map((kind) => (
             <button key={kind} onClick={() => newDraft(kind)}>

@@ -2,7 +2,7 @@ import { prepareDeviceRecovery } from '../reliability/deviceRecovery.js';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/index.jsx';
 import { bindWorkbenchTransport, getWorkbenchContext, setIdentityLostListener, workbenchGet } from './apiClient.js';
-import { canPersistLocally, setStorageFailureListener } from './storage.js';
+import { canPersistLocally, setStorageFailureListener, resetLocalReaders } from './storage.js';
 import WorkbenchApp from './WorkbenchApp.jsx';
 import './workbench.css';
 
@@ -13,6 +13,16 @@ export default function WorkbenchRoot() {
   const [deviceReset, setDeviceReset] = useState(0);
   const [deviceClearNotice, setDeviceClearNotice] = useState(null);
   const [storageFailed, setStorageFailed] = useState(() => !canPersistLocally());
+  useEffect(() => {
+    const cleared = event => {
+      if (event.key !== `tb.device.clear:${account.accountKey}`) return;
+      resetLocalReaders(account.accountKey);
+      setDeviceClearNotice('本设备草稿与现场已在另一个标签页清理。待确认资料仍保留。');
+      setDeviceReset(value => value + 1);
+    };
+    window.addEventListener('storage', cleared);
+    return () => window.removeEventListener('storage', cleared);
+  }, [account.accountKey]);
   useEffect(() => {
     let live = true;
     const unbind = bindWorkbenchTransport(request);

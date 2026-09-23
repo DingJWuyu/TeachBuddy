@@ -23,6 +23,7 @@ import {
 
 function SaveState({ saveState, onRetry, onReload }) {
   if (!saveState || saveState.status === 'idle') return null;
+  if (saveState.status === 'dirty') return <p className="sch-save is-warn" data-region="save-state">未保存，草稿在此设备</p>;
   if (saveState.status === 'saving') return <p className="sch-save is-busy" data-region="save-state">正在保存…</p>;
   if (saveState.status === 'saved-dirty') return <p className="sch-save is-warn" data-region="save-state">提交内容已保存，仍有未保存修改</p>;
   if (saveState.status === 'saved') return <p className="sch-save is-ok" data-region="save-state">已保存</p>;
@@ -544,7 +545,7 @@ export default function EntryEditor({
       <SaveState saveState={saveState} onRetry={onRetry} onReload={onReload} />
 
       <footer className="sch-editor-actions">
-        <button type="button" className="wb-button is-primary" data-action="save" disabled={saveState?.status === 'saving'} onClick={onSave}>
+        <button type="button" className="wb-button is-primary" data-action="save" disabled={saveState?.status === 'saving' || saveState?.status === 'unconfirmed'} onClick={onSave}>
           保存
         </button>
         <button type="button" className="wb-button" data-action="cancel" onClick={onCancel}>关闭</button>

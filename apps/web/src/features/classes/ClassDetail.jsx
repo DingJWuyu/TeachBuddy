@@ -1,3 +1,4 @@
+import { useScene } from '../workbench/useScene.js';
 /**
  * One class: its actual position, the one-line composer and the record list.
  * A deleted class is read-only until it is restored; records keep their own
@@ -32,8 +33,10 @@ export function ClassDetail({
   detailScrollTop,
   onDetailScrollTop
 }) {
-  const [renaming, setRenaming] = useState(false);
-  const [name, setName] = useState(classroom.name);
+  const [renameScene, patchRename] = useScene(accountKey, `class-rename:${classroom.id}`, { renaming: false, name: classroom.name });
+  const { renaming, name } = renameScene;
+  const setRenaming = value => patchRename({ renaming: value });
+  const setName = value => patchRename({ name: value });
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const renamed = useIdempotentSubmit({ accountKey, name: `pending:class-rename:${classroom.id}` });
   const deletion = useIdempotentSubmit({ accountKey, name: `pending:class-deletion:${classroom.id}` });

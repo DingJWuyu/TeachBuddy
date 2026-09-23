@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useScene } from "../workbench/useScene.js";
 import { createResourcesClient, pendingStore } from "./client.js";
+import { reselectDeviceFile } from '../workbench/deviceRequestStore.js';
 import { FileImage, Preview } from "./Preview.jsx";
 import { Taxonomy } from "./Taxonomy.jsx";
 import "./resources.css";
@@ -174,6 +175,7 @@ function ResourceWorkspace({
   }
   async function execute(record) {
     if (busyRef.current) return false;
+    if (record.requiresReselection) { setError('请重新选择原文件核对名称、长度和内容，再确认上传'); return false; }
     busyRef.current = true;
     setBusy(true);
     setError("");
@@ -391,7 +393,14 @@ function ResourceWorkspace({
           </button>
         )}
         {error && <span role="alert">{error}</span>}
-        {pending && !busy && (
+        {pending?.requiresReselection && !busy ? <label>重新选择原文件
+          <input type="file" aria-label="重新选择原文件" onChange={async event => {
+            const file = event.target.files[0]; event.target.value = '';
+            if (!file) return;
+            try { await execute(await reselectDeviceFile(pending, file)); }
+            catch (error) { setError(error.message); }
+          }} />
+        </label> : pending && !busy && (
           <button onClick={() => execute(pending)} disabled={busy}>
             重试确认原请求
           </button>

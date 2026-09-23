@@ -15,9 +15,7 @@ export default function OriginalPane({
     ...material.supplementFileIds,
   ];
   const [preview, setPreview] = useState(null),
-    [error, setError] = useState(""),
-    [box, setBox] = useState(null),
-    [locationRole, setLocationRole] = useState("body");
+    [error, setError] = useState("");
   const start = useRef(null);
   const [previewAttempt, setPreviewAttempt] = useState(0);
   const nativePane = useRef(null);
@@ -35,11 +33,23 @@ export default function OriginalPane({
     .find((x) => x.kind === "page" || x.kind === "docx");
   const fileId = scene.fileId ?? loc?.fileId ?? files[0],
     page = scene.page ?? loc?.page ?? 1;
+  const box = scene.selection?.fileId === fileId && scene.selection?.page === page ? scene.selection.box : null;
+  const setBox = box => onScene({ selection: { fileId, page, box } });
+  const locationRole = scene.locationRole ?? 'body';
+  const setLocationRole = locationRole => onScene({ locationRole });
+  const pageNode = useRef(null);
+  const scrollKey = `${fileId}:${page}`;
+  const restoreScroll = () => {
+    if (!pageNode.current) return;
+    const saved = scene.scrollPositions?.[scrollKey];
+    pageNode.current.scrollTop = saved?.top ?? 0;
+    pageNode.current.scrollLeft = saved?.left ?? 0;
+  };
+  useEffect(restoreScroll, [fileId, page, preview?.pages]);
   useEffect(() => {
     let active = true;
     setPreview(null);
     setError("");
-    setBox(null);
     let timer;
     async function refresh() {
       try {
@@ -160,7 +170,9 @@ export default function OriginalPane({
             <p>段落 {scene.paragraph ?? loc.paragraph}</p>
           )}
           {current ? (
-            <div className="q-page-scroll">
+            <div className="q-page-scroll" ref={pageNode} onLoadCapture={restoreScroll}
+              onScroll={event => onScene({ scrollPositions: { ...scene.scrollPositions,
+                [scrollKey]: { top: event.currentTarget.scrollTop, left: event.currentTarget.scrollLeft } } })}>
               <div
                 className="q-page"
                 style={{ width: `${(scene.zoom ?? 1) * 100}%` }}

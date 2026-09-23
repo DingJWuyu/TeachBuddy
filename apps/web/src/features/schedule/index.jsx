@@ -1,3 +1,4 @@
+import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 /**
  * Schedule module entry: the single top-level 日程 page.
  *
@@ -85,15 +86,18 @@ export default function SchedulePage({ route }) {
   const [error, setError] = useState(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [selection, setSelection] = useState(() => scene.selection ?? null);
-  const [editor, setEditor] = useState(() => scene.editor ?? null);
-  const [saveState, setSaveState] = useState(() => scene.editor?.pending ? { status: 'unconfirmed' } : { status: 'idle' });
+  const [editor, setEditorState] = useState(() => scene.editor ?? null);
+  const [saveState, setSaveState] = useState(() => scene.editor?.pending ? { status: 'unconfirmed' }
+    : scene.editor && JSON.stringify(scene.editor.drafts) !== JSON.stringify(scene.editor.baseline) ? { status: 'dirty' } : { status: 'idle' });
   const savesInFlight = useRef(new Set());
   const mounted = useRef(false);
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
   }, []);
-  const [actionState, setActionState] = useState({ name: null, status: 'idle' });
+  const operation = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:schedule-action' });
+  const actionState = { ...operation, status: operation.status === 'failed' ? 'error' : operation.status,
+    ...operation.pending?.payload, key: operation.pending?.key };
   const [moveState, setMoveState] = useState(() => scene.moveState?.status === 'running'
     ? { ...scene.moveState, status: 'unconfirmed' } : scene.moveState ?? null);
   const [settingsState, setSettingsState] = useState({ status: 'idle' });
@@ -105,7 +109,8 @@ export default function SchedulePage({ route }) {
   const [recordsState, setRecordsState] = useState('idle');
   const [linksRetry, setLinksRetry] = useState(0);
   const [exceptions, setExceptions] = useState([]);
-  const [rangeDraft, setRangeDraft] = useState({ from: scene.from, to: scene.to });
+  const rangeDraft = scene.rangeDraft ?? { from: scene.from, to: scene.to };
+  const setRangeDraft = value => patchScene({ rangeDraft: value });
   const [focusToken, setFocusToken] = useState(0);
 
   const sceneRef = useRef(scene);
@@ -115,6 +120,15 @@ export default function SchedulePage({ route }) {
   const scrollRestored = useRef(false);
   const editorRef = useRef(editor);
   editorRef.current = editor;
+  function setEditor(updater) {
+    const current = editorRef.current;
+    const next = typeof updater === 'function' ? updater(current) : updater;
+    editorRef.current = next;
+    // Input and original request must be durable before any request or unload.
+    patchScene({ editor: next });
+    setEditorState(next);
+    return next;
+  }
 
   const from = scene.from;
   const to = scene.to;
@@ -255,7 +269,8 @@ export default function SchedulePage({ route }) {
       from: nextFrom,
       to: nextTo,
       days: diffDays(nextFrom, nextTo) + 1,
-      month: nextFrom.slice(0, 7)
+      month: nextFrom.slice(0, 7),
+      rangeDraft: { from: nextFrom, to: nextTo }
     });
   }
 
@@ -310,10 +325,11 @@ export default function SchedulePage({ route }) {
     patchScene({ editors });
     const saved = editors[editorKey(next)];
     const dirty = saved && (saved.pending || JSON.stringify(saved.drafts) !== JSON.stringify(saved.baseline));
-    setSaveState(dirty && saved.pending ? { status: 'unconfirmed' } : { status: 'idle' });
-    setEditor(dirty && saved.entryId === next.entryId
-      ? { ...next, drafts: saved.drafts, baseline: saved.baseline, expectedVersion: saved.expectedVersion, pending: saved.pending }
-      : next);
+    const restored = dirty && saved.entryId === next.entryId ? { ...next,
+      drafts: saved.drafts, baseline: saved.baseline, expectedVersion: saved.expectedVersion,
+      scope: saved.scope, pending: saved.pending } : next;
+    setEditor(restored);
+    setSaveState({ status: restored.pending ? 'unconfirmed' : dirty ? 'dirty' : 'idle' });
     setFocusToken((token) => token + 1);
   }, [patchScene]);
 
@@ -548,56 +564,48 @@ export default function SchedulePage({ route }) {
     }
   }
 
-  async function executeAction(name, request, key = newRequestKey()) {
-    setActionState({ name, status: 'running', key, request });
-    try {
-      await request.run(key);
-      setActionState({ name, status: 'done' });
-      reload();
-      return true;
-    } catch (problem) {
-      const value = problem.problem ?? {};
-      setActionState({
-        name,
-        status: value.kind === 'unconfirmed' ? 'unconfirmed' : 'error',
-        key,
-        request,
-        problem: value
-      });
-      return false;
-    }
+  async function runAction({ key, payload }) {
+    const request = payload.request;
+    if (request.kind === 'exception') return api.setException({ key, ...request.args });
+    if (request.kind === 'deletion') return api.setEntryDeletion({ key, ...request.args });
+    if (request.kind === 'move') return api.moveItem({ key, payload: request.args });
+    if (request.kind === 'settings') return api.updateSettings({ key, payload: request.args });
+    throw { problem: { kind: 'unconfirmed', message: '无法识别原操作，已保留设备资料，请下载草稿后检查' } };
   }
-
+  async function executeAction(name, request, retry = false) {
+    if (!retry && operation.pending) { setNotice('请先确认上次操作，再执行新的操作'); return false; }
+    const result = retry ? await operation.retry(runAction) : await operation.submit(runAction, { name, request });
+    if (!result) return false;
+    if (request.kind === 'settings') {
+      setSettings(result); shell.setTimeZone?.(result.timeZone); setTimeZone(result.timeZone); setSettingsState({ status: 'done' });
+    }
+    reload();
+    return true;
+  }
   async function retryAction() {
     if (!actionState.request) return;
-    await executeAction(actionState.name, actionState.request, actionState.key);
+    const ok = await executeAction(actionState.name, actionState.request, true);
+    const current = editorRef.current;
+    if (ok && current?.entryId && !current.pending) await openEntry(current.entryId, current.originDate);
   }
 
   async function setInstanceModeAt(originDate, mode) {
     if (!editor?.entryId) return;
     const entryId = editor.entryId;
     await executeAction(`${mode}:${originDate}`, {
-      run: (key) => api.setException({
-        key,
-        id: entryId,
-        originDate,
-        payload: { expectedVersion: editor.expectedVersion, mode }
-      })
+      kind: 'exception', args: { id: entryId, originDate,
+        payload: { expectedVersion: editor.expectedVersion, mode } }
     });
     await openEntry(entryId, editor.scope === 'instance' ? editor.originDate : null);
   }
 
   async function deleteOrRestoreEntry() {
     if (!editor?.entryId) return;
-    const key = newRequestKey();
     const deleted = !editor.entryDeleted;
     const ok = await executeAction('delete', {
-      run: (requestKey) => api.setEntryDeletion({
-        key: requestKey,
-        id: editor.entryId,
-        payload: { expectedVersion: editor.expectedVersion, deleted }
-      })
-    }, key);
+      kind: 'deletion', args: { id: editor.entryId,
+        payload: { expectedVersion: editor.expectedVersion, deleted } }
+    });
     if (ok) {
       setSaveState({ status: 'saved' });
       await openEntry(editor.entryId, editor.originDate);
@@ -609,12 +617,8 @@ export default function SchedulePage({ route }) {
     const entryId = editor.entryId;
     const originDate = editor.originDate;
     const ok = await executeAction(mode, {
-      run: (key) => api.setException({
-        key,
-        id: entryId,
-        originDate,
-        payload: { expectedVersion: editor.expectedVersion, mode }
-      })
+      kind: 'exception', args: { id: entryId, originDate,
+        payload: { expectedVersion: editor.expectedVersion, mode } }
     });
     if (ok) await openEntry(entryId, originDate);
   }
@@ -698,26 +702,10 @@ export default function SchedulePage({ route }) {
       });
     }
   }
-
   async function updateTimeZone(nextZone) {
     setSettingsState({ status: 'running' });
-    try {
-      const updated = await api.updateSettings({
-        key: newRequestKey(),
-        payload: { timeZone: nextZone, expectedVersion: settings.version }
-      });
-      setSettings(updated);
-      shell.setTimeZone?.(updated.timeZone);
-      setTimeZone(updated.timeZone);
-      setSettingsState({ status: 'done' });
-      reload();
-    } catch (problem) {
-      const value = problem.problem ?? {};
-      setSettingsState({
-        status: value.kind === 'unconfirmed' ? 'unconfirmed' : 'error',
-        problem: value
-      });
-    }
+    const ok = await executeAction('settings', { kind: 'settings', args: { timeZone: nextZone, expectedVersion: settings.version } });
+    if (!ok) setSettingsState({ status: 'error', problem: { message: '时区未确认，请查看页面中的操作结果并重试确认' } });
   }
 
   const dates = useMemo(() => {
@@ -774,7 +762,7 @@ export default function SchedulePage({ route }) {
     onPatch: patchDraft,
     onScope: switchScope,
     onSave: saveEditor,
-    onCancel: () => setEditor(null),
+    onCancel: () => { const current = editorRef.current; if (current) patchScene({ editors: { ...sceneRef.current.editors, [`${current.entryId ?? 'new'}:${current.originDate ?? ''}`]: current } }); setEditor(null); },
     onDelete: deleteOrRestoreEntry,
     onRestore: deleteOrRestoreEntry,
     onCancelInstance: () => setInstanceMode('cancelled'),
@@ -959,13 +947,13 @@ export default function SchedulePage({ route }) {
       {actionState.status === 'unconfirmed' && (
         <div className="sch-action-state" data-region="action-state">
           <span>上次操作结果未确认</span>
-          <button type="button" className="wb-button" data-action="retry-action" onClick={retryAction}>重试</button>
+          <button type="button" className="wb-button" data-action="retry-action" onClick={retryAction}>用原请求确认</button>
         </div>
       )}
       {actionState.status === 'error' && (
         <div className="sch-action-state is-error" data-region="action-state">
           <span>{actionState.problem?.message ?? '操作被拒绝'}</span>
-          <button type="button" className="wb-button" onClick={() => setActionState({ status: 'idle' })}>关闭</button>
+          <button type="button" className="wb-button" onClick={operation.reset}>关闭</button>
         </div>
       )}
     </div>

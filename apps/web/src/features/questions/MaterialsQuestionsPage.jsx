@@ -1,3 +1,4 @@
+import { pendingQuestionUpload, uploadQuestionFile } from './uploadRecovery.js';
 import React, { useEffect, useRef, useState } from "react";
 import { questionDocuments, supportedDocument } from "@refatos/shared";
 import { DocumentEditor, DocumentView } from "../workbench/materials/index.js";
@@ -5,7 +6,6 @@ import { readLocal, writeLocal, removeLocal } from "../workbench/storage.js";
 import {
   get,
   write,
-  upload,
   download,
   empty,
   sourceText,
@@ -78,8 +78,9 @@ export default function MaterialsQuestionsPage({
     [usages, setUsages] = useState([]),
     [assets, setAssets] = useState(null),
     [source, setSource] = useState(null),
-    [conflict, setConflict] = useState(null),
-    [includeAnswers, setIncludeAnswers] = useState(false);
+    [conflict, setConflict] = useState(null);
+  const includeAnswers = scene.includeAnswers ?? false;
+  const setIncludeAnswers = includeAnswers => patchScene({ includeAnswers });
   const [text, setText] = useState(collection.text ?? ""),
     [title, setTitle] = useState(collection.title ?? ""),
     [origin, setOrigin] = useState(collection.origin ?? ""),
@@ -90,6 +91,8 @@ export default function MaterialsQuestionsPage({
     (top) => patchScene({ questionScroll: top }),
     value?.id,
   );
+  const reviewScroll = useScrollRestore(scene.reviewScroll?.[selected] ?? 0,
+    top => patchScene({ reviewScroll: { ...scene.reviewScroll, [selected]: top } }), selected);
   const unsupportedQuestion = value && scene.kind !== "import" && value.body
     ? questionDocuments(value).some(([, document]) => !supportedDocument(document))
     : false;
@@ -100,11 +103,18 @@ export default function MaterialsQuestionsPage({
       title,
       origin,
       pages,
+      fileNames: chosenFiles.length ? chosenFiles.map(file => file.name) : collection.fileNames ?? [],
     });
-  }, [capture, text, title, origin, pages]);
+  }, [capture, text, title, origin, pages, chosenFiles]);
   const pending = useRef(readLocal(accountKey, "questions-materials-pending")),
-    uploadKeys = useRef(new WeakMap()),
     alive = useRef(true);
+  useEffect(() => {
+    let live = true;
+    pendingQuestionUpload(accountKey).then(value => {
+      if (live && value) setMessage(`文件“${value.file.name}”上传结果待确认，请重新选择原文件继续。`);
+    }).catch(() => { if (live) setMessage('无法读取待确认的文件，请保留设备资料并检查浏览器存储权限。'); });
+    return () => { live = false; };
+  }, [accountKey]);
   const picker = useRef(null);
   const [splitAt, setSplitAt] = useState(1),
     [mergeId, setMergeId] = useState("");
@@ -321,7 +331,7 @@ export default function MaterialsQuestionsPage({
       removeLocal(accountKey, "questions-materials-pending");
       return result;
     } catch (e) {
-      if (e.problem && e.problem.kind !== "unconfirmed") {
+      if (e.problem && !['unconfirmed', 'identity'].includes(e.problem.kind)) {
         pending.current = null;
         removeLocal(accountKey, "questions-materials-pending");
       }
@@ -353,9 +363,7 @@ export default function MaterialsQuestionsPage({
     return result;
   }
   async function uploadFile(file) {
-    if (!uploadKeys.current.has(file))
-      uploadKeys.current.set(file, crypto.randomUUID());
-    return upload(transport, file, uploadKeys.current.get(file));
+    return uploadQuestionFile(accountKey, transport, file);
   }
   async function collect() {
     let input;
@@ -850,6 +858,7 @@ export default function MaterialsQuestionsPage({
                       };
                       change({ ...value, drafts: [...value.drafts, d] });
                       setSelected(d.id);
+                      patchScene({ draftId: d.id });
                     })
                   }
                 >
@@ -971,7 +980,7 @@ export default function MaterialsQuestionsPage({
                   })
                 }
               />
-              <section className="q-review-result">
+              <section {...reviewScroll} className="q-review-result">
                 <nav className="q-tools">
                   {value.drafts.map((d, i) => (
                     <button
@@ -1667,6 +1676,7 @@ export default function MaterialsQuestionsPage({
                   }
                   onChange={(e) => setChosenFiles([...e.target.files])}
                 />
+                {!chosenFiles.length && collection.fileNames?.length > 0 && <p>请重新选择原文件：{collection.fileNames.join('、')}</p>}
                 {chosenFiles.map((f, i) => (
                   <div key={i}>
                     {f.name}
