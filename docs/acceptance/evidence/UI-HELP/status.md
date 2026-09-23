@@ -20,5 +20,5 @@
 
 - `npm run build` 通过；既有产物大包提示仍存在。
 - `TMPDIR=/tmp npx playwright test -c apps/web/e2e/help-shell.config.mjs`：3 个真实 HTTPS、隔离数据库与浏览器用例通过。
-- 覆盖首页、目录、章节、文章、刷新、返回、模块入口、无效文章、关键词搜索、键盘选择、空结果、退出中间帧、快速反向、390px 窄屏和空更新日志。
+- 覆盖首页、目录、章节、文章、刷新、返回、模块入口、无效文章、关键词搜索、键盘选择、空结果、退出中间帧、快速反向、390px 窄屏、刷新后的目录开合现场和空更新日志。
 - 截图：[桌面首页](desktop.png)、[文章](article.png)、[搜索](search.png)、[手机首页](mobile.png)、[更新日志](releases.png)。

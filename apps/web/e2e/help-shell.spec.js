@@ -90,6 +90,11 @@ test('窄屏目录连续展开收起，正文无溢出', async ({ page }) => {
   const topic = page.getByRole('button', { name: '题库', exact: true });
   await topic.click();
   await expect(page.getByRole('link', { name: '自建题目' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '有什么可以帮您？' })).toBeVisible();
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('link', { name: '自建题目' })).toBeVisible();
   await topic.click(); await topic.click();
   await expect(topic).toHaveAttribute('aria-expanded', 'true');
   await page.getByRole('link', { name: '自建题目' }).click();

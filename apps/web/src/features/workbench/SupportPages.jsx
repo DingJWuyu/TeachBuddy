@@ -90,11 +90,17 @@ export function SupportHelp() {
   const shell = useWorkbenchShell();
   const route = useRoute();
   const [scene, patch] = useScene(shell.accountKey, 'help', { query: '', expanded: {}, positions: {}, searchOpen: false, mobileOpen: false });
+  const previousPath = useRef(route.path);
   const topic = helpTopics.find(item => item.id === route.topicId);
   const article = topic?.articles.find(item => item.id === route.articleId);
   useEffect(() => {
-    if (route.topicId) patch(current => ({ expanded: { ...current.expanded, [route.topicId]: true } }));
-    patch({ mobileOpen: false });
+    const navigated = previousPath.current !== route.path;
+    previousPath.current = route.path;
+    patch(current => ({
+      ...(navigated ? { mobileOpen: false } : {}),
+      ...(route.topicId && (navigated || current.expanded[route.topicId] === undefined)
+        ? { expanded: { ...current.expanded, [route.topicId]: true } } : {})
+    }));
   }, [route.path, route.topicId, patch]);
   useEffect(() => {
     const shortcut = event => {
@@ -123,5 +129,5 @@ export function SupportHelp() {
 }
 
 export function SupportReleases() {
-  return <div className="support-releases-placeholder" data-region="releases" role="img" aria-label="更新日志占位"><Icon name="newspaper" size={44} strokeWidth={1.4} /></div>;
+  return <div className="support-releases-placeholder" data-region="releases" role="img" aria-label="更新日志"><Icon name="newspaper" size={44} strokeWidth={1.4} /></div>;
 }
