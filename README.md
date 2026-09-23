@@ -27,7 +27,7 @@
 
 题库支持文字、PDF、Word、图片收录，题面、公式、配图和答案编辑，自定义题型/标签、笔记与标记检索，复制改编对照、删除恢复，以及单题或多题加入备课和班级教学反馈。原稿下载保留文件名；题面透明 PNG 使用当前已保存内容生成。
 
-文字与 DOCX 使用原生结构自动拆题；文字层 PDF 使用本机 Poppler 自动提取，并匹配明确的跨页答案和单栏配图。DOCX 没有分页预览时可按原文段落对照公式和配图，不替代 Word 的分页排版。旧版 DOC 的转换仍需要 `MATERIALS_OFFICE_ROOT`。图片、扫描 PDF 的视觉识别尚未配置；原稿、裁图和人工校对可保存，但不计作自动识别完成。复杂数学排版、多栏与跨页续题仍需对照核查。本机验证和具体限制见 [题库交付回执](docs/acceptance/evidence/MANUAL-QUESTIONS/v1/receipt.md)。
+文字与 DOCX 使用原生结构自动拆题；文字层 PDF 使用本机 Poppler 自动提取，并匹配明确的跨页答案和单栏配图。DOCX 没有分页预览时可按原文段落对照公式和配图，不替代 Word 的分页排版。旧版 DOC 配置 `MATERIALS_OFFICE_ROOT` 后可在本机转换、读取文字并校对保存；转换中的对象丢失风险、文字层缺失公式与按页草稿仍需人工核对，详见[接续验证](docs/acceptance/evidence/MANUAL-QUESTIONS/v1/continuation.md)。图片、扫描 PDF 的视觉识别尚未配置；原稿、裁图和人工校对可保存，但不计作自动识别完成。复杂数学排版、多栏与跨页续题仍需对照核查。本机验证和具体限制见 [题库交付回执](docs/acceptance/evidence/MANUAL-QUESTIONS/v1/receipt.md)。
 
 ## DOCX 输出
 

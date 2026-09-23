@@ -98,6 +98,9 @@ export default function OriginalPane({
         {fileId && <button onClick={() => download(fileId)}>下载原稿</button>}
       </header>
       {material.origin && <p className="q-origin">出处：{material.origin}</p>}
+      {preview?.issues.includes("legacy-object-loss") && (
+        <p role="status">旧版 DOC 转换可能丢失公式或嵌入对象，请下载原稿核对；缺失内容可补充文字或清晰照片。</p>
+      )}
       {material.input.kind === "text" && (
         <pre>
           {(() => {

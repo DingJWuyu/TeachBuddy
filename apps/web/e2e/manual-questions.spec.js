@@ -246,6 +246,89 @@ test('Word 原稿可对照、原生公式与配图可编辑，图片入口保留
   await page.screenshot({path:path.join(evidence,'image-correction.png')});
 });
 
+test('旧 DOC 本机转换后自动读取，对照校对并保存重开', async ({page,browser}) => {
+  test.skip(!process.env.MATERIALS_OFFICE_ROOT, '需显式提供已有 Office 工具目录');
+  test.setTimeout(180000);
+  await start(page);
+  await page.getByRole('button',{name:'收录',exact:true}).click();
+  await page.getByRole('button',{name:'Word',exact:true}).click();
+  await page.getByLabel('选择原稿').setInputFiles('apps/web/e2e/fixtures/materials/samples/w.doc');
+  await page.getByLabel('出处',{exact:true}).fill('旧 DOC 本机转换校对');
+  await page.getByRole('button',{name:'保存原稿并整理'}).click();
+  await expect(page.getByLabel('草稿标题')).toBeVisible({timeout:120000});
+  await expect(page.locator('.q-original img').first()).toBeVisible();
+  const originalFile = await page.getByLabel('原稿文件').inputValue();
+  const previewResponse = page.waitForResponse(r => r.url().endsWith(`/files/${originalFile}/preview`) && r.status() === 200);
+  await page.reload();
+  const response = await previewResponse;
+  const preview = await response.json();
+  const headers = {'X-TeachBuddy-Page': response.request().headers()['x-teachbuddy-page']};
+  expect(preview.state).toBe('limited');
+  expect(preview.issues).toContain('legacy-object-loss');
+  expect(preview.pageCount).toBe(4);
+  const converted = await page.request.get(`${world.origin}/api/workbench/files/${preview.renditionFileId}/content`, {headers});
+  expect(converted.ok()).toBeTruthy();
+  fs.writeFileSync(path.join(evidence,'legacy-doc.pdf'), await converted.body());
+  await expect(page.getByRole('button',{name:'保存校对',exact:true})).toBeEnabled({timeout:120000});
+  await expect(page.locator('.q-original')).toContainText('旧版 DOC 转换可能丢失公式或嵌入对象');
+  console.log('DOC preview', JSON.stringify(preview));
+  const automaticText = await page.locator('.q-review-result textarea').allTextContents();
+  expect(automaticText.join('\n')).toContain('求函数');
+  console.log('DOC extracted', automaticText);
+  await page.screenshot({path:path.join(evidence,'legacy-doc-review.png')});
+  const downloading = page.waitForEvent('download');
+  await page.getByRole('button',{name:'下载原稿',exact:true}).click();
+  const original = await downloading;
+  expect(original.suggestedFilename()).toBe('w.doc');
+  expect(fs.readFileSync(await original.path())).toEqual(fs.readFileSync('apps/web/e2e/fixtures/materials/samples/w.doc'));
+  await page.getByLabel('草稿标题').fill('旧 DOC 校对保存题');
+  const body = page.locator('.q-review-result .material-editor').first().locator('textarea').first();
+  const extracted = await body.inputValue();
+  expect(extracted.trim().length).toBeGreaterThan(0);
+  await body.fill(`${extracted}\n校对备注：已核对旧 DOC 转换原稿。`);
+  // The converted page has visual formulas that its text layer cannot expose.
+  // Add a visible region by hand; this is not automatic recognition.
+  const area = await page.locator('.q-page').boundingBox();
+  await page.mouse.move(area.x + area.width * 0.1, area.y + area.height * 0.3);
+  await page.mouse.down();
+  await page.mouse.move(area.x + area.width * 0.5, area.y + area.height * 0.5, {steps:8});
+  await page.mouse.up();
+  await page.getByRole('button',{name:'裁图加入题面',exact:true}).click();
+  await expect(page.locator('.q-review-result img').first()).toBeVisible();
+  for (const issue of await page.locator('.q-issue select').all()) await issue.selectOption('corrected');
+  await page.getByRole('button',{name:'保存校对',exact:true}).click();
+  await page.reload();
+  await expect(page.getByLabel('草稿标题')).toHaveValue('旧 DOC 校对保存题');
+  await expect(page.locator('.q-review-result textarea').first()).toContainText('校对备注');
+  await page.getByRole('button',{name:'确认收录',exact:true}).click();
+  await page.getByRole('button',{name:'查看已入库题目',exact:true}).click();
+  await page.reload();
+  await expect(page.getByLabel('题目标题')).toHaveValue('旧 DOC 校对保存题');
+  await expect(page.locator('.q-question textarea').first()).toContainText('校对备注');
+  await page.getByRole('button',{name:'对照原稿',exact:true}).click();
+  await expect(page.locator('.q-original img').first()).toBeVisible();
+  await expect(page.locator('.q-original')).toContainText('旧 DOC 本机转换校对');
+  await page.getByRole('button',{name:'查看已入库题目',exact:true}).click();
+  await expect(page.getByLabel('题目标题')).toHaveValue('旧 DOC 校对保存题');
+  const questionPath = new URL(page.url()).pathname + new URL(page.url()).search;
+  const directory = world.directory, storageState = await page.context().storageState();
+  await world.close();
+  world = await createIntegration({directory});
+  const fresh = await browser.newContext({storageState,ignoreHTTPSErrors:true,viewport:{width:1440,height:900}});
+  try {
+    const reopened = await fresh.newPage();
+    await reopened.goto(world.origin + questionPath);
+    await reopened.locator('.q-list button').filter({hasText:'旧 DOC 校对保存题'}).click();
+    await expect(reopened.getByLabel('题目标题')).toHaveValue('旧 DOC 校对保存题');
+    await expect(reopened.locator('.q-question textarea').first()).toContainText('校对备注');
+    await expect(reopened.locator('.q-question img').first()).toBeVisible();
+    await reopened.getByRole('button',{name:'对照原稿',exact:true}).click();
+    await expect(reopened.locator('.q-original img').first()).toBeVisible();
+    await expect(reopened.locator('.q-original')).toContainText('旧版 DOC 转换可能丢失公式或嵌入对象');
+    await reopened.screenshot({path:path.join(evidence,'legacy-doc-reopened.png')});
+  } finally { await fresh.close(); }
+});
+
 test('未保存编辑经删除恢复仍在，取用时使用当前修改', async ({page}) => {
   await start(page);
   await create(page,'修改后取用');
