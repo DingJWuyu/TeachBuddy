@@ -1,0 +1,12 @@
+[WebServer] (node:92948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:93378) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/materials-resources.spec.js:5:1 › WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复 (5.4s)
+  ✓  2 apps/web/e2e/materials-resources.spec.js:133:1 › WB-M014 全格式真实页图、返回现场及备课取用 Adapter (13.8s)
+  ✓  3 apps/web/e2e/materials-resources.spec.js:438:1 › 备课目标快速切换不被迟到响应覆盖 (352ms)
+
+  3 passed (23.0s)
