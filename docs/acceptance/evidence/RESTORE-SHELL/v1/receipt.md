@@ -1,32 +1,25 @@
-# RESTORE-SHELL@1
+# RESTORE-SHELL@1 / attempt 2
 
-- status: FAIL，候选可构建，但全部 UI/UX 恢复未完成，不作为上线放行。
-- verification_level: self
-- base_revision: d7b5849a4fe6d8b99fec275bb9a0a6c8870efa57
-- runner: Codex，gpt-6-astra，low（任务指定）
-- skills_used: diagnosing-bugs、writing-for-agents
-- identity_mode: real-auth，隔离 HTTPS 测试账户
-- authorization_used: RESTORE-SHELL@1 用户任务包
-- session_id: unavailable
+- status: PASS，限本次明确的原型 UI 恢复范围及下述自验覆盖。
+- base_revision: 975fa14e7603c9b7ec7051b2f25286c832b04822
+- runner: Codex gpt-6-astra / low，self verification
+- scope: 原型前端外壳恢复；固定起点后的增量，不含部署。
+- skills: diagnosing-bugs、writing-for-agents。
 
-## 候选范围
+## 实现
 
-原型侧栏组件、图标、国旗及样式迁入 apps/web/src/features/workbench/chrome；顶部首页/日程/支持菜单和搜索外观、首页欢迎区恢复。真实昵称经既有 ShellContext 传入。删除侧栏底部 AI 入口，业务页面右侧辅助栏保留。业务模块、数据库、认证目录、预览配置未修改。
+顶部反馈、教程进度、首访气泡、完成动画、隐私和通知采用原型弹层，不再跳转冒充。通知使用真实提醒 API、原幂等提交和身份保护，点击定位日程，已读通知可拖到垃圾桶。反馈输入和记录保存在当前账户设备现场，不声称已发送给服务端。
 
-CSS 使用原生 @scope，以 .wb-workspace 为排除边界，模块样式不进入原型 reset。适用浏览器须支持 @scope。账户认证挂载仍是 App 的 AuthProvider -> AuthGate -> WorkbenchRoot，无新接口要求。
+修正顶部关闭监听误关学期弹层、窄屏遮罩挡住导航、首页输入前后宽度及间距；首页返回工作使用上次业务地址。语言选择、教程进度、学期详情和复制选项复用 useScene。侧栏底部 AI 入口排除，模块右侧 AI 与 Agent runtime 保持现状。
 
-## 已验证
+## 验证
 
-运行 `npm run build:web`、`node apps/web/e2e/restore-shell/verify.mjs`。真实注册、Cookie 身份、刷新恢复、退出通过。五模块、日程、设置/帮助/更新菜单跳转通过。搜索弹层可打开关闭。侧栏 overflow-y 为 auto。主内容由既有模块分区承担滚动，此轮未逐个执行长内容滚动验收。
+`npm run build:web`、`node apps/web/e2e/restore-shell/remaining.mjs`、`node apps/web/e2e/restore-shell/verify.mjs`，结果见同目录 attempt2 日志。
 
-基线使用原 50880 同版本构建产物在隔离服务重现：同一验证脚本报 Prototype topbar missing。候选通过该断言。证据为同目录 home.png、settings.png、verify.log、baseline.log、build.log。截图内“外壳验收”为隔离环境真实注册账户，不是产品硬编码姓名。
+真实 HTTPS 隔离账户，Chromium 对照本树原型及用户图二。覆盖反馈表单与重开输入、教程进度刷新恢复、隐私、真实通知定位与已读拖放删除、创建学期与刷新、模块拖放隐藏与恢复、五模块和日程/支持导航、390px 抽屉与弹层、首页输入切模块保留、登录刷新退出。截图等待有限动画结束后采集。`home.png` 为固定起点首页，`attempt2-*.png` 为本轮对照与结果。检查模块可见独立滚动容器，并对日程网格执行真实滚轮，外层不跟随滚动；不将空账户检查扩大为所有业务长文档验收。
 
-## 未完成与接续条件
+## 覆盖边界
 
-1. 学期无真实后端接口。候选无样本学期，创建的学期仅是账户隔离设备现场元数据，不能声称驱动业务分学期或复制数据；需在现有边界内明确如何恢复完整行为。语言选择也未接入产品翻译能力。
-2. 分组/隐藏/排序使用现有 useScene 账户隔离本地保存，尚未读取旧服务端 workspaceLayouts，不能宣称跨设备恢复或旧布局迁入已完成。
-3. 反馈、教程、隐私按钮仍跳到既有帮助/设置页，原型对应弹层尚未全部迁入；通知沿用真实业务组件，未完全对齐原型外观。
-4. 拖放、学期弹窗、窄屏、所有模块独立滚动和恢复保护尚未完成定向回归；首页实际输入框仍沿用已有 Agent 组件，未逐像素对齐全部状态。
-5. 50880 只打开到匿名登录页，未部署。维护者保留上线与用户数据权限。本候选不可报告为已上线或完整恢复。
+学期是设备现场元数据及原表单交互，复制选项不复制业务数据；语言选择不包含新翻译引擎。旧 `/api/workspace/layout` 已退役，当前产品对该接口返回 404（已有 api.test.js 明确约束），没有可复用的当前账户读取接缝，分组/隐藏/排序仍按账户在设备保存，不声称跨设备迁移。
 
-无独立 review，无其他 session 联系，无 main 合并或 push。未达完成标准，因此保留 /tmp/rs 与隔离验证材料供接续。
+恢复隔离、编辑存储及真实账户交接路径未改。认证候选由维护者另行组合。未改 features/auth、后端、preview、用户数据配置；AGENTS.md 的既有改动不提交。没有其他 session 联系、main 合并或 push。

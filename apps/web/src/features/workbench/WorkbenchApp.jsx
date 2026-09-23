@@ -156,7 +156,7 @@ function WorkbenchContent({ boot }) {
   }
 
   let page = null;
-  if (route.name === 'home') page = <RestoredHome />;
+  if (route.name === 'home') page = <RestoredHome returnPath={scene.lastWorkPath} />;
   else if (route.name === 'questions' || route.name === 'question') page = <QuestionsPage route={route} />;
   else if (route.name === 'lessons' || route.name === 'lesson') page = <LessonsPage route={route} />;
   else if (route.name === 'resources' || route.name === 'resource') page = <ResourceRoute key={route.path} route={route} transport={transport} />;
@@ -175,11 +175,13 @@ function WorkbenchContent({ boot }) {
     : route.name === 'lessons' || route.name === 'lesson' ? 'lessons' : route.name === 'resources' || route.name === 'resource' ? 'resources' : route.name === 'math' ? 'math' : route.name.startsWith('class') ? 'classes' : null;
 
   useEffect(() => {
+    if (!activeModuleId && route.name !== 'schedule') return;
+    if (scene.lastWorkPath !== window.location.pathname + window.location.search) patchScene({lastWorkPath: window.location.pathname + window.location.search});
     if (!activeModuleId) return;
     const current = window.location.pathname + window.location.search;
     if (scene.modulePaths?.[activeModuleId] !== current)
       patchScene({ modulePaths: { ...scene.modulePaths, [activeModuleId]: current } });
-  }, [activeModuleId, route.path, route.workId]);
+  }, [activeModuleId, route.path, route.workId, route.search]);
 
   return (
     <ShellContext.Provider value={shell}>

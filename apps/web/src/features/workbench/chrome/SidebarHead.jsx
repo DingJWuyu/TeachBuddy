@@ -247,8 +247,8 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
   const [name, setName] = useState(isEdit && semester ? semester.name : '');
   const [start, setStart] = useState(isEdit && semester ? semester.start : '');
   const [end, setEnd] = useState(isEdit && semester ? semester.end : '');
-  const [sourceId, setSourceId] = useState(null);
-  const [picked, setPicked] = useState([]);
+  const [sourceId, setSourceId] = useState(semester?.sourceId ?? null);
+  const [picked, setPicked] = useState(semester?.picked ?? []);
 
   useLayoutEffect(() => {
     const modal = modalRef.current;
@@ -382,6 +382,7 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
                 <label className="tb-field-label" htmlFor="tb-semester-end">结束日期 *</label>
                 <input
                   id="tb-semester-end"
+                  min={start || undefined}
                   className="tb-field-input"
                   type="date"
                   required
@@ -460,10 +461,12 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
 }
 
 export default function SidebarHead({ accountName, onAnnounce, openSurface, onToggleSurface, onOpenSurface, onCloseSurface, visible }) {
-  const [language, setLanguage] = useState(() => LANGUAGES.find((item) => item.code === 'zh-CN'));
+  const { accountKey } = useWorkbenchShell();
+  const [languageScene, patchLanguage] = useScene(accountKey, 'shell-language', { code: 'zh-CN' });
+  const language = LANGUAGES.find(item => item.code === languageScene.code) || LANGUAGES.find(item => item.code === 'zh-CN');
+  const setLanguage = item => patchLanguage({ code: item.code });
   const languageOpen = openSurface === 'language';
   const semesterOpen = openSurface === 'semester';
-  const { accountKey } = useWorkbenchShell();
   const [termState, patchTerms] = useScene(accountKey, 'semester-navigation', { semesters: [], activeId: null });
   const semesters = termState.semesters;
   const activeSemesterId = termState.activeId;
@@ -496,11 +499,11 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
   }
 
   function submitDialog(values) {
-    const copied = values.sourceId && values.picked.length ? '，并复制了所选内容' : '';
+    const copied = values.sourceId && values.picked.length ? '，已保留复制选项' : '';
     if (dialog.mode === 'edit') {
       setSemesters((list) => list.map((item) => (
         item.id === dialog.semester.id
-          ? { ...item, name: values.name, start: values.start, end: values.end }
+          ? { ...item, name: values.name, start: values.start, end: values.end, sourceId: values.sourceId, picked: values.picked }
           : item
       )));
       announce(`已保存 ${values.name}${copied}`);
@@ -509,7 +512,8 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
         id: nextSemesterId(semesters),
         name: values.name,
         start: values.start,
-        end: values.end
+        end: values.end,
+        sourceId: values.sourceId, picked: values.picked
       };
       setSemesters((list) => [...list, created]);
       setActiveSemesterId(created.id);
