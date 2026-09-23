@@ -1,8 +1,0 @@
-
-Running 1 test using 1 worker
-
-(node:151378) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  1 apps/web/e2e/manual-lessons-preview.spec.js:40:1 › MF-UI-01 更新对照新旧文件完整阅读及采用保存 (15.5s)
-
-  1 passed (20.0s)

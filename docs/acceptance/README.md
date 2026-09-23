@@ -25,6 +25,18 @@
 
 ## 证据怎么用
 
-[当前证据索引](../plans/run-inputs.md)只列仍可消费的结论。已提交过程报告按索引中的 Git 路径追溯；`evidence/` 保留样本、机器结果、截图、下载物和相关脚本，不是当前状态或待办集合；不批量读入 worker 上下文。
+[当前证据索引](../plans/run-inputs.md)只列仍可消费的结论。已提交过程报告按索引中的 Git 路径追溯；`evidence/` 仅保留下表的就地用途，不作为历史日志库或待办集合。旧阶段截图、检查结果、修复脚本和输出按固定 Git 来源追溯；测试向某路径写文件不要求保留该路径的旧输出。
 
 self 是作者验证，independent 是独立验收，user 是具名真人反馈。PASS 只覆盖报告实际范围。新候选涉及改变时验证影响范围，未变部分引用已有证据；环境已暂缓时单列未知，不把它写成已通过。
+
+## 仍在树内的制品用途
+
+| 位置 | 使用条件与限制 |
+| --- | --- |
+| `HUMAN-ACCEPTANCE/20260922/` | 具名真人 Office 比较制品、源 Markdown/图片、生成器与原始 manifest，保留为目标 Office 验证输入。来源路径在 manifest 中；包含的检查结果仅对应这些样本，不证明产品全矩阵。 |
+| `R34/v1/outputs/*-docx-00.docx` | 三份文件是 `apps/web/e2e/fixtures/materials-lessons/office.py` 的直接输入；其余输出可由 `verify-outputs.mjs` 重新生成。测试副本不证明当前产品输出质量。 |
+| `C26/v1/live-deepseek.json`、`live-glm.json` | `apps/web/e2e/c26/agent.spec.js` 读取后复制各自 directory。所记旧目录当前不存在，单有 JSON 不能重跑该测试；后续获准恢复 Agent 验证时先按工作树恢复索引找匹配现场，不能因缺输入自行重开模型请求。 |
+| `UI-SETTINGS/`、`UI-HELP/` | 当前设置/帮助页面的桌面、窄屏和交互视觉参考；结合[设置规格](../features/settings.md)使用，截图不定义新功能，也不证明全站偏好生效。 |
+| `M43/v1/output/`、`R33/v1/attempt2/`、`R33/v1/attempt4/` 及已有未跟踪制品 | 保留任务开始时已有用户修改，未改字节；不是本轮新验证。未跟踪的 BUSINESS-MVP、M42 及 apps/api/docs 输出同样保留，由其原任务决定去留。 |
+
+上表路径均相对 `docs/acceptance/evidence/`，代码侧路径除外。生产 schema、固定契约输入闭包及 `apps/` 下的测试样本由各消费者直接读取，独立于这些历史输出。

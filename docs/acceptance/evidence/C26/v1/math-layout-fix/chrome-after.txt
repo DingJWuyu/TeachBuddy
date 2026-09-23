@@ -1,3 +1,0 @@
-result: "{\"width\":390,\"split\":0,\"base\":\"inline-block\",\"threadWidth\":318,\"threadScrollWidth\":318}"
-help[1]:
-  Run `chrome-devtools-axi snapshot` to see current page state

@@ -1,7 +1,0 @@
-{
-  "pages": 1,
-  "platform": "linux",
-  "officeRoot": "/home/liam_t/项目/TeacherWorkspace-c22/experiments/C22/deps/libreoffice/opt/opt/libreoffice26.8",
-  "application": "LibreOffice Impress via isolated converter",
-  "targetWindowsPowerPoint": "not-tested"
-}

@@ -72,24 +72,26 @@ T52 拥有账户的 schedule-settings，timeZone 为 IANA 名称，首次读取�
 
 T53 仅在站内通知查询/写入及 schedule 变更时结算；浏览器工作台可见时每 30 秒查询，回到前台/登录恢复立即查询；时钟由服务端控制，后台浏览器不承担可靠计时。无需常驻任务、队列、Web Push 或通知中心模块。已到期列表按 dueAt 降序、ID 升序；点击旧通知通过当前 occurrence 解引用，不需要保留整个安排的历史版本。
 
-## 公共变更与待接边界
+## 公共端口与协议版本
 
-B11 没有给出 lessons 的同步引用读取 Interface，也没有 classes/schedule 的目录依赖值。本包以[架构中的两个有消费者扩展](../arch/teaching-time.md#模块与-interface)交独立核验：T53 增加 lessons.readForTeachingLink 和目录响应 v2，不重定义 B11 题目/备课内容、写入或旧 schema。T51 可先用同版替身检验读取适配，T53 汇合真实提供方。题目的 readForReference 直接复用 B11。
+classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2` 和 `math.readForTeachingLinkV1` 读取真实来源；schedule 使用班级/记录摘要与备课端口。具体同步 Interface 见[架构](../arch/teaching-time.md#模块与-interface)。业务事务和旧协议的字段约束继续保留。
 
-### 静态目录 v2
+### 静态目录 v2 与当前 v3
 
-`GET /api/modules` 的成功响应固定采用样本 `catalog-v2`：`version=2`，条目顺序为 `questions`、`lessons`、`classes`、`schedule`，每项的完整 `id/name/path/navigation/auxiliaryPanel/requires` 以该样本为准。它替代 B11 的目录 v1 响应，其他 B11 操作和旧 v1 文件保持不变。响应仍遵守共同协议的加法兼容，不能因未来响应增加字段而拒绝读取。
+`teaching-time.openapi.yaml` 的 `catalog-v2` 样本定义教学基础组合：version=2，顺序 questions、lessons、classes、schedule。它只用于该版协议与固定样本，不是当前六模块运行响应。当前 `GET /api/modules` 使用数学契约的 ModuleCatalogV3 和 `packages/shared/src/moduleCatalog.js`，顺序为 questions、lessons、math、resources、classes、schedule；材料版的目录 v2 也不能与教学版 v2 混为同一全集。
 
-T53 在投影目录前对这份静态输入执行跨条目校验：ID 唯一、path 唯一、每个 `requires` 都有本批固定提供方、依赖图无环。校验失败统一返回 `422 invalid-input`，重复 ID/path 的 `field` 指向重复 descriptor 的对应 `/id` 或 `/path`，`reason=duplicate-id`；缺依赖和依赖环的 `reason=invalid-reference`，固定输入和字段见 cases 的 TT-C7。不能以 OpenAPI 的单对象形状通过替代这些静态校验。
+所有版本的静态目录均核对 ID/path 唯一、requires 提供方存在且依赖无环。校验失败为 `422 invalid-input`；重复项 field 指向对应 `/id` 或 `/path`，reason=duplicate-id，缺依赖/环路 reason=invalid-reference。教学 v2 的固定反例见 cases 的 TT-C7；当前 v3 按自己的 schema 和目录核对。未知目录版本保留设备草稿并提示升级，不忽略依赖继续装配。
 
-数学作品：M40 须提供账户内身份、活动/删除判断、稳定读取/回看、反向使用入口的确切契约与版本；T50/M40 对照后增加本包新版 source 类型及用例，独立冻结受影响部分。当前 schema 拒绝 work/resource/任意 JSON 扩展字段。T51 的普通行为不等它，完整作品关联 self PASS 要等 M44；不能用占位 ID 或作品名字符串替代。
+### 记录来源 v1 与 v2
+
+本页基础 schema 的记录 v1 SourceInput 仅含 lesson/question，拒绝 math、work、resource 和任意 JSON 扩展。当前记录使用[教学记录 v2](teaching-time-math.md)：新增 kind=math，真实提供方及前端反向反馈均已接线。v1 读取含 math 对象时的整体拒绝、v2 兼容旧记录、旧键原路径确认均沿该扩展，不能通过删掉 math 字段进行有损降级。真实完整教学验收与目标设备仍按[剩余依赖](../plans/mvp-dag.md)推进，不因接口存在标全范围通过。
 
 ## 场景与操作映射
 
 | BDD / UX | 共同操作 | 归属 |
 | --- | --- | --- |
 | WB-T001、002、019 / U1、U2、U11 | classes 与 records CRUD/deletion | T51 |
-| WB-T003、004、020 / U3、U8 | record sources、source-records、课程 recordIds | T51；T53 真实汇合；作品待 M40/M44 |
+| WB-T003、004、020 / U3、U8 | record sources、source-records、课程 recordIds | classes 与组合层；真实作品完整验收依赖 M44 |
 | WB-T005、008 / U4、U5 | listOccurrences、getOccurrence、设备现场 | T52；范围选择不切 AI 为前端行为 |
 | WB-T006、007 / U6 | Entry、moveItem、数组/priority | T52 |
 | WB-T009、010、011 / U7 | exceptions、settings、日期计算 | T52 |

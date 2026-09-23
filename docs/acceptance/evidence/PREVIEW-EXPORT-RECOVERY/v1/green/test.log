@@ -1,9 +1,0 @@
-
-Running 2 tests using 1 worker
-
-(node:1623746) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  1 apps/web/e2e/materials-integration-export-recovery.spec.js:25:1 › 输出现场刷新恢复 (3.8s)
-  ✓  2 apps/web/e2e/materials-integration-export-recovery.spec.js:57:1 › 输出恢复保留选项、六种成品与失败现场，新建备课仍可保存 (27.3s)
-
-  2 passed (32.1s)

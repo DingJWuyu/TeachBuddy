@@ -1,8 +1,0 @@
-{
-  "errors": [
-    {
-      "message": "Cannot read properties of null (reading 'sections')",
-      "stack": "TypeError: Cannot read properties of null (reading 'sections')\n    at id (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:267:124604)\n    at po (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:8:47518)\n    at ac (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:8:70125)\n    at Sc (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:8:80399)\n    at ku (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:8:115967)\n    at Eu (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:8:115015)\n    at Tu (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:8:114849)\n    at pu (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:8:111678)\n    at od (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:8:123318)\n    at MessagePort.D (https://127.0.0.1:41569/assets/index-DYGZbBsp.js:1:10241)"
-    }
-  ]
-}

@@ -1,9 +1,0 @@
-{
-  "base": "dfb3b4adf35f2657c8f001fd6c1ad6c8cc26726f",
-  "filesChecked": 75,
-  "mismatches": [],
-  "apiOverwrittenArtifactsPreservedIn": "inherited-test-artifacts/",
-  "restoredFrom": "88d610f07b627533201ba59ac1d176d6bd1059ae",
-  "combinedEvidenceFilesChecked": 1007,
-  "combinedEvidenceTrackedDiff": []
-}

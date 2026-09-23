@@ -26,7 +26,7 @@ flowchart LR
 
 共享接缝的改动须核对手工和 Agent 两个消费者。手工与工具对同输入应得相同 status/body/problem，包括复制读取权、查询过滤、题目/引用版本、deleted、外账户 404、幂等优先顺序和批量取题原子性。工具读副本不使用 C24 固定原题限制；实验 fault/control 参数不进产品。
 
-后续 resources/math/classes/schedule 由各自模块导出同样的有限 operations，已有静态目录声明真实依赖，Agent 本地代码映射显式引入其 tool adapter 和冻结 schema。每次只加实际消费者所需的封闭工具，并补业务一致性场景；不创建任意属性槽位、动态上传扩展、运行时代码安装或插件市场。数学作品的隔离执行由其独立契约负责，不能把任意 shell 加到 Agent。
+resources/math/classes/schedule 已有各自公共 operations；待恢复的全模块 Agent 接续负责消费这些端口，按静态目录显式映射 tool adapter 和已冻结的扩展 schema，不重新设计业务提供方。每次只加实际消费者所需的封闭工具，并补业务一致性场景；不创建任意属性槽位、动态上传扩展、运行时代码安装或插件市场。数学作品的隔离执行由其独立契约负责，不能把任意 shell 加到 Agent。
 
 ## 持久化、重启与身份
 

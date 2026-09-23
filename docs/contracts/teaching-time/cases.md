@@ -87,12 +87,14 @@ T52 用同版 classes/lessons 替身验证：course.classId=C1、lessonId=L1、r
 
 ## TT-C6 作品接入（WB-T020）
 
-当前 SourceInput 只接受 lesson/question；work、math、resource 或未知 blob 字段都是422。这不是最终取消作品能力。M40 给出固定提供方契约后，T50/M40补本包新版映射、真实失败/删源/双向回看场景；T51取得M44真实作品执行。当前替身/样本不能把 WB-T020 判PASS。
+`teaching-time.openapi.yaml` 的记录 v1 `SourceInput` 只接受 lesson/question；work、math、resource 或未知 blob 字段均为 422。当前记录 v2 的 `SourceInputV2` 已支持 kind=math，见[数学关联与兼容契约](../teaching-time-math.md)和[对应场景](math-cases.md)；work/resource 仍不受支持。验证需同时覆盖 v1 拒绝、v2 真实作品选择/保存/删源/双向回看和旧键确认。已有局部接线不等于 WB-T020 全范围通过，替身及 schema 样本也不能代签。
 
 <a id="tt-c7"></a>
 ## TT-C7 静态目录 v2 校验
 
-`GET /api/modules` 成功返回样本 `catalog-v2`，状态 200，响应为 `version=2` 且 `items` 顺序严格为 `questions`、`lessons`、`classes`、`schedule`；四项完整 descriptor 的 `name`、`path`、`navigation`、`auxiliaryPanel` 和 `requires` 逐项按样本比对。该响应是 v2，不能返回 B11 v1 的 `{items: []}` 形状。
+本组仅验证教学基础目录 v2 的固定输入。当前六模块组合返回 v3，见[目录版本](../teaching-time.md#静态目录-v2-与当前-v3)，不使用下述四模块样本断言当前运行响应。
+
+在该 v2 fixture 中，`GET /api/modules` 成功返回样本 `catalog-v2`，状态 200，响应为 `version=2` 且 `items` 顺序严格为 `questions`、`lessons`、`classes`、`schedule`；四项完整 descriptor 的 `name`、`path`、`navigation`、`auxiliaryPanel` 和 `requires` 逐项按样本比对。该响应是 v2，不能返回 B11 v1 的 `{items: []}` 形状。
 
 T53 对同一静态输入先校验再投影。以下变体都通过 `ModuleCatalogV2` 的单对象 JSON Schema 形状检查，但必须由目录校验器拒绝；拒绝不启动/不暴露部分目录，固定返回 `422 invalid-input`：
 

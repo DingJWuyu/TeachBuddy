@@ -1,8 +1,0 @@
-
-Running 1 test using 1 worker
-
-(node:1081845) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  1 apps/web/e2e/materials-integration.spec.js:25:1 › 真实身份外壳：原件预览替换、校对入库、混合取材、六输出与重启恢复 (39.5s)
-
-  1 passed (40.4s)

@@ -22,7 +22,7 @@ v2 读取旧对象时，原 Document.version=1 原样返回；补充空分类、
 
 B11 的 readForReference 端口继续供旧调用方使用，新增 `readForReferenceV2` 支持本批 Snapshot；新 lessons 只消费后者。旧副本来源中的 v1 快照维持 v1。题库和备课各自拥有自身对象兼容，未知旧请求沿原路径确认。
 
-静态模块目录只有一份。材料版历史协议定义 ModuleCatalog version=2；当前完整组合返回数学契约的 version=3。材料版，精确描述与依赖名唯一在本 schema；这是该目录操作的显式版本演进，B11 原定义保留为版本1历史冻结输入，不作为材料版运行响应的竞争定义。支持版本1的旧客户端遇到2必须保留草稿并提示重新加载，不用未知依赖继续装配。当前只注册真实实现并检查映射、缺依赖和环路。
+静态模块目录只有一份。材料版历史协议定义 ModuleCatalog version=2；当前完整组合返回数学契约的 version=3。材料版 v2 的精确描述与依赖名在 materials.openapi.yaml；这是该目录操作的显式版本演进，B11 原定义保留为版本1历史冻结输入，不作为材料版运行响应的竞争定义。支持版本1的旧客户端遇到2必须保留草稿并提示重新加载，不用未知依赖继续装配。当前只注册真实实现并检查映射、缺依赖和环路。
 
 ## 文件与定位
 
@@ -122,4 +122,4 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 | WB-M024 | U-M6 | createQuestionAsset、Document | R33；R31 公共呈现 |
 | WB-M025 至 M028 | U-M7、8 | B11 协议、File、Job、版本适配 | R31-R34 按模块；R34 集成 |
 
-M40 可以消费 File、Document、Location、现有 Reference/Usage 及[中立公共端口](../../arch/materials.md#公共端口)，但当前 schema 不接受数学作品引用。M40 设计自身提供方时产生独立版本并交冻结，不能先往 kind 里填 math 或任意 provider。
+`materials.openapi.yaml` 的备课 v2 Reference 只接受 question/resource，仍拒绝 math 或任意 provider。当前备课使用已存在的 [lessons v3 数学引用契约](math.md)，通过相同 File、Document、Location 和[公共端口](../../arch/materials.md#公共端口)组合；v2 的拒绝与未知请求原路径确认继续有效，不能将 v3 的 math 字段直接发给 v2。

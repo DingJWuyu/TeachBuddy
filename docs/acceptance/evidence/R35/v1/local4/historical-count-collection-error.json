@@ -1,4 +1,0 @@
-{
-  "message": "Expected values to be strictly equal:\n\n2 !== 1\n",
-  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n2 !== 1\n\n    at file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r35-local-fixes/docs/acceptance/evidence/R35/v1/local4/scripts/http.mjs:81:86\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)"
-}
