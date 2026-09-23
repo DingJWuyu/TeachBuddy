@@ -1,5 +1,0 @@
-[workbench] modules discovered: questions, lessons, workbench-broken
-
-[first-flow] startup failed: workbench-broken fixture migration failed on purpose
-
-exit=1

@@ -8,7 +8,7 @@
 
 前端使用同版 examples 驱动替身：请求先按对应 requestBody 校验，再按以下序列返回结果和延迟/失败；不能只根据按钮名返回成功。后端测试直接调用相同 HTTP 操作并独立断言预期数据，不能以实现生成的快照作为唯一预期。成功/失败之后 GET 验证状态，所有 mutation failure 检查无部分变更。
 
-原件来源按[实验裁决](../../arch/materials-evidence.md)定位 C21 与 C22 固定提交。T/W/P/I/PS 自动拆题用 C21 原件；C22 学生练习是答案泄漏反例，不能作为“无答案”的期望。E 全原件只在保留工作区读取，不复制到本仓库。机器原始结果、校对结果和最终题目分别保存证据。
+原件来源按[材料夹具](../../../apps/web/e2e/fixtures/materials-questions/)定位 C21 与 C22 固定提交。T/W/P/I/PS 自动拆题用 C21 原件；C22 学生练习是答案泄漏反例，不能作为“无答案”的期望。E 全原件只在保留工作区读取，不复制到本仓库。机器原始结果、校对结果和最终题目分别保存证据。
 
 ## 成功、失败与恢复序列
 
@@ -70,10 +70,4 @@ problem完整字段由schema拥有。业务 field采用JSON Pointer；解析sche
 | practice_docx | 只含所选题目，重新编号，同题多次出现各编号，小问/选项/图保留，无环节说明。 |
 | practice_pdf | 同上且打印稳定；Q2配方关闭答案后消失，Q6未给答案时不补造。 |
 
-每类至少一个教师变体、一个学生变体。每格式原件链接见[六种格式样本](../../arch/materials-evidence.md#六种格式样本与用途)。Linux可编辑切片与目标Windows/WPS切片各自有实际应用版本与行为证据；保存后XML仍有m:oMath只是补证，不能单独证明实际编辑体验。
-
-## 契约检查命令
-
-R30 文档检查不运行产品。读取 YAML、校验 OpenAPI 3.2.1 与全部本地引用，按 Draft 2020-12 验证 `components.examples.*.value` 对应 `x-schema`，检查六种 kind×format 样本完整；校验 BDD 场景标签与表格映射及 Markdown 本地链接。检查结果、工具版本和实际命令记录在 [R30 self-check](../../acceptance/evidence/R30/v1/self-check.md)。
-
-R31-R34 使用冻结版 schema 做真实请求/响应断言，另运行本表的跨字段/状态用例；schema通过不代替这些行为检查。UI没有单元测试，优先真实HTTP集成和浏览器流程。临时校验环境不成为产品依赖。
+每类至少一个教师变体、一个学生变体。每格式原件链接见[材料夹具](../../../apps/web/e2e/fixtures/materials-questions/)。Linux可编辑切片与目标Windows/WPS切片各自有实际应用版本与行为证据；保存后XML仍有m:oMath只是补证，不能单独证明实际编辑体验。

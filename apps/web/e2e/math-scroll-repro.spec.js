@@ -6,7 +6,7 @@ import { register, save } from './fixtures/math-scroll/helpers.mjs';
 
 // Same user path as M44-LOCAL-001, with this task's own database and artifacts.
 test('ordinary wheel: math tools must expose dynamic steps', async ({ page, context }) => {
-  const out = path.join(process.env.M43_SCROLL_EVIDENCE || 'docs/acceptance/evidence/M43/v1/scroll-fix/green', 'minimal');
+  const out = path.join(process.env.M43_SCROLL_EVIDENCE || 'test-results/evidence/M43/v1/scroll-fix/green', 'minimal');
   fs.mkdirSync(out, { recursive: true });
   const world = await createIntegration();
   try {

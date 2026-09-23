@@ -1,9 +1,0 @@
-{
-  "sourceRevision": "2b6cbcda934057a89c0443437e03b2e30e850a8d",
-  "identity": "test-principal",
-  "id": "c1c3168c-60d4-4382-936e-4757e71e6247",
-  "v1DocumentPreserved": true,
-  "oldRequestReplayPreserved": true,
-  "restartPreserved": true,
-  "dataDir": "/tmp/r33-upgrade-nO8Bpe"
-}

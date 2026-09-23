@@ -21,7 +21,7 @@ const PORT = 47114;
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 const SHOTS = process.env.B14_SHOTS_DIR
   ? path.resolve(process.env.B14_SHOTS_DIR)
-  : path.join(ROOT, 'docs/acceptance/evidence/B14/v1/screenshots');
+  : path.join(ROOT, 'test-results/evidence/B14/v1/screenshots');
 
 let substitute;
 

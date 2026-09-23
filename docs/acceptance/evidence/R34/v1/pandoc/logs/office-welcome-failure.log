@@ -1,5 +1,0 @@
-Traceback (most recent call last):
-  File "/home/liam_t/项目/TeacherWorkspace-r34-pandoc/docs/acceptance/evidence/R34/v1/pandoc/scripts/office.py", line 50, in <module>
-    doc.setModified(False); doc.close(True)
-                            ~~~~~~~~~^^^^^^
-com.sun.star.util.CloseVetoException: Controller disagree ...

@@ -1,6 +1,6 @@
-# Teaching-time 契约用例
+# 班级教学与日程交换用例
 
-状态：T50/v1 修订候选，READY_FOR_REVIEW。字段只见 [OpenAPI](teaching-time.openapi.yaml)，下列是独立前后端可重放的交换预期，不是已跑过的产品测试。机器样本见 [samples.json](samples.json)，每项注明 schema 和是否应接受；语义条件仍按本页与[契约入口](../teaching-time.md)验证，JSON Schema 通过不代表跨字段/业务通过。
+字段见 [OpenAPI](teaching-time.openapi.yaml)，语义见 [契约](../teaching-time.md)。[样本](samples.json)表示输入形状，跨字段与业务结果仍按场景验证。以下是预期，不是产品通过记录。
 
 ## 固定数据与执行方法
 
@@ -87,7 +87,7 @@ T52 用同版 classes/lessons 替身验证：course.classId=C1、lessonId=L1、r
 
 ## TT-C6 作品接入（WB-T020）
 
-当前 SourceInput 只接受 lesson/question；work、math、resource 或未知 blob 字段都是422。这不是最终取消作品能力。M40 给出固定提供方契约后，T50/M40补本包新版映射、真实失败/删源/双向回看场景；T51取得M44真实作品执行。当前替身/样本不能把 WB-T020 判PASS。
+此处的基础 SourceInput 只接受 lesson/question；数学作品使用 [扩展契约](../teaching-time-math.md)。resource 或未知 blob 字段仍拒绝。
 
 <a id="tt-c7"></a>
 ## TT-C7 静态目录 v2 校验

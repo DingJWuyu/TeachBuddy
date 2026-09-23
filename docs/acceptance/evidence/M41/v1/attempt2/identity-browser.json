@@ -1,7 +1,0 @@
-{
-  "expiredLocks": true,
-  "sameAccountDraft": true,
-  "otherAccountIsolated": true,
-  "staleDownloads": 0,
-  "pendingExportConfirmed": true
-}

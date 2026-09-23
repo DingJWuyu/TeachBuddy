@@ -1,9 +1,0 @@
-{
-  "schemaVersion": 1,
-  "kind": "formula",
-  "latex": "x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
-  "caption": "判别式大于零时有两个不相等的实数根",
-  "includeCaption": true,
-  "color": "#2855a6",
-  "fontSize": 40
-}

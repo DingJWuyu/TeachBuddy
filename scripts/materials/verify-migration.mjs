@@ -10,6 +10,7 @@ import { startFirstFlowRunner } from '../first-flow/lib/runner.mjs';
 import { pastedQuestionSample } from '../../apps/api/test/first-flow-harness.js';
 const fixed = '612f0a9868743a1d5eea7e6f236d3ff903752439';
 const source = process.env.B16_SOURCE ?? '/home/liam_t/项目/TeacherWorkspace-b16-candidate2';
+fs.mkdirSync("test-results/evidence/R31/v1", { recursive: true });
 assert.equal(
   execFileSync('git', ['-C', source, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   fixed,
@@ -133,7 +134,7 @@ try {
     assert.deepEqual(snapshot(world.workbench.db), before);
   } finally { await world.close(); }
   fs.writeFileSync(
-    'docs/acceptance/evidence/R31/v1/migration.json',
+    'test-results/evidence/R31/v1/migration.json',
     JSON.stringify(
       {
         status: 'PASS',

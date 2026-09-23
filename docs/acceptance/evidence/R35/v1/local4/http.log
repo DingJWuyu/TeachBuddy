@@ -1,7 +1,0 @@
-[workbench] modules discovered: questions, resources, lessons
-[workbench] migrations applied 0, skipped 7
-[workbench] modules enabled: questions, resources, lessons
-[workbench] modules discovered: questions, resources, lessons
-[workbench] migrations applied 0, skipped 7
-[workbench] modules enabled: questions, resources, lessons
-{"result":"PASS","scenarios":12,"restart":"PASS","localProviderCalls":0}

@@ -1,1 +1,0 @@
-{"status":"completed","requests":4,"usage":{"input":33815,"output":1534,"cacheRead":99584,"cacheWrite":0,"reasoning":372,"totalTokens":134933,"requestsStarted":4,"requestsReported":4,"complete":true,"actualCost":null},"error":"Cannot read properties of undefined (reading 'questionId')"}

@@ -2,7 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium, expect } from "@playwright/test";
 import { startFixture } from "./fixture.mjs";
-const evidence = path.resolve("docs/acceptance/evidence/R31/v1");
+const evidence = path.resolve("test-results/evidence/R31/v1");
+fs.mkdirSync(evidence, { recursive: true });
 const options = {
   dataDir: path.resolve("test-results/r31-complete/preview-browser"),
   port: 48335,

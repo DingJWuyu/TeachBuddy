@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
-const evidence = path.resolve('docs/acceptance/evidence/MANUAL-QUESTIONS/v1/browser');
+const evidence = path.resolve('test-results/evidence/MANUAL-QUESTIONS/v1/browser');
 fs.mkdirSync(evidence, { recursive: true });
 let world;
 test.afterEach(async ({context}) => { await context.close(); await world?.close(); });

@@ -1,12 +1,10 @@
-# Teaching-time 唯一契约入口
+# 班级教学与日程契约
 
-状态：T50/v1 修订候选，READY_FOR_REVIEW，待外层独立冻结。修订基线 `32af4eb53f78d83780c55fd83821733b000f393b`，含已独立冻结的 [B11](../acceptance/evidence/B11/v1/review.md) 和 [C20](../acceptance/evidence/C20/v1/review.md)。本包用户行为来源为同一候选的 [TT1-TT7](../user-stories/teaching-time.md) 与 [TT-U1-U11](../ux/teaching-time.md)，不是原型 Accepted 声明。
-
-精确 HTTP/字段/枚举唯一归 [OpenAPI](teaching-time/teaching-time.openapi.yaml)，跨操作规则归本页，固定交换/失败恢复归 [cases](teaching-time/cases.md)，写者与进程内 Interface 归 [架构](../arch/teaching-time.md)。不修改 B11、认证、数学或资源提供方契约。
+[OpenAPI](teaching-time/teaching-time.openapi.yaml) 定义字段与状态码；本文定义跨操作规则，[用例](teaching-time/cases.md)提供交换与失败恢复预期。实际范围和剩余验证见 [产品范围](../product/scope.md)及 [当前状态](../plans/status.md)。
 
 ## 共同协议
 
-继承 [B11 身份、HTTP、幂等、冲突与未知结果](workbench.md)：可信 principal、同源 Cookie、来源/保护头、no-store、2 MiB 请求限制、严格请求与宽容响应、账户隔离、原子成功回执、无 TTL 的请求重放、版本冲突对照。无身份 401；不存在/外账户统一 404。所有写入携 Idempotency-Key；成功重放先于当前版本检查。UUID 是标识而非权限。所有日期时间计算使用服务端时钟；业务创建/更新/删除服务器 UTC 时间。
+继承 [工作台身份、HTTP、幂等、冲突与未知结果](workbench.md)：可信 principal、同源 Cookie、来源/保护头、no-store、2 MiB 请求限制、严格请求与宽容响应、账户隔离、原子成功回执、无 TTL 的请求重放、版本冲突对照。无身份 401；不存在/外账户统一 404。所有写入携 Idempotency-Key；成功重放先于当前版本检查。UUID 是标识而非权限。所有日期时间计算使用服务端时钟；业务创建/更新/删除服务器 UTC 时间。
 
 新增对象 version 从 1 开始，每次成功逻辑写入加 1，同体新键也加 1。PUT 为完整替换其可写内容，字段必填但允许空值的以 schema 为准；省略不等于清空。删除/恢复独立操作，不用 HTTP DELETE；被删除对象 GET 可读，普通修改 409 object-deleted。列表默认 active，可显式 deleted；不分页，按各自定义稳定排序。未知 query、重复 query、未知请求字段、隐式类型转换均拒绝。错误完整字段只见 schema。
 
@@ -16,7 +14,7 @@
 - 一条记录属于一个不可更换的班级；recordedOn 是实际教学日期，默认账户今天，允许老师补记或纠正日期，不由课程时间生成。note、position、unfinished、commonIssues、nextNote 至少一个去空白后非空，原文字不截断。列表按 recordedOn 降序、updatedAt 降序、ID 升序。
 - 班级顶部实际位置由记录派生，不另设进度表：活动记录中 position 非空的首条；无此项则显示最近活动记录摘录。删除/改日期后重新派生。班级软删除后其记录保留只读，恢复班级不改变记录自己的删除状态。
 - 记录的备课/题目关联是可回看当前对象的链接，不是采用某版教材快照。首次链接保存服务器读取的标题 labelAtLink；读取派生 currentLabel/deleted，不因改题或改备课而改记录文字、版本、保存时标题。新链接要求本账户活动来源；已保留链接可以引用已删除来源。移除后再添加算新链接，不能新连已删除来源。重复 kind+id 拒绝。
-- sources 仅接 B11 已冻结的 lesson/question。classes 拥有关联表和反向查询，题库/备课只读 classes 公共操作，不读其表、不写回备课正文。反向查询默认活动记录及活动班级，按记录顺序返回；查看已删除记录走班级的删除过滤，不混入当前反馈。
+- 基础 sources 接受 lesson/question；数学作品使用 [扩展契约](teaching-time-math.md)。classes 拥有关联表和反向查询，题库/备课只读 classes 公共操作，不读其表、不写回备课正文。反向查询默认活动记录及活动班级，按记录顺序返回；查看已删除记录走班级的删除过滤，不混入当前反馈。
 - 日程可以带一个班级、一个备课和多个实际记录。链接已有记录时必须与所选班级相同；classId 为空时 recordIds 必须为空。同一次安排可以关联多条实际记录；写记录与安排关联是两个明确保存步骤，不建立跨模块分布式事务。记录先保存成功后，第二步失败只重试关联。单次实例才能关联实际记录，重复模板 recordIds 必须为空。
 - 删除来源/班级/记录不级联删除任何日程；现存链接继续可读并标已删除。修改无关字段时允许保留失效链接；新增/改指链接时重新检查活动性/归属。更换班级必须同时清除不匹配 recordIds。返回的关联状态由公共读取派生，来源读取失败使本次读取失败，不伪装为“已删除”。
 
@@ -34,7 +32,7 @@ time=null 表示未排期，repeat 与 reminder 均必须为 null，course.recor
 
 ## 账户时区与日期
 
-T52 拥有账户的 schedule-settings，timeZone 为 IANA 名称，首次读取未设置账户返回 Asia/Shanghai、version=1；初始化须幂等。浏览器 OS 时区不决定业务日期。更新设置只改变显示与新建默认时区，既有安排各自保存的排课时区和实际瞬间不变。记录 recordedOn 是日期，不因时区切换改变。
+schedule 拥有账户的 schedule-settings，timeZone 为 IANA 名称，首次读取未设置账户返回 Asia/Shanghai、version=1；初始化须幂等。浏览器 OS 时区不决定业务日期。更新设置只改变显示与新建默认时区，既有安排各自保存的排课时区和实际瞬间不变。记录 recordedOn 是日期，不因时区切换改变。
 
 日期用有效公历 YYYY-MM-DD，支持 1900-01-01 至 2100-12-31；time.startTime 是分钟精度 HH:mm（00:00 至 23:59），durationMinutes 是实际经过的 1 至 1440 分钟。跨午夜显示两个日期；结束瞬间 = 开始瞬间 + durationMinutes，不能用浏览器随意解析本地日期。时间网格可拖选，接口仍以日期/开始时刻/持续分钟表达，编辑结束时间时转换为实际分钟。
 
@@ -62,7 +60,7 @@ T52 拥有账户的 schedule-settings，timeZone 为 IANA 名称，首次读取�
 
 通知唯一键为可信账户 + entryId + originDate（单次用 null 的稳定哨兵），不是 dueAt、标题、版本或轮询时刻；一条实例一生最多生成一条通知。到期入库时保存原定 dueAt、`projectReminderTitle(entry)` 的结果、readAt=null；点击/全部已读只改 readAt，清空只设 dismissedAt，唯一痕迹仍保留。
 
-**修改前先结算**：T52 对任何安排/例外/删除/恢复/事项移动的成功变更，在同一 mutations 事务中先调用 T53 注入的 captureDue，以同一个服务端 now 结算旧安排中 `armedAt < dueAt <= now` 的提醒，再写新状态。校验失败则整个事务回滚。即使工作台没打开，已经到点的旧提醒也不会被随后调课抹掉。T52 的独立替身可验证调用顺序；T53 必须接入持久实现才具备完整行为。
+**修改前先结算**：schedule 对任何安排/例外/删除/恢复/事项移动的成功变更，在同一 mutations 事务中先调用 通知模块提供的 captureDue，以同一个服务端 now 结算旧安排中 `armedAt < dueAt <= now` 的提醒，再写新状态。校验失败则整个事务回滚。即使工作台没打开，已经到点的旧提醒也不会被随后调课抹掉。隔离替身可验证调用顺序，完整行为须接入持久通知实现。
 
 | 操作发生时点 | 通知结果 |
 | --- | --- |
@@ -72,28 +70,8 @@ T52 拥有账户的 schedule-settings，timeZone 为 IANA 名称，首次读取�
 | 清空通知、重复进入、并发查询 | dismissed 通知不再展示且不再生成；总共仍只有一条唯一记录 |
 | 关闭工作台/服务停止期间到期 | 再次查询时扫描当前有效实例至服务端 now，补写缺失通知，显示原 dueAt，不显示补写时间冒充提醒时间 |
 
-T53 仅在站内通知查询/写入及 schedule 变更时结算；浏览器工作台可见时每 30 秒查询，回到前台/登录恢复立即查询；时钟由服务端控制，后台浏览器不承担可靠计时。无需常驻任务、队列、Web Push 或通知中心模块。已到期列表按 dueAt 降序、ID 升序；点击旧通知通过当前 occurrence 解引用，不需要保留整个安排的历史版本。
+通知只在站内查询/写入及 schedule 变更时结算；浏览器工作台可见时每 30 秒查询，回到前台/登录恢复立即查询；时钟由服务端控制，后台浏览器不承担可靠计时。无需常驻任务、队列、Web Push 或通知中心模块。已到期列表按 dueAt 降序、ID 升序；点击旧通知通过当前 occurrence 解引用，不需要保留整个安排的历史版本。
 
-## 公共变更与待接边界
+## 跨模块来源
 
-B11 没有给出 lessons 的同步引用读取 Interface，也没有 classes/schedule 的目录依赖值。本包以[架构中的两个有消费者扩展](../arch/teaching-time.md#必须的共享变更)交独立核验：T53 增加 lessons.readForTeachingLink 和目录响应 v2，不重定义 B11 题目/备课内容、写入或旧 schema。T51 可先用同版替身检验读取适配，T53 汇合真实提供方。题目的 readForReference 直接复用 B11。
-
-### 静态目录 v2
-
-`GET /api/modules` 的成功响应固定采用样本 `catalog-v2`：`version=2`，条目顺序为 `questions`、`lessons`、`classes`、`schedule`，每项的完整 `id/name/path/navigation/auxiliaryPanel/requires` 以该样本为准。它替代 B11 的目录 v1 响应，其他 B11 操作和旧 v1 文件保持不变。响应仍遵守共同协议的加法兼容，不能因未来响应增加字段而拒绝读取。
-
-T53 在投影目录前对这份静态输入执行跨条目校验：ID 唯一、path 唯一、每个 `requires` 都有本批固定提供方、依赖图无环。校验失败统一返回 `422 invalid-input`，重复 ID/path 的 `field` 指向重复 descriptor 的对应 `/id` 或 `/path`，`reason=duplicate-id`；缺依赖和依赖环的 `reason=invalid-reference`，固定输入和字段见 cases 的 TT-C7。不能以 OpenAPI 的单对象形状通过替代这些静态校验。
-
-数学作品：M40 须提供账户内身份、活动/删除判断、稳定读取/回看、反向使用入口的确切契约与版本；T50/M40 对照后增加本包新版 source 类型及用例，独立冻结受影响部分。当前 schema 拒绝 work/resource/任意 JSON 扩展字段。T51 的普通行为不等它，完整作品关联 self PASS 要等 M44；不能用占位 ID 或作品名字符串替代。
-
-## 场景与操作映射
-
-| BDD / UX | 共同操作 | 归属 |
-| --- | --- | --- |
-| WB-T001、002、019 / U1、U2、U11 | classes 与 records CRUD/deletion | T51 |
-| WB-T003、004、020 / U3、U8 | record sources、source-records、课程 recordIds | T51；T53 真实汇合；作品待 M40/M44 |
-| WB-T005、008 / U4、U5 | listOccurrences、getOccurrence、设备现场 | T52；范围选择不切 AI 为前端行为 |
-| WB-T006、007 / U6 | Entry、moveItem、数组/priority | T52 |
-| WB-T009、010、011 / U7 | exceptions、settings、日期计算 | T52 |
-| WB-T012 至 016 / U9、U10 | reminder、notifications、captureDue | T52 保存/投影，T53 存储/已读/汇合 |
-| WB-T017、018 / 全部 | B11 协议、Problem、版本/账户保护 | T51/T52/T53 各自，T54 真实复验 |
+班级记录与日程读取当前题目、备课和数学作品。丰富题目的无损读取见 [教学题目关联](materials-teaching-alignment.md)，数学作品来源见 [数学关联契约](teaching-time-math.md)。来源 404 或 503 是读取失败，不能投影成已删除；只有成功读取的 tombstone 才标记删除。模块目录只注册实际接好的模块并验证依赖。

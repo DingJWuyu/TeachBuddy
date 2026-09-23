@@ -1,9 +1,0 @@
-{
-  "schemaVersion": 1,
-  "kind": "formula",
-  "latex": "\\frac{1",
-  "caption": "当参数 a 等于负一",
-  "includeCaption": true,
-  "color": "#1e293b",
-  "fontSize": 32
-}

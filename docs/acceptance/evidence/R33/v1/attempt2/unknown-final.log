@@ -1,8 +1,0 @@
-
-Running 1 test using 1 worker
-
-(node:1116625) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  1 apps/web/e2e/materials-questions-local.spec.js:286:1 › lost confirmation response replays the original request after reload without duplicating a question (909ms)
-
-  1 passed (1.4s)

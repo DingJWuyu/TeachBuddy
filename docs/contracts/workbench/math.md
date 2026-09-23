@@ -1,8 +1,6 @@
-# Math 唯一契约入口
+# 数学作品契约
 
-状态：M40/v1 `READY_FOR_REVIEW`，作者自检不等于冻结。产品行为由同提交 [故事](../../user-stories/math.md)、[UX](../../ux/math.md)、[BDD](../../acceptance/math.feature)定义；精确 HTTP、字段、联合类型、限制和样本类型只有 [math.openapi.json](math/math.openapi.json) 一份，[samples.json](math/samples.json)是具体值，[cases](math/cases.md)是交换顺序。M41-M43 必须消费外层独立回执固定的完整候选 SHA。
-
-固定输入 `0b7f8968d088b50e569af0e58dce36e36bb93b74`；材料语义取恢复候选 `77899744214f60b489b6728a680abbd2fb5b292e`，限定 independent PASS 为 `c82cd69b84c2c3b4b3730384b951bf3d914cc112:docs/acceptance/evidence/C20-MATERIALS-RECOVERY/v1/review.md`。只消费 File/Document/Location/现有 Reference/Usage 及其传递类型，不继承提取、Office 或 R30 整体 PASS。C23 固定 `bf779db4c4908cb61d25824c1859516ff39e1e0e`，消费裁决见 [math-evidence](../../arch/math-evidence.md)。
+[OpenAPI](math/math.openapi.json) 定义字段与状态码，[样本](math/samples.json)提供具体值，[用例](math/cases.md)定义交换顺序。产品行为见 [范围](../../product/scope.md)与 [数学场景](../../product/math.feature)。
 
 ## 共同协议与身份
 
@@ -54,7 +52,7 @@ source/html 的 background 固定 transparent、width 固定1600，避免无意�
 
 受控包装器把不可篡改的 CSP 放在任何作品内容之前；允许内联脚本/样式、data 图片/字体，default-src/connect-src/frame-src/object-src/worker-src/base-uri/form-action 均收紧为 none（img-src/font-src 仅 data，script-src/style-src 仅 unsafe-inline）。不允 eval、远程模块或外部资源。结构化解析后去掉 base、刷新跳转 meta、外链导航属性，仅改变运行副本；原始源不变。包装数据序列化必须防 `</script>` 提前闭合，文件名/标签也转义。
 
-sandbox 隔离读取，CSP限制资源，不是完整恶意代码沙箱或可证明的全网络封锁：任意脚本仍可能自导航、耗尽CPU，字符串扫描不能证明无依赖。主应用不能依赖 sandbox 防全部出网；本版不授予网络能力，发生意外导航立即停止预览，保留源码。即使自导航也保留 sandbox，不能读取账户Cookie、父DOM/存储或持有 PageContext；不靠网络不可达保证身份安全。M42 必须用恶意fixture验证这些读取/写入边界，M43真实禁网冷启动才证明下载物可离线。不能为让某HTML运行而放开同源/凭据或联网白名单。需要服务端/CDN/模块的HTML继续保留取回与源码编辑，显示预览受限。
+sandbox 隔离读取，CSP限制资源，不是完整恶意代码沙箱或可证明的全网络封锁：任意脚本仍可能自导航、耗尽CPU，字符串扫描不能证明无依赖。主应用不能依赖 sandbox 防全部出网；本版不授予网络能力，发生意外导航立即停止预览，保留源码。即使自导航也保留 sandbox，不能读取账户Cookie、父DOM/存储或持有 PageContext；不靠网络不可达保证身份安全。隔离边界须用恶意夹具验证，下载物的离线性须在禁网冷启动后验证。不能为让某HTML运行而放开同源/凭据或联网白名单。需要服务端/CDN/模块的HTML继续保留取回与源码编辑，显示预览受限。
 
 UTF-8且≤1 MiB的HTML支持源码编辑/运行副本；更大或无法UTF-8解码的原件可保存/下载，尝试执行/编辑返回明确受限（source-too-large 413，编码不支持422 unsupported-export），不有损改码。母页面退出或账户代次改变销毁iframe及源码视图；预览异常可停止，不能宣称任意恶意无限循环都能无卡顿回收。
 
@@ -62,7 +60,7 @@ UTF-8且≤1 MiB的HTML支持源码编辑/运行副本；更大或无法UTF-8解
 
 math provider 是业务模块提供方，非 LLM Provider。`readForReferenceV1` 返回当前活动或tombstone作品与服务器快照；新增或采用更新仍必须是当前活动版且 render!=invalid。快照保存 title、workVersion、Source、posterFileId、presentationFileId、rendererVersion，外部HTML固定该版fileId，文件一直保留。用户不得提交 snapshot。相同 referenceId/kind/workId/workVersion 保留旧快照；不允许既有引用改指对象，采用新版须显式改 workVersion。SourceState/latestVersion 只读派生，不改备课 version。
 
-本包将 lesson 的封闭 Reference 联合扩为 v3；Question/Resource分支及File/Document/Location/Usage直接外引冻结schema，不改语义。全部v3备课读写、删除、导出和使用位置在 `/api/modules/lessons/v3`，同一ID、DB、版本和幂等账本。v3在事务中同步读三个提供方，快照与备课原子提交。全课引用≤1000、环节/引用ID唯一，顺序和材料未安排规则继承材料。使用位置查询先验证本账户源（含tombstone），仅活动备课，沿旧排序；旧查询kind仍只有question/resource。
+备课的封闭 Reference 联合在 v3 扩展；Question/Resource分支及File/Document/Location/Usage直接外引冻结schema，不改语义。全部v3备课读写、删除、导出和使用位置在 `/api/modules/lessons/v3`，同一ID、DB、版本和幂等账本。v3在事务中同步读三个提供方，快照与备课原子提交。全课引用≤1000、环节/引用ID唯一，顺序和材料未安排规则继承材料。使用位置查询先验证本账户源（含tombstone），仅活动备课，沿旧排序；旧查询kind仍只有question/resource。
 
 旧v1/v2对不含math的可表示对象行为不变；遇含math的读/匹配列表返回422 invalid-input，reason=unsupported-content-version，不能漏条或去掉引用再写。旧写先重放原成功请求，再检查版本，再拒绝有损覆盖。旧路径未知请求必须留原路径确认。新版读取旧备课不增版本、不迁移旧快照。新引用/采用更新校验工作版本，math来源冲突返回新增409 `/problems/math/reference-version-conflict`，kind=math、id为workId、currentVersion为当前版本。旧question/resource冲突仍沿材料原类型，不向其封闭kind枚举偷偷加值。
 
@@ -72,9 +70,9 @@ v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公�
 
 ## 目录、公共端口与教学反馈
 
-[架构](../../arch/math.md#公共接口与唯一写者)唯一规定 Interface 和写者。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及包含教学时间的组合目标；生产只注册实际接好的模块，按 questions/lessons/math/resources/classes/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖，lessons依赖math读取，classes可以依赖math教学链接；反向反馈仅前端组合，不制造math→classes服务端环。
+[产品结构](../../development/architecture.md)唯一规定 Interface 和写者。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及包含教学时间的组合目标；生产只注册实际接好的模块，按 questions/lessons/math/resources/classes/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖，lessons依赖math读取，classes可以依赖math教学链接；反向反馈仅前端组合，不制造math→classes服务端环。
 
-T50参考仅固定 `acbf48f01b5dc15373546545af80fa2e7e79f0c3`。M40提供教学链接和kind=math的新增分支，详见[扩展交接](math/teaching-time-extension.md)；不修改其候选、不宣称联合schema已冻结或T51已接真。
+数学作品与教学记录的关系见 [教学关联契约](../teaching-time-math.md)。
 
 ## 错误与恢复
 

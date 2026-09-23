@@ -1,9 +1,0 @@
-
-Running 2 tests using 1 worker
-
-(node:1170522) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  1 apps/web/e2e/materials-questions-quality.spec.js:5:3 › T untouched native quality and editable formula persistence (1.7s)
-  ✓  2 apps/web/e2e/materials-questions-quality.spec.js:5:3 › W untouched native quality and editable formula persistence (3.8s)
-
-  2 passed (5.9s)

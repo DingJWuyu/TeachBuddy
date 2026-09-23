@@ -1,3 +1,0 @@
-result: "{\"split\":1,\"base\":\"inline\"}"
-help[1]:
-  Run `chrome-devtools-axi snapshot` to see current page state

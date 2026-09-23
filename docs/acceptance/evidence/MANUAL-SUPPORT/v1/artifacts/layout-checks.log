@@ -1,8 +1,0 @@
-
-Running 1 test using 1 worker
-
-(node:139829) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  1 apps/web/e2e/manual-support/support.spec.js:146:1 › 支持页桌面与平板布局 (3.9s)
-
-  1 passed (7.4s)

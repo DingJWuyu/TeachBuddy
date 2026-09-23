@@ -1,9 +1,0 @@
-
-Running 2 tests using 1 worker
-
-(node:1303539) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  1 apps/web/e2e/materials-questions-local5.spec.js:30:1 › LOCAL002-open-tool (3.4s)
-  ✓  2 apps/web/e2e/materials-questions-local5.spec.js:43:1 › LOCAL004-single-line-controls (1.6s)
-
-  2 passed (5.7s)
