@@ -2,7 +2,7 @@
 
 在线产品仍为 `11c7cf12b98953b44f272cebd6dfc381c523934d`，入口 `https://localhost:50880` 保持运行。本轮仅接入独立证据、环境诊断和 E2E 输入适配；产品源码、运行配置、用户数据及服务进程未变。
 
-- SUPPORT 独立报告固定输入 `c53947a446c49aa0f9b5806c0669af2214d469bc`，本分支提交 `8fb49c8cd49f202afe201bc7569e452ddc24844a`，原文保留在 [independent.md](../../MANUAL-SUPPORT/v1/independent.md)。报告对原候选 `655d4595` 作 **FAIL / independent**，唯一未通过切片是当时未修的新格式上传归档；设置、帮助、偏好、已测现场、双账户个人导出与真实备份恢复已独立通过，双轴无新增问题。后续产品修复 `b4f36312` 已在在线组合，恢复切片的独立复验仍待结论，不据此改写原报告或声明整批 PASS。
+- SUPPORT 独立报告固定输入 `c53947a446c49aa0f9b5806c0669af2214d469bc`，本分支提交 `8fb49c8cd49f202afe201bc7569e452ddc24844a`，原文保留在 [independent.md](../../MANUAL-SUPPORT/v1/independent.md)。报告对原候选 `655d4595` 作 **FAIL / independent**，唯一未通过切片是当时未修的新格式上传归档；设置、帮助、偏好、已测现场、双账户个人导出与真实备份恢复已独立通过，双轴无新增问题。在线组合中的产品修复 `b4f36312` 现有独立定向报告 `da3d4bd0552e81d93459f0109ab4d762f98fdd8e`，见 [recovery-independent.md](../../MANUAL-SUPPORT/v1/recovery-independent.md)：8 份原文件、既有归档及重启取回、无旧请求重放和 3 项上传回归均 PASS。旧报告原文保持原固定范围；当前结论不代签完整 MVP。
 - 原仓库 `apps/web/e2e/manual-support/support.spec.js` 数学预览用例已按独立验收副本补上“作品与工具 → 二次函数起点”输入。新演示仍从空画布开始，原有参数恢复、导出格式和已保存 Source 不变断言全部保留。组合现有生产构建上运行该用例 **1/1 PASS**；无需重新构建或重启服务。
 - 原邮件诊断固定输入 `f13e2aa88b6c0af6aa159f7ea03768d8f3e64450`，本分支文档提交 `5f4f6450`。用户已自行调整代理并确认验证码发送恢复。README 已按当前在线能力和这一事实更新；本轮没有修改网络、凭据或 SMTP，也没有发送邮件。
 

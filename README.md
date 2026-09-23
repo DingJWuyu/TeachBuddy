@@ -2,7 +2,7 @@
 
 统一可体验产品运行在 `/home/liam_t/项目/TeacherWorkspace-preview` 的 `preview/usable-mvp` 分支，入口为 **https://localhost:50880**。六线手动业务组合起点为 `7aceca1f95bba95e7dccbae7cf144929b1fe90ad`，备课更新对照预览修复已接入；预览服务沿用原账户、数据库、文件和配置。首次使用时点击“创建账户”，由使用者在 UI 发送邮件验证码并注册；已有认证测试库的账户不会自动进入预览库。
 
-当前预览已接入题库、资源、备课、数学、教学与数据管理的手动能力：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程安排，以及个人资料导出、误删恢复和部署备份工具。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前入口的部署检查见 [七线预览回执](docs/acceptance/evidence/MANUAL-INTEGRATION/v1/support-preview.md)。DATA 六线组合已通过[独立验收](docs/acceptance/evidence/MANUAL-DATA/v1/independent.md)。SUPPORT 偏好、帮助和设备现场已接入；其[独立报告](docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent.md)确认设置、偏好、已测现场和 DATA 接缝通过，旧候选的上传归档缺口已修复，独立定向复验仍待结论。
+当前预览已接入题库、资源、备课、数学、教学与数据管理的手动能力：录题与备课取题、讲义 DOCX/PDF 下载、资源上传预览与复用、数学作品制作与离线输出、班级教学记录、日程安排，以及个人资料导出、误删恢复和部署备份工具。既有预览证据见 [交付回执](docs/acceptance/evidence/PREVIEW-DELIVERY/v1/receipt.md) 和 [输出回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)；当前入口的部署检查见 [七线预览回执](docs/acceptance/evidence/MANUAL-INTEGRATION/v1/support-preview.md)。DATA 六线组合已通过[独立验收](docs/acceptance/evidence/MANUAL-DATA/v1/independent.md)。SUPPORT 偏好、帮助和设备现场已接入；其[独立报告](docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent.md)确认设置、偏好、已测现场和 DATA 接缝通过。旧候选的上传归档缺口已修复，8 份原文件及既有归档的[独立定向复验](docs/acceptance/evidence/MANUAL-SUPPORT/v1/recovery-independent.md)通过；这些结论不代签完整 MVP。
 
 班级教学与日程的手动操作支持分班反馈、三类资料关联、连续日期拖选、多事项排序与优先级、未排期、周重复与单次调课、自选结束前后提醒，以及重进工作台后的补提醒定位。操作范围、保存恢复和已知限制见 [班级与日程回执](docs/acceptance/evidence/MANUAL-TEACHING/v1/receipt.md)。
 
