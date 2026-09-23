@@ -1,3 +1,7 @@
+import RestoredHome from './chrome/Home.jsx';
+import RestoredSidebar, { useLayoutModel } from './chrome/Sidebar.jsx';
+import RestoredTopbar from './chrome/Topbar.jsx';
+import './chrome/chrome.css';
 import { hasRecoveredDrafts } from './storage.js';
 import { usePreferences } from './usePreferences.js';
 import { SupportHelp, SupportReleases } from './SupportPages.jsx';
@@ -73,6 +77,8 @@ function WorkbenchContent({ boot }) {
   const agent = useAgent();
   const { logout, accountKey, nickname, generation, storageFailed, reportIdentityLost, transport } = boot;
   const route = useRoute();
+  const layoutModel = useLayoutModel(accountKey);
+  const [surface, setSurface] = useState(null);
   const preferences = usePreferences(accountKey, generation);
   const [recoveryNotice, setRecoveryNotice] = useState(() => hasRecoveredDrafts(accountKey));
   useEffect(() => {
@@ -150,7 +156,7 @@ function WorkbenchContent({ boot }) {
   }
 
   let page = null;
-  if (route.name === 'home') page = <AiWorkspace variant="home" />;
+  if (route.name === 'home') page = <RestoredHome />;
   else if (route.name === 'questions' || route.name === 'question') page = <QuestionsPage route={route} />;
   else if (route.name === 'lessons' || route.name === 'lesson') page = <LessonsPage route={route} />;
   else if (route.name === 'resources' || route.name === 'resource') page = <ResourceRoute key={route.path} route={route} transport={transport} />;
@@ -178,30 +184,13 @@ function WorkbenchContent({ boot }) {
   return (
     <ShellContext.Provider value={shell}>
       <div
-        className={`wb-shell${panelOpen ? ' has-panel' : ''}${narrow ? ' is-narrow' : ''}`}
+        className={`wb-shell tb-prototype${scene.sidebarCollapsed ? ' is-sidebar-collapsed' : ''}${panelOpen ? ' has-panel' : ''}${narrow ? ' is-narrow' : ''}`}
         data-sidebar={collapsed ? 'rail' : 'expanded'}
         data-route={route.name}
         data-reading-size={preferences.baseline?.values.readingSize || 'standard'}
         data-motion={preferences.baseline?.values.motion || 'system'}
       >
-        <header className="wb-topbar">
-          <button
-            type="button"
-            className="wb-icon-button"
-            aria-label={collapsed ? '展开侧栏' : '收起侧栏'}
-            title={collapsed ? '展开侧栏' : '收起侧栏'}
-            aria-expanded={!collapsed}
-            onClick={toggleSidebar}
-          >
-            <Icon name="menu" />
-          </button>
-          <a className="wb-brand" href="/" onClick={(event) => followAnchor(event, '/')}>
-            <span className="wb-brand-mark" aria-hidden="true">T</span>
-            TeachBuddy
-          </a>
-          <div className="wb-topbar-spacer" />
-          <a className="wb-button" href="/calendar" onClick={event => followAnchor(event, '/calendar')}><Icon name="calendar" />日程</a>
-          <Notifications key={accountKey} />
+        <RestoredTopbar route={route} collapsed={collapsed} toggleSidebar={toggleSidebar} surface={surface} setSurface={setSurface}>
           <ReferenceAction route={route} onAdded={() => openPanel('ai')} />
           {hasPanel && (
             <button
@@ -214,71 +203,14 @@ function WorkbenchContent({ boot }) {
               {panelOpen ? '关闭辅助栏' : 'AI 助理'}
             </button>
           )}
-          <span className="wb-account-chip" title={nickname} aria-label={nickname}>
-            <span className="wb-avatar" aria-hidden="true">师</span>
-            <span className="wb-account-name">{nickname}</span>
-          </span>
-        </header>
+        </RestoredTopbar>
 
         <div className="wb-body">
-          <aside
-            className={`wb-sidebar${collapsed ? ' is-collapsed' : ''}`}
-            aria-label="模块导航"
-            data-region="sidebar"
-          >
-            <div className="wb-sidebar-account">
-              <span className="wb-avatar" aria-hidden="true">师</span>
-              <span className="wb-account-name" title={nickname}>{nickname}</span>
-            </div>
-            <nav className="wb-nav">
-              <NavigationRow
-                href="/"
-                icon="home"
-                label="工作台首页"
-                active={route.name === 'home'}
-                collapsed={collapsed}
-                onNavigate={() => patchScene({ drawerOpen: false })}
-              />
-              {modules.map((moduleItem) => (
-                <NavigationRow
-                  key={moduleItem.id}
-                  href={activeModuleId === moduleItem.id ? moduleItem.path : (scene.modulePaths?.[moduleItem.id]?.startsWith(moduleItem.path) ? scene.modulePaths[moduleItem.id] : moduleItem.path)}
-                  icon={moduleItem.icon}
-                  label={moduleItem.name}
-                  active={activeModuleId === moduleItem.id}
-                  collapsed={collapsed}
-                  onNavigate={() => patchScene({ drawerOpen: false })}
-                />
-              ))}
-            </nav>
-            <div className="wb-sidebar-foot">
-              <NavigationRow
-                href="/settings"
-                icon="settings"
-                label="设置"
-                active={route.name === 'settings'}
-                collapsed={collapsed}
-                onNavigate={() => patchScene({ drawerOpen: false })}
-              />
-              <NavigationRow href="/help" icon="help" label="使用帮助" active={route.name === 'help'} collapsed={collapsed} onNavigate={() => patchScene({ drawerOpen: false })} />
-              <NavigationRow href="/releases" icon="history" label="版本记录" active={route.name === 'releases'} collapsed={collapsed} onNavigate={() => patchScene({ drawerOpen: false })} />
-              {hasPanel && (
-                <button
-                  type="button"
-                  className="wb-ai-entry"
-                  onClick={() => openPanel('ai')}
-                  title={collapsed ? 'AI 助理' : undefined}
-                >
-                  <Icon name="sparkle" />
-                  <span>AI 助理</span>
-                </button>
-              )}
-            </div>
-          </aside>
-          {narrow && scene.drawerOpen && (
-            <div className="wb-drawer-scrim" onClick={() => patchScene({ drawerOpen: false })} role="presentation" />
-          )}
-
+          <RestoredSidebar modulePaths={scene.modulePaths} model={layoutModel} routePath={activeModuleId ? `/${activeModuleId}` : route.path} accountName={nickname}
+            mobileOpen={Boolean(scene.drawerOpen)} isNarrow={narrow} railCollapsed={!narrow && collapsed}
+            onNavigate={() => patchScene({ drawerOpen: false })} onCloseMobile={() => patchScene({ drawerOpen: false })}
+            openSurface={surface} onToggleSurface={value => setSurface(surface === value ? null : value)}
+            onOpenSurface={setSurface} onCloseSurface={() => setSurface(null)} />
           <div className="wb-workspace">
             <main className="wb-main" data-region="main">
               {boot.recoveryChanged && <div className="wb-storage-warning" role="status">工作台已从备份恢复。<a href="/settings" onClick={event=>followAnchor(event,'/settings')}>查看恢复前的本设备草稿</a></div>}
