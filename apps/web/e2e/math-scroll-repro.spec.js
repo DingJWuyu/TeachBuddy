@@ -12,6 +12,8 @@ test('ordinary wheel: math tools must expose dynamic steps', async ({ page, cont
   try {
     await register(page, world, 'm44-scroll@example.test');
     await page.getByRole('button', { name: '新建演示', exact: true }).first().click();
+    await page.getByRole('button', {name:'作品与工具',exact:true}).click();
+    await page.getByRole('button', {name:'二次函数起点',exact:true}).click();
     await page.getByLabel('作品名称').fill('M44 滚动可达性');
     await save(page);
     const measure = () => page.evaluate(() => ({

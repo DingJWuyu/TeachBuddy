@@ -2203,7 +2203,7 @@
             "items": {
               "$ref": "#/components/schemas/Key"
             },
-            "minItems": 1,
+            "minItems": 0,
             "maxItems": 300
           },
           "values": {
@@ -2213,6 +2213,10 @@
             },
             "minItems": 0,
             "maxItems": 20
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
           }
         },
         "required": [
@@ -2240,7 +2244,7 @@
             "items": {
               "$ref": "#/components/schemas/Parameter"
             },
-            "minItems": 1,
+            "minItems": 0,
             "maxItems": 20
           },
           "drags": {

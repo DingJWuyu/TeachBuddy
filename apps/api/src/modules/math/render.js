@@ -2,7 +2,7 @@ import { Worker } from "node:worker_threads";
 import { MathSourceError } from "../../../../../packages/shared/src/math/expression.js";
 import { mathError } from "./contract.js";
 export const rendererVersion =
-  "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated";
+  "math-v4-mathjax3.2.2-noto-sc5.2.9-dynamic-step-text";
 export async function renderSource(source, options = {}) {
   const viewport = source.scene?.viewport ?? source.viewport;
   const width = options.width ?? viewport?.width;

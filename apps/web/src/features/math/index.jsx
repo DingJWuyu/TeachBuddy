@@ -4,7 +4,8 @@ import { uploadDraft } from "./uploadDraft.js";
 import DynamicPreview from "./DynamicPreview.jsx";
 import DynamicTools from "./DynamicTools.jsx";
 import HtmlEditor from "./HtmlEditor.jsx";
-import { dynamicSource } from "./model.js";
+import { dynamicSource, emptyDynamicSource } from "./model.js";
+import { updateObjects } from "./editing.js";
 import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
 import { renderGraphic } from "../../../../../packages/shared/src/math/graphics.js";
 import {
@@ -156,7 +157,16 @@ function Fields({ value, onChange, prefix = "" }) {
                 >
                   {options.map((v) => (
                     <option key={v} value={v}>
-                      {{ solid: "实线", dashed: "虚线", dotted: "点线", none: "无", end: "终点", both: "两端" }[v]}
+                      {
+                        {
+                          solid: "实线",
+                          dashed: "虚线",
+                          dotted: "点线",
+                          none: "无",
+                          end: "终点",
+                          both: "两端",
+                        }[v]
+                      }
                     </option>
                   ))}
                 </select>
@@ -205,7 +215,9 @@ export function MathWorkbench({ transport, route } = {}) {
 }
 function AuthenticatedMath({ route }) {
   const { request, account } = useAuth();
-  return <MathSession key={account.accountKey} transport={request} route={route} />;
+  return (
+    <MathSession key={account.accountKey} transport={request} route={route} />
+  );
 }
 function MathSession({ transport, route }) {
   const shell = useContext(ShellContext);
@@ -394,12 +406,28 @@ function MathSession({ transport, route }) {
         setMessage("设备草稿空间不足，请保存到服务端");
       }
     }
-  }, [draft, pending, status, storage, loadedStorage, locked, selected, search, deleted]);
+  }, [
+    draft,
+    pending,
+    status,
+    storage,
+    loadedStorage,
+    locked,
+    selected,
+    search,
+    deleted,
+  ]);
   const routeLoaded = useRef(null);
   useEffect(() => {
-    if (!route?.workId || !storage || loadedStorage !== storage || routeLoaded.current === route.workId) return;
+    if (
+      !route?.workId ||
+      !storage ||
+      loadedStorage !== storage ||
+      routeLoaded.current === route.workId
+    )
+      return;
     routeLoaded.current = route.workId;
-    if (draft?.id !== route.workId) open({id:route.workId});
+    if (draft?.id !== route.workId) open({ id: route.workId });
   }, [route?.workId, storage, loadedStorage]);
   async function refresh() {
     const epoch = generation.current;
@@ -455,7 +483,7 @@ function MathSession({ transport, route }) {
       return;
     edit({
       title: `未命名${names[kind]}`,
-      source: kind === "dynamic" ? dynamicSource() : emptySource(kind),
+      source: kind === "dynamic" ? emptyDynamicSource() : emptySource(kind),
       originalFileId: null,
     });
     setSelected(0);
@@ -485,6 +513,10 @@ function MathSession({ transport, route }) {
   }
   async function save(copy = false) {
     if (inFlight.current) return;
+    if (!pending && Object.keys(draft.parameterEdits ?? {}).length) {
+      setMessage("请先应用参数设置，再保存作品");
+      return;
+    }
     if (pending?.kind === "deletion") return deletion();
     if (pending?.kind === "export") return exportFile();
     if (
@@ -739,20 +771,16 @@ function MathSession({ transport, route }) {
       ? draft.source.scene.elements
       : (draft?.source.points ?? []);
   function replaceObject(next) {
-    if (["plane", "dynamic"].includes(draft.source.kind))
-      source({
-        ...draft.source,
-        scene: {
-          ...draft.source.scene,
-          elements: objects.map((v, i) => (i === selected ? next : v)),
-        },
-      });
-    else
-      source({
-        ...draft.source,
-        points: objects.map((v, i) => (i === selected ? next : v)),
-      });
+    const previous = objects[selected];
+    source(
+      updateObjects(
+        draft.source,
+        objects.map((v, i) => (i === selected ? next : v)),
+        previous.id !== next.id ? { from: previous.id, to: next.id } : null,
+      ),
+    );
   }
+
   function add(type) {
     let index = 1;
     const prefix = {
@@ -765,13 +793,7 @@ function MathSession({ transport, route }) {
     }[type];
     while (objects.some((object) => object.id === `${prefix}${index}`)) index++;
     const id = `${prefix}${index}`;
-    source({
-      ...draft.source,
-      scene: {
-        ...draft.source.scene,
-        elements: [...objects, newElement(type, id)],
-      },
-    });
+    source(updateObjects(draft.source, [...objects, newElement(type, id)]));
     setSelected(objects.length);
   }
   if (locked)
@@ -787,7 +809,11 @@ function MathSession({ transport, route }) {
       <section className="math-main">
         <header>
           <strong>数学工坊</strong>
-          {shell && <button onClick={() => shell.openPanel("math-tools")}>作品与工具</button>}
+          {shell && (
+            <button onClick={() => shell.openPanel("math-tools")}>
+              作品与工具
+            </button>
+          )}
           <input
             ref={importFile}
             type="file"
@@ -836,7 +862,15 @@ function MathSession({ transport, route }) {
             </>
           )}
         </header>
-        {shell && <MathIntegration work={draft} saved={status === "已保存" && !pending} busy={busy} client={client} onError={handleError} />}
+        {shell && (
+          <MathIntegration
+            work={draft}
+            saved={status === "已保存" && !pending}
+            busy={busy}
+            client={client}
+            onError={handleError}
+          />
+        )}
         {fontError && (
           <div role="alert" className="math-message">
             {fontError}
@@ -1083,12 +1117,37 @@ function MathSession({ transport, route }) {
             ))}
           </nav>
         </details>
-        {draft?.source.kind === "dynamic" && (
-          <DynamicTools
-            source={draft.source}
-            onChange={source}
-            Fields={Fields}
-          />
+        {draft?.source.kind === "dynamic" && !readOnly && (
+          <>
+            <button
+              onClick={() => {
+                if (
+                  !draft.source.scene.elements.length ||
+                  window.confirm(
+                    "使用二次函数起点会替换当前演示内容，是否继续？",
+                  )
+                ) {
+                  edit({
+                    ...draft,
+                    source: dynamicSource(),
+                    parameterEdits: {},
+                  });
+                  setSelected(0);
+                }
+              }}
+            >
+              二次函数起点
+            </button>
+            <DynamicTools
+              source={draft.source}
+              onChange={(next, parameterEdits = draft.parameterEdits) =>
+                edit({ ...draft, source: next, parameterEdits })
+              }
+              edits={draft.parameterEdits}
+              onEdits={(parameterEdits) => edit({ ...draft, parameterEdits })}
+              Fields={Fields}
+            />
+          </>
         )}
         {draft &&
           !readOnly &&
@@ -1121,17 +1180,20 @@ function MathSession({ transport, route }) {
                     </button>
                     <button
                       onClick={() => {
+                        let pointIndex = 0;
+                        while (objects.some((o) => o.id === `P${pointIndex}`))
+                          pointIndex++;
                         source({
                           ...draft.source,
                           points: [
                             ...objects,
                             {
-                              id: `P${objects.length}`,
+                              id: `P${pointIndex}`,
                               x: 0,
                               y: 0,
                               z: 0,
                               label: {
-                                text: `P${objects.length}`,
+                                text: `P${pointIndex}`,
                                 dx: 10,
                                 dy: -10,
                               },
@@ -1184,21 +1246,12 @@ function MathSession({ transport, route }) {
                     />
                     <button
                       onClick={() => {
-                        if (["plane", "dynamic"].includes(draft.source.kind))
-                          source({
-                            ...draft.source,
-                            scene: {
-                              ...draft.source.scene,
-                              elements: objects.filter(
-                                (_, i) => i !== selected,
-                              ),
-                            },
-                          });
-                        else
-                          source({
-                            ...draft.source,
-                            points: objects.filter((_, i) => i !== selected),
-                          });
+                        source(
+                          updateObjects(
+                            draft.source,
+                            objects.filter((_, i) => i !== selected),
+                          ),
+                        );
                         setSelected(0);
                       }}
                     >

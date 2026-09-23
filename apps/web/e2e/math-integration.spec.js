@@ -123,6 +123,8 @@ test('real-auth: dynamic and exact external HTML final downloads cold start with
 
  await page.locator('.wb-sidebar').getByRole('link',{name:'数学工坊',exact:true}).click();
  await page.getByRole('button',{name:'新建演示',exact:true}).first().click();
+    await page.getByRole('button', {name:'作品与工具',exact:true}).click();
+    await page.getByRole('button', {name:'二次函数起点',exact:true}).click();
  await page.getByLabel('作品名称').fill('离线参数函数');
  await page.getByRole('button',{name:'保存',exact:true}).click();
  await expect(page.getByRole('status').first()).toContainText('已保存');

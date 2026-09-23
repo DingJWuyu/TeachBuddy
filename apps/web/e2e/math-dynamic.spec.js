@@ -23,15 +23,20 @@ test("M-D edit, step consistency, pointer/keyboard, persistence and cold isolate
       .getByRole("button", { name: "新建演示", exact: true })
       .first()
       .click();
+    await page
+      .getByRole("button", { name: "二次函数起点", exact: true })
+      .click();
     await page.getByLabel("作品名称").fill("参数函数探究");
     await page.getByLabel("parameter-0-min", { exact: true }).fill("-2");
     await page.getByLabel("parameter-0-max", { exact: true }).fill("2");
     await page.getByLabel("parameter-0-step", { exact: true }).fill("1");
+    await page.getByRole("button", { name: "应用参数 1", exact: true }).click();
     expect((await save(page)).version).toBe(1);
     await page.getByLabel("parameter-0-min", { exact: true }).fill("-3");
     await page.getByLabel("parameter-0-max", { exact: true }).fill("3");
     await page.getByLabel("parameter-0-initial", { exact: true }).fill("0.5");
     await page.getByLabel("parameter-0-step", { exact: true }).fill("0.5");
+    await page.getByRole("button", { name: "应用参数 1", exact: true }).click();
     await page.getByText("步骤", { exact: true }).click();
     await page.getByLabel("步骤 2 标题").fill("平移与定位");
     await page.getByLabel("初始步骤").selectOption("translate");
@@ -201,7 +206,11 @@ test("scientific numeric tokens remain valid beside an e3 parameter", async ({
       .getByRole("button", { name: "新建演示", exact: true })
       .first()
       .click();
+    await page
+      .getByRole("button", { name: "二次函数起点", exact: true })
+      .click();
     await page.getByLabel("parameter-0-name", { exact: true }).fill("e3");
+    await page.getByRole("button", { name: "应用参数 1", exact: true }).click();
     await page.getByText("步骤", { exact: true }).click();
     for (let i = 3; i >= 1; i--)
       await page
@@ -210,6 +219,11 @@ test("scientific numeric tokens remain valid beside an e3 parameter", async ({
     await page.getByLabel("选择对象").selectOption("0");
     await page.getByLabel("expression", { exact: true }).fill("1e3*x+e3");
     await expect(page.locator('.math-dynamic [data-object="f"]')).toBeVisible();
+    await page.getByLabel("parameter-0-name", { exact: true }).fill("b");
+    await page.getByRole("button", { name: "应用参数 1", exact: true }).click();
+    await expect(page.getByLabel("expression", { exact: true })).toHaveValue(
+      "1e3*x+b",
+    );
     const result = await save(page);
     expect(result.render.state).toBe("ready");
     passed = true;

@@ -11,7 +11,7 @@ export function mountDynamic(
 ) {
   let state = stateFor(source);
   root.innerHTML =
-    '<nav aria-label="演示步骤"></nav><div class="plot"></div><div class="controls"></div><p class="notice" role="status"></p>';
+    '<nav aria-label="演示步骤"></nav><p class="step-description"></p><div class="plot"></div><div class="controls"></div><p class="notice" role="status"></p>';
   const plot = root.querySelector(".plot"),
     controls = root.querySelector(".controls");
   const sliders = new Map();
@@ -96,6 +96,12 @@ export function mountDynamic(
     });
   function draw() {
     try {
+      const description = root.querySelector(".step-description");
+      description.textContent =
+        source.steps.find((step) => step.id === state.stepId)?.description ??
+        "";
+      description.hidden = !description.textContent;
+      description.style.whiteSpace = "pre-wrap";
       const { plane, undefinedIds } = resolve(source, state, true);
       plot.innerHTML = render(plane, { parameters: state.values }).replace(
         /(<svg[^>]*>)/,

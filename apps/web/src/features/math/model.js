@@ -165,3 +165,17 @@ export function dynamicSource() {
   }));
   return source;
 }
+
+export function emptyDynamicSource() {
+  return {
+    schemaVersion: 1,
+    kind: "dynamic",
+    scene: { viewport: defaultViewport(), elements: [] },
+    parameters: [
+      { name: "t", label: "参数 t", min: -5, max: 5, step: 0.5, initial: 0 },
+    ],
+    drags: [],
+    steps: [],
+    initialStepId: null,
+  };
+}
