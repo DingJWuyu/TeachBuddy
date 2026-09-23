@@ -1,0 +1,9 @@
+{
+  "fraction": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}",
+  "quadratic": "f(x)=x^{2}-2x-3",
+  "vertex": "f(x)=(x-1)^{2}-4",
+  "log": "\\log_{2}(x-1)\\leq1",
+  "cube": "AC_{1}",
+  "piecewise": "f(x)=\\begin{cases} ax+1 & x<0 \\\\ x^{2}-1 & x\\geq0 \\end{cases}",
+  "standalone": "y=\\sqrt{x^{2}+1}"
+}

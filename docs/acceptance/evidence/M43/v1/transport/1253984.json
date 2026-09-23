@@ -1,0 +1,78 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1253984,
+  "argv": [
+    "/home/liam_t/.local/share/pi-node/node-v22.23.2-linux-x64/bin/node",
+    "/tmp/m43-suite/apps/api/test/teaching-time-schedule-migrations.test.js"
+  ],
+  "cwd": "/tmp/m43-suite/apps/api",
+  "events": [
+    {
+      "ms": 864.757105,
+      "event": "server:listen",
+      "server": 1,
+      "port": 0
+    },
+    {
+      "ms": 870.249681,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 33465
+      }
+    },
+    {
+      "ms": 874.836566,
+      "event": "server:socket",
+      "socket": 2,
+      "localPort": 33465,
+      "remotePort": 38560,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 876.760377,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/modules/questions/items",
+      "socket": 2,
+      "localPort": 33465,
+      "remotePort": 38560,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 886.466485,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 2,
+      "localPort": 33465,
+      "remotePort": 38560,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 887.03621,
+      "event": "server:close",
+      "socket": 2,
+      "remotePort": 38560,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 888.655368,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 888.808111,
+      "event": "server:close",
+      "server": 1
+    }
+  ]
+}

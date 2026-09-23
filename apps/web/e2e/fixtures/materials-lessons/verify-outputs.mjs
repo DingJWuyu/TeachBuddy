@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import JSZip from "jszip";
 import assert from "node:assert/strict";
 import { start } from "./server.mjs";
-const dir = path.resolve("test-results/evidence/R34/v1/outputs");
+const dir = path.resolve("docs/acceptance/evidence/R34/v1/outputs");
 if (fs.existsSync(dir)) {
   const previous = path.resolve(
     "test-results/r34",

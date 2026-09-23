@@ -1,6 +1,6 @@
 // T51 data-side integration coverage for classes, records and material links
 // over the frozen workbench seam. Cases map to TT-C1/C5 and WB-T001, WB-T002,
-// WB-T003, WB-T017, WB-T018, WB-T019 in docs/product/teaching-time.feature.
+// WB-T003, WB-T017, WB-T018, WB-T019 in docs/acceptance/teaching-time.feature.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {

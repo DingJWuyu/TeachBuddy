@@ -1,0 +1,284 @@
+{
+  "node": "v22.23.2",
+  "undici": "6.28.0",
+  "pid": 1281209,
+  "argv": [
+    "/home/liam_t/.local/share/pi-node/node-v22.23.2-linux-x64/bin/node",
+    "/tmp/m43-suite/apps/api/test/auth-contract-migration.test.js"
+  ],
+  "cwd": "/tmp/m43-suite/apps/api",
+  "events": [
+    {
+      "ms": 197.12287,
+      "event": "server:listen",
+      "server": 1,
+      "port": 0,
+      "host": "127.0.0.1"
+    },
+    {
+      "ms": 204.18999,
+      "event": "server:listening",
+      "server": 1,
+      "address": {
+        "address": "127.0.0.1",
+        "family": "IPv4",
+        "port": 46063
+      }
+    },
+    {
+      "ms": 220.215767,
+      "event": "server:socket",
+      "socket": 2,
+      "localPort": 46063,
+      "remotePort": 54484,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 221.387519,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/auth/session",
+      "socket": 2,
+      "localPort": 46063,
+      "remotePort": 54484,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 228.47658,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 2,
+      "localPort": 46063,
+      "remotePort": 54484,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 230.027995,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/auth/registration-codes",
+      "socket": 2,
+      "localPort": 46063,
+      "remotePort": 54484,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 231.497692,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 2,
+      "localPort": 46063,
+      "remotePort": 54484,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 232.033798,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/auth/register",
+      "socket": 2,
+      "localPort": 46063,
+      "remotePort": 54484,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 340.027016,
+      "event": "server:response",
+      "server": 1,
+      "status": 201,
+      "socket": 2,
+      "localPort": 46063,
+      "remotePort": 54484,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 343.026097,
+      "event": "server:request",
+      "server": 1,
+      "method": "POST",
+      "path": "/api/auth/session",
+      "socket": 2,
+      "localPort": 46063,
+      "remotePort": 54484,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 344.406551,
+      "event": "server:response",
+      "server": 1,
+      "status": 200,
+      "socket": 2,
+      "localPort": 46063,
+      "remotePort": 54484,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 344.883709,
+      "event": "server:close-called",
+      "server": 1
+    },
+    {
+      "ms": 345.305723,
+      "event": "server:close",
+      "server": 1
+    },
+    {
+      "ms": 816.783346,
+      "event": "server:listen",
+      "server": 3,
+      "port": 0,
+      "host": "127.0.0.1"
+    },
+    {
+      "ms": 817.889644,
+      "event": "server:listening",
+      "server": 3,
+      "address": {
+        "address": "127.0.0.1",
+        "family": "IPv4",
+        "port": 34307
+      }
+    },
+    {
+      "ms": 820.496275,
+      "event": "server:close",
+      "socket": 2,
+      "remotePort": 54484,
+      "destroyed": true,
+      "readableEnded": false
+    },
+    {
+      "ms": 820.807251,
+      "event": "server:socket",
+      "socket": 4,
+      "localPort": 34307,
+      "remotePort": 44688,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 821.166573,
+      "event": "server:request",
+      "server": 3,
+      "method": "POST",
+      "path": "/api/auth/session",
+      "socket": 4,
+      "localPort": 34307,
+      "remotePort": 44688,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 822.226528,
+      "event": "server:response",
+      "server": 3,
+      "status": 200,
+      "socket": 4,
+      "localPort": 34307,
+      "remotePort": 44688,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 822.948405,
+      "event": "server:request",
+      "server": 3,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "socket": 4,
+      "localPort": 34307,
+      "remotePort": 44688,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 960.842225,
+      "event": "server:response",
+      "server": 3,
+      "status": 200,
+      "socket": 4,
+      "localPort": 34307,
+      "remotePort": 44688,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 962.26428,
+      "event": "server:request",
+      "server": 3,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "socket": 4,
+      "localPort": 34307,
+      "remotePort": 44688,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1072.214849,
+      "event": "server:response",
+      "server": 3,
+      "status": 200,
+      "socket": 4,
+      "localPort": 34307,
+      "remotePort": 44688,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1073.530875,
+      "event": "server:request",
+      "server": 3,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "socket": 4,
+      "localPort": 34307,
+      "remotePort": 44688,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1115.092871,
+      "event": "server:response",
+      "server": 3,
+      "status": 503,
+      "socket": 4,
+      "localPort": 34307,
+      "remotePort": 44688,
+      "destroyed": false,
+      "readableEnded": false
+    },
+    {
+      "ms": 1115.886085,
+      "event": "server:close-called",
+      "server": 3
+    },
+    {
+      "ms": 1116.017689,
+      "event": "server:close",
+      "server": 3
+    },
+    {
+      "ms": 1163.130564,
+      "event": "server:close",
+      "socket": 4,
+      "remotePort": 44688,
+      "destroyed": true,
+      "readableEnded": false
+    }
+  ]
+}

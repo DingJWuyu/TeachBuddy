@@ -1,6 +1,6 @@
-# 首条流程交换用例
+# First-flow 交换与样本
 
-字段和样本值见 [OpenAPI](first-flow.openapi.yaml)，语义见 [工作台契约](../workbench.md)。前端替身与后端 HTTP 集成从 `components.examples` 取样本并按下表验证。测试身份仅用于隔离测试，不证明真实认证。
+本页消费工作台 `0.1.0-candidate.2` 与认证 `1.0.0-rc.2`，为设计用例，不是运行通过证据。字段和样本值唯一在 [OpenAPI](first-flow.openapi.yaml)；[消费版本](../workbench.md#消费版本与验收范围)区分旧测试身份首流与当前认证接续。前端替身与后端 HTTP 集成都从 `components.examples` 取样本并按下表序列验证，不各造一套模型。
 
 ## 可复现起点
 

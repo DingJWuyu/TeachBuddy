@@ -1,22 +1,49 @@
-# 仓库协作规则
+# AGENTS.md
 
-用中文沟通。文档只描述当前事实和未来条件；写供 Agent 使用的文档时先读 `/home/liam_t/.agents/skills/writing-for-agents/SKILL.md`。使用普通连字符，不使用 em dash。生成提交信息时不添加 Agent 共同作者。`CHANGELOG.md` 和标记为自动生成的文件由其生成流程维护。
+## 项目入口
 
-## 工作入口
+- 核对实际能力或运行状态时读 `README.md`；`prototype/` 是交互参考，`apps/` 才是真实产品实现位置，旧演示 API 不约束新契约。
+- 编排 MVP 时从 `docs/plans/mvp-dag.md` 进入调度视图；了解总体进度时可从 `docs/ROADMAP.md` 导航。
+- 当前编排状态和下一步读取 `docs/plans/run-state.md`；它只维护执行台账，不替代 DAG 的依赖与授权视图。
+- 仅编排者：效率优先，在依赖与权限允许时并行使用 worktree；某条 flow 等用户时继续其他可推进的 flow。派发 prompt 保持最小必要，模型路由和具体规则见 `docs/plans/execution-protocol.md#orchestration`，任务包见 `docs/plans/task-package.md`。
+- 需要选择或解释 skill 流程时读取 `docs/plans/skill-routing.md`；任务包点名 skill 时，完整读取其 `SKILL.md` 及直接引用。业务 session 之间不互聊、不扩 DAG；skill 明确要求的有界内部 subagent 由调用 session 管理并聚合，只是该规则的有限例外，不单列 DAG 节点。
+- 接到设计、实现或独立验收任务时，从本次任务包的必读清单进入对应节点、规格和 `docs/plans/execution-protocol.md` 的本角色章节；按触发条件补读，不要求通读 DAG 或其他模块。
+- 设计或核查范围时读取 `docs/PRODUCT_SCOPE.md` 的相关段落；页面和跨模块行为读取 `docs/WORKBENCH_DESIGN.md` 的相关段落。范围不能由旧代码或原型反推。
+- 登录注册由独立 session 负责；涉及身份交接或退出时读取 `docs/contracts/auth.md`，核对其源版本与未完成项，不把讨论中的契约当成已实现能力。
 
-- 实际产品在 `apps/`；`prototype/` 仅供交互参考。核对能力先看代码与 [README](README.md)，不可从原型或旧回执推定现状。
-- 设计或核对功能范围时读 [产品范围](docs/product/scope.md)的相关模块；设计页面或跨模块行为时读 [工作台设计](docs/product/workbench.md)的相关段落。
-- 开发或验收前读 [当前状态](docs/plans/status.md)的相关事项。当前唯一开发目录是本仓库的 `preview/usable-mvp`；产品 Agent 和全站外壳改造暂停。现有界面和账户、文件、配置、服务应保留；恢复暂停线路或改变目标环境优先级需要用户新指令。
-- 涉及接口、数据或身份交接时读 [契约目录](docs/contracts/README.md)与对应契约。schema 是运行输入；契约要求不能直接写成已实现能力。
-- UI 工作读 [设计与验证规则](docs/development/ui-quality.md)。从真实页面和用户操作验证布局、动效及保存结果，保持现有外壳和已确认的界面风格。
-- 修改项目术语或重大稳定决策时读 [CONTEXT](CONTEXT.md)和适用 [ADR](docs/adr/)。
+## Rules
 
-## 实施与验证
+**Git:**
 
-- 优先服务一位教师的真实流程和长期可维护性。用简单、内聚的实现；不要为高并发或假设性场景增设机制。
-- 技术取舍优先考虑质量、简洁、鲁棒性和可维护性，开发成本不是主要权重。一次性运维工作先走最直接的端到端路径；只有遇到具体阻碍或重复需求才增加自动化。使用会立即派出大量子 Agent 的动态工作流前，先说明代价并取得用户明确同意。
-- 修复缺陷先从接近用户操作的端到端路径复现，再定位原因。看到明显 UI 问题、lint/test 失败或不稳定测试时一并处理。UI 不写单元测试；其他单元测试只在确有必要时写。按改动范围做有意义的验证，细则见 [验证指南](docs/development/verification.md)。
-- 本轮已授权的开发在 `preview/usable-mvp` 上进行。将来创建开发分支时从 `main` 建短期分支；合并到 `main` 须用户许可。提交遵循 Conventional Commits。用户要求 PR 时标题也遵循该格式，并按模板或 Summary、Why、What changed、Testing 写正文，关联相关 issue。
-- 保护未提交的用户工作、数据和运行配置。完成后清理无用临时文件；未完成的现场保留以便接续。等待其他 session 的主动消息，不循环轮询。
-- 用户消息以问号结尾时先回答问题，只有收到明确的执行指令才开始新任务。
-- 涉及 GitHub issue 时使用仓库 `DingJWuyu/TeacherWorkspace`；triage 标签为 `needs-triage`、`needs-info`、`ready-for-agent`、`ready-for-human`、`wontfix`。创建或关闭 issue 按用户具体指令。
+- Branch：一条 main 主干；开发时必须从 main 创建短生命周期 branch → 持续合回 main，不允许在 main 上直接开发，必须经过用户准许才合并进 main；branch 命名优先使用常见前缀，但不严格限制。正式版本通过 `Release PR` 汇总后再打 Tag / 发布。
+- Commit：遵循 Conventional Commits。
+- Pull Request：如果用户让你生成 PR，Title 遵循 Conventional Commits；如有 PR Template，则务必遵循，否则默认为 Summarize-Why-What changed-Testing 四段式；如有关联 issue，则在 Body 中关联。
+
+**Others:**
+
+- 进行重要产品或部署变更时，保持 `README.md` 与项目当前面向公众的状态一致。
+- 原型设计、UI/UX 开发规则：美学基线、间距与动效要求、参考来源边界、验证陷阱。参见 `docs/rules/design-and-verification.md`。
+- 禁止给 UI 写单元测试，尽可能不写任何单元测试，只有必须时才写单元测试
+- 等待另一个 subagent / session 返回的消息时，禁止不断轮询，必须停下来，等待对方主动发消息。
+- 禁止 overengineering，本项目的用户只会有一个人，禁止不断增加复杂度，完全不需要考虑高性能高并发高可用。
+- 设计系统架构、契约、技术方案等技术设计时，牢记第一性原理、奥卡姆剃刀、消融实验、批判性思维、独立思考、发现未知的未知、高内聚低耦合。
+- 实现代码时，牢记第一性原理、奥卡姆剃刀、消融实验、高内聚低耦合。
+- 编写文档时，禁止写 changelog/repair 式的无用历史信息，文档只保存当下，不承载历史，必须遵循 write-for-agents skill。
+
+## Agent skills
+
+### 开发模型路由
+
+派发任务或恢复执行时，按 [MVP 执行协议的模型映射](docs/plans/execution-protocol.md#模型与固定派发)选择 Codex CLI 模型与 effort，并记录到任务包和回执。开发任务停用 dsh，不设自动降级；skill 内部助手继承调用 session。产品内的 pi runtime 与产品模型白名单另行约束。
+
+### Issue tracker
+
+问题和规格记录在 GitHub 仓库 `DingJWuyu/TeacherWorkspace` 的 Issues 中。参见 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+使用默认的五个 triage 标签：`needs-triage`、`needs-info`、`ready-for-agent`、`ready-for-human`、`wontfix`。参见 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+使用 single-context 布局：根目录 `CONTEXT.md` 和 `docs/adr/`。参见 `docs/agents/domain.md`。

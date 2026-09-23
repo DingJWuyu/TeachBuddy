@@ -7,7 +7,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import Database from 'better-sqlite3';
 import request from 'supertest';
 import {createApp} from '../src/app.js';
-const evidence=new URL('../../../test-results/evidence/M43/v1/',import.meta.url);
+const evidence=new URL('../../../docs/acceptance/evidence/M43/v1/',import.meta.url);
 fs.mkdirSync(evidence,{recursive:true});
 const digest=value=>createHash('sha256').update(value).digest('hex');
 function businessState(file){

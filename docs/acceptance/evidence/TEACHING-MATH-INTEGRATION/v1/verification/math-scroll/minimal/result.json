@@ -1,0 +1,147 @@
+{
+  "origin": "https://127.0.0.1:46779",
+  "directory": "/home/liam_t/tmitmpMuTu/a11-s5Y25F",
+  "before": {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "regions": [
+      {
+        "className": "wb-aux",
+        "clientHeight": 844,
+        "scrollHeight": 844,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1140,
+          "y": 56,
+          "width": 300,
+          "height": 844,
+          "top": 56,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1140
+        }
+      },
+      {
+        "className": "wb-aux-body",
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1141,
+          "y": 100,
+          "width": 299,
+          "height": 800,
+          "top": 100,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1141
+        }
+      },
+      {
+        "className": "math-tools-panel",
+        "clientHeight": 800,
+        "scrollHeight": 2725,
+        "scrollTop": 0,
+        "overflowY": "auto",
+        "rect": {
+          "x": 1141,
+          "y": 100,
+          "width": 299,
+          "height": 800,
+          "top": 100,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1141
+        }
+      }
+    ],
+    "steps": [
+      {
+        "x": 1151,
+        "y": 1657.71875,
+        "width": 279,
+        "height": 23.09375,
+        "top": 1657.71875,
+        "right": 1430,
+        "bottom": 1680.8125,
+        "left": 1151
+      }
+    ]
+  },
+  "after": {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "regions": [
+      {
+        "className": "wb-aux",
+        "clientHeight": 844,
+        "scrollHeight": 844,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1140,
+          "y": 56,
+          "width": 300,
+          "height": 844,
+          "top": 56,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1140
+        }
+      },
+      {
+        "className": "wb-aux-body",
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "scrollTop": 0,
+        "overflowY": "visible",
+        "rect": {
+          "x": 1141,
+          "y": 100,
+          "width": 299,
+          "height": 800,
+          "top": 100,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1141
+        }
+      },
+      {
+        "className": "math-tools-panel",
+        "clientHeight": 800,
+        "scrollHeight": 2725,
+        "scrollTop": 1925,
+        "overflowY": "auto",
+        "rect": {
+          "x": 1141,
+          "y": 100,
+          "width": 299,
+          "height": 800,
+          "top": 100,
+          "right": 1440,
+          "bottom": 900,
+          "left": 1141
+        }
+      }
+    ],
+    "steps": [
+      {
+        "x": 1151,
+        "y": -267.28125,
+        "width": 279,
+        "height": 23.09375,
+        "top": -267.28125,
+        "right": 1430,
+        "bottom": -244.1875,
+        "left": 1151
+      }
+    ]
+  },
+  "clickError": null
+}

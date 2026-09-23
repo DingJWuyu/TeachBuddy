@@ -1,6 +1,8 @@
-# 产品 Agent 契约
+# 早期 Agent 契约语义
 
-[OpenAPI](agent.openapi.json) 定义接口与错误，[样本](agent-examples.json)给出交换值。本文记录跨请求语义。产品 Agent 后续开发暂停，已有接口仍需保持兼容；实现与验证状态见 [当前状态](../plans/status.md)。
+状态：C25/v1 `READY_FOR_REVIEW/self`。精确 HTTP、请求/响应、工具参数和错误对照唯一归 [agent.openapi.json](agent.openapi.json)，有效交换样本见 [agent-examples.json](agent-examples.json)。本页定义请求之间的不变量，不是另一份字段 schema。
+
+输入版本、实验裁决与下游条件见[架构](../arch/agent.md)。已有业务字段继续引用工作台 `0.1.0-candidate.2`，业务语义源为 B11 `9aee091a34ba2eb311b51299d9beed78a032d026`；真实认证源为 `6f3003250d170b44e89f6ac9b0a74f91d658a357`、冻结 `63bfe8f7900b4a2bb7fc9ab5a4145f1c89a6f73b`。Agent 只新增 `/api/agent`，不改 15 个旧工作台操作、认证操作、Cookie 或页面上下文语义。
 
 ## 身份与接受顺序
 
@@ -79,6 +81,6 @@ reconcile 是受当前身份保护的零模型操作：读取原 operation 及�
 
 业务 adapter 的 `details` 必须是 ToolOutcome；content 是该 outcome 的可读 JSON。返回对象顶层 `isError` 不作为信号源。在 SDK `afterToolCall`（或产品固定的等价扩展 tool_result hook）按 details.state 设置外层 isError：read/confirmed=false，rejected/unconfirmed/failed/cancelled/interrupted=true；保留结构化 details。未知异常由统一映射区分是否已有执行中的 operation：只读保存 failed/tool-failed，已持久 executing 的写入保存 unconfirmed；尚未开始的写入取消，并按存储/身份等实际失败来源结束 turn；未开始调用的取消和只读中断补同名 ToolOutcome。所有这些结果在下一次请求前补入原生 toolResult；不得用成功空对象吞错。持久 toolResult、外层 tool_execution_end 和产品工具卡三者需同义。实验中嵌套 true、外层 false 的旧日志只是历史，产品不会复制该误映射。
 
-所有 provider 密钥只从服务端既有部署配置读取，不进入前端配置或聊天。当前可消费的接线是 command-code/openai-completions、配置的 base URL；不声称已验证直连厂商。配置缺失时业务及聊天历史仍可用，模型发送 503。单 turn 最多 12 次 provider 请求、24 次工具调用、180 秒；达到任一限制停止后续动作，保留完成部分并标记 run-limit。该限制是调用上界，不是费用上限，不自动重置预算继续执行。
+所有 provider 密钥只从服务端既有部署配置读取，不进入前端配置或聊天。当前可消费的接线是 command-code/openai-completions、C24 固定 base URL；不声称已验证直连厂商。配置缺失时业务及聊天历史仍可用，模型发送 503。单 turn 最多 12 次 provider 请求、24 次工具调用、180 秒；达到任一限制停止后续动作，保留完成部分并标记 run-limit。该限制是调用上界，不是费用上限，不自动重置预算继续执行。
 
 每次 provider 请求开始即持久记录 request ordinal；按该 ordinal 只记一次已报告 usage。聚合字段为已报告值之和，无任何报告时为 null；complete 仅当所有已发请求都取得完整 usage。token 字段采用原返回语义，reasoning 是细分，不重复加到 totalTokens。流中断、授权失败、网络失败可能已收费但没有 usage，必须标为不完整。当前实际账单/余额未知，配置返回 null，模型元数据 cost=0 不参与费用计算。provider 额度/额外收费授权拒绝立即停止后续请求，无自动充值、换模型或付费重试。

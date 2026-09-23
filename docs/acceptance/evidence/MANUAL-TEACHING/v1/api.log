@@ -1,0 +1,109 @@
+TAP version 13
+# Subtest: real composition exposes scheduled notifications with no implicit reminder
+ok 1 - real composition exposes scheduled notifications with no implicit reminder
+  ---
+  duration_ms: 261.436473
+  type: 'test'
+  ...
+# Subtest: WB-T012/014: before, after, original due time and stable identities survive repeated restarts
+ok 2 - WB-T012/014: before, after, original due time and stable identities survive repeated restarts
+  ---
+  duration_ms: 100.020431
+  type: 'test'
+  ...
+# Subtest: WB-T013: changing before due recalculates; changing after due captures old title and original time atomically
+ok 3 - WB-T013: changing before due recalculates; changing after due captures old title and original time atomically
+  ---
+  duration_ms: 63.411367
+  type: 'test'
+  ...
+# Subtest: WB-T015/017/018: reads, dismissal snapshots, atomic foreign-ID rejection, replay and isolation
+ok 4 - WB-T015/017/018: reads, dismissal snapshots, atomic foreign-ID rejection, replay and isolation
+  ---
+  duration_ms: 88.109551
+  type: 'test'
+  ...
+# Subtest: WB-T013/018: real SQLite failure rolls back pre-change notification capture and the schedule write
+ok 5 - WB-T013/018: real SQLite failure rolls back pre-change notification capture and the schedule write
+  ---
+  duration_ms: 51.014749
+  type: 'test'
+  ...
+# Subtest: WB-T012: Unicode fallback title matches the public candidate projection without truncating saved input
+ok 6 - WB-T012: Unicode fallback title matches the public candidate projection without truncating saved input
+  ---
+  duration_ms: 52.336192
+  type: 'test'
+  ...
+# Subtest: WB-T010/016: moved weekly instances, cancellation recovery, deletion and outside-series targets
+ok 7 - WB-T010/016: moved weekly instances, cancellation recovery, deletion and outside-series targets
+  ---
+  duration_ms: 53.812157
+  type: 'test'
+  ...
+# Subtest: TT-C7: production catalog matches combined v3 with the frozen teaching question overlay and rejects all four invalid static inputs
+ok 8 - TT-C7: production catalog matches combined v3 with the frozen teaching question overlay and rejects all four invalid static inputs
+  ---
+  duration_ms: 55.556482
+  type: 'test'
+  ...
+# Subtest: WB-T016: cancelling before due and restoring after due is quiet; deleting after due captures the old notification
+ok 9 - WB-T016: cancelling before due and restoring after due is quiet; deleting after due captures the old notification
+  ---
+  duration_ms: 62.441673
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, lessons
+# [workbench] migrations applied 7, skipped 0
+# [workbench] modules enabled: questions, resources, lessons
+# Subtest: TT-C5: notification actions reject malformed, unknown and duplicate input before writing
+ok 10 - TT-C5: notification actions reject malformed, unknown and duplicate input before writing
+  ---
+  duration_ms: 58.025833
+  type: 'test'
+  ...
+# Subtest: B16 database upgrades into the real four-module composition without losing linked sources
+ok 11 - B16 database upgrades into the real four-module composition without losing linked sources
+  ---
+  duration_ms: 84.642255
+  type: 'test'
+  ...
+# Subtest: moving an item to a new unscheduled entry is one atomic result and replay-safe
+ok 12 - moving an item to a new unscheduled entry is one atomic result and replay-safe
+  ---
+  duration_ms: 144.125953
+  type: 'test'
+  ...
+# Subtest: moving into an existing entry inserts at the index and rolls back entirely on conflict
+ok 13 - moving into an existing entry inserts at the index and rolls back entirely on conflict
+  ---
+  duration_ms: 63.639532
+  type: 'test'
+  ...
+# Subtest: invalid move shapes and repeating participants are rejected without a partial write
+ok 14 - invalid move shapes and repeating participants are rejected without a partial write
+  ---
+  duration_ms: 61.541525
+  type: 'test'
+  ...
+# Subtest: an emptied untitled source is soft-deleted while a titled source stays
+ok 15 - an emptied untitled source is soft-deleted while a titled source stays
+  ---
+  duration_ms: 64.08053
+  type: 'test'
+  ...
+# Subtest: deleted source or target rejects the move before any change
+ok 16 - deleted source or target rejects the move before any change
+  ---
+  duration_ms: 59.612859
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2717.887518

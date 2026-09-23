@@ -1,0 +1,189 @@
+{
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "result": "FAIL",
+  "expected": "完整页图在预览内可读",
+  "image": {
+    "top": 479.171875,
+    "bottom": 735.859375,
+    "height": 256.6875
+  },
+  "outer": {
+    "top": 359.734375,
+    "bottom": 540.25,
+    "height": 180.515625
+  },
+  "visibleFraction": 0.2379474068663258,
+  "ancestors1440": [
+    {
+      "tag": "DIV",
+      "cls": "r34-preview-scroll",
+      "overflow": "auto",
+      "transform": "none",
+      "rect": {
+        "x": 476,
+        "y": 463.171875,
+        "width": 488,
+        "height": 288.6875
+      }
+    },
+    {
+      "tag": "SECTION",
+      "cls": "wb-dialog r34-preview",
+      "overflow": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "rect": {
+        "x": 460,
+        "y": 359.734375,
+        "width": 520,
+        "height": 810
+      }
+    },
+    {
+      "tag": "DIV",
+      "cls": "wb-dialog-host",
+      "overflow": "visible",
+      "transform": "none",
+      "rect": {
+        "x": 280,
+        "y": 359.734375,
+        "width": 880,
+        "height": 180.515625
+      }
+    },
+    {
+      "tag": "DIV",
+      "cls": "wb-dialog wb-compare-dialog",
+      "overflow": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "rect": {
+        "x": 280,
+        "y": 359.734375,
+        "width": 880,
+        "height": 180.515625
+      }
+    },
+    {
+      "tag": "DIV",
+      "cls": "wb-dialog-host",
+      "overflow": "visible",
+      "transform": "none",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "tag": "ARTICLE",
+      "cls": "wb-reference",
+      "overflow": "visible",
+      "transform": "none",
+      "rect": {
+        "x": 280,
+        "y": 734.03125,
+        "width": 812,
+        "height": 187.1875
+      }
+    },
+    {
+      "tag": "DIV",
+      "cls": "wb-references",
+      "overflow": "visible",
+      "transform": "none",
+      "rect": {
+        "x": 280,
+        "y": 293.84375,
+        "width": 812,
+        "height": 627.375
+      }
+    },
+    {
+      "tag": "SECTION",
+      "cls": "wb-section",
+      "overflow": "visible",
+      "transform": "none",
+      "rect": {
+        "x": 268,
+        "y": 200.40625,
+        "width": 836,
+        "height": 730.8125
+      }
+    },
+    {
+      "tag": "DIV",
+      "cls": "wb-lesson-scroll",
+      "overflow": "auto",
+      "transform": "none",
+      "rect": {
+        "x": 256,
+        "y": 140.234375,
+        "width": 860,
+        "height": 759.765625
+      }
+    },
+    {
+      "tag": "DIV",
+      "cls": "wb-page wb-lesson",
+      "overflow": "hidden",
+      "transform": "none",
+      "rect": {
+        "x": 256,
+        "y": 56,
+        "width": 860,
+        "height": 844
+      }
+    },
+    {
+      "tag": "MAIN",
+      "cls": "wb-main",
+      "overflow": "visible",
+      "transform": "none",
+      "rect": {
+        "x": 256,
+        "y": 56,
+        "width": 860,
+        "height": 844
+      }
+    },
+    {
+      "tag": "DIV",
+      "cls": "wb-workspace",
+      "overflow": "visible",
+      "transform": "none",
+      "rect": {
+        "x": 256,
+        "y": 56,
+        "width": 1184,
+        "height": 844
+      }
+    },
+    {
+      "tag": "DIV",
+      "cls": "wb-body",
+      "overflow": "visible",
+      "transform": "none",
+      "rect": {
+        "x": 0,
+        "y": 56,
+        "width": 1440,
+        "height": 844
+      }
+    },
+    {
+      "tag": "DIV",
+      "cls": "wb-shell has-panel",
+      "overflow": "visible",
+      "transform": "none",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900
+      }
+    }
+  ]
+}

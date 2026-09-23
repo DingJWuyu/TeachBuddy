@@ -1,0 +1,34 @@
+{
+  "main": "da5df67f056eb34b4d97b473f5447e032e9fcceb",
+  "product": "267cf5119e05e6caba8f2db58ece3487dc6c3e9d",
+  "consumption": "a968e74611f4a11575d742aabad88888ab2c7ba9",
+  "finalProduct": "c2cdd9d12428dadb6ac405ff5b8081d15b51f0d6",
+  "controls": {
+    "AGENTS.md": true,
+    "README.md": true,
+    "CONTEXT.md": true,
+    "docs/plans/execution-protocol.md": true,
+    "docs/plans/mvp-dag.md": true,
+    "docs/plans/run-state.md": true
+  },
+  "consumedProductDiff": "",
+  "changedFiles": [
+    "apps/api/src/modules/lessons/materials.js",
+    "apps/api/src/modules/questions/materials-service.js",
+    "apps/api/test/materials-protection.test.js",
+    "apps/api/test/materials-questions.test.js",
+    "apps/web/src/features/lessons/LessonDetail.jsx",
+    "apps/web/src/features/lessons/LessonPanels.jsx",
+    "apps/web/src/features/lessons/ReferenceCard.jsx",
+    "apps/web/src/features/lessons/materials.css",
+    "apps/web/src/features/questions/MaterialsQuestionsPage.jsx",
+    "apps/web/src/features/workbench/SaveStatus.jsx",
+    "docs/plans/execution-protocol.md",
+    "docs/plans/mvp-dag.md",
+    "docs/plans/run-state.md",
+    "packages/shared/src/index.js",
+    "packages/shared/src/materials/content.js"
+  ],
+  "productModelRequests": 0,
+  "productModelKeyReads": 0
+}

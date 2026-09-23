@@ -9,7 +9,7 @@
  *
  *   node scripts/first-flow/check.mjs
  *
- * Evidence lands in `test-results/evidence/B12/v1/`; a later node that
+ * Evidence lands in `docs/acceptance/evidence/B12/v1/`; a later node that
  * re-runs these public checks on an integrated candidate sets
  * FIRST_FLOW_EVIDENCE_DIR instead, so B12's own evidence stays untouched. Raw
  * isolated state stays under test-results/first-flow/check/. Exit code 0 only

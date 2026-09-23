@@ -1,0 +1,71 @@
+PASS RUI-02 1680 title.x: 831.59375 / 831.59375
+PASS RUI-02 1680 title.y: 316.53125 / 316.53125
+PASS RUI-02 1680 title.w: 268.8125 / 268.8125
+PASS RUI-02 1680 title.h: 42 / 42
+PASS RUI-02 1680 title.size: 28px / 28px
+PASS RUI-02 1680 composer.x: 626 / 626
+PASS RUI-02 1680 composer.y: 445.21875 / 445.21875
+PASS RUI-02 1680 composer.w: 680 / 680
+PASS RUI-02 1680 composer.h: 136 / 136
+PASS RUI-02 1680 composer.size: 13px / 13px
+PASS RUI-02 1680 send.x: 1263 / 1263
+PASS RUI-02 1680 send.y: 541.21875 / 541.21875
+PASS RUI-02 1680 send.w: 29 / 29
+PASS RUI-02 1680 send.h: 29 / 29
+PASS RUI-02 1680 send.size: 10px / 10px
+PASS RUI-02 1680 suggestions.x: 626 / 626
+PASS RUI-02 1680 suggestions.y: 598.21875 / 598.21875
+PASS RUI-02 1680 suggestions.w: 680 / 680
+PASS RUI-02 1680 suggestions.h: 32.140625 / 32.140625
+PASS RUI-02 1680 suggestions.size: 13px / 13px
+PASS RUI-01 1680 top actions gap
+PASS RUI-02 390 title.x: 84.59375 / 84.59375
+PASS RUI-02 390 title.y: 226.140625 / 226.140625
+PASS RUI-02 390 title.w: 220.8125 / 220.8125
+PASS RUI-02 390 title.h: 34.5 / 34.5
+PASS RUI-02 390 title.size: 23px / 23px
+PASS RUI-02 390 composer.x: 19 / 19
+PASS RUI-02 390 composer.y: 337.4375 / 337.4375
+PASS RUI-02 390 composer.w: 352 / 352
+PASS RUI-02 390 composer.h: 136 / 136
+PASS RUI-02 390 composer.size: 13px / 13px
+PASS RUI-02 390 send.x: 328 / 328
+PASS RUI-02 390 send.y: 433.4375 / 433.4375
+PASS RUI-02 390 send.w: 29 / 29
+PASS RUI-02 390 send.h: 29 / 29
+PASS RUI-02 390 send.size: 10px / 10px
+PASS RUI-02 390 suggestions.x: 19 / 19
+PASS RUI-02 390 suggestions.y: 490.4375 / 490.4375
+PASS RUI-02 390 suggestions.w: 352 / 352
+PASS RUI-02 390 suggestions.h: 73.28125 / 73.28125
+PASS RUI-02 390 suggestions.size: 13px / 13px
+PASS RUI-01 390 top actions gap
+PASS RUI-01 sidebar.x: 0 / 0
+PASS RUI-01 sidebar.y: 0 / 0
+PASS RUI-01 sidebar.w: 326 / 326
+PASS RUI-01 sidebar.h: 844 / 844
+PASS RUI-01 account.x: 16 / 16
+PASS RUI-01 account.y: 76 / 76
+PASS RUI-01 account.w: 183 / 183
+PASS RUI-01 account.h: 40 / 40
+PASS RUI-01 term.x: 12 / 12
+PASS RUI-01 term.y: 132 / 132
+PASS RUI-01 term.w: 301 / 301
+PASS RUI-01 term.h: 36 / 36
+PASS RUI-01 heading.x: 0 / 0
+PASS RUI-01 heading.y: 312 / 312
+PASS RUI-01 heading.w: 325 / 325
+PASS RUI-01 heading.h: 24 / 24
+PASS RUI-03 persisted class is searchable
+PASS RUI-03 persisted lesson is searchable
+PASS RUI-03 narrow detail destination
+PASS RUI-03 narrow detail destination
+PASS RUI-01 narrow questions no overflow
+PASS RUI-01 narrow lessons no overflow
+PASS RUI-01 narrow math no overflow
+PASS RUI-01 narrow resources no overflow
+PASS RUI-01 narrow classes no overflow
+PASS RUI-02 live composer retains prototype square send button
+PASS RUI-02 suggestion creates real draft, focuses input and preserves it across navigation
+PASS No page errors: 
+Isolated world https://127.0.0.1:46643 /tmp/rs3/a11-epfLmb

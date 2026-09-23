@@ -1,0 +1,73 @@
+{
+  "question": {
+    "id": "85c025f6-81c7-47b3-88de-fead5e2a7451",
+    "version": 1,
+    "createdAt": "2026-09-22T15:59:27.577Z",
+    "updatedAt": "2026-09-22T15:59:27.577Z",
+    "deletedAt": null,
+    "title": "边界 2399",
+    "source": {
+      "kind": "manual"
+    },
+    "note": "R35_PRIVATE_MUST_NOT_RENDER",
+    "starred": false,
+    "typeId": null,
+    "tagIds": [],
+    "answerStatus": "absent",
+    "solution": {
+      "version": 2,
+      "blocks": []
+    },
+    "body": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "image",
+          "fileId": "053afb2c-f303-4d3b-aae6-74e38980a2f2",
+          "alt": "高度边界色块",
+          "widthMm": 100
+        },
+        {
+          "type": "image",
+          "fileId": "f1fd1b44-8769-4616-b95a-ec9420b58912",
+          "alt": "高度边界色块",
+          "widthMm": 100
+        }
+      ]
+    }
+  },
+  "job": {
+    "id": "f9214a1b-610f-442b-8155-f0c0478ff222",
+    "kind": "question-asset",
+    "target": {
+      "kind": "question",
+      "id": "85c025f6-81c7-47b3-88de-fead5e2a7451",
+      "version": 1
+    },
+    "state": "succeeded",
+    "createdAt": "2026-09-22T15:59:27.579Z",
+    "updatedAt": "2026-09-22T15:59:27.650Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 1,
+      "total": 1,
+      "unit": "stages"
+    },
+    "outputFileIds": [
+      "6129f84b-874b-4db6-8013-9e1285c541fd"
+    ],
+    "issues": []
+  },
+  "files": [
+    {
+      "file": "boundary-2399-0.png",
+      "id": "6129f84b-874b-4db6-8013-9e1285c541fd",
+      "width": 1600,
+      "height": 2399,
+      "alpha": true,
+      "transparent": 398752,
+      "visible": 3439648,
+      "sha256": "8d3323937a5c18652dd98c89fe6e07f04d244ca90be971fa5f64249dc79df9fb"
+    }
+  ]
+}

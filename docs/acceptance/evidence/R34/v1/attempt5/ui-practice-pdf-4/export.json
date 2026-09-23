@@ -1,0 +1,20 @@
+{
+  "id": "14bdf7f6-a788-4c46-ad6c-92faf34bb6ac",
+  "lessonId": "1cdc0605-ab7e-49d7-9e6d-a9e80da342e2",
+  "lessonVersion": 8,
+  "options": {
+    "baseVersion": 8,
+    "kind": "practice",
+    "format": "pdf",
+    "includeAnswers": false,
+    "includeTeacherNotes": false,
+    "sectionIds": [
+      "1f833243-e63c-4f5a-b095-b8ba883a6740"
+    ],
+    "materialReferenceIds": [],
+    "answerSpaceLines": 4
+  },
+  "jobId": "07739c59-24bb-464f-9670-b9952950c52f",
+  "fileId": null,
+  "createdAt": "2026-09-22T14:08:36.967Z"
+}

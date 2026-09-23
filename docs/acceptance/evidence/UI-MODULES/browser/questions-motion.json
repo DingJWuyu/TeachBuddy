@@ -1,0 +1,906 @@
+{
+  "origin": "https://127.0.0.1:50931",
+  "method": "real pointer clicks with requestAnimationFrame sampling",
+  "records": [
+    {
+      "action": "删除",
+      "samples": [
+        [],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.376624
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.641533
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.804966
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.897605
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.948289
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.975709
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.989764
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.996483
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.999188
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.999936
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ]
+      ]
+    },
+    {
+      "action": "取消",
+      "samples": [
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.625357
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.357233
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.195048
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.10281
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.0517157
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.0242928
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.0101795
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.00351725
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.000812346
+          }
+        ],
+        [
+          {
+            "kind": "wb-dialog-host wb-module-dialog",
+            "opacity": 0.0000622755
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "action": "",
+      "samples": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "action": "",
+      "samples": [
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.0839799
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.262462
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.468223
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.637478
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.763378
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.852278
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.915006
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.957101
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.983473
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.996949
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ]
+      ]
+    },
+    {
+      "action": "",
+      "samples": [
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.915584
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.738114
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.531152
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.362049
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.236913
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.14748
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.0851359
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.0429924
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.0165807
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.00307232
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "action": "复制改编",
+      "samples": [
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "wb-popover is-end",
+            "opacity": 0.916456
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.375848
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.642289
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.804673
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.897442
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.948422
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.975663
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.989798
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.996499
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.999184
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.999937
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ]
+      ]
+    },
+    {
+      "action": "分类与教学笔记",
+      "samples": [
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ]
+      ]
+    },
+    {
+      "action": "结束原题对照",
+      "samples": [
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 1
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.624191
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.357736
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.195341
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.102566
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.0518044
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.0243396
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.0102027
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.00352751
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.000815858
+          }
+        ],
+        [
+          {
+            "kind": "q-copy-source",
+            "opacity": 0.0000643307
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    }
+  ]
+}

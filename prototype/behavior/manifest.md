@@ -42,7 +42,7 @@ npm run prototype:sidebar
 | [screenshots](../evidence/screenshots/) | 按旅程分类，文件名包含终端与场景 ID；证据索引由对应场景覆盖文档拥有 |
 | [verification results](../evidence/verification/) | 当前场景断言、几何与交互检查结果，包括账户完整报告与输入边界报告 |
 | [verification](../verification/) | 当前几何、交互、拖拽与响应式验证脚本；账户入口另有走查与截图表脚本 |
-| [项目设计规则](../../docs/development/ui-quality.md) | 跨原型与产品适用的设计要求及验证经验 |
+| [项目设计规则](../../docs/rules/design-and-verification.md) | 跨原型与产品适用的设计要求及验证经验 |
 
 下面是仓库保留的验证脚本索引，不是一组适用于当前版本的全量验收命令。账户脚本按账户覆盖文档使用；旧工作台脚本中的空首页、九模块及固定通知断言不适用当前模块稿，尤其不能直接用 `verify-home-empty.mjs` 判定本版是否正确。工作台的历史报告应先逐项核对场景与现状，当前模块覆盖见 [modules.md](modules.md)。
 

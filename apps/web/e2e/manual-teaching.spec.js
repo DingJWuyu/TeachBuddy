@@ -7,7 +7,7 @@ import { createIntegration } from '../../api/test/fixtures/auth-integration/harn
 import { registerMath } from './fixtures/math-static/real.mjs';
 import { http, seedLegacy, C, R, record } from '../../api/test/teaching-time-classes-materials-fixture.js';
 
-const evidence = path.resolve('test-results/evidence/MANUAL-TEACHING/v1/browser');
+const evidence = path.resolve('docs/acceptance/evidence/MANUAL-TEACHING/v1/browser');
 const E = '/api/modules/schedule/entries';
 let world, call, client, businessNow;
 const workbenchClock = () => new Date(businessNow);

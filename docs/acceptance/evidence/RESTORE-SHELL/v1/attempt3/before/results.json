@@ -1,0 +1,510 @@
+{
+  "failures": [
+    "RUI-02 1680 title.x: 833.59375 / 831.59375",
+    "RUI-02 1680 title.y: 324 / 316.53125",
+    "RUI-02 1680 title.h: 46.1875 / 42",
+    "RUI-02 1680 composer.x: 628 / 626",
+    "RUI-02 1680 composer.y: 478.625 / 445.21875",
+    "RUI-02 390 title.x: 60.59375 / 84.59375",
+    "RUI-02 390 title.y: 243 / 226.140625",
+    "RUI-02 390 title.w: 268.8125 / 220.8125",
+    "RUI-02 390 title.h: 46.1875 / 34.5",
+    "RUI-02 390 title.size: 28px / 23px",
+    "RUI-02 390 composer.y: 397.625 / 337.4375",
+    "RUI-02 390 composer.w: 350 / 352",
+    "RUI-01 390 top actions gap",
+    "RUI-01 sidebar.y: 56 / 0",
+    "RUI-01 sidebar.w: 256 / 326",
+    "RUI-01 sidebar.h: 788 / 844",
+    "RUI-01 account.y: 132 / 76",
+    "RUI-01 term.y: 188 / 132",
+    "RUI-01 term.w: 231 / 301",
+    "RUI-01 heading.y: 368 / 312",
+    "RUI-01 heading.w: 255 / 325",
+    "RUI-03 persisted class is searchable",
+    "RUI-03 persisted lesson is searchable"
+  ],
+  "metrics": [
+    {
+      "width": 1680,
+      "product": {
+        "title": {
+          "x": 833.59375,
+          "y": 324,
+          "w": 268.8125,
+          "h": 46.1875,
+          "size": "28px",
+          "gap": "normal"
+        },
+        "composer": {
+          "x": 628,
+          "y": 478.625,
+          "w": 680,
+          "h": 135,
+          "size": "13px",
+          "gap": "normal"
+        },
+        "actions": {
+          "x": 1440,
+          "y": 16,
+          "w": 192,
+          "h": 32,
+          "size": "16px",
+          "gap": "8px"
+        }
+      },
+      "prototype": {
+        "title": {
+          "x": 831.59375,
+          "y": 316.53125,
+          "w": 268.8125,
+          "h": 42,
+          "size": "28px",
+          "gap": "normal"
+        },
+        "composer": {
+          "x": 626,
+          "y": 445.21875,
+          "w": 680,
+          "h": 136,
+          "size": "13px",
+          "gap": "normal"
+        },
+        "actions": {
+          "x": 1440,
+          "y": 16,
+          "w": 192,
+          "h": 32,
+          "size": "16px",
+          "gap": "8px"
+        }
+      }
+    },
+    {
+      "width": 390,
+      "product": {
+        "title": {
+          "x": 60.59375,
+          "y": 243,
+          "w": 268.8125,
+          "h": 46.1875,
+          "size": "28px",
+          "gap": "normal"
+        },
+        "composer": {
+          "x": 20,
+          "y": 397.625,
+          "w": 350,
+          "h": 135,
+          "size": "13px",
+          "gap": "normal"
+        },
+        "actions": {
+          "x": 52,
+          "y": 9.5,
+          "w": 322,
+          "h": 36,
+          "size": "16px",
+          "gap": "2px"
+        }
+      },
+      "prototype": {
+        "title": {
+          "x": 84.59375,
+          "y": 226.140625,
+          "w": 220.8125,
+          "h": 34.5,
+          "size": "23px",
+          "gap": "normal"
+        },
+        "composer": {
+          "x": 19,
+          "y": 337.4375,
+          "w": 352,
+          "h": 136,
+          "size": "13px",
+          "gap": "normal"
+        },
+        "actions": {
+          "x": 52,
+          "y": 9.5,
+          "w": 322,
+          "h": 36,
+          "size": "16px",
+          "gap": "8px"
+        }
+      }
+    },
+    {
+      "kind": "product",
+      "drawer": {
+        "sidebar": {
+          "x": 0,
+          "y": 56,
+          "w": 256,
+          "h": 788,
+          "size": "16px",
+          "gap": "normal"
+        },
+        "account": {
+          "x": 16,
+          "y": 132,
+          "w": 183,
+          "h": 40,
+          "size": "16px",
+          "gap": "12px"
+        },
+        "term": {
+          "x": 12,
+          "y": 188,
+          "w": 231,
+          "h": 36,
+          "size": "14px",
+          "gap": "6px"
+        },
+        "heading": {
+          "x": 0,
+          "y": 368,
+          "w": 255,
+          "h": 24,
+          "size": "10px",
+          "gap": "normal"
+        }
+      }
+    },
+    {
+      "kind": "prototype",
+      "drawer": {
+        "sidebar": {
+          "x": 0,
+          "y": 0,
+          "w": 326,
+          "h": 844,
+          "size": "16px",
+          "gap": "normal"
+        },
+        "account": {
+          "x": 16,
+          "y": 76,
+          "w": 183,
+          "h": 40,
+          "size": "16px",
+          "gap": "12px"
+        },
+        "term": {
+          "x": 12,
+          "y": 132,
+          "w": 301,
+          "h": 36,
+          "size": "14px",
+          "gap": "6px"
+        },
+        "heading": {
+          "x": 0,
+          "y": 312,
+          "w": 325,
+          "h": 24,
+          "size": "10px",
+          "gap": "normal"
+        }
+      }
+    }
+  ],
+  "requests": [
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/registration-codes",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/register",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/workbench/context",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/reliability/v1/context",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/notifications",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/settings",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/reliability/v1/preferences",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/agent/conversations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/agent/configuration",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/items",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/items",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/settings",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/items",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/modules/classes/items",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/items",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/settings",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/v2/records",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/v2/records",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/workbench/context",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/reliability/v1/context",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/notifications",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/settings",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/reliability/v1/preferences",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/agent/conversations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/agent/configuration",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/items",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/items",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/v2/records",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/classes/v2/records",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/lessons/v3",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/settings",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/lessons/v3/new",
+      "status": 422,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/settings",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/lessons/v3",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/modules/lessons/v3/42e6f19c-e09c-4bcc-9da2-17a0cce57684",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/lessons/v3/42e6f19c-e09c-4bcc-9da2-17a0cce57684",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/settings",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/workbench/context",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/reliability/v1/context",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/notifications",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/lessons/v3/42e6f19c-e09c-4bcc-9da2-17a0cce57684",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/lessons/v3/42e6f19c-e09c-4bcc-9da2-17a0cce57684",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/agent/conversations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/agent/configuration",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/reliability/v1/preferences",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/modules/schedule/settings",
+      "status": 200,
+      "method": "GET"
+    }
+  ]
+}

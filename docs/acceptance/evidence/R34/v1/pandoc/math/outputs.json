@@ -1,0 +1,759 @@
+{
+  "directory": "/home/liam_t/r34-pandoc-run/tmp/m43-api-GHUkT3",
+  "lesson": {
+    "id": "c8ca389e-0b64-4396-86f3-c214df3f07bc",
+    "version": 1,
+    "createdAt": "2026-09-22T19:57:22.388Z",
+    "updatedAt": "2026-09-22T19:57:22.388Z",
+    "deletedAt": null,
+    "title": "五类数学成果",
+    "intro": {
+      "version": 1,
+      "blocks": []
+    },
+    "sections": [],
+    "materials": [
+      {
+        "id": "3eec0e79-a0fa-4e34-af88-5239aeda105e",
+        "kind": "math",
+        "workId": "1608efe2-f354-416e-bf85-77c217b64e4f",
+        "workVersion": 1,
+        "note": "禁止泄漏的课堂私密备注",
+        "snapshot": {
+          "title": "formula课堂数学",
+          "workVersion": 1,
+          "source": {
+            "schemaVersion": 1,
+            "kind": "formula",
+            "latex": "x_{1,2}=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
+            "caption": "判别式 D=b²-4ac",
+            "includeCaption": true,
+            "color": "#172033",
+            "fontSize": 28
+          },
+          "posterFileId": "d7692c20-4842-411e-8f40-eed3c4584dba",
+          "presentationFileId": null,
+          "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated"
+        },
+        "latestVersion": 1,
+        "sourceState": "active"
+      },
+      {
+        "id": "c95fa876-1868-47e8-b002-3936cf1abb82",
+        "kind": "math",
+        "workId": "c00f9e0a-d2f0-4780-8775-bc6759bc8e7f",
+        "workVersion": 1,
+        "note": "禁止泄漏的课堂私密备注",
+        "snapshot": {
+          "title": "plane课堂数学",
+          "workVersion": 1,
+          "source": {
+            "schemaVersion": 1,
+            "kind": "plane",
+            "scene": {
+              "viewport": {
+                "xMin": -5,
+                "xMax": 5,
+                "yMin": -6,
+                "yMax": 6,
+                "width": 800,
+                "height": 720,
+                "axes": true,
+                "grid": true
+              },
+              "elements": [
+                {
+                  "id": "f",
+                  "type": "function",
+                  "expression": "x^2-2*x-3",
+                  "domain": {
+                    "min": -5,
+                    "max": 5
+                  },
+                  "label": {
+                    "text": "y=x²-2x-3",
+                    "dx": 12,
+                    "dy": -12
+                  },
+                  "style": {
+                    "stroke": "#2563eb",
+                    "fill": null,
+                    "width": 2,
+                    "dash": "solid",
+                    "fontSize": 16
+                  }
+                },
+                {
+                  "id": "v",
+                  "type": "point",
+                  "at": {
+                    "x": "1",
+                    "y": "-4"
+                  },
+                  "label": {
+                    "text": "顶点 (1,-4)",
+                    "dx": 12,
+                    "dy": -12
+                  },
+                  "style": {
+                    "stroke": "#2563eb",
+                    "fill": null,
+                    "width": 2,
+                    "dash": "solid",
+                    "fontSize": 16
+                  }
+                },
+                {
+                  "id": "r1",
+                  "type": "point",
+                  "at": {
+                    "x": "-1",
+                    "y": "0"
+                  },
+                  "label": {
+                    "text": "(-1,0)",
+                    "dx": 12,
+                    "dy": -12
+                  },
+                  "style": {
+                    "stroke": "#2563eb",
+                    "fill": null,
+                    "width": 2,
+                    "dash": "solid",
+                    "fontSize": 16
+                  }
+                },
+                {
+                  "id": "r2",
+                  "type": "point",
+                  "at": {
+                    "x": "3",
+                    "y": "0"
+                  },
+                  "label": {
+                    "text": "(3,0)",
+                    "dx": 12,
+                    "dy": -12
+                  },
+                  "style": {
+                    "stroke": "#2563eb",
+                    "fill": null,
+                    "width": 2,
+                    "dash": "solid",
+                    "fontSize": 16
+                  }
+                }
+              ]
+            }
+          },
+          "posterFileId": "a496edbe-6f14-44ba-8bd0-ba8cc568e977",
+          "presentationFileId": null,
+          "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated"
+        },
+        "latestVersion": 1,
+        "sourceState": "active"
+      },
+      {
+        "id": "7f51216d-25ed-4d1b-9717-59c056819c4b",
+        "kind": "math",
+        "workId": "deecfdd7-e219-4170-ad4f-d98bdaaa05d3",
+        "workVersion": 1,
+        "note": "禁止泄漏的课堂私密备注",
+        "snapshot": {
+          "title": "space课堂数学",
+          "workVersion": 1,
+          "source": {
+            "schemaVersion": 1,
+            "kind": "space",
+            "viewport": {
+              "xMin": -3,
+              "xMax": 3,
+              "yMin": -3,
+              "yMax": 3,
+              "width": 800,
+              "height": 720,
+              "axes": false,
+              "grid": false
+            },
+            "azimuth": -30,
+            "elevation": 25,
+            "points": [
+              {
+                "id": "A",
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "label": {
+                  "text": "A",
+                  "dx": 12,
+                  "dy": -12
+                },
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "B",
+                "x": 2,
+                "y": 0,
+                "z": 0,
+                "label": {
+                  "text": "B",
+                  "dx": 12,
+                  "dy": -12
+                },
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "C",
+                "x": 2,
+                "y": 2,
+                "z": 0,
+                "label": {
+                  "text": "C",
+                  "dx": 12,
+                  "dy": -12
+                },
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "D",
+                "x": 0,
+                "y": 2,
+                "z": 0,
+                "label": {
+                  "text": "D",
+                  "dx": 12,
+                  "dy": -12
+                },
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "A1",
+                "x": 0,
+                "y": 0,
+                "z": 2,
+                "label": {
+                  "text": "A1",
+                  "dx": 12,
+                  "dy": -12
+                },
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "B1",
+                "x": 2,
+                "y": 0,
+                "z": 2,
+                "label": {
+                  "text": "B1",
+                  "dx": 12,
+                  "dy": -12
+                },
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "C1",
+                "x": 2,
+                "y": 2,
+                "z": 2,
+                "label": {
+                  "text": "C1",
+                  "dx": 12,
+                  "dy": -12
+                },
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "D1",
+                "x": 0,
+                "y": 2,
+                "z": 2,
+                "label": {
+                  "text": "D1",
+                  "dx": 12,
+                  "dy": -12
+                },
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              }
+            ],
+            "edges": [
+              {
+                "id": "A_B",
+                "from": "A",
+                "to": "B",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "B_C",
+                "from": "B",
+                "to": "C",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "C_D",
+                "from": "C",
+                "to": "D",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "dashed",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "D_A",
+                "from": "D",
+                "to": "A",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "dashed",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "A1_B1",
+                "from": "A1",
+                "to": "B1",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "B1_C1",
+                "from": "B1",
+                "to": "C1",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "C1_D1",
+                "from": "C1",
+                "to": "D1",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "D1_A1",
+                "from": "D1",
+                "to": "A1",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "A_A1",
+                "from": "A",
+                "to": "A1",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "B_B1",
+                "from": "B",
+                "to": "B1",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "C_C1",
+                "from": "C",
+                "to": "C1",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "D_D1",
+                "from": "D",
+                "to": "D1",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "dashed",
+                  "fontSize": 16
+                }
+              },
+              {
+                "id": "A_C1",
+                "from": "A",
+                "to": "C1",
+                "style": {
+                  "stroke": "#2563eb",
+                  "fill": null,
+                  "width": 2,
+                  "dash": "solid",
+                  "fontSize": 16
+                }
+              }
+            ]
+          },
+          "posterFileId": "2978c049-c69f-4d35-a6f1-cb4f8be00a75",
+          "presentationFileId": null,
+          "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated"
+        },
+        "latestVersion": 1,
+        "sourceState": "active"
+      },
+      {
+        "id": "421dddd3-793f-4d74-ad9e-c9fc00135843",
+        "kind": "math",
+        "workId": "9f193c23-c010-430d-a4d4-0afa12b7e46b",
+        "workVersion": 1,
+        "note": "禁止泄漏的课堂私密备注",
+        "snapshot": {
+          "title": "dynamic课堂数学",
+          "workVersion": 1,
+          "source": {
+            "schemaVersion": 1,
+            "kind": "dynamic",
+            "scene": {
+              "viewport": {
+                "xMin": -5,
+                "xMax": 5,
+                "yMin": -6,
+                "yMax": 6,
+                "width": 800,
+                "height": 720,
+                "axes": true,
+                "grid": true
+              },
+              "elements": [
+                {
+                  "id": "mother",
+                  "type": "function",
+                  "expression": "x^2",
+                  "domain": {
+                    "min": -5,
+                    "max": 5
+                  },
+                  "label": {
+                    "text": "y=x²",
+                    "dx": 12,
+                    "dy": -12
+                  },
+                  "style": {
+                    "stroke": "#2563eb",
+                    "fill": null,
+                    "width": 2,
+                    "dash": "solid",
+                    "fontSize": 16
+                  }
+                },
+                {
+                  "id": "translated",
+                  "type": "function",
+                  "expression": "(x-h)^2+k",
+                  "domain": {
+                    "min": -5,
+                    "max": 5
+                  },
+                  "label": {
+                    "text": "y=(x-{h})²+{k}",
+                    "dx": 12,
+                    "dy": -12
+                  },
+                  "style": {
+                    "stroke": "#2563eb",
+                    "fill": null,
+                    "width": 2,
+                    "dash": "solid",
+                    "fontSize": 16
+                  }
+                },
+                {
+                  "id": "scaled",
+                  "type": "function",
+                  "expression": "a*(x-h)^2+k",
+                  "domain": {
+                    "min": -5,
+                    "max": 5
+                  },
+                  "label": {
+                    "text": "y={a}(x-{h})²+{k}",
+                    "dx": 12,
+                    "dy": -12
+                  },
+                  "style": {
+                    "stroke": "#2563eb",
+                    "fill": null,
+                    "width": 2,
+                    "dash": "solid",
+                    "fontSize": 16
+                  }
+                },
+                {
+                  "id": "vertex",
+                  "type": "point",
+                  "at": {
+                    "x": "h",
+                    "y": "k"
+                  },
+                  "label": {
+                    "text": "控制点 ({h},{k})",
+                    "dx": 12,
+                    "dy": -12
+                  },
+                  "style": {
+                    "stroke": "#2563eb",
+                    "fill": null,
+                    "width": 2,
+                    "dash": "solid",
+                    "fontSize": 16
+                  }
+                }
+              ]
+            },
+            "parameters": [
+              {
+                "name": "a",
+                "label": "a",
+                "min": -2,
+                "max": 2,
+                "step": 1,
+                "initial": 1
+              },
+              {
+                "name": "h",
+                "label": "h",
+                "min": -4,
+                "max": 4,
+                "step": 0.5,
+                "initial": 1
+              },
+              {
+                "name": "k",
+                "label": "k",
+                "min": -4,
+                "max": 4,
+                "step": 0.5,
+                "initial": -4
+              }
+            ],
+            "drags": [
+              {
+                "pointId": "vertex",
+                "xParameter": "h",
+                "yParameter": "k"
+              }
+            ],
+            "steps": [
+              {
+                "id": "motherStep",
+                "title": "母函数",
+                "visibleIds": [
+                  "mother"
+                ],
+                "values": [
+                  {
+                    "name": "a",
+                    "value": 1
+                  },
+                  {
+                    "name": "h",
+                    "value": 0
+                  },
+                  {
+                    "name": "k",
+                    "value": 0
+                  }
+                ]
+              },
+              {
+                "id": "moveStep",
+                "title": "平移与顶点",
+                "visibleIds": [
+                  "translated",
+                  "vertex"
+                ],
+                "values": [
+                  {
+                    "name": "a",
+                    "value": 1
+                  },
+                  {
+                    "name": "h",
+                    "value": 1
+                  },
+                  {
+                    "name": "k",
+                    "value": -4
+                  }
+                ]
+              },
+              {
+                "id": "scaleStep",
+                "title": "系数与解析式",
+                "visibleIds": [
+                  "scaled",
+                  "vertex"
+                ],
+                "values": [
+                  {
+                    "name": "a",
+                    "value": 1
+                  },
+                  {
+                    "name": "h",
+                    "value": 1
+                  },
+                  {
+                    "name": "k",
+                    "value": -4
+                  }
+                ]
+              }
+            ],
+            "initialStepId": "scaleStep"
+          },
+          "posterFileId": "86b69446-31ef-4a0d-8ba2-891f1f3c55e6",
+          "presentationFileId": "a5b61090-2238-4197-9afa-7a05823a4ff0",
+          "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated"
+        },
+        "latestVersion": 1,
+        "sourceState": "active"
+      },
+      {
+        "id": "85f4a343-4319-4481-a14d-99f5c62ef9fe",
+        "kind": "math",
+        "workId": "a1b352ab-2223-433c-ad4e-76777a8ecfe0",
+        "workVersion": 1,
+        "note": "禁止泄漏的课堂私密备注",
+        "snapshot": {
+          "title": "HTML课堂探究",
+          "workVersion": 1,
+          "source": {
+            "schemaVersion": 1,
+            "kind": "html",
+            "fileId": "38661efc-c7dc-4893-a19f-e5059a79f191"
+          },
+          "posterFileId": null,
+          "presentationFileId": "1d6b8b8d-62ea-46bb-a1da-f41c816f1228",
+          "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated"
+        },
+        "latestVersion": 1,
+        "sourceState": "active"
+      }
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "lesson-plan",
+      "format": "docx",
+      "fileId": "5e31ec58-9596-40cb-8d17-ed97f955bde6",
+      "bytes": 76718
+    },
+    {
+      "kind": "lesson-plan",
+      "format": "pdf",
+      "fileId": "06d1296f-89e0-4202-b552-edcb8142b1f2",
+      "bytes": 144017
+    },
+    {
+      "kind": "handout",
+      "format": "docx",
+      "fileId": "fdd1cb00-d08c-48c5-a5f2-b128644eaea2",
+      "bytes": 76718
+    },
+    {
+      "kind": "handout",
+      "format": "pdf",
+      "fileId": "5a0d51ce-f63f-4782-9dd8-230a3612dc40",
+      "bytes": 144017
+    }
+  ]
+}

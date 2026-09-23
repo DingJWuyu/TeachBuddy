@@ -5,7 +5,7 @@ import { createIntegration } from '../../api/test/fixtures/auth-integration/harn
 import { register, save } from './fixtures/math-scroll/helpers.mjs';
 import { wheelTo, clickTool, fillTool, openSection, showTools, closeTools, layout } from './fixtures/math-scroll/interactions.mjs';
 
-const evidence = path.resolve(process.env.M43_SCROLL_EVIDENCE || 'test-results/evidence/M43/v1/scroll-fix/green');
+const evidence = path.resolve(process.env.M43_SCROLL_EVIDENCE || 'docs/acceptance/evidence/M43/v1/scroll-fix/green');
 for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 768, height: 1024 }]) {
   test(`tools ordinary editing and persistence ${viewport.width}x${viewport.height}`, async ({ page, context, browser }) => {
     await page.setViewportSize(viewport);

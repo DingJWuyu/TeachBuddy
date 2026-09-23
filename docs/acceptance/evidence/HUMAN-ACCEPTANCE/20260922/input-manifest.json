@@ -1,0 +1,398 @@
+{
+  "source_root": "/home/liam_t/项目/TeacherWorkspace-office-comparison",
+  "source_head": "b3a2eb665f29c4485729ecf70005ef15c93f0a4b",
+  "state": "uncommitted-readonly-user-handoff",
+  "captured_at": "2026-09-22T19:40:35.897432+00:00",
+  "files": [
+    {
+      "path": "experiments/human-acceptance-20260922.md",
+      "size": 4683,
+      "sha256": "5c09e0cd73facb2c4b9b07394f427bbaa09a5db9a580bf2779917943d28ea65c"
+    },
+    {
+      "path": "experiments/office-comparison/README.md",
+      "size": 3432,
+      "sha256": "8ca9f30179006dd8f2cead98b53db588cf247d60f5c7af517d25d5657004994a"
+    },
+    {
+      "path": "experiments/office-comparison/checks.json",
+      "size": 1004,
+      "sha256": "5289caf4bae7caf979109e05fdaf18764a6a5436e1e5e2c3a62d0a1411671892"
+    },
+    {
+      "path": "experiments/office-comparison/deliverables/A-pandoc.docx",
+      "size": 21442,
+      "sha256": "8488d6dab81d13b4171f37eafa29df3d4abc5f2e94377447273bd5a261b8c588"
+    },
+    {
+      "path": "experiments/office-comparison/deliverables/B-docx-native.docx",
+      "size": 19103,
+      "sha256": "8f9f7603a41b06577a7343ab08e133f476a7934237437fd3ed7a8e7db35d1bcd"
+    },
+    {
+      "path": "experiments/office-comparison/deliverables/先读我.txt",
+      "size": 1042,
+      "sha256": "0cc9be5a86092ef8bf99054bd0ad7aec0aa89d6c220652a96aaadd4a82df29bf"
+    },
+    {
+      "path": "experiments/office-comparison/full/README.md",
+      "size": 3665,
+      "sha256": "19ab45472d21a18f0c5c57b9f10ddd06b135d100dbd899b72e2a6b0dcda7d19e"
+    },
+    {
+      "path": "experiments/office-comparison/full/docx/handout-student.docx",
+      "size": 37151,
+      "sha256": "3cdaf83e8e9fd2749dac822e5793c71ef08a7be9c2ec7e575fdc4bdc55de205f"
+    },
+    {
+      "path": "experiments/office-comparison/full/docx/handout-teacher.docx",
+      "size": 37383,
+      "sha256": "fc4198fed48452239196498c2723ad8e8858febb727c445d9f2ea86986204fdd"
+    },
+    {
+      "path": "experiments/office-comparison/full/docx/lesson-student.docx",
+      "size": 36978,
+      "sha256": "f1b9679db314aace0dddb1ba4bce9a0f62180a04e3756fd7354a765588cd0e1c"
+    },
+    {
+      "path": "experiments/office-comparison/full/docx/lesson-teacher.docx",
+      "size": 37124,
+      "sha256": "b775838cf381b47766ce5c1b1bec5e5078395b2defdade521bca9423d0cd9391"
+    },
+    {
+      "path": "experiments/office-comparison/full/docx/practice-student.docx",
+      "size": 65810,
+      "sha256": "6bfc73fd43a642b16e9a619cf3a495c8392623c2153685792c4afbf41baf591e"
+    },
+    {
+      "path": "experiments/office-comparison/full/docx/practice-teacher.docx",
+      "size": 66152,
+      "sha256": "c6c3807290d94bf991115fc7f2b78a6a6adcfafe284320e8e478a84782563b89"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/content-checks.json",
+      "size": 5653,
+      "sha256": "17d59efd1728b3d97a6da14dfaee497c93ab8029fb1413684cd89daf035785b4"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/generation.json",
+      "size": 759,
+      "sha256": "fd03a65efe133bce712c6bdba9ca66a22b45cde98f6202cf9c4213901b3e3485"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/handout-student-overview.png",
+      "size": 96987,
+      "sha256": "a858231393acc6c73c6a3122159e3dded80683482289df1eb84662b0988e287a"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/handout-student.md",
+      "size": 989,
+      "sha256": "bbffeec60c56b74a232904de0e5ca5764150a366867a1b35742847f6c2d890a0"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/handout-student.txt",
+      "size": 745,
+      "sha256": "040c287c7a10286761f8543280804816f66efc05d3d895bbfd629eddfeada13f"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/handout-teacher-final-overview.png",
+      "size": 156326,
+      "sha256": "1e1a5ee53348a1f6adc4124266d31d303e14741a63787814605424995718ed07"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/handout-teacher-overview.png",
+      "size": 134568,
+      "sha256": "e88b911de575fa7000a125c1c33158b3d47ebf9f31eac829258baa8d12ff7f6e"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/handout-teacher.md",
+      "size": 1172,
+      "sha256": "9bc4217a9de7fda7ef432e4d7d24f10fd96bf90eaa27f5747af3a7833df779ce"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/handout-teacher.txt",
+      "size": 1050,
+      "sha256": "f1813d4b75706a63fe229d7aeeb2e5f36cb6a15b42f14d036fcf7bdb361cc2a9"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/lesson-student-overview.png",
+      "size": 94519,
+      "sha256": "b4525a536d9aa20ec587b178d8d923e233eaa5c869b2212c430212b0232a9465"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/lesson-student.md",
+      "size": 953,
+      "sha256": "d0748a4b184cc2e1f33bb11dedf54bfe2d279811b7dc241ac3f4530f1b81aa27"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/lesson-student.txt",
+      "size": 620,
+      "sha256": "fee5c3a009a2e8d8ea23f171434e5527f0fa20147f9a5c65dd18638143a5fa80"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/lesson-teacher-overview.png",
+      "size": 112503,
+      "sha256": "ada9c25e54e257e41d65d286c9a084c0b28dbc2f4c1cedb8ae218a0aec5c62ab"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/lesson-teacher.md",
+      "size": 1024,
+      "sha256": "9dd068627002e820e912d81c3138eae8bf4c1fcf2d331db04ec2ea46a651b7fc"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/lesson-teacher.txt",
+      "size": 765,
+      "sha256": "7e6777f12a06b85fb964dca845857ecc7650d9557074f872cc53b2c9b9c8d33b"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/handout-student-1.png",
+      "size": 77240,
+      "sha256": "111ec1356c1c3bb9cfa8d4d1470159cc2dfd96abc2a0872130274521d37e6ab5"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/handout-student-2.png",
+      "size": 17549,
+      "sha256": "6c5e2a452cbcd7bde5f9b4a73baa99195407f7418ba6073cb67888c147542a07"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/handout-teacher-1.png",
+      "size": 85221,
+      "sha256": "463daef533c12ec567d3a74c62e3e489a676784a8ea301d230a52e782831fc2b"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/handout-teacher-2.png",
+      "size": 27389,
+      "sha256": "1770b664307e542af4e92e4c215128bbe364d96572b8dcd4d4bc314677ba64ae"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/handout-teacher-3.png",
+      "size": 17549,
+      "sha256": "6c5e2a452cbcd7bde5f9b4a73baa99195407f7418ba6073cb67888c147542a07"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/handout-teacher-final-1.png",
+      "size": 89741,
+      "sha256": "c939520c263681dc3edd1fe9ccdf4125adabc903ae45cab6ba4ca46e41050524"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/handout-teacher-final-2.png",
+      "size": 61394,
+      "sha256": "2d243fc110bd1f58871a19e9caf747a9df2c7dcfa9fe4eae1b56627eac5d54d2"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/lesson-student-1.png",
+      "size": 81510,
+      "sha256": "4603003221390464be4882fbfce38eeee33128d8cf815d59126a5c4d6e0c04f6"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/lesson-student-2.png",
+      "size": 8099,
+      "sha256": "afe3ce1cca62a664dd48ad10f03f95a174315ebb34b8b99fd7e0f1f3a894184e"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/lesson-teacher-1.png",
+      "size": 82090,
+      "sha256": "d5358778182bbc2093f070b27daae26a2f231fa027f81f2a47b0782202b7acc4"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/lesson-teacher-2.png",
+      "size": 27007,
+      "sha256": "df6ee2fd12f289931f743343554aceaf64d02e700f176881466b0c3ea53b7f2e"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/practice-student-1.png",
+      "size": 68614,
+      "sha256": "b14696ee3e78d3cbc9037dc4cfa80f4b43c7d6300b15415bbdb94f02d8e2fcd4"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/practice-student-2.png",
+      "size": 18660,
+      "sha256": "e5fbd842a6c0925f79832446d28df4da67e6c7330561ee2fd81047ccea5eec8e"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/practice-student-3.png",
+      "size": 47221,
+      "sha256": "3e538bfbfed8c925b3cb7ff0979f86fbe177180ff8cbd4363cd658e2c3672413"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/practice-teacher-1.png",
+      "size": 69318,
+      "sha256": "af907b9704a8cd6dae5a251c00dab92aa67fd87b707c782ee072c79838e352f5"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/practice-teacher-2.png",
+      "size": 18660,
+      "sha256": "e5fbd842a6c0925f79832446d28df4da67e6c7330561ee2fd81047ccea5eec8e"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/practice-teacher-3.png",
+      "size": 47221,
+      "sha256": "3e538bfbfed8c925b3cb7ff0979f86fbe177180ff8cbd4363cd658e2c3672413"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pages/practice-teacher-4.png",
+      "size": 48698,
+      "sha256": "15a6ed1ae17fc1febef49deff62012a5c768e07548d5659f6b5596ccfa19fce9"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/pdf-checks.json",
+      "size": 1430,
+      "sha256": "2304c7efe8495965a39c6e00ecff79f9464014a24848a59ff85f5f41fda93392"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/practice-student-overview.png",
+      "size": 142040,
+      "sha256": "dcec0957d15f952dad7b970e59e8f5ee8adce1e06154aa8f27dcd57370afac89"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/practice-student.md",
+      "size": 1106,
+      "sha256": "3934c11bc97a5a8a4773f41c7d8eda5e0ecb1601ba13084ee16799fbf37d7ad3"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/practice-student.txt",
+      "size": 844,
+      "sha256": "bf143079332ebca6bbea535b209fa7759bf12f616da1e56c73ac3d571cd9e22e"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/practice-teacher-overview.png",
+      "size": 190239,
+      "sha256": "e4d5b67883b5246802a7336e609f1e8690dce0969baaf89e882846c5101af605"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/practice-teacher.md",
+      "size": 1509,
+      "sha256": "3caea1b47bab0081c8b81e17bbc44489dc0b737a316c109b6bf294df47c1981d"
+    },
+    {
+      "path": "experiments/office-comparison/full/evidence/practice-teacher.txt",
+      "size": 1290,
+      "sha256": "8482a28138389ddf5165e6573a4028ec1be5be8f6bea935140da3cb2375fbe7f"
+    },
+    {
+      "path": "experiments/office-comparison/full/make-sources.py",
+      "size": 4774,
+      "sha256": "fb77cb40a3a0fd0cf13061f0d1906c33e253da24f03ba0df74098f49bcc3b1f0"
+    },
+    {
+      "path": "experiments/office-comparison/full/pdf/handout-student.pdf",
+      "size": 103028,
+      "sha256": "fb4de1e80645e6231002057b01a88c0103c589b5a5d07237f3753e3970adfede"
+    },
+    {
+      "path": "experiments/office-comparison/full/pdf/handout-teacher.pdf",
+      "size": 117999,
+      "sha256": "0fadfb2a3f8734cc01898bb4bb642109192eff3776ca10ac890c30fc838015d7"
+    },
+    {
+      "path": "experiments/office-comparison/full/pdf/lesson-student.pdf",
+      "size": 102678,
+      "sha256": "22c04579ff6d0bfb86090b641bdd8133e2eb604ab192a8cc7e4d1faa0bde082b"
+    },
+    {
+      "path": "experiments/office-comparison/full/pdf/lesson-teacher.pdf",
+      "size": 113346,
+      "sha256": "e790418405ad3e0f70adf9eab95272e72b6fbe7cab162c00eb0ef2c7ebf5a796"
+    },
+    {
+      "path": "experiments/office-comparison/full/pdf/practice-student.pdf",
+      "size": 139506,
+      "sha256": "b0b6c1df02f3efc0140133be61f69e4cc7ff4dfa86345bf6cde8b958c8631a37"
+    },
+    {
+      "path": "experiments/office-comparison/full/pdf/practice-teacher.pdf",
+      "size": 162921,
+      "sha256": "344893d8530f5f9bbb3c0d7d916e6ba56485b5aad45002a6c0ec9dc53fa729e6"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/assets/q2-parabola.png",
+      "size": 26476,
+      "sha256": "08102463501502109678441fea51a237bca6da33548bc583009892a67299fc66"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/assets/q5-triangle.png",
+      "size": 10329,
+      "sha256": "98e234f9c58ed3bcd9834852ab7680d08a5e5fe872d8dd75c86cb2287b767e4c"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/assets/q6-cube.png",
+      "size": 19925,
+      "sha256": "d1b95f0f4528f50affff8d25177ff39a8e84e34a5a056ad7a6062a84b0967b15"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/handout-student.md",
+      "size": 961,
+      "sha256": "40bbd9d0c12c7665eb140243725fc557af8d975f544eb4679648d12e88d32705"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/handout-teacher.md",
+      "size": 1131,
+      "sha256": "0f48518572b1f22c181228c1ddb91843e85411696075f85dbfaf312b68ddc117"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/latex.json",
+      "size": 291,
+      "sha256": "8b37ba25285229cc28d119d4fd180b9b8712fdccccb22f0ecbee2e2bf0a398b5"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/lesson-student.md",
+      "size": 730,
+      "sha256": "ad128dda8f43a18819af11fe9189dd53fec8f414b213556634077dd55592f9a2"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/lesson-teacher.md",
+      "size": 796,
+      "sha256": "40fae272b6b2ea930a66968a97d3526a8584036028e8179ffbf994d5522c8d41"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/practice-student.md",
+      "size": 1092,
+      "sha256": "fff2ec2105ace450f8eaa7df25dab256996fedc1ffba03119c3fc8d2b8bceb4f"
+    },
+    {
+      "path": "experiments/office-comparison/full/source/practice-teacher.md",
+      "size": 1553,
+      "sha256": "82a5884f218885df7203075be5a8233a9e18f5089945deb8f73ccd697eb7cb57"
+    },
+    {
+      "path": "experiments/office-comparison/full/验收清单.txt",
+      "size": 1694,
+      "sha256": "4c69f6e3482386697f1cb7116db99fec12a215dc30d4ed3d2e6998d0f9d3c7e6"
+    },
+    {
+      "path": "experiments/office-comparison/generate-native.cjs",
+      "size": 1989,
+      "sha256": "4594a53753c272b9532e7ead9940a195837667c8d659dd6f129cdd7f7138c5e8"
+    },
+    {
+      "path": "experiments/office-comparison/package-lock.json",
+      "size": 7929,
+      "sha256": "9fc7b875104e19fdf11bf6b8456a3bf87674bf450f49f533c9f2a562b0c8207c"
+    },
+    {
+      "path": "experiments/office-comparison/package.json",
+      "size": 48,
+      "sha256": "e8dfd4de4a0030af006b91f4db03f25d25257561064e8aa41246538b080e1cc4"
+    },
+    {
+      "path": "experiments/office-comparison/roundtrip-A.md",
+      "size": 766,
+      "sha256": "45e61744ac71e3c1e47abb1331afb149a355f2d4e39661695ca8f1d2de0ee113"
+    },
+    {
+      "path": "experiments/office-comparison/roundtrip-B.md",
+      "size": 738,
+      "sha256": "795ab9b69ba63746bda9c9a35c550b82af37c98275f30c89398d18a72ec17d26"
+    },
+    {
+      "path": "experiments/office-comparison/sample.md",
+      "size": 658,
+      "sha256": "82b0ae503c04a06ea1e4fc0a513f69101bf84691db57528e8fcd554006c64453"
+    },
+    {
+      "path": "experiments/office-comparison/triangle.png",
+      "size": 10329,
+      "sha256": "98e234f9c58ed3bcd9834852ab7680d08a5e5fe872d8dd75c86cb2287b767e4c"
+    }
+  ]
+}

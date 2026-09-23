@@ -6,7 +6,7 @@
  * identities. Every run is isolated: nothing here may touch a developer's user
  * database, and the test-principal identity mode is refused in production.
  *
- * Commands for the isolated first-flow runner:
+ * Commands (see docs/acceptance/evidence/B12/v1/author.md):
  *   node scripts/first-flow/start.mjs --reset                 # fresh isolated start
  *   node scripts/first-flow/start.mjs                         # restart, keeps the database
  */

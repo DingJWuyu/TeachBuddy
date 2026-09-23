@@ -1,0 +1,73 @@
+{
+  "question": {
+    "id": "fb7babe0-15c7-4040-8a4c-fd4e631b18ba",
+    "version": 1,
+    "createdAt": "2026-09-22T15:59:27.722Z",
+    "updatedAt": "2026-09-22T15:59:27.722Z",
+    "deletedAt": null,
+    "title": "边界 2400",
+    "source": {
+      "kind": "manual"
+    },
+    "note": "R35_PRIVATE_MUST_NOT_RENDER",
+    "starred": false,
+    "typeId": null,
+    "tagIds": [],
+    "answerStatus": "absent",
+    "solution": {
+      "version": 2,
+      "blocks": []
+    },
+    "body": {
+      "version": 2,
+      "blocks": [
+        {
+          "type": "image",
+          "fileId": "053afb2c-f303-4d3b-aae6-74e38980a2f2",
+          "alt": "高度边界色块",
+          "widthMm": 100
+        },
+        {
+          "type": "image",
+          "fileId": "d1c0c21b-d8e5-492c-9ea3-2ff36f396bc2",
+          "alt": "高度边界色块",
+          "widthMm": 100
+        }
+      ]
+    }
+  },
+  "job": {
+    "id": "b05b64d1-c066-45d8-9f94-8e27cebbd295",
+    "kind": "question-asset",
+    "target": {
+      "kind": "question",
+      "id": "fb7babe0-15c7-4040-8a4c-fd4e631b18ba",
+      "version": 1
+    },
+    "state": "succeeded",
+    "createdAt": "2026-09-22T15:59:27.726Z",
+    "updatedAt": "2026-09-22T15:59:27.813Z",
+    "attemptOf": null,
+    "progress": {
+      "completed": 1,
+      "total": 1,
+      "unit": "stages"
+    },
+    "outputFileIds": [
+      "3c24b7ba-62e1-42bd-bc5d-34cf2975adaa"
+    ],
+    "issues": []
+  },
+  "files": [
+    {
+      "file": "boundary-2400-0.png",
+      "id": "3c24b7ba-62e1-42bd-bc5d-34cf2975adaa",
+      "width": 1600,
+      "height": 2400,
+      "alpha": true,
+      "transparent": 398848,
+      "visible": 3441152,
+      "sha256": "ee21fec69d067e390fdc828b2efd0358e564362325f189b5a5512f9a3db74fc9"
+    }
+  ]
+}

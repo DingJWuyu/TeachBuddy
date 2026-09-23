@@ -1,0 +1,13 @@
+
+Running 6 tests using 1 worker
+
+(node:106459) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/manual-teaching.spec.js:137:1 › 任意连续日期拖选、多事项顺序与优先级、未排期移入移出、保存重开 (3.0s)
+  ✓  2 apps/web/e2e/manual-teaching.spec.js:343:1 › 日程保存慢响应不会串写后来打开的安排 (1.4s)
+  ✓  3 apps/web/e2e/manual-teaching.spec.js:406:1 › 移回未排期丢响应后用原请求确认，不重复移动 (1.2s)
+  ✓  4 apps/web/e2e/manual-teaching.spec.js:468:1 › 离开后返回的未保存日程草稿不能覆盖期间的服务器变更 (1.5s)
+  ✓  5 apps/web/e2e/manual-teaching.spec.js:482:1 › 新建保存慢响应后切换安排，后写草稿跟随真实ID恢复 (1.2s)
+  ✓  6 apps/web/e2e/manual-teaching.spec.js:505:1 › 移入请求途中刷新后即使源事项已消失仍可按原键原体确认 (1.2s)
+
+  6 passed (13.3s)

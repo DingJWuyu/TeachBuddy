@@ -2,7 +2,7 @@
 
 Status: Draft，待用户视觉与交互评审。
 
-产品要求见 [PRODUCT_SCOPE.md](../../docs/product/scope.md)，页面共识见 [WORKBENCH_DESIGN.md](../../docs/product/workbench.md)。本文件只说明本轮源码原型已经覆盖到哪里，不缩减完整产品范围。
+产品要求见 [PRODUCT_SCOPE.md](../../docs/PRODUCT_SCOPE.md)，页面共识见 [WORKBENCH_DESIGN.md](../../docs/WORKBENCH_DESIGN.md)。本文件只说明本轮源码原型已经覆盖到哪里，不缩减完整产品范围。
 
 ## 入口与布局
 

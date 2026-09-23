@@ -70,7 +70,7 @@ test('MC06/10: adopted snapshots survive deletion; real classes reverse links pr
 
 
 test('MC07: all five math kinds produce real DOCX and PDF without private notes', {timeout:90000}, async()=>{
- const h=await harness();const out=new URL('../../../test-results/evidence/M43/v1/output/',import.meta.url);fs.mkdirSync(out,{recursive:true});
+ const h=await harness();const out=new URL('../../../docs/acceptance/evidence/M43/v1/output/',import.meta.url);fs.mkdirSync(out,{recursive:true});
  try {
   const samples=JSON.parse(fs.readFileSync(new URL('../../../docs/contracts/workbench/math/samples.json',import.meta.url)));
   const references=[];

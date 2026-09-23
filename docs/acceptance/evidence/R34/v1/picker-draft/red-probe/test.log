@@ -1,0 +1,45 @@
+
+Running 1 test using 1 worker
+
+(node:1648354) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-integration-picker-draft.spec.js:25:1 › 未手动保存直接取题后再次新建为空白草稿 (6.6s)
+
+
+  1) apps/web/e2e/materials-integration-picker-draft.spec.js:25:1 › 未手动保存直接取题后再次新建为空白草稿 ────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[data-section-id]')
+    Expected: 0
+    Received: 1
+    Timeout:  3000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[data-section-id]') with timeout 3000ms
+      - waiting for locator('[data-section-id]')
+        10 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      63 |     await nav(page, "备课");
+      64 |     await page.getByRole("button", { name: "新建备课", exact: true }).click();
+    > 65 |     await expect(page.locator("[data-section-id]")).toHaveCount(0, { timeout: 3000 });
+         |                                                     ^
+      66 |     await expect(page.getByRole("button", { name: "保存", exact: true })).toBeVisible();
+      67 |     expect(errors).toEqual([]);
+      68 |   } finally {
+        at /home/liam_t/项目/TeacherWorkspace-r34-picker-draft/apps/web/e2e/materials-integration-picker-draft.spec.js:65:53
+
+    Error Context: .scratch/r34-picker/red-probe/materials-integration-picker-draft-未手动保存直接取题后再次新建为空白草稿/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .scratch/r34-picker/red-probe/materials-integration-picker-draft-未手动保存直接取题后再次新建为空白草稿/trace.zip
+    Usage:
+
+        npx playwright show-trace .scratch/r34-picker/red-probe/materials-integration-picker-draft-未手动保存直接取题后再次新建为空白草稿/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-integration-picker-draft.spec.js:25:1 › 未手动保存直接取题后再次新建为空白草稿 ─────────────

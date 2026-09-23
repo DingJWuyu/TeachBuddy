@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:101872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:101872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/manual-lessons.spec.js:44:1 › 当前环节可就地取已有数学作品 (4.2s)
+  ✓  2 apps/web/e2e/manual-lessons.spec.js:242:1 › 资源就地预览采用、引用排序移动、删除环节和来源更新 (5.4s)
+
+  2 passed (13.2s)

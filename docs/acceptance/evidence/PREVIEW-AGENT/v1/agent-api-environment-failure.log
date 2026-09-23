@@ -1,0 +1,391 @@
+
+> refatos-v1@0.3.0 test:agent
+> node --test apps/api/test/agent.test.js
+
+TAP version 13
+# Subtest: WB-AG-019/020: 真实SDK只读404无assistant仍保存卡片，另一账户404
+ok 1 - WB-AG-019/020: 真实SDK只读404无assistant仍保存卡片，另一账户404
+  ---
+  duration_ms: 1026.878529
+  type: 'test'
+  ...
+# Subtest: WB-AG-019: 空读取结果和SDK成功标志、实际usage
+ok 2 - WB-AG-019: 空读取结果和SDK成功标志、实际usage
+  ---
+  duration_ms: 142.440742
+  type: 'test'
+  ...
+# Subtest: WB-AG-023: 重复写调用关联同一operation，业务只写一次
+ok 3 - WB-AG-023: 重复写调用关联同一operation，业务只写一次
+  ---
+  duration_ms: 333.122225
+  type: 'test'
+  ...
+# Subtest: WB-AG-005/010/016: 草稿冲突、发送同键重放、白名单和缺配置不产生请求
+ok 4 - WB-AG-005/010/016: 草稿冲突、发送同键重放、白名单和缺配置不产生请求
+  ---
+  duration_ms: 146.809918
+  type: 'test'
+  ...
+# Subtest: WB-AG-006: 发送前核验版本与软删除，历史引用冻结
+ok 5 - WB-AG-006: 发送前核验版本与软删除，历史引用冻结
+  ---
+  duration_ms: 105.058869
+  type: 'test'
+  ...
+# Subtest: WB-AG-012/023: 业务提交后journal失败，原题更新后核实仍是原键原体
+ok 6 - WB-AG-012/023: 业务提交后journal失败，原题更新后核实仍是原键原体
+  ---
+  duration_ms: 174.752857
+  type: 'test'
+  ...
+# Subtest: WB-AG-021: 读取异常映射安全失败，同批后续工具取消
+ok 7 - WB-AG-021: 读取异常映射安全失败，同批后续工具取消
+  ---
+  duration_ms: 178.12448
+  type: 'test'
+  ...
+# Subtest: WB-AG-013/017: 停止后无新请求，用量不完整，保留已接受输入
+ok 8 - WB-AG-013/017: 停止后无新请求，用量不完整，保留已接受输入
+  ---
+  duration_ms: 128.376076
+  type: 'test'
+  ...
+# Subtest: WB-AG-022/004: 保留库重启取消prepared、中断executing读取并补同ID原生结果
+ok 9 - WB-AG-022/004: 保留库重启取消prepared、中断executing读取并补同ID原生结果
+  ---
+  duration_ms: 189.027208
+  type: 'test'
+  ...
+# Subtest: WB-AG-023: 无效完整参数只生成拒绝卡，没有非法journal
+ok 10 - WB-AG-023: 无效完整参数只生成拒绝卡，没有非法journal
+  ---
+  duration_ms: 158.091044
+  type: 'test'
+  ...
+# Subtest: WB-AG-008: 工具布尔标记筛选与手工HTTP字面true保持一致
+ok 11 - WB-AG-008: 工具布尔标记筛选与手工HTTP字面true保持一致
+  ---
+  duration_ms: 143.900771
+  type: 'test'
+  ...
+# Subtest: WB-AG-011/020: HTTPS SSE各游标补发与snapshot一致，无额外请求
+ok 12 - WB-AG-011/020: HTTPS SSE各游标补发与snapshot一致，无额外请求
+  ---
+  duration_ms: 126.854564
+  type: 'test'
+  ...
+# Subtest: WB-AG-015: provider返回前撤销真实身份，后续工具取消且不写业务
+ok 13 - WB-AG-015: provider返回前撤销真实身份，后续工具取消且不写业务
+  ---
+  duration_ms: 117.625165
+  type: 'test'
+  ...
+# Subtest: WB-AG-018: 12次provider上限停止，无自动重置窗口
+ok 14 - WB-AG-018: 12次provider上限停止，无自动重置窗口
+  ---
+  duration_ms: 150.621899
+  type: 'test'
+  ...
+# Subtest: WB-AG-009/014: 复制已保存而备课版本冲突，保留副本和真实失败结果
+ok 15 - WB-AG-009/014: 复制已保存而备课版本冲突，保留副本和真实失败结果
+  ---
+  duration_ms: 115.688554
+  type: 'test'
+  ...
+# Subtest: WB-AG-018/021: 业务响应不匹配契约为只读failed，损坏entries保留原记录
+ok 16 - WB-AG-018/021: 业务响应不匹配契约为只读failed，损坏entries保留原记录
+  ---
+  duration_ms: 110.022437
+  type: 'test'
+  ...
+# tar: apps/api/.env.example: Cannot write: No space left on device
+# tar: apps/api/package.json: Cannot write: No space left on device
+# tar: apps/api/src/app.js: Cannot write: No space left on device
+# tar: apps/api/src/config/env.js: Cannot write: No space left on device
+# tar: apps/api/src/core/auth.js: Cannot write: No space left on device
+# tar: apps/api/src/core/dataStore.js: Cannot write: No space left on device
+# tar: apps/api/src/core/mail.js: Cannot write: No space left on device
+# tar: apps/api/src/core/moduleRegistry.js: Cannot write: No space left on device
+# tar: apps/api/src/core/validation.js: Cannot write: No space left on device
+# tar: apps/api/src/core/workspaceLayout.js: Cannot write: No space left on device
+# tar: apps/api/src/features/auth/index.js: Cannot write: No space left on device
+# tar: apps/api/src/features/auth/migrations/index.js: Cannot write: No space left on device
+# tar: apps/api/src/features/auth/operations.js: Cannot write: No space left on device
+# tar: apps/api/src/features/auth/passwords.js: Cannot write: No space left on device
+# tar: apps/api/src/features/auth/problems.js: Cannot write: No space left on device
+# tar: apps/api/src/features/auth/protocol.js: Cannot write: No space left on device
+# tar: apps/api/src/features/auth/store.js: Cannot write: No space left on device
+# tar: apps/api/src/features/auth/validation.js: Cannot write: No space left on device
+# tar: apps/api/src/middleware/errorHandler.js: Cannot write: No space left on device
+# tar: apps/api/src/middleware/notFound.js: Cannot write: No space left on device
+# tar: apps/api/src/middleware/requireAuth.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/lessons/index.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/lessons/migrations/index.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/lessons/repository.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/lessons/router.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/lessons/service.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/questions/contract.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/questions/index.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/questions/migrations/index.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/questions/repository.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/questions/router.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/questions/schema.js: Cannot write: No space left on device
+# tar: apps/api/src/modules/questions/service.js: Cannot write: No space left on device
+# tar: apps/api/src/scripts/verify-storage.js: Cannot write: No space left on device
+# tar: apps/api/src/server.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/http.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/identity.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/index.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/logger.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/migrations.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/moduleImplementations.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/moduleLoader.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/mutations.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/problems.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/schema.js: Cannot write: No space left on device
+# tar: apps/api/src/workbench/storage.js: Cannot write: No space left on device
+# tar: apps/api/test/api.test.js: Cannot write: No space left on device
+# tar: apps/api/test/auth-contract-accounts.test.js: Cannot write: No space left on device
+# tar: apps/api/test/auth-contract-faults.test.js: Cannot write: No space left on device
+# tar: apps/api/test/auth-contract-https.test.js: Cannot write: No space left on device
+# tar: apps/api/test/auth-contract-migration.test.js: Cannot write: No space left on device
+# tar: apps/api/test/auth-contract-protocol.test.js: Cannot write: No space left on device
+# tar: apps/api/test/auth-contract-sessions.test.js: Cannot write: No space left on device
+# tar: apps/api/test/auth-integration.test.js: Cannot write: No space left on device
+# tar: apps/api/test/first-flow-harness.js: Cannot write: No space left on device
+# tar: apps/api/test/first-flow-lessons.test.js: Cannot write: No space left on device
+# tar: apps/api/test/first-flow-migrations.test.js: Cannot write: No space left on device
+# tar: apps/api/test/first-flow-protocol.test.js: Cannot write: No space left on device
+# tar: apps/api/test/first-flow-questions.test.js: Cannot write: No space left on device
+# tar: apps/api/test/first-flow-real-runner.mjs: Cannot write: No space left on device
+# tar: apps/api/test/fixtures/auth-contract/harness.js: Cannot write: No space left on device
+# tar: apps/api/test/fixtures/auth-contract/https-smoke.mjs: Cannot write: No space left on device
+# tar: apps/api/test/fixtures/auth-integration/harness.js: Cannot write: No space left on device
+# tar: apps/api/test/fixtures/first-flow/accounts.js: Cannot write: No space left on device
+# tar: apps/api/test/fixtures/first-flow/broken/workbench-broken/index.js: Cannot write: No space left on device
+# tar: apps/api/test/fixtures/first-flow/broken/workbench-broken/migrations/index.js: Cannot write: No space left on device
+# tar: apps/api/test/fixtures/first-flow/catalog.js: Cannot write: No space left on device
+# tar: apps/api/test/fixtures/first-flow/modules/workbench-probe/index.js: Cannot write: No space left on device
+# tar: apps/api/test/fixtures/first-flow/modules/workbench-probe/migrations/index.js: Cannot write: No space left on device
+# tar: apps/api/test/workbench-catalog.test.js: Cannot write: No space left on device
+# tar: apps/api/test/workbench-http.test.js: Cannot write: No space left on device
+# tar: apps/api/test/workbench-identity.test.js: Cannot write: No space left on device
+# tar: apps/api/test/workbench-migrations.test.js: Cannot write: No space left on device
+# tar: apps/api/test/workbench-mutations.test.js: Cannot write: No space left on device
+# tar: apps/api/test/workbench-schema.test.js: Cannot write: No space left on device
+# tar: apps/api/test/workbench-test-context.js: Cannot write: No space left on device
+# tar: package.json: Cannot write: No space left on device
+# tar: packages/shared/package.json: Cannot write: No space left on device
+# tar: packages/shared/scripts/verify-catalog.mjs: Cannot write: No space left on device
+# tar: packages/shared/src/contract.js: Cannot write: No space left on device
+# tar: packages/shared/src/index.js: Cannot write: No space left on device
+# tar: packages/shared/src/moduleCatalog.js: Cannot write: No space left on device
+# tar: packages/shared/src/moduleCatalogValidation.js: Cannot write: No space left on device
+# tar: Exiting with failure status due to previous errors
+# Subtest: WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键核实
+ok 17 - WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键核实
+  ---
+  duration_ms: 6018.089308
+  type: 'test'
+  ...
+# Subtest: WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持
+not ok 18 - WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持
+  ---
+  duration_ms: 50.614292
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-preview-agent/apps/api/test/agent.test.js:282:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Command failed: tar -x -C /tmp/c26-a11-source-4LreFn
+    tar: apps/api/.env.example: Cannot write: No space left on device
+    tar: apps/api/package.json: Cannot write: No space left on device
+    tar: apps/api/src/app.js: Cannot write: No space left on device
+    tar: apps/api/src/config/env.js: Cannot write: No space left on device
+    tar: apps/api/src/core/auth.js: Cannot write: No space left on device
+    tar: apps/api/src/core/dataStore.js: Cannot write: No space left on device
+    tar: apps/api/src/core/mail.js: Cannot write: No space left on device
+    tar: apps/api/src/core/moduleRegistry.js: Cannot write: No space left on device
+    tar: apps/api/src/core/validation.js: Cannot write: No space left on device
+    tar: apps/api/src/core/workspaceLayout.js: Cannot write: No space left on device
+    tar: apps/api/src/features/auth/index.js: Cannot write: No space left on device
+    tar: apps/api/src/features/auth/migrations/index.js: Cannot write: No space left on device
+    tar: apps/api/src/features/auth/operations.js: Cannot write: No space left on device
+    tar: apps/api/src/features/auth/passwords.js: Cannot write: No space left on device
+    tar: apps/api/src/features/auth/problems.js: Cannot write: No space left on device
+    tar: apps/api/src/features/auth/protocol.js: Cannot write: No space left on device
+    tar: apps/api/src/features/auth/store.js: Cannot write: No space left on device
+    tar: apps/api/src/features/auth/validation.js: Cannot write: No space left on device
+    tar: apps/api/src/middleware/errorHandler.js: Cannot write: No space left on device
+    tar: apps/api/src/middleware/notFound.js: Cannot write: No space left on device
+    tar: apps/api/src/middleware/requireAuth.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/lessons/index.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/lessons/migrations/index.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/lessons/repository.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/lessons/router.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/lessons/service.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/questions/contract.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/questions/index.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/questions/migrations/index.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/questions/repository.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/questions/router.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/questions/schema.js: Cannot write: No space left on device
+    tar: apps/api/src/modules/questions/service.js: Cannot write: No space left on device
+    tar: apps/api/src/scripts/verify-storage.js: Cannot write: No space left on device
+    tar: apps/api/src/server.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/http.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/identity.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/index.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/logger.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/migrations.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/moduleImplementations.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/moduleLoader.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/mutations.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/problems.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/schema.js: Cannot write: No space left on device
+    tar: apps/api/src/workbench/storage.js: Cannot write: No space left on device
+    tar: apps/api/test/api.test.js: Cannot write: No space left on device
+    tar: apps/api/test/auth-contract-accounts.test.js: Cannot write: No space left on device
+    tar: apps/api/test/auth-contract-faults.test.js: Cannot write: No space left on device
+    tar: apps/api/test/auth-contract-https.test.js: Cannot write: No space left on device
+    tar: apps/api/test/auth-contract-migration.test.js: Cannot write: No space left on device
+    tar: apps/api/test/auth-contract-protocol.test.js: Cannot write: No space left on device
+    tar: apps/api/test/auth-contract-sessions.test.js: Cannot write: No space left on device
+    tar: apps/api/test/auth-integration.test.js: Cannot write: No space left on device
+    tar: apps/api/test/first-flow-harness.js: Cannot write: No space left on device
+    tar: apps/api/test/first-flow-lessons.test.js: Cannot write: No space left on device
+    tar: apps/api/test/first-flow-migrations.test.js: Cannot write: No space left on device
+    tar: apps/api/test/first-flow-protocol.test.js: Cannot write: No space left on device
+    tar: apps/api/test/first-flow-questions.test.js: Cannot write: No space left on device
+    tar: apps/api/test/first-flow-real-runner.mjs: Cannot write: No space left on device
+    tar: apps/api/test/fixtures/auth-contract/harness.js: Cannot write: No space left on device
+    tar: apps/api/test/fixtures/auth-contract/https-smoke.mjs: Cannot write: No space left on device
+    tar: apps/api/test/fixtures/auth-integration/harness.js: Cannot write: No space left on device
+    tar: apps/api/test/fixtures/first-flow/accounts.js: Cannot write: No space left on device
+    tar: apps/api/test/fixtures/first-flow/broken/workbench-broken/index.js: Cannot write: No space left on device
+    tar: apps/api/test/fixtures/first-flow/broken/workbench-broken/migrations/index.js: Cannot write: No space left on device
+    tar: apps/api/test/fixtures/first-flow/catalog.js: Cannot write: No space left on device
+    tar: apps/api/test/fixtures/first-flow/modules/workbench-probe/index.js: Cannot write: No space left on device
+    tar: apps/api/test/fixtures/first-flow/modules/workbench-probe/migrations/index.js: Cannot write: No space left on device
+    tar: apps/api/test/workbench-catalog.test.js: Cannot write: No space left on device
+    tar: apps/api/test/workbench-http.test.js: Cannot write: No space left on device
+    tar: apps/api/test/workbench-identity.test.js: Cannot write: No space left on device
+    tar: apps/api/test/workbench-migrations.test.js: Cannot write: No space left on device
+    tar: apps/api/test/workbench-mutations.test.js: Cannot write: No space left on device
+    tar: apps/api/test/workbench-schema.test.js: Cannot write: No space left on device
+    tar: apps/api/test/workbench-test-context.js: Cannot write: No space left on device
+    tar: package.json: Cannot write: No space left on device
+    tar: packages/shared/package.json: Cannot write: No space left on device
+    tar: packages/shared/scripts/verify-catalog.mjs: Cannot write: No space left on device
+    tar: packages/shared/src/contract.js: Cannot write: No space left on device
+    tar: packages/shared/src/index.js: Cannot write: No space left on device
+    tar: packages/shared/src/moduleCatalog.js: Cannot write: No space left on device
+    tar: packages/shared/src/moduleCatalogValidation.js: Cannot write: No space left on device
+    tar: Exiting with failure status due to previous errors
+    
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    genericNodeError (node:internal/errors:983:15)
+    wrappedFn (node:internal/errors:537:14)
+    checkExecSyncError (node:child_process:916:11)
+    execFileSync (node:child_process:952:15)
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-preview-agent/apps/api/test/agent.test.js:285:2)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  ...
+# Subtest: WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+not ok 19 - WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+  ---
+  duration_ms: 85.047191
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-preview-agent/apps/api/test/agent.test.js:307:1'
+  failureType: 'testCodeFailure'
+  error: 'error:0480006C:PEM routines::no start line'
+  code: 'ERR_OSSL_PEM_NO_START_LINE'
+  stack: |-
+    node:internal/tls/secure-context:70:13
+    Array.forEach (<anonymous>)
+    setCerts (node:internal/tls/secure-context:68:3)
+    configSecureContext (node:internal/tls/secure-context:191:5)
+    Object.createSecureContext (node:internal/tls/common:113:3)
+    Server.setSecureContext (node:internal/tls/wrap:1598:27)
+    Server (node:internal/tls/wrap:1462:8)
+    new Server (node:https:97:3)
+    Object.createServer (node:https:152:10)
+    createIntegration (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-preview-agent/apps/api/test/fixtures/c26/harness.js:11:24)
+  ...
+# Subtest: WB-AG-016/017: SDK未知或替换模型零请求，额度错误不重试且usage不完整
+not ok 20 - WB-AG-016/017: SDK未知或替换模型零请求，额度错误不重试且usage不完整
+  ---
+  duration_ms: 119.938916
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-preview-agent/apps/api/test/agent.test.js:329:1'
+  failureType: 'testCodeFailure'
+  error: 'error:0480006C:PEM routines::no start line'
+  code: 'ERR_OSSL_PEM_NO_START_LINE'
+  stack: |-
+    node:internal/tls/secure-context:70:13
+    Array.forEach (<anonymous>)
+    setCerts (node:internal/tls/secure-context:68:3)
+    configSecureContext (node:internal/tls/secure-context:191:5)
+    Object.createSecureContext (node:internal/tls/common:113:3)
+    Server.setSecureContext (node:internal/tls/wrap:1598:27)
+    Server (node:internal/tls/wrap:1462:8)
+    new Server (node:https:97:3)
+    Object.createServer (node:https:152:10)
+    createIntegration (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-preview-agent/apps/api/test/fixtures/c26/harness.js:11:24)
+  ...
+# Subtest: WB-AG-018: prepared落盘失败不能执行业务或发出未保存toolCall事件
+not ok 21 - WB-AG-018: prepared落盘失败不能执行业务或发出未保存toolCall事件
+  ---
+  duration_ms: 37.620691
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-preview-agent/apps/api/test/agent.test.js:343:1'
+  failureType: 'testCodeFailure'
+  error: 'error:0480006C:PEM routines::no start line'
+  code: 'ERR_OSSL_PEM_NO_START_LINE'
+  stack: |-
+    node:internal/tls/secure-context:70:13
+    Array.forEach (<anonymous>)
+    setCerts (node:internal/tls/secure-context:68:3)
+    configSecureContext (node:internal/tls/secure-context:191:5)
+    Object.createSecureContext (node:internal/tls/common:113:3)
+    Server.setSecureContext (node:internal/tls/wrap:1598:27)
+    Server (node:internal/tls/wrap:1462:8)
+    new Server (node:https:97:3)
+    Object.createServer (node:https:152:10)
+    createIntegration (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-preview-agent/apps/api/test/fixtures/c26/harness.js:11:24)
+  ...
+# Subtest: WB-AG-013/022: 首个写入已确认后停止，同批未开始调用取消且不回滚
+not ok 22 - WB-AG-013/022: 首个写入已确认后停止，同批未开始调用取消且不回滚
+  ---
+  duration_ms: 38.687556
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-preview-agent/apps/api/test/agent.test.js:350:1'
+  failureType: 'testCodeFailure'
+  error: 'error:0480006C:PEM routines::no start line'
+  code: 'ERR_OSSL_PEM_NO_START_LINE'
+  stack: |-
+    node:internal/tls/secure-context:70:13
+    Array.forEach (<anonymous>)
+    setCerts (node:internal/tls/secure-context:68:3)
+    configSecureContext (node:internal/tls/secure-context:191:5)
+    Object.createSecureContext (node:internal/tls/common:113:3)
+    Server.setSecureContext (node:internal/tls/wrap:1598:27)
+    Server (node:internal/tls/wrap:1462:8)
+    new Server (node:https:97:3)
+    Object.createServer (node:https:152:10)
+    createIntegration (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-preview-agent/apps/api/test/fixtures/c26/harness.js:11:24)
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 17
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11274.286898

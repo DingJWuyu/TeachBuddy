@@ -2,7 +2,7 @@ import json, pathlib, sys, time, subprocess
 import uno
 from com.sun.star.beans import PropertyValue
 root=pathlib.Path.cwd()
-evidence=root/'test-results/evidence/R34/v1/office'
+evidence=root/'docs/acceptance/evidence/R34/v1/office'
 evidence.mkdir(parents=True,exist_ok=True)
 def prop(name,value):
  p=PropertyValue();p.Name=name;p.Value=value;return p
@@ -22,7 +22,7 @@ def formulas(document):
  return result
 records=[]
 for kind in ['lesson-plan','handout','practice']:
- source=root/f'test-results/evidence/R34/v1/outputs/{kind}-docx-00.docx'
+ source=root/f'docs/acceptance/evidence/R34/v1/outputs/{kind}-docx-00.docx'
  copy=evidence/f'{kind}-edited.docx';copy.write_bytes(source.read_bytes())
  doc=desktop.loadComponentFromURL(copy.as_uri(),'_blank',0,(prop('Hidden',False),prop('MacroExecutionMode',0),prop('UpdateDocMode',0)))
  time.sleep(0.5)

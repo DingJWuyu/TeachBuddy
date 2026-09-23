@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:99812) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 apps/web/e2e/manual-questions.spec.js:75:1 › 图文公式答案、分类标记检索、删除恢复、批量备课与班级反馈 (6.4s)
+  ✓  2 apps/web/e2e/manual-questions.spec.js:163:1 › 删除分类后保留未保存编辑并继续保存 (1.9s)
+  ✓  3 apps/web/e2e/manual-questions.spec.js:188:1 › 较慢的旧搜索响应不会覆盖最新搜索 (1.2s)
+
+  3 passed (13.3s)

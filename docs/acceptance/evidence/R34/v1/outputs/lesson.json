@@ -1,0 +1,327 @@
+{
+  "id": "8d695ccd-4c83-47c4-94ff-2f0b4f9bf344",
+  "version": 1,
+  "createdAt": "2026-09-22T11:20:31.970Z",
+  "updatedAt": "2026-09-22T11:20:31.970Z",
+  "deletedAt": null,
+  "title": "函数与定义域 - 输出核验",
+  "intro": {
+    "version": 2,
+    "blocks": [
+      {
+        "type": "paragraph",
+        "runs": [
+          {
+            "type": "text",
+            "text": "INTRO-PUBLIC 本课从定义域出发，讨论代数表达式的意义。"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "runs": [
+          {
+            "type": "text",
+            "text": "行内分式："
+          },
+          {
+            "type": "math",
+            "latex": "\\frac{2x-1}{x+3}"
+          }
+        ]
+      },
+      {
+        "type": "teacher-note",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "TEACHER-ONLY 关注条件遗漏。"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "b4df5b5d-9dca-4716-b440-0a8da0884fa5",
+      "title": "自主探究",
+      "content": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "SECTION-PUBLIC 请先独立思考，再交流。"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "rows": [
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "表达式"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "限制条件"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "\\sqrt{x-1}"
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "math",
+                      "latex": "x\\ge1"
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "references": [
+        {
+          "id": "24a981d5-9a2b-4faf-8938-223416726953",
+          "kind": "question",
+          "questionId": "34000000-0000-4000-8000-000000000001",
+          "questionVersion": 1,
+          "note": "LESSON-NOTE 留意分母不为零。",
+          "snapshot": {
+            "title": "函数的定义域",
+            "body": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "求函数 "
+                    },
+                    {
+                      "type": "math",
+                      "latex": "y=\\frac{2x-1}{x+3}"
+                    },
+                    {
+                      "type": "text",
+                      "text": " 的定义域。"
+                    }
+                  ]
+                },
+                {
+                  "type": "math",
+                  "latex": "f(x)=\\begin{cases}x^2&x<0\\\\x+1&x\\ge0\\end{cases}"
+                },
+                {
+                  "type": "math",
+                  "latex": "\\sqrt[3]{x_1^2+1}+\\log_2 x\\in(-\\infty,3]"
+                },
+                {
+                  "type": "list",
+                  "role": "subquestions",
+                  "items": [
+                    {
+                      "label": "(1)",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "写出分式有意义的条件。"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "(2)",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "讨论分段函数在零点两侧的取值。"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "image",
+                  "fileId": "8d923ba6-5abd-4c61-be62-f661db8086ac",
+                  "alt": "三角形 ABC",
+                  "widthMm": 80
+                }
+              ]
+            },
+            "solution": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "ANSWER-ONLY Q2配方："
+                    }
+                  ]
+                },
+                {
+                  "type": "math",
+                  "latex": "x^2-2x=(x-1)^2-1"
+                }
+              ]
+            },
+            "answerStatus": "present"
+          },
+          "latestVersion": 1,
+          "sourceState": "active"
+        },
+        {
+          "id": "d319675a-78f7-4a42-9c3f-60ec96abbb71",
+          "kind": "resource",
+          "resourceId": "34000000-0000-4000-8000-000000000002",
+          "resourceVersion": 1,
+          "note": "RESOURCE-LESSON-NOTE",
+          "snapshot": {
+            "title": "课堂阅读资料",
+            "fileId": "8d519515-e174-4da7-97ea-4cea260b2b99",
+            "fileName": "课堂资料.pdf",
+            "mediaType": "application/pdf",
+            "supplementPreviewFileId": null
+          },
+          "latestVersion": 1,
+          "sourceState": "active"
+        },
+        {
+          "id": "347bb127-0f03-4231-b1ff-722f6fa8a82c",
+          "kind": "question",
+          "questionId": "60ce7cf0-157d-4f92-bbd3-d46f42feae29",
+          "questionVersion": 1,
+          "note": "",
+          "snapshot": {
+            "title": "未提供答案的练习",
+            "body": {
+              "version": 2,
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "求函数 "
+                    },
+                    {
+                      "type": "math",
+                      "latex": "y=\\frac{2x-1}{x+3}"
+                    },
+                    {
+                      "type": "text",
+                      "text": " 的定义域。"
+                    }
+                  ]
+                },
+                {
+                  "type": "math",
+                  "latex": "f(x)=\\begin{cases}x^2&x<0\\\\x+1&x\\ge0\\end{cases}"
+                },
+                {
+                  "type": "math",
+                  "latex": "\\sqrt[3]{x_1^2+1}+\\log_2 x\\in(-\\infty,3]"
+                },
+                {
+                  "type": "list",
+                  "role": "subquestions",
+                  "items": [
+                    {
+                      "label": "(1)",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "写出分式有意义的条件。"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "(2)",
+                      "blocks": [
+                        {
+                          "type": "paragraph",
+                          "runs": [
+                            {
+                              "type": "text",
+                              "text": "讨论分段函数在零点两侧的取值。"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "image",
+                  "fileId": "8d923ba6-5abd-4c61-be62-f661db8086ac",
+                  "alt": "三角形 ABC",
+                  "widthMm": 80
+                }
+              ]
+            },
+            "solution": {
+              "version": 2,
+              "blocks": []
+            },
+            "answerStatus": "absent"
+          },
+          "latestVersion": 1,
+          "sourceState": "active"
+        }
+      ]
+    }
+  ],
+  "materials": []
+}

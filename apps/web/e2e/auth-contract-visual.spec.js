@@ -1,6 +1,6 @@
 /*
  * Three-viewport visual and interaction evidence for the account entry. The
- * screenshots are written under test-results/evidence/AUTH-FRONTEND/v1/.
+ * screenshots are written under docs/acceptance/evidence/AUTH-FRONTEND/v1/.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -25,7 +25,7 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
  * A normal suite run keeps its captures in the ignored test-results directory
  * so regenerated evidence does not dirty the working tree.
  */
-const EVIDENCE_DIR = path.join(REPO_ROOT, 'test-results/evidence/AUTH-FRONTEND/v1/screenshots');
+const EVIDENCE_DIR = path.join(REPO_ROOT, 'docs/acceptance/evidence/AUTH-FRONTEND/v1/screenshots');
 const SHOT_DIR = process.env.AUTH_WRITE_EVIDENCE === '1'
   ? EVIDENCE_DIR
   : path.join(REPO_ROOT, 'apps/web/test-results/auth-contract-screenshots');

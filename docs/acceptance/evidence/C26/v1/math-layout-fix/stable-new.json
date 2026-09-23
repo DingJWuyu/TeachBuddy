@@ -1,0 +1,2118 @@
+{
+  "mode": "new",
+  "label": "stable",
+  "directory": "/tmp/c26-math-new-eeVrL9",
+  "productModelRequests": 0,
+  "layouts": [
+    {
+      "width": 1440,
+      "formulas": [
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 0,
+          "roots": 0
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 1,
+          "roots": 1
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 1,
+          "roots": 1
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 0,
+          "roots": 0
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 1,
+          "roots": 1
+        }
+      ],
+      "geometry": {
+        "width": 872,
+        "scrollWidth": 872,
+        "shell": 1440,
+        "viewport": 1440
+      },
+      "scrolling": [
+        {
+          "clientWidth": 840,
+          "scrollWidth": 2164,
+          "scrollLeft": 1200
+        }
+      ]
+    },
+    {
+      "width": 820,
+      "formulas": [
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 0,
+          "roots": 0
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 1,
+          "roots": 1
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 1,
+          "roots": 1
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 0,
+          "roots": 0
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 1,
+          "roots": 1
+        }
+      ],
+      "geometry": {
+        "width": 748,
+        "scrollWidth": 748,
+        "shell": 820,
+        "viewport": 820
+      },
+      "scrolling": [
+        {
+          "clientWidth": 716,
+          "scrollWidth": 2164,
+          "scrollLeft": 1200
+        },
+        {
+          "clientWidth": 716,
+          "scrollWidth": 720,
+          "scrollLeft": 4
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "formulas": [
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 0,
+          "roots": 0
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 1,
+          "roots": 1
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 1,
+          "roots": 1
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            },
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 0,
+          "roots": 0
+        },
+        {
+          "split": 0,
+          "bases": [
+            {
+              "display": "inline-block",
+              "whiteSpace": "nowrap"
+            }
+          ],
+          "fractions": 1,
+          "roots": 1
+        }
+      ],
+      "geometry": {
+        "width": 318,
+        "scrollWidth": 318,
+        "shell": 390,
+        "viewport": 390
+      },
+      "scrolling": [
+        {
+          "clientWidth": 298,
+          "scrollWidth": 431,
+          "scrollLeft": 133
+        },
+        {
+          "clientWidth": 298,
+          "scrollWidth": 2164,
+          "scrollLeft": 1200
+        },
+        {
+          "clientWidth": 298,
+          "scrollWidth": 720,
+          "scrollLeft": 422
+        }
+      ]
+    }
+  ],
+  "question": [
+    {
+      "split": 0,
+      "bases": [
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        }
+      ],
+      "fractions": 1,
+      "roots": 1
+    },
+    {
+      "split": 0,
+      "bases": [
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        }
+      ],
+      "fractions": 1,
+      "roots": 1
+    }
+  ],
+  "panel": [
+    {
+      "split": 0,
+      "bases": [
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        }
+      ],
+      "fractions": 0,
+      "roots": 0
+    },
+    {
+      "split": 0,
+      "bases": [
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        }
+      ],
+      "fractions": 1,
+      "roots": 1
+    },
+    {
+      "split": 0,
+      "bases": [
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        }
+      ],
+      "fractions": 1,
+      "roots": 1
+    },
+    {
+      "split": 0,
+      "bases": [
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        },
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        }
+      ],
+      "fractions": 0,
+      "roots": 0
+    },
+    {
+      "split": 0,
+      "bases": [
+        {
+          "display": "inline-block",
+          "whiteSpace": "nowrap"
+        }
+      ],
+      "fractions": 1,
+      "roots": 1
+    }
+  ],
+  "controlledProviderRequests": 1,
+  "restart": "PASS",
+  "status": "PASS"
+}

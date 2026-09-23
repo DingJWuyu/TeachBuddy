@@ -1,0 +1,26 @@
+
+Running 1 test using 1 worker
+
+(node:125454) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+DOC preview {"fileId":"2d057981-21e9-4374-9846-5f6f6bfb142c","jobId":null,"state":"limited","renditionFileId":"9e8986d4-42a5-40e7-9c01-76e2ad3f1334","pageCount":4,"pages":[{"page":1,"width":1855,"height":2400,"imageFileId":"69b07594-a7f9-4ee0-af96-f35d32f16156"},{"page":2,"width":1855,"height":2400,"imageFileId":"780ce012-1285-4e9d-9d7c-1f8d7553d7b5"},{"page":3,"width":1855,"height":2400,"imageFileId":"b489a5da-621e-4c96-94c2-e29b7d728527"},{"page":4,"width":1855,"height":2400,"imageFileId":"04332311-8662-4474-9e59-42ddcdd8b7e5"}],"issues":["legacy-object-loss"]}
+DOC extracted [
+  'C22 Office 固定样本 W',
+  '                      C22 实验批次',
+  '                      $2026-09-21$',
+  'C22 固定样本 W',
+  '以下六题用于验证中文、公式、配图、分页和已有答案在 Office 文件中的保留情况。',
+  'Q1',
+  '求函数           的定义域。',
+  '选项 A     ；B           ；C           ；D       。',
+  'Q2',
+  '已知            ，配坐标轴与抛物线图，标出顶点和两个横轴交点。',
+  'Q2 函数图',
+  '1',
+  '求零点',
+  '2',
+  '写出单调递增区间。解析保留配方               。'
+]
+  ✓  1 apps/web/e2e/manual-questions.spec.js:249:1 › 旧 DOC 本机转换后自动读取，对照校对并保存重开 (6.7s)
+
+  1 passed (10.8s)

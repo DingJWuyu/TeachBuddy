@@ -1,0 +1,740 @@
+{
+  "directory": "/home/liam_t/r34-pandoc-run/tmp/r34-pandoc-http-JAk3gI",
+  "lessonId": "d47e115a-abeb-49ac-b690-24ac1ed18354",
+  "manifest": [
+    {
+      "name": "lesson-plan-00.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "lesson-plan",
+        "format": "docx",
+        "includeAnswers": false,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "e4d25531ddfecb5afaf99496cab1be088210713a6f53c944a5e44aff1b095fc0",
+      "formulas": [
+        "\\sqrt[3]{x} + \\frac{1}{2}",
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}"
+      ],
+      "pages": null,
+      "fileId": "3c058b0f-126f-448f-b5e8-2829b835f1b1"
+    },
+    {
+      "name": "lesson-plan-00.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "lesson-plan",
+        "format": "pdf",
+        "includeAnswers": false,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "42e73bbb9384e90eaa7e4a50797ae4d3e6fd7b3f102377d0ed6f0c6743265bd0",
+      "formulas": null,
+      "pages": 3,
+      "fileId": "cb89b357-71a5-4372-b209-531f9f514e6c"
+    },
+    {
+      "name": "lesson-plan-01.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "lesson-plan",
+        "format": "docx",
+        "includeAnswers": false,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "7afeef647ad3a8458c7154eafb212be3911ac10b624bedfb740ee453e4d62adf",
+      "formulas": [
+        "\\sqrt[3]{x} + \\frac{1}{2}",
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}"
+      ],
+      "pages": null,
+      "fileId": "a882dd1e-f46d-4ffc-a150-0ca9af162746"
+    },
+    {
+      "name": "lesson-plan-01.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "lesson-plan",
+        "format": "pdf",
+        "includeAnswers": false,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "501c4675988915c9fec04cd4d532beaf1135681e0ce8e1e9816ebaa77873c1b9",
+      "formulas": null,
+      "pages": 3,
+      "fileId": "2d6f2b75-4b08-4822-87a8-ba2a486421b7"
+    },
+    {
+      "name": "lesson-plan-10.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "lesson-plan",
+        "format": "docx",
+        "includeAnswers": true,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "94080d52771bd8db053a711581c3a20b2c870ebaae3685c49d31307b5d86d37e",
+      "formulas": [
+        "\\sqrt[3]{x} + \\frac{1}{2}",
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}",
+        "f(x) = (x - 1)^{2} - 4",
+        "\\lbrack 1, + \\infty)",
+        "a = - 1",
+        "f(1) = 0",
+        "x > 1",
+        "x - 1 \\leq 2",
+        "1 < x \\leq 3",
+        "BC = 5",
+        "\\tan B = \\frac{3}{4}"
+      ],
+      "pages": null,
+      "fileId": "8da152e3-e9f8-45bd-bcd3-e6318313e5ab"
+    },
+    {
+      "name": "lesson-plan-10.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "lesson-plan",
+        "format": "pdf",
+        "includeAnswers": true,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "84534d0998f1c3b66cdd8fe0d4bca124448781c9655a41041a650b756486fa51",
+      "formulas": null,
+      "pages": 3,
+      "fileId": "57ff1dbe-2d15-49b2-b6f4-1abe4d82a5b1"
+    },
+    {
+      "name": "lesson-plan-11.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "lesson-plan",
+        "format": "docx",
+        "includeAnswers": true,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "87bf653a12194993c6501f8c2117082d5adbc73440929f189e86aa870060d3ac",
+      "formulas": [
+        "\\sqrt[3]{x} + \\frac{1}{2}",
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}",
+        "f(x) = (x - 1)^{2} - 4",
+        "\\lbrack 1, + \\infty)",
+        "a = - 1",
+        "f(1) = 0",
+        "x > 1",
+        "x - 1 \\leq 2",
+        "1 < x \\leq 3",
+        "BC = 5",
+        "\\tan B = \\frac{3}{4}"
+      ],
+      "pages": null,
+      "fileId": "46d16c7c-739e-4ecc-880d-fde792ba3b51"
+    },
+    {
+      "name": "lesson-plan-11.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "lesson-plan",
+        "format": "pdf",
+        "includeAnswers": true,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "3c64b431e848f4c19a68b0d3af210ce6c2487ffcd5e08bdb50057efba9f43d07",
+      "formulas": null,
+      "pages": 3,
+      "fileId": "cd21c852-e337-4bad-81be-cde4dfbc3be6"
+    },
+    {
+      "name": "handout-00.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "handout",
+        "format": "docx",
+        "includeAnswers": false,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "1a35edb7c2b031f89295492597abdd10b02642ea27e2822b4fcb093797b795cc",
+      "formulas": [
+        "\\sqrt[3]{x} + \\frac{1}{2}",
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}"
+      ],
+      "pages": null,
+      "fileId": "8cbea02c-2d35-42ca-a30e-d39c7e07ad10"
+    },
+    {
+      "name": "handout-00.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "handout",
+        "format": "pdf",
+        "includeAnswers": false,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "744ae1c9fe943416444d63716923c40993aac5b26dfc0f6c0aee942b8b64ad19",
+      "formulas": null,
+      "pages": 4,
+      "fileId": "8ff78732-f0c5-4b3f-99fa-201ca48f418b"
+    },
+    {
+      "name": "handout-01.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "handout",
+        "format": "docx",
+        "includeAnswers": false,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "e1b291f71d68be175c572acc04c09f33ba6314841855101397d7cb2f99b1d7b3",
+      "formulas": [
+        "\\sqrt[3]{x} + \\frac{1}{2}",
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}"
+      ],
+      "pages": null,
+      "fileId": "3735cb61-fd83-4bde-8529-1a811c732c89"
+    },
+    {
+      "name": "handout-01.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "handout",
+        "format": "pdf",
+        "includeAnswers": false,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "90a017fff3ef0779f1e2de777e6ab5d1f0d529fc963bcd8e79f412473eff3a98",
+      "formulas": null,
+      "pages": 4,
+      "fileId": "2c1ac0ff-0265-4659-b023-4d9c07fcdd3d"
+    },
+    {
+      "name": "handout-10.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "handout",
+        "format": "docx",
+        "includeAnswers": true,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "45ff660f4362cc34c2bfbd4fa7e944b1ec3ba7e19802d7b876265eeed84de60b",
+      "formulas": [
+        "\\sqrt[3]{x} + \\frac{1}{2}",
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}",
+        "f(x) = (x - 1)^{2} - 4",
+        "\\lbrack 1, + \\infty)",
+        "a = - 1",
+        "f(1) = 0",
+        "x > 1",
+        "x - 1 \\leq 2",
+        "1 < x \\leq 3",
+        "BC = 5",
+        "\\tan B = \\frac{3}{4}"
+      ],
+      "pages": null,
+      "fileId": "f2c08c49-e729-484b-a2e6-74d3ec2bbaf6"
+    },
+    {
+      "name": "handout-10.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "handout",
+        "format": "pdf",
+        "includeAnswers": true,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "7f5a193e35e4f48aba034c1c19e122e1b4193baf2034fbbf1bd22f31bd53befd",
+      "formulas": null,
+      "pages": 4,
+      "fileId": "260cb177-8e67-4d02-948a-cac1c5997a11"
+    },
+    {
+      "name": "handout-11.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "handout",
+        "format": "docx",
+        "includeAnswers": true,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "60999d846d3f597521b5442a381b21aa5f77c5165c010d9d0a907a468f0e5c8b",
+      "formulas": [
+        "\\sqrt[3]{x} + \\frac{1}{2}",
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}",
+        "f(x) = (x - 1)^{2} - 4",
+        "\\lbrack 1, + \\infty)",
+        "a = - 1",
+        "f(1) = 0",
+        "x > 1",
+        "x - 1 \\leq 2",
+        "1 < x \\leq 3",
+        "BC = 5",
+        "\\tan B = \\frac{3}{4}"
+      ],
+      "pages": null,
+      "fileId": "11c420ac-756a-40e8-9268-c1dfb73170de"
+    },
+    {
+      "name": "handout-11.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "handout",
+        "format": "pdf",
+        "includeAnswers": true,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "d58ba902316255eb2fba06994df107ad0cb4e053378b7ae82bc344a117be92ef",
+      "formulas": null,
+      "pages": 5,
+      "fileId": "cb34cef2-fee3-48fc-b6f4-6e4c688db24f"
+    },
+    {
+      "name": "practice-00.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "practice",
+        "format": "docx",
+        "includeAnswers": false,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "d6aeaa1dcf1b198cfbd0f0b98bc7008d5431aa4bc7567ba1ce8e4efecf5d7f72",
+      "formulas": [
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}"
+      ],
+      "pages": null,
+      "fileId": "e0866be8-143c-42db-bd87-2d4c21a8aae4"
+    },
+    {
+      "name": "practice-00.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "practice",
+        "format": "pdf",
+        "includeAnswers": false,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "ca75a51c580279cabd5dd3e3bcc9f12a41302535244ca149c88978b214d976d7",
+      "formulas": null,
+      "pages": 4,
+      "fileId": "f14e0e6f-c128-4990-b0a5-fc5110baa177"
+    },
+    {
+      "name": "practice-01.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "practice",
+        "format": "docx",
+        "includeAnswers": false,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "ab8f6c00fdcc52385fbdd7a6cf7fa5793e82d6450d8f35294dc15689dee5e2b2",
+      "formulas": [
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}"
+      ],
+      "pages": null,
+      "fileId": "e94e4c21-43ef-47cb-a0ae-829ec60c8496"
+    },
+    {
+      "name": "practice-01.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "practice",
+        "format": "pdf",
+        "includeAnswers": false,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "a25cc718166a4cb2820818abd23159f1aa1fe3cf06faa06492dea0248b751dd6",
+      "formulas": null,
+      "pages": 4,
+      "fileId": "c6a05992-32b6-4b6e-8c9c-f36ec6850c41"
+    },
+    {
+      "name": "practice-10.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "practice",
+        "format": "docx",
+        "includeAnswers": true,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "6b804c3c920ce1956a03aae597e9cc89da745b3ef25869bb05a1ef2e698566df",
+      "formulas": [
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}",
+        "f(x) = (x - 1)^{2} - 4",
+        "\\lbrack 1, + \\infty)",
+        "a = - 1",
+        "f(1) = 0",
+        "x > 1",
+        "x - 1 \\leq 2",
+        "1 < x \\leq 3",
+        "BC = 5",
+        "\\tan B = \\frac{3}{4}"
+      ],
+      "pages": null,
+      "fileId": "78436f32-098c-422f-a7f4-af30ef278510"
+    },
+    {
+      "name": "practice-10.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "practice",
+        "format": "pdf",
+        "includeAnswers": true,
+        "includeTeacherNotes": false,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "1682990c7edc7bf8aeb6a69b5e8f6fd1ed153d57401a829cb3db194957cabf53",
+      "formulas": null,
+      "pages": 4,
+      "fileId": "30743d86-a88d-48b5-b22b-1b95d3bf0cb4"
+    },
+    {
+      "name": "practice-11.docx",
+      "options": {
+        "baseVersion": 1,
+        "kind": "practice",
+        "format": "docx",
+        "includeAnswers": true,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "7642cb4729eb8c2a0e8b4db89e0f74f1636112689227d03bc65312537c93d177",
+      "formulas": [
+        "f(x) = \\frac{\\sqrt{2x - 1}}{x + 2}",
+        "\\lbrack\\frac{1}{2}, + \\infty)",
+        "\\lbrack\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "(\\frac{1}{2},2) \\cup (2, + \\infty)",
+        "( - \\infty,2) \\cup (2, + \\infty)",
+        "f(x) = x^{2} - 2x - 3",
+        "( - 1,0)",
+        "(1, - 4)",
+        "(3,0)",
+        "f(x) = \\left\\{ \\begin{matrix}\nax + 1 & x < 0 \\\\\nx^{2} - 1 & x \\geq 0\n\\end{matrix} \\right.\\ ",
+        "f( - 2) = 3",
+        "f(1)",
+        "\\log_{2}(x - 1) \\leq 1",
+        "\\angle A = 90^{\\circ}",
+        "\\tan B",
+        "ABCD - A_{1}B_{1}C_{1}D_{1}",
+        "AC_{1}",
+        "f(x) = (x - 1)^{2} - 4",
+        "\\lbrack 1, + \\infty)",
+        "a = - 1",
+        "f(1) = 0",
+        "x > 1",
+        "x - 1 \\leq 2",
+        "1 < x \\leq 3",
+        "BC = 5",
+        "\\tan B = \\frac{3}{4}"
+      ],
+      "pages": null,
+      "fileId": "f4cbaf90-ace5-47bb-800a-da46fb47741b"
+    },
+    {
+      "name": "practice-11.pdf",
+      "options": {
+        "baseVersion": 1,
+        "kind": "practice",
+        "format": "pdf",
+        "includeAnswers": true,
+        "includeTeacherNotes": true,
+        "sectionIds": [
+          "8461de3a-4040-4d68-8ffa-b7cf20228f31"
+        ],
+        "materialReferenceIds": [],
+        "answerSpaceLines": 4
+      },
+      "sha256": "569530dd3177b97ef5ce53197d0b432724089f38641788fa08aa6194f7fc7d72",
+      "formulas": null,
+      "pages": 5,
+      "fileId": "fd41a372-5724-4d8d-b673-0dfae814dd27"
+    }
+  ]
+}

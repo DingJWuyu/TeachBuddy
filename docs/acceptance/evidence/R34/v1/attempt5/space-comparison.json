@@ -1,0 +1,257 @@
+{
+  "originalAndCombined20SameXmlExceptKeepNext": true,
+  "originalAndCombinedSameParagraphLayout": false,
+  "paragraphs": 120,
+  "perQuestion": {
+    "1": 20,
+    "2": 20,
+    "3": 20,
+    "4": 20,
+    "5": 20,
+    "6": 20
+  },
+  "lastQuestionByPage": {
+    "7": 17,
+    "8": 3
+  },
+  "pageStyle": {
+    "Width": 21001,
+    "Height": 29700,
+    "TopMargin": 2000,
+    "BottomMargin": 2000,
+    "LeftMargin": 2000,
+    "RightMargin": 2000
+  },
+  "linePitchHundredthsMm": 1105,
+  "reopenedSameTextAndPages": true,
+  "originalExplicitPageBreaks": 0,
+  "combinedExplicitPageBreaks": 0,
+  "lastQuestion": [
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 1,
+      "page": 7,
+      "y": 187604,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 2,
+      "page": 7,
+      "y": 188708,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 3,
+      "page": 7,
+      "y": 189812,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 4,
+      "page": 7,
+      "y": 190916,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 5,
+      "page": 7,
+      "y": 192020,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 6,
+      "page": 7,
+      "y": 193125,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 7,
+      "page": 7,
+      "y": 194229,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 8,
+      "page": 7,
+      "y": 195333,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 9,
+      "page": 7,
+      "y": 196437,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 10,
+      "page": 7,
+      "y": 197541,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 11,
+      "page": 7,
+      "y": 198646,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 12,
+      "page": 7,
+      "y": 199750,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 13,
+      "page": 7,
+      "y": 200854,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 14,
+      "page": 7,
+      "y": 201958,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 15,
+      "page": 7,
+      "y": 203062,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 16,
+      "page": 7,
+      "y": 204167,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 17,
+      "page": 7,
+      "y": 205271,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 18,
+      "page": 8,
+      "y": 211409,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 19,
+      "page": 8,
+      "y": 212513,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    },
+    {
+      "text": " ",
+      "question": 6,
+      "answerLine": 20,
+      "page": 8,
+      "y": 213618,
+      "fontSize": 11.0,
+      "lineHeight": 125,
+      "lineMode": 0,
+      "bottomMargin": 212
+    }
+  ],
+  "originalAndUi20SameParagraphsExceptTitle": true,
+  "titleDifference": {
+    "fixture": "R35 函数与空间几何",
+    "realUiSavedVersion8": "R35 丢响应后保留"
+  },
+  "originalAndUi20SamePageAndCoordinates": true
+}

@@ -1,0 +1,324 @@
+TAP version 13
+# Subtest: WB-005: a lesson keeps stable section ids, order and server snapshots
+ok 1 - WB-005: a lesson keeps stable section ids, order and server snapshots
+  ---
+  duration_ms: 258.893114
+  type: 'test'
+  ...
+# Subtest: WB-007: moving a reference keeps its id, snapshot and note
+ok 2 - WB-007: moving a reference keeps its id, snapshot and note
+  ---
+  duration_ms: 81.317367
+  type: 'test'
+  ...
+# Subtest: WB-006/013: stale reference versions reject the whole lesson atomically
+ok 3 - WB-006/013: stale reference versions reject the whole lesson atomically
+  ---
+  duration_ms: 73.430963
+  type: 'test'
+  ...
+# Subtest: WB-008: a question update never silently changes prepared content
+ok 4 - WB-008: a question update never silently changes prepared content
+  ---
+  duration_ms: 76.616142
+  type: 'test'
+  ...
+# Subtest: WB-009: question deletion keeps prepared snapshots and blocks new references
+ok 5 - WB-009: question deletion keeps prepared snapshots and blocks new references
+  ---
+  duration_ms: 97.472454
+  type: 'test'
+  ...
+# Subtest: WB-009: lesson deletion and restore keep sections, references and questions
+ok 6 - WB-009: lesson deletion and restore keep sections, references and questions
+  ---
+  duration_ms: 91.881838
+  type: 'test'
+  ...
+# Subtest: WB-014/016: lesson reference identity and ownership are enforced
+ok 7 - WB-014/016: lesson reference identity and ownership are enforced
+  ---
+  duration_ms: 83.548581
+  type: 'test'
+  ...
+# Subtest: WB-005: lesson search covers title and body text but not snapshots or notes
+ok 8 - WB-005: lesson search covers title and body text but not snapshots or notes
+  ---
+  duration_ms: 67.851334
+  type: 'test'
+  ...
+# Subtest: WB-005: section order is server-side and reordering keeps stable ids
+ok 9 - WB-005: section order is server-side and reordering keeps stable ids
+  ---
+  duration_ms: 51.920022
+  type: 'test'
+  ...
+# Subtest: C11/WB-013: stale lesson base versions conflict on update, delete and restore
+ok 10 - C11/WB-013: stale lesson base versions conflict on update, delete and restore
+  ---
+  duration_ms: 52.896126
+  type: 'test'
+  ...
+# Subtest: WB-001/002: a pasted question keeps its original text and can be found again
+ok 11 - WB-001/002: a pasted question keeps its original text and can be found again
+  ---
+  duration_ms: 259.572547
+  type: 'test'
+  ...
+# Subtest: WB-003/013: editing keeps the same id, bumps the version and replays idempotently
+ok 12 - WB-003/013: editing keeps the same id, bumps the version and replays idempotently
+  ---
+  duration_ms: 69.191397
+  type: 'test'
+  ...
+# Subtest: WB-004: a copy keeps the original snapshot and both questions evolve independently
+ok 13 - WB-004: a copy keeps the original snapshot and both questions evolve independently
+  ---
+  duration_ms: 77.647708
+  type: 'test'
+  ...
+# Subtest: WB-009: question deletion hides the item but keeps tombstones and stable ids
+ok 14 - WB-009: question deletion hides the item but keeps tombstones and stable ids
+  ---
+  duration_ms: 75.504843
+  type: 'test'
+  ...
+# Subtest: WB-014: invalid question payloads are rejected without touching stored data
+ok 15 - WB-014: invalid question payloads are rejected without touching stored data
+  ---
+  duration_ms: 107.258928
+  type: 'test'
+  ...
+# Subtest: WB-016: another account cannot reach a question and forged identity is ignored
+ok 16 - WB-016: another account cannot reach a question and forged identity is ignored
+  ---
+  duration_ms: 79.383062
+  type: 'test'
+  ...
+# Subtest: WB-001: list search covers title, body and note only, and starred filters apply
+ok 17 - WB-001: list search covers title, body and note only, and starred filters apply
+  ---
+  duration_ms: 77.613399
+  type: 'test'
+  ...
+# Subtest: C11/WB-013: every question write trigger rejects a stale base version with the current version
+ok 18 - C11/WB-013: every question write trigger rejects a stale base version with the current version
+  ---
+  duration_ms: 66.036839
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+ok 19 - MC14/16: save adopted resource, move it and retain its snapshot across source update and restart
+  ---
+  duration_ms: 196.409319
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+not ok 20 - MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage
+  ---
+  duration_ms: 195.569483
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-protection-fix/apps/api/test/materials-lessons.test.js:161:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"id":"2cbb7de1-2ecf-4633-81fb-7a30f2dbcc26","kind":"export","target":{"kind":"lesson","id":"bd8e4d75-eb87-4d5f-8b9a-14dbd5130a55","version":1},"state":"failed","createdAt":"2026-09-22T18:22:17.910Z","updatedAt":"2026-09-22T18:22:18.021Z","attemptOf":null,"progress":{"completed":1,"total":3,"unit":"stages"},"outputFileIds":[],"issues":[{"code":"conversion-failed","unitId":null,"field":null,"detail":"文件未生成，已保存的备课和旧输出仍保留。修复后重新生成。"}]}
+    + actual - expected
+    
+    + 'failed'
+    - 'succeeded'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'failed'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-protection-fix/apps/api/test/materials-lessons.test.js:260:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+ok 21 - MC11: B11 refuses a v2 lesson without lossy projection or overwrite
+  ---
+  duration_ms: 98.435852
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+not ok 22 - MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected
+  ---
+  duration_ms: 184.809232
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-protection-fix/apps/api/test/materials-lessons.test.js:316:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'failed'
+    - 'succeeded'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'failed'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-protection-fix/apps/api/test/materials-lessons.test.js:354:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+not ok 23 - MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes
+  ---
+  duration_ms: 161.373617
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-protection-fix/apps/api/test/materials-lessons.test.js:407:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'failed'
+    - 'succeeded'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'failed'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-protection-fix/apps/api/test/materials-lessons.test.js:448:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+ok 24 - MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages
+  ---
+  duration_ms: 53.740373
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+not ok 25 - MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export
+  ---
+  duration_ms: 206.076326
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-protection-fix/apps/api/test/materials-lessons.test.js:569:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'failed'
+    - 'succeeded'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'failed'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-protection-fix/apps/api/test/materials-lessons.test.js:577:124)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+ok 26 - stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP
+  ---
+  duration_ms: 656.519131
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC05/06/11: real composition preserves math snapshots, v2 replay and restart
+ok 27 - MC05/06/11: real composition preserves math snapshots, v2 replay and restart
+  ---
+  duration_ms: 1111.284875
+  type: 'test'
+  ...
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 0, skipped 11
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# [workbench] modules discovered: questions, resources, math, lessons, classes, schedule
+# [workbench] migrations applied 11, skipped 0
+# [workbench] modules enabled: questions, resources, math, lessons, classes, schedule
+# Subtest: MC06/10: adopted snapshots survive deletion; real classes reverse links preserve linked labels
+ok 28 - MC06/10: adopted snapshots survive deletion; real classes reverse links preserve linked labels
+  ---
+  duration_ms: 570.197222
+  type: 'test'
+  ...
+# Subtest: MC07: all five math kinds produce real DOCX and PDF without private notes
+not ok 29 - MC07: all five math kinds produce real DOCX and PDF without private notes
+  ---
+  duration_ms: 1461.82436
+  type: 'test'
+  location: '/home/liam_t/项目/TeacherWorkspace-r34-protection-fix/apps/api/test/math-integration.test.js:72:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"id":"97b3fd53-21b5-4d1b-ad92-8949ef0de083","kind":"export","target":{"kind":"lesson","id":"03237ffa-8f6b-4c99-b31c-aff11c9b9804","version":1},"state":"failed","createdAt":"2026-09-22T18:22:20.428Z","updatedAt":"2026-09-22T18:22:20.576Z","attemptOf":null,"progress":{"completed":1,"total":3,"unit":"stages"},"outputFileIds":[],"issues":[{"code":"conversion-failed","unitId":null,"field":null,"detail":"文件未生成，已保存的备课和旧输出仍保留。修复后重新生成。"}]}
+    + actual - expected
+    
+    + 'failed'
+    - 'succeeded'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'failed'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/liam_t/%E9%A1%B9%E7%9B%AE/TeacherWorkspace-r34-protection-fix/apps/api/test/math-integration.test.js:94:11)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 24
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3448.702021

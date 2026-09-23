@@ -9,7 +9,7 @@ const dataRoot = path.resolve(process.env.SCROLL_DATA_DIR || '/tmp/t52-scroll-fi
 let dataDir;
 const port = Number(process.env.SCROLL_PORT || 48752);
 const origin = `https://localhost:${port}`;
-const evidence = path.resolve(process.env.SCROLL_EVIDENCE || 'test-results/evidence/T52/v1/scroll-fix/current');
+const evidence = path.resolve(process.env.SCROLL_EVIDENCE || 'docs/acceptance/evidence/T52/v1/scroll-fix/current');
 const entries = '/api/modules/schedule/entries';
 let runner;
 

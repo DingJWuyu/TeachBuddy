@@ -1,6 +1,6 @@
 # 教师个人工作台
 
-面向中国大陆高中教师个人的教学工作空间，首先服务高一数学实习教师。本文只定义共同词汇；范围见 [MVP 产品范围](docs/product/scope.md)，实现进度见 [README](README.md)。
+面向中国大陆高中教师个人的教学工作空间，首先服务高一数学实习教师。本文只定义共同词汇；范围见 [MVP 产品范围](docs/PRODUCT_SCOPE.md)，实现进度见 [README](README.md)。
 
 ## Language
 

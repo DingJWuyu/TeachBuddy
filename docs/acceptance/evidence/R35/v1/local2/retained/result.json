@@ -1,0 +1,74 @@
+{
+  "origin": "https://127.0.0.1:49934",
+  "directory": "/tmp/teacher-r35-local2-retained",
+  "pids": [
+    1237767,
+    1237972
+  ],
+  "identity": "real-auth/fake-mail; two distinct accounts; fresh context re-login",
+  "unknownSave": {
+    "sameKey": true,
+    "beforeVersion": 8,
+    "acceptedVersion": 9,
+    "afterVersion": 9
+  },
+  "historicalDownload": "89a62aac-b0e0-4fa4-b4fe-18e77086449d.pdf",
+  "isolation": [
+    {
+      "path": "/api/modules/lessons/v2/items/1cdc0605-ab7e-49d7-9e6d-a9e80da342e2",
+      "status": 404
+    },
+    {
+      "path": "/api/modules/lessons/v2/items/1cdc0605-ab7e-49d7-9e6d-a9e80da342e2/exports",
+      "status": 404
+    },
+    {
+      "path": "/api/modules/questions/v2/items/6993711e-b3c9-4523-9659-189c9d08e6e7",
+      "status": 404
+    },
+    {
+      "path": "/api/modules/questions/v2/items/9178c876-be1e-4498-8da9-328660c2eca8",
+      "status": 404
+    },
+    {
+      "path": "/api/workbench/files/94ce89e9-d524-4917-83ba-ca3b78096041",
+      "status": 404
+    },
+    {
+      "path": "/api/modules/questions/v2/items/1a84c476-ebb9-4b04-9fd6-b9d87d315dd9",
+      "status": 404
+    },
+    {
+      "path": "/api/modules/questions/v2/items/c785a665-a5fd-413b-a19b-81fe784a36e8",
+      "status": 404
+    },
+    {
+      "path": "/api/modules/questions/v2/items/baf759cf-69e8-47b3-aeee-92ee7b63142b",
+      "status": 404
+    },
+    {
+      "path": "/api/workbench/files/bd46323b-b78b-4ad7-9b64-ff0ea1213d1f",
+      "status": 404
+    },
+    {
+      "path": "/api/modules/questions/v2/items/b8099b99-d6e0-411e-b320-681d7f1d9ed0",
+      "status": 404
+    },
+    {
+      "path": "/api/workbench/files/6c470f0e-d3d5-4ede-8873-10414075d5cf",
+      "status": 404
+    },
+    {
+      "path": "/api/modules/resources/v1/items/1ff436fe-3538-4d62-a26e-b480b63696c5",
+      "status": 404
+    },
+    {
+      "path": "/api/workbench/jobs/01a332d5-fb4f-4a9f-8a5e-570b78a78f45",
+      "status": 404
+    },
+    {
+      "path": "/api/workbench/files/8c05ecf5-9774-41a7-801d-c29cc8e3d314",
+      "status": 404
+    }
+  ]
+}

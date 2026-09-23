@@ -1,0 +1,39 @@
+
+Running 1 test using 1 worker
+
+(node:140178) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/manual-lessons-preview.spec.js:36:1 › MF-UI-01 更新对照新旧文件完整阅读及采用保存 (9.7s)
+
+
+  1) apps/web/e2e/manual-lessons-preview.spec.js:36:1 › MF-UI-01 更新对照新旧文件完整阅读及采用保存 ─────────────────
+
+    Error: 1440-current-page1: 页图四角、边缘和中心均应可见
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 9
+    Received: 3
+
+      30 |   fs.writeFileSync(path.join(evidence, `${label}.json`), JSON.stringify(visibility, null, 2));
+      31 |   await page.screenshot({ path: path.join(evidence, `${label}.png`) });
+    > 32 |   expect(visibility.visiblePoints, `${label}: 页图四角、边缘和中心均应可见`).toBe(visibility.totalPoints);
+         |                                                                ^
+      33 | }
+      34 |
+      35 | const nav = (page, name) => page.locator('.wb-sidebar').getByRole('link', { name, exact: true }).click();
+        at checkPage (/home/liam_t/项目/TeacherWorkspace-manual-lessons/apps/web/e2e/manual-lessons-preview.spec.js:32:64)
+        at /home/liam_t/项目/TeacherWorkspace-manual-lessons/apps/web/e2e/manual-lessons-preview.spec.js:76:7
+
+    Error Context: test-results/manual-lessons/manual-lessons-preview-MF-UI-01-更新对照新旧文件完整阅读及采用保存/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/manual-lessons/manual-lessons-preview-MF-UI-01-更新对照新旧文件完整阅读及采用保存/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/manual-lessons/manual-lessons-preview-MF-UI-01-更新对照新旧文件完整阅读及采用保存/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/manual-lessons-preview.spec.js:36:1 › MF-UI-01 更新对照新旧文件完整阅读及采用保存 ──────────────────

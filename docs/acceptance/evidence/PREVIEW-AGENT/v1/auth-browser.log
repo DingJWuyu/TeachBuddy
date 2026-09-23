@@ -1,0 +1,122 @@
+
+> refatos-v1@0.3.0 test:e2e
+> playwright test --config=playwright.config.mjs
+
+
+Running 10 tests using 1 worker
+
+(node:1598886) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 apps/web/e2e/auth-integration.spec.js:34:1 › 真实注册、Cookie、账号行、remembered 刷新、退出和 page 登录刷新 (2.0s)
+  ✓   2 apps/web/e2e/auth-integration.spec.js:58:1 › 设置退出已知失败、结果未知和同目标重试 (1.0s)
+  ✓   3 apps/web/e2e/auth-integration.spec.js:82:3 › tablet 真实登录长昵称无横向溢出 (823ms)
+  ✓   4 apps/web/e2e/auth-integration.spec.js:82:3 › mobile 真实登录长昵称无横向溢出 (36.8s)
+  ✘   5 apps/web/e2e/auth-integration.spec.js:105:1 › 真实业务保存、响应丢失幂等重试、刷新、草稿账户分区与迟到结果 (1.1m)
+(node:1600507) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   6 apps/web/e2e/auth-integration.spec.js:158:1 › 15 个工作台操作从实际界面经认证 transport 发送页面头 (1.5m)
+(node:1601861) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   7 apps/web/e2e/auth-integration.spec.js:219:1 › 退出响应丢失后 I06 确认失效，同页仍可重新登录 (1.7s)
+  ✓   8 apps/web/e2e/auth-integration.spec.js:233:1 › 同浏览器双账户：A 定向退出停在登录，B 的 remembered 会话仍有效 (2.0s)
+  ✓   9 apps/web/e2e/auth-integration.spec.js:252:1 › 共享 remembered 双页退出：迟到清理不得破坏登录准备（A12-LOCAL-001） (1.3s)
+  ✘  10 apps/web/e2e/auth-integration.spec.js:290:1 › 恢复失败卡三视口间距及真实恢复重试（A12-LOCAL-002） (46.1s)
+
+
+  1) apps/web/e2e/auth-integration.spec.js:105:1 › 真实业务保存、响应丢失幂等重试、刷新、草稿账户分区与迟到结果 ──────────────────
+
+    Test timeout of 45000ms exceeded.
+
+    Error: locator.fill: Test timeout of 45000ms exceeded.
+    Call log:
+      - waiting for locator('input[aria-label="标题"], textarea[aria-label="标题"]')
+
+
+      93 | async function newQuestion(page, title) {
+      94 |   await page.goto(`${world.origin}/questions/new-manual`);
+    > 95 |   await field(page, '标题').fill(title);
+         |                           ^
+      96 |   await page.locator('[data-document-editor="题面"]').getByRole('button', { name: '段落', exact: true }).click();
+      97 |   await field(page, '题面段落 1').fill('已知 f(x)=x²-2x，求最小值。');
+      98 | }
+        at newQuestion (/home/liam_t/项目/TeacherWorkspace-preview-agent/apps/web/e2e/auth-integration.spec.js:95:27)
+        at /home/liam_t/项目/TeacherWorkspace-preview-agent/apps/web/e2e/auth-integration.spec.js:107:3
+
+    Error Context: test-results/a11/auth-integration-真实业务保存、响应丢失幂等重试、刷新、草稿账户分区与迟到结果/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/a11/auth-integration-真实业务保存、响应丢失幂等重试、刷新、草稿账户分区与迟到结果/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/a11/auth-integration-真实业务保存、响应丢失幂等重试、刷新、草稿账户分区与迟到结果/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) apps/web/e2e/auth-integration.spec.js:158:1 › 15 个工作台操作从实际界面经认证 transport 发送页面头 ───────────────
+
+    Test timeout of 45000ms exceeded.
+
+    Test timeout of 45000ms exceeded while running "afterEach" hook.
+
+       7 | let world;
+       8 | test.beforeEach(async () => { world = await createIntegration(); });
+    >  9 | test.afterEach(async () => { await world.close(); });
+         |      ^
+      10 |
+      11 | async function register(page, email = 'browser@example.test', nickname = '林老师') {
+      12 |   await page.goto(world.origin);
+        at /home/liam_t/项目/TeacherWorkspace-preview-agent/apps/web/e2e/auth-integration.spec.js:9:6
+
+    Error: locator.fill: Test ended.
+    Call log:
+      - waiting for locator('input[aria-label="标题"], textarea[aria-label="标题"]')
+
+
+      93 | async function newQuestion(page, title) {
+      94 |   await page.goto(`${world.origin}/questions/new-manual`);
+    > 95 |   await field(page, '标题').fill(title);
+         |                           ^
+      96 |   await page.locator('[data-document-editor="题面"]').getByRole('button', { name: '段落', exact: true }).click();
+      97 |   await field(page, '题面段落 1').fill('已知 f(x)=x²-2x，求最小值。');
+      98 | }
+        at newQuestion (/home/liam_t/项目/TeacherWorkspace-preview-agent/apps/web/e2e/auth-integration.spec.js:95:27)
+        at /home/liam_t/项目/TeacherWorkspace-preview-agent/apps/web/e2e/auth-integration.spec.js:168:3
+
+    Error Context: test-results/a11/auth-integration-15-个工作台操作从实际界面经认证-transport-发送页面头/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/a11/auth-integration-15-个工作台操作从实际界面经认证-transport-发送页面头/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/a11/auth-integration-15-个工作台操作从实际界面经认证-transport-发送页面头/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) apps/web/e2e/auth-integration.spec.js:290:1 › 恢复失败卡三视口间距及真实恢复重试（A12-LOCAL-002） ────────────────
+
+    Test timeout of 45000ms exceeded while running "afterEach" hook.
+
+       7 | let world;
+       8 | test.beforeEach(async () => { world = await createIntegration(); });
+    >  9 | test.afterEach(async () => { await world.close(); });
+         |      ^
+      10 |
+      11 | async function register(page, email = 'browser@example.test', nickname = '林老师') {
+      12 |   await page.goto(world.origin);
+        at /home/liam_t/项目/TeacherWorkspace-preview-agent/apps/web/e2e/auth-integration.spec.js:9:6
+
+    Error Context: test-results/a11/auth-integration-恢复失败卡三视口间距及真实恢复重试（A12-LOCAL-002）/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/a11/auth-integration-恢复失败卡三视口间距及真实恢复重试（A12-LOCAL-002）/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/a11/auth-integration-恢复失败卡三视口间距及真实恢复重试（A12-LOCAL-002）/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    apps/web/e2e/auth-integration.spec.js:105:1 › 真实业务保存、响应丢失幂等重试、刷新、草稿账户分区与迟到结果 ───────────────────
+    apps/web/e2e/auth-integration.spec.js:158:1 › 15 个工作台操作从实际界面经认证 transport 发送页面头 ────────────────
+    apps/web/e2e/auth-integration.spec.js:290:1 › 恢复失败卡三视口间距及真实恢复重试（A12-LOCAL-002） ─────────────────
+  7 passed (4.3m)

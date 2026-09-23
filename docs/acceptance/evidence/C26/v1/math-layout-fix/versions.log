@@ -1,0 +1,9 @@
+refatos-v1@0.3.0 /home/liam_t/项目/TeacherWorkspace-c26-math-layout
+└─┬ @refatos/web@0.3.0 -> ./apps/web
+  ├── katex@0.16.47
+  ├─┬ rehype-katex@7.0.1
+  │ └── katex@0.16.47
+  └─┬ remark-math@6.0.0
+    └─┬ micromark-extension-math@3.1.0
+      └── katex@0.16.47
+

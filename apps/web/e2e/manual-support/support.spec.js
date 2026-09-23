@@ -144,7 +144,7 @@ test('偏好 API 认证、校验、幂等与版本保护', async ({ page, playwr
 });
 
 test('支持页桌面与平板布局', async ({ page }) => {
-  const evidence = path.resolve('test-results/evidence/MANUAL-SUPPORT/v1/browser'); fs.mkdirSync(evidence, { recursive: true });
+  const evidence = path.resolve('docs/acceptance/evidence/MANUAL-SUPPORT/v1/browser'); fs.mkdirSync(evidence, { recursive: true });
   for (const width of [1440, 820]) {
     await page.setViewportSize({ width, height: 900 });
     for (const route of ['settings', 'help', 'releases']) {

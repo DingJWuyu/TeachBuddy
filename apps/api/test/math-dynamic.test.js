@@ -18,7 +18,7 @@ const evidence = process.env.M42_EVIDENCE_DIR
   ? path.resolve(process.env.M42_EVIDENCE_DIR)
   : fileURLToPath(
       new URL(
-        "../../../test-results/evidence/M42/v1/artifacts/",
+        "../../../docs/acceptance/evidence/M42/v1/artifacts/",
         import.meta.url,
       ),
     );

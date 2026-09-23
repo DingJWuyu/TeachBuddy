@@ -1,0 +1,200 @@
+{
+  "directory": "/tmp/r33-local5-api-LoJ7zU",
+  "trace": [
+    {
+      "at": "2026-09-22T15:41:11.884Z",
+      "route": "/api/workbench/files",
+      "method": "POST",
+      "status": 201,
+      "request": "image upload",
+      "response": {
+        "id": "15795171-50f0-43bc-b679-779501d5a8b8",
+        "name": "triangle.png",
+        "mediaType": "image/png",
+        "byteLength": 16272,
+        "sha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f",
+        "createdAt": "2026-09-22T15:41:11.927Z",
+        "duplicateOfFileId": null
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:11.978Z",
+      "route": "/api/modules/questions/v2/imports",
+      "method": "POST",
+      "status": 201,
+      "request": {
+        "title": "空正文",
+        "origin": "",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "15795171-50f0-43bc-b679-779501d5a8b8"
+          ],
+          "pages": []
+        }
+      },
+      "response": {
+        "id": "847bd153-159c-4cca-8ae0-77e8fcd5832a",
+        "version": 1,
+        "createdAt": "2026-09-22T15:41:11.990Z",
+        "updatedAt": "2026-09-22T15:41:11.990Z",
+        "deletedAt": null,
+        "title": "空正文",
+        "origin": "",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "15795171-50f0-43bc-b679-779501d5a8b8"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [],
+        "fragments": [],
+        "jobId": "39736783-e7e4-45a0-8d26-0327be0f163a"
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:12.007Z",
+      "route": "/api/workbench/jobs/39736783-e7e4-45a0-8d26-0327be0f163a",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "39736783-e7e4-45a0-8d26-0327be0f163a",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "847bd153-159c-4cca-8ae0-77e8fcd5832a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:11.990Z",
+        "updatedAt": "2026-09-22T15:41:11.995Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:12.039Z",
+      "route": "/api/workbench/jobs/39736783-e7e4-45a0-8d26-0327be0f163a",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "39736783-e7e4-45a0-8d26-0327be0f163a",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "847bd153-159c-4cca-8ae0-77e8fcd5832a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:11.990Z",
+        "updatedAt": "2026-09-22T15:41:11.995Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:12.075Z",
+      "route": "/api/workbench/jobs/39736783-e7e4-45a0-8d26-0327be0f163a",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "39736783-e7e4-45a0-8d26-0327be0f163a",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "847bd153-159c-4cca-8ae0-77e8fcd5832a",
+          "version": 1
+        },
+        "state": "running",
+        "createdAt": "2026-09-22T15:41:11.990Z",
+        "updatedAt": "2026-09-22T15:41:11.995Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 0,
+          "total": null,
+          "unit": "stages"
+        },
+        "outputFileIds": [],
+        "issues": []
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:12.109Z",
+      "route": "/api/workbench/jobs/39736783-e7e4-45a0-8d26-0327be0f163a",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "39736783-e7e4-45a0-8d26-0327be0f163a",
+        "kind": "extraction",
+        "target": {
+          "kind": "import",
+          "id": "847bd153-159c-4cca-8ae0-77e8fcd5832a",
+          "version": 1
+        },
+        "state": "failed",
+        "createdAt": "2026-09-22T15:41:11.990Z",
+        "updatedAt": "2026-09-22T15:41:12.117Z",
+        "attemptOf": null,
+        "progress": {
+          "completed": 1,
+          "total": 1,
+          "unit": "pages"
+        },
+        "outputFileIds": [],
+        "issues": [
+          {
+            "code": "empty-response",
+            "unitId": "file:15795171-50f0-43bc-b679-779501d5a8b8:page:1",
+            "field": null,
+            "detail": "提取结果不完整，请对照原稿继续。"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-09-22T15:41:12.127Z",
+      "route": "/api/modules/questions/v2/imports/847bd153-159c-4cca-8ae0-77e8fcd5832a",
+      "method": "GET",
+      "status": 200,
+      "request": null,
+      "response": {
+        "id": "847bd153-159c-4cca-8ae0-77e8fcd5832a",
+        "version": 2,
+        "createdAt": "2026-09-22T15:41:11.990Z",
+        "updatedAt": "2026-09-22T15:41:12.115Z",
+        "deletedAt": null,
+        "title": "空正文",
+        "origin": "",
+        "input": {
+          "kind": "files",
+          "fileIds": [
+            "15795171-50f0-43bc-b679-779501d5a8b8"
+          ],
+          "pages": []
+        },
+        "supplementFileIds": [],
+        "drafts": [],
+        "fragments": [],
+        "jobId": "39736783-e7e4-45a0-8d26-0327be0f163a"
+      }
+    }
+  ]
+}

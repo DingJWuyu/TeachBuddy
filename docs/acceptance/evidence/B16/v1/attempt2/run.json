@@ -1,0 +1,162 @@
+{
+  "task": "B16@1",
+  "attempt": 2,
+  "candidate_sha": "612f0a9868743a1d5eea7e6f236d3ff903752439",
+  "product_code_sha": "723ec00ee47599517302fcdcf61226500c82de0b",
+  "runtime_root": "/home/liam_t/项目/TeacherWorkspace-b16-candidate2",
+  "identity_mode": "test-principal",
+  "origin": "https://localhost:47216",
+  "ports": {
+    "primary": 47216,
+    "legacy": 48216,
+    "failure": 49216
+  },
+  "data_root": "/home/liam_t/项目/TeacherWorkspace-b16/.scratch/B16/attempt2/data",
+  "web_dist": "/home/liam_t/项目/TeacherWorkspace-b16-candidate2/apps/web/dist",
+  "served_web_dist": "/proc/self/cwd/apps/web/dist",
+  "accounts": [
+    "fixture-teacher-a",
+    "fixture-teacher-b"
+  ],
+  "started_at_utc": "2026-09-21T22:55:59.379Z",
+  "finished_at_utc": "2026-09-21T22:56:08.385Z",
+  "status": "PASS",
+  "checks": [
+    {
+      "id": "core-flow",
+      "status": "PASS",
+      "detail": "录题 cd674e88-6956-411c-87ea-a176fc2aed89，改编 a95fa280-6693-45c8-8a3d-92837cdb1474，备课 0245746e-c198-4f3e-9e33-427906c2d80c；返回、刷新、保留库重启和新上下文均读回",
+      "artifacts": [
+        "desktop-core-flow.png",
+        "desktop-fresh-context-after-restart.png"
+      ]
+    },
+    {
+      "id": "wb-010-desktop-scene",
+      "status": "PASS",
+      "detail": "搜索、多选、列表滚动 422px、右栏和 AI 草稿在切模块与刷新后恢复",
+      "artifacts": [
+        "desktop-scene-scroll-aux.png"
+      ]
+    },
+    {
+      "id": "two-account-isolation",
+      "status": "PASS",
+      "detail": "账户 B 的列表为空，读取 A 的题目返回 404，且无 A 的草稿现场",
+      "artifacts": [
+        "desktop-account-b-isolated.png"
+      ]
+    },
+    {
+      "id": "wb-011-local-storage",
+      "status": "PASS",
+      "detail": "实际浏览器拒绝 workbench localStorage 写入时给出明确警告，仍可通过在线保存恢复",
+      "artifacts": [
+        "failure-local-storage-refused.png",
+        "recovered-local-storage-online-save.png"
+      ]
+    },
+    {
+      "id": "real-write-failure-recovery",
+      "status": "PASS",
+      "detail": "真实 SQLite 拒写返回 503，业务行与幂等记录均无部分写；恢复后原键重试只新增 1 题和 1 记录",
+      "artifacts": [
+        "failure-sqlite-write-refused.png",
+        "recovered-sqlite-write.png",
+        "network.jsonl"
+      ]
+    },
+    {
+      "id": "pad-visual",
+      "status": "PASS",
+      "detail": "768×1024 下列表/阅读/改编对照按区切换，右栏独占内容区，长公式无页面横向溢出，reduced-motion 动画时长为 0s",
+      "artifacts": [
+        "pad-question-list.png",
+        "pad-aux-exclusive.png",
+        "pad-copy-compare.png"
+      ]
+    },
+    {
+      "id": "narrow-desktop-visual",
+      "status": "PASS",
+      "detail": "1100×800 下题目与右栏同时可操作，页面无横向溢出",
+      "artifacts": [
+        "narrow-desktop-aux.png"
+      ]
+    },
+    {
+      "id": "old-database-upgrade",
+      "status": "PASS",
+      "detail": "固定基线旧账户和布局在工作台迁移后保留，questions/lessons 迁移均已执行",
+      "artifacts": [
+        "run.json"
+      ]
+    },
+    {
+      "id": "startup-guards",
+      "status": "PASS",
+      "detail": "故意破损迁移和 production test-principal 均非零退出，原因可定位",
+      "artifacts": [
+        "broken-migration.log",
+        "production-refusal.log"
+      ]
+    },
+    {
+      "id": "build-isolation",
+      "status": "PASS",
+      "detail": "固定候选的生产构建 exit 0，使用临时 API 数据库，未创建 apps/api/src/data/refatos.sqlite",
+      "artifacts": [
+        "build.log"
+      ]
+    },
+    {
+      "id": "service-log-index",
+      "status": "PASS",
+      "detail": "脱敏服务日志已复制：service-errors.jsonl, service-requests.jsonl",
+      "artifacts": [
+        "service-errors.jsonl",
+        "service-requests.jsonl"
+      ]
+    }
+  ],
+  "screenshots": [
+    "desktop-core-flow.png",
+    "desktop-fresh-context-after-restart.png",
+    "desktop-scene-scroll-aux.png",
+    "desktop-account-b-isolated.png",
+    "failure-local-storage-refused.png",
+    "recovered-local-storage-online-save.png",
+    "failure-sqlite-write-refused.png",
+    "recovered-sqlite-write.png",
+    "pad-question-list.png",
+    "pad-aux-exclusive.png",
+    "pad-copy-compare.png",
+    "narrow-desktop-aux.png"
+  ],
+  "visual": {
+    "overlay": {
+      "animationName": "wb-pop-in",
+      "animationDuration": "0.18s",
+      "transformOrigin": "167px 0px"
+    },
+    "desktop": {
+      "listScrollTop": 422,
+      "restoredScroll": 422,
+      "readerScrollTop": 0,
+      "documentScrollTop": 0,
+      "mainWidthBefore": 1184,
+      "mainWidthAfter": 884,
+      "pageOverflow": 0
+    },
+    "reducedMotionDuration": "0s",
+    "pad": {
+      "auxWidth": 696,
+      "workspaceWidth": 696,
+      "pageOverflow": 0
+    },
+    "narrowDesktop": {
+      "pageOverflow": 0
+    }
+  },
+  "failure": null
+}

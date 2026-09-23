@@ -1,0 +1,9 @@
+
+> refatos-v1@0.3.0 build:shared
+> npm --workspace @refatos/shared run build
+
+
+> @refatos/shared@0.3.0 build
+> node scripts/verify-catalog.mjs
+
+Module catalog ok: default 6, isolated math 6 entries, API implementations [questions, lessons, math, resources, classes, schedule], Web implementations [classes, lessons, math, questions, resources, schedule]

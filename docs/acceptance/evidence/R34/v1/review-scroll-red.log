@@ -1,0 +1,39 @@
+
+Running 1 test using 1 worker
+
+(node:1063025) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 apps/web/e2e/materials-lessons.spec.js:278:1 › WB-M018: output round trip restores manuscript scroll (6.0s)
+
+
+  1) apps/web/e2e/materials-lessons.spec.js:278:1 › WB-M018: output round trip restores manuscript scroll
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 150
+    Received: 0
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      297 |   await page.getByRole("button", { name: "输出", exact: true }).click();
+      298 |   await page.getByRole("button", { name: "返回文稿", exact: true }).click();
+    > 299 |   await expect.poll(() => region.evaluate((el) => el.scrollTop)).toBe(150);
+          |                                                                  ^
+      300 | });
+      301 | test("WB-M019: resource comparison previews both adopted and current files", async ({
+      302 |   page,
+        at /home/liam_t/项目/TeacherWorkspace-r34-lessons/apps/web/e2e/materials-lessons.spec.js:299:66
+
+    Error Context: test-results/r34/playwright/materials-lessons-WB-M018--afb3c--restores-manuscript-scroll/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/r34/playwright/materials-lessons-WB-M018--afb3c--restores-manuscript-scroll/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/r34/playwright/materials-lessons-WB-M018--afb3c--restores-manuscript-scroll/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    apps/web/e2e/materials-lessons.spec.js:278:1 › WB-M018: output round trip restores manuscript scroll

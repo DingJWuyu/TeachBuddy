@@ -1,0 +1,32 @@
+
+Running 19 tests using 1 worker
+
+(node:92506) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 apps/web/e2e/manual-teaching.spec.js:43:1 › 任意提醒分钟可编辑并保存重开 (1.8s)
+  ✓   2 apps/web/e2e/manual-teaching.spec.js:56:1 › 重复课程整组可以调整班级和备课，单次例外保持原关联 (1.4s)
+  ✓   3 apps/web/e2e/manual-teaching.spec.js:73:1 › 已设提醒和实际记录的安排可以移回未排期 (1.2s)
+  ✓   4 apps/web/e2e/manual-teaching.spec.js:87:1 › 备课显示分班反馈并回到原教学记录 (1.1s)
+(node:92506) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   5 apps/web/e2e/manual-teaching.spec.js:105:1 › 日程可选当前备课与含数学作品的实际记录 (1.5s)
+  ✓   6 apps/web/e2e/manual-teaching.spec.js:137:1 › 任意连续日期拖选、多事项顺序与优先级、未排期移入移出、保存重开 (2.1s)
+  ✓   7 apps/web/e2e/manual-teaching.spec.js:170:1 › 无标题未排期事项可从列表直接编辑 (1.1s)
+  ✓   8 apps/web/e2e/manual-teaching.spec.js:182:1 › 保存后恢复某次原安排不会显示旧的已保存草稿 (1.2s)
+  ✓   9 apps/web/e2e/manual-teaching.spec.js:195:1 › 相对结束提醒随调时变化，关闭后补提醒保留原时刻并定位返回 (2.9s)
+(node:92506) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  10 apps/web/e2e/manual-teaching.spec.js:240:1 › 班级管理、一句话后补充进度问题和三类关联、保存重开 (2.6s)
+  ✓  11 apps/web/e2e/manual-teaching.spec.js:288:1 › 日程删除后有可发现的恢复入口 (1.6s)
+  ✓  12 apps/web/e2e/manual-teaching.spec.js:305:1 › 编辑日期与提醒时的暂时空值保留页面和草稿 (1.3s)
+  ✓  13 apps/web/e2e/manual-teaching.spec.js:321:1 › 重复课程课后记录独立保存并关联回本次安排与备课 (1.4s)
+  ✓  14 apps/web/e2e/manual-teaching.spec.js:343:1 › 日程保存慢响应不会串写后来打开的安排 (1.3s)
+(node:92506) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  15 apps/web/e2e/manual-teaching.spec.js:368:1 › 日程关联读取失败明确提示并允许原地重试 (1.4s)
+  ✓  16 apps/web/e2e/manual-teaching.spec.js:380:1 › 页面新建周重复课程、单次调课与取消恢复不改其他周 (2.4s)
+  ✓  17 apps/web/e2e/manual-teaching.spec.js:406:1 › 移回未排期丢响应后用原请求确认，不重复移动 (1.2s)
+  ✓  18 apps/web/e2e/manual-teaching.spec.js:424:1 › 日程丢失保存响应后刷新保留新输入，并用原键原体确认 (1.6s)
+  ✓  19 apps/web/e2e/manual-teaching.spec.js:451:1 › 平板日程编辑与通知布局可操作且无整页横向溢出 (1.2s)
+
+  19 passed (34.0s)

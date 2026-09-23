@@ -1,0 +1,380 @@
+{
+  "created": {
+    "id": "b05bde19-7116-4fe4-b91e-4e08f3a7778c",
+    "version": 1,
+    "title": "M-D",
+    "source": {
+      "schemaVersion": 1,
+      "kind": "dynamic",
+      "scene": {
+        "viewport": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -5,
+          "yMax": 5,
+          "width": 960,
+          "height": 720,
+          "axes": true,
+          "grid": true
+        },
+        "elements": [
+          {
+            "id": "f",
+            "type": "function",
+            "style": {
+              "stroke": "#2855a6",
+              "fill": null,
+              "width": 2,
+              "dash": "solid",
+              "fontSize": 18
+            },
+            "expression": "a*(x-h)^2+k",
+            "domain": {
+              "min": -6,
+              "max": 6
+            },
+            "label": {
+              "text": "y={a}(x-({h}))²+({k})",
+              "dx": -250,
+              "dy": -15
+            }
+          },
+          {
+            "id": "P",
+            "type": "point",
+            "style": {
+              "stroke": "#2855a6",
+              "fill": null,
+              "width": 2,
+              "dash": "solid",
+              "fontSize": 18
+            },
+            "at": {
+              "x": "h",
+              "y": "k"
+            },
+            "label": {
+              "text": "定位点 ({h},{k})",
+              "dx": 12,
+              "dy": -12
+            }
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "name": "a",
+          "label": "系数 a",
+          "min": -3,
+          "max": 3,
+          "step": 0.5,
+          "initial": 1
+        },
+        {
+          "name": "h",
+          "label": "水平平移 h",
+          "min": -4,
+          "max": 4,
+          "step": 0.5,
+          "initial": 1
+        },
+        {
+          "name": "k",
+          "label": "竖直平移 k",
+          "min": -4,
+          "max": 4,
+          "step": 0.5,
+          "initial": -4
+        }
+      ],
+      "drags": [
+        {
+          "pointId": "P",
+          "xParameter": "h",
+          "yParameter": "k"
+        }
+      ],
+      "steps": [
+        {
+          "id": "base",
+          "title": "母函数",
+          "visibleIds": [
+            "f",
+            "P"
+          ],
+          "values": [
+            {
+              "name": "a",
+              "value": 1
+            },
+            {
+              "name": "h",
+              "value": 0
+            },
+            {
+              "name": "k",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "id": "translate",
+          "title": "平移后曲线",
+          "visibleIds": [
+            "f",
+            "P"
+          ],
+          "values": [
+            {
+              "name": "a",
+              "value": 1
+            },
+            {
+              "name": "h",
+              "value": 1
+            },
+            {
+              "name": "k",
+              "value": -4
+            }
+          ]
+        },
+        {
+          "id": "full",
+          "title": "带系数完整式",
+          "visibleIds": [
+            "f",
+            "P"
+          ],
+          "values": [
+            {
+              "name": "a",
+              "value": -2
+            },
+            {
+              "name": "h",
+              "value": 0
+            },
+            {
+              "name": "k",
+              "value": 1
+            }
+          ]
+        }
+      ],
+      "initialStepId": "base"
+    },
+    "originalFileId": null,
+    "render": {
+      "state": "ready",
+      "posterFileId": "1496ce35-4f08-47fe-994c-aef76a1e0198",
+      "presentationFileId": "29942c22-641d-4c04-81aa-6f6d45c3543a",
+      "reason": null
+    },
+    "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated",
+    "createdAt": "2026-09-23T06:01:09.937Z",
+    "updatedAt": "2026-09-23T06:01:09.937Z",
+    "deletedAt": null
+  },
+  "changed": {
+    "id": "b05bde19-7116-4fe4-b91e-4e08f3a7778c",
+    "version": 2,
+    "title": "修改动态",
+    "source": {
+      "schemaVersion": 1,
+      "kind": "dynamic",
+      "scene": {
+        "viewport": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -5,
+          "yMax": 5,
+          "width": 960,
+          "height": 720,
+          "axes": true,
+          "grid": true
+        },
+        "elements": [
+          {
+            "id": "f",
+            "type": "function",
+            "style": {
+              "stroke": "#2855a6",
+              "fill": null,
+              "width": 2,
+              "dash": "solid",
+              "fontSize": 18
+            },
+            "expression": "a*(x-h)^2+k",
+            "domain": {
+              "min": -6,
+              "max": 6
+            },
+            "label": {
+              "text": "y={a}(x-({h}))²+({k})",
+              "dx": -250,
+              "dy": -15
+            }
+          },
+          {
+            "id": "P",
+            "type": "point",
+            "style": {
+              "stroke": "#2855a6",
+              "fill": null,
+              "width": 2,
+              "dash": "solid",
+              "fontSize": 18
+            },
+            "at": {
+              "x": "h",
+              "y": "k"
+            },
+            "label": {
+              "text": "定位点 ({h},{k})",
+              "dx": 12,
+              "dy": -12
+            }
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "name": "a",
+          "label": "系数 a",
+          "min": -3,
+          "max": 3,
+          "step": 0.5,
+          "initial": 1
+        },
+        {
+          "name": "h",
+          "label": "水平平移 h",
+          "min": -4,
+          "max": 4,
+          "step": 0.5,
+          "initial": 1
+        },
+        {
+          "name": "k",
+          "label": "竖直平移 k",
+          "min": -4,
+          "max": 4,
+          "step": 0.5,
+          "initial": -4
+        }
+      ],
+      "drags": [
+        {
+          "pointId": "P",
+          "xParameter": "h",
+          "yParameter": "k"
+        }
+      ],
+      "steps": [
+        {
+          "id": "base",
+          "title": "母函数",
+          "visibleIds": [
+            "f",
+            "P"
+          ],
+          "values": [
+            {
+              "name": "a",
+              "value": 1
+            },
+            {
+              "name": "h",
+              "value": 0
+            },
+            {
+              "name": "k",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "id": "translate",
+          "title": "平移与定位",
+          "visibleIds": [
+            "f",
+            "P"
+          ],
+          "values": [
+            {
+              "name": "a",
+              "value": 1
+            },
+            {
+              "name": "h",
+              "value": 1
+            },
+            {
+              "name": "k",
+              "value": -4
+            }
+          ]
+        },
+        {
+          "id": "full",
+          "title": "带系数完整式",
+          "visibleIds": [
+            "f",
+            "P"
+          ],
+          "values": [
+            {
+              "name": "a",
+              "value": -2
+            },
+            {
+              "name": "h",
+              "value": 0
+            },
+            {
+              "name": "k",
+              "value": 1
+            }
+          ]
+        }
+      ],
+      "initialStepId": "translate"
+    },
+    "originalFileId": null,
+    "render": {
+      "state": "ready",
+      "posterFileId": "41dfc0c7-2346-4ebb-bd94-758c655595d7",
+      "presentationFileId": "c145404f-5eaf-48dd-b603-27808489e2f6",
+      "reason": null
+    },
+    "rendererVersion": "math-v3-mathjax3.2.2-noto-sc5.2.9-dynamic-isolated",
+    "createdAt": "2026-09-23T06:01:09.937Z",
+    "updatedAt": "2026-09-23T06:01:10.295Z",
+    "deletedAt": null
+  },
+  "exported": {
+    "id": "290369d3-3128-4070-9aa6-4fd2c127deb4",
+    "workId": "b05bde19-7116-4fe4-b91e-4e08f3a7778c",
+    "workVersion": 2,
+    "format": "html",
+    "file": {
+      "id": "c145404f-5eaf-48dd-b603-27808489e2f6",
+      "name": "math-presentation.html",
+      "mediaType": "text/html",
+      "byteLength": 2161557,
+      "sha256": "40244f3e5dc5f0a9fe195b4e3a1e0b87e53cbea5ce66d82a2bd220b86093bed0",
+      "createdAt": "2026-09-23T06:01:10.277Z",
+      "duplicateOfFileId": null
+    },
+    "offline": "self-contained",
+    "createdAt": "2026-09-23T06:01:10.443Z"
+  },
+  "restarts": 2,
+  "invalid": {
+    "state": "invalid",
+    "posterFileId": null,
+    "presentationFileId": null,
+    "reason": "invalid-expression"
+  }
+}

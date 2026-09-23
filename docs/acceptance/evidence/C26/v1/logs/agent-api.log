@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: WB-AG-019/020: 真实SDK只读404无assistant仍保存卡片，另一账户404
+ok 1 - WB-AG-019/020: 真实SDK只读404无assistant仍保存卡片，另一账户404
+  ---
+  duration_ms: 1112.895707
+  type: 'test'
+  ...
+# Subtest: WB-AG-019: 空读取结果和SDK成功标志、实际usage
+ok 2 - WB-AG-019: 空读取结果和SDK成功标志、实际usage
+  ---
+  duration_ms: 277.294909
+  type: 'test'
+  ...
+# Subtest: WB-AG-023: 重复写调用关联同一operation，业务只写一次
+ok 3 - WB-AG-023: 重复写调用关联同一operation，业务只写一次
+  ---
+  duration_ms: 443.81236
+  type: 'test'
+  ...
+# Subtest: WB-AG-005/010/016: 草稿冲突、发送同键重放、白名单和缺配置不产生请求
+ok 4 - WB-AG-005/010/016: 草稿冲突、发送同键重放、白名单和缺配置不产生请求
+  ---
+  duration_ms: 332.944504
+  type: 'test'
+  ...
+# Subtest: WB-AG-006: 发送前核验版本与软删除，历史引用冻结
+ok 5 - WB-AG-006: 发送前核验版本与软删除，历史引用冻结
+  ---
+  duration_ms: 191.561574
+  type: 'test'
+  ...
+# Subtest: WB-AG-012/023: 业务提交后journal失败，原题更新后核实仍是原键原体
+ok 6 - WB-AG-012/023: 业务提交后journal失败，原题更新后核实仍是原键原体
+  ---
+  duration_ms: 286.690345
+  type: 'test'
+  ...
+# Subtest: WB-AG-021: 读取异常映射安全失败，同批后续工具取消
+ok 7 - WB-AG-021: 读取异常映射安全失败，同批后续工具取消
+  ---
+  duration_ms: 238.522165
+  type: 'test'
+  ...
+# Subtest: WB-AG-013/017: 停止后无新请求，用量不完整，保留已接受输入
+ok 8 - WB-AG-013/017: 停止后无新请求，用量不完整，保留已接受输入
+  ---
+  duration_ms: 181.826971
+  type: 'test'
+  ...
+# Subtest: WB-AG-022/004: 保留库重启取消prepared、中断executing读取并补同ID原生结果
+ok 9 - WB-AG-022/004: 保留库重启取消prepared、中断executing读取并补同ID原生结果
+  ---
+  duration_ms: 416.100588
+  type: 'test'
+  ...
+# Subtest: WB-AG-023: 无效完整参数只生成拒绝卡，没有非法journal
+ok 10 - WB-AG-023: 无效完整参数只生成拒绝卡，没有非法journal
+  ---
+  duration_ms: 184.407647
+  type: 'test'
+  ...
+# Subtest: WB-AG-008: 工具布尔标记筛选与手工HTTP字面true保持一致
+ok 11 - WB-AG-008: 工具布尔标记筛选与手工HTTP字面true保持一致
+  ---
+  duration_ms: 227.916507
+  type: 'test'
+  ...
+# Subtest: WB-AG-011/020: HTTPS SSE各游标补发与snapshot一致，无额外请求
+ok 12 - WB-AG-011/020: HTTPS SSE各游标补发与snapshot一致，无额外请求
+  ---
+  duration_ms: 290.262673
+  type: 'test'
+  ...
+# Subtest: WB-AG-015: provider返回前撤销真实身份，后续工具取消且不写业务
+ok 13 - WB-AG-015: provider返回前撤销真实身份，后续工具取消且不写业务
+  ---
+  duration_ms: 292.124826
+  type: 'test'
+  ...
+# Subtest: WB-AG-018: 12次provider上限停止，无自动重置窗口
+ok 14 - WB-AG-018: 12次provider上限停止，无自动重置窗口
+  ---
+  duration_ms: 253.92276
+  type: 'test'
+  ...
+# Subtest: WB-AG-009/014: 复制已保存而备课版本冲突，保留副本和真实失败结果
+ok 15 - WB-AG-009/014: 复制已保存而备课版本冲突，保留副本和真实失败结果
+  ---
+  duration_ms: 272.069661
+  type: 'test'
+  ...
+# Subtest: WB-AG-018/021: 业务响应不匹配契约为只读failed，损坏entries保留原记录
+ok 16 - WB-AG-018/021: 业务响应不匹配契约为只读failed，损坏entries保留原记录
+  ---
+  duration_ms: 249.878043
+  type: 'test'
+  ...
+# Subtest: WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键核实
+ok 17 - WB-AG-012: 真实进程SIGKILL的三个写检查点，同库重启原键核实
+  ---
+  duration_ms: 5486.147384
+  type: 'test'
+  ...
+# Subtest: WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持
+ok 18 - WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持
+  ---
+  duration_ms: 454.292376
+  type: 'test'
+  ...
+# Subtest: WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+ok 19 - WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+  ---
+  duration_ms: 351.632469
+  type: 'test'
+  ...
+# Subtest: WB-AG-016/017: SDK未知或替换模型零请求，额度错误不重试且usage不完整
+ok 20 - WB-AG-016/017: SDK未知或替换模型零请求，额度错误不重试且usage不完整
+  ---
+  duration_ms: 583.467074
+  type: 'test'
+  ...
+# Subtest: WB-AG-018: prepared落盘失败不能执行业务或发出未保存toolCall事件
+ok 21 - WB-AG-018: prepared落盘失败不能执行业务或发出未保存toolCall事件
+  ---
+  duration_ms: 265.210206
+  type: 'test'
+  ...
+# Subtest: WB-AG-013/022: 首个写入已确认后停止，同批未开始调用取消且不回滚
+ok 22 - WB-AG-013/022: 首个写入已确认后停止，同批未开始调用取消且不回滚
+  ---
+  duration_ms: 390.995924
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13531.559427

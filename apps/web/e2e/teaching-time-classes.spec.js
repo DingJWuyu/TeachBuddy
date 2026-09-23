@@ -9,7 +9,7 @@
  * the T51 receipt.
  *
  * Scenarios map to WB-T001, WB-T002, WB-T003, WB-T017, WB-T018 and WB-T019 in
- * docs/product/teaching-time.feature. Identity is `test-principal`
+ * docs/acceptance/teaching-time.feature. Identity is `test-principal`
  * (A11 real authentication is a separate, unfinished deliverable).
  */
 

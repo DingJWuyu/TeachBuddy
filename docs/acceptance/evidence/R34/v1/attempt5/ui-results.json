@@ -1,0 +1,69 @@
+[
+  {
+    "path": "ui-final-restarted-20/result.json",
+    "pages": 8,
+    "blankPages": [
+      8
+    ],
+    "browser": "152.0.7977.64",
+    "identity": "real-auth, copied retained database, fresh UI login"
+  },
+  {
+    "path": "ui-final-restarted-4/result.json",
+    "pages": 4,
+    "blankPages": [],
+    "browser": "152.0.7977.64",
+    "identity": "real-auth, copied retained database, fresh UI login"
+  },
+  {
+    "path": "ui-handout-docx-4/result.json",
+    "pages": 4,
+    "blankPages": [],
+    "browser": "152.0.7977.64",
+    "identity": "real-auth, copied retained database, fresh UI login"
+  },
+  {
+    "path": "ui-handout-pdf-4/result.json",
+    "pages": 4,
+    "blankPages": [],
+    "browser": "152.0.7977.64",
+    "identity": "real-auth, copied retained database, fresh UI login"
+  },
+  {
+    "path": "ui-lesson-plan-docx-4-final/result.json",
+    "pages": 2,
+    "blankPages": [],
+    "browser": "152.0.7977.64",
+    "identity": "real-auth, copied retained database, fresh UI login"
+  },
+  {
+    "path": "ui-lesson-plan-pdf-4-final/result.json",
+    "pages": 2,
+    "blankPages": [],
+    "browser": "152.0.7977.64",
+    "identity": "real-auth, copied retained database, fresh UI login"
+  },
+  {
+    "path": "ui-practice-docx-20/result.json",
+    "pages": 8,
+    "blankPages": [
+      8
+    ],
+    "browser": "152.0.7977.64",
+    "identity": "real-auth, copied retained database, fresh UI login"
+  },
+  {
+    "path": "ui-practice-docx-4/result.json",
+    "pages": 4,
+    "blankPages": [],
+    "browser": "152.0.7977.64",
+    "identity": "real-auth, copied retained database, fresh UI login"
+  },
+  {
+    "path": "ui-practice-pdf-4/result.json",
+    "pages": 4,
+    "blankPages": [],
+    "browser": "152.0.7977.64",
+    "identity": "real-auth, copied retained database, fresh UI login"
+  }
+]

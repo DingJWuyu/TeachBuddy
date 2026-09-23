@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 // T53 ff248141 repair scenarios replayed with the T51-MATH isolated composition, port and outputs.
 import { test, expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
@@ -8,8 +7,7 @@ import { bootstrapPrincipal } from './fixtures/first-flow/identity.js';
 
 const dataDir = T51_DATA_DIR;
 const origin = T51_ORIGIN;
-const evidence = path.resolve('test-results/evidence/T51-MATH/v1/inherited-repairs');
-fs.mkdirSync(evidence, { recursive: true });
+const evidence = path.resolve('docs/acceptance/evidence/T51-MATH/v1/inherited-repairs');
 const records = '/api/modules/classes/v2/records';
 const entries = '/api/modules/schedule/entries';
 const notices = '/api/modules/schedule/notifications';

@@ -1,0 +1,50 @@
+{
+  "lesson-plan-student.docx": {
+    "sha256": "e4d25531ddfecb5afaf99496cab1be088210713a6f53c944a5e44aff1b095fc0",
+    "source": "http/lesson-plan-00.docx"
+  },
+  "lesson-plan-student.pdf": {
+    "sha256": "42e73bbb9384e90eaa7e4a50797ae4d3e6fd7b3f102377d0ed6f0c6743265bd0",
+    "source": "http/lesson-plan-00.pdf"
+  },
+  "lesson-plan-teacher.docx": {
+    "sha256": "87bf653a12194993c6501f8c2117082d5adbc73440929f189e86aa870060d3ac",
+    "source": "http/lesson-plan-11.docx"
+  },
+  "lesson-plan-teacher.pdf": {
+    "sha256": "3c64b431e848f4c19a68b0d3af210ce6c2487ffcd5e08bdb50057efba9f43d07",
+    "source": "http/lesson-plan-11.pdf"
+  },
+  "handout-student.docx": {
+    "sha256": "1a35edb7c2b031f89295492597abdd10b02642ea27e2822b4fcb093797b795cc",
+    "source": "http/handout-00.docx"
+  },
+  "handout-student.pdf": {
+    "sha256": "744ae1c9fe943416444d63716923c40993aac5b26dfc0f6c0aee942b8b64ad19",
+    "source": "http/handout-00.pdf"
+  },
+  "handout-teacher.docx": {
+    "sha256": "60999d846d3f597521b5442a381b21aa5f77c5165c010d9d0a907a468f0e5c8b",
+    "source": "http/handout-11.docx"
+  },
+  "handout-teacher.pdf": {
+    "sha256": "d58ba902316255eb2fba06994df107ad0cb4e053378b7ae82bc344a117be92ef",
+    "source": "http/handout-11.pdf"
+  },
+  "practice-student.docx": {
+    "sha256": "d6aeaa1dcf1b198cfbd0f0b98bc7008d5431aa4bc7567ba1ce8e4efecf5d7f72",
+    "source": "http/practice-00.docx"
+  },
+  "practice-student.pdf": {
+    "sha256": "ca75a51c580279cabd5dd3e3bcc9f12a41302535244ca149c88978b214d976d7",
+    "source": "http/practice-00.pdf"
+  },
+  "practice-teacher.docx": {
+    "sha256": "7642cb4729eb8c2a0e8b4db89e0f74f1636112689227d03bc65312537c93d177",
+    "source": "http/practice-11.docx"
+  },
+  "practice-teacher.pdf": {
+    "sha256": "569530dd3177b97ef5ce53197d0b432724089f38641788fa08aa6194f7fc7d72",
+    "source": "http/practice-11.pdf"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "handout-student.docx": {
+    "non_math_text": "identical ignoring whitespace, Pandoc zero-width spaces and generator name in title",
+    "formula_count": 5,
+    "original_images": "identical SHA256 set",
+    "sha256": "3cdaf83e8e9fd2749dac822e5793c71ef08a7be9c2ec7e575fdc4bdc55de205f",
+    "explicit_page_breaks": 1,
+    "Windows": {
+      "evidence": "user-reported personal Windows, 完全正常",
+      "Word": "Chinese/denominator/root exponent edit, save/reopen, continued equation editing and full print preview PASS",
+      "WPS": "Chinese/denominator/root exponent edit, save/reopen, continued equation editing and full print preview PASS",
+      "page_count": "not separately reported",
+      "versions": "not provided",
+      "second_edit_round": "not confirmed",
+      "edited_PDF_export": "not confirmed",
+      "saved_artifacts": "not collected"
+    },
+    "ordered_math_text": "matches original after whitespace/minus normalization; structure reviewed in readback and PDF"
+  },
+  "handout-teacher.docx": {
+    "non_math_text": "identical ignoring whitespace, Pandoc zero-width spaces and generator name in title",
+    "formula_count": 7,
+    "original_images": "identical SHA256 set",
+    "sha256": "fc4198fed48452239196498c2723ad8e8858febb727c445d9f2ea86986204fdd",
+    "explicit_page_breaks": 1,
+    "Windows": {
+      "evidence": "user-reported personal Windows, 全都正常, following five-file checklist",
+      "Word": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "WPS": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "page_count": "not separately reported",
+      "versions": "not provided",
+      "editing": "not tested for this file",
+      "saved_artifacts": "not collected"
+    },
+    "ordered_math_text": "matches original after whitespace/minus normalization; structure reviewed in readback and PDF"
+  },
+  "lesson-student.docx": {
+    "non_math_text": "identical ignoring whitespace, Pandoc zero-width spaces and generator name in title",
+    "formula_count": 1,
+    "original_images": "identical SHA256 set",
+    "sha256": "f1b9679db314aace0dddb1ba4bce9a0f62180a04e3756fd7354a765588cd0e1c",
+    "explicit_page_breaks": 1,
+    "Windows": {
+      "evidence": "user-reported personal Windows, 全都正常, following five-file checklist",
+      "Word": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "WPS": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "page_count": "not separately reported",
+      "versions": "not provided",
+      "editing": "not tested for this file",
+      "saved_artifacts": "not collected"
+    },
+    "ordered_math_text": "matches original after whitespace/minus normalization; structure reviewed in readback and PDF"
+  },
+  "lesson-teacher.docx": {
+    "non_math_text": "identical ignoring whitespace, Pandoc zero-width spaces and generator name in title",
+    "formula_count": 2,
+    "original_images": "identical SHA256 set",
+    "sha256": "b775838cf381b47766ce5c1b1bec5e5078395b2defdade521bca9423d0cd9391",
+    "explicit_page_breaks": 1,
+    "Windows": {
+      "evidence": "user-reported personal Windows, 全都正常, following five-file checklist",
+      "Word": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "WPS": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "page_count": "not separately reported",
+      "versions": "not provided",
+      "editing": "not tested for this file",
+      "saved_artifacts": "not collected"
+    },
+    "ordered_math_text": "matches original after whitespace/minus normalization; structure reviewed in readback and PDF"
+  },
+  "practice-student.docx": {
+    "non_math_text": "identical ignoring whitespace, Pandoc zero-width spaces and generator name in title",
+    "formula_count": 6,
+    "original_images": "identical SHA256 set",
+    "sha256": "6bfc73fd43a642b16e9a619cf3a495c8392623c2153685792c4afbf41baf591e",
+    "explicit_page_breaks": 2,
+    "Windows": {
+      "evidence": "user-reported personal Windows, 全都正常, following five-file checklist",
+      "Word": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "WPS": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "page_count": "not separately reported",
+      "versions": "not provided",
+      "editing": "not tested for this file",
+      "saved_artifacts": "not collected"
+    },
+    "ordered_math_text": "matches original after whitespace/minus normalization; structure reviewed in readback and PDF"
+  },
+  "practice-teacher.docx": {
+    "non_math_text": "identical ignoring whitespace, Pandoc zero-width spaces and generator name in title",
+    "formula_count": 7,
+    "original_images": "identical SHA256 set",
+    "sha256": "c6c3807290d94bf991115fc7f2b78a6a6adcfafe284320e8e478a84782563b89",
+    "explicit_page_breaks": 3,
+    "Windows": {
+      "evidence": "user-reported personal Windows, 全都正常, following five-file checklist",
+      "Word": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "WPS": "open, formulas/images, all-page print preview and student/teacher separation PASS",
+      "page_count": "not separately reported",
+      "versions": "not provided",
+      "editing": "not tested for this file",
+      "saved_artifacts": "not collected"
+    },
+    "ordered_math_text": "matches original after whitespace/minus normalization; structure reviewed in readback and PDF"
+  }
+}

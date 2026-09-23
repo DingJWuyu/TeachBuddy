@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+ok 1 - WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本
+  ---
+  duration_ms: 254.81387
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 945.549398

@@ -8,7 +8,7 @@ import { bootstrapPrincipal } from './fixtures/first-flow/identity.js';
 
 const root = process.cwd();
 const dataDir = path.join(root, 'test-results/teaching-time/t53');
-const evidence = path.join(root, 'test-results/evidence/T53/v1');
+const evidence = path.join(root, 'docs/acceptance/evidence/T53/v1');
 const origin = 'https://localhost:47153';
 const entries = '/api/modules/schedule/entries';
 const notices = '/api/modules/schedule/notifications';
