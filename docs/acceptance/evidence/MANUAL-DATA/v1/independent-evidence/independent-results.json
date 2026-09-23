@@ -1,0 +1,132 @@
+[
+  {
+    "name": "service-start",
+    "directory": "/home/liam_t/项目/TeacherWorkspace-manual-data/.scratch/manual-data-independent-20260923/combination-SQxxjR",
+    "origin": "https://127.0.0.1:41383",
+    "pid": 150171
+  },
+  {
+    "name": "UI-export-offline-and-restore",
+    "status": "PASS",
+    "zipSha256": "6f1c6b457d25fe9055a1d37ec712c0d619279b3c64172e59385fc9843a488a7a",
+    "objects": 13,
+    "files": 30,
+    "relations": 16,
+    "originalSha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f",
+    "offline": true
+  },
+  {
+    "name": "service-stopped",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "name": "service-start",
+    "directory": "/home/liam_t/项目/TeacherWorkspace-manual-data/.scratch/manual-data-independent-20260923/combination-SQxxjR-restored",
+    "origin": "https://127.0.0.1:41383",
+    "pid": 150403
+  },
+  {
+    "name": "service-stopped",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "name": "service-start",
+    "directory": "/home/liam_t/项目/TeacherWorkspace-manual-data/.scratch/manual-data-independent-20260923/combination-SQxxjR-restored",
+    "origin": "https://127.0.0.1:41383",
+    "pid": 150448
+  },
+  {
+    "name": "CLI-combination-restore",
+    "status": "PASS",
+    "source": "/home/liam_t/项目/TeacherWorkspace-manual-data/.scratch/manual-data-independent-20260923/combination-SQxxjR",
+    "backup": "/home/liam_t/项目/TeacherWorkspace-manual-data/.scratch/manual-data-independent-20260923/combination-SQxxjR-backup",
+    "restored": "/home/liam_t/项目/TeacherWorkspace-manual-data/.scratch/manual-data-independent-20260923/combination-SQxxjR-restored",
+    "oldCookieStatus": 401,
+    "newCookieAfterOrdinaryRestart": 200,
+    "accountKeyPreserved": true,
+    "migration": "lessons_0003_order",
+    "storedOrder": {
+      "accountKey": "usr_0iSyNqRGBxuD0GZ3BgKz5Ir2T8hx9CSd",
+      "version": 1,
+      "lessonIds": "[\"db65eece-6c92-4297-8f97-0ba32bc3c38b\",\"c9046f15-6488-4301-b442-d3a60f69acca\"]"
+    },
+    "tableDigests": {
+      "question_items": {
+        "rows": 1,
+        "sha256": "e71c79be443239917f43cc3e56cee448736d1f596000a4b1927086f404dcd24b"
+      },
+      "lesson_items": {
+        "rows": 2,
+        "sha256": "1590718b148f8c1e4384cdc52baac1d184d15f464c4c806fea8c7a164ae2a195"
+      },
+      "lesson_sections": {
+        "rows": 1,
+        "sha256": "4d7831487f27353f66a18864f3ddf1604e1647e268d26854274945c1f6f8acbd"
+      },
+      "lesson_references": {
+        "rows": 3,
+        "sha256": "3c0dc2c75019ab646c2125ce9361fcc6d4d4d28990c1e491ec6a12fb66c9ef2c"
+      },
+      "lesson_order": {
+        "rows": 1,
+        "sha256": "a966d3e4a3b87a3905f27c9e7f12b7699495db7003b85de51aafe8e63aaf1c2d"
+      },
+      "resource_items": {
+        "rows": 1,
+        "sha256": "fc367cba81c35552b9775d9cb04b094d761a6aaf8ae878f7f82c5c687e435860"
+      },
+      "math_works": {
+        "rows": 1,
+        "sha256": "6d81850c4b8574ffe1bd1aba5dd7614792280a4357d35bb60dbf275d1f729488"
+      },
+      "math_revisions": {
+        "rows": 1,
+        "sha256": "51cf864cb819a53166de87344b36b94c60ec959888166845bb14bf9110a3fd4b"
+      },
+      "classes_items": {
+        "rows": 1,
+        "sha256": "3cd085b4191cc181254b8b6680ddd459d34e50ebe6fbce1c85698b15c554e511"
+      },
+      "classes_records": {
+        "rows": 1,
+        "sha256": "f769bb404c848392cb4066e8b96bf8888f00cba9dcd00b2ae8709dcf104bc820"
+      },
+      "classes_record_sources": {
+        "rows": 3,
+        "sha256": "8f87df2037a79713b76cbebea7b1b559769656b63827fc863c6906bdf62e85ae"
+      },
+      "schedule_entries": {
+        "rows": 1,
+        "sha256": "53253884fd5e6092e5a101e4523f4e633adf95121f29f3ec1021b23fb5abf2b9"
+      },
+      "schedule_exceptions": {
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "materials_files": {
+        "rows": 2,
+        "sha256": "00795bb1bca6d4ee1ff57945d7d15f1d8c54294c6f0815194c21de186d85df96"
+      },
+      "workbench_migrations": {
+        "rows": 21,
+        "sha256": "63c2e05d43195117d936f040e4372923ff71df5fe6950f12ec2b0d526930a664"
+      }
+    },
+    "originalDbHash": "f301f6b31e94fd388baf3f5940b90a541294efaf307c55da5115be64d5a6fba2",
+    "backupHash": "09c74c4193c592b0acc7905f2c6b3982950842727244b8b5e3b930d44225b899",
+    "restoredFilesSha256": "d19d905bb7050230c1e89d9860f55e53f4a168fb75fe5dfdb4cbedac3eeaab1f",
+    "publicObjectsCompared": 10
+  },
+  {
+    "name": "service-stopped",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "name": "complete",
+    "status": "PASS",
+    "finishedAt": "2026-09-23T06:34:37.987Z"
+  }
+]
