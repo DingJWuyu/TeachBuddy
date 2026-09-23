@@ -4,6 +4,8 @@ import { useWorkbenchShell } from '../shellContext.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createDragChip } from './dragChip.js';
 import { Icon } from './icons.jsx';
+import { listClasses } from '../../classes/api.js';
+import { listLessons } from '../../lessons/api.js';
 import { modulePath, navigate, routeClick, withSearch } from './routes.js';
 const WORKBENCH_MODULES = [{id:'questions',name:'题库',icon:'lessons'},{id:'lessons',name:'备课',icon:'pencil'},{id:'math',name:'数学工坊',icon:'graph'},{id:'resources',name:'资源库',icon:'folder'},{id:'classes',name:'班级教学',icon:'classes'}];
 
@@ -24,17 +26,43 @@ export function SearchModal({ onClose, onAnnounce }) {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef(null);
+  const [sources, setSources] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [problems, setProblems] = useState([]);
+  const [reload, setReload] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setProblems([]);
+    Promise.allSettled([listClasses(), listLessons()]).then(results => {
+      if (cancelled) return;
+      const labels = ['班级', '备课'];
+      setSources(results.flatMap((result, index) => result.status === 'fulfilled' ? [{
+        group: labels[index],
+        items: result.value.map(item => ({
+          id: `${index === 0 ? 'class' : 'lesson'}-${item.id}`,
+          name: index === 0 ? item.name : item.title,
+          hint: labels[index],
+          icon: index === 0 ? 'classes' : 'pencil',
+          route: `/${index === 0 ? 'classes' : 'lessons'}/${encodeURIComponent(item.id)}`
+        }))
+      }] : []));
+      setProblems(results.flatMap((result, index) => result.status === 'rejected' ? [`${labels[index]}读取失败：${result.reason.message}`] : []));
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [reload]);
 
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return SEARCH_GROUPS;
-    return SEARCH_GROUPS
+    return [...SEARCH_GROUPS, ...sources]
       .map((group) => ({
         ...group,
         items: group.items.filter((item) => `${item.name}${item.hint}`.toLowerCase().includes(needle))
       }))
       .filter((group) => group.items.length > 0);
-  }, [query]);
+  }, [query, sources]);
 
   const flat = useMemo(() => groups.flatMap((group) => group.items), [groups]);
 
@@ -44,7 +72,7 @@ export function SearchModal({ onClose, onAnnounce }) {
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [query]);
+  }, [query, sources]);
 
   /*
    * Results navigate to the destination they name, so search leaves the shell
@@ -98,7 +126,12 @@ export function SearchModal({ onClose, onAnnounce }) {
           </button>
         </div>
         <div className="tb-search-results">
-          {flat.length === 0 && (
+          {loading && <div className="tb-search-state" role="status">正在读取班级和备课…</div>}
+          {problems.length > 0 && <div className="tb-search-state" role="alert">
+            {problems.map(problem => <p key={problem}>{problem}</p>)}
+            <button className="wb-button" onClick={() => setReload(value => value + 1)}>重试</button>
+          </div>}
+          {!loading && problems.length === 0 && flat.length === 0 && (
             <div className="tb-search-empty">
               <Icon name="search" size={20} />
               <p>没有匹配「{query}」的结果</p>
