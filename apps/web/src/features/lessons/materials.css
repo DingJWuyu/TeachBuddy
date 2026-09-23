@@ -25,13 +25,31 @@
   flex: 1 1 14em;
   width: auto;
   min-width: 0;
+  font-size: 18px;
+  font-weight: 600;
+  border-color: transparent;
+  padding-left: 0;
 }
+.wb-lesson-head .wb-object-title-input:focus { border-color: #b4aacd; padding-left: 10px; }
+.wb-lesson .wb-inline-action { margin-bottom: 24px; }
+.wb-lesson .wb-reference-note textarea { min-height: 34px; }
 .wb-lesson-actions {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
 }
+.wb-lesson .wb-section-head { gap: 6px; }
+.wb-lesson .wb-material-menu { margin-left: auto; flex: none; }
+.wb-lesson .wb-section-title { font-size: 16px; font-weight: 600; }
+.wb-lesson .wb-section-head .wb-icon-button { color: #747780; }
+.wb-lesson .wb-section-head .wb-icon-button:hover { color: var(--wb-ink); }
+.wb-lesson .wb-lesson-scroll { scroll-padding-top: 16px; }
+.wb-lessons-index .wb-card-list { gap: 2px; }
+.wb-lessons-index .wb-lesson-list-row { border-bottom: 1px solid var(--wb-line-soft, #efefef); padding: 3px 0; }
+.wb-lessons-index .wb-card-row { border: 0; border-radius: 8px; }
+.wb-lessons-index .wb-lesson-order-buttons { opacity: 0; transition: opacity 140ms ease; }
+.wb-lessons-index .wb-lesson-list-row:is(:hover, :focus-within) .wb-lesson-order-buttons { opacity: 1; }
 .wb-lesson-head > .wb-save-block {
   flex: 1 0 100%;
   flex-wrap: wrap;
@@ -61,6 +79,13 @@
   padding: 10px 0;
   border-bottom: 1px solid #e3e3e3;
 }
+.r34-picker-row { padding: 10px 8px; border-radius: 6px; }
+.r34-picker-row > input[type="checkbox"] { width: 14px; height: 14px; flex: 0 0 14px; margin: 0; }
+.r34-picker-row.is-previewed { background: var(--wb-purple-soft, #f3f0fa); }
+.r34-picker-row > button { flex: 1; min-width: 0; text-align: left; overflow-wrap: anywhere; }
+.r34-picker-row > .wb-muted { flex: none; font-size: 11px; }
+.r34-picker-columns > section > h3 { font-size: 18px; margin-bottom: 18px; }
+.r34-picker-columns > section > details { margin-top: 20px; }
 .r34-exports {
   height: 100%;
   overflow: auto;
@@ -93,14 +118,19 @@
   width: 5rem;
 }
 .r34-exports fieldset {
-  border: 1px solid #e3e3e3;
-  border-radius: 8px;
-  padding: 12px;
+  border: 0;
+  border-top: 1px solid #efefef;
+  border-radius: 0;
+  padding: 16px 0;
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 16px;
 }
+.r34-exports legend { padding: 0 8px 0 0; font-weight: 600; }
+.r34-exports > .wb-section-head h2 { font-size: 18px; }
+.r34-exports .r34-export-options { gap: 12px 24px; }
+.r34-exports .r34-output-list { margin-top: 32px; }
 .r34-output-list {
   margin-top: 24px;
 }
@@ -136,6 +166,8 @@
   background: #ededed;
   padding: 16px;
 }
+.r34-preview .wb-section-head > label { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.r34-preview .wb-section-head select { width: 80px; min-height: 30px; }
 .r34-preview img {
   display: block;
   max-width: 100%;
@@ -159,4 +191,15 @@
 }
 .wb-lesson .material-editor .wb-block-controls button {
   padding: 4px 6px;
+}
+@media (max-width: 700px) {
+  .r34-picker-columns { grid-template-columns: minmax(0, 1fr); overflow: auto; }
+  .r34-picker-columns > section { min-height: 180px; overflow: visible; }
+  .wb-lesson .wb-section-title { flex-basis: 100%; }
+  .wb-lesson .wb-material-menu { margin-left: 0; }
+  .wb-lessons-index .wb-lesson-order-buttons { opacity: 1; }
+  .r34-exports { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wb-lessons-index .wb-lesson-order-buttons { transition: none; }
 }

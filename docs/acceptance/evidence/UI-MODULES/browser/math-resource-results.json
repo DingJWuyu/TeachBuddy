@@ -1,0 +1,62 @@
+{
+  "scope": [
+    "math",
+    "resources"
+  ],
+  "origin": "https://127.0.0.1:50931",
+  "account": "math@ui-modules.test",
+  "browser": "isolated Chrome 152 via chrome-devtools-axi and isolated Playwright contexts",
+  "viewport": [
+    1440,
+    900
+  ],
+  "guidanceRead": [
+    "https://raw.githubusercontent.com/pbakaus/impeccable/main/skill/SKILL.src.md",
+    "https://raw.githubusercontent.com/pbakaus/impeccable/main/skill/reference/operate.md",
+    "https://raw.githubusercontent.com/pbakaus/impeccable/main/skill/reference/distill.md",
+    "https://raw.githubusercontent.com/pbakaus/impeccable/main/skill/reference/animate.md",
+    "https://raw.githubusercontent.com/pbakaus/impeccable/main/skill/reference/craft-floor.md"
+  ],
+  "passed": [
+    "真实PDF上传、3页预览与原件下载",
+    "资源名称和笔记草稿刷新保留，保存后刷新保留",
+    "资源信息栏打开、关闭、快速反向及中间帧采样",
+    "资源文件管理details打开关闭连续高度采样",
+    "资源加入备课弹窗进出、焦点与Escape",
+    "文件夹创建、分类编辑取消",
+    "资源实际加入备课并读取使用位置",
+    "更新文件取消和确认，保留名称、笔记和关联，来源更新提示",
+    "删除确认Escape退出",
+    "公式真实渲染、保存、重开、PNG下载",
+    "公式说明与样式details双向连续高度采样",
+    "动态演示进入退出及快速反向，Escape退出",
+    "未保存作品替换确认取消保留草稿",
+    "动态作品保存并下载HTML",
+    "平面函数图形创建保存",
+    "空间正方体创建保存",
+    "新建作品/我的作品/参数/步骤/拖动绑定/对象/坐标窗/投影/棱逐项实际打开和关闭",
+    "1024宽度无页面水平溢出",
+    "生产构建通过",
+    "git diff --check通过",
+    "HTML文件真实导入保存，源码展开收起与隔离预览打开关闭",
+    "HTML默认导出格式正确且隐藏无关背景/宽度选项",
+    "HTML独立演示文件下载",
+    "HTML隔离预览内容截图目视确认"
+  ],
+  "motionEvidence": [
+    "resource-panel-motion.json",
+    "math-presentation-motion.json",
+    "math-all-disclosures.json"
+  ],
+  "screenshots": [
+    "resource-preview.png",
+    "math-formula.png",
+    "math-dynamic.png",
+    "math-html.png"
+  ],
+  "remainingProductIssues": [],
+  "verificationLimits": [
+    "1024宽度外壳辅助栏按既有行为覆盖主区，未修改外壳。",
+    "HTML嵌套sandbox的Playwright frame locator未稳定附着；真实内容已通过截图目视确认，导入、源码进出、预览外层进出和下载由自动化通过。"
+  ]
+}

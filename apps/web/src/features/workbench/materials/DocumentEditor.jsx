@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { supportedDocument } from '@refatos/shared';
 import { parseInlineRuns, serializeInlineRuns } from '../documents.js';
 import { DocumentView, Formula, ControlledImage } from './DocumentView.jsx';
+import { Icon } from '../icons.jsx';
+import { Popover, MenuItem } from '../ModuleOverlays.jsx';
 
 const paragraph = () => ({ type: 'paragraph', runs: [] });
 const kinds = {
@@ -23,7 +25,7 @@ function Controls({ index, count, label, change }) {
         disabled={!index}
         onClick={() => change('up')}
       >
-        ↑
+        <Icon name="chevron" size={14} className="material-move-up" />
       </button>
       <button
         type="button"
@@ -32,7 +34,7 @@ function Controls({ index, count, label, change }) {
         disabled={index === count - 1}
         onClick={() => change('down')}
       >
-        ↓
+        <Icon name="chevron" size={14} className="material-move-down" />
       </button>
       <button
         type="button"
@@ -40,7 +42,7 @@ function Controls({ index, count, label, change }) {
         aria-label={`删除${label}`}
         onClick={() => change('remove')}
       >
-        ×
+        <Icon name="close" size={14} />
       </button>
     </div>
   );
@@ -324,6 +326,11 @@ function BlockList({
     change([...blocks, block]);
   }
   const counts = {};
+  const available = Object.entries(kinds)
+    .filter(([type]) => allowTeacherNotes || type !== 'teacher-note')
+    .filter(([type]) => legacy ? ['paragraph', 'math'].includes(type) : !leaf || ['paragraph', 'math', 'image'].includes(type));
+  const primary = available.filter(([type]) => ['paragraph', 'math', 'image'].includes(type));
+  const secondary = available.filter(([type]) => !['paragraph', 'math', 'image'].includes(type));
   return (
     <div className="material-block-list">
       {blocks.map((block, i) => {
@@ -348,14 +355,7 @@ function BlockList({
         );
       })}
       <div className="wb-block-add">
-        {Object.entries(kinds)
-          .filter(([type]) => allowTeacherNotes || type !== 'teacher-note')
-          .filter(([type]) =>
-            legacy
-              ? ['paragraph', 'math'].includes(type)
-              : !leaf || ['paragraph', 'math', 'image'].includes(type)
-          )
-          .map(([type, text]) => (
+        {primary.map(([type, text]) => (
             <button
               type="button"
               className="wb-button"
@@ -366,6 +366,9 @@ function BlockList({
               {text}
             </button>
           ))}
+        {secondary.length > 0 && <Popover label="更多内容" icon={null} buttonClassName="wb-button" align="start">
+          {({ close }) => secondary.map(([type, text]) => <MenuItem key={type} onClick={() => { append(type); close(); }}>{text}</MenuItem>)}
+        </Popover>}
       </div>
       {error && <p role="alert">{error}</p>}
     </div>

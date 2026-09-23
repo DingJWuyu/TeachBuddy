@@ -9,6 +9,7 @@ import { useScene } from '../workbench/useScene.js';
  * exact request and the typed input.
  */
 import { useEffect, useRef, useState } from 'react';
+import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { Icon } from '../workbench/icons.jsx';
 import { readLocal, removeLocal, writeLocal } from '../workbench/storage.js';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
@@ -103,7 +104,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
           className="wb-input c-composer-input"
           aria-label="写一句"
           rows={2}
-          placeholder="写一句…（例：例2没讲，任意性还需强调）"
+          placeholder="记下今天的教学进展或课堂反馈…"
           value={input.note}
           onChange={(event) => patch({ note: event.target.value })}
         />
@@ -126,7 +127,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
           aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
         >
-          {expanded ? '收起补充' : '补充'}
+          {expanded ? '收起补充' : '补充进度与资料'}
         </button>
         <span className="c-composer-spacer" />
         {submit.status === 'unconfirmed' ? (
@@ -140,6 +141,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
         )}
       </div>
 
+      <ModulePresence present={expanded} mode="collapse">
       {expanded && (
         <div className="c-composer-extra" data-region="record-supplement">
           <label className="wb-field">
@@ -195,6 +197,8 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
         </div>
       )}
 
+      </ModulePresence>
+
       <div className={`c-composer-status is-${statusKind}`} data-region="composer-status" role="status" aria-live="polite">
         {statusText && (
           <span className="c-status-text">
@@ -205,6 +209,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
         {!statusText && hasAnyRecordText(input) && <span className="wb-draft-hint">草稿在此设备</span>}
       </div>
 
+      <ModulePresence present={pickerOpen}>
       {pickerOpen && (
         <SourcePicker
           sceneKey={`new:${draftKey ?? classId}`}
@@ -217,6 +222,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
           }}
         />
       )}
+      </ModulePresence>
     </form>
   );
 }

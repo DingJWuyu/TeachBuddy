@@ -1,3 +1,4 @@
+import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 import { useScene } from "../workbench/useScene.js";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -8,6 +9,8 @@ import {
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useIdempotentSubmit } from "../workbench/useIdempotentSubmit.js";
 export function FilePreview({ fileId, onClose }) {
+  const dialogRef = useRef(null);
+  useModuleDialogFocus(dialogRef, onClose);
   const { accountKey } = useWorkbenchShell();
   const [scene, patchScene] = useScene(accountKey, `lesson-preview-${fileId}`, {
     page: 0,
@@ -102,9 +105,10 @@ export function FilePreview({ fileId, onClose }) {
     setRevision((n) => n + 1);
   }
   return (
-    <div className="wb-dialog-host">
+    <div className="wb-module wb-dialog-host">
       <div className="wb-dialog-scrim" role="presentation" onClick={onClose} />
       <section
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="成品预览"
@@ -133,6 +137,7 @@ export function FilePreview({ fileId, onClose }) {
           <label>
             缩放
             <select
+              className="wb-input"
               aria-label="预览缩放"
               value={zoom}
               onChange={(e) => patchScene({ zoom: Number(e.target.value) })}

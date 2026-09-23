@@ -1,3 +1,5 @@
+import { Popover, ConfirmDialog } from "../workbench/ModuleOverlays.jsx";
+import { ModulePresence, useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 import { pendingQuestionUpload, uploadQuestionFile } from './uploadRecovery.js';
 import React, { useEffect, useRef, useState } from "react";
 import { questionDocuments, supportedDocument } from "@refatos/shared";
@@ -470,7 +472,7 @@ export default function MaterialsQuestionsPage({
     });
   }
   const taxonomyTools = (
-    <div className="q-taxonomy-tools">
+    <div className="wb-module q-taxonomy-tools">
       <select
         aria-label="筛选题型"
         value={scene.typeId ?? ""}
@@ -501,7 +503,7 @@ export default function MaterialsQuestionsPage({
           </label>
         ))}
       </div>
-      {manage && (
+      <ModulePresence present={manage} mode="collapse">{manage && (
         <Taxonomy
           key={taxonomy.version}
           taxonomy={taxonomy}
@@ -550,7 +552,7 @@ export default function MaterialsQuestionsPage({
             })
           }
         />
-      )}
+      )}</ModulePresence>
     </div>
   );
   const toolsRef = useRef(taxonomyTools);
@@ -575,16 +577,16 @@ export default function MaterialsQuestionsPage({
     items,
   ]);
   return (
-    <div ref={pageNode} className="q-workspace" data-review={scene.kind === "import"}
+    <div ref={pageNode} className="wb-module q-workspace" data-review={scene.kind === "import"}
       style={{"--q-ratio": scene.compare ? (scene.compareWidth ?? 0.5) : (scene.listWidth ?? 0.32)}}
       data-compare={Boolean(scene.compare && value?.source?.kind === "copy")}>
       {scene.kind !== "import" && <ResizeDivider
         value={scene.compare ? (scene.compareWidth ?? 0.5) : (scene.listWidth ?? 0.32)}
         label={scene.compare ? "调整原题对照宽度" : "调整题目列表宽度"}
         onChange={width => patchScene(scene.compare ? {compareWidth: width} : {listWidth: width})} />}
-      <aside className="q-finder">
+      <aside className="q-finder" inert={scene.compare && value?.source?.kind === "copy" ? true : undefined} aria-hidden={scene.compare && value?.source?.kind === "copy" ? true : undefined}>
         <header>
-          <strong>题库</strong>
+          <strong>题库 <span className="q-list-count">{items.length}</span></strong>
           <div className="q-tools">
             <button
               onClick={() => {
@@ -597,7 +599,7 @@ export default function MaterialsQuestionsPage({
             <button
               onClick={() => open("new", null)}
             >
-              自建
+              新建题目
             </button>
           </div>
         </header>
@@ -646,8 +648,8 @@ export default function MaterialsQuestionsPage({
             patchScene({ listScroll: e.currentTarget.scrollTop })
           }
         >
-          <details open>
-            <summary>待整理材料 · {imports.length}</summary>
+          {imports.length > 0 && <details open>
+            <summary>待整理 · {imports.length}</summary>
             {imports.map((m) => (
               <button
                 className={scene.id === m.id ? "selected" : ""}
@@ -663,7 +665,8 @@ export default function MaterialsQuestionsPage({
                 </small>
               </button>
             ))}
-          </details>
+          </details>}
+          {items.length === 0 && <p className="q-list-empty">{scene.q || scene.starred || scene.typeId || scene.tagIds?.length ? "没有匹配的题目" : scene.state === "deleted" ? "没有已删除题目" : "题库还没有题目"}</p>}
           {items.map((q) => (
             <div className="q-list-entry" key={q.id}>
             {onAddToLesson && !q.deletedAt && <input type="checkbox"
@@ -701,14 +704,16 @@ export default function MaterialsQuestionsPage({
           <button onClick={() => patchScene({selectedIds: []})}>取消选择</button>
         </div>}
       </aside>
+      <ModulePresence present={Boolean(scene.compare && value?.source?.kind === "copy")} className="q-compare-presence">
       {scene.compare && value?.source?.kind === "copy" && <section className="q-copy-source" aria-label="原题对照">
         <header><strong>原题 · 采用版本 {value.source.questionVersion}</strong>
           <button onClick={() => patchScene({compare: false})}>结束对照</button></header>
         <h3>{value.source.snapshot.title || "原题"}</h3>
         <DocumentView value={value.source.snapshot.body} />
-        <details open><summary>答案解析</summary><DocumentView value={value.source.snapshot.solution} /></details>
+        {value.source.snapshot.solution?.blocks?.length > 0 && <details open><summary>答案解析</summary><DocumentView value={value.source.snapshot.solution} /></details>}
         <button onClick={() => open("question", value.source.questionId)}>查看当前原题</button>
       </section>}
+      </ModulePresence>
       <main className="q-main">
         <div className="q-message" role="status">
           {message}
@@ -774,7 +779,7 @@ export default function MaterialsQuestionsPage({
           </section>
         )}
         {!value ? (
-          <p className="q-empty">选择一道题或待整理材料</p>
+          <p className="q-empty">选择题目查看内容</p>
         ) : scene.kind === "import" ? (
           <>
             <header>
@@ -1328,9 +1333,9 @@ export default function MaterialsQuestionsPage({
           <section className="q-question" ref={questionScroll.ref} onScroll={questionScroll.onScroll}>
             {onReturnToRecord && <button onClick={onReturnToRecord}>返回教学记录</button>}
             <header>
-              <strong>
-                {scene.kind === "new" ? "自建题目" : value.title || "题目"}
-              </strong>
+              <input className="q-title-input" aria-label="题目标题" placeholder="题目标题（选填）"
+                value={value.title} maxLength={200} disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}
+                onChange={(event) => change({ ...value, title: event.target.value })} />
               <div className="q-tools">
                 <button
                   className="primary"
@@ -1351,7 +1356,11 @@ export default function MaterialsQuestionsPage({
                 </button>
                 {value.id && (
                   <>
-                    <button
+                    <Popover label="更多题目操作">
+                      {({ close }) => <div className="q-question-menu" onClick={(event) => {
+                        if (event.target.closest('button:not(:disabled)')) close();
+                      }}>
+                    <button role="menuitem"
                       disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}
                       onClick={() =>
                         action(async () => {
@@ -1371,7 +1380,7 @@ export default function MaterialsQuestionsPage({
                     >
                       复制改编
                     </button>
-                    <button
+                    <button role="menuitem"
                       disabled={busy || unsupportedQuestion}
                       onClick={() =>
                         action(async () => {
@@ -1388,6 +1397,8 @@ export default function MaterialsQuestionsPage({
                     >
                       {value.deletedAt ? "恢复题目" : "删除题目"}
                     </button>
+                      </div>}
+                    </Popover>
                     {onAddToLesson && (
                       <button disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} data-return-focus="add-to-lesson"
                         onClick={() => action(async () => onAddToLesson([readLocal(accountKey, localKey) ? await save() : value]))}>
@@ -1402,12 +1413,6 @@ export default function MaterialsQuestionsPage({
               <p role="status">题目包含暂不支持的文档版本，原数据只读保留。</p>
             )}
             <fieldset disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}>
-              <input
-                aria-label="题目标题"
-                placeholder="题目标题"
-                value={value.title}
-                onChange={(e) => change({ ...value, title: e.target.value })}
-              />
               <DocumentEditor
                 allowTeacherNotes={false}
                 value={value.body}
@@ -1441,6 +1446,9 @@ export default function MaterialsQuestionsPage({
                   onPickImage={pickImage}
                 />
               )}{" "}
+              <details className="q-question-notes" open={Boolean(scene.notesOpen)} onToggle={(event) => {
+                if (event.currentTarget.open !== Boolean(scene.notesOpen)) patchScene({ notesOpen: event.currentTarget.open });
+              }}><summary>分类与教学笔记</summary>
               {classification(value, (patch) => change({ ...value, ...patch }))}
               <label>
                 长期笔记
@@ -1459,6 +1467,7 @@ export default function MaterialsQuestionsPage({
                 />
                 标记题目
               </label>
+              </details>
             </fieldset>
             {value.source?.kind === "import" && (
               <button onClick={() => {
@@ -1468,21 +1477,21 @@ export default function MaterialsQuestionsPage({
                 对照原稿
               </button>
             )}
-            {value.source?.kind === "copy" && (
+            {value.source?.kind === "copy" && !scene.compare && (
               <>
-                <button onClick={() => patchScene({compare: !scene.compare})}>
-                  {scene.compare ? "结束原题对照" : "对照原题"}
+                <button onClick={() => patchScene({compare: true})}>
+                  对照原题
                 </button>
                 <button
                   onClick={() => open("question", value.source.questionId)}
                 >
                   查看原题
                 </button>
-                {!scene.compare && <details>
+                <details>
                   <summary>采用时的原题</summary>
                   <DocumentView value={value.source.snapshot.body} />
                   <DocumentView value={value.source.snapshot.solution} />
-                </details>}
+                </details>
               </>
             )}
             {copies.map((q) => (
@@ -1490,7 +1499,7 @@ export default function MaterialsQuestionsPage({
                 改编题：{q.title || "未命名"}
               </button>
             ))}
-            <details open={Boolean(scene.usagesOpen)} onToggle={(event) => {
+            {value.id && <details open={Boolean(scene.usagesOpen)} onToggle={(event) => {
               if (event.currentTarget.open !== Boolean(scene.usagesOpen))
                 patchScene({ usagesOpen: event.currentTarget.open });
             }}>
@@ -1510,7 +1519,7 @@ export default function MaterialsQuestionsPage({
                   </p>
                 ))
               )}
-            </details>
+            </details>}
             {value.id && renderTeachingFeedback && (
               <details open={Boolean(scene.teachingOpen)} onToggle={(event) => {
                 if (event.currentTarget.open !== Boolean(scene.teachingOpen))
@@ -1638,9 +1647,9 @@ export default function MaterialsQuestionsPage({
           </section>
         )}
       </main>
+      <ModulePresence present={Boolean(capture)}>
       {capture && (
-        <div className="q-modal-backdrop">
-          <section className="q-modal" role="dialog" aria-label="收录材料">
+        <CaptureDialog onClose={() => setCapture(null)}>
             <header>
               <strong>收录材料</strong>
               <button onClick={() => setCapture(null)}>关闭</button>
@@ -1731,12 +1740,22 @@ export default function MaterialsQuestionsPage({
               {busy ? "正在保存原稿" : "保存原稿并整理"}
             </button>
             {message && <p role="alert">{message}</p>}
-          </section>
-        </div>
+        </CaptureDialog>
       )}
+      </ModulePresence>
     </div>
   );
 }
+function CaptureDialog({ children, onClose }) {
+  const ref = useRef(null);
+  useModuleDialogFocus(ref, onClose);
+  return <div className="q-modal-backdrop" onClick={(event) => {
+    if (event.target === event.currentTarget) onClose();
+  }}>
+    <section ref={ref} className="q-modal" role="dialog" aria-modal="true" aria-label="收录材料">{children}</section>
+  </div>;
+}
+
 function Taxonomy({ taxonomy, disabled, onSave }) {
   const [draft, setDraft] = useState({
       types: taxonomy.types,
@@ -1745,6 +1764,7 @@ function Taxonomy({ taxonomy, disabled, onSave }) {
     [name, setName] = useState(""),
     [kind, setKind] = useState("types"),
     [deleting, setDeleting] = useState(false),
+    [pendingDelete, setPendingDelete] = useState(null),
     [error, setError] = useState("");
   return (
     <div className="q-taxonomy">
@@ -1804,15 +1824,7 @@ function Taxonomy({ taxonomy, disabled, onSave }) {
                   .filter(
                     (q) => q.typeId === t.id || q.tagIds.includes(t.id),
                   ).length;
-                if (
-                  window.confirm(
-                    `删除“${t.name}”并解除关联？影响 ${affected} 题（含已删除题）。`,
-                  )
-                )
-                  setDraft({
-                    ...draft,
-                    [k]: draft[k].filter((x) => x.id !== t.id),
-                  });
+                setPendingDelete({ kind: k, id: t.id, name: t.name, affected });
                 } catch (error) { setError(error.message); }
                 finally { setDeleting(false); }
               }}
@@ -1824,6 +1836,12 @@ function Taxonomy({ taxonomy, disabled, onSave }) {
       )}
       <button disabled={disabled || deleting} onClick={() => onSave(draft)}>保存分类</button>
       {error && <p role="alert">{error}</p>}
+      <ModulePresence present={Boolean(pendingDelete)}>{pendingDelete && <ConfirmDialog
+        title="删除分类" message={`删除“${pendingDelete.name}”并解除 ${pendingDelete.affected} 道题的关联？题目本身会保留。`}
+        confirmLabel="删除分类" onCancel={() => setPendingDelete(null)} onConfirm={() => {
+          setDraft(current => ({ ...current, [pendingDelete.kind]: current[pendingDelete.kind].filter(item => item.id !== pendingDelete.id) }));
+          setPendingDelete(null);
+        }} />}</ModulePresence>
     </div>
   );
 }

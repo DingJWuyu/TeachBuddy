@@ -1,3 +1,4 @@
+import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 /**
  * "加入备课" from the question bank: pick an existing lesson or create one, pick
  * the target (a section or 本课材料), then commit one lesson PUT so a batch is
@@ -5,7 +6,7 @@
  * second lesson.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../workbench/icons.jsx';
 import { createLesson, getLesson, listLessons, updateLesson } from '../lessons/api.js';
 import { appendReferencesToLesson, targetReferences } from '../lessons/model.js';
@@ -16,6 +17,8 @@ import { excerptFor } from '../workbench/documents.js';
 const MATERIALS = { type: 'materials', sectionId: null };
 
 export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOpenLesson }) {
+  const dialogRef = useRef(null);
+  useModuleDialogFocus(dialogRef, onClose);
   const [lessons, setLessons] = useState([]);
   const [loadError, setLoadError] = useState(null);
   const [selectedLessonId, setSelectedLessonId] = useState(null);
@@ -120,9 +123,9 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
     : (lesson?.sections || []).find((section) => section.id === target.sectionId)?.title || '环节';
 
   return (
-    <div className="wb-dialog-host" data-overlay="dialog">
+    <div className="wb-module wb-dialog-host" data-overlay="dialog">
       <div className="wb-dialog-scrim" onClick={onClose} role="presentation" />
-      <div className="wb-dialog wb-add-dialog" role="dialog" aria-modal="true" aria-label="加入备课">
+      <div ref={dialogRef} className="wb-dialog wb-add-dialog" role="dialog" aria-modal="true" aria-label="加入备课">
         <header className="wb-dialog-head">
           <h2>加入备课</h2>
           <button type="button" className="wb-icon-button" aria-label="关闭" onClick={onClose}>

@@ -5,6 +5,7 @@
  * visible range. Picking a start and an end day (or pressing 应用 in the
  * toolbar) is what changes the grid.
  */
+import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { TIME_ZONES, formatRangeLabel, weekdayOf } from './model.js';
 
 const MONTH_NAMES = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
@@ -55,7 +56,7 @@ export default function RangeOverview({
     <div className="sch-overview" data-region="range-overview">
       <section className="sch-overview-block">
         <h2>{formatRangeLabel(from, to)}</h2>
-        <p className="wb-muted">{`${occurrenceCount} 段安排 · ${unscheduledCount} 项未排期 · ${timeZone}`}</p>
+        <p className="wb-muted">{`${occurrenceCount} 段安排 · ${unscheduledCount} 项未排期`}</p>
       </section>
 
       <section className="sch-month" data-region="month-calendar">
@@ -81,6 +82,8 @@ export default function RangeOverview({
                   type="button"
                   className={`sch-month-day${date === from || date === to ? ' is-edge' : ''}${date > from && date < to ? ' is-inside' : ''}`}
                   data-day={date}
+                  aria-label={date}
+                  aria-pressed={date >= from && date <= to}
                   onClick={() => onPick(date)}
                 >
                   {Number(date.slice(8, 10))}
@@ -101,6 +104,7 @@ export default function RangeOverview({
           <span>显示时区：{timeZone}</span>
           <span className="sch-caret" aria-hidden="true">{settingsOpen ? '▾' : '▸'}</span>
         </button>
+        <ModulePresence present={settingsOpen} mode="collapse">
         {settingsOpen && (
           <div className="sch-timezone" data-region="timezone-settings">
             <select
@@ -121,6 +125,7 @@ export default function RangeOverview({
             )}
           </div>
         )}
+        </ModulePresence>
       </section>
     </div>
   );

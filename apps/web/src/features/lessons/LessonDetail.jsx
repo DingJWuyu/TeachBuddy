@@ -1,3 +1,4 @@
+import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import { useMathReturn } from "./useMathReturn.js";
 import { lessonDocuments, supportedDocument } from "@refatos/shared";
 import { ExportsPanel } from "./ExportsPanel.jsx";
@@ -23,7 +24,7 @@ import { useIdempotentSubmit } from "../workbench/useIdempotentSubmit.js";
 import { SaveActions, SaveStatus } from "../workbench/SaveStatus.jsx";
 import { LessonDocumentEditor as DocumentEditor } from "./LessonDocumentEditor.jsx";
 import { DocumentView } from "../workbench/materials/index.js";
-import { ConfirmDialog, MenuItem, Popover } from "../workbench/overlays.jsx";
+import { ConfirmDialog, MenuItem, Popover } from "../workbench/ModuleOverlays.jsx";
 import { ConflictResolution } from "../workbench/ConflictResolution.jsx";
 import { Icon } from "../workbench/icons.jsx";
 import { navigate } from "../workbench/routes.js";
@@ -60,6 +61,25 @@ import { useLessonPickerFlow } from "./useLessonPickerFlow.js";
 import { ReferenceCard } from "./ReferenceCard.jsx";
 import { LessonIndex, LessonOutline } from "./LessonPanels.jsx";
 import { SourceRecordsPanel } from "../classes/index.jsx";
+
+function MaterialMenu({ target, disabled, pickerFlow, mathReturn, name }) {
+  return (
+    <Popover label="插入材料" icon={null} buttonClassName="wb-button" className="wb-material-menu">
+      {({ close }) => (
+        <>
+          <MenuItem icon="question" name={name} disabled={disabled || pickerFlow.entering}
+            onClick={() => { close(); pickerFlow.enter(target); }}>从题库取题</MenuItem>
+          <MenuItem disabled={disabled || pickerFlow.entering}
+            onClick={() => { close(); pickerFlow.enter(target, "resource"); }}>从资源库取材</MenuItem>
+          <MenuItem disabled={disabled || pickerFlow.entering}
+            onClick={() => { close(); pickerFlow.enter(target, "math"); }}>从数学工坊取材</MenuItem>
+          <MenuItem disabled={disabled}
+            onClick={() => { close(); mathReturn.enter(target); }}>制作数学作品</MenuItem>
+        </>
+      )}
+    </Popover>
+  );
+}
 
 export default function LessonDetail({ id }) {
   const shell = useWorkbenchShell();
@@ -201,7 +221,7 @@ export default function LessonDetail({ id }) {
 
   if (savable.loadState === "missing") {
     return (
-      <div className="wb-page wb-not-found" data-region="lesson-missing">
+      <div className="wb-module wb-page wb-not-found" data-region="lesson-missing">
         <p>未找到内容</p>
         <a
           className="wb-link"
@@ -219,7 +239,7 @@ export default function LessonDetail({ id }) {
 
   if (savable.loadState === "error") {
     return (
-      <div className="wb-page wb-inline-error" data-region="lesson-load-error">
+      <div className="wb-module wb-page wb-inline-error" data-region="lesson-load-error">
         <p>{savable.loadError?.message || "读取失败"}</p>
         <button
           type="button"
@@ -236,7 +256,7 @@ export default function LessonDetail({ id }) {
   // options and pending requests from its input and saved identity.
   if (savable.loadState === "loading" || !savable.input) {
     return (
-      <div className="wb-page wb-empty-note" role="status" data-region="lesson-loading">
+      <div className="wb-module wb-page wb-empty-note" role="status" data-region="lesson-loading">
         正在读取备课…
       </div>
     );
@@ -244,7 +264,7 @@ export default function LessonDetail({ id }) {
 
   const pickerDialogs = (
     <>
-      {pickerFlow.targetGone && picker && (
+      <ModulePresence present={Boolean(pickerFlow.targetGone && picker)}>{pickerFlow.targetGone && picker && (
         <ConfirmDialog
           title="目标环境已变化"
           message={`环节「${targetLabel(input, picker.target)}」在本课已不存在。选题仍保留，可以改选本课材料或取消。`}
@@ -252,8 +272,8 @@ export default function LessonDetail({ id }) {
           onCancel={pickerFlow.dismissTargetGone}
           onConfirm={pickerFlow.moveToMaterials}
         />
-      )}
-      {pickerFlow.conflict && picker && (
+      )}</ModulePresence>
+      <ModulePresence present={Boolean(pickerFlow.conflict && picker)}>{pickerFlow.conflict && picker && (
         <ConfirmDialog
           title="备课已在别处修改"
           message="取回服务器版本才能继续加入，选题会保留；本地尚未保存的文稿不会被自动丢弃，请先自行处理。"
@@ -261,7 +281,7 @@ export default function LessonDetail({ id }) {
           onCancel={pickerFlow.dismissConflict}
           onConfirm={pickerFlow.takeServerVersion}
         />
-      )}
+      )}</ModulePresence>
     </>
   );
 
@@ -403,7 +423,7 @@ export default function LessonDetail({ id }) {
 
   return (
     <div
-      className="wb-page wb-lesson"
+      className="wb-module wb-page wb-lesson"
       data-region="lesson-editor"
       data-lesson-id={baseline?.id || id}
     >
@@ -417,6 +437,7 @@ export default function LessonDetail({ id }) {
         <input
           className="wb-input wb-object-title-input"
           aria-label="课题"
+          placeholder="输入课题"
           readOnly={unsupported}
           value={input.title}
           maxLength={200}
@@ -484,8 +505,7 @@ export default function LessonDetail({ id }) {
                     icon="back"
                     onClick={() => {
                       close();
-                      if (window.confirm("放弃未保存的草稿，回到已保存版本？"))
-                        savable.discardDraft();
+                      setDialog("discard-draft");
                     }}
                   >
                     放弃草稿
@@ -562,7 +582,7 @@ export default function LessonDetail({ id }) {
             if (event.currentTarget.open !== Boolean(scene.feedbackOpen)) patchScene({ feedbackOpen: event.currentTarget.open });
           }}>
           <summary>教学反馈</summary>
-          {scene.feedbackOpen && <SourceRecordsPanel kind="lesson" id={baseline.id} onOpenRecord={(record) => shell.openMaterialSource(`/classes/${record.classId}/records/${record.id}`, `/lessons/${id}`)} />}
+          <SourceRecordsPanel kind="lesson" id={baseline.id} onOpenRecord={(record) => shell.openMaterialSource(`/classes/${record.classId}/records/${record.id}`, `/lessons/${id}`)} />
         </details>}
         <section className="wb-lesson-block">
           <h3>开头文稿</h3>
@@ -622,31 +642,8 @@ export default function LessonDetail({ id }) {
               >
                 ↓
               </button>
-              <button type="button" className="wb-button" disabled={unsupported} onClick={() => mathReturn.enter({type:"section",sectionId:section.id})}>制作数学作品</button>
-              <button type="button" className="wb-button" disabled={unsupported || pickerFlow.entering} onClick={() => pickerFlow.enter({ type: "section", sectionId: section.id }, "math")}>从数学工坊取材</button>
-              <button
-                type="button"
-                className="wb-button"
-                name="pick-section"
-                disabled={unsupported || pickerFlow.entering}
-                onClick={() =>
-                  pickerFlow.enter({ type: "section", sectionId: section.id })
-                }
-              >
-                从题库取题
-              </button>
-              <button
-                className="wb-button"
-                disabled={unsupported}
-                onClick={() =>
-                  pickerFlow.enter(
-                    { type: "section", sectionId: section.id },
-                    "resource",
-                  )
-                }
-              >
-                从资源库取材
-              </button>
+              <MaterialMenu target={{ type: "section", sectionId: section.id }}
+                disabled={unsupported} pickerFlow={pickerFlow} mathReturn={mathReturn} name="pick-section" />
 
               <button
                 type="button"
@@ -702,26 +699,8 @@ export default function LessonDetail({ id }) {
         >
           <header className="wb-section-head">
             <h3>本课材料</h3>
-            <button type="button" className="wb-button" disabled={unsupported} onClick={() => mathReturn.enter({type:"materials"})}>制作数学作品</button>
-            <button type="button" className="wb-button" disabled={unsupported || pickerFlow.entering} onClick={() => pickerFlow.enter({ type: "materials" }, "math")}>从数学工坊取材</button>
-            <button
-              className="wb-button"
-              disabled={unsupported}
-              onClick={() =>
-                pickerFlow.enter({ type: "materials" }, "resource")
-              }
-            >
-              从资源库取材
-            </button>
-            <button
-              type="button"
-              className="wb-button"
-              name="pick-materials"
-              disabled={unsupported || pickerFlow.entering}
-              onClick={() => pickerFlow.enter({ type: "materials" })}
-            >
-              从题库取题
-            </button>
+            <MaterialMenu target={{ type: "materials" }} disabled={unsupported}
+              pickerFlow={pickerFlow} mathReturn={mathReturn} name="pick-materials" />
           </header>
           {input.sections.flatMap((section) =>
             section.references.map((ref) => (
@@ -750,7 +729,11 @@ export default function LessonDetail({ id }) {
 
       {pickerDialogs}
 
-      {dialog === "delete" && (
+      <ModulePresence present={dialog === "discard-draft"}>{dialog === "discard-draft" && (
+        <ConfirmDialog title="放弃草稿" message="未保存的修改将被移除，备课回到已保存的版本。" confirmLabel="放弃草稿"
+          onCancel={() => setDialog(null)} onConfirm={() => { savable.discardDraft(); setDialog(null); }} />
+      )}</ModulePresence>
+      <ModulePresence present={Boolean(dialog === "delete")}>{dialog === "delete" && (
         <ConfirmDialog
           title="删除备课"
           message="删除后引用与快照保留，可在已删除中恢复；关联的题目不会删除。"
@@ -758,9 +741,9 @@ export default function LessonDetail({ id }) {
           onCancel={() => setDialog(null)}
           onConfirm={() => handleDeletion(true)}
         />
-      )}
+      )}</ModulePresence>
 
-      {dialog?.type === "delete-section" && (
+      <ModulePresence present={Boolean(dialog?.type === "delete-section")}>{dialog?.type === "delete-section" && (
         <ConfirmDialog
           title="删除环节"
           message="环节里的题目默认移入本课材料；也可以连同题目一起从这份备课移除。"
@@ -784,7 +767,7 @@ export default function LessonDetail({ id }) {
             setDialog(null);
           }}
         />
-      )}
+      )}</ModulePresence>
     </div>
   );
 }

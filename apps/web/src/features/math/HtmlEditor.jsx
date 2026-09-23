@@ -1,3 +1,4 @@
+import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import React, { useEffect, useState } from "react";
 import {
   htmlLimit,
@@ -60,20 +61,19 @@ export default function HtmlEditor({
           disabled={current === null || !!error || tooLarge}
           onClick={() => setRunning(!running)}
         >
-          {running ? "停止预览" : "运行预览"}
+          {running ? "关闭预览" : "运行预览"}
         </button>
         <button onClick={() => onDownload(draft.originalFileId)}>
           取回原文件
         </button>
       </div>
       {!draft.id && <p>原件已上传，保存作品后可修改源码。</p>}
-      <p>离线效果待检查。打开原始 HTML 会运行其中代码。</p>
       {(error || tooLarge) && (
         <p role="alert">
           {error || "源码超过 1 MiB，可保存及取回，无法运行预览。"}
         </p>
       )}
-      {editing && (
+      <ModulePresence present={editing} mode="collapse">{editing && (
         <label>
           HTML 源码
           <textarea
@@ -91,13 +91,14 @@ export default function HtmlEditor({
           />
         </label>
       )}
-      {running && (
+      </ModulePresence>
+      <ModulePresence present={running} mode="collapse">{running && (
         <iframe
           title="作品隔离预览"
           sandbox="allow-scripts"
           srcDoc={isolatedHtml(current)}
         />
-      )}
+      )}</ModulePresence>
     </div>
   );
 }

@@ -3,8 +3,9 @@
  * deletable and restorable. Opening a record edits it inline, so the list keeps
  * its scroll and the editor's draft survives leaving and returning.
  */
+import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { useState } from 'react';
-import { ConfirmDialog, MenuItem, Popover } from '../workbench/overlays.jsx';
+import { ConfirmDialog, MenuItem, Popover } from '../workbench/ModuleOverlays.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { setRecordDeletion, decodeRecordRequest, recordRequest } from './api.js';
 import { formatRecordedOn } from './model.js';
@@ -32,7 +33,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
   }
 
   return (
-    <li className={`c-record${deleted ? ' is-deleted' : ''}`} data-record-id={record.id} data-record-state={deleted ? 'deleted' : 'active'}>
+    <li className={`c-record${open ? ' is-editing' : ''}${deleted ? ' is-deleted' : ''}`} data-record-id={record.id} data-record-state={deleted ? 'deleted' : 'active'}>
       <div className="c-record-head">
         <span className="c-record-date">{formatRecordedOn(record.recordedOn)}</span>
         {deleted && <span className="wb-tag is-deleted">已删除</span>}
@@ -73,6 +74,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
           )}
         </Popover>}
       </div>
+      <ModulePresence present={!open || readOnly} mode="collapse">
       {record.note && <p className="c-record-note">{record.note}</p>}
       {RECORD_EXTRA_FIELDS.map(([key, label]) => (record[key]
         ? (
@@ -83,6 +85,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
         )
         : null))}
       {record.sources.length > 0 && <SourceChips sources={record.sources} returnPath={`/classes/${record.classId}/records/${record.id}`} />}
+      </ModulePresence>
       {deletion.status === 'unconfirmed' && (
         <div className="c-record-problem" data-region="record-action-problem">
           <span>上次操作的结果未确认，请重试确认</span>
@@ -92,6 +95,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
       {deletion.status === 'failed' && (
         <p className="wb-inline-error" data-region="record-action-problem">{deletion.problem?.message || '操作失败'}</p>
       )}
+      <ModulePresence present={open && !readOnly} mode="collapse">
       {open && !readOnly && (
         <RecordEditor
           accountKey={accountKey}
@@ -101,6 +105,8 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
           onClose={onClose}
         />
       )}
+      </ModulePresence>
+      <ModulePresence present={confirming}>
       {confirming && (
         <ConfirmDialog
           title="删除记录"
@@ -110,6 +116,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
           onConfirm={() => submitDeletion(true)}
         />
       )}
+      </ModulePresence>
     </li>
   );
 }
@@ -118,7 +125,7 @@ export function RecordList({ accountKey, generation, records, state, onStateChan
   return (
     <section className="c-records" data-region="record-list">
       <div className="c-records-head">
-        <h2 className="c-section-title">实际记录</h2>
+        <h2 className="c-section-title">教学记录 <span className="c-record-count">{records.length}</span></h2>
         <div className="wb-filters" role="group" aria-label="记录过滤">
           <button
             type="button"
@@ -126,7 +133,7 @@ export function RecordList({ accountKey, generation, records, state, onStateChan
             aria-pressed={state === 'active'}
             onClick={() => onStateChange('active')}
           >
-            教学记录
+            全部
           </button>
           <button
             type="button"
@@ -140,7 +147,7 @@ export function RecordList({ accountKey, generation, records, state, onStateChan
       </div>
       {records.length === 0 && (
         <p className="wb-empty-note" data-region="record-empty">
-          {state === 'deleted' ? '没有已删除的记录' : '还没有实际记录，先写一句'}
+          {state === 'deleted' ? '没有已删除的记录' : '还没有教学记录'}
         </p>
       )}
       <ul className="c-record-list" data-region="record-rows">

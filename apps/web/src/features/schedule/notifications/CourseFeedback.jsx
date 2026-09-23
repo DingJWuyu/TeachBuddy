@@ -1,4 +1,5 @@
 /** Record creation and schedule linking are two separate confirmed saves. */
+import { ModulePresence } from '../../workbench/ModuleMotion.jsx';
 import { useState } from 'react';
 import { RecordComposer } from '../../classes/index.jsx';
 import { useWorkbenchShell } from '../../workbench/shellContext.js';
@@ -10,8 +11,9 @@ import * as api from '../api.js';
 export default function CourseFeedback({ entryId, originDate, course, timeZone, onLinked }) {
   const shell = useWorkbenchShell();
   const name = `course-feedback:${entryId}:${originDate ?? ''}`;
-  const [scene, patch] = useScene(shell.accountKey, name, { record: null, linked: false });
-  const [open, setOpen] = useState(false);
+  const [scene, patch] = useScene(shell.accountKey, name, { record: null, linked: false, open: false });
+  const open = scene.open;
+  const setOpen = open => patch({ open });
   const [error, setError] = useState(null);
   const submit = useIdempotentSubmit({ accountKey: shell.accountKey, name: `pending:${name}` });
   const run = ({ key, payload }) => payload.originDate
@@ -41,16 +43,19 @@ export default function CourseFeedback({ entryId, originDate, course, timeZone, 
     {course.recordIds.map(id => <button key={id} type="button" className="wb-text-button"
       onClick={() => navigate(`/classes/${course.classId}/records/${id}`)}>查看实际记录</button>)}
     {!open && !scene.record && <button type="button" className="wb-button" onClick={() => setOpen(true)}>记课后情况</button>}
+    <ModulePresence present={open && !scene.record} mode="collapse">
     {open && !scene.record && <RecordComposer key={name} accountKey={shell.accountKey} classId={course.classId}
       timeZone={timeZone} draftKey={name}
       initialSources={course.lessonId ? [{ kind: 'lesson', id: course.lessonId, label: '本次备课' }] : []}
       onCreated={record => { patch({ record, linked: false }); setOpen(false); }} />}
+    </ModulePresence>
+    {open && !scene.record && <button type="button" className="wb-text-button" onClick={() => setOpen(false)}>收起</button>}
     {scene.record && <div>
       <p>{scene.linked ? '记录已保存并关联安排' : '记录已保存，尚未关联安排'}</p>
       <button type="button" className="wb-text-button" onClick={() => navigate(`/classes/${scene.record.classId}/records/${scene.record.id}`)}>打开已保存记录</button>
       {!scene.linked && <button type="button" className="wb-button" disabled={submit.isRunning} onClick={() => link()}>
         {submit.problem || error ? '重试关联' : '关联回本次安排'}</button>}
-      {scene.linked && <button type="button" className="wb-text-button" onClick={() => { patch({ record: null, linked: false }); setOpen(true); }}>再记一句</button>}
+      {scene.linked && <button type="button" className="wb-text-button" onClick={() => { patch({ record: null, linked: false, open: false }); setOpen(true); }}>再记一句</button>}
     </div>}
     {(submit.problem || error) && <p role="alert">{error || submit.problem.message}</p>}
   </div>;

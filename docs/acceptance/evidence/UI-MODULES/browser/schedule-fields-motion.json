@@ -1,0 +1,319 @@
+{
+  "interaction": "DOM change/click and animation-frame sampling, no schedule submitted",
+  "results": [
+    {
+      "name": "entry-create-open",
+      "h": [
+        418,
+        418,
+        418,
+        418,
+        418,
+        418
+      ],
+      "o": [
+        0,
+        0.375595,
+        0.948393,
+        0.999192,
+        1,
+        1
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 418,
+        "o": 1
+      }
+    },
+    {
+      "name": "time-open",
+      "h": [
+        0,
+        74,
+        113,
+        116,
+        116
+      ],
+      "o": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 116,
+        "o": 1
+      }
+    },
+    {
+      "name": "time-close",
+      "h": [
+        72,
+        6,
+        0,
+        0,
+        0
+      ],
+      "o": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 0,
+        "o": 0
+      }
+    },
+    {
+      "name": "time-reverse",
+      "h": [
+        0,
+        74,
+        5,
+        0,
+        0
+      ],
+      "o": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 0,
+        "o": 0
+      }
+    },
+    {
+      "name": "weekly-open",
+      "h": [
+        0,
+        35,
+        54,
+        55,
+        55,
+        55
+      ],
+      "o": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 55,
+        "o": 1
+      }
+    },
+    {
+      "name": "weekly-close",
+      "h": [
+        34,
+        3,
+        0,
+        0,
+        0
+      ],
+      "o": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 0,
+        "o": 0
+      }
+    },
+    {
+      "name": "weekly-reverse",
+      "h": [
+        0,
+        35,
+        2,
+        0,
+        0
+      ],
+      "o": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 0,
+        "o": 0
+      }
+    },
+    {
+      "name": "reminder-open",
+      "h": [
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      "o": [
+        0,
+        0.641395,
+        0.975697,
+        0.999936,
+        1
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 30,
+        "o": 1
+      }
+    },
+    {
+      "name": "reminder-close",
+      "h": [
+        30,
+        30,
+        30,
+        0,
+        0
+      ],
+      "o": [
+        0.62596,
+        0.0517845,
+        0.000815067,
+        0,
+        0
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 0,
+        "o": 0
+      }
+    },
+    {
+      "name": "reminder-reverse",
+      "h": [
+        30,
+        30,
+        30,
+        30,
+        0
+      ],
+      "o": [
+        0,
+        0.642151,
+        0.013024,
+        0,
+        0
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 0,
+        "o": 0
+      }
+    },
+    {
+      "name": "class-records-open",
+      "h": [
+        0,
+        43,
+        66,
+        68,
+        68,
+        68
+      ],
+      "o": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 68,
+        "o": 1
+      }
+    },
+    {
+      "name": "class-records-close",
+      "h": [
+        42,
+        3,
+        0,
+        0,
+        0
+      ],
+      "o": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 0,
+        "o": 0
+      }
+    },
+    {
+      "name": "class-records-reverse",
+      "h": [
+        0,
+        43,
+        3,
+        0,
+        0
+      ],
+      "o": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 0,
+        "o": 0
+      }
+    },
+    {
+      "name": "entry-create-close",
+      "h": [
+        805,
+        805,
+        805,
+        0,
+        0
+      ],
+      "o": [
+        0.625687,
+        0.0517534,
+        0.000813837,
+        0,
+        0
+      ],
+      "intermediate": true,
+      "end": {
+        "h": 0,
+        "o": 0
+      }
+    }
+  ]
+}

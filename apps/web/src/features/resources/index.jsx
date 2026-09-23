@@ -7,6 +7,8 @@ import { reselectDeviceFile } from '../workbench/deviceRequestStore.js';
 import { FileImage, Preview } from "./Preview.jsx";
 import { Taxonomy } from "./Taxonomy.jsx";
 import "./resources.css";
+import { ResourceDialog } from "./ResourceDialog.jsx";
+import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import { AddToLesson } from "./AddToLesson.jsx";
 const root = "/api/modules/resources";
 const metadata = (item) => ({
@@ -64,6 +66,7 @@ function ResourceWorkspace({
     zoom: 100,
     drafts: {},
     supplement: null,
+    metadataOpen: true,
   });
   const sceneRef = useRef(scene);
   sceneRef.current = scene;
@@ -386,7 +389,7 @@ function ResourceWorkspace({
       : (item?.supplementPreviewFileId ?? item?.fileId);
   const page = scene.pages[previewId] ?? 1;
   return (
-    <div className="res-workspace">
+    <div className="res-workspace wb-module">
       <div className="res-status" aria-live="polite">
         {message}
         {lastLesson && (
@@ -439,7 +442,7 @@ function ResourceWorkspace({
         <div className="res-filters">
           <input
             aria-label="搜索资料"
-            placeholder="搜索名称、文件名或笔记"
+            placeholder="搜索资料"
             value={scene.q}
             onChange={(e) => patchScene({ q: e.target.value })}
           />
@@ -531,13 +534,13 @@ function ResourceWorkspace({
                 </div>
                 <div className="res-card-text">
                   <strong>{resource.title}</strong>
-                  <span>{files[resource.fileId]?.name}</span>
+                  <span>{tax.folders.find((folder) => folder.id === resource.folderId)?.name || "未分类"}{resource.tagIds.length ? ` · ${resource.tagIds.map(id => tax.tags.find(tag => tag.id === id)?.name).filter(Boolean).join("、")}` : ""}</span>
                   <small>
                     {previews[resource.fileId]?.state === "limited"
                       ? "预览需核对"
                       : previews[resource.fileId]?.state === "failed"
                         ? "预览失败"
-                        : `版本 ${resource.version}`}
+                        : files[resource.fileId]?.name.split(".").pop()?.toUpperCase()}
                   </small>
                 </div>
               </button>
@@ -560,11 +563,12 @@ function ResourceWorkspace({
             </article>
           ))}
           {!items.length && (
-            <p className="res-empty">
-              {scene.q || scene.folderId || scene.tagIds.length
-                ? "没有匹配的资料"
-                : "上传第一份课件或文档"}
-            </p>
+            <div className="res-empty">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M10 10h19l9 9v21H10zM29 10v10h9M17 28h14M17 33h10" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>
+              <h2>{scene.q || scene.folderId || scene.tagIds.length || scene.mediaType ? "没有匹配的资料" : scene.state === "deleted" ? "没有已删除的资料" : "收好每一份教学材料"}</h2>
+              <p>{scene.state === "deleted" ? "删除的资料会保留在这里，随时可以恢复。" : "课件、文档和图片，都可以从这里取用。"}</p>
+              {(scene.q || scene.folderId || scene.tagIds.length || scene.mediaType) ? <button onClick={() => patchScene({ q: "", folderId: "", tagIds: [], mediaType: "" })}>清除筛选</button> : scene.state !== "deleted" && <label className={`res-button res-primary ${disabled ? "is-disabled" : ""}`}>上传资料<input type="file" aria-label="上传第一份资料" disabled={disabled} onChange={event => { upload(event.target.files[0]); event.target.value = ""; }} /></label>}
+            </div>
           )}
         </div>
         {onPickResources && scene.selected.length > 0 && (
@@ -588,6 +592,8 @@ function ResourceWorkspace({
           <header className="res-header">
             <button onClick={close}>返回资源库</button>
             <h1>{item?.title ?? "读取资料…"}</h1>
+            <button aria-expanded={scene.metadataOpen !== false} aria-controls="resource-metadata" onClick={() => patchScene({ metadataOpen: scene.metadataOpen === false })}>资料信息</button>
+            <button disabled={disabled || !item || !!item.deletedAt} className="res-primary" onClick={() => setAddToLesson([item])}>加入备课</button>
             <button
               disabled={!file}
               onClick={() =>
@@ -601,7 +607,7 @@ function ResourceWorkspace({
           </header>
           {item && (
             <>
-              <div className="res-detail-body">
+              <div className={`res-detail-body${scene.metadataOpen === false ? " is-preview-only" : ""}`}>
                 <div className="res-preview-column">
                   {item.supplementPreviewFileId && !supplement && (
                     <div className="res-warning">
@@ -676,7 +682,7 @@ function ResourceWorkspace({
                     }}
                   />
                 </div>
-                <aside className="res-metadata">
+                <aside id="resource-metadata" className="res-metadata" inert={scene.metadataOpen === false ? true : undefined}>
                   <h2>资料信息</h2>
                   <label>
                     名称
@@ -748,7 +754,7 @@ function ResourceWorkspace({
                   >
                     保存资料
                   </button>
-                  <div className="res-file-info">
+                  <details className="res-file-details" open={!!scene.fileDetailsOpen} onToggle={event => { if (scene.fileDetailsOpen !== event.currentTarget.open) patchScene({ fileDetailsOpen: event.currentTarget.open }); }}><summary>文件与预览</summary><div className="res-file-info">
                     <strong>{file?.name}</strong>
                     <span>当前版本 {item.version}</span>
                     <label className="res-button">
@@ -794,13 +800,7 @@ function ResourceWorkspace({
                         移除补充预览
                       </button>
                     )}
-                  </div>
-                  <button
-                    disabled={disabled || !!item.deletedAt}
-                    onClick={() => setAddToLesson([item])}
-                  >
-                    加入备课
-                  </button>
+                  </div></details>
                   <h2>使用位置 · {usages.length}</h2>
                   {usageError ? (
                     <p role="alert">
@@ -838,7 +838,7 @@ function ResourceWorkspace({
           )}
         </section>
       )}
-      {addToLesson && (
+      <ModulePresence present={!!addToLesson}>{addToLesson && (
         <AddToLesson
           client={client}
           resources={addToLesson}
@@ -849,9 +849,9 @@ function ResourceWorkspace({
           }
         />
       )}
-      {conflict && (
-        <div className="res-overlay">
-          <div className="res-dialog" role="dialog" aria-label="版本冲突">
+      </ModulePresence>
+      <ModulePresence present={!!conflict}>{conflict && (
+        <ResourceDialog label="版本冲突" onClose={() => setConflict(null)}>
             <h2>内容已在其他地方更新</h2>
             <p>
               你的输入仍保留。当前资源：{item?.title}，版本 {item?.version}。
@@ -868,18 +868,11 @@ function ResourceWorkspace({
               保留草稿并对照当前版本
             </button>
             <button onClick={() => setConflict(null)}>稍后处理</button>
-          </div>
-        </div>
+        </ResourceDialog>
       )}
-      {dialog && (
-        <div className="res-overlay">
-          <div
-            className="res-dialog"
-            role="dialog"
-            aria-label={
-              dialog.kind === "replace" ? "更新文件确认" : "删除恢复确认"
-            }
-          >
+      </ModulePresence>
+      <ModulePresence present={!!dialog}>{dialog && (
+        <ResourceDialog label={dialog.kind === "replace" ? "更新文件确认" : "删除恢复确认"} onClose={() => setDialog(null)}>
             <h2>
               {dialog.kind === "replace"
                 ? "更新当前文件"
@@ -932,9 +925,8 @@ function ResourceWorkspace({
               </button>
               <button onClick={() => setDialog(null)}>取消</button>
             </div>
-          </div>
-        </div>
-      )}
+        </ResourceDialog>
+      )}</ModulePresence>
     </div>
   );
 }

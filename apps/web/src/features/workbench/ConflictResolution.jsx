@@ -4,9 +4,12 @@
  */
 
 import { useState } from 'react';
+import { ModuleDisclosure, ModulePresence } from './ModuleMotion.jsx';
+import { ConfirmDialog } from './ModuleOverlays.jsx';
 
 export function ConflictResolution({ savable, onAdopt, renderServer, hint }) {
   const [showServer, setShowServer] = useState(false);
+  const [confirmAdopt, setConfirmAdopt] = useState(false);
   const server = savable.serverObject || savable.baseline;
   return (
     <div className="wb-conflict" data-region="conflict">
@@ -25,20 +28,22 @@ export function ConflictResolution({ savable, onAdopt, renderServer, hint }) {
           className="wb-button is-primary"
           name="adopt-server"
           disabled={Boolean(savable.pending)}
-          onClick={async () => {
-            const confirmed = window.confirm('采用服务器版本会丢弃当前的本地输入，继续？');
-            if (confirmed) await onAdopt();
-          }}
+          onClick={() => setConfirmAdopt(true)}
         >
           采用服务器版本
         </button>
       </div>
-      {showServer && server && (
+      <ModuleDisclosure open={showServer && Boolean(server)}>
+      {server && (
         <div className="wb-conflict-server" data-region="server-version">
           {renderServer ? renderServer(server) : <p className="wb-muted">服务器版本 {server.version}</p>}
           <p className="wb-muted">版本 {server.version}</p>
         </div>
       )}
+      </ModuleDisclosure>
+      <ModulePresence present={confirmAdopt}>
+        {confirmAdopt && <ConfirmDialog title="采用服务器版本？" message="当前本地输入会被替换，请先确认已完成对照。" confirmLabel="采用服务器版本" onCancel={() => setConfirmAdopt(false)} onConfirm={async () => { setConfirmAdopt(false); await onAdopt(); }} />}
+      </ModulePresence>
     </div>
   );
 }

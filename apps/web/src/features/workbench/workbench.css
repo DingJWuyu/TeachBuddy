@@ -4,7 +4,7 @@
  * Values follow the agreed compact EMStudio-derived baseline: 36px navigation
  * rows, 30px menu rows, 13-14px body text, 6-12px radii, 1px #e3e3e3 lines and
  * the small two-layer card shadow. Overlays appear progressively (opacity +
- * scale 0.96 + 4px, 180ms) and disappear instantly.
+ * scale 0.96 + 4px, 180ms). Module surfaces retain content through exit.
  */
 
 .wb-shell {
@@ -1770,3 +1770,126 @@
 .wb-recovery-candidates time { margin-left: 12px; color: #72716a; font-size: 12px; }
 .wb-recovery-candidates pre { max-height: 260px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
 .wb-recovery-candidates details { margin: 10px 0; }
+
+/* Module workspace: quiet working surfaces, independent of chrome and settings. */
+.wb-module {
+  --wb-muted: #676b74;
+  --wb-module-ease: cubic-bezier(.22, 1, .36, 1);
+  min-width: 0;
+  accent-color: var(--wb-purple);
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d8 transparent;
+}
+.wb-module ::selection { background: #e7e1f5; color: #2d3037; }
+.wb-module :is(input, textarea) { caret-color: var(--wb-purple); }
+.wb-module :is(button, a, input, textarea, select, summary):focus-visible {
+  outline: 2px solid #a796cf;
+  outline-offset: 2px;
+}
+.wb-module :is(.wb-button, .wb-icon-button, .wb-chip, .wb-row-body, .wb-outline-row) {
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+.wb-module :is(.wb-button, .wb-icon-button):not(:disabled):hover { background-color: #f5f4f7; }
+.wb-module .wb-button.is-primary:not(:disabled):hover { background-color: #6952ad; }
+.wb-module .wb-split { background-image: none; gap: 16px; padding: 16px; }
+.wb-module :is(.wb-list-pane, .wb-content-pane, .wb-preview-pane) { box-shadow: inset 0 0 0 1px var(--wb-line); }
+.wb-module :is(.wb-reader, .wb-editor, .wb-lesson-block, .wb-section) { box-shadow: none; }
+.wb-module :is(.wb-reader-scroll, .wb-editor) { padding: 20px 24px; }
+.wb-module .wb-object-head { min-height: 52px; padding: 10px 20px; gap: 12px; }
+.wb-module .wb-object-title { font-size: 16px; }
+.wb-module input.wb-object-title-input { font-size: 18px; font-weight: 600; height: 36px; padding: 4px 6px; border-color: transparent; }
+.wb-module input.wb-object-title-input:is(:hover, :focus) { border-color: var(--wb-line); }
+.wb-module .wb-label { font-size: 12px; line-height: 18px; letter-spacing: 0; text-transform: none; }
+.wb-module .wb-field { gap: 6px; margin-bottom: 20px; }
+.wb-module .wb-lesson-scroll { gap: 0; padding: 24px clamp(20px, 4vw, 56px); background: #fff; }
+.wb-module .wb-section { padding: 20px 0; border-radius: 0; border-top: 1px solid var(--wb-line-soft); }
+.wb-module .wb-lesson-block { padding: 0 0 20px; border-radius: 0; }
+.wb-module .wb-reference { border-radius: 6px; padding: 12px; box-shadow: none; background: #f8f8f9; }
+.wb-module .wb-section-title { font-size: 15px; }
+.wb-module .wb-section-head { gap: 8px; }
+.wb-module .wb-lesson-block h3 { font-size: 12px; letter-spacing: 0; margin-bottom: 8px; }
+.wb-module .wb-lesson-scroll > .wb-section:first-child { border-top: 0; }
+.wb-module .wb-lesson-scroll > .wb-inline-action { margin: 12px 0 24px; }
+.wb-module .wb-empty-note { padding: 20px 16px; line-height: 1.8; }
+.wb-module .wb-block-controls { gap: 2px; }
+.wb-module .wb-block-controls .wb-icon-button { border-color: transparent; background: transparent; color: var(--wb-muted); }
+.wb-module .wb-block-controls .wb-icon-button:not(:disabled):hover { background: #eeedf1; color: var(--wb-ink); }
+.wb-module .wb-block-add { gap: 4px; }
+.wb-module .wb-inline-editor > select { width: fit-content; min-width: 108px; }
+.wb-module .wb-block-add > .wb-button { background: transparent; border-color: transparent; color: var(--wb-muted); padding-inline: 8px; }
+.wb-module .wb-block-add > .wb-button:hover { background: #f0eef5; color: var(--wb-ink); }
+.wb-module .wb-selection-bar { border-radius: 8px; padding: 8px 12px; }
+.wb-module .wb-selection-bar .wb-button:not(:disabled):hover { background: #ffffff30; }
+.wb-module .wb-selection-bar .wb-button.is-primary:not(:disabled):hover { background: #eeeaf7; }
+
+/* Native disclosures keep their actual semantics and interpolate in both directions. */
+.wb-module details { interpolate-size: allow-keywords; }
+.wb-module details::details-content {
+  height: 0;
+  opacity: 0;
+  overflow: clip;
+  transition: height 180ms var(--wb-module-ease), opacity 180ms ease, content-visibility 180ms;
+  transition-behavior: allow-discrete;
+}
+.wb-module details[open]::details-content { height: auto; opacity: 1; }
+.wb-module details > summary { cursor: pointer; }
+
+/* Retained presence is used only by module surfaces, never by shell overlays. */
+.wb-module-presence.is-surface { display: contents; }
+.wb-module-presence.is-surface > * {
+  opacity: 1;
+  transition: opacity 180ms var(--wb-module-ease, ease);
+}
+.wb-module-presence.is-surface > :is(.wb-dialog-host, .q-modal-backdrop, .res-overlay) { z-index: 400; }
+.wb-module-presence.is-surface[data-state='closed'] > * { opacity: 0; pointer-events: none; }
+.wb-module-presence.is-surface > :is(.wb-popover, .wb-dialog-host, .q-modal-backdrop, .res-overlay),
+.wb-module-presence.is-surface :is(.wb-dialog, .q-modal, .res-dialog) { animation: none; }
+.wb-module-presence.is-surface > .wb-popover {
+  transform: translateY(0) scale(1);
+  transition: opacity 180ms ease, transform 180ms var(--wb-module-ease, cubic-bezier(.22,1,.36,1));
+}
+.wb-module-presence.is-surface[data-state='closed'] > .wb-popover { transform: translateY(-4px) scale(.96); }
+.wb-module-presence.is-surface :is(.wb-dialog, .q-modal, .res-dialog) {
+  transform: translateY(0) scale(1);
+  transition: transform 180ms var(--wb-module-ease, cubic-bezier(.22,1,.36,1));
+}
+.wb-module-presence.is-surface[data-state='closed'] :is(.wb-dialog, .q-modal, .res-dialog) { transform: translateY(4px) scale(.97); }
+.wb-module-presence.is-collapse,
+.wb-module-disclosure-grid {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition: grid-template-rows 180ms var(--wb-module-ease, ease), opacity 180ms ease;
+}
+.wb-module-presence.is-collapse[data-state='closed'],
+.wb-module-disclosure-grid[data-state='closed'] { grid-template-rows: 0fr; opacity: 0; }
+.wb-module-collapse-inner { min-height: 0; overflow: hidden; }
+.wb-module-disclosure { min-width: 0; }
+.wb-module-disclosure-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--wb-muted);
+  text-align: left;
+  cursor: pointer;
+}
+.wb-module-disclosure-trigger .wb-icon { transition: transform 180ms ease; }
+.wb-module-disclosure-trigger[aria-expanded='true'] .wb-icon { transform: rotate(90deg); }
+.wb-module-popover .wb-menu-item { white-space: nowrap; }
+.wb-module-dialog .wb-dialog p { color: var(--wb-muted); line-height: 1.8; }
+
+@media (max-width: 1000px) {
+  .wb-module :is(.wb-reader-scroll, .wb-editor) { padding: 16px; }
+  .wb-module .wb-object-head { padding: 10px 12px; flex-wrap: wrap; }
+  .wb-module .wb-lesson-scroll { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wb-module details::details-content,
+  .wb-module-presence *,
+  .wb-module-disclosure-grid,
+  .wb-module-disclosure-trigger .wb-icon { transition: none !important; animation: none !important; }
+}

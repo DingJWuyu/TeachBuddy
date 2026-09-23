@@ -6,7 +6,8 @@ import { useScene } from '../workbench/useScene.js';
  */
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../workbench/icons.jsx';
-import { ConfirmDialog } from '../workbench/overlays.jsx';
+import { ConfirmDialog, MenuItem, Popover } from '../workbench/ModuleOverlays.jsx';
+import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
 import { setClassDeletion, updateClass } from './api.js';
@@ -108,7 +109,29 @@ export function ClassDetail({
             <Icon name="back" size={16} />
           </button>
         )}
-        {renaming ? (
+          <>
+            <h1 className="c-class-title">{classroom.name}</h1>
+            {deleted && <span className="wb-tag is-deleted">已删除</span>}
+            <span className="c-head-spacer" />
+            <Popover label="班级操作" icon="more">
+              {({ close }) => <>
+                <MenuItem name="rename-class" onClick={() => { close(); setName(classroom.name); setRenaming(true); }}>重命名</MenuItem>
+                {!deleted && <MenuItem name="delete-class" icon="trash" danger onClick={() => { close(); setConfirmingDelete(true); }}>删除班级</MenuItem>}
+              </>}
+            </Popover>
+            {deleted ? (
+              <button
+                type="button"
+                className="wb-button is-primary"
+                name={deletion.status === 'unconfirmed' ? 'retry-confirm' : 'restore-class'}
+                onClick={() => (deletion.status === 'unconfirmed' ? retryDeletion() : submitDeletion(false))}
+              >
+                {deletion.status === 'unconfirmed' ? '重试确认' : '恢复班级'}
+              </button>
+            ) : null}
+          </>
+        <ModulePresence present={renaming} mode="collapse" className="c-rename-reveal">
+          {renaming && (
           <div className="c-rename">
             <input
               className="wb-input"
@@ -143,36 +166,9 @@ export function ClassDetail({
               取消
             </button>
           </div>
-        ) : (
-          <>
-            <h1 className="c-class-title">{classroom.name}</h1>
-            {deleted && <span className="wb-tag is-deleted">已删除</span>}
-            <span className="c-head-spacer" />
-            <button
-              type="button"
-              className="wb-button"
-              name="rename-class"
-              onClick={() => {
-                setName(classroom.name);
-                setRenaming(true);
-              }}
-            >
-              改名
-            </button>
-            {deleted ? (
-              <button
-                type="button"
-                className="wb-button is-primary"
-                name={deletion.status === 'unconfirmed' ? 'retry-confirm' : 'restore-class'}
-                onClick={() => (deletion.status === 'unconfirmed' ? retryDeletion() : submitDeletion(false))}
-              >
-                {deletion.status === 'unconfirmed' ? '重试确认' : '恢复班级'}
-              </button>
-            ) : (
-              <button type="button" className="wb-button" name="delete-class" onClick={() => setConfirmingDelete(true)}>删除</button>
-            )}
-          </>
-        )}
+          )}
+        </ModulePresence>
+
         {renamed.status === 'failed' && <p className="c-field-error">{renamed.problem?.message || '改名失败'}</p>}
         {deletion.status === 'failed' && <p className="c-field-error">{deletion.problem?.message || '班级操作失败'}</p>}
         {deletion.status === 'unconfirmed' && !deleted && (
@@ -181,17 +177,13 @@ export function ClassDetail({
       </header>
 
       <div className="c-detail-scroll" data-region="class-detail-scroll" ref={scroll.ref} onScroll={scroll.onScroll}>
-        <div className="c-position" data-region="latest-position">
-          <span className="wb-label">最近实际位置</span>
-          {position ? (
-            <p className="c-position-text">
+        {position && <div className="c-position" data-region="latest-position">
+          <span className="wb-label">最近教到</span>
+          <p className="c-position-text">
               {position.text}
               <span className="wb-muted"> · {formatRecordedOn(position.record.recordedOn)}</span>
             </p>
-          ) : (
-            <p className="wb-muted">还没有实际记录</p>
-          )}
-        </div>
+        </div>}
 
         {deleted && (
           <p className="c-deleted-note" data-region="class-deleted-note">
@@ -232,6 +224,7 @@ export function ClassDetail({
         )}
       </div>
 
+      <ModulePresence present={confirmingDelete}>
       {confirmingDelete && (
         <ConfirmDialog
           title="删除班级"
@@ -241,6 +234,7 @@ export function ClassDetail({
           onConfirm={() => submitDeletion(true)}
         />
       )}
+      </ModulePresence>
     </section>
   );
 }

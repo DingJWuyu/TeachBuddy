@@ -5,6 +5,7 @@ import { useScene } from '../workbench/useScene.js';
  * while the teacher moves between classes.
  */
 import { useState } from 'react';
+import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { Icon } from '../workbench/icons.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
@@ -82,10 +83,11 @@ export function ClassList({
           {listState === 'active' && !creating && (
             <button type="button" className="wb-button is-primary" name="new-class" onClick={() => setCreating(true)}>
               <Icon name="plus" size={14} />
-              新建班级
+              新建
             </button>
           )}
         </div>
+        <ModulePresence present={creating} mode="collapse">
         {creating && (
           <div className="c-create-class" data-region="class-create">
             <input
@@ -116,6 +118,7 @@ export function ClassList({
             </div>
           </div>
         )}
+        </ModulePresence>
         {localError && <p className="c-field-error" data-region="class-create-error">{localError}</p>}
         {submit.status === 'unconfirmed' && !creating && (
           <p className="c-field-error">上次新建的结果未确认，可再次重试确认</p>

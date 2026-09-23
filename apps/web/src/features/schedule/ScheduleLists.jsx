@@ -6,6 +6,7 @@
  * order. Each unscheduled item can be moved into an existing non-repeating
  * segment through the atomic moveItem operation.
  */
+import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { useEffect, useState } from 'react';
 import { listEntries } from './api.js';
 import {
@@ -78,6 +79,7 @@ function DeletedEntries({ open, onToggle, onOpen, refreshToken }) {
     <button type="button" className="sch-list-head" aria-expanded={Boolean(open)} onClick={onToggle}>
       <span>已删除安排</span><span aria-hidden="true">{open ? '▾' : '▸'}</span>
     </button>
+    <ModulePresence present={open} mode="collapse">
     {open && <>
       {loading && <p className="wb-muted">正在读取…</p>}
       {error && <p role="alert">{error}<button className="wb-button" onClick={() => setRetry(value => value + 1)}>重试</button></p>}
@@ -86,6 +88,7 @@ function DeletedEntries({ open, onToggle, onOpen, refreshToken }) {
         <button type="button" className="sch-unscheduled-title" onClick={() => onOpen(entry.id)}>{titleOf(entry)}</button>
       </li>)}</ul>
     </>}
+    </ModulePresence>
   </section>;
 }
 
@@ -128,6 +131,7 @@ export default function ScheduleLists({
           <span>未排期 {unscheduled.length}</span>
           <span className="sch-caret" aria-hidden="true">{open.unscheduled ? '▾' : '▸'}</span>
         </button>
+        <ModulePresence present={open.unscheduled} mode="collapse">
         {open.unscheduled && (
           unscheduled.length === 0
             ? <p className="wb-empty-note" data-region="unscheduled-empty">没有未排期事项</p>
@@ -158,6 +162,7 @@ export default function ScheduleLists({
               </ul>
             )
         )}
+        </ModulePresence>
       </section>
 
       <section className="sch-list" data-region="priority">
@@ -170,6 +175,7 @@ export default function ScheduleLists({
           <span>优先事项 {rows.length}</span>
           <span className="sch-caret" aria-hidden="true">{open.priority ? '▾' : '▸'}</span>
         </button>
+        <ModulePresence present={open.priority} mode="collapse">
         {open.priority && (
           rows.length === 0
             ? <p className="wb-empty-note" data-region="priority-empty">范围内还没有事项</p>
@@ -206,6 +212,7 @@ export default function ScheduleLists({
               </ol>
             )
         )}
+        </ModulePresence>
       </section>
       <DeletedEntries open={open.deleted} onToggle={() => onToggle('deleted')}
         onOpen={onOpenEntry} refreshToken={refreshToken} />

@@ -1,7 +1,10 @@
+import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import { referenceInputFrom as inputReference } from '../lessons/api.js';
 export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
   const sequence = useRef(0);
+  const dialogRef = useRef(null);
+  useModuleDialogFocus(dialogRef, onClose);
   const [selectedId, setSelectedId] = useState("");
   const [lessons, setLessons] = useState([]),
     [lesson, setLesson] = useState(null),
@@ -68,7 +71,7 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
   }
   return (
     <div className="res-overlay">
-      <div className="res-dialog" role="dialog" aria-label="加入备课">
+      <div ref={dialogRef} className="res-dialog" role="dialog" aria-modal="true" aria-label="加入备课">
         <h2>加入备课</h2>
         {error && <p role="alert">{error}</p>}
         <label>

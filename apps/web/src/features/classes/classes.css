@@ -8,7 +8,7 @@
  */
 
 .c-classes .wb-split {
-  grid-template-columns: 30fr 70fr;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
 }
 
 /* ------------------------------------------------------------------- list */
@@ -57,19 +57,30 @@
   position: relative;
 }
 
+.c-class-placeholder {
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.c-placeholder-inner { max-width: 300px; }
+.c-placeholder-inner p { margin: 0 0 12px; line-height: 1.7; }
+
 .c-class-head {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
   flex: none;
-  min-height: 48px;
-  padding: 8px 12px;
+  min-height: 56px;
+  padding: 10px 20px;
   border-bottom: 1px solid var(--wb-line-soft);
 }
 
 .c-class-title {
-  font-size: 15px;
+  margin: 0;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -89,24 +100,26 @@
   max-width: 240px;
 }
 
+.c-rename-reveal { flex-basis: 100%; }
+
 .c-detail-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 12px;
+  padding: 20px;
 }
 
 .c-position {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: var(--wb-purple-soft);
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--wb-line-soft);
 }
 
 .c-position-text {
+  margin: 0;
   font-size: 14px;
   font-weight: 500;
 }
@@ -126,15 +139,15 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 12px;
-  padding: 10px;
-  border-radius: 12px;
-  box-shadow: inset 0 0 0 1px var(--wb-line), var(--wb-shadow);
+  margin-top: 0;
+  padding: 12px;
+  border: 1px solid var(--wb-line);
+  border-radius: 10px;
   background: var(--wb-surface);
 }
 
 .c-composer-input {
-  min-height: 54px;
+  min-height: 68px;
   resize: vertical;
   font-size: 14px;
   line-height: 1.6;
@@ -183,9 +196,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 18px;
   font-size: 12px;
 }
+
+.c-composer-status:empty { display: none; }
+.c-position + .c-composer { margin-top: 16px; }
 
 .c-composer-status.is-saved .c-status-text {
   display: inline-flex;
@@ -355,17 +370,19 @@
 /* ---------------------------------------------------------------- records */
 
 .c-records {
-  margin-top: 16px;
+  margin-top: 24px;
 }
 
 .c-records-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
 .c-section-title {
+  margin: 0;
   font-size: 13px;
   font-weight: 600;
 }
@@ -373,18 +390,21 @@
 .c-record-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .c-record {
-  padding: 8px 10px;
-  border-radius: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--wb-line-soft);
   background: var(--wb-surface);
-  box-shadow: inset 0 0 0 1px var(--wb-line);
 }
+
+.c-record-count { margin-left: 5px; color: var(--wb-muted); font-weight: 400; }
+.c-record:last-child { border-bottom: 0; }
+.c-record.is-editing { border-color: var(--wb-line); }
 
 .c-record.is-deleted {
   background: #fbfbfb;
@@ -397,7 +417,9 @@
 }
 
 .c-record-date {
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--wb-muted);
 }
 
 .c-record-spacer {
@@ -405,8 +427,9 @@
 }
 
 .c-record-note {
-  margin-top: 4px;
+  margin: 6px 0;
   font-size: 14px;
+  line-height: 1.7;
   white-space: pre-wrap;
 }
 
@@ -432,10 +455,26 @@
   flex-direction: column;
   gap: 8px;
   margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  background: #fbfafd;
-  box-shadow: inset 0 0 0 1px #e7e1f4;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--wb-line-soft);
+  background: var(--wb-surface);
+}
+
+.c-editor-extra { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+.c-record-editor > .wb-field:first-of-type .wb-input { max-width: 160px; }
+.c-class-row { min-height: 42px; }
+.c-picker-filter { margin: 0 16px 8px; }
+.c-picker-check { transition: background 160ms ease, border-color 160ms ease; }
+.c-picker-row.is-selected .c-picker-check { background: var(--wb-purple); border-color: var(--wb-purple); color: white; }
+.c-picker-row { transition: background 160ms ease; }
+.c-source-chip { max-width: 100%; }
+.c-source-open { min-width: 0; }
+
+@media (max-width: 700px) {
+  .c-detail-scroll { padding: 14px; }
+  .c-class-head { padding: 10px 14px; }
+  .c-editor-extra { grid-template-columns: minmax(0, 1fr); }
+  .c-composer-actions { gap: 6px; flex-wrap: wrap; }
 }
 
 .c-editor-head {

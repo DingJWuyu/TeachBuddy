@@ -7,7 +7,7 @@
   gap: 12px;
   height: 100%;
   min-height: 0;
-  color: #30332f;
+  color: var(--wb-ink, #2d3037);
   font:
     14px/1.5 system-ui,
     sans-serif;
@@ -32,20 +32,20 @@
   min-height: 30px;
 }
 .q-workspace button:hover {
-  background: #f1f4ef;
+  background: #f5f5f6;
 }
 .q-workspace button:disabled {
   opacity: 0.45;
   cursor: default;
 }
 .q-workspace .selected {
-  background: #edf2e9;
-  border-color: #98a28c;
+  background: var(--wb-purple-soft, #f3f0fa);
+  border-color: transparent;
 }
 .q-workspace .primary {
-  background: #465940;
+  background: var(--wb-ink, #2d3037);
   color: #fff;
-  border-color: #465940;
+  border-color: var(--wb-ink, #2d3037);
 }
 .q-workspace header {
   display: flex;
@@ -74,9 +74,12 @@
   overflow: auto;
 }
 .q-finder {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: opacity 180ms ease, visibility 180ms;
 }
 .q-finder header {
   padding-bottom: 0;
@@ -97,11 +100,13 @@
   gap: 6px;
   text-align: left;
   width: 100%;
-  padding: 12px;
-  margin-bottom: 8px;
+  padding: 10px;
+  margin-bottom: 3px;
+  border-color: transparent;
+  border-radius: 8px;
 }
 .q-list small {
-  color: #6f776b;
+  color: #686b73;
 }
 .q-list .q-excerpt {
   max-height: 5.4em;
@@ -127,9 +132,13 @@
   grid-template-columns: minmax(0, calc((100% - 12px) * var(--q-ratio, 0.5))) minmax(0, 1fr);
 }
 .q-workspace[data-compare="true"] > .q-finder {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 .q-copy-source {
+  grid-column: 1;
+  grid-row: 1;
   background: #fff;
   padding: 0 16px 16px;
   border-radius: 12px;
@@ -153,6 +162,8 @@
   color: #6a7264;
 }
 .q-main {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
 }
@@ -168,8 +179,12 @@
 }
 .q-empty {
   margin: auto;
-  color: #777f72;
+  padding: 32px 12px;
+  color: #686b73;
+  text-align: center;
 }
+.q-list-count { font-size: 12px; font-weight: 400; color: #686b73; margin-left: 5px; }
+.q-list-empty { padding: 20px 10px; color: #686b73; }
 .q-review {
   position: relative;
   --q-gap: 16px;
@@ -277,7 +292,19 @@
 .q-question {
   max-width: 100%;
   overflow: auto;
+  padding-bottom: 24px;
 }
+.q-question > header { position: sticky; top: 0; z-index: 3; background: var(--wb-surface, #fff); border-bottom: 1px solid #efefef; }
+.q-question > header > .q-title-input { flex: 1 1 180px; width: 0; font-size: 18px; font-weight: 600; border-color: transparent; padding-left: 0; }
+.q-question > header > .q-title-input:focus { padding-left: 9px; border-color: #b4aacd; }
+.q-question > fieldset > label > select { width: auto; max-width: 100%; }
+.q-question-notes > :not(summary) { margin-top: 12px; }
+.q-question-notes summary { color: #686b73; }
+.q-question .q-tools .wb-popover-host { order: 3; }
+.q-question-menu { display: grid; min-width: 140px; gap: 2px; }
+.q-question-menu button { border: 0; text-align: left; border-radius: 6px; }
+.q-workspace :is(input, textarea, select, button):focus-visible { outline: 2px solid #9c8ec4; outline-offset: 2px; }
+.q-workspace :is(button, input, textarea, select) { transition: background-color 140ms ease, border-color 140ms ease; }
 .q-question textarea {
   width: 100%;
   min-height: 90px;
@@ -367,7 +394,6 @@
   flex-direction: column;
   gap: 16px;
   box-shadow: 0 4px 12px #0001;
-  animation: q-appear 180ms ease-out;
 }
 .q-modal label {
   display: grid;
@@ -423,6 +449,8 @@
     max-height: 280px;
   }
   .q-main {
+    grid-column: 1;
+    grid-row: 2;
     min-height: 500px;
   }
   .q-review {
@@ -430,6 +458,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .q-finder { transition: none; }
   .q-modal {
     animation: none;
   }
@@ -440,6 +469,9 @@
 .q-workspace[data-review="true"] > .q-finder {
   display: none;
 }
+.q-workspace[data-review="true"] > .q-main { grid-column: 1; grid-row: 1; }
+.q-compare-presence > .q-copy-source { transition: opacity 180ms ease, transform 180ms ease; }
+.q-compare-presence[data-state="closed"] > .q-copy-source { opacity: 0; transform: translateX(-6px); }
 .q-review-switch {
   display: none;
 }

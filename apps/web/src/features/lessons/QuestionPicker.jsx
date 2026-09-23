@@ -86,7 +86,7 @@ export function QuestionPicker({
   const existing = new Set(existingQuestionIds);
 
   return (
-    <div className="wb-page wb-picker" data-region="question-picker">
+    <div className="wb-module wb-page wb-picker" data-region="question-picker">
       <header className="wb-picker-head">
         <button type="button" className="wb-button" name="picker-back" onClick={onCancel}>
           <Icon name="back" size={15} />

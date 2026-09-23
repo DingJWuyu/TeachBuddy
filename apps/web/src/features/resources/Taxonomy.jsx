@@ -1,4 +1,5 @@
 import React from "react";
+import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 export function Taxonomy({
   value,
   scene,
@@ -90,7 +91,7 @@ export function Taxonomy({
       ));
   }
   return (
-    <div className="res-tools">
+    <div className="res-tools wb-module">
       <div className="res-tool-head">
         <h3>文件夹</h3>
         <button onClick={() => open("folder")} disabled={disabled}>
@@ -135,7 +136,7 @@ export function Taxonomy({
           </button>
         </div>
       ))}
-      {edit && (
+      <ModulePresence present={!!edit} mode="collapse">{edit && (
         <div className="res-pop" role="dialog" aria-label="管理分类">
           <label>
             名称
@@ -181,7 +182,8 @@ export function Taxonomy({
           </div>
         </div>
       )}
-      {remove && (
+      </ModulePresence>
+      <ModulePresence present={!!remove} mode="collapse">{remove && (
         <div className="res-pop" role="alertdialog" aria-label="删除分类">
           <p>
             删除“{remove.item.name}”？影响{" "}
@@ -202,7 +204,7 @@ export function Taxonomy({
           </button>
           <button onClick={() => setRemove(null)}>取消</button>
         </div>
-      )}
+      )}</ModulePresence>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export function LessonIndex({ currentId }) {
   }, [query, state, revision, currentId, shell.generation]);
 
   return (
-    <div className="wb-tool" data-region="lesson-index">
+    <div className="wb-module wb-tool" data-region="lesson-index">
       <div className="wb-search">
         <Icon name="search" size={15} />
         <input
@@ -94,7 +94,7 @@ export function LessonOutline({ input, onFocus, onMove, readOnly = false }) {
     return <p className="wb-empty-note" data-region="outline-empty">还没有环节</p>;
   }
   return (
-    <ol className="wb-outline" data-region="lesson-outline">
+    <ol className="wb-module wb-outline" data-region="lesson-outline">
       {sections.map((section, index) => (
         <li key={section.id}>
           <button type="button" className="wb-outline-row" onClick={() => onFocus(section.id)}>

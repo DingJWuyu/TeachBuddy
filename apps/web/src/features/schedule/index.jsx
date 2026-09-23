@@ -12,6 +12,7 @@ import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
  */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useAuxiliaryTools, useWorkbenchShell } from '../workbench/shellContext.js';
+import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { useScene } from '../workbench/useScene.js';
 import { newRequestKey } from '../workbench/uuid.js';
 import * as api from './api.js';
@@ -800,7 +801,7 @@ export default function SchedulePage({ route }) {
 
   return (
     <div
-      className="sch-page"
+      className="wb-module sch-page"
       data-region="schedule"
       ref={pageRef}
       onScroll={(event) => {
@@ -899,9 +900,6 @@ export default function SchedulePage({ route }) {
               today={todayInZone(timeZone)}
             />
           )}
-          {occurrences.length === 0 && status === 'ready' && (
-            <p className="wb-empty-note" data-region="range-empty">这个范围暂无安排</p>
-          )}
           <ScheduleLists
             regionRef={listsRef}
             onScroll={(event) => {
@@ -923,9 +921,11 @@ export default function SchedulePage({ route }) {
 
         {!panelOwnsEditor && (
           <aside className="sch-side" data-region="schedule-side">
-            {editorProps
-              ? <EntryEditor {...editorProps} {...editorActions} />
-              : (
+            <ModulePresence present={Boolean(editorProps)}>
+              {editorProps && <EntryEditor {...editorProps} {...editorActions} />}
+            </ModulePresence>
+            <ModulePresence present={!editorProps}>
+              {!editorProps && (
                 <RangeOverview
                   from={from}
                   to={to}
@@ -943,16 +943,19 @@ export default function SchedulePage({ route }) {
                   settingsState={settingsState}
                 />
               )}
+            </ModulePresence>
           </aside>
         )}
       </div>
 
+      <ModulePresence present={Boolean(notice)}>
       {notice && (
         <div className="sch-action-state" data-region="notice">
           <span>{notice}</span>
           <button type="button" className="wb-button" onClick={() => setNotice(null)}>关闭</button>
         </div>
       )}
+      </ModulePresence>
       {actionState.status === 'unconfirmed' && (
         <div className="sch-action-state" data-region="action-state">
           <span>上次操作结果未确认</span>

@@ -1,0 +1,53 @@
+{
+  "results": [
+    {
+      "disclosure": "新建作品",
+      "openedAndClosed": true
+    },
+    {
+      "disclosure": "我的作品",
+      "openedAndClosed": true
+    },
+    {
+      "disclosure": "参数",
+      "openedAndClosed": true
+    },
+    {
+      "disclosure": "步骤",
+      "openedAndClosed": true
+    },
+    {
+      "disclosure": "拖动绑定",
+      "openedAndClosed": true
+    },
+    {
+      "disclosure": "对象",
+      "openedAndClosed": true
+    },
+    {
+      "disclosure": "坐标窗",
+      "openedAndClosed": true
+    },
+    {
+      "flow": "动态演示保存及HTML下载",
+      "pass": true
+    },
+    {
+      "flow": "平面函数图形添加与保存",
+      "pass": true
+    },
+    {
+      "disclosure": "投影",
+      "openedAndClosed": true
+    },
+    {
+      "disclosure": "棱",
+      "openedAndClosed": true
+    },
+    {
+      "flow": "空间正方体创建与保存",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

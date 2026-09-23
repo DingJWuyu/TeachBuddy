@@ -8,6 +8,7 @@ import { useScene } from '../workbench/useScene.js';
  * closing the editor returns to the same scroll position.
  */
 import { useEffect, useRef, useState } from 'react';
+import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { ConflictResolution } from '../workbench/ConflictResolution.jsx';
 import { SaveActions, SaveStatus } from '../workbench/SaveStatus.jsx';
 import { useSavableDocument } from '../workbench/useSavableDocument.js';
@@ -121,6 +122,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
           onChange={(event) => setInput((current) => ({ ...current, note: event.target.value }))}
         />
       </label>
+      <div className="c-editor-extra">
       {RECORD_EXTRA_FIELDS.map(([key, label]) => (
         <label className="wb-field" key={key}>
           <span className="wb-label">{label}</span>
@@ -133,6 +135,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
           />
         </label>
       ))}
+      </div>
       <div className="wb-field">
         <span className="wb-label">关联资料</span>
         <SourceChips
@@ -165,6 +168,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
         />
       )}
       <SaveActions savable={savable} />
+      <ModulePresence present={pickerOpen}>
       {pickerOpen && (
         <SourcePicker
           sceneKey={`record:${record.id}`}
@@ -177,6 +181,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
           }}
         />
       )}
+      </ModulePresence>
     </div>
   );
 }

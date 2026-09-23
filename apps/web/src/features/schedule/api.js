@@ -5,6 +5,21 @@ import { listRecords } from '../classes/api.js';
 export { listLessons } from '../lessons/api.js';
 import { unexpectedSuccessProblem } from '../workbench/problems.js';
 
+// This schedule-specific 422 is a confirmed rejection, so the teacher can
+// correct the reminder and submit a new request. Unknown responses retain the
+// shared client's conservative, original-key retry behaviour.
+async function scheduleWrite(request) {
+  try {
+    return await request;
+  } catch (error) {
+    const problem = error.problem;
+    if (problem?.httpStatus === 422 && problem.type === '/problems/workbench/reminder-not-future') {
+      throw new WorkbenchError({ ...problem, kind: 'invalid', field: '/reminder', message: '提醒时间已过去，请调整时间或关闭提醒' });
+    }
+    throw error;
+  }
+}
+
 function assertObject(payload, label) {
   if (!payload || typeof payload !== 'object' || typeof payload.id !== 'string' || !Number.isInteger(payload.version)) {
     throw new WorkbenchError(unexpectedSuccessProblem(`${label}结果无法识别`));
@@ -47,12 +62,12 @@ export async function getEntry(id) {
 }
 
 export async function createEntry({ key, payload }) {
-  const { body } = await workbenchPost('/api/modules/schedule/entries', payload, key);
+  const { body } = await scheduleWrite(workbenchPost('/api/modules/schedule/entries', payload, key));
   return assertObject(body, '安排');
 }
 
 export async function updateEntry({ key, id, payload }) {
-  const { body } = await workbenchPut(`/api/modules/schedule/entries/${id}`, payload, key);
+  const { body } = await scheduleWrite(workbenchPut(`/api/modules/schedule/entries/${id}`, payload, key));
   return assertObject(body, '安排');
 }
 
@@ -70,11 +85,11 @@ export async function listExceptions(id) {
 }
 
 export async function setException({ key, id, originDate, payload }) {
-  const { body } = await workbenchPut(
+  const { body } = await scheduleWrite(workbenchPut(
     `/api/modules/schedule/entries/${id}/exceptions/${originDate}`,
     payload,
     key
-  );
+  ));
   if (!body || !body.key) throw new WorkbenchError(unexpectedSuccessProblem('单次安排无法识别'));
   return body;
 }

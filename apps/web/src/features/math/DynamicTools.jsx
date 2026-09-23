@@ -7,7 +7,7 @@ import {
   updateDrag,
 } from "./editing.js";
 
-function ParameterEditor({ source, index, Fields, onChange, edits, onEdits }) {
+function ParameterEditor({ source, index, Fields, onChange, edits, onEdits, confirm }) {
   const parameter = source.parameters[index];
   const draft = edits[parameter.name] ?? parameter;
   const setDraft = (next) =>
@@ -43,9 +43,9 @@ function ParameterEditor({ source, index, Fields, onChange, edits, onEdits }) {
           应用参数 {index + 1}
         </button>
         <button
-          onClick={() => {
+          onClick={async () => {
             if (
-              window.confirm(
+              await confirm(
                 `移除参数 ${parameter.name}，公式中的该参数将固定为初值 ${parameter.initial}。是否继续？`,
               )
             )
@@ -69,6 +69,7 @@ export default function DynamicTools({
   Fields,
   edits = {},
   onEdits,
+  confirm,
 }) {
   const set = (key, value) => onChange({ ...source, [key]: value });
   const unbound = source.scene.elements.filter(
@@ -87,6 +88,7 @@ export default function DynamicTools({
             onChange={onChange}
             edits={edits}
             onEdits={onEdits}
+            confirm={confirm}
           />
         ))}
         <button

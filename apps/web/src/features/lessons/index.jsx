@@ -47,7 +47,7 @@ function LessonsIndex() {
   }, [shell.accountKey, reloadToken]);
 
   return (
-    <div className="wb-page wb-lessons-index" data-region="lessons-index">
+    <div className="wb-module wb-page wb-lessons-index" data-region="lessons-index">
       <header className="wb-list-head">
         <div className="wb-search">
           <Icon name="search" size={15} />
@@ -103,7 +103,7 @@ function LessonsIndex() {
         </div>
       )}
       {status === 'ready' && items.length === 0 && (
-        <p className="wb-empty-note" data-region="lessons-empty">还没有备课，先新建一份</p>
+        <p className="wb-empty-note" data-region="lessons-empty">{scene.listQuery ? "没有匹配的备课" : scene.listState === "deleted" ? "没有已删除备课" : "还没有备课，先新建一份"}</p>
       )}
       <div className="wb-lessons-scroll" data-region="lessons-scroll" ref={scroll.ref} onScroll={scroll.onScroll}>
         {items.length > 0 && (
@@ -114,7 +114,6 @@ function LessonsIndex() {
                 <span className="wb-card-title">{item.title}</span>
                 <span className="wb-row-tags">
                   {item.deletedAt && <span className="wb-tag is-deleted">已删除</span>}
-                  <span className="wb-muted">版本 {item.version}</span>
                 </span>
               </button>
               <LessonOrderButtons item={item} index={index} items={items} order={order} />

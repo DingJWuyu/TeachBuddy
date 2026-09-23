@@ -15,14 +15,8 @@
   box-sizing: border-box;
 }
 
-.sch-page {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-  min-width: 0;
-  padding: 10px 12px 12px;
+.sch-page,
+.sch-aux {
   --sch-line: var(--wb-line, #e3e3e3);
   --sch-line-soft: var(--wb-line-soft, #efefef);
   --sch-ink: var(--wb-ink, #2d3037);
@@ -36,6 +30,16 @@
   font-size: 13px;
 }
 
+.sch-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  min-width: 0;
+  padding: 12px;
+}
+
 .sch-toolbar {
   display: flex;
   align-items: flex-end;
@@ -43,6 +47,7 @@
   gap: 10px;
   flex-wrap: wrap;
   flex: none;
+  padding: 2px 0 4px;
 }
 
 .sch-range,
@@ -102,11 +107,21 @@
 }
 
 .sch-side {
+  display: grid;
+  align-content: start;
   flex: none;
-  width: 328px;
+  width: 300px;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+.sch-side > .sch-editor,
+.sch-side > .sch-overview,
+.sch-side > .wb-module-presence > .sch-editor,
+.sch-side > .wb-module-presence > .sch-overview {
+  grid-area: 1 / 1;
+  align-self: start;
 }
 
 .sch-grid {
@@ -118,7 +133,6 @@
   border: 1px solid var(--sch-line);
   border-radius: 10px;
   background: var(--sch-surface);
-  box-shadow: var(--sch-shadow);
   overflow: hidden;
 }
 
@@ -248,6 +262,7 @@
   overflow: hidden;
   cursor: pointer;
   font: inherit;
+  transition: background 150ms ease, box-shadow 150ms ease;
 }
 
 .sch-event:hover {
@@ -292,7 +307,6 @@
   border: 1px solid var(--sch-line);
   border-radius: 10px;
   background: var(--sch-surface);
-  box-shadow: var(--sch-shadow);
   overflow: hidden;
 }
 
@@ -433,13 +447,20 @@
 .sch-editor {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   border: 1px solid var(--sch-line);
   border-radius: 10px;
   background: var(--sch-surface);
-  box-shadow: var(--sch-shadow);
-  padding: 10px 12px 12px;
+  padding: 14px;
 }
+
+.sch-aux .sch-editor { border: 0; border-radius: 0; padding: 4px; }
+.sch-editor .sch-field { min-width: 0; }
+.sch-editor .sch-label { font-size: 12px; color: var(--sch-ink); letter-spacing: 0; }
+.sch-links-disclosure { border-top: 1px solid var(--sch-line-soft); padding-top: 8px; }
+.sch-links-disclosure .sch-course { padding-top: 8px; gap: 10px; }
+.sch-course > label { display: flex; flex-direction: column; gap: 4px; }
+.sch-course > label .wb-input { width: 100%; flex: none; }
 
 .sch-editor-head {
   display: flex;
@@ -512,10 +533,15 @@
 
 .sch-item-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 74px auto;
+  grid-template-columns: minmax(0, 1fr) 76px;
   gap: 4px;
   align-items: center;
 }
+
+.sch-item-row > .sch-item-actions { grid-column: 1 / -1; justify-content: flex-end; }
+.sch-item-row + .sch-item-row { border-top: 1px solid var(--sch-line-soft); padding-top: 6px; }
+.sch-item-row .sch-priority { padding: 0 5px; }
+.sch-item-actions .wb-icon-button { width: 24px; height: 24px; }
 
 .sch-reminder,
 .sch-course {
@@ -574,6 +600,12 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  position: sticky;
+  bottom: -14px;
+  padding: 10px 0;
+  border-top: 1px solid var(--sch-line-soft);
+  background: var(--sch-surface);
+  z-index: 1;
 }
 
 .sch-save {
@@ -627,6 +659,7 @@
   color: var(--sch-ink);
   font-size: 12px;
   cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
 }
 
 .sch-month-day:hover {

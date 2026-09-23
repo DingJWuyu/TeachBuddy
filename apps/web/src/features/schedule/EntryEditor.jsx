@@ -6,6 +6,9 @@
  * pending input survives a failed or unconfirmed save exactly as typed.
  */
 import { useEffect, useMemo, useRef } from 'react';
+import { ModuleDisclosure, ModulePresence } from '../workbench/ModuleMotion.jsx';
+import { useWorkbenchShell } from '../workbench/shellContext.js';
+import { useScene } from '../workbench/useScene.js';
 import {
   PRIORITY_LABEL,
   PRIORITY_ORDER,
@@ -18,7 +21,8 @@ import {
   newItem,
   parseClock,
   reminderInstant,
-  weekdayLabel
+  weekdayLabel,
+  todayInZone
 } from './model.js';
 
 function SaveState({ saveState, onRetry, onReload }) {
@@ -96,6 +100,8 @@ export default function EntryEditor({
   moveState,
   courseFeedback
 }) {
+  const shell = useWorkbenchShell();
+  const [view, patchView] = useScene(shell.accountKey, `schedule-editor-view:${instance?.key.entryId ?? 'new'}`, { linksOpen: Boolean(draft.course.classId || draft.course.lessonId) });
   const titleRef = useRef(null);
   useEffect(() => {
     if (focusToken) titleRef.current?.focus();
@@ -168,7 +174,7 @@ export default function EntryEditor({
       )}
       {repeatingInstance && scope === 'instance' && (
         <p className="sch-note" data-region="instance-note">
-          原始日期 {instance.key.originDate}，身份不变
+          原定 {instance.key.originDate}
         </p>
       )}
 
@@ -180,7 +186,7 @@ export default function EntryEditor({
           ref={titleRef}
           value={draft.title}
           maxLength={300}
-          placeholder="可留空，用首项事项代表"
+          placeholder="安排什么？"
           onChange={(event) => onPatch({ title: event.target.value })}
         />
       </label>
@@ -277,11 +283,12 @@ export default function EntryEditor({
               disabled={scope === 'instance' || Boolean(instance?.repeat)}
               onChange={(event) => onPatch(event.target.checked
                 ? { unscheduled: true, weekly: false, reminder: null, course: { ...draft.course, recordIds: [] } }
-                : { unscheduled: false })}
+                : { unscheduled: false, time: { ...draft.time, date: draft.time.date || todayInZone(timeZone), startTime: draft.time.startTime || '09:00' } })}
             />
             暂不安排时间
           </label>
         </div>
+        <ModulePresence present={!draft.unscheduled} mode="collapse">
         {!draft.unscheduled && (
           <div className="sch-time-grid">
             <label>
@@ -335,8 +342,10 @@ export default function EntryEditor({
             </label>
           </div>
         )}
+        </ModulePresence>
       </div>
 
+      <ModulePresence present={!draft.unscheduled && scope !== 'instance'} mode="collapse">
       {!draft.unscheduled && scope !== 'instance' && (
         <div className="sch-field">
           <label className="sch-toggle">
@@ -353,6 +362,7 @@ export default function EntryEditor({
             />
             每周重复
           </label>
+          <ModulePresence present={draft.weekly} mode="collapse">
           {draft.weekly && (
             <div className="sch-time-grid">
               <label>
@@ -370,9 +380,12 @@ export default function EntryEditor({
               </label>
             </div>
           )}
+          </ModulePresence>
         </div>
       )}
+      </ModulePresence>
 
+      <ModulePresence present={!draft.unscheduled} mode="collapse">
       {!draft.unscheduled && <div className="sch-field">
         <span className="sch-label">提醒</span>
         <div className="sch-reminder">
@@ -390,6 +403,7 @@ export default function EntryEditor({
             <option value="before">结束前</option>
             <option value="after">结束后</option>
           </select>
+          <ModulePresence present={Boolean(draft.reminder)}>
           {draft.reminder && (
             <label className="sch-reminder-minutes">
               <input
@@ -406,6 +420,7 @@ export default function EntryEditor({
               <span>分钟</span>
             </label>
           )}
+          </ModulePresence>
         </div>
         {dueAt && (
           <p className="sch-note" data-region="reminder-instant">
@@ -418,9 +433,10 @@ export default function EntryEditor({
           </p>
         )}
       </div>}
+      </ModulePresence>
 
+      <ModuleDisclosure title="关联班级与备课" open={view.linksOpen} onOpenChange={linksOpen => patchView({ linksOpen })} className="sch-links-disclosure">
       <div className="sch-field">
-        <span className="sch-label">关联（可选）</span>
         {(linksError || recordsState === 'error') && <div role="alert" className="sch-save is-error">
           {linksError && <p>{linksError}</p>}
           {recordsState === 'error' && <p>实际记录读取失败</p>}
@@ -457,6 +473,7 @@ export default function EntryEditor({
               ))}
             </select>
           </label>
+          <ModulePresence present={Boolean(draft.course.classId && !draft.weekly && !draft.unscheduled)} mode="collapse">
           {draft.course.classId && !draft.weekly && !draft.unscheduled && (
             <fieldset className="sch-records">
               <legend className="sch-sub-label">实际记录</legend>
@@ -481,8 +498,11 @@ export default function EntryEditor({
               ))}
             </fieldset>
           )}
+          </ModulePresence>
         </div>
       </div>
+
+      </ModuleDisclosure>
 
       {courseFeedback}
 

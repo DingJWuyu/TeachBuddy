@@ -8,7 +8,7 @@ import { useScrollRestore } from '../workbench/useScrollRestore.js';
  * Deleted sources stay visible (a saved link must remain recognizable) but
  * cannot be added again.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon } from '../workbench/icons.jsx';
 import { navigate } from '../workbench/routes.js';
 import { listTeachingQuestions, listTeachingWorks } from './api.js';
@@ -18,7 +18,7 @@ import { sourceFallbackLabel, sourceHistoryHint, sourceKindLabel, sourceLabel, s
 export function SourceChips({ sources, onRemove, onPick, returnPath, disabled = false }) {
   return (
     <div className="c-sources" data-region="record-sources">
-      {sources.length === 0 && <span className="wb-muted">未关联资料</span>}
+      {sources.length === 0 && !onPick && <span className="wb-muted">未关联资料</span>}
       {sources.map((source) => {
         const hint = sourceHistoryHint(source);
         const label = sourceLabel(source);
@@ -74,7 +74,9 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
   const setKind = kind => patchScene({ kind });
   const setQuery = query => patchScene({ query });
   const setWorkKind = workKind => patchScene({ workKind });
-  const onCancel = () => { patchScene({ selected: null }); cancel(); };
+  const cancelRef = useRef(cancel);
+  cancelRef.current = cancel;
+  const onCancel = useCallback(() => { patchScene({ selected: null }); cancelRef.current(); }, [patchScene]);
   const onConfirm = value => { patchScene({ selected: null }); confirm(value); };
   const [retry, setRetry] = useState(0);
   const [items, setItems] = useState([]);
@@ -112,6 +114,7 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
     const opener = document.activeElement;
     searchRef.current?.focus();
     function onKeyDown(event) {
+      if (dialogRef.current?.closest('[inert]')) return;
       if (event.key === 'Tab') {
         const controls = [...dialogRef.current.querySelectorAll('button:not(:disabled), input, select')];
         const first = controls[0], last = controls[controls.length - 1];
@@ -142,7 +145,7 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
   return (
     <div className="wb-dialog-host" data-overlay="dialog">
       <div className="wb-dialog-scrim" onClick={onCancel} role="presentation" />
-      <div ref={dialogRef} className="wb-dialog c-source-picker" role="dialog" aria-modal="true" aria-label="关联资料" data-region="source-picker">
+      <div ref={dialogRef} className="wb-dialog wb-module c-source-picker" role="dialog" aria-modal="true" aria-label="关联资料" data-region="source-picker">
         <div className="wb-dialog-head">
           <h2>关联资料</h2>
           <button type="button" className="wb-icon-button" aria-label="关闭" onClick={onCancel}>
@@ -212,7 +215,7 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
               >
                 <span className="c-picker-check" aria-hidden="true">{active ? <Icon name="check" size={13} /> : null}</span>
                 <span className="c-picker-title">{item.title || sourceFallbackLabel(kind)}</span>
-                <span className="wb-muted">版本 {item.version}</span>
+
               </button>
             );
           })}
@@ -220,7 +223,7 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
         <div className="wb-dialog-actions">
           <button type="button" className="wb-button" name="picker-cancel" onClick={onCancel}>取消</button>
           <button type="button" className="wb-button is-primary" name="picker-confirm" onClick={() => onConfirm(selected)}>
-            确定
+            {selected.length ? `关联 ${selected.length} 项` : '确定'}
           </button>
         </div>
       </div>

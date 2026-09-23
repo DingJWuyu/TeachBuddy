@@ -1,3 +1,4 @@
+import { useMathConfirm } from "./useMathConfirm.jsx";
 import { useScene } from '../workbench/useScene.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
 import { readLocal, writeLocal, migrateLegacyLocal } from '../workbench/storage.js';
@@ -268,6 +269,12 @@ function MathSession({ transport, route }) {
     [background, setBackground] = useState("transparent"),
     [exportWidth, setExportWidth] = useState(1600),
     [conflict, setConflict] = useState(null);
+  const [confirm, confirmationDialog] = useMathConfirm();
+  useEffect(() => {
+    const kind = draft?.source?.kind;
+    if (kind === 'html' && !['html', 'source'].includes(format)) setFormat('html');
+    else if (kind && !['html', 'dynamic'].includes(kind) && format === 'html') setFormat('png');
+  }, [draft?.source?.kind, format]);
   const [viewScene, patchView] = useScene(account, 'math-view', { canvasTop: 0, canvasLeft: 0 });
   const canvasScroll = useScrollRestore(viewScene.canvasTop, top => patchView({ canvasTop: top }), `${draft?.id}:${draft?.source.kind}:${Boolean(font)}`);
   useEffect(() => { if (canvasScroll.ref.current) canvasScroll.ref.current.scrollLeft = viewScene.canvasLeft; }, [account, draft?.id, font]);
@@ -309,7 +316,7 @@ function MathSession({ transport, route }) {
       file && !importPending &&
       draft &&
       status !== "已保存" &&
-      !window.confirm("导入会替换当前未保存稿，是否继续？")
+      !await confirm("导入会替换当前未保存稿，是否继续？")
     )
       return;
     const epoch = generation.current;
@@ -494,7 +501,7 @@ function MathSession({ transport, route }) {
   function source(next) {
     edit({ ...draft, source: next });
   }
-  function newDraft(kind) {
+  async function newDraft(kind) {
     if (pending) {
       setMessage("请先确认上次保存结果");
       return;
@@ -502,7 +509,7 @@ function MathSession({ transport, route }) {
     if (
       draft &&
       status !== "已保存" &&
-      !window.confirm("新建作品会替换当前未保存稿，是否继续？")
+      !await confirm("新建作品会替换当前未保存稿，是否继续？")
     )
       return;
     edit({
@@ -521,7 +528,7 @@ function MathSession({ transport, route }) {
     if (
       status !== "已保存" &&
       draft &&
-      !window.confirm("打开作品会替换当前未保存稿，是否继续？")
+      !await confirm("打开作品会替换当前未保存稿，是否继续？")
     )
       return;
     const epoch = generation.current;
@@ -841,10 +848,11 @@ function MathSession({ transport, route }) {
       </main>
     );
   return (
-    <main className="math-workbench">
+    <main className="math-workbench wb-module">
+      {confirmationDialog}
       <section className="math-main">
         <header>
-          <strong>数学工坊</strong>
+          <strong className="math-heading">数学工坊</strong>
           {shell && (
             <button onClick={() => shell.openPanel("math-tools")}>
               作品与工具
@@ -880,7 +888,7 @@ function MathSession({ transport, route }) {
                 onChange={(e) => edit({ ...draft, title: e.target.value })}
               />
               <span role="status">{status}</span>
-              <button disabled={busy || readOnly} onClick={() => save()}>
+              <button className="math-primary" disabled={busy || readOnly} onClick={() => save()}>
                 {pending
                   ? pending.kind === "deletion"
                     ? "确认删除结果"
@@ -937,12 +945,21 @@ function MathSession({ transport, route }) {
         <div className="math-canvas" ref={canvasScroll.ref} onScroll={event => { canvasScroll.onScroll(event); patchView({ canvasLeft: event.currentTarget.scrollLeft }); }}>
           {!draft ? (
             <div className="math-empty">
-              <h1>制作数学作品</h1>
-              {["formula", "plane", "space", "dynamic"].map((kind) => (
-                <button key={kind} onClick={() => newDraft(kind)}>
-                  新建{names[kind]}
-                </button>
-              ))}
+              <h1>从一个数学想法开始</h1>
+              <div className="math-start-options">
+                {[
+                  ["formula", "公式", "可编辑的 LaTeX，透明图片输出", "M9 30h7l7-18h17M26 19h11M26 26h9"],
+                  ["plane", "平面图形", "函数图像、几何与标注", "M9 32h32M16 38V8M10 14Q25 46 39 13"],
+                  ["space", "空间图形", "立体几何与投影", "M12 17l16-8 12 8v16l-16 8-12-8zM12 17l12 8 16-8M24 25v16M28 9v16"],
+                  ["dynamic", "动态演示", "参数变化、拖动与分步讲解", "M8 15h32M8 32h32M18 10v10M31 27v10"],
+                ].map(([kind, title, description, path]) => (
+                  <button className="math-start-option" key={kind} onClick={() => newDraft(kind)}>
+                    <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d={path} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <span><strong>{title}</strong><small>{description}</small></span>
+                    <svg className="math-start-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 18 18 6M7 6h11v11" stroke="currentColor" strokeWidth="1.5" /></svg>
+                  </button>
+                ))}
+              </div>
             </div>
           ) : readOnly ? (
             <div className="math-formula">
@@ -967,8 +984,16 @@ function MathSession({ transport, route }) {
               onChange={source}
             />
           ) : draft.source.kind === "formula" ? (
-            <div className="math-formula">
-              <label>
+            <div className="math-formula math-formula-editor">
+              <FormulaPreview
+                source={draft.source}
+                retry={fontAttempt}
+                onLocate={(position) => {
+                  latexInput.current.focus();
+                  latexInput.current.setSelectionRange(position, position + 1);
+                }}
+              />
+              <label className="math-latex-field">
                 LaTeX
                 <textarea
                   ref={latexInput}
@@ -1002,6 +1027,8 @@ function MathSession({ transport, route }) {
                   </button>
                 ))}
               </div>
+              <details className="math-formula-options" open={!!viewScene.formulaOptions} onToggle={event => { if (viewScene.formulaOptions !== event.currentTarget.open) patchView({ formulaOptions: event.currentTarget.open }); }}><summary>说明与样式</summary>
+              <div className="math-formula-settings">
               <label>
                 中文说明
                 <textarea
@@ -1048,14 +1075,7 @@ function MathSession({ transport, route }) {
                   }
                 />
               </label>
-              <FormulaPreview
-                source={draft.source}
-                retry={fontAttempt}
-                onLocate={(position) => {
-                  latexInput.current.focus();
-                  latexInput.current.setSelectionRange(position, position + 1);
-                }}
-              />
+              </div></details>
               {draft.render?.state === "invalid" && status === "已保存" && (
                 <p role="alert">
                   源码已保存，渲染失败。请修正 LaTeX
@@ -1113,23 +1133,21 @@ function MathSession({ transport, route }) {
                 />
               </>
             )}
-            <button disabled={busy} onClick={exportFile}>
-              下载
+            <button className="math-primary" disabled={busy} onClick={exportFile}>
+              下载作品
             </button>
-            <button disabled={busy} onClick={deletion}>
+            <button className="math-delete" disabled={busy} onClick={deletion}>
               {draft.deletedAt ? "恢复作品" : "删除作品"}
             </button>
           </footer>
         )}
       </section>
       <Tools {...(shell ? { sceneKey: draft?.id ?? "new" } : {})}>
-        <div className="math-new">
+        <details className="math-create-menu"><summary>新建作品</summary><div className="math-new">
           {["formula", "plane", "space", "dynamic"].map((kind) => (
-            <button key={kind} onClick={() => newDraft(kind)}>
-              新建{names[kind]}
-            </button>
+            <button key={kind} onClick={() => newDraft(kind)}>{names[kind]}</button>
           ))}
-        </div>
+        </div></details>
         <details open>
           <summary>我的作品</summary>
           <input
@@ -1148,9 +1166,9 @@ function MathSession({ transport, route }) {
           </label>
           <nav>
             {items.map((item) => (
-              <button key={item.id} onClick={() => open(item)}>
+              <button key={item.id} className={draft?.id === item.id ? "is-current" : ""} aria-current={draft?.id === item.id ? "true" : undefined} onClick={() => open(item)}>
                 {item.title}
-                <small>v{item.version}</small>
+                <small>{names[item.kind ?? item.source?.kind] ?? `v${item.version}`}</small>
               </button>
             ))}
           </nav>
@@ -1158,12 +1176,12 @@ function MathSession({ transport, route }) {
         {draft?.source.kind === "dynamic" && !readOnly && (
           <>
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (
                   (JSON.stringify(draft.source) ===
                     JSON.stringify(emptyDynamicSource()) &&
                     !Object.keys(draft.parameterEdits ?? {}).length) ||
-                  window.confirm(
+                  await confirm(
                     "使用二次函数起点会替换当前演示的图形、参数和步骤，并丢弃未应用的参数编辑。是否继续？",
                   )
                 ) {
@@ -1186,6 +1204,7 @@ function MathSession({ transport, route }) {
               edits={draft.parameterEdits}
               onEdits={(parameterEdits) => edit({ ...draft, parameterEdits })}
               Fields={Fields}
+              confirm={confirm}
             />
           </>
         )}

@@ -103,3 +103,11 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.material-move-up { transform: rotate(-90deg); }
+.material-move-down { transform: rotate(90deg); }
+.material-editor .wb-block-add { align-items: center; }
+.material-editor .wb-menu-item { border: 0; border-radius: 6px; padding: 0 12px; }
+.material-editor .wb-menu-item:hover { background: #f4f4f5; }
+.material-editor .material-edit-block { margin: 8px 0 12px; }
+.material-editor .wb-block-controls { opacity: .6; transition: opacity 140ms ease; }
+.material-editor .material-edit-block:is(:hover, :focus-within) > .wb-block-controls { opacity: 1; }

@@ -1,3 +1,4 @@
+import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import { unexpectedSuccessProblem } from "../workbench/problems.js";
 import { useScene } from "../workbench/useScene.js";
 import { useEffect, useState } from "react";
@@ -128,9 +129,9 @@ export function ExportsPanel({ savable, onClose }) {
         : [...o[key], id],
     }));
   return (
-    <section className="r34-exports" aria-label="输出备课">
+    <section className="wb-module r34-exports" aria-label="输出备课">
       <header className="wb-section-head">
-        <h2>输出备课</h2>
+        <h2>输出 · {savable.input.title || "未命名备课"}</h2>
         <button className="wb-button" onClick={() => onClose()}>
           返回文稿
         </button>
@@ -207,7 +208,7 @@ export function ExportsPanel({ savable, onClose }) {
           </label>
         )}
       </div>
-      <fieldset>
+      {!!savable.input.sections.length && <fieldset>
         <legend>包含环节</legend>
         {savable.input.sections.map((s) => (
           <label key={s.id}>
@@ -219,7 +220,7 @@ export function ExportsPanel({ savable, onClose }) {
             {s.title}
           </label>
         ))}
-      </fieldset>
+      </fieldset>}
       {!!savable.input.materials.length && (
         <fieldset>
           <legend>备用材料</legend>
@@ -291,7 +292,7 @@ export function ExportsPanel({ savable, onClose }) {
                 <button
                   className="wb-button"
                   onClick={() =>
-                    openLessonFile(r.fileId).catch((e) => setError(e.message))
+                    openLessonFile(r.fileId, `${savable.input.title || "备课"}-${kinds[r.options.kind]}.${r.options.format}`).catch((e) => setError(e.message))
                   }
                 >
                   下载
@@ -337,9 +338,9 @@ export function ExportsPanel({ savable, onClose }) {
           </article>
         ))}
       </div>
-      {preview && (
+      <ModulePresence present={Boolean(preview)}>{preview && (
         <FilePreview fileId={preview} onClose={() => setPreview(null)} />
-      )}
+      )}</ModulePresence>
     </section>
   );
 }

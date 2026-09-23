@@ -160,7 +160,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const listItems = scene.listState === 'deleted' ? (classes.deleted ?? []) : (classes.active ?? []);
 
   return (
-    <div className="wb-page c-classes" data-region="classes-index">
+    <div className="wb-page wb-module c-classes" data-region="classes-index">
       <div className="wb-split" data-view={view}>
         <ClassList
           accountKey={shell.accountKey}

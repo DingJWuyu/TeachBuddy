@@ -29,6 +29,7 @@ export default function FormulaPreview({ source, retry, onLocate }) {
   useEffect(() => {
     let live = true;
     setPreview(null);
+    if (!source.latex.trim()) return;
     const timer = setTimeout(async () => {
       try {
         checkFormula(source.latex);
@@ -44,7 +45,8 @@ export default function FormulaPreview({ source, retry, onLocate }) {
     return () => { live = false; clearTimeout(timer); };
   }, [source, retry]);
   useEffect(() => () => { if (preview?.url) URL.revokeObjectURL(preview.url); }, [preview]);
-  if (!preview || preview.source !== source) return <p>正在预览</p>;
+  if (!source.latex.trim()) return <div className="math-formula-preview math-formula-placeholder">输入公式，预览会显示在这里</div>;
+  if (!preview || preview.source !== source) return <div className="math-formula-preview math-formula-placeholder" role="status">正在预览…</div>;
   const before = Number.isInteger(preview.position) ? source.latex.slice(0, preview.position).split('\n') : null;
   return preview.error ? <div role="alert">LaTeX：{preview.error}
     {before ? <button onClick={() => onLocate(preview.position)}>定位到第 {before.length} 行第 {Array.from(before.at(-1)).length + 1} 列</button>

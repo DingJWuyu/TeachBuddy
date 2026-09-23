@@ -1,3 +1,4 @@
+import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useScene } from "../workbench/useScene.js";
 import { useScrollRestore } from "../workbench/useScrollRestore.js";
@@ -32,7 +33,8 @@ export function MaterialsPicker({
   const [items, setItems] = useState([]),
     [preview, setPreview] = useState(null),
     [previewFile, setPreviewFile] = useState(null),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const selection = selected.filter(id => !existingQuestionIds.includes(id));
   const scroll = useScrollRestore(
@@ -57,12 +59,13 @@ export function MaterialsPicker({
   }, [kind, scene.previewId]);
   useEffect(() => {
     let live = true;
+    setLoading(true);
     listSources(kind, query)
       .then((rows) => {
-        if (live) setItems(rows);
+        if (live) { setItems(rows); setLoading(false); }
       })
       .catch((e) => {
-        if (live) setError(e.message);
+        if (live) { setError(e.message); setLoading(false); }
       });
     return () => {
       live = false;
@@ -86,14 +89,14 @@ export function MaterialsPicker({
     }
   }
   return (
-    <div className="wb-page wb-picker">
+    <div className="wb-module wb-page wb-picker">
       <header className="wb-picker-head">
         <h2>
           {kind === "math" ? "取数学作品" : kind === "resource" ? "取资源" : "取题"} · {lessonTitle} /{" "}
           {targetLabel}
         </h2>
         <button className="wb-button" disabled={busy || confirming || awaitingConfirmation} onClick={onCancel}>
-          取消
+          返回文稿
         </button>
         {!!selected.length && onRemoveSelection && <button className="wb-button" disabled={busy || confirming || awaitingConfirmation} onClick={() => onRemoveSelection(selected)}>清空选择</button>}
         {awaitingConfirmation ? <button className="wb-button is-primary" disabled={busy || confirming} onClick={onRetry}>重试确认取材</button> : <button
@@ -115,8 +118,9 @@ export function MaterialsPicker({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+          {!items.length && <p className="wb-empty-note">{loading ? "正在读取材料…" : query ? "没有匹配的材料" : "暂无可选材料"}</p>}
           {items.map((item) => (
-            <div key={item.id} className="r34-picker-row">
+            <div key={item.id} className={`r34-picker-row${scene.previewId === item.id ? " is-previewed" : ""}`}>
               <input
                 type="checkbox"
                 aria-label={`选择 ${item.title}`}
@@ -126,6 +130,7 @@ export function MaterialsPicker({
               />
               <button
                 className="wb-text-button"
+                aria-pressed={scene.previewId === item.id}
                 onClick={() => patchScene({ previewId: item.id })}
               >
                 {item.title || "未命名题目"}
@@ -165,7 +170,7 @@ export function MaterialsPicker({
           )}
         </section>
       </div>
-      {previewFile && <FilePreview fileId={previewFile} onClose={() => setPreviewFile(null)} />}
+      <ModulePresence present={Boolean(previewFile)}>{previewFile && <FilePreview fileId={previewFile} onClose={() => setPreviewFile(null)} />}</ModulePresence>
     </div>
   );
 }

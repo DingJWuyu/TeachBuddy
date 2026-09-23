@@ -1,3 +1,4 @@
+import { ModulePresence, useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 import { MathSnapshot } from "./MathSnapshot.jsx";
 import { FilePreview } from "./FilePreview.jsx";
 /**
@@ -6,7 +7,7 @@ import { FilePreview } from "./FilePreview.jsx";
  * place the same question again, move or remove the reference).
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DocumentView } from "../workbench/materials/index.js";
 import { Icon } from "../workbench/icons.jsx";
 import { excerptFor } from "../workbench/documents.js";
@@ -14,6 +15,8 @@ import { readSource } from "./api.js";
 import { openLessonFile } from "./files.js";
 
 function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
+  const dialogRef = useRef(null);
+  useModuleDialogFocus(dialogRef, onClose);
   const [current, setCurrent] = useState(null);
   const [previewFile, setPreviewFile] = useState(null);
   const [error, setError] = useState(null);
@@ -36,9 +39,10 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
   }, [reference.workId, reference.questionId, reference.resourceId, reference.kind]);
 
   return (
-    <div className="wb-dialog-host" data-overlay="dialog">
+    <div className="wb-module wb-dialog-host" data-overlay="dialog">
       <div className="wb-dialog-scrim" onClick={onClose} role="presentation" />
       <div
+        ref={dialogRef}
         className="wb-dialog wb-compare-dialog"
         role="dialog"
         aria-modal="true"
@@ -126,13 +130,13 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
           </button>
         </div>
       </div>
-      {previewFile && (
+      <ModulePresence present={Boolean(previewFile)}>{previewFile && (
         <FilePreview
           key={previewFile}
           fileId={previewFile}
           onClose={() => setPreviewFile(null)}
         />
-      )}
+      )}</ModulePresence>
     </div>
   );
 }
@@ -251,7 +255,7 @@ export function ReferenceCard({
             </button>
             <button
               className="wb-text-button"
-              onClick={() => openLessonFile(reference.snapshot.fileId)}
+              onClick={() => openLessonFile(reference.snapshot.fileId, reference.snapshot.fileName)}
             >
               下载原件
             </button>
@@ -284,13 +288,13 @@ export function ReferenceCard({
           查看来源
         </button>
       )}
-      {previewFile && (
+      <ModulePresence present={Boolean(previewFile)}>{previewFile && (
         <FilePreview
           fileId={previewFile}
           onClose={() => setPreviewFile(null)}
         />
-      )}
-      {compareOpen && (
+      )}</ModulePresence>
+      <ModulePresence present={Boolean(compareOpen)}>{compareOpen && (
         <UpdateCompareDialog
           readOnly={readOnly}
           reference={reference}
@@ -300,7 +304,7 @@ export function ReferenceCard({
             setCompareOpen(false);
           }}
         />
-      )}
+      )}</ModulePresence>
     </article>
   );
 }

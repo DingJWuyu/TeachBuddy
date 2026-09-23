@@ -1,3 +1,4 @@
+import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import React, { useState } from "react";
 import { writeLocal } from "../workbench/storage.js";
 import { useAuth } from "../auth/index.jsx";
@@ -31,7 +32,7 @@ export default function QuestionsPage({ route }) {
         onReturnToRecord={fromPath?.startsWith("/classes/") ? () => shell.navigate(fromPath) : undefined}
         renderTeachingFeedback={(id) => <SourceRecordsPanel kind="question" id={id} />}
       />
-      {questions && (
+      <ModulePresence present={Boolean(questions)}>{questions && (
         <AddToLessonDialog
           accountKey={shell.accountKey}
           questions={questions}
@@ -39,7 +40,7 @@ export default function QuestionsPage({ route }) {
           onDone={() => setUsageRevision((value) => value + 1)}
           onOpenLesson={openLesson}
         />
-      )}
+      )}</ModulePresence>
     </>
   );
 }

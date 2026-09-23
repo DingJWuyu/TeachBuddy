@@ -1,3 +1,4 @@
+import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 /**
  * One question route: reading, editing, paste/adaptation comparison and the
  * local draft that survives a refresh.
@@ -11,7 +12,7 @@ import { useWorkbenchShell } from '../workbench/shellContext.js';
 import { useScene } from '../workbench/useScene.js';
 import { useSavableDocument } from '../workbench/useSavableDocument.js';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
-import { ConfirmDialog, MenuItem, Popover } from '../workbench/overlays.jsx';
+import { ConfirmDialog, MenuItem, Popover } from '../workbench/ModuleOverlays.jsx';
 import { SaveStatus } from '../workbench/SaveStatus.jsx';
 import { ConflictResolution } from '../workbench/ConflictResolution.jsx';
 import { navigate } from '../workbench/routes.js';
@@ -175,7 +176,7 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
 
   if (savable.loadState === 'error') {
     return (
-      <div className="wb-page wb-inline-error" data-region="question-load-error">
+      <div className="wb-module wb-page wb-inline-error" data-region="question-load-error">
         <p>{savable.loadError?.message || '读取失败'}</p>
         <button type="button" className="wb-button" onClick={savable.adoptServer}>重试</button>
       </div>
@@ -184,7 +185,7 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
 
   if (saveStatus === 'missing') {
     return (
-      <div className="wb-page wb-not-found" data-region="question-missing">
+      <div className="wb-module wb-page wb-not-found" data-region="question-missing">
         <p>未找到内容</p>
         <a className="wb-link" href="/questions" onClick={(event) => { event.preventDefault(); navigate('/questions'); }}>
           返回题库
@@ -194,7 +195,7 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
   }
 
   if (!input) {
-    return <div className="wb-page"><p className="wb-muted">正在加载…</p></div>;
+    return <div className="wb-module wb-page"><p className="wb-muted">正在加载…</p></div>;
   }
 
   const draftBanner = savable.localDraft && !editing && baseline ? (
@@ -208,7 +209,7 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
         className="wb-button"
         name="discard-draft"
         onClick={() => {
-          if (window.confirm('放弃未保存的草稿？')) savable.discardDraft();
+          setDialog('discard-draft');
         }}
       >
         放弃草稿
@@ -297,7 +298,7 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
   );
 
   return (
-    <div className="wb-page wb-question" data-region="question-detail" data-question-id={baseline?.id || id}>
+    <div className="wb-module wb-page wb-question" data-region="question-detail" data-question-id={baseline?.id || id}>
       {question?.deletedAt && (
         <div className="wb-banner" data-region="question-deleted">这道题已删除，来源与引用都保留，可以恢复。</div>
       )}
@@ -402,7 +403,11 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
         />
       )}
 
-      {dialog === 'delete' && (
+      <ModulePresence present={dialog === 'discard-draft'}>{dialog === 'discard-draft' && (
+        <ConfirmDialog title="放弃草稿" message="未保存的修改将被移除，已保存的题目不会改变。" confirmLabel="放弃草稿"
+          onCancel={() => setDialog(null)} onConfirm={() => { savable.discardDraft(); setDialog(null); }} />
+      )}</ModulePresence>
+      <ModulePresence present={Boolean(dialog === 'delete')}>{dialog === 'delete' && (
         <ConfirmDialog
           title="删除题目"
           message="删除后题目来源、副本与备课中的引用和快照都保留，可以在已删除中恢复。"
@@ -410,7 +415,7 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
           onCancel={() => setDialog(null)}
           onConfirm={() => handleDeletion(true)}
         />
-      )}
+      )}</ModulePresence>
     </div>
   );
 }
