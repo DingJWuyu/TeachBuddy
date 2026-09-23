@@ -24,6 +24,9 @@ function parseRoute(pathname) {
     if (['help', 'releases'].includes(segments[0])) return { name: segments[0], path };
     if (segments[0] === 'settings') return { name: 'settings', path: '/settings' };
   }
+  if (segments[0] === 'help' && (segments.length === 2 || segments.length === 3)) {
+    return { name: 'help', path, topicId: segments[1], articleId: segments[2] };
+  }
   if (segments.length === 2) {
     const id = decodeURIComponent(segments[1]);
     if (segments[0] === 'classes') return { name: 'class', classId: id, path };
