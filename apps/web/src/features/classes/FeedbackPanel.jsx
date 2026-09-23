@@ -41,7 +41,7 @@ export function SourceRecordsPanel(props) {
   return <SourceRecordsContent key={`${shell.accountKey}:${props.kind}:${props.id}`} {...props} generation={shell.generation} />;
 }
 
-function SourceRecordsContent({ kind, id, generation, emptyText = '还没有班级记录关联这份资料' }) {
+function SourceRecordsContent({ kind, id, generation, onOpenRecord, emptyText = '还没有班级记录关联这份资料' }) {
   const [records, setRecords] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState(null);
@@ -67,6 +67,7 @@ function SourceRecordsContent({ kind, id, generation, emptyText = '还没有班�
   }, [kind, id, generation, reloadToken]);
 
   function openRecord(record) {
+    if (onOpenRecord) return onOpenRecord(record);
     navigate(`/classes/${record.classId}/records/${record.id}`);
   }
 

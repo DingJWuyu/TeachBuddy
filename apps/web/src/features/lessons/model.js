@@ -227,8 +227,8 @@ export function newReference(question, note = "", kind = "question") {
   return {
     id: newRequestKey(),
     kind,
-    [`${kind}Id`]: question.id,
-    [`${kind}Version`]: question.version,
+    [`${kind === "math" ? "work" : kind}Id`]: question.id,
+    [`${kind === "math" ? "work" : kind}Version`]: question.version,
     note,
     snapshot: question.snapshot ?? {
       title: question.title,
@@ -277,6 +277,18 @@ export function moveSection(input, sectionId, offset) {
       next.sections[target],
       next.sections[index],
     ];
+  });
+}
+
+export function reorderReference(input, referenceId, offset) {
+  return updateInput(input, (next) => {
+    const references = [next.materials, ...next.sections.map(section => section.references)]
+      .find(items => items.some(reference => reference.id === referenceId));
+    if (!references) return;
+    const index = references.findIndex(reference => reference.id === referenceId);
+    const target = index + offset;
+    if (target < 0 || target >= references.length) return;
+    [references[index], references[target]] = [references[target], references[index]];
   });
 }
 
@@ -371,14 +383,18 @@ export function setReferenceNote(input, referenceId, note) {
 }
 
 /** Explicitly adopt the question's current version for one reference only. */
-export function adoptReferenceVersion(input, referenceId, latestVersion) {
+export function adoptReferenceVersion(input, referenceId, latestVersion, snapshot) {
   return updateInput(input, (next) => {
     const all = [
       ...next.materials,
       ...next.sections.flatMap((section) => section.references),
     ];
     const reference = all.find((item) => item.id === referenceId);
-    if (reference)
+    if (reference) {
       reference[`${reference.kind === "math" ? "work" : reference.kind ?? "question"}Version`] = latestVersion;
+      if (snapshot) reference.snapshot = snapshot;
+      reference.latestVersion = latestVersion;
+      reference.sourceState = "active";
+    }
   });
 }

@@ -1,4 +1,5 @@
 import { validate as validateMath } from "../../workbench/content/mathSchema.js";
+import { createLessonOrder } from "./order.js";
 import { lessonDocuments, supportedDocument } from "@refatos/shared";
 import { normalizeSearchQuery, matchesSearch } from "../questions/contract.js";
 import { createLessonExports } from "./exports.js";
@@ -39,6 +40,7 @@ export function createMaterialsLessons({
   files,
   now = () => new Date(),
 }) {
+  const order = version === 3 ? createLessonOrder({ db, repository, mutations }) : null;
   const validate = (name, value) => version === 3 ? validateMath(name === "CreateLesson" || name === "UpdateLesson" ? `${name}V3` : name, value) : validateSchema(name, value);
   const assertRepresentable = (id) => {
     if (version < 3 && repository.listReferences(id).some(r => r.kind === "math")) throw invalidInput("/materials", "unsupported-content-version");
@@ -266,9 +268,10 @@ export function createMaterialsLessons({
         ...(b.rows ?? []).flatMap((row) => row.flatMap((c) => text(c.blocks))),
       ]);
     const q = normalizeSearchQuery(query.q);
+    const rows = repository.listLessonsForAccount(account(p));
+    if (order) order.sort(p, rows);
     return {
-      items: repository
-        .listLessonsForAccount(account(p))
+      items: rows
         .filter((r) => (r.deletedAt !== null) === (query.state === "deleted"))
         .filter((r) =>
           matchesSearch(q, [
@@ -311,6 +314,7 @@ export function createMaterialsLessons({
   const exports = createLessonExports({ db, jobs, files, getLesson: get, now });
   const operations = {};
   const router = Router();
+  order?.mount(router);
   const definitions = [
     [
       "createLessonExport",

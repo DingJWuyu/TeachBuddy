@@ -4,6 +4,8 @@ import { useScrollRestore } from "../workbench/useScrollRestore.js";
 import { useEffect, useState } from "react";
 import { listSources, readSource } from "./api.js";
 import { DocumentView } from "../workbench/materials/index.js";
+import { MathSnapshot } from "./MathSnapshot.jsx";
+import { FilePreview } from "./FilePreview.jsx";
 export function MaterialsPicker({
   kind = "question",
   lessonTitle,
@@ -26,13 +28,17 @@ export function MaterialsPicker({
   const setQuery = (query) => patchScene({ query });
   const [items, setItems] = useState([]),
     [preview, setPreview] = useState(null),
+    [previewFile, setPreviewFile] = useState(null),
     [error, setError] = useState("");
+  const [confirming, setConfirming] = useState(false);
+  const selection = selected.filter(id => !existingQuestionIds.includes(id));
   const scroll = useScrollRestore(
     scene.scrollTop,
     (top) => patchScene({ scrollTop: top }),
     items.length,
   );
   useEffect(() => {
+    setPreview(null);
     if (!scene.previewId) return;
     let live = true;
     readSource(kind, scene.previewId)
@@ -60,33 +66,38 @@ export function MaterialsPicker({
     };
   }, [kind, query]);
   async function confirm() {
+    if (confirming || busy) return;
+    setConfirming(true);
+    setError("");
     try {
       const sources = await Promise.all(
-        selected.map((id) => readSource(kind, id)),
+        selection.map((id) => readSource(kind, id)),
       );
       if (sources.some((s) => s.deletedAt))
         throw new Error("所选材料已删除，请重新选择");
       onConfirm(sources);
     } catch (e) {
       setError(e.message);
+    } finally {
+      setConfirming(false);
     }
   }
   return (
     <div className="wb-page wb-picker">
       <header className="wb-picker-head">
         <h2>
-          {kind === "resource" ? "取资源" : "取题"} · {lessonTitle} /{" "}
+          {kind === "math" ? "取数学作品" : kind === "resource" ? "取资源" : "取题"} · {lessonTitle} /{" "}
           {targetLabel}
         </h2>
-        <button className="wb-button" onClick={onCancel}>
+        <button className="wb-button" disabled={busy || confirming} onClick={onCancel}>
           取消
         </button>
         <button
           className="wb-button is-primary"
-          disabled={busy || !selected.length}
+          disabled={busy || confirming || !selection.length}
           onClick={confirm}
         >
-          采用所选 {selected.length} 项
+          采用所选 {selection.length} 项
         </button>
       </header>
       {(error || problem) && <p role="alert">{error || problem.message}</p>}
@@ -105,7 +116,8 @@ export function MaterialsPicker({
               <input
                 type="checkbox"
                 aria-label={`选择 ${item.title}`}
-                checked={selected.includes(item.id)}
+                checked={selection.includes(item.id)}
+                disabled={busy || confirming || existingQuestionIds.includes(item.id)}
                 onChange={() => onToggle(item.id)}
               />
               <button
@@ -136,8 +148,12 @@ export function MaterialsPicker({
                     <DocumentView value={preview.snapshot.solution} />
                   </details>
                 </>
+              ) : kind === "math" ? (
+                <MathSnapshot snapshot={preview.snapshot} />
               ) : (
-                <p>{preview.snapshot.fileName}</p>
+                <button className="wb-button" onClick={() => setPreviewFile(preview.snapshot.supplementPreviewFileId ?? preview.snapshot.fileId)}>
+                  预览 {preview.snapshot.fileName}
+                </button>
               )}
             </>
           ) : (
@@ -145,6 +161,7 @@ export function MaterialsPicker({
           )}
         </section>
       </div>
+      {previewFile && <FilePreview fileId={previewFile} onClose={() => setPreviewFile(null)} />}
     </div>
   );
 }

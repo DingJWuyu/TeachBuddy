@@ -9,6 +9,7 @@ import { Icon } from '../workbench/icons.jsx';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
 import { listLessons } from './api.js';
 import LessonDetail from './LessonDetail.jsx';
+import { useLessonOrder, LessonOrderButtons } from './LessonOrder.jsx';
 
 function LessonsIndex() {
   const shell = useWorkbenchShell();
@@ -17,6 +18,7 @@ function LessonsIndex() {
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const order = useLessonOrder(() => setReloadToken(token => token + 1));
   const [hasDraft, setHasDraft] = useState(() => listLocalNames(shell.accountKey).includes('draft:lesson:new'));
   const seqRef = useRef(0);
   const scroll = useScrollRestore(scene.listScrollTop || 0, (top) => patchScene({ listScrollTop: top }), items.length);
@@ -91,6 +93,7 @@ function LessonsIndex() {
       )}
 
       {status === 'loading' && <p className="wb-muted">正在加载备课…</p>}
+      {order.feedback}
       {status === 'error' && (
         <div className="wb-inline-error" data-region="lessons-error">
           <p>{error?.message}</p>
@@ -103,8 +106,8 @@ function LessonsIndex() {
       <div className="wb-lessons-scroll" data-region="lessons-scroll" ref={scroll.ref} onScroll={scroll.onScroll}>
         {items.length > 0 && (
         <ul className="wb-card-list" data-region="lesson-rows">
-          {items.map((item) => (
-            <li key={item.id}>
+          {items.map((item, index) => (
+            <li key={item.id} className="wb-lesson-list-row">
               <button type="button" className="wb-card-row" onClick={() => navigate(`/lessons/${item.id}`)}>
                 <span className="wb-card-title">{item.title}</span>
                 <span className="wb-row-tags">
@@ -112,6 +115,7 @@ function LessonsIndex() {
                   <span className="wb-muted">版本 {item.version}</span>
                 </span>
               </button>
+              <LessonOrderButtons item={item} index={index} items={items} order={order} />
             </li>
           ))}
         </ul>

@@ -261,7 +261,7 @@ function WorkbenchContent({ boot }) {
                   草稿无法保留，请先保存
                 </div>
               )}
-              {materialNavigation.sourcePath === route.path && materialNavigation.lessonPath && (
+              {materialNavigation.sourcePath === route.path + window.location.search && materialNavigation.lessonPath && (
                 <div className="wb-material-return"><button className="wb-button" onClick={() => navigate(materialNavigation.lessonPath)}>返回备课现场</button></div>
               )}
               {materialNavigation.questionUsage?.lessonPath === route.path && (

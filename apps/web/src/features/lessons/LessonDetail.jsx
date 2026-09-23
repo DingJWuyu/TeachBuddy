@@ -43,6 +43,8 @@ import {
   emptyLessonInput,
   lessonInputFrom,
   moveReference,
+  reorderReference,
+  targetReferences,
   moveSection,
   newReference,
   newSection,
@@ -57,6 +59,7 @@ import {
 import { useLessonPickerFlow } from "./useLessonPickerFlow.js";
 import { ReferenceCard } from "./ReferenceCard.jsx";
 import { LessonIndex, LessonOutline } from "./LessonPanels.jsx";
+import { SourceRecordsPanel } from "../classes/index.jsx";
 
 export default function LessonDetail({ id }) {
   const shell = useWorkbenchShell();
@@ -277,7 +280,7 @@ export default function LessonDetail({ id }) {
           lessonTitle={input.title}
           targetLabel={targetLabel(input, picker.target)}
           existingQuestionIds={targetReferences.map(
-            (reference) => reference.questionId ?? reference.resourceId,
+            (reference) => reference.workId ?? reference.questionId ?? reference.resourceId,
           )}
           selected={picker.selected}
           busy={pickerFlow.pendingConfirm || saveStatus === "saving"}
@@ -346,6 +349,8 @@ export default function LessonDetail({ id }) {
 
   function referenceActions(reference) {
     const position = positionOf(reference.id);
+    const references = targetReferences(input, targetFromValue(position));
+    const referenceIndex = references.findIndex(item => item.id === reference.id);
     return (
       <ReferenceCard
         readOnly={unsupported}
@@ -353,6 +358,9 @@ export default function LessonDetail({ id }) {
         reference={reference}
         position={position}
         targets={targets.filter((target) => target.value !== position)}
+        canMoveUp={referenceIndex > 0}
+        canMoveDown={referenceIndex < references.length - 1}
+        onReorder={(offset) => savable.setInput(current => reorderReference(current, reference.id, offset))}
         onNoteChange={(note) =>
           savable.setInput((current) =>
             setReferenceNote(current, reference.id, note),
@@ -366,9 +374,9 @@ export default function LessonDetail({ id }) {
             moveReference(current, reference.id, targetFromValue(value)),
           )
         }
-        onAdopt={(version) =>
+        onAdopt={(version, snapshot) =>
           savable.setInput((current) =>
-            adoptReferenceVersion(current, reference.id, version),
+            adoptReferenceVersion(current, reference.id, version, snapshot),
           )
         }
         onPlaceAgain={() =>
@@ -606,6 +614,7 @@ export default function LessonDetail({ id }) {
                 ↓
               </button>
               <button type="button" className="wb-button" disabled={unsupported} onClick={() => mathReturn.enter({type:"section",sectionId:section.id})}>制作数学作品</button>
+              <button type="button" className="wb-button" disabled={unsupported || pickerFlow.entering} onClick={() => pickerFlow.enter({ type: "section", sectionId: section.id }, "math")}>从数学工坊取材</button>
               <button
                 type="button"
                 className="wb-button"
@@ -685,6 +694,7 @@ export default function LessonDetail({ id }) {
           <header className="wb-section-head">
             <h3>本课材料</h3>
             <button type="button" className="wb-button" disabled={unsupported} onClick={() => mathReturn.enter({type:"materials"})}>制作数学作品</button>
+            <button type="button" className="wb-button" disabled={unsupported || pickerFlow.entering} onClick={() => pickerFlow.enter({ type: "materials" }, "math")}>从数学工坊取材</button>
             <button
               className="wb-button"
               disabled={unsupported}
@@ -727,6 +737,10 @@ export default function LessonDetail({ id }) {
             </div>
           )}
         </section>
+        {baseline?.id && <details className="wb-lesson-block" open={Boolean(scene.feedbackOpen)} onToggle={(event) => patchScene({ feedbackOpen: event.currentTarget.open })}>
+          <summary>教学反馈</summary>
+          {scene.feedbackOpen && <SourceRecordsPanel kind="lesson" id={baseline.id} onOpenRecord={(record) => shell.openMaterialSource(`/classes/${record.classId}/records/${record.id}`, `/lessons/${id}`)} />}
+        </details>}
       </div>
 
       {pickerDialogs}

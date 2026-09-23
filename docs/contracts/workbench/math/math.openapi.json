@@ -1476,6 +1476,140 @@
           }
         }
       }
+    },
+    "/api/modules/lessons/v3/order": {
+      "get": {
+        "operationId": "getLessonOrder",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonOrder"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateLessonOrder",
+        "parameters": [
+          {
+            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已确认的持久结果；读取无副作用。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonOrder"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLessonOrder"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3512,6 +3646,48 @@
           "id",
           "currentVersion"
         ]
+      },
+      "LessonOrder": {
+        "type": "object",
+        "required": [
+          "version",
+          "lessonIds"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lessonIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "UpdateLessonOrder": {
+        "type": "object",
+        "required": [
+          "baseVersion",
+          "lessonIds"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lessonIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "uniqueItems": true
+          }
+        }
       }
     },
     "responses": {

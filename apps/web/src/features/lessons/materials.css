@@ -1,6 +1,26 @@
 .wb-lesson-head {
   flex-wrap: wrap;
 }
+.wb-lesson-list-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.wb-lesson-list-row > button {
+  flex: 1;
+  min-width: 0;
+}
+.wb-lesson-order-buttons {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.wb-reference-file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
 .wb-lesson-head .wb-object-title-input {
   flex: 1 1 14em;
   width: auto;

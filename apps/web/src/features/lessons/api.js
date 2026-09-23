@@ -63,7 +63,7 @@ export async function setLessonDeletion({ key, id, payload, version = 3 }) {
 }
 
 export const sourcePath = (kind) =>
-  kind === "resource"
+  kind === "math" ? "/api/modules/math/v1/works" : kind === "resource"
     ? "/api/modules/resources/items"
     : "/api/modules/questions/v2/items";
 export async function readSource(kind, id) {

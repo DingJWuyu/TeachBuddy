@@ -50,4 +50,14 @@ export const migrations = [
     },
   },
   ...materialsMigrations,
+  {
+    id: "lessons_0003_order",
+    up(db) {
+      db.exec(`CREATE TABLE lesson_order (
+        accountKey TEXT PRIMARY KEY,
+        version INTEGER NOT NULL,
+        lessonIds TEXT NOT NULL
+      )`);
+    },
+  },
 ];

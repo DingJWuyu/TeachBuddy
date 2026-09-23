@@ -124,7 +124,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
               current.version ===
                 (reference.workVersion ?? reference.questionVersion ?? reference.resourceVersion)
             }
-            onClick={() => onAdopt(current.version)}
+            onClick={() => onAdopt(current.version, current.snapshot)}
           >
             采用更新
           </button>
@@ -148,6 +148,9 @@ export function ReferenceCard({
   onPlaceAgain,
   onOpenLesson,
   onCopyWork,
+  onReorder,
+  canMoveUp = false,
+  canMoveDown = false,
   readOnly = false,
 }) {
   const [compareOpen, setCompareOpen] = useState(false);
@@ -188,6 +191,10 @@ export function ReferenceCard({
           </button>
         )}
         <div className="wb-reference-actions">
+          {onReorder && <>
+            <button type="button" className="wb-icon-button" aria-label={`上移材料 ${excerpt}`} disabled={readOnly || !canMoveUp} onClick={() => onReorder(-1)}>↑</button>
+            <button type="button" className="wb-icon-button" aria-label={`下移材料 ${excerpt}`} disabled={readOnly || !canMoveDown} onClick={() => onReorder(1)}>↓</button>
+          </>}
           <button
             type="button"
             className="wb-icon-button"
@@ -230,7 +237,7 @@ export function ReferenceCard({
       </header>
       <div className="wb-reference-body">
         {reference.kind === "math" ? <MathSnapshot snapshot={reference.snapshot} /> : reference.kind === "resource" ? (
-          <>
+          <div className="wb-reference-file-actions">
             <button
               className="wb-text-button"
               onClick={() =>
@@ -248,7 +255,7 @@ export function ReferenceCard({
             >
               下载原件
             </button>
-          </>
+          </div>
         ) : (
           <DocumentView value={reference.snapshot?.body} />
         )}
@@ -288,8 +295,8 @@ export function ReferenceCard({
           readOnly={readOnly}
           reference={reference}
           onClose={() => setCompareOpen(false)}
-          onAdopt={(version) => {
-            onAdopt(version);
+          onAdopt={(version, snapshot) => {
+            onAdopt(version, snapshot);
             setCompareOpen(false);
           }}
         />

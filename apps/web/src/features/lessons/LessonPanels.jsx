@@ -5,6 +5,7 @@ import { useWorkbenchShell } from '../workbench/shellContext.js';
 import { Icon } from '../workbench/icons.jsx';
 import { navigate } from '../workbench/routes.js';
 import { listLessons } from './api.js';
+import { useLessonOrder, LessonOrderButtons } from './LessonOrder.jsx';
 
 export function LessonIndex({ currentId }) {
   const shell = useWorkbenchShell();
@@ -12,6 +13,8 @@ export function LessonIndex({ currentId }) {
   const [query, setQuery] = useState('');
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('loading');
+  const [revision, setRevision] = useState(0);
+  const order = useLessonOrder(() => setRevision(value => value + 1));
 
   useEffect(() => {
     let cancelled = false;
@@ -26,7 +29,7 @@ export function LessonIndex({ currentId }) {
         if (!cancelled) setStatus('error');
       });
     return () => { cancelled = true; };
-  }, [query, state]);
+  }, [query, state, revision, currentId, shell.generation]);
 
   return (
     <div className="wb-tool" data-region="lesson-index">
@@ -60,10 +63,11 @@ export function LessonIndex({ currentId }) {
         </button>
       </div>
       {status === 'error' && <p className="wb-muted">读取失败</p>}
+      {order.feedback}
       {status === 'ready' && items.length === 0 && <p className="wb-empty-note">没有备课</p>}
       <ul className="wb-tool-list" data-region="lesson-index-list">
-        {items.map((item) => (
-          <li key={item.id}>
+        {items.map((item, index) => (
+          <li key={item.id} className="wb-lesson-list-row">
             <button
               type="button"
               className={`wb-nav-row${currentId === item.id ? ' is-active' : ''}`}
@@ -73,6 +77,7 @@ export function LessonIndex({ currentId }) {
               <span className="wb-nav-label">{item.title}</span>
               {item.deletedAt && <span className="wb-tag is-deleted">已删除</span>}
             </button>
+            <LessonOrderButtons item={item} index={index} items={items} order={order} />
           </li>
         ))}
       </ul>
