@@ -1,3 +1,4 @@
+import { readLocal, writeLocal, migrateLegacyLocal } from '../workbench/storage.js';
 import { ShellContext } from "../workbench/shellContext.js";
 import { MathTools, MathIntegration } from "./Integration.jsx";
 import { uploadDraft } from "./uploadDraft.js";
@@ -265,7 +266,11 @@ function MathSession({ transport, route }) {
     [conflict, setConflict] = useState(null);
   const importFile = useRef(null);
   const [importPending, setImportPending] = useState(null);
+  const previousKind = useRef(null);
   useEffect(() => {
+    const kind = draft?.source.kind;
+    if (!kind || !previousKind.current || previousKind.current === kind) { previousKind.current = kind; return; }
+    previousKind.current = kind;
     if (draft?.source.kind === "html" || draft?.source.kind === "dynamic")
       setFormat("html");
     else setFormat("png");
@@ -378,13 +383,17 @@ function MathSession({ transport, route }) {
   useEffect(() => {
     if (!storage) return;
     try {
-      const saved = JSON.parse(localStorage.getItem(storage));
+      const saved = migrateLegacyLocal(account, "math-workspace", storage);
       if (saved) {
         setDraft(saved.draft);
         setSelected(saved.selected ?? 0);
         setSearch(saved.search ?? "");
         setDeleted(saved.deleted ?? false);
         setPending(saved.pending);
+        setFormat(saved.format ?? (['dynamic', 'html'].includes(saved.draft?.source.kind) ? 'html' : 'png'));
+        setBackground(saved.background ?? 'transparent');
+        setExportWidth(saved.exportWidth ?? 1600);
+        if (saved.draft && saved.status !== '已保存') setMessage('已恢复本设备的数学草稿，请检查后保存');
         setStatus(
           saved.pending &&
             (!saved.pending.kind || saved.pending.kind === "save")
@@ -398,25 +407,13 @@ function MathSession({ transport, route }) {
   useEffect(() => {
     if (storage && loadedStorage === storage && !locked) {
       try {
-        localStorage.setItem(
-          storage,
-          JSON.stringify({ draft, pending, status, selected, search, deleted }),
-        );
+        if (!writeLocal(account, 'math-workspace', { draft, pending, status, selected, search, deleted, format, background, exportWidth }))
+          setMessage('设备草稿无法保留，请先保存到服务端');
       } catch {
         setMessage("设备草稿空间不足，请保存到服务端");
       }
     }
-  }, [
-    draft,
-    pending,
-    status,
-    storage,
-    loadedStorage,
-    locked,
-    selected,
-    search,
-    deleted,
-  ]);
+  }, [draft, pending, status, storage, loadedStorage, locked, selected, search, deleted, format, background, exportWidth]);
   const routeLoaded = useRef(null);
   useEffect(() => {
     if (
@@ -463,6 +460,8 @@ function MathSession({ transport, route }) {
       setMessage("请先确认当前操作结果");
       return;
     }
+    draftRef.current = next;
+    writeLocal(account, 'math-workspace', { draft: next, pending, status: '未保存', selected, search, deleted, format, background, exportWidth });
     setDraft(next);
     setStatus("未保存");
     setMessage("");
@@ -487,6 +486,7 @@ function MathSession({ transport, route }) {
       originalFileId: null,
     });
     setSelected(0);
+    setFormat(kind === 'dynamic' ? 'html' : 'png');
   }
   async function open(item) {
     if (pending) {
@@ -589,6 +589,7 @@ function MathSession({ transport, route }) {
     const operation = Symbol("math-request");
     inFlight.current = operation;
     setBusy(true);
+    writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status: '保存结果待确认', selected, search, deleted, format, background, exportWidth });
     setPending(request);
     setStatus("保存中");
     setMessage("");
@@ -665,6 +666,7 @@ function MathSession({ transport, route }) {
     const operation = Symbol("math-request");
     inFlight.current = operation;
     setBusy(true);
+    writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status: '保存结果待确认', selected, search, deleted, format, background, exportWidth });
     setPending(request);
     try {
       const result = await mathRequest(request.path, request);
@@ -718,6 +720,7 @@ function MathSession({ transport, route }) {
     const operation = Symbol("math-request");
     inFlight.current = operation;
     setBusy(true);
+    writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status: '保存结果待确认', selected, search, deleted, format, background, exportWidth });
     setPending(request);
     try {
       const saved = await mathRequest(request.path, request);
@@ -932,6 +935,8 @@ function MathSession({ transport, route }) {
             />
           ) : draft.source.kind === "dynamic" ? (
             <DynamicPreview
+              accountKey={account}
+              workId={draft.id ?? "new"}
               source={draft.source}
               font={font}
               onChange={source}

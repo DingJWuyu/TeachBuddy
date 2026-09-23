@@ -1,3 +1,5 @@
+import { usePreferences } from './usePreferences.js';
+import { SupportHelp, SupportReleases } from './SupportPages.jsx';
 import { AgentProvider, useAgent } from '../agent/AgentProvider.jsx';
 import { ReferenceAction } from '../agent/ReferenceAction.jsx';
 /**
@@ -70,6 +72,7 @@ function WorkbenchContent({ boot }) {
   const agent = useAgent();
   const { logout, accountKey, nickname, generation, storageFailed, reportIdentityLost, transport } = boot;
   const route = useRoute();
+  const preferences = usePreferences(accountKey, generation);
   const narrow = useIsNarrow();
   const [scene, patchScene] = useScene(accountKey, 'shell', {
     sidebarCollapsed: false,
@@ -100,6 +103,8 @@ function WorkbenchContent({ boot }) {
 
   const shell = useMemo(() => ({
     logout,
+    preferences,
+    resetDeviceScene: boot.resetDeviceScene, deviceClearNotice: boot.deviceClearNotice,
     accountKey,
     nickname,
     generation: `${generation}:${agent.businessRevision}`,
@@ -125,7 +130,7 @@ function WorkbenchContent({ boot }) {
     },
     openMaterialSource: (path, lessonPath) => { setMaterialNavigation({ sourcePath: path, lessonPath }); navigate(path); }
   }), [logout, accountKey, nickname, generation, agent.businessRevision, storageFailed, narrow, scene.panelMode, scene.panelOpen, scene.panelWidth,
-    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone]);
+    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, preferences]);
 
   const collapsed = narrow ? !scene.drawerOpen : Boolean(scene.sidebarCollapsed);
   const hasPanel = route.name === 'questions' || route.name === 'question'
@@ -148,11 +153,20 @@ function WorkbenchContent({ boot }) {
   else if (route.name === 'schedule') page = <SchedulePage route={route} />;
   else if (route.name === 'math') page = <MathWorkbench route={route} />;
   else if (route.name === 'settings') page = <WorkbenchSettings />;
+  else if (route.name === 'help') page = <SupportHelp />;
+  else if (route.name === 'releases') page = <SupportReleases />;
   else page = <NotFound />;
 
   const activeModuleId = route.name === 'questions' || route.name === 'question'
     ? 'questions'
     : route.name === 'lessons' || route.name === 'lesson' ? 'lessons' : route.name === 'resources' || route.name === 'resource' ? 'resources' : route.name === 'math' ? 'math' : route.name.startsWith('class') ? 'classes' : null;
+
+  useEffect(() => {
+    if (!activeModuleId) return;
+    const current = window.location.pathname + window.location.search;
+    if (scene.modulePaths?.[activeModuleId] !== current)
+      patchScene({ modulePaths: { ...scene.modulePaths, [activeModuleId]: current } });
+  }, [activeModuleId, route.path, route.workId]);
 
   return (
     <ShellContext.Provider value={shell}>
@@ -160,6 +174,8 @@ function WorkbenchContent({ boot }) {
         className={`wb-shell${panelOpen ? ' has-panel' : ''}${narrow ? ' is-narrow' : ''}`}
         data-sidebar={collapsed ? 'rail' : 'expanded'}
         data-route={route.name}
+        data-reading-size={preferences.baseline?.values.readingSize || 'standard'}
+        data-motion={preferences.baseline?.values.motion || 'system'}
       >
         <header className="wb-topbar">
           <button
@@ -219,7 +235,7 @@ function WorkbenchContent({ boot }) {
               {modules.map((moduleItem) => (
                 <NavigationRow
                   key={moduleItem.id}
-                  href={moduleItem.path}
+                  href={activeModuleId === moduleItem.id ? moduleItem.path : (scene.modulePaths?.[moduleItem.id]?.startsWith(moduleItem.path) ? scene.modulePaths[moduleItem.id] : moduleItem.path)}
                   icon={moduleItem.icon}
                   label={moduleItem.name}
                   active={activeModuleId === moduleItem.id}
@@ -237,6 +253,8 @@ function WorkbenchContent({ boot }) {
                 collapsed={collapsed}
                 onNavigate={() => patchScene({ drawerOpen: false })}
               />
+              <NavigationRow href="/help" icon="help" label="使用帮助" active={route.name === 'help'} collapsed={collapsed} onNavigate={() => patchScene({ drawerOpen: false })} />
+              <NavigationRow href="/releases" icon="history" label="版本记录" active={route.name === 'releases'} collapsed={collapsed} onNavigate={() => patchScene({ drawerOpen: false })} />
               {hasPanel && (
                 <button
                   type="button"

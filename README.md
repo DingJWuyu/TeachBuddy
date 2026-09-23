@@ -53,6 +53,12 @@ node apps/api/src/scripts/reliability.js activate --target /新恢复目录 --st
 
 已支持当前预览的迁移集合，包括备课排序迁移 `lessons_0003_order`，以及固定起点缺少可靠性模块的基线升级。未知迁移、内容格式、缺文件、摘要不符及未完成认证清理都会停止恢复。集成其他模块新增迁移时，须同步接入备份支持集合再验证。自验范围与证据见 [MANUAL-DATA 回执](docs/acceptance/evidence/MANUAL-DATA/v1/receipt.md)。
 
+## 设置与工作现场
+
+设置可保存账户阅读字号与减少动效偏好，重新登录或在另一设备打开后生效。帮助按六模块真实操作流程组织；版本记录从构建时的 Git 提交生成，没有发布标记时明确显示为未正式发布的构建，不改写 `CHANGELOG.md`。
+
+本设备输入与现场按账户和编辑分支保存，两个标签页可分别继续自己的草稿。切换模块可回到上次打开的内容。设置可下载本设备 JSON 草稿并清理本机现场，保留待确认请求、相关模块输入及不可自动读取的原文；服务器资料不受清理影响。JSON 草稿用于留存和手工取回内容，不是整体备份或批量导入。
+
 ## DOCX 输出
 
 本分支已集成 R34 Pandoc 输出修复。Pandoc 3.11 生成可编辑公式 DOCX，再沿既有 LibreOffice 链校验和转换 PDF。服务使用 `MATERIALS_PANDOC_PATH` 指向 Pandoc 可执行文件，并沿用 `MATERIALS_OFFICE_ROOT`；工具二进制不进入仓库。固定候选的验证及 Word/WPS 真人待验条件见 [Pandoc 报告](docs/acceptance/evidence/R34/v1/pandoc.md)。本分支集成自验见 [PREVIEW-OFFICE 回执](docs/acceptance/evidence/PREVIEW-OFFICE/v1/receipt.md)。

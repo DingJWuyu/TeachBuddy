@@ -1,6 +1,7 @@
 import { createReliability } from './reliability/index.js';
 import { migrations as reliabilityMigrations, acquireLock } from './reliability/storage.js';
 import fs from 'node:fs';
+import { createPreferencesRouter, preferenceMigrations } from '../reliability/preferences.js';
 import { connectBusinessOperations } from '../agent/business.js';
 import { createAgent, migrations as agentMigrations } from '../agent/index.js';
 import { createJobs } from "./jobs/index.js";
@@ -153,6 +154,8 @@ export function createWorkbench({
     logger,
   });
   const reliability = createReliability({ db, loader, mutations, identity, trustedOrigins: workbenchEnv.trustedOrigins ?? [], ready: () => initialize(), filesDirectory: workbenchEnv.filesDir ?? path.join(path.dirname(env.sqlitePath), 'files'), logger });
+  const preferencesRouter = createPreferencesRouter({ db, mutations, identity,
+    trustedOrigins: workbenchEnv.trustedOrigins ?? [], ready: () => initialize(), logger, clock });
   let initialization = null;
   let agent;
   let closed = false;
@@ -161,12 +164,13 @@ export function createWorkbench({
     initialization ??= (async () => {
       await loader.discover();
       const migrationResult = migrations.run(
-        [...fileMigrations, ...jobMigrations, ...reliabilityMigrations, ...loader.moduleMigrations()],
+        [...fileMigrations, ...jobMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...loader.moduleMigrations()],
         {
           knownModuleIds: [
             "reliability",
             "materials-files",
             "materials-jobs",
+            "reliability-preferences",
             ...catalog.map((entry) => entry.id),
           ],
         },
@@ -207,6 +211,7 @@ export function createWorkbench({
     filesRouter,
     reliabilityRouter: reliability.router,
     agentRecoveryGuard: reliability.agentRecoveryGuard,
+    preferencesRouter,
     jobs,
     jobsRouter,
     identity,

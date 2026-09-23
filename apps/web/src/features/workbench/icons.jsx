@@ -1,6 +1,7 @@
 /** Line icons for the workbench shell, sized to the 36px navigation rows. */
 
 const PATHS = {
+  history: 'M4 6a7 7 0 1 1-1 7M3 3v4h4M10 6v4l3 2',
   math: 'M3 14l3 3 4-13h7M12 9l5 6M17 9l-5 6',
   calendar: 'M4 5h12v12H4zM4 8h12M7 3v4M13 3v4M7 11h1M11 11h1M7 14h1',
   bell: 'M5 13h10l-1-2V8a4 4 0 0 0-8 0v3zM8 16h4',

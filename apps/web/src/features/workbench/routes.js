@@ -21,6 +21,7 @@ function parseRoute(pathname) {
     if (segments[0] === 'math') return { name: 'math', path, workId: new URLSearchParams(window.location.search).get('workId') };
     if (segments[0] === 'classes') return { name: 'classes', path };
     if (segments[0] === 'calendar') return { name: 'schedule', path, search: window.location.search };
+    if (['help', 'releases'].includes(segments[0])) return { name: segments[0], path };
     if (segments[0] === 'settings') return { name: 'settings', path: '/settings' };
   }
   if (segments.length === 2) {

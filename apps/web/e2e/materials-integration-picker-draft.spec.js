@@ -202,7 +202,6 @@ test("账户切换保留各自新建草稿", async ({ page, context }) => {
     await expect(page.locator(".wb-shell")).toBeVisible();
     await nav(page, "备课");
     await expect(page.getByRole("button", { name: /乙账户保存内容/ })).toHaveCount(0);
-    await page.getByRole("button", { name: "新建备课", exact: true }).click();
     await expect(page.getByLabel("课题", { exact: true })).toHaveValue("甲账户未保存内容");
     await expect(page.locator("[data-section-id]")).toHaveCount(1);
   } finally {

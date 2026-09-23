@@ -8,8 +8,13 @@ export function mountDynamic(
   resolve,
   snap,
   fontStyle = "",
+  options = {},
 ) {
-  let state = stateFor(source);
+  let state = stateFor(source, source.steps.some(step => step.id === options.initialState?.stepId) ? options.initialState.stepId : undefined);
+  if (options.initialState?.values) for (const parameter of source.parameters) {
+    const value = options.initialState.values[parameter.name];
+    if (Number.isFinite(value)) state.values[parameter.name] = snap(parameter, value);
+  }
   root.innerHTML =
     '<nav aria-label="演示步骤"></nav><p class="step-description"></p><div class="plot"></div><div class="controls"></div><p class="notice" role="status"></p>';
   const plot = root.querySelector(".plot"),
@@ -95,6 +100,7 @@ export function mountDynamic(
       drag = null;
     });
   function draw() {
+    options.onState?.(structuredClone(state));
     try {
       const description = root.querySelector(".step-description");
       description.textContent =

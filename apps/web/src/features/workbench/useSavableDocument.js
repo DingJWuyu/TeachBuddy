@@ -238,7 +238,8 @@ export function useSavableDocument({
       const status = current.status === 'clean' || current.status === 'saved' ? 'dirty' : current.status;
       return { ...current, input: nextInput, status };
     });
-  }, [commit]);
+    persistDraft(stateRef.current);
+  }, [commit, persistDraft]);
 
   const submit = useCallback(async ({ retry = false, input: inputOverride } = {}) => {
     const current = stateRef.current;
@@ -273,6 +274,8 @@ export function useSavableDocument({
         createdAt: Date.now()
       }
     });
+
+    persistDraft(stateRef.current);
 
     try {
       const result = targetId
@@ -327,7 +330,7 @@ export function useSavableDocument({
       if (problem.kind === 'unconfirmed') {
         commit({ status: 'unconfirmed', problem });
       } else if (problem.kind === 'conflict') {
-        commit({ status: 'conflict', problem });
+        commit({ status: 'conflict', problem, pending: null });
         // "查看服务器版本" must show what is actually on the server now.
         if (apiRef.current.load) {
           apiRef.current.load()
@@ -387,8 +390,26 @@ export function useSavableDocument({
     return true;
   }, [commit]);
 
+  const refreshServer = useCallback(async () => {
+    if (!apiRef.current.load) return null;
+    const epoch = seqRef.current;
+    try {
+      const object = await apiRef.current.load();
+      if (epoch !== seqRef.current) return null;
+      const latest = stateRef.current;
+      if (latest.pending || !['clean', 'saved'].includes(latest.status)) {
+        if (latest.baseline && latest.baseline.version !== object.version && !latest.pending)
+          commit({ status: 'conflict', serverObject: object, problem: { kind: 'conflict', currentVersion: object.version, message: '内容已在别处修改' } });
+      } else {
+        commit({ baseline: object, input: apiRef.current.inputFromObject(object), serverObject: null });
+      }
+      return object;
+    } catch { return null; }
+  }, [commit]);
+
   return {
     ...state,
+    refreshServer,
     setInput,
     save: submit,
     retryConfirm: () => submit({ retry: true }),

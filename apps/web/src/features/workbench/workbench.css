@@ -1716,3 +1716,47 @@
 .wb-material-return { padding: 8px 16px; border-bottom: 1px solid #e3e3e3; }
 .wb-sidebar.is-collapsed .wb-ai-entry span { display: none; }
 .wb-main > .res-workspace { flex: 1; height: auto; }
+
+/* Support pages use one quiet reading area, independent of business panels. */
+.wb-support { min-height: 0; min-width: 0; overflow: auto; padding: 32px clamp(20px, 5vw, 72px); }
+.wb-support > header { margin-bottom: 24px; }
+.wb-support h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; }
+.wb-support header p, .wb-support time { color: var(--wb-muted); }
+.wb-support h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.wb-settings { gap: 0; }
+.wb-support-section { width: 100%; max-width: 760px; border-top: 1px solid var(--wb-line); padding: 20px 0; display: flex; flex-direction: column; gap: 14px; }
+.wb-setting-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; max-width: 560px; min-height: 32px; }
+.wb-setting-row select { min-width: 160px; border: 1px solid var(--wb-line); border-radius: 6px; padding: 5px 8px; background: var(--wb-surface); color: inherit; }
+.wb-support-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.wb-help { display: flex; flex-direction: column; overflow: hidden; }
+.wb-help-layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 32px; min-height: 0; }
+.wb-help nav { display: flex; flex-direction: column; gap: 4px; }
+.wb-help nav button { text-align: left; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--wb-muted); }
+.wb-help nav button.is-active { background: var(--wb-hover, #f0f0f0); color: var(--wb-text); }
+.wb-help-article { overflow: auto; min-width: 0; padding-right: 16px; max-width: 760px; }
+.wb-help-article ol { margin: 20px 0; padding-left: 22px; }
+.wb-help-article li { margin-bottom: 18px; line-height: 1.8; }
+.wb-release-list { padding: 0; list-style: none; max-width: 900px; }
+.wb-release-list li { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--wb-line); }
+.wb-release-list h2 { overflow-wrap: anywhere; line-height: 1.6; }
+.wb-release-list code { display: inline-block; margin-top: 6px; color: var(--wb-muted); font-size: 12px; }
+.wb-shell[data-reading-size="large"] .wb-main { font-size: 16px; }
+.wb-shell[data-reading-size="large"] .wb-main :is(input, textarea, select, [contenteditable], .wb-note, .wb-help-article, .wb-setting-row, .mat-document, .wb-document) { font-size: 16px; }
+.wb-shell[data-motion="reduce"] *, .wb-shell[data-motion="reduce"] *::before, .wb-shell[data-motion="reduce"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+@media (max-width: 760px) {
+  .wb-support { padding: 20px; }
+  .wb-help { overflow: auto; }
+  .wb-help-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .wb-help nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wb-help-article { overflow: visible; }
+  .wb-release-list li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+}
+.wb-shell label.wb-setting-row { display: grid; grid-template-columns: minmax(0, 1fr) 180px; color: var(--wb-text); font-size: 13px; font-weight: 400; }
+.wb-shell label.wb-setting-row > span { color: inherit; }
+.wb-shell label.wb-setting-row select { width: 180px; min-width: 0; font: inherit; }
+.wb-shell[data-reading-size="large"] label.wb-setting-row { font-size: 16px; }
+.wb-shell[data-reading-size="large"] :is(.q-page, .res-page, .math-workbench, .math-tools-panel, .c-page, .sch-page, .wb-support, .mat-paragraph) { font-size: 16px; }
+@media (max-width: 480px) {
+  .wb-shell label.wb-setting-row { grid-template-columns: minmax(0, 1fr) 140px; }
+  .wb-shell label.wb-setting-row select { width: 140px; }
+}

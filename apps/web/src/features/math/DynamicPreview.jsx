@@ -1,3 +1,4 @@
+import { readLocal, writeLocal } from '../workbench/storage.js';
 import React, { useEffect, useRef, useState } from "react";
 import { renderGraphic } from "../../../../../packages/shared/src/math/graphics.js";
 import {
@@ -7,12 +8,15 @@ import {
 } from "../../../../../packages/shared/src/math/dynamic.js";
 import { mountDynamic } from "../../../../../packages/shared/src/math/presentation.js";
 import { mathFontStyle } from "../../../../../packages/shared/src/math/formula.js";
-export default function DynamicPreview({ source, font, onChange }) {
+export default function DynamicPreview({ source, font, onChange, accountKey, workId }) {
   const root = useRef(null),
     runtime = useRef(null);
   const [show, setShow] = useState(false);
   useEffect(() => {
     if (!font) return;
+    const name = `scene:math-preview:${workId}`;
+    const sourceJson = JSON.stringify(source);
+    const saved = accountKey ? readLocal(accountKey, name) : null;
     runtime.current = mountDynamic(
       root.current,
       source,
@@ -21,9 +25,11 @@ export default function DynamicPreview({ source, font, onChange }) {
       dynamicPlane,
       snapParameter,
       mathFontStyle(font),
+      { initialState: saved?.sourceJson === sourceJson ? saved.state : null,
+        onState: state => { if (accountKey) writeLocal(accountKey, name, { sourceJson, state }); } },
     );
     return () => root.current?.replaceChildren();
-  }, [source, font]);
+  }, [source, font, accountKey, workId]);
   return (
     <div className={`math-dynamic${show ? " math-presenting" : ""}`}>
       <div className="math-add">

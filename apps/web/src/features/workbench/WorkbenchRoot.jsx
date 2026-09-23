@@ -10,6 +10,8 @@ export default function WorkbenchRoot() {
   const { account, request, logout } = useAuth();
   const [boot, setBoot] = useState(null);
   const [retry, setRetry] = useState(0);
+  const [deviceReset, setDeviceReset] = useState(0);
+  const [deviceClearNotice, setDeviceClearNotice] = useState(null);
   const [storageFailed, setStorageFailed] = useState(() => !canPersistLocally());
   useEffect(() => {
     let live = true;
@@ -39,8 +41,9 @@ export default function WorkbenchRoot() {
   }, [account, request, retry]);
 
   if (boot?.account === account && boot.mode === 'ready') {
-    return <WorkbenchApp key={`${account.accountKey}:${retry}`} boot={{
-      logout, transport: request, recoveryChanged: boot.recoveryChanged,
+    return <WorkbenchApp key={`${account.accountKey}:${retry}:${deviceReset}`} boot={{
+      logout, transport: request, recoveryChanged: boot.recoveryChanged, deviceClearNotice,
+      resetDeviceScene: notice => { setDeviceClearNotice(notice); setDeviceReset(value => value + 1); },
       accountKey: account.accountKey, nickname: account.nickname, generation: retry, storageFailed,
       reportIdentityLost: () => setBoot({ account, mode: 'identity' })
     }} />;

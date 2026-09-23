@@ -12,10 +12,16 @@ import { useCallback, useRef, useState } from 'react';
 import { readLocal, writeLocal } from './storage.js';
 
 export function useScene(accountKey, scope, initial = {}) {
+  const identity = `${accountKey}:${scope}`;
+  const identityRef = useRef(identity);
   const [scene, setScene] = useState(() => ({
     ...initial,
     ...(readLocal(accountKey, `scene:${scope}`) || {})
   }));
+  if (identityRef.current !== identity) {
+    identityRef.current = identity;
+    setScene({ ...initial, ...(readLocal(accountKey, `scene:${scope}`) || {}) });
+  }
   const sceneRef = useRef(scene);
   sceneRef.current = scene;
   const accountRef = useRef(accountKey);
