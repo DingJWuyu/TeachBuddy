@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 import { createIntegration } from "../../api/test/fixtures/auth-integration/harness.js";
-const evidence = path.resolve("docs/acceptance/evidence/R34/v1/attempt3");
+const evidence = path.resolve(process.env.MATERIALS_NAVIGATION_EVIDENCE || "test-results/materials-navigation/evidence");
 const root = path.resolve("test-results/r34-attempt3");
 fs.mkdirSync(root, { recursive: true });
 let world;

@@ -247,7 +247,7 @@ test('WB-T002/TT-U2 补充字段、最近实际位置、删除回退与恢复', 
   await expect(page.locator(`[data-record-id="${first.id}"]`)).toHaveAttribute('data-record-state', 'deleted');
   await page.locator(`[data-record-id="${first.id}"] button[aria-label="记录操作"]`).click();
   await page.locator(`[data-record-id="${first.id}"] button[name="record-restore"]`).click();
-  await recordFilter.getByRole('button', { name: '进行中' }).click();
+  await recordFilter.getByRole('button', { name: '教学记录' }).click();
   await expect(page.locator('[data-region="record-rows"] [data-record-id]')).toHaveCount(2);
   await expect(page.locator('[data-region="latest-position"]')).toContainText('定义讲完');
   const restored = await apiRead(page, `/api/modules/classes/v2/records/${first.id}`);

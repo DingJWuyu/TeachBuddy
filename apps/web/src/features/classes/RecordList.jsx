@@ -36,7 +36,6 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
       <div className="c-record-head">
         <span className="c-record-date">{formatRecordedOn(record.recordedOn)}</span>
         {deleted && <span className="wb-tag is-deleted">已删除</span>}
-        <span className="wb-muted">版本 {record.version}</span>
         <span className="c-record-spacer" />
         {!deleted && (
           <button type="button" className="wb-button" name="record-open" onClick={() => (open ? onClose() : onOpen(record.id))}>
@@ -127,7 +126,7 @@ export function RecordList({ accountKey, generation, records, state, onStateChan
             aria-pressed={state === 'active'}
             onClick={() => onStateChange('active')}
           >
-            进行中
+            教学记录
           </button>
           <button
             type="button"

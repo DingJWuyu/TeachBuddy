@@ -78,6 +78,7 @@ function Fields({ value, onChange, prefix = "" }) {
     <div className="math-fields">
       {Object.entries(value)
         .filter(([key]) => !["type", "schemaVersion", "kind"].includes(key))
+        .sort(([a], [b]) => Number(a === "style") - Number(b === "style"))
         .map(([key, child]) => {
           const caption = names[key] ?? key,
             id = `${prefix}${key}`;
@@ -154,7 +155,9 @@ function Fields({ value, onChange, prefix = "" }) {
                   onChange={(e) => update(e.target.value)}
                 >
                   {options.map((v) => (
-                    <option key={v}>{v}</option>
+                    <option key={v} value={v}>
+                      {{ solid: "实线", dashed: "虚线", dotted: "点线", none: "无", end: "终点", both: "两端" }[v]}
+                    </option>
                   ))}
                 </select>
               ) : typeof child === "boolean" ? (
@@ -1063,7 +1066,7 @@ function MathSession({ transport, route }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <label>
+          <label className="math-deleted-filter">
             <input
               type="checkbox"
               checked={deleted}

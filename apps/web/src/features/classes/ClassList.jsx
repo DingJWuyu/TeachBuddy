@@ -65,7 +65,7 @@ export function ClassList({
               aria-pressed={listState === 'active'}
               onClick={() => onListStateChange('active')}
             >
-              进行中
+              我的班级
             </button>
             <button
               type="button"
@@ -148,7 +148,6 @@ export function ClassList({
                 <span className="wb-card-title">{classroom.name}</span>
                 <span className="wb-row-tags">
                   {classroom.deletedAt && <span className="wb-tag is-deleted">已删除</span>}
-                  <span className="wb-muted">版本 {classroom.version}</span>
                 </span>
               </button>
             </li>

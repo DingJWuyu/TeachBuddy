@@ -15,9 +15,10 @@ function businessState(file){
  try{return Object.fromEntries(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE 'lesson_%' OR name LIKE 'question_%' OR name LIKE 'resource_%' OR name LIKE 'math_%' OR name='materials_files' OR name='workbench_mutation_keys') ORDER BY name").all().map(({name})=>[name,digest(JSON.stringify(db.prepare(`SELECT * FROM "${name}" ORDER BY rowid`).all()))]));}finally{db.close();}
 }
 for(const [name,source,file,account] of [
- ['P',process.env.M43_P_LIBRARY??'/tmp/teacher-r34-attempt5','workspace.sqlite',null],
- ['M',process.env.M43_M_LIBRARY??'/tmp/m43-original-m-library','workbench.sqlite','m41-a']
-])test(`MC11: fixed ${name} library copy preserves rows, files and receipts across two restarts`,async()=>{
+ ['P',process.env.M43_P_LIBRARY,'workspace.sqlite',null],
+ ['M',process.env.M43_M_LIBRARY,'workbench.sqlite','m41-a']
+])test(`MC11: fixed ${name} library copy preserves rows, files and receipts across two restarts`,
+ {skip: !source && `Set M43_${name}_LIBRARY to the retained acceptance library to run this external-fixture check`},async()=>{
  assert.ok(fs.existsSync(path.join(source,file)),`Required retained source: ${source}`);
  const directory=fs.mkdtempSync(path.join(os.tmpdir(), `m43-migration-${name}-`));fs.cpSync(source,directory,{recursive:true});
  const sqlitePath=path.join(directory,file);const before=businessState(sqlitePath);const original=businessState(path.join(source,file));

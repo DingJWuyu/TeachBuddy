@@ -3,7 +3,7 @@ import { test, expect, chromium } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
-const evidence=path.resolve('docs/acceptance/evidence/M43/v1/browser');
+const evidence=path.resolve(process.env.MATH_INTEGRATION_EVIDENCE || 'test-results/math-integration/evidence');
 fs.mkdirSync(evidence,{recursive:true});
 let world;
 test.afterEach(async({context})=>{await context.close();await world?.close();});
@@ -33,6 +33,7 @@ test('real-auth: specified lesson section -> saved formula -> v3 return keeps dr
  await expect(page.getByRole('status').first()).toContainText('已保存');
  await page.getByLabel('课题',{exact:true}).fill('二次函数未提交现场');
  await page.locator('.wb-topbar').getByRole('button',{name:'AI 助理',exact:true}).click();
+ await page.getByRole('button',{name:'新对话',exact:true}).click();
  await page.getByLabel('AI 输入').fill('保留判别式讲解草稿，不发送');
  await page.locator('[data-section-id]').getByRole('button',{name:'制作数学作品',exact:true}).click();
  await expect(page.locator('.math-workbench')).toBeVisible();

@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 const root = path.resolve("test-results/r34-integration");
-const evidence = path.resolve("docs/acceptance/evidence/R34/v1/attempt2");
+const evidence = path.resolve(process.env.MATERIALS_RESTART_EVIDENCE || "test-results/materials-restart/evidence");
 
 test("独立普通进程重启保持同一origin、未知上传原键和新浏览器持久数据", async ({
   page,
