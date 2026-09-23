@@ -557,6 +557,13 @@ export default function LessonDetail({ id }) {
           patchScene({ scrollTop: manuscriptTop.current });
         }}
       >
+        {baseline?.id && <details className="wb-lesson-block" data-region="lesson-teaching-feedback"
+          open={Boolean(scene.feedbackOpen)} onToggle={event => {
+            if (event.currentTarget.open !== Boolean(scene.feedbackOpen)) patchScene({ feedbackOpen: event.currentTarget.open });
+          }}>
+          <summary>教学反馈</summary>
+          {scene.feedbackOpen && <SourceRecordsPanel kind="lesson" id={baseline.id} onOpenRecord={(record) => shell.openMaterialSource(`/classes/${record.classId}/records/${record.id}`, `/lessons/${id}`)} />}
+        </details>}
         <section className="wb-lesson-block">
           <h3>开头文稿</h3>
           <DocumentEditor
@@ -739,10 +746,6 @@ export default function LessonDetail({ id }) {
             </div>
           )}
         </section>
-        {baseline?.id && <details className="wb-lesson-block" open={Boolean(scene.feedbackOpen)} onToggle={(event) => patchScene({ feedbackOpen: event.currentTarget.open })}>
-          <summary>教学反馈</summary>
-          {scene.feedbackOpen && <SourceRecordsPanel kind="lesson" id={baseline.id} onOpenRecord={(record) => shell.openMaterialSource(`/classes/${record.classId}/records/${record.id}`, `/lessons/${id}`)} />}
-        </details>}
       </div>
 
       {pickerDialogs}

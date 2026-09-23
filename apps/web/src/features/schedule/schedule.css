@@ -738,3 +738,9 @@
     width: 100%;
   }
 }
+
+.sch-reminder-minutes { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.sch-reminder-minutes input { min-width: 0; }
+.sch-reminder-minutes span { flex-shrink: 0; color: var(--wb-muted, #7c8089); font-size: 12px; }
+
+.sch-deleted-list { grid-column: 1 / -1; }

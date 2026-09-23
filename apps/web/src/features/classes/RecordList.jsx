@@ -11,7 +11,7 @@ import { formatRecordedOn } from './model.js';
 import { RecordEditor, RECORD_EXTRA_FIELDS } from './RecordEditor.jsx';
 import { SourceChips } from './SourcePicker.jsx';
 
-function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onChanged }) {
+function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onChanged, readOnly }) {
   const [confirming, setConfirming] = useState(false);
   const deletion = useIdempotentSubmit({ accountKey, name: `pending:class-record-deletion:${record.id}` });
   const deleted = record.deletedAt !== null;
@@ -37,12 +37,12 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
         <span className="c-record-date">{formatRecordedOn(record.recordedOn)}</span>
         {deleted && <span className="wb-tag is-deleted">已删除</span>}
         <span className="c-record-spacer" />
-        {!deleted && (
+        {!deleted && !readOnly && (
           <button type="button" className="wb-button" name="record-open" onClick={() => (open ? onClose() : onOpen(record.id))}>
             {open ? '收起' : '编辑'}
           </button>
         )}
-        <Popover label="记录操作" icon="more">
+        {!readOnly && <Popover label="记录操作" icon="more">
           {({ close }) => (
             <>
               {deleted ? (
@@ -71,7 +71,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
               )}
             </>
           )}
-        </Popover>
+        </Popover>}
       </div>
       {record.note && <p className="c-record-note">{record.note}</p>}
       {RECORD_EXTRA_FIELDS.map(([key, label]) => (record[key]
@@ -92,7 +92,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
       {deletion.status === 'failed' && (
         <p className="wb-inline-error" data-region="record-action-problem">{deletion.problem?.message || '操作失败'}</p>
       )}
-      {open && (
+      {open && !readOnly && (
         <RecordEditor
           accountKey={accountKey}
           generation={generation}
@@ -114,7 +114,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
   );
 }
 
-export function RecordList({ accountKey, generation, records, state, onStateChange, openRecordId, onOpen, onClose, onChanged }) {
+export function RecordList({ accountKey, generation, records, state, onStateChange, openRecordId, onOpen, onClose, onChanged, readOnly = false }) {
   return (
     <section className="c-records" data-region="record-list">
       <div className="c-records-head">
@@ -150,6 +150,7 @@ export function RecordList({ accountKey, generation, records, state, onStateChan
             accountKey={accountKey}
             generation={generation}
             record={record}
+            readOnly={readOnly}
             open={openRecordId === record.id}
             onOpen={onOpen}
             onClose={onClose}

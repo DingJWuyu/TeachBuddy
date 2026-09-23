@@ -6,7 +6,8 @@
  * order. Each unscheduled item can be moved into an existing non-repeating
  * segment through the atomic moveItem operation.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { listEntries } from './api.js';
 import {
   PRIORITY_LABEL,
   PRIORITY_VALUES,
@@ -16,12 +17,12 @@ import {
   titleOf
 } from './model.js';
 
-function MoveRow({ entry, item, targets, onMove, moveState }) {
+function MoveRow({ entry, item, targets, onMove, onOpen, moveState }) {
   const [target, setTarget] = useState('');
   const options = targets.filter((candidate) => candidate.id !== entry.id);
   return (
     <li className="sch-unscheduled-item" data-item-id={item.id}>
-      <span className="sch-item-text">{item.text}</span>
+      <button type="button" className="sch-item-text sch-unscheduled-title" onClick={() => onOpen(entry.id)}>{item.text}</button>
       <span className="wb-tag" data-priority={item.priority}>{PRIORITY_LABEL[item.priority]}</span>
       <span className="sch-item-actions">
         <select
@@ -62,6 +63,37 @@ function MoveRow({ entry, item, targets, onMove, moveState }) {
   );
 }
 
+function DeletedEntries({ open, onToggle, onOpen, refreshToken }) {
+  const [items, setItems] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [retry, setRetry] = useState(0);
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setLoading(true);
+    listEntries({ state: 'deleted' }).then(rows => {
+      if (!cancelled) { setItems(rows); setError(null); }
+    }).catch(problem => {
+      if (!cancelled) setError(problem.message || '无法读取已删除安排');
+    }).finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [open, refreshToken, retry]);
+  return <section className="sch-list sch-deleted-list" data-region="deleted-entries">
+    <button type="button" className="sch-list-head" aria-expanded={Boolean(open)} onClick={onToggle}>
+      <span>已删除安排</span><span aria-hidden="true">{open ? '▾' : '▸'}</span>
+    </button>
+    {open && <>
+      {loading && <p className="wb-muted">正在读取…</p>}
+      {error && <p role="alert">{error}<button className="wb-button" onClick={() => setRetry(value => value + 1)}>重试</button></p>}
+      {!loading && !error && items.length === 0 && <p className="wb-empty-note">没有已删除安排</p>}
+      <ul className="sch-unscheduled">{items.map(entry => <li key={entry.id}>
+        <button type="button" className="sch-unscheduled-title" onClick={() => onOpen(entry.id)}>{titleOf(entry)}</button>
+      </li>)}</ul>
+    </>}
+  </section>;
+}
+
 export default function ScheduleLists({
   regionRef,
   onScroll,
@@ -72,7 +104,8 @@ export default function ScheduleLists({
   onOpenEntry,
   onMove,
   moveState,
-  timeZone
+  timeZone,
+  refreshToken
 }) {
   const rows = buildPriorityRows(occurrences, unscheduled);
   const groups = groupPriorityRows(rows);
@@ -116,6 +149,7 @@ export default function ScheduleLists({
                           item={item}
                           targets={targets}
                           onMove={onMove}
+                          onOpen={onOpenEntry}
                           moveState={moveState}
                         />
                       ))}
@@ -174,6 +208,8 @@ export default function ScheduleLists({
             )
         )}
       </section>
+      <DeletedEntries open={open.deleted} onToggle={() => onToggle('deleted')}
+        onOpen={onOpenEntry} refreshToken={refreshToken} />
     </div>
   );
 }

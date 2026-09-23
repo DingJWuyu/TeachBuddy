@@ -215,6 +215,7 @@ export function ClassDetail({
         )}
         {(records.active !== null || records.deleted !== null) && (
           <RecordList
+            readOnly={deleted}
             accountKey={accountKey}
             generation={generation}
             records={recordState === 'deleted' ? (records.deleted ?? []) : activeRecords}

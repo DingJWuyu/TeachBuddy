@@ -79,7 +79,12 @@ export function titleOf(entry) {
 
 /** Exact reminder instant text for the current draft, or null when unset. */
 export function reminderInstant(draft, zone) {
-  if (!draft.reminder || !draft.time) return null;
+  if (draft.unscheduled || !draft.reminder || !draft.time || !parseDateParts(draft.time.date)
+    || parseClock(draft.time.startTime) === null) return null;
+  const minutes = Number(draft.reminder.minutes);
+  const duration = Number(draft.time.durationMinutes);
+  if (draft.reminder.minutes === '' || !Number.isInteger(minutes) || minutes < 0 || minutes > 10080
+    || !Number.isInteger(duration) || duration < 1 || duration > 1440) return null;
   const start = instantAt(draft.time.timeZone || zone, draft.time.date, parseClock(draft.time.startTime) ?? 0);
   const end = start + (Number(draft.time.durationMinutes) || 0) * 60_000;
   const offset = Number(draft.reminder.minutes) * 60_000;
@@ -93,7 +98,7 @@ export function reminderInstant(draft, zone) {
  * grid that always places instances by their real `startsAt`.
  */
 export function dstAdjustment(draft) {
-  if (!draft?.time) return null;
+  if (!draft?.time || !parseDateParts(draft.time.date)) return null;
   const minutes = parseClock(draft.time.startTime);
   if (minutes === null) return null;
   const ms = instantAt(draft.time.timeZone, draft.time.date, minutes);
@@ -253,9 +258,9 @@ export function entryInputFromDraft(draft) {
     course: {
       classId: draft.course.classId,
       lessonId: draft.course.lessonId,
-      recordIds: [...draft.course.recordIds]
+      recordIds: time === null || draft.weekly ? [] : [...draft.course.recordIds]
     },
-    reminder: draft.reminder ? { side: draft.reminder.side, minutes: Number(draft.reminder.minutes) } : null
+    reminder: time !== null && draft.reminder ? { side: draft.reminder.side, minutes: Number(draft.reminder.minutes) } : null
   };
 }
 

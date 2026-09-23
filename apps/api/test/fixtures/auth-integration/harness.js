@@ -18,7 +18,7 @@ export async function createIntegration(options = {}) {
     context = createApp({
       env: { nodeEnv: 'test', sqlitePath: path.join(directory, 'workspace.sqlite'), authCodeSecret: 'isolated-a11-test-secret',
         workbench: { ...options.workbench, publicOrigin: origin, webDist: options.webDist ?? path.resolve('apps/web/dist') } },
-      sendCode: mailer.sendCode, now: clock.now,
+      sendCode: mailer.sendCode, now: clock.now, workbenchClock: options.workbenchClock,
       workbenchLogger: { info() {}, request() {}, error() {} }
     });
     await context.workbench.initialize();

@@ -21,11 +21,10 @@ import {
   weekdayLabel
 } from './model.js';
 
-const MINUTE_OPTIONS = [0, 5, 10, 15, 30, 60, 120];
-
 function SaveState({ saveState, onRetry, onReload }) {
   if (!saveState || saveState.status === 'idle') return null;
   if (saveState.status === 'saving') return <p className="sch-save is-busy" data-region="save-state">正在保存…</p>;
+  if (saveState.status === 'saved-dirty') return <p className="sch-save is-warn" data-region="save-state">提交内容已保存，仍有未保存修改</p>;
   if (saveState.status === 'saved') return <p className="sch-save is-ok" data-region="save-state">已保存</p>;
   if (saveState.status === 'unconfirmed') {
     return (
@@ -67,6 +66,7 @@ export default function EntryEditor({
   draft,
   instance,
   canEditGroup,
+  canMoveItems,
   onPatch,
   onScope,
   onSave,
@@ -81,6 +81,9 @@ export default function EntryEditor({
   classes,
   lessons,
   records,
+  linksError,
+  recordsState,
+  onRetryLinks,
   timeZone,
   focusToken,
   exceptions,
@@ -88,6 +91,7 @@ export default function EntryEditor({
   onInheritInstance,
   onCancelInstanceAt,
   onMoveItemToUnscheduled,
+  onRetryMoveOut,
   moveState,
   courseFeedback
 }) {
@@ -110,8 +114,6 @@ export default function EntryEditor({
   }
 
   const repeatingInstance = instance && instance.key.originDate !== null;
-  // A repeating template cannot carry record links; every other scope can.
-  const templateScope = Boolean(instance?.repeat && scope === 'group');
   // Only a scheduled, non-repeating entry can hand an item back to 未排期.
   const canMoveItemOut = Boolean(
     instance && instance.time && !instance.repeat && !instance.entryDeleted && scope === 'group'
@@ -233,7 +235,8 @@ export default function EntryEditor({
                     className="wb-icon-button"
                     data-action="item-to-unscheduled"
                     aria-label="移回未排期"
-                    title="移回未排期"
+                    title={canMoveItems ? '移回未排期' : '请先保存修改再移动事项'}
+                    disabled={!canMoveItems || moveState?.status === 'running'}
                     onClick={() => onMoveItemToUnscheduled(item)}
                   >
                     ↧
@@ -270,7 +273,10 @@ export default function EntryEditor({
               type="checkbox"
               name="entry-unscheduled"
               checked={draft.unscheduled}
-              onChange={(event) => onPatch({ unscheduled: event.target.checked })}
+              disabled={scope === 'instance' || Boolean(instance?.repeat)}
+              onChange={(event) => onPatch(event.target.checked
+                ? { unscheduled: true, weekly: false, reminder: null, course: { ...draft.course, recordIds: [] } }
+                : { unscheduled: false })}
             />
             暂不安排时间
           </label>
@@ -283,6 +289,7 @@ export default function EntryEditor({
                 className="wb-input"
                 type="date"
                 name="entry-date"
+                disabled={Boolean(instance?.repeat) && scope === 'group'}
                 value={draft.time.date}
                 min="1900-01-01"
                 max="2100-12-31"
@@ -316,6 +323,7 @@ export default function EntryEditor({
               <select
                 className="wb-input"
                 name="entry-timezone"
+                disabled={Boolean(instance?.repeat) && scope === 'group'}
                 value={draft.time.timeZone}
                 onChange={(event) => onPatch({ time: { ...draft.time, timeZone: event.target.value } })}
               >
@@ -335,7 +343,7 @@ export default function EntryEditor({
               type="checkbox"
               name="entry-weekly"
               checked={draft.weekly}
-              disabled={mode !== 'create' && instance?.repeat !== null}
+              disabled={mode !== 'create'}
               onChange={(event) => onPatch({
                 weekly: event.target.checked,
                 until: draft.until || draft.time.date,
@@ -364,7 +372,7 @@ export default function EntryEditor({
         </div>
       )}
 
-      <div className="sch-field">
+      {!draft.unscheduled && <div className="sch-field">
         <span className="sch-label">提醒</span>
         <div className="sch-reminder">
           <select
@@ -382,19 +390,20 @@ export default function EntryEditor({
             <option value="after">结束后</option>
           </select>
           {draft.reminder && (
-            <select
-              className="wb-input"
-              name="reminder-minutes"
-              aria-label="提醒分钟"
-              value={draft.reminder.minutes}
-              onChange={(event) => onPatch({ reminder: { ...draft.reminder, minutes: Number(event.target.value) } })}
-            >
-              {[...new Set([...MINUTE_OPTIONS, draft.reminder.minutes])]
-                .sort((a, b) => a - b)
-                .map((minutes) => (
-                  <option key={minutes} value={minutes}>{minutes} 分钟</option>
-                ))}
-            </select>
+            <label className="sch-reminder-minutes">
+              <input
+                className="wb-input"
+                type="number"
+                name="reminder-minutes"
+                aria-label="提醒分钟"
+                min="0"
+                max="10080"
+                step="1"
+                value={draft.reminder.minutes}
+                onChange={(event) => onPatch({ reminder: { ...draft.reminder, minutes: event.target.value } })}
+              />
+              <span>分钟</span>
+            </label>
           )}
         </div>
         {dueAt && (
@@ -407,68 +416,72 @@ export default function EntryEditor({
             {`夏令时调整：本地 ${draft.time.startTime} 不存在，实际从 ${dst.date} ${dst.startTime} 开始`}
           </p>
         )}
-      </div>
+      </div>}
 
-      {!templateScope && (
-        <div className="sch-field">
-          <span className="sch-label">关联（可选）</span>
-          <div className="sch-course">
-            <label>
-              <span className="sch-sub-label">班级</span>
-              <select
-                className="wb-input"
-                name="class-select"
-                value={draft.course.classId ?? ''}
-                onChange={(event) => onPatch({
-                  course: { ...draft.course, classId: event.target.value || null, recordIds: [] }
-                })}
-              >
-                <option value="">不关联班级</option>
-                {classes.map((item) => (
-                  <option key={item.id} value={item.id}>{item.name}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span className="sch-sub-label">备课</span>
-              <select
-                className="wb-input"
-                name="lesson-select"
-                value={draft.course.lessonId ?? ''}
-                onChange={(event) => onPatch({ course: { ...draft.course, lessonId: event.target.value || null } })}
-              >
-                <option value="">不关联备课</option>
-                {lessons.map((item) => (
-                  <option key={item.id} value={item.id}>{item.title.trim() || '未命名备课'}</option>
-                ))}
-              </select>
-            </label>
-            {draft.course.classId && !draft.weekly && !draft.unscheduled && (
-              <fieldset className="sch-records">
-                <legend className="sch-sub-label">实际记录</legend>
-                {records.length === 0 && <p className="wb-muted">本班还没有实际记录</p>}
-                {records.map((record) => (
-                  <label key={record.id} className="sch-toggle">
-                    <input
-                      type="checkbox"
-                      name="record-checkbox"
-                      value={record.id}
-                      checked={draft.course.recordIds.includes(record.id)}
-                      onChange={(event) => {
-                        const next = event.target.checked
-                          ? [...draft.course.recordIds, record.id]
-                          : draft.course.recordIds.filter((id) => id !== record.id);
-                        onPatch({ course: { ...draft.course, recordIds: next } });
-                      }}
-                    />
-                    {`${record.recordedOn} ${record.note || record.position || ''}`.trim()}
-                  </label>
-                ))}
-              </fieldset>
-            )}
-          </div>
+      <div className="sch-field">
+        <span className="sch-label">关联（可选）</span>
+        {(linksError || recordsState === 'error') && <div role="alert" className="sch-save is-error">
+          {linksError && <p>{linksError}</p>}
+          {recordsState === 'error' && <p>实际记录读取失败</p>}
+          <button type="button" className="wb-button" onClick={onRetryLinks}>重试关联资料</button>
+        </div>}
+        <div className="sch-course">
+          <label>
+            <span className="sch-sub-label">班级</span>
+            <select
+              className="wb-input"
+              name="class-select"
+              value={draft.course.classId ?? ''}
+              onChange={(event) => onPatch({
+                course: { ...draft.course, classId: event.target.value || null, recordIds: [] }
+              })}
+            >
+              <option value="">不关联班级</option>
+              {classes.map((item) => (
+                <option key={item.id} value={item.id}>{item.name}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="sch-sub-label">备课</span>
+            <select
+              className="wb-input"
+              name="lesson-select"
+              value={draft.course.lessonId ?? ''}
+              onChange={(event) => onPatch({ course: { ...draft.course, lessonId: event.target.value || null } })}
+            >
+              <option value="">不关联备课</option>
+              {lessons.map((item) => (
+                <option key={item.id} value={item.id}>{item.title.trim() || '未命名备课'}</option>
+              ))}
+            </select>
+          </label>
+          {draft.course.classId && !draft.weekly && !draft.unscheduled && (
+            <fieldset className="sch-records">
+              <legend className="sch-sub-label">实际记录</legend>
+              {recordsState === 'loading' && <p className="wb-muted">正在读取实际记录…</p>}
+              {records.length === 0 && recordsState === 'ready' && <p className="wb-muted">本班还没有实际记录</p>}
+              {records.map((record) => (
+                <label key={record.id} className="sch-toggle">
+                  <input
+                    type="checkbox"
+                    name="record-checkbox"
+                    value={record.id}
+                    checked={draft.course.recordIds.includes(record.id)}
+                    onChange={(event) => {
+                      const next = event.target.checked
+                        ? [...draft.course.recordIds, record.id]
+                        : draft.course.recordIds.filter((id) => id !== record.id);
+                      onPatch({ course: { ...draft.course, recordIds: next } });
+                    }}
+                  />
+                  {`${record.recordedOn} ${record.note || record.position || ''}`.trim()}
+                </label>
+              ))}
+            </fieldset>
+          )}
         </div>
-      )}
+      </div>
 
       {courseFeedback}
 
@@ -495,19 +508,20 @@ export default function EntryEditor({
                 >
                   打开
                 </button>
-                {exception.mode === 'cancelled' ? (
+                <button
+                  type="button"
+                  className="wb-button"
+                  data-action="restore-exception"
+                  disabled={!exception.eligible}
+                  onClick={() => onInheritInstance(exception.originDate)}
+                >
+                  恢复原安排
+                </button>
+                {exception.mode !== 'cancelled' && (
                   <button
                     type="button"
                     className="wb-button"
-                    data-action="restore-exception"
-                    onClick={() => onInheritInstance(exception.originDate)}
-                  >
-                    恢复原安排
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="wb-button"
+                    disabled={!exception.eligible}
                     data-action="cancel-exception"
                     onClick={() => onCancelInstanceAt(exception.originDate)}
                   >
@@ -520,14 +534,17 @@ export default function EntryEditor({
         </div>
       )}
 
-      {moveState?.status === 'unconfirmed' && (
-        <p className="sch-save is-warn" data-region="move-state">移回未排期的结果未确认，请重试</p>
+      {moveState?.status === 'unconfirmed' && moveState.direction === 'out' && moveState.request?.fromEntryId === instance?.key.entryId && (
+        <div className="sch-save is-warn" data-region="move-state">
+          <p>移回未排期的结果未确认</p>
+          <button type="button" className="wb-button" onClick={onRetryMoveOut}>重试移回未排期</button>
+        </div>
       )}
 
       <SaveState saveState={saveState} onRetry={onRetry} onReload={onReload} />
 
       <footer className="sch-editor-actions">
-        <button type="button" className="wb-button is-primary" data-action="save" onClick={onSave}>
+        <button type="button" className="wb-button is-primary" data-action="save" disabled={saveState?.status === 'saving'} onClick={onSave}>
           保存
         </button>
         <button type="button" className="wb-button" data-action="cancel" onClick={onCancel}>关闭</button>

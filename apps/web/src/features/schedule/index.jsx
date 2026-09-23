@@ -35,6 +35,8 @@ import {
 } from './model.js';
 import { addDays, diffDays, localParts } from './zoned.js';
 
+const editorKey = value => `${value.entryId ?? 'new'}:${value.originDate ?? ''}`;
+
 const SCHEDULE_TOOL = {
   id: 'schedule',
   label: '安排'
@@ -49,6 +51,9 @@ function draftProblem(draft, scope) {
     if (!Number.isInteger(duration) || duration < 1 || duration > 1440) return { message: '时长需在 1 到 1440 分钟之间' };
     if (draft.weekly && draft.until < draft.time.date) return { message: '重复结束日期不能早于首日' };
   }
+  if (!draft.unscheduled && draft.reminder && (draft.reminder.minutes === ''
+    || !Number.isInteger(Number(draft.reminder.minutes)) || Number(draft.reminder.minutes) < 0
+    || Number(draft.reminder.minutes) > 10080)) return { message: '提醒间隔需在 0 到 10080 分钟之间' };
   const items = draft.items.filter((item) => item.text.trim() !== '');
   if (draft.title.trim() === '' && items.length === 0) return { message: '标题或至少一项事项' };
   return null;
@@ -81,14 +86,24 @@ export default function SchedulePage({ route }) {
   const [reloadToken, setReloadToken] = useState(0);
   const [selection, setSelection] = useState(() => scene.selection ?? null);
   const [editor, setEditor] = useState(() => scene.editor ?? null);
-  const [saveState, setSaveState] = useState({ status: 'idle' });
+  const [saveState, setSaveState] = useState(() => scene.editor?.pending ? { status: 'unconfirmed' } : { status: 'idle' });
+  const savesInFlight = useRef(new Set());
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const [actionState, setActionState] = useState({ name: null, status: 'idle' });
-  const [moveState, setMoveState] = useState(null);
+  const [moveState, setMoveState] = useState(() => scene.moveState?.status === 'running'
+    ? { ...scene.moveState, status: 'unconfirmed' } : scene.moveState ?? null);
   const [settingsState, setSettingsState] = useState({ status: 'idle' });
   const [notice, setNotice] = useState(null);
   const [classes, setClasses] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [records, setRecords] = useState([]);
+  const [linksError, setLinksError] = useState(null);
+  const [recordsState, setRecordsState] = useState('idle');
+  const [linksRetry, setLinksRetry] = useState(0);
   const [exceptions, setExceptions] = useState([]);
   const [rangeDraft, setRangeDraft] = useState({ from: scene.from, to: scene.to });
   const [focusToken, setFocusToken] = useState(0);
@@ -174,15 +189,15 @@ export default function SchedulePage({ route }) {
         if (cancelled) return;
         setClasses(classroomItems);
         setLessons(lessonItems);
+        setLinksError(null);
       })
       .catch(() => {
         if (!cancelled) {
-          setClasses([]);
-          setLessons([]);
+          setLinksError('班级或备课读取失败');
         }
       });
     return () => { cancelled = true; };
-  }, [editor?.mode, editor?.entryId, shell.generation]);
+  }, [editor?.mode, editor?.entryId, shell.generation, linksRetry]);
 
   const editorEntryId = editor?.entryId ?? null;
   const editorRepeats = Boolean(editor?.entry?.repeat);
@@ -202,18 +217,24 @@ export default function SchedulePage({ route }) {
   useEffect(() => {
     if (!editorClassId) {
       setRecords([]);
+      setRecordsState('idle');
       return undefined;
     }
     let cancelled = false;
+    setRecords([]);
+    setRecordsState('loading');
     api.listClassRecords(editorClassId)
-      .then((items) => { if (!cancelled) setRecords(items); })
-      .catch(() => { if (!cancelled) setRecords([]); });
+      .then((items) => { if (!cancelled) { setRecords(items); setRecordsState('ready'); } })
+      .catch(() => { if (!cancelled) setRecordsState('error'); });
     return () => { cancelled = true; };
-  }, [editorClassId]);
+  }, [editorClassId, linksRetry, reloadToken, shell.generation]);
 
   useEffect(() => {
-    patchScene({ editor });
+    patchScene(current => ({ editor, editors: editor
+      ? { ...current.editors, [editorKey(editor)]: editor } : current.editors }));
   }, [editor, patchScene]);
+
+  useEffect(() => { patchScene({ moveState }); }, [moveState, patchScene]);
 
   useEffect(() => {
     patchScene({ selection });
@@ -280,15 +301,16 @@ export default function SchedulePage({ route }) {
   }
 
   const openEditor = useCallback((next) => {
-    setSaveState({ status: 'idle' });
     const previous = editorRef.current;
-    const keyFor = value => `${value.entryId ?? 'new'}:${value.originDate ?? ''}`;
     const editors = { ...sceneRef.current.editors };
-    if (previous) editors[keyFor(previous)] = previous;
+    if (previous) editors[editorKey(previous)] = previous;
     patchScene({ editors });
-    const saved = editors[keyFor(next)];
+    const saved = editors[editorKey(next)];
     const dirty = saved && (saved.pending || JSON.stringify(saved.drafts) !== JSON.stringify(saved.baseline));
-    setEditor(dirty && saved.entryId === next.entryId ? { ...next, drafts: saved.drafts, pending: saved.pending } : next);
+    setSaveState(dirty && saved.pending ? { status: 'unconfirmed' } : { status: 'idle' });
+    setEditor(dirty && saved.entryId === next.entryId
+      ? { ...next, drafts: saved.drafts, baseline: saved.baseline, expectedVersion: saved.expectedVersion, pending: saved.pending }
+      : next);
     setFocusToken((token) => token + 1);
   }, [patchScene]);
 
@@ -380,9 +402,10 @@ export default function SchedulePage({ route }) {
       await openEntry(entryId, query.get('on'));
     }).catch(problem => { if (!cancelled) setError(problem.problem ?? { message: '安排读取失败' }); });
     return () => { cancelled = true; };
-  }, [route?.search, shell.generation]);
+  }, [route, shell.generation]);
 
   function patchDraft(patch) {
+    setSaveState(current => current.status === 'saved' || current.status === 'saved-dirty' ? { status: 'idle' } : current);
     setEditor((current) => {
       if (!current) return current;
       const scope = current.scope;
@@ -411,45 +434,61 @@ export default function SchedulePage({ route }) {
   const activeDraft = editor ? editor.drafts[editor.scope] : null;
 
   async function submitSave(request, key) {
+    const targetKey = editorKey(editor);
+    if (savesInFlight.current.has(targetKey)) return;
+    savesInFlight.current.add(targetKey);
+    const savedScope = request.kind === 'override' ? 'instance' : 'group';
+    const submittedDraft = editor.pending?.draft ?? editor.drafts[savedScope];
+    const pending = { key, request, draft: submittedDraft };
+    const isCurrent = () => editorRef.current && editorKey(editorRef.current) === targetKey;
+    // A save belongs to its original editor even after selection/navigation.
+    // Persist the exact request before I/O, so refresh can confirm it safely.
+    function updateTarget(update) {
+      patchScene(current => ({
+        editor: current.editor && editorKey(current.editor) === targetKey ? update(current.editor) : current.editor,
+        editors: Object.fromEntries(Object.entries(current.editors ?? {}).map(([id, value]) =>
+          [id, editorKey(value) === targetKey ? update(value) : value]))
+      }));
+      setEditor(current => current && editorKey(current) === targetKey ? update(current) : current);
+    }
+    updateTarget(current => ({ ...current, pending }));
     setSaveState({ status: 'saving' });
     try {
       let result;
       if (request.kind === 'create') {
         result = await api.createEntry({ key, payload: request.payload });
       } else if (request.kind === 'override') {
-        result = await api.setException({
-          key,
-          id: request.id,
-          originDate: request.originDate,
-          payload: { expectedVersion: request.expectedVersion, mode: 'override', content: request.payload }
-        });
+        result = await api.setException({ key, id: request.id, originDate: request.originDate,
+          payload: { expectedVersion: request.expectedVersion, mode: 'override', content: request.payload } });
       } else {
-        result = await api.updateEntry({
-          key,
-          id: request.id,
-          payload: { ...request.payload, expectedVersion: request.expectedVersion }
-        });
+        result = await api.updateEntry({ key, id: request.id,
+          payload: { ...request.payload, expectedVersion: request.expectedVersion } });
       }
-      setEditor((current) => (current ? {
-        ...current,
-        mode: result.id ? 'entry' : current.mode,
-        entryId: result.id ?? result.key?.entryId ?? current.entryId,
-        expectedVersion: result.version ?? result.entryVersion ?? current.expectedVersion,
-        entry: result.id ? result : current.entry,
+      if (!mounted.current) return;
+      const current = isCurrent();
+      const newerInput = current && JSON.stringify(editorRef.current.drafts[savedScope]) !== JSON.stringify(submittedDraft);
+      updateTarget(value => ({
+        ...value,
+        mode: result.id ? 'entry' : value.mode,
+        entryId: result.id ?? result.key?.entryId ?? value.entryId,
+        expectedVersion: result.version ?? result.entryVersion ?? value.expectedVersion,
+        entry: result.id ? result : value.entry,
+        baseline: { group: null, instance: null, ...value.baseline, [savedScope]: submittedDraft },
         pending: null
-      } : current));
-      setSaveState({ status: 'saved' });
+      }));
+      if (current) setSaveState({ status: newerInput ? 'saved-dirty' : 'saved' });
       reload();
     } catch (problem) {
+      if (!mounted.current) return;
       const value = problem.problem ?? {};
-      if (value.kind === 'unconfirmed') {
-        setEditor((current) => (current ? { ...current, pending: { key, request } } : current));
-        setSaveState({ status: 'unconfirmed', problem: value });
-      } else if (value.kind === 'conflict') {
-        setSaveState({ status: 'conflict', problem: value, currentVersion: value.currentVersion });
-      } else {
-        setSaveState({ status: 'error', problem: value });
+      if (value.kind !== 'unconfirmed') updateTarget(current => ({ ...current, pending: null }));
+      if (isCurrent()) {
+        setSaveState(value.kind === 'unconfirmed' ? { status: 'unconfirmed', problem: value }
+          : value.kind === 'conflict' ? { status: 'conflict', problem: value, currentVersion: value.currentVersion }
+          : { status: 'error', problem: value });
       }
+    } finally {
+      savesInFlight.current.delete(targetKey);
     }
   }
 
@@ -575,11 +614,11 @@ export default function SchedulePage({ route }) {
     if (ok) await openEntry(entryId, originDate);
   }
 
-  async function moveItemToUnscheduled(item) {
+  async function moveItemToUnscheduled(item, retry = false) {
     if (!editor?.entryId || !editor.entry) return;
-    const entryId = editor.entryId;
+    const entryId = retry ? moveState.request.fromEntryId : editor.entryId;
     const originDate = editor.originDate;
-    const request = {
+    const request = retry ? moveState.request : {
       itemId: item.id,
       fromEntryId: entryId,
       fromVersion: editor.expectedVersion,
@@ -587,11 +626,12 @@ export default function SchedulePage({ route }) {
       toVersion: null,
       toIndex: 0
     };
-    const key = newRequestKey();
-    setMoveState({ itemId: item.id, status: 'running' });
+    const key = retry ? moveState.key : newRequestKey();
+    setMoveState({ itemId: item.id, status: 'running', direction: 'out', key, request });
     try {
       await api.moveItem({ key, payload: request });
       setMoveState({ itemId: item.id, status: 'done' });
+      setSaveState({ status: 'idle' });
       const refreshed = await api.getEntry(entryId);
       if (refreshed.deletedAt !== null) {
         // An untitled source that lost its last item is soft-deleted; the
@@ -607,6 +647,7 @@ export default function SchedulePage({ route }) {
       setMoveState({
         itemId: item.id,
         status: value.kind === 'unconfirmed' ? 'unconfirmed' : 'error',
+        direction: 'out',
         message: value.message ?? '移回未排期被拒绝',
         key,
         request
@@ -624,18 +665,16 @@ export default function SchedulePage({ route }) {
     const request = retry ? moveState.request : { entry, item, toEntryId };
     const target = occurrences.find((occurrence) => occurrence.key.entryId === toEntryId);
     const key = retry ? moveState.key : newRequestKey();
+    const payload = retry && moveState.payload ? moveState.payload : {
+      itemId: item.id,
+      fromEntryId: entry.id,
+      fromVersion: entry.version,
+      toEntryId,
+      toVersion: target?.entryVersion ?? null,
+      toIndex: target ? target.items.length : 0
+    };
     try {
-      await api.moveItem({
-        key,
-        payload: {
-          itemId: item.id,
-          fromEntryId: entry.id,
-          fromVersion: entry.version,
-          toEntryId,
-          toVersion: target?.entryVersion ?? null,
-          toIndex: target ? target.items.length : 0
-        }
-      });
+      await api.moveItem({ key, payload });
       setMoveState({ itemId: item.id, status: 'done' });
       if (editor?.entryId === entry.id) setEditor(null);
       reload();
@@ -644,6 +683,8 @@ export default function SchedulePage({ route }) {
       setMoveState({
         itemId: item.id,
         status: value.kind === 'unconfirmed' ? 'unconfirmed' : 'error',
+        direction: 'in',
+        payload,
         message: value.message ?? '移动被拒绝',
         key,
         request
@@ -693,10 +734,14 @@ export default function SchedulePage({ route }) {
       }
       : null,
     canEditGroup: !editor.entryDeleted,
+    canMoveItems: !editor.pending && JSON.stringify(activeDraft) === JSON.stringify(editor.baseline?.[editor.scope]),
     timeZone,
     classes,
     lessons,
     records,
+    linksError,
+    recordsState,
+    onRetryLinks: () => setLinksRetry(value => value + 1),
     exceptions,
     courseFeedback: editor.entryId && editor.entry?.time && !activeDraft.unscheduled
       && activeDraft.course.classId && !editor.entryDeleted
@@ -730,6 +775,7 @@ export default function SchedulePage({ route }) {
     onOpenInstance: (originDate) => (editor?.entryId ? openEntry(editor.entryId, originDate) : undefined),
     onMoveItemToUnscheduled: moveItemToUnscheduled,
     moveState,
+    onRetryMoveOut: () => moveItemToUnscheduled({ id: moveState.itemId }, true),
     onInheritInstance: (originDate) => setInstanceModeAt(originDate, 'inherit'),
     onCancelInstanceAt: (originDate) => setInstanceModeAt(originDate, 'cancelled'),
     onRetry: retrySave,
@@ -860,11 +906,10 @@ export default function SchedulePage({ route }) {
               }
             }}
             unscheduled={unscheduled}
+            refreshToken={reloadToken}
             occurrences={occurrences}
-            open={{ unscheduled: scene.unscheduledOpen, priority: scene.priorityOpen }}
-            onToggle={(key) => patchScene(key === 'unscheduled'
-              ? { unscheduledOpen: !scene.unscheduledOpen }
-              : { priorityOpen: !scene.priorityOpen })}
+            open={{ unscheduled: scene.unscheduledOpen, priority: scene.priorityOpen, deleted: scene.deletedOpen }}
+            onToggle={(key) => patchScene({ [`${key}Open`]: !scene[`${key}Open`] })}
             onOpenEntry={openEntry}
             onMove={moveUnscheduledItem}
             moveState={moveState}

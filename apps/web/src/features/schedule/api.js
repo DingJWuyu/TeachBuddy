@@ -1,6 +1,8 @@
 /** Schedule module API surface: the only endpoints this feature may call. */
 
 import { WorkbenchError, buildQuery, workbenchGet, workbenchPost, workbenchPut } from '../workbench/apiClient.js';
+import { listRecords } from '../classes/api.js';
+export { listLessons } from '../lessons/api.js';
 import { unexpectedSuccessProblem } from '../workbench/problems.js';
 
 function assertObject(payload, label) {
@@ -104,13 +106,6 @@ export async function listClasses() {
   return assertList(body, '班级').items;
 }
 
-export async function listClassRecords(classId) {
-  const query = buildQuery({ classId });
-  const { body } = await workbenchGet(`/api/modules/classes/records${query}`);
-  return assertList(body, '实际记录').items;
-}
-
-export async function listLessons() {
-  const { body } = await workbenchGet('/api/modules/lessons/items');
-  return assertList(body, '备课').items;
+export function listClassRecords(classId) {
+  return listRecords({ classId });
 }

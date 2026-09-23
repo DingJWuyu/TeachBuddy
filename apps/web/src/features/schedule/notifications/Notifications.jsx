@@ -60,7 +60,8 @@ export default function Notifications() {
     if (!notice.readAt) submit.submit(run, { path: `${endpoint}/${notice.id}`, body: { action: 'read' } });
     const query = new URLSearchParams({ entry: notice.key.entryId });
     if (notice.key.originDate) query.set('on', notice.key.originDate);
-    navigate(`/calendar?${query}`);
+    const path = `/calendar?${query}`;
+    navigate(path, { replace: window.location.pathname + window.location.search === path });
     close();
   }
   const label = `通知${state.unreadCount ? `（${state.unreadCount} 条未读）` : ''}`;
