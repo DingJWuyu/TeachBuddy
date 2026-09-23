@@ -1,0 +1,25 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { test, expect } from '@playwright/test';
+import { startTeachingAuth } from '../../../../../../apps/web/e2e/teaching-time-auth/service.mjs';
+import { register } from '../../../../../../apps/web/e2e/teaching-time-auth/helpers.mjs';
+const evidence=path.resolve('docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts');
+let world;
+test.afterEach(async()=>{await world?.close();world=null;});
+test('独立支持布局：正文滚动、帮助目录恢复、版本标题完整可读',async({page})=>{
+ world=await startTeachingAuth({directory:fs.mkdtempSync(path.resolve('.tmp-ms/layout-'))});await register(page,world);
+ await page.setViewportSize({width:820,height:900});
+ await page.getByRole('link',{name:'设置',exact:true}).click();await expect(page.locator('[data-region="auxiliary"]')).toHaveCount(0);
+ const topBefore=await page.locator('.wb-topbar').boundingBox();
+ await page.getByRole('button',{name:'下载本设备草稿',exact:true}).scrollIntoViewIfNeeded();
+ await expect(page.getByRole('heading',{name:'本设备草稿与现场',exact:true})).toBeVisible();
+ await page.screenshot({path:path.join(evidence,'settings-device-820.png')});
+ const topAfter=await page.locator('.wb-topbar').boundingBox();expect(topAfter).toEqual(topBefore);
+ await page.getByRole('link',{name:'使用帮助',exact:true}).click();await page.getByRole('button',{name:'保存失败、草稿与重开',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'保存失败、草稿与重开',exact:true})).toBeVisible();await page.reload();await expect(page.getByRole('heading',{name:'保存失败、草稿与重开',exact:true})).toBeVisible();
+ await page.getByRole('link',{name:'管理本设备草稿',exact:true}).click();await expect(page.getByLabel('阅读字号')).toBeVisible();
+ await page.getByRole('link',{name:'版本记录',exact:true}).click();await expect(page.getByRole('heading',{name:'版本记录',exact:true})).toBeVisible();
+ const geometry=await page.locator('.wb-release-list h2').evaluateAll(items=>items.map(e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();const s=getComputedStyle(e);return{text:e.textContent,clientWidth:e.clientWidth,scrollWidth:e.scrollWidth,right:r.right,parentRight:p.right,viewport:innerWidth,whiteSpace:s.whiteSpace,overflow:s.overflow,textOverflow:s.textOverflow};}));
+ fs.writeFileSync(path.join(evidence,'release-geometry.json'),JSON.stringify(geometry,null,2));await page.screenshot({path:path.join(evidence,'release-820-verified.png')});
+ expect(geometry.filter(x=>x.scrollWidth>x.clientWidth+1),'版本标题应换行并可完整阅读').toEqual([]);
+});

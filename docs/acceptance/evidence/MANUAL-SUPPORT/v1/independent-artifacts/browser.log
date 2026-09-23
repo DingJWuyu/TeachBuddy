@@ -1,0 +1,94 @@
+
+Running 19 tests using 1 worker
+
+(node:166781) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/seam.spec.mjs:11:1 › 独立 SUPPORT-DATA 接缝：UI偏好、两账户、ZIP、停服备份还原 (6.1s)
+(node:167041) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:16:1 › 支持页面、偏好保存与重开 (2.1s)
+  ✓   3 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:37:1 › 偏好响应丢失后按原键确认、冲突对照与服务重启 (2.6s)
+  ✓   4 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:80:1 › 清理保留未确认操作、其他账户和损坏原文，删除失败不报成功 (1.1s)
+  ✓   5 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:109:1 › 两标签页备课输入刷新后各自恢复 (1.4s)
+  ✓   6 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:124:1 › 偏好 API 认证、校验、幂等与版本保护 (1.1s)
+  ✓   7 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:146:1 › 支持页桌面与平板布局 (1.9s)
+  ✓   8 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:160:1 › 切换模块返回备课编辑现场，数学双标签页草稿独立 (1.9s)
+  ✓   9 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:182:1 › 日程保存中重开按原请求确认，后续输入不冒充已保存 (1.4s)
+  ✓  10 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:213:1 › 日程删除响应丢失后刷新仍用原键确认 (1.7s)
+  ✓  11 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:237:1 › 日程关闭草稿再打开仍保留原版本，不覆盖别处修改 (1.6s)
+  ✓  12 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:262:1 › 班级创建输入和记录关联选择刷新恢复 (1.8s)
+  ✘  13 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:279:1 › 数学预览参数和工具展开位置重开，不改作品源码 (11.3s)
+(node:168175) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  14 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:297:1 › 资源两标签页上传互不覆盖，原文件确认后筛选与视图重开 (4.2s)
+  ✓  15 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:334:1 › 题库原文件刷新重选以同一摘要和原键确认，不启动整理模型 (2.5s)
+  ✓  16 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:369:1 › 清理其他标签页时不会由旧输入重新生成草稿 (1.4s)
+  ✓  17 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:384:1 › 关闭标签页后从设置选择原备课草稿，保留当前分支 (1.4s)
+  ✓  18 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:403:1 › 数学 HTML 上传重开后校验原文件并以原键确认 (1.2s)
+  ✓  19 docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:419:1 › 返回备课标签页读取最新内容，有本地修改时只显示对照 (1.7s)
+
+
+  1) docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/seam.spec.mjs:11:1 › 独立 SUPPORT-DATA 接缝：UI偏好、两账户、ZIP、停服备份还原 
+
+    Error: expect(received).toBeTruthy()
+
+    Received: undefined
+
+      38 |  const candidates=[];for(const entry of Object.values(archive.files))if(!entry.dir&&entry.name.endsWith('.json')){const raw=await entry.async('string');if(raw.includes('readingSize'))candidates.push({path:entry.name,value:JSON.parse(raw)});}
+      39 |  expect(candidates.some(c=>JSON.stringify(c.value).includes(JSON.stringify(before.values)))).toBe(true);
+    > 40 |  const prefEntry=candidates.find(c=>c.path.includes('preferences'));expect(prefEntry).toBeTruthy();
+         |                                                                                       ^
+      41 |  expect(JSON.stringify(prefEntry.value)).toContain('"version":2');
+      42 |  const rowsBefore=world.workbench.db.prepare('SELECT * FROM reliability_preferences ORDER BY accountKey').all();expect(rowsBefore).toHaveLength(2);
+      43 |  const migrationBefore=world.workbench.db.prepare('SELECT * FROM workbench_migrations WHERE id=?').all('reliability_preferences_001');expect(migrationBefore).toHaveLength(1);
+        at /home/liam_t/项目/TeacherWorkspace-manual-support-acceptance/docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/seam.spec.mjs:40:87
+
+    Error Context: .tmp-ms/independent-results/seam-独立-SUPPORT-DATA-接缝：UI偏好、两账户、ZIP、停服备份还原/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .tmp-ms/independent-results/seam-独立-SUPPORT-DATA-接缝：UI偏好、两账户、ZIP、停服备份还原/trace.zip
+    Usage:
+
+        npx playwright show-trace .tmp-ms/independent-results/seam-独立-SUPPORT-DATA-接缝：UI偏好、两账户、ZIP、停服备份还原/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:279:1 › 数学预览参数和工具展开位置重开，不改作品源码 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('status').first()
+    Expected substring: "已保存"
+    Received string:    "保存失败"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toContainText" getByRole('status').first() with timeout 10000ms
+      - waiting for getByRole('status').first()
+        24 × locator resolved to <span role="status">保存失败</span>
+           - unexpected value "保存失败"
+
+
+      282 |   await page.getByLabel('作品名称').fill('独立预览参数');
+      283 |   await page.getByRole('button', { name: '保存', exact: true }).click();
+    > 284 |   await expect(page.getByRole('status').first()).toContainText('已保存');
+          |                                                  ^
+      285 |   await page.getByLabel('a 数值', { exact: true }).fill('2.5');
+      286 |   await page.getByRole('button', { name: '作品与工具', exact: true }).click();
+      287 |   await page.locator('.math-tools-panel details').filter({ has: page.locator('summary', { hasText: '参数' }) }).first().locator('summary').click();
+        at /home/liam_t/项目/TeacherWorkspace-manual-support-acceptance/docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:284:50
+
+    Error Context: .tmp-ms/independent-results/support-数学预览参数和工具展开位置重开，不改作品源码/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .tmp-ms/independent-results/support-数学预览参数和工具展开位置重开，不改作品源码/trace.zip
+    Usage:
+
+        npx playwright show-trace .tmp-ms/independent-results/support-数学预览参数和工具展开位置重开，不改作品源码/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/seam.spec.mjs:11:1 › 独立 SUPPORT-DATA 接缝：UI偏好、两账户、ZIP、停服备份还原 
+    docs/acceptance/evidence/MANUAL-SUPPORT/v1/independent-artifacts/support.spec.mjs:279:1 › 数学预览参数和工具展开位置重开，不改作品源码 
+  17 passed (56.9s)
