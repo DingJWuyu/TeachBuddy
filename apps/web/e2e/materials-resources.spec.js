@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
 import path from "node:path";
-const evidence = path.resolve("docs/acceptance/evidence/R32/v1");
+const evidence = path.resolve(
+  process.env.R32_EVIDENCE_DIR ?? "docs/acceptance/evidence/R32/v1",
+);
 const samples = path.resolve("apps/web/e2e/fixtures/materials/samples");
 test("WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -441,7 +443,7 @@ test("备课目标快速切换不被迟到响应覆盖", async ({ page }) => {
   await expect(page.locator(".res-card-open")).toHaveCount(1);
   await page.locator(".res-card-open").click();
   const lesson = await page.request
-    .get("/api/modules/lessons/v2/items")
+    .get("/api/modules/lessons/v3")
     .then((r) => r.json())
     .then((v) => v.items[0]);
   const a = {
@@ -458,14 +460,14 @@ test("备课目标快速切换不被迟到响应覆盖", async ({ page }) => {
   const gate = new Promise((resolve) => {
     release = resolve;
   });
-  await page.route("**/api/modules/lessons/v2/items", (route) =>
+  await page.route("**/api/modules/lessons/v3", (route) =>
     route.fulfill({ json: { items: [a, b] } }),
   );
-  await page.route(`**/api/modules/lessons/v2/items/${a.id}`, async (route) => {
+  await page.route(`**/api/modules/lessons/v3/${a.id}`, async (route) => {
     await gate;
     await route.fulfill({ json: a });
   });
-  await page.route(`**/api/modules/lessons/v2/items/${b.id}`, (route) =>
+  await page.route(`**/api/modules/lessons/v3/${b.id}`, (route) =>
     route.fulfill({ json: b }),
   );
   await page.getByRole("button", { name: "加入备课", exact: true }).click();
