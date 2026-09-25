@@ -19,11 +19,9 @@ const states = {
 const date = (value) => new Date(value).toLocaleString("zh-CN");
 export function DataManagement({ accountActions, dangerActions }) {
   const [exports, setExports] = useState([]),
-    [deleted, setDeleted] = useState([]),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
-    [busy, setBusy] = useState(""),
-    [filter, setFilter] = useState("all");
+    [busy, setBusy] = useState("");
   const { accountKey } = useWorkbenchShell();
   const [exportOpen, setExportOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
@@ -53,13 +51,9 @@ export function DataManagement({ accountActions, dangerActions }) {
     return action.submit(run, { path, body, recoveryId: context.recoveryId });
   }
   const refresh = useCallback(async () => {
-    const [a, b] = await Promise.all([
-      workbenchGet(`${base}/exports`),
-      workbenchGet(`${base}/deleted`),
-    ]);
+    const a = await workbenchGet(`${base}/exports`);
     if (mounted.current) {
       setExports(a.body.items);
-      setDeleted(b.body.items);
     }
   }, []);
   useEffect(() => {
@@ -108,31 +102,13 @@ export function DataManagement({ accountActions, dangerActions }) {
       setBusy("");
     }
   }
-  async function restore(item) {
-    setBusy(item.id);
-    setError("");
-    setMessage("");
-    try {
-      if (
-        await submit(item.deletionPath, {
-          [item.versionField]: item.version,
-          deleted: false,
-        })
-      ) {
-        await refresh();
-        setMessage(`已恢复“${item.title}”`);
-      }
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy("");
-    }
-  }
   async function retry() {
+    const isExport = action.pending?.payload.path === `${base}/exports`;
     setBusy("retry");
     try {
       if (await action.retry(run)) {
         await refresh();
+        if (isExport) setExportOpen(true);
         setMessage("操作结果已确认");
       }
     } finally {
@@ -145,10 +121,14 @@ export function DataManagement({ accountActions, dangerActions }) {
       <div className="settings-row-copy"><h2 id="personal-data-title">您的数据</h2><p>以 ZIP 文件下载你的 TeachBuddy 个人资料</p></div>
       <button className="wb-button" disabled={!!busy || !!action.pending} onClick={() => { setExportOpen(true); createExport(); }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5"/></svg>导出数据</button>
     </section>
-    {accountActions}</div>
+    {accountActions}
+    {message && <p role="status">{message}</p>}
+    {!exportOpen && (error || action.problem) && <p role="alert">{error || action.problem.message}</p>}
+    {!exportOpen && action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>重试确认操作</button><SettingsDisclosure title="查看待确认请求"><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>放弃重试</button></SettingsDisclosure></div>}
+    </div>
     {dangerActions}
     <SettingsConfirm show={exportOpen} title="导出个人资料" onClose={() => setExportOpen(false)}>
-      <p>资料包包含已保存资料、最近删除、原文件与对话。下载后解压，打开 index.html 阅读。</p>
+      <p>资料包包含已保存及已删除的资料、原文件与对话。下载后解压，打开 index.html 阅读。</p>
       <p className="wb-note">文件可重新上传，正文与公式可复制；资料包不能覆盖账户或恢复原关联。</p>
       {busy === 'export' && <p role="status">正在生成资料包…</p>}
       {error && !action.pending && <button className="wb-button" disabled={!!busy} onClick={createExport}>重试生成</button>}
@@ -159,15 +139,6 @@ export function DataManagement({ accountActions, dangerActions }) {
       {(error || action.problem) && <p role="alert">{error || action.problem.message}</p>}
       {action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>重试确认操作</button><SettingsDisclosure title="查看待确认请求"><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>放弃重试</button></SettingsDisclosure></div>}
     </SettingsConfirm>
-    <section className="settings-sheet settings-deleted reliability-data" aria-labelledby="deleted-title">
-      <div className="reliability-heading"><h2 id="deleted-title">最近删除</h2><button className="wb-text-button" disabled={!!busy} onClick={() => refresh().catch(e => setError(e.message))}>刷新列表</button></div>
-      <div className="reliability-filter"><label>资料类型 <select value={filter} onChange={e => setFilter(e.target.value)}><option value="all">全部</option>{[['question','题目'],['lesson','备课'],['resource','资源'],['math','数学作品'],['class','班级'],['record','教学记录'],['entry','日程'],['import','收录']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></label></div>
-      <p className="wb-note">恢复教学记录前，请先恢复所属班级。</p>
-      {!deleted.filter(d => filter === 'all' || d.kind === filter).length ? <p className="settings-empty">暂无已删除资料</p> : <ul className="reliability-list" aria-label="已删除资料">{deleted.filter(d => filter === 'all' || d.kind === filter).map(item => <li key={`${item.kind}:${item.id}`}><div><strong>{item.title}</strong><small>{item.label} · {date(item.deletedAt)}</small></div><button className="wb-button" disabled={!!busy || !!action.pending} onClick={() => restore(item)}>恢复</button></li>)}</ul>}
-      {message && <p role="status">{message}</p>}
-      {!exportOpen && (error || action.problem) && <p role="alert">{error || action.problem.message}</p>}
-      {!exportOpen && action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>重试确认操作</button><SettingsDisclosure title="查看待确认请求"><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>放弃重试</button></SettingsDisclosure></div>}
-    </section>
     <SettingsConfirm show={resetOpen} title="放弃重试？" confirmLabel="放弃重试" onClose={() => setResetOpen(false)} onConfirm={() => { action.reset(); setResetOpen(false); }}><p>放弃重试不会撤销已完成的操作。请保留请求并核对当前资料后再开始新操作。</p></SettingsConfirm>
   </>;
 }

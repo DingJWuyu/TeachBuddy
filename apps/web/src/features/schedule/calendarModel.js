@@ -58,7 +58,7 @@ export function eventOf(occurrence, zone, labels) {
   const color = labels.find(label => occurrence.calendar?.tags.includes(label.id))?.color ?? '#9ba0aa';
   return { id: `${occurrence.key.entryId}:${occurrence.key.originDate ?? ''}`, title: titleOf(occurrence),
     start: `${start.date}T${formatClock(start.minutes)}:00`, end: `${end.date}T${formatClock(end.minutes)}:00`,
-    allDay: occurrence.calendar?.allDay ?? false, backgroundColor: `${color}24`, borderColor: 'transparent', textColor: '#2e3137',
+    allDay: occurrence.calendar?.allDay ?? false, backgroundColor: `${color}24`, borderColor: 'transparent', textColor: 'var(--app-text)',
     extendedProps: { occurrence, color } };
 }
 export function timeFromEvent(event, zone) {

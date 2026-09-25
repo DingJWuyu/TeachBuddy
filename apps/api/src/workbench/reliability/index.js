@@ -26,54 +26,6 @@ const problem = (reason, detail) => ({
   status: reason === "archive-not-ready" ? 409 : 503,
   detail,
 });
-export function listDeleted(db, accountKey) {
-  const definitions = [
-    ["question", "题目", "question_items", "/api/modules/questions/v2/items"],
-    ["lesson", "备课", "lesson_items", "/api/modules/lessons/v3"],
-    ["resource", "资源", "resource_items", "/api/modules/resources/items"],
-    ["math", "数学作品", "math_works", "/api/modules/math/v1/works"],
-    ["class", "班级", "classes_items", "/api/modules/classes/items"],
-    [
-      "record",
-      "教学记录",
-      "classes_records",
-      "/api/modules/classes/v2/records",
-    ],
-    ["entry", "日程", "schedule_entries", "/api/modules/schedule/entries"],
-    [
-      "import",
-      "收录",
-      "questions_materials_imports",
-      "/api/modules/questions/v2/imports",
-    ],
-  ];
-  return definitions
-    .flatMap(([kind, label, table, base]) =>
-      db
-        .prepare(`SELECT * FROM ${table} WHERE accountKey=?`)
-        .all(accountKey)
-        .map((row) => (row.value ? JSON.parse(row.value) : row))
-        .filter((v) => v.deletedAt)
-        .map((v) => ({
-          kind,
-          label,
-          id: v.id,
-          title: v.title || v.name || v.note || label,
-          version: v.version,
-          versionField: ["class", "record", "entry"].includes(kind)
-            ? "expectedVersion"
-            : "baseVersion",
-          deletedAt: v.deletedAt,
-          deletionPath: `${base}/${v.id}/deletion`,
-        })),
-    )
-    .sort(
-      (a, b) =>
-        b.deletedAt.localeCompare(a.deletedAt) ||
-        a.kind.localeCompare(b.kind) ||
-        a.id.localeCompare(b.id),
-    );
-}
 export function createReliability({
   db,
   mutations,
@@ -181,9 +133,6 @@ export function createReliability({
       ...(receipt ? { recoveredFrom: receipt.backupCreatedAt } : {}),
     });
   });
-  router.get("/deleted", (req, res) =>
-    res.json({ items: listDeleted(db, req.workbenchPrincipal.accountKey) }),
-  );
   router.get("/exports", (req, res) =>
     res.json({
       items: db

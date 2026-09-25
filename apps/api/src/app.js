@@ -77,10 +77,10 @@ export function createApp(options = {}) {
   });
   if (!testIdentity && (!workbench.filesRouter || !workbench.jobsRouter))
     throw new Error('The authenticated composition requires files and jobs.');
+  app.use('/api/reliability/v1', workbench.preferencesRouter);
   if (workbench.reliabilityRouter) app.use('/api/reliability/v1', workbench.reliabilityRouter);
   if (workbench.filesRouter) app.use('/api/workbench/files', workbench.filesRouter);
   if (workbench.jobsRouter) app.use('/api/workbench/jobs', workbench.jobsRouter);
-  app.use('/api/reliability/v1', workbench.preferencesRouter);
   app.use(workbenchPaths.context, workbench.contextRouter);
   app.use(workbenchPaths.modules, workbench.modulesRouter);
   app.get(workbenchPaths.modules, ...workbench.catalogHandler);

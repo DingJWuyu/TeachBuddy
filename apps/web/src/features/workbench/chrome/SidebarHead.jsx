@@ -461,7 +461,7 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
 }
 
 export default function SidebarHead({ accountName, onAnnounce, openSurface, onToggleSurface, onOpenSurface, onCloseSurface, visible }) {
-  const { accountKey } = useWorkbenchShell();
+  const { accountKey, appearance } = useWorkbenchShell();
   const [languageScene, patchLanguage] = useScene(accountKey, 'shell-language', { code: 'zh-CN' });
   const language = LANGUAGES.find(item => item.code === languageScene.code) || LANGUAGES.find(item => item.code === 'zh-CN');
   const setLanguage = item => patchLanguage({ code: item.code });
@@ -526,7 +526,7 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
     <>
       <div className="tb-account-block">
         <a className="tb-account-row" href={SETTINGS_HREF} aria-label={`账户：${accountName}`} title={accountName} onClick={(event) => routeClick(event, SETTINGS_HREF)}>
-          <span className="tb-avatar" data-slot="avatar">{Array.from(accountName)[0] || '师'}</span>
+          <span className="tb-avatar" data-slot="avatar">{appearance.avatar ? <img src={appearance.avatar} alt="账户头像" /> : Array.from(accountName)[0] || '师'}</span>
           <p className="tb-account-name">{accountName}</p>
         </a>
         <button

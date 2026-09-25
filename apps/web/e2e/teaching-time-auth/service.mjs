@@ -15,7 +15,7 @@ export async function startTeachingAuth({ directory, port = 0, now = () => Date.
   let context;
   try {
     context = createApp({ env: { nodeEnv: 'test', sqlitePath: path.join(directory, 'workspace.sqlite'),
-      authCodeSecret: 't53-isolated-fake-mail-only', workbench: { mode: 'none', testPrincipals: [], publicOrigin: origin, webDist: path.resolve('apps/web/dist') } },
+      authCodeSecret: 't53-isolated-fake-mail-only', workbench: { mode: 'none', testPrincipals: [], publicOrigin: origin, webDist: process.env.WORKBENCH_WEB_DIST || path.resolve('apps/web/dist') } },
       now: () => new Date(now()).getTime(), workbenchClock: () => new Date(now()),
       sendCode: async message => {
         await mailer.sendCode(message);

@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { randomUUID } from "node:crypto";
+import { randomUUID, randomBytes } from "node:crypto";
+import sharp from "sharp";
 import Database from "better-sqlite3";
 import JSZip from "jszip";
 import { createIntegration } from "./fixtures/auth-integration/harness.js";
@@ -52,6 +53,50 @@ async function account(world, email = "data@example.test") {
 }
 const write = (client, url, body, key = randomUUID()) =>
   client.request("POST", url, { body, headers: { "Idempotency-Key": key } });
+
+test("account appearance persists, isolates accounts, validates avatars and preserves legacy preferences", async () => {
+  const directory = fs.mkdtempSync(path.join(root, "appearance-"));
+  const world = await createIntegration({ directory });
+  try {
+    const a = await account(world), b = await account(world, "other@example.test");
+    const url = "/api/reliability/v1/preferences";
+    const initial = (await a.client.request("GET", url)).json;
+    assert.equal(initial.values.theme, "light");
+    const bytes = await sharp(randomBytes(256 * 256 * 3), { raw: { width: 256, height: 256, channels: 3 } }).webp({ quality: 90 }).toBuffer();
+    const avatar = `data:image/webp;base64,${bytes.toString("base64")}`;
+    assert(avatar.length > 16384);
+    const body = { baseVersion: initial.version, values: { ...initial.values, theme: "dark", background: "stripes", avatar } };
+    const key = randomUUID();
+    const put = (body, requestKey = randomUUID()) => a.client.request("PUT", url, { body, headers: { "Idempotency-Key": requestKey } });
+    const saved = await put(body, key);
+    assert.equal(saved.status, 200, saved.text);
+    assert.deepEqual((await put(body, key)).json, saved.json);
+    assert.equal((await a.client.request("GET", url)).json.values.avatar, avatar);
+    assert.equal((await b.client.request("GET", url)).json.values.avatar, "");
+    assert.equal((await b.client.request("GET", url)).json.values.theme, "light");
+    assert.equal((await put(body)).status, 409);
+    for (const invalid of [{ theme: "unknown" }, { background: "unknown" }, { avatar: "data:image/svg+xml,<svg/>" }, { avatar: "data:image/webp;base64,AAAA" }]) {
+      const result = await put({ baseVersion: saved.json.version, values: { ...saved.json.values, ...invalid } });
+      assert(result.status >= 400 && result.status < 500, result.text);
+      assert.equal((await a.client.request("GET", url)).json.version, saved.json.version);
+    }
+    const legacy = await put({ baseVersion: saved.json.version, values: { readingSize: "large", motion: "system", externalAi: "deepseek" } });
+    assert.equal(legacy.status, 200, legacy.text);
+    assert.equal(legacy.json.values.theme, "dark");
+    assert.equal(legacy.json.values.avatar, avatar);
+    const removed = await put({ baseVersion: legacy.json.version, values: { ...legacy.json.values, avatar: "" } });
+    assert.equal(removed.status, 200, removed.text);
+    assert.equal((await a.client.request("GET", url)).json.values.avatar, "");
+    world.workbench.db.prepare("UPDATE reliability_preferences SET valuesJson=? WHERE accountKey=?")
+      .run(JSON.stringify({ readingSize: "large", motion: "reduce", externalAi: "deepseek" }), a.accountKey);
+    const upgraded = (await a.client.request("GET", url)).json.values;
+    assert.equal(upgraded.theme, "light");
+    assert.equal(upgraded.background, "grid");
+    assert.equal(upgraded.readingSize, "large");
+  } finally {
+    await world.close();
+  }
+});
 async function untilReady(client, id) {
   for (let i = 0; i < 200; i++) {
     const r = await client.request("GET", `/api/reliability/v1/exports/${id}`);
@@ -156,22 +201,19 @@ test("real auth export snapshot, secrets exclusion, all files, idempotency and o
         .get().document,
       rawBefore,
     );
-    const list = await a.client.request("GET", "/api/reliability/v1/deleted");
-    assert.equal(list.json.items.length, 1);
-    const item = list.json.items[0];
+    assert.equal((await a.client.request("GET", "/api/reliability/v1/deleted")).status, 404);
     assert.equal(
       (
-        await write(a.client, item.deletionPath, {
-          baseVersion: item.version,
+        await write(a.client, `/api/modules/questions/items/${q.json.id}/deletion`, {
+          baseVersion: deleted.json.version,
           deleted: false,
         })
       ).status,
       200,
     );
     assert.equal(
-      (await a.client.request("GET", "/api/reliability/v1/deleted")).json.items
-        .length,
-      0,
+      (await a.client.request("GET", `/api/modules/questions/items/${q.json.id}`)).json.deletedAt,
+      null,
     );
   } finally {
     await world?.close();
@@ -461,25 +503,20 @@ test("all eight deletion kinds restore through original endpoints, class/record 
         deleted: true,
       });
     }
-    const deleted = (
-      await a.client.request("GET", "/api/reliability/v1/deleted")
-    ).json.items;
-    assert.equal(deleted.length, 8);
     const exported = await make("/api/reliability/v1/exports", {});
     assert.equal((await untilReady(a.client, exported.id)).state, "ready");
-    for (const item of deleted.sort(
-      (a, b) => Number(b.kind === "class") - Number(a.kind === "class"),
+    for (const [kind, base, value] of [...items].sort(
+      (a, b) => Number(b[0] === "class") - Number(a[0] === "class"),
     )) {
-      await make(item.deletionPath, {
-        [item.versionField]: item.version,
+      const deleted = await a.client.request("GET", `${base}/${value.id}`);
+      assert(deleted.json.deletedAt);
+      const field = ["record", "class", "entry"].includes(kind) ? "expectedVersion" : "baseVersion";
+      await make(`${base}/${value.id}/deletion`, {
+        [field]: deleted.json.version,
         deleted: false,
       });
+      assert.equal((await a.client.request("GET", `${base}/${value.id}`)).json.deletedAt, null);
     }
-    assert.equal(
-      (await a.client.request("GET", "/api/reliability/v1/deleted")).json.items
-        .length,
-      0,
-    );
     const reopened = await a.client.request(
       "GET",
       `/api/modules/classes/v2/records/${record.id}`,

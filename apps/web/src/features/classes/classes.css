@@ -38,7 +38,7 @@
 
 .c-class-row.is-active {
   background: var(--wb-purple-soft);
-  box-shadow: inset 0 0 0 1px #ded5f2;
+  box-shadow: inset 0 0 0 1px light-dark(#ded5f2, var(--app-line));
 }
 
 .c-field-error {
@@ -128,7 +128,7 @@
   margin-top: 10px;
   padding: 8px 10px;
   border-radius: 8px;
-  background: #fdf3f5;
+  background: light-dark(#fdf3f5, var(--app-soft));
   color: var(--wb-danger);
   font-size: 12px;
 }
@@ -233,12 +233,12 @@
   min-height: 24px;
   padding: 2px 6px 2px 8px;
   border-radius: 7px;
-  background: #f4f4f5;
+  background: light-dark(#f4f4f5, var(--app-soft));
   font-size: 12px;
 }
 
 .c-source-chip.is-deleted {
-  background: #fdf3f5;
+  background: light-dark(#fdf3f5, var(--app-soft));
 }
 
 .c-source-kind {
@@ -290,7 +290,7 @@
 }
 
 .c-chip-remove:hover {
-  background: #e7e7e9;
+  background: light-dark(#e7e7e9, var(--app-hover));
   color: var(--wb-ink);
 }
 
@@ -340,7 +340,7 @@
 }
 
 .c-picker-row:hover {
-  background: #f5f5f6;
+  background: light-dark(#f5f5f6, var(--app-soft));
 }
 
 .c-picker-row.is-selected {
@@ -407,7 +407,7 @@
 .c-record.is-editing { border-color: var(--wb-line); }
 
 .c-record.is-deleted {
-  background: #fbfbfb;
+  background: light-dark(#fbfbfb, var(--app-soft));
 }
 
 .c-record-head {
@@ -465,7 +465,7 @@
 .c-class-row { min-height: 42px; }
 .c-picker-filter { margin: 0 16px 8px; }
 .c-picker-check { transition: background 160ms ease, border-color 160ms ease; }
-.c-picker-row.is-selected .c-picker-check { background: var(--wb-purple); border-color: var(--wb-purple); color: white; }
+.c-picker-row.is-selected .c-picker-check { background: var(--wb-purple); border-color: var(--wb-purple); color: var(--app-on-primary); }
 .c-picker-row { transition: background 160ms ease; }
 .c-source-chip { max-width: 100%; }
 .c-source-open { min-width: 0; }
@@ -519,7 +519,7 @@
 }
 
 .c-feedback-row:hover {
-  background: #fafafa;
+  background: light-dark(#fafafa, var(--app-soft));
 }
 
 .c-feedback-class {
@@ -562,7 +562,7 @@
 }
 
 .c-record-option:hover {
-  background: #f5f5f6;
+  background: light-dark(#f5f5f6, var(--app-soft));
 }
 
 .c-record-option span:last-child {

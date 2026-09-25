@@ -7,7 +7,7 @@ import { useScene } from '../useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 import Notifications from './Notifications.jsx';
 const modules = [{id:'questions',name:'题库',icon:'lessons'},{id:'lessons',name:'备课',icon:'pencil'},{id:'math',name:'数学工坊',icon:'graph'},{id:'resources',name:'资源库',icon:'folder'},{id:'classes',name:'班级教学',icon:'classes'}];
-export default function Topbar({ route, collapsed, toggleSidebar, surface, setSurface, children }) {
+export default function Topbar({ route, collapsed, toggleSidebar, surface, setSurface, assistantOpen, onToggleAssistant, children }) {
  const ref = useRef(null);
  const { accountKey } = useWorkbenchShell();
  const [scene, patch] = useScene(accountKey, 'topbar', { completed: [], coachDismissed: false });
@@ -39,6 +39,12 @@ export default function Topbar({ route, collapsed, toggleSidebar, surface, setSu
    {entry('feedback','feedback','发送反馈',<FeedbackPanel onAnnounce={announce} onClose={()=>setSurface(null)}/>)}
    {entry('tutorial','tutorial','使用教程',<TutorialPanel modules={modules} completed={scene.completed} onAnnounce={announce} onComplete={id=>{ const completed=scene.completed.includes(id)?scene.completed.filter(x=>x!==id):[...scene.completed,id]; patch({completed}); if(completed.length===modules.length) celebrate(true); }}/>,modules.length-scene.completed.length)}
    {entry('privacy','shield','隐私与数据保护',<PrivacyPanel/>)}{children}
+   <span className="tb-entry-wrap">
+    {onToggleAssistant
+     ? <button type="button" className="tb-entry" aria-label="AI 助理" aria-expanded={assistantOpen} onClick={onToggleAssistant}><Icon name="sparkles" size={22}/></button>
+     : <a className="tb-entry" aria-label="AI 助理" href="/" onClick={e=>followAnchor(e,'/')}><Icon name="sparkles" size={22}/></a>}
+    <span className="tb-tooltip" aria-hidden="true">AI 助理</span>
+   </span>
   </div>
   <button className="tb-sidebar-toggle" aria-label={collapsed?'展开侧栏':'收起侧栏'} onClick={toggleSidebar}><Icon name={collapsed?'panelOpen':'panelClose'} size={16}/></button>
   {surface==='search' && <SearchModal onClose={()=>setSurface(null)} onAnnounce={announce}/>}

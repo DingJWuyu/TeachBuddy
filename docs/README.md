@@ -14,7 +14,7 @@
 | 公式、图形、动态作品、源码、离线演示 | [数学工坊](features/math.md) |
 | 班级反馈、日程、重复、提醒 | [教学与时间](features/teaching-time.md) |
 | 偏好、退出、帮助、更新日志 | [设置与帮助](features/settings.md) |
-| 个人资料包、最近删除、备份还原 | [数据管理](features/data.md) |
+| 个人资料包、模块误删恢复、备份还原 | [数据管理](features/data.md) |
 | 登录、注册、邮件、身份交接 | [账户](features/identity.md) |
 | 对话、业务工具、模型接入 | [产品 Agent](features/agent.md) |
 

@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import sharp from 'sharp';
 import { startTeachingAuth } from './teaching-time-auth/service.mjs';
-import { register, headers } from './teaching-time-auth/helpers.mjs';
+import { register, login } from './teaching-time-auth/helpers.mjs';
 let world, directory;
 test.beforeEach(async ({ page }) => {
   fs.mkdirSync('.scratch/settings-test', { recursive: true });
@@ -23,24 +24,23 @@ test('设置外观、占位边界、真实导出和退出', async ({ page }) => 
   const writes = [];
   page.on('request', request => { if (request.url().includes('/api/') && !['GET', 'HEAD'].includes(request.method())) writes.push(request.url()); });
   await expect(settings).toContainText('teacher-a@example.test');
-  for (const removed of ['阅读字号', '界面动效', '保存偏好', '本设备草稿与现场', '备份与还原', '当前学期', '当前套餐'])
+  for (const removed of ['阅读字号', '界面动效', '保存偏好', '本设备草稿与现场', '备份与还原', '当前学期', '当前套餐', '每周开始于', '最近删除'])
     await expect(settings.getByText(removed, { exact: true })).toHaveCount(0);
   await page.screenshot({ path: '.scratch/settings-test/settings-light.png', animations: 'disabled' });
+  await settings.locator('.settings-danger-section').screenshot({ path: '.scratch/settings-test/settings-danger.png', animations: 'disabled' });
   await settings.getByRole('button', { name: '深色', exact: true }).click();
   await expect(settings.getByRole('button', { name: '深色', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.screenshot({ path: '.scratch/settings-test/settings-dark.png', animations: 'disabled' });
   await settings.getByRole('button', { name: '浅色', exact: true }).click();
-  await settings.getByRole('button', { name: '星期日', exact: true }).click();
-  await expect(settings.getByRole('button', { name: '星期日', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await settings.getByRole('button', { name: '语言', exact: true }).click();
   await expect(page.getByRole('menu', { name: '选择语言' })).toBeVisible();
   await expect(page.getByRole('menuitemradio')).toHaveCount(20);
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect(settings.getByRole('button', { name: '语言', exact: true })).toContainText('English');
   await settings.getByRole('button', { name: '羊皮纸', exact: true }).click();
-  await expect(settings).toHaveAttribute('data-settings-background', 'parchment');
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-background', 'parchment');
   await settings.getByRole('button', { name: '深色', exact: true }).click();
-  await expect(settings).toHaveCSS('background-color', 'rgb(41, 37, 31)');
+  await expect(page.locator('.wb-workspace')).toHaveCSS('background-color', 'rgb(41, 37, 31)');
   await settings.getByRole('button', { name: '浅色', exact: true }).click();
   await settings.getByRole('button', { name: '签署协议', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
@@ -51,7 +51,8 @@ test('设置外观、占位边界、真实导出和退出', async ({ page }) => 
   await expect(page.getByRole('dialog').getByRole('button', { name: /删除/ })).toBeDisabled();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  expect(writes).toEqual([]);
+  expect(writes.length).toBeGreaterThan(0);
+  expect(writes.every(url => url.endsWith('/api/reliability/v1/preferences'))).toBe(true);
   await settings.getByRole('button', { name: '导出数据', exact: true }).click();
   const downloadButton = page.getByRole('button', { name: '下载资料包', exact: true });
   await expect(downloadButton.first()).toBeVisible({ timeout: 30000 });
@@ -73,30 +74,50 @@ test('窄屏设置可阅读且不横向溢出', async ({ page }) => {
   await page.screenshot({ path: '.scratch/settings-test/settings-mobile.png', animations: 'disabled' });
 });
 
-test('最近删除保留真实恢复及刷新后的原ID', async ({ page }) => {
-  const writeHeaders = () => ({ ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() });
-  const created = await page.request.post(world.origin + '/api/modules/classes/items', { headers: writeHeaders(), data: { name: '设置恢复验收班' } });
-  expect(created.status()).toBe(201);
-  const item = await created.json();
-  const deleted = await page.request.post(world.origin + '/api/modules/classes/items/' + item.id + '/deletion', { headers: writeHeaders(), data: { expectedVersion: item.version, deleted: true } });
-  expect(deleted.ok()).toBe(true);
-  await page.getByRole('button', { name: '刷新列表', exact: true }).click();
-  await expect(page.getByText('设置恢复验收班', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '恢复', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: '已恢复' })).toBeVisible();
-  await page.reload();
-  const restored = await page.request.get(world.origin + '/api/modules/classes/items/' + item.id, { headers: headers(page) });
-  expect(restored.ok()).toBe(true);
-  expect((await restored.json()).deletedAt).toBeNull();
+test('外观和背景覆盖外壳与全部页面并在刷新后保留', async ({ page }) => {
+  await page.getByRole('button', { name: '深色', exact: true }).click();
+  await page.getByRole('button', { name: '条纹', exact: true }).click();
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+  for (const route of ['/', '/questions', '/lessons', '/math', '/classes', '/resources', '/calendar', '/settings', '/help', '/releases']) {
+    await page.goto(world.origin + route);
+    await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.locator('.wb-shell')).toHaveAttribute('data-background', 'stripes');
+    for (const selector of ['.tb-topbar', '.tb-sidebar'])
+      await expect(page.locator(selector)).toHaveCSS('background-color', 'rgb(37, 38, 43)');
+    await expect(page.locator('.wb-workspace')).toHaveCSS('background-image', /repeating-linear-gradient/);
+    expect(await page.locator('.wb-workspace').evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    await page.screenshot({ path: `.scratch/settings-test/dark-${route.slice(1) || 'home'}.png`, animations: 'disabled' });
+  }
+  await page.goto(world.origin + '/settings');
+  await expect(page.getByText('结束当前会话', { exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: '最近删除' })).toHaveCount(0);
+  await page.getByRole('button', { name: '浅色', exact: true }).click();
+  await expect(page.locator('.tb-topbar')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
 });
-test('头像预览与弹层退出具有中间帧，快速反向可操作', async ({ page }) => {
+test('头像上传删除同步侧栏、刷新保留，弹层退出连续', async ({ page, browser }) => {
   const settings = page.locator('[data-region="settings"]');
-  await settings.locator('input[type="file"]').setInputFiles({ name: 'avatar.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL1sAAAAASUVORK5CYII=', 'base64') });
-  await expect(settings.getByAltText('头像预览')).toBeVisible();
-  await expect(settings).toContainText('头像仅预览，尚未保存');
+  const avatar = await sharp({ create: { width: 48, height: 64, channels: 3, background: '#927acb' } }).png().toBuffer();
+  await settings.locator('input[type="file"]').setInputFiles({ name: 'avatar.png', mimeType: 'image/png', buffer: avatar });
+  await expect(settings.getByAltText('账户头像')).toBeVisible();
+  await expect(page.locator('.tb-account-row img')).toHaveAttribute('src', await settings.getByAltText('账户头像').getAttribute('src'));
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+  const other = await browser.newContext({ ignoreHTTPSErrors: true });
+  try {
+    const secondPage = await other.newPage();
+    await secondPage.goto(world.origin);
+    await login(secondPage);
+    await expect(secondPage.locator('.tb-account-row img')).toHaveAttribute('src', await settings.getByAltText('账户头像').getAttribute('src'));
+  } finally { await other.close(); }
+  await page.reload();
+  await expect(settings.getByAltText('账户头像')).toBeVisible();
+  await expect(page.locator('.tb-account-row img')).toBeVisible();
   await settings.locator('.settings-avatar').hover();
-  await settings.getByRole('button', { name: '移除头像预览' }).click();
-  await expect(settings.getByAltText('头像预览')).toHaveCount(0);
+  await settings.getByRole('button', { name: '删除头像' }).click();
+  await expect(settings.getByAltText('账户头像')).toHaveCount(0);
+  await expect(page.locator('.tb-account-row img')).toHaveCount(0);
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+  await page.reload();
+  await expect(page.locator('.tb-account-row img')).toHaveCount(0);
   await settings.getByRole('button', { name: '签署协议', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.evaluate(() => {
@@ -121,4 +142,53 @@ test('头像预览与弹层退出具有中间帧，快速反向可操作', async
   await expect(page.getByRole('menuitemradio', { name: 'English', exact: true })).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(language).toBeFocused();
+});
+
+test('外观保存回执丢失后原键确认并保存后续选择', async ({ page }) => {
+  const keys = [];
+  let lost = false;
+  await page.route('**/api/reliability/v1/preferences', async route => {
+    if (route.request().method() !== 'PUT') return route.continue();
+    keys.push(route.request().headers()['idempotency-key']);
+    if (!lost) {
+      lost = true;
+      await route.fetch();
+      await route.abort('failed');
+    } else await route.continue();
+  });
+  await page.getByRole('button', { name: '深色', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试保存', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '圆形', exact: true }).click();
+  await page.getByRole('button', { name: '重试保存', exact: true }).click();
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+  expect(keys).toHaveLength(3);
+  expect(keys[0]).toBeTruthy();
+  expect(keys[1]).toBe(keys[0]);
+  expect(keys[2]).not.toBe(keys[0]);
+  await page.reload();
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-background', 'circles');
+});
+
+test('导出回执丢失后刷新可确认并下载同一资料包', async ({ page }) => {
+  const keys = [];
+  let lost = false;
+  await page.route('**/api/reliability/v1/exports', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    keys.push(route.request().headers()['idempotency-key']);
+    if (!lost) {
+      lost = true;
+      await route.fetch();
+      await route.abort('failed');
+    } else await route.continue();
+  });
+  await page.getByRole('button', { name: '导出数据', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试确认操作', exact: true })).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: '重试确认操作', exact: true }).click();
+  await expect(page.getByRole('button', { name: '下载资料包', exact: true })).toBeVisible();
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toBeTruthy();
+  expect(keys[1]).toBe(keys[0]);
+  await expect(page.getByRole('list', { name: '个人资料导出记录' }).locator('li')).toHaveCount(1);
 });

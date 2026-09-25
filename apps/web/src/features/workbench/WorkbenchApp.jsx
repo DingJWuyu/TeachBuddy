@@ -14,7 +14,7 @@ import { ReferenceAction } from '../agent/ReferenceAction.jsx';
  * restored view scene.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { AuxiliaryPanel, AiWorkspace } from './AuxiliaryPanel.jsx';
 import { Icon } from './icons.jsx';
 import { ShellContext, useWorkbenchShell } from './shellContext.js';
@@ -31,6 +31,7 @@ import Notifications from '../schedule/notifications/Notifications.jsx';
 import { MathWorkbench } from '../math/index.jsx';
 import { workbenchGet } from './apiClient.js';
 import './workbench.css';
+import './appearance.css';
 
 function useIsNarrow() {
   const [narrow, setNarrow] = useState(() => (
@@ -80,6 +81,15 @@ function WorkbenchContent({ boot }) {
   const layoutModel = useLayoutModel(accountKey);
   const [surface, setSurface] = useState(null);
   const preferences = usePreferences(accountKey, generation);
+  const appearance = useMemo(() => ({ theme: 'light', background: 'grid', avatar: '', ...preferences.input }), [preferences.input]);
+  const setAppearance = useCallback(patch => preferences.setInput(values => ({ ...values, ...patch })), [preferences.setInput]);
+  useEffect(() => {
+    if (preferences.status === 'dirty' && preferences.baseline) void preferences.save();
+  }, [preferences.status, preferences.input, preferences.baseline, preferences.save]);
+  useLayoutEffect(() => {
+    document.documentElement.dataset.workbenchTheme = appearance.theme;
+    return () => { delete document.documentElement.dataset.workbenchTheme; };
+  }, [appearance.theme]);
   const [recoveryNotice, setRecoveryNotice] = useState(() => hasRecoveredDrafts(accountKey));
   useEffect(() => {
     const restored = event => { if (event.detail.account === accountKey) setRecoveryNotice(true); };
@@ -117,6 +127,7 @@ function WorkbenchContent({ boot }) {
   const shell = useMemo(() => ({
     logout,
     preferences,
+    appearance, setAppearance,
     resetDeviceScene: boot.resetDeviceScene, deviceClearNotice: boot.deviceClearNotice,
     accountKey,
     nickname,
@@ -143,7 +154,7 @@ function WorkbenchContent({ boot }) {
     },
     openMaterialSource: (path, lessonPath) => { setMaterialNavigation({ sourcePath: path, lessonPath }); navigate(path); }
   }), [logout, accountKey, nickname, generation, agent.businessRevision, storageFailed, narrow, scene.panelMode, scene.panelOpen, scene.panelWidth,
-    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, preferences]);
+    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, preferences, appearance, setAppearance]);
 
   const collapsed = narrow ? !scene.drawerOpen : Boolean(scene.sidebarCollapsed);
   const hasPanel = route.name === 'questions' || route.name === 'question'
@@ -189,22 +200,15 @@ function WorkbenchContent({ boot }) {
         className={`wb-shell tb-prototype${scene.sidebarCollapsed ? ' is-sidebar-collapsed' : ''}${panelOpen ? ' has-panel' : ''}${narrow ? ' is-narrow' : ''}`}
         data-sidebar={collapsed ? 'rail' : 'expanded'}
         data-route={route.name}
+        data-theme={appearance.theme}
+        data-background={appearance.background}
         data-reading-size={preferences.baseline?.values.readingSize || 'standard'}
         data-motion={preferences.baseline?.values.motion || 'system'}
       >
-        <RestoredTopbar route={route} collapsed={collapsed} toggleSidebar={toggleSidebar} surface={surface} setSurface={setSurface}>
+        <RestoredTopbar route={route} collapsed={collapsed} toggleSidebar={toggleSidebar} surface={surface} setSurface={setSurface}
+          assistantOpen={panelOpen}
+          onToggleAssistant={hasPanel ? () => (panelOpen ? shell.closePanel() : openPanel('ai')) : undefined}>
           <ReferenceAction route={route} onAdded={() => openPanel('ai')} />
-          {hasPanel && (
-            <button
-              type="button"
-              className="wb-button wb-panel-toggle"
-              aria-pressed={panelOpen}
-              onClick={() => (panelOpen ? shell.closePanel() : openPanel('ai'))}
-            >
-              <Icon name="sparkle" size={15} />
-              {panelOpen ? '关闭辅助栏' : 'AI 助理'}
-            </button>
-          )}
         </RestoredTopbar>
 
         <div className="wb-body">
