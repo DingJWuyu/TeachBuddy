@@ -53,7 +53,7 @@
 .cal-event-title { font-size: 12px; font-weight: 600; overflow: hidden; overflow-wrap: anywhere; }
 .cal-event-content.is-compact { flex-direction: row; align-items: center; gap: 6px; padding: 4px 6px; }
 .cal-event-content.is-compact .cal-event-title { font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
-.cal-event-content i, .cal-upcoming-row > i, .cal-upcoming-group h3 i { width: 6px; height: 6px; flex: none; border-radius: 50%; }
+.cal-event-content i, .cal-upcoming-row > i { width: 6px; height: 6px; flex: none; border-radius: 50%; }
 .cal-page .fc .fc-timegrid-event-short .cal-event-content { padding: 2px 8px; flex-direction: row; gap: 5px; }
 .cal-page .fc .fc-timegrid-now-indicator-line { border-width: 1px; }
 .cal-page .fc .fc-timegrid-now-indicator-arrow { border-width: 4px 0 4px 5px; margin-top: -4px; }
@@ -97,6 +97,7 @@
 .cal-upcoming-group { margin-bottom: 12px; }
 .cal-upcoming-group h3 { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 500; margin: 0 0 4px; }
 .cal-upcoming-group h3 span { color: #888; font-weight: 400; }
+.cal-group-tag-icon { display: inline-flex; flex: none; }
 .cal-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; gap: 12px; color: #a2a2a7; font-size: 13px; }
 .cal-editor-heading { display: flex; align-items: center; justify-content: space-between; height: 24px; margin-bottom: 4px; }
 .cal-editor-heading > div { display: flex; align-items: center; gap: 4px; }
