@@ -24,6 +24,8 @@
 .cal-page .fc { height: 100%; font-size: 13px; --fc-border-color: #eeeeef; --fc-today-bg-color: transparent; --fc-highlight-color: #2e313711; --fc-event-selected-overlay-color: transparent; --fc-now-indicator-color: #ff6b75; }
 .cal-page .fc a { color: inherit; text-decoration: none; }
 .cal-page .fc .fc-scrollgrid { border: 0; }
+.cal-page .fc-scroller, .cal-grid-wrap.is-month { scrollbar-width: none; }
+.cal-page .fc-scroller::-webkit-scrollbar, .cal-grid-wrap.is-month::-webkit-scrollbar { display: none; }
 .cal-page .fc .fc-scrollgrid-section > td { border-right: 0; border-bottom: 0; }
 .cal-page .fc .fc-col-header-cell { background: #fafafa; font-weight: 400; height: 36px; vertical-align: middle; }
 .cal-page .fc .fc-col-header-cell-cushion { padding: 4px 0; }
