@@ -1,6 +1,6 @@
 # 教学与时间契约
 
-[OpenAPI](teaching-time/teaching-time.openapi.yaml)拥有基础字段与操作，[cases](teaching-time/cases.md)拥有交换与失败恢复；[教学实现](../features/teaching-time.md#教学实现)定义进程内接缝。当前记录 v2 另消费[数学关联](#数学作品关联)，题目提供方明确采用[丰富题目读取](#丰富题目关联)。用户行为见[班级与日程](../features/teaching-time.md)。
+[OpenAPI](teaching-time/teaching-time.openapi.yaml)拥有基础字段与操作，日历界面另消费[日历扩展](#日历扩展)，[cases](teaching-time/cases.md)拥有交换与失败恢复；[教学实现](../features/teaching-time.md#教学实现)定义进程内接缝。当前记录 v2 另消费[数学关联](#数学作品关联)，题目提供方明确采用[丰富题目读取](#丰富题目关联)。用户行为见[班级与日程](../features/teaching-time.md)。
 
 ## 共同协议
 
@@ -49,6 +49,14 @@ T52 拥有账户的 schedule-settings，timeZone 为 IANA 名称，首次读取�
 整组 version 同时保护模板和全部例外，每次单次操作也使它加 1，避免两设备改同系列互相覆盖。整组更新保留已有例外的全部内容，提醒也保留；缩短 until 隐藏原始日期不再符合规则的例外，伸长后恢复原例外。隐藏不表示删除它的数据；例外列表包含 eligible=false 供确认。早于首日或不符合每周节律的原始日期为 404；符合节律但超出当前 until 的单实例读取返回 outside-series（即使没有存过例外），以便旧通知解释缩短后的课程。其写操作返回 422 invalid-input、field=/originDate、reason=out-of-range；需先延长整组再编辑/恢复该次。
 
 “恢复原安排”删除该日例外并重新采用当前模板，不将调课后的日期作为新原始日期。取消例外的 content=null，单实例读取返回当前模板的可辨认内容及 cancelled 状态；override 的 content 非空。隐藏状态优先于取消，整组 deleted 优先于两者。没有例外时再次 inherit 仍算一次版本化写入。取消、隐藏或整组删除的实例不会触发新提醒。源 Entry 删除后所有实例显示 deleted，恢复原 ID 与例外，不回放停用期间提醒。
+
+## 日历扩展
+
+日历请求可携带 `calendar: {allDay, notes, tags}`：`allDay` 为布尔值，纯文本 `notes` 最长 50000 字符，`tags` 为最多 30 个不重复标签 UUID。安排和实例读取总是提供此对象；基础请求省略它时保留原值。全天安排要求 00:00 开始及整天时长，结束按安排时区的当地午夜计算。带 calendar 的单次时长上限为 366 天；基础请求仍为 1440 分钟。
+
+重复规则可在 `until` 外指定 `frequency`（daily/weekly/monthly/yearly）、`interval`（1 至 999）、`weekdays`（0 表示周日，周规则至少一天）、`monthly`（date/weekday）和 `count`（0 表示不按次数截止，最多 10000）。规则按安排当地日期展开；不存在的月日期或闰日跳过，月星期按首日的第几个星期定位。日历更新允许已有任务切换重复类型和调整系列起日；基础请求保留上述不可变系列限制。已有单次例外按原始日期保留，只有仍符合系列规则的实例进入范围查询。
+
+标签接口为 `/api/modules/schedule/labels` 的 GET/POST 与 `/:id` 的 PUT。创建提交 `{name, color}`，名称去空白后 1 至 60 字符，颜色为 `#RRGGBB`；更新额外携带 `expectedVersion` 和 `deleted`。读取仅含本账户活动标签，写入沿用公共身份、版本、幂等与事务规则；删除标签不删除任务。此扩展的运行校验归 `apps/api/src/modules/schedule/schema.js`，真实 HTTP 兼容与重启验证见 `apps/api/test/teaching-time-calendar.test.js`。
 
 ## 提醒、修改与重启
 

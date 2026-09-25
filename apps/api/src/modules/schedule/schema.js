@@ -34,6 +34,35 @@ const timeSchema = schema.object([
 
 const repeatSchema = schema.object([['until', date]]);
 
+const calendarSchema = schema.object([
+  ['allDay', schema.boolean()],
+  ['notes', schema.string({ maxLength: 50000 })],
+  ['tags', schema.array(() => id, { maxItems: 30 })]
+]);
+const calendarRepeatSchema = schema.object([
+  ['until', date],
+  ['frequency', schema.string({ enum: ['daily', 'weekly', 'monthly', 'yearly'] })],
+  ['interval', schema.integer({ min: 1, max: 999 })],
+  ['weekdays', schema.array(() => schema.integer({ min: 0, max: 6 }), { maxItems: 7 })],
+  ['monthly', schema.string({ enum: ['date', 'weekday'] })],
+  ['count', schema.integer({ min: 0, max: 10000 })]
+]);
+
+// The calendar extension is additive. Existing callers keep the original
+// request shape, limits and weekly-series behaviour.
+function calendarFields(fields, value) {
+  const extended = value && Object.hasOwn(value, 'calendar');
+  return fields.map(([name, node]) => {
+    if (name === 'repeat' && value?.repeat && Object.hasOwn(value.repeat, 'frequency')) return [name, calendarRepeatSchema];
+    if (name === 'time' && extended) return [name, schema.object([
+      ['date', date], ['startTime', schema.string({ pattern: timeOfDayPattern })],
+      ['timeZone', schema.string({ minLength: 1, maxLength: 100 })],
+      ['durationMinutes', schema.integer({ min: 1, max: 527040 })]
+    ])];
+    return [name, node];
+  }).concat(extended ? [['calendar', calendarSchema]] : []);
+}
+
 const reminderSchema = schema.object([
   ['side', schema.string({ enum: ['before', 'after'] })],
   ['minutes', schema.integer({ min: 0, max: 10080 })]
@@ -60,8 +89,6 @@ const entryBodyFields = [
   ['reminder', reminderSchema]
 ];
 
-const entryInputSchema = schema.object(entryBodyFields);
-const entryUpdateSchema = schema.object([['expectedVersion', version], ...entryBodyFields]);
 const overrideSchema = schema.object([
   ['title', schema.string({ maxLength: 300 })],
   ['items', schema.array(() => itemSchema, { maxItems: 200 })],
@@ -193,19 +220,26 @@ export function validateEntryShape(value, pointer = '') {
   assertItems(value.items, pointer);
   assertDateFields(value, pointer);
   assertCourse(value.course, pointer);
+  if (value.calendar) {
+    if (new Set(value.calendar.tags).size !== value.calendar.tags.length) throw invalidInput(`${pointer}/calendar/tags`, 'duplicate-id');
+    if (value.calendar.allDay && value.time && (value.time.startTime !== '00:00' || value.time.durationMinutes % 1440 !== 0)) {
+      throw invalidInput(`${pointer}/time`, 'out-of-range');
+    }
+  }
+  if (value.repeat?.frequency === 'weekly' && value.repeat.weekdays.length === 0) throw invalidInput(`${pointer}/repeat/weekdays`, 'empty-content');
   return value;
 }
 
 export function validateCreateEntry(body) {
   const { prepared, pending } = prepare(body, entryNullables);
-  const value = validateBody(entryInputSchema, prepared);
+  const value = validateBody(schema.object(calendarFields(entryBodyFields, body)), prepared);
   restoreNulls(pending);
   return validateEntryShape(value);
 }
 
 export function validateUpdateEntry(body) {
   const { prepared, pending } = prepare(body, entryNullables);
-  const value = validateBody(entryUpdateSchema, prepared);
+  const value = validateBody(schema.object([['expectedVersion', version], ...calendarFields(entryBodyFields, body)]), prepared);
   restoreNulls(pending);
   return validateEntryShape(value);
 }
@@ -219,7 +253,11 @@ export function validateExceptionInput(body) {
   const contentPending = prepared?.mode === 'override' && prepared.content
     ? applySentinels(prepared.content, overrideNullables)
     : [];
-  const value = validateBody(exceptionInputSchema, prepared);
+  const overrideFields = entryBodyFields.filter(([name]) => name !== 'repeat');
+  const value = validateBody(body?.mode === 'override' ? schema.object([
+    ['expectedVersion', version], ['mode', schema.string({ const: 'override' })],
+    ['content', schema.object(calendarFields(overrideFields, body.content))]
+  ]) : exceptionInputSchema, prepared);
   restoreNulls(contentPending);
   if (value.mode === 'override') {
     if (value.content.time === null) throw invalidInput('/content/time', 'invalid-type');
@@ -238,3 +276,10 @@ export function validateMoveItem(body) {
 export function validateSettingsUpdate(body) {
   return validateBody(settingsUpdateSchema, body);
 }
+
+const labelFields = [['name', schema.string({ minLength: 1, maxLength: 60, nonBlank: true })],
+  ['color', schema.string({ pattern: /^#[0-9a-fA-F]{6}$/ })]];
+export const validateCreateLabel = body => validateBody(schema.object(labelFields), body);
+export const validateUpdateLabel = body => validateBody(schema.object([
+  ['expectedVersion', version], ...labelFields, ['deleted', schema.boolean()]
+]), body);

@@ -11,6 +11,7 @@
 import { contractError, invalidInput, problems } from '../../workbench/problems.js';
 import { scheduleProblems } from './problems.js';
 import {
+  addDays,
   compareDates,
   formatIsoZ,
   instantAt,
@@ -75,7 +76,8 @@ function normalizeContent(value) {
     title: value.title,
     items: value.items.map((item) => ({ id: item.id, text: item.text, priority: item.priority })),
     time: value.time === null ? null : { ...value.time },
-    repeat: repeat === null ? null : { until: repeat.until },
+    repeat: repeat === null ? null : { ...repeat },
+    ...(value.calendar ? { calendar: structuredClone(value.calendar) } : {}),
     course: {
       classId: value.course.classId,
       lessonId: value.course.lessonId,
@@ -91,7 +93,8 @@ function overrideView(content) {
     items: content.items,
     time: content.time,
     course: content.course,
-    reminder: content.reminder
+    reminder: content.reminder,
+    ...(content.calendar ? { calendar: content.calendar } : {})
   };
 }
 
@@ -306,6 +309,7 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       repeat: entry.repeat,
       course: entry.course,
       reminder: entry.reminder,
+      calendar: entry.calendar ?? { allDay: false, notes: '', tags: [] },
       courseState: buildCourseState(principal, entry.course, entry.courseLinks)
     };
   }
@@ -341,6 +345,23 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
   }
 
   return {
+    listLabels(principal) {
+      return { items: repository.listLabels(principal.accountKey) };
+    },
+    createLabel(principal, body) {
+      const label = { id: randomUuid(), accountKey: principal.accountKey, name: body.name.trim(), color: body.color };
+      repository.insertLabel(label);
+      return { id: label.id, name: label.name, color: label.color, version: 1 };
+    },
+    updateLabel(principal, id, body) {
+      const label = repository.findLabel(principal.accountKey, id);
+      if (!label) throw contractError(problems.notFound());
+      assertVersion(label, body.expectedVersion);
+      const updated = { ...label, accountKey: principal.accountKey, name: body.name.trim(), color: body.color,
+        version: label.version + 1, deleted: body.deleted ? 1 : 0 };
+      repository.writeLabel(updated);
+      return { id, name: updated.name, color: updated.color, version: updated.version, deleted: Boolean(updated.deleted) };
+    },
     getSettings(principal) {
       const row = readSettings(principal.accountKey);
       return { timeZone: row.timeZone, version: row.version };
@@ -393,6 +414,7 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
         items: content.items,
         time: content.time,
         repeat: content.repeat,
+        calendar: content.calendar ?? { allDay: false, notes: '', tags: [] },
         course: content.course,
         courseLinks: links,
         reminder: content.reminder,
@@ -409,15 +431,16 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       const entry = readActiveEntry(principal, id);
       assertVersion(entry, body.expectedVersion);
       const content = normalizeContent(body);
+      if (entry.repeat?.frequency && body.repeat && !body.repeat.frequency) content.repeat = { ...entry.repeat, until: body.repeat.until };
       const repeatingTemplate = content.repeat !== null;
       assertContentRules(content, { repeatingTemplate });
 
-      if (isRepeating(entry)) {
+      if (!body.calendar && isRepeating(entry)) {
         if (content.repeat === null || content.time === null) throw scheduleProblems.immutableSeries();
         if (content.time.date !== entry.time.date || content.time.timeZone !== entry.time.timeZone) {
           throw scheduleProblems.immutableSeries();
         }
-      } else if (content.repeat !== null) {
+      } else if (!body.calendar && content.repeat !== null) {
         throw scheduleProblems.immutableSeries();
       }
 
@@ -427,12 +450,12 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       assertReminderFuture(content, previousContent, now.ms, { repeatingTemplate });
 
       const timingChanged = !sameTime(previousContent.time, content.time)
-        || (previousContent.repeat?.until ?? null) !== (content.repeat?.until ?? null)
+        || JSON.stringify(previousContent.repeat) !== JSON.stringify(content.repeat)
         || !sameReminder(previousContent.reminder, content.reminder);
 
       beforeChange(principal, now.iso);
 
-      if (isRepeating(entry) && entry.repeat.until !== content.repeat.until) {
+      if (isRepeating(entry) && content.repeat && entry.repeat.until !== content.repeat.until) {
         writeArmsForNewlyVisible({ ...entry, time: content.time, repeat: content.repeat }, entry.repeat.until, now.iso);
       }
 
@@ -443,6 +466,7 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
         items: content.items,
         time: content.time,
         repeat: content.repeat,
+        calendar: content.calendar ?? entry.calendar,
         course: content.course,
         courseLinks: links,
         reminder: content.reminder,
@@ -518,7 +542,7 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
           entryId: entry.id,
           originDate,
           mode: 'override',
-          content: { ...content, courseLinks: links },
+          content: { ...content, calendar: content.calendar ?? previousContent.calendar, courseLinks: links },
           now: now.iso
         });
         if (!sameTime(previousContent.time, content.time) || !sameReminder(previousContent.reminder, content.reminder)) {
@@ -569,7 +593,13 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
           if (intersects(occurrence, start, end)) items.push(occurrence);
           continue;
         }
-        for (const originDate of seriesOriginDates(entry)) {
+        const origins = new Set(seriesOriginDates(entry, {
+          from: addDays(query.from, -Math.ceil(entry.time.durationMinutes / 1440) - 2), to: addDays(query.to, 2)
+        }));
+        for (const originDate of byDate.keys()) {
+          if (originDate <= entry.repeat.until && fitsSeries(entry, originDate)) origins.add(originDate);
+        }
+        for (const originDate of origins) {
           const exception = byDate.get(originDate) ?? null;
           const occurrence = buildOccurrence({
             entry,
@@ -681,5 +711,3 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
     }
   };
 }
-
-

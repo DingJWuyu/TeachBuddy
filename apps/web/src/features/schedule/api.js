@@ -124,3 +124,16 @@ export async function listClasses() {
 export function listClassRecords(classId) {
   return listRecords({ classId });
 }
+
+export async function listLabels() {
+  const { body } = await workbenchGet('/api/modules/schedule/labels');
+  return assertList(body, '标签').items;
+}
+export async function createLabel({ key, payload }) {
+  const { body } = await workbenchPost('/api/modules/schedule/labels', payload, key);
+  return assertObject(body, '标签');
+}
+export async function updateLabel({ key, id, payload }) {
+  const { body } = await workbenchPut(`/api/modules/schedule/labels/${id}`, payload, key);
+  return assertObject(body, '标签');
+}

@@ -56,5 +56,23 @@ export const migrations = [
         );
       `);
     }
+  },
+  {
+    id: 'schedule_0002_calendar_details',
+    up(db) {
+      db.exec(`
+        ALTER TABLE schedule_entries ADD COLUMN calendarJson TEXT;
+        ALTER TABLE schedule_entries ADD COLUMN repeatJson TEXT;
+        CREATE TABLE schedule_labels (
+          id TEXT PRIMARY KEY,
+          accountKey TEXT NOT NULL,
+          name TEXT NOT NULL,
+          color TEXT NOT NULL,
+          version INTEGER NOT NULL DEFAULT 1,
+          deleted INTEGER NOT NULL DEFAULT 0
+        );
+        CREATE INDEX schedule_labels_account ON schedule_labels (accountKey);
+      `);
+    }
   }
 ];

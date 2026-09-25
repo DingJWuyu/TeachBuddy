@@ -12,6 +12,11 @@
   },
   "dependencies": {
     "@fontsource/noto-sans-sc": "5.2.9",
+    "@fullcalendar/core": "6.1.19",
+    "@fullcalendar/daygrid": "6.1.19",
+    "@fullcalendar/interaction": "6.1.19",
+    "@fullcalendar/react": "6.1.19",
+    "@fullcalendar/timegrid": "6.1.19",
     "@refatos/shared": "0.3.0",
     "katex": "0.16.47",
     "mathjax": "3.2.2",

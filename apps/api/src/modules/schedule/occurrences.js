@@ -16,6 +16,7 @@ import {
   parseInstant,
   parseTimeOfDay
 } from './time.js';
+import { recurrenceDates } from './recurrence.js';
 
 /**
  * The one title projection the contract fixes for reminders and notifications:
@@ -34,7 +35,8 @@ export function templateContent(entry) {
     items: entry.items,
     time: entry.time,
     course: entry.course,
-    reminder: entry.reminder
+    reminder: entry.reminder,
+    calendar: entry.calendar ?? { allDay: false, notes: '', tags: [] }
   };
 }
 
@@ -79,19 +81,13 @@ export function instanceArmedAt(entry, armRow) {
   return armRow?.armedAt ?? entry.reminderArmedAt ?? entry.createdAt;
 }
 
-/** Weekly origin dates of a repeating entry, first date and `until` included. */
-export function seriesOriginDates(entry) {
-  if (!entry.time || !entry.repeat) return [];
-  const dates = [];
-  for (let date = entry.time.date; compareDates(date, entry.repeat.until) <= 0; date = addDays(date, 7)) {
-    dates.push(date);
-  }
-  return dates;
-}
+/** Origin dates of a repeating entry, bounded by its rule and optional range. */
+export const seriesOriginDates = recurrenceDates;
 
-/** True when `originDate` follows the weekly rhythm from the first date. */
+/** Whether a date belongs to the recurrence pattern, independently of `until`. */
 export function fitsSeries(entry, originDate) {
   if (!entry.time) return false;
+  if (entry.repeat?.frequency) return recurrenceDates({ ...entry, repeat: { ...entry.repeat, until: '2100-12-31' } }, { from: originDate, to: originDate }).length > 0;
   const distance = diffDays(entry.time.date, originDate);
   return distance >= 0 && distance % 7 === 0;
 }
@@ -104,7 +100,9 @@ export function isRepeating(entry) {
 export function dueInstantMs(content) {
   if (!content.reminder || !content.time) return null;
   const start = instantAt(content.time.timeZone, content.time.date, parseTimeOfDay(content.time.startTime));
-  const end = start.utcMs + content.time.durationMinutes * 60_000;
+  const end = content.calendar?.allDay
+    ? instantAt(content.time.timeZone, addDays(content.time.date, content.time.durationMinutes / 1440), 0).utcMs
+    : start.utcMs + content.time.durationMinutes * 60_000;
   const offset = content.reminder.minutes * 60_000;
   return content.reminder.side === 'before' ? end - offset : end + offset;
 }
@@ -120,7 +118,9 @@ export function buildOccurrence({ entry, originDate, exception, links }) {
     : effectiveContent(entry, null, originDate);
   const time = content.time;
   const start = instantAt(time.timeZone, time.date, parseTimeOfDay(time.startTime));
-  const endsAtMs = start.utcMs + time.durationMinutes * 60_000;
+  const endsAtMs = content.calendar?.allDay
+    ? instantAt(time.timeZone, addDays(time.date, time.durationMinutes / 1440), 0).utcMs
+    : start.utcMs + time.durationMinutes * 60_000;
   const dueMs = dueInstantMs(content);
   return {
     key: { entryId: entry.id, originDate },
@@ -129,6 +129,7 @@ export function buildOccurrence({ entry, originDate, exception, links }) {
     state,
     title: content.title,
     items: content.items,
+    calendar: content.calendar ?? entry.calendar ?? { allDay: false, notes: '', tags: [] },
     time,
     startsAt: formatIsoZ(start.utcMs),
     endsAt: formatIsoZ(endsAtMs),
@@ -176,6 +177,7 @@ export function listReminderCandidates(entries, exceptionsByEntry, armsByEntry, 
   for (const entry of entries) {
     if (entry.deletedAt || !entry.time) continue;
     const exceptions = exceptionsByEntry.get(entry.id) ?? [];
+    if (!entry.reminder && !exceptions.some(value => value.content?.reminder)) continue;
     const arms = armsByEntry.get(entry.id) ?? new Map();
     const exceptionByDate = new Map(exceptions.map((item) => [item.originDate, item]));
 
@@ -201,7 +203,9 @@ export function listReminderCandidates(entries, exceptionsByEntry, armsByEntry, 
       consider(null, null);
       continue;
     }
-    for (const originDate of seriesOriginDates(entry)) {
+    const candidateDates = new Set(seriesOriginDates(entry, { to: addDays(nowIso.slice(0, 10), 9) }));
+    for (const exception of exceptions) if (fitsSeries(entry, exception.originDate) && exception.originDate <= entry.repeat.until) candidateDates.add(exception.originDate);
+    for (const originDate of candidateDates) {
       consider(originDate, exceptionByDate.get(originDate) ?? null);
     }
   }

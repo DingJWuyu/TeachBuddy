@@ -20,7 +20,8 @@ export function mapEntryRow(row) {
     title: row.title,
     items: JSON.parse(row.items),
     time: parseJson(row.timeJson),
-    repeat: row.repeatUntil === null ? null : { until: row.repeatUntil },
+    repeat: parseJson(row.repeatJson) ?? (row.repeatUntil === null ? null : { until: row.repeatUntil }),
+    calendar: parseJson(row.calendarJson) ?? { allDay: false, notes: '', tags: [] },
     course: JSON.parse(row.courseJson),
     courseLinks: JSON.parse(row.courseLinks),
     reminder: parseJson(row.reminderJson),
@@ -63,10 +64,10 @@ export function createScheduleRepository(db) {
     insertEntry: db.prepare(`
       INSERT INTO schedule_entries (
         id, accountKey, version, title, items, timeJson, repeatUntil, courseJson, courseLinks,
-        reminderJson, reminderArmedAt, createdAt, updatedAt, deletedAt
+        reminderJson, reminderArmedAt, createdAt, updatedAt, deletedAt, calendarJson, repeatJson
       ) VALUES (
         @id, @accountKey, @version, @title, @items, @timeJson, @repeatUntil, @courseJson, @courseLinks,
-        @reminderJson, @reminderArmedAt, @createdAt, @updatedAt, @deletedAt
+        @reminderJson, @reminderArmedAt, @createdAt, @updatedAt, @deletedAt, @calendarJson, @repeatJson
       )
     `),
     updateEntry: db.prepare(`
@@ -76,6 +77,8 @@ export function createScheduleRepository(db) {
         items = @items,
         timeJson = @timeJson,
         repeatUntil = @repeatUntil,
+        repeatJson = @repeatJson,
+        calendarJson = @calendarJson,
         courseJson = @courseJson,
         courseLinks = @courseLinks,
         reminderJson = @reminderJson,
@@ -126,6 +129,8 @@ export function createScheduleRepository(db) {
       items: JSON.stringify(entry.items),
       timeJson: entry.time === null ? null : JSON.stringify(entry.time),
       repeatUntil: entry.repeat === null ? null : entry.repeat.until,
+      repeatJson: entry.repeat == null ? null : JSON.stringify(entry.repeat),
+      calendarJson: entry.calendar == null ? null : JSON.stringify(entry.calendar),
       courseJson: JSON.stringify(entry.course),
       courseLinks: JSON.stringify(entry.courseLinks),
       reminderJson: entry.reminder === null ? null : JSON.stringify(entry.reminder),
@@ -137,6 +142,18 @@ export function createScheduleRepository(db) {
   }
 
   return {
+    listLabels(accountKey) {
+      return db.prepare('SELECT id, name, color, version FROM schedule_labels WHERE accountKey = ? AND deleted = 0 ORDER BY name, id').all(accountKey);
+    },
+    findLabel(accountKey, id) {
+      return db.prepare('SELECT id, name, color, version, deleted FROM schedule_labels WHERE accountKey = ? AND id = ?').get(accountKey, id);
+    },
+    insertLabel(label) {
+      db.prepare('INSERT INTO schedule_labels (id, accountKey, name, color) VALUES (@id, @accountKey, @name, @color)').run(label);
+    },
+    writeLabel(label) {
+      db.prepare('UPDATE schedule_labels SET name = @name, color = @color, version = @version, deleted = @deleted WHERE accountKey = @accountKey AND id = @id').run(label);
+    },
     readSettings(accountKey) {
       return statements.selectSettings.get(accountKey) ?? null;
     },

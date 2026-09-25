@@ -1,973 +1,293 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useWorkbenchShell } from '../workbench/shellContext.js';
+import { useScene } from '../workbench/useScene.js';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
-/**
- * Schedule module entry: the single top-level 日程 page.
- *
- * It owns the visible range, the time grid, the unscheduled/priority lists and
- * one editor for a new entry, a whole repeating group or a single-instance
- * override. Drafts, selection, scroll and the open sections are part of the
- * per-account view scene; a formal selection or opening an existing entry
- * switches the shared auxiliary panel to the schedule tool and leaves the AI
- * draft untouched.
- */
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useAuxiliaryTools, useWorkbenchShell } from '../workbench/shellContext.js';
-import { ModulePresence } from '../workbench/ModuleMotion.jsx';
-import { useScene } from '../workbench/useScene.js';
-import { newRequestKey } from '../workbench/uuid.js';
-import * as api from './api.js';
-import CourseFeedback from './notifications/CourseFeedback.jsx';
-import EntryEditor from './EntryEditor.jsx';
-import RangeOverview from './RangeOverview.jsx';
-import ScheduleAuxTool from './ScheduleAuxTool.jsx';
-import ScheduleLists from './ScheduleLists.jsx';
+import { CalendarDialog, CalendarIcon, IconButton, MiniCalendar, MonthTitle, ViewMenu } from './CalendarControls.jsx';
+import CalendarEditor from './CalendarEditor.jsx';
 import TimeGrid from './TimeGrid.jsx';
-import { publishSchedulePanel } from './panelStore.js';
+import { addDays, contentOf, contentProblem, diffDays, monday, newContent, shiftMonth, timeFromEvent, titleOf, todayInZone } from './calendarModel.js';
+import { localParts } from './zoned.js';
+import * as api from './api.js';
 import './schedule.css';
-import {
-  DEFAULT_RANGE_DAYS,
-  HOUR_HEIGHT,
-  draftFromContent,
-  emptyDraft,
-  entryInputFromDraft,
-  formatClock,
-  formatRangeLabel,
-  newItem,
-  overrideFromDraft,
-  todayInZone
-} from './model.js';
-import { addDays, diffDays, localParts } from './zoned.js';
 
-const editorKey = value => `${value.entryId ?? 'new'}:${value.originDate ?? ''}`;
-
-const SCHEDULE_TOOL = {
-  id: 'schedule',
-  label: '安排'
-};
-
-function draftProblem(draft, scope) {
-  if (scope === 'instance' && !draft.time) return { message: '这次安排必须有时间' };
-  if (!draft.unscheduled) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.time.date)) return { message: '请填写日期' };
-    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(draft.time.startTime)) return { message: '请填写开始时间' };
-    const duration = Number(draft.time.durationMinutes);
-    if (!Number.isInteger(duration) || duration < 1 || duration > 1440) return { message: '时长需在 1 到 1440 分钟之间' };
-    if (draft.weekly && draft.until < draft.time.date) return { message: '重复结束日期不能早于首日' };
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const overrideContent = ({ repeat, ...content }) => content;
+function shiftRepeat(content, delta) {
+  if (delta && content.repeat?.frequency === 'weekly') {
+    content.repeat.weekdays = content.repeat.weekdays.map(day => ((day + delta) % 7 + 7) % 7);
   }
-  if (!draft.unscheduled && draft.reminder && (draft.reminder.minutes === ''
-    || !Number.isInteger(Number(draft.reminder.minutes)) || Number(draft.reminder.minutes) < 0
-    || Number(draft.reminder.minutes) > 10080)) return { message: '提醒间隔需在 0 到 10080 分钟之间' };
-  const items = draft.items.filter((item) => item.text.trim() !== '');
-  if (draft.title.trim() === '' && items.length === 0) return { message: '标题或至少一项事项' };
-  return null;
+}
+async function runWrite({ key, payload }) {
+  if (payload.kind === 'create') return api.createEntry({ key, payload: payload.content });
+  if (payload.kind === 'update') return api.updateEntry({ key, id: payload.id, payload: { ...payload.content, expectedVersion: payload.version } });
+  if (payload.kind === 'override') return api.setException({ key, id: payload.id, originDate: payload.origin,
+    payload: { expectedVersion: payload.version, mode: 'override', content: overrideContent(payload.content) } });
+  if (payload.kind === 'cancel') return api.setException({ key, id: payload.id, originDate: payload.origin, payload: { expectedVersion: payload.version, mode: 'cancelled' } });
+  return api.setEntryDeletion({ key, id: payload.id, payload: { expectedVersion: payload.version, deleted: true } });
+}
+
+function Upcoming({ entries, occurrences, labels, today, grouped, onGroup, onNew, onOpen }) {
+  const items = entries.map(entry => {
+    const next = occurrences.find(x => x.key.entryId === entry.id && x.time.date >= today);
+    return { entry, occurrence: next, date: next?.time.date ?? entry.time?.date ?? '' };
+  }).filter(x => !x.entry.time || (x.entry.repeat ? Boolean(x.occurrence) : x.date >= today))
+    .sort((a, b) => a.date.localeCompare(b.date) || b.entry.updatedAt.localeCompare(a.entry.updatedAt));
+  const row = ({ entry, occurrence, date }) => {
+    const tags = labels.filter(label => (occurrence ?? entry).calendar?.tags.includes(label.id));
+    return <button type="button" className="cal-upcoming-row" key={entry.id} onClick={() => onOpen(entry.id, occurrence?.key.originDate ?? (entry.repeat ? entry.time.date : null))}>
+      <i style={{ background: tags[0]?.color ?? '#9ba0aa' }}/><span className="cal-upcoming-title">{titleOf(occurrence ?? entry)}</span>
+      {!grouped && tags[0] && <span className="cal-tag" style={{ '--tag-color': tags[0].color }}>{tags[0].name}</span>}
+      <time>{date ? `${Number(date.slice(5, 7))}月 ${Number(date.slice(8))}` : '未排期'}</time>
+    </button>;
+  };
+  const groups = [...labels, { id: '', name: '无标签', color: '#9ba0aa' }].map(label => ({ label,
+    rows: items.filter(x => label.id ? (x.occurrence ?? x.entry).calendar?.tags.includes(label.id) : !labels.some(l => (x.occurrence ?? x.entry).calendar?.tags.includes(l.id))) })).filter(x => x.rows.length);
+  return <section className="cal-upcoming" aria-label="即将到来"><header><h2><CalendarIcon name="clock" size={18}/>即将到来<span>({items.length})</span></h2><div><IconButton name={grouped ? 'tag' : 'calendar'} label={grouped ? '按日期显示' : '按标签分组'} aria-pressed={grouped} onClick={onGroup}/><IconButton name="plus" label="新建任务" onClick={onNew}/></div></header>
+    {items.length === 0 ? <div className="cal-empty"><CalendarIcon name="calendar" size={28}/><p>暂无安排</p></div> : grouped ? groups.map(({ label, rows }) => <div className="cal-upcoming-group" key={label.id}><h3><i style={{ background: label.color }}/>{label.name}<span>{rows.length}</span></h3>{rows.map(row)}</div>) : <div className="cal-upcoming-list">{items.map(row)}</div>}
+  </section>;
 }
 
 export default function SchedulePage({ route }) {
   const shell = useWorkbenchShell();
-  const [scene, patchScene] = useScene(shell.accountKey, 'schedule', {
-    from: '',
-    to: '',
-    days: DEFAULT_RANGE_DAYS,
-    pageScrollTop: 0,
-    listsScrollTop: 0,
-    gridScrollTop: 7 * HOUR_HEIGHT,
-    gridScrollLeft: 0,
-    unscheduledOpen: true,
-    priorityOpen: false,
-    month: '',
-    editor: null,
-    settingsOpen: false
+  const initialToday = todayInZone('Asia/Shanghai');
+  const [scene, patchScene] = useScene(shell.accountKey, 'schedule-calendar', {
+    anchor: initialToday, view: { kind: 'days', days: 7 }, month: initialToday.slice(0, 7), scroll: 0, grouped: false, draft: null
   });
-
-  const [settings, setSettings] = useState({ timeZone: 'Asia/Shanghai', version: 1 });
-  const [timeZone, setTimeZone] = useState('Asia/Shanghai');
-  const [occurrences, setOccurrences] = useState([]);
-  const [unscheduled, setUnscheduled] = useState([]);
-  const [status, setStatus] = useState('loading');
-  const [stale, setStale] = useState(false);
-  const [error, setError] = useState(null);
-  const [reloadToken, setReloadToken] = useState(0);
-  const [selection, setSelection] = useState(() => scene.selection ?? null);
-  const [editor, setEditorState] = useState(() => scene.editor ?? null);
-  const [saveState, setSaveState] = useState(() => scene.editor?.pending ? { status: 'unconfirmed' }
-    : scene.editor && JSON.stringify(scene.editor.drafts) !== JSON.stringify(scene.editor.baseline) ? { status: 'dirty' } : { status: 'idle' });
-  const savesInFlight = useRef(new Set());
-  const mounted = useRef(false);
-  useEffect(() => {
-    mounted.current = true;
-    return () => { mounted.current = false; };
-  }, []);
-  const operation = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:schedule-action' });
-  const actionState = { ...operation, status: operation.status === 'failed' ? 'error' : operation.status,
-    ...operation.pending?.payload, key: operation.pending?.key };
-  const [moveState, setMoveState] = useState(() => scene.moveState?.status === 'running'
-    ? { ...scene.moveState, status: 'unconfirmed' } : scene.moveState ?? null);
-  const [settingsState, setSettingsState] = useState({ status: 'idle' });
-  const [notice, setNotice] = useState(null);
-  const [classes, setClasses] = useState([]);
-  const [lessons, setLessons] = useState([]);
-  const [records, setRecords] = useState([]);
-  const [linksError, setLinksError] = useState(null);
-  const [recordsState, setRecordsState] = useState('idle');
-  const [linksRetry, setLinksRetry] = useState(0);
-  const [exceptions, setExceptions] = useState([]);
-  const rangeDraft = scene.rangeDraft ?? { from: scene.from, to: scene.to };
-  const setRangeDraft = value => patchScene({ rangeDraft: value });
-  const [focusToken, setFocusToken] = useState(0);
-
-  const sceneRef = useRef(scene);
-  sceneRef.current = scene;
-  const pageRef = useRef(null);
-  const listsRef = useRef(null);
-  const scrollRestored = useRef(false);
-  const editorRef = useRef(editor);
-  editorRef.current = editor;
-  function setEditor(updater) {
-    const current = editorRef.current;
-    const next = typeof updater === 'function' ? updater(current) : updater;
-    editorRef.current = next;
-    // Input and original request must be durable before any request or unload.
-    patchScene({ editor: next });
-    setEditorState(next);
-    return next;
-  }
-
-  const from = scene.from;
-  const to = scene.to;
-
-  useLayoutEffect(() => {
-    // The pending list determines the scroll regions' content heights. Restore only after it loads,
-    // and only once per mount so later reloads do not undo the user's scrolling.
-    if (status !== 'ready' || scrollRestored.current) return;
-    pageRef.current.scrollTop = sceneRef.current.pageScrollTop;
-    listsRef.current.scrollTop = sceneRef.current.listsScrollTop;
-    scrollRestored.current = true;
-  }, [status]);
-
-  // First mount / account switch: default the range to today plus six days.
-  useEffect(() => {
-    if (sceneRef.current.from && sceneRef.current.to) return;
-    const zone = settings.timeZone;
-    const today = todayInZone(zone);
-    patchScene({ from: today, to: addDays(today, DEFAULT_RANGE_DAYS - 1), month: today.slice(0, 7) });
-  }, [patchScene, settings.timeZone]);
-
-  useEffect(() => {
-    const current = sceneRef.current;
-    setRangeDraft({ from: current.from, to: current.to });
-  }, [from, to]);
+  const sceneRef = useRef(scene); sceneRef.current = scene;
+  const mounted = useRef(true);
+  const [zone, setZone] = useState('Asia/Shanghai');
+  const [range, setRange] = useState({ from: scene.anchor, to: addDays(scene.anchor, 6) });
+  const [data, setData] = useState({ entries: [], occurrences: [], upcoming: [], labels: [] });
+  const [displayMonth, setDisplayMonth] = useState(scene.anchor.slice(0, 7));
+  const [loadState, setLoadState] = useState('loading');
+  const [loadError, setLoadError] = useState('');
+  const [validation, setValidation] = useState('');
+  const [revision, setRevision] = useState(0);
+  const [scopePrompt, setScopePrompt] = useState(false);
+  const [deletePrompt, setDeletePrompt] = useState(false);
+  const [movePrompt, setMovePrompt] = useState(null);
+  const [mobileSidebar, setMobileSidebar] = useState(false);
+  const flight = useRef(null);
+  const op = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:schedule-calendar' });
+  const opRef = useRef(op); opRef.current = op;
+  const today = todayInZone(zone);
+  useEffect(() => setDisplayMonth(scene.view.kind === 'month' && scene.monthScroll?.anchor === scene.anchor ? scene.month : scene.anchor.slice(0, 7)), [scene.anchor]);
+  const draft = scene.draft;
+  const dirty = draft && !same(draft.content, draft.baseline);
+  const reload = useCallback(() => setRevision(x => x + 1), []);
+  const updateScene = value => {
+    const next = typeof value === 'function' ? value(sceneRef.current) : value;
+    sceneRef.current = { ...sceneRef.current, ...next }; patchScene(next);
+  };
+  const setDraft = value => updateScene({ draft: value });
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => { if (shell.isPanelOpen && shell.panelMode === 'schedule') shell.closePanel(); }, []);
 
   useEffect(() => {
     let cancelled = false;
-    api.getSettings()
-      .then((value) => {
-        if (cancelled) return;
-        setSettings(value);
-        setTimeZone(value.timeZone);
-      })
-      .catch((problem) => {
-        if (!cancelled) setError(problem.problem ?? { message: '时区设置读取失败' });
-      });
+    setLoadState('loading');
+    Promise.all([api.getSettings(), api.listEntries(), api.listOccurrences(range), api.listLabels(), api.listOccurrences({ from: today, to: addDays(today, 366) })]).then(([settings, entries, result, labels, upcoming]) => {
+      if (cancelled) return;
+      setZone(settings.timeZone); setData({ entries, occurrences: result.items, labels, upcoming: upcoming.items }); setLoadState('ready'); setLoadError('');
+    }).catch(error => { if (!cancelled) { setLoadState('error'); setLoadError(error.problem?.message ?? '日程未能更新'); } });
     return () => { cancelled = true; };
-  }, [shell.generation, reloadToken]);
+  }, [range.from, range.to, revision, shell.generation, today]);
+  useForegroundRefresh(reload);
 
-  useEffect(() => {
-    if (!from || !to) return undefined;
-    let cancelled = false;
-    setStatus('loading');
-    Promise.all([
-      api.listOccurrences({ from, to }),
-      api.listEntries({ state: 'active', placement: 'unscheduled' })
-    ])
-      .then(([range, pending]) => {
-        if (cancelled) return;
-        setOccurrences(range.items);
-        setTimeZone(range.timeZone);
-        setUnscheduled(pending);
-        setStatus('ready');
-        setStale(false);
-        setError(null);
-      })
-      .catch((problem) => {
-        if (cancelled) return;
-        setStatus('error');
-        setStale(true);
-        setError(problem.problem ?? { message: '读取失败' });
-      });
-    return () => { cancelled = true; };
-  }, [from, to, reloadToken, shell.generation]);
-
-  useEffect(() => {
-    if (!editor) return undefined;
-    let cancelled = false;
-    Promise.all([api.listClasses(), api.listLessons()])
-      .then(([classroomItems, lessonItems]) => {
-        if (cancelled) return;
-        setClasses(classroomItems);
-        setLessons(lessonItems);
-        setLinksError(null);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setLinksError('班级或备课读取失败');
-        }
-      });
-    return () => { cancelled = true; };
-  }, [editor?.mode, editor?.entryId, shell.generation, linksRetry]);
-
-  const editorEntryId = editor?.entryId ?? null;
-  const editorRepeats = Boolean(editor?.entry?.repeat);
-  useEffect(() => {
-    if (!editorEntryId || !editorRepeats) {
-      setExceptions([]);
-      return undefined;
+  function applySaved(result, payload) {
+    if (!mounted.current || !result) return false;
+    const current = sceneRef.current.draft;
+    if (['delete', 'cancel'].includes(payload.kind)) {
+      if (current?.id === payload.id) setDraft(null);
+    } else if (current && payload.clientId && current.clientId === payload.clientId) {
+      const entry = result.id ? result : { ...current.entry, version: result.entryVersion };
+      const origin = payload.kind === 'override' ? current.origin : entry.repeat ? current.origin ?? entry.time.date : null;
+      setDraft({ ...current, id: result.id ?? current.id, version: result.version ?? result.entryVersion,
+        origin, entry, baseline: payload.draftContent ?? payload.content, scope: null, forceSeries: false, savePaused: false });
     }
-    let cancelled = false;
-    api.listExceptions(editorEntryId)
-      .then((value) => { if (!cancelled) setExceptions(value.items); })
-      .catch(() => { if (!cancelled) setExceptions([]); });
-    return () => { cancelled = true; };
-  }, [editorEntryId, editorRepeats, reloadToken]);
-
-  const editorClassId = editor?.drafts?.[editor.scope]?.course?.classId ?? null;
+    setValidation(''); reload(); return true;
+  }
+  async function perform(payload, retry = false) {
+    if (flight.current) return flight.current;
+    if (opRef.current.pending && !retry) return false;
+    const original = retry ? opRef.current.pending?.payload : payload;
+    if (!original) return false;
+    const pending = (async () => {
+      const result = retry ? await opRef.current.retry(runWrite) : await opRef.current.submit(runWrite, original);
+      return applySaved(result, original);
+    })();
+    flight.current = pending;
+    try { return await pending; } finally { if (flight.current === pending) flight.current = null; }
+  }
+  async function flush({ explicit = false, scope } = {}) {
+    if (flight.current) { await flight.current; }
+    const current = sceneRef.current.draft;
+    if (!current || same(current.content, current.baseline)) return !opRef.current.pending;
+    if (opRef.current.pending) return false;
+    const issue = contentProblem(current.content);
+    if (issue) { if (explicit) setValidation(issue); return false; }
+    const choice = scope ?? current.scope;
+    if (current.entry?.repeat && current.origin && !choice && !current.forceSeries) { setScopePrompt(true); return false; }
+    let content = structuredClone(current.content);
+    const single = current.entry?.repeat && current.origin && choice !== 'series' && !current.forceSeries;
+    if (!single && current.entry?.repeat && current.origin && content.time) {
+      const delta = diffDays(current.origin, content.time.date);
+      content.time.date = addDays(current.entry.time.date, delta);
+      if (!current.forceSeries) shiftRepeat(content, delta);
+    }
+    if (content.repeat) content.course.recordIds = [];
+    return perform({ kind: !current.id ? 'create' : single ? 'override' : 'update', id: current.id, origin: current.origin,
+      version: current.version, clientId: current.clientId, content, draftContent: current.content });
+  }
+  const actionsRef = useRef(null);
+  actionsRef.current = { flush, closeEditor, changeView };
   useEffect(() => {
-    if (!editorClassId) {
-      setRecords([]);
-      setRecordsState('idle');
-      return undefined;
-    }
-    let cancelled = false;
-    setRecords([]);
-    setRecordsState('loading');
-    api.listClassRecords(editorClassId)
-      .then((items) => { if (!cancelled) { setRecords(items); setRecordsState('ready'); } })
-      .catch(() => { if (!cancelled) setRecordsState('error'); });
-    return () => { cancelled = true; };
-  }, [editorClassId, linksRetry, reloadToken, shell.generation]);
+    if (!dirty || draft.savePaused || contentProblem(draft.content) || ['running', 'unconfirmed', 'failed'].includes(op.status) || scopePrompt || deletePrompt) return;
+    const timer = setTimeout(() => actionsRef.current.flush(), 600);
+    return () => clearTimeout(timer);
+  }, [draft?.content, draft?.baseline, draft?.savePaused, op.status, scopePrompt, deletePrompt]);
 
-  useEffect(() => {
-    patchScene(current => ({ editor, editors: editor
-      ? { ...current.editors, [editorKey(editor)]: editor } : current.editors }));
-  }, [editor, patchScene]);
-
-  function updateMoveState(next) {
-    setMoveState(next);
-    patchScene({ moveState: next });
+  async function leaveEditor() {
+    const current = sceneRef.current.draft;
+    if (!current) return !opRef.current.pending;
+    if (!current.id && !current.content.title.trim() && !current.content.items.length && !current.content.calendar.notes.trim() && !current.content.calendar.tags.length) return !opRef.current.pending && !flight.current;
+    return flush({ explicit: true });
   }
-
-  useEffect(() => {
-    patchScene({ selection });
-  }, [selection, patchScene]);
-
-  const reload = useCallback(() => setReloadToken((token) => token + 1), []);
-
-  function applyRange(nextFrom, nextTo) {
-    if (!nextFrom || !nextTo) return;
-    if (diffDays(nextFrom, nextTo) < 0) {
-      setError({ message: '开始日期不能晚于结束日期' });
-      return;
-    }
-    patchScene({
-      from: nextFrom,
-      to: nextTo,
-      days: diffDays(nextFrom, nextTo) + 1,
-      month: nextFrom.slice(0, 7),
-      rangeDraft: { from: nextFrom, to: nextTo }
-    });
+  async function closeEditor() {
+    if (!await leaveEditor()) return;
+    setDraft(null); setValidation(''); setMobileSidebar(false);
   }
-
-  function shiftRange(delta) {
-    const days = Math.max(1, diffDays(from, to) + 1);
-    const nextFrom = addDays(from, delta * days);
-    applyRange(nextFrom, addDays(nextFrom, days - 1));
+  function patchContent(patch, forceSeries = false) {
+    const current = sceneRef.current.draft;
+    if (!current) return;
+    setValidation('');
+    if (opRef.current.status === 'failed') opRef.current.reset();
+    setDraft({ ...current, content: { ...current.content, ...patch }, forceSeries: forceSeries || current.forceSeries });
   }
-
-  function pickMonthDay(date) {
-    const current = sceneRef.current;
-    if (!rangeDraft.from || diffDays(rangeDraft.from, rangeDraft.to) !== 0) {
-      setRangeDraft({ from: date, to: date });
-      return;
-    }
-    if (diffDays(rangeDraft.from, date) < 0) setRangeDraft({ from: date, to: rangeDraft.from });
-    else setRangeDraft({ from: rangeDraft.from, to: date });
-  }
-
-  /** One editor state shape for create, group and instance scopes. */
-  function editorState({
-    mode,
-    entryId = null,
-    originDate = null,
-    entry = null,
-    scope = 'group',
-    expectedVersion = null,
-    entryDeleted = false,
-    state = 'active',
-    drafts,
-    baseline = null
-  }) {
-    return {
-      mode,
-      entryId,
-      originDate,
-      entry,
-      scope,
-      expectedVersion,
-      entryDeleted,
-      state,
-      drafts,
-      baseline,
-      pending: null
-    };
-  }
-
-  const openEditor = useCallback((next) => {
-    const previous = editorRef.current;
-    const editors = { ...sceneRef.current.editors };
-    if (previous) editors[editorKey(previous)] = previous;
-    patchScene({ editors });
-    const saved = editors[editorKey(next)];
-    const dirty = saved && (saved.pending || JSON.stringify(saved.drafts) !== JSON.stringify(saved.baseline));
-    const restored = dirty && saved.entryId === next.entryId ? { ...next,
-      drafts: saved.drafts, baseline: saved.baseline, expectedVersion: saved.expectedVersion,
-      scope: saved.scope, pending: saved.pending } : next;
-    setEditor(restored);
-    setSaveState({ status: restored.pending ? 'unconfirmed' : dirty ? 'dirty' : 'idle' });
-    setFocusToken((token) => token + 1);
-  }, [patchScene]);
-
-  function openCreate({ date, startMinutes, endMinutes }) {
-    const draft = emptyDraft({
-      date,
-      startTime: formatClock(startMinutes),
-      durationMinutes: Math.max(15, endMinutes - startMinutes),
-      timeZone
-    });
-    // A new segment starts with one empty item, like 记一件事; an untouched
-    // blank row is dropped on save.
-    draft.items = [newItem()];
-    openEditor(editorState({ mode: 'create', drafts: { group: draft, instance: null } }));
-    if (shell.openPanel) {
-      shell.openPanel('schedule');
-      shell.setPanelMode?.('schedule');
-    }
-  }
-
-  function openUnscheduledCreate() {
-    const draft = emptyDraft({ timeZone });
-    draft.unscheduled = true;
-    draft.items = [newItem()];
-    openEditor(editorState({ mode: 'create', drafts: { group: draft, instance: null } }));
-  }
-
-  async function openEntry(entryId, originDate = null, background = false) {
+  async function openEntry(id, origin = null, bypass = false) {
+    if (!bypass && !await leaveEditor()) return;
     try {
-      const entry = await api.getEntry(entryId);
-      let content = null;
-      let occurrence = occurrences.find((item) => (
-        item.key.entryId === entryId && (item.key.originDate ?? null) === (originDate ?? null)
-      )) ?? null;
-      if (originDate !== null) {
-        const exceptions = await api.listExceptions(entryId);
-        const exception = exceptions.items.find((item) => item.originDate === originDate) ?? null;
-        if (exception?.mode === 'override') content = exception.content;
-        occurrence = await api.getOccurrence(entryId, originDate);
-        content = occurrence;
-      }
-      const base = {
-        entry,
-        unscheduled: entry.time === null,
-        weekly: entry.repeat !== null,
-        until: entry.repeat?.until ?? entry.time?.date ?? ''
-      };
-      const groupDraft = draftFromContent(base);
-      const instanceDraft = originDate === null
-        ? null
-        : draftFromContent({ ...base, content, weekly: false });
-      if (!mounted.current || (background && (editorRef.current?.entryId !== entryId || editorRef.current?.pending || savesInFlight.current.size > 0))) return;
-      openEditor(editorState({
-        mode: 'entry',
-        entryId,
-        originDate,
-        entry,
-        scope: originDate === null ? 'group' : 'instance',
-        expectedVersion: entry.version,
-        entryDeleted: entry.deletedAt !== null,
-        state: occurrence?.state ?? 'active',
-        drafts: { group: groupDraft, instance: instanceDraft },
-        baseline: { group: groupDraft, instance: instanceDraft }
-      }));
-      if (!background && shell.openPanel) {
-        shell.openPanel('schedule');
-        shell.setPanelMode?.('schedule');
-      }
-    } catch (problem) {
-      setError(problem.problem ?? { message: '安排读取失败' });
-    }
+      const entry = await api.getEntry(id);
+      const occurrence = origin ? await api.getOccurrence(id, origin) : null;
+      if (!mounted.current) return;
+      const content = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
+      const readOnly = entry.deletedAt ? '任务已删除' : occurrence && occurrence.state !== 'active' ? occurrence.state === 'cancelled' ? '这次任务已取消' : '这次任务已不在重复范围内' : null;
+      setDraft({ clientId: crypto.randomUUID(), id, origin, version: entry.version, entry, content, baseline: structuredClone(content), zone, scope: null, readOnly });
+      if (!bypass && shell.isPanelOpen) shell.closePanel();
+      setValidation(''); setMobileSidebar(true);
+    } catch (error) { setLoadError(error.problem?.message ?? '无法打开任务'); }
   }
-
-  useForegroundRefresh(async () => {
-    if (!mounted.current || savesInFlight.current.size > 0) return;
-    reload();
-    const current = editorRef.current;
-    if (current?.entryId && !current.pending) await openEntry(current.entryId, current.originDate, true);
-  });
-
+  async function create(start, end, allDay = false) {
+    if (!await leaveEditor()) return;
+    const content = newContent(zone, start, end, allDay);
+    setDraft({ clientId: crypto.randomUUID(), id: null, origin: null, version: null, entry: null, content, baseline: null, zone });
+    if (shell.isPanelOpen) shell.closePanel();
+    setValidation(''); setMobileSidebar(true);
+  }
+  async function remove(scope = 'series') {
+    const current = sceneRef.current.draft;
+    if (!current?.id) { setDraft(null); setDeletePrompt(false); return; }
+    if (flight.current) await flight.current;
+    const entry = await api.getEntry(current.id).catch(() => null);
+    if (!entry) { setValidation('读取失败，请重试'); return; }
+    const ok = await perform({ kind: scope === 'instance' && current.origin ? 'cancel' : 'delete', id: current.id, origin: current.origin, version: entry.version });
+    if (ok) setDeletePrompt(false);
+  }
+  async function moveEvent(info, scope) {
+    if (!await leaveEditor()) { info.revert(); return; }
+    const occurrence = info.event.extendedProps.occurrence;
+    if (occurrence.key.originDate && !scope) { setMovePrompt(info); return; }
+    try {
+      const entry = await api.getEntry(occurrence.key.entryId);
+      const content = contentOf({ ...entry, ...occurrence, repeat: entry.repeat });
+      content.time = timeFromEvent(info.event, zone);
+      content.calendar.allDay = info.event.allDay;
+      const single = occurrence.key.originDate && scope !== 'series';
+      if (!single && entry.repeat) {
+        const delta = diffDays(occurrence.time.date, content.time.date);
+        content.time.date = addDays(entry.time.date, delta);
+        shiftRepeat(content, delta);
+      }
+      const issue = contentProblem(content);
+      if (issue) { setLoadError(issue); info.revert(); return; }
+      const ok = await perform({ kind: single ? 'override' : 'update', id: entry.id, origin: occurrence.key.originDate, version: entry.version, content });
+      if (!ok) info.revert();
+      else if (sceneRef.current.draft?.id === entry.id) await openEntry(entry.id, single ? occurrence.key.originDate : entry.repeat ? content.time.date : null, true);
+    } catch (error) { info.revert(); setLoadError(error.problem?.message ?? '调整时间未能保存'); }
+    setMovePrompt(null);
+  }
+  function changeView(view) {
+    updateScene({ view, anchor: view.kind === 'week' ? monday(sceneRef.current.anchor) : sceneRef.current.anchor });
+  }
+  function navigate(delta) {
+    const current = sceneRef.current;
+    const anchor = current.view.kind === 'month' ? `${shiftMonth(displayMonth, delta)}-01`
+      : addDays(current.anchor, delta * (current.view.kind === 'day' ? 1 : current.view.kind === 'week' ? 7 : current.view.days));
+    if (anchor < '1900-01-01' || anchor > '2100-12-31') return;
+    updateScene({ anchor, month: anchor.slice(0, 7) });
+  }
+  useEffect(() => {
+    const keydown = event => {
+      const typing = event.target.closest('input,textarea,select,[contenteditable="true"]');
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && sceneRef.current.draft) { event.preventDefault(); actionsRef.current.flush({ explicit: true }); return; }
+      if (document.querySelector('[role="dialog"], [role="menu"]:not([inert] *)')) return;
+      if (event.key === 'Escape') { actionsRef.current.closeEditor(); return; }
+      if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
+      const kind = { d: 'day', w: 'week', m: 'month' }[event.key.toLowerCase()];
+      if (kind) actionsRef.current.changeView({ kind, days: kind === 'day' ? 1 : 7 });
+      else if (/^[2-9]$/.test(event.key)) actionsRef.current.changeView({ kind: 'days', days: Number(event.key) });
+    };
+    document.addEventListener('keydown', keydown);
+    return () => document.removeEventListener('keydown', keydown);
+  }, []);
   useEffect(() => {
     const query = new URLSearchParams(route?.search ?? '');
-    const entryId = query.get('entry');
-    if (!entryId) return undefined;
+    const id = query.get('entry');
+    if (!id) return;
     let cancelled = false;
-    api.getEntry(entryId).then(async entry => {
+    api.getEntry(id).then(async entry => {
       if (cancelled) return;
-      if (!entry.time) { await openEntry(entryId); return; }
-      const occurrence = await api.getOccurrence(entryId, query.get('on'));
+      const origin = query.get('on') ?? (entry.repeat ? entry.time.date : null);
+      const occurrence = entry.time ? await api.getOccurrence(id, origin) : null;
       if (cancelled) return;
-      const zone = (await api.getSettings()).timeZone;
-      if (cancelled) return;
-      const start = localParts(zone, Date.parse(occurrence.startsAt));
-      const end = localParts(zone, Date.parse(occurrence.endsAt) - 1);
-      applyRange(start.date, end.date);
-      patchScene({ gridScrollTop: Math.max(0, (start.minutes / 60 - 1) * HOUR_HEIGHT) });
-      await openEntry(entryId, query.get('on'));
-    }).catch(problem => { if (!cancelled) setError(problem.problem ?? { message: '安排读取失败' }); });
+      if (occurrence) {
+        const value = localParts(zone, Date.parse(occurrence.startsAt));
+        updateScene({ anchor: value.date, month: value.date.slice(0, 7), scroll: Math.max(0, (value.minutes / 60 - 1) * 104) });
+      }
+      await openEntry(id, origin, true);
+    }).catch(error => { if (!cancelled) setLoadError(error.problem?.message ?? '无法打开这项安排'); });
     return () => { cancelled = true; };
-  }, [route, shell.generation]);
+  }, [route?.search, shell.generation]);
 
-  function patchDraft(patch) {
-    setSaveState(current => current.status === 'saved' || current.status === 'saved-dirty' ? { status: 'idle' } : current);
-    setEditor((current) => {
-      if (!current) return current;
-      const scope = current.scope;
-      const draft = { ...current.drafts[scope], ...patch };
-      return { ...current, drafts: { ...current.drafts, [scope]: draft } };
-    });
-  }
-
-  function switchScope(scope) {
-    setEditor((current) => {
-      if (!current || current.scope === scope) return current;
-      const existing = current.drafts[scope];
-      if (existing) return { ...current, scope };
-      const entry = current.entry ?? null;
-      const draft = draftFromContent({
-        entry: entry ?? { title: '', items: [], time: null, repeat: null, course: null, reminder: null },
-        content: null,
-        unscheduled: !entry || entry.time === null,
-        weekly: Boolean(entry?.repeat),
-        until: entry?.repeat?.until ?? entry?.time?.date ?? ''
-      });
-      return { ...current, scope, drafts: { ...current.drafts, [scope]: draft } };
-    });
-  }
-
-  const activeDraft = editor ? editor.drafts[editor.scope] : null;
-
-  async function submitSave(request, key) {
-    const targetKey = editorKey(editor);
-    if (savesInFlight.current.has(targetKey)) return;
-    savesInFlight.current.add(targetKey);
-    const savedScope = request.kind === 'override' ? 'instance' : 'group';
-    const submittedDraft = editor.pending?.draft ?? editor.drafts[savedScope];
-    const pending = { key, request, draft: submittedDraft };
-    const isCurrent = () => editorRef.current && editorKey(editorRef.current) === targetKey;
-    // A save belongs to its original editor even after selection/navigation.
-    // Persist the exact request before I/O, so refresh can confirm it safely.
-    function updateTarget(update) {
-      patchScene(current => ({
-        editor: current.editor && editorKey(current.editor) === targetKey ? update(current.editor) : current.editor,
-        editors: Object.fromEntries(Object.values(current.editors ?? {}).map(value => {
-          const next = editorKey(value) === targetKey ? update(value) : value;
-          return [editorKey(next), next];
-        }))
-      }));
-      setEditor(current => current && editorKey(current) === targetKey ? update(current) : current);
-    }
-    updateTarget(current => ({ ...current, pending }));
-    setSaveState({ status: 'saving' });
-    try {
-      let result;
-      if (request.kind === 'create') {
-        result = await api.createEntry({ key, payload: request.payload });
-      } else if (request.kind === 'override') {
-        result = await api.setException({ key, id: request.id, originDate: request.originDate,
-          payload: { expectedVersion: request.expectedVersion, mode: 'override', content: request.payload } });
-      } else {
-        result = await api.updateEntry({ key, id: request.id,
-          payload: { ...request.payload, expectedVersion: request.expectedVersion } });
-      }
-      if (!mounted.current) return;
-      const current = isCurrent();
-      const newerInput = current && JSON.stringify(editorRef.current.drafts[savedScope]) !== JSON.stringify(submittedDraft);
-      updateTarget(value => ({
-        ...value,
-        mode: result.id ? 'entry' : value.mode,
-        entryId: result.id ?? result.key?.entryId ?? value.entryId,
-        expectedVersion: result.version ?? result.entryVersion ?? value.expectedVersion,
-        entry: result.id ? result : value.entry,
-        baseline: { group: null, instance: null, ...value.baseline, [savedScope]: submittedDraft },
-        pending: null
-      }));
-      if (current) setSaveState({ status: newerInput ? 'saved-dirty' : 'saved' });
-      reload();
-    } catch (problem) {
-      if (!mounted.current) return;
-      const value = problem.problem ?? {};
-      if (value.kind !== 'unconfirmed') updateTarget(current => ({ ...current, pending: null }));
-      if (isCurrent()) {
-        setSaveState(value.kind === 'unconfirmed' ? { status: 'unconfirmed', problem: value }
-          : value.kind === 'conflict' ? { status: 'conflict', problem: value, currentVersion: value.currentVersion }
-          : { status: 'error', problem: value });
-      }
-    } finally {
-      savesInFlight.current.delete(targetKey);
-    }
-  }
-
-  async function saveEditor() {
-    if (!editor || !activeDraft) return;
-    const problem = draftProblem(activeDraft, editor.scope);
-    if (problem) {
-      setSaveState({ status: 'error', problem });
-      return;
-    }
-    const request = editor.pending?.request ?? (editor.scope === 'instance'
-      ? {
-        kind: 'override',
-        id: editor.entryId,
-        originDate: editor.originDate,
-        expectedVersion: editor.expectedVersion,
-        payload: overrideFromDraft(activeDraft)
-      }
-      : {
-        kind: editor.mode === 'create' ? 'create' : 'update',
-        id: editor.entryId,
-        expectedVersion: editor.expectedVersion,
-        payload: entryInputFromDraft(activeDraft)
-      });
-    const key = editor.pending?.key ?? newRequestKey();
-    await submitSave(request, key);
-  }
-
-  async function retrySave() {
-    if (!editor?.pending) return;
-    await submitSave(editor.pending.request, editor.pending.key);
-  }
-
-  async function reloadCurrent() {
-    if (!editor?.entryId) return;
-    try {
-      const entry = await api.getEntry(editor.entryId);
-      // Keep the draft: the teacher compares both sides and decides, and the
-      // next save is a new submission against the version just read.
-      setEditor((current) => (current ? { ...current, entry, expectedVersion: entry.version } : current));
-      setSaveState({
-        status: 'conflict-view',
-        server: {
-          version: entry.version,
-          title: entry.title.trim() || entry.items[0]?.text?.trim() || '未命名安排',
-          detail: entry.items[1]?.text?.trim() ?? ''
-        },
-        problem: { message: '已读取服务器版本，本地修改保留，再次保存将以该版本提交' }
-      });
-    } catch (problem) {
-      setSaveState({ status: 'error', problem: problem.problem ?? { message: '读取服务器版本失败' } });
-    }
-  }
-
-  async function runAction({ key, payload }) {
-    const request = payload.request;
-    if (request.kind === 'exception') return api.setException({ key, ...request.args });
-    if (request.kind === 'deletion') return api.setEntryDeletion({ key, ...request.args });
-    if (request.kind === 'move') return api.moveItem({ key, payload: request.args });
-    if (request.kind === 'settings') return api.updateSettings({ key, payload: request.args });
-    throw { problem: { kind: 'unconfirmed', message: '无法识别原操作，已保留设备资料，请下载草稿后检查' } };
-  }
-  async function executeAction(name, request, retry = false) {
-    if (!retry && operation.pending) { setNotice('请先确认上次操作，再执行新的操作'); return false; }
-    const result = retry ? await operation.retry(runAction) : await operation.submit(runAction, { name, request });
-    if (!result) return false;
-    if (request.kind === 'settings') {
-      setSettings(result); shell.setTimeZone?.(result.timeZone); setTimeZone(result.timeZone); setSettingsState({ status: 'done' });
-    }
-    reload();
-    return true;
-  }
-  async function retryAction() {
-    if (!actionState.request) return;
-    const ok = await executeAction(actionState.name, actionState.request, true);
-    const current = editorRef.current;
-    if (ok && current?.entryId && !current.pending) await openEntry(current.entryId, current.originDate);
-  }
-
-  async function setInstanceModeAt(originDate, mode) {
-    if (!editor?.entryId) return;
-    const entryId = editor.entryId;
-    await executeAction(`${mode}:${originDate}`, {
-      kind: 'exception', args: { id: entryId, originDate,
-        payload: { expectedVersion: editor.expectedVersion, mode } }
-    });
-    await openEntry(entryId, editor.scope === 'instance' ? editor.originDate : null);
-  }
-
-  async function deleteOrRestoreEntry() {
-    if (!editor?.entryId) return;
-    const deleted = !editor.entryDeleted;
-    const ok = await executeAction('delete', {
-      kind: 'deletion', args: { id: editor.entryId,
-        payload: { expectedVersion: editor.expectedVersion, deleted } }
-    });
-    if (ok) {
-      setSaveState({ status: 'saved' });
-      await openEntry(editor.entryId, editor.originDate);
-    }
-  }
-
-  async function setInstanceMode(mode) {
-    if (!editor?.entryId || editor.originDate === null) return;
-    const entryId = editor.entryId;
-    const originDate = editor.originDate;
-    const ok = await executeAction(mode, {
-      kind: 'exception', args: { id: entryId, originDate,
-        payload: { expectedVersion: editor.expectedVersion, mode } }
-    });
-    if (ok) await openEntry(entryId, originDate);
-  }
-
-  async function moveItemToUnscheduled(item, retry = false) {
-    if (!editor?.entryId || !editor.entry) return;
-    const entryId = retry ? moveState.request.fromEntryId : editor.entryId;
-    const originDate = editor.originDate;
-    const request = retry ? moveState.request : {
-      itemId: item.id,
-      fromEntryId: entryId,
-      fromVersion: editor.expectedVersion,
-      toEntryId: null,
-      toVersion: null,
-      toIndex: 0
-    };
-    const key = retry ? moveState.key : newRequestKey();
-    updateMoveState({ itemId: item.id, status: 'running', direction: 'out', key, request });
-    try {
-      await api.moveItem({ key, payload: request });
-      if (!mounted.current) return;
-      updateMoveState({ itemId: item.id, status: 'done' });
-      setSaveState({ status: 'idle' });
-      const refreshed = await api.getEntry(entryId);
-      if (!mounted.current) return;
-      const stillSelected = editorRef.current?.entryId === entryId;
-      if (refreshed.deletedAt !== null && stillSelected) {
-        // An untitled source that lost its last item is soft-deleted; the
-        // editor cannot keep editing it.
-        setEditor(null);
-        setNotice('原安排已移空并删除，可在“已删除”中恢复');
-      } else if (stillSelected) {
-        await openEntry(entryId, originDate);
-      }
-      reload();
-    } catch (problem) {
-      if (!mounted.current) return;
-      const value = problem.problem ?? {};
-      updateMoveState({
-        itemId: item.id,
-        status: value.kind === 'unconfirmed' ? 'unconfirmed' : 'error',
-        direction: 'out',
-        message: value.message ?? '移回未排期被拒绝',
-        key,
-        request
-      });
-      setSaveState({ status: 'error', problem: value });
-    }
-  }
-
-  async function moveUnscheduledItem({ entry, item, toEntryId }, retry = false) {
-    const request = retry ? moveState.request : { entry, item, toEntryId };
-    const target = occurrences.find((occurrence) => occurrence.key.entryId === toEntryId);
-    const key = retry ? moveState.key : newRequestKey();
-    const payload = retry && moveState.payload ? moveState.payload : {
-      itemId: item.id,
-      fromEntryId: entry.id,
-      fromVersion: entry.version,
-      toEntryId,
-      toVersion: target?.entryVersion ?? null,
-      toIndex: target ? target.items.length : 0
-    };
-    updateMoveState({ itemId: item.id, status: 'running', direction: 'in', key, request, payload });
-    try {
-      await api.moveItem({ key, payload });
-      if (!mounted.current) return;
-      updateMoveState({ itemId: item.id, status: 'done' });
-      if (editorRef.current?.entryId === entry.id) setEditor(null);
-      reload();
-    } catch (problem) {
-      if (!mounted.current) return;
-      const value = problem.problem ?? {};
-      updateMoveState({
-        itemId: item.id,
-        status: value.kind === 'unconfirmed' ? 'unconfirmed' : 'error',
-        direction: 'in',
-        payload,
-        message: value.message ?? '移动被拒绝',
-        key,
-        request
-      });
-    }
-  }
-  async function updateTimeZone(nextZone) {
-    setSettingsState({ status: 'running' });
-    const ok = await executeAction('settings', { kind: 'settings', args: { timeZone: nextZone, expectedVersion: settings.version } });
-    if (!ok) setSettingsState({ status: 'error', problem: { message: '时区未确认，请查看页面中的操作结果并重试确认' } });
-  }
-
-  const dates = useMemo(() => {
-    if (!from || !to) return [];
-    const list = [];
-    for (let date = from; diffDays(date, to) >= 0; date = addDays(date, 1)) list.push(date);
-    return list;
-  }, [from, to]);
-
-  const editorProps = editor && activeDraft ? {
-    mode: editor.mode,
-    scope: editor.scope,
-    draft: activeDraft,
-    instance: editor.entryId
-      ? {
-        key: { entryId: editor.entryId, originDate: editor.originDate },
-        repeat: editor.entry?.repeat ?? null,
-        time: editor.entry?.time ?? null,
-        state: editor.state,
-        entryDeleted: editor.entryDeleted
-      }
-      : null,
-    canEditGroup: !editor.entryDeleted,
-    canMoveItems: !editor.pending && JSON.stringify(activeDraft) === JSON.stringify(editor.baseline?.[editor.scope]),
-    timeZone,
-    classes,
-    lessons,
-    records,
-    linksError,
-    recordsState,
-    onRetryLinks: () => setLinksRetry(value => value + 1),
-    exceptions,
-    courseFeedback: editor.entryId && editor.entry?.time && !activeDraft.unscheduled
-      && activeDraft.course.classId && !editor.entryDeleted
-      && editor.state === 'active' && (editor.scope === 'instance' || !editor.entry?.repeat)
-      ? <CourseFeedback key={`${editor.entryId}:${editor.originDate ?? ''}`} entryId={editor.entryId}
-          originDate={editor.originDate} course={activeDraft.course} timeZone={timeZone}
-          onLinked={result => {
-            setEditor(current => {
-              if (!current) return current;
-              const scope = current.scope;
-              const draft = current.drafts[scope];
-              const nextDraft = { ...draft, course: { ...draft.course, recordIds: result.course.recordIds } };
-              return { ...current, expectedVersion: result.version ?? result.entryVersion,
-                drafts: { ...current.drafts, [scope]: nextDraft } };
-            });
-            reload();
-          }} /> : null,
-    saveState,
-    focusToken
-  } : null;
-
-  const editorActions = {
-    onPatch: patchDraft,
-    onScope: switchScope,
-    onSave: saveEditor,
-    onCancel: () => { const current = editorRef.current; if (current) patchScene({ editors: { ...sceneRef.current.editors, [`${current.entryId ?? 'new'}:${current.originDate ?? ''}`]: current } }); setEditor(null); },
-    onDelete: deleteOrRestoreEntry,
-    onRestore: deleteOrRestoreEntry,
-    onCancelInstance: () => setInstanceMode('cancelled'),
-    onRestoreInstance: () => setInstanceMode('inherit'),
-    onOpenInstance: (originDate) => (editor?.entryId ? openEntry(editor.entryId, originDate) : undefined),
-    onMoveItemToUnscheduled: moveItemToUnscheduled,
-    moveState,
-    onRetryMoveOut: () => moveItemToUnscheduled({ id: moveState.itemId }, true),
-    onInheritInstance: (originDate) => setInstanceModeAt(originDate, 'inherit'),
-    onCancelInstanceAt: (originDate) => setInstanceModeAt(originDate, 'cancelled'),
-    onRetry: retrySave,
-    onReload: reloadCurrent
-  };
-
-  useEffect(() => () => publishSchedulePanel({ active: false }), []);
-
-  const panelRef = useRef(null);
-  panelRef.current = { active: Boolean(editorProps), editor: editorProps, actions: editorActions };
-  useEffect(() => {
-    publishSchedulePanel(panelRef.current);
-  });
-
-  useAuxiliaryTools([{ ...SCHEDULE_TOOL, render: () => <ScheduleAuxTool /> }]);
-
-  const panelOwnsEditor = Boolean(shell.isPanelOpen && shell.panelMode === 'schedule');
-
-  return (
-    <div
-      className="wb-module sch-page"
-      data-region="schedule"
-      ref={pageRef}
-      onScroll={(event) => {
-        if (scrollRestored.current && event.target === event.currentTarget) {
-          patchScene({ pageScrollTop: event.currentTarget.scrollTop });
-        }
-      }}
-    >
-      <header className="sch-toolbar">
-        <div className="sch-range">
-          <button type="button" className="wb-button" data-action="today" onClick={() => {
-            const today = todayInZone(timeZone);
-            applyRange(today, addDays(today, Math.max(1, diffDays(from, to) + 1) - 1));
-          }}>
-            今天
-          </button>
-          <button type="button" className="wb-icon-button" aria-label="上一段" data-action="prev-range" onClick={() => shiftRange(-1)}>‹</button>
-          <button type="button" className="wb-icon-button" aria-label="下一段" data-action="next-range" onClick={() => shiftRange(1)}>›</button>
-          <label className="sch-range-field">
-            <span className="sch-sub-label">开始</span>
-            <input
-              className="wb-input"
-              type="date"
-              name="range-from"
-              value={rangeDraft.from}
-              min="1900-01-01"
-              max="2100-12-31"
-              onChange={(event) => setRangeDraft({ ...rangeDraft, from: event.target.value })}
-            />
-          </label>
-          <label className="sch-range-field">
-            <span className="sch-sub-label">结束</span>
-            <input
-              className="wb-input"
-              type="date"
-              name="range-to"
-              value={rangeDraft.to}
-              min="1900-01-01"
-              max="2100-12-31"
-              onChange={(event) => setRangeDraft({ ...rangeDraft, to: event.target.value })}
-            />
-          </label>
-          <label className="sch-range-field is-days">
-            <span className="sch-sub-label">天数</span>
-            <input
-              className="wb-input"
-              type="number"
-              name="range-days"
-              min="1"
-              max="366"
-              value={Math.max(1, diffDays(rangeDraft.from || from, rangeDraft.to || to) + 1)}
-              onChange={(event) => {
-                const days = Math.max(1, Number(event.target.value) || 1);
-                setRangeDraft({ from: rangeDraft.from || from, to: addDays(rangeDraft.from || from, days - 1) });
-              }}
-            />
-          </label>
-          <button type="button" className="wb-button is-primary" data-action="apply-range" onClick={() => applyRange(rangeDraft.from, rangeDraft.to)}>
-            应用
-          </button>
-        </div>
-        <div className="sch-toolbar-actions">
-          <span className="sch-range-label" data-region="range-label">{from && to ? formatRangeLabel(from, to) : ''}</span>
-          <button type="button" className="wb-button" data-action="new-unscheduled" onClick={openUnscheduledCreate}>
-            记一件事
-          </button>
-        </div>
-      </header>
-
-      {stale && (
-        <p className="sch-stale" data-region="stale-notice">
-          未能更新，显示的是上一次结果
-          <button type="button" className="wb-button" onClick={reload}>重试</button>
-        </p>
-      )}
-      {!stale && error && status === 'error' && (
-        <p className="sch-stale" data-region="range-error">{error.message ?? '读取失败'}</p>
-      )}
-
-      <div className="sch-body">
-        <div className="sch-main">
-          {status === 'loading' && occurrences.length === 0 && <p className="wb-muted">正在加载日程…</p>}
-          {dates.length > 0 && (
-            <TimeGrid
-              dates={dates}
-              timeZone={timeZone}
-              occurrences={occurrences}
-              selection={selection}
-              onSelect={(next) => {
-                setSelection(next);
-                openCreate(next);
-              }}
-              onOpen={(occurrence) => openEntry(occurrence.key.entryId, occurrence.key.originDate)}
-              scroll={{ top: scene.gridScrollTop, left: scene.gridScrollLeft, ready: status === 'ready', restoreKey: `${shell.accountKey}:${from}:${to}` }}
-              onScroll={({ top, left }) => patchScene({ gridScrollTop: top, gridScrollLeft: left })}
-              today={todayInZone(timeZone)}
-            />
-          )}
-          <ScheduleLists
-            regionRef={listsRef}
-            onScroll={(event) => {
-              if (scrollRestored.current && event.target === event.currentTarget) {
-                patchScene({ listsScrollTop: event.currentTarget.scrollTop });
-              }
-            }}
-            unscheduled={unscheduled}
-            refreshToken={reloadToken}
-            occurrences={occurrences}
-            open={{ unscheduled: scene.unscheduledOpen, priority: scene.priorityOpen, deleted: scene.deletedOpen }}
-            onToggle={(key) => patchScene({ [`${key}Open`]: !scene[`${key}Open`] })}
-            onOpenEntry={openEntry}
-            onMove={moveUnscheduledItem}
-            moveState={moveState}
-            timeZone={timeZone}
-          />
-        </div>
-
-        {!panelOwnsEditor && (
-          <aside className="sch-side" data-region="schedule-side">
-            <ModulePresence present={Boolean(editorProps)}>
-              {editorProps && <EntryEditor {...editorProps} {...editorActions} />}
-            </ModulePresence>
-            <ModulePresence present={!editorProps}>
-              {!editorProps && (
-                <RangeOverview
-                  from={from}
-                  to={to}
-                  month={scene.month || (from ? from.slice(0, 7) : '')}
-                  onMonth={(month) => patchScene({ month })}
-                  onPick={pickMonthDay}
-                  timeZone={timeZone}
-                  occurrenceCount={occurrences.length}
-                  unscheduledCount={unscheduled.reduce((total, entry) => total + entry.items.length, 0)}
-                  settings={settings}
-                  settingsOpen={scene.settingsOpen}
-                  onSettingsOpen={() => patchScene({ settingsOpen: true })}
-                  onSettingsClose={() => patchScene({ settingsOpen: false })}
-                  onUpdateTimeZone={updateTimeZone}
-                  settingsState={settingsState}
-                />
-              )}
-            </ModulePresence>
-          </aside>
-        )}
-      </div>
-
-      <ModulePresence present={Boolean(notice)}>
-      {notice && (
-        <div className="sch-action-state" data-region="notice">
-          <span>{notice}</span>
-          <button type="button" className="wb-button" onClick={() => setNotice(null)}>关闭</button>
-        </div>
-      )}
-      </ModulePresence>
-      {actionState.status === 'unconfirmed' && (
-        <div className="sch-action-state" data-region="action-state">
-          <span>上次操作结果未确认</span>
-          <button type="button" className="wb-button" data-action="retry-action" onClick={retryAction}>用原请求确认</button>
-        </div>
-      )}
-      {actionState.status === 'error' && (
-        <div className="sch-action-state is-error" data-region="action-state">
-          <span>{actionState.problem?.message ?? '操作被拒绝'}</span>
-          <button type="button" className="wb-button" onClick={operation.reset}>关闭</button>
-        </div>
-      )}
-    </div>
-  );
+  const highlightFrom = scene.view.kind === 'month' ? '' : scene.view.kind === 'week' ? monday(scene.anchor) : scene.anchor;
+  const highlightTo = highlightFrom ? addDays(highlightFrom, (scene.view.kind === 'day' ? 1 : scene.view.kind === 'week' ? 7 : scene.view.days) - 1) : '';
+  const saveError = validation || op.problem?.message || (draft?.savePaused ? '本地输入已保留，请确认后重新保存' : '');
+  const labelsChanged = label => { setData(current => ({ ...current, labels: label.deleted ? current.labels.filter(x => x.id !== label.id) : [...current.labels.filter(x => x.id !== label.id), label] })); reload(); };
+  return <div className={`cal-page${mobileSidebar ? ' sidebar-open' : ''}${shell.isPanelOpen && shell.panelMode === 'ai' ? ' has-ai' : ''}`} data-region="schedule">
+    {(loadError || (op.problem && !draft)) && <div className="cal-load-error" role="alert">{loadError || op.problem.message}<button onClick={() => op.pending ? perform(null, true) : reload()}>重试</button></div>}
+    <section className="cal-board" aria-label="日历"><header className="cal-toolbar"><MonthTitle date={scene.view.kind === 'month' ? `${displayMonth}-01` : scene.anchor}/><div className="cal-toolbar-actions"><ViewMenu view={scene.view} onChange={changeView}/><button className="cal-today-button" onClick={() => { setDisplayMonth(today.slice(0, 7)); updateScene({ anchor: scene.view.kind === 'week' ? monday(today) : today, month: today.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 }); }}>今天</button><IconButton name="left" label="上一段" onClick={() => navigate(-1)}/><IconButton name="right" label="下一段" onClick={() => navigate(1)}/><span className="cal-mobile-toggle"><IconButton name="grid" label="打开月份与任务" onClick={() => setMobileSidebar(true)}/></span></div></header>
+      <TimeGrid key={scene.view.kind === 'month' ? `${scene.anchor}:${scene.monthJump}` : 'time'} view={scene.view} anchor={scene.anchor} zone={zone} occurrences={data.occurrences} labels={data.labels} selected={draft}
+        onRange={(from, to) => setRange(current => current.from === from && current.to === to ? current : { from, to })}
+        onSelect={create} onOpen={occurrence => openEntry(occurrence.key.entryId, occurrence.key.originDate)} onMove={moveEvent}
+        onDay={date => updateScene({ anchor: date, view: { kind: 'day', days: 1 }, month: date.slice(0, 7) })}
+        onMonthScroll={(month, monthScroll) => { setDisplayMonth(month); updateScene({ month, monthScroll }); }}
+        scroll={scene.scroll} monthScroll={scene.monthScroll} onScroll={scroll => updateScene({ scroll })} disabled={op.isRunning || Boolean(op.pending)}/>
+      {loadState === 'loading' && <span className="cal-loading" role="status">正在加载…</span>}
+    </section>
+    <aside className="cal-sidebar" aria-label="月份与任务"><div className="cal-mobile-close"><IconButton name="close" label="关闭月份与任务" onClick={() => setMobileSidebar(false)}/></div>
+      <MiniCalendar month={scene.month} from={highlightFrom} to={highlightTo} today={today} onMonth={month => updateScene({ month })} onSelect={(from, to, dragged) => {
+        const view = dragged ? { kind: 'days', days: diffDays(from, to) + 1 } : scene.view;
+        setDisplayMonth(from.slice(0, 7)); updateScene({ anchor: view.kind === 'week' ? monday(from) : from, view, month: from.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 });
+      }}/>
+      {draft ? <CalendarEditor key={draft.clientId} draft={draft} onPatch={patchContent} onClose={closeEditor} onDelete={() => draft.id ? setDeletePrompt(true) : closeEditor()}
+        labels={data.labels} onLabels={labelsChanged} accountKey={shell.accountKey} status={op.status} error={saveError}
+        onRetry={() => op.pending ? perform(null, true) : flush({ explicit: true })}
+        onReload={op.problem?.kind === 'conflict' ? async () => { try { const entry = await api.getEntry(draft.id); setDraft({ ...sceneRef.current.draft, entry, version: entry.version, savePaused: true }); op.reset(); setValidation('已读取最新版本；本地输入保留，请重新保存'); } catch { setValidation('读取失败，请重试'); } } : null}/>
+        : <Upcoming entries={data.entries} occurrences={data.upcoming} labels={data.labels} today={today} grouped={scene.grouped} onGroup={() => updateScene({ grouped: !scene.grouped })} onNew={() => create()} onOpen={openEntry}/>}
+    </aside>
+    {scopePrompt && <CalendarDialog title="编辑重复任务" onClose={() => { setScopePrompt(false); if (draft) setDraft({ ...draft, content: structuredClone(draft.baseline) }); }}><p>将修改应用到哪些任务？</p><footer><button onClick={() => { setScopePrompt(false); flush({ scope: 'instance' }); }}>仅此任务</button><button className="is-primary" onClick={() => { setScopePrompt(false); flush({ scope: 'series' }); }}>所有重复任务</button></footer></CalendarDialog>}
+    {deletePrompt && <CalendarDialog title="删除任务" onClose={() => setDeletePrompt(false)}><p>删除“{titleOf(draft.content)}”？</p><footer><button onClick={() => setDeletePrompt(false)}>取消</button>{draft.origin && <button className="is-danger" disabled={op.isRunning} onClick={() => remove('instance')}>仅此任务</button>}<button className="is-danger" disabled={op.isRunning || Boolean(op.pending)} onClick={() => remove('series')}>{draft.origin ? '所有重复任务' : '删除'}</button></footer></CalendarDialog>}
+    {movePrompt && <CalendarDialog title="调整重复任务" onClose={() => { movePrompt.revert(); setMovePrompt(null); }}><p>将时间调整应用到哪些任务？</p><footer><button onClick={() => moveEvent(movePrompt, 'instance')}>仅此任务</button><button className="is-primary" onClick={() => moveEvent(movePrompt, 'series')}>所有重复任务</button></footer></CalendarDialog>}
+  </div>;
 }

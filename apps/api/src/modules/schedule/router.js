@@ -13,6 +13,8 @@ import { validateIdPath } from '../../workbench/schema.js';
 import { unauthenticated } from '../questions/contract.js';
 import {
   validateCreateEntry,
+  validateCreateLabel,
+  validateUpdateLabel,
   validateExceptionInput,
   validateMoveItem,
   validateSetDeletion,
@@ -55,6 +57,15 @@ function requireEnumQuery(query, name, allowed, fallback) {
 
 export function createScheduleRouter({ service, mutations }) {
   const router = Router();
+
+  router.get('/labels', (req, res) => {
+    validateQuery(req.query, []);
+    res.json(service.listLabels(requirePrincipal(req)));
+  });
+  router.post('/labels', createMutationHandler({ mutations, method: 'POST', validate: validateCreateLabel,
+    write: ({ principal, body }) => ({ status: 201, body: service.createLabel(principal, body) }) }));
+  router.put('/labels/:id', createMutationHandler({ mutations, method: 'PUT', validate: withPathId(validateUpdateLabel),
+    write: ({ principal, body, request }) => ({ status: 200, body: service.updateLabel(principal, request.params.id, body) }) }));
 
   router.get('/settings', (req, res) => {
     validateQuery(req.query, []);
