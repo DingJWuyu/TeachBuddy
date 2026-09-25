@@ -1,165 +1,74 @@
+import { useRef, useState } from 'react';
 import { useScene } from '../workbench/useScene.js';
-/**
- * Class list pane: the only entry when there is no class yet, the deleted
- * filter for restoring one, and the create form. The list keeps its scroll
- * while the teacher moves between classes.
- */
-import { useState } from 'react';
-import { ModulePresence } from '../workbench/ModuleMotion.jsx';
+import { useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
 import { Icon } from '../workbench/icons.jsx';
+import { MenuItem, Popover } from '../workbench/ModuleOverlays.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
 import { createClass } from './api.js';
 
-export function ClassList({
-  accountKey,
-  items,
-  status,
-  error,
-  listState,
-  onListStateChange,
-  selectedId,
-  onSelect,
-  onCreated,
-  onReload,
-  scrollTop,
-  onScrollTop
-}) {
-  const [scene, patchScene] = useScene(accountKey, 'class-create', { creating: false, name: '' });
-  const { creating, name } = scene;
-  const setCreating = value => patchScene({ creating: value });
-  const setName = value => patchScene({ name: value });
+export function ClassList({ items, status, error, listState, onListStateChange, selectedId,
+  onSelect, onCreate, onReload, scrollTop, onScrollTop, onClose }) {
+  const scroll = useScrollRestore(scrollTop || 0, onScrollTop, items.length);
+  const deleted = listState === 'deleted';
+  return <aside className="c-class-pane" data-region="class-list" aria-label="我的班级">
+    <header className="c-list-head">
+      <h2><Icon name={deleted ? 'trash' : 'classes'} size={20} />{deleted ? '已删除的班级' : '我的班级'}</h2>
+      {onClose ? <button type="button" className="wb-icon-button" title="关闭班级列表" aria-label="关闭班级列表" onClick={onClose}><Icon name="close" /></button>
+        : <Popover label="班级列表操作">{({ close }) => <MenuItem icon="trash" onClick={() => { close(); onListStateChange('deleted'); }}>已删除的班级</MenuItem>}</Popover>}
+    </header>
+    {deleted ? <button className="wb-button c-list-return" onClick={() => onListStateChange('active')}><Icon name="back" size={15} />返回我的班级</button>
+      : <p className="c-list-caption">每个班的进度与反馈，分别记在这里。</p>}
+    {status === 'loading' && <p className="wb-muted c-pane-note">正在加载班级…</p>}
+    {status === 'error' && <div className="wb-inline-error c-pane-note" role="alert"><span>{error?.message || '无法加载班级'}</span><button className="wb-button" onClick={onReload}>重试</button></div>}
+    <div className="c-class-scroll" ref={scroll.ref} onScroll={scroll.onScroll} data-region="class-rows-scroll">
+      {status === 'ready' && items.length === 0 && <p className="wb-empty-note" data-region="class-empty">{deleted ? '没有已删除的班级' : '还没有班级'}</p>}
+      <ul className="c-class-rows">
+        {items.map(classroom => <li key={classroom.id}>
+          <button type="button" className={`c-class-row${selectedId === classroom.id ? ' is-active' : ''}`}
+            data-class-id={classroom.id} aria-current={selectedId === classroom.id ? 'true' : undefined} onClick={() => onSelect(classroom.id)}>
+            <span className="c-class-avatar"><Icon name="classes" size={19} /></span>
+            <span className="c-class-name">{classroom.name}</span>
+            {selectedId === classroom.id && <Icon name="check" size={15} />}
+          </button>
+        </li>)}
+      </ul>
+    </div>
+    <footer className="c-list-footer">
+      {!deleted && <button type="button" className="wb-button c-create-button" name="new-class" onClick={onCreate}><Icon name="plus" size={16} />创建班级</button>}
+      {onClose && !deleted && <button className="wb-text-button" onClick={() => onListStateChange('deleted')}>已删除的班级</button>}
+    </footer>
+  </aside>;
+}
+
+export function ClassCreateDialog({ accountKey, onCreated, onClose }) {
+  const [scene, patchScene] = useScene(accountKey, 'class-create', { name: '' });
   const [localError, setLocalError] = useState(null);
   const submit = useIdempotentSubmit({ accountKey, name: 'pending:class-create' });
-  const scroll = useScrollRestore(scrollTop || 0, onScrollTop, items.length);
-
-  async function save() {
-    const trimmed = name.trim();
-    if (trimmed === '') {
-      setLocalError('班级名称不能为空');
-      return;
-    }
+  const dialog = useRef(null);
+  const busy = submit.status === 'running';
+  useModuleDialogFocus(dialog, () => { if (!busy) onClose(); });
+  async function save(event) {
+    event.preventDefault();
+    if (busy) return;
+    if (!scene.name.trim()) { setLocalError('填写一个班级名称，例如：高一（1）班'); return; }
     setLocalError(null);
-    const payload = { name };
-    const created = await submit.submit(({ key, payload: body }) => createClass({ key, payload: body }), payload);
-    if (created) {
-      setName('');
-      setCreating(false);
-      onCreated(created);
-    }
+    const created = submit.status === 'unconfirmed'
+      ? await submit.retry(({ key, payload }) => createClass({ key, payload }))
+      : await submit.submit(({ key, payload }) => createClass({ key, payload }), { name: scene.name });
+    if (created) { patchScene({ name: '', creating: false }); onCreated(created); }
   }
-
-  async function retryCreate() {
-    const created = await submit.retry(({ key, payload }) => createClass({ key, payload }));
-    if (created) {
-      setName('');
-      setCreating(false);
-      onCreated(created);
-    }
-  }
-
-  return (
-    <aside className="wb-list-pane c-class-pane" data-region="class-list">
-      <div className="wb-list-head">
-        <div className="c-list-toolbar">
-          <div className="wb-filters" role="group" aria-label="班级过滤">
-            <button
-              type="button"
-              className={`wb-chip${listState === 'active' ? ' is-active' : ''}`}
-              aria-pressed={listState === 'active'}
-              onClick={() => onListStateChange('active')}
-            >
-              我的班级
-            </button>
-            <button
-              type="button"
-              className={`wb-chip${listState === 'deleted' ? ' is-active' : ''}`}
-              aria-pressed={listState === 'deleted'}
-              onClick={() => onListStateChange('deleted')}
-            >
-              已删除
-            </button>
-          </div>
-          {listState === 'active' && !creating && (
-            <button type="button" className="wb-button is-primary" name="new-class" onClick={() => setCreating(true)}>
-              <Icon name="plus" size={14} />
-              新建
-            </button>
-          )}
-        </div>
-        <ModulePresence present={creating} mode="collapse">
-        {creating && (
-          <div className="c-create-class" data-region="class-create">
-            <input
-              className="wb-input"
-              aria-label="班级名称"
-              placeholder="班级名称"
-              value={name}
-              autoFocus
-              onChange={(event) => setName(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') save();
-                if (event.key === 'Escape') {
-                  setName('');
-                  setCreating(false);
-                }
-              }}
-            />
-            <div className="c-create-actions">
-              <button type="button" className="wb-button" onClick={() => { setName(''); setCreating(false); }}>取消</button>
-              <button
-                type="button"
-                className="wb-button is-primary"
-                name={submit.status === 'unconfirmed' ? 'retry-confirm' : 'create-class'}
-                onClick={() => (submit.status === 'unconfirmed' ? retryCreate() : save())}
-              >
-                {submit.status === 'unconfirmed' ? '重试确认' : '创建'}
-              </button>
-            </div>
-          </div>
-        )}
-        </ModulePresence>
-        {localError && <p className="c-field-error" data-region="class-create-error">{localError}</p>}
-        {submit.status === 'unconfirmed' && !creating && (
-          <p className="c-field-error">上次新建的结果未确认，可再次重试确认</p>
-        )}
-        {submit.status === 'failed' && (
-          <p className="c-field-error" data-region="class-create-error">{submit.problem?.message || '新建失败'}</p>
-        )}
-      </div>
-
-      {status === 'loading' && <p className="wb-muted c-pane-note">正在加载班级…</p>}
-      {status === 'error' && (
-        <div className="wb-inline-error c-pane-note" data-region="classes-error">
-          <span>{error?.message || '无法加载班级'}</span>
-          <button type="button" className="wb-button" onClick={onReload}>重试</button>
-        </div>
-      )}
-      {status === 'ready' && items.length === 0 && (
-        <p className="wb-empty-note c-pane-note" data-region="class-empty">
-          {listState === 'deleted' ? '没有已删除的班级' : '还没有班级，先新建一个'}
-        </p>
-      )}
-      <div className="wb-list-scroll c-class-scroll" ref={scroll.ref} onScroll={scroll.onScroll} data-region="class-rows-scroll">
-        <ul className="wb-card-list" data-region="class-rows">
-          {items.map((classroom) => (
-            <li key={classroom.id}>
-              <button
-                type="button"
-                className={`wb-card-row c-class-row${selectedId === classroom.id ? ' is-active' : ''}`}
-                data-class-id={classroom.id}
-                aria-current={selectedId === classroom.id ? 'true' : undefined}
-                onClick={() => onSelect(classroom.id)}
-              >
-                <span className="wb-card-title">{classroom.name}</span>
-                <span className="wb-row-tags">
-                  {classroom.deletedAt && <span className="wb-tag is-deleted">已删除</span>}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </aside>
-  );
+  return <div className="wb-dialog-host wb-module-dialog c-create-dialog-host" data-overlay="dialog">
+    <div className="wb-dialog-scrim" role="presentation" onClick={() => { if (!busy) onClose(); }} />
+    <form ref={dialog} className="wb-dialog c-create-dialog" role="dialog" aria-modal="true" aria-label="创建班级" onSubmit={save}>
+      <h2>创建班级</h2><p>为这个班单独记录教学进度和课堂反馈。</p>
+      <label className="wb-field"><span className="wb-label">班级名称</span>
+        <input className="wb-input" aria-label="班级名称" placeholder="例如：高一（1）班" value={scene.name} disabled={busy || submit.status === 'unconfirmed'}
+          onChange={event => { patchScene({ name: event.target.value }); setLocalError(null); }} /></label>
+      {(localError || submit.status === 'failed') && <p className="c-field-error" role="alert">{localError || submit.problem?.message || '创建失败，请重试'}</p>}
+      {submit.status === 'unconfirmed' && <p className="c-field-error" role="status">暂时无法确认是否创建，班级名称已保留。</p>}
+      <div className="wb-dialog-actions"><button type="button" className="wb-button" disabled={busy} onClick={onClose}>取消</button>
+        <button type="submit" className="wb-button is-primary" name="create-class" disabled={busy}>{busy ? '创建中…' : submit.status === 'unconfirmed' ? '重试确认' : '创建班级'}</button></div>
+    </form>
+  </div>;
 }

@@ -4,10 +4,10 @@ import { useScene } from '../workbench/useScene.js';
  * A deleted class is read-only until it is restored; records keep their own
  * deletion state either way.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon } from '../workbench/icons.jsx';
 import { ConfirmDialog, MenuItem, Popover } from '../workbench/ModuleOverlays.jsx';
-import { ModulePresence } from '../workbench/ModuleMotion.jsx';
+import { ModuleDisclosure, ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
 import { setClassDeletion, updateClass } from './api.js';
@@ -30,7 +30,7 @@ export function ClassDetail({
   onOpenRecord,
   onCloseRecord,
   onClassChanged,
-  onBack,
+  onChooseClass,
   detailScrollTop,
   onDetailScrollTop
 }) {
@@ -43,9 +43,50 @@ export function ClassDetail({
   const deletion = useIdempotentSubmit({ accountKey, name: `pending:class-deletion:${classroom.id}` });
   const deleted = classroom.deletedAt !== null;
   const activeRecords = records.active ?? [];
+  const locatedRecord = [...activeRecords, ...(records.deleted ?? [])].find(record => record.id === openRecordId);
+  const editing = Boolean(openRecordId && !deleted && (!locatedRecord || !locatedRecord.deletedAt));
   const position = latestPosition(activeRecords);
+  const next = activeRecords.find(record => record.nextNote?.trim());
+  const [createdId, setCreatedId] = useState(null);
   const scroll = useScrollRestore(detailScrollTop || 0, onDetailScrollTop, classroom.id);
   const pendingScroll = useRef(detailScrollTop || 0);
+  const [reading, patchReading] = useScene(accountKey, `class-reading:${classroom.id}`, { anchor: null });
+  const returning = useRef(false);
+
+  function openEditor(id) {
+    const node = scroll.ref.current;
+    const row = node?.querySelector(`[data-record-id="${CSS.escape(id)}"]`);
+    if (row) patchReading({ anchor: { id, offset: row.getBoundingClientRect().top - node.getBoundingClientRect().top } });
+    onOpenRecord(id);
+  }
+  function closeEditor() {
+    returning.current = Boolean(openRecordId && reading.anchor);
+    onCloseRecord();
+  }
+  useLayoutEffect(() => {
+    if (openRecordId || !returning.current || !reading.anchor) return;
+    const node = scroll.ref.current;
+    const row = node?.querySelector(`[data-record-id="${CSS.escape(reading.anchor.id)}"]`);
+    if (!row) { returning.current = false; return; }
+    let frame;
+    let settledFrames = 0;
+    // Both the composer and the inline editor change height on return. Keep the
+    // reading anchor in place through their transitions, including reduced motion.
+    const restore = () => {
+      node.scrollTop += row.getBoundingClientRect().top - node.getBoundingClientRect().top - reading.anchor.offset;
+      const moving = node.getAnimations({ subtree: true }).some(animation => animation.playState === 'running'
+        && animation.effect?.target?.matches('.wb-module-presence, .wb-module-disclosure-grid'));
+      settledFrames = moving ? 0 : settledFrames + 1;
+      if (settledFrames < 3) frame = requestAnimationFrame(restore);
+      else {
+        returning.current = false;
+        row.querySelector('[name="record-open"]')?.focus({ preventScroll: true });
+        patchReading({ anchor: null });
+      }
+    };
+    frame = requestAnimationFrame(restore);
+    return () => cancelAnimationFrame(frame);
+  }, [openRecordId, reading.anchor, patchReading, scroll.ref]);
 
   useEffect(() => {
     const node = scroll.ref.current;
@@ -102,20 +143,19 @@ export function ClassDetail({
   }
 
   return (
-    <section className="wb-content-pane c-class-detail" data-region="class-detail" data-class-id={classroom.id}>
+    <section className="c-class-detail" data-region="class-detail" data-class-id={classroom.id}>
       <header className="c-class-head">
-        {onBack && (
-          <button type="button" className="wb-icon-button c-back" aria-label="返回班级列表" name="back-to-classes" onClick={onBack}>
-            <Icon name="back" size={16} />
-          </button>
-        )}
+        <span className="c-module-icon"><Icon name="classes" size={23} /></span>
+        <h1>班级教学</h1>
           <>
-            <h1 className="c-class-title">{classroom.name}</h1>
+            <button type="button" className="c-class-switch" title={`切换班级 · ${classroom.name}`} aria-label={`切换班级，当前：${classroom.name}`} onClick={onChooseClass}>
+              <span>{classroom.name}</span><Icon name="chevron" size={14} />
+            </button>
             {deleted && <span className="wb-tag is-deleted">已删除</span>}
             <span className="c-head-spacer" />
             <Popover label="班级操作" icon="more">
               {({ close }) => <>
-                <MenuItem name="rename-class" onClick={() => { close(); setName(classroom.name); setRenaming(true); }}>重命名</MenuItem>
+                <MenuItem name="rename-class" onClick={() => { close(); setName(classroom.name); setRenaming(true); }}>修改班级名称</MenuItem>
                 {!deleted && <MenuItem name="delete-class" icon="trash" danger onClick={() => { close(); setConfirmingDelete(true); }}>删除班级</MenuItem>}
               </>}
             </Popover>
@@ -177,12 +217,15 @@ export function ClassDetail({
       </header>
 
       <div className="c-detail-scroll" data-region="class-detail-scroll" ref={scroll.ref} onScroll={scroll.onScroll}>
-        {position && <div className="c-position" data-region="latest-position">
-          <span className="wb-label">最近教到</span>
-          <p className="c-position-text">
-              {position.text}
-              <span className="wb-muted"> · {formatRecordedOn(position.record.recordedOn)}</span>
-            </p>
+        {(position || next) && <div className="c-overview">
+          {position && <div className="c-overview-item" data-region="latest-position">
+            <span className="c-overview-label"><Icon name={position.kind === 'position' ? 'prep' : 'history'} size={16} />{position.kind === 'position' ? '最近教到' : '最近记录'}<time dateTime={position.record.recordedOn}>{formatRecordedOn(position.record.recordedOn)}</time></span>
+            <p>{position.text}</p>
+          </div>}
+          {next && <div className="c-overview-item" data-region="latest-next-note">
+            <span className="c-overview-label"><Icon name="calendar" size={16} />下次教学想法<time dateTime={next.recordedOn}>{formatRecordedOn(next.recordedOn)}</time></span>
+            <p>{next.nextNote}</p>
+          </div>}
         </div>}
 
         {deleted && (
@@ -192,13 +235,17 @@ export function ClassDetail({
         )}
 
         {!deleted && (
+          <ModuleDisclosure open={!editing} className="c-composer-disclosure">
           <RecordComposer
             key={classroom.id}
             accountKey={accountKey}
             classId={classroom.id}
             timeZone={timeZone}
-            onCreated={onReloadRecords}
+            journal
+            active={!editing}
+            onCreated={record => { setCreatedId(record.id); onRecordStateChange('active'); onReloadRecords(); }}
           />
+          </ModuleDisclosure>
         )}
 
         {recordsStatus === 'loading' && <p className="wb-muted c-pane-note">正在加载记录…</p>}
@@ -208,6 +255,10 @@ export function ClassDetail({
             <button type="button" className="wb-button" onClick={onReloadRecords}>重试</button>
           </div>
         )}
+        {openRecordId && recordsStatus === 'ready' && !locatedRecord && <div className="wb-inline-error" role="status">
+          <span>没有找到这条记录，可以返回查看本班的其他记录。</span>
+          <button className="wb-button" onClick={closeEditor}>返回教学记录</button>
+        </div>}
         {(records.active !== null || records.deleted !== null) && (
           <RecordList
             readOnly={deleted}
@@ -217,9 +268,11 @@ export function ClassDetail({
             state={recordState}
             onStateChange={onRecordStateChange}
             openRecordId={openRecordId}
-            onOpen={onOpenRecord}
-            onClose={onCloseRecord}
+            onOpen={openEditor}
+            onClose={closeEditor}
             onChanged={onReloadRecords}
+            createdId={createdId}
+            onRevealed={() => setCreatedId(null)}
           />
         )}
       </div>

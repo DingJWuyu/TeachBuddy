@@ -4,7 +4,8 @@
  * its scroll and the editor's draft survives leaving and returning.
  */
 import { ModulePresence } from '../workbench/ModuleMotion.jsx';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Icon } from '../workbench/icons.jsx';
 import { ConfirmDialog, MenuItem, Popover } from '../workbench/ModuleOverlays.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { setRecordDeletion, decodeRecordRequest, recordRequest } from './api.js';
@@ -12,10 +13,16 @@ import { formatRecordedOn } from './model.js';
 import { RecordEditor, RECORD_EXTRA_FIELDS } from './RecordEditor.jsx';
 import { SourceChips } from './SourcePicker.jsx';
 
-function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onChanged, readOnly }) {
+function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onChanged, readOnly, justCreated, onRevealed }) {
   const [confirming, setConfirming] = useState(false);
   const deletion = useIdempotentSubmit({ accountKey, name: `pending:class-record-deletion:${record.id}` });
   const deleted = record.deletedAt !== null;
+  const row = useRef(null);
+  useEffect(() => {
+    if (!justCreated) return;
+    row.current?.scrollIntoView({ block: 'nearest' });
+    onRevealed();
+  }, [justCreated, onRevealed]);
 
   async function submitDeletion(nextDeleted) {
     setConfirming(false);
@@ -33,14 +40,14 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
   }
 
   return (
-    <li className={`c-record${open ? ' is-editing' : ''}${deleted ? ' is-deleted' : ''}`} data-record-id={record.id} data-record-state={deleted ? 'deleted' : 'active'}>
+    <li ref={row} className={`c-record${open && !deleted && !readOnly ? ' is-editing' : ''}${deleted ? ' is-deleted' : ''}`} data-record-id={record.id} data-record-state={deleted ? 'deleted' : 'active'}>
       <div className="c-record-head">
-        <span className="c-record-date">{formatRecordedOn(record.recordedOn)}</span>
+        <time className="c-record-date" dateTime={record.recordedOn}><Icon name="calendar" size={14} />{formatRecordedOn(record.recordedOn)}</time>
         {deleted && <span className="wb-tag is-deleted">已删除</span>}
         <span className="c-record-spacer" />
-        {!deleted && !readOnly && (
-          <button type="button" className="wb-button" name="record-open" onClick={() => (open ? onClose() : onOpen(record.id))}>
-            {open ? '收起' : '编辑'}
+        {!deleted && !readOnly && !open && (
+          <button type="button" className="wb-button c-text-action" name="record-open" onClick={() => onOpen(record.id)}>
+            编辑记录
           </button>
         )}
         {!readOnly && <Popover label="记录操作" icon="more">
@@ -74,7 +81,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
           )}
         </Popover>}
       </div>
-      <ModulePresence present={!open || readOnly} mode="collapse">
+      <ModulePresence present={!open || readOnly || deleted} mode="collapse">
       {record.note && <p className="c-record-note">{record.note}</p>}
       {RECORD_EXTRA_FIELDS.map(([key, label]) => (record[key]
         ? (
@@ -95,8 +102,8 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
       {deletion.status === 'failed' && (
         <p className="wb-inline-error" data-region="record-action-problem">{deletion.problem?.message || '操作失败'}</p>
       )}
-      <ModulePresence present={open && !readOnly} mode="collapse">
-      {open && !readOnly && (
+      <ModulePresence present={open && !readOnly && !deleted} mode="collapse">
+      {open && !readOnly && !deleted && (
         <RecordEditor
           accountKey={accountKey}
           generation={generation}
@@ -121,33 +128,17 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
   );
 }
 
-export function RecordList({ accountKey, generation, records, state, onStateChange, openRecordId, onOpen, onClose, onChanged, readOnly = false }) {
+export function RecordList({ accountKey, generation, records, state, onStateChange, openRecordId, onOpen, onClose, onChanged, readOnly = false, createdId, onRevealed }) {
   return (
     <section className="c-records" data-region="record-list">
       <div className="c-records-head">
-        <h2 className="c-section-title">教学记录 <span className="c-record-count">{records.length}</span></h2>
-        <div className="wb-filters" role="group" aria-label="记录过滤">
-          <button
-            type="button"
-            className={`wb-chip${state === 'active' ? ' is-active' : ''}`}
-            aria-pressed={state === 'active'}
-            onClick={() => onStateChange('active')}
-          >
-            全部
-          </button>
-          <button
-            type="button"
-            className={`wb-chip${state === 'deleted' ? ' is-active' : ''}`}
-            aria-pressed={state === 'deleted'}
-            onClick={() => onStateChange('deleted')}
-          >
-            已删除
-          </button>
-        </div>
+        <h2 className="c-section-title"><Icon name="history" size={18} />{state === 'deleted' ? '已删除的记录' : '教学记录'} <span className="c-record-count">{records.length}</span></h2>
+        {state === 'deleted' ? <button className="wb-button c-text-action" onClick={() => { onClose(); onStateChange('active'); }}><Icon name="back" size={14} />返回教学记录</button>
+          : <Popover label="教学记录选项">{({ close }) => <MenuItem icon="trash" onClick={() => { close(); onClose(); onStateChange('deleted'); }}>已删除的记录</MenuItem>}</Popover>}
       </div>
       {records.length === 0 && (
         <p className="wb-empty-note" data-region="record-empty">
-          {state === 'deleted' ? '没有已删除的记录' : '还没有教学记录'}
+          {state === 'deleted' ? '没有已删除的记录' : '保存的课堂记录会按日期留在这里，下次上课前随时回看。'}
         </p>
       )}
       <ul className="c-record-list" data-region="record-rows">
@@ -162,6 +153,8 @@ export function RecordList({ accountKey, generation, records, state, onStateChan
             onOpen={onOpen}
             onClose={onClose}
             onChanged={onChanged}
+            justCreated={createdId === record.id}
+            onRevealed={onRevealed}
           />
         ))}
       </ul>

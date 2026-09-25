@@ -7,7 +7,7 @@
  * the class/record selector are exported from here for the lessons, questions
  * and schedule pages to assemble.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWorkbenchShell } from '../workbench/shellContext.js';
 import { useScene } from '../workbench/useScene.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
@@ -15,12 +15,23 @@ import { navigate } from '../workbench/routes.js';
 import { Icon } from '../workbench/icons.jsx';
 import { listClasses, listRecords } from './api.js';
 import { DEFAULT_TIME_ZONE } from './model.js';
-import { ClassList } from './ClassList.jsx';
+import { ClassList, ClassCreateDialog } from './ClassList.jsx';
 import { ClassDetail } from './ClassDetail.jsx';
+import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
+import { MenuItem, Popover } from '../workbench/ModuleOverlays.jsx';
 import './classes.css';
 
 const NAVIGATION_EVENT = 'tb:navigate';
 const EMPTY_ROUTE = Object.freeze({ name: 'classes', classId: null, recordId: null });
+
+function ClassChooser({ children, onClose }) {
+  const ref = useRef(null);
+  useModuleDialogFocus(ref, onClose);
+  return <div className="wb-dialog-host wb-module-dialog" data-overlay="dialog">
+    <div className="wb-dialog-scrim" role="presentation" onClick={onClose} />
+    <div ref={ref} className="wb-dialog c-chooser-dialog" role="dialog" aria-modal="true" aria-label="切换班级">{children}</div>
+  </div>;
+}
 
 export function parseClassesPath(pathname) {
   const segments = String(pathname || '/').split('/').filter(Boolean);
@@ -100,12 +111,18 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
     return () => { cancelled = true; };
   }, [classReload, shell.generation]);
 
-  const selectedId = located.classId ?? null;
+  const remembered = (classes.active ?? []).find(item => item.id === scene.selectedId);
+  const selectedId = located.classId ?? remembered?.id ?? classes.active?.[0]?.id ?? null;
   const selected = selectedId
     ? (classes.active ?? []).find((item) => item.id === selectedId)
       ?? (classes.deleted ?? []).find((item) => item.id === selectedId)
       ?? null
     : null;
+
+  useEffect(() => {
+    if (selected && !located.classId) navigate(`/classes/${selected.id}`, { replace: true });
+    if (selected && scene.selectedId !== selected.id) patchScene({ selectedId: selected.id });
+  }, [selected?.id, located.classId, scene.selectedId, patchScene]);
 
   useEffect(() => {
     if (!selected) {
@@ -144,8 +161,9 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const refreshRecords = useCallback(() => setRecordReload((token) => token + 1), []);
   const handleClassCreated = useCallback((classroom) => {
     refreshClasses();
+    patchScene({ creatingClass: false, classListOpen: false, listState: 'active', selectedId: classroom.id, recordState: 'active' });
     navigate(`/classes/${classroom.id}`);
-  }, [refreshClasses]);
+  }, [refreshClasses, patchScene]);
   const handleClassChanged = useCallback(() => {
     refreshClasses();
   }, [refreshClasses]);
@@ -155,28 +173,24 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const closeRecord = useCallback(() => {
     if (selectedId) navigate(`/classes/${selectedId}`);
   }, [selectedId]);
-  const narrow = Boolean(shell.narrow);
-  const view = narrow ? (selected ? 'detail' : 'list') : 'detail';
   const listItems = scene.listState === 'deleted' ? (classes.deleted ?? []) : (classes.active ?? []);
+  const hasClasses = (classes.active?.length ?? 0) + (classes.deleted?.length ?? 0) > 0;
+  const showSidebar = hasClasses && !shell.narrow && !shell.isPanelOpen;
+  function selectClass(classId) {
+    patchScene({ selectedId: classId, classListOpen: false, recordState: 'active' });
+    navigate(`/classes/${classId}`);
+  }
+  const createClass = () => patchScene({ creatingClass: true, classListOpen: false });
+  function renderClasses(onClose) {
+    return <ClassList items={listItems} status={classesStatus} error={classesError}
+      listState={scene.listState} onListStateChange={listState => patchScene({ listState })}
+      selectedId={selectedId} onSelect={selectClass} onCreate={createClass} onReload={refreshClasses}
+      scrollTop={scene.listScrollTop} onScrollTop={listScrollTop => patchScene({ listScrollTop })} onClose={onClose} />;
+  }
 
   return (
     <div className="wb-page wb-module c-classes" data-region="classes-index">
-      <div className="wb-split" data-view={view}>
-        <ClassList
-          accountKey={shell.accountKey}
-          items={listItems}
-          status={classesStatus}
-          error={classesError}
-          listState={scene.listState}
-          onListStateChange={(listState) => patchScene({ listState })}
-          selectedId={selectedId}
-          onSelect={(classId) => navigate(`/classes/${classId}`)}
-          onCreated={handleClassCreated}
-          onReload={refreshClasses}
-          scrollTop={scene.listScrollTop}
-          onScrollTop={(listScrollTop) => patchScene({ listScrollTop })}
-        />
-
+      <div className={`c-layout${showSidebar ? ' has-class-list' : ''}`}>
         {selected ? (
           <ClassDetail
             key={selected.id}
@@ -194,30 +208,47 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
             onOpenRecord={openRecord}
             onCloseRecord={closeRecord}
             onClassChanged={handleClassChanged}
-            onBack={narrow ? () => navigate('/classes') : null}
+            onChooseClass={() => patchScene({ classListOpen: true })}
             detailScrollTop={scene.detailScroll?.classId === selected.id ? scene.detailScroll.top : 0}
             onDetailScrollTop={(top) => patchScene({ detailScroll: { classId: selected.id, top } })}
           />
         ) : (
-          <section className="wb-content-pane c-class-placeholder" data-region="class-placeholder">
-            {classesStatus === 'loading' && <p className="wb-muted">正在加载班级…</p>}
+          <section className="c-class-placeholder" data-region="class-placeholder">
+            <header className="c-class-head"><span className="c-module-icon"><Icon name="classes" size={23} /></span><h1>班级教学</h1>
+              <span className="c-head-spacer" /><Popover label="班级管理">{({ close }) => <MenuItem icon="trash" onClick={() => { close(); patchScene({ classListOpen: true, listState: 'deleted' }); }}>已删除的班级</MenuItem>}</Popover>
+            </header>
+            {classesStatus === 'loading' && <p className="wb-muted c-pane-note">正在加载班级…</p>}
+            {classesStatus === 'error' && <div className="wb-inline-error c-welcome" role="alert"><p>{classesError?.message || '无法加载班级'}</p><button className="wb-button" onClick={refreshClasses}>重试加载</button></div>}
             {classesStatus === 'ready' && selectedId && (
-              <div className="c-placeholder-inner">
+              <div className="c-welcome">
                 <p>未找到这个班级</p>
-                <button type="button" className="wb-button" name="back-to-classes" onClick={() => navigate('/classes')}>
+                <button type="button" className="wb-button" name="back-to-classes" onClick={() => { patchScene({ selectedId: null }); navigate('/classes'); }}>
                   <Icon name="back" size={14} />
                   返回班级列表
                 </button>
               </div>
             )}
             {classesStatus === 'ready' && !selectedId && (
-              <div className="c-placeholder-inner" data-region="class-placeholder-empty">
-                <p className="wb-muted">选择左侧班级查看实际记录，或新建一个班级</p>
+              <div className="c-welcome" data-region="class-placeholder-empty">
+                <span className="c-welcome-icon"><Icon name="prep" size={32} /></span>
+                <h2>每个班，都有自己的教学记录</h2>
+                <p>记住教到了哪里、课堂上遇到的问题，<br />下次上课前，回来接着看。</p>
+                <button type="button" className="wb-button is-primary" name="new-class" onClick={createClass}><Icon name="plus" size={17} />创建班级</button>
+                <span className="c-welcome-hint">先建一个班，课后写一句就能开始。</span>
               </div>
             )}
           </section>
         )}
+        {showSidebar && renderClasses()}
       </div>
+      <ModulePresence present={Boolean(scene.classListOpen)}>
+        {scene.classListOpen && <ClassChooser onClose={() => patchScene({ classListOpen: false })}>
+          {renderClasses(() => patchScene({ classListOpen: false }))}
+        </ClassChooser>}
+      </ModulePresence>
+      <ModulePresence present={Boolean(scene.creatingClass)}>
+        {scene.creatingClass && <ClassCreateDialog accountKey={shell.accountKey} onCreated={handleClassCreated} onClose={() => patchScene({ creatingClass: false })} />}
+      </ModulePresence>
     </div>
   );
 }

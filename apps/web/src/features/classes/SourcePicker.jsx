@@ -66,7 +66,7 @@ export function SourceChips({ sources, onRemove, onPick, returnPath, disabled = 
   );
 }
 
-export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel: cancel, onConfirm: confirm }) {
+export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel: cancel, onConfirm: confirm, explain = false }) {
   const [scene, patchScene] = useScene(accountKey, `class-source-picker:${sceneKey}`, {
     kind: 'lesson', query: '', workKind: '', selected: null, scrollTop: 0
   });
@@ -152,6 +152,7 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
             <Icon name="close" size={15} />
           </button>
         </div>
+        {explain && <p className="c-picker-description">选择本次用到的备课、题目或作品。保存记录后，就能从这里直接打开。</p>}
         <div className="c-picker-tabs" role="tablist" aria-label="资料类型">
           <button
             type="button"
@@ -201,7 +202,9 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
         <div {...scroll} className="c-picker-body" data-region="source-picker-rows">
           {status === 'loading' && <p className="wb-muted">正在加载…</p>}
           {status === 'error' && <p className="wb-inline-error">{kind === 'math' ? '未能加载作品' : error?.message}<button type="button" className="wb-button" onClick={() => setRetry(token => token + 1)}>重试</button></p>}
-          {status === 'ready' && items.length === 0 && <p className="wb-empty-note">{kind === 'math' ? '暂无作品' : '没有可选资料'}</p>}
+          {status === 'ready' && items.length === 0 && <p className="wb-empty-note">{explain
+            ? query || workKind ? '没有找到匹配的资料，试试其他关键词或类型。' : '还没有可选资料。可以先保存课堂记录，以后再关联。'
+            : kind === 'math' ? '暂无作品' : '没有可选资料'}</p>}
           {items.map((item) => {
             const active = selectedKeys.has(`${kind}:${item.id}`);
             return (
@@ -223,7 +226,7 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
         <div className="wb-dialog-actions">
           <button type="button" className="wb-button" name="picker-cancel" onClick={onCancel}>取消</button>
           <button type="button" className="wb-button is-primary" name="picker-confirm" onClick={() => onConfirm(selected)}>
-            {selected.length ? `关联 ${selected.length} 项` : '确定'}
+            {explain ? selected.length ? `加入记录（${selected.length}）` : '确认选择' : selected.length ? `关联 ${selected.length} 项` : '确定'}
           </button>
         </div>
       </div>

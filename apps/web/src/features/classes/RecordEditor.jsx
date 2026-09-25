@@ -15,19 +15,18 @@ import { useSavableDocument } from '../workbench/useSavableDocument.js';
 import { getRecord, updateRecord, decodeRecordRequest, recordRequest } from './api.js';
 import { recordInputFromRecord, recordUpdatePayload } from './model.js';
 import { SourceChips, SourcePicker } from './SourcePicker.jsx';
+import { RecordFields, RECORD_FIELDS } from './RecordFields.jsx';
+import { useSaveShortcut } from '../workbench/useSaveShortcut.js';
 
-export const RECORD_EXTRA_FIELDS = [
-  ['position', '教学位置'],
-  ['unfinished', '未讲内容'],
-  ['commonIssues', '共性问题'],
-  ['nextNote', '下次备注']
-];
+export const RECORD_EXTRA_FIELDS = RECORD_FIELDS.map(field => [field.key, field.label]);
 
 export function RecordEditor({ accountKey, generation, record, onSaved, onClose }) {
   const [pickerScene, patchPicker] = useScene(accountKey, `class-record-picker:${record.id}`, { open: false });
   const pickerOpen = pickerScene.open;
   const setPickerOpen = open => patchPicker({ open });
+  const [fieldScene, patchFields] = useScene(accountKey, `class-record-fields:${record.id}`, { fields: [] });
   const notifiedVersionRef = useRef(null);
+  const editorRef = useRef(null);
   const [readWarning, setReadWarning] = useState(null);
   const [reload, setReload] = useState(0);
   const loadGeneration = `${generation}:${reload}`;
@@ -71,6 +70,10 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
     inputFromObject: recordInputFromRecord
   });
   const { input, setInput } = savable;
+  useSaveShortcut(() => {
+    if (editorRef.current?.closest('[inert]') || [...document.querySelectorAll('[role="dialog"]')].some(dialog => !dialog.closest('[inert]'))) return;
+    return savable.pending ? savable.retryConfirm() : savable.save();
+  }, Boolean(input) && !savable.isSaving && !pickerOpen);
 
   useEffect(() => {
     // Refresh the list once per confirmed server version; the refresh must not
@@ -87,20 +90,20 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
         <p className="wb-muted">
           {savable.loadState === 'error' ? (savable.loadError?.message || '无法读取记录') : '正在加载记录…'}
         </p>
-        <button type="button" className="wb-button" name="record-close" onClick={onClose}>返回</button>
+        <button type="button" className="wb-button" name="record-close" onClick={onClose}>返回记录</button>
       </div>
     );
   }
 
   return (
-    <div className="c-record-editor" data-region="record-editor">
+    <div ref={editorRef} className="c-record-editor" data-region="record-editor">
       {readWarning && <div className="wb-inline-error" role="status" data-region="record-read-warning">
         未能更新记录，当前显示上次内容；草稿保留，可移除异常关联后保存。
         <button type="button" className="wb-button" onClick={() => setReload(value => value + 1)} disabled={savable.isSaving}>重试读取</button>
       </div>}
       <div className="c-editor-head">
         <span className="wb-label">编辑记录</span>
-        <button type="button" className="wb-button" name="record-close" onClick={onClose}>返回</button>
+        <button type="button" className="wb-button" name="record-close" onClick={onClose}>返回记录</button>
       </div>
       <label className="wb-field">
         <span className="wb-label">日期</span>
@@ -113,7 +116,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
         />
       </label>
       <label className="wb-field">
-        <span className="wb-label">一句话</span>
+        <span className="wb-label">课堂记录</span>
         <textarea
           className="wb-input c-textarea"
           aria-label="编辑记录内容"
@@ -122,22 +125,9 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
           onChange={(event) => setInput((current) => ({ ...current, note: event.target.value }))}
         />
       </label>
-      <div className="c-editor-extra">
-      {RECORD_EXTRA_FIELDS.map(([key, label]) => (
-        <label className="wb-field" key={key}>
-          <span className="wb-label">{label}</span>
-          <textarea
-            className="wb-input c-textarea"
-            aria-label={label}
-            rows={2}
-            value={input[key]}
-            onChange={(event) => setInput((current) => ({ ...current, [key]: event.target.value }))}
-          />
-        </label>
-      ))}
-      </div>
-      <div className="wb-field">
-        <span className="wb-label">关联资料</span>
+      <RecordFields input={input} onChange={values => setInput(current => ({ ...current, ...values }))}
+        fields={fieldScene.fields} onFieldsChange={fields => patchFields({ fields })} onPick={() => setPickerOpen(true)} />
+      {input.sources.length > 0 && <div className="wb-field">
         <SourceChips
           sources={input.sources}
           returnPath={`/classes/${record.classId}/records/${record.id}`}
@@ -145,9 +135,8 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
             ...current,
             sources: current.sources.filter((item) => !(item.kind === source.kind && item.id === source.id))
           }))}
-          onPick={() => setPickerOpen(true)}
         />
-      </div>
+      </div>}
       <SaveStatus savable={savable} />
       {savable.status === 'conflict' && (
         <ConflictResolution
@@ -167,10 +156,11 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
           )}
         />
       )}
-      <SaveActions savable={savable} />
+      <SaveActions savable={savable} saveLabel="保存修改" />
       <ModulePresence present={pickerOpen}>
       {pickerOpen && (
         <SourcePicker
+          explain
           sceneKey={`record:${record.id}`}
           accountKey={accountKey}
           value={input.sources}

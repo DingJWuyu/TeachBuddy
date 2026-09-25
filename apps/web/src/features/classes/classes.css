@@ -7,40 +7,6 @@
  * shell dialog primitives, so their progressive appearance is unchanged.
  */
 
-.c-classes .wb-split {
-  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
-}
-
-/* ------------------------------------------------------------------- list */
-
-.c-class-pane .wb-list-head {
-  gap: 8px;
-}
-
-.c-list-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.c-create-class {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.c-create-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-.c-class-row.is-active {
-  background: var(--wb-purple-soft);
-  box-shadow: inset 0 0 0 1px light-dark(#ded5f2, var(--app-line));
-}
-
 .c-field-error {
   margin: 0;
   color: var(--wb-danger);
@@ -57,16 +23,6 @@
   position: relative;
 }
 
-.c-class-placeholder {
-  justify-content: center;
-  align-items: center;
-  padding: 32px;
-  text-align: center;
-}
-
-.c-placeholder-inner { max-width: 300px; }
-.c-placeholder-inner p { margin: 0 0 12px; line-height: 1.7; }
-
 .c-class-head {
   display: flex;
   align-items: center;
@@ -76,12 +32,6 @@
   min-height: 56px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--wb-line-soft);
-}
-
-.c-class-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
 }
 
 .c-head-spacer {
@@ -108,20 +58,6 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 20px;
-}
-
-.c-position {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 0 0 16px;
-  border-bottom: 1px solid var(--wb-line-soft);
-}
-
-.c-position-text {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 500;
 }
 
 .c-deleted-note {
@@ -200,7 +136,6 @@
 }
 
 .c-composer-status:empty { display: none; }
-.c-position + .c-composer { margin-top: 16px; }
 
 .c-composer-status.is-saved .c-status-text {
   display: inline-flex;
@@ -460,7 +395,6 @@
   background: var(--wb-surface);
 }
 
-.c-editor-extra { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
 .c-record-editor > .wb-field:first-of-type .wb-input { max-width: 160px; }
 .c-class-row { min-height: 42px; }
 .c-picker-filter { margin: 0 16px 8px; }
@@ -473,7 +407,6 @@
 @media (max-width: 700px) {
   .c-detail-scroll { padding: 14px; }
   .c-class-head { padding: 10px 14px; }
-  .c-editor-extra { grid-template-columns: minmax(0, 1fr); }
   .c-composer-actions { gap: 6px; flex-wrap: wrap; }
 }
 
@@ -574,22 +507,115 @@
 /* -------------------------------------------------------------- responsive */
 
 @media (max-width: 1080px) {
-  .c-classes .wb-split {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  .c-composer-extra { grid-template-columns: minmax(0, 1fr); }
+}
 
-  .c-classes .wb-split[data-view='list'] .wb-content-pane,
-  .c-classes .wb-split[data-view='detail'] .wb-list-pane {
-    display: none;
-  }
-
-  .c-class-detail {
-    background: transparent;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .c-composer-extra {
-    grid-template-columns: minmax(0, 1fr);
-  }
+/* Class journal surfaces. Scoped here because the composer also serves course feedback. */
+.c-classes { min-width: 0; font-size: 14px; color: var(--wb-ink); }
+.c-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; flex: 1; min-height: 0; }
+.c-layout.has-class-list { grid-template-columns: minmax(0, 1fr) 288px; }
+.c-classes :is(.c-class-detail, .c-class-placeholder, .c-class-pane) {
+  display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  background: var(--wb-surface); border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--wb-line), 0 4px 12px #0000000d, 0 2px 4px -1px #00000008;
+}
+.c-classes :is(.c-class-detail, .c-class-placeholder) { overflow: hidden; }
+.c-classes .c-class-placeholder { padding: 0; text-align: left; justify-content: flex-start; align-items: stretch; }
+.c-classes .c-class-head { min-height: 80px; padding: 18px 22px; gap: 10px; }
+.c-class-head h1 { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -.5px; margin: 0; white-space: nowrap; }
+.c-module-icon { width: 36px; height: 36px; display: grid; place-items: center; flex: none; background: var(--app-soft); border-radius: 8px; }
+.c-class-switch { display: inline-flex; align-items: center; gap: 6px; max-width: 45%; min-width: 0; padding: 6px 8px; border: 0; background: transparent; font: inherit; font-size: 14px; color: var(--wb-muted); cursor: pointer; border-radius: 8px; }
+.c-class-switch span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-class-switch .wb-icon { transform: rotate(90deg); flex: none; }
+.c-class-switch:hover { background: var(--app-soft); color: var(--wb-ink); }
+.c-classes .c-detail-scroll { padding: 24px; scroll-padding: 18px; }
+.c-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 20px; margin-bottom: 24px; padding-bottom: 22px; border-bottom: 1px solid var(--wb-line-soft); }
+.c-overview-item { min-width: 0; }
+.c-overview-label { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--wb-muted); }
+.c-overview-label time { margin-left: auto; font-size: 11px; }
+.c-overview-item p { margin: 8px 0 0; font-size: 15px; line-height: 1.65; overflow-wrap: anywhere; white-space: pre-wrap; }
+.c-classes .wb-button { font-size: 13px; min-height: 34px; border-radius: 8px; }
+.c-classes.wb-module .wb-button.is-primary { background: var(--app-primary); border-color: var(--app-primary); color: var(--app-on-primary); }
+.c-classes.wb-module .wb-button.is-primary:not(:disabled):hover { background: var(--app-primary); filter: brightness(1.15); }
+.c-classes .c-text-action { background: transparent; border-color: transparent; color: var(--wb-muted); padding: 4px 7px; }
+.c-classes .c-text-action:hover { color: var(--wb-ink); }
+.c-classes .c-journal-composer { padding: 0; border: 0; border-radius: 0; gap: 12px; }
+.c-composer-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.c-composer-heading h2, .c-classes .c-section-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; margin: 0; line-height: 24px; }
+.c-compact-date { display: inline-flex; align-items: center; gap: 4px; color: var(--wb-muted); }
+.c-classes .c-compact-date .wb-input { width: 132px; min-height: 30px; height: 30px; padding: 3px 4px; border-color: transparent; background: transparent; font-size: 12px; }
+.c-classes .c-compact-date .wb-input:hover { border-color: var(--wb-line); }
+.c-classes .c-composer-input { padding: 12px 14px; min-height: 104px; font-size: 14px; line-height: 1.8; border-radius: 9px; }
+.c-classes textarea::placeholder { color: var(--wb-muted); opacity: .85; }
+.c-record-fields { min-width: 0; }
+.c-add-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.c-classes .c-add-tools .wb-popover { z-index: 30; }
+.c-optional-field { position: relative; padding-top: 16px; }
+.c-classes .c-optional-field .wb-field { margin: 0; gap: 8px; }
+.c-field-title { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--wb-muted); padding-right: 32px; }
+.c-classes .c-field-close { position: absolute; top: 12px; right: 0; border-color: transparent; width: 26px; height: 26px; }
+.c-classes .c-textarea { font-size: 14px; padding: 10px 12px; line-height: 1.7; border-radius: 8px; }
+.c-composer-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.c-compose-hint { font-size: 12px; color: var(--wb-muted); }
+.c-composer-footer .wb-button { flex: none; padding: 6px 14px; }
+.c-classes .c-records { margin-top: 28px; }
+.c-classes .c-records-head { padding-bottom: 12px; margin-bottom: 0; border-bottom: 1px solid var(--wb-line-soft); }
+.c-classes .c-record-count { font-size: 12px; margin: 0; }
+.c-classes .c-record { padding: 18px 0; }
+.c-classes .c-record-date { display: flex; align-items: center; gap: 6px; font-weight: 400; }
+.c-classes .c-record-note { font-size: 14px; line-height: 1.8; margin: 10px 0; overflow-wrap: anywhere; }
+.c-classes .c-record-field { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 12px; margin: 6px 0; line-height: 1.8; overflow-wrap: anywhere; }
+.c-classes .c-record-field .wb-label { padding: 2px 0 0; }
+.c-classes .c-record-editor { padding-top: 14px; gap: 16px; }
+.c-classes .c-record-editor .wb-field { margin-bottom: 0; }
+.c-classes .c-editor-head .wb-label { font-size: 15px; font-weight: 600; color: var(--wb-ink); }
+.c-classes .c-record-editor .wb-save-actions { justify-content: flex-end; }
+.c-classes .c-record-list { padding-left: 0; }
+.c-classes .c-records > .wb-empty-note { text-align: center; padding: 30px 8px; color: var(--wb-muted); font-size: 13px; }
+.c-composer-disclosure > .wb-module-disclosure-grid > .wb-module-collapse-inner { overflow: visible; }
+.c-composer-disclosure > .wb-module-disclosure-grid[data-state='closed'] > .wb-module-collapse-inner { overflow: hidden; }
+.c-classes .c-class-pane { overflow: hidden; }
+.c-list-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 18px 12px; gap: 8px; flex: none; }
+.c-list-head h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 18px; font-weight: 600; line-height: 26px; }
+.c-list-caption { margin: 0; padding: 0 18px 20px; font-size: 12px; line-height: 1.7; color: var(--wb-muted); }
+.c-class-scroll { flex: 1; min-height: 0; overflow: auto; padding: 0 10px 10px; overscroll-behavior: contain; }
+.c-class-rows { display: flex; flex-direction: column; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.c-classes .c-class-row { width: 100%; display: flex; align-items: center; min-width: 0; gap: 10px; padding: 10px; border: 0; border-radius: 9px; background: transparent; color: var(--wb-ink); font: inherit; font-size: 14px; text-align: left; cursor: pointer; transition: background 160ms; }
+.c-classes .c-class-row.is-active { background: var(--app-soft); box-shadow: none; font-weight: 500; }
+.c-classes .c-class-row:hover { background: var(--app-hover); }
+.c-class-avatar { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 7px; background: var(--wb-surface); box-shadow: inset 0 0 0 1px var(--wb-line-soft); flex: none; color: var(--wb-muted); }
+.c-class-name { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.c-class-row > .wb-icon { flex: none; }
+.c-list-footer { display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 14px 18px 18px; flex: none; }
+.c-classes .c-create-button { justify-content: center; border-style: dashed; background: transparent; color: var(--wb-muted); }
+.c-classes .c-list-return { align-self: flex-start; margin: 0 18px 16px; }
+.c-classes .c-welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px; margin: auto; max-width: 550px; min-height: 0; }
+.c-welcome-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 16px; background: var(--app-soft); color: var(--wb-muted); margin-bottom: 20px; }
+.c-classes .c-welcome h2 { font-size: 24px; font-weight: 600; line-height: 1.5; margin: 0 0 12px; }
+.c-classes .c-welcome p { font-size: 14px; color: var(--wb-muted); line-height: 1.9; margin: 0 0 24px; }
+.c-classes .c-welcome .wb-button { padding: 8px 18px; font-size: 14px; }
+.c-welcome-hint { margin-top: 16px; font-size: 12px; color: var(--wb-muted); }
+.c-classes .c-create-dialog { width: min(420px, calc(100vw - 32px)); padding: 24px; }
+.c-classes .c-create-dialog .wb-field { margin: 18px 0; }
+.c-classes .c-create-dialog h2 { font-size: 20px; }
+.c-classes .c-chooser-dialog { width: min(360px, calc(100vw - 32px)); padding: 0; overflow: visible; }
+.c-classes .c-chooser-dialog .c-class-pane { height: min(560px, calc(100dvh - 80px)); box-shadow: none; }
+.c-picker-description { margin: 0; padding: 0 16px 16px; font-size: 13px; color: var(--wb-muted); line-height: 1.8; }
+.c-classes .c-source-picker .wb-dialog-actions { padding-top: 12px; }
+@media (max-width: 1080px) {
+  .c-layout.has-class-list { grid-template-columns: minmax(0, 1fr); }
+  .c-layout > .c-class-pane { display: none; }
+}
+@media (max-width: 700px) {
+  .c-classes .c-class-head { padding: 14px 16px; min-height: 72px; gap: 8px; }
+  .c-class-head h1 { font-size: 21px; }
+  .c-module-icon { width: 30px; height: 30px; }
+  .c-class-switch { max-width: calc(100% - 80px); order: 2; flex-basis: 100%; padding-left: 0; }
+  .c-classes .c-detail-scroll { padding: 18px 16px; }
+  .c-overview { gap: 14px; padding-bottom: 18px; margin-bottom: 20px; }
+  .c-composer-heading { gap: 6px; }
+  .c-compose-hint { max-width: 145px; line-height: 1.6; }
+  .c-classes .c-record-field { grid-template-columns: minmax(0, 1fr); gap: 0; margin: 10px 0; }
+  .c-classes .c-welcome h2 { font-size: 20px; }
+  .c-classes .c-welcome { padding: 28px 20px; }
 }
