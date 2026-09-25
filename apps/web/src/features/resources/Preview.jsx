@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Icon } from "../workbench/chrome/icons.jsx";
 export function FileImage({ client, id, alt, ...props }) {
   const [url, setUrl] = useState(""),
     [error, setError] = useState("");
@@ -37,6 +38,7 @@ export function Preview({
   onZoom,
   scrollPosition,
   onScrollPosition,
+  onSupplement,
 }) {
   const [preview, setPreview] = useState(null),
     [job, setJob] = useState(null),
@@ -63,7 +65,9 @@ export function Preview({
         // The job can finish between the two reads. Read its committed rendition
         // once more before stopping, rather than displaying the older snapshot.
         if (["succeeded", "partial"].includes(currentJob?.state))
-          result = await client.request(`/api/workbench/files/${fileId}/preview`);
+          result = await client.request(
+            `/api/workbench/files/${fileId}/preview`,
+          );
         if (!active) return;
         setPreview(result);
         setJob(currentJob);
@@ -112,24 +116,41 @@ export function Preview({
       setError(e.message);
     }
   }
+  const preparing = ["queued", "running", "cancelling"].includes(job?.state);
+  const failed =
+    !preparing &&
+    (preview?.state === "failed" ||
+      ["failed", "cancelled", "interrupted"].includes(job?.state));
   return (
     <section className="res-preview" aria-label="文件预览">
       <div className="res-preview-toolbar">
-        <button
-          onClick={() => onPage(Math.max(1, page - 1))}
-          disabled={!current || page <= 1}
-        >
-          上一页
-        </button>
-        <span>
-          {current?.page ?? 0} / {preview?.pageCount ?? "…"}
-        </span>
-        <button
-          onClick={() => onPage(Math.min(preview?.pageCount ?? 1, page + 1))}
-          disabled={!current || page >= preview.pageCount}
-        >
-          下一页
-        </button>
+        {preview?.pageCount > 1 ? (
+          <>
+            <button
+              className="res-icon-button"
+              aria-label="上一页"
+              title="上一页"
+              onClick={() => onPage(Math.max(1, page - 1))}
+              disabled={!current || page <= 1}
+            >
+              <Icon name="arrowLeft" size={16} />
+            </button>
+            <span>
+              第 {current?.page ?? 0} / {preview.pageCount} 页
+            </span>
+            <button
+              className="res-icon-button"
+              aria-label="下一页"
+              title="下一页"
+              onClick={() => onPage(Math.min(preview.pageCount, page + 1))}
+              disabled={!current || page >= preview.pageCount}
+            >
+              <Icon name="arrowRight" size={16} />
+            </button>
+          </>
+        ) : (
+          <span className="res-muted">{current ? "共 1 页" : "文件预览"}</span>
+        )}
         <label>
           缩放{" "}
           <select
@@ -147,10 +168,16 @@ export function Preview({
       </div>
       {preview?.state === "limited" && (
         <div className="res-warning">
-          预览需核对：
-          {preview.issues.includes("legacy-object-loss")
-            ? "旧 DOC 公式或对象可能缺失，请与原件对照，可补充 PDF。"
-            : "部分内容或字体需核对。"}
+          <Icon name="info" size={16} />
+          <span>
+            预览需核对：
+            {preview.issues.includes("legacy-object-loss")
+              ? "旧 DOC 公式或对象可能缺失，请与原件对照，可补充 PDF。"
+              : "部分内容或字体需核对。"}
+          </span>
+          {onSupplement && (
+            <button onClick={onSupplement}>补充 PDF 预览</button>
+          )}
         </div>
       )}
       {error && (
@@ -160,25 +187,35 @@ export function Preview({
       )}
       {!preview?.pages.length && (
         <div className="res-empty">
-          {preview?.state === "failed" ||
-          ["failed", "cancelled", "interrupted"].includes(job?.state)
-            ? "预览失败，原文件仍可下载。"
-            : "预览正在准备"}
-          <button
-            onClick={generate}
-            disabled={
-              job && ["queued", "running", "cancelling"].includes(job.state)
-            }
-          >
-            {preview?.state === "failed" ||
-            ["failed", "cancelled", "interrupted"].includes(job?.state)
-              ? "重试预览"
-              : "生成预览"}
-          </button>
+          <span className="res-empty-icon">
+            <Icon name="file" size={30} />
+          </span>
+          <h2>{failed ? "暂时无法预览" : "正在准备预览"}</h2>
+          <p>
+            原文件已保存，可以随时下载。
+            {failed ? "也可以上传 PDF 作为预览。" : "预览完成后会自动显示。"}
+          </p>
+          {preview && !preparing && (
+            <button
+              onClick={generate}
+              disabled={
+                job && ["queued", "running", "cancelling"].includes(job.state)
+              }
+            >
+              {preview?.state === "failed" ||
+              ["failed", "cancelled", "interrupted"].includes(job?.state)
+                ? "重试预览"
+                : "生成预览"}
+            </button>
+          )}
+          {failed && onSupplement && (
+            <button onClick={onSupplement}>补充 PDF 预览</button>
+          )}
         </div>
       )}
       <div
         className="res-page-scroll"
+        hidden={!current}
         ref={scrollRef}
         onScroll={(e) => {
           if (loadedPage.current === current?.imageFileId)

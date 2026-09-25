@@ -8,7 +8,7 @@ test("WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复", as
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/fixture/session");
   await page
-    .getByLabel("上传资料", { exact: true })
+    .getByLabel(/^上传(第一份)?资料$/)
     .setInputFiles(path.join(samples, "c22.pptx"));
   await expect(page.getByLabel("资源名称")).toHaveValue("c22.pptx");
   await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible({
@@ -18,7 +18,7 @@ test("WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复", as
   await expect(page.getByAltText("第 2 页", { exact: true })).toBeVisible();
   await page.getByLabel("资源名称").fill("函数课堂课件");
   await page.getByLabel("资源笔记").fill("板书：先观察，再归纳");
-  await page.getByRole("button", { name: "保存资料", exact: true }).click();
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("已保存");
   await page.screenshot({ path: path.join(evidence, "desktop-preview.png") });
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
@@ -28,32 +28,39 @@ test("WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复", as
   ).toBeVisible();
   await page.getByRole("button", { name: "新建文件夹", exact: true }).click();
   await page
-    .getByRole("dialog", { name: "管理分类" })
+    .getByRole("dialog", { name: /新建文件夹|新建标签/ })
     .getByLabel("名称", { exact: true })
     .fill("高一资料");
-  await page.getByRole("button", { name: "保存分类", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "管理分类" })).toHaveCount(0);
+  await page
+    .getByRole("button", { name: /创建文件夹|创建标签/, exact: true })
+    .click();
+  await expect(
+    page.getByRole("dialog", { name: /新建文件夹|新建标签/ }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "新建标签", exact: true }).click();
   await page
-    .getByRole("dialog", { name: "管理分类" })
+    .getByRole("dialog", { name: /新建文件夹|新建标签/ })
     .getByLabel("名称", { exact: true })
     .fill("课堂");
-  await page.getByRole("button", { name: "保存分类", exact: true }).click();
+  await page
+    .getByRole("button", { name: /创建文件夹|创建标签/, exact: true })
+    .click();
   await page.getByRole("button", { name: /函数课堂课件/ }).click();
   await page.getByLabel("资源文件夹").selectOption({ label: "高一资料" });
   await page
     .locator(".res-metadata")
     .getByLabel("课堂", { exact: true })
     .check();
-  await page.getByRole("button", { name: "保存资料", exact: true }).click();
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("已保存");
   await page
     .getByLabel("更新文件", { exact: true })
     .setInputFiles(path.join(samples, "c22.pdf"));
   await page.getByRole("button", { name: "确认更新", exact: true }).click();
-  await expect(page.locator(".res-file-info strong")).toHaveText("c22.pdf");
+  await expect(page.locator(".res-info-file strong")).toHaveText("c22.pdf");
   await expect(page.getByLabel("资源笔记")).toHaveValue("板书：先观察，再归纳");
-  await page.getByRole("button", { name: "删除资料", exact: true }).click();
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  await page.getByRole("menuitem", { name: "删除资料", exact: true }).click();
   await page.getByRole("button", { name: "确认删除", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "恢复资料", exact: true }),
@@ -61,7 +68,7 @@ test("WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复", as
   await page.getByRole("button", { name: "恢复资料", exact: true }).click();
   await page.getByRole("button", { name: "确认恢复", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "删除资料", exact: true }),
+    page.getByRole("button", { name: "加入备课", exact: true }),
   ).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("资源笔记")).toHaveValue("板书：先观察，再归纳");
@@ -102,7 +109,7 @@ test("WB-M015 旧DOC风险和逐页核对补充PDF", async ({ page }) => {
   )
     await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await page
-    .getByLabel("上传资料", { exact: true })
+    .getByLabel(/^上传(第一份)?资料$/)
     .setInputFiles(path.join(samples, "w.doc"));
   await expect(page.getByLabel("资源名称")).toHaveValue("w.doc");
   await expect(page.getByText(/旧 DOC 公式或对象可能缺失/)).toBeVisible({
@@ -142,7 +149,7 @@ test("WB-M014 全格式真实页图、返回现场及备课取用 Adapter", asyn
     path.join(own, "page.jpg"),
     path.join(own, "page.webp"),
   ]) {
-    await page.getByLabel("上传资料", { exact: true }).setInputFiles(source);
+    await page.getByLabel(/^上传(第一份)?资料$/).setInputFiles(source);
     await expect(page.getByLabel("资源名称")).toHaveValue(
       path.basename(source),
     );
@@ -155,9 +162,12 @@ test("WB-M014 全格式真实页图、返回现场及备课取用 Adapter", asyn
         .evaluate((img) => img.naturalWidth),
     ).toBeGreaterThan(100);
     while (
-      await page
+      (await page
         .getByRole("button", { name: "下一页", exact: true })
-        .isEnabled()
+        .isVisible()) &&
+      (await page
+        .getByRole("button", { name: "下一页", exact: true })
+        .isEnabled())
     ) {
       await page.getByRole("button", { name: "下一页", exact: true }).click();
       await expect(page.locator(".res-page-paper img")).toBeVisible();
@@ -178,7 +188,7 @@ test("WB-M014 全格式真实页图、返回现场及备课取用 Adapter", asyn
   await expect(
     page.getByRole("button", { name: "前往备课：函数复习课" }),
   ).toBeVisible();
-  await expect(page.locator(".res-usage")).toContainText("采用版本 1");
+  await expect(page.locator(".res-usage")).toContainText("函数复习课");
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await expect(page.getByLabel("搜索资料")).toHaveValue("page.webp");
   await page.screenshot({ path: path.join(evidence, "filtered-library.png") });
@@ -189,7 +199,7 @@ test("WB-M023/028 未知结果刷新后原键确认，新草稿及冲突对照�
 }) => {
   await page.goto("/fixture/session");
   await page
-    .getByLabel("上传资料", { exact: true })
+    .getByLabel(/^上传(第一份)?资料$/)
     .setInputFiles(path.join(samples, "c22.pdf"));
   await expect(page.getByLabel("资源名称")).toHaveValue("c22.pdf");
   await page.getByLabel("资源笔记").fill("确认前的笔记");
@@ -205,7 +215,7 @@ test("WB-M023/028 未知结果刷新后原键确认，新草稿及冲突对照�
       await route.abort("failed");
     } else await route.continue();
   });
-  await page.getByRole("button", { name: "保存资料", exact: true }).click();
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "重试确认原请求" }),
   ).toBeVisible();
@@ -227,7 +237,7 @@ test("WB-M023/028 未知结果刷新后原键确认，新草稿及冲突对照�
   await expect(page.getByLabel("资源笔记")).toHaveValue(
     "后续草稿不能被确认覆盖",
   );
-  await page.getByRole("button", { name: "保存资料", exact: true }).click();
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("已保存");
   await page.evaluate(async (pathName) => {
     const value = await fetch(pathName).then((r) => r.json());
@@ -248,7 +258,7 @@ test("WB-M023/028 未知结果刷新后原键确认，新草稿及冲突对照�
     });
   }, pathName);
   await page.getByLabel("资源笔记").fill("我保留的草稿");
-  await page.getByRole("button", { name: "保存资料", exact: true }).click();
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "版本冲突" })).toBeVisible();
   await expect(page.getByRole("dialog", { name: "版本冲突" })).toContainText(
     "另一个窗口的笔记",
@@ -256,13 +266,13 @@ test("WB-M023/028 未知结果刷新后原键确认，新草稿及冲突对照�
   await page.screenshot({ path: path.join(evidence, "version-conflict.png") });
   await page.getByRole("button", { name: "保留草稿并对照当前版本" }).click();
   await expect(page.getByLabel("资源笔记")).toHaveValue("我保留的草稿");
-  await page.getByRole("button", { name: "保存资料", exact: true }).click();
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("已保存");
 });
 
 test("损坏预览可重试，替换失败保持旧文件，HTML不执行", async ({ page }) => {
   await page.goto("/fixture/session");
-  await page.getByLabel("上传资料", { exact: true }).setInputFiles({
+  await page.getByLabel(/^上传(第一份)?资料$/).setInputFiles({
     name: "损坏.pdf",
     mimeType: "application/pdf",
     buffer: Buffer.from("%PDF-1.4\ntruncated"),
@@ -292,16 +302,16 @@ test("损坏预览可重试，替换失败保持旧文件，HTML不执行", asyn
   await expect(
     page.getByRole("button", { name: "重试确认原请求" }),
   ).toBeVisible();
-  await expect(page.locator(".res-file-info strong")).toHaveText("损坏.pdf");
+  await expect(page.locator(".res-info-file strong")).toHaveText("损坏.pdf");
   await expect(page.getByRole("alert")).toContainText("存储暂不可用");
   await expect(
     page.getByRole("button", { name: "重试确认原请求" }),
   ).toBeEnabled();
   await page.unroute("**/api/modules/resources/items/*/file");
   await page.getByRole("button", { name: "重试确认原请求" }).click();
-  await expect(page.locator(".res-file-info strong")).toHaveText("c22.pdf");
+  await expect(page.locator(".res-info-file strong")).toHaveText("c22.pdf");
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
-  await page.getByLabel("上传资料", { exact: true }).setInputFiles({
+  await page.getByLabel(/^上传(第一份)?资料$/).setInputFiles({
     name: "安全文本.html",
     mimeType: "text/html",
     buffer: Buffer.from(
@@ -330,7 +340,9 @@ test("重启后新浏览器上下文读取笔记、原件和账户隔离", async
     path: path.join(evidence, "restart-new-context.png"),
   });
   await page.goto("/fixture/session?account=b");
-  await expect(page.getByText("上传第一份课件或文档")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "把教学资料收在一起" }),
+  ).toBeVisible();
   await expect(page.locator(".res-card-open")).toHaveCount(0);
   await context.close();
 });
@@ -393,20 +405,20 @@ test("分类草稿在辅助栏关闭和刷新后保留", async ({ page }) => {
   await page.goto("/fixture/session");
   await page.getByRole("button", { name: "新建文件夹", exact: true }).click();
   await page
-    .getByRole("dialog", { name: "管理分类" })
+    .getByRole("dialog", { name: /新建文件夹|新建标签/ })
     .getByLabel("名称", { exact: true })
     .fill("仍保留的文件夹草稿");
   await page.getByRole("button", { name: "文件夹与标签", exact: true }).click();
   await page.getByRole("button", { name: "文件夹与标签", exact: true }).click();
   await expect(
     page
-      .getByRole("dialog", { name: "管理分类" })
+      .getByRole("dialog", { name: /新建文件夹|新建标签/ })
       .getByLabel("名称", { exact: true }),
   ).toHaveValue("仍保留的文件夹草稿");
   await page.reload();
   await expect(
     page
-      .getByRole("dialog", { name: "管理分类" })
+      .getByRole("dialog", { name: /新建文件夹|新建标签/ })
       .getByLabel("名称", { exact: true }),
   ).toHaveValue("仍保留的文件夹草稿");
 });

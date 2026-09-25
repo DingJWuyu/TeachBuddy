@@ -1,11 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useScene } from "../workbench/useScene.js";
-import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
+import { useForegroundRefresh } from "../workbench/useForegroundRefresh.js";
 import { createResourcesClient, pendingStore } from "./client.js";
-import { reselectDeviceFile } from '../workbench/deviceRequestStore.js';
-import { FileImage, Preview } from "./Preview.jsx";
-import { Taxonomy } from "./Taxonomy.jsx";
+import { reselectDeviceFile } from "../workbench/deviceRequestStore.js";
+import { Preview } from "./Preview.jsx";
+import { Library } from "./Library.jsx";
+import { ResourceInfo } from "./ResourceInfo.jsx";
+import { Icon } from "../workbench/chrome/icons.jsx";
+import { Popover } from "../workbench/ModuleOverlays.jsx";
+import { Taxonomy, TaxonomyDialog } from "./Taxonomy.jsx";
 import "./resources.css";
 import { ResourceDialog } from "./ResourceDialog.jsx";
 import { ModulePresence } from "../workbench/ModuleMotion.jsx";
@@ -66,7 +70,8 @@ function ResourceWorkspace({
     zoom: 100,
     drafts: {},
     supplement: null,
-    metadataOpen: true,
+    libraryPanelOpen: false,
+    filtersOpen: false,
   });
   const sceneRef = useRef(scene);
   sceneRef.current = scene;
@@ -82,6 +87,7 @@ function ResourceWorkspace({
     [pending, setPending] = useState(null),
     [busy, setBusy] = useState(false),
     [loaded, setLoaded] = useState(false),
+    [listLoading, setListLoading] = useState(true),
     [revision, setRevision] = useState(0),
     [dialog, setDialog] = useState(null),
     [conflict, setConflict] = useState(null),
@@ -90,9 +96,13 @@ function ResourceWorkspace({
   const listRef = useRef(null),
     triggerRef = useRef(null),
     pendingRef = useRef(null),
-    busyRef = useRef(false);
+    busyRef = useRef(false),
+    replaceInput = useRef(null),
+    supplementInput = useRef(null);
   const refresh = () => setRevision((n) => n + 1);
-  useForegroundRefresh(() => { if (!busyRef.current && !controller.signal.aborted) refresh(); });
+  useForegroundRefresh(() => {
+    if (!busyRef.current && !controller.signal.aborted) refresh();
+  });
   useEffect(() => {
     pendingStore(shell.accountKey)
       .then((value) => {
@@ -106,6 +116,7 @@ function ResourceWorkspace({
   }, [shell.accountKey]);
   useEffect(() => {
     let active = true;
+    setListLoading(true);
     const query = new URLSearchParams();
     for (const name of ["q", "folderId", "mediaType", "state"])
       if (scene[name]) query.set(name, scene[name]);
@@ -140,7 +151,8 @@ function ResourceWorkspace({
           );
         }
       })
-      .catch((e) => active && setError(e.message));
+      .catch((e) => active && setError(e.message))
+      .finally(() => active && setListLoading(false));
     return () => {
       active = false;
     };
@@ -180,7 +192,10 @@ function ResourceWorkspace({
   }
   async function execute(record) {
     if (busyRef.current) return false;
-    if (record.requiresReselection) { setError('请重新选择原文件核对名称、长度和内容，再确认上传'); return false; }
+    if (record.requiresReselection) {
+      setError("请重新选择原文件核对名称、长度和内容，再确认上传");
+      return false;
+    }
     busyRef.current = true;
     setBusy(true);
     setError("");
@@ -250,7 +265,8 @@ function ResourceWorkspace({
               },
             });
         }
-        if (record.purpose === "taxonomy")
+        if (record.purpose === "taxonomy") {
+          setTax(value);
           patchScene({
             folderId: value.folders.some(
               (f) => f.id === sceneRef.current.folderId,
@@ -261,7 +277,8 @@ function ResourceWorkspace({
               value.tags.some((t) => t.id === id),
             ),
           });
-        if (record.purpose === "create") patchScene({ openId: value.id });
+        }
+        if (record.purpose === "create") open(value.id);
         if (["supplement", "replace"].includes(record.purpose))
           patchScene({ supplement: null });
         if (record.purpose === "lesson") {
@@ -269,7 +286,19 @@ function ResourceWorkspace({
           setLastLesson({ lessonId: value.id, lessonTitle: value.title });
         }
         await remember(null);
-        setMessage("已保存");
+        setMessage(
+          {
+            create: "文件已保存",
+            replace: "文件已更新",
+            metadata: "资料信息已保存",
+            taxonomy: "整理已保存",
+            supplement: "已采用补充预览",
+            lesson: "已加入备课",
+            deletion: value.deletedAt
+              ? "资料已移到已删除资料，可随时恢复"
+              : "资料已恢复",
+          }[record.purpose] ?? "已保存",
+        );
         setConflict(null);
         setDialog(null);
         refresh();
@@ -341,12 +370,23 @@ function ResourceWorkspace({
   }
   function open(id, event) {
     triggerRef.current = event?.currentTarget;
-    patchScene({ openId: id });
+    patchScene({
+      openId: id,
+      libraryPanelOpen: Boolean(
+        shell.isPanelOpen && shell.panelMode === "resource-taxonomy",
+      ),
+    });
+    if (shell.isPanelOpen && shell.panelMode === "resource-taxonomy")
+      shell.closePanel?.();
     setError("");
     setMessage("");
   }
   function close() {
     patchScene({ openId: null });
+    if (!shell.isPanelOpen || shell.panelMode === "resource-taxonomy") {
+      if (scene.libraryPanelOpen) shell.openPanel?.("resource-taxonomy");
+      else if (shell.isPanelOpen) shell.closePanel?.();
+    }
     refresh();
     requestAnimationFrame(() => triggerRef.current?.focus());
   }
@@ -354,32 +394,111 @@ function ResourceWorkspace({
     patchScene({
       drafts: { ...sceneRef.current.drafts, [item.id]: { ...draft, ...patch } },
     });
-    setMessage("未保存");
+    setMessage("");
   }
   const disabled = busy || !!pending || !loaded;
+  const dirty = Boolean(
+    item &&
+      draft &&
+      ["title", "folderId", "tagIds", "note"].some(
+        (key) => JSON.stringify(draft[key]) !== JSON.stringify(item[key]),
+      ),
+  );
+  function manageTaxonomy(kind, entry, attach = false) {
+    patchScene({
+      taxonomyDraft: {
+        edit: { kind, item: entry },
+        name: entry?.name ?? "",
+        parentId: entry?.parentId ?? "",
+        attachTo: attach ? item?.id : null,
+      },
+    });
+  }
+  function changeTaxonomy(patch) {
+    patchScene((current) => ({
+      taxonomyDraft: { ...current.taxonomyDraft, ...patch },
+    }));
+  }
+  async function saveTaxonomy(input, created) {
+    const before = scene.taxonomyDraft;
+    if (!(await write(`${root}/taxonomy`, input, "taxonomy"))) return;
+    if (created && before.attachTo && !before.edit.item) {
+      const currentItem = allItems.find(
+        (entry) => entry.id === before.attachTo,
+      );
+      if (currentItem) {
+        const current =
+          sceneRef.current.drafts[currentItem.id] ?? metadata(currentItem);
+        patchScene((state) => ({
+          drafts: {
+            ...state.drafts,
+            [currentItem.id]: {
+              ...current,
+              ...(before.edit.kind === "folder"
+                ? { folderId: created.id }
+                : { tagIds: [...new Set([...current.tagIds, created.id])] }),
+            },
+          },
+        }));
+      }
+    }
+    patchScene({ taxonomyDraft: null });
+  }
+  const infoOpen = shell.isPanelOpen && shell.panelMode === "resource-taxonomy";
+  function toggleTools() {
+    if (infoOpen) shell.closePanel?.();
+    else shell.openPanel?.("resource-taxonomy");
+  }
   useEffect(() => {
     shell.registerTools([
       {
         id: "resource-taxonomy",
-        label: "文件夹与标签",
-        render: () => (
-          <Taxonomy
-            value={tax}
-            scene={scene}
-            patchScene={patchScene}
-            disabled={disabled}
-            items={allItems}
-            onSave={(input) => write(`${root}/taxonomy`, input, "taxonomy")}
-          />
-        ),
+        label: scene.openId ? "资料信息" : "文件夹与标签",
+        render: () =>
+          scene.openId ? (
+            <ResourceInfo
+              item={item}
+              file={file}
+              draft={draft}
+              tax={tax}
+              onEdit={edit}
+              onSave={() =>
+                write(`${root}/items/${item.id}`, draft, "metadata")
+              }
+              onManage={(kind) => manageTaxonomy(kind, null, true)}
+              disabled={disabled}
+              dirty={dirty}
+              usages={usages}
+              usageError={usageError}
+              onRefresh={refresh}
+              onOpenLesson={onOpenLesson}
+            />
+          ) : (
+            <Taxonomy
+              value={tax}
+              scene={scene}
+              patchScene={patchScene}
+              disabled={disabled}
+              onManage={manageTaxonomy}
+            />
+          ),
       },
     ]);
-  }, [shell.registerTools, tax, scene, disabled, allItems]);
+  }, [
+    shell.registerTools,
+    tax,
+    scene,
+    disabled,
+    allItems,
+    files,
+    usages,
+    usageError,
+  ]);
   useEffect(() => () => shell.registerTools([]), [shell.registerTools]);
   const breadcrumbs = [];
   let folder = tax.folders.find((f) => f.id === scene.folderId);
   while (folder) {
-    breadcrumbs.unshift(folder.name);
+    breadcrumbs.unshift(folder);
     folder = tax.folders.find((f) => f.id === folder.parentId);
   }
   const supplement = scene.supplement;
@@ -389,403 +508,115 @@ function ResourceWorkspace({
       : (item?.supplementPreviewFileId ?? item?.fileId);
   const page = scene.pages[previewId] ?? 1;
   return (
-    <div className="res-workspace wb-module">
-      <div className="res-status" aria-live="polite">
-        {message}
-        {lastLesson && (
-          <button onClick={() => onOpenLesson?.(lastLesson)}>
-            前往备课：{lastLesson.lessonTitle}
-          </button>
-        )}
-        {error && <span role="alert">{error}</span>}
-        {pending?.requiresReselection && !busy ? <label>重新选择原文件
-          <input type="file" aria-label="重新选择原文件" onChange={async event => {
-            const file = event.target.files[0]; event.target.value = '';
-            if (!file) return;
-            try { await execute(await reselectDeviceFile(pending, file)); }
-            catch (error) { setError(error.message); }
-          }} />
-        </label> : pending && !busy && (
-          <button onClick={() => execute(pending)} disabled={busy}>
-            重试确认原请求
-          </button>
-        )}
-      </div>
-      <section className="res-library" hidden={!!scene.openId}>
-        <header className="res-header">
-          <div>
-            <h1>资源库</h1>
-            <span className="res-muted">
-              {breadcrumbs.join(" / ") || "全部资料"} · {items.length} 份
-            </span>
-          </div>
-          {shell.openPanel && (
-            <button onClick={() => shell.openPanel("resource-taxonomy")}>
-              文件夹与标签
-            </button>
-          )}
-          <label
-            className={`res-button res-primary ${disabled ? "is-disabled" : ""}`}
-          >
-            上传资料
-            <input
-              aria-label="上传资料"
-              type="file"
-              disabled={disabled}
-              onChange={(e) => {
-                upload(e.target.files[0]);
-                e.target.value = "";
-              }}
-            />
-          </label>
-        </header>
-        <div className="res-filters">
-          <input
-            aria-label="搜索资料"
-            placeholder="搜索资料"
-            value={scene.q}
-            onChange={(e) => patchScene({ q: e.target.value })}
-          />
-          <select
-            aria-label="格式筛选"
-            value={scene.mediaType}
-            onChange={(e) => patchScene({ mediaType: e.target.value })}
-          >
-            <option value="">全部格式</option>
-            {[
-              ["application/pdf", "PDF"],
-              ["application/msword", "DOC"],
-              [
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "DOCX",
-              ],
-              ["application/vnd.ms-powerpoint", "PPT"],
-              [
-                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                "PPTX",
-              ],
-              ["image/png", "PNG"],
-              ["image/jpeg", "JPEG"],
-              ["image/webp", "WebP"],
-              ["text/html", "HTML"],
-            ].map(([v, label]) => (
-              <option key={v} value={v}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <select
-            aria-label="资料状态"
-            value={scene.state}
-            onChange={(e) => patchScene({ state: e.target.value })}
-          >
-            <option value="active">正在使用</option>
-            <option value="deleted">已删除</option>
-          </select>
-          <button
-            aria-pressed={scene.view === "grid"}
-            onClick={() =>
-              patchScene({ view: scene.view === "grid" ? "list" : "grid" })
-            }
-          >
-            {scene.view === "grid" ? "列表视图" : "缩略图视图"}
-          </button>
-        </div>
-        {!!scene.tagIds.length && (
-          <div className="res-chips">
-            {scene.tagIds.map((id) => (
-              <button
-                key={id}
-                onClick={() =>
-                  patchScene({ tagIds: scene.tagIds.filter((t) => t !== id) })
-                }
-              >
-                {tax.tags.find((t) => t.id === id)?.name} ×
-              </button>
-            ))}
-          </div>
-        )}
-        <div
-          className={`res-items res-${scene.view}`}
-          ref={listRef}
-          onScroll={(e) => patchScene({ scroll: e.currentTarget.scrollTop })}
-        >
-          {items.map((resource) => (
-            <article className="res-card" key={resource.id}>
-              <button
-                className="res-card-open"
-                onClick={(e) => open(resource.id, e)}
-              >
-                <div className="res-thumb">
-                  {previews[resource.fileId]?.pages[0] ? (
-                    <FileImage
-                      client={client}
-                      id={previews[resource.fileId].pages[0].imageFileId}
-                      alt={`${resource.title} 缩略图`}
-                    />
-                  ) : (
-                    <span>
-                      {files[resource.fileId]?.name
-                        .split(".")
-                        .pop()
-                        ?.toUpperCase() || "文件"}
-                    </span>
-                  )}
-                </div>
-                <div className="res-card-text">
-                  <strong>{resource.title}</strong>
-                  <span>{tax.folders.find((folder) => folder.id === resource.folderId)?.name || "未分类"}{resource.tagIds.length ? ` · ${resource.tagIds.map(id => tax.tags.find(tag => tag.id === id)?.name).filter(Boolean).join("、")}` : ""}</span>
-                  <small>
-                    {previews[resource.fileId]?.state === "limited"
-                      ? "预览需核对"
-                      : previews[resource.fileId]?.state === "failed"
-                        ? "预览失败"
-                        : files[resource.fileId]?.name.split(".").pop()?.toUpperCase()}
-                  </small>
-                </div>
-              </button>
-              {onPickResources && (
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={scene.selected.includes(resource.id)}
-                    onChange={() =>
-                      patchScene({
-                        selected: scene.selected.includes(resource.id)
-                          ? scene.selected.filter((id) => id !== resource.id)
-                          : [...scene.selected, resource.id],
-                      })
-                    }
-                  />
-                  选择
-                </label>
-              )}
-            </article>
-          ))}
-          {!items.length && (
-            <div className="res-empty">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M10 10h19l9 9v21H10zM29 10v10h9M17 28h14M17 33h10" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>
-              <h2>{scene.q || scene.folderId || scene.tagIds.length || scene.mediaType ? "没有匹配的资料" : scene.state === "deleted" ? "没有已删除的资料" : "收好每一份教学材料"}</h2>
-              <p>{scene.state === "deleted" ? "删除的资料会保留在这里，随时可以恢复。" : "课件、文档和图片，都可以从这里取用。"}</p>
-              {(scene.q || scene.folderId || scene.tagIds.length || scene.mediaType) ? <button onClick={() => patchScene({ q: "", folderId: "", tagIds: [], mediaType: "" })}>清除筛选</button> : scene.state !== "deleted" && <label className={`res-button res-primary ${disabled ? "is-disabled" : ""}`}>上传资料<input type="file" aria-label="上传第一份资料" disabled={disabled} onChange={event => { upload(event.target.files[0]); event.target.value = ""; }} /></label>}
-            </div>
-          )}
-        </div>
-        {onPickResources && scene.selected.length > 0 && (
-          <div className="res-actions">
-            <button
-              onClick={() =>
-                onPickResources(
-                  scene.selected
-                    .map((id) => allItems.find((i) => i.id === id))
-                    .filter(Boolean),
-                )
-              }
-            >
-              采用所选 {scene.selected.length} 份资料
-            </button>
-          </div>
-        )}
-      </section>
+    <div className="res-workspace res-ui wb-module">
+      <Library
+        scene={scene}
+        patchScene={patchScene}
+        items={items}
+        allItems={allItems}
+        tax={tax}
+        files={files}
+        previews={previews}
+        client={client}
+        busy={disabled}
+        loading={listLoading}
+        listRef={listRef}
+        breadcrumbs={breadcrumbs}
+        onOpen={open}
+        onUpload={upload}
+        onFolders={shell.openPanel ? toggleTools : null}
+        foldersOpen={infoOpen}
+        onPickResources={onPickResources}
+      />
       {scene.openId && (
         <section className="res-detail">
-          <header className="res-header">
-            <button onClick={close}>返回资源库</button>
-            <h1>{item?.title ?? "读取资料…"}</h1>
-            <button aria-expanded={scene.metadataOpen !== false} aria-controls="resource-metadata" onClick={() => patchScene({ metadataOpen: scene.metadataOpen === false })}>资料信息</button>
-            <button disabled={disabled || !item || !!item.deletedAt} className="res-primary" onClick={() => setAddToLesson([item])}>加入备课</button>
-            <button
-              disabled={!file}
-              onClick={() =>
-                client
-                  .download(item.fileId, file.name)
-                  .catch((e) => setError(e.message))
-              }
-            >
-              下载原件
+          <header className="res-header res-surface">
+            <button className="res-back-button" onClick={close}>
+              <Icon name="arrowLeft" size={17} />
+              <span>返回资源库</span>
             </button>
-          </header>
-          {item && (
-            <>
-              <div className={`res-detail-body${scene.metadataOpen === false ? " is-preview-only" : ""}`}>
-                <div className="res-preview-column">
-                  {item.supplementPreviewFileId && !supplement && (
-                    <div className="res-warning">
-                      正在查看本版本补充 PDF，原件保持不变。
-                    </div>
-                  )}
-                  {supplement?.resourceId === item.id && (
-                    <div className="res-warning">
-                      核对补充 PDF：{supplement.name} · 已看{" "}
-                      {supplement.viewed.length} 页
-                      <button
-                        disabled={
-                          disabled ||
-                          !supplement.total ||
-                          supplement.viewed.length !== supplement.total
-                        }
-                        onClick={() =>
-                          write(
-                            `${root}/items/${item.id}/supplement-preview`,
-                            {
-                              baseVersion: supplement.baseVersion,
-                              fileId: supplement.originalFileId,
-                              supplementPreviewFileId: supplement.fileId,
-                            },
-                            "supplement",
-                          )
-                        }
-                      >
-                        采用补充 PDF
-                      </button>
-                      <button onClick={() => patchScene({ supplement: null })}>
-                        取消补充
-                      </button>
-                    </div>
-                  )}
-                  <Preview
-                    key={previewId}
-                    client={client}
-                    fileId={previewId}
-                    page={page}
-                    scrollPosition={
-                      scene.previewScroll?.[`${previewId}:${page}`]
-                    }
-                    onScrollPosition={(position) =>
-                      patchScene((current) => ({
-                        previewScroll: {
-                          ...current.previewScroll,
-                          [`${previewId}:${page}`]: position,
-                        },
-                      }))
-                    }
-                    onPage={(p) =>
-                      patchScene({
-                        pages: { ...sceneRef.current.pages, [previewId]: p },
-                      })
-                    }
-                    zoom={scene.zoom}
-                    onZoom={(zoom) => patchScene({ zoom })}
-                    onViewed={(p, preview) => {
-                      const current = sceneRef.current.supplement;
-                      if (
-                        current?.fileId === previewId &&
-                        preview.state === "ready"
-                      )
-                        patchScene({
-                          supplement: {
-                            ...current,
-                            total: preview.pageCount,
-                            viewed: [...new Set([...current.viewed, p])],
-                          },
-                        });
-                    }}
-                  />
-                </div>
-                <aside id="resource-metadata" className="res-metadata" inert={scene.metadataOpen === false ? true : undefined}>
-                  <h2>资料信息</h2>
-                  <label>
-                    名称
-                    <input
-                      aria-label="资源名称"
-                      maxLength={200}
-                      value={draft.title}
-                      onChange={(e) => edit({ title: e.target.value })}
-                      disabled={!!item.deletedAt}
-                    />
-                  </label>
-                  <label>
-                    文件夹
-                    <select
-                      aria-label="资源文件夹"
-                      value={draft.folderId ?? ""}
-                      onChange={(e) =>
-                        edit({ folderId: e.target.value || null })
-                      }
-                      disabled={!!item.deletedAt}
+            <div className="res-detail-title">
+              <h1>{item?.title ?? "读取资料…"}</h1>
+              <span className="res-muted">
+                {item?.deletedAt ? "已删除资料" : file?.name}
+              </span>
+            </div>
+            <div className="res-header-actions">
+              {item?.deletedAt ? (
+                <button
+                  className="res-primary"
+                  disabled={disabled}
+                  onClick={() => setDialog({ kind: "delete", item })}
+                >
+                  恢复资料
+                </button>
+              ) : (
+                <button
+                  disabled={disabled || !item}
+                  className="res-primary"
+                  onClick={() => setAddToLesson([item])}
+                >
+                  <Icon name="lessons" size={16} />
+                  加入备课
+                </button>
+              )}
+              <button
+                disabled={!file}
+                onClick={() =>
+                  client
+                    .download(item.fileId, file.name)
+                    .catch((error) => setError(error.message))
+                }
+              >
+                <Icon name="arrowDown" size={16} />
+                <span>下载原件</span>
+              </button>
+              <button
+                aria-expanded={Boolean(infoOpen)}
+                aria-label="资料信息"
+                title="资料信息"
+                className={`res-info-toggle${infoOpen ? " is-selected" : ""}`}
+                onClick={toggleTools}
+              >
+                <Icon name="info" size={17} />
+                <span>资料信息</span>
+                {dirty && <span className="res-unsaved-dot" />}
+              </button>
+              <Popover
+                label="资料更多操作"
+                className="res-menu"
+                buttonClassName="res-icon-button"
+              >
+                {({ close: closeMenu }) => (
+                  <>
+                    <button
+                      role="menuitem"
+                      disabled={disabled || !item || !!item.deletedAt}
+                      onClick={() => {
+                        closeMenu();
+                        replaceInput.current?.click();
+                      }}
                     >
-                      <option value="">根目录</option>
-                      {tax.folders.map((f) => (
-                        <option value={f.id} key={f.id}>
-                          {f.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <fieldset disabled={!!item.deletedAt}>
-                    <legend>标签</legend>
-                    {tax.tags.length ? (
-                      tax.tags.map((t) => (
-                        <label key={t.id}>
-                          <input
-                            type="checkbox"
-                            checked={draft.tagIds.includes(t.id)}
-                            onChange={() =>
-                              edit({
-                                tagIds: draft.tagIds.includes(t.id)
-                                  ? draft.tagIds.filter((id) => id !== t.id)
-                                  : [...draft.tagIds, t.id],
-                              })
-                            }
-                          />
-                          {t.name}
-                        </label>
-                      ))
-                    ) : (
-                      <span className="res-muted">可在右栏新建标签</span>
-                    )}
-                  </fieldset>
-                  <label>
-                    笔记
-                    <textarea
-                      aria-label="资源笔记"
-                      maxLength={20000}
-                      value={draft.note}
-                      onChange={(e) => edit({ note: e.target.value })}
-                      disabled={!!item.deletedAt}
-                    />
-                  </label>
-                  <button
-                    className="res-primary"
-                    disabled={disabled || !!item.deletedAt}
-                    onClick={() =>
-                      write(`${root}/items/${item.id}`, draft, "metadata")
-                    }
-                  >
-                    保存资料
-                  </button>
-                  <details className="res-file-details" open={!!scene.fileDetailsOpen} onToggle={event => { if (scene.fileDetailsOpen !== event.currentTarget.open) patchScene({ fileDetailsOpen: event.currentTarget.open }); }}><summary>文件与预览</summary><div className="res-file-info">
-                    <strong>{file?.name}</strong>
-                    <span>当前版本 {item.version}</span>
-                    <label className="res-button">
+                      <Icon name="upload" size={16} />
                       更新文件
-                      <input
-                        aria-label="更新文件"
-                        type="file"
-                        disabled={disabled || !!item.deletedAt}
-                        onChange={(e) => {
-                          upload(e.target.files[0], "replace");
-                          e.target.value = "";
-                        }}
-                      />
-                    </label>
-                    <label className="res-button">
+                    </button>
+                    <button
+                      role="menuitem"
+                      disabled={disabled || !item || !!item.deletedAt}
+                      onClick={() => {
+                        closeMenu();
+                        supplementInput.current?.click();
+                      }}
+                    >
+                      <Icon name="file" size={16} />
                       补充 PDF 预览
-                      <input
-                        aria-label="补充 PDF 预览"
-                        type="file"
-                        accept="application/pdf,.pdf"
-                        disabled={disabled || !!item.deletedAt}
-                        onChange={(e) => {
-                          upload(e.target.files[0], "supplement");
-                          e.target.value = "";
-                        }}
-                      />
-                    </label>
-                    {item.supplementPreviewFileId && (
+                    </button>
+                    {item?.supplementPreviewFileId && (
                       <button
+                        role="menuitem"
                         disabled={disabled || !!item.deletedAt}
-                        onClick={() =>
+                        onClick={() => {
+                          closeMenu();
                           write(
                             `${root}/items/${item.id}/supplement-preview`,
                             {
@@ -794,64 +625,227 @@ function ResourceWorkspace({
                               supplementPreviewFileId: null,
                             },
                             "supplement",
-                          )
-                        }
+                          );
+                        }}
                       >
                         移除补充预览
                       </button>
                     )}
-                  </div></details>
-                  <h2>使用位置 · {usages.length}</h2>
-                  {usageError ? (
-                    <p role="alert">
-                      使用位置读取失败：{usageError}
-                      <button onClick={refresh}>重新读取</button>
-                    </p>
-                  ) : usages.length ? (
-                    usages.map((u) => (
-                      <button
-                        className="res-usage"
-                        key={u.referenceId}
-                        onClick={() => onOpenLesson?.(u)}
-                      >
-                        {u.lessonTitle} / {u.sectionTitle ?? "备用材料"}
-                        <small>
-                          采用版本 {u.adoptedVersion}
-                          {u.adoptedVersion < item.version
-                            ? " · 来源有更新"
-                            : ""}
-                        </small>
-                      </button>
-                    ))
-                  ) : (
-                    <p className="res-muted">尚未用于备课</p>
-                  )}
+                    {!item?.deletedAt && (
+                      <>
+                        <div className="res-menu-divider" />
+                        <button
+                          role="menuitem"
+                          className="res-danger"
+                          disabled={disabled || !item}
+                          onClick={() => {
+                            closeMenu();
+                            setDialog({ kind: "delete", item });
+                          }}
+                        >
+                          <Icon name="trash" size={16} />
+                          删除资料
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
+              </Popover>
+            </div>
+            <input
+              ref={replaceInput}
+              hidden
+              aria-label="更新文件"
+              type="file"
+              disabled={disabled || !!item?.deletedAt}
+              onChange={(event) => {
+                upload(event.target.files[0], "replace");
+                event.target.value = "";
+              }}
+            />
+            <input
+              ref={supplementInput}
+              hidden
+              aria-label="补充 PDF 预览"
+              type="file"
+              accept="application/pdf,.pdf"
+              disabled={disabled || !!item?.deletedAt}
+              onChange={(event) => {
+                upload(event.target.files[0], "supplement");
+                event.target.value = "";
+              }}
+            />
+          </header>
+          {item && (
+            <div className="res-preview-column res-surface">
+              {item.supplementPreviewFileId && !supplement && (
+                <div className="res-notice">
+                  <Icon name="info" size={16} />
+                  正在查看本版本补充 PDF，原件保持不变。
+                </div>
+              )}
+              {supplement?.resourceId === item.id && (
+                <div className="res-warning">
+                  <span>
+                    核对补充 PDF：{supplement.name} · 已看{" "}
+                    {supplement.viewed.length} / {supplement.total ?? "…"} 页
+                  </span>
                   <button
-                    disabled={disabled}
-                    onClick={() => setDialog({ kind: "delete", item })}
+                    className="res-primary"
+                    disabled={
+                      disabled ||
+                      !supplement.total ||
+                      supplement.viewed.length !== supplement.total
+                    }
+                    onClick={() =>
+                      write(
+                        `${root}/items/${item.id}/supplement-preview`,
+                        {
+                          baseVersion: supplement.baseVersion,
+                          fileId: supplement.originalFileId,
+                          supplementPreviewFileId: supplement.fileId,
+                        },
+                        "supplement",
+                      )
+                    }
                   >
-                    {item.deletedAt ? "恢复资料" : "删除资料"}
+                    采用补充 PDF
                   </button>
-                </aside>
-              </div>
-            </>
+                  <button onClick={() => patchScene({ supplement: null })}>
+                    取消补充
+                  </button>
+                </div>
+              )}
+              <Preview
+                key={previewId}
+                client={client}
+                fileId={previewId}
+                page={page}
+                scrollPosition={scene.previewScroll?.[`${previewId}:${page}`]}
+                onScrollPosition={(position) =>
+                  patchScene((current) => ({
+                    previewScroll: {
+                      ...current.previewScroll,
+                      [`${previewId}:${page}`]: position,
+                    },
+                  }))
+                }
+                onPage={(page) =>
+                  patchScene((current) => ({
+                    pages: { ...current.pages, [previewId]: page },
+                  }))
+                }
+                zoom={scene.zoom}
+                onZoom={(zoom) => patchScene({ zoom })}
+                onSupplement={
+                  !item.deletedAt && !supplement && !disabled
+                    ? () => supplementInput.current?.click()
+                    : null
+                }
+                onViewed={(page, preview) => {
+                  const current = sceneRef.current.supplement;
+                  if (
+                    current?.fileId === previewId &&
+                    preview.state === "ready"
+                  )
+                    patchScene({
+                      supplement: {
+                        ...current,
+                        total: preview.pageCount,
+                        viewed: [...new Set([...current.viewed, page])],
+                      },
+                    });
+                }}
+              />
+            </div>
           )}
         </section>
       )}
-      <ModulePresence present={!!addToLesson}>{addToLesson && (
-        <AddToLesson
-          client={client}
-          resources={addToLesson}
-          disabled={disabled}
-          onClose={() => setAddToLesson(null)}
-          onSave={(id, input) =>
-            write(`/api/modules/lessons/v3/${id}`, input, "lesson")
-          }
-        />
-      )}
+      <ModulePresence
+        present={Boolean(message || error || busy || pending || lastLesson)}
+      >
+        <div
+          className={`res-status${error ? " has-error" : ""}`}
+          role="status"
+          aria-live="polite"
+        >
+          <Icon name={error ? "info" : busy ? "upload" : "check"} size={16} />
+          <span role={error && !busy ? "alert" : undefined}>
+            {busy ? "正在保存，请稍候…" : error || message}
+          </span>
+          {lastLesson && (
+            <button onClick={() => onOpenLesson?.(lastLesson)}>
+              前往备课：{lastLesson.lessonTitle}
+            </button>
+          )}
+          {pending?.requiresReselection && !busy ? (
+            <label className="res-button">
+              重新选择原文件
+              <input
+                type="file"
+                aria-label="重新选择原文件"
+                onChange={async (event) => {
+                  const file = event.target.files[0];
+                  event.target.value = "";
+                  if (!file) return;
+                  try {
+                    await execute(await reselectDeviceFile(pending, file));
+                  } catch (error) {
+                    setError(error.message);
+                  }
+                }}
+              />
+            </label>
+          ) : (
+            pending &&
+            !busy && (
+              <button onClick={() => execute(pending)}>重试确认原请求</button>
+            )
+          )}
+          {!pending && !busy && (
+            <button
+              className="res-icon-button"
+              aria-label="关闭提示"
+              onClick={() => {
+                setMessage("");
+                setError("");
+                setLastLesson(null);
+              }}
+            >
+              <Icon name="close" size={14} />
+            </button>
+          )}
+        </div>
       </ModulePresence>
-      <ModulePresence present={!!conflict}>{conflict && (
-        <ResourceDialog label="版本冲突" onClose={() => setConflict(null)}>
+      <ModulePresence present={!!scene.taxonomyDraft?.edit}>
+        {scene.taxonomyDraft?.edit && (
+          <TaxonomyDialog
+            value={tax}
+            draft={scene.taxonomyDraft}
+            onChange={changeTaxonomy}
+            onSave={saveTaxonomy}
+            onClose={() => patchScene({ taxonomyDraft: null })}
+            disabled={disabled}
+            items={allItems}
+          />
+        )}
+      </ModulePresence>
+      <ModulePresence present={!!addToLesson}>
+        {addToLesson && (
+          <AddToLesson
+            client={client}
+            resources={addToLesson}
+            disabled={disabled}
+            onClose={() => setAddToLesson(null)}
+            onSave={(id, input) =>
+              write(`/api/modules/lessons/v3/${id}`, input, "lesson")
+            }
+          />
+        )}
+      </ModulePresence>
+      <ModulePresence present={!!conflict}>
+        {conflict && (
+          <ResourceDialog label="版本冲突" onClose={() => setConflict(null)}>
             <h2>内容已在其他地方更新</h2>
             <p>
               你的输入仍保留。当前资源：{item?.title}，版本 {item?.version}。
@@ -868,11 +862,15 @@ function ResourceWorkspace({
               保留草稿并对照当前版本
             </button>
             <button onClick={() => setConflict(null)}>稍后处理</button>
-        </ResourceDialog>
-      )}
+          </ResourceDialog>
+        )}
       </ModulePresence>
-      <ModulePresence present={!!dialog}>{dialog && (
-        <ResourceDialog label={dialog.kind === "replace" ? "更新文件确认" : "删除恢复确认"} onClose={() => setDialog(null)}>
+      <ModulePresence present={!!dialog}>
+        {dialog && (
+          <ResourceDialog
+            label={dialog.kind === "replace" ? "更新文件确认" : "删除恢复确认"}
+            onClose={() => setDialog(null)}
+          >
             <h2>
               {dialog.kind === "replace"
                 ? "更新当前文件"
@@ -885,15 +883,28 @@ function ResourceWorkspace({
                 <p>
                   {file?.name} → {dialog.source.name}
                 </p>
-                <p>
-                  {usages.length} 处使用保持采用的旧文件。名称、分类和笔记保留。
-                </p>
+                <p>名称、文件夹、标签和备注都会保留。</p>
+                {usages.length > 0 && (
+                  <p>
+                    已有 {usages.length}{" "}
+                    处备课引用仍保留旧文件，需要时可在备课中采用新版。
+                  </p>
+                )}
               </>
             ) : (
-              <p>原文件与已有备课引用保留。</p>
+              <p>
+                {dialog.item.deletedAt
+                  ? "恢复后可以继续查看和整理这份资料。"
+                  : "资料会移入“已删除资料”，可以随时恢复。已有备课仍可使用引用的文件。"}
+              </p>
             )}
             <div className="res-actions">
               <button
+                className={
+                  dialog.kind === "delete" && !dialog.item.deletedAt
+                    ? "res-danger"
+                    : "res-primary"
+                }
                 disabled={disabled}
                 onClick={() =>
                   dialog.kind === "replace"
@@ -925,8 +936,9 @@ function ResourceWorkspace({
               </button>
               <button onClick={() => setDialog(null)}>取消</button>
             </div>
-        </ResourceDialog>
-      )}</ModulePresence>
+          </ResourceDialog>
+        )}
+      </ModulePresence>
     </div>
   );
 }

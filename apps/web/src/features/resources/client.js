@@ -14,7 +14,7 @@ export function createResourcesClient(transport, signal, onIdentityLost) {
       const id = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
       const allowed = method === 'PUT'
         ? new RegExp(`^/api/modules/(?:resources/(?:taxonomy|items/${id}(?:/(?:file|supplement-preview))?)|lessons/v3/${id})$`)
-        : method === 'POST' ? new RegExp(`^/api/(?:workbench/files(?:/${id}/preview)?|modules/resources/items(?:/${id}/deletion)?)$`) : null;
+        : method === 'POST' ? new RegExp(`^/api/(?:workbench/(?:files(?:/${id}/preview)?|jobs/${id}/retry)|modules/resources/items(?:/${id}/deletion)?)$`) : null;
       if (!allowed?.test(path) || typeof key !== 'string' || !input || typeof input !== 'object')
         throw Object.assign(new Error('原请求格式暂不支持，已保留设备资料，请核对后处理'), { unknown: true });
       headers["X-TeachBuddy-Request"] = "1";

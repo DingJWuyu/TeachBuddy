@@ -1,11 +1,13 @@
 import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 import React, { useEffect, useRef, useState } from "react";
-import { referenceInputFrom as inputReference } from '../lessons/api.js';
+import { referenceInputFrom as inputReference } from "../lessons/api.js";
+import { Icon } from "../workbench/chrome/icons.jsx";
 export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
   const sequence = useRef(0);
   const dialogRef = useRef(null);
   useModuleDialogFocus(dialogRef, onClose);
   const [selectedId, setSelectedId] = useState("");
+  const [loading, setLoading] = useState(true);
   const [lessons, setLessons] = useState([]),
     [lesson, setLesson] = useState(null),
     [section, setSection] = useState(""),
@@ -15,7 +17,8 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
     client
       .request("/api/modules/lessons/v3")
       .then((r) => active && setLessons(r.items))
-      .catch((e) => active && setError(e.message));
+      .catch((e) => active && setError(e.message))
+      .finally(() => active && setLoading(false));
     return () => {
       active = false;
       sequence.current++;
@@ -29,9 +32,7 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
     setSection("");
     if (!id) return;
     try {
-      const result = await client.request(
-        `/api/modules/lessons/v3/${id}`,
-      );
+      const result = await client.request(`/api/modules/lessons/v3/${id}`);
       if (request === sequence.current) setLesson(result);
     } catch (e) {
       if (request === sequence.current) setError(e.message);
@@ -70,9 +71,35 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
     onSave(lesson.id, input);
   }
   return (
-    <div className="res-overlay">
-      <div ref={dialogRef} className="res-dialog" role="dialog" aria-modal="true" aria-label="加入备课">
-        <h2>加入备课</h2>
+    <div
+      className="res-overlay"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        className="res-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label="加入备课"
+      >
+        <header className="res-dialog-heading">
+          <h2>加入备课</h2>
+          <button
+            className="res-icon-button"
+            aria-label="关闭加入备课"
+            onClick={onClose}
+          >
+            <Icon name="close" size={17} />
+          </button>
+        </header>
+        <p>
+          {resources.length === 1
+            ? `将“${resources[0].title}”放入已有备课。`
+            : `将所选 ${resources.length} 份资料放入已有备课。`}
+          原文件仍保存在资源库。
+        </p>
         {error && <p role="alert">{error}</p>}
         <label>
           选择备课
@@ -81,7 +108,9 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
             value={selectedId}
             onChange={(e) => choose(e.target.value)}
           >
-            <option value="">请选择</option>
+            <option value="">
+              {loading ? "正在读取备课…" : "选择一份备课"}
+            </option>
             {lessons.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.title}
@@ -89,7 +118,9 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
             ))}
           </select>
         </label>
-        {!lessons.length && !error && <p>还没有备课，请先新建备课。</p>}
+        {!loading && !lessons.length && !error && (
+          <p>你还没有备课。创建备课后，就可以从这里加入资料。</p>
+        )}
         {lesson && (
           <label>
             放入位置
@@ -108,10 +139,14 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
           </label>
         )}
         <div className="res-actions">
-          <button disabled={disabled || !lesson} onClick={save}>
+          <button onClick={onClose}>取消</button>
+          <button
+            className="res-primary"
+            disabled={disabled || !lesson}
+            onClick={save}
+          >
             确认加入
           </button>
-          <button onClick={onClose}>取消</button>
         </div>
       </div>
     </div>
