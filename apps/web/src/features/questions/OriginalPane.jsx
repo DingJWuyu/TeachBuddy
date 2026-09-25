@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { ControlledImage, DocumentView } from "../workbench/materials/DocumentView.jsx";
 import { get, write, download } from "./materials-api.js";
+import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
 export default function OriginalPane({
   material,
   draft,
@@ -134,7 +135,7 @@ export default function OriginalPane({
       {files.length > 0 && (
         <>
           <div className="q-tools">
-            <select
+            {files.length > 1 && <select
               aria-label="原稿文件"
               value={fileId}
               onChange={(e) => onScene({ fileId: e.target.value, page: 1 })}
@@ -144,8 +145,8 @@ export default function OriginalPane({
                   原稿 {i + 1}
                 </option>
               ))}
-            </select>
-            {Boolean(preview?.pages.length) && <><select
+            </select>}
+            {Boolean(preview?.pages.length) && <>{preview.pages.length === 1 ? <span className="q-muted">第 1 页</span> : <select
               aria-label="原稿页码"
               value={page}
               onChange={(e) => onScene({ page: Number(e.target.value) })}
@@ -155,7 +156,7 @@ export default function OriginalPane({
                   第 {x.page} 页
                 </option>
               ))}
-            </select>
+            </select>}
             <select
               aria-label="原稿缩放"
               value={scene.zoom ?? 1}
@@ -177,6 +178,7 @@ export default function OriginalPane({
                 className="q-page"
                 style={{ width: `${(scene.zoom ?? 1) * 100}%` }}
                 onPointerDown={(e) => {
+                  if (readOnly || !scene.adjusting) return;
                   start.current = point(e);
                   e.currentTarget.setPointerCapture(e.pointerId);
                 }}
@@ -225,6 +227,8 @@ export default function OriginalPane({
           ) : (
             <p>{error || "原稿已保存，预览尚未就绪"}</p>
           )}
+          {!readOnly && current && <ModuleDisclosure title="调整原稿选区" open={Boolean(scene.adjusting)} onOpenChange={adjusting => onScene({ adjusting })}>
+          <p className="q-muted">在原稿上拖选区域，再选择用于定位或裁图。</p>
           <div className="q-tools">
             <select
               aria-label="定位用途"
@@ -246,7 +250,9 @@ export default function OriginalPane({
             >
               裁图加入题面
             </button>
-            <button
+          </div>
+          </ModuleDisclosure>}
+          {error && <button
               onClick={async () => {
                 try {
                   await write(
@@ -261,9 +267,8 @@ export default function OriginalPane({
                 }
               }}
             >
-              生成预览
-            </button>
-          </div>
+              重新生成预览
+            </button>}
         </>
       )}
       {positions.length > 0 && (
@@ -279,13 +284,7 @@ export default function OriginalPane({
                     : onScene({ fileId: l.fileId, paragraph: l.paragraph })
               }
             >
-              {roleName[l.role]} ·{" "}
-              {l.fileId ? `原稿 ${files.indexOf(l.fileId) + 1} · ` : ""}
-              {l.kind === "text"
-                ? `字符 ${l.start}-${l.end}`
-                : l.kind === "docx"
-                  ? `段落 ${l.paragraph}`
-                  : `第 ${l.page} 页`}
+              定位{roleName[l.role]}{l.kind === 'page' ? ` · 第 ${l.page} 页` : l.kind === 'docx' ? ` · 段落 ${l.paragraph}` : ''}
             </button>
           ))}
         </div>
