@@ -44,7 +44,7 @@ function Upcoming({ entries, occurrences, labels, today, grouped, onGroup, onNew
   const groups = [...labels, { id: '', name: '无标签', color: '#9ba0aa' }].map(label => ({ label,
     rows: items.filter(x => label.id ? (x.occurrence ?? x.entry).calendar?.tags.includes(label.id) : !labels.some(l => (x.occurrence ?? x.entry).calendar?.tags.includes(l.id))) })).filter(x => x.rows.length);
   return <section className="cal-upcoming" aria-label="即将到来"><header><h2><CalendarIcon name="clock" size={18}/>即将到来<span>({items.length})</span></h2><div><IconButton name={grouped ? 'tag' : 'calendar'} label={grouped ? '按日期显示' : '按标签分组'} aria-pressed={grouped} onClick={onGroup}/><IconButton name="plus" label="新建任务" onClick={onNew}/></div></header>
-    {items.length === 0 ? <div className="cal-empty"><CalendarIcon name="calendar" size={28}/><p>暂无安排</p></div> : grouped ? groups.map(({ label, rows }) => <div className="cal-upcoming-group" key={label.id}><h3><span className="cal-group-tag-icon" style={{ color: label.color }}><CalendarIcon name="tag" size={14}/></span>{label.name}<span>{rows.length}</span></h3>{rows.map(row)}</div>) : <div className="cal-upcoming-list">{items.map(row)}</div>}
+    {items.length === 0 ? <div className="cal-empty"><CalendarIcon name="calendar" size={28}/><p>暂无安排</p></div> : grouped ? groups.map(({ label, rows }) => <div className="cal-upcoming-group" key={label.id}><h3><span className="cal-group-tag-icon" style={{ color: label.color }}><CalendarIcon name="tag" size={20}/></span><span className="cal-group-name" title={label.name}>{label.name}</span><span className="cal-group-count">{rows.length}</span></h3>{rows.map(row)}</div>) : <div className="cal-upcoming-list">{items.map(row)}</div>}
   </section>;
 }
 
