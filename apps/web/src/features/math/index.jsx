@@ -3,17 +3,22 @@ import { useScene } from '../workbench/useScene.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
 import { readLocal, writeLocal, migrateLegacyLocal } from '../workbench/storage.js';
 import { ShellContext } from "../workbench/shellContext.js";
-import { MathTools, MathIntegration } from "./Integration.jsx";
+import { MathTools, MathIntegration, MathUsageDetails } from "./Integration.jsx";
 import { uploadDraft } from "./uploadDraft.js";
 import { reselectDeviceFile } from '../workbench/deviceRequestStore.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import DynamicPreview from "./DynamicPreview.jsx";
-import DynamicTools from "./DynamicTools.jsx";
+import GraphTools from "./GraphTools.jsx";
+import WorkspaceHome, { WorkIllustration } from "./WorkspaceHome.jsx";
+import GraphicPreview from "./GraphicPreview.jsx";
+import FormulaEditor from "./FormulaEditor.jsx";
+import { Icon } from "../workbench/icons.jsx";
+import { Popover, MenuItem } from "../workbench/ModuleOverlays.jsx";
 import HtmlEditor from "./HtmlEditor.jsx";
 import { dynamicSource, emptyDynamicSource } from "./model.js";
 import { updateObjects } from "./editing.js";
-import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
-import { renderGraphic } from "../../../../../packages/shared/src/math/graphics.js";
+import React, { useEffect, useLayoutEffect, useMemo, useState, useRef, useContext } from "react";
+import { projectSpace } from "../../../../../packages/shared/src/math/graphics.js";
 import {
   emptySource,
   newElement,
@@ -24,9 +29,10 @@ import {
 import { createMathClient } from "./api.js";
 import { useAuth } from "../auth/index.jsx";
 import { loadMathFont } from "./localFont.js";
-import { mathFontStyle } from "../../../../../packages/shared/src/math/formula.js";
-import FormulaPreview from "./FormulaPreview.jsx";
 import "./math.css";
+import "./workspace.css";
+import { ModulePresence } from '../workbench/ModuleMotion.jsx';
+import { WorkspaceToolbar } from './WorkspaceControls.jsx';
 const base = "/api/modules/math/v1/works";
 const names = {
   dynamic: "演示",
@@ -43,7 +49,7 @@ const names = {
   ellipse: "圆 / 椭圆",
   polyline: "多边形",
   text: "文字",
-  id: "标识",
+  id: "名称",
   x: "x",
   y: "y",
   z: "z",
@@ -80,6 +86,18 @@ const names = {
   azimuth: "方位角",
   elevation: "仰角",
 };
+function hasContent(draft) {
+  if (!draft) return false;
+  if (draft.id || draft.source.kind === 'html' || Object.keys(draft.parameterEdits ?? {}).length) return true;
+  const kind = draft.source.kind;
+  const empty = kind === 'dynamic' ? emptyDynamicSource() : emptySource(kind);
+  return draft.title !== `未命名${names[kind]}` || JSON.stringify(draft.source) !== JSON.stringify(empty);
+}
+function fitSpace(source) {
+  const points = source.points.map(p => projectSpace(p, source.azimuth, source.elevation));
+  const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+  return { ...source, viewport: { ...source.viewport, xMin: Math.min(...xs) - 1, xMax: Math.max(...xs) + 1, yMin: Math.min(...ys) - 1, yMax: Math.max(...ys) + 1 } };
+}
 function Fields({ value, onChange, prefix = "" }) {
   return (
     <div className="math-fields">
@@ -231,7 +249,6 @@ function MathSession({ transport, route }) {
   const [font, setFont] = useState(null);
   const [fontError, setFontError] = useState("");
   const [fontAttempt, setFontAttempt] = useState(0);
-  const latexInput = useRef(null);
   useEffect(() => {
     let live = true;
     setFontError("");
@@ -276,8 +293,11 @@ function MathSession({ transport, route }) {
     else if (kind && !['html', 'dynamic'].includes(kind) && format === 'html') setFormat('png');
   }, [draft?.source?.kind, format]);
   const [viewScene, patchView] = useScene(account, 'math-view', { canvasTop: 0, canvasLeft: 0 });
-  const canvasScroll = useScrollRestore(viewScene.canvasTop, top => patchView({ canvasTop: top }), `${draft?.id}:${draft?.source.kind}:${Boolean(font)}`);
-  useEffect(() => { if (canvasScroll.ref.current) canvasScroll.ref.current.scrollLeft = viewScene.canvasLeft; }, [account, draft?.id, font]);
+  const home = !draft || viewScene.screen === 'home';
+  const canvasScroll = useScrollRestore(home ? viewScene.homeTop ?? 0 : viewScene.canvasTop,
+    top => patchView(home ? { homeTop: top } : { canvasTop: top }), `${home}:${draft?.id}:${draft?.source.kind}:${Boolean(font)}`);
+  useLayoutEffect(() => { if (canvasScroll.ref.current) canvasScroll.ref.current.scrollTop = home ? viewScene.homeTop ?? 0 : viewScene.canvasTop; }, [home]);
+  useEffect(() => { if (canvasScroll.ref.current) canvasScroll.ref.current.scrollLeft = home ? 0 : viewScene.canvasLeft; }, [account, home, draft?.id, font]);
   const importFile = useRef(null);
   const [importPending, setImportPending] = useState(null);
   const previousKind = useRef(null);
@@ -314,7 +334,7 @@ function MathSession({ transport, route }) {
     if (attempt.requiresReselection) { importFile.current.click(); return; }
     if (
       file && !importPending &&
-      draft &&
+      hasContent(draft) &&
       status !== "已保存" &&
       !await confirm("导入会替换当前未保存稿，是否继续？")
     )
@@ -331,6 +351,8 @@ function MathSession({ transport, route }) {
         source: { schemaVersion: 1, kind: "html", fileId: stored.id },
         originalFileId: stored.id,
       });
+      patchView({ screen: 'editor', exportOpen: false });
+      if (shell?.panelMode === 'math-tools') shell.closePanel();
       await uploadDraft(account, "delete");
       if (epoch === generation.current) setImportPending(null);
     } catch (error) {
@@ -413,7 +435,7 @@ function MathSession({ transport, route }) {
         setFormat(saved.format ?? (['dynamic', 'html'].includes(saved.draft?.source.kind) ? 'html' : 'png'));
         setBackground(saved.background ?? 'transparent');
         setExportWidth(saved.exportWidth ?? 1600);
-        if (saved.draft && saved.status !== '已保存') setMessage('已恢复本设备的数学草稿，请检查后保存');
+
         setStatus(
           saved.pending &&
             (!saved.pending.kind || saved.pending.kind === "save")
@@ -445,6 +467,7 @@ function MathSession({ transport, route }) {
       return;
     routeLoaded.current = route.workId;
     if (draft?.id !== route.workId) open({ id: route.workId });
+    else patchView({ screen: 'editor' });
   }, [route?.workId, storage, loadedStorage]);
   async function refresh() {
     const epoch = generation.current;
@@ -507,7 +530,7 @@ function MathSession({ transport, route }) {
       return;
     }
     if (
-      draft &&
+      hasContent(draft) &&
       status !== "已保存" &&
       !await confirm("新建作品会替换当前未保存稿，是否继续？")
     )
@@ -518,7 +541,10 @@ function MathSession({ transport, route }) {
       originalFileId: null,
     });
     setSelected(0);
+    setConflict(null);
     setFormat(kind === 'dynamic' ? 'html' : 'png');
+    patchView({ screen: 'editor', toolTab: 'objects', selectionKind: 'object', exportOpen: false, formulaMode: 'guided', formulaBuilder: null, groups: {}, canvasTop: 0, canvasLeft: 0 });
+    if (shell?.panelMode === 'math-tools') shell.closePanel();
   }
   async function open(item) {
     if (pending) {
@@ -527,7 +553,7 @@ function MathSession({ transport, route }) {
     }
     if (
       status !== "已保存" &&
-      draft &&
+      hasContent(draft) &&
       !await confirm("打开作品会替换当前未保存稿，是否继续？")
     )
       return;
@@ -538,7 +564,9 @@ function MathSession({ transport, route }) {
       setDraft(saved);
       setStatus("已保存");
       setSelected(0);
+      setConflict(null);
       setMessage("");
+      patchView({ screen: 'editor', toolTab: 'objects', selectionKind: 'object', exportOpen: false, formulaMode: null, usageOpen: false });
     } catch (e) {
       if (epoch === generation.current) handleError(e);
     }
@@ -785,22 +813,6 @@ function MathSession({ transport, route }) {
       !["formula", "plane", "space", "dynamic", "html"].includes(
         draft.source.kind,
       ));
-  const preview = useMemo(() => {
-    if (
-      !draft ||
-      ["formula", "dynamic", "html"].includes(draft.source.kind) ||
-      readOnly
-    )
-      return null;
-    if (!font) return { loading: true };
-    try {
-      return {
-        url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(renderGraphic(draft.source).replace(/(<svg[^>]*>)/, `$1${font ? mathFontStyle(font) : ""}`))}`,
-      };
-    } catch (e) {
-      return { error: e.message };
-    }
-  }, [draft, readOnly, font]);
   const objects =
     ["plane", "dynamic"].includes(draft?.source.kind) && !readOnly
       ? draft.source.scene.elements
@@ -839,6 +851,64 @@ function MathSession({ transport, route }) {
     source(updateObjects(draft.source, [...objects, newElement(type, id)]));
     setSelected(objects.length);
   }
+  const graphical = !readOnly && ['plane', 'space', 'dynamic'].includes(draft?.source.kind);
+  const toolTab = ['objects', 'parameters', 'steps', 'canvas'].includes(viewScene.toolTab) ? viewScene.toolTab : 'objects';
+  const selection = `${viewScene.selectionKind ?? 'object'}:${selected}`;
+  function showTools(tab) {
+    patchView({ toolTab: tab });
+    shell?.openPanel('math-tools');
+  }
+  function selectGraphic(value) {
+    const [kind, index] = value.split(':');
+    setSelected(Number(index));
+    patchView({ selectionKind: kind });
+    showTools('objects');
+  }
+  function goHome() {
+    if (!hasContent(draft) && !pending && !busy) { setDraft(null); draftRef.current = null; }
+    patchView({ screen: 'home', exportOpen: false, usageOpen: false });
+    setMessage('');
+    if (shell?.panelMode === 'math-tools') shell.closePanel();
+    requestAnimationFrame(() => document.getElementById('math-start-heading')?.focus({ preventScroll: true }));
+  }
+  async function discard() {
+    if (pending || busy) { setMessage('请先确认当前操作结果'); return; }
+    if (!await confirm('丢弃本设备的未保存修改？已保存的作品仍会保留。')) return;
+    setDraft(null); draftRef.current = null; setMessage(''); setConflict(null);
+  }
+  function resume() { patchView({ screen: 'editor' }); }
+  async function useTemplate() {
+    const kind = draft.source.kind;
+    const empty = kind === 'dynamic' ? emptyDynamicSource() : emptySource(kind);
+    if (JSON.stringify(draft.source) !== JSON.stringify(empty) && !await confirm('使用示例会替换当前图形及设置，是否继续？')) return;
+    const example = kind === 'dynamic' ? dynamicSource() : kind === 'space' ? fitSpace(cubeSource()) : { ...empty, scene: { ...empty.scene, elements: [{ ...newElement('function', 'f1'), expression: 'x^2' }] } };
+    edit({ ...draft, source: example, parameterEdits: {} });
+    setSelected(0); patchView({ selectionKind: 'object' });
+    if (kind !== 'dynamic') showTools('objects');
+    else if (shell?.panelMode === 'math-tools') shell.closePanel();
+  }
+  function addGraphic(type) {
+    if (draft.source.kind !== 'space') { add(type); patchView({ selectionKind: 'object' }); }
+    else if (type === 'point') {
+      let index = 1;
+      while (objects.some(p => p.id === `P${index}`)) index++;
+      const id = `P${index}`;
+      source({ ...draft.source, points: [...objects, { id, x: 0, y: 0, z: 0, label: { text: id, dx: 10, dy: -10 }, style: defaultStyle() }] });
+      setSelected(objects.length); patchView({ selectionKind: 'object' });
+    } else {
+      source({ ...draft.source, edges: [...draft.source.edges, { id: `E${Date.now()}`, from: objects[0].id, to: objects[1].id, style: defaultStyle() }] });
+      setSelected(draft.source.edges.length); patchView({ selectionKind: 'edge' });
+    }
+    showTools('objects');
+  }
+  function removeGraphic() {
+    if (viewScene.selectionKind === 'edge') source({ ...draft.source, edges: draft.source.edges.filter((_, i) => i !== selected) });
+    else source(updateObjects(draft.source, objects.filter((_, i) => i !== selected)));
+    setSelected(0); patchView({ selectionKind: 'object' });
+  }
+  function expandTool(key, open) {
+    patchView(current => ({ groups: { ...current.groups, [key]: open } }));
+  }
   if (locked)
     return (
       <main className="math-lock">
@@ -848,67 +918,25 @@ function MathSession({ transport, route }) {
       </main>
     );
   return (
-    <main className="math-workbench wb-module">
+    <div className="math-workbench wb-module">
       {confirmationDialog}
       <section className="math-main">
-        <header>
-          <strong className="math-heading">数学工坊</strong>
-          {shell && (
-            <button onClick={() => shell.openPanel("math-tools")}>
-              作品与工具
-            </button>
-          )}
-          <input
-            ref={importFile}
-            type="file"
-            accept=".html,.htm"
-            aria-label="导入 HTML 文件"
-            hidden
-            onChange={(e) => {
-              importHtml(e.target.files[0]);
-              e.target.value = "";
-            }}
-          />
-          <button
-            disabled={busy || Boolean(pending)}
-            onClick={() => importFile.current.click()}
-          >
-            导入 HTML
-          </button>
-          {importPending && (
-            <button disabled={busy} onClick={() => importHtml()}>
-              {importPending.requiresReselection ? '重选原文件并确认上传' : '重试原文件上传'}
-            </button>
-          )}
-          {draft && (
-            <>
-              <input
-                aria-label="作品名称"
-                value={draft.title}
-                onChange={(e) => edit({ ...draft, title: e.target.value })}
-              />
-              <span role="status">{status}</span>
-              <button className="math-primary" disabled={busy || readOnly} onClick={() => save()}>
-                {pending
-                  ? pending.kind === "deletion"
-                    ? "确认删除结果"
-                    : pending.kind === "export"
-                      ? "确认导出结果"
-                      : "确认保存结果"
-                  : "保存"}
-              </button>
-              <button
-                disabled={busy || readOnly || Boolean(pending)}
-                onClick={() => save(true)}
-              >
-                另存作品
-              </button>
-            </>
-          )}
+        <header className="math-workspace-header">
+          <div className="math-workspace-identity"><span className="math-module-icon"><Icon name="math" size={25}/></span><h1 className="math-heading">数学工坊</h1></div>
+          {!home && <WorkspaceToolbar draft={draft} busy={busy} readOnly={readOnly} pending={pending} empty={!hasContent(draft)}
+            exportOpen={!!viewScene.exportOpen} onHome={goHome} onSave={() => save()} onCopy={() => save(true)}
+            onDelete={deletion} onExport={() => patchView({ exportOpen: !viewScene.exportOpen })} onUsage={() => patchView({ usageOpen: !viewScene.usageOpen })}/>}
+          <input ref={importFile} type="file" accept=".html,.htm" aria-label="导入 HTML 文件" hidden onChange={e => { importHtml(e.target.files[0]); e.target.value = ''; }}/>
+          {importPending && <button disabled={busy} onClick={() => importHtml()}>{importPending.requiresReselection ? '重选原文件并确认上传' : '重试原文件上传'}</button>}
         </header>
+        {!home && <div className="math-document-bar">
+          <button className="math-return" onClick={goHome}><Icon name="back"/><span>返回工坊</span></button>
+          <input aria-label="作品名称" value={draft.title} onChange={e => edit({ ...draft, title: e.target.value })}/>
+          <span className="math-workspace-status" role="status">{status}</span>
+        </div>}
         {shell && (
           <MathIntegration
-            work={draft}
+            work={home ? null : draft}
             saved={status === "已保存" && !pending}
             busy={busy}
             client={client}
@@ -942,26 +970,72 @@ function MathSession({ transport, route }) {
             </button>
           </div>
         )}
-        <div className="math-canvas" ref={canvasScroll.ref} onScroll={event => { canvasScroll.onScroll(event); patchView({ canvasLeft: event.currentTarget.scrollLeft }); }}>
-          {!draft ? (
-            <div className="math-empty">
-              <h1>从一个数学想法开始</h1>
-              <div className="math-start-options">
-                {[
-                  ["formula", "公式", "可编辑的 LaTeX，透明图片输出", "M9 30h7l7-18h17M26 19h11M26 26h9"],
-                  ["plane", "平面图形", "函数图像、几何与标注", "M9 32h32M16 38V8M10 14Q25 46 39 13"],
-                  ["space", "空间图形", "立体几何与投影", "M12 17l16-8 12 8v16l-16 8-12-8zM12 17l12 8 16-8M24 25v16M28 9v16"],
-                  ["dynamic", "动态演示", "参数变化、拖动与分步讲解", "M8 15h32M8 32h32M18 10v10M31 27v10"],
-                ].map(([kind, title, description, path]) => (
-                  <button className="math-start-option" key={kind} onClick={() => newDraft(kind)}>
-                    <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d={path} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    <span><strong>{title}</strong><small>{description}</small></span>
-                    <svg className="math-start-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 18 18 6M7 6h11v11" stroke="currentColor" strokeWidth="1.5" /></svg>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : readOnly ? (
+        {!home && draft && <ModulePresence present={!!viewScene.exportOpen} mode="collapse">
+          <section id="math-export-options" className="math-export-options" aria-label="导出作品">
+            <label>文件格式<select
+              aria-label="导出格式"
+              value={format}
+              onChange={(e) => setFormat(e.target.value)}
+            >
+              {draft.source.kind !== "html" && (
+                <>
+                  <option value="png">图片 · PNG</option>
+                  <option value="svg">矢量图片 · SVG</option>
+                </>
+              )}
+              {["dynamic", "html"].includes(draft.source.kind) && (
+                <option value="html">离线演示 · HTML</option>
+              )}
+              <option value="source">
+                {draft.source.kind === "html" ? "当前源码 HTML" : "制作源 JSON"}
+              </option>
+            </select></label>
+            {!["source", "html"].includes(format) && (
+              <>
+                <label>背景<select
+                  aria-label="导出背景"
+                  value={background}
+                  onChange={(e) => setBackground(e.target.value)}
+                >
+                  <option value="transparent">透明</option>
+                  {draft.source.kind !== "formula" && (
+                    <option value="white">白底</option>
+                  )}
+                </select></label>
+                <label>宽度（像素）<input
+                  aria-label="导出宽度"
+                  type="number"
+                  value={exportWidth}
+                  min="200"
+                  max="4800"
+                  onChange={(e) => setExportWidth(Number(e.target.value))}
+                /></label>
+              </>
+            )}
+            <button className="math-primary" disabled={busy || (!pending && (!draft.id || status !== "已保存"))} onClick={exportFile}>
+              下载作品
+            </button>
+            {(!draft.id || status !== '已保存') && !pending && <span className="math-hint">保存作品后即可下载</span>}
+          </section>
+        </ModulePresence>}
+        {!home && graphical && <div className="math-editing-toolbar" aria-label="制作操作">
+          <Popover label="添加图形" icon={null} align="start" buttonClassName="math-action-button">{({ close }) => <>
+            {(draft.source.kind === 'space' ? ['point', 'edge'] : ['function', 'point', 'line', 'ellipse', 'polyline', 'text']).map(type => <MenuItem key={type} disabled={type === 'edge' && objects.length < 2} onClick={() => { close(); addGraphic(type); }}>添加{type === 'edge' ? '棱' : names[type]}</MenuItem>)}
+            {draft.source.kind === 'space' && <MenuItem onClick={async () => { close(); if (objects.length && !await confirm('使用棱锥会替换当前图形，是否继续？')) return; source(fitSpace(pyramidSource())); selectGraphic('object:0'); }}>棱锥示例</MenuItem>}
+          </>}</Popover>
+          <button onClick={() => showTools('objects')}>图形与标注</button>
+          {draft.source.kind === 'dynamic' && <><button onClick={() => showTools('parameters')}>设置滑杆</button><button onClick={() => showTools('steps')}>编排步骤</button></>}
+          <button className="math-icon-button math-canvas-settings" title="画布设置" aria-label="画布设置" onClick={() => showTools('canvas')}>
+            <svg className="wb-icon" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true" focusable="false">
+              <path d="M3 5h3m4 0h7M3 10h8m4 0h2M3 15h3m4 0h7"/><circle cx="8" cy="5" r="2"/><circle cx="13" cy="10" r="2"/><circle cx="8" cy="15" r="2"/>
+            </svg>
+          </button>
+        </div>}
+        {!home && shell && draft?.id && <ModulePresence present={!!viewScene.usageOpen} mode="collapse"><MathUsageDetails work={draft}/></ModulePresence>}
+        <div className={`math-canvas${home ? ' is-home' : ''}`} ref={canvasScroll.ref} onScroll={event => { canvasScroll.onScroll(event); if (!home) patchView({ canvasLeft: event.currentTarget.scrollLeft }); }}>
+          {home ? <WorkspaceHome draft={hasContent(draft) ? draft : null} status={status} items={items} search={search} deleted={deleted} busy={busy}
+            onSearch={setSearch} onDeleted={setDeleted} onNew={newDraft} onOpen={item => draft?.id === item.id ? resume() : open(item)} onResume={resume} onDiscard={discard} onImport={() => importFile.current.click()}/>
+          : readOnly ? (
             <div className="math-formula">
               <p>作品格式需要更新，请升级后编辑。</p>
               <pre>{JSON.stringify(draft.source, null, 2)}</pre>
@@ -975,6 +1049,13 @@ function MathSession({ transport, route }) {
               onError={handleError}
               onDownload={downloadOriginal}
             />
+          ) : graphical && !objects.length ? (
+            <div className="math-canvas-start"><WorkIllustration kind={draft.source.kind}/>
+              <h2>{draft.source.kind === 'space' ? '从一个立体图形开始' : draft.source.kind === 'dynamic' ? '让图形动起来' : '画出第一个图形'}</h2>
+              <p>{draft.source.kind === 'space' ? '选择示例后，可以改顶点、添加棱和调整观察角度。' : draft.source.kind === 'dynamic' ? '先试着拖动参数，再调整图形和讲解步骤。' : '输入函数表达式，或添加点、线段和标注。'}</p>
+              <div><button className="math-primary" onClick={useTemplate}>{draft.source.kind === 'space' ? '正方体示例' : draft.source.kind === 'dynamic' ? '试试二次函数演示' : '从 y = x² 开始'}</button>
+              <button onClick={() => addGraphic(draft.source.kind === 'space' ? 'point' : 'function')}>{draft.source.kind === 'space' ? '添加空间点' : '添加函数'}</button></div>
+            </div>
           ) : draft.source.kind === "dynamic" ? (
             <DynamicPreview
               accountKey={account}
@@ -982,409 +1063,21 @@ function MathSession({ transport, route }) {
               source={draft.source}
               font={font}
               onChange={source}
+              onSelect={id => { const index = objects.findIndex(o => o.id === id); if (index >= 0) selectGraphic(`object:${index}`); }}
+              selectedId={viewScene.selectionKind !== 'edge' ? objects[selected]?.id : null}
             />
           ) : draft.source.kind === "formula" ? (
-            <div className="math-formula math-formula-editor">
-              <FormulaPreview
-                source={draft.source}
-                retry={fontAttempt}
-                onLocate={(position) => {
-                  latexInput.current.focus();
-                  latexInput.current.setSelectionRange(position, position + 1);
-                }}
-              />
-              <label className="math-latex-field">
-                LaTeX
-                <textarea
-                  ref={latexInput}
-                  aria-label="LaTeX"
-                  value={draft.source.latex}
-                  onChange={(e) =>
-                    source({ ...draft.source, latex: e.target.value })
-                  }
-                />
-              </label>
-              <div className="math-insert">
-                {[
-                  ["分式", "\\frac{}{}"],
-                  ["根式", "\\sqrt{}"],
-                  ["上下标", "x_{}^{}"],
-                  [
-                    "分段式",
-                    "\\begin{cases}x & x>0\\\\ -x & x\\le0\\end{cases}",
-                  ],
-                ].map(([name, text]) => (
-                  <button
-                    key={name}
-                    onClick={() =>
-                      source({
-                        ...draft.source,
-                        latex: draft.source.latex + text,
-                      })
-                    }
-                  >
-                    {name}
-                  </button>
-                ))}
-              </div>
-              <details className="math-formula-options" open={!!viewScene.formulaOptions} onToggle={event => { if (viewScene.formulaOptions !== event.currentTarget.open) patchView({ formulaOptions: event.currentTarget.open }); }}><summary>说明与样式</summary>
-              <div className="math-formula-settings">
-              <label>
-                中文说明
-                <textarea
-                  aria-label="中文说明"
-                  value={draft.source.caption}
-                  onChange={(e) =>
-                    source({ ...draft.source, caption: e.target.value })
-                  }
-                />
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={draft.source.includeCaption}
-                  onChange={(e) =>
-                    source({
-                      ...draft.source,
-                      includeCaption: e.target.checked,
-                    })
-                  }
-                />
-                纳入成果
-              </label>
-              <label>
-                颜色
-                <input
-                  type="color"
-                  value={draft.source.color}
-                  onChange={(e) =>
-                    source({ ...draft.source, color: e.target.value })
-                  }
-                />
-              </label>
-              <label>
-                字号
-                <input
-                  type="number"
-                  value={draft.source.fontSize}
-                  onChange={(e) =>
-                    source({
-                      ...draft.source,
-                      fontSize: Number(e.target.value),
-                    })
-                  }
-                />
-              </label>
-              </div></details>
-              {draft.render?.state === "invalid" && status === "已保存" && (
-                <p role="alert">
-                  源码已保存，渲染失败。请修正 LaTeX
-                  后保存；本版本仅可下载制作源。
-                </p>
-              )}
-            </div>
-          ) : preview?.loading ? (
-            <p>{fontError ? "字体恢复后继续预览" : "正在加载本地字体"}</p>
-          ) : preview?.error ? (
-            <p role="alert">{preview.error}</p>
-          ) : (
-            <img alt="当前数学图形预览" src={preview?.url} />
-          )}
+            <FormulaEditor source={draft.source} onChange={source} view={viewScene} onView={patchView} confirm={confirm} retry={fontAttempt}
+              savedInvalid={draft.render?.state === 'invalid' && status === '已保存'}/>
+          ) : <GraphicPreview source={draft.source} font={font} selection={selection} onSelect={selectGraphic}/>}
         </div>
-        {draft?.id && (
-          <footer>
-            <select
-              aria-label="导出格式"
-              value={format}
-              onChange={(e) => setFormat(e.target.value)}
-            >
-              {draft.source.kind !== "html" && (
-                <>
-                  <option value="png">PNG</option>
-                  <option value="svg">SVG</option>
-                </>
-              )}
-              {["dynamic", "html"].includes(draft.source.kind) && (
-                <option value="html">隔离演示 HTML</option>
-              )}
-              <option value="source">
-                {draft.source.kind === "html" ? "当前源码 HTML" : "制作源 JSON"}
-              </option>
-            </select>
-            {!["source", "html"].includes(format) && (
-              <>
-                <select
-                  aria-label="导出背景"
-                  value={background}
-                  onChange={(e) => setBackground(e.target.value)}
-                >
-                  <option value="transparent">透明</option>
-                  {draft.source.kind !== "formula" && (
-                    <option value="white">白底</option>
-                  )}
-                </select>
-                <input
-                  aria-label="导出宽度"
-                  type="number"
-                  value={exportWidth}
-                  min="200"
-                  max="4800"
-                  onChange={(e) => setExportWidth(Number(e.target.value))}
-                />
-              </>
-            )}
-            <button className="math-primary" disabled={busy} onClick={exportFile}>
-              下载作品
-            </button>
-            <button className="math-delete" disabled={busy} onClick={deletion}>
-              {draft.deletedAt ? "恢复作品" : "删除作品"}
-            </button>
-          </footer>
-        )}
       </section>
-      <Tools {...(shell ? { sceneKey: draft?.id ?? "new" } : {})}>
-        <details className="math-create-menu"><summary>新建作品</summary><div className="math-new">
-          {["formula", "plane", "space", "dynamic"].map((kind) => (
-            <button key={kind} onClick={() => newDraft(kind)}>{names[kind]}</button>
-          ))}
-        </div></details>
-        <details open>
-          <summary>我的作品</summary>
-          <input
-            aria-label="搜索作品"
-            placeholder="搜索作品"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <label className="math-deleted-filter">
-            <input
-              type="checkbox"
-              checked={deleted}
-              onChange={(e) => setDeleted(e.target.checked)}
-            />
-            已删除
-          </label>
-          <nav>
-            {items.map((item) => (
-              <button key={item.id} className={draft?.id === item.id ? "is-current" : ""} aria-current={draft?.id === item.id ? "true" : undefined} onClick={() => open(item)}>
-                {item.title}
-                <small>{names[item.kind ?? item.source?.kind] ?? `v${item.version}`}</small>
-              </button>
-            ))}
-          </nav>
-        </details>
-        {draft?.source.kind === "dynamic" && !readOnly && (
-          <>
-            <button
-              onClick={async () => {
-                if (
-                  (JSON.stringify(draft.source) ===
-                    JSON.stringify(emptyDynamicSource()) &&
-                    !Object.keys(draft.parameterEdits ?? {}).length) ||
-                  await confirm(
-                    "使用二次函数起点会替换当前演示的图形、参数和步骤，并丢弃未应用的参数编辑。是否继续？",
-                  )
-                ) {
-                  edit({
-                    ...draft,
-                    source: dynamicSource(),
-                    parameterEdits: {},
-                  });
-                  setSelected(0);
-                }
-              }}
-            >
-              二次函数起点
-            </button>
-            <DynamicTools
-              source={draft.source}
-              onChange={(next, parameterEdits = draft.parameterEdits) =>
-                edit({ ...draft, source: next, parameterEdits })
-              }
-              edits={draft.parameterEdits}
-              onEdits={(parameterEdits) => edit({ ...draft, parameterEdits })}
-              Fields={Fields}
-              confirm={confirm}
-            />
-          </>
-        )}
-        {draft &&
-          !readOnly &&
-          !["formula", "html"].includes(draft.source.kind) && (
-            <>
-              <details open>
-                <summary>对象</summary>
-                {["plane", "dynamic"].includes(draft.source.kind) ? (
-                  <div className="math-add">
-                    {[
-                      "function",
-                      "point",
-                      "line",
-                      "ellipse",
-                      "polyline",
-                      "text",
-                    ].map((type) => (
-                      <button key={type} onClick={() => add(type)}>
-                        添加{names[type]}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="math-add">
-                    <button onClick={() => source(cubeSource())}>
-                      正方体起点
-                    </button>
-                    <button onClick={() => source(pyramidSource())}>
-                      棱锥起点
-                    </button>
-                    <button
-                      onClick={() => {
-                        let pointIndex = 0;
-                        while (objects.some((o) => o.id === `P${pointIndex}`))
-                          pointIndex++;
-                        source({
-                          ...draft.source,
-                          points: [
-                            ...objects,
-                            {
-                              id: `P${pointIndex}`,
-                              x: 0,
-                              y: 0,
-                              z: 0,
-                              label: {
-                                text: `P${pointIndex}`,
-                                dx: 10,
-                                dy: -10,
-                              },
-                              style: defaultStyle(),
-                            },
-                          ],
-                        });
-                        setSelected(objects.length);
-                      }}
-                    >
-                      添加空间点
-                    </button>
-                    <button
-                      disabled={objects.length < 2}
-                      onClick={() =>
-                        source({
-                          ...draft.source,
-                          edges: [
-                            ...draft.source.edges,
-                            {
-                              id: `E${Date.now()}`,
-                              from: objects[0].id,
-                              to: objects[1].id,
-                              style: defaultStyle(),
-                            },
-                          ],
-                        })
-                      }
-                    >
-                      添加棱
-                    </button>
-                  </div>
-                )}
-                <select
-                  aria-label="选择对象"
-                  value={selected}
-                  onChange={(e) => setSelected(Number(e.target.value))}
-                >
-                  {objects.map((o, i) => (
-                    <option key={i} value={i}>
-                      {o.id} {names[o.type] ?? ""}
-                    </option>
-                  ))}
-                </select>
-                {objects[selected] && (
-                  <>
-                    <Fields
-                      value={objects[selected]}
-                      onChange={replaceObject}
-                    />
-                    <button
-                      onClick={() => {
-                        source(
-                          updateObjects(
-                            draft.source,
-                            objects.filter((_, i) => i !== selected),
-                          ),
-                        );
-                        setSelected(0);
-                      }}
-                    >
-                      移除对象
-                    </button>
-                  </>
-                )}
-              </details>
-              <details>
-                <summary>坐标窗</summary>
-                <Fields
-                  value={draft.source.scene?.viewport ?? draft.source.viewport}
-                  onChange={(view) =>
-                    source(
-                      ["plane", "dynamic"].includes(draft.source.kind)
-                        ? {
-                            ...draft.source,
-                            scene: { ...draft.source.scene, viewport: view },
-                          }
-                        : { ...draft.source, viewport: view },
-                    )
-                  }
-                />
-              </details>
-              {draft.source.kind === "space" && (
-                <>
-                  <details open>
-                    <summary>投影</summary>
-                    <Fields
-                      value={{
-                        azimuth: draft.source.azimuth,
-                        elevation: draft.source.elevation,
-                      }}
-                      onChange={(angles) =>
-                        source({ ...draft.source, ...angles })
-                      }
-                    />
-                  </details>
-                  <details>
-                    <summary>棱</summary>
-                    {draft.source.edges.map((edge, i) => (
-                      <div key={i}>
-                        <Fields
-                          value={edge}
-                          prefix={`edge-${i}-`}
-                          onChange={(next) =>
-                            source({
-                              ...draft.source,
-                              edges: draft.source.edges.map((v, j) =>
-                                j === i ? next : v,
-                              ),
-                            })
-                          }
-                        />
-                        <button
-                          onClick={() =>
-                            source({
-                              ...draft.source,
-                              edges: draft.source.edges.filter(
-                                (_, j) => j !== i,
-                              ),
-                            })
-                          }
-                        >
-                          移除棱
-                        </button>
-                      </div>
-                    ))}
-                  </details>
-                </>
-              )}
-            </>
-          )}
-      </Tools>
-    </main>
+      {!home && graphical && <Tools {...(shell ? { sceneKey: `${draft?.id ?? 'new'}:${toolTab}` } : {})}>
+        <GraphTools active={toolTab} source={draft.source} selection={selection} onSelect={selectGraphic} objects={objects}
+          onChange={(next, parameterEdits = draft.parameterEdits) => edit({ ...draft, source: next, parameterEdits })}
+          onReplace={replaceObject} onRemove={removeGraphic} Fields={Fields} expanded={viewScene.groups ?? {}} onExpanded={expandTool} onTool={showTools}
+          edits={draft.parameterEdits} onEdits={parameterEdits => edit({ ...draft, parameterEdits })} confirm={confirm}/>
+      </Tools>}
+    </div>
   );
 }

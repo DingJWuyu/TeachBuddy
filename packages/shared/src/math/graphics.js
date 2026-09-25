@@ -102,7 +102,7 @@ export function viewportTransform(viewport) {
 }
 export function renderGraphic(
   source,
-  { width, background = "transparent", parameters = {} } = {},
+  { width, background = "transparent", parameters = {}, interactive = false } = {},
 ) {
   const viewport = source.scene?.viewport ?? source.viewport;
   const w = viewport.width,
@@ -112,8 +112,9 @@ export function renderGraphic(
   const elements = [],
     labels = [];
   const style = (s) =>
-    `stroke="${s.stroke}" fill="${s.fill ?? "none"}" stroke-width="${s.width}"${s.dash === "solid" ? "" : ` stroke-dasharray="${s.dash === "dashed" ? "8 5" : "2 4"}"`} stroke-linejoin="round" stroke-linecap="round"`;
-  const label = (p, text, s, offset = { dx: 0, dy: 0 }) => {
+    `stroke="${escapeXml(s.stroke)}" fill="${escapeXml(s.fill ?? "none")}" stroke-width="${escapeXml(s.width)}"${s.dash === "solid" ? "" : ` stroke-dasharray="${s.dash === "dashed" ? "8 5" : "2 4"}"`} stroke-linejoin="round" stroke-linecap="round"`;
+  const selection = (kind, index, name) => interactive ? ` data-selection="${kind}:${index}" role="button" tabindex="0" aria-label="选择 ${escapeXml(name)}"` : '';
+  const label = (p, text, s, offset = { dx: 0, dy: 0 }, attributes = '') => {
     if (!text) return;
     // Each character fits in one em; wrapping also bounds arbitrarily long CJK labels.
     const columns = Math.max(1, Math.floor((w - 16) / s.fontSize));
@@ -137,7 +138,7 @@ export function renderGraphic(
       ),
     );
     labels.push(
-      `<text x="${number(x)}" y="${number(y)}" fill="${s.stroke}" font-size="${s.fontSize}" font-family="sans-serif">${lines.map((line, i) => `<tspan x="${number(x)}" dy="${i ? s.fontSize * 1.25 : 0}">${escapeXml(line)}</tspan>`).join("")}</text>`,
+      `<g${attributes}><text x="${number(x)}" y="${number(y)}" fill="${escapeXml(s.stroke)}" font-size="${escapeXml(s.fontSize)}" font-family="sans-serif">${lines.map((line, i) => `<tspan x="${number(x)}" dy="${i ? s.fontSize * 1.25 : 0}">${escapeXml(line)}</tspan>`).join("")}</text></g>`,
     );
   };
   const line = (a, b, s, arrow = "none") => {
@@ -159,7 +160,7 @@ export function renderGraphic(
     if (arrow === "both") head(b, a);
   };
   if (background === "white")
-    elements.push(`<rect width="${w}" height="${h}" fill="#ffffff"/>`);
+    elements.push(`<rect width="${escapeXml(w)}" height="${escapeXml(h)}" fill="#ffffff"/>`);
   if (viewport.grid) {
     const step =
       10 **
@@ -202,20 +203,30 @@ export function renderGraphic(
         map(projectSpace(p, source.azimuth, source.elevation)),
       ]),
     );
-    for (const edge of source.edges)
+    for (const [index, edge] of source.edges.entries()) {
+      elements.push(`<g${selection('edge', index, `${edge.from} → ${edge.to}`)}>`);
       line(points.get(edge.from), points.get(edge.to), edge.style);
-    for (const p of source.points)
-      label(points.get(p.id), p.label.text, p.style, p.label);
+      elements.push('</g>');
+    }
+    for (const [index, p] of source.points.entries()) {
+      const attributes = selection('object', index, p.id);
+      if (interactive) {
+        const [x, y] = points.get(p.id);
+        elements.push(`<g${attributes}><circle cx="${number(x)}" cy="${number(y)}" r="3" ${style({ ...p.style, fill: p.style.stroke })}/></g>`);
+      }
+      label(points.get(p.id), p.label.text, p.style, p.label, attributes);
+    }
   } else
-    for (const e of source.scene.elements) {
-      elements.push(`<g data-object="${escapeXml(e.id)}">`);
+    for (const [index, e] of source.scene.elements.entries()) {
+      const attributes = selection('object', index, e.id);
+      elements.push(`<g data-object="${escapeXml(e.id)}"${attributes}>`);
       switch (e.type) {
         case "point": {
           const p = xy(e.at);
           elements.push(
             `<circle cx="${number(p[0])}" cy="${number(p[1])}" r="3" ${style({ ...e.style, fill: e.style.fill ?? e.style.stroke })}/>`,
           );
-          label(p, e.label.text, e.style, e.label);
+          label(p, e.label.text, e.style, e.label, attributes);
           break;
         }
         case "line":
@@ -238,7 +249,7 @@ export function renderGraphic(
           break;
         }
         case "text":
-          label(xy(e.at), e.text, e.style);
+          label(xy(e.at), e.text, e.style, undefined, attributes);
           break;
         case "function": {
           const min = Math.max(e.domain.min, viewport.xMin),
@@ -268,7 +279,7 @@ export function renderGraphic(
             );
           const visible = paths.flat().filter((p) => p[1] >= 0 && p[1] <= h);
           if (visible.length)
-            label(visible.at(-1), e.label.text, e.style, e.label);
+            label(visible.at(-1), e.label.text, e.style, e.label, attributes);
           break;
         }
       }
@@ -276,5 +287,5 @@ export function renderGraphic(
     }
   const outputWidth = width ?? w,
     outputHeight = Math.round((outputWidth * h) / w);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${outputWidth}" height="${outputHeight}" viewBox="0 0 ${w} ${h}"><defs><clipPath id="plot"><rect width="${w}" height="${h}"/></clipPath></defs><g clip-path="url(#plot)">${elements.join("")}</g>${labels.join("")}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${escapeXml(outputWidth)}" height="${outputHeight}" viewBox="0 0 ${escapeXml(w)} ${escapeXml(h)}"><defs><clipPath id="plot"><rect width="${escapeXml(w)}" height="${escapeXml(h)}"/></clipPath></defs><g clip-path="url(#plot)">${elements.join("")}</g>${labels.join("")}</svg>`;
 }

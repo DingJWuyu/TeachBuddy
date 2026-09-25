@@ -10,7 +10,7 @@ export function MathTools({ children, sceneKey = 'current' }) {
   const [scene, patch] = useScene(shell.accountKey, `math-tools:${sceneKey}`, { top: 0, listTop: 0, expanded: {} });
   const [host, setHost] = useState(null);
   const restored = useRef(null);
-  useAuxiliaryTools([{ id: 'math-tools', label: '作品与工具', render: () => <div className="math-tools-panel wb-module" ref={setHost}
+  useAuxiliaryTools([{ id: 'math-tools', label: '制作工具', render: () => <div className="math-tools-panel wb-module" ref={setHost}
     onScrollCapture={event => {
       if (event.target === event.currentTarget) patch({ top: event.target.scrollTop });
       else if (event.target.tagName === 'NAV') patch({ listTop: event.target.scrollTop });
@@ -34,12 +34,6 @@ export function MathTools({ children, sceneKey = 'current' }) {
 export function MathIntegration({ work, saved, busy, onError, client }) {
   const shell=useWorkbenchShell();
   const [scene,patch]=useScene(shell.accountKey,'math-return',{});
-  const [usages,setUsages]=useState([]),[error,setError]=useState(null),[reload,setReload]=useState(0);
-  useEffect(()=>{
-    let live=true;setUsages([]);setError(null);
-    if(work?.id) workbenchGet(`/api/modules/lessons/v3/usages?kind=math&id=${work.id}`).then(({body})=>{if(live)setUsages(body.items);}).catch(e=>{if(live)setError(e.problem?.message||'无法读取使用位置');});
-    return()=>{live=false;};
-  },[work?.id,work?.version,reload]);
   async function bringBack() {
     try {
       const current=await client.json(`/api/modules/math/v1/works/${work.id}/reference`);
@@ -57,7 +51,19 @@ export function MathIntegration({ work, saved, busy, onError, client }) {
       <button className="wb-button" disabled={!saved||busy||!work?.id||work.deletedAt||work.render?.state==='invalid'||scene.target.replaceWorkId===work.id} onClick={bringBack}>带回备课</button>
       <button className="wb-button" onClick={()=>{const id=scene.target.lessonId;patch({target:null,result:null,inserted:false});shell.navigate(`/lessons/${id}`);}}>取消返回</button>
     </div>}
-    {work?.id && <details><summary>使用位置与教学反馈</summary>
+  </div>;
+}
+
+export function MathUsageDetails({ work }) {
+  const shell = useWorkbenchShell();
+  const [usages,setUsages]=useState([]),[error,setError]=useState(null),[reload,setReload]=useState(0);
+  useEffect(()=>{
+    let live=true;setUsages([]);setError(null);
+    if(work?.id) workbenchGet(`/api/modules/lessons/v3/usages?kind=math&id=${work.id}`).then(({body})=>{if(live)setUsages(body.items);}).catch(e=>{if(live)setError(e.problem?.message||'无法读取使用位置');});
+    return()=>{live=false;};
+  },[work?.id,work?.version,reload]);
+  return <div className="math-usage-details">
+    {work?.id && <details open><summary>使用位置与教学反馈</summary>
       {error && <p role="alert">{error}<button onClick={()=>setReload(n=>n+1)}>重试使用位置</button></p>}
       {usages.map(u=><button className="wb-text-button" key={u.referenceId} onClick={()=>shell.openQuestionUsage(u.lessonId,u.referenceId,`/math?workId=${work.id}`)}>{u.lessonTitle} · {u.sectionTitle||'本课材料'} · 版本 {u.adoptedVersion}</button>)}
       <SourceRecordsPanel kind="math" id={work.id}/>
