@@ -8,8 +8,12 @@ import {
   mergeExtractions,
   reconcileExtraction,
   extractionId,
+  questionLabel,
 } from "./extraction-fragments.js";
 const issue = (code, unitId, detail) => ({ code, unitId, field: null, detail });
+const questionStart = /^\s*((?:Q\s*)?[0-9０-９]+(?:[.．](?![0-9０-９])|[、:：)）])|例\s*[0-9０-９]+[:：.、]?|练习\s*[0-9０-９]+[:：.、]?)[ \t]*(.*)$/i;
+const answerHeading = /^\s*(?:【.*(?:答案|解析).*】|(?:第.+页[:：]\s*)?(?:原有)?(?:参考答案|答案解析|参考解答)\s*[:：]?\s*$)/;
+const inlineAnswer = /^\s*(?:参考答案|答案|解析|解答)\s*[:：]\s*(.*)$/;
 export function nativeText(text, location) {
   const lines = [];
   let cursor = 0;
@@ -23,6 +27,9 @@ export function nativeText(text, location) {
   let group = null,
     answer = false,
     answerSection = false;
+  const answerHeadingIndex = lines.findIndex(line => answerHeading.test(line.text));
+  const numbered = lines.slice(0, answerHeadingIndex < 0 ? lines.length : answerHeadingIndex)
+    .some(line => questionStart.test(line.text));
   const locate = (start, end) => location ?? { kind: "text", start, end };
   function finish() {
     if (!group) return;
@@ -78,11 +85,7 @@ export function nativeText(text, location) {
     group = null;
   }
   for (const line of lines) {
-    if (
-      /^\s*(?:【.*(?:答案|解析).*】|(?:第.+页[:：]\s*)?(?:原有)?(?:参考答案|答案解析|参考解答)\s*[:：]?\s*$)/.test(
-        line.text,
-      )
-    ) {
+    if (answerHeading.test(line.text)) {
       finish();
       answerSection = true;
       continue;
@@ -91,9 +94,7 @@ export function nativeText(text, location) {
       finish();
       continue;
     }
-    const match = line.text.match(
-      /^\s*((?:Q\s*)?\d+[.、．:)）]|例\s*\d+[:：.、]?|练习\s*\d+[:：.、]?)[ \t]*(.*)$/i,
-    );
+    const match = line.text.match(questionStart);
     if (match) {
       finish();
       group = {
@@ -119,10 +120,12 @@ export function nativeText(text, location) {
           locations: [locate(line.start, line.end)],
           disposition: "unassigned",
         });
-    } else if (group) {
-      const a = line.text.match(
-        /^\s*(?:参考答案|答案|解析|解答)\s*[:：]\s*(.*)$/,
-      );
+    } else if (group || (!numbered && !answerSection && line.text.trim() && !inlineAnswer.test(line.text))) {
+      if (!group) {
+        group = { title: "未编号题目", body: [], solution: [], start: line.start, end: line.end };
+        answer = false;
+      }
+      const a = line.text.match(inlineAnswer);
       if (a) {
         answer = true;
         group.answerStart ??= line.start;
@@ -139,10 +142,10 @@ export function nativeText(text, location) {
   }
   finish();
   for (const a of answers) {
-    const candidates = drafts.filter((d) => d.title === a.title);
+    const candidates = drafts.filter((d) => questionLabel(d.title) === questionLabel(a.title));
     if (
       candidates.length !== 1 ||
-      answers.filter((x) => x.title === a.title).length !== 1
+      answers.filter((x) => questionLabel(x.title) === questionLabel(a.title)).length !== 1
     ) {
       for (const d of candidates) {
         d.answerStatus = "unresolved";

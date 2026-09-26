@@ -154,6 +154,34 @@ const manual = () => ({
   tagIds: [],
   source: { kind: "manual" },
 });
+test("native text import preserves unnumbered originals and matches only unique normalized question labels", async (t) => {
+  const e = await environment(t);
+  const cases = [
+    { text: "求三加五的和。\n答案：八", count: 1, answers: ["present"] },
+    { text: "1. 求三加五的和。\n参考答案\n１、八", count: 1, answers: ["present"] },
+    { text: "1.5 是一个有理数，请说明理由。", count: 1, answers: ["absent"], body: "1.5" },
+    { text: "1. 第一题。\n１、第二题。\n参考答案\n1）答案不能猜测对应哪道题。", count: 2, answers: ["unresolved", "unresolved"], fragments: 1 },
+    { text: "答案：八", count: 0, answers: [], fragments: 1 },
+    { text: "教师活动：请同学们讨论。", count: 0, answers: [], fragments: 1 },
+    { text: "求三加五的和。\n答案：八\n教师活动：讨论不同解法。\n求九减二的差。\n答案：七", count: 2, answers: ["present", "present"], fragments: 1 },
+    { text: "1. 分两步说明。\n（1）说明条件。\n（2）给出结论。\n答案：略", count: 1, answers: ["present"] },
+  ];
+  for (const expected of cases) {
+    const created = (await e.q("/imports", { title: "边界样本", origin: "", input: { kind: "text", text: expected.text } })).body;
+    assert.equal((await e.job(created.jobId)).state, "succeeded", expected.text);
+    const m = (await e.q(`/imports/${created.id}`, null, "GET")).body;
+    assert.equal(m.input.text, expected.text);
+    assert.equal(m.drafts.length, expected.count, expected.text);
+    assert.deepEqual(m.drafts.map(d => d.answerStatus), expected.answers, expected.text);
+    if (expected.fragments) assert.equal(m.fragments.length, expected.fragments, expected.text);
+    if (expected.body) assert.ok(JSON.stringify(m.drafts[0].body).includes(expected.body));
+    for (const d of m.drafts) for (const part of d.parts) for (const location of part.locations) {
+      assert.equal(location.kind, "text");
+      assert.ok(location.start >= 0 && location.end <= [...expected.text].length && location.end > location.start);
+    }
+  }
+});
+
 test("permanent question deletion requires archive and current version, replays safely and retains adopted snapshots", async (t) => {
   const e = await environment(t);
   const q = (await e.q("/items", manual())).body;
@@ -952,4 +980,16 @@ test("native PDF automatically retains six questions, cross-page answers and dia
   assert.deepEqual(await e.bytes(file.id), original);
   await e.restart();
   assert.deepEqual((await e.q('/imports/' + created.id, null, 'GET')).body, material);
+});
+
+test("question search excludes answers by default and accepts only explicit boolean answer scope", async (t) => {
+  const e = await environment(t);
+  const q = (await e.q('/items', { ...manual(), title: '题干检索', solution: doc('只在答案中的蓝莓'), answerStatus: 'present' })).body;
+  assert.equal((await e.q('/items?q=蓝莓', null, 'GET')).body.items.length, 0);
+  assert.equal((await e.q('/items?q=蓝莓&searchAnswers=false', null, 'GET')).body.items.length, 0);
+  assert.deepEqual((await e.q('/items?q=蓝莓&searchAnswers=true', null, 'GET')).body.items.map(x => x.id), [q.id]);
+  assert.deepEqual((await e.q('/items?q=检索', null, 'GET')).body.items.map(x => x.id), [q.id]);
+  assert.equal((await e.q('/items?searchAnswers=1', null, 'GET')).status, 422);
+  assert.equal((await e.q('/items?searchAnswers=true&searchAnswers=false', null, 'GET')).status, 422);
+  assert.equal((await e.q('/items?q=蓝莓&searchAnswers=true', null, 'GET', 'r33-b')).body.items.length, 0);
 });

@@ -18,12 +18,14 @@ const doubt = (id, code, field, locations) => ({
   locations,
   resolution: "open",
 });
-const label = (value) => value.trim().replace(/[.．、:：]\s*$/, "");
+// Normalize identifiers only. Original text and source offsets stay untouched.
+export const questionLabel = (value) => value.normalize("NFKC").trim()
+  .replace(/\s+/g, "").replace(/[.、:)]$/, "").replace(/^q(?=\d)/i, "");
 const matches = (q, f, target = f.label) =>
   Boolean(q.section || q.group) &&
   q.section === f.section &&
   q.group === f.group &&
-  label(q.label) === label(target);
+  questionLabel(q.label) === questionLabel(target);
 const unassigned = (f) => ({
   id: f.id,
   text: f.text,
@@ -175,7 +177,7 @@ export function mergeExtractions(results, complete) {
       }
     } else if (
       complete &&
-      !answers.some((f) => !f.label || label(f.label) === label(q.label)) &&
+      !answers.some((f) => !f.label || questionLabel(f.label) === questionLabel(q.label)) &&
       !tails.some((f) => !used.has(f.id))
     )
       d.answerStatus = "absent";

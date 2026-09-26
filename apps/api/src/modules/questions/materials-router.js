@@ -57,11 +57,10 @@ export function createMaterialsRouter({ service, mutations }) {
           throw invalidInput("/query/q", "out-of-range");
         if (query.typeId !== undefined)
           validateSchema("Id", query.typeId, "/query/typeId");
-        if (
-          query.starred !== undefined &&
-          ![true, false, "true", "false"].includes(query.starred)
-        )
-          throw invalidInput("/query/starred", "invalid-type");
+        for (const field of ["starred", "searchAnswers"]) {
+          if (query[field] !== undefined && ![true, false, "true", "false"].includes(query[field]))
+            throw invalidInput("/query/" + field, "invalid-type");
+        }
         if (query.tagIds !== undefined) {
           query = {
             ...query,
