@@ -16,6 +16,7 @@ import {
   validateCreateRecordV2,
   validateUpdateRecordV2,
   validateDeletion,
+  validatePurgeClass,
   validateRecordsQuery,
   validateSourceRecordsPath,
   validateUpdateClass,
@@ -78,6 +79,14 @@ export function createClassesRouter({ service, mutations, version = 1 }) {
         status: 200,
         body: service.setClassDeletion(principal, request.params.id, body)
       })
+    }));
+
+    router.post('/items/:id/purge', createMutationHandler({
+      mutations,
+      method: 'POST',
+      validate: withPathId(validatePurgeClass),
+      write: ({ principal, body, request }) => ({ status: 200,
+        body: service.purgeClass(principal, request.params.id, body) })
     }));
 
   }

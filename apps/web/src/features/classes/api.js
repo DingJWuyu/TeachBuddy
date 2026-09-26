@@ -77,6 +77,16 @@ export function setClassDeletion({ key, id, payload }) {
   });
 }
 
+export function purgeClass({ key, id, payload }) {
+  return call(async () => {
+    const { body } = await workbenchPost(`/api/modules/classes/items/${id}/purge`, payload, key);
+    if (body?.id !== id || body.permanentlyDeleted !== true) {
+      throw new WorkbenchError(unexpectedSuccessProblem('删除结果无法识别'));
+    }
+    return body;
+  });
+}
+
 export function listRecords({ classId, state = 'active' } = {}) {
   return call(async () => {
     const { body } = await workbenchGet(`/api/modules/classes/v2/records${buildQuery({ classId, state })}`);

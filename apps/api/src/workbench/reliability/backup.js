@@ -219,14 +219,15 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     lesson: "lesson_items",
     record: "classes_records",
   };
+  // Permanently removed teaching objects retain only an owned identity for
+  // existing schedule links; older backups may predate this classes migration.
+  const removedTeachingObject = db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='classes_removed_objects'").get()
+    ? db.prepare("SELECT 1 FROM classes_removed_objects WHERE id=? AND accountKey=? AND kind=?") : null;
   function owned(kind, id, account) {
     const table = sourceTables[kind];
-    if (
-      !table ||
-      !db
-        .prepare(`SELECT 1 FROM ${table} WHERE id=? AND accountKey=?`)
-        .get(id, account)
-    )
+    const present = table && db.prepare(`SELECT 1 FROM ${table} WHERE id=? AND accountKey=?`).get(id, account);
+    const removed = ["class", "record"].includes(kind) && removedTeachingObject?.get(id, account, kind);
+    if (!present && !removed)
       throw new Error("Missing or foreign object reference");
   }
   for (const row of db.prepare("SELECT * FROM lesson_references").all())

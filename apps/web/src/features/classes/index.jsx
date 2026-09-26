@@ -13,12 +13,14 @@ import { useScene } from '../workbench/useScene.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import { navigate } from '../workbench/routes.js';
 import { Icon } from '../workbench/icons.jsx';
-import { listClasses, listRecords } from './api.js';
+import { listClasses, listRecords, purgeClass } from './api.js';
 import { DEFAULT_TIME_ZONE } from './model.js';
 import { ClassList, ClassCreateDialog } from './ClassList.jsx';
 import { ClassDetail } from './ClassDetail.jsx';
+import { ClassHome } from './ClassHome.jsx';
 import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
-import { MenuItem, Popover } from '../workbench/ModuleOverlays.jsx';
+import { ConfirmDialog } from '../workbench/ModuleOverlays.jsx';
+import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import './classes.css';
 
 const NAVIGATION_EVENT = 'tb:navigate';
@@ -77,7 +79,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const localRoute = useClassesRoute();
   const located = route ?? localRoute;
   const [scene, patchScene] = useScene(shell.accountKey, 'classes', {
-    listState: 'active',
+    homeView: 'active',
     listScrollTop: 0,
     detailScroll: { classId: null, top: 0 }
   });
@@ -91,6 +93,9 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const [recordsStatus, setRecordsStatus] = useState('idle');
   const [recordsError, setRecordsError] = useState(null);
   const [recordReload, setRecordReload] = useState(0);
+  const [confirmingPurge, setConfirmingPurge] = useState(null);
+  // The request survives its card disappearing after deletion, including reload.
+  const purge = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:class-purge' });
   useForegroundRefresh(() => { setClassReload(value => value + 1); setRecordReload(value => value + 1); });
 
   useEffect(() => {
@@ -111,18 +116,12 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
     return () => { cancelled = true; };
   }, [classReload, shell.generation]);
 
-  const remembered = (classes.active ?? []).find(item => item.id === scene.selectedId);
-  const selectedId = located.classId ?? remembered?.id ?? classes.active?.[0]?.id ?? null;
+  const selectedId = located.classId ?? null;
   const selected = selectedId
     ? (classes.active ?? []).find((item) => item.id === selectedId)
       ?? (classes.deleted ?? []).find((item) => item.id === selectedId)
       ?? null
     : null;
-
-  useEffect(() => {
-    if (selected && !located.classId) navigate(`/classes/${selected.id}`, { replace: true });
-    if (selected && scene.selectedId !== selected.id) patchScene({ selectedId: selected.id });
-  }, [selected?.id, located.classId, scene.selectedId, patchScene]);
 
   useEffect(() => {
     if (!selected) {
@@ -161,35 +160,65 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const refreshRecords = useCallback(() => setRecordReload((token) => token + 1), []);
   const handleClassCreated = useCallback((classroom) => {
     refreshClasses();
-    patchScene({ creatingClass: false, classListOpen: false, listState: 'active', selectedId: classroom.id, recordState: 'active' });
+    patchScene({ creatingClass: false, classListOpen: false, homeView: 'active', recordState: 'active' });
     navigate(`/classes/${classroom.id}`);
   }, [refreshClasses, patchScene]);
-  const handleClassChanged = useCallback(() => {
+  const handleClassChanged = useCallback((classroom) => {
+    setClasses(current => ({
+      active: [...(current.active ?? []).filter(item => item.id !== classroom.id), ...(!classroom.deletedAt ? [classroom] : [])]
+        .sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : a.id.localeCompare(b.id)),
+      deleted: [...(current.deleted ?? []).filter(item => item.id !== classroom.id), ...(classroom.deletedAt ? [classroom] : [])]
+    }));
+    if (classroom.deletedAt && located.classId === classroom.id) {
+      patchScene({ homeView: 'active', classListOpen: false });
+      navigate('/classes');
+    }
     refreshClasses();
-  }, [refreshClasses]);
+  }, [refreshClasses, located.classId, patchScene]);
   const openRecord = useCallback((recordId) => {
     if (selectedId) navigate(`/classes/${selectedId}/records/${recordId}`);
   }, [selectedId]);
   const closeRecord = useCallback(() => {
     if (selectedId) navigate(`/classes/${selectedId}`);
   }, [selectedId]);
-  const listItems = scene.listState === 'deleted' ? (classes.deleted ?? []) : (classes.active ?? []);
-  const hasClasses = (classes.active?.length ?? 0) + (classes.deleted?.length ?? 0) > 0;
-  const showSidebar = hasClasses && !shell.narrow && !shell.isPanelOpen;
+  const archived = scene.homeView === 'archived';
+  const showSidebar = Boolean(selected) && !shell.narrow && !shell.isPanelOpen;
+  function goHome(view = 'active') {
+    patchScene({ homeView: view, classListOpen: false, selectedId: null });
+    navigate('/classes');
+  }
+  async function confirmPurge() {
+    const classroom = confirmingPurge;
+    setConfirmingPurge(null);
+    const run = ({ key, payload }) => purgeClass({ key, id: payload.id, payload: { expectedVersion: payload.expectedVersion } });
+    const result = purge.pending ? await purge.retry(run)
+      : classroom && await purge.submit(run, { id: classroom.id, name: classroom.name, expectedVersion: classroom.version });
+    if (!result) return;
+    setClasses(current => ({ active: (current.active ?? []).filter(item => item.id !== result.id), deleted: (current.deleted ?? []).filter(item => item.id !== result.id) }));
+    refreshClasses();
+    goHome('archived');
+  }
+  function requestPurge(classroom) {
+    if (!purge.isRunning && !purge.pending) setConfirmingPurge(classroom);
+  }
   function selectClass(classId) {
-    patchScene({ selectedId: classId, classListOpen: false, recordState: 'active' });
+    patchScene({ classListOpen: false, recordState: 'active' });
     navigate(`/classes/${classId}`);
   }
   const createClass = () => patchScene({ creatingClass: true, classListOpen: false });
   function renderClasses(onClose) {
-    return <ClassList items={listItems} status={classesStatus} error={classesError}
-      listState={scene.listState} onListStateChange={listState => patchScene({ listState })}
+    return <ClassList items={classes.active ?? []} status={classesStatus} error={classesError}
+      onArchived={() => goHome('archived')}
       selectedId={selectedId} onSelect={selectClass} onCreate={createClass} onReload={refreshClasses}
       scrollTop={scene.listScrollTop} onScrollTop={listScrollTop => patchScene({ listScrollTop })} onClose={onClose} />;
   }
 
   return (
     <div className="wb-page wb-module c-classes" data-region="classes-index">
+      {purge.isRunning && <p className="wb-muted c-pane-note" role="status">正在确认删除结果…</p>}
+      {purge.status === 'unconfirmed' && <div className="wb-inline-error" role="status">暂时无法确认是否彻底删除「{purge.pending.payload.name}」。
+        <button className="wb-button" onClick={confirmPurge}>重试确认</button></div>}
+      {purge.status === 'failed' && <div className="wb-inline-error" role="alert">{purge.problem?.message || '删除失败，请重试'}<button className="wb-button" onClick={refreshClasses}>刷新班级</button></div>}
       <div className={`c-layout${showSidebar ? ' has-class-list' : ''}`}>
         {selected ? (
           <ClassDetail
@@ -209,42 +238,42 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
             onCloseRecord={closeRecord}
             onClassChanged={handleClassChanged}
             onChooseClass={() => patchScene({ classListOpen: true })}
+            onHome={() => goHome()}
+            onDelete={requestPurge}
             detailScrollTop={scene.detailScroll?.classId === selected.id ? scene.detailScroll.top : 0}
             onDetailScrollTop={(top) => patchScene({ detailScroll: { classId: selected.id, top } })}
           />
-        ) : (
+        ) : selectedId ? (
           <section className="c-class-placeholder" data-region="class-placeholder">
-            <header className="c-class-head"><span className="c-module-icon"><Icon name="classes" size={23} /></span><h1>班级教学</h1>
-              <span className="c-head-spacer" /><Popover label="班级管理">{({ close }) => <MenuItem icon="trash" onClick={() => { close(); patchScene({ classListOpen: true, listState: 'deleted' }); }}>已删除的班级</MenuItem>}</Popover>
-            </header>
+            <header className="c-class-head"><button className="wb-icon-button" aria-label="返回班级主页" title="返回班级主页" onClick={() => goHome()}><Icon name="back" size={20} /></button><h1>班级教学</h1></header>
             {classesStatus === 'loading' && <p className="wb-muted c-pane-note">正在加载班级…</p>}
             {classesStatus === 'error' && <div className="wb-inline-error c-welcome" role="alert"><p>{classesError?.message || '无法加载班级'}</p><button className="wb-button" onClick={refreshClasses}>重试加载</button></div>}
             {classesStatus === 'ready' && selectedId && (
               <div className="c-welcome">
                 <p>未找到这个班级</p>
-                <button type="button" className="wb-button" name="back-to-classes" onClick={() => { patchScene({ selectedId: null }); navigate('/classes'); }}>
+                <button type="button" className="wb-button" name="back-to-classes" onClick={() => goHome()}>
                   <Icon name="back" size={14} />
-                  返回班级列表
+                  返回班级主页
                 </button>
               </div>
             )}
-            {classesStatus === 'ready' && !selectedId && (
-              <div className="c-welcome" data-region="class-placeholder-empty">
-                <span className="c-welcome-icon"><Icon name="prep" size={32} /></span>
-                <h2>每个班，都有自己的教学记录</h2>
-                <p>记住教到了哪里、课堂上遇到的问题，<br />下次上课前，回来接着看。</p>
-                <button type="button" className="wb-button is-primary" name="new-class" onClick={createClass}><Icon name="plus" size={17} />创建班级</button>
-                <span className="c-welcome-hint">先建一个班，课后写一句就能开始。</span>
-              </div>
-            )}
           </section>
-        )}
+        ) : <ClassHome accountKey={shell.accountKey} items={(archived ? classes.deleted : classes.active) ?? []}
+          status={classesStatus} error={classesError} archived={archived} onViewChange={value => goHome(value ? 'archived' : 'active')}
+          onSelect={selectClass} onCreate={createClass} onReload={refreshClasses} onChanged={handleClassChanged} onDelete={requestPurge}
+          scrollTop={scene.homeScroll?.[archived ? 'archived' : 'active'] || 0}
+          onScrollTop={top => patchScene({ homeScroll: { ...scene.homeScroll, [archived ? 'archived' : 'active']: top } })} />}
         {showSidebar && renderClasses()}
       </div>
       <ModulePresence present={Boolean(scene.classListOpen)}>
         {scene.classListOpen && <ClassChooser onClose={() => patchScene({ classListOpen: false })}>
           {renderClasses(() => patchScene({ classListOpen: false }))}
         </ClassChooser>}
+      </ModulePresence>
+      <ModulePresence present={Boolean(confirmingPurge)}>
+        {confirmingPurge && <ConfirmDialog title="彻底删除班级"
+          message={`永久删除「${confirmingPurge.name}」及其全部课堂记录，无法恢复。关联的备课、题目、作品和日程会保留。`}
+          confirmLabel="彻底删除" onCancel={() => setConfirmingPurge(null)} onConfirm={confirmPurge} />}
       </ModulePresence>
       <ModulePresence present={Boolean(scene.creatingClass)}>
         {scene.creatingClass && <ClassCreateDialog accountKey={shell.accountKey} onCreated={handleClassCreated} onClose={() => patchScene({ creatingClass: false })} />}

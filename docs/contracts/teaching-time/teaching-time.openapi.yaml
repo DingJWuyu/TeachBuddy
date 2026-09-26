@@ -142,7 +142,7 @@ paths:
   /api/modules/classes/items/{id}/deletion:
     post:
       operationId: setClassDeletion
-      description: setClassDeletion
+      description: 归档或恢复班级，deleted=true 表示归档，false 表示恢复。
       parameters:
       - $ref: '#/components/parameters/id'
       - $ref: '#/components/parameters/IdempotencyKey'
@@ -181,6 +181,48 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Deletion'
+  /api/modules/classes/items/{id}/purge:
+    post:
+      operationId: purgeClass
+      description: 仅永久删除本账户已归档班级及其全部课堂记录，保留其他模块内容。
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      responses:
+        '200':
+          description: 持久成功结果；写入重放保持原状态码和结果。
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassPurgeResult'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassPurge'
   /api/modules/classes/records:
     get:
       operationId: listRecords
@@ -1278,6 +1320,22 @@ components:
       - expectedVersion
       - name
       additionalProperties: false
+    ClassPurge:
+      type: object
+      properties:
+        expectedVersion:
+          $ref: '#/components/schemas/Version'
+      required: [expectedVersion]
+      additionalProperties: false
+    ClassPurgeResult:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        permanentlyDeleted:
+          type: boolean
+          const: true
+      required: [id, permanentlyDeleted]
     Class:
       type: object
       properties:

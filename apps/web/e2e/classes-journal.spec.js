@@ -41,6 +41,40 @@ async function supplement(page, action, label, value) {
   await page.getByLabel(label, { exact: true }).fill(value);
 }
 const rows = page => page.locator('[data-region=record-rows] > li');
+async function archiveCurrent(page) {
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '归档班级', exact: true }).click();
+  await page.getByRole('dialog', { name: '归档班级', exact: true }).getByRole('button', { name: '归档', exact: true }).click();
+  await expect(page).toHaveURL(`${world.origin}/classes`);
+}
+async function openArchives(page) {
+  await page.getByRole('button', { name: '班级管理', exact: true }).click();
+  await page.getByRole('menuitem', { name: '已归档班级', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '已归档班级', exact: true })).toBeVisible();
+}
+
+test('归档班级后回到班级主页，不继续展示刚移走的班级', async ({ page }) => {
+  await createClass(page);
+  await archiveCurrent(page);
+  await expect(page).toHaveURL(`${world.origin}/classes`);
+  await expect(page.locator('[data-region=class-detail]')).toHaveCount(0);
+  await page.reload();
+  await expect(page).toHaveURL(`${world.origin}/classes`);
+  await expect(page.locator('[data-region=class-detail]')).toHaveCount(0);
+});
+
+test('创建班级后能返回班级主页，主页刷新后仍停在主页', async ({ page }) => {
+  await createClass(page);
+  await page.getByLabel('写一句', { exact: true }).fill('返回主页时保留的草稿');
+  await page.getByRole('button', { name: '返回班级主页', exact: true }).click();
+  await expect(page).toHaveURL(`${world.origin}/classes`);
+  await expect(page.getByRole('button', { name: '高一（1）班', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page).toHaveURL(`${world.origin}/classes`);
+  await expect(page.locator('[data-region=class-detail]')).toHaveCount(0);
+  await page.getByRole('button', { name: '高一（1）班', exact: true }).click();
+  await expect(page.getByLabel('写一句', { exact: true })).toHaveValue('返回主页时保留的草稿');
+});
 
 test('从用途空态完成一句话记录，编辑与新建互斥，重新打开仍有内容', async ({ page }) => {
   await expect(page.getByText('每个班，都有自己的教学记录')).toBeVisible();
@@ -129,7 +163,7 @@ test('两班草稿独立，空补充和日期保留，窄屏可切换且没有�
   await expect(rows(page)).toContainText('二班已经讲到例3');
 });
 
-test('记录与班级通过次级入口删除和恢复，记录不会随班级丢失', async ({ page }) => {
+test('记录删除恢复与班级归档恢复，记录不会随归档丢失', async ({ page }) => {
   await createClass(page);
   await page.getByLabel('写一句', { exact: true }).fill('例1已讲完');
   await page.getByRole('button', { name: '保存记录', exact: true }).click();
@@ -152,14 +186,61 @@ test('记录与班级通过次级入口删除和恢复，记录不会随班级�
   await expect(page.getByLabel('编辑记录内容')).toHaveValue('例1已讲完');
   await page.getByRole('button', { name: '返回记录', exact: true }).click();
   await expect(rows(page)).toHaveCount(1);
-  await page.getByRole('button', { name: '班级操作', exact: true }).click();
-  await page.getByRole('menuitem', { name: '删除班级' }).click();
-  await page.getByRole('dialog', { name: '删除班级' }).getByRole('button', { name: '删除', exact: true }).click();
+  await archiveCurrent(page);
+  await openArchives(page);
+  await page.getByRole('button', { name: '高一（1）班', exact: true }).click();
   await expect(page.getByRole('button', { name: '恢复班级', exact: true })).toBeVisible();
   await expect(rows(page)).toContainText('例1已讲完');
   await expect(page.getByRole('button', { name: '保存记录', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '恢复班级', exact: true }).click();
   await expect(page.getByRole('button', { name: '保存记录', exact: true })).toBeVisible();
+});
+
+test('已归档班级可以取消或确认彻底删除，删除后刷新不再出现', async ({ page }) => {
+  await createClass(page);
+  const classroom = (await call('GET', C)).items[0];
+  await page.getByLabel('写一句', { exact: true }).fill('随班级彻底删除的记录');
+  await page.getByRole('button', { name: '保存记录', exact: true }).click();
+  await expect(rows(page)).toHaveCount(1);
+  const recordId = await rows(page).getAttribute('data-record-id');
+  await archiveCurrent(page);
+  await openArchives(page);
+  const card = page.locator(`[data-class-id="${classroom.id}"]`);
+  await card.getByRole('button', { name: /班级操作/ }).click();
+  await page.getByRole('menuitem', { name: '彻底删除', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '彻底删除班级', exact: true });
+  await expect(dialog).toContainText('全部课堂记录，无法恢复');
+  await dialog.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(card).toBeVisible();
+  await card.getByRole('button', { name: /班级操作/ }).click();
+  await page.getByRole('menuitem', { name: '彻底删除', exact: true }).click();
+  await dialog.getByRole('button', { name: '彻底删除', exact: true }).click();
+  await expect(card).toHaveCount(0);
+  await expect(page.getByText('没有已归档的班级', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(card).toHaveCount(0);
+  await call('GET', `${C}/${classroom.id}`, undefined, 404);
+  await call('GET', `${R}/${recordId}`, undefined, 404);
+});
+
+test('彻底删除响应丢失后，刷新仍可重试确认', async ({ page }) => {
+  await createClass(page);
+  await archiveCurrent(page);
+  await openArchives(page);
+  let lost = false;
+  await page.route('**/api/modules/classes/items/*/purge', async route => {
+    if (!lost) { lost = true; await route.fetch(); await route.abort('failed'); }
+    else await route.continue();
+  });
+  await page.getByRole('button', { name: /班级操作 ·/ }).click();
+  await page.getByRole('menuitem', { name: '彻底删除', exact: true }).click();
+  await page.getByRole('dialog', { name: '彻底删除班级', exact: true }).getByRole('button', { name: '彻底删除', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '重试确认', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试确认', exact: true })).toHaveCount(0);
+  await expect(page.getByText('没有已归档的班级', { exact: true })).toBeVisible();
 });
 
 test('保存响应丢失后重试确认不重复记录，并保留期间的新输入', async ({ page }) => {

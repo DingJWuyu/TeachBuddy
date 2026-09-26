@@ -602,6 +602,19 @@
 .c-classes .c-chooser-dialog .c-class-pane { height: min(560px, calc(100dvh - 80px)); box-shadow: none; }
 .c-picker-description { margin: 0; padding: 0 16px 16px; font-size: 13px; color: var(--wb-muted); line-height: 1.8; }
 .c-classes .c-source-picker .wb-dialog-actions { padding-top: 12px; }
+.c-home-scroll { flex: 1; min-height: 0; overflow: auto; padding: 24px; }
+.c-home-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.c-home-toolbar h2 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 16px; font-weight: 600; }
+.c-home-toolbar h2 span { color: var(--wb-muted); font-size: 12px; font-weight: 400; }
+.c-home-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); align-content: start; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.c-home-card { min-width: 0; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--wb-line); }
+.c-home-open { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 94px; padding: 20px; border: 0; border-radius: 10px; color: var(--wb-ink); background: transparent; font: inherit; text-align: left; cursor: pointer; transition: background 160ms; }
+.c-home-open:hover { background: var(--app-hover); }
+.c-home-open:focus-visible { outline: 2px solid var(--app-primary); outline-offset: -2px; }
+.c-home-open > span:nth-child(2) { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 16px; font-weight: 500; }
+.c-home-open > .wb-icon { flex: none; color: var(--wb-muted); }
+.c-home-card-actions { display: flex; align-items: center; justify-content: space-between; padding: 0 20px 16px; gap: 10px; }
+.c-home-card .c-field-error { padding: 0 20px 16px; }
 @media (max-width: 1080px) {
   .c-layout.has-class-list { grid-template-columns: minmax(0, 1fr); }
   .c-layout > .c-class-pane { display: none; }
@@ -618,4 +631,5 @@
   .c-classes .c-record-field { grid-template-columns: minmax(0, 1fr); gap: 0; margin: 10px 0; }
   .c-classes .c-welcome h2 { font-size: 20px; }
   .c-classes .c-welcome { padding: 28px 20px; }
+  .c-home-scroll { padding: 18px 16px; }
 }

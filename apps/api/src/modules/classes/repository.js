@@ -33,6 +33,15 @@ export function createClassesRepository(db) {
     SELECT id, accountKey, version, createdAt, updatedAt, deletedAt, name
     FROM classes_items WHERE accountKey = ? ORDER BY name ASC, id ASC
   `);
+  const removeClass = db.prepare('DELETE FROM classes_items WHERE id = ? AND accountKey = ?');
+  const removeRecords = db.prepare('DELETE FROM classes_records WHERE classId = ? AND accountKey = ?');
+  const removeClassSources = db.prepare(`DELETE FROM classes_record_sources WHERE accountKey = ? AND recordId IN
+    (SELECT id FROM classes_records WHERE classId = ? AND accountKey = ?)`);
+  const rememberRemovedClass = db.prepare(`INSERT INTO classes_removed_objects (id, accountKey, kind, classId, version, removedAt)
+    SELECT id, accountKey, 'class', id, version + 1, ? FROM classes_items WHERE id = ? AND accountKey = ?`);
+  const rememberRemovedRecords = db.prepare(`INSERT INTO classes_removed_objects (id, accountKey, kind, classId, version, removedAt)
+    SELECT id, accountKey, 'record', classId, version + 1, ? FROM classes_records WHERE classId = ? AND accountKey = ?`);
+  const selectRemoved = db.prepare('SELECT id, classId, version, removedAt FROM classes_removed_objects WHERE id = ? AND accountKey = ? AND kind = ?');
 
   const insertRecord = db.prepare(`
     INSERT INTO classes_records (
@@ -102,6 +111,14 @@ export function createClassesRepository(db) {
     updateClass: (row) => updateClass.run(row),
     getClassForAccount: (accountKey, id) => selectClass.get(id, accountKey) ?? null,
     listClassesForAccount: (accountKey) => selectClasses.all(accountKey),
+    getRemovedForAccount: (accountKey, id, kind) => selectRemoved.get(id, accountKey, kind) ?? null,
+    purgeClass(accountKey, classId, at) {
+      rememberRemovedClass.run(at, classId, accountKey);
+      rememberRemovedRecords.run(at, classId, accountKey);
+      removeClassSources.run(accountKey, classId, accountKey);
+      removeRecords.run(classId, accountKey);
+      removeClass.run(classId, accountKey);
+    },
 
     insertRecord: (row) => insertRecord.run(row),
     updateRecord: (row) => updateRecord.run(row),

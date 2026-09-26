@@ -31,6 +31,8 @@ export function ClassDetail({
   onCloseRecord,
   onClassChanged,
   onChooseClass,
+  onHome,
+  onDelete,
   detailScrollTop,
   onDetailScrollTop
 }) {
@@ -145,24 +147,25 @@ export function ClassDetail({
   return (
     <section className="c-class-detail" data-region="class-detail" data-class-id={classroom.id}>
       <header className="c-class-head">
-        <span className="c-module-icon"><Icon name="classes" size={23} /></span>
+        <button type="button" className="wb-icon-button" aria-label="返回班级主页" title="返回班级主页" onClick={onHome}><Icon name="back" size={20} /></button>
         <h1>班级教学</h1>
           <>
             <button type="button" className="c-class-switch" title={`切换班级 · ${classroom.name}`} aria-label={`切换班级，当前：${classroom.name}`} onClick={onChooseClass}>
               <span>{classroom.name}</span><Icon name="chevron" size={14} />
             </button>
-            {deleted && <span className="wb-tag is-deleted">已删除</span>}
             <span className="c-head-spacer" />
             <Popover label="班级操作" icon="more">
               {({ close }) => <>
-                <MenuItem name="rename-class" onClick={() => { close(); setName(classroom.name); setRenaming(true); }}>修改班级名称</MenuItem>
-                {!deleted && <MenuItem name="delete-class" icon="trash" danger onClick={() => { close(); setConfirmingDelete(true); }}>删除班级</MenuItem>}
+                {!deleted && <MenuItem name="rename-class" onClick={() => { close(); setName(classroom.name); setRenaming(true); }}>修改班级名称</MenuItem>}
+                {!deleted && <MenuItem name="archive-class" icon="folder" disabled={deletion.isRunning || Boolean(deletion.pending)} onClick={() => { close(); setConfirmingDelete(true); }}>归档班级</MenuItem>}
+                {deleted && <MenuItem name="purge-class" icon="trash" danger disabled={deletion.isRunning || Boolean(deletion.pending)} onClick={() => { close(); onDelete(classroom); }}>彻底删除</MenuItem>}
               </>}
             </Popover>
             {deleted ? (
               <button
                 type="button"
                 className="wb-button is-primary"
+                disabled={deletion.isRunning}
                 name={deletion.status === 'unconfirmed' ? 'retry-confirm' : 'restore-class'}
                 onClick={() => (deletion.status === 'unconfirmed' ? retryDeletion() : submitDeletion(false))}
               >
@@ -211,9 +214,8 @@ export function ClassDetail({
 
         {renamed.status === 'failed' && <p className="c-field-error">{renamed.problem?.message || '改名失败'}</p>}
         {deletion.status === 'failed' && <p className="c-field-error">{deletion.problem?.message || '班级操作失败'}</p>}
-        {deletion.status === 'unconfirmed' && !deleted && (
-          <p className="c-field-error">上次删除的结果未确认，可再次重试确认</p>
-        )}
+        {deletion.status === 'unconfirmed' && !deleted && <div className="c-field-error" role="status">归档结果未确认。
+          <button className="wb-button" onClick={retryDeletion}>重试确认</button></div>}
       </header>
 
       <div className="c-detail-scroll" data-region="class-detail-scroll" ref={scroll.ref} onScroll={scroll.onScroll}>
@@ -227,12 +229,6 @@ export function ClassDetail({
             <p>{next.nextNote}</p>
           </div>}
         </div>}
-
-        {deleted && (
-          <p className="c-deleted-note" data-region="class-deleted-note">
-            班级已删除，记录只读；恢复班级后可继续记录。
-          </p>
-        )}
 
         {!deleted && (
           <ModuleDisclosure open={!editing} className="c-composer-disclosure">
@@ -280,9 +276,9 @@ export function ClassDetail({
       <ModulePresence present={confirmingDelete}>
       {confirmingDelete && (
         <ConfirmDialog
-          title="删除班级"
-          message="记录保留，关联显示已删除；不连带删除备课或题目。"
-          confirmLabel="删除"
+          title="归档班级"
+          message={`将「${classroom.name}」移入归档，课堂记录会保留，以后可以恢复。`}
+          confirmLabel="归档"
           onCancel={() => setConfirmingDelete(false)}
           onConfirm={() => submitDeletion(true)}
         />

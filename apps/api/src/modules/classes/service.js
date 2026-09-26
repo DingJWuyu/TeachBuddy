@@ -22,6 +22,7 @@ import {
   validateCreateRecordV2,
   validateUpdateRecordV2,
   validateDeletion,
+  validatePurgeClass,
   validateSourceRecordsPath,
   validateUpdateClass,
   validateUpdateRecord
@@ -210,6 +211,16 @@ export function createClassesService({ repository, questions, lessons, math, now
     return toClass(next);
   }
 
+  function purgeClass(principal, classId, input) {
+    const accountKey = requireAccountKey(principal);
+    const body = validatePurgeClass(input);
+    const current = requireClass(principal, classId);
+    if (body.expectedVersion !== current.version) throw versionConflict(current.version, current.id);
+    if (current.deletedAt === null) throw invalidInput('/classId', 'invalid-reference');
+    repository.purgeClass(accountKey, classId, timestamp());
+    return { id: classId, permanentlyDeleted: true };
+  }
+
   // ------------------------------------------------------------------ records
 
   function listRecords(principal, { classId, state = 'active' } = {}, version = 1) {
@@ -317,6 +328,8 @@ export function createClassesService({ repository, questions, lessons, math, now
   // -------------------------------------------------------------- public ports
 
   function readClass(principal, classId) {
+    const removed = repository.getRemovedForAccount(requireAccountKey(principal), classId, 'class');
+    if (removed) return { id: removed.id, version: removed.version, name: '已删除班级', deletedAt: removed.removedAt };
     const record = requireClass(principal, classId);
     return {
       id: record.id,
@@ -327,6 +340,9 @@ export function createClassesService({ repository, questions, lessons, math, now
   }
 
   function readRecord(principal, recordId) {
+    const removed = repository.getRemovedForAccount(requireAccountKey(principal), recordId, 'record');
+    if (removed) return { id: removed.id, version: removed.version, classId: removed.classId,
+      label: '已删除记录', deletedAt: removed.removedAt, classDeletedAt: removed.removedAt };
     const record = requireRecord(principal, recordId);
     const classroom = requireClass(principal, record.classId);
     return {
@@ -345,6 +361,7 @@ export function createClassesService({ repository, questions, lessons, math, now
     createClass,
     updateClass,
     setClassDeletion,
+    purgeClass,
     listRecords,
     getRecord,
     createRecord,

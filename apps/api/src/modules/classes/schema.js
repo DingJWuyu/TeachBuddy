@@ -50,6 +50,8 @@ const deletionSchema = schema.object([
   ['expectedVersion', () => primitives.version],
   ['deleted', schema.boolean()]
 ]);
+const purgeClassSchema = schema.object([['expectedVersion', () => primitives.version]]);
+export function validatePurgeClass(input) { return validateBody(purgeClassSchema, input); }
 
 function recordFieldList(sourceSchema = sourceInputSchema) {
   return [

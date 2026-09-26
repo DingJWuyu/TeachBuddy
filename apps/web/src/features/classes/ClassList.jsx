@@ -7,22 +7,20 @@ import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
 import { createClass } from './api.js';
 
-export function ClassList({ items, status, error, listState, onListStateChange, selectedId,
+export function ClassList({ items, status, error, onArchived, selectedId,
   onSelect, onCreate, onReload, scrollTop, onScrollTop, onClose }) {
   const scroll = useScrollRestore(scrollTop || 0, onScrollTop, items.length);
-  const deleted = listState === 'deleted';
   return <aside className="c-class-pane" data-region="class-list" aria-label="我的班级">
     <header className="c-list-head">
-      <h2><Icon name={deleted ? 'trash' : 'classes'} size={20} />{deleted ? '已删除的班级' : '我的班级'}</h2>
+      <h2><Icon name="classes" size={20} />我的班级</h2>
       {onClose ? <button type="button" className="wb-icon-button" title="关闭班级列表" aria-label="关闭班级列表" onClick={onClose}><Icon name="close" /></button>
-        : <Popover label="班级列表操作">{({ close }) => <MenuItem icon="trash" onClick={() => { close(); onListStateChange('deleted'); }}>已删除的班级</MenuItem>}</Popover>}
+        : <Popover label="班级列表操作">{({ close }) => <MenuItem icon="folder" onClick={() => { close(); onArchived(); }}>已归档班级</MenuItem>}</Popover>}
     </header>
-    {deleted ? <button className="wb-button c-list-return" onClick={() => onListStateChange('active')}><Icon name="back" size={15} />返回我的班级</button>
-      : <p className="c-list-caption">每个班的进度与反馈，分别记在这里。</p>}
+    <p className="c-list-caption">每个班的进度与反馈，分别记在这里。</p>
     {status === 'loading' && <p className="wb-muted c-pane-note">正在加载班级…</p>}
     {status === 'error' && <div className="wb-inline-error c-pane-note" role="alert"><span>{error?.message || '无法加载班级'}</span><button className="wb-button" onClick={onReload}>重试</button></div>}
     <div className="c-class-scroll" ref={scroll.ref} onScroll={scroll.onScroll} data-region="class-rows-scroll">
-      {status === 'ready' && items.length === 0 && <p className="wb-empty-note" data-region="class-empty">{deleted ? '没有已删除的班级' : '还没有班级'}</p>}
+      {status === 'ready' && items.length === 0 && <p className="wb-empty-note" data-region="class-empty">还没有班级</p>}
       <ul className="c-class-rows">
         {items.map(classroom => <li key={classroom.id}>
           <button type="button" className={`c-class-row${selectedId === classroom.id ? ' is-active' : ''}`}
@@ -35,8 +33,8 @@ export function ClassList({ items, status, error, listState, onListStateChange, 
       </ul>
     </div>
     <footer className="c-list-footer">
-      {!deleted && <button type="button" className="wb-button c-create-button" name="new-class" onClick={onCreate}><Icon name="plus" size={16} />创建班级</button>}
-      {onClose && !deleted && <button className="wb-text-button" onClick={() => onListStateChange('deleted')}>已删除的班级</button>}
+      <button type="button" className="wb-button c-create-button" name="new-class" onClick={onCreate}><Icon name="plus" size={16} />创建班级</button>
+      {onClose && <button className="wb-text-button" onClick={onArchived}>已归档班级</button>}
     </footer>
   </aside>;
 }

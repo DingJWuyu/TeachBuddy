@@ -47,5 +47,20 @@ export const migrations = [
           ON classes_record_sources (accountKey, kind, sourceId);
       `);
     }
+  },
+  {
+    id: 'classes_0002_removed_objects',
+    up(db) {
+      // Keep only identities needed by existing schedule links, never class
+      // names or record text. Business rows are physically removed on purge.
+      db.exec(`CREATE TABLE classes_removed_objects (
+        id TEXT PRIMARY KEY,
+        accountKey TEXT NOT NULL,
+        kind TEXT NOT NULL CHECK (kind IN ('class', 'record')),
+        classId TEXT NOT NULL,
+        version INTEGER NOT NULL,
+        removedAt TEXT NOT NULL
+      )`);
+    }
   }
 ];
