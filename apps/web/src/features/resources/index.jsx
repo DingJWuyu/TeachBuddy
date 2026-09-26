@@ -14,6 +14,8 @@ import "./resources.css";
 import { ResourceDialog } from "./ResourceDialog.jsx";
 import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import { AddToLesson } from "./AddToLesson.jsx";
+import { FileHistory } from "./FileHistory.jsx";
+import { Organize } from "./Organize.jsx";
 const root = "/api/modules/resources";
 const metadata = (item) => ({
   baseVersion: item.version,
@@ -79,8 +81,10 @@ function ResourceWorkspace({
     [allItems, setAllItems] = useState([]),
     [tax, setTax] = useState({ version: 1, folders: [], tags: [] }),
     [files, setFiles] = useState({}),
+    [fileErrors, setFileErrors] = useState({}),
     [previews, setPreviews] = useState({}),
     [usages, setUsages] = useState([]),
+    [fileHistory, setFileHistory] = useState([]),
     [usageError, setUsageError] = useState("");
   const [error, setError] = useState(""),
     [message, setMessage] = useState(""),
@@ -93,6 +97,8 @@ function ResourceWorkspace({
     [conflict, setConflict] = useState(null),
     [addToLesson, setAddToLesson] = useState(null),
     [lastLesson, setLastLesson] = useState(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [organize, setOrganize] = useState(null);
   const listRef = useRef(null),
     triggerRef = useRef(null),
     pendingRef = useRef(null),
@@ -146,16 +152,38 @@ function ResourceWorkspace({
           ),
         ];
         const results = await Promise.all(
-          ids.map(async (id) => [
-            id,
-            await client.request(`/api/workbench/files/${id}`),
-            await client.request(`/api/workbench/files/${id}/preview`),
-          ]),
+          ids.map(async (id) => {
+            const [file, preview] = await Promise.allSettled([
+              client.request(`/api/workbench/files/${id}`),
+              client.request(`/api/workbench/files/${id}/preview`),
+            ]);
+            return [id, file, preview];
+          }),
         );
         if (active) {
-          setFiles(Object.fromEntries(results.map(([id, file]) => [id, file])));
+          setFiles(
+            Object.fromEntries(
+              results
+                .filter(([, file]) => file.status === "fulfilled")
+                .map(([id, file]) => [id, file.value]),
+            ),
+          );
           setPreviews(
-            Object.fromEntries(results.map(([id, , preview]) => [id, preview])),
+            Object.fromEntries(
+              results
+                .filter(([, , preview]) => preview.status === "fulfilled")
+                .map(([id, , preview]) => [id, preview.value]),
+            ),
+          );
+          setFileErrors(
+            Object.fromEntries(
+              results
+                .filter(
+                  ([, file, preview]) =>
+                    file.status === "rejected" || preview.status === "rejected",
+                )
+                .map(([id]) => [id, "文件暂时无法读取，请重试"]),
+            ),
           );
         }
       })
@@ -179,12 +207,22 @@ function ResourceWorkspace({
   useEffect(() => {
     let active = true;
     setUsages([]);
+    setFileHistory([]);
     setUsageError("");
     if (item)
       client
         .request(`/api/modules/lessons/v2/resource-usages/${item.id}`)
         .then((r) => active && setUsages(r.items))
         .catch((e) => active && setUsageError(e.message));
+    if (item)
+      client
+        .request(`${root}/items/${item.id}/history`)
+        .then((result) => {
+          if (active) setFileHistory(result.items);
+        })
+        .catch(() => {
+          /* Usage status remains generic if history is unavailable. */
+        });
     return () => {
       active = false;
     };
@@ -204,6 +242,9 @@ function ResourceWorkspace({
       setError("请重新选择原文件核对名称、长度和内容，再确认上传");
       return false;
     }
+    // A retry may commit even after a prior definite rejection. Until this
+    // attempt is confirmed, skipping it could orphan a successfully saved item.
+    record = { ...record, definiteFailure: false };
     busyRef.current = true;
     setBusy(true);
     setError("");
@@ -211,6 +252,22 @@ function ResourceWorkspace({
     try {
       await remember(record);
       for (;;) {
+        if (record.duplicateHash) {
+          const matches = await Promise.all(
+            ["active", "deleted"].map((state) =>
+              client.request(
+                `${root}/items?state=${state}&sha256=${record.duplicateHash}`,
+              ),
+            ),
+          );
+          record = {
+            ...record,
+            duplicateHash: null,
+            duplicateMatches: matches.flatMap((result) => result.items),
+          };
+          await remember(record);
+        }
+        if (record.duplicateMatches?.length) break;
         const value = await client.request(record.path, {
           method: record.method,
           input: record.input,
@@ -236,6 +293,13 @@ function ResourceWorkspace({
             break;
           }
           record = {
+            remaining: record.remaining,
+            batchTotal: record.batchTotal,
+            completed: record.completed,
+            duplicateHash:
+              meta.kind === "create" && value.duplicateOfFileId
+                ? value.sha256
+                : null,
             key: crypto.randomUUID(),
             method: meta.kind === "replace" ? "PUT" : "POST",
             path:
@@ -256,6 +320,43 @@ function ResourceWorkspace({
           };
           await remember(record);
           continue;
+        }
+        if (record.purpose === "organize") {
+          if (
+            !Array.isArray(value.items) ||
+            value.items.length !== record.input.items.length
+          )
+            throw Object.assign(new Error("批量整理结果未确认"), {
+              unknown: true,
+            });
+          const drafts = { ...sceneRef.current.drafts };
+          for (const item of value.items) {
+            if (!drafts[item.id]) continue;
+            drafts[item.id] = {
+              ...drafts[item.id],
+              baseVersion: item.version,
+              ...(record.input.action === "move"
+                ? { folderId: item.folderId }
+                : {}),
+              ...(record.input.action === "add-tags"
+                ? {
+                    tagIds: [
+                      ...new Set([
+                        ...drafts[item.id].tagIds,
+                        ...record.input.tagIds,
+                      ]),
+                    ],
+                  }
+                : {}),
+            };
+          }
+          patchScene({ selected: [], selectionMode: false, drafts });
+          await remember(null);
+          setMessage(
+            `已${{ move: "移动", "add-tags": "添加标签：", archive: "归档", restore: "恢复" }[record.input.action]} ${value.items.length} 份资料`,
+          );
+          refresh();
+          break;
         }
         if (
           record.purpose === "purge"
@@ -315,18 +416,34 @@ function ResourceWorkspace({
             ),
           });
         }
-        if (record.purpose === "create") open(value.id);
-        if (["supplement", "replace"].includes(record.purpose))
+        if (record.purpose === "create" && !(record.batchTotal > 1))
+          open(value.id);
+        if (["supplement", "replace", "restore-file"].includes(record.purpose))
           patchScene({ supplement: null });
+        if (["replace", "restore-file"].includes(record.purpose)) {
+          const live = sceneRef.current.drafts[value.id];
+          if (live)
+            patchScene({
+              drafts: {
+                ...sceneRef.current.drafts,
+                [value.id]: { ...live, baseVersion: value.version },
+              },
+            });
+        }
         if (record.purpose === "lesson") {
           setAddToLesson(null);
           setLastLesson({ lessonId: value.id, lessonTitle: value.title });
         }
-        await remember(null);
+        const next = nextUpload(record);
+        await remember(next);
         setMessage(
           {
-            create: "文件已保存",
+            create:
+              record.batchTotal > 1
+                ? `已处理 ${(record.completed ?? 0) + 1} / ${record.batchTotal} 份资料`
+                : "文件已保存",
             replace: "文件已更新",
+            "restore-file": "已恢复历史文件，已有备课引用保持不变",
             metadata: "资料信息已保存",
             taxonomy: "整理已保存",
             supplement: "已采用补充预览",
@@ -340,8 +457,12 @@ function ResourceWorkspace({
         setConflict(null);
         setDialog(null);
         refresh();
-        if (["create", "replace"].includes(record.purpose))
+        if (["create", "replace", "restore-file"].includes(record.purpose))
           await requestPreview(value.fileId);
+        if (next) {
+          record = next;
+          continue;
+        }
         break;
       }
       return true;
@@ -354,8 +475,10 @@ function ResourceWorkspace({
           setConflict({ record });
           refresh();
         }
-        if (!e.unknown) {
+        if (!e.unknown && !record.batchTotal) {
           await remember(null);
+        } else if (!e.unknown) {
+          await remember({ ...record, definiteFailure: true });
         }
       }
       return false;
@@ -382,6 +505,18 @@ function ResourceWorkspace({
   }
   function upload(source, kind = "create") {
     if (!source || pendingRef.current || busyRef.current) return;
+    const sources = Array.isArray(source) ? source : [source];
+    if (!sources.length) return;
+    const invalid = sources.find(
+      (file) => file.size > 100 * 1024 * 1024 || file.name.length > 200,
+    );
+    if (invalid) {
+      setError(
+        `“${invalid.name}”超过限制：每份文件最多 100 MB，文件名最多 200 个字符。请调整后重新选择。`,
+      );
+      return;
+    }
+    source = sources[0];
     const meta = {
       kind,
       folderId: scene.folderId,
@@ -404,7 +539,54 @@ function ResourceWorkspace({
       input: source,
       purpose: "upload",
       meta,
+      remaining: sources.slice(1),
+      batchTotal: sources.length > 1 ? sources.length : undefined,
+      completed: 0,
     });
+  }
+  function nextUpload(record) {
+    if (!record.remaining?.length) return null;
+    const [input, ...remaining] = record.remaining;
+    return {
+      key: crypto.randomUUID(),
+      method: "POST",
+      path: "/api/workbench/files",
+      input,
+      purpose: "upload",
+      meta: {
+        kind: "create",
+        folderId: record.input.folderId ?? record.meta?.folderId ?? null,
+      },
+      remaining,
+      batchTotal: record.batchTotal,
+      completed: (record.completed ?? 0) + 1,
+    };
+  }
+  async function skipDuplicate() {
+    const record = pendingRef.current;
+    if (
+      (!record?.duplicateMatches?.length && !record?.definiteFailure) ||
+      busyRef.current
+    )
+      return;
+    busyRef.current = true;
+    setBusy(true);
+    let next;
+    try {
+      next = nextUpload(record);
+      await remember(next);
+      setError("");
+      setMessage(
+        record.definiteFailure ? "已跳过未保存的资料" : "已跳过重复资料",
+      );
+    } catch (error) {
+      next = null;
+      setError(error.message);
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+    if (next && !controller.signal.aborted) await execute(next);
   }
   function open(id, event) {
     triggerRef.current = event?.currentTarget;
@@ -512,6 +694,7 @@ function ResourceWorkspace({
               disabled={disabled}
               dirty={dirty}
               usages={usages}
+              fileHistory={fileHistory}
               usageError={usageError}
               onRefresh={refresh}
               onOpenLesson={onOpenLesson}
@@ -535,6 +718,7 @@ function ResourceWorkspace({
     allItems,
     files,
     usages,
+    fileHistory,
     usageError,
   ]);
   useEffect(() => () => shell.registerTools([]), [shell.registerTools]);
@@ -560,6 +744,7 @@ function ResourceWorkspace({
         tax={tax}
         files={files}
         previews={previews}
+        fileErrors={fileErrors}
         client={client}
         busy={disabled}
         loading={listLoading}
@@ -570,6 +755,21 @@ function ResourceWorkspace({
         onFolders={shell.openPanel ? toggleTools : null}
         foldersOpen={infoOpen}
         onPickResources={onPickResources}
+        onOrganize={(action) =>
+          setOrganize({
+            action,
+            resources: allItems.filter((item) =>
+              scene.selected.includes(item.id),
+            ),
+          })
+        }
+        onAddToLesson={() =>
+          setAddToLesson(
+            allItems.filter(
+              (item) => scene.selected.includes(item.id) && !item.deletedAt,
+            ),
+          )
+        }
       />
       {scene.openId && (
         <section className="res-detail">
@@ -632,6 +832,17 @@ function ResourceWorkspace({
               >
                 {({ close: closeMenu }) => (
                   <>
+                    <button
+                      role="menuitem"
+                      disabled={!item}
+                      onClick={() => {
+                        closeMenu();
+                        setHistoryOpen(true);
+                      }}
+                    >
+                      <Icon name="file" size={16} />
+                      文件历史版本
+                    </button>
                     {!item?.deletedAt && (
                       <>
                         <button
@@ -739,6 +950,12 @@ function ResourceWorkspace({
           </header>
           {item && (
             <div className="res-preview-column res-surface">
+              {fileErrors[item.fileId] && (
+                <div className="res-warning" role="alert">
+                  {fileErrors[item.fileId]}
+                  <button onClick={refresh}>重新读取文件</button>
+                </div>
+              )}
               {item.supplementPreviewFileId && !supplement && (
                 <div className="res-notice">
                   <Icon name="info" size={16} />
@@ -832,7 +1049,11 @@ function ResourceWorkspace({
         >
           <Icon name={error ? "info" : busy ? "upload" : "check"} size={16} />
           <span role={error && !busy ? "alert" : undefined}>
-            {busy ? "正在保存，请稍候…" : error || message}
+            {busy
+              ? pending?.batchTotal
+                ? `正在收录第 ${(pending.completed ?? 0) + 1} / ${pending.batchTotal} 份，请稍候…`
+                : "正在保存，请稍候…"
+              : error || message}
           </span>
           {lastLesson && (
             <button onClick={() => onOpenLesson?.(lastLesson)}>
@@ -859,6 +1080,7 @@ function ResourceWorkspace({
             </label>
           ) : (
             pending &&
+            !pending.duplicateMatches?.length &&
             !busy && (
               <button onClick={() => execute(pending)}>重试确认原请求</button>
             )
@@ -876,7 +1098,42 @@ function ResourceWorkspace({
               <Icon name="close" size={14} />
             </button>
           )}
+          {pending?.definiteFailure && !busy && (
+            <button onClick={skipDuplicate}>跳过未保存的资料</button>
+          )}
         </div>
+      </ModulePresence>
+      <ModulePresence present={Boolean(pending?.duplicateMatches?.length)}>
+        {pending?.duplicateMatches?.length > 0 && (
+          <ResourceDialog label="发现重复资料" onClose={skipDuplicate}>
+            <h2>这份文件已经收录过</h2>
+            <p>“{pending.input.title}”与以下资料的文件内容相同：</p>
+            <ul>
+              {pending.duplicateMatches.map((match) => (
+                <li key={match.id}>
+                  {match.title}
+                  {match.deletedAt ? "（已归档）" : ""}
+                </li>
+              ))}
+            </ul>
+            <p>可跳过这份资料，或另存一份并分别整理。</p>
+            <div className="res-actions">
+              <button
+                className="res-primary"
+                disabled={busy}
+                onClick={skipDuplicate}
+              >
+                跳过这份资料
+              </button>
+              <button
+                disabled={busy}
+                onClick={() => execute({ ...pending, duplicateMatches: null })}
+              >
+                仍然另存一份
+              </button>
+            </div>
+          </ResourceDialog>
+        )}
       </ModulePresence>
       <ModulePresence present={!!scene.taxonomyDraft?.edit}>
         {scene.taxonomyDraft?.edit && (
@@ -904,12 +1161,47 @@ function ResourceWorkspace({
           />
         )}
       </ModulePresence>
+      <ModulePresence present={historyOpen && !!item}>
+        {historyOpen && item && (
+          <FileHistory
+            client={client}
+            item={item}
+            disabled={disabled}
+            onClose={() => setHistoryOpen(false)}
+            onRestore={(entry) => {
+              setHistoryOpen(false);
+              write(
+                `${root}/items/${item.id}/restore-file`,
+                { baseVersion: item.version, fileVersion: entry.version },
+                "restore-file",
+                "POST",
+              );
+            }}
+          />
+        )}
+      </ModulePresence>
+      <ModulePresence present={!!organize}>
+        {organize && (
+          <Organize
+            {...organize}
+            tax={tax}
+            disabled={disabled}
+            onClose={() => setOrganize(null)}
+            onSave={(input) => {
+              setOrganize(null);
+              write(`${root}/items/organize`, input, "organize", "POST");
+            }}
+          />
+        )}
+      </ModulePresence>
       <ModulePresence present={!!conflict}>
         {conflict && (
           <ResourceDialog label="版本冲突" onClose={() => setConflict(null)}>
             <h2>内容已在其他地方更新</h2>
             <p>
-              你的输入仍保留。当前资源：{item?.title}，版本 {item?.version}。
+              {conflict.record.purpose === "organize"
+                ? "所选资料中有内容已变化，本次整理全部未生效。请关闭提示后重新选择资料。"
+                : `你的输入仍保留。当前资源：${item?.title ?? ""}，版本 ${item?.version ?? ""}。`}
             </p>
             <pre>{item?.note}</pre>
             <button

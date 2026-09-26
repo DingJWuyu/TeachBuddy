@@ -117,6 +117,7 @@ export function Preview({
     }
   }
   const preparing = ["queued", "running", "cancelling"].includes(job?.state);
+  const unsupported = preview?.issues.includes("unsupported-format");
   const failed =
     !preparing &&
     (preview?.state === "failed" ||
@@ -135,9 +136,37 @@ export function Preview({
             >
               <Icon name="arrowLeft" size={16} />
             </button>
-            <span>
-              第 {current?.page ?? 0} / {preview.pageCount} 页
-            </span>
+            <form
+              className="res-page-jump"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const number = Number(
+                  new FormData(event.currentTarget).get("page"),
+                );
+                if (
+                  Number.isInteger(number) &&
+                  number >= 1 &&
+                  number <= preview.pageCount
+                )
+                  onPage(number);
+              }}
+            >
+              <label>
+                第{" "}
+                <input
+                  key={current?.page}
+                  aria-label="跳转页码"
+                  name="page"
+                  type="number"
+                  min="1"
+                  max={preview.pageCount}
+                  defaultValue={current?.page ?? 1}
+                  required
+                />{" "}
+                / {preview.pageCount} 页
+              </label>
+              <button type="submit">跳转</button>
+            </form>
             <button
               className="res-icon-button"
               aria-label="下一页"
@@ -183,6 +212,7 @@ export function Preview({
       {error && (
         <div role="alert" className="res-warning">
           {error}
+          <button onClick={() => setReload((n) => n + 1)}>重新读取预览</button>
         </div>
       )}
       {!preview?.pages.length && (
@@ -190,12 +220,22 @@ export function Preview({
           <span className="res-empty-icon">
             <Icon name="file" size={30} />
           </span>
-          <h2>{failed ? "暂时无法预览" : "正在准备预览"}</h2>
+          <h2>
+            {unsupported
+              ? "此格式暂不支持在线预览"
+              : failed
+                ? "暂时无法预览"
+                : "正在准备预览"}
+          </h2>
           <p>
             原文件已保存，可以随时下载。
-            {failed ? "也可以上传 PDF 作为预览。" : "预览完成后会自动显示。"}
+            {unsupported
+              ? "请下载后用对应软件打开，或补充 PDF 预览。"
+              : failed
+                ? "转换未完成，请确认原文件能正常打开，或补充 PDF 预览。"
+                : "预览完成后会自动显示。"}
           </p>
-          {preview && !preparing && (
+          {preview && !preparing && !unsupported && (
             <button
               onClick={generate}
               disabled={

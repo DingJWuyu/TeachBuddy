@@ -38,6 +38,7 @@ const kindLabels = {
   lesson: "备课",
   resource: "资源",
   "resource-taxonomy": "资源分类",
+  "resource-file-revision": "资源文件历史版本",
   math: "数学作品",
   "math-revision": "数学历史版本",
   class: "班级",
@@ -137,6 +138,9 @@ export function takeSnapshot(db, principal, loader) {
   values("questions_materials_imports", "import");
   values("resource_items", "resource");
   values("resource_taxonomy", "resource-taxonomy");
+  rows("resource_file_history").forEach(row =>
+    add("resource-file-revision", JSON.parse(row.value), row.resourceId, row.version),
+  );
   values("math_works", "math");
   db.prepare(
     "SELECT r.* FROM math_revisions r JOIN math_works w ON w.id=r.workId WHERE w.accountKey=?",
@@ -416,6 +420,8 @@ export async function writeArchive(snapshot, directory, destination, signal) {
       );
     if (object.kind === "math-revision")
       relation("math", object.id, "current-link", "work");
+    if (object.kind === "resource-file-revision")
+      relation("resource", object.id, "current-link", "resource");
     if (object.kind === "lesson-export")
       relation(
         "lesson",

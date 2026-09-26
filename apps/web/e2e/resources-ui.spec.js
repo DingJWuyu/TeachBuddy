@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import JSZip from "jszip";
 import { createIntegration } from "../../api/test/fixtures/auth-integration/harness.js";
 import { registerMath } from "./fixtures/math-static/real.mjs";
 
@@ -209,7 +210,7 @@ test("真实 PDF 翻页、加入备课、更新文件、归档恢复保留资料
   await expect(page.getByLabel("资源笔记")).toHaveValue(
     "更新文件也保留这条备注",
   );
-  await expect(page.locator(".res-usage")).toContainText("来源有更新");
+  await expect(page.locator(".res-usage")).toContainText("文件有更新");
   const after = await api.request(
     "GET",
     "/api/modules/lessons/v3/" + created.json.id,
@@ -633,3 +634,483 @@ test("彻底删除的权限、版本与响应丢失恢复", async ({ page }) => 
     ).status,
   ).toBe(404);
 });
+
+test("单份文件读取失败不阻断正常资料下载", async ({ page }) => {
+  await upload(page, image);
+  const broken = (await api.request("GET", "/api/modules/resources/items")).json
+    .items[0];
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  await upload(page, pdf, false);
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  await page.route(`**/api/workbench/files/${broken.fileId}`, (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: "application/problem+json",
+      body: JSON.stringify({ detail: "文件暂时不可读取或保存" }),
+    }),
+  );
+  await page.reload();
+  await expect(page.locator(".res-browser")).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
+  await page.getByRole("button", { name: /c22.pdf/ }).click();
+  await expect(
+    page.getByRole("button", { name: "下载原件", exact: true }),
+  ).toBeEnabled();
+  const event = page.waitForEvent("download");
+  await page.getByRole("button", { name: "下载原件", exact: true }).click();
+  expect(
+    fs.readFileSync(await (await event).path()).equals(fs.readFileSync(pdf)),
+  ).toBe(true);
+});
+
+test("不支持的预览格式给出明确原因而不是无效重试", async ({ page }) => {
+  await page.getByLabel("上传第一份资料", { exact: true }).setInputFiles({
+    name: "课堂记录.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("仅存档的文字资料"),
+  });
+  await expect(page.getByText("此格式暂不支持在线预览")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "重试预览", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "下载原件", exact: true }),
+  ).toBeEnabled();
+});
+
+test("历史文件可下载核对并恢复，备注和旧引用保持", async ({ page }, info) => {
+  await upload(page, pdf);
+  await infoPanel(page);
+  await page.getByLabel("资源笔记").fill("保留的教学备注");
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "保存修改", exact: true }),
+  ).toBeDisabled();
+  const original = (await api.request("GET", "/api/modules/resources/items"))
+    .json.items[0];
+  const lesson = await api.request("POST", "/api/modules/lessons/v3", {
+    headers: { "Idempotency-Key": randomUUID() },
+    body: {
+      title: "历史文件引用",
+      intro: { version: 2, blocks: [] },
+      sections: [],
+      materials: [
+        {
+          id: randomUUID(),
+          kind: "resource",
+          resourceId: original.id,
+          resourceVersion: original.version,
+          note: "",
+        },
+      ],
+    },
+  });
+  expect(lesson.status).toBe(201);
+  await page.getByLabel("资源笔记").fill("只更新备注，不更新文件");
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
+  await expect(page.locator(".res-usage")).toContainText("资料信息有更新");
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
+  await (await chooser).setFiles(image);
+  await page.getByRole("button", { name: "确认更新", exact: true }).click();
+  await expect(page.locator(".res-status")).toContainText("文件已更新");
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "文件历史版本", exact: true })
+    .click();
+  const old = page.locator(".res-history-entry").filter({ hasText: "c22.pdf" });
+  await expect(old).toBeVisible();
+  await screenshot(page, info, "history-desktop");
+  await page.setViewportSize({ width: 768, height: 900 });
+  await screenshot(page, info, "history-narrow");
+  const historyBox = await page
+    .getByRole("dialog", { name: "文件历史版本" })
+    .boundingBox();
+  expect(historyBox.x).toBeGreaterThanOrEqual(0);
+  expect(historyBox.x + historyBox.width).toBeLessThanOrEqual(768);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const download = page.waitForEvent("download");
+  await old.getByRole("button", { name: "下载此版本" }).click();
+  expect(
+    fs.readFileSync(await (await download).path()).equals(fs.readFileSync(pdf)),
+  ).toBe(true);
+  await old.getByRole("button", { name: "恢复为当前文件" }).click();
+  await page.getByRole("button", { name: "取消恢复" }).click();
+  expect(
+    (await api.request("GET", `/api/modules/resources/items/${original.id}`))
+      .json.fileId,
+  ).not.toBe(original.fileId);
+  await old.getByRole("button", { name: "恢复为当前文件" }).click();
+  await page.getByRole("button", { name: "确认恢复文件" }).click();
+  await expect(page.locator(".res-status")).toContainText("已恢复历史文件");
+  await page.getByRole("button", { name: "关闭辅助栏", exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByLabel("跳转页码").fill("3");
+  await page.getByRole("button", { name: "跳转", exact: true }).click();
+  await expect(page.getByAltText("第 3 页", { exact: true })).toBeVisible();
+  await expect
+    .poll(() =>
+      page.getByLabel("缩放", { exact: true }).evaluate((element) => {
+        const control = element.getBoundingClientRect();
+        const toolbar = element
+          .closest(".res-preview-toolbar")
+          .getBoundingClientRect();
+        return (
+          control.right <= toolbar.right && control.bottom <= toolbar.bottom
+        );
+      }),
+    )
+    .toBe(true);
+  await screenshot(page, info, "page-jump-phone");
+  const menuBounds = await page
+    .getByRole("button", { name: "资料更多操作", exact: true })
+    .boundingBox();
+  expect(menuBounds.x + menuBounds.width).toBeLessThanOrEqual(390);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.reload();
+  await expect(page.getByAltText("第 3 页", { exact: true })).toBeVisible();
+  await infoPanel(page);
+  await expect(page.getByLabel("资源笔记")).toHaveValue(
+    "只更新备注，不更新文件",
+  );
+  const current = (
+    await api.request("GET", `/api/modules/resources/items/${original.id}`)
+  ).json;
+  expect(current.fileId).toBe(original.fileId);
+  expect(
+    (await api.request("GET", `/api/modules/lessons/v3/${lesson.json.id}`)).json
+      .materials[0].snapshot.fileId,
+  ).toBe(original.fileId);
+  const history = await api.request(
+    "GET",
+    `/api/modules/resources/items/${original.id}/history`,
+  );
+  expect(history.json.items).toHaveLength(3);
+  const exported = await api.request("POST", "/api/reliability/v1/exports", {
+    headers: { "Idempotency-Key": randomUUID() },
+    body: {},
+  });
+  expect(exported.status).toBe(202);
+  await expect
+    .poll(
+      async () =>
+        (
+          await api.request(
+            "GET",
+            `/api/reliability/v1/exports/${exported.json.id}`,
+          )
+        ).json.state,
+    )
+    .toBe("ready");
+  const archive = await JSZip.loadAsync(
+    fs.readFileSync(
+      path.join(world.directory, "personal-exports", `${exported.json.id}.zip`),
+    ),
+  );
+  const manifest = JSON.parse(
+    await archive.file("manifest.json").async("string"),
+  );
+  expect(
+    manifest.objects.filter(
+      (object) =>
+        object.key.kind === "resource-file-revision" &&
+        object.key.id === original.id,
+    ),
+  ).toHaveLength(3);
+  const foreign = await registerMath(world, "history-other@example.test");
+  expect(
+    (
+      await foreign.client.request(
+        "GET",
+        `/api/modules/resources/items/${original.id}/history`,
+      )
+    ).status,
+  ).toBe(404);
+  expect(
+    (
+      await api.request(
+        "POST",
+        `/api/modules/resources/items/${original.id}/restore-file`,
+        {
+          headers: { "Idempotency-Key": randomUUID() },
+          body: { baseVersion: original.version, fileVersion: 1 },
+        },
+      )
+    ).status,
+  ).toBe(409);
+});
+
+test("批量收录遇到重复资料可刷新后继续，不重复创建已保存条目", async ({
+  page,
+}) => {
+  await page
+    .getByLabel("上传第一份资料", { exact: true })
+    .setInputFiles([image, image, pdf]);
+  await expect(
+    page.getByRole("dialog", { name: "发现重复资料" }),
+  ).toBeVisible();
+  expect(
+    (await api.request("GET", "/api/modules/resources/items")).json.items,
+  ).toHaveLength(1);
+  await page.reload();
+  await expect(
+    page.getByRole("dialog", { name: "发现重复资料" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "跳过这份资料" }).click();
+  await expect(page.locator(".res-card")).toHaveCount(2);
+  await expect(page.locator(".res-status")).toContainText(
+    "已处理 3 / 3 份资料",
+  );
+  await page.getByLabel("上传资料", { exact: true }).setInputFiles(image);
+  await page.getByRole("button", { name: "仍然另存一份" }).click();
+  await expect(page.locator(".res-status")).toContainText("文件已保存");
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  await expect(page.locator(".res-card")).toHaveCount(3);
+});
+
+test("批量整理取消、冲突和响应丢失保持原子结果", async ({ page }, info) => {
+  const folderId = randomUUID(),
+    tagId = randomUUID();
+  expect(
+    (
+      await api.request("PUT", "/api/modules/resources/taxonomy", {
+        headers: { "Idempotency-Key": randomUUID() },
+        body: {
+          baseVersion: 1,
+          folders: [{ id: folderId, name: "期末复习", parentId: null }],
+          tags: [{ id: tagId, name: "重点" }],
+        },
+      })
+    ).status,
+  ).toBe(200);
+  await page
+    .getByLabel("上传第一份资料", { exact: true })
+    .setInputFiles([image, pdf]);
+  await expect(page.locator(".res-status")).toContainText(
+    "已处理 2 / 2 份资料",
+  );
+  await expect(page.locator(".res-card")).toHaveCount(2);
+  async function selectAll() {
+    await page.getByRole("button", { name: "选择资料", exact: true }).click();
+    await page
+      .getByRole("button", { name: "选择当前结果", exact: true })
+      .click();
+  }
+  await selectAll();
+  await page.getByRole("button", { name: "移动", exact: true }).click();
+  await page.getByLabel("目标文件夹").selectOption(folderId);
+  await page.getByRole("button", { name: "取消", exact: true }).click();
+  expect(
+    (await api.request("GET", "/api/modules/resources/items")).json.items.every(
+      (item) => item.folderId === null,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "移动", exact: true }).click();
+  await page.getByLabel("目标文件夹").selectOption(folderId);
+  await page.getByRole("button", { name: "确认移动", exact: true }).click();
+  await expect(page.locator(".res-status")).toContainText("已移动 2 份资料");
+  await selectAll();
+  await page.getByRole("button", { name: "添加标签", exact: true }).click();
+  await page.getByRole("dialog").getByLabel("重点", { exact: true }).check();
+  await page.getByRole("button", { name: "确认添加标签", exact: true }).click();
+  await expect(page.locator(".res-status")).toContainText("2 份资料");
+  await expect
+    .poll(async () =>
+      (
+        await api.request("GET", "/api/modules/resources/items")
+      ).json.items.every((item) => item.tagIds.includes(tagId)),
+    )
+    .toBe(true);
+  const items = (await api.request("GET", "/api/modules/resources/items")).json
+    .items;
+  const invalid = {
+    action: "archive",
+    items: items.map((item, i) => ({
+      id: item.id,
+      baseVersion: item.version - (i === 1 ? 1 : 0),
+    })),
+    folderId: null,
+    tagIds: [],
+  };
+  expect(
+    (
+      await api.request("POST", "/api/modules/resources/items/organize", {
+        headers: { "Idempotency-Key": randomUUID() },
+        body: invalid,
+      })
+    ).status,
+  ).toBe(409);
+  expect(
+    (await api.request("GET", "/api/modules/resources/items")).json.items,
+  ).toHaveLength(2);
+  let key;
+  await page.route("**/items/organize", async (route) => {
+    key = route.request().headers()["idempotency-key"];
+    await route.fetch();
+    await route.abort("failed");
+  });
+  await selectAll();
+  await page.getByRole("button", { name: "归档", exact: true }).click();
+  await page.getByRole("button", { name: "确认归档", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "重试确认原请求" }),
+  ).toBeVisible();
+  await page.unroute("**/items/organize");
+  await page.reload();
+  const replay = page.waitForRequest((req) =>
+    req.url().endsWith("/items/organize"),
+  );
+  await page.getByRole("button", { name: "重试确认原请求" }).click();
+  expect((await replay).headers()["idempotency-key"]).toBe(key);
+  await expect(page.locator(".res-status")).toContainText("已归档 2 份资料");
+  await page
+    .getByRole("button", { name: "资源库更多操作", exact: true })
+    .click();
+  await page.getByRole("menuitem", { name: "已归档资料", exact: true }).click();
+  await selectAll();
+  await page.getByRole("button", { name: "恢复", exact: true }).click();
+  await page.getByRole("button", { name: "确认恢复", exact: true }).click();
+  await expect(page.locator(".res-status")).toContainText("已恢复 2 份资料");
+  const restored = (await api.request("GET", "/api/modules/resources/items"))
+    .json.items;
+  expect(
+    restored.every(
+      (item) => item.folderId === folderId && item.tagIds.includes(tagId),
+    ),
+  ).toBe(true);
+  await page
+    .getByRole("button", { name: "全部资料", exact: true })
+    .first()
+    .click();
+  await selectAll();
+  await page.setViewportSize({ width: 768, height: 900 });
+  await expect(page.locator(".res-status")).toBeVisible();
+  await expect
+    .poll(async () => {
+      const toast = await page.locator(".res-status").boundingBox();
+      const toolbar = await page.locator(".res-selection").boundingBox();
+      return toast.y + toast.height <= toolbar.y;
+    })
+    .toBe(true);
+  await screenshot(page, info, "batch-narrow");
+  const preferences = (
+    await api.request("GET", "/api/reliability/v1/preferences")
+  ).json;
+  expect(
+    (
+      await api.request("PUT", "/api/reliability/v1/preferences", {
+        headers: { "Idempotency-Key": randomUUID() },
+        body: {
+          baseVersion: preferences.version,
+          values: { ...preferences.values, theme: "dark", motion: "reduce" },
+        },
+      })
+    ).status,
+  ).toBe(200);
+  await page.reload();
+  await expect(page.locator(".wb-shell")).toHaveAttribute("data-theme", "dark");
+  await screenshot(page, info, "batch-dark");
+  const bounds = await page.locator(".res-selection").boundingBox();
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(768);
+});
+
+test("批量收录拒绝后重试遇到响应丢失，刷新接续剩余文件", async ({ page }) => {
+  let attempt = 0,
+    key;
+  await page.route("**/api/modules/resources/items", async (route) => {
+    if (route.request().method() !== "POST" || attempt >= 2)
+      return route.continue();
+    attempt++;
+    if (attempt === 1)
+      return route.fulfill({
+        status: 422,
+        contentType: "application/problem+json",
+        body: JSON.stringify({ detail: "本次请求已明确拒绝" }),
+      });
+    key = route.request().headers()["idempotency-key"];
+    await route.fetch();
+    await route.abort("failed");
+  });
+  await page
+    .getByLabel("上传第一份资料", { exact: true })
+    .setInputFiles([image, pdf]);
+  await expect(
+    page.getByRole("button", { name: "重试确认原请求" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "跳过未保存的资料" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "重试确认原请求" }).click();
+  await expect(
+    page.getByRole("button", { name: "重试确认原请求" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "跳过未保存的资料" }),
+  ).toHaveCount(0);
+  await page.reload();
+  const replay = page.waitForRequest(
+    (req) => req.url().endsWith("/resources/items") && req.method() === "POST",
+  );
+  await page.getByRole("button", { name: "重试确认原请求" }).click();
+  expect((await replay).headers()["idempotency-key"]).toBe(key);
+  await expect(page.locator(".res-card")).toHaveCount(2);
+  await expect(page.locator(".res-status")).toContainText(
+    "已处理 2 / 2 份资料",
+  );
+  expect(
+    (await api.request("GET", "/api/modules/resources/items")).json.items,
+  ).toHaveLength(2);
+});
+
+for (const source of [
+  "materials/samples/c22.pptx",
+  "materials/samples/c22.ppt",
+  "materials/samples/w.doc",
+  "materials-resources/samples/w.docx",
+]) {
+  test(`Office 原件真实逐页预览与下载：${path.extname(source)}`, async ({
+    page,
+  }, info) => {
+    test.skip(
+      !process.env.MATERIALS_OFFICE_ROOT,
+      "需配置真实 LibreOffice 环境",
+    );
+    const original = path.resolve("apps/web/e2e/fixtures", source);
+    await page
+      .getByLabel("上传第一份资料", { exact: true })
+      .setInputFiles(original);
+    await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible({
+      timeout: 60000,
+    });
+    const item = (await api.request("GET", "/api/modules/resources/items")).json
+      .items[0];
+    const preview = (
+      await api.request("GET", `/api/workbench/files/${item.fileId}/preview`)
+    ).json;
+    expect(preview.pageCount).toBeGreaterThan(0);
+    if (source.endsWith(".doc"))
+      await expect(page.getByText(/旧 DOC 公式或对象可能缺失/)).toBeVisible();
+    for (let number = 1; number <= preview.pageCount; number++) {
+      if (number > 1)
+        await page.getByRole("button", { name: "下一页", exact: true }).click();
+      await expect
+        .poll(() =>
+          page
+            .getByAltText(`第 ${number} 页`, { exact: true })
+            .evaluate((img) => img.naturalWidth),
+        )
+        .toBeGreaterThan(100);
+    }
+    const download = page.waitForEvent("download");
+    await page.getByRole("button", { name: "下载原件", exact: true }).click();
+    expect(
+      fs
+        .readFileSync(await (await download).path())
+        .equals(fs.readFileSync(original)),
+    ).toBe(true);
+    await screenshot(page, info, "office-last-page");
+  });
+}

@@ -129,6 +129,10 @@ function contentSchemas(db) {
     for (const row of db.prepare(`SELECT * FROM ${table}`).all())
       for (const column of columns)
         visit(JSON.parse(row[column]), row.accountKey);
+  // Older backups predate resource file history; their migration seeds the current file.
+  if (db.prepare("SELECT name FROM sqlite_master WHERE name='resource_file_history'").get())
+    for (const row of db.prepare("SELECT accountKey, value FROM resource_file_history").all())
+      visit(JSON.parse(row.value), row.accountKey);
   for (const row of db
     .prepare(
       "SELECT r.value,w.accountKey FROM math_revisions r JOIN math_works w ON w.id=r.workId",

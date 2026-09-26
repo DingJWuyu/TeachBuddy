@@ -206,7 +206,7 @@ test("全部常用格式内容预览，分类搜索、备课复用及更新后�
   await expect(
     page.locator(".res-metadata").getByLabel("复习", { exact: true }),
   ).toBeChecked();
-  await expect(page.locator(".res-usage")).toContainText("来源有更新");
+  await expect(page.locator(".res-usage")).toContainText("文件有更新");
   await page.locator(".res-usage").click();
   await expect(page.getByLabel("课题", { exact: true })).toHaveValue(
     "资源复用课",

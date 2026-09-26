@@ -11,7 +11,12 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
             <button
               className={scene.folderId === folder.id ? "is-selected" : ""}
               onClick={() =>
-                patchScene({ folderId: folder.id, state: "active" })
+                patchScene({
+                  folderId: folder.id,
+                  state: "active",
+                  selected: [],
+                  selectionMode: false,
+                })
               }
             >
               <Icon name="folder" size={16} />
@@ -50,7 +55,14 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
           className={
             !scene.folderId && scene.state !== "deleted" ? "is-selected" : ""
           }
-          onClick={() => patchScene({ folderId: "", state: "active" })}
+          onClick={() =>
+            patchScene({
+              folderId: "",
+              state: "active",
+              selected: [],
+              selectionMode: false,
+            })
+          }
         >
           <Icon name="inbox" size={16} />
           <span>全部资料</span>
@@ -112,6 +124,8 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
           onClick={() =>
             patchScene({
               state: "deleted",
+              selected: [],
+              selectionMode: false,
               folderId: "",
               tagIds: [],
               q: "",

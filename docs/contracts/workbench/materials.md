@@ -62,6 +62,18 @@ LocatedPart 区分题面/答案/配图/未分配片段；跨页一题包含多�
 
 `POST /api/modules/resources/items/{id}/purge` 接收 `{baseVersion}` 与幂等键，仅允许彻底删除本账户已归档的资料条目，返回 `{id, permanentlyDeleted: true}`。活动资料返回 422 `invalid-input`（`/id`, `invalid-reference`），过期版本返回 409，外账户或不存在返回 404。删除后 GET、恢复及新键再次删除均返回 404；成功原键重放仍返回原成功结果，不能重新创建或恢复条目。已有备课引用通过其快照继续读取文件，受管文件生命周期不由此接口清理。
 
+## 资源批量整理与文件历史
+
+`POST /api/modules/resources/items/organize` 接收 `OrganizeResources`，每批 1 至 100 个唯一 `{id, baseVersion}`，操作为移动、追加标签、归档或恢复。所有对象归属、状态和版本在同一幂等事务内校验；任一对象失败则整个批次不写入。成功返回 `ResourceList`，每个对象增加版本；移动仅改变文件夹，追加标签取原标签并集。外账户 404、过期版本 409、重复 ID 或无效分类 422。响应丢失后用原键原请求确认。
+
+`GET /api/modules/resources/items?sha256=<64位小写摘要>` 按当前原件摘要查重，继续遵循活动/归档查询与账户隔离；不自动合并条目。不可读取的文件不会阻断其他资料的名称、备注与格式检索。
+
+`resource_file_history` 属于资源模块，主键为账户、资料 ID 和保存版本。新建、替换原件、采用或移除补充预览、恢复历史文件时保存原件及补充预览身份；备注、标签、分类与归档不新增文件历史。迁移仅记录当时的当前文件，不能还原启用前的历史。
+
+`GET /api/modules/resources/items/{id}/history` 返回倒序 `ResourceFileHistory`，含文件元数据；单个历史原件损坏时保留记录并标记 `unavailable`。`POST /api/modules/resources/items/{id}/restore-file` 接收 `{baseVersion, fileVersion}` 与幂等键，仅允许本账户活动资料采用自身历史文件。校验原件和补充预览可读后，保持资料身份及元数据，以新的资料版本保存并追加文件历史。旧备课快照不变；外账户/不存在 404、版本过期 409、未知历史版本 422。恢复操作可按原键重放，不重复追加历史。
+
+彻底删除条目时同时移除其历史记录，文件字节仍遵循文件保留规则。个人资料包包含 `resource-file-revision` 对象；实例备份包含历史表，并检查其中引用的文件归属与可达性。
+
 ## 内容
 
 Document 是 B11 v1 或本批 v2 的封闭联合。v2 增加图片、标题、选项/小问列表、表格、教师注记；没有任意 HTML/attrs。列表 item 有显示 label 和有序块，可独立增删排序；表格各行列数相同，不支持合并单元格，复杂原稿表格可保留原图供局部校对。题干的实际内容无需先选题型。
