@@ -80,6 +80,7 @@ export function useLessonPickerFlow({
     setEntering(false);
     if (!lessonId) return;
     patchScene({
+      editingId: lessonId,
       picker: {
         lessonId,
         target,

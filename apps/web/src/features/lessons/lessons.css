@@ -1,0 +1,1037 @@
+/* Only the lesson routes own these aligned surfaces. */
+.wb-shell.tb-prototype:is([data-route="lessons"], [data-route="lesson"])
+  .wb-workspace {
+  padding: var(--app-workspace-padding);
+  gap: 16px;
+}
+.wb-shell.tb-prototype:is([data-route="lessons"], [data-route="lesson"])
+  .wb-main {
+  padding: 0;
+}
+.wb-shell.tb-prototype:is([data-route="lessons"], [data-route="lesson"]):not(
+    .is-panel-overlay
+  )
+  .wb-aux {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: var(--wb-shadow);
+}
+.wb-shell.tb-prototype:is(
+    [data-route="lessons"],
+    [data-route="lesson"]
+  ).is-panel-overlay
+  .wb-aux {
+  inset: 12px;
+  margin: 0;
+  border-radius: 12px;
+}
+.wb-shell :is(.wb-lesson, .wb-lessons-index, .lesson-picker, .r34-exports) {
+  --lesson-muted: var(--app-muted);
+  color: var(--app-text);
+  font-size: 14px;
+}
+.wb-shell :is(.wb-lesson, .wb-lessons-index, .r34-exports) {
+  background: var(--app-surface);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px var(--app-line),
+    var(--wb-shadow);
+}
+.wb-shell
+  :is(.wb-lesson, .wb-lessons-index, .lesson-picker, .r34-exports)
+  .wb-button {
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.wb-shell
+  :is(.wb-lesson, .wb-lessons-index, .lesson-picker, .r34-exports)
+  .wb-button.is-primary {
+  background: var(--app-primary);
+  border-color: var(--app-primary);
+  color: var(--app-on-primary);
+}
+.wb-shell
+  :is(.wb-lesson, .wb-lessons-index, .lesson-picker, .r34-exports)
+  .wb-button.is-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--app-primary) 88%, var(--app-surface));
+}
+.wb-shell
+  :is(.wb-lesson, .wb-lessons-index, .lesson-picker, .r34-exports)
+  .wb-text-button {
+  color: var(--app-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.wb-shell
+  :is(.wb-lesson, .wb-lessons-index, .lesson-picker, .r34-exports)
+  :is(button, input, textarea):focus-visible {
+  outline: 2px solid var(--app-muted);
+  outline-offset: 3px;
+}
+.wb-shell .wb-lessons-index {
+  padding: 0;
+}
+.lesson-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border-bottom: 1px solid var(--app-line-soft);
+  flex: none;
+}
+.lesson-page-identity,
+.lesson-picker-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.lesson-page-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--app-soft);
+  flex: none;
+}
+.wb-module .lesson-page-heading h1,
+.wb-module .lesson-picker-title h1 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  margin: 0;
+}
+.lesson-page-heading p,
+.lesson-picker-title p {
+  color: var(--app-muted);
+  font-size: 13px;
+  line-height: 21px;
+  margin: 5px 0 0;
+}
+.lesson-page-heading > button {
+  flex: none;
+}
+.lesson-list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px 12px;
+}
+.lesson-list-toolbar .wb-search {
+  max-width: 330px;
+  flex: 1;
+}
+.lesson-list-label {
+  margin-left: auto;
+  color: var(--app-muted);
+  font-size: 12px;
+}
+.wb-lessons-index .wb-lessons-scroll {
+  padding: 0 24px 24px;
+}
+.wb-lessons-index .wb-card-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 12px;
+  text-align: left;
+}
+.lesson-row-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 44px;
+  border: 1px solid var(--app-line);
+  border-radius: 7px;
+  flex: none;
+  color: var(--app-muted);
+}
+.lesson-row-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 5px;
+}
+.wb-lessons-index .wb-card-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.lesson-row-excerpt {
+  font-size: 13px;
+  color: var(--app-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lesson-row-meta {
+  font-size: 12px;
+  color: var(--app-muted);
+  margin-top: 3px;
+}
+.wb-lessons-index .wb-draft-list {
+  padding: 0 24px;
+}
+.wb-lessons-index .wb-draft-row {
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--app-soft);
+}
+.lesson-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(32px, 7vh, 80px) 24px 28px;
+}
+.lesson-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--app-soft);
+  color: var(--app-muted);
+  margin-bottom: 20px;
+}
+.wb-module .lesson-empty h2 {
+  font-size: 22px;
+  line-height: 32px;
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.lesson-empty p {
+  max-width: 420px;
+  margin: 0;
+  color: var(--app-muted);
+  line-height: 1.8;
+}
+.lesson-empty-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 24px;
+}
+.lesson-outcome-hints {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 26px;
+  padding-top: 36px;
+  color: var(--app-muted);
+  font-size: 12px;
+}
+.lesson-outcome-hints > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.wb-shell .wb-lesson {
+  overflow: hidden;
+}
+.lesson-editor-heading {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--app-line-soft);
+  flex: none;
+}
+.lesson-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: var(--app-muted);
+  font-size: 12px;
+}
+.wb-lesson .lesson-breadcrumb .wb-text-button {
+  font-size: 12px;
+  color: var(--app-muted);
+}
+.lesson-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.lesson-title-area {
+  flex: 1;
+  min-width: 180px;
+}
+.wb-module .lesson-title-area h1,
+.wb-module input.lesson-title-input {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 32px;
+  height: 36px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  width: 100%;
+}
+.wb-module input.lesson-title-input::placeholder {
+  font-weight: 400;
+  color: var(--app-muted);
+  font-size: 19px;
+}
+.lesson-title-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--app-muted);
+  margin-top: 4px;
+}
+.wb-lesson .wb-lesson-actions {
+  gap: 8px;
+  flex: none;
+}
+.lesson-editor-heading .wb-save-block {
+  margin: 10px 0 0 52px;
+  font-size: 12px;
+}
+.lesson-editor-heading
+  .wb-save-block[data-save-status="clean"]:has(.wb-save-status:empty) {
+  display: none;
+}
+.lesson-draft-banner {
+  padding: 12px 24px;
+  background: var(--app-soft);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--app-line-soft);
+}
+.lesson-draft-banner span {
+  flex: 1;
+}
+.wb-shell .wb-lesson .wb-lesson-scroll {
+  padding: 28px clamp(24px, 3vw, 48px);
+  background: transparent;
+  gap: 0;
+  scroll-padding-top: 24px;
+}
+.lesson-content-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.wb-module .lesson-content-heading h2 {
+  font-size: 15px;
+  line-height: 24px;
+  margin: 0;
+  font-weight: 600;
+}
+.lesson-content-heading > svg {
+  color: var(--app-muted);
+}
+.lesson-intro-section {
+  padding-bottom: 24px;
+}
+.lesson-quiet-empty {
+  color: var(--app-muted);
+  font-size: 13px;
+  margin: 10px 0;
+  line-height: 1.8;
+}
+.wb-shell .wb-lesson .lesson-section {
+  padding: 24px 0;
+  border-top: 1px solid var(--app-line-soft);
+}
+.wb-lesson .lesson-section .wb-section-head {
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.lesson-step-number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--app-soft);
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.wb-lesson .lesson-section .wb-section-title {
+  border-color: transparent;
+  padding: 4px 6px;
+  font-size: 17px;
+  font-weight: 600;
+  min-width: 100px;
+  height: 34px;
+}
+.wb-lesson .lesson-section h2 {
+  font-size: 17px;
+  margin: 0;
+  flex: 1;
+}
+.lesson-add-section {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 4px 0 30px;
+}
+.lesson-add-section > span {
+  font-size: 12px;
+  color: var(--app-muted);
+}
+.lesson-document-editor {
+  position: relative;
+  min-width: 0;
+}
+.lesson-edit-block {
+  position: relative;
+  min-width: 0;
+  margin: 6px 0;
+  padding-right: 32px;
+}
+.wb-lesson .lesson-writing-input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 84px;
+  resize: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: var(--app-soft);
+  color: var(--app-text);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.8;
+  overflow: hidden;
+  transition:
+    border-color 140ms,
+    background 140ms;
+}
+.wb-lesson .lesson-writing-input::placeholder {
+  color: var(--app-muted);
+}
+.wb-lesson .lesson-writing-input:focus {
+  border-color: var(--app-line);
+  background: var(--app-surface);
+  outline: none;
+}
+.lesson-block-menu {
+  position: absolute;
+  right: 0;
+  top: 8px;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.lesson-edit-block:is(:hover, :focus-within) > .lesson-block-menu {
+  opacity: 1;
+}
+.lesson-document-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 6px;
+}
+.lesson-document-tools > span {
+  font-size: 12px;
+  color: var(--app-muted);
+  opacity: 0;
+  transition: opacity 140ms;
+}
+.lesson-document-editor:focus-within .lesson-document-tools > span,
+.lesson-document-tools:hover > span {
+  opacity: 1;
+}
+.wb-shell .wb-lesson .lesson-insert-button {
+  border-color: transparent;
+  background: transparent;
+  color: var(--app-muted);
+  min-height: 30px;
+  padding: 4px 8px;
+}
+.lesson-structured-block
+  > .material-editor
+  > .material-block-list
+  > .wb-block-add,
+.lesson-structured-block
+  > .material-editor
+  > .material-block-list
+  > .material-edit-block
+  > .wb-block-controls {
+  display: none;
+}
+.lesson-structured-block
+  > .material-editor
+  > .material-block-list
+  > .material-edit-block {
+  grid-template-columns: minmax(0, 1fr);
+}
+.wb-lesson .material-document {
+  font-size: 15px;
+  line-height: 1.85;
+}
+.wb-lesson .wb-reference {
+  padding: 16px;
+  border-radius: 9px;
+  background: var(--app-soft);
+}
+.wb-lesson .wb-reference-head {
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.wb-lesson .wb-reference-head h4 {
+  font-size: 14px;
+  margin: 0;
+  flex: 1;
+}
+.wb-lesson .wb-reference-head > .wb-muted {
+  font-size: 11px;
+  color: var(--app-muted);
+}
+.wb-lesson .wb-reference-head > .wb-module-popover {
+  margin-left: auto;
+}
+.wb-lesson .wb-reference-note {
+  margin-top: 12px;
+  display: block;
+}
+.lesson-note-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--app-muted);
+}
+.wb-lesson .wb-reference-note textarea {
+  min-height: 64px;
+  background: var(--app-surface);
+  font-size: 14px;
+}
+.wb-lesson .lesson-source-link,
+.wb-lesson .lesson-note-toggle {
+  font-size: 12px;
+  margin-top: 12px;
+  margin-right: 18px;
+  color: var(--app-muted);
+}
+.lesson-reference-note-read {
+  display: flex;
+  align-items: start;
+  gap: 6px;
+  white-space: pre-wrap;
+  font-size: 13px;
+  color: var(--app-muted);
+  margin-top: 12px;
+}
+.lesson-materials,
+.lesson-feedback {
+  border-top: 1px solid var(--app-line-soft);
+  padding: 12px 0;
+}
+.wb-lesson .wb-module-disclosure-trigger {
+  color: var(--app-muted);
+  font-size: 13px;
+}
+.lesson-materials-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+}
+.lesson-materials-head > p {
+  color: var(--app-muted);
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 0;
+}
+.lesson-material-overview {
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wb-lesson .lesson-material-overview button {
+  padding: 10px;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 13px;
+}
+.lesson-material-overview button:hover {
+  background: var(--app-soft);
+}
+.lesson-material-overview button span {
+  flex: 1;
+  text-align: left;
+}
+.lesson-material-overview small {
+  color: var(--app-muted);
+}
+.lesson-upload-feedback {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13px;
+}
+.wb-shell .lesson-picker {
+  padding: 0;
+  background: transparent;
+}
+.lesson-picker .wb-picker-head {
+  padding: 20px;
+  background: var(--app-surface);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px var(--app-line),
+    var(--wb-shadow);
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.lesson-picker-title {
+  flex: 1;
+}
+.lesson-picker .r34-picker-columns > section {
+  box-shadow:
+    inset 0 0 0 1px var(--app-line),
+    var(--wb-shadow);
+  padding: 20px;
+}
+.lesson-picker .r34-picker-row {
+  border-bottom: 0;
+  margin-top: 4px;
+  padding: 12px 8px;
+}
+.lesson-picker .r34-picker-row.is-previewed {
+  background: var(--app-soft);
+}
+.lesson-picker .r34-picker-row .wb-text-button {
+  font-size: 14px;
+}
+.lesson-picker .r34-picker-columns > section > .wb-muted {
+  margin: 30px 0;
+  font-size: 13px;
+  text-align: center;
+}
+.lesson-export-heading .wb-text-button {
+  color: var(--app-muted);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.wb-module .lesson-export-heading h1 {
+  font-size: 24px;
+  line-height: 32px;
+  margin: 0 0 8px;
+}
+.lesson-export-heading p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--app-muted);
+}
+.r34-exports .lesson-export-kinds {
+  display: block;
+  border: 0;
+  margin: 0 0 28px;
+  padding: 0;
+}
+.r34-exports .lesson-export-kinds legend {
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.lesson-export-kinds > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.lesson-export-kinds button {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--app-line);
+  border-radius: 10px;
+  background: var(--app-surface);
+  color: var(--app-text);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.lesson-export-kinds button.is-selected {
+  border-color: var(--app-primary);
+  box-shadow: inset 0 0 0 1px var(--app-primary);
+  background: var(--app-soft);
+}
+.lesson-export-kind-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.lesson-radio-mark {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--app-line);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.is-selected .lesson-radio-mark {
+  background: var(--app-primary);
+  color: var(--app-on-primary);
+  border-color: var(--app-primary);
+}
+.lesson-export-kinds strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+.lesson-export-kinds button > span:last-child {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--app-muted);
+}
+.lesson-export-settings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 0.7fr);
+  gap: 32px;
+}
+.wb-module .lesson-export-settings h2,
+.wb-module .r34-output-list h2 {
+  font-size: 15px;
+  line-height: 24px;
+  margin: 0 0 14px;
+}
+.r34-exports .lesson-export-format {
+  padding: 0;
+  margin: 0 0 20px;
+  border: 0;
+  gap: 20px;
+}
+.r34-exports .lesson-export-format legend {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--app-muted);
+  margin-bottom: 10px;
+}
+.lesson-export-format span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lesson-export-format strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.lesson-export-format small {
+  color: var(--app-muted);
+  font-size: 12px;
+}
+.lesson-export-check {
+  display: flex;
+  gap: 8px;
+  align-items: start;
+  font-size: 13px;
+  margin: 16px 0;
+}
+.lesson-export-check input {
+  margin-top: 3px;
+}
+.lesson-export-check small {
+  display: block;
+  color: var(--app-muted);
+  font-size: 12px;
+  line-height: 20px;
+  margin-top: 4px;
+}
+.lesson-answer-space {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.lesson-answer-space .wb-input {
+  width: 66px;
+}
+.lesson-export-summary {
+  background: var(--app-soft);
+  border-radius: 9px;
+  padding: 20px;
+}
+.lesson-export-summary p {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.lesson-export-summary p span {
+  font-size: 12px;
+  color: var(--app-muted);
+}
+.lesson-export-summary ul {
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 2;
+}
+.lesson-export-summary > small {
+  font-size: 12px;
+  color: var(--app-muted);
+  line-height: 1.8;
+}
+.lesson-export-scope {
+  border-block: 1px solid var(--app-line-soft);
+  margin: 24px 0 20px;
+  padding: 12px 0;
+}
+.r34-exports .lesson-export-scope fieldset {
+  border: 0;
+  gap: 12px 20px;
+  padding: 12px 0;
+  margin: 0;
+}
+.lesson-export-save-hint {
+  font-size: 12px;
+  color: var(--app-muted);
+  margin: 16px 0;
+}
+.lesson-example.wb-dialog {
+  width: min(620px, 92vw);
+  max-height: 85vh;
+  overflow: auto;
+  padding: 28px;
+}
+.lesson-example header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 20px;
+}
+.lesson-eyebrow {
+  font-size: 12px;
+  color: var(--app-muted);
+}
+.lesson-example h2 {
+  font-size: 24px;
+  margin: 6px 0 0;
+}
+.lesson-example p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--app-muted);
+}
+.lesson-example > section {
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid var(--app-line-soft);
+  padding: 20px 0;
+}
+.lesson-example h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+.lesson-example section p {
+  margin: 0;
+}
+.lesson-example-question {
+  padding: 14px;
+  background: var(--app-soft);
+  border-radius: 7px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+.lesson-example footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--app-line-soft);
+}
+.lesson-example footer span {
+  font-size: 12px;
+  color: var(--app-muted);
+}
+@media (max-width: 1180px) {
+  .lesson-title-area {
+    min-width: 150px;
+  }
+  .wb-lesson .wb-lesson-actions {
+    flex-basis: 100%;
+    margin-top: 4px;
+  }
+  .lesson-export-settings {
+    gap: 20px;
+  }
+}
+@media (max-width: 700px) {
+  .lesson-page-heading {
+    padding: 20px 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .lesson-page-heading p {
+    max-width: 250px;
+  }
+  .lesson-list-toolbar {
+    padding: 12px 16px;
+  }
+  .lesson-list-label {
+    display: none;
+  }
+  .wb-lessons-index .wb-lessons-scroll {
+    padding: 0 12px 16px;
+  }
+  .lesson-empty {
+    padding: 28px 16px;
+  }
+  .lesson-empty-actions,
+  .lesson-outcome-hints {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .lesson-editor-heading {
+    padding: 16px;
+  }
+  .wb-shell .wb-lesson .wb-lesson-scroll {
+    padding: 20px 16px;
+  }
+  .lesson-edit-block {
+    padding-right: 0;
+    padding-top: 26px;
+  }
+  .lesson-block-menu {
+    top: 0;
+    opacity: 1;
+  }
+  .lesson-document-tools > span {
+    display: none;
+  }
+  .wb-lesson .lesson-section .wb-section-title {
+    flex-basis: calc(100% - 40px);
+  }
+  .lesson-materials-head {
+    flex-wrap: wrap;
+  }
+  .lesson-materials-head > p {
+    flex-basis: 100%;
+  }
+  .lesson-draft-banner {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .lesson-export-kinds > div,
+  .lesson-export-settings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lesson-export-kinds button {
+    gap: 6px;
+  }
+  .lesson-example.wb-dialog {
+    padding: 20px;
+  }
+  .lesson-example footer {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lesson-block-menu,
+  .lesson-document-tools > span,
+  .wb-lesson .lesson-writing-input {
+    transition: none;
+  }
+}
+.lesson-index-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.wb-shell .wb-lesson .lesson-writing-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-muted) 24%, transparent);
+}
+.wb-shell .r34-exports {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+.lesson-export-heading {
+  flex: none;
+  padding: 22px 28px;
+  margin: 0;
+  border-bottom: 1px solid var(--app-line-soft);
+}
+.lesson-export-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 24px 28px;
+}
+.lesson-export-footer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 28px;
+  border-top: 1px solid var(--app-line-soft);
+}
+.lesson-export-footer > span {
+  color: var(--app-muted);
+  font-size: 12px;
+}
+.wb-shell .r34-exports label {
+  color: var(--app-text);
+}
+.wb-shell .r34-exports label > span,
+.wb-lesson .lesson-note-label > span {
+  color: inherit;
+}
+.r34-exports input:is([type="radio"], [type="checkbox"]) {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  accent-color: var(--app-primary);
+}
+.r34-exports .lesson-export-format label {
+  min-width: 145px;
+  flex: 1;
+  gap: 8px;
+}
+@media (max-width: 700px) {
+  .lesson-export-heading,
+  .lesson-export-body {
+    padding: 18px 16px;
+  }
+  .lesson-export-footer {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .lesson-export-heading h1 {
+    font-size: 21px;
+  }
+}
+
+.lesson-tool-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--app-muted);
+  font-size: 12px;
+}
+.wb-outline .lesson-outline-number {
+  width: 20px;
+  color: var(--app-muted);
+  font-size: 12px;
+}
+.wb-outline .wb-outline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+}

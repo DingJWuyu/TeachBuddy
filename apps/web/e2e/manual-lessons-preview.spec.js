@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
+import { registerMath } from './fixtures/math-static/real.mjs';
+import { http, doc } from '../../api/test/teaching-time-classes-materials-fixture.js';
 
 const evidence = path.resolve(process.env.MANUAL_LESSONS_PREVIEW_EVIDENCE || 'test-results/manual-lessons-preview-evidence');
 let world;
@@ -36,44 +38,30 @@ async function checkPage(page, label) {
   expect(visibility.visiblePoints, `${label}: 页图四角、边缘和中心均应可见`).toBe(visibility.totalPoints);
 }
 
-const nav = (page, name) => page.locator('.wb-sidebar').getByRole('link', { name, exact: true }).click();
 test('MF-UI-01 更新对照新旧文件完整阅读及采用保存', async ({ page }) => {
   test.setTimeout(180000);
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   world = await createIntegration();
-  await page.goto(world.origin);
-  await page.getByRole('button', { name: '创建账户', exact: true }).click();
-  await page.getByLabel('昵称', { exact: true }).fill('预览回归老师');
+  const { client } = await registerMath(world, 'preview-regression@example.test');
+  const call = http(client);
+  async function upload(name, mime) {
+    const boundary = `preview-${crypto.randomUUID()}`;
+    const result = await client.request('POST', '/api/workbench/files', { headers: { 'Idempotency-Key': crypto.randomUUID() }, contentType: `multipart/form-data; boundary=${boundary}`, rawBody: Buffer.concat([Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${name}"\r\nContent-Type: ${mime}\r\n\r\n`), fs.readFileSync(`apps/web/e2e/fixtures/materials/samples/${name}`), Buffer.from(`\r\n--${boundary}--\r\n`)]) });
+    expect(result.status).toBe(201); return result.json;
+  }
+  const oldFile = await upload('c22.pptx', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+  const resource = await call('POST', '/api/modules/resources/items', { title: '对照课件', fileId: oldFile.id, folderId: null, tagIds: [], note: '' }, 201);
+  const lesson = await call('POST', '/api/modules/lessons/v3', { title: '新旧课件完整阅读', intro: doc('比较两份课堂资料'), sections: [{ id: crypto.randomUUID(), title: '对照讲解', content: doc('检查完整页面'), references: [{ id: crypto.randomUUID(), kind: 'resource', resourceId: resource.id, resourceVersion: resource.version, note: '' }] }], materials: [] }, 201);
+  const newFile = await upload('c22.pdf', 'application/pdf');
+  await call('PUT', `/api/modules/resources/items/${resource.id}/file`, { baseVersion: resource.version, fileId: newFile.id });
+  await page.goto(`${world.origin}/lessons/${lesson.id}`);
   await page.getByLabel('邮箱', { exact: true }).fill('preview-regression@example.test');
-  await page.getByLabel('密码', { exact: true }).fill('Preview-test-123');
-  await page.getByLabel('确认密码', { exact: true }).fill('Preview-test-123');
-  await page.getByRole('button', { name: '发送验证码', exact: true }).click();
-  await expect.poll(() => world.mailer.lastCode('registration', 'preview-regression@example.test')).toBeTruthy();
-  await page.getByLabel('邮箱验证码').fill(world.mailer.lastCode('registration', 'preview-regression@example.test'));
-  await page.getByRole('checkbox').check();
-  await page.getByRole('button', { name: '注册', exact: true }).click();
-  await expect(page.locator('.wb-shell')).toBeVisible();
-  await nav(page, '备课');
-  await page.getByRole('button', { name: '新建备课', exact: true }).click();
-  await page.getByLabel('课题', { exact: true }).fill('新旧课件完整阅读');
-  await page.getByRole('button', { name: '添加环节', exact: true }).click();
-  await page.getByLabel('环节名称 1', { exact: true }).fill('对照讲解');
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByRole('status').first()).toContainText('已保存');
-  await nav(page, '资源库');
-  await page.getByLabel('上传资料', { exact: true }).setInputFiles('apps/web/e2e/fixtures/materials/samples/c22.pptx');
-  await expect(page.getByAltText('第 1 页', { exact: true })).toBeVisible({ timeout: 60000 });
-  await page.getByRole('button', { name: '加入备课', exact: true }).click();
-  await page.getByLabel('选择备课').selectOption({ label: '新旧课件完整阅读' });
-  await page.getByLabel('放入位置').selectOption({ label: '对照讲解' });
-  await page.getByRole('button', { name: '确认加入', exact: true }).click();
-  await expect(page.locator('.res-usage')).toContainText('新旧课件完整阅读');
-  await page.getByLabel('更新文件', { exact: true }).setInputFiles('apps/web/e2e/fixtures/materials/samples/c22.pdf');
-  await page.getByRole('button', { name: '确认更新', exact: true }).click();
-  await expect(page.locator('.res-file-info strong')).toHaveText('c22.pdf');
-  await page.locator('.res-usage').click();
-  await expect(page.getByLabel('课题', { exact: true })).toHaveValue('新旧课件完整阅读');
+  await page.getByLabel('密码', { exact: true }).fill('math-password');
+  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '新旧课件完整阅读', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '知道了', exact: true }).click();
+  await page.getByRole('button', { name: '编辑备课', exact: true }).click();
   const previewPaths = {};
   for (const width of [1440, 1280]) {
     await page.setViewportSize({ width, height: 900 });
@@ -123,8 +111,8 @@ test('MF-UI-01 更新对照新旧文件完整阅读及采用保存', async ({ pa
   await page.getByRole('button', { name: '有更新 · 查看', exact: true }).click();
   await page.getByRole('button', { name: '采用更新', exact: true }).click();
   await expect(page.getByRole('button', { name: 'c22.pdf · 预览采用文件', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByRole('status').first()).toContainText('已保存');
+  await page.getByRole('button', { name: '保存备课', exact: true }).click();
+  await expect(page.locator('[data-save-status]')).toHaveAttribute('data-save-status', /saved|clean/);
   await page.reload();
   await expect(page.getByRole('button', { name: 'c22.pdf · 预览采用文件', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '有更新 · 查看', exact: true })).toHaveCount(0);

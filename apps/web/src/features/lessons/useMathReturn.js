@@ -4,7 +4,7 @@ import { addReferences, removeReference, replaceReference, targetLabel, targetRe
 import { getLesson } from './api.js';
 
 /** Lessons owns the return intent, original draft and the second save. */
-export function useMathReturn({ shell, savable, id }) {
+export function useMathReturn({ shell, savable, id, onEnter }) {
   const [scene, patch] = useScene(shell.accountKey, 'math-return', {});
   const [problem, setProblem] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -15,6 +15,7 @@ export function useMathReturn({ shell, savable, id }) {
     if (!saved?.id) saved = await savable.save();
     if (!saved) return;
     if (!savable.checkpoint(saved.id)) { setProblem('无法保留备课现场，请检查浏览器存储后再进入工坊'); return; }
+    onEnter?.(saved.id);
     patch({ target: {
       lessonId: saved.id, sectionId: target.sectionId ?? null, baseVersion: saved.version,
       sectionWasSaved: saved.sections.some(section => section.id === target.sectionId),

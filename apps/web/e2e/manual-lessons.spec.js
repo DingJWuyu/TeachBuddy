@@ -10,7 +10,7 @@ import { http, C, R, Q, question, writable, record, doc } from '../../api/test/t
 const evidence = path.resolve(process.env.MANUAL_LESSONS_EVIDENCE || 'test-results/manual-lessons-evidence');
 fs.mkdirSync(evidence, { recursive: true });
 let world;
-test.afterEach(async ({ context }) => { await context.close(); await world?.close(); });
+test.afterEach(async ({ context }, info) => { await context.close(); await world?.close(); if (world && info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true }); });
 async function setup(page) {
   world = await createIntegration();
   const { client } = await registerMath(world, 'manual-lessons@example.test');
@@ -21,9 +21,19 @@ async function setup(page) {
   await page.getByLabel('密码', { exact: true }).fill('math-password');
   await page.getByRole('button', { name: '登录', exact: true }).click();
   await expect(page.locator('.wb-shell')).toBeVisible();
-  await page.locator('.wb-sidebar').getByRole('link', { name: '备课', exact: true }).click();
+  await page.getByRole('button', { name: '知道了', exact: true }).click();
+  await page.getByRole('complementary', { name: '工作台导航' }).getByRole('link', { name: /^备课/ }).click();
   await page.getByRole('button', { name: /函数专题/ }).first().click();
+  await page.getByRole('button', { name: '编辑备课', exact: true }).click();
   return { call, lesson, client };
+}
+async function pick(page, name, section = page.locator('[data-section-id]').first()) {
+  await section.getByRole('button', { name: '加入材料', exact: true }).click();
+  await page.getByRole('menuitem', { name, exact: true }).click();
+}
+async function sectionAction(page, title, action) {
+  await page.getByRole('button', { name: `环节操作 ${title}`, exact: true }).click();
+  await page.getByRole('menuitem', { name: action, exact: true }).click();
 }
 test('备课回看两班反馈并打开原记录', async ({ page }) => {
   const { call, lesson } = await setup(page);
@@ -44,12 +54,12 @@ test('备课回看两班反馈并打开原记录', async ({ page }) => {
 test('当前环节可就地取已有数学作品', async ({ page }) => {
   const { call } = await setup(page);
   const work = await call('POST', '/api/modules/math/v1/works', { title: '定义域公式', source: { ...emptySource('formula'), latex: 'x\\ne-3' }, originalFileId: null }, 201);
-  await page.locator('[data-section-id]').getByRole('button', { name: '从数学工坊取材', exact: true }).click();
-  await expect(page.getByRole('heading', { name: /取数学作品.*函数专题.*概念探究/ })).toBeVisible();
+  await pick(page, '加入数学作品');
+  await expect(page.getByRole('heading', { name: '加入数学作品', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '定义域公式', exact: true }).click();
   await expect(page.locator('.lesson-math-snapshot .katex')).toBeVisible();
   await page.getByRole('checkbox', { name: '选择 定义域公式', exact: true }).check();
-  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await page.getByRole('button', { name: /^加入 1 (道题|份材料)$/ }).click();
   await expect(page.locator('[data-reference-id]')).toHaveCount(1);
   await page.reload();
   await expect(page.locator('[data-reference-id]')).toHaveCount(1);
@@ -57,14 +67,14 @@ test('当前环节可就地取已有数学作品', async ({ page }) => {
   await expect(page).toHaveURL(new RegExp(`/math\\?workId=${work.id}`));
   await page.getByRole('button', { name: '返回备课现场', exact: true }).click();
   await expect(page.locator('[data-reference-id]')).toHaveCount(1);
-  await page.locator('[data-section-id]').getByRole('button', { name: '从数学工坊取材', exact: true }).click();
+  await pick(page, '加入数学作品');
   await expect(page.getByRole('checkbox', { name: '选择 定义域公式', exact: true })).toBeDisabled();
 });
 
 test('取材写入后断线，刷新仍可原键确认且不重复加入', async ({ page }) => {
   const { call, lesson } = await setup(page);
   await call('POST', Q, question('断线取题'), 201);
-  await page.locator('[data-section-id]').getByRole('button', { name: '从题库取题', exact: true }).click();
+  await pick(page, '加入题目');
   await page.getByRole('checkbox', { name: '选择 断线取题', exact: true }).check();
   const attempts = [];
   await page.route(`**/api/modules/lessons/v3/${lesson.id}`, async route => {
@@ -73,7 +83,7 @@ test('取材写入后断线，刷新仍可原键确认且不重复加入', async
     if (attempts.length === 1) { await route.fetch(); await route.abort('failed'); }
     else await route.continue();
   });
-  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await page.getByRole('button', { name: /^加入 1 (道题|份材料)$/ }).click();
   await expect(page.getByRole('button', { name: '重试确认取材', exact: true })).toBeVisible();
   await page.reload();
   await page.getByRole('button', { name: '重试确认取材', exact: true }).click();
@@ -95,19 +105,19 @@ test('取材明确拒绝后可重试或取消，取消不留下待采用引用',
     expect(response.status()).toBe(422);
     await route.fulfill({ response });
   });
-  await page.locator('[data-section-id]').getByRole('button', { name: '从题库取题', exact: true }).click();
+  await pick(page, '加入题目');
   await page.getByRole('checkbox', { name: '选择 第一份材料', exact: true }).check();
-  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await page.getByRole('button', { name: /^加入 1 (道题|份材料)$/ }).click();
   await expect(page.getByRole('alert')).toBeVisible();
   reject = false;
-  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await page.getByRole('button', { name: /^加入 1 (道题|份材料)$/ }).click();
   await expect(page.locator('[data-reference-id]')).toHaveCount(1);
   reject = true;
-  await page.locator('[data-section-id]').getByRole('button', { name: '从题库取题', exact: true }).click();
+  await pick(page, '加入题目');
   await page.getByRole('checkbox', { name: '选择 第二份材料', exact: true }).check();
-  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await page.getByRole('button', { name: /^加入 1 (道题|份材料)$/ }).click();
   await expect(page.getByRole('alert')).toBeVisible();
-  await page.getByRole('button', { name: '取消', exact: true }).click();
+  await page.getByRole('button', { name: '返回课稿', exact: true }).click();
   await expect(page.locator('[data-reference-id]')).toHaveCount(1);
   await expect(page.locator('.wb-reference h4')).toHaveText(['第一份材料']);
   expect((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).sections[0].references).toHaveLength(1);
@@ -116,56 +126,57 @@ test('取材明确拒绝后可重试或取消，取消不留下待采用引用',
 test('已选来源删除后仍可清空隐藏选择并重新取材', async ({ page }) => {
   const { call } = await setup(page);
   const q = await call('POST', Q, question('稍后删除的来源'), 201);
-  await page.locator('[data-section-id]').getByRole('button', { name: '从题库取题', exact: true }).click();
+  await pick(page, '加入题目');
   await page.getByRole('checkbox', { name: '选择 稍后删除的来源', exact: true }).check();
   await call('POST', `${Q}/${q.id}/deletion`, { baseVersion: q.version, deleted: true });
   await page.reload();
   await expect(page.getByRole('checkbox', { name: '选择 稍后删除的来源', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '清空选择', exact: true }).click();
-  await expect(page.getByRole('button', { name: '采用所选 0 项', exact: true })).toBeDisabled();
-  await page.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(page.getByRole('button', { name: '加入 0 道题', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: '返回课稿', exact: true }).click();
   await expect(page.locator('[data-reference-id]')).toHaveCount(0);
 });
 
 test('取题、环节排序、来源采用及三成果的学生教师 Word/PDF', async ({ page }) => {
-  test.setTimeout(240000);
+  test.setTimeout(480000);
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   const { call, lesson } = await setup(page);
   const q = await call('POST', Q, { ...question('定义域练习'), body: { version: 2, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text: '求函数的定义域' }, { type: 'math', latex: 'y=\\frac{1}{x+3}' }] }] }, solution: doc('仅教师答案：排除负三'), answerStatus: 'present' }, 201);
-  await page.getByRole('button', { name: '添加环节', exact: true }).click();
+  await page.getByRole('button', { name: '添加教学环节', exact: true }).click();
   await page.getByLabel('环节名称 2').fill('课堂练习');
-  await page.getByRole('button', { name: '上移环节 课堂练习', exact: true }).click();
+  await sectionAction(page, '课堂练习', '上移环节');
   await expect(page.getByLabel('环节名称 1')).toHaveValue('课堂练习');
   const section = page.locator('[data-section-id]').first();
-  await section.getByRole('button', { name: '从题库取题', exact: true }).click();
+  await pick(page, '加入题目', section);
   await page.getByRole('checkbox', { name: '选择 定义域练习', exact: true }).check();
-  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await page.getByRole('button', { name: /^加入 1 (道题|份材料)$/ }).click();
   await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+  await page.getByRole('button', { name: '添加本课备注', exact: true }).click();
   await page.getByLabel('本课备注 定义域练习').fill('仅教师注记：先让学生讨论');
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByRole('status').first()).toContainText('已保存');
+  await page.getByRole('button', { name: '保存备课', exact: true }).click();
+  await expect(page.locator('[data-save-status]')).toHaveAttribute('data-save-status', /saved|clean/);
   await call('PUT', `${Q}/${q.id}`, { baseVersion: q.version, ...writable(q), body: doc('新版题面：求有理函数定义域') });
   await page.reload();
   await page.getByRole('button', { name: '有更新 · 查看', exact: true }).click();
   await expect(page.locator('[data-region="reference-new"]')).toContainText('新版题面');
   await page.getByRole('button', { name: '采用更新', exact: true }).click();
   await expect(page.locator('.wb-reference-body')).toContainText('新版题面');
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByRole('status').first()).toContainText('已保存');
+  await page.getByRole('button', { name: '保存备课', exact: true }).click();
+  await expect(page.locator('[data-save-status]')).toHaveAttribute('data-save-status', /saved|clean/);
   // Keep a real editable formula in the accepted source for all output kinds.
   const current = await call('GET', `${Q}/${q.id}`);
   await call('PUT', `${Q}/${q.id}`, { baseVersion: current.version, ...writable(current), body: q.body });
   await page.reload();
   await page.getByRole('button', { name: '有更新 · 查看', exact: true }).click();
   await page.getByRole('button', { name: '采用更新', exact: true }).click();
-  await page.getByRole('button', { name: '输出', exact: true }).click();
-  for (const teacher of [false, true]) {
-    await page.getByLabel('答案与解析', { exact: true }).setChecked(teacher);
-    await page.getByLabel('教师注记', { exact: true }).setChecked(teacher);
+  await page.getByRole('button', { name: '生成教学资料', exact: true }).click();
+  for (const [answers, notes] of [[false, false], [true, false], [false, true], [true, true]]) {
+    await page.getByRole('checkbox', { name: /附上答案与解析/ }).setChecked(answers);
+    await page.getByRole('checkbox', { name: /附上教师注记/ }).setChecked(notes);
     for (const kind of ['lesson-plan', 'handout', 'practice']) {
-      await page.getByRole('combobox', { name: '成果', exact: true }).selectOption(kind);
+      await page.getByRole('radio', { name: kind === 'lesson-plan' ? /^教案/ : kind === 'handout' ? /^导学案/ : /^练习/ }).click();
       for (const format of ['docx', 'pdf']) {
-        await page.getByRole('combobox', { name: '格式', exact: true }).selectOption(format);
+        await page.getByRole('radio', { name: format === 'docx' ? /^Word/ : /^PDF/ }).check();
         const oldCount = await page.locator('.r34-output-list article').count();
         await page.getByRole('button', { name: '保存并生成', exact: true }).click();
         await expect(page.locator('.r34-output-list article')).toHaveCount(oldCount + 1);
@@ -173,7 +184,7 @@ test('取题、环节排序、来源采用及三成果的学生教师 Word/PDF',
         await expect(row.getByRole('button', { name: '下载', exact: true })).toBeVisible({ timeout: 60000 });
         const pending = page.waitForEvent('download');
         await row.getByRole('button', { name: '下载', exact: true }).click();
-        const file = path.join(evidence, `${kind}-${teacher ? 'teacher' : 'student'}.${format}`);
+        const file = path.join(evidence, `${kind}-${answers ? 'answers' : 'no-answers'}-${notes ? 'notes' : 'no-notes'}.${format}`);
         await (await pending).saveAs(file);
         let text;
         if (format === 'docx') {
@@ -185,16 +196,16 @@ test('取题、环节排序、来源采用及三成果的学生教师 Word/PDF',
           expect(readback).toContain('"Math"');
           expect(readback).toContain('frac');
         } else text = execFileSync('pdftotext', ['-layout', file, '-'], { encoding: 'utf8' });
-        expect(text.includes('仅教师答案')).toBe(teacher);
-        expect(text.includes('仅教师注记')).toBe(teacher);
+        expect(text.includes('仅教师答案')).toBe(answers);
+        expect(text.includes('仅教师注记')).toBe(notes);
         expect(text).not.toContain('原始私密笔记');
       }
     }
   }
   await page.screenshot({ path: path.join(evidence, 'outputs.png') });
   await page.reload();
-  await expect(page.locator('.r34-output-list article')).toHaveCount(12);
-  await page.getByRole('button', { name: '返回文稿', exact: true }).click();
+  await expect(page.locator('.r34-output-list article')).toHaveCount(24);
+  await page.getByRole('button', { name: '返回课稿', exact: true }).click();
   await expect(page.getByLabel('环节名称 1')).toHaveValue('课堂练习');
   expect((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).sections[0].references[0].questionVersion).toBe(3);
   expect(errors).toEqual([]);
@@ -202,23 +213,23 @@ test('取题、环节排序、来源采用及三成果的学生教师 Word/PDF',
 
 test('课题新建、排序、删除恢复以及重启后保留顺序', async ({ page, browser }) => {
   const { lesson } = await setup(page);
-  await page.locator('.wb-sidebar').getByRole('link', { name: '备课', exact: true }).click();
+  await page.getByRole('button', { name: '我的备课', exact: true }).click();
   await page.getByRole('button', { name: '新建备课', exact: true }).click();
   await page.getByLabel('课题', { exact: true }).fill('第二课时');
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByRole('status').first()).toContainText('已保存');
-  await page.locator('.wb-sidebar').getByRole('link', { name: '备课', exact: true }).click();
+  await page.getByRole('button', { name: '保存备课', exact: true }).click();
+  await expect(page.locator('[data-save-status]')).toHaveAttribute('data-save-status', /saved|clean/);
+  await page.getByRole('button', { name: '我的备课', exact: true }).click();
   await expect(page.locator('.wb-card-title')).toHaveText(['第二课时', '函数专题']);
   await page.getByRole('button', { name: '上移课题 函数专题', exact: true }).click();
   await expect(page.locator('.wb-card-title')).toHaveText(['函数专题', '第二课时']);
   await page.reload();
   await expect(page.locator('.wb-card-title')).toHaveText(['函数专题', '第二课时']);
-  await page.getByRole('button', { name: /函数专题 版本/ }).click();
-  await page.getByRole('button', { name: '更多操作', exact: true }).click();
+  await page.getByRole('button', { name: /^函数专题/ }).click();
+  await page.getByRole('button', { name: '备课操作', exact: true }).click();
   await page.getByRole('menuitem', { name: '删除备课', exact: true }).click();
   await page.getByRole('dialog', { name: '删除备课' }).getByRole('button', { name: '删除备课', exact: true }).click();
   await expect(page.locator('[data-region="lesson-deleted"]')).toBeVisible();
-  await page.getByRole('button', { name: '更多操作', exact: true }).click();
+  await page.getByRole('button', { name: '备课操作', exact: true }).click();
   await page.getByRole('menuitem', { name: '恢复备课', exact: true }).click();
   await expect(page.locator('[data-region="lesson-deleted"]')).toHaveCount(0);
   const directory = world.directory;
@@ -231,11 +242,12 @@ test('课题新建、排序、删除恢复以及重启后保留顺序', async ({
     await reopened.getByLabel('密码', { exact: true }).fill('math-password');
     await reopened.getByRole('button', { name: '登录', exact: true }).click();
     await expect(reopened.locator('.wb-shell')).toBeVisible();
-    await reopened.locator('.wb-sidebar').getByRole('link', { name: '备课', exact: true }).click();
+    await reopened.getByRole('button', { name: '知道了', exact: true }).click();
+    await reopened.getByRole('complementary', { name: '工作台导航' }).getByRole('link', { name: /^备课/ }).click();
     await expect(reopened.locator('.wb-card-title')).toHaveText(['函数专题', '第二课时']);
-    await reopened.getByRole('button', { name: /函数专题 版本/ }).click();
+    await reopened.getByRole('button', { name: /^函数专题/ }).click();
     await expect(reopened).toHaveURL(new RegExp(lesson.id));
-    await expect(reopened.getByLabel('环节名称 1')).toHaveValue('概念探究');
+    await expect(reopened.getByRole('heading', { name: '概念探究', exact: true })).toBeVisible();
   } finally { await fresh.close(); }
 });
 
@@ -253,28 +265,30 @@ test('资源就地预览采用、引用排序移动、删除环节和来源更�
   const file = await upload('课堂阅读.pdf');
   const resource = await call('POST', '/api/modules/resources/items', { title: '课堂阅读', fileId: file.id, folderId: null, tagIds: [], note: '资源私人笔记' }, 201);
   const q = await call('POST', Q, question('备用练习'), 201);
-  await page.locator('[data-section-id]').getByRole('button', { name: '从资源库取材', exact: true }).click();
+  await pick(page, '加入资源');
   await page.getByRole('button', { name: '课堂阅读', exact: true }).click();
   await page.getByRole('button', { name: '预览 课堂阅读.pdf', exact: true }).click();
   await expect(page.getByAltText('成品第 1 页')).toBeVisible({ timeout: 30000 });
   await page.getByRole('button', { name: '关闭预览', exact: true }).click();
   await page.getByRole('checkbox', { name: '选择 课堂阅读', exact: true }).check();
-  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await page.getByRole('button', { name: /^加入 1 (道题|份材料)$/ }).click();
   await expect(page.locator('[data-reference-id]')).toHaveCount(1);
-  await page.locator('[data-section-id]').getByRole('button', { name: '从题库取题', exact: true }).click();
+  await pick(page, '加入题目');
   await page.getByRole('checkbox', { name: '选择 备用练习', exact: true }).check();
-  await page.getByRole('button', { name: '采用所选 1 项', exact: true }).click();
+  await page.getByRole('button', { name: /^加入 1 (道题|份材料)$/ }).click();
   await expect(page.locator('[data-reference-id]')).toHaveCount(2);
-  await page.getByRole('button', { name: '上移材料 备用练习', exact: true }).click();
+  await page.getByRole('button', { name: '材料操作 备用练习', exact: true }).click();
+  await page.getByRole('menuitem', { name: '上移材料', exact: true }).click();
   await expect(page.locator('.wb-reference h4')).toHaveText(['备用练习', '课堂阅读']);
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByRole('status').first()).toContainText('已保存');
+  await page.getByRole('button', { name: '保存备课', exact: true }).click();
+  await expect(page.locator('[data-save-status]')).toHaveAttribute('data-save-status', /saved|clean/);
   await page.reload();
   await expect(page.locator('.wb-reference h4')).toHaveText(['备用练习', '课堂阅读']);
-  await page.getByRole('button', { name: '删除环节 概念探究', exact: true }).click();
-  await page.getByRole('button', { name: '移入本课材料并删除', exact: true }).click();
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByRole('status').first()).toContainText('已保存');
+  await sectionAction(page, '概念探究', '删除环节');
+  await page.getByRole('button', { name: '移入备用材料并删除', exact: true }).click();
+  await page.getByRole('button', { name: '保存备课', exact: true }).click();
+  await expect(page.locator('[data-save-status]')).toHaveAttribute('data-save-status', /saved|clean/);
+  await page.getByRole('button', { name: '备用材料 · 2', exact: true }).click();
   await expect(page.locator('[data-region="materials"] [data-reference-id]')).toHaveCount(2);
   const newerFile = await upload('课堂阅读修订.pdf');
   await call('PUT', `/api/modules/resources/items/${resource.id}/file`, { baseVersion: resource.version, fileId: newerFile.id });
@@ -282,8 +296,8 @@ test('资源就地预览采用、引用排序移动、删除环节和来源更�
   await page.getByRole('button', { name: '有更新 · 查看', exact: true }).click();
   await page.getByRole('button', { name: '采用更新', exact: true }).click();
   await expect(page.getByRole('button', { name: '课堂阅读修订.pdf · 预览采用文件', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByRole('status').first()).toContainText('已保存');
+  await page.getByRole('button', { name: '保存备课', exact: true }).click();
+  await expect(page.locator('[data-save-status]')).toHaveAttribute('data-save-status', /saved|clean/);
   const saved = await call('GET', `/api/modules/lessons/v3/${lesson.id}`);
   expect(saved.materials.map(ref => ref.questionId ?? ref.resourceId)).toEqual([q.id, resource.id]);
   expect(saved.materials[1].snapshot.fileId).toBe(newerFile.id);
@@ -292,7 +306,9 @@ test('资源就地预览采用、引用排序移动、删除环节和来源更�
   await page.getByRole('button', { name: '返回备课现场', exact: true }).click();
   await expect(page.locator('[data-region="materials"] [data-reference-id]')).toHaveCount(2);
   await page.setViewportSize({ width: 768, height: 1024 });
-  await expect.poll(() => page.locator('.wb-sidebar').evaluate(node => node.getBoundingClientRect().width)).toBeLessThanOrEqual(72);
+  await expect(page.getByRole('button', { name: '展开侧栏', exact: true })).toBeVisible();
+  await expect(page.getByRole('complementary', { name: '工作台导航' })).toBeHidden();
+  await expect(page.getByRole('button', { name: '保存备课', exact: true })).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: path.join(evidence, 'materials-tablet.png'), animations: 'disabled' });
 });
