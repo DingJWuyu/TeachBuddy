@@ -1113,3 +1113,20 @@
   color: var(--app-muted);
   font-size: 12px;
 }
+
+.wb-lesson .lesson-edit-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wb-lesson .lesson-history-actions { display: flex; gap: 12px; flex-shrink: 0; }
+.wb-lesson .lesson-history-actions button { font-size: 12px; }
+.wb-lesson .lesson-history-actions button:disabled { opacity: .4; cursor: default; }
+.lesson-export-reference-list { display: grid; gap: 12px; }
+.lesson-export-reference { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; min-width: 0; }
+.lesson-export-reference > label { display: flex; align-items: flex-start; gap: 8px; flex: 1 1 200px; min-width: 0; }
+.lesson-export-reference > label span { overflow-wrap: anywhere; }
+.lesson-export-reference input[type="checkbox"] { flex-shrink: 0; margin-top: 3px; }
+.lesson-export-reference-space { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lesson-export-reference-space .wb-input { width: 64px; }
+.lesson-export-reference-space label { display: flex; align-items: center; gap: 6px; }
+.lesson-export-reference .wb-text-button { font-size: 12px; }
+
+.wb-lesson .lesson-edit-status > .wb-save-block { min-width: 0; }
+.r34-exports .lesson-export-selection-hint { margin: 0 0 12px; font-size: 13px; line-height: 1.6; }

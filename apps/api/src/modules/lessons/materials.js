@@ -42,7 +42,7 @@ export function createMaterialsLessons({
 }) {
   const order = version === 3 ? createLessonOrder({ db, repository, mutations }) : null;
   const validate = (name, value) => {
-    if (name === "PurgeLesson" || version < 3) return validateSchema(name, value);
+    if (["PurgeLesson", "CopyLesson"].includes(name) || version < 3) return validateSchema(name, value);
     return validateMath(
       name === "CreateLesson" || name === "UpdateLesson" ? `${name}V3` : name,
       value,
@@ -273,6 +273,31 @@ export function createMaterialsLessons({
     repository.purgeLesson(account(p), id);
     return { id, permanentlyDeleted: true };
   }
+  function copy(p, input, id) {
+    const original = requireLesson(p, id);
+    if (original.version !== input.baseVersion)
+      throw contractError(problems.versionConflict(original.version));
+    assertWritable(original);
+    const at = now().toISOString();
+    const record = { ...original, id: randomUUID(), version: 1,
+      createdAt: at, updatedAt: at, deletedAt: null,
+      title: `${Array.from(original.title).slice(0, 196).join("")}（副本）` };
+    const originalSections = repository.listSections(id);
+    const sections = originalSections.map(section => ({
+      ...section, sectionId: randomUUID(),
+    }));
+    const sectionIds = new Map(originalSections
+      .map((section, index) => [section.sectionId, sections[index].sectionId]));
+    // Reuse adopted snapshots, including archived/removed sources. Copying must
+    // never silently upgrade the source version or trust a client snapshot.
+    const references = repository.listReferences(id).map(reference => ({
+      ...reference, referenceId: randomUUID(),
+      sectionId: sectionIds.get(reference.sectionId) ?? null,
+    }));
+    repository.insertLesson(record);
+    repository.replaceContent(record.id, sections, references);
+    return read(p, record);
+  }
   function list(p, query = {}) {
     const text = (blocks) =>
       blocks.flatMap((b) => [
@@ -292,7 +317,13 @@ export function createMaterialsLessons({
           matchesSearch(q, [
             r.title,
             ...text(r.intro.blocks),
-            ...repository.listSections(r.id).flatMap((s) => text(s.content.blocks)),
+            ...repository.listSections(r.id).flatMap((s) => [s.title, ...text(s.content.blocks)]),
+            ...repository.listReferences(r.id).flatMap(({ note, snapshot }) => [
+              note, snapshot.title ?? "", snapshot.fileName ?? "",
+              ...text(snapshot.body?.blocks ?? []),
+              ...text(snapshot.solution?.blocks ?? []),
+              snapshot.source?.latex ?? "", snapshot.source?.caption ?? "",
+            ]),
           ]),
         )
         .map((r) => read(p, r)),
@@ -385,6 +416,7 @@ export function createMaterialsLessons({
   ];
   if (version === 3) {
     definitions.splice(7);
+    definitions.push(["copyLessonV3", "post", "/items/:id/copy", "CopyLesson", 201, copy]);
     definitions.push([
       "purgeLessonV3", "post", "/items/:id/purge", "PurgeLesson", 200, purge,
     ]);

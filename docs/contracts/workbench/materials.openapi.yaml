@@ -1334,6 +1334,57 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PurgeLesson'
+  /api/modules/lessons/v3/{id}/copy:
+    post:
+      operationId: copyLessonV3
+      summary: 复制已保存备课
+      description: 按当前账户原备课的 baseVersion 创建独立活动副本。保留已采用的材料快照与备注，环节和引用生成新身份，不复制输出记录或班级记录。原课稿及来源保持不变；原稿版本冲突返回 409，同键重放返回同一副本。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '201':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: './math/math.openapi.json#/components/schemas/LessonV3'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyLesson'
   /api/modules/resources/items/{id}/for-reference:
     get:
       operationId: readResourceForReferenceV2
@@ -2401,6 +2452,13 @@ components:
           $ref: '#/components/schemas/Id'
         permanentlyDeleted:
           const: true
+    CopyLesson:
+      type: object
+      additionalProperties: false
+      required: [baseVersion]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
     PurgeLesson:
       type: object
       additionalProperties: false
@@ -4208,6 +4266,28 @@ components:
           minItems: 0
           maxItems: 1000
           uniqueItems: true
+        excludedReferenceIds:
+          description: 从所选环节及备用材料中排除的引用；省略表示不排除。
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          maxItems: 1000
+          uniqueItems: true
+        answerSpaceOverrides:
+          description: 各题单独设置的作答行数；省略的题沿用 answerSpaceLines。
+          type: array
+          maxItems: 1000
+          items:
+            type: object
+            additionalProperties: false
+            required: [referenceId, lines]
+            properties:
+              referenceId:
+                $ref: '#/components/schemas/Id'
+              lines:
+                type: integer
+                minimum: 0
+                maximum: 20
         answerSpaceLines:
           type: integer
           minimum: 0

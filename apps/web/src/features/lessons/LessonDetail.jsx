@@ -2,6 +2,7 @@ import {
   ModulePresence,
   ModuleDisclosure,
 } from "../workbench/ModuleMotion.jsx";
+import { useLessonHistory } from "./useLessonHistory.js";
 import { useMathReturn } from "./useMathReturn.js";
 import { lessonDocuments, supportedDocument } from "@refatos/shared";
 import { ExportsPanel } from "./ExportsPanel.jsx";
@@ -40,6 +41,7 @@ import { readLocal, removeLocal, writeLocal } from "../workbench/storage.js";
 import { useSaveShortcut } from "../workbench/useSaveShortcut.js";
 import {
   createLesson,
+  copyLesson,
   getLesson,
   setLessonDeletion,
   purgeLesson,
@@ -134,7 +136,7 @@ export default function LessonDetail({ id }) {
   const isNew = id === "new";
   const [, patchListScene] = useScene(shell.accountKey, "lessons");
 
-  const savable = useSavableDocument({
+  const savedDocument = useSavableDocument({
     accountKey: shell.accountKey,
     generation: shell.generation,
     kind: "lesson",
@@ -149,6 +151,8 @@ export default function LessonDetail({ id }) {
     prepareDraft: async () => ({ input: emptyLessonInput(), baseline: null }),
   });
 
+  const savable = useLessonHistory(savedDocument);
+
   const mathReturn = useMathReturn({
     shell,
     savable,
@@ -160,12 +164,17 @@ export default function LessonDetail({ id }) {
     accountKey: shell.accountKey,
     name: `pending:lesson-deletion:${id}`,
   });
+  const copySubmit = useIdempotentSubmit({
+    accountKey: shell.accountKey,
+    name: `pending:lesson-copy:${id}`,
+  });
+  const [copySaving, setCopySaving] = useState(false);
   const [dialog, setDialog] = useState(null);
   const [localProblem, setLocalProblem] = useState(null);
 
   const baseline = savable.baseline;
   const deleted = Boolean(baseline?.deletedAt);
-  const lifecycleBusy = deleteSubmit.isRunning || Boolean(deleteSubmit.pending);
+  const lifecycleBusy = deleteSubmit.isRunning || Boolean(deleteSubmit.pending) || copySaving || copySubmit.isRunning || Boolean(copySubmit.pending);
   const editing = !deleted && (isNew || scene.editingId === id);
   const input =
     !editing && baseline
@@ -291,6 +300,31 @@ export default function LessonDetail({ id }) {
       saveStatus !== "deleted",
   );
 
+  const sendCopy = ({ key, payload }) => copyLesson({ key, id, payload });
+  function finishCopy(result) {
+    if (!result) return;
+    patchScene({ editingId: result.id, picker: null, exportsOpen: false, scrollTop: 0 });
+    navigate(`/lessons/${result.id}`);
+  }
+  async function handleCopy() {
+    setDialog(null);
+    setCopySaving(true);
+    try {
+      const current = savable.localDraft && !deleted ? await savable.save() : baseline;
+      if (!current) return;
+      finishCopy(await copySubmit.submit(sendCopy, { baseVersion: current.version }));
+    } finally { setCopySaving(false); }
+  }
+  const copyFeedback = (copySubmit.problem || copySubmit.pending) && (
+    <div className="wb-inline-error" role="status">
+      <p>{copySubmit.isRunning ? "正在创建副本…" : copySubmit.problem?.message || "副本创建结果未确认"}</p>
+      {copySubmit.pending && <button className="wb-button" disabled={copySubmit.isRunning}
+        onClick={async () => finishCopy(await copySubmit.retry(sendCopy))}>确认备课副本</button>}
+      {!copySubmit.pending && copySubmit.problem?.kind === "conflict" &&
+        <button className="wb-button" onClick={() => window.location.reload()}>重新读取备课</button>}
+    </div>
+  );
+
   function sendLifecycle({ key, payload }) {
     if (payload.action === "purge")
       return purgeLesson({ key, id, payload: payload.body });
@@ -388,6 +422,7 @@ export default function LessonDetail({ id }) {
         data-region="lesson-missing"
       >
         {lifecycleFeedback}
+        {copyFeedback}
         <p>这份备课已不存在。</p>
         <a
           className="wb-link"
@@ -626,6 +661,8 @@ export default function LessonDetail({ id }) {
       className="wb-module wb-page wb-lesson"
       data-region="lesson-editor"
       data-lesson-id={baseline?.id || id}
+      onBlurCapture={savable.history.endGroup}
+      onKeyDownCapture={editing && !lifecycleBusy && !picker && !scene.exportsOpen ? savable.history.keydown : undefined}
     >
       {mathReturn.pending && (
         <div className="wb-inline-error" role="status">
@@ -760,6 +797,10 @@ export default function LessonDetail({ id }) {
                   >
                     切换备课
                   </MenuItem>
+                  {baseline && (
+                    <MenuItem icon="copy" disabled={unsupported || lifecycleBusy || savable.isSaving || Boolean(savable.pending) || saveStatus === "conflict"}
+                      onClick={() => { close(); setDialog("copy"); }}>复制备课</MenuItem>
+                  )}
                   {baseline && !deleted && (
                     <MenuItem
                       icon="folder"
@@ -793,7 +834,13 @@ export default function LessonDetail({ id }) {
             </Popover>
           </div>
         </div>
-        {editing && <SaveStatus savable={savable} />}
+        {editing && <div className="lesson-edit-status">
+          <SaveStatus savable={savable} />
+          <div className="lesson-history-actions" aria-label="本次编辑历史">
+            <button className="wb-text-button" title="撤销本次未保存的修改 (Ctrl/⌘ Z)" disabled={!savable.history.canUndo || lifecycleBusy || unsupported} onClick={savable.history.undo}>撤销</button>
+            <button className="wb-text-button" title="重做 (Ctrl/⌘ Shift Z)" disabled={!savable.history.canRedo || lifecycleBusy || unsupported} onClick={savable.history.redo}>重做</button>
+          </div>
+        </div>}
       </header>
       {!editing && !deleted && savable.localDraft && (
         <div className="lesson-draft-banner" role="status">
@@ -860,6 +907,7 @@ export default function LessonDetail({ id }) {
         />
       )}
       {lifecycleFeedback}
+      {copyFeedback}
 
       <div
         className="wb-lesson-scroll"
@@ -1137,6 +1185,13 @@ export default function LessonDetail({ id }) {
             }}
           />
         )}
+      </ModulePresence>
+      <ModulePresence present={dialog === "copy"}>
+        {dialog === "copy" && <ConfirmDialog title="创建备课副本？"
+          message={savable.localDraft && !deleted
+            ? "先保存当前修改，再创建一份独立副本并打开。保留原备课，材料沿用本课已采用的版本。"
+            : `创建一份独立副本并打开。保留原备课，材料沿用本课已采用的版本；不复制输出和班级记录。${savable.localDraft ? "仅复制已保存课稿，未保存草稿仍保留在原备课。" : ""}`}
+          confirmLabel="创建副本" onCancel={() => setDialog(null)} onConfirm={handleCopy} />}
       </ModulePresence>
       <ModulePresence present={dialog === "archive"}>
         {dialog === "archive" && (

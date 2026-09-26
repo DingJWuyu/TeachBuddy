@@ -14,6 +14,7 @@ import { useIdempotentSubmit } from "../workbench/useIdempotentSubmit.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { openLessonFile } from "./files.js";
 import { FilePreview } from "./FilePreview.jsx";
+import { LessonExportSelection } from "./LessonExportSelection.jsx";
 import { Icon } from "../workbench/icons.jsx";
 import { SaveStatus } from "../workbench/SaveStatus.jsx";
 const kinds = {
@@ -36,11 +37,16 @@ export function ExportsPanel({ savable, onClose }) {
         sectionIds: savable.input.sections.map((s) => s.id),
         materialReferenceIds: [],
         answerSpaceLines: 4,
+        excludedReferenceIds: [],
+        answerSpaceOverrides: [],
       },
     },
   );
+  const references = [...savable.input.materials, ...savable.input.sections.flatMap(s => s.references)];
   const options = {
     ...scene.options,
+    excludedReferenceIds: (scene.options.excludedReferenceIds ?? []).filter(id => references.some(r => r.id === id)),
+    answerSpaceOverrides: (scene.options.answerSpaceOverrides ?? []).filter(item => references.some(r => r.id === item.referenceId)),
     sectionIds: scene.options.sectionIds.filter((id) =>
       savable.input.sections.some((section) => section.id === id),
     ),
@@ -52,6 +58,12 @@ export function ExportsPanel({ savable, onClose }) {
     patchScene((current) => ({
       options: typeof change === "function" ? change(current.options) : change,
     }));
+  const selectedReferences = [
+    ...savable.input.sections.filter(s => options.sectionIds.includes(s.id)).flatMap(s => s.references),
+    ...savable.input.materials.filter(r => options.materialReferenceIds.includes(r.id)),
+  ].filter(r => options.kind !== "practice" || (r.kind ?? "question") === "question");
+  const questionCount = selectedReferences.filter(r => (r.kind ?? "question") === "question" && !options.excludedReferenceIds.includes(r.id)).length;
+  const emptyPractice = options.kind === "practice" && questionCount === 0;
   const [records, setRecords] = useState([]),
     [error, setError] = useState(""),
     [preview, setPreview] = useState(null),
@@ -295,7 +307,7 @@ export function ExportsPanel({ savable, onClose }) {
               </span>
             </p>
             <ul>
-              <li>{options.sectionIds.length} 个教学环节</li>
+              <li>{options.sectionIds.length} 个教学环节 · {questionCount} 道题</li>
               <li>
                 {options.materialReferenceIds.length
                   ? `另外包含 ${options.materialReferenceIds.length} 份备用材料`
@@ -352,6 +364,9 @@ export function ExportsPanel({ savable, onClose }) {
               </fieldset>
             )}
           </ModuleDisclosure>
+        )}
+        {selectedReferences.length > 0 && (
+          <LessonExportSelection references={selectedReferences} options={options} setOptions={setOptions} />
         )}
         {savable.localDraft && (
           <p className="lesson-export-save-hint">
@@ -457,7 +472,7 @@ export function ExportsPanel({ savable, onClose }) {
         </div>
       </div>
       <footer className="lesson-export-footer">
-        <span>生成后可预览成品，再下载文件。</span>
+        <span>{emptyPractice ? "至少选择一道题才能生成练习。" : "生成后可预览成品，再下载文件。"}</span>
         {submit.pending ? (
           <button
             className="wb-button"
@@ -471,7 +486,7 @@ export function ExportsPanel({ savable, onClose }) {
         ) : (
           <button
             className="wb-button is-primary"
-            disabled={submit.isRunning || savable.status === "saving"}
+            disabled={submit.isRunning || savable.status === "saving" || emptyPractice}
             onClick={create}
           >
             {submit.isRunning || savable.status === "saving"

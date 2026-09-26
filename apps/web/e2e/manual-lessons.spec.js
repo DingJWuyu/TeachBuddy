@@ -315,3 +315,81 @@ test('资源就地预览采用、引用排序移动、删除环节和来源更�
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: path.join(evidence, 'materials-tablet.png'), animations: 'disabled' });
 });
+
+test('输出可逐题筛选并分别留白，下载的 Word/PDF 与选择一致', async ({ page }) => {
+  const { call, lesson } = await setup(page);
+  for (const name of ['保留题甲', '排除题乙', '保留题丙']) {
+    await call('POST', Q, { ...question(name), body: doc(`${name}的题面`),
+      solution: doc(`${name}的答案`), answerStatus: 'present' }, 201);
+  }
+  await pick(page, '加入题目');
+  for (const name of ['保留题甲', '排除题乙', '保留题丙'])
+    await page.getByRole('checkbox', { name: `选择 ${name}`, exact: true }).check();
+  await page.getByRole('button', { name: '加入 3 道题', exact: true }).click();
+  await expect(page.locator('[data-reference-id]')).toHaveCount(3);
+  await page.getByRole('button', { name: '生成教学资料', exact: true }).click();
+  await page.getByRole('radio', { name: /^练习/ }).click();
+  await page.getByRole('checkbox', { name: /附上答案与解析/ }).check();
+  await page.getByLabel('作答空白行', { exact: true }).fill('0');
+  await page.getByRole('button', { name: '按材料细选与留白', exact: true }).click();
+  await page.getByRole('checkbox', { name: '输出材料 2 排除题乙', exact: true }).uncheck();
+  const first = page.locator('.lesson-export-reference').first();
+  await first.getByRole('button', { name: '单独设置留白', exact: true }).click();
+  await page.getByLabel('作答行数 1 保留题甲', { exact: true }).fill('2');
+  await expect(page.locator('.lesson-export-summary')).toContainText('2 道题');
+  for (const title of ['输出材料 1 保留题甲', '输出材料 3 保留题丙'])
+    await page.getByRole('checkbox', { name: title, exact: true }).uncheck();
+  await expect(page.getByRole('button', { name: '保存并生成', exact: true })).toBeDisabled();
+  await expect(page.locator('.lesson-export-footer')).toContainText('至少选择一道题');
+  for (const title of ['输出材料 1 保留题甲', '输出材料 3 保留题丙'])
+    await page.getByRole('checkbox', { name: title, exact: true }).check();
+  // Reopening preserves both selection and per-question spacing.
+  await page.reload();
+  await page.getByRole('button', { name: '按材料细选与留白', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: '输出材料 2 排除题乙', exact: true })).not.toBeChecked();
+  await expect(page.getByLabel('作答行数 1 保留题甲', { exact: true })).toHaveValue('2');
+  const lessonBefore = await call('GET', `/api/modules/lessons/v3/${lesson.id}`);
+  for (const format of ['docx', 'pdf']) {
+    await page.getByRole('radio', { name: format === 'docx' ? /^Word/ : /^PDF/ }).check();
+    await page.getByRole('button', { name: '保存并生成', exact: true }).click();
+    const row = page.locator('.r34-output-list article').first();
+    await expect(row.getByRole('button', { name: '下载', exact: true })).toBeVisible({ timeout: 60000 });
+    const pending = page.waitForEvent('download');
+    await row.getByRole('button', { name: '下载', exact: true }).click();
+    const file = path.join(evidence, `selected-practice.${format}`);
+    await (await pending).saveAs(file);
+    let text;
+    if (format === 'docx') {
+      const zip = await JSZip.loadAsync(fs.readFileSync(file));
+      const xml = await zip.file('word/document.xml').async('string');
+      const { DOMParser } = await import('@xmldom/xmldom');
+      const document = new DOMParser().parseFromString(xml, 'text/xml');
+      const paragraphs = Array.from(document.getElementsByTagName('w:p')).map(p => p.textContent);
+      const a = paragraphs.findIndex(t => t === '保留题甲的题面');
+      const c = paragraphs.findIndex(t => t.includes('2. 保留题丙'));
+      expect(paragraphs.slice(a + 1, c).map(t => t.trim())).toEqual(['', '']);
+      text = paragraphs.join('\n');
+    } else text = execFileSync('pdftotext', ['-layout', file, '-'], { encoding: 'utf8' });
+    expect(text).toContain('保留题甲的题面');
+    expect(text).toContain('保留题丙的答案');
+    expect(text).not.toContain('排除题乙');
+    expect(text).not.toContain('从定义出发');
+  }
+  expect(await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).toEqual(lessonBefore);
+  for (const theme of ['light', 'dark']) {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.getByRole('link', { name: /账户：/ }).click();
+    await page.getByRole('button', { name: theme === 'dark' ? '深色' : '浅色', exact: true }).click();
+    await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', theme);
+    await page.getByRole('complementary', { name: '工作台导航' }).getByRole('link', { name: /^备课/ }).click();
+    await page.getByRole('button', { name: '按材料细选与留白', exact: true }).click();
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.locator('.lesson-export-reference-list').scrollIntoViewIfNeeded();
+      await expect(page.getByLabel('作答行数 1 保留题甲', { exact: true })).toBeInViewport();
+      await expect(page.getByRole('button', { name: '保存并生成', exact: true })).toBeInViewport();
+      await page.screenshot({ path: path.join(evidence, `output-selection-${theme}-${width}.png`), animations: 'disabled' });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+    }
+  }
+});

@@ -86,3 +86,8 @@ export async function listSources(kind, q = "") {
 
 // Public serializer for consumers adding references to a complete lesson draft.
 export { referenceInputFrom } from "./model.js";
+
+export async function copyLesson({ key, id, payload }) {
+  const { body } = await workbenchPost(`/api/modules/lessons/v3/${id}/copy`, payload, key);
+  return assertLesson(body);
+}
