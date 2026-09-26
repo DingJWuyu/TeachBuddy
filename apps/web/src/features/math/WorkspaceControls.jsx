@@ -2,18 +2,20 @@ import { Popover, MenuItem } from '../workbench/ModuleOverlays.jsx';
 import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
 
 export function WorkspaceToolbar({ draft, busy, readOnly, pending, exportOpen, empty,
-  onHome, onSave, onCopy, onDelete, onPurge, onExport, onUsage }) {
+  onHome, onSave, onCopy, onDelete, onPurge, onExport, onUsage, onHistory, onDynamic }) {
   const presentation = ['dynamic', 'html'].includes(draft?.source.kind);
   return <div className="math-workspace-actions">
     {draft && <>
       <button className="math-primary" disabled={busy || (!pending && (readOnly || empty))} onClick={draft.deletedAt && !pending ? onDelete : onSave}>
-        {pending ? pending.kind === 'purge' ? '确认删除结果' : pending.kind === 'deletion' ? pending.input.deleted ? '确认归档结果' : '确认恢复结果' : pending.kind === 'export' ? '确认导出结果' : '确认保存结果' : draft.deletedAt ? '恢复作品' : '保存'}
+        {pending ? pending.kind === 'import-source' ? '确认导入结果' : pending.kind === 'purge' ? '确认删除结果' : pending.kind === 'deletion' ? pending.input.deleted ? '确认归档结果' : '确认恢复结果' : pending.kind === 'export' ? '确认导出结果' : '确认保存结果' : draft.deletedAt ? '恢复作品' : '保存'}
       </button>
       <button className="math-action-button" aria-expanded={exportOpen} aria-controls="math-export-options" onClick={onExport}>{presentation ? '下载演示' : '下载图片'}</button>
       <Popover label="作品操作" buttonClassName="math-more-button">
         {({ close }) => <>
           <MenuItem icon="folder" onClick={() => { close(); onHome(); }}>我的作品</MenuItem>
           {!draft.deletedAt && <MenuItem icon="copy" disabled={busy || readOnly || !!pending} onClick={() => { close(); onCopy(); }}>另存作品</MenuItem>}
+          {draft.id && !draft.deletedAt && <MenuItem icon="history" disabled={busy || readOnly || !!pending} onClick={() => { close(); onHistory(); }}>历史版本</MenuItem>}
+          {draft.source.kind === 'plane' && !draft.deletedAt && <MenuItem disabled={busy || readOnly || !!pending} onClick={() => { close(); onDynamic(); }}>制作动态副本</MenuItem>}
           {draft.id && <MenuItem onClick={() => { close(); onUsage(); }}>使用位置与教学反馈</MenuItem>}
           {draft.id && !draft.deletedAt && <MenuItem icon="folder" disabled={busy || !!pending}
             onClick={() => { close(); onDelete(); }}>归档作品</MenuItem>}

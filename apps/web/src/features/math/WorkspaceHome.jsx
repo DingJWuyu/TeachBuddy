@@ -24,7 +24,7 @@ export function WorkIllustration({ kind }) {
   </svg>;
 }
 
-export default function WorkspaceHome({ draft, status, items, search, deleted, busy, onSearch, onDeleted, onNew, onOpen, onResume, onDiscard, onImport, onRestore, onPurge }) {
+export default function WorkspaceHome({ draft, status, items, search, deleted, busy, onSearch, onDeleted, onNew, onOpen, onResume, onDiscard, onImport, onImportSource, onRestore, onPurge }) {
   return <div className="math-home">
     <section aria-labelledby="math-start-heading">
       <h2 id="math-start-heading" tabIndex={-1}>这节课，需要什么数学素材？</h2>
@@ -34,7 +34,8 @@ export default function WorkspaceHome({ draft, status, items, search, deleted, b
           <Icon name="chevron"/>
         </button>)}
       </div>
-      <button className="math-import-link" disabled={busy} onClick={onImport}><Icon name="folder"/>导入已有 HTML 演示</button>
+      <div className="math-import-actions"><button className="math-import-link" disabled={busy} onClick={onImport}><Icon name="folder"/>导入已有 HTML 演示</button>
+      <button className="math-import-link" disabled={busy} onClick={onImportSource}><Icon name="folder"/>导入制作源 JSON</button></div>
     </section>
     {draft && status !== '已保存' && <section className="math-resume" aria-label="本设备草稿">
       <div><strong>{draft.title}</strong><span>{status === '未保存' ? '草稿保留在本设备，可继续制作' : status}</span></div>

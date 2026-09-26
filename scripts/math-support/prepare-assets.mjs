@@ -23,6 +23,10 @@ export async function prepareMathAssets(destination = mathAssetsDirectory) {
     await fs.copyFile(path.join(font, 'files', name), path.join(fontTarget, 'files', name));
   }
   await fs.copyFile(path.join(font, 'LICENSE'), path.join(fontTarget, 'LICENSE'));
+  const licenses = path.join(destination, 'licenses');
+  await fs.mkdir(licenses, { recursive: true });
+  await fs.copyFile(path.join(path.dirname(require.resolve('mathlive')), 'LICENSE.txt'), path.join(licenses, 'mathlive.txt'));
+  await fs.copyFile(path.resolve(path.dirname(require.resolve('zundo')), '../LICENSE'), path.join(licenses, 'zundo.txt'));
   console.log(`Local MathJax ${version} and Noto Sans SC assets: ${destination}`);
 }
 

@@ -19,6 +19,19 @@
 .math-document-bar input { flex: 1; min-width: 40px; width: 100px; border-color: transparent; background: transparent; padding: 4px 8px; font-size: 15px; font-weight: 500; }
 .math-document-bar input:hover { background: var(--math-soft); }
 .math-workspace-status { font-size: 12px; color: var(--math-muted); white-space: nowrap; }
+.math-undo-actions { display: flex; gap: 2px; flex: none; }
+.math-import-actions { display: flex; flex-wrap: wrap; gap: 0 20px; }
+.math-history-host { --math-line: var(--app-line); --math-muted: var(--app-muted); }
+.wb-dialog.math-history { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); overflow-y: auto; }
+.math-history-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.math-history-heading h2 { margin: 0; font-size: 18px; }
+.math-history .math-hint { color: var(--math-muted); font-size: 13px; line-height: 1.7; }
+.math-version-select { display: grid; gap: 8px; font-size: 14px; }
+.math-version-select select { width: 100%; min-width: 0; }
+.math-history-title { display: block; margin-top: 16px; overflow-wrap: anywhere; font-size: 14px; }
+.math-history-preview { display: grid; place-items: center; height: 300px; margin: 12px 0; border: 1px solid var(--math-line); border-radius: 8px; overflow: auto; }
+.math-history-preview > p { padding: 16px; color: var(--math-muted); font-size: 14px; }
+.math-history-preview .math-formula-preview { padding: 16px; max-width: 100%; }
 .math-editing-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px 20px; background: var(--math-surface); }
 .math-editing-toolbar > button { border-color: transparent; font-size: 13px; }
 .math-editing-toolbar .math-canvas-settings { margin-left: auto; }
@@ -113,6 +126,11 @@
 .math-formula-mode { display: flex; align-items: center; gap: 8px; margin: 24px 0 16px; }
 .math-formula-mode button { border-color: transparent; background: transparent; color: var(--math-muted); }
 .math-formula-mode button[aria-pressed="true"] { color: var(--app-text); background: var(--math-soft); font-weight: 500; }
+.math-formula-mode { flex-wrap: wrap; }
+.math-visual-field math-field { display: block; min-height: 64px; max-width: 100%; padding: 12px; border: 1px solid var(--math-line); border-radius: 8px; background: var(--math-surface); color: var(--app-text); font-size: 24px; --primary: var(--app-primary); --caret-color: var(--app-primary); --selection-background-color: var(--app-hover); --selection-color: var(--app-text); }
+.math-visual-field math-field:focus-within { outline: none; border-color: var(--app-primary); box-shadow: inset 0 0 0 1px var(--app-primary); }
+.math-visual-field math-field::part(virtual-keyboard-toggle), .math-visual-field math-field::part(menu-toggle) { display: none; }
+.math-visual-formula .math-insert { display: flex; flex-wrap: wrap; gap: 6px; }
 .math-formula-templates { display: flex; gap: 10px; margin-bottom: 16px; }
 .math-formula-templates button { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 58px; flex: 1; }
 .math-formula-templates button[aria-pressed="true"] { border-color: var(--app-primary); }
