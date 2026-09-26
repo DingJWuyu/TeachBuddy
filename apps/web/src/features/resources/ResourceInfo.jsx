@@ -31,7 +31,7 @@ export function ResourceInfo({
         <div>
           <strong>{file?.name ?? item.title}</strong>
           <span>
-            {item.deletedAt ? "已删除，恢复后可以继续整理" : "整理这份资料"}
+            {item.deletedAt ? "已归档，恢复后可以继续整理" : "整理这份资料"}
           </span>
         </div>
       </div>

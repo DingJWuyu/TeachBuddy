@@ -4,11 +4,13 @@
 
 ## 已有本机实例
 
-- 开发树：`/home/liam_t/项目/TeacherWorkspace-preview`，分支 `preview/usable-mvp`。
+- 开发树：`/home/liam_t/项目/TeacherWorkspace-preview`；当前开发分支以 `git branch --show-current` 为准。
 - 地址：`https://localhost:50880`。
 - 用户级服务：`teacherworkspace-preview.service`。
 - 启动入口：开发树 `.scratch/preview/start.sh`；私有运行配置：`.scratch/preview/runtime.env`。
+- 已发布源码：`.scratch/preview/deployed-source/`；Web 静态文件：`apps/web/dist/`。发布快照只包含已部署基线和本次获准改动，避免重启时连带加载其他会话尚未提交的代码；开发树修改需重新验证、更新快照并重启才进入 API 实例。
 - 启动入口还加载 `.env` 及用户私有邮件配置。只读键名和路径进行诊断，不打印秘密。
+- 发布快照的转换依赖须在沙箱挂载目录内可解析；逐包指向开发树的绝对软链接会在沙箱中失效。按快照实际依赖布局运行真实 PDF 预览后再更新实例。
 
 当前代码 HEAD、已构建 Web、正在运行的 Node 进程是三个事实，不能互相替代。文档编辑不需要重启服务。用户未要求更新实例时，开发验证不占 50880，不写其数据库、文件、证书或配置，也不覆盖其 Web 构建产物。
 

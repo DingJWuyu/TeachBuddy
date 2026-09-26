@@ -1,4 +1,34 @@
 /* Resource library only: independent surfaces on the existing workbench background. */
+.wb-shell.tb-prototype:is([data-route="resources"], [data-route="resource"])
+  .wb-workspace {
+  padding: var(--app-workspace-padding);
+  gap: 16px;
+}
+.wb-shell.tb-prototype:is([data-route="resources"], [data-route="resource"])
+  .wb-main {
+  padding: 0;
+}
+.wb-shell.tb-prototype:is(
+    [data-route="resources"],
+    [data-route="resource"]
+  ):not(.is-narrow)
+  .wb-aux {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: var(--wb-shadow);
+}
+.wb-shell.tb-prototype:is(
+    [data-route="resources"],
+    [data-route="resource"]
+  ).is-narrow
+  .wb-aux {
+  inset: var(--app-workspace-padding);
+  margin: 0;
+  border-radius: 12px;
+}
+.wb-shell:is([data-route="resources"], [data-route="resource"]) .wb-aux-body {
+  overflow-y: auto;
+}
 .res-ui,
 .res-dialog {
   --res-ink: var(--app-text, #2e3137);

@@ -29,8 +29,15 @@ async function upload(page, file = image, first = true) {
   await page
     .getByLabel(first ? "上传第一份资料" : "上传资料", { exact: true })
     .setInputFiles(file);
-  await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible();
   await expect(page.locator(".res-status")).toContainText("文件已保存");
+  await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .getByAltText("第 1 页", { exact: true })
+        .evaluate((img) => img.naturalWidth),
+    )
+    .toBeGreaterThan(100);
 }
 
 test.beforeEach(async ({ page }) => {
@@ -150,7 +157,7 @@ test("先收录后整理：图片、就地建文件夹和标签、保存重开�
   await expect(page.locator(".res-card-open")).toHaveCount(1);
 });
 
-test("真实 PDF 翻页、加入备课、更新文件、删除恢复保留资料和旧引用", async ({
+test("真实 PDF 翻页、加入备课、更新文件、归档恢复保留资料和旧引用", async ({
   page,
 }, info) => {
   // Only the destination lesson is a fixture. All resource actions use visible UI.
@@ -209,16 +216,15 @@ test("真实 PDF 翻页、加入备课、更新文件、删除恢复保留资料
   );
   expect(after.json.materials[0].snapshot).toEqual(snapshot);
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
-  await page.getByRole("menuitem", { name: "删除资料", exact: true }).click();
-  await page.getByRole("button", { name: "确认删除", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "恢复资料", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
+  await page.getByRole("button", { name: "确认归档", exact: true }).click();
+  await expect(page.locator(".res-library")).toBeVisible();
+  await expect(page.locator(".res-detail")).toHaveCount(0);
+  await expect(page.locator(".res-status")).toBeHidden({ timeout: 3500 });
   await page
     .getByRole("button", { name: "资源库更多操作", exact: true })
     .click();
-  await page.getByRole("menuitem", { name: "已删除资料", exact: true }).click();
+  await page.getByRole("menuitem", { name: "已归档资料", exact: true }).click();
   await expect(page.locator(".res-card-open")).toHaveCount(1);
   await screenshot(page, info, "deleted");
   await page.locator(".res-card-open").click();
@@ -231,6 +237,58 @@ test("真实 PDF 翻页、加入备课、更新文件、删除恢复保留资料
   await expect(page.getByLabel("资源笔记")).toHaveValue(
     "更新文件也保留这条备注",
   );
+  const resource = (await api.request("GET", "/api/modules/resources/items"))
+    .json.items[0];
+  const rejected = await api.request(
+    "POST",
+    `/api/modules/resources/items/${resource.id}/purge`,
+    {
+      headers: { "Idempotency-Key": randomUUID() },
+      body: { baseVersion: resource.version },
+    },
+  );
+  expect(rejected.status).toBe(422);
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
+  await page.getByRole("button", { name: "确认归档", exact: true }).click();
+  await expect(page.locator(".res-library")).toBeVisible();
+  await page
+    .getByRole("button", { name: "资源库更多操作", exact: true })
+    .click();
+  await page.getByRole("menuitem", { name: "已归档资料", exact: true }).click();
+  await page.locator(".res-card-open").click();
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  await page.getByRole("menuitem", { name: "彻底删除", exact: true }).click();
+  await expect(
+    page.getByRole("dialog", { name: "彻底删除确认" }),
+  ).toContainText("无法恢复");
+  await page.getByRole("button", { name: "取消", exact: true }).click();
+  await expect(page.locator(".res-detail")).toBeVisible();
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  await page.getByRole("menuitem", { name: "彻底删除", exact: true }).click();
+  await page.getByRole("button", { name: "确认彻底删除", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "没有已归档的资料" }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "没有已归档的资料" }),
+  ).toBeVisible();
+  expect(
+    (await api.request("GET", `/api/modules/resources/items/${resource.id}`))
+      .status,
+  ).toBe(404);
+  const lesson = (
+    await api.request("GET", "/api/modules/lessons/v3/" + created.json.id)
+  ).json;
+  expect(lesson.materials[0].snapshot).toEqual(snapshot);
+  expect(lesson.materials[0].sourceState).toBe("deleted");
+  const original = await api.request(
+    "GET",
+    `/api/workbench/files/${snapshot.fileId}/content`,
+  );
+  expect(original.status).toBe(200);
+  expect(original.text).toBe(fs.readFileSync(pdf, "utf8"));
 });
 
 test("文件夹浏览与菜单键盘操作，桌面和平板布局保持可用", async ({
@@ -239,6 +297,16 @@ test("文件夹浏览与菜单键盘操作，桌面和平板布局保持可用",
   await upload(page);
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await page.getByRole("button", { name: "文件夹与标签", exact: true }).click();
+  await expect
+    .poll(async () => {
+      const main = await page.locator(".res-workspace").boundingBox();
+      const aside = await page.locator(".wb-aux").boundingBox();
+      return Math.max(
+        Math.abs(main.y - aside.y),
+        Math.abs(main.y + main.height - aside.y - aside.height),
+      );
+    })
+    .toBeLessThanOrEqual(1);
   await page.getByRole("button", { name: "新建文件夹", exact: true }).click();
   await page
     .getByRole("dialog", { name: "新建文件夹" })
@@ -282,6 +350,19 @@ test("文件夹浏览与菜单键盘操作，桌面和平板布局保持可用",
       );
     expect(zoomFits).toBe(true);
     await screenshot(page, info, `preview-${width}`);
+    await infoPanel(page);
+    await expect
+      .poll(async () => {
+        const main = await page.locator(".res-workspace").boundingBox();
+        const aside = await page.locator(".wb-aux").boundingBox();
+        return Math.max(
+          Math.abs(main.y - aside.y),
+          Math.abs(main.y + main.height - aside.y - aside.height),
+        );
+      })
+      .toBeLessThanOrEqual(1);
+    await screenshot(page, info, `info-${width}`);
+    await page.getByRole("button", { name: "关闭辅助栏", exact: true }).click();
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
   const preferences = (
@@ -453,4 +534,102 @@ test("筛选和对话框连续展开收起，快速反向与键盘焦点可用",
   await page.emulateMedia({ reducedMotion: "reduce" });
   await filter.click();
   await expect(page.getByLabel("格式筛选")).toHaveCount(0);
+});
+
+test("PDF 预览不依赖 Office 安装目录", async ({ page }) => {
+  const previous = process.env.MATERIALS_OFFICE_ROOT;
+  process.env.MATERIALS_OFFICE_ROOT = path.join(
+    world.directory,
+    "office-not-installed",
+  );
+  try {
+    await page.getByLabel("上传第一份资料", { exact: true }).setInputFiles(pdf);
+    await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible({
+      timeout: 8000,
+    });
+    await expect
+      .poll(() =>
+        page
+          .getByAltText("第 1 页", { exact: true })
+          .evaluate((img) => img.naturalWidth),
+      )
+      .toBeGreaterThan(100);
+  } finally {
+    if (previous === undefined) delete process.env.MATERIALS_OFFICE_ROOT;
+    else process.env.MATERIALS_OFFICE_ROOT = previous;
+  }
+});
+
+test("彻底删除的权限、版本与响应丢失恢复", async ({ page }) => {
+  await upload(page);
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
+  await page.getByRole("button", { name: "确认归档", exact: true }).click();
+  await expect(page.locator(".res-library")).toBeVisible();
+  const archived = (
+    await api.request("GET", "/api/modules/resources/items?state=deleted")
+  ).json.items[0];
+  const endpoint = `/api/modules/resources/items/${archived.id}/purge`;
+  const mutation = {
+    headers: { "Idempotency-Key": randomUUID() },
+    body: { baseVersion: archived.version },
+  };
+  const other = (
+    await registerMath(world, "another-resource-owner@example.test")
+  ).client;
+  expect((await other.request("POST", endpoint, mutation)).status).toBe(404);
+  expect(
+    (
+      await api.request("POST", endpoint, {
+        ...mutation,
+        body: { baseVersion: archived.version - 1 },
+      })
+    ).status,
+  ).toBe(409);
+  await page
+    .getByRole("button", { name: "资源库更多操作", exact: true })
+    .click();
+  await page.getByRole("menuitem", { name: "已归档资料", exact: true }).click();
+  await page.locator(".res-card-open").click();
+  let key,
+    lost = true;
+  await page.route("**/purge", async (route) => {
+    if (lost) {
+      lost = false;
+      key = route.request().headers()["idempotency-key"];
+      await route.fetch();
+      await route.abort("failed");
+    } else await route.continue();
+  });
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  await page.getByRole("menuitem", { name: "彻底删除", exact: true }).click();
+  await page.getByRole("button", { name: "确认彻底删除", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "重试确认原请求" }),
+  ).toBeVisible();
+  await page.reload();
+  const retried = page.waitForRequest(
+    (req) =>
+      req.url().endsWith("/purge") && req.headers()["idempotency-key"] === key,
+  );
+  await page.getByRole("button", { name: "重试确认原请求" }).click();
+  await retried;
+  await expect(
+    page.getByRole("heading", { name: "没有已归档的资料" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "重试确认原请求" }),
+  ).toBeHidden();
+  expect(
+    (
+      await api.request(
+        "POST",
+        `/api/modules/resources/items/${archived.id}/deletion`,
+        {
+          headers: { "Idempotency-Key": randomUUID() },
+          body: { baseVersion: archived.version, deleted: false },
+        },
+      )
+    ).status,
+  ).toBe(404);
 });

@@ -180,6 +180,20 @@ export function createResourcesModule({
         });
       },
     },
+    purgeResource: {
+      method: "POST",
+      route: "/items/:id/purge",
+      schema: "PurgeResource",
+      run: ({ principal, id, input }) => {
+        const item = current(principal, id, input, true);
+        if (!item.deletedAt) throw invalidInput("/id", "invalid-reference");
+        db.prepare(
+          "DELETE FROM resource_items WHERE accountKey=? AND id=?",
+        ).run(principal.accountKey, id);
+        // Lesson snapshots and managed file bytes have their own lifetime.
+        return { id, permanentlyDeleted: true };
+      },
+    },
     getResourceTaxonomy: {
       method: "GET",
       route: "/taxonomy",

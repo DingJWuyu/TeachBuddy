@@ -79,10 +79,10 @@ export function Library({
             <Icon name={deleted ? "trash" : "folder"} size={23} />
           </span>
           <div>
-            <h1>{deleted ? "已删除资料" : "资源库"}</h1>
+            <h1 tabIndex={-1}>{deleted ? "已归档资料" : "资源库"}</h1>
             <p>
               {deleted
-                ? "误删的资料可以在这里恢复"
+                ? "暂时不用的资料，可恢复或彻底删除"
                 : "收藏教学资料，随时查看与取用"}
             </p>
           </div>
@@ -124,7 +124,7 @@ export function Library({
                     }}
                   >
                     <Icon name="trash" size={16} />
-                    已删除资料
+                    已归档资料
                   </button>
                 )}
               </Popover>
@@ -383,7 +383,7 @@ export function Library({
                   : filtered
                     ? "没有找到匹配的资料"
                     : deleted
-                      ? "没有已删除的资料"
+                      ? "没有已归档的资料"
                       : "把教学资料收在一起"}
               </h2>
               {!loading && (
@@ -392,7 +392,7 @@ export function Library({
                     {filtered
                       ? "试试其他关键词，或清除筛选条件。"
                       : deleted
-                        ? "删除的资料会出现在这里，随时可以恢复。"
+                        ? "归档的资料会出现在这里，可以恢复或彻底删除。"
                         : "上传课件、文档或图片，随时预览，也可以加入备课。"}
                   </p>
                   {filtered ? (

@@ -120,7 +120,7 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
           }
         >
           <Icon name="trash" size={16} />
-          已删除资料
+          已归档资料
         </button>
       </div>
     </div>

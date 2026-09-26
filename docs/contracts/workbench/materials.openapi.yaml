@@ -1130,6 +1130,57 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SetDeletion'
+  /api/modules/resources/items/{id}/purge:
+    post:
+      operationId: purgeResource
+      summary: purgeResource
+      description: 永久移除已归档资料条目。活动资料拒绝；已有备课快照和受管文件保留。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourcePurged'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurgeResource'
   /api/modules/resources/items/{id}/for-reference:
     get:
       operationId: readResourceForReferenceV2
@@ -2181,6 +2232,22 @@ components:
       $ref: ./first-flow.openapi.yaml#/components/schemas/MathBlock
     SetDeletion:
       $ref: ./first-flow.openapi.yaml#/components/schemas/SetDeletion
+    PurgeResource:
+      type: object
+      additionalProperties: false
+      required: [baseVersion]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+    ResourcePurged:
+      type: object
+      additionalProperties: false
+      required: [id, permanentlyDeleted]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        permanentlyDeleted:
+          const: true
     Box:
       type: object
       properties:

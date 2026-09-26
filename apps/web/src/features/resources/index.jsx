@@ -100,6 +100,14 @@ function ResourceWorkspace({
     replaceInput = useRef(null),
     supplementInput = useRef(null);
   const refresh = () => setRevision((n) => n + 1);
+  useEffect(() => {
+    if (!message || busy || pending || error) return;
+    const timer = setTimeout(() => {
+      setMessage("");
+      setLastLesson(null);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [message, busy, pending, error]);
   useForegroundRefresh(() => {
     if (!busyRef.current && !controller.signal.aborted) refresh();
   });
@@ -249,8 +257,37 @@ function ResourceWorkspace({
           await remember(record);
           continue;
         }
-        if (!Number.isInteger(value.version))
+        if (
+          record.purpose === "purge"
+            ? value.permanentlyDeleted !== true || !value.id
+            : !Number.isInteger(value.version)
+        )
           throw Object.assign(new Error("保存结果未确认"), { unknown: true });
+        if (record.purpose === "purge" || record.purpose === "deletion") {
+          const purged = record.purpose === "purge";
+          const drafts = { ...sceneRef.current.drafts };
+          if (purged) delete drafts[value.id];
+          else if (drafts[value.id])
+            drafts[value.id] = {
+              ...drafts[value.id],
+              baseVersion: value.version,
+            };
+          patchScene({
+            drafts,
+            selected: sceneRef.current.selected.filter((id) => id !== value.id),
+            ...(sceneRef.current.supplement?.resourceId === value.id
+              ? { supplement: null }
+              : {}),
+            ...(!purged && !value.deletedAt ? { state: "active" } : {}),
+          });
+          setAllItems((current) =>
+            purged
+              ? current.filter((item) => item.id !== value.id)
+              : current.map((item) => (item.id === value.id ? value : item)),
+          );
+          setItems((current) => current.filter((item) => item.id !== value.id));
+          if (purged || value.deletedAt) close(true);
+        }
         if (record.purpose === "metadata") {
           const live = sceneRef.current.drafts[value.id];
           if (JSON.stringify(live) === JSON.stringify(record.input)) {
@@ -295,8 +332,9 @@ function ResourceWorkspace({
             supplement: "已采用补充预览",
             lesson: "已加入备课",
             deletion: value.deletedAt
-              ? "资料已移到已删除资料，可随时恢复"
+              ? "资料已归档，可在已归档资料中恢复"
               : "资料已恢复",
+            purge: "资料已彻底删除",
           }[record.purpose] ?? "已保存",
         );
         setConflict(null);
@@ -381,14 +419,19 @@ function ResourceWorkspace({
     setError("");
     setMessage("");
   }
-  function close() {
+  function close(removed = false) {
     patchScene({ openId: null });
     if (!shell.isPanelOpen || shell.panelMode === "resource-taxonomy") {
       if (scene.libraryPanelOpen) shell.openPanel?.("resource-taxonomy");
       else if (shell.isPanelOpen) shell.closePanel?.();
     }
     refresh();
-    requestAnimationFrame(() => triggerRef.current?.focus());
+    requestAnimationFrame(() => {
+      if (!removed && triggerRef.current?.isConnected)
+        triggerRef.current.focus();
+      else
+        listRef.current?.closest(".res-library")?.querySelector("h1")?.focus();
+    });
   }
   function edit(patch) {
     patchScene({
@@ -531,14 +574,14 @@ function ResourceWorkspace({
       {scene.openId && (
         <section className="res-detail">
           <header className="res-header res-surface">
-            <button className="res-back-button" onClick={close}>
+            <button className="res-back-button" onClick={() => close()}>
               <Icon name="arrowLeft" size={17} />
               <span>返回资源库</span>
             </button>
             <div className="res-detail-title">
               <h1>{item?.title ?? "读取资料…"}</h1>
               <span className="res-muted">
-                {item?.deletedAt ? "已删除资料" : file?.name}
+                {item?.deletedAt ? "已归档资料" : file?.name}
               </span>
             </div>
             <div className="res-header-actions">
@@ -589,47 +632,51 @@ function ResourceWorkspace({
               >
                 {({ close: closeMenu }) => (
                   <>
-                    <button
-                      role="menuitem"
-                      disabled={disabled || !item || !!item.deletedAt}
-                      onClick={() => {
-                        closeMenu();
-                        replaceInput.current?.click();
-                      }}
-                    >
-                      <Icon name="upload" size={16} />
-                      更新文件
-                    </button>
-                    <button
-                      role="menuitem"
-                      disabled={disabled || !item || !!item.deletedAt}
-                      onClick={() => {
-                        closeMenu();
-                        supplementInput.current?.click();
-                      }}
-                    >
-                      <Icon name="file" size={16} />
-                      补充 PDF 预览
-                    </button>
-                    {item?.supplementPreviewFileId && (
-                      <button
-                        role="menuitem"
-                        disabled={disabled || !!item.deletedAt}
-                        onClick={() => {
-                          closeMenu();
-                          write(
-                            `${root}/items/${item.id}/supplement-preview`,
-                            {
-                              baseVersion: item.version,
-                              fileId: item.fileId,
-                              supplementPreviewFileId: null,
-                            },
-                            "supplement",
-                          );
-                        }}
-                      >
-                        移除补充预览
-                      </button>
+                    {!item?.deletedAt && (
+                      <>
+                        <button
+                          role="menuitem"
+                          disabled={disabled || !item || !!item.deletedAt}
+                          onClick={() => {
+                            closeMenu();
+                            replaceInput.current?.click();
+                          }}
+                        >
+                          <Icon name="upload" size={16} />
+                          更新文件
+                        </button>
+                        <button
+                          role="menuitem"
+                          disabled={disabled || !item || !!item.deletedAt}
+                          onClick={() => {
+                            closeMenu();
+                            supplementInput.current?.click();
+                          }}
+                        >
+                          <Icon name="file" size={16} />
+                          补充 PDF 预览
+                        </button>
+                        {item?.supplementPreviewFileId && (
+                          <button
+                            role="menuitem"
+                            disabled={disabled || !!item.deletedAt}
+                            onClick={() => {
+                              closeMenu();
+                              write(
+                                `${root}/items/${item.id}/supplement-preview`,
+                                {
+                                  baseVersion: item.version,
+                                  fileId: item.fileId,
+                                  supplementPreviewFileId: null,
+                                },
+                                "supplement",
+                              );
+                            }}
+                          >
+                            移除补充预览
+                          </button>
+                        )}
+                      </>
                     )}
                     {!item?.deletedAt && (
                       <>
@@ -644,9 +691,23 @@ function ResourceWorkspace({
                           }}
                         >
                           <Icon name="trash" size={16} />
-                          删除资料
+                          归档资料
                         </button>
                       </>
+                    )}
+                    {item?.deletedAt && (
+                      <button
+                        role="menuitem"
+                        className="res-danger"
+                        disabled={disabled}
+                        onClick={() => {
+                          closeMenu();
+                          setDialog({ kind: "purge", item });
+                        }}
+                      >
+                        <Icon name="trash" size={16} />
+                        彻底删除
+                      </button>
                     )}
                   </>
                 )}
@@ -868,15 +929,23 @@ function ResourceWorkspace({
       <ModulePresence present={!!dialog}>
         {dialog && (
           <ResourceDialog
-            label={dialog.kind === "replace" ? "更新文件确认" : "删除恢复确认"}
+            label={
+              dialog.kind === "replace"
+                ? "更新文件确认"
+                : dialog.kind === "purge"
+                  ? "彻底删除确认"
+                  : "归档恢复确认"
+            }
             onClose={() => setDialog(null)}
           >
             <h2>
               {dialog.kind === "replace"
                 ? "更新当前文件"
-                : dialog.item.deletedAt
-                  ? "恢复资料"
-                  : "删除资料"}
+                : dialog.kind === "purge"
+                  ? "彻底删除资料"
+                  : dialog.item.deletedAt
+                    ? "恢复资料"
+                    : "归档资料"}
             </h2>
             {dialog.kind === "replace" ? (
               <>
@@ -893,15 +962,18 @@ function ResourceWorkspace({
               </>
             ) : (
               <p>
-                {dialog.item.deletedAt
-                  ? "恢复后可以继续查看和整理这份资料。"
-                  : "资料会移入“已删除资料”，可以随时恢复。已有备课仍可使用引用的文件。"}
+                {dialog.kind === "purge"
+                  ? `“${dialog.item.title}”将从资源库永久删除，无法恢复。已有备课引用的文件会保留。`
+                  : dialog.item.deletedAt
+                    ? "恢复后可以继续查看和整理这份资料。"
+                    : "资料会移入“已归档资料”，可以随时恢复。已有备课仍可使用引用的文件。"}
               </p>
             )}
             <div className="res-actions">
               <button
                 className={
-                  dialog.kind === "delete" && !dialog.item.deletedAt
+                  dialog.kind === "purge" ||
+                  (dialog.kind === "delete" && !dialog.item.deletedAt)
                     ? "res-danger"
                     : "res-primary"
                 }
@@ -916,23 +988,32 @@ function ResourceWorkspace({
                         purpose: "upload",
                         meta: dialog.meta,
                       })
-                    : write(
-                        `${root}/items/${dialog.item.id}/deletion`,
-                        {
-                          baseVersion: dialog.item.version,
-                          deleted: !dialog.item.deletedAt,
-                        },
-                        "deletion",
-                        "POST",
-                      )
+                    : dialog.kind === "purge"
+                      ? write(
+                          `${root}/items/${dialog.item.id}/purge`,
+                          { baseVersion: dialog.item.version },
+                          "purge",
+                          "POST",
+                        )
+                      : write(
+                          `${root}/items/${dialog.item.id}/deletion`,
+                          {
+                            baseVersion: dialog.item.version,
+                            deleted: !dialog.item.deletedAt,
+                          },
+                          "deletion",
+                          "POST",
+                        )
                 }
               >
                 确认
                 {dialog.kind === "replace"
                   ? "更新"
-                  : dialog.item.deletedAt
-                    ? "恢复"
-                    : "删除"}
+                  : dialog.kind === "purge"
+                    ? "彻底删除"
+                    : dialog.item.deletedAt
+                      ? "恢复"
+                      : "归档"}
               </button>
               <button onClick={() => setDialog(null)}>取消</button>
             </div>

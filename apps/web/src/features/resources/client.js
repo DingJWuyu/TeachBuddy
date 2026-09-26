@@ -1,4 +1,4 @@
-import { deviceRequestStore } from '../workbench/deviceRequestStore.js';
+import { deviceRequestStore } from "../workbench/deviceRequestStore.js";
 // transport is the authenticated page transport supplied by the shell. No raw
 // fetch fallback: uploads and bytes must have the same identity as JSON writes.
 export function createResourcesClient(transport, signal, onIdentityLost) {
@@ -11,12 +11,27 @@ export function createResourcesClient(transport, signal, onIdentityLost) {
     const headers = {};
     let body;
     if (method !== "GET") {
-      const id = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-      const allowed = method === 'PUT'
-        ? new RegExp(`^/api/modules/(?:resources/(?:taxonomy|items/${id}(?:/(?:file|supplement-preview))?)|lessons/v3/${id})$`)
-        : method === 'POST' ? new RegExp(`^/api/(?:workbench/(?:files(?:/${id}/preview)?|jobs/${id}/retry)|modules/resources/items(?:/${id}/deletion)?)$`) : null;
-      if (!allowed?.test(path) || typeof key !== 'string' || !input || typeof input !== 'object')
-        throw Object.assign(new Error('原请求格式暂不支持，已保留设备资料，请核对后处理'), { unknown: true });
+      const id = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+      const allowed =
+        method === "PUT"
+          ? new RegExp(
+              `^/api/modules/(?:resources/(?:taxonomy|items/${id}(?:/(?:file|supplement-preview))?)|lessons/v3/${id})$`,
+            )
+          : method === "POST"
+            ? new RegExp(
+                `^/api/(?:workbench/(?:files(?:/${id}/preview)?|jobs/${id}/retry)|modules/resources/items(?:/${id}/(?:deletion|purge))?)$`,
+              )
+            : null;
+      if (
+        !allowed?.test(path) ||
+        typeof key !== "string" ||
+        !input ||
+        typeof input !== "object"
+      )
+        throw Object.assign(
+          new Error("原请求格式暂不支持，已保留设备资料，请核对后处理"),
+          { unknown: true },
+        );
       headers["X-TeachBuddy-Request"] = "1";
       headers["Idempotency-Key"] = key;
       if (input instanceof Blob) {
@@ -92,7 +107,12 @@ export function createResourcesClient(transport, signal, onIdentityLost) {
 }
 
 export function pendingStore(accountKey, value) {
-  return deviceRequestStore({ database: 'teachbuddy-resources-pending', storeName: 'requests',
-    account: accountKey, name: 'pending:resources',
-    action: value === undefined ? 'get' : value === null ? 'delete' : 'put', value });
+  return deviceRequestStore({
+    database: "teachbuddy-resources-pending",
+    storeName: "requests",
+    account: accountKey,
+    name: "pending:resources",
+    action: value === undefined ? "get" : value === null ? "delete" : "put",
+    value,
+  });
 }

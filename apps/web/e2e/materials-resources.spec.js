@@ -60,11 +60,14 @@ test("WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复", as
   await expect(page.locator(".res-info-file strong")).toHaveText("c22.pdf");
   await expect(page.getByLabel("资源笔记")).toHaveValue("板书：先观察，再归纳");
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
-  await page.getByRole("menuitem", { name: "删除资料", exact: true }).click();
-  await page.getByRole("button", { name: "确认删除", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "恢复资料", exact: true }),
-  ).toBeVisible();
+  await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
+  await page.getByRole("button", { name: "确认归档", exact: true }).click();
+  await expect(page.locator(".res-library")).toBeVisible();
+  await page
+    .getByRole("button", { name: "资源库更多操作", exact: true })
+    .click();
+  await page.getByRole("menuitem", { name: "已归档资料", exact: true }).click();
+  await page.locator(".res-card-open").click();
   await page.getByRole("button", { name: "恢复资料", exact: true }).click();
   await page.getByRole("button", { name: "确认恢复", exact: true }).click();
   await expect(

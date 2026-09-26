@@ -79,7 +79,17 @@ export async function convertFile({
   const apiModules = path.join(root, "apps/api/node_modules");
   if (fs.existsSync(apiModules))
     args.push("--ro-bind", apiModules, "/app/api/node_modules");
-  if (officeRoot) args.push("--ro-bind", path.resolve(officeRoot), "/office");
+  // PDF, images and HTML do not use Office. A stale Office installation path
+  // must not prevent their independent converters from starting.
+  const needsOffice = [
+    "application/msword",
+    "application/vnd.ms-powerpoint",
+    "application/x-cfb",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ].includes(mediaType);
+  if (needsOffice && officeRoot)
+    args.push("--ro-bind", path.resolve(officeRoot), "/office");
   args.push(
     "/usr/bin/prlimit",
     "--as=4294967296",
