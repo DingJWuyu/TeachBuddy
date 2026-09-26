@@ -78,7 +78,7 @@ test('classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数
   const harness = await createTeachingTimeClassesHarness({ databasePath: sqlitePath, trustedOrigin: TRUSTED_ORIGIN });
   try {
     const applied = harness.query("SELECT id FROM workbench_migrations WHERE id LIKE 'classes_%'");
-    assert.deepEqual(applied.map((row) => row.id), ['classes_0001_class_tables']);
+    assert.deepEqual(applied.map((row) => row.id), ['classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility']);
     assert.equal(harness.countRows('question_items'), 1);
     assert.equal(harness.countRows('lesson_items'), 1);
 

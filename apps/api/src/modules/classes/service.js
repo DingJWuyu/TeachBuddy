@@ -23,6 +23,7 @@ import {
   validateUpdateRecordV2,
   validateDeletion,
   validatePurgeClass,
+  validateNextNoteVisibility,
   validateSourceRecordsPath,
   validateUpdateClass,
   validateUpdateRecord
@@ -107,8 +108,17 @@ export function createClassesService({ repository, questions, lessons, math, now
   }
 
   /** Project one stored link against the current source. */
-  function toSource(principal, stored) {
-    const reference = readSource(principal, stored.kind, stored.sourceId);
+  function toSource(principal, stored, version) {
+    let reference;
+    try { reference = readSource(principal, stored.kind, stored.sourceId); }
+    catch (error) {
+      // Existing links already belong to this record's owner. Keep their saved
+      // label when a provider is unavailable; new links still require validation.
+      if (version < 2 || ![404, 503].includes(error.status)) throw error;
+      return { kind: stored.kind, id: stored.sourceId, labelAtLink: stored.labelAtLink,
+        currentLabel: stored.labelAtLink, deleted: null,
+        unavailable: error.status === 404 ? 'missing' : 'temporary' };
+    }
     return {
       kind: stored.kind,
       id: stored.sourceId,
@@ -126,10 +136,11 @@ export function createClassesService({ repository, questions, lessons, math, now
 
   function projectRecords(principal, records, version) {
     records.forEach(record => assertRepresentable(record, version, '/items'));
-    return { items: records.map(record => toRecord(principal, record)) };
+    if (version >= 2) records.sort((a, b) => b.recordedOn.localeCompare(a.recordedOn) || b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id));
+    return { items: records.map(record => toRecord(principal, record, version)) };
   }
 
-  function toRecord(principal, record) {
+  function toRecord(principal, record, version = 1) {
     return {
       id: record.id,
       version: record.version,
@@ -143,7 +154,8 @@ export function createClassesService({ repository, questions, lessons, math, now
       unfinished: record.unfinished,
       commonIssues: record.commonIssues,
       nextNote: record.nextNote,
-      sources: repository.listSources(record.id).map((stored) => toSource(principal, stored))
+      ...(version >= 2 ? { nextNoteHidden: Boolean(record.nextNoteHidden) } : {}),
+      sources: repository.listSources(record.id).map((stored) => toSource(principal, stored, version))
     };
   }
 
@@ -158,6 +170,19 @@ export function createClassesService({ repository, questions, lessons, math, now
         .filter((record) => (record.deletedAt !== null) === wantDeleted)
         .map(toClass)
     };
+  }
+
+  function overview(principal) {
+    const accountKey = requireAccountKey(principal);
+    const records = repository.listActiveRecordsForAccount(accountKey);
+    return { items: repository.listClassesForAccount(accountKey).filter(item => !item.deletedAt).map(classroom => {
+      const items = records.filter(record => record.classId === classroom.id);
+      const latest = items[0];
+      const position = items.find(record => record.position.trim());
+      return { id: classroom.id, count: items.length,
+        latest: latest ? { recordedOn: latest.recordedOn, text: recordLabel(latest) } : null,
+        position: position ? { recordedOn: position.recordedOn, text: position.position } : null };
+    }) };
   }
 
   function getClass(principal, classId) {
@@ -236,7 +261,7 @@ export function createClassesService({ repository, questions, lessons, math, now
   function getRecord(principal, recordId, version = 1) {
     const record = requireRecord(principal, recordId);
     assertRepresentable(record, version);
-    return toRecord(principal, record);
+    return toRecord(principal, record, version);
   }
 
   function recordText(body) {
@@ -268,7 +293,7 @@ export function createClassesService({ repository, questions, lessons, math, now
     };
     repository.insertRecord(record);
     repository.replaceSources(record.id, accountKey, resolveLinks(principal, body.sources, new Map()));
-    return toRecord(principal, record);
+    return toRecord(principal, record, version);
   }
 
   /**
@@ -292,13 +317,14 @@ export function createClassesService({ repository, questions, lessons, math, now
     assertRepresentable(current, version);
     // A record belongs to exactly one class for its whole life.
     if (body.classId !== current.classId) throw classMismatch();
-    const next = { ...current, version: current.version + 1, updatedAt: timestamp(), ...recordText(body) };
+    const next = { ...current, version: current.version + 1, updatedAt: timestamp(), ...recordText(body),
+      nextNoteHidden: body.nextNote === current.nextNote ? current.nextNoteHidden : 0 };
     const existingByKey = new Map(
       repository.listSources(current.id).map((stored) => [`${stored.kind}:${stored.sourceId}`, stored])
     );
     repository.updateRecord(next);
     repository.replaceSources(current.id, accountKey, resolveLinks(principal, body.sources, existingByKey));
-    return toRecord(principal, next);
+    return toRecord(principal, next, version);
   }
 
   function setRecordDeletion(principal, recordId, input, version = 1) {
@@ -311,7 +337,26 @@ export function createClassesService({ repository, questions, lessons, math, now
     const at = timestamp();
     const next = { ...current, version: current.version + 1, updatedAt: at, deletedAt: body.deleted ? at : null };
     repository.updateRecord(next);
-    return toRecord(principal, next);
+    return toRecord(principal, next, version);
+  }
+
+  function purgeRecord(principal, recordId, input) {
+    const body = validatePurgeClass(input);
+    const current = requireRecordInActiveClass(principal, recordId);
+    if (body.expectedVersion !== current.version) throw versionConflict(current.version, current.id);
+    if (current.deletedAt === null) throw invalidInput('/recordId', 'invalid-reference');
+    repository.purgeRecord(requireAccountKey(principal), recordId, timestamp());
+    return { id: recordId, classId: current.classId, permanentlyDeleted: true };
+  }
+
+  function setNextNoteVisibility(principal, recordId, input) {
+    const body = validateNextNoteVisibility(input);
+    const current = requireRecordInActiveClass(principal, recordId);
+    if (current.deletedAt !== null) throw objectDeleted();
+    if (body.expectedVersion !== current.version) throw versionConflict(current.version, current.id);
+    const next = { ...current, nextNoteHidden: body.hidden ? 1 : 0, version: current.version + 1, updatedAt: timestamp() };
+    repository.updateRecord(next);
+    return toRecord(principal, next, 2);
   }
 
   // -------------------------------------------------- reverse feedback (links)
@@ -342,7 +387,9 @@ export function createClassesService({ repository, questions, lessons, math, now
   function readRecord(principal, recordId) {
     const removed = repository.getRemovedForAccount(requireAccountKey(principal), recordId, 'record');
     if (removed) return { id: removed.id, version: removed.version, classId: removed.classId,
-      label: '已删除记录', deletedAt: removed.removedAt, classDeletedAt: removed.removedAt };
+      label: '已删除记录', deletedAt: removed.removedAt,
+      classDeletedAt: repository.getClassForAccount(requireAccountKey(principal), removed.classId)?.deletedAt
+        ?? repository.getRemovedForAccount(requireAccountKey(principal), removed.classId, 'class')?.removedAt ?? null };
     const record = requireRecord(principal, recordId);
     const classroom = requireClass(principal, record.classId);
     return {
@@ -357,11 +404,14 @@ export function createClassesService({ repository, questions, lessons, math, now
 
   return {
     listClasses,
+    overview,
     getClass,
     createClass,
     updateClass,
     setClassDeletion,
     purgeClass,
+    purgeRecord,
+    setNextNoteVisibility,
     listRecords,
     getRecord,
     createRecord,

@@ -13,7 +13,7 @@ import { useScene } from '../workbench/useScene.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import { navigate } from '../workbench/routes.js';
 import { Icon } from '../workbench/icons.jsx';
-import { listClasses, listRecords, purgeClass } from './api.js';
+import { listClasses, listRecords, purgeClass, purgeRecord } from './api.js';
 import { DEFAULT_TIME_ZONE } from './model.js';
 import { ClassList, ClassCreateDialog } from './ClassList.jsx';
 import { ClassDetail } from './ClassDetail.jsx';
@@ -21,6 +21,7 @@ import { ClassHome } from './ClassHome.jsx';
 import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
 import { ConfirmDialog } from '../workbench/ModuleOverlays.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
+import { removeLocal } from '../workbench/storage.js';
 import './classes.css';
 
 const NAVIGATION_EVENT = 'tb:navigate';
@@ -93,6 +94,8 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const [recordsStatus, setRecordsStatus] = useState('idle');
   const [recordsError, setRecordsError] = useState(null);
   const [recordReload, setRecordReload] = useState(0);
+  const [confirmingRecordPurge, setConfirmingRecordPurge] = useState(null);
+  const recordPurge = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:record-purge' });
   const [confirmingPurge, setConfirmingPurge] = useState(null);
   // The request survives its card disappearing after deletion, including reload.
   const purge = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:class-purge' });
@@ -198,6 +201,21 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
     refreshClasses();
     goHome('archived');
   }
+  async function confirmRecordPurge() {
+    const record = confirmingRecordPurge;
+    setConfirmingRecordPurge(null);
+    const run = ({ key, payload }) => purgeRecord({ key, id: payload.id, payload: { expectedVersion: payload.expectedVersion } });
+    const result = recordPurge.pending ? await recordPurge.retry(run)
+      : record && await recordPurge.submit(run, { id: record.id, expectedVersion: record.version });
+    if (!result) return;
+    removeLocal(shell.accountKey, `draft:class-record:${result.id}`);
+    setRecords(current => ({ ...current, deleted: current.deleted?.filter(item => item.id !== result.id) ?? null }));
+    refreshRecords();
+    if (located.recordId === result.id) closeRecord();
+  }
+  function requestRecordPurge(record) {
+    if (!recordPurge.isRunning && !recordPurge.pending) setConfirmingRecordPurge(record);
+  }
   function requestPurge(classroom) {
     if (!purge.isRunning && !purge.pending) setConfirmingPurge(classroom);
   }
@@ -215,6 +233,10 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
 
   return (
     <div className="wb-page wb-module c-classes" data-region="classes-index">
+      {recordPurge.isRunning && <p className="wb-muted c-pane-note" role="status">正在确认记录删除结果…</p>}
+      {recordPurge.status === 'unconfirmed' && <div className="wb-inline-error" role="status">暂时无法确认是否彻底删除记录。
+        <button className="wb-button" onClick={confirmRecordPurge}>重试删除记录</button></div>}
+      {recordPurge.status === 'failed' && <div className="wb-inline-error" role="alert">{recordPurge.problem?.message || '记录删除失败'}<button className="wb-button" onClick={refreshRecords}>刷新记录</button></div>}
       {purge.isRunning && <p className="wb-muted c-pane-note" role="status">正在确认删除结果…</p>}
       {purge.status === 'unconfirmed' && <div className="wb-inline-error" role="status">暂时无法确认是否彻底删除「{purge.pending.payload.name}」。
         <button className="wb-button" onClick={confirmPurge}>重试确认</button></div>}
@@ -240,6 +262,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
             onChooseClass={() => patchScene({ classListOpen: true })}
             onHome={() => goHome()}
             onDelete={requestPurge}
+            onPurgeRecord={requestRecordPurge}
             detailScrollTop={scene.detailScroll?.classId === selected.id ? scene.detailScroll.top : 0}
             onDetailScrollTop={(top) => patchScene({ detailScroll: { classId: selected.id, top } })}
           />
@@ -269,6 +292,10 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
         {scene.classListOpen && <ClassChooser onClose={() => patchScene({ classListOpen: false })}>
           {renderClasses(() => patchScene({ classListOpen: false }))}
         </ClassChooser>}
+      </ModulePresence>
+      <ModulePresence present={Boolean(confirmingRecordPurge)}>
+        {confirmingRecordPurge && <ConfirmDialog title="彻底删除记录" message="永久删除这条课堂记录，无法恢复。关联的资料和日程会保留。"
+          confirmLabel="彻底删除" onCancel={() => setConfirmingRecordPurge(null)} onConfirm={confirmRecordPurge} />}
       </ModulePresence>
       <ModulePresence present={Boolean(confirmingPurge)}>
         {confirmingPurge && <ConfirmDialog title="彻底删除班级"

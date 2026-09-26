@@ -55,6 +55,7 @@ export function recordInputFromRecord(record) {
       id: source.id,
       label: source.currentLabel,
       savedLabel: source.labelAtLink,
+      unavailable: source.unavailable,
       deleted: source.deleted
     }))
   };
@@ -118,7 +119,7 @@ export function latestPosition(records) {
 export function formatRecordedOn(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ''));
   if (!match) return String(value ?? '');
-  return `${Number(match[2])}月${Number(match[3])}日`;
+  return `${match[1]}年${Number(match[2])}月${Number(match[3])}日`;
 }
 
 export function sourceKindLabel(kind) {

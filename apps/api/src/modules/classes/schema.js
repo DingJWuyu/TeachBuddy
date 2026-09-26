@@ -51,6 +51,9 @@ const deletionSchema = schema.object([
   ['deleted', schema.boolean()]
 ]);
 const purgeClassSchema = schema.object([['expectedVersion', () => primitives.version]]);
+export function validateNextNoteVisibility(input) {
+  return validateBody(schema.object([['expectedVersion', () => primitives.version], ['hidden', schema.boolean()]]), input);
+}
 export function validatePurgeClass(input) { return validateBody(purgeClassSchema, input); }
 
 function recordFieldList(sourceSchema = sourceInputSchema) {

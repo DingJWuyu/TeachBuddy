@@ -17,6 +17,7 @@ import {
   validateUpdateRecordV2,
   validateDeletion,
   validatePurgeClass,
+  validateNextNoteVisibility,
   validateRecordsQuery,
   validateSourceRecordsPath,
   validateUpdateClass,
@@ -40,6 +41,11 @@ export function createClassesRouter({ service, mutations, version = 1 }) {
   } : service;
 
   if (version === 1) {
+    router.get('/overview', (req, res) => {
+      validateNoQuery(req.query);
+      res.json(service.overview(requirePrincipal(req)));
+    });
+
     router.get('/items', (req, res) => {
       const query = validateClassesQuery(req.query);
       res.json(service.listClasses(requirePrincipal(req), query));
@@ -89,6 +95,13 @@ export function createClassesRouter({ service, mutations, version = 1 }) {
         body: service.purgeClass(principal, request.params.id, body) })
     }));
 
+  }
+
+  if (version === 2) {
+    router.post('/records/:id/purge', createMutationHandler({ mutations, method: 'POST', validate: withPathId(validatePurgeClass),
+      write: ({ principal, body, request }) => ({ status: 200, body: service.purgeRecord(principal, request.params.id, body) }) }));
+    router.post('/records/:id/next-note-visibility', createMutationHandler({ mutations, method: 'POST', validate: withPathId(validateNextNoteVisibility),
+      write: ({ principal, body, request }) => ({ status: 200, body: service.setNextNoteVisibility(principal, request.params.id, body) }) }));
   }
 
   router.get('/records', (req, res) => {

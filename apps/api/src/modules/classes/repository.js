@@ -4,12 +4,13 @@
 //
 // Sorting is fixed by the contract: classes by name then id ascending (SQLite's
 // BINARY collation over UTF-8 is Unicode code point order), records by
-// recordedOn desc, updatedAt desc, id asc.
+// recordedOn desc, updatedAt desc, id asc for v1. The service projects v2
+// records by recordedOn desc, createdAt desc, id asc.
 // One column list drives both the plain and the `r.`-prefixed select, so the
 // reverse-feedback join cannot drift from the record projection.
 const RECORD_COLUMNS = [
   'id', 'accountKey', 'classId', 'version', 'createdAt', 'updatedAt', 'deletedAt',
-  'recordedOn', 'note', 'position', 'unfinished', 'commonIssues', 'nextNote'
+  'recordedOn', 'note', 'position', 'unfinished', 'commonIssues', 'nextNote', 'nextNoteHidden'
 ];
 
 export function createClassesRepository(db) {
@@ -56,12 +57,12 @@ export function createClassesRepository(db) {
     UPDATE classes_records
     SET version = @version, updatedAt = @updatedAt, deletedAt = @deletedAt,
         recordedOn = @recordedOn, note = @note, position = @position,
-        unfinished = @unfinished, commonIssues = @commonIssues, nextNote = @nextNote
+        unfinished = @unfinished, commonIssues = @commonIssues, nextNote = @nextNote, nextNoteHidden = @nextNoteHidden
     WHERE id = @id AND accountKey = @accountKey
   `);
   const selectRecord = db.prepare(`
     SELECT id, accountKey, classId, version, createdAt, updatedAt, deletedAt,
-           recordedOn, note, position, unfinished, commonIssues, nextNote
+           recordedOn, note, position, unfinished, commonIssues, nextNote, nextNoteHidden
     FROM classes_records WHERE id = ? AND accountKey = ?
   `);
   const selectRecordsForClass = db.prepare(`
@@ -120,6 +121,13 @@ export function createClassesRepository(db) {
       removeClass.run(classId, accountKey);
     },
 
+    listActiveRecordsForAccount: accountKey => db.prepare('SELECT * FROM classes_records WHERE accountKey = ? AND deletedAt IS NULL ORDER BY recordedOn DESC, createdAt DESC, id ASC').all(accountKey),
+    purgeRecord(accountKey, recordId, at) {
+      db.prepare(`INSERT INTO classes_removed_objects (id, accountKey, kind, classId, version, removedAt)
+        SELECT id, accountKey, 'record', classId, version + 1, ? FROM classes_records WHERE id = ? AND accountKey = ?`).run(at, recordId, accountKey);
+      db.prepare('DELETE FROM classes_record_sources WHERE recordId = ? AND accountKey = ?').run(recordId, accountKey);
+      db.prepare('DELETE FROM classes_records WHERE id = ? AND accountKey = ?').run(recordId, accountKey);
+    },
     insertRecord: (row) => insertRecord.run(row),
     updateRecord: (row) => updateRecord.run(row),
     getRecordForAccount: (accountKey, id) => selectRecord.get(id, accountKey) ?? null,

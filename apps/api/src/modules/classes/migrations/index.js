@@ -62,5 +62,9 @@ export const migrations = [
         removedAt TEXT NOT NULL
       )`);
     }
+  },
+  {
+    id: 'classes_0003_next_note_visibility',
+    up(db) { db.exec('ALTER TABLE classes_records ADD COLUMN nextNoteHidden INTEGER NOT NULL DEFAULT 0 CHECK (nextNoteHidden IN (0, 1))'); }
   }
 ];

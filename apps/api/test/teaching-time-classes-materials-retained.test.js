@@ -23,7 +23,7 @@ const root = fileURLToPath(new URL("../../../", import.meta.url)),
   );
 fs.mkdirSync(evidence, { recursive: true });
 const hash = (value) => createHash("sha256").update(value).digest("hex");
-function snapshot(directory) {
+function snapshot(directory, legacyColumns = false) {
   const db = new Database(path.join(directory, "workspace.sqlite"), {
     readonly: true,
   });
@@ -38,7 +38,14 @@ function snapshot(directory) {
           name,
           hash(
             JSON.stringify(
-              db.prepare(`SELECT * FROM "${name}" ORDER BY rowid`).all(),
+              db.prepare(`SELECT * FROM "${name}" ORDER BY rowid`).all().map(row => {
+                if (legacyColumns && name === 'classes_records') {
+                  assert.equal(row.nextNoteHidden, 0);
+                  const { nextNoteHidden, ...legacy } = row;
+                  return legacy;
+                }
+                return row;
+              }),
             ),
           ),
         ]),
@@ -136,9 +143,9 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
   }
   try {
     let call = await start();
-    assert.deepEqual(snapshot(candidate), { ...oldRows, lesson_order: hash("[]") });
+    assert.deepEqual(snapshot(candidate, true), { ...oldRows, lesson_order: hash("[]"), classes_removed_objects: hash("[]") });
     assert.deepEqual(files(candidate), oldFiles);
-    assert.deepEqual(await call("GET", `${R}/${seed.saved.id}`), seed.saved);
+    assert.deepEqual(await call("GET", `${R}/${seed.saved.id}`), { ...seed.saved, nextNoteHidden: false });
     assert.deepEqual(
       await call(
         "POST",
@@ -149,7 +156,7 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
       ),
       seed.saved,
     );
-    assert.deepEqual(snapshot(candidate), { ...oldRows, lesson_order: hash("[]") });
+    assert.deepEqual(snapshot(candidate, true), { ...oldRows, lesson_order: hash("[]"), classes_removed_objects: hash("[]") });
     const upgraded = await call("PUT", `${Q}/${seed.item.id}`, {
       ...writable({
         ...seed.item,
@@ -190,7 +197,7 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
       call = await start();
       assert.deepEqual(await call("GET", `${Q}/${seed.item.id}`), upgraded);
       assert.deepEqual(await call("GET", `${R}/${saved.id}`), restored);
-      assert.deepEqual(await call("GET", `${R}/${seed.mixed.id}`), seed.mixed);
+      assert.deepEqual(await call("GET", `${R}/${seed.mixed.id}`), { ...seed.mixed, nextNoteHidden: false });
       assert.deepEqual(
         await call("GET", `/api/modules/math/v1/works/${seed.math.id}`),
         seed.math,

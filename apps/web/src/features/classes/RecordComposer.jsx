@@ -13,6 +13,7 @@ import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { Icon } from '../workbench/icons.jsx';
 import { readLocal, removeLocal, writeLocal } from '../workbench/storage.js';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
+import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import { useSaveShortcut } from '../workbench/useSaveShortcut.js';
 import { createRecord, decodeRecordRequest, recordRequest } from './api.js';
 import { emptyRecordInput, hasAnyRecordText, recordCreatePayload, todayInZone } from './model.js';
@@ -23,8 +24,9 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
   const draftName = `draft:class-record-new:${draftKey ?? classId}`;
   const [input, setInput] = useState(() => {
     const stored = readLocal(accountKey, draftName);
-    return stored?.input ?? { ...emptyRecordInput(classId, todayInZone(timeZone)), sources: initialSources };
+    return stored?.input ? { ...stored.input, recordedOn: journal && !stored.manualDate && !hasAnyRecordText(stored.input) && !stored.input.sources.length ? todayInZone(timeZone) : stored.input.recordedOn } : { ...emptyRecordInput(classId, todayInZone(timeZone)), sources: initialSources };
   });
+  const manualDate = useRef(readLocal(accountKey, draftName)?.manualDate ?? false);
   const [expanded, setExpanded] = useState(() => readLocal(accountKey, draftName)?.expanded ?? false);
   const [fields, setFields] = useState(() => {
     const stored = readLocal(accountKey, draftName);
@@ -49,21 +51,38 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
       removeLocal(accountKey, draftName);
       return;
     }
-    writeLocal(accountKey, draftName, { input, expanded, fields });
+    writeLocal(accountKey, draftName, { input, expanded, fields, manualDate: manualDate.current });
   }, [accountKey, draftName, input, expanded, fields, timeZone, journal]);
 
+  function refreshDate() {
+    if (!journal || manualDate.current || submit.pending || hasAnyRecordText(inputRef.current) || inputRef.current.sources.length) return;
+    const today = todayInZone(timeZone);
+    if (inputRef.current.recordedOn !== today) {
+      inputRef.current = { ...inputRef.current, recordedOn: today };
+      setInput(inputRef.current);
+    }
+  }
+  useForegroundRefresh(refreshDate);
+  useEffect(() => {
+    const timer = setInterval(refreshDate, 30000);
+    return () => clearInterval(timer);
+  }, [timeZone, submit.pending]);
+
   function patch(values) {
+    if (Object.hasOwn(values, 'recordedOn')) manualDate.current = values.recordedOn !== todayInZone(timeZone);
+    else refreshDate();
     setNotice(null);
     inputRef.current = { ...inputRef.current, ...values };
     setInput(inputRef.current);
-    writeLocal(accountKey, draftName, { input: inputRef.current, expanded, fields });
+    writeLocal(accountKey, draftName, { input: inputRef.current, expanded, fields, manualDate: manualDate.current });
   }
 
   function settle(result, payload) {
     if (!result || !alive.current) return;
     const unchanged = JSON.stringify(recordCreatePayload(inputRef.current)) === JSON.stringify(payload);
     if (unchanged) {
-      inputRef.current = emptyRecordInput(classId, inputRef.current.recordedOn);
+      manualDate.current = false;
+      inputRef.current = emptyRecordInput(classId, journal ? todayInZone(timeZone) : inputRef.current.recordedOn);
       setInput(inputRef.current);
       setExpanded(false);
       setFields([]);
@@ -117,6 +136,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
             <input className="wb-input" type="date" aria-label="记录日期" value={input.recordedOn}
               onChange={event => patch({ recordedOn: event.target.value })} />
           </label>
+          {input.recordedOn !== todayInZone(timeZone) && <button type="button" className="wb-button c-text-action" onClick={() => patch({ recordedOn: todayInZone(timeZone) })}>今天</button>}
         </div>
         <textarea className="wb-input c-composer-input" aria-label="写一句" rows={3}
           placeholder="今天这个班讲得怎么样？例如：讲完单调性定义，例2还没讲，下次先复习定义。"

@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { listClassOverview } from './api.js';
+import { formatRecordedOn } from './model.js';
 import { Icon } from '../workbench/icons.jsx';
 import { MenuItem, Popover } from '../workbench/ModuleOverlays.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
@@ -27,6 +30,17 @@ function ArchivedClass({ accountKey, classroom, onSelect, onChanged, onDelete })
 
 export function ClassHome({ accountKey, items, status, error, archived, onViewChange, onSelect,
   onCreate, onReload, onChanged, onDelete, scrollTop, onScrollTop }) {
+  const [overview, setOverview] = useState(null);
+  const [overviewError, setOverviewError] = useState(false);
+  const [reload, setReload] = useState(0);
+  useEffect(() => {
+    if (archived) return;
+    let cancelled = false;
+    listClassOverview().then(rows => {
+      if (!cancelled) { setOverview(new Map(rows.map(item => [item.id, item]))); setOverviewError(false); }
+    }).catch(() => { if (!cancelled) setOverviewError(true); });
+    return () => { cancelled = true; };
+  }, [accountKey, archived, items, reload]);
   const scroll = useScrollRestore(scrollTop || 0, onScrollTop, `${archived}:${items.length}`);
   return <section className="c-class-placeholder c-class-home" data-region="class-home">
     <header className="c-class-head">
@@ -49,11 +63,17 @@ export function ClassHome({ accountKey, items, status, error, archived, onViewCh
       <div className="c-home-toolbar">{archived ? <span className="wb-muted">共 {items.length} 个班级</span> : <h2>我的班级<span>{items.length}</span></h2>}
         {!archived && <button className="wb-button is-primary" onClick={onCreate}><Icon name="plus" size={16} />创建班级</button>}
       </div>
+      {overviewError && <p className="wb-muted" role="status">未能更新班级进度。<button className="wb-button c-text-action" onClick={() => setReload(value => value + 1)}>重试进度</button></p>}
       <ul className="c-home-grid">{items.map(classroom => archived
         ? <ArchivedClass key={classroom.id} accountKey={accountKey} classroom={classroom} onSelect={onSelect} onChanged={onChanged} onDelete={onDelete} />
         : <li key={classroom.id} className="c-home-card" data-class-id={classroom.id}>
-          <button className="c-home-open" onClick={() => onSelect(classroom.id)}>
-            <span className="c-class-avatar"><Icon name="classes" size={22} /></span><span>{classroom.name}</span><Icon name="chevron" size={16} />
+          <button className="c-home-open" aria-label={classroom.name} onClick={() => onSelect(classroom.id)}>
+            <span className="c-class-avatar"><Icon name="classes" size={22} /></span><span>{classroom.name}
+              {overview?.has(classroom.id) && <span className="c-home-summary">
+                {overview.get(classroom.id).position ? <><span>最近教到</span><span className="c-home-summary-text">{overview.get(classroom.id).position.text}</span><time>{formatRecordedOn(overview.get(classroom.id).position.recordedOn)}</time></>
+                  : overview.get(classroom.id).latest ? <><span>最近记录</span><span className="c-home-summary-text">{overview.get(classroom.id).latest.text}</span><time>{formatRecordedOn(overview.get(classroom.id).latest.recordedOn)}</time></> : <span>还没有课堂记录</span>}
+              </span>}
+            </span><Icon name="chevron" size={16} />
           </button>
         </li>)}</ul>
     </div>}

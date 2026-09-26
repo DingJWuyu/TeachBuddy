@@ -633,3 +633,26 @@
   .c-classes .c-welcome { padding: 28px 20px; }
   .c-home-scroll { padding: 18px 16px; }
 }
+
+/* Existing journal surfaces also carry retrieval and class progress. */
+.c-records-head > .wb-icon-button { margin-left: auto; }
+.c-record-search { padding: 14px 0; }
+.c-search-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.c-search-row .wb-search { flex: 1; min-width: 0; }
+.c-search-row .wb-search input { width: 100%; min-width: 0; }
+.c-classes .c-search-row .wb-search:focus-within { outline: 2px solid #a796cf; outline-offset: -2px; }
+.c-classes .c-search-row .wb-search input:focus-visible { outline: none; }
+.c-search-row > button { flex: none; }
+.c-record-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-top: 14px; }
+.c-record-filters .wb-field { min-width: 0; margin: 0; }
+.c-record-filters :is(input, select) { width: 100%; min-width: 0; }
+.c-home-summary { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; font-size: 12px; font-weight: 400; color: var(--wb-muted); }
+.c-home-summary-text { color: var(--wb-ink); font-size: 14px; line-height: 1.6; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.c-home-summary time { font-size: 11px; }
+@media (max-width: 450px) { .c-record-filters { grid-template-columns: minmax(0, 1fr); } }
+
+.c-review { margin-bottom: 18px; }
+.c-review-records { padding-top: 8px; }
+.c-review-record { padding: 10px 0; border-bottom: 1px solid var(--wb-line-soft); }
+.c-review-record p { margin: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; }
+.c-review-record .wb-label { display: block; margin-bottom: 4px; }

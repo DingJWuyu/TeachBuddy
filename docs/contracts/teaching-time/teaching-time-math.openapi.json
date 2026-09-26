@@ -2067,6 +2067,204 @@
           }
         }
       }
+    },
+    "/api/modules/classes/v2/records/{id}/purge": {
+      "post": {
+        "operationId": "purgeRecord",
+        "description": "仅彻底删除活动班级中已删除的记录；检查归属和版本；关联资料与日程保留。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordPurged"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordPurge"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classes/v2/records/{id}/next-note-visibility": {
+      "post": {
+        "operationId": "setNextNoteVisibility",
+        "description": "调整活动班级中活动记录的下次想法提示，不改文字。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordV2"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextNoteVisibility"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classes/overview": {
+      "get": {
+        "operationId": "classOverview",
+        "description": "只读本账户活动班级的记录数、最新记录摘要与最近教学位置；不读取来源。拒绝所有查询参数。",
+        "responses": {
+          "200": {
+            "description": "当前账户结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassOverviewList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4415,6 +4613,9 @@
           },
           {
             "$ref": "inputs/m40/docs/contracts/workbench/math/math.openapi.json#/components/schemas/TeachingMathSource"
+          },
+          {
+            "$ref": "#/components/schemas/UnavailableSourceV2"
           }
         ]
       },
@@ -4577,6 +4778,10 @@
             "items": {
               "$ref": "#/components/schemas/SourceV2"
             }
+          },
+          "nextNoteHidden": {
+            "type": "boolean",
+            "description": "是否停止提示该条下次想法；原文保留。修改 nextNote 内容后恢复提示。"
           }
         },
         "required": [
@@ -4614,6 +4819,165 @@
       },
       "TeachingWork": {
         "$ref": "inputs/m40/docs/contracts/workbench/math/math.openapi.json#/components/schemas/TeachingWork"
+      },
+      "UnavailableSourceV2": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "question",
+              "lesson",
+              "math"
+            ]
+          },
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "labelAtLink": {
+            "type": "string"
+          },
+          "currentLabel": {
+            "type": "string",
+            "description": "沿用首次关联时的标题，不宣称已读取当前标题。"
+          },
+          "deleted": {
+            "type": "null"
+          },
+          "unavailable": {
+            "enum": [
+              "missing",
+              "temporary"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "labelAtLink",
+          "currentLabel",
+          "deleted",
+          "unavailable"
+        ]
+      },
+      "NextNoteVisibility": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "hidden": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "hidden"
+        ]
+      },
+      "RecordPurge": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ]
+      },
+      "RecordPurged": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "classId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "permanentlyDeleted": {
+            "const": true
+          }
+        },
+        "required": [
+          "id",
+          "classId",
+          "permanentlyDeleted"
+        ]
+      },
+      "ClassOverviewList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "latest": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "recordedOn": {
+                          "$ref": "#/components/schemas/Date"
+                        },
+                        "text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "recordedOn",
+                        "text"
+                      ]
+                    }
+                  ]
+                },
+                "position": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "recordedOn": {
+                          "$ref": "#/components/schemas/Date"
+                        },
+                        "text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "recordedOn",
+                        "text"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "count",
+                "latest",
+                "position"
+              ]
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
       }
     }
   },
