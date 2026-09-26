@@ -11,11 +11,11 @@ export function useMathConfirm() {
     resolveRef.current = null;
     setMessage(null);
   };
-  const confirm = message => new Promise(resolve => {
+  const confirm = (message, options = {}) => new Promise(resolve => {
     resolveRef.current?.(false);
     resolveRef.current = resolve;
-    setMessage(message);
+    setMessage({ text: message, ...options });
   });
-  const dialog = <ModulePresence present={!!message}>{message && <ConfirmDialog title="确认操作" message={message} confirmLabel="继续" onConfirm={() => finish(true)} onCancel={() => finish(false)} />}</ModulePresence>;
+  const dialog = <ModulePresence present={!!message}>{message && <ConfirmDialog title={message.title ?? '确认操作'} message={message.text} confirmLabel={message.confirmLabel ?? '继续'} onConfirm={() => finish(true)} onCancel={() => finish(false)} />}</ModulePresence>;
   return [confirm, dialog];
 }

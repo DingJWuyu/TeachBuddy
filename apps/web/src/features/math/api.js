@@ -5,7 +5,7 @@ export function createMathClient(transport, getSignal) {
     if (method !== 'GET') {
       const id = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
       const allowed = method === 'PUT' ? new RegExp(`^/api/modules/math/v1/works/${id}$`)
-        : method === 'POST' ? new RegExp(`^/api/modules/math/v1/works(?:/${id}/(?:copy|exports|deletion))?$`) : null;
+        : method === 'POST' ? new RegExp(`^/api/modules/math/v1/works(?:/${id}/(?:copy|exports|deletion|purge))?$`) : null;
       if (!allowed?.test(path) || typeof key !== 'string' || !input || typeof input !== 'object')
         throw new Error('原请求格式暂不支持，已保留设备资料，请核对后处理');
     }

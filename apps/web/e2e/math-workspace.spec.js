@@ -42,6 +42,98 @@ async function selectTools(page, name) {
   await page.getByRole('button', { name: ({ 对象: '图形与标注', 参数: '设置滑杆', 步骤: '编排步骤', 画布: '画布设置' })[name], exact: true }).click();
 }
 
+test('归档当前作品后返回工坊，刷新不重开作品', async ({ page }) => {
+  await page.getByRole('button', { name: '新建公式', exact: true }).click();
+  await page.getByLabel('作品名称').fill('归档流程验证');
+  await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
+  await page.getByLabel('LaTeX', { exact: true }).fill('x^2');
+  const work = await save(page);
+  await page.goto(`${world.origin}/math?workId=${work.id}`);
+  await expect(page.getByLabel('作品名称')).toHaveValue('归档流程验证');
+  await page.getByRole('button', { name: '作品操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: /^(删除|归档)作品$/ }).click();
+  await expect(page.getByRole('button', { name: '新建公式', exact: true })).toBeVisible();
+  await expect(page.getByLabel('作品名称')).toBeHidden();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '新建公式', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(`${world.origin}/math`);
+  await page.getByLabel('已归档', { exact: true }).check();
+  const actions = page.getByRole('group', { name: '归档流程验证的归档操作', exact: true });
+  await actions.getByRole('button', { name: '恢复', exact: true }).click();
+  await expect(page.getByText('没有已归档的作品', { exact: true })).toBeVisible();
+  await page.getByLabel('已归档', { exact: true }).uncheck();
+  await page.locator('.math-library').getByRole('button', { name: '归档流程验证 公式', exact: true }).click();
+  await expect(page.getByLabel('LaTeX', { exact: true })).toHaveValue('x^2');
+  await page.getByRole('button', { name: '作品操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '归档作品', exact: true }).click();
+  await page.getByLabel('已归档', { exact: true }).check();
+  await actions.getByRole('button', { name: '彻底删除', exact: true }).click();
+  await page.getByRole('dialog', { name: '彻底删除作品' }).getByRole('button', { name: '取消', exact: true }).click();
+  await expect(actions.getByRole('button', { name: '彻底删除', exact: true })).toBeFocused();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(actions.getByRole('button', { name: '彻底删除', exact: true })).toBeInViewport();
+  await actions.getByRole('button', { name: '彻底删除', exact: true }).click();
+  await page.getByRole('dialog', { name: '彻底删除作品' }).getByRole('button', { name: '彻底删除', exact: true }).click();
+  await expect(page.getByText('没有已归档的作品', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('没有已归档的作品', { exact: true })).toBeVisible();
+});
+
+test('输入焦点框贴合完整控件，搜索框包含图标', async ({ page }, info) => {
+  const search = page.getByLabel('搜索作品', { exact: true });
+  await search.click();
+  await page.screenshot({ path: info.outputPath('search-focus.png') });
+  const parent = page.locator('.math-library-search');
+  expect(await parent.evaluate(el => getComputedStyle(el).boxShadow)).not.toBe('none');
+  expect(await search.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('none');
+  expect(await search.evaluate(el => getComputedStyle(el).boxShadow)).toBe('none');
+  await page.getByRole('button', { name: '新建公式', exact: true }).click();
+  for (const control of [page.getByLabel('作品名称'), page.getByLabel('LaTeX', { exact: true })]) {
+    if (await control.count() === 0) await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
+    await control.click();
+    const style = await control.evaluate(el => ({ offset: getComputedStyle(el).outlineOffset, shadow: getComputedStyle(el).boxShadow }));
+    expect(parseFloat(style.offset)).toBeLessThanOrEqual(0);
+    expect(style.shadow).toContain('inset');
+  }
+  await page.screenshot({ path: info.outputPath('formula-focus.png') });
+});
+
+test('归档和彻底删除的响应丢失后按原请求确认，刷新返回首页', async ({ page }) => {
+  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+  await page.getByRole('button', { name: '从 y = x² 开始', exact: true }).click();
+  await page.getByLabel('作品名称').fill('请求确认作品');
+  await save(page);
+  for (const action of ['deletion', 'purge']) {
+    let first = true;
+    const keys = [];
+    await page.route(`**/api/modules/math/v1/works/*/${action}`, async route => {
+      keys.push(route.request().headers()['idempotency-key']);
+      if (!first) return route.continue();
+      first = false;
+      await route.fetch();
+      await route.abort('failed');
+    });
+    await page.getByRole('button', { name: '作品操作', exact: true }).click();
+    await page.getByRole('menuitem', { name: action === 'deletion' ? '归档作品' : '彻底删除', exact: true }).click();
+    if (action === 'purge') await page.getByRole('dialog', { name: '彻底删除作品' }).getByRole('button', { name: '彻底删除', exact: true }).click();
+    await expect(page.getByRole('button', { name: action === 'deletion' ? '确认归档结果' : '确认删除结果', exact: true })).toBeEnabled();
+    await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+    await page.reload();
+    await page.getByRole('button', { name: '确认操作结果', exact: true }).click();
+    await expect(page.getByRole('button', { name: '确认操作结果', exact: true })).toBeHidden();
+    expect(keys.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(keys).size).toBe(1);
+    await page.reload();
+    await expect(page.getByRole('button', { name: '新建公式', exact: true })).toBeVisible();
+    if (action === 'deletion') {
+      await page.getByLabel('已归档', { exact: true }).check();
+      await page.locator('.math-library').getByRole('button', { name: '请求确认作品 平面图形', exact: true }).click();
+      await expect(page.getByRole('button', { name: '恢复作品', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: '图形与标注', exact: true })).toBeHidden();
+    } else await expect(page.getByText('没有已归档的作品', { exact: true })).toBeVisible();
+  }
+});
+
 test('新建图形直接编辑，保存重开及真实导出，窄屏操作可达', async ({ page }, info) => {
   await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
   await expect(page.getByLabel('搜索作品', { exact: true })).toBeHidden();

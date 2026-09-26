@@ -8,11 +8,13 @@
 
 同源 Cookie、保护头、完整 Origin/Referer 校验、no-store、严格请求/宽容响应、UUID、服务端 UTC、账户隔离、2 MiB JSON 限制、持久幂等与未知结果全部沿用 B11。写入顺序：来源保护 → 身份 → schema → 已成功同键重放 → 归属 → 版本 → 状态 → 业务约束 → 原子提交。JSON 未知字段/重复 query/类型转换拒绝。未提供有效页面绑定为401；外账户/不存在一律404；不能把未注册模块、隐藏导航或 client accountKey 当权限。禁止生产 test-principal，隔离验证须标身份模式。
 
-每次有效新写包括同体保存、删除、恢复增加对象 version；导出只产生导出记录，不增加作品 version。幂等范围是账户+键，绑定方法/规范路径/请求内容；异步生成文件后再检查版本与事务提交。同键重放返回原结果，即使当前对象已更新/删除；未知结果必须回原路径确认。旧响应不覆盖新草稿或新账户。源码不可用/文件丢失为可恢复失败，不伪装404删除。
+每次有效新写包括同体保存、归档、恢复增加对象 version；导出只产生导出记录，不增加作品 version。幂等范围是账户+键，绑定方法/规范路径/请求内容；异步生成文件后再检查版本与事务提交。同键重放返回原结果，即使当前对象已更新/删除；未知结果必须回原路径确认。旧响应不覆盖新草稿或新账户。源码不可用/文件丢失为可恢复失败，不伪装404删除。
 
 ## 作品、源与制品
 
-Work 是工坊唯一可写聚合，包含标题、Source、原始导入文件关联与软删除状态；它不是 Resource，不强迫生成第二份资源条目。版本是完整、不可变的 WorkRevision。每次写入保存新 revision，旧版本、旧源文件、输出文件和幂等结果长期保留，本版无永久删除。getWork 返回当前 tombstone，getWorkVersion/listWorkVersions 可读本账户历史；revision.createdAt 是该次提交时间，Work.createdAt 是首次建立时间。恢复保持 ID 并新增版本。
+Work 是工坊唯一可写聚合，包含标题、Source、原始导入文件关联与归档状态；它不是 Resource，不强迫生成第二份资源条目。版本是完整、不可变的 WorkRevision。保存、归档和恢复写入新 revision。归档沿用 `deletedAt`、`state=deleted` 和 `/deletion`，保持既有请求可确认。getWork 返回当前 tombstone，getWorkVersion/listWorkVersions 可读本账户历史；revision.createdAt 是该次提交时间，Work.createdAt 是首次建立时间。恢复保持 ID 并新增版本。
+
+`POST /api/modules/math/v1/works/{id}/purge` 接收 `baseVersion`，仅允许本账户已归档作品；活动作品返回422 invalid-input，旧版本409，外账户或不存在404。在同一幂等事务中移除 Work、全部 WorkRevision 和作品导出记录，返回 `{id, permanentlyDeleted:true}`。成功后读取、恢复和新的导出请求均404；原成功请求仍可按原键确认，不重新建立作品。既有备课快照、教学关联与共享不可变 File 保留，彻底删除不是账户文件的物理清理；引用方将不存在的源视为 deleted，仍可保存本课备注与下载采用版本的文件。
 
 Source.schemaVersion=1 是编辑格式版本，与 Work.version 分开。kind 创建后不可变，另存可建立新 ID。未知格式必须保留原字节，客户端只读并提示升级；旧客户端不得损坏它。Formula/Plane/Space/Dynamic 是受控结构化源；HtmlSource.fileId 指不可变 HTML 字节。原始导入允许File检测为text/html，或以.html/.htm命名的text/plain/application/octet-stream；明确检测为PDF/Office/图片等格式则415。扩展名只表达导入意图，不授权执行；运行/编辑另验UTF-8和大小，损坏或不支持编码仍可保存取回。用 files.store 保存，createWork.originalFileId 必须与初始 source.fileId 相同；非 HTML 为 null。updateWork 不可改 originalFileId。HTML 修改先保存新 File，再提交其 ID；失败只留下可复用文件，不覆盖原件。copyWork 读取 baseVersion 对应的当前活动作品，复制源与原件指针，新 ID/version=1，随后两者独立编辑；复制版本不符为409。
 
@@ -37,7 +39,7 @@ rendererVersion 是服务端实际的渲染器发行标识，覆盖表达式求�
 
 ## 导出与 HTML 隔离
 
-exportWork 固定明确 version，可导出本账户历史或已删作品版本，不要求最新；不存在版本404。HTML格式直接返回该revision固定presentation文件，无该文件时422 unsupported-export。后台只读该 revision，转换完成、File持久提交和导出回执持久化后才201。操作最多30秒、输出最多100 MiB、栅格总像素≤24M；超限422 unsupported-export，服务超时503 render-unavailable，同键同体确认。失败不修改作品。无需增加材料 Job.kind；确定性本地渲染不调用模型。下载沿 File 授权入口。
+exportWork 固定明确 version，可导出本账户历史或归档作品版本，不要求最新；不存在版本404。HTML格式直接返回该revision固定presentation文件，无该文件时422 unsupported-export。后台只读该 revision，转换完成、File持久提交和导出回执持久化后才201。操作最多30秒、输出最多100 MiB、栅格总像素≤24M；超限422 unsupported-export，服务超时503 render-unavailable，同键同体确认。失败不修改作品。无需增加材料 Job.kind；确定性本地渲染不调用模型。下载沿 File 授权入口。
 
 | 源类型 | 支持 format | 约束 |
 | --- | --- | --- |

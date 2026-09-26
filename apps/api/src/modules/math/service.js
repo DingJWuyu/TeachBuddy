@@ -233,6 +233,17 @@ export function createMathService({ db, mutations, files }) {
       } catch (e) {
         if (e !== prepare) throw e;
       }
+      if (definition.name === "purgeWork") {
+        return mutations.execute(request, () => {
+          const work = current(principal, id, input.baseVersion, false);
+          if (!work.deletedAt) throw invalidInput("/id", "invalid-reference");
+          db.prepare("DELETE FROM math_exports WHERE accountKey=? AND json_extract(value, '$.workId')=?").run(principal.accountKey, id);
+          db.prepare("DELETE FROM math_revisions WHERE workId=?").run(id);
+          db.prepare("DELETE FROM math_works WHERE id=? AND accountKey=?").run(id, principal.accountKey);
+          // Adopted lesson snapshots and shared immutable files have their own lifetime.
+          return { status: 200, body: { id, permanentlyDeleted: true } };
+        });
+      }
       if (definition.name === "exportWork") {
         const saved = revision(principal, id, input.version);
         const { format, background, width } = input;
@@ -274,6 +285,7 @@ export function createMathService({ db, mutations, files }) {
                 `math-${id}-v${input.version}.${format === "source" ? (saved.source.kind === "html" ? "html" : "json") : format}`,
               );
         return mutations.execute(request, () => {
+          revision(principal, id, input.version);
           const body = {
             id: randomUUID(),
             workId: id,

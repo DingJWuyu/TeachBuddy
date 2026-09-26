@@ -12,6 +12,7 @@ import GraphTools from "./GraphTools.jsx";
 import WorkspaceHome, { WorkIllustration } from "./WorkspaceHome.jsx";
 import GraphicPreview from "./GraphicPreview.jsx";
 import FormulaEditor from "./FormulaEditor.jsx";
+import FormulaPreview from "./FormulaPreview.jsx";
 import { Icon } from "../workbench/icons.jsx";
 import { Popover, MenuItem } from "../workbench/ModuleOverlays.jsx";
 import HtmlEditor from "./HtmlEditor.jsx";
@@ -511,6 +512,7 @@ function MathSession({ transport, route }) {
     );
   }
   function edit(next) {
+    if (draftRef.current?.deletedAt && next?.id === draftRef.current.id) return;
     if (pending?.kind && pending.kind !== "save") {
       setMessage("请先确认当前操作结果");
       return;
@@ -577,7 +579,7 @@ function MathSession({ transport, route }) {
       setMessage("请先应用参数设置，再保存作品");
       return;
     }
-    if (pending?.kind === "deletion") return deletion();
+    if (["deletion", "purge"].includes(pending?.kind)) return deletion();
     if (pending?.kind === "export") return exportFile();
     if (
       copy &&
@@ -758,46 +760,52 @@ function MathSession({ transport, route }) {
       }
     }
   }
-  async function deletion() {
+  async function deletion(permanent = false, target = draftRef.current) {
     if (inFlight.current) return;
-    if (pending && pending.kind !== "deletion") {
-      setMessage("请先确认当前操作结果");
+    if (pending && !['deletion', 'purge'].includes(pending.kind)) {
+      setMessage('请先确认当前操作结果');
       return;
     }
-    if (!pending && status !== "已保存") {
-      setMessage("请先保存当前修改，再删除作品");
+    if (!pending && (!target?.id || (target.id === draftRef.current?.id && status !== '已保存'))) {
+      setMessage('请先保存当前修改，再归档作品');
       return;
     }
-    const epoch = generation.current,
-      started = draftRef.current;
+    if (!pending && permanent && !await confirm(
+      `彻底删除“${target.title}”？作品及历史版本将无法恢复。已有备课中采用的内容和已下载文件仍保留。`,
+      { title: '彻底删除作品', confirmLabel: '彻底删除' },
+    )) return;
+    const epoch = generation.current;
     const request = pending ?? {
-      kind: "deletion",
-      path: `${base}/${draft.id}/deletion`,
-      method: "POST",
+      kind: permanent ? 'purge' : 'deletion',
+      path: `${base}/${target.id}/${permanent ? 'purge' : 'deletion'}`,
+      method: 'POST',
       key: crypto.randomUUID(),
-      input: { baseVersion: draft.version, deleted: !draft.deletedAt },
+      input: { baseVersion: target.version, ...(permanent ? {} : { deleted: !target.deletedAt }) },
     };
-    const operation = Symbol("math-request");
+    const operation = Symbol('math-request');
     inFlight.current = operation;
     setBusy(true);
-    writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status: '保存结果待确认', selected, search, deleted, format, background, exportWidth });
+    setMessage('');
+    writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status, selected, search, deleted, format, background, exportWidth });
     setPending(request);
     try {
       const saved = await mathRequest(request.path, request);
-      if (
-        epoch !== generation.current ||
-        inFlight.current !== operation ||
-        draftRef.current !== started
-      )
-        return;
+      if (epoch !== generation.current || inFlight.current !== operation) return;
+      const removed = request.kind === 'purge' || request.input.deleted;
+      const currentTarget = draftRef.current?.id === saved.id;
+      const next = currentTarget ? removed ? null : saved : draftRef.current;
+      draftRef.current = next;
+      setDraft(next);
       setPending(null);
-      setDraft(saved);
-      setStatus("已保存");
-      setMessage("");
+      setConflict(null);
+      if (currentTarget) setStatus('已保存');
+      writeLocal(account, 'math-workspace', { draft: next, pending: null, status: currentTarget ? '已保存' : status, selected, search, deleted, format, background, exportWidth });
+      if (removed && currentTarget) goHome();
+      if (request.kind === 'deletion' && request.input.deleted) setDeleted(false);
+      setMessage(request.kind === 'purge' ? '作品已彻底删除' : request.input.deleted ? '作品已归档，可在“已归档”中恢复' : '作品已恢复');
       refresh();
     } catch (e) {
-      if (epoch !== generation.current || inFlight.current !== operation)
-        return;
+      if (epoch !== generation.current || inFlight.current !== operation) return;
       if (e.status && e.status < 500 && e.status !== 401) setPending(null);
       handleError(e);
     } finally {
@@ -867,6 +875,7 @@ function MathSession({ transport, route }) {
   function goHome() {
     if (!hasContent(draft) && !pending && !busy) { setDraft(null); draftRef.current = null; }
     patchView({ screen: 'home', exportOpen: false, usageOpen: false });
+    if (route?.workId) shell?.navigate('/math');
     setMessage('');
     if (shell?.panelMode === 'math-tools') shell.closePanel();
     requestAnimationFrame(() => document.getElementById('math-start-heading')?.focus({ preventScroll: true }));
@@ -925,14 +934,14 @@ function MathSession({ transport, route }) {
           <div className="math-workspace-identity"><span className="math-module-icon"><Icon name="math" size={25}/></span><h1 className="math-heading">数学工坊</h1></div>
           {!home && <WorkspaceToolbar draft={draft} busy={busy} readOnly={readOnly} pending={pending} empty={!hasContent(draft)}
             exportOpen={!!viewScene.exportOpen} onHome={goHome} onSave={() => save()} onCopy={() => save(true)}
-            onDelete={deletion} onExport={() => patchView({ exportOpen: !viewScene.exportOpen })} onUsage={() => patchView({ usageOpen: !viewScene.usageOpen })}/>}
+            onDelete={() => deletion()} onPurge={() => deletion(true)} onExport={() => patchView({ exportOpen: !viewScene.exportOpen })} onUsage={() => patchView({ usageOpen: !viewScene.usageOpen })}/>}
           <input ref={importFile} type="file" accept=".html,.htm" aria-label="导入 HTML 文件" hidden onChange={e => { importHtml(e.target.files[0]); e.target.value = ''; }}/>
           {importPending && <button disabled={busy} onClick={() => importHtml()}>{importPending.requiresReselection ? '重选原文件并确认上传' : '重试原文件上传'}</button>}
         </header>
         {!home && <div className="math-document-bar">
           <button className="math-return" onClick={goHome}><Icon name="back"/><span>返回工坊</span></button>
-          <input aria-label="作品名称" value={draft.title} onChange={e => edit({ ...draft, title: e.target.value })}/>
-          <span className="math-workspace-status" role="status">{status}</span>
+          <input aria-label="作品名称" readOnly={!!draft.deletedAt} value={draft.title} onChange={e => edit({ ...draft, title: e.target.value })}/>
+          <span className="math-workspace-status" role="status">{draft.deletedAt ? '已归档' : status}</span>
         </div>}
         {shell && (
           <MathIntegration
@@ -951,6 +960,8 @@ function MathSession({ transport, route }) {
             </button>
           </div>
         )}
+        {pending && home && <div className="math-message" role="status">上次操作结果待确认。<button disabled={busy} onClick={() => save()}>确认操作结果</button></div>}
+        {!home && draft.deletedAt && <div className="math-archive-notice">已归档，恢复后可继续编辑。</div>}
         {message && (
           <div role="alert" className="math-message">
             {message}
@@ -1018,7 +1029,7 @@ function MathSession({ transport, route }) {
             {(!draft.id || status !== '已保存') && !pending && <span className="math-hint">保存作品后即可下载</span>}
           </section>
         </ModulePresence>}
-        {!home && graphical && <div className="math-editing-toolbar" aria-label="制作操作">
+        {!home && !draft.deletedAt && graphical && <div className="math-editing-toolbar" aria-label="制作操作">
           <Popover label="添加图形" icon={null} align="start" buttonClassName="math-action-button">{({ close }) => <>
             {(draft.source.kind === 'space' ? ['point', 'edge'] : ['function', 'point', 'line', 'ellipse', 'polyline', 'text']).map(type => <MenuItem key={type} disabled={type === 'edge' && objects.length < 2} onClick={() => { close(); addGraphic(type); }}>添加{type === 'edge' ? '棱' : names[type]}</MenuItem>)}
             {draft.source.kind === 'space' && <MenuItem onClick={async () => { close(); if (objects.length && !await confirm('使用棱锥会替换当前图形，是否继续？')) return; source(fitSpace(pyramidSource())); selectGraphic('object:0'); }}>棱锥示例</MenuItem>}
@@ -1033,9 +1044,13 @@ function MathSession({ transport, route }) {
         </div>}
         {!home && shell && draft?.id && <ModulePresence present={!!viewScene.usageOpen} mode="collapse"><MathUsageDetails work={draft}/></ModulePresence>}
         <div className={`math-canvas${home ? ' is-home' : ''}`} ref={canvasScroll.ref} onScroll={event => { canvasScroll.onScroll(event); if (!home) patchView({ canvasLeft: event.currentTarget.scrollLeft }); }}>
-          {home ? <WorkspaceHome draft={hasContent(draft) ? draft : null} status={status} items={items} search={search} deleted={deleted} busy={busy}
+          {home ? <WorkspaceHome draft={hasContent(draft) ? draft : null} status={status} items={items} search={search} deleted={deleted} busy={busy || !!pending} onRestore={item => deletion(false, item)} onPurge={item => deletion(true, item)}
             onSearch={setSearch} onDeleted={setDeleted} onNew={newDraft} onOpen={item => draft?.id === item.id ? resume() : open(item)} onResume={resume} onDiscard={discard} onImport={() => importFile.current.click()}/>
-          : readOnly ? (
+          : draft.deletedAt ? <div className="math-archived-preview">
+            {draft.source.kind === 'formula' ? <FormulaPreview source={draft.source} retry={fontAttempt}/>
+              : ['plane', 'space', 'dynamic'].includes(draft.source.kind) ? <GraphicPreview source={draft.source} font={font}/>
+              : <p>HTML 演示已归档，可下载查看或恢复后运行。</p>}
+          </div> : readOnly ? (
             <div className="math-formula">
               <p>作品格式需要更新，请升级后编辑。</p>
               <pre>{JSON.stringify(draft.source, null, 2)}</pre>
@@ -1072,7 +1087,7 @@ function MathSession({ transport, route }) {
           ) : <GraphicPreview source={draft.source} font={font} selection={selection} onSelect={selectGraphic}/>}
         </div>
       </section>
-      {!home && graphical && <Tools {...(shell ? { sceneKey: `${draft?.id ?? 'new'}:${toolTab}` } : {})}>
+      {!home && !draft.deletedAt && graphical && <Tools {...(shell ? { sceneKey: `${draft?.id ?? 'new'}:${toolTab}` } : {})}>
         <GraphTools active={toolTab} source={draft.source} selection={selection} onSelect={selectGraphic} objects={objects}
           onChange={(next, parameterEdits = draft.parameterEdits) => edit({ ...draft, source: next, parameterEdits })}
           onReplace={replaceObject} onRemove={removeGraphic} Fields={Fields} expanded={viewScene.groups ?? {}} onExpanded={expandTool} onTool={showTools}

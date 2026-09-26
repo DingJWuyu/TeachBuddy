@@ -24,7 +24,7 @@ export function WorkIllustration({ kind }) {
   </svg>;
 }
 
-export default function WorkspaceHome({ draft, status, items, search, deleted, busy, onSearch, onDeleted, onNew, onOpen, onResume, onDiscard, onImport }) {
+export default function WorkspaceHome({ draft, status, items, search, deleted, busy, onSearch, onDeleted, onNew, onOpen, onResume, onDiscard, onImport, onRestore, onPurge }) {
   return <div className="math-home">
     <section aria-labelledby="math-start-heading">
       <h2 id="math-start-heading" tabIndex={-1}>这节课，需要什么数学素材？</h2>
@@ -43,15 +43,21 @@ export default function WorkspaceHome({ draft, status, items, search, deleted, b
     <section className="math-library" aria-labelledby="math-library-heading">
       <div className="math-library-heading"><h2 id="math-library-heading">我的作品</h2>
         <label className="math-library-search"><Icon name="search"/><input aria-label="搜索作品" placeholder="搜索作品" value={search} onChange={e => onSearch(e.target.value)}/></label>
-        <label className="math-deleted-filter"><input type="checkbox" checked={deleted} onChange={e => onDeleted(e.target.checked)}/>已删除</label>
+        <label className="math-deleted-filter"><input type="checkbox" checked={deleted} onChange={e => onDeleted(e.target.checked)}/>已归档</label>
       </div>
       <div className="math-work-list">
-        {items.map(item => <button key={item.id} className="math-work-row" disabled={busy} onClick={() => onOpen(item)}>
+        {items.map(item => <div key={item.id} className="math-work-entry">
+          <button className="math-work-row" disabled={busy} onClick={() => onOpen(item)}>
           <span className="math-work-symbol"><Icon name="math" size={20}/></span>
           <span><strong>{item.title}</strong><small>{workshopKinds.find(k => k.kind === (item.kind ?? item.source?.kind))?.title ?? 'HTML 演示'}</small></span><Icon name="chevron"/>
-        </button>)}
+          </button>
+          {deleted && <div className="math-archive-actions" role="group" aria-label={`${item.title}的归档操作`}>
+            <button disabled={busy} onClick={() => onRestore(item)}>恢复</button>
+            <button className="math-danger-button" disabled={busy} onClick={() => onPurge(item)}>彻底删除</button>
+          </div>}
+        </div>)}
       </div>
-      {!items.length && <p className="math-library-empty">{search ? '没有找到匹配的作品' : deleted ? '没有已删除的作品' : '制作并保存后，你的作品会留在这里。'}</p>}
+      {!items.length && <p className="math-library-empty">{search ? '没有找到匹配的作品' : deleted ? '没有已归档的作品' : '制作并保存后，你的作品会留在这里。'}</p>}
     </section>
   </div>;
 }

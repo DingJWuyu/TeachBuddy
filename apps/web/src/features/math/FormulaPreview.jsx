@@ -49,7 +49,7 @@ export default function FormulaPreview({ source, retry, onLocate }) {
   if (!preview || preview.source !== source) return <div className="math-formula-preview math-formula-placeholder" role="status">正在预览…</div>;
   const before = Number.isInteger(preview.position) ? source.latex.slice(0, preview.position).split('\n') : null;
   return preview.error ? <div role="alert">LaTeX：{preview.error}
-    {before ? <button onClick={() => onLocate(preview.position)}>定位到第 {before.length} 行第 {Array.from(before.at(-1)).length + 1} 列</button>
+    {before && onLocate ? <button onClick={() => onLocate(preview.position)}>定位到第 {before.length} 行第 {Array.from(before.at(-1)).length + 1} 列</button>
       : <p>无法精确定位，请检查 LaTeX 源码。</p>}
   </div>
     : <div className="math-formula-preview"><img alt="当前公式预览" src={preview.url} /></div>;
