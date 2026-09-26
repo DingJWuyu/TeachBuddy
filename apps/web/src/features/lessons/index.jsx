@@ -81,7 +81,7 @@ function LessonsIndex() {
               >
                 {scene.listState === "deleted"
                   ? "查看我的备课"
-                  : "查看已删除备课"}
+                  : "查看已归档备课"}
               </MenuItem>
             )}
           </Popover>
@@ -114,12 +114,17 @@ function LessonsIndex() {
             />
           </div>
           <span className="lesson-list-label">
-            {scene.listState === "deleted" ? "已删除的备课" : "我的备课"}
+            {scene.listState === "deleted" ? "已归档的备课" : "我的备课"}
           </span>
         </div>
       )}
 
-      {hasDraft && (
+      {scene.listState === "deleted" && items.length > 0 && (
+        <p className="lesson-archive-help">
+          打开一份归档备课，可以恢复使用或彻底删除。
+        </p>
+      )}
+      {hasDraft && scene.listState !== "deleted" && (
         <div className="wb-draft-list" data-region="lesson-draft">
           <button
             type="button"
@@ -156,14 +161,14 @@ function LessonsIndex() {
             {scene.listQuery
               ? "没有找到这份备课"
               : scene.listState === "deleted"
-                ? "没有已删除的备课"
+                ? "没有已归档的备课"
                 : "从准备一节课开始"}
           </h2>
           <p>
             {scene.listQuery
               ? "试试课题里的其他词，或清空搜索。"
               : scene.listState === "deleted"
-                ? "删除的备课会保留在这里，方便恢复。"
+                ? "归档的备课会保留在这里，可以恢复或彻底删除。"
                 : "先写下这节课准备怎么讲，需要时再加入题目、资料和数学作品。"}
           </p>
           {scene.listQuery ? (
@@ -250,16 +255,18 @@ function LessonsIndex() {
                   </span>
                   <span className="wb-row-tags">
                     {item.deletedAt && (
-                      <span className="wb-tag is-deleted">已删除</span>
+                      <span className="wb-tag is-deleted">已归档</span>
                     )}
                   </span>
                 </button>
-                <LessonOrderButtons
-                  item={item}
-                  index={index}
-                  items={items}
-                  order={order}
-                />
+                {!item.deletedAt && items.length > 1 && (
+                  <LessonOrderButtons
+                    item={item}
+                    index={index}
+                    items={items}
+                    order={order}
+                  />
+                )}
               </li>
             ))}
           </ul>

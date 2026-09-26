@@ -1283,6 +1283,57 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PurgeResource'
+  /api/modules/lessons/v3/{id}/purge:
+    post:
+      operationId: purgeLessonV3
+      summary: 彻底删除已归档备课
+      description: 永久移除当前账户已归档备课的课稿、环节、引用快照和输出记录，停止未完成的输出任务并移除课题顺序项。活动备课返回 422，版本过期返回 409。来源对象、教学记录及独立受管文件保留；同键重放返回首次结果。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonPurged'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurgeLesson'
   /api/modules/resources/items/{id}/for-reference:
     get:
       operationId: readResourceForReferenceV2
@@ -2342,6 +2393,22 @@ components:
         baseVersion:
           $ref: '#/components/schemas/Version'
     ResourcePurged:
+      type: object
+      additionalProperties: false
+      required: [id, permanentlyDeleted]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        permanentlyDeleted:
+          const: true
+    PurgeLesson:
+      type: object
+      additionalProperties: false
+      required: [baseVersion]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+    LessonPurged:
       type: object
       additionalProperties: false
       required: [id, permanentlyDeleted]

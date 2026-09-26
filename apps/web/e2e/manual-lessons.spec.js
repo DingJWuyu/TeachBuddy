@@ -211,7 +211,7 @@ test('取题、环节排序、来源采用及三成果的学生教师 Word/PDF',
   expect(errors).toEqual([]);
 });
 
-test('课题新建、排序、删除恢复以及重启后保留顺序', async ({ page, browser }) => {
+test('课题新建、排序、归档恢复以及重启后保留顺序', async ({ page, browser }) => {
   const { lesson } = await setup(page);
   await page.getByRole('button', { name: '我的备课', exact: true }).click();
   await page.getByRole('button', { name: '新建备课', exact: true }).click();
@@ -226,12 +226,15 @@ test('课题新建、排序、删除恢复以及重启后保留顺序', async ({
   await expect(page.locator('.wb-card-title')).toHaveText(['函数专题', '第二课时']);
   await page.getByRole('button', { name: /^函数专题/ }).click();
   await page.getByRole('button', { name: '备课操作', exact: true }).click();
-  await page.getByRole('menuitem', { name: '删除备课', exact: true }).click();
-  await page.getByRole('dialog', { name: '删除备课' }).getByRole('button', { name: '删除备课', exact: true }).click();
-  await expect(page.locator('[data-region="lesson-deleted"]')).toBeVisible();
-  await page.getByRole('button', { name: '备课操作', exact: true }).click();
-  await page.getByRole('menuitem', { name: '恢复备课', exact: true }).click();
-  await expect(page.locator('[data-region="lesson-deleted"]')).toHaveCount(0);
+  await page.getByRole('menuitem', { name: '归档备课', exact: true }).click();
+  await page.getByRole('dialog', { name: '归档备课' }).getByRole('button', { name: '归档备课', exact: true }).click();
+  await expect(page).toHaveURL(/\/lessons$/);
+  await expect(page.locator('.wb-card-title')).toHaveText(['第二课时']);
+  await page.getByRole('button', { name: '备课列表选项', exact: true }).click();
+  await page.getByRole('menuitem', { name: '查看已归档备课', exact: true }).click();
+  await page.getByRole('button', { name: /^函数专题/ }).click();
+  await page.getByRole('button', { name: '恢复备课', exact: true }).click();
+  await expect(page).toHaveURL(/\/lessons$/);
   const directory = world.directory;
   await world.close(); world = await createIntegration({ directory });
   const fresh = await browser.newContext({ ignoreHTTPSErrors: true });

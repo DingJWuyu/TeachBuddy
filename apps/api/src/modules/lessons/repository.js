@@ -142,6 +142,22 @@ export function createLessonsRepository(db) {
       return listLessonsStatement.all(accountKey).map(toLesson);
     },
 
+    purgeLesson(accountKey, lessonId) {
+      db.prepare("DELETE FROM lesson_sections WHERE accountKey=? AND lessonId=?")
+        .run(accountKey, lessonId);
+      db.prepare("DELETE FROM lesson_references WHERE accountKey=? AND lessonId=?")
+        .run(accountKey, lessonId);
+      db.prepare("DELETE FROM lesson_items WHERE accountKey=? AND id=?")
+        .run(accountKey, lessonId);
+      const order = db.prepare("SELECT lessonIds FROM lesson_order WHERE accountKey=?")
+        .get(accountKey);
+      if (order) {
+        const remaining = JSON.parse(order.lessonIds).filter(id => id !== lessonId);
+        db.prepare("UPDATE lesson_order SET version=version+1, lessonIds=? WHERE accountKey=?")
+          .run(JSON.stringify(remaining), accountKey);
+      }
+    },
+
     listSections(lessonId) {
       return listSectionsStatement.all(lessonId).map(toSection);
     },

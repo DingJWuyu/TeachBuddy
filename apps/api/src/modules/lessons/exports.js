@@ -64,6 +64,21 @@ export function createLessonExports({
     );
     return record;
   }
+  function remove(principal, id) {
+    for (const row of rows.all(principal.accountKey, id)) {
+      const { jobId } = JSON.parse(row.record);
+      const state = jobs.get(principal, jobId).state;
+      if (["queued", "running", "cancelling"].includes(state)) {
+        jobs.cancel(principal, jobId, {
+          key: randomUUID(),
+          method: "POST",
+          path: `/internal/lessons/${id}/exports/${jobId}/cancel`,
+        });
+      }
+    }
+    db.prepare("DELETE FROM lesson_exports WHERE accountKey=? AND lessonId=?")
+      .run(principal.accountKey, id);
+  }
   const handler = {
     async run({ principal, job, signal, reportProgress }) {
       const row = find.get(principal.accountKey, job.id);
@@ -144,5 +159,5 @@ export function createLessonExports({
       }
     },
   };
-  return { create, list, handler };
+  return { create, list, remove, handler };
 }

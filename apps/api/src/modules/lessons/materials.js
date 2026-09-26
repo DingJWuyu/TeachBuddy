@@ -41,7 +41,13 @@ export function createMaterialsLessons({
   now = () => new Date(),
 }) {
   const order = version === 3 ? createLessonOrder({ db, repository, mutations }) : null;
-  const validate = (name, value) => version === 3 ? validateMath(name === "CreateLesson" || name === "UpdateLesson" ? `${name}V3` : name, value) : validateSchema(name, value);
+  const validate = (name, value) => {
+    if (name === "PurgeLesson" || version < 3) return validateSchema(name, value);
+    return validateMath(
+      name === "CreateLesson" || name === "UpdateLesson" ? `${name}V3` : name,
+      value,
+    );
+  };
   const assertRepresentable = (id) => {
     if (version < 3 && repository.listReferences(id).some(r => r.kind === "math")) throw invalidInput("/materials", "unsupported-content-version");
   };
@@ -258,6 +264,15 @@ export function createMaterialsLessons({
     repository.updateLesson(next);
     return read(p, next);
   }
+  function purge(p, input, id) {
+    const lesson = requireLesson(p, id);
+    if (lesson.version !== input.baseVersion)
+      throw contractError(problems.versionConflict(lesson.version));
+    if (!lesson.deletedAt) throw invalidInput("/id", "invalid-reference");
+    exports.remove(p, id);
+    repository.purgeLesson(account(p), id);
+    return { id, permanentlyDeleted: true };
+  }
   function list(p, query = {}) {
     const text = (blocks) =>
       blocks.flatMap((b) => [
@@ -370,6 +385,9 @@ export function createMaterialsLessons({
   ];
   if (version === 3) {
     definitions.splice(7);
+    definitions.push([
+      "purgeLessonV3", "post", "/items/:id/purge", "PurgeLesson", 200, purge,
+    ]);
     definitions.unshift(["listUsagesV3", "get", "/usages", null, 200, (p,b,id,q) => listUsages(p,q)]);
   }
   for (const [name, method, oldPath, schema, status, action] of definitions) {

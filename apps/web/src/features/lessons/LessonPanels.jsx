@@ -35,7 +35,10 @@ export function LessonIndex({ currentId }) {
   }, [query, state, revision, currentId, shell.generation]);
 
   return (
-    <div className="wb-module wb-tool" data-region="lesson-index">
+    <div
+      className="wb-module wb-tool lesson-index-tool"
+      data-region="lesson-index"
+    >
       <div className="wb-search">
         <Icon name="search" size={15} />
         <input
@@ -48,7 +51,7 @@ export function LessonIndex({ currentId }) {
         />
       </div>
       <div className="lesson-tool-heading">
-        <span>{state === "deleted" ? "已删除的备课" : "我的备课"}</span>
+        <span>{state === "deleted" ? "已归档的备课" : "我的备课"}</span>
         <Popover label="备课目录选项">
           {({ close }) => (
             <MenuItem
@@ -57,7 +60,7 @@ export function LessonIndex({ currentId }) {
                 setState(state === "active" ? "deleted" : "active");
               }}
             >
-              {state === "active" ? "查看已删除备课" : "查看我的备课"}
+              {state === "active" ? "查看已归档备课" : "查看我的备课"}
             </MenuItem>
           )}
         </Popover>
@@ -88,15 +91,17 @@ export function LessonIndex({ currentId }) {
             >
               <span className="wb-nav-label">{item.title}</span>
               {item.deletedAt && (
-                <span className="wb-tag is-deleted">已删除</span>
+                <span className="wb-tag is-deleted">已归档</span>
               )}
             </button>
-            <LessonOrderButtons
-              item={item}
-              index={index}
-              items={items}
-              order={order}
-            />
+            {!item.deletedAt && items.length > 1 && (
+              <LessonOrderButtons
+                item={item}
+                index={index}
+                items={items}
+                order={order}
+              />
+            )}
           </li>
         ))}
       </ul>

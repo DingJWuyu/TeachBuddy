@@ -30,6 +30,9 @@
   color: var(--app-text);
   font-size: 14px;
 }
+.wb-shell[data-theme="dark"] :is(.wb-lesson, .lesson-picker, .r34-exports) {
+  --wb-danger: #f191a0;
+}
 .wb-shell :is(.wb-lesson, .wb-lessons-index, .r34-exports) {
   background: var(--app-surface);
   border-radius: 12px;
@@ -70,9 +73,9 @@
 }
 .wb-shell
   :is(.wb-lesson, .wb-lessons-index, .lesson-picker, .r34-exports)
-  :is(button, input, textarea):focus-visible {
+  :is(button, a):focus-visible {
   outline: 2px solid var(--app-muted);
-  outline-offset: 3px;
+  outline-offset: 1px;
 }
 .wb-shell .wb-lessons-index {
   padding: 0;
@@ -879,9 +882,6 @@
   .lesson-list-toolbar {
     padding: 12px 16px;
   }
-  .lesson-list-label {
-    display: none;
-  }
   .wb-lessons-index .wb-lessons-scroll {
     padding: 0 12px 16px;
   }
@@ -923,6 +923,12 @@
     padding: 12px 16px;
     flex-wrap: wrap;
   }
+  .wb-lesson .lesson-archive-banner {
+    padding: 16px;
+  }
+  .wb-lesson .lesson-archive-banner > div {
+    flex-basis: 100%;
+  }
   .lesson-export-kinds > div,
   .lesson-export-settings {
     grid-template-columns: minmax(0, 1fr);
@@ -950,9 +956,66 @@
   gap: 8px;
   flex: none;
 }
-.wb-shell .wb-lesson .lesson-writing-input:focus-visible {
+/* Inset rings remain complete beside scroll clips; compound searches own one ring. */
+.wb-shell
+  :is(
+    .wb-lesson,
+    .wb-lessons-index,
+    .lesson-picker,
+    .r34-exports,
+    .lesson-index-tool
+  )
+  :where(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select
+  ):focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-muted) 24%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--app-muted);
+}
+.wb-shell
+  :is(.wb-lessons-index, .lesson-picker, .lesson-index-tool)
+  .wb-search:focus-within {
+  border-color: var(--app-muted);
+  box-shadow: inset 0 0 0 0.5px var(--app-muted);
+}
+.wb-shell
+  :is(.wb-lessons-index, .lesson-picker, .lesson-index-tool)
+  .wb-search
+  input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.wb-lesson input.lesson-title-input {
+  padding-inline: 6px;
+}
+.lesson-archive-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--app-soft);
+  border-bottom: 1px solid var(--app-line-soft);
+}
+.lesson-archive-banner > div {
+  flex: 1;
+  min-width: 180px;
+}
+.lesson-archive-banner p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--app-muted);
+  line-height: 1.8;
+}
+.wb-lessons-index .lesson-row-copy {
+  flex: 1;
+}
+.wb-lessons-index .wb-card-title {
+  overflow-wrap: anywhere;
+}
+.wb-lessons-index .wb-row-tags:empty {
+  display: none;
 }
 .wb-shell .r34-exports {
   display: flex;
@@ -1034,4 +1097,19 @@
   align-items: center;
   gap: 8px;
   min-height: 38px;
+}
+
+.wb-lesson .lesson-title-area h1 {
+  height: auto;
+  min-height: 36px;
+  overflow-wrap: anywhere;
+}
+.lesson-list-label {
+  flex: none;
+}
+.lesson-archive-help {
+  margin: 0;
+  padding: 0 24px 12px;
+  color: var(--app-muted);
+  font-size: 12px;
 }

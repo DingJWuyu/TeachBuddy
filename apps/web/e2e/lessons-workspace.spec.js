@@ -387,3 +387,235 @@ test("按需插入公式、教师注记和图片，排序后保存重开", async
     "只给老师看的提示",
   );
 });
+
+test("归档备课后返回主页，恢复草稿和彻底删除均可从归档中完成", async ({
+  page,
+}) => {
+  const call = await setup(page);
+  await newLesson(page);
+  await page.getByLabel("课题", { exact: true }).fill("准备归档的课稿");
+  await save(page);
+  const id = page.url().split("/").at(-1);
+  await page.getByLabel("开头文稿段落 1").fill("归档后仍需保留的草稿");
+  await page.getByRole("button", { name: "备课操作", exact: true }).click();
+  await page.getByRole("menuitem", { name: "归档备课", exact: true }).click();
+  await page
+    .getByRole("dialog", { name: "归档备课" })
+    .getByRole("button", { name: "取消", exact: true })
+    .click();
+  await expect(page.getByLabel("开头文稿段落 1")).toHaveValue(
+    "归档后仍需保留的草稿",
+  );
+  await page.getByRole("button", { name: "备课操作", exact: true }).click();
+  await page.getByRole("menuitem", { name: "归档备课", exact: true }).click();
+  await page
+    .getByRole("dialog", { name: "归档备课", exact: true })
+    .getByRole("button", { name: "归档备课", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/lessons$/);
+  await expect(page.locator(".wb-card-title")).toHaveCount(0);
+  await page.reload();
+  await expect(page).toHaveURL(/\/lessons$/);
+  await expect(
+    page.getByRole("button", { name: "新建备课", exact: true }),
+  ).toBeVisible();
+
+  await openArchived(page, "准备归档的课稿");
+  await expect(page.locator(".wb-lesson textarea")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "生成教学资料", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "恢复备课", exact: true }).click();
+  await expect(page).toHaveURL(/\/lessons$/);
+  await page.getByRole("button", { name: /^准备归档的课稿/ }).click();
+  await page
+    .getByRole("button", { name: "继续编辑草稿", exact: true })
+    .first()
+    .click();
+  await expect(page.getByLabel("开头文稿段落 1")).toHaveValue(
+    "归档后仍需保留的草稿",
+  );
+  await save(page);
+  await archiveLesson(page);
+  await openArchived(page, "准备归档的课稿");
+  await page.getByRole("button", { name: "彻底删除", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "彻底删除备课" });
+  await expect(dialog).toContainText("无法恢复");
+  await dialog.getByRole("button", { name: "取消", exact: true }).click();
+  await expect(page.locator('[data-region="lesson-archived"]')).toBeVisible();
+  await page.getByRole("button", { name: "彻底删除", exact: true }).click();
+  await dialog.getByRole("button", { name: "彻底删除", exact: true }).click();
+  await expect(page).toHaveURL(/\/lessons$/);
+  await page.reload();
+  await expect(page).toHaveURL(/\/lessons$/);
+  await call("GET", `/api/modules/lessons/v3/${id}`, undefined, 404);
+  await page.getByRole("button", { name: "备课列表选项", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "查看已归档备课", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "没有已归档的备课" }),
+  ).toBeVisible();
+});
+
+async function archiveLesson(page) {
+  await page.getByRole("button", { name: "备课操作", exact: true }).click();
+  await page.getByRole("menuitem", { name: "归档备课", exact: true }).click();
+  await page
+    .getByRole("dialog", { name: "归档备课", exact: true })
+    .getByRole("button", { name: "归档备课", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/lessons$/);
+}
+async function openArchived(page, title) {
+  await page.getByRole("button", { name: "备课列表选项", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "查看已归档备课", exact: true })
+    .click();
+  await page.getByRole("button", { name: new RegExp(`^${title}`) }).click();
+  await expect(page.locator('[data-region="lesson-archived"]')).toBeVisible();
+}
+
+for (const action of ["archive", "restore", "purge"]) {
+  test(`备课 ${action} 写入后断线，刷新仍可确认并返回主页`, async ({
+    page,
+  }) => {
+    await setup(page);
+    await newLesson(page);
+    await page.getByLabel("课题", { exact: true }).fill("断线后确认");
+    await save(page);
+    if (action !== "archive") {
+      await archiveLesson(page);
+      await openArchived(page, "断线后确认");
+    }
+    const route = `**/api/modules/lessons/v3/*/${action === "purge" ? "purge" : "deletion"}`;
+    const attempts = [];
+    await page.route(route, async (intercepted) => {
+      const request = intercepted.request();
+      attempts.push({
+        key: request.headers()["idempotency-key"],
+        body: request.postData(),
+      });
+      const response = await intercepted.fetch();
+      expect(response.status()).toBe(200);
+      if (attempts.length === 1) await intercepted.abort("connectionfailed");
+      else await intercepted.fulfill({ response });
+    });
+    if (action === "archive") {
+      await page.getByRole("button", { name: "备课操作", exact: true }).click();
+      await page
+        .getByRole("menuitem", { name: "归档备课", exact: true })
+        .click();
+      await page
+        .getByRole("dialog", { name: "归档备课" })
+        .getByRole("button", { name: "归档备课", exact: true })
+        .click();
+    } else if (action === "restore") {
+      await page.getByRole("button", { name: "恢复备课", exact: true }).click();
+    } else {
+      await page.getByRole("button", { name: "彻底删除", exact: true }).click();
+      await page
+        .getByRole("dialog", { name: "彻底删除备课" })
+        .getByRole("button", { name: "彻底删除", exact: true })
+        .click();
+    }
+    await expect(
+      page.getByRole("button", { name: "重试确认", exact: true }),
+    ).toBeEnabled();
+    await page.reload();
+    await page.getByRole("button", { name: "重试确认", exact: true }).click();
+    await expect(page).toHaveURL(/\/lessons$/);
+    expect(attempts).toHaveLength(2);
+    expect(attempts[1]).toEqual(attempts[0]);
+    await page.reload();
+    await expect(page).toHaveURL(/\/lessons$/);
+    await expect(page.locator(".wb-card-title")).toHaveCount(
+      action === "restore" ? 1 : 0,
+    );
+  });
+}
+
+test("备课输入焦点完整贴合，深浅色与窄屏仍能阅读长课题和归档操作", async ({
+  page,
+}) => {
+  await setup(page);
+  await newLesson(page);
+  const title = "函数的单调性：从图像观察到定义证明，再到课堂练习和课后复习";
+  await page.getByLabel("课题", { exact: true }).fill(title);
+  await page.getByLabel("开头文稿段落 1").fill("先观察，再证明。");
+  await addSection(page, "例题讲解");
+  await save(page);
+  for (const theme of ["light", "dark"]) {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.getByRole("link", { name: /账户：/ }).click();
+    await page
+      .getByRole("button", {
+        name: theme === "dark" ? "深色" : "浅色",
+        exact: true,
+      })
+      .click();
+    await expect(page.locator(".wb-shell")).toHaveAttribute(
+      "data-theme",
+      theme,
+    );
+    await page
+      .getByRole("complementary", { name: "工作台导航" })
+      .getByRole("link", { name: /^备课/ })
+      .click();
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const label of ["课题", "开头文稿段落 1", "环节名称 1"]) {
+        const input = page.getByLabel(label, { exact: true });
+        await input.click();
+        const focus = await input.evaluate((node) => {
+          const style = getComputedStyle(node);
+          const rect = node.getBoundingClientRect();
+          return {
+            outline: style.outlineStyle,
+            shadow: style.boxShadow,
+            corners: [
+              [rect.left + 3, rect.top + 3],
+              [rect.right - 3, rect.bottom - 3],
+            ].every(([x, y]) => document.elementFromPoint(x, y) === node),
+          };
+        });
+        expect(focus.outline).toBe("none");
+        expect(focus.shadow).toContain("inset");
+        expect(focus.corners).toBe(true);
+        await screenshot(page, `focus-${theme}-${width}-${label}`);
+      }
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+  }
+  await page.getByRole("button", { name: "查看课稿", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: title, exact: true }),
+  ).toBeVisible();
+  await screenshot(page, "long-title-dark-390");
+  await page.getByRole("button", { name: "我的备课", exact: true }).click();
+  const search = page.getByLabel("搜索备课", { exact: true });
+  await search.click();
+  const focus = await search.evaluate((node) => ({
+    outline: getComputedStyle(node).outlineStyle,
+    shadow: getComputedStyle(node).boxShadow,
+    group: getComputedStyle(node.parentElement).boxShadow,
+  }));
+  expect(focus.outline).toBe("none");
+  expect(focus.shadow).toBe("none");
+  expect(focus.group).toContain("inset");
+  await screenshot(page, "search-dark-390");
+  await page.getByRole("button", { name: new RegExp(`^${title}`) }).click();
+  await archiveLesson(page);
+  await openArchived(page, title);
+  await expect(
+    page.getByRole("button", { name: "恢复备课", exact: true }),
+  ).toBeInViewport();
+  await expect(
+    page.getByRole("button", { name: "彻底删除", exact: true }),
+  ).toBeInViewport();
+  await screenshot(page, "archive-dark-390");
+});

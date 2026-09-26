@@ -62,6 +62,13 @@ export async function setLessonDeletion({ key, id, payload, version = 3 }) {
   return assertLesson(body);
 }
 
+export async function purgeLesson({ key, id, payload }) {
+  const { body } = await workbenchPost(`/api/modules/lessons/v3/${id}/purge`, payload, key);
+  if (body?.id !== id || body.permanentlyDeleted !== true)
+    throw new WorkbenchError(unexpectedSuccessProblem("删除结果无法确认"));
+  return body;
+}
+
 export const sourcePath = (kind) =>
   kind === "math" ? "/api/modules/math/v1/works" : kind === "resource"
     ? "/api/modules/resources/items"
