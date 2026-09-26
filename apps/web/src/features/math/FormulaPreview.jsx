@@ -4,6 +4,11 @@ import { checkFormula, formulaPackages, formulaSvg } from '../../../../../packag
 import { loadMathFont } from './localFont.js';
 
 let renderer;
+function previewBackground(color) {
+  const rgb = color.slice(1).match(/.{2}/g).map(hex => parseInt(hex, 16) / 255);
+  const [r, g, b] = rgb.map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.18 ? '#25262b' : '#ffffff';
+}
 function loadRenderer() {
   if (!renderer) renderer = (async () => {
     window.MathJax = {
@@ -52,5 +57,5 @@ export default function FormulaPreview({ source, retry, onLocate }) {
     {before && onLocate ? <button onClick={() => onLocate(preview.position)}>定位到第 {before.length} 行第 {Array.from(before.at(-1)).length + 1} 列</button>
       : <p>无法精确定位，请检查 LaTeX 源码。</p>}
   </div>
-    : <div className="math-formula-preview"><img alt="当前公式预览" src={preview.url} /></div>;
+    : <div className="math-formula-preview" style={{ background: previewBackground(source.color) }}><img alt="当前公式预览" src={preview.url} /></div>;
 }
