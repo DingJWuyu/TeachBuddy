@@ -92,6 +92,10 @@ export function createQuestionsRepository(db) {
       return toRecord(getStatement.get(id, accountKey));
     },
 
+    removeForAccount(accountKey, id) {
+      db.prepare('DELETE FROM question_items WHERE accountKey=? AND id=?').run(accountKey, id);
+    },
+
     listForAccount(accountKey) {
       return listStatement.all(accountKey).map(toRecord);
     },

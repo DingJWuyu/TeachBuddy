@@ -1,3 +1,8 @@
+/* Questions owns the spacing for its main panes and the existing auxiliary panel. */
+.wb-shell.tb-prototype:is([data-route="questions"], [data-route="question"]) .wb-workspace { padding: var(--app-workspace-padding); gap: 16px; }
+.wb-shell.tb-prototype:is([data-route="questions"], [data-route="question"]) .wb-main { padding: 0; }
+.wb-shell.tb-prototype:is([data-route="questions"], [data-route="question"]):not(.is-panel-overlay) .wb-aux { margin: 0; border-radius: 12px; box-shadow: var(--wb-shadow); }
+.wb-shell.tb-prototype:is([data-route="questions"], [data-route="question"]).is-panel-overlay .wb-aux { inset: var(--app-workspace-padding); margin: 0; border-radius: 12px; }
 .q-workspace {
   --q-gap: 16px;
   --q-padding: 0px;
@@ -29,7 +34,13 @@
 .q-workspace button:disabled { opacity: .45; cursor: default; }
 .q-workspace .primary { background: var(--app-primary, #2d3037); color: var(--app-on-primary, #fff); border-color: transparent; font-weight: 500; }
 .q-workspace .primary:hover { background: var(--app-primary, #2d3037); filter: brightness(1.12); }
-.q-workspace :is(input, textarea, select, button):focus-visible { outline: 2px solid var(--app-text, #565961); outline-offset: 3px; }
+.wb-shell :is(.q-workspace, .q-taxonomy-tools) :is(input, textarea, select):focus {
+  outline: none;
+  border-color: var(--app-accent);
+  box-shadow: inset 0 0 0 1px var(--app-accent);
+}
+.wb-shell :is(.q-workspace, .q-taxonomy-tools) :is(button, a, summary):focus-visible { outline: 2px solid var(--app-accent); outline-offset: -2px; }
+.wb-shell .q-workspace input[type="checkbox"]:focus-visible { outline: 2px solid var(--app-accent); outline-offset: 1px; box-shadow: none; }
 .q-workspace .q-text-button, .q-workspace .q-icon-button { background: transparent; border-color: transparent; }
 .q-workspace .q-text-button { padding: 4px 2px; min-height: 28px; font-size: 13px; }
 .q-workspace .q-icon-button { width: 34px; height: 34px; padding: 7px; flex: none; }
@@ -41,7 +52,7 @@
 .q-workspace input[type="checkbox"] { flex: none; accent-color: var(--app-primary, #2d3037); width: 14px; height: 14px; }
 .q-workspace input[type="number"] { width: 64px; }
 .q-workspace input:not([type="checkbox"]):not([type="file"]), .q-workspace textarea { max-width: 100%; }
-.q-workspace textarea { width: 100%; resize: vertical; }
+.q-workspace textarea { display: block; width: 100%; resize: vertical; }
 .q-workspace header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .q-workspace h1, .q-workspace h2, .q-workspace h3, .q-workspace h4 { margin: 0; font-weight: 600; }
 .q-workspace .q-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
@@ -58,6 +69,8 @@
 .q-search { display: flex; align-items: center; flex: 1; gap: 6px; color: var(--q-muted); border-radius: 8px; background: var(--q-soft); padding: 0 9px; }
 .q-search input { width: 100%; }
 .q-workspace .q-search input { border: 0; background: transparent; padding: 9px 0; font-size: 13px; }
+.wb-shell .q-search:focus-within { box-shadow: inset 0 0 0 2px var(--app-accent); }
+.wb-shell .q-workspace .q-search input:focus { outline: none; box-shadow: none; }
 .q-filters { display: flex; flex-direction: column; gap: 12px; padding: 2px 2px 12px; border-bottom: 1px solid var(--q-line); }
 .q-filters > label:first-child { display: grid; grid-template-columns: 38px minmax(0, 1fr); }
 .q-filter-tags { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; }
@@ -136,6 +149,11 @@
 .q-draft-notice > span { flex: 1 1 180px; color: var(--q-muted); }
 .q-workspace .q-question-menu { min-width: 160px; display: grid; gap: 2px; }
 .q-workspace .q-question-menu button { justify-content: flex-start; border: 0; text-align: left; font-size: 13px; white-space: nowrap; }
+.q-workspace .q-danger { color: light-dark(#aa3333, #f3a4a4); }
+.q-workspace .q-danger-primary { background: light-dark(#a73434, #e99090); color: light-dark(#fff, #281818); border-color: transparent; }
+.q-workspace .q-danger-primary:hover { background: light-dark(#922d2d, #f3a4a4); }
+.q-lifecycle-dialog p { margin: 0; line-height: 1.8; }
+.q-workspace .q-finder-heading h1:focus { outline: none; }
 .q-export p { margin: 6px 0 12px; }
 .q-export .q-tools { margin: 12px 0; }
 .q-export textarea { min-height: 100px; }

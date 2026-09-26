@@ -105,6 +105,15 @@ export function createMaterialsStore(db, repository, now = () => new Date()) {
     list,
     question,
     writeQuestion,
+    purgeQuestion(p, id) {
+      repository.removeForAccount(p.accountKey, id);
+      db.prepare('DELETE FROM questions_materials_meta WHERE accountKey=? AND id=?').run(p.accountKey, id);
+      db.prepare("DELETE FROM questions_materials_tasks WHERE accountKey=? AND json_extract(value, '$.question.id')=?").run(p.accountKey, id);
+    },
+    purgeImport(p, id) {
+      db.prepare('DELETE FROM questions_materials_imports WHERE accountKey=? AND id=?').run(p.accountKey, id);
+      db.prepare("DELETE FROM questions_materials_tasks WHERE accountKey=? AND json_extract(value, '$.importId')=?").run(p.accountKey, id);
+    },
     taxonomy,
     stamp,
     questions: (p) =>

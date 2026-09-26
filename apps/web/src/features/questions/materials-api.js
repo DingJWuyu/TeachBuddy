@@ -13,7 +13,7 @@ export async function write(path, body, key, method = "POST") {
   const id = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
   const allowed = method === 'PUT'
     ? new RegExp(`^/(?:taxonomy|(?:items|imports)/${id})$`)
-    : method === 'POST' ? new RegExp(`^/(?:items|imports|items/${id}/(?:copies|deletion|assets)|imports/${id}/(?:deletion|supplements|commit)|api/workbench/files/(?:crops|${id}/preview)|api/workbench/jobs/${id}/(?:cancel|retry))$`) : null;
+    : method === 'POST' ? new RegExp(`^/(?:items|imports|items/${id}/(?:copies|deletion|purge|assets)|imports/${id}/(?:deletion|purge|supplements|commit)|api/workbench/files/(?:crops|${id}/preview)|api/workbench/jobs/${id}/(?:cancel|retry))$`) : null;
   if (!allowed?.test(path) || typeof key !== 'string' || !body || typeof body !== 'object')
     throw Object.assign(new Error('原请求格式暂不支持，已保留设备资料，请核对后处理'), { problem: { kind: 'unconfirmed', message: '原请求格式暂不支持，已保留设备资料，请核对后处理' } });
   try {
@@ -35,6 +35,8 @@ export async function write(path, body, key, method = "POST") {
       "/problems/materials/invalid-location":
         "来源位置无效，请重新选择原稿范围。",
       "/problems/materials/job-not-retryable": "没有可重试的未完成单元。",
+      "/problems/materials/archive-required": "请先归档，再彻底删除。",
+      "/problems/materials/processing-in-progress": "内容仍在处理中，请等待结束或停止处理后再彻底删除。",
     };
     if (messages[error.problem?.type] && error.problem.httpStatus < 500)
       error.problem = {

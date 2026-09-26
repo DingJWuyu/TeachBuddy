@@ -25,6 +25,7 @@ export default function QuestionsPage({ route }) {
         requestedId={route?.id}
         registerTools={shell.registerTools}
         onOpenTools={() => shell.openPanel("questions-classification")}
+        onReturnToLibrary={() => shell.navigate('/questions', { replace: true })}
         transport={auth.request}
         onAddToLesson={setQuestions}
         onOpenLesson={openLesson}

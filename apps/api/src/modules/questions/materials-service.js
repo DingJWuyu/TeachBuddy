@@ -45,6 +45,12 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
     if (busy.has(jobs.get(p, m.jobId).state))
       throw materialsError("import-not-editable", 409);
   };
+  function checkPurge(p, item, baseVersion, kind) {
+    s.check(item, baseVersion, false);
+    if (!item.deletedAt) throw materialsError('archive-required', 409);
+    if (jobs.list(p).items.some(job => job.target.kind === kind && job.target.id === item.id && busy.has(job.state)))
+      throw materialsError('processing-in-progress', 409);
+  }
   function locations(p, m, parts) {
     const originals = [...(m.input.fileIds ?? []), ...m.supplementFileIds];
     const task = s.get("tasks", p, m.jobId);
@@ -197,6 +203,11 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
         ...s.bump(q),
         deletedAt: input.deleted ? s.stamp() : null,
       });
+    },
+    purgeQuestionV2({ principal: p, id, input }) {
+      checkPurge(p, s.question(p, id), input.baseVersion, 'question');
+      s.purgeQuestion(p, id);
+      return { id, permanentlyDeleted: true };
     },
     relocateQuestion({ principal: p, id, input }) {
       const q = s.question(p, id);
@@ -406,6 +417,11 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
         ...s.bump(m),
         deletedAt: input.deleted ? s.stamp() : null,
       });
+    },
+    purgeQuestionImport({ principal: p, id, input }) {
+      checkPurge(p, s.get('imports', p, id), input.baseVersion, 'import');
+      s.purgeImport(p, id);
+      return { id, permanentlyDeleted: true };
     },
     createQuestionAsset({ principal: p, id, input }) {
       const q = s.question(p, id);

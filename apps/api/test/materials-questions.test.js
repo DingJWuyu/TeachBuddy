@@ -154,6 +154,86 @@ const manual = () => ({
   tagIds: [],
   source: { kind: "manual" },
 });
+test("permanent question deletion requires archive and current version, replays safely and retains adopted snapshots", async (t) => {
+  const e = await environment(t);
+  const q = (await e.q("/items", manual())).body;
+  const { source, ...copyInput } = manual();
+  const copy = (await e.q(`/items/${q.id}/copies`, { ...copyInput, baseVersion: q.version })).body;
+  const lesson = await e.call("/api/modules/lessons/v2/items", {
+    title: "保留引用", intro: doc(""), sections: [],
+    materials: [{ id: randomUUID(), kind: "question", questionId: q.id, questionVersion: q.version, note: "课堂使用" }],
+  });
+  assert.equal(lesson.status, 201, JSON.stringify(lesson.body));
+  const active = await e.q(`/items/${q.id}/purge`, { baseVersion: q.version });
+  assert.equal(active.status, 409);
+  assert.equal(active.body.type, "/problems/materials/archive-required");
+  const archived = (await e.q(`/items/${q.id}/deletion`, { baseVersion: q.version, deleted: true })).body;
+  assert.equal((await e.q(`/items/${q.id}/purge`, { baseVersion: archived.version }, "POST", "r33-b")).status, 404);
+  assert.equal((await e.q(`/items/${q.id}/purge`, { baseVersion: q.version })).status, 409);
+  const key = randomUUID(), input = { baseVersion: archived.version };
+  const purged = await e.q(`/items/${q.id}/purge`, input, "POST", "r33-a", key);
+  assert.equal(purged.status, 200, JSON.stringify(purged.body));
+  assert.deepEqual(purged.body, { id: q.id, permanentlyDeleted: true });
+  await e.restart();
+  assert.deepEqual(await e.q(`/items/${q.id}/purge`, input, "POST", "r33-a", key), purged);
+  assert.equal((await e.q(`/items/${q.id}`, null, "GET")).status, 404);
+  assert.equal((await e.q(`/items/${q.id}/purge`, input)).status, 404);
+  assert.equal((await e.q(`/items/${q.id}/deletion`, { ...input, deleted: false })).status, 404);
+  assert.deepEqual((await e.q(`/items/${copy.id}`, null, "GET")).body.source.snapshot, copy.source.snapshot);
+  assert.deepEqual((await e.call(`/api/modules/lessons/v2/items/${lesson.body.id}`, null, "GET")).body.materials,
+    lesson.body.materials.map(reference => ({ ...reference, sourceState: "deleted" })));
+});
+
+test("permanent import deletion waits for running extraction", async (t) => {
+  let finish;
+  const processing = new Promise(resolve => { finish = resolve; });
+  const e = await environment(t, { extract: async () => { await processing; return { questions: [] }; } });
+  t.after(() => finish());
+  const form = new FormData();
+  form.append("file", new Blob([await (await import("sharp")).default({ create: { width: 100, height: 100, channels: 3, background: "white" } }).png().toBuffer()], { type: "image/png" }), "原稿.png");
+  const file = (await e.call("/api/workbench/files", form)).body;
+  const created = (await e.q("/imports", { title: "处理中", origin: "", input: { kind: "files", fileIds: [file.id], pages: [] } })).body;
+  const archived = (await e.q(`/imports/${created.id}/deletion`, { baseVersion: created.version, deleted: true })).body;
+  const blocked = await e.q(`/imports/${created.id}/purge`, { baseVersion: archived.version });
+  assert.equal(blocked.status, 409, JSON.stringify(blocked.body));
+  assert.equal(blocked.body.type, "/problems/materials/processing-in-progress");
+  assert.equal((await e.q(`/imports/${created.id}`, null, "GET")).status, 200);
+  finish();
+  await e.job(created.jobId);
+  const latest = (await e.q(`/imports/${created.id}`, null, "GET")).body;
+  assert.equal((await e.q(`/imports/${created.id}/purge`, { baseVersion: latest.version })).status, 200);
+  assert.equal((await e.call(`/api/workbench/jobs/${created.jobId}/retry`, { unitIds: [] })).status, 404);
+  assert.equal((await e.q(`/imports/${created.id}`, null, "GET")).status, 404);
+});
+
+test("permanent import deletion keeps committed questions and cannot be restored or retried", async (t) => {
+  const e = await environment(t);
+  const created = (await e.q("/imports", { title: "待移除材料", origin: "", input: { kind: "text", text: "1. 求 2+3。\n答案：5" } })).body;
+  await e.job(created.jobId);
+  const m = (await e.q(`/imports/${created.id}`, null, "GET")).body;
+  const saved = await e.q(`/imports/${m.id}`, {
+    baseVersion: m.version, fragments: m.fragments,
+    drafts: m.drafts.map(d => ({ ...d, issues: d.issues.map(i => ({ ...i, resolution: "corrected" })) })),
+  }, "PUT");
+  assert.equal(saved.status, 200, JSON.stringify(saved.body));
+  const committed = await e.q(`/imports/${m.id}/commit`, { baseVersion: saved.body.version, draftIds: [m.drafts[0].id] });
+  assert.equal(committed.status, 200, JSON.stringify(committed.body));
+  const question = committed.body.questions[0];
+  assert.equal((await e.q(`/imports/${m.id}/purge`, { baseVersion: committed.body.import.version })).status, 409);
+  const archived = (await e.q(`/imports/${m.id}/deletion`, { baseVersion: committed.body.import.version, deleted: true })).body;
+  const key = randomUUID(), input = { baseVersion: archived.version };
+  assert.equal((await e.q(`/imports/${m.id}/purge`, input, "POST", "r33-b")).status, 404);
+  const purged = await e.q(`/imports/${m.id}/purge`, input, "POST", "r33-a", key);
+  assert.equal(purged.status, 200, JSON.stringify(purged.body));
+  await e.restart();
+  assert.deepEqual(await e.q(`/imports/${m.id}/purge`, input, "POST", "r33-a", key), purged);
+  assert.equal((await e.q(`/imports/${m.id}`, null, "GET")).status, 404);
+  assert.equal((await e.q(`/imports/${m.id}/deletion`, { ...input, deleted: false })).status, 404);
+  assert.equal((await e.call(`/api/workbench/jobs/${m.jobId}/retry`, { unitIds: [] })).status, 409);
+  assert.deepEqual((await e.q(`/items/${question.id}`, null, "GET")).body, question);
+  assert.deepEqual((await e.q("/imports?state=deleted", null, "GET")).body.items, []);
+});
+
 test("taxonomy and v2 editing, copies, legacy refusal, account isolation and restart", async (t) => {
   const e = await environment(t);
   const type = randomUUID(),

@@ -823,6 +823,108 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SetDeletion'
+  /api/modules/questions/v2/items/{id}/purge:
+    post:
+      operationId: purgeQuestionV2
+      summary: purgeQuestionV2
+      description: 仅彻底删除当前账户已归档的内容；已保存的引用快照保留。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionContentPurged'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurgeQuestionContent'
+  /api/modules/questions/v2/imports/{id}/purge:
+    post:
+      operationId: purgeQuestionImport
+      summary: purgeQuestionImport
+      description: 仅彻底删除当前账户已归档的内容；已保存的引用快照保留。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionContentPurged'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurgeQuestionContent'
   /api/modules/questions/v2/items/{id}/for-reference:
     get:
       operationId: readQuestionForReferenceV2
@@ -2240,6 +2342,22 @@ components:
         baseVersion:
           $ref: '#/components/schemas/Version'
     ResourcePurged:
+      type: object
+      additionalProperties: false
+      required: [id, permanentlyDeleted]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        permanentlyDeleted:
+          const: true
+    PurgeQuestionContent:
+      type: object
+      additionalProperties: false
+      required: [baseVersion]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+    QuestionContentPurged:
       type: object
       additionalProperties: false
       required: [id, permanentlyDeleted]
