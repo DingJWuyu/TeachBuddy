@@ -55,7 +55,7 @@ Web 与 `/api` 由同一个 HTTPS origin 提供。固定构建不热更新；真
 
 本机固定环境为 Linux、NVIDIA RTX 5060 Laptop 8 GiB、Python 3.12.14、PaddlePaddle GPU 3.2.1/cu129、PaddleOCR/PaddleX 3.7.0。需要 `bwrap`、用户级 systemd 和 `nvidia-smi`。运行单页子进程，禁止联网和自动下载，复用既有串行 Job；公开 Paddle API 的微型预热用于本机首次 kernel 加载问题，不修改第三方依赖或模型函数。
 
-VLM 通过官方 `max_pixels` 参数限制每块内部识别分辨率，避免大表格的视觉 attention 超出显存；原页、版面坐标及裁图像素保持不变。小字和复杂表格仍须对照原稿校对。改变识别参数时同时递增结果修订和工具清单修订，不能把旧缓存当作新配置的验证结果。参数入口见[官方说明](https://www.paddleocr.ai/main/en/version3.x/pipeline_usage/PaddleOCR-VL.html)。
+VLM 通过官方 `max_pixels` 参数限制每块内部识别分辨率，避免大表格的视觉 attention 超出显存；原页保持不变。版面采用官方矩形裁切模式，表格范围保守扩边，避免边缘文字被旧多边形遮掉；原始结果记录实际范围，配图仍从原页像素裁取。小字和复杂表格仍须对照原稿校对。改变识别参数时同时递增结果修订和工具清单修订，不能把旧缓存当作新配置的验证结果。参数入口见[官方说明](https://www.paddleocr.ai/main/en/version3.x/pipeline_usage/PaddleOCR-VL.html)。
 
 当前持久目录为 `/home/liam_t/.local/share/teacherworkspace-tools/paddleocr-vl-1.6`，布局为 `python/`、`venv/`、`models/`、`requirements.freeze.txt` 与 `manifest.json`。两个模型分别固定到 PaddleOCR-VL-1.6 `c5630abae1d940eafe0697512a0325494b02ab42` 和 PP-DocLayoutV3 `7b48a7566925fa464281f930c58eee04fe2c862a`。清单记录 25 个模型文件与依赖清单的 SHA-256，许可随模型保留；依赖和权重不进入 Git。
 

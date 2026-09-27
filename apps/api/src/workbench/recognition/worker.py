@@ -8,7 +8,7 @@ import shutil
 import sys
 from pathlib import Path
 
-REVISION = "paddleocr-vl-1.6/document-2"
+REVISION = "paddleocr-vl-1.6/document-3"
 MODELS = {
     "PP-DocLayoutV3": "7b48a7566925fa464281f930c58eee04fe2c862a",
     "PaddleOCR-VL-1.6": "c5630abae1d940eafe0697512a0325494b02ab42",
@@ -51,7 +51,7 @@ def verify_environment(home):
 
 
 def pipeline_config(home):
-    # Matches the six-page validation config; only local model paths vary.
+    # Fixed local model configuration. Class 21 is table in PP-DocLayoutV3.
     return {
         "pipeline_name": "PaddleOCR-VL-1.6", "batch_size": 1, "use_queues": False,
         "use_doc_preprocessor": False, "use_layout_detection": True,
@@ -62,7 +62,7 @@ def pipeline_config(home):
             "LayoutDetection": {
                 "module_name": "layout_detection", "model_name": "PP-DocLayoutV3",
                 "model_dir": str(home / "models/PP-DocLayoutV3"), "batch_size": 1,
-                "threshold": 0.3, "layout_nms": True, "layout_unclip_ratio": [1, 1],
+                "threshold": 0.3, "layout_nms": True, "layout_unclip_ratio": {21: [1.06, 1.06]},
                 "layout_merge_bboxes_mode": {str(i): "large" if i in (3, 5, 6, 15, 17) else "union" for i in range(25)},
             },
             "VLRecognition": {
@@ -223,7 +223,9 @@ def main():
     count = 0
     # Bound visual attention memory on the fixed 8 GiB GPU. This public VLM
     # setting leaves the source image, layout coordinates and derived crops intact.
-    for result in pipeline.predict_iter("/input/page.png", max_pixels=802816):
+    # Rectangular crops make table expansion effective; polygon masks would
+    # otherwise erase the extra border and truncate edge text.
+    for result in pipeline.predict_iter("/input/page.png", max_pixels=802816, layout_shape_mode="rect"):
         result.save_to_json(str(OUTPUT))
         result.save_to_markdown(str(OUTPUT))
         count += 1
