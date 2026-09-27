@@ -1,3 +1,5 @@
+import { addSurface } from './SurfaceTools.jsx';
+import { constructionIssue } from '../../../../../packages/shared/src/math/geometry.js';
 import { useMathConfirm } from "./useMathConfirm.jsx";
 import { useScene } from '../workbench/useScene.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
@@ -34,6 +36,8 @@ import "./math.css";
 import "./workspace.css";
 import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { WorkspaceToolbar } from './WorkspaceControls.jsx';
+import { useDraftHistory } from './useDraftHistory.js';
+import WorkHistory from './WorkHistory.jsx';
 const base = "/api/modules/math/v1/works";
 const names = {
   dynamic: "演示",
@@ -45,6 +49,10 @@ const names = {
   plane: "平面图形",
   space: "空间图形",
   function: "函数",
+  piecewise: "分段函数",
+  face: "面",
+  section: "截面",
+  tickLabels: "刻度与轴名",
   point: "点",
   line: "线段",
   ellipse: "圆 / 椭圆",
@@ -288,6 +296,8 @@ function MathSession({ transport, route }) {
     [exportWidth, setExportWidth] = useState(1600),
     [conflict, setConflict] = useState(null);
   const [confirm, confirmationDialog] = useMathConfirm();
+  const history = useDraftHistory();
+  const [historyOpen, setHistoryOpen] = useState(false);
   useEffect(() => {
     const kind = draft?.source?.kind;
     if (kind === 'html' && !['html', 'source'].includes(format)) setFormat('html');
@@ -300,6 +310,7 @@ function MathSession({ transport, route }) {
   useLayoutEffect(() => { if (canvasScroll.ref.current) canvasScroll.ref.current.scrollTop = home ? viewScene.homeTop ?? 0 : viewScene.canvasTop; }, [home]);
   useEffect(() => { if (canvasScroll.ref.current) canvasScroll.ref.current.scrollLeft = home ? 0 : viewScene.canvasLeft; }, [account, home, draft?.id, font]);
   const importFile = useRef(null);
+  const sourceFile = useRef(null);
   const [importPending, setImportPending] = useState(null);
   const previousKind = useRef(null);
   useEffect(() => {
@@ -351,7 +362,8 @@ function MathSession({ transport, route }) {
         title: attempt.file.name,
         source: { schemaVersion: 1, kind: "html", fileId: stored.id },
         originalFileId: stored.id,
-      });
+      }, false);
+      history.reset(null);
       patchView({ screen: 'editor', exportOpen: false });
       if (shell?.panelMode === 'math-tools') shell.closePanel();
       await uploadDraft(account, "delete");
@@ -360,6 +372,50 @@ function MathSession({ transport, route }) {
       if (epoch === generation.current) handleError(error);
     } finally {
       if (epoch === generation.current) setBusy(false);
+    }
+  }
+  async function importSource(file) {
+    if (inFlight.current || busy || !account || (pending && pending.kind !== 'import-source')) return;
+    const epoch = generation.current;
+    const operation = Symbol('import-source');
+    inFlight.current = operation;
+    setBusy(true); setMessage('');
+    let request = pending;
+    let submitted = !!pending;
+    try {
+      if (!request) {
+        if (!file) return;
+        if (file.size > 1024 * 1024) throw new Error('制作源超过 1 MiB，请选择工坊下载的 JSON 文件。');
+        let source;
+        try { source = JSON.parse(await file.text()); } catch { throw new Error('文件不是有效的制作源 JSON，当前草稿已保留。'); }
+        if (!source || source.schemaVersion !== 1 || !['formula', 'plane', 'space', 'dynamic'].includes(source.kind))
+          throw new Error('请选择工坊下载的公式或图形制作源 JSON；HTML 演示请使用 HTML 导入入口。');
+        if (epoch !== generation.current) return;
+        if (hasContent(draftRef.current) && status !== '已保存' && !await confirm('导入作品会替换当前未保存稿，是否继续？')) return;
+        request = { kind: 'import-source', path: base, method: 'POST', key: crypto.randomUUID(),
+          input: { title: file.name.replace(/\.json$/i, '').slice(0, 200) || '导入作品', source, originalFileId: null } };
+      }
+      if (epoch !== generation.current) return;
+      if (!writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status, selected, search, deleted, format, background, exportWidth }))
+        throw new Error('设备存储空间不足，请先整理设备草稿，再重试导入。');
+      setPending(request);
+      // The existing creation endpoint validates the complete source before it
+      // reaches an editor. An invalid import never replaces the current draft.
+      submitted = true;
+      const saved = await mathRequest(request.path, request);
+      if (epoch !== generation.current) return;
+      setPending(null); setDraft(saved); draftRef.current = saved;
+      history.reset(saved); setSelected(0); setConflict(null); setStatus('已保存'); setDeleted(false);
+      setMessage('制作源已导入为新作品，可以继续修改。');
+      patchView({ screen: 'editor', toolTab: 'objects', selectionKind: 'object', exportOpen: false, formulaMode: null, formulaBuilder: null });
+      if (shell?.panelMode === 'math-tools') shell.closePanel();
+      if (!deleted) await refresh();
+    } catch (error) {
+      if (epoch !== generation.current) return;
+      if (!submitted || (error.status && error.status < 500)) setPending(null);
+      handleError(error);
+    } finally {
+      if (inFlight.current === operation) { inFlight.current = null; setBusy(false); }
     }
   }
   async function downloadOriginal(id) {
@@ -395,6 +451,8 @@ function MathSession({ transport, route }) {
           inFlight.current = null;
           setBusy(false);
           setDraft(null);
+          history.reset(null);
+          setHistoryOpen(false);
           setPending(null);
           setItems([]);
           setStatus("未保存");
@@ -429,6 +487,7 @@ function MathSession({ transport, route }) {
       const saved = migrateLegacyLocal(account, "math-workspace", storage);
       if (saved) {
         setDraft(saved.draft);
+        history.reset(saved.draft);
         setSelected(saved.selected ?? 0);
         setSearch(saved.search ?? "");
         setDeleted(saved.deleted ?? false);
@@ -511,12 +570,13 @@ function MathSession({ transport, route }) {
             : e.message,
     );
   }
-  function edit(next) {
+  function edit(next, track = true) {
     if (draftRef.current?.deletedAt && next?.id === draftRef.current.id) return;
     if (pending?.kind && pending.kind !== "save") {
       setMessage("请先确认当前操作结果");
       return;
     }
+    if (track && draftRef.current) history.record(draftRef.current, next);
     draftRef.current = next;
     writeLocal(account, 'math-workspace', { draft: next, pending, status: '未保存', selected, search, deleted, format, background, exportWidth });
     setDraft(next);
@@ -537,11 +597,12 @@ function MathSession({ transport, route }) {
       !await confirm("新建作品会替换当前未保存稿，是否继续？")
     )
       return;
+    history.reset(null);
     edit({
       title: `未命名${names[kind]}`,
       source: kind === "dynamic" ? emptyDynamicSource() : emptySource(kind),
       originalFileId: null,
-    });
+    }, false);
     setSelected(0);
     setConflict(null);
     setFormat(kind === 'dynamic' ? 'html' : 'png');
@@ -564,6 +625,8 @@ function MathSession({ transport, route }) {
       const saved = await mathRequest(`${base}/${item.id}`);
       if (epoch !== generation.current) return;
       setDraft(saved);
+      draftRef.current = saved;
+      history.reset(saved);
       setStatus("已保存");
       setSelected(0);
       setConflict(null);
@@ -575,6 +638,7 @@ function MathSession({ transport, route }) {
   }
   async function save(copy = false) {
     if (inFlight.current) return;
+    if (pending?.kind === 'import-source') return importSource();
     if (!pending && Object.keys(draft.parameterEdits ?? {}).length) {
       setMessage("请先应用参数设置，再保存作品");
       return;
@@ -682,6 +746,7 @@ function MathSession({ transport, route }) {
         unchanged && draftRef.current === started ? "已保存" : "未保存",
       );
       setConflict(null);
+      if (copy) history.reset(saved);
       await refresh();
     } catch (e) {
       if (epoch !== generation.current || inFlight.current !== operation)
@@ -827,6 +892,7 @@ function MathSession({ transport, route }) {
       : (draft?.source.points ?? []);
   function replaceObject(next) {
     const previous = objects[selected];
+    if (previous.id !== next.id && previous.label?.text === previous.id && next.label?.text === previous.id) next = { ...next, label: { ...next.label, text: next.id } };
     if (
       objects.some(
         (object, index) => index !== selected && object.id === next.id,
@@ -835,11 +901,19 @@ function MathSession({ transport, route }) {
       setMessage("对象标识已存在，请使用不同标识");
       return;
     }
+    const replacement = objects.map((v, i) => i === selected ? next : v);
+    const renamed = previous.id !== next.id ? { from: previous.id, to: next.id } : null;
+    const references = replacement.map(e => renamed && e.construction ? {
+      ...e, construction: { ...e.construction, refs: e.construction.refs.map(id => id === renamed.from ? renamed.to : id) },
+    } : e);
+    if (draft.source.scene && constructionIssue(references)) {
+      setMessage('构造引用须有效且不能形成循环'); return;
+    }
     source(
       updateObjects(
         draft.source,
-        objects.map((v, i) => (i === selected ? next : v)),
-        previous.id !== next.id ? { from: previous.id, to: next.id } : null,
+        replacement,
+        renamed,
       ),
     );
   }
@@ -848,6 +922,7 @@ function MathSession({ transport, route }) {
     let index = 1;
     const prefix = {
       function: "f",
+      piecewise: "f",
       point: "P",
       line: "L",
       ellipse: "E",
@@ -860,7 +935,7 @@ function MathSession({ transport, route }) {
     setSelected(objects.length);
   }
   const graphical = !readOnly && ['plane', 'space', 'dynamic'].includes(draft?.source.kind);
-  const toolTab = ['objects', 'parameters', 'steps', 'canvas'].includes(viewScene.toolTab) ? viewScene.toolTab : 'objects';
+  const toolTab = ['objects', 'parameters', 'steps', 'canvas', 'analysis', 'construct'].includes(viewScene.toolTab) ? viewScene.toolTab : 'objects';
   const selection = `${viewScene.selectionKind ?? 'object'}:${selected}`;
   function showTools(tab) {
     patchView({ toolTab: tab });
@@ -904,16 +979,68 @@ function MathSession({ transport, route }) {
       const id = `P${index}`;
       source({ ...draft.source, points: [...objects, { id, x: 0, y: 0, z: 0, label: { text: id, dx: 10, dy: -10 }, style: defaultStyle() }] });
       setSelected(objects.length); patchView({ selectionKind: 'object' });
+    } else if (['face', 'section'].includes(type)) {
+      const key = type === 'face' ? 'faces' : 'sections';
+      source(addSurface(draft.source, type)); setSelected(draft.source[key]?.length ?? 0); patchView({ selectionKind: type });
     } else {
       source({ ...draft.source, edges: [...draft.source.edges, { id: `E${Date.now()}`, from: objects[0].id, to: objects[1].id, style: defaultStyle() }] });
       setSelected(draft.source.edges.length); patchView({ selectionKind: 'edge' });
     }
     showTools('objects');
   }
-  function removeGraphic() {
-    if (viewScene.selectionKind === 'edge') source({ ...draft.source, edges: draft.source.edges.filter((_, i) => i !== selected) });
-    else source(updateObjects(draft.source, objects.filter((_, i) => i !== selected)));
+  async function removeGraphic() {
+    const kind = viewScene.selectionKind;
+    let next;
+    if (kind === 'edge') next = { ...draft.source, edges: draft.source.edges.filter((_, i) => i !== selected) };
+    else if (kind === 'face' || kind === 'section') {
+      if (kind === 'face' && draft.source.sections?.length && !await confirm('移除此面也会移除依赖完整多面体的截面，是否继续？')) return;
+      const key = kind === 'face' ? 'faces' : 'sections';
+      next = { ...draft.source, [key]: draft.source[key].filter((_, i) => i !== selected), ...(kind === 'face' && draft.source.sections ? { sections: [] } : {}) };
+    } else {
+      next = updateObjects(draft.source, objects.filter((_, i) => i !== selected));
+      const dependents = draft.source.scene ? objects.length - next.scene.elements.length - 1 : (draft.source.faces?.length ?? 0) - (next.faces?.length ?? 0) + (draft.source.sections?.length ?? 0) - (next.sections?.length ?? 0);
+      if (dependents > 0 && !await confirm(`移除此对象也会移除 ${dependents} 个依赖它的构造、面或截面，是否继续？`)) return;
+    }
+    source(next); setSelected(0); patchView({ selectionKind: 'object' });
+  }
+  const canChangeHistory = !home && !busy && !pending && !locked && !readOnly && !draft?.deletedAt;
+  function moveHistory(direction) {
+    if (!canChangeHistory || (direction === 'undo' ? !history.canUndo : !history.canRedo)) return;
+    edit(history.move(direction, draftRef.current), false);
     setSelected(0); patchView({ selectionKind: 'object' });
+  }
+  useEffect(() => {
+    if (!canChangeHistory) return;
+    const keydown = event => {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.isComposing || event.defaultPrevented) return;
+      if (!event.target.closest?.('.math-workbench, .math-tools-panel') || event.target.closest('input, textarea, select, math-field, [contenteditable="true"], [role="dialog"], [role="menu"]')) return;
+      if ([...document.querySelectorAll('[role="dialog"]')].some(node => !node.closest('[inert]'))) return;
+      const key = event.key.toLowerCase();
+      if (key !== 'z' && key !== 'y') return;
+      event.preventDefault(); moveHistory(key === 'y' || event.shiftKey ? 'redo' : 'undo');
+    };
+    document.addEventListener('keydown', keydown);
+    return () => document.removeEventListener('keydown', keydown);
+  }, [canChangeHistory, history.canUndo, history.canRedo, draft]);
+  async function restoreVersion(version) {
+    if (!canChangeHistory) return;
+    if (status !== '已保存' && !await confirm('恢复历史版本会替换当前未保存修改，是否继续？')) return;
+    edit({ ...draftRef.current, title: version.title, source: version.source, htmlText: undefined, htmlUploadKey: undefined, parameterEdits: {} });
+    setHistoryOpen(false); setSelected(0);
+    patchView({ formulaMode: null, formulaBuilder: null, selectionKind: 'object' });
+    setMessage(`已恢复版本 ${version.version} 为草稿，保存后生成新版本。`);
+  }
+  async function makeDynamicCopy() {
+    if (!canChangeHistory || draft.source.kind !== 'plane') return;
+    if (status !== '已保存') { setMessage('请先保存平面图形，再制作动态副本。'); return; }
+    const suffix = ' · 动态演示';
+    const next = { title: `${draft.title.slice(0, 200 - suffix.length)}${suffix}`, originalFileId: null,
+      source: { ...emptyDynamicSource(), scene: structuredClone(draft.source.scene) } };
+    history.reset(null); edit(next, false);
+    if (route?.workId) shell?.navigate('/math');
+    setFormat('html'); setSelected(0); setConflict(null);
+    patchView({ selectionKind: 'object', exportOpen: false }); showTools('parameters');
+    setMessage('已保留原图。设置参数，并在图形表达式中使用参数名；保存后建立独立的动态作品。');
   }
   function expandTool(key, open) {
     patchView(current => ({ groups: { ...current.groups, [key]: open } }));
@@ -928,20 +1055,28 @@ function MathSession({ transport, route }) {
     );
   return (
     <div className="math-workbench wb-module">
+      <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
       {confirmationDialog}
       <section className="math-main">
         <header className="math-workspace-header">
           <div className="math-workspace-identity"><span className="math-module-icon"><Icon name="math" size={25}/></span><h1 className="math-heading">数学工坊</h1></div>
           {!home && <WorkspaceToolbar draft={draft} busy={busy} readOnly={readOnly} pending={pending} empty={!hasContent(draft)}
             exportOpen={!!viewScene.exportOpen} onHome={goHome} onSave={() => save()} onCopy={() => save(true)}
+            onHistory={() => setHistoryOpen(true)} onDynamic={makeDynamicCopy}
             onDelete={() => deletion()} onPurge={() => deletion(true)} onExport={() => patchView({ exportOpen: !viewScene.exportOpen })} onUsage={() => patchView({ usageOpen: !viewScene.usageOpen })}/>}
           <input ref={importFile} type="file" accept=".html,.htm" aria-label="导入 HTML 文件" hidden onChange={e => { importHtml(e.target.files[0]); e.target.value = ''; }}/>
+          <input ref={sourceFile} type="file" accept=".json,application/json" aria-label="导入制作源文件" hidden onChange={e => { importSource(e.target.files[0]); e.target.value = ''; }}/>
           {importPending && <button disabled={busy} onClick={() => importHtml()}>{importPending.requiresReselection ? '重选原文件并确认上传' : '重试原文件上传'}</button>}
         </header>
         {!home && <div className="math-document-bar">
           <button className="math-return" onClick={goHome}><Icon name="back"/><span>返回工坊</span></button>
           <input aria-label="作品名称" readOnly={!!draft.deletedAt} value={draft.title} onChange={e => edit({ ...draft, title: e.target.value })}/>
           <span className="math-workspace-status" role="status">{draft.deletedAt ? '已归档' : status}</span>
+          {!draft.deletedAt && <div className="math-undo-actions" aria-label="编辑历史">
+            {['undo', 'redo'].map(direction => <button key={direction} className="math-icon-button" aria-label={direction === 'undo' ? '撤销' : '重做'} title={direction === 'undo' ? '撤销 (Ctrl/Cmd+Z)' : '重做 (Ctrl/Cmd+Shift+Z)'} disabled={!canChangeHistory || !(direction === 'undo' ? history.canUndo : history.canRedo)} onClick={() => moveHistory(direction)}>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={direction === 'redo' ? { transform: 'scaleX(-1)' } : undefined}><path d="M7 4 3 8l4 4M3 8h8a5 5 0 0 1 0 10"/></svg>
+            </button>)}
+          </div>}
         </div>}
         {shell && (
           <MathIntegration
@@ -1031,10 +1166,12 @@ function MathSession({ transport, route }) {
         </ModulePresence>}
         {!home && !draft.deletedAt && graphical && <div className="math-editing-toolbar" aria-label="制作操作">
           <Popover label="添加图形" icon={null} align="start" buttonClassName="math-action-button">{({ close }) => <>
-            {(draft.source.kind === 'space' ? ['point', 'edge'] : ['function', 'point', 'line', 'ellipse', 'polyline', 'text']).map(type => <MenuItem key={type} disabled={type === 'edge' && objects.length < 2} onClick={() => { close(); addGraphic(type); }}>添加{type === 'edge' ? '棱' : names[type]}</MenuItem>)}
+            {(draft.source.kind === 'space' ? ['point', 'edge', 'face', 'section'] : ['function', 'piecewise', 'point', 'line', 'ellipse', 'polyline', 'text']).map(type => <MenuItem key={type} disabled={(type === 'edge' && objects.length < 2) || (type === 'face' && objects.length < 3) || (type === 'section' && (draft.source.faces?.length ?? 0) < 4)} onClick={() => { close(); addGraphic(type); }}>添加{type === 'edge' ? '棱' : names[type]}</MenuItem>)}
+            {draft.source.scene && <MenuItem onClick={() => { close(); showTools('construct'); }}>关联构造…</MenuItem>}
             {draft.source.kind === 'space' && <MenuItem onClick={async () => { close(); if (objects.length && !await confirm('使用棱锥会替换当前图形，是否继续？')) return; source(fitSpace(pyramidSource())); selectGraphic('object:0'); }}>棱锥示例</MenuItem>}
           </>}</Popover>
           <button onClick={() => showTools('objects')}>图形与标注</button>
+          {draft.source.scene && <button onClick={() => showTools('analysis')}>函数分析</button>}
           {draft.source.kind === 'dynamic' && <><button onClick={() => showTools('parameters')}>设置滑杆</button><button onClick={() => showTools('steps')}>编排步骤</button></>}
           <button className="math-icon-button math-canvas-settings" title="画布设置" aria-label="画布设置" onClick={() => showTools('canvas')}>
             <svg className="wb-icon" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true" focusable="false">
@@ -1045,7 +1182,7 @@ function MathSession({ transport, route }) {
         {!home && shell && draft?.id && <ModulePresence present={!!viewScene.usageOpen} mode="collapse"><MathUsageDetails work={draft}/></ModulePresence>}
         <div className={`math-canvas${home ? ' is-home' : ''}`} ref={canvasScroll.ref} onScroll={event => { canvasScroll.onScroll(event); if (!home) patchView({ canvasLeft: event.currentTarget.scrollLeft }); }}>
           {home ? <WorkspaceHome draft={hasContent(draft) ? draft : null} status={status} items={items} search={search} deleted={deleted} busy={busy || !!pending} onRestore={item => deletion(false, item)} onPurge={item => deletion(true, item)}
-            onSearch={setSearch} onDeleted={setDeleted} onNew={newDraft} onOpen={item => draft?.id === item.id ? resume() : open(item)} onResume={resume} onDiscard={discard} onImport={() => importFile.current.click()}/>
+            onSearch={setSearch} onDeleted={setDeleted} onNew={newDraft} onOpen={item => draft?.id === item.id ? resume() : open(item)} onResume={resume} onDiscard={discard} onImport={() => importFile.current.click()} onImportSource={() => sourceFile.current.click()}/>
           : draft.deletedAt ? <div className="math-archived-preview">
             {draft.source.kind === 'formula' ? <FormulaPreview source={draft.source} retry={fontAttempt}/>
               : ['plane', 'space', 'dynamic'].includes(draft.source.kind) ? <GraphicPreview source={draft.source} font={font}/>

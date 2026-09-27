@@ -1,3 +1,4 @@
+import { constructionIssue } from "../../../../../packages/shared/src/math/geometry.js";
 import { parameterOnGrid } from "../../../../../packages/shared/src/math/dynamic.js";
 import { ContractError } from "../../workbench/problems.js";
 export { contract, validate } from "../../workbench/content/mathSchema.js";
@@ -30,6 +31,8 @@ export function validateSourceRelations(source) {
   };
   if (["plane", "dynamic"].includes(source.kind)) {
     unique(source.scene.elements, "/scene/elements");
+    const issue = constructionIssue(source.scene.elements);
+    if (issue) bad(`/scene/elements/${source.scene.elements.findIndex(e => e.id === issue)}/construction`, 'invalid-reference');
     source.scene.elements.forEach((e, i) => {
       if (e.type === "function" && e.domain.min >= e.domain.max)
         bad(`/scene/elements/${i}/domain`, "invalid-range");
@@ -38,6 +41,8 @@ export function validateSourceRelations(source) {
   if (source.kind === "space") {
     const ids = unique(source.points, "/points");
     unique(source.edges, "/edges");
+    unique(source.faces ?? [], '/faces'); unique(source.sections ?? [], '/sections');
+    (source.faces ?? []).forEach((face, i) => { if (face.vertices.some(id => !ids.has(id))) bad(`/faces/${i}`, 'invalid-reference'); });
     source.edges.forEach((e, i) => {
       if (!ids.has(e.from) || !ids.has(e.to) || e.from === e.to)
         bad(`/edges/${i}`, "invalid-reference");
@@ -83,12 +88,14 @@ export function validateDynamic(source) {
     names.add(p.name);
   });
   const elements = new Map(source.scene.elements.map((e) => [e.id, e]));
+  if (source.animation && !names.has(source.animation.parameter)) bad('animation/parameter');
+  (source.traceIds ?? []).forEach((id, i) => { if (elements.get(id)?.type !== 'point') bad(`traceIds/${i}`); });
   const bound = new Set();
   source.drags.forEach((d, i) => {
     const point = elements.get(d.pointId);
     if (
       !point ||
-      point.type !== "point" ||
+      point.type !== "point" || point.construction ||
       bound.has(d.pointId) ||
       (!d.xParameter && !d.yParameter)
     )

@@ -14,6 +14,7 @@ export const defaultViewport = () => ({
   height: 720,
   axes: true,
   grid: true,
+  tickLabels: true,
 });
 export function emptySource(kind) {
   if (kind === "formula")
@@ -47,6 +48,8 @@ export function newElement(type, id) {
     at = { x: "0", y: "0" },
     label = { text: "", dx: 10, dy: -10 };
   switch (type) {
+    case "piecewise":
+      return { ...base, type: "function", expression: "x < 0 ? -x : x^2", domain: { min: -6, max: 6 }, label };
     case "function":
       return { ...base, expression: "x", domain: { min: -6, max: 6 }, label };
     case "point":
@@ -89,6 +92,7 @@ export function cubeSource(size = 2) {
     ["C", "C1"],
     ["D", "D1"],
   ].map(([from, to]) => ({ id: from + to, from, to, style: defaultStyle() }));
+  source.faces = [['A','D','C','B'], ['A1','B1','C1','D1'], ['A','B','B1','A1'], ['B','C','C1','B1'], ['C','D','D1','C1'], ['D','A','A1','D1']].map((vertices, i) => ({ id: `F${i + 1}`, vertices, style: { ...defaultStyle(), fill: '#91acd1' } }));
   return source;
 }
 
@@ -106,6 +110,7 @@ export function pyramidSource() {
   source.edges = source.edges.slice(0, 4);
   for (const from of ["A", "B", "C", "D"])
     source.edges.push({ id: `${from}S`, from, to: "S", style: defaultStyle() });
+  source.faces = [['A','D','C','B'], ['A','B','S'], ['B','C','S'], ['C','D','S'], ['D','A','S']].map((vertices, i) => ({ id: `F${i + 1}`, vertices, style: { ...defaultStyle(), fill: '#91acd1' } }));
   return source;
 }
 

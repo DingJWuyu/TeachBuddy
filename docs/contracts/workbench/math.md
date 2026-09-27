@@ -29,10 +29,14 @@ rendererVersion 是服务端实际的渲染器发行标识，覆盖表达式求�
 唯一字段见 schema，下面是字段间的约束与数学定义。
 
 - 二维坐标为数学坐标，x向右、y向上；viewport 的 min<max。显示按同一单位等比缩放并居中留白，SVG viewBox/PNG 使用保存的 width/height，不把圆拉成椭圆。对象数组顺序是绘制顺序，id 在整 scene 唯一。标签 dx/dy 为输出逻辑像素（右/下为正），缩放一同变换。text 为普通文字；允许 `{参数名}` 的数值插值，其他花括号文字原样显示，绝不解释 HTML。
-- Expr 是十进制实数、`x`、已声明参数、`pi/e`，运算 `+ - * / ^`、括号，函数 `sin cos tan asin acos atan sqrt abs exp ln log10` 的封闭文法。无隐式乘法，弧度，幂右结合且高于一元负号，`-2^2=-4`、`2^3^2=512`。不支持赋值、属性访问、数组、脚本、网络或自定义函数。非曲线坐标不能使用 x；静态 scene 无参数。最多1000字符、200 AST节点、深度32；拒绝循环引用。实现用解析器，不能 eval/Function。
+- Expr 是十进制实数、`x`、已声明参数、`pi/e`，运算 `+ - * / ^`、括号，函数 `sin cos tan asin acos atan sqrt abs exp ln log10 log` 的受限实数文法；`log(x)` 为常用对数，`log(x,b)` 为指定底数。允许比较、链式比较、and/or 与 `条件 ? 值 : 值` 分段式，最终结果须为数值。支持数字/括号/变量的隐式乘法、Unicode 上标及 π、×、÷、−；弧度，幂右结合且高于一元负号，`-2^2=-4`、`2^3^2=512`。不支持赋值、属性访问、数组、脚本、网络或自定义函数。非曲线坐标不能使用 x；静态 scene 无参数。最多1000字符、200 AST节点、深度32；拒绝循环引用。Math.js 负责解析，节点白名单负责解释，不使用其任意求值/编译入口或 eval/Function。隐式乘法优先级沿 Math.js，含除法的歧义式应加括号；变量名完整匹配，不将 ax 擅自拆为 a*x；既有参数若与解析器关键词同名，先按声明转义，保留其参数含义。
+- viewport.tickLabels 为可选开关，省略时不增加刻度文字，保留既有作品外观；新建画布默认开启并随 axes 显示；关闭不影响数学坐标。
 - 曲线在 domain 与视窗交集中取值。无定义/非有限点断开，极点附近不得连跨区直线；渐近线和高斜率需自适应细分，不能靠固定粗采样宣称数学正确。点/半径求值非有限、rx/ry≤0 为 invalid-geometry。函数局部无定义允许曲线有间断，整个窗口无有效点时 invalid-expression，源仍可保存。
-- Space 采用正交投影：azimuth=A、elevation=E（度），`u=x*cos(A)-y*sin(A)`，`v=z*cos(E)-(x*sin(A)+y*cos(A))*sin(E)`，再按 viewport 映射。每条棱 from/to 必须是已存在且不同的点；遮挡用明确 dash 表示，不承诺自动消隐。三维点/棱 id 各自唯一，数值均有限。二维轮廓也可做圆柱等空间示意。
+- Point/Line/Ellipse 可选 construction={kind,refs,branch?}，refs 指向同场景对象。类型、数量、唯一性及无环关系先校验；构造覆盖该对象的自由坐标，原坐标字段保留格式兼容但不参与计算。midpoint/segment/circle 依赖两点；projection/parallel/perpendicular 依赖点与线；intersection 依赖直线或圆，branch 为按 x、y 排序的第 0/1 个交点。退化关系、非圆椭圆或当前分支无交点为 invalid-geometry。动态先解析依赖，再按步骤可见集合绘图，隐藏的原对象仍可参与构造；探索退化时隐藏受影响对象并提示。
+- Space 可选 faces=[{id,vertices,style}]、sections=[{id,plane:{a,b,c,d},style}]。面引用至少三个不同、共面且沿简单边界排列的点；截面定义为 ax+by+cz=d 与封闭凸多面体的交。每条面边须属于两个面，整体不得退化为平面；目前不处理非凸、多实体或曲面。引用错误拒绝422，几何退化允许保存并标记 invalid。省略新字段的旧线框保持原行为。
+- Space 采用正交投影：azimuth=A、elevation=E（度），`u=x*cos(A)-y*sin(A)`，`v=z*cos(E)-(x*sin(A)+y*cos(A))*sin(E)`，再按 viewport 映射。edges 可为空，面自行绘制边界，无棱连接的点在导出中保留圆点。每条棱 from/to 必须是已存在且不同的点；遮挡用明确 dash 表示，不承诺自动消隐。三维点/棱 id 各自唯一，数值均有限。二维轮廓也可做圆柱等空间示意。
 - Dynamic 可以没有参数，仅按步骤展示。参数 name 唯一，不得占用 x/pi/e/函数名；min<max，step>0，initial 在闭区间内且落在 min+n*step 网格上（相对容差1e-9）。max也必须落在同一网格，避免夹到非网格末值；每个拖动绑定存在的 point 和参数，至少绑定一轴，同点不能重复绑定，绑定轴坐标必须恰为对应参数名。指针/键盘值先取最近网格再限制范围；未绑定轴保持。
+- Dynamic 可选 animation={parameter,seconds,mode}，参数须存在，单程 1 至 120 秒，mode 为 once/loop/bounce；省略时试演可往返播放第一个参数，8 秒单程。traceIds 为最多 10 个不同 point ID，可包含构造点；构造点不能加入 drags。播放与采样仅改演示现场，不自动写 Source；静态导出始终为保存初态。在线与离线共用暂停、重置、切步骤与轨迹规则。
 - 步骤 id 唯一，可选 description 保存最多2000字符的普通文字说明，预览与离线展示按原换行显示；visibleIds 唯一且存在，空集合用于仅文字讲解；每步 values 必须恰好给所有参数一次，各值合规。steps=[] 时 initialStepId=null，否则必须指其中一步。进入一步完整应用其 values/visibleIds；无步骤用所有对象和 initial 值。自由拖动只变当前步现场，重置恢复本步值。预览ready只证明保存初态及各步预设可渲染；探索值导致无定义时隐藏对应对象并显示“此取值下无定义”，不沿用旧坐标/旧公式冒充当前结果。不同步骤要用不同公式/曲线时使用不同对象和可见集合，避免曲线变了而顶点/解析式仍是另一状态。
 
 结构关系（重复/缺失 ID、参数绑定、范围等）无效拒绝422 invalid-math-source；可保存的 invalid 只限数学源语法/求值/几何渲染失败。对象/参数之外不接纳任意 attrs，SVG只由可信渲染器输出；LaTeX 使用本地 MathJax 的受限数学包，不启用加载外部文件/宏扩展或 HTML 注入。说明与标签转义。曲线label锚定可见域最右侧的有限曲线点，再加dx/dy；点label锚定点；超出输出边界时扩大图形留白或移动标签，不裁掉文字。图形/公式不是外部 SVG 执行入口。

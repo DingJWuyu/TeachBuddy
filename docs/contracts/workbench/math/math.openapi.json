@@ -1833,6 +1833,9 @@
           },
           "grid": {
             "type": "boolean"
+          },
+          "tickLabels": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -1906,6 +1909,9 @@
           },
           "label": {
             "$ref": "#/components/schemas/Label"
+          },
+          "construction": {
+            "$ref": "#/components/schemas/Construction"
           }
         },
         "required": [
@@ -1941,6 +1947,9 @@
               "end",
               "both"
             ]
+          },
+          "construction": {
+            "$ref": "#/components/schemas/Construction"
           }
         },
         "required": [
@@ -2006,6 +2015,9 @@
           },
           "ry": {
             "$ref": "#/components/schemas/Expr"
+          },
+          "construction": {
+            "$ref": "#/components/schemas/Construction"
           }
         },
         "required": [
@@ -2299,8 +2311,22 @@
             "items": {
               "$ref": "#/components/schemas/SpatialEdge"
             },
-            "minItems": 1,
+            "minItems": 0,
             "maxItems": 300
+          },
+          "faces": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpatialFace"
+            },
+            "maxItems": 30
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpatialSection"
+            },
+            "maxItems": 30
           }
         },
         "required": [
@@ -2493,6 +2519,17 @@
                 "type": "null"
               }
             ]
+          },
+          "animation": {
+            "$ref": "#/components/schemas/Animation"
+          },
+          "traceIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Key"
+            },
+            "uniqueItems": true,
+            "maxItems": 10
           }
         },
         "required": [
@@ -3803,6 +3840,142 @@
             "const": true
           }
         }
+      },
+      "Construction": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "midpoint",
+              "projection",
+              "intersection",
+              "segment",
+              "parallel",
+              "perpendicular",
+              "circle"
+            ]
+          },
+          "refs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Key"
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "branch": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "kind",
+          "refs"
+        ],
+        "additionalProperties": false
+      },
+      "SpatialFace": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "vertices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Key"
+            },
+            "minItems": 3,
+            "maxItems": 30,
+            "uniqueItems": true
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          }
+        },
+        "required": [
+          "id",
+          "vertices",
+          "style"
+        ],
+        "additionalProperties": false
+      },
+      "SpatialSection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "plane": {
+            "type": "object",
+            "properties": {
+              "a": {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              "b": {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              "c": {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              "d": {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "a",
+              "b",
+              "c",
+              "d"
+            ],
+            "additionalProperties": false
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          }
+        },
+        "required": [
+          "id",
+          "plane",
+          "style"
+        ],
+        "additionalProperties": false
+      },
+      "Animation": {
+        "type": "object",
+        "properties": {
+          "parameter": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "seconds": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "mode": {
+            "enum": [
+              "once",
+              "loop",
+              "bounce"
+            ]
+          }
+        },
+        "required": [
+          "parameter",
+          "seconds",
+          "mode"
+        ],
+        "additionalProperties": false
       }
     },
     "responses": {

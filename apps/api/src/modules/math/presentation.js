@@ -1,10 +1,11 @@
-import fs from "node:fs/promises";
+import { mathDependencyLicenses } from './licenses.js';
+import { build } from "esbuild";
+import { fileURLToPath } from "node:url";
 import {
   isolatedHtml,
   htmlLimit,
 } from "../../../../../packages/shared/src/math/isolation.js";
 import {
-  mountDynamic,
   presentationCss,
 } from "../../../../../packages/shared/src/math/presentation.js";
 import { mathFontStyle } from "../../../../../packages/shared/src/math/formula.js";
@@ -33,25 +34,18 @@ export async function readHtml(files, principal, id) {
     return { bytes, text: null };
   }
 }
+let runtimeBundle;
+async function nativeRuntime() {
+  runtimeBundle ??= build({ entryPoints: [fileURLToPath(new URL('../../../../../packages/shared/src/math/offline.js', import.meta.url))],
+    bundle: true, write: false, platform: 'browser', format: 'iife', globalName: 'MathPresentation',
+    target: 'es2022', minify: true, legalComments: 'inline',
+  }).then(result => result.outputFiles[0].text).catch(error => { runtimeBundle = null; throw error; });
+  return runtimeBundle;
+}
 export async function dynamicPresentation(source) {
-  // Package only these trusted modules. No user source is interpreted as JS.
-  const modules = await Promise.all(
-    ["expression", "graphics", "dynamic"].map(async (name) =>
-      (
-        await fs.readFile(
-          new URL(
-            `../../../../../packages/shared/src/math/${name}.js`,
-            import.meta.url,
-          ),
-          "utf8",
-        )
-      )
-        .replace(/^import[\s\S]*?from ['"][^'"]+['"];\s*/gm, "")
-        .replace(/^export /gm, ""),
-    ),
-  );
+  const runtime = await nativeRuntime();
   const safe = (value) => JSON.stringify(value).replace(/</g, "\\u003c");
-  const html = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><style>${presentationCss}</style><main id="presentation"></main><script>${modules.join("\n")}\n(${mountDynamic.toString()})(document.getElementById('presentation'),${safe(source)},renderGraphic,dynamicState,dynamicPlane,snapParameter,${safe(mathFontStyle(await registerAndReadFont()))});</script></html>`;
+  const html = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><style>${presentationCss}</style><main id="presentation"></main><script type="application/json" id="third-party-licenses">${safe(await mathDependencyLicenses())}</script><script>${runtime}\nMathPresentation.mount(document.getElementById('presentation'),${safe(source)},${safe(mathFontStyle(await registerAndReadFont()))});</script></html>`;
   return Buffer.from(isolatedHtml(html, false));
 }
 export { isolatedHtml };

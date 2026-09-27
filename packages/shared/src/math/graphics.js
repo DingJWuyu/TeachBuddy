@@ -1,8 +1,10 @@
 import {
   parseExpression,
+  expressionBoundaries,
   finiteCoordinate,
   MathSourceError,
 } from "./expression.js";
+import { resolveElements, spatialSurfaces } from "./geometry.js";
 export const escapeXml = (value) =>
   String(value).replace(
     /[&<>"']/g,
@@ -105,6 +107,7 @@ export function renderGraphic(
   { width, background = "transparent", parameters = {}, interactive = false } = {},
 ) {
   const viewport = source.scene?.viewport ?? source.viewport;
+  if (source.scene) source = { ...source, scene: { ...source.scene, elements: resolveElements(source.scene.elements, parameters, { viewport }).elements } };
   const w = viewport.width,
     h = viewport.height;
   const { scale, map } = viewportTransform(viewport);
@@ -196,7 +199,29 @@ export function renderGraphic(
     line(map([viewport.xMin, 0]), map([viewport.xMax, 0]), s, "end");
     line(map([0, viewport.yMin]), map([0, viewport.yMax]), s, "end");
   }
+  if (viewport.axes && viewport.tickLabels === true) {
+    const span = Math.max(viewport.xMax - viewport.xMin, viewport.yMax - viewport.yMin);
+    const base = 10 ** Math.floor(Math.log10(span / 8));
+    const step = [1, 2, 5, 10].map(n => n * base).find(n => n >= span / 8);
+    const s = { stroke: '#64748b', fill: null, width: 1, dash: 'solid', fontSize: 18 };
+    const format = n => Number(n.toPrecision(6)).toString();
+    if (viewport.yMin <= 0 && viewport.yMax >= 0) {
+      for (let i = 0; i < 30; i++) { const x = Math.ceil(viewport.xMin / step) * step + i * step; if (x >= viewport.xMax) break; if (Math.abs(x) < step / 100) continue;
+        const p = map([x, 0]); line([p[0], p[1] - 3], [p[0], p[1] + 3], s); label(p, format(x), s, { dx: -5, dy: 19 }); }
+      label(map([viewport.xMax, 0]), 'x', s, { dx: 8, dy: -10 });
+    }
+    if (viewport.xMin <= 0 && viewport.xMax >= 0) {
+      for (let i = 0; i < 30; i++) { const y = Math.ceil(viewport.yMin / step) * step + i * step; if (y >= viewport.yMax) break; if (Math.abs(y) < step / 100) continue;
+        const p = map([0, y]); line([p[0] - 3, p[1]], [p[0] + 3, p[1]], s); label(p, format(y), s, { dx: 7, dy: 4 }); }
+      label(map([0, viewport.yMax]), 'y', s, { dx: 9, dy: -8 });
+    }
+  }
   if (source.kind === "space") {
+    const surfaces = spatialSurfaces(source);
+    for (const [kind, items] of [['face', surfaces.faces], ['section', surfaces.sections]]) for (const [index, surface] of items.entries()) {
+      const coords = surface.points.map(p => map(projectSpace(p, source.azimuth, source.elevation)));
+      elements.push(`<g data-surface="${escapeXml(surface.id)}"${selection(kind, index, surface.id)}><polygon points="${coords.map(p => p.map(number).join(',')).join(' ')}" ${style(surface.style)} fill-opacity="0.22"/></g>`);
+    }
     const points = new Map(
       source.points.map((p) => [
         p.id,
@@ -210,7 +235,7 @@ export function renderGraphic(
     }
     for (const [index, p] of source.points.entries()) {
       const attributes = selection('object', index, p.id);
-      if (interactive) {
+      if (interactive || !source.edges.some(edge => edge.from === p.id || edge.to === p.id)) {
         const [x, y] = points.get(p.id);
         elements.push(`<g${attributes}><circle cx="${number(x)}" cy="${number(y)}" r="3" ${style({ ...p.style, fill: p.style.stroke })}/></g>`);
       }
@@ -277,6 +302,22 @@ export function renderGraphic(
             elements.push(
               `<path d="${points.map((p, i) => `${i ? "L" : "M"}${p.map(number).join(" ")}`).join(" ")}" ${style({ ...e.style, fill: null })}/>`,
             );
+          for (const x of expressionBoundaries(e.expression, parameters).filter(x => x >= min && x <= max)) {
+            const delta = Math.max((max - min) * 1e-8, Number.EPSILON * Math.abs(x) * 4);
+            const exact = evaluate({ ...parameters, x });
+            const limits = [x - delta, x + delta].filter(t => t >= min && t <= max).map(t => evaluate({ ...parameters, x: t })).filter(Number.isFinite);
+            if (limits.every(y => Math.abs(y - exact) * scale < 0.01)) continue;
+            const marks = [];
+            for (const y of [...limits, exact].filter(Number.isFinite)) {
+              const closed = Math.abs(y - exact) * scale < 0.01;
+              const old = marks.find(m => Math.abs(m.y - y) * scale < 0.01);
+              if (old) old.closed ||= closed; else marks.push({ y, closed });
+            }
+            for (const { y, closed } of marks) {
+              const p = map([x, y]); if (p[1] < 0 || p[1] > h) continue;
+              elements.push(`<circle data-endpoint="${closed ? 'closed' : 'open'}" cx="${number(p[0])}" cy="${number(p[1])}" r="4" stroke="${escapeXml(e.style.stroke)}" stroke-width="1.5" fill="${closed ? escapeXml(e.style.stroke) : '#ffffff'}"/>`);
+            }
+          }
           const visible = paths.flat().filter((p) => p[1] >= 0 && p[1] <= h);
           if (visible.length)
             label(visible.at(-1), e.label.text, e.style, e.label, attributes);

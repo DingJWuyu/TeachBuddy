@@ -1,12 +1,16 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { renderGraphic } from '../../../../../packages/shared/src/math/graphics.js';
+import { renderDynamic } from '../../../../../packages/shared/src/math/dynamic.js';
 import { mathFontStyle } from '../../../../../packages/shared/src/math/formula.js';
 
 export default function GraphicPreview({ source, font, selection, onSelect }) {
   const root = useRef(null);
   const preview = useMemo(() => {
     if (!font) return {};
-    try { return { html: renderGraphic(source, { interactive: !!onSelect }).replace(/(<svg[^>]*>)/, `$1${mathFontStyle(font)}`) }; }
+    try {
+      const render = source.kind === 'dynamic' ? renderDynamic : renderGraphic;
+      return { html: render(source, { interactive: !!onSelect }).replace(/(<svg[^>]*>)/, `$1${mathFontStyle(font)}`) };
+    }
     catch (error) { return { error: error.message }; }
   }, [source, font, !!onSelect]);
   useLayoutEffect(() => {

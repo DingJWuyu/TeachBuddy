@@ -1,19 +1,24 @@
+import FunctionInput from './FunctionInput.jsx';
+import { ConstructionFields } from './ConstructionTools.jsx';
+import { constructionKinds } from '../../../../../packages/shared/src/math/geometry.js';
 import { Popover, MenuItem } from '../workbench/ModuleOverlays.jsx';
 import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
 
 export function WorkspaceToolbar({ draft, busy, readOnly, pending, exportOpen, empty,
-  onHome, onSave, onCopy, onDelete, onPurge, onExport, onUsage }) {
+  onHome, onSave, onCopy, onDelete, onPurge, onExport, onUsage, onHistory, onDynamic }) {
   const presentation = ['dynamic', 'html'].includes(draft?.source.kind);
   return <div className="math-workspace-actions">
     {draft && <>
       <button className="math-primary" disabled={busy || (!pending && (readOnly || empty))} onClick={draft.deletedAt && !pending ? onDelete : onSave}>
-        {pending ? pending.kind === 'purge' ? '确认删除结果' : pending.kind === 'deletion' ? pending.input.deleted ? '确认归档结果' : '确认恢复结果' : pending.kind === 'export' ? '确认导出结果' : '确认保存结果' : draft.deletedAt ? '恢复作品' : '保存'}
+        {pending ? pending.kind === 'import-source' ? '确认导入结果' : pending.kind === 'purge' ? '确认删除结果' : pending.kind === 'deletion' ? pending.input.deleted ? '确认归档结果' : '确认恢复结果' : pending.kind === 'export' ? '确认导出结果' : '确认保存结果' : draft.deletedAt ? '恢复作品' : '保存'}
       </button>
       <button className="math-action-button" aria-expanded={exportOpen} aria-controls="math-export-options" onClick={onExport}>{presentation ? '下载演示' : '下载图片'}</button>
       <Popover label="作品操作" buttonClassName="math-more-button">
         {({ close }) => <>
           <MenuItem icon="folder" onClick={() => { close(); onHome(); }}>我的作品</MenuItem>
           {!draft.deletedAt && <MenuItem icon="copy" disabled={busy || readOnly || !!pending} onClick={() => { close(); onCopy(); }}>另存作品</MenuItem>}
+          {draft.id && !draft.deletedAt && <MenuItem icon="history" disabled={busy || readOnly || !!pending} onClick={() => { close(); onHistory(); }}>历史版本</MenuItem>}
+          {draft.source.kind === 'plane' && !draft.deletedAt && <MenuItem disabled={busy || readOnly || !!pending} onClick={() => { close(); onDynamic(); }}>制作动态副本</MenuItem>}
           {draft.id && <MenuItem onClick={() => { close(); onUsage(); }}>使用位置与教学反馈</MenuItem>}
           {draft.id && !draft.deletedAt && <MenuItem icon="folder" disabled={busy || !!pending}
             onClick={() => { close(); onDelete(); }}>归档作品</MenuItem>}
@@ -26,13 +31,16 @@ export function WorkspaceToolbar({ draft, busy, readOnly, pending, exportOpen, e
 }
 
 export function ToolPanel({ name, active, children }) {
-  return active === name ? <section id={`math-panel-${name}`} className="math-tool-section" aria-label={{ objects: '图形编辑', parameters: '滑杆设置', steps: '讲解步骤', canvas: '画布设置' }[name]}>{children}</section> : null;
+  return active === name ? <section id={`math-panel-${name}`} className="math-tool-section" aria-label={{ objects: '图形编辑', parameters: '滑杆设置', steps: '讲解步骤', canvas: '画布设置', analysis: '函数分析', construct: '关联构造' }[name]}>{children}</section> : null;
 }
 
-export function ObjectProperties({ value, onChange, Fields, expanded, onExpanded }) {
-  const { style, label, domain, ...content } = value;
+export function ObjectProperties({ value, onChange, Fields, expanded, onExpanded, elements = [] }) {
+  const { style, label, domain, construction, expression, ...rawContent } = value;
+  const content = construction ? Object.fromEntries(Object.entries(rawContent).filter(([key]) => !["at", "from", "to", "center", "rx", "ry"].includes(key))) : rawContent;
   return <div className="math-object-properties">
     <Fields value={content} onChange={next => onChange({ ...value, ...next })} />
+    {expression !== undefined && <FunctionInput expression={expression} onChange={expression => onChange({ ...value, expression })}/>}
+    {construction && <><p className="math-hint">关联构造 · {constructionKinds[construction.kind]?.label}，随原对象变化。</p><ConstructionFields construction={construction} elements={elements} id={value.id} onChange={construction => onChange({ ...value, construction })}/></>}
     {domain && <ModuleDisclosure title="定义域" className="math-property-group" open={!!expanded.domain} onOpenChange={open => onExpanded('domain', open)}>
       <Fields value={domain} prefix="domain-" onChange={next => onChange({ ...value, domain: next })}/>
     </ModuleDisclosure>}

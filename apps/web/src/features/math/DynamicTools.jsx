@@ -78,7 +78,7 @@ export default function DynamicTools({
 }) {
   const set = (key, value) => onChange({ ...source, [key]: value });
   const unbound = source.scene.elements.filter(
-    (e) => e.type === "point" && !source.drags.some((d) => d.pointId === e.id),
+    (e) => e.type === "point" && !e.construction && !source.drags.some((d) => d.pointId === e.id),
   );
   return (
     <>
@@ -105,6 +105,17 @@ export default function DynamicTools({
             添加参数
           </button>
         </div>
+        <ModuleDisclosure title="自动播放与轨迹" open={!!expanded.animation} onOpenChange={open => onExpanded('animation', open)}>
+          <div className="math-dynamic-fields">
+            {source.parameters.length > 0 && <>
+              <label>播放参数<select aria-label="播放参数" value={source.animation?.parameter ?? source.parameters[0].name} onChange={e => set('animation', { seconds: 8, mode: 'bounce', ...source.animation, parameter: e.target.value })}>{source.parameters.map(p => <option key={p.name} value={p.name}>{p.label}</option>)}</select></label>
+              <label>单程秒数<input aria-label="单程秒数" type="number" min="1" max="120" value={source.animation?.seconds ?? 8} onChange={e => set('animation', { parameter: source.parameters[0].name, mode: 'bounce', ...source.animation, seconds: Number(e.target.value) })}/></label>
+              <label>播放方式<select aria-label="播放方式" value={source.animation?.mode ?? 'bounce'} onChange={e => set('animation', { parameter: source.parameters[0].name, seconds: 8, ...source.animation, mode: e.target.value })}><option value="bounce">往返</option><option value="loop">循环</option><option value="once">播放一次</option></select></label>
+            </>}
+            <fieldset><legend>记录点的采样轨迹</legend>{source.scene.elements.filter(e => e.type === 'point').map(p => <label key={p.id}><input type="checkbox" checked={(source.traceIds ?? []).includes(p.id)} disabled={!(source.traceIds ?? []).includes(p.id) && (source.traceIds?.length ?? 0) >= 10} onChange={e => set('traceIds', e.target.checked ? [...(source.traceIds ?? []), p.id] : source.traceIds.filter(id => id !== p.id))}/>{p.id} 的轨迹</label>)}</fieldset>
+            <p className="math-hint">播放和轨迹只用于试演，重置或换步骤后清空轨迹。下载的演示保留相同设置。</p>
+          </div>
+        </ModuleDisclosure>
         <details>
           <summary>拖动图上的点</summary>
           {source.drags.map((drag, i) => (
@@ -123,7 +134,7 @@ export default function DynamicTools({
                   {source.scene.elements
                     .filter(
                       (e) =>
-                        e.type === "point" &&
+                        e.type === "point" && !e.construction &&
                         (e.id === drag.pointId ||
                           !source.drags.some((d) => d.pointId === e.id)),
                     )

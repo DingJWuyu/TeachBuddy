@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import FormulaPreview from './FormulaPreview.jsx';
+import VisualFormulaInput from './VisualFormulaInput.jsx';
 import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
 
 const templates = {
@@ -45,13 +46,14 @@ export default function FormulaEditor({ source, onChange, view, onView, confirm,
     {savedInvalid && <p role="alert">源码已保存，公式暂时无法显示。请修正后再次保存；当前版本仅可下载制作源。</p>}
     <div className="math-formula-mode" aria-label="公式输入方式">
       <button aria-pressed={mode === 'guided'} onClick={() => onView({ formulaMode: 'guided' })}>常用结构</button>
+      <button aria-pressed={mode === 'visual'} onClick={() => onView({ formulaMode: 'visual' })}>可视化编辑</button>
       <button aria-pressed={mode === 'source'} onClick={() => onView({ formulaMode: 'source' })}>LaTeX 源码</button>
     </div>
     {mode === 'guided' ? <div className="math-guided-formula">
       <div className="math-formula-templates">{Object.entries(templates).map(([kind, template]) => <button key={kind} aria-label={template.title} aria-pressed={!!matching && builder.kind === kind} onClick={() => choose(kind)}><span aria-hidden="true"><Symbol name={kind}/></span><span>{template.title}</span></button>)}</div>
       {matching ? <div className="math-formula-values">{templates[builder.kind].fields.map(([key, label]) => <label key={key}>{label}<input value={builder.values[key]} onChange={e => update(key, e.target.value)}/></label>)}</div>
         : <p className="math-hint">{source.latex ? '当前公式可在 LaTeX 源码中继续编辑，也可以选择新的结构。' : '选择一种结构，填写内容后即可看到公式。'}</p>}
-    </div> : <div>
+    </div> : mode === 'visual' ? <VisualFormulaInput value={source.latex} onChange={latex => onChange({ ...source, latex })}/> : <div>
       <label className="math-latex-field">公式源码<textarea ref={input} aria-label="LaTeX" placeholder="例如：x^2 + y^2 = r^2" value={source.latex} onChange={e => onChange({ ...source, latex: e.target.value })}/></label>
       <div className="math-insert">{[['分式', '\\frac{}{}'], ['根式', '\\sqrt{}'], ['上下标', 'x_{}^{}'], ['分段式', '\\begin{cases}x & x>0\\\\ -x & x\\le0\\end{cases}']].map(([name, text]) => <button key={name} onMouseDown={e => e.preventDefault()} onClick={() => insert(text)}>{name}</button>)}</div>
     </div>}

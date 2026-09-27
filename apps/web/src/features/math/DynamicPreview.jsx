@@ -23,6 +23,7 @@ export default function DynamicPreview({ source, font, onChange, accountKey, wor
   };
   useLayoutEffect(highlight, [selectedId]);
   function togglePresentation(next) {
+    runtime.current?.pause();
     origin.current = container.current.getBoundingClientRect();
     transition.current?.cancel();
     setShow(next);
@@ -63,7 +64,7 @@ export default function DynamicPreview({ source, font, onChange, accountKey, wor
     highlight();
     const observer = new MutationObserver(highlight);
     observer.observe(root.current, { childList: true, subtree: true });
-    return () => { observer.disconnect(); root.current?.replaceChildren(); };
+    return () => { observer.disconnect(); runtime.current?.destroy(); runtime.current = null; };
   }, [source, font, accountKey, workId]);
   return (
     <div ref={container} className={`math-dynamic${show ? " math-presenting" : ""}`} style={{ transformOrigin: 'top left' }}>
@@ -76,6 +77,7 @@ export default function DynamicPreview({ source, font, onChange, accountKey, wor
           <button
             disabled={!font}
             onClick={() => {
+              runtime.current.pause();
               const state = runtime.current.getState();
               onChange({
                 ...source,

@@ -8,5 +8,12 @@
   },
   "scripts": {
     "build": "node scripts/verify-catalog.mjs"
+  },
+  "dependencies": {
+    "@flatten-js/core": "1.6.14",
+    "bisect": "1.0.0",
+    "mathjs": "15.2.0",
+    "minimize-golden-section-1d": "3.0.0",
+    "three": "0.186.1"
   }
 }

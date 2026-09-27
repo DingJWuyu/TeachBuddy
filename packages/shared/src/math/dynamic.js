@@ -1,4 +1,5 @@
 import { parseExpression, MathSourceError } from "./expression.js";
+import { resolveElements } from "./geometry.js";
 import { renderGraphic } from "./graphics.js";
 
 export function parameterOnGrid(parameter, value) {
@@ -49,9 +50,10 @@ export function dynamicPlane(source, state, tolerant = false) {
       Object.hasOwn(state.values, name) ? String(state.values[name]) : match,
     );
   const point = (at) => ({ x: evaluate(at.x), y: evaluate(at.y) });
-  const undefinedIds = [];
+  const resolved = resolveElements(source.scene.elements, state.values, { tolerant, visibleIds: state.visibleIds, viewport: source.scene.viewport });
+  const undefinedIds = [...resolved.undefinedIds];
   const elements = [];
-  for (const original of source.scene.elements) {
+  for (const original of resolved.elements) {
     if (!state.visibleIds.includes(original.id)) continue;
     try {
       const e = structuredClone(original);

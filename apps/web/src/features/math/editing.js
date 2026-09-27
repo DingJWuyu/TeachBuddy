@@ -95,6 +95,7 @@ export function updateParameter(source, index, next) {
           : v,
       ),
     })),
+    ...(source.animation ? { animation: { ...source.animation, parameter: source.animation.parameter === old.name ? next.name : source.animation.parameter } } : {}),
     drags: source.drags.map((d) => ({
       ...d,
       xParameter: d.xParameter === old.name ? next.name : d.xParameter,
@@ -124,6 +125,7 @@ export function addParameter(source) {
 }
 export function removeParameter(source, index) {
   const p = source.parameters[index];
+  if (source.animation?.parameter === p.name) { source = { ...source }; delete source.animation; }
   return {
     ...source,
     parameters: source.parameters.filter((_, i) => i !== index),
@@ -156,11 +158,17 @@ export function updateObjects(source, elements, renamed = null) {
     return {
       ...source,
       points: elements,
+      ...(source.faces ? { faces: source.faces.map(f => ({ ...f, vertices: f.vertices.map(rename) })).filter(f => f.vertices.every(id => ids.has(id))) } : {}),
+      ...(source.sections && elements.length < source.points.length ? { sections: [] } : {}),
       edges: source.edges
         .map((e) => ({ ...e, from: rename(e.from), to: rename(e.to) }))
         .filter((e) => ids.has(e.from) && ids.has(e.to)),
     };
   }
+  const renamedId = id => renamed && id === renamed.from ? renamed.to : id;
+  elements = elements.map(e => e.construction ? { ...e, construction: { ...e.construction, refs: e.construction.refs.map(renamedId) } } : e);
+  let length;
+  do { length = elements.length; const ids = new Set(elements.map(e => e.id)); elements = elements.filter(e => !e.construction || e.construction.refs.every(id => ids.has(id))); } while (elements.length !== length);
   const next = { ...source, scene: { ...source.scene, elements } };
   if (source.kind !== "dynamic") return next;
   const ids = new Set(elements.map((e) => e.id));
@@ -169,6 +177,7 @@ export function updateObjects(source, elements, renamed = null) {
     .filter((e) => !previous.has(e.id) && e.id !== renamed?.to)
     .map((e) => e.id);
   const rename = (id) => (renamed && id === renamed.from ? renamed.to : id);
+  if (source.traceIds) next.traceIds = source.traceIds.map(rename).filter(id => ids.has(id));
   next.steps = source.steps.map((s) => ({
     ...s,
     visibleIds: [
@@ -178,7 +187,7 @@ export function updateObjects(source, elements, renamed = null) {
   }));
   next.drags = source.drags
     .map((d) => ({ ...d, pointId: rename(d.pointId) }))
-    .filter((d) => ids.has(d.pointId));
+    .filter((d) => ids.has(d.pointId) && !elements.find(e => e.id === d.pointId)?.construction);
   // Editing a bound coordinate releases only that axis, preserving the other one.
   next.drags = next.drags
     .map((d) => {
