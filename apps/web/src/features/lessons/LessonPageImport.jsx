@@ -63,10 +63,12 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
         if (scene.jobId) {
           const job = (await workbenchGet(`/api/workbench/jobs/${scene.jobId}`)).body;
           if (!live) return;
+          // A fixed page's newer failure outranks a cached job's terminal
+          // state; a previous cancellation must not erase the current issues.
           if (["queued", "running", "cancelling"].includes(job.state)) {
             setState(job.state); setError("");
             timer = setTimeout(load, 2000);
-          } else if (["failed", "interrupted", "cancelled"].includes(job.state)) {
+          } else if (result.state !== "failed" && ["failed", "interrupted", "cancelled"].includes(job.state)) {
             setState(job.state);
             setError(job.state === "cancelled" ? "" : job.issues?.[0]?.detail || result.issues?.[0]?.detail || "识别未完成，原资料和课稿仍保留。可以重新识别这一页。");
           } else if (result.state === "running") timer = setTimeout(load, 500);

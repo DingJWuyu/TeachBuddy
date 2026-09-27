@@ -16,15 +16,16 @@ test.afterEach(async ({ context }, info) => {
   await context.close(); await world?.close();
   if (world && info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
 });
-async function setup(page, recognizer) {
+async function setup(page, recognizer, sample = 'materials-resources/samples/page.png') {
   if (!process.env.WORKBENCH_WEB_DIST) throw new Error('Set WORKBENCH_WEB_DIST to the isolated build');
   world = await createIntegration({ workbench: { recognition: { recognizer } } });
   const email = 'lesson-page-ui@example.test';
   const { client } = await registerMath(world, email), call = http(client);
-  const boundary = `page-${randomUUID()}`, png = fs.readFileSync(new URL('./fixtures/materials-resources/samples/page.png', import.meta.url));
+  const boundary = `page-${randomUUID()}`, bytes = fs.readFileSync(new URL(`./fixtures/${sample}`, import.meta.url));
+  const filename = sample.split('/').at(-1), mediaType = sample.endsWith('.pdf') ? 'application/pdf' : 'image/png';
   const upload = await client.request('POST', '/api/workbench/files', {
     headers: { 'Idempotency-Key': randomUUID() }, contentType: `multipart/form-data; boundary=${boundary}`,
-    rawBody: Buffer.concat([Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="page.png"\r\nContent-Type: image/png\r\n\r\n`), png, Buffer.from(`\r\n--${boundary}--\r\n`)]),
+    rawBody: Buffer.concat([Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mediaType}\r\n\r\n`), bytes, Buffer.from(`\r\n--${boundary}--\r\n`)]),
   });
   expect(upload.status).toBe(201);
   const resource = await call('POST', '/api/modules/resources/items', { title: '单页资料', fileId: upload.json.id,
@@ -266,5 +267,54 @@ test('恢复：其他入口重新识别同页后，备课跟随当前任务并�
   await expect.poll(async () => (await call('GET', `/api/workbench/jobs/${current.id}`)).state).toBe('cancelled');
   expect((await call('GET', `/api/workbench/jobs/${original.id}`)).state).toBe('failed');
   expect(runs).toBe(2);
+  expect((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).sections).toHaveLength(0);
+});
+
+for (const newerPage of [1, 2]) test(`恢复：旧任务已取消，其他入口第 ${newerPage} 页清理失败后重开保持本页状态`, async ({ page }, info) => {
+  let runs = 0;
+  const recognizer = { revision: 'controlled-terminal-following-ui', run: ({ signal }) => new Promise((resolve, reject) => {
+    const attempt = ++runs;
+    const abort = () => reject(attempt === 2
+      ? Object.assign(new Error('Controlled newer cleanup failure'), { code: 'recognition-cleanup' }) : signal.reason);
+    signal.addEventListener('abort', abort, { once: true });
+    if (signal.aborted) abort();
+  }) };
+  const { fileId, call, lesson } = await setup(page, recognizer,
+    newerPage === 1 ? 'materials-resources/samples/page.png' : 'materials-questions/P.pdf');
+  await selectPage(page);
+  const accepted = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith(`/files/${fileId}/recognition`));
+  await page.getByRole('button', { name: '识别这一页', exact: true }).click();
+  const original = await (await accepted).json();
+  await expect.poll(() => runs).toBe(1);
+  await page.getByRole('button', { name: '停止识别', exact: true }).click();
+  await expect(page.getByText('识别已停止，原资料和课稿仍保留。', { exact: true })).toBeVisible();
+  expect((await call('GET', `/api/workbench/jobs/${original.id}`)).state).toBe('cancelled');
+  await page.getByRole('button', { name: '返回课稿', exact: true }).click();
+
+  const preview = await call('GET', `/api/workbench/files/${fileId}/preview`);
+  expect(preview.pages.some(item => item.page === newerPage)).toBe(true);
+  const current = await call('POST', `/api/workbench/files/${fileId}/recognition`, { renditionFileId: preview.renditionFileId, pages: [newerPage] }, 202);
+  await expect.poll(() => runs).toBe(2);
+  await call('POST', `/api/workbench/jobs/${current.id}/cancel`, {});
+  await expect.poll(async () => (await call('GET', `/api/workbench/jobs/${current.id}`)).state).toBe('failed');
+  expect((await call('GET', `/api/workbench/files/${fileId}/recognition/pages/${newerPage}?renditionFileId=${preview.renditionFileId}`)).issues[0].code).toBe('recognition-cleanup');
+
+  await page.getByRole('button', { name: '从资料提取正文', exact: true }).click();
+  for (const reload of [false, true]) {
+    if (reload) await page.reload();
+    if (newerPage === 1) {
+      await expect(page.getByRole('alert')).toContainText('尚未确认识别进程停止');
+      await expect(page.getByText('识别已停止，原资料和课稿仍保留。', { exact: true })).toHaveCount(0);
+    } else {
+      await expect(page.getByText('识别已停止，原资料和课稿仍保留。', { exact: true })).toBeVisible();
+      await expect(page.getByRole('alert')).toHaveCount(0);
+    }
+  }
+  await page.screenshot({ path: info.outputPath('latest-failed-page.png'), animations: 'disabled' });
+  await page.getByRole('button', { name: '重新识别这一页', exact: true }).click();
+  await expect.poll(() => runs).toBe(3);
+  await page.getByRole('button', { name: '停止识别', exact: true }).click();
+  await expect(page.getByText('识别已停止，原资料和课稿仍保留。', { exact: true })).toBeVisible();
+  expect((await call('GET', `/api/workbench/jobs/${current.id}`)).state).toBe('failed');
   expect((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).sections).toHaveLength(0);
 });
