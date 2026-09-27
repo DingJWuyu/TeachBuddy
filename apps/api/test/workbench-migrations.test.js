@@ -25,7 +25,7 @@ import { startServer } from '../src/server.js';
 import { ACCOUNT_A, createTempRoot, createWorkbenchContext } from './workbench-test-context.js';
 import { resolveFixtureSets } from './fixtures/first-flow/catalog.js';
 
-const PRODUCT_MIGRATIONS = ['materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'lessons_0003_order', 'lessons_0004_history_and_placement', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications'];
+const PRODUCT_MIGRATIONS = ['materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'lessons_0003_order', 'lessons_0004_history_and_placement', 'lessons_0005_page_source', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications'];
 
 test('an empty database applies migrations once and records them in the ledger', async () => {
   const context = await createWorkbenchContext();
