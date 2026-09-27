@@ -10,6 +10,7 @@ import { unconnectedHandlers } from "./jobs/fixtures.js";
 import { createJobsRouter } from "./jobs/router.js";
 import { createPreviews } from "./files/preview.js";
 import { createRecognition } from './recognition/index.js';
+import { createRecognizer } from './recognition/runtime.js';
 import { recognitionMigrations } from './recognition/migrations.js';
 /**
  * Workbench composition root.
@@ -110,7 +111,7 @@ export function createWorkbench({
   );
   const content = createContent({ files });
   const recognition = createRecognition({ db, mutations, files, readBytes, jobs, content,
-    recognizer: workbenchEnv.recognition?.recognizer });
+    recognizer: workbenchEnv.recognition?.recognizer ?? createRecognizer({ home: workbenchEnv.recognition?.home }) });
   const migrations = createMigrationRunner({ db, clock });
   const loader = createModuleLoader({
     catalog,

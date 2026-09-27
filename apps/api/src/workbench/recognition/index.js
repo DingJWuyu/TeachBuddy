@@ -150,6 +150,8 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
         content.validate(principal, normalized.document);
         signal?.throwIfAborted();
         save(principal, { ...value, ...normalized, rawFileId: rawFile.id, state: 'ready',
+          issues: [...normalized.issues, ...value.derivations.flatMap(derivation =>
+            (derivation.issues ?? []).map(issue => ({ ...issue, assetName: derivation.name })))],
           assetFileIds: value.assetFileIds, originalAssetFileIds: value.originalAssetFileIds,
           derivations: output.derivations ?? [] });
         return readPage(principal, input);

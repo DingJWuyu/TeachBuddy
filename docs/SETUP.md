@@ -49,6 +49,16 @@ Web 与 `/api` 由同一个 HTTPS origin 提供。固定构建不热更新；真
 
 当前实例的工具可用性与待处理项由[台账](plans/run-state.md)维护；修改运行配置后必须实际转换并打开文件验证。
 
+## 本地页识别工具
+
+`MATERIALS_OCR_HOME` 指向独立、持久的 PaddleOCR 工具目录。未配置时不运行新识别，已经保存的机器结果仍可读取。识别结果与人工采用的边界见[共用页识别](contracts/workbench/recognition.md)，不把文字搜索命中等同于题目整理或人工校对完成。
+
+本机固定环境为 Linux、NVIDIA RTX 5060 Laptop 8 GiB、Python 3.12.14、PaddlePaddle GPU 3.2.1/cu129、PaddleOCR/PaddleX 3.7.0。需要 `bwrap`、用户级 systemd 和 `nvidia-smi`。运行单页子进程，禁止联网和自动下载，复用既有串行 Job；公开 Paddle API 的微型预热用于本机首次 kernel 加载问题，不修改第三方依赖或模型函数。
+
+当前持久目录为 `/home/liam_t/.local/share/teacherworkspace-tools/paddleocr-vl-1.6`，布局为 `python/`、`venv/`、`models/`、`requirements.freeze.txt` 与 `manifest.json`。两个模型分别固定到 PaddleOCR-VL-1.6 `c5630abae1d940eafe0697512a0325494b02ab42` 和 PP-DocLayoutV3 `7b48a7566925fa464281f930c58eee04fe2c862a`。清单记录 25 个模型文件与依赖清单的 SHA-256，许可随模型保留；依赖和权重不进入 Git。
+
+移到另一目录时用目标 Python 重新创建 venv，再安装固定依赖；不能复制指向实验 worktree 的绝对解释器链接。模型目录保持完整，配置指向新目录后重启 API，再从真实上传验证文字、公式、裁图与取消。运行适配与准确参数由 `apps/api/src/workbench/recognition/runtime.js`、`worker.py` 维护，逐页资源准入失败会留在可重试状态，不停其他进程或改驱动/swap。此配置只证明当前主机路径，不代表其他设备已验证。
+
 ## 验证与原型
 
 具体测试选择和数据隔离见[验证指南](acceptance/README.md)。全量命令不能替代当前功能的实际操作，也不要在在线实例旁盲目运行会覆盖 `dist` 或写证据的旧脚本。

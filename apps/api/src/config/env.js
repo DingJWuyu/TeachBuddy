@@ -47,7 +47,7 @@ export function createWorkbenchEnv(overrides = {}) {
     filesDir: source.filesDir ?? process.env.WORKBENCH_FILES_DIR ?? null,
     jobHandlers: source.jobHandlers ?? null,
     conversion: source.conversion ?? {},
-    recognition: source.recognition ?? {},
+    recognition: { home: process.env.MATERIALS_OCR_HOME ?? null, ...source.recognition },
     extraImplementations: source.extraImplementations ?? null,
     catalogOverride: source.catalogOverride ?? null,
     resolvePrincipal: source.resolvePrincipal ?? null
