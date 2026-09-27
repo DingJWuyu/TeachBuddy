@@ -549,7 +549,16 @@ export function createMaterialsLessons({
   materialErrors(router);
   return {
     router,
-    port: { operations, listUsages },
+    port: {
+      operations,
+      listUsages,
+      readHistoryForExport(principal, id) {
+        return history.list(principal, id).items.map(({ version, savedAt }) => {
+          const saved = history.get(principal, id, version);
+          return { ...read(principal, saved.record, saved), savedAt };
+        });
+      },
+    },
     jobHandlers: { export: exports.handler },
     get,
     requireLesson,

@@ -4,7 +4,7 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createHash } from "node:crypto";
-import { documentText } from "../../modules/questions/materials-content.js";
+import { documentText, walkBlocks } from "../../modules/questions/materials-content.js";
 import { validateArchive } from "./schema.js";
 import { createQuestionsRepository } from "../../modules/questions/repository.js";
 import { createMaterialsStore } from "../../modules/questions/materials-store.js";
@@ -36,6 +36,7 @@ const kindLabels = {
   "question-taxonomy": "题目分类",
   import: "收录",
   lesson: "备课",
+  "lesson-revision": "备课历史版本",
   resource: "资源",
   "resource-taxonomy": "资源分类",
   "resource-file-revision": "资源文件历史版本",
@@ -100,6 +101,39 @@ function readableContent(value) {
     .join("");
 }
 
+// Offline lesson reading keeps section/placement boundaries. Document text and
+// formula sources use the existing extractor; full layout remains in JSON.
+function readableLesson(lesson, files) {
+  function document(value) {
+    const parts = [];
+    walkBlocks(value.blocks, block => {
+      if (block.type === "image") {
+        const file = files.find(file => file.id === block.fileId);
+        if (!file) throw new Error("Saved lesson image is missing");
+        const href = `../${filePath(file).split("/").map(encodeURIComponent).join("/")}`;
+        parts.push(`${block.alt ? `<p>${escape(block.alt)}</p>` : ""}<p><a href="${escape(href)}"><img src="${escape(href)}" alt="${escape(block.alt || JSON.parse(file.metadata).name)}" style="max-width:100%;height:auto;max-height:480px"></a></p>`);
+      } else if (block.runs || block.type === "math") {
+        parts.push(readableContent({ version: value.version, blocks: [block] }));
+      }
+    });
+    return parts.join("");
+  }
+  function reference(ref) {
+    const snapshot = ref.snapshot;
+    const version = ref.workVersion ?? ref.questionVersion ?? ref.resourceVersion;
+    const content = ref.kind === "question"
+      ? `<h4>题干</h4>${document(snapshot.body)}${snapshot.solution.blocks.length ? `<h4>答案解析</h4>${document(snapshot.solution)}` : ""}`
+      : readableContent(snapshot);
+    return `<section><h3>${escape(snapshot.title || kindLabels[ref.kind] || "材料")} · 采用版本 ${escape(version)}</h3>${content}${ref.note ? `<h4>本课备注</h4><pre>${escape(ref.note)}</pre>` : ""}</section>`;
+  }
+  return `<section><h2>开头文稿</h2>${document(lesson.intro)}</section>` + lesson.sections.map(section => {
+    const at = boundary => section.references.filter(ref => (ref.afterBlock ?? null) === boundary).map(reference).join("");
+    return `<section><h2>${escape(section.title)}</h2>${at(0)}${section.content.blocks.map((block, i) =>
+      document({ version: section.content.version, blocks: [block] }) + at(i + 1),
+    ).join("")}${at(null)}</section>`;
+  }).join("") + (lesson.materials.length ? `<section><h2>备用材料</h2>${lesson.materials.map(reference).join("")}</section>` : "");
+}
+
 // One synchronous SQLite snapshot. Runtime entries, auth, mutation journals and
 // provider configuration are deliberately absent; teacher text is never redacted.
 export function takeSnapshot(db, principal, loader) {
@@ -160,14 +194,16 @@ export function takeSnapshot(db, principal, loader) {
       snapshot: JSON.parse(row.snapshot),
     })),
   };
-  rows("lesson_items").forEach((row) =>
-    add(
-      "lesson",
-      loader
-        .get("lessons")
-        .port.operations.getLessonV3({ principal, id: row.id }).body,
-    ),
-  );
+  const lessons = loader.get("lessons").port;
+  rows("lesson_items").forEach((row) => {
+    add("lesson", lessons.operations.getLessonV3({ principal, id: row.id }).body);
+    const seen = new Set();
+    for (const revision of lessons.readHistoryForExport(principal, row.id)) {
+      if (seen.has(revision.version)) continue;
+      seen.add(revision.version);
+      add("lesson-revision", revision, row.id, revision.version);
+    }
+  });
   rows("lesson_exports").forEach((row) =>
     add("lesson-export", JSON.parse(row.record), row.id),
   );
@@ -310,6 +346,7 @@ export async function writeArchive(snapshot, directory, destination, signal) {
   for (const object of entries) {
     const value = object.value,
       current = value.entry ?? value;
+    const lesson = object.kind === "lesson" || object.kind === "lesson-revision";
     const title =
       current.title ||
       current.name ||
@@ -349,9 +386,8 @@ export async function writeArchive(snapshot, directory, destination, signal) {
         adoptedVersion,
         location,
       });
-      related.push(
-        `<li><a href="../${target.readablePath}">${escape(target.value.title || target.value.name || kind)} (${escape(type)})</a></li>`,
-      );
+      const label = lesson ? ({ "current-link": "当前课稿", "reference-snapshot": "来源当前内容", origin: "附件" }[type] ?? type) : type;
+      related.push(`<li><a href="../${target.readablePath}">${escape(target.value.title || target.value.name || kind)} (${escape(label)})</a></li>`);
     }
     if (object.kind === "question" && value.source?.kind === "copy")
       relation(
@@ -364,16 +400,16 @@ export async function writeArchive(snapshot, directory, destination, signal) {
       );
     if (object.kind === "question" && value.source?.kind === "import")
       relation("import", value.source.importId, "origin", "source/importId");
-    if (object.kind === "lesson")
-      for (const [i, r] of [
-        ...(value.materials ?? []),
-        ...(value.sections ?? []).flatMap((s) => s.references),
-      ].entries())
+    if (lesson)
+      for (const [r, location] of [
+        ...(value.materials ?? []).map((r, i) => [r, `materials/${i}`]),
+        ...(value.sections ?? []).flatMap((s, i) => s.references.map((r, j) => [r, `sections/${i}/references/${j}`])),
+      ])
         relation(
           r.kind,
           r.workId ?? r.questionId ?? r.resourceId,
           "reference-snapshot",
-          `references/${i}`,
+          location,
           r.workVersion ?? r.questionVersion ?? r.resourceVersion,
           r.snapshot,
         );
@@ -425,6 +461,8 @@ export async function writeArchive(snapshot, directory, destination, signal) {
       relation("math", object.id, "current-link", "work");
     if (object.kind === "resource-file-revision")
       relation("resource", object.id, "current-link", "resource");
+    if (object.kind === "lesson-revision")
+      relation("lesson", object.id, "current-link", "id");
     if (object.kind === "lesson-export")
       relation(
         "lesson",
@@ -440,13 +478,18 @@ export async function writeArchive(snapshot, directory, destination, signal) {
     const attachment = file
       ? `<p><a href="../${escape(filePath(file).split("/").map(encodeURIComponent).join("/"))}" download="${escape(value.name)}">${escape(value.name)} - 下载原文件</a></p>`
       : "";
+    const historyLabel = object.kind === "lesson-revision"
+      ? ` · 版本 ${object.version} · 保存于 ${value.savedAt}` : "";
+    const status = object.kind === "lesson-revision" ? "课稿保存版本"
+      : lesson ? (state === "deleted" ? "已归档" : "当前课稿")
+      : state === "deleted" ? "已删除，可在工作台恢复" : "已保存";
     put(
       object.readablePath,
-      `<!doctype html><html lang="zh-CN"><meta charset="utf-8">${readableStyle}<title>${escape(title)}</title><body><a href="../index.html">资料目录</a><h1>${escape(title)}</h1><p>${state === "deleted" ? "已删除，可在工作台恢复" : "已保存"}${object.version === null ? "" : ` · 版本 ${object.version}`}</p>${attachment}<ul>${related.join("")}</ul><p>下方保留完整内容、公式源码及已采用的历史快照。当前关联内容可从上方链接查看。</p>${readableContent(value)}<details><summary>完整记录与版式数据</summary><pre>${escape(json(value))}</pre></details><a href="../${object.dataPath}">机器可读 JSON</a></body></html>`,
+      `<!doctype html><html lang="zh-CN"><meta charset="utf-8">${readableStyle}<meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><body><a href="../index.html">资料目录</a><h1>${escape(title)}</h1><p>${status}${historyLabel ? escape(historyLabel) : object.version === null ? "" : ` · 版本 ${object.version}`}</p>${attachment}<ul>${related.join("")}</ul><p>下方保留完整内容、公式源码及已采用的历史快照。当前关联内容可从上方链接查看。</p>${lesson ? '<p>正文与公式可复制，图片可保存后重新上传。来源可用性为导出时状态，已采用内容保持原保存版本。</p>' : ""}${lesson ? readableLesson(value, snapshot.files) : readableContent(value)}<details><summary>完整记录与版式数据</summary><pre>${escape(json(value))}</pre></details><a href="../${object.dataPath}">机器可读 JSON</a></body></html>`,
       "text/html",
     );
     links.push(
-      `<li><a href="${object.readablePath}">${escape(title)}</a> (${escape(kindLabels[object.kind] || object.kind)}${state === "deleted" ? "，已删除" : ""})</li>`,
+      `<li><a href="${object.readablePath}">${escape(title + historyLabel)}</a> (${escape(kindLabels[object.kind] || object.kind)}${state === "deleted" ? lesson ? "，已归档" : "，已删除" : ""})</li>`,
     );
   }
   for (const row of snapshot.files) {

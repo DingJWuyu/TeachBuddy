@@ -26,7 +26,7 @@
 
 编辑课稿底部的“从其他备课复用环节”用于查找其他当前或归档课稿，预览并勾选环节，按来源顺序追加到本课末尾。确认前保存本课草稿，保留已采用快照、备注和混排位置，环节与引用生成独立身份；来源已更新、归档或移除仍不改变已采用内容。创建成功即已保存，可继续调整位置。关闭选择窗口保留原草稿，不创建环节。
 
-两项操作都校验当前版本，复用还校验来源版本；结果未知时保留原请求，刷新后“确认课稿更新”仍使用同一幂等键，不重复恢复或插入。接口见[材料接口](../contracts/workbench/materials.openapi.yaml)：`GET /api/modules/lessons/v3/{id}/history`、`GET .../history/{version}`、`POST .../history/restore`、`POST .../sections/copy`。历史保存在实例数据库并随实例备份保留；个人资料包目前仅包含当前课稿，不包含课稿历史。
+两项操作都校验当前版本，复用还校验来源版本；结果未知时保留原请求，刷新后“确认课稿更新”仍使用同一幂等键，不重复恢复或插入。接口见[材料接口](../contracts/workbench/materials.openapi.yaml)：`GET /api/modules/lessons/v3/{id}/history`、`GET .../history/{version}`、`POST .../history/restore`、`POST .../sections/copy`。历史保存在实例数据库并随实例备份保留；[个人资料包](data.md#portable)同时包含当前课稿和历史列表中现存的最多 50 个版本，按标题、版本与保存时间索引。正文、公式源码、采用快照、本课备注、混排位置和历史独有附件均保留，来源删除不改变已采用内容。离线可阅读并手工复制正文/公式、重新上传图片到新课稿；不批量恢复账户或原历史链。
 
 ## 归档、恢复与彻底删除
 
@@ -83,12 +83,11 @@
 ## 暂缺能力
 
 - 外部 Word/PDF 无损拆解为可编辑文稿、题目和公式，扫描页 OCR，以及从原件页面自动区分/排除答案。现有转换器可可靠生成整页预览，但通用转换不能保证复杂表格、浮动图形、旧公式对象及扫描页的结构和语义；当前明确提供原页插入，不声称可编辑导入。
-- 个人资料包携带课稿历史；历史目前随完整实例备份保存。本模块不扩展设置与资料包的格式。
 
 ## 接口、代码与验证
 
 保存、引用身份/版本/删除见[共享契约](../contracts/workbench.md#引用更新与删除)；文件、输出过滤见[材料契约](../contracts/workbench/materials.md#引用和输出)；含数学的 lessons v3 见[数学契约](../contracts/workbench/math.md)。
 
-Web `apps/web/src/features/lessons/`；API `apps/api/src/modules/lessons/`，DOCX 生成在 `pandoc.js`，PDF/预览共用文件转换器。验证入口 `apps/web/e2e/manual-lessons.config.mjs`、`apps/api/test/materials-lessons.test.js`、`materials-pandoc.test.js`。
+Web `apps/web/src/features/lessons/`；API `apps/api/src/modules/lessons/`，DOCX 生成在 `pandoc.js`，PDF/预览共用文件转换器。验证入口 `apps/web/e2e/manual-lessons.config.mjs`、`apps/api/test/materials-lessons.test.js`、`materials-pandoc.test.js`。个人资料包通过模块只读 `readHistoryForExport(principal, id)` 取得公开历史投影，复用历史列表/详情及其归属校验，读取不生成版本；导出、离线取回与真实文件输出见 `apps/web/e2e/lessons-portable.config.mjs`，快照与备份边界见 `apps/api/test/reliability-material-snapshots.test.js`。
 
 相关修改走“组织环节 → 取题/资源/作品 → 保存刷新 → 查看来源 → 对照并采用单处更新”。输出修改必须下载并打开真实文件，检查三类成果、答案和注记四种组合、公式可编辑、配图/分页及旧成功输出保留。Linux 结构检查不代替目标 Office 编辑。场景见[材料 BDD](../acceptance/materials.feature)，本地证明见[能力证据](../plans/run-state.md#证据边界)。
