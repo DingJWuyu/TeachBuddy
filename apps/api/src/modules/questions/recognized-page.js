@@ -38,7 +38,8 @@ export function readRecognizedPage(page, { section }) {
     if (["header", "footer", "number", "header_image", "footer_image"].includes(raw.block_label) ||
         /^\s*第\s*\d+\s*页/.test(raw.text) && ["paragraph_title", "doc_title"].includes(raw.block_label) ||
         answerPage && answerHeading.test(pageHeading(raw.text))) continue;
-    if (/^\s*(?:教学环节|师生活动|教师活动|设计点评)\s*[:：]/.test(raw.text)) {
+    if (raw.document.blocks.length === 1 && ["heading", "paragraph"].includes(raw.document.blocks[0].type) &&
+        /^\s*(?:教学环节|师生活动|教师活动|设计点评)\s*[:：][^\r\n]*$/.test(raw.text)) {
       fragment(raw.text, [location]);
       continue;
     }

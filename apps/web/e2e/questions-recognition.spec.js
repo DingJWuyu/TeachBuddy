@@ -293,6 +293,23 @@ test('HTTP：未拆开的教学表格保留为未分配内容，活动标题不�
   expect(material.fragments.some(f => f.text === '教学环节：初步应用')).toBe(true);
 });
 
+test('HTTP：首格是教学环节的表格仍提示结构未拆开，不能作为普通标题跳过', async () => {
+  recognizer.run = async ({width, height}) => ({width, height, assets: [], raw: {width, height, parsing_res_list: [
+    {block_id: 0, block_label: 'table', block_bbox: [0, 0, width, height],
+      block_content: '<table><tr><td>教学环节：初步应用</td><td>判断函数奇偶性</td></tr><tr><td>师生活动</td><td>教师引导学生讨论</td></tr></table>'},
+  ]}});
+  const created = await importPages(['I-1']);
+  const job = await waitJob(created.jobId);
+  expect(job.state).toBe('partial');
+  expect(job.issues.some(issue => issue.detail?.includes('尚未可靠区分'))).toBe(true);
+  const material = await read(created.id);
+  expect(material.drafts).toEqual([]);
+  const text = material.fragments.map(fragment => fragment.text).join('\n');
+  expect(text).toContain('教学环节：初步应用');
+  expect(text).toContain('判断函数奇偶性');
+  expect(text).toContain('教师引导学生讨论');
+});
+
 test('浏览器：图片批次逐题检查公式与配图，修正后入库并刷新', async ({page}, info) => {
   await page.goto(world.origin);
   await page.getByLabel('邮箱', {exact:true}).fill(email);
