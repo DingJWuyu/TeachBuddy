@@ -31,9 +31,14 @@ test('设置导出课稿历史，离线取回正文公式及图片后保存刷�
   expect(upload.status, upload.text).toBe(201);
   const text = '旧稿独有：先观察图像，再讨论定义域。';
   const latex = 'y=\\frac{1}{x+3}';
-  const q = await call('POST', Q, { ...question('旧稿独有的例题'), body: doc('旧稿采用的题面') }, 201);
+  const picture = { type: 'image', fileId: upload.json.id, alt: '历史顺序配图', widthMm: 60 };
+  const q = await call('POST', Q, { ...question('旧稿独有的例题'),
+    body: { version: 2, blocks: [...doc('题干图片之前').blocks, picture, ...doc('题干图片之后').blocks] },
+    solution: { version: 2, blocks: [...doc('答案图片之前').blocks, picture, ...doc('答案图片之后').blocks] },
+    answerStatus: 'present',
+  }, 201);
   const original = await call('POST', base, {
-    title: '函数备课原稿', intro: doc(text), materials: [],
+    title: '函数备课原稿', intro: { version: 2, blocks: [...doc(text).blocks, picture, ...doc('开头图片之后').blocks] }, materials: [],
     sections: [{ id: randomUUID(), title: '旧稿的讲解环节', content: { version: 2, blocks: [
       { type: 'math', latex }, { type: 'image', fileId: upload.json.id, alt: '历史独有配图', widthMm: 60 },
     ] }, references: [{ id: randomUUID(), kind: 'question', questionId: q.id, questionVersion: q.version, note: '原稿讲解备注', afterBlock: 1 }] }],
@@ -95,6 +100,14 @@ test('设置导出课稿历史，离线取回正文公式及图片后保存刷�
     await expect(reader.getByRole('heading', { name: '函数备课原稿', exact: true })).toBeVisible();
     await expect(reader.getByRole('heading', { name: '旧稿的讲解环节', exact: true })).toBeVisible();
     await expect(reader.locator('body')).toContainText('原稿讲解备注');
+    await reader.screenshot({ path: info.outputPath('offline-order.png'), fullPage: true });
+    const readingOrder = locator => locator.locator('pre,img').evaluateAll(nodes => nodes.map(node => node.tagName === 'IMG' ? '[图片]' : node.textContent));
+    const intro = reader.getByRole('heading', { name: '开头文稿', exact: true }).locator('..');
+    expect(await readingOrder(intro)).toEqual([text, '[图片]', '开头图片之后']);
+    const adopted = reader.getByRole('heading', { name: '旧稿独有的例题 · 采用版本 1', exact: true }).locator('..');
+    expect((await readingOrder(adopted)).slice(0, 6)).toEqual([
+      '题干图片之前', '[图片]', '题干图片之后', '答案图片之前', '[图片]', '答案图片之后',
+    ]);
     copiedText = await reader.locator('pre').filter({ hasText: text }).first().innerText();
     copiedLatex = await reader.locator('pre').filter({ hasText: latex }).first().innerText();
     expect(copiedText.trim()).toBe(text);

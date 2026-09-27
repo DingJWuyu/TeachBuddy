@@ -33,8 +33,18 @@ async function prepare({ historyOnly = false } = {}) {
       ]),
     });
     assert.equal(upload.status, 201, upload.text);
+    const mixed = label => [
+      ...doc(`${label}图片之前`).blocks,
+      { type: "image", fileId: upload.json.id, alt: `${label}配图`, widthMm: 60 },
+      ...doc(`${label}图片之后`).blocks,
+    ];
     const input = question("用于备课的原题");
     input.body.blocks.push({ type: "image", fileId: upload.json.id, alt: "原题配图", widthMm: 60 });
+    if (historyOnly) {
+      input.body = { version: 2, blocks: mixed("题干") };
+      input.solution = { version: 2, blocks: mixed("答案") };
+      input.answerStatus = "present";
+    }
     const q = await call("POST", Q, input, 201);
     const copy = await call("POST", `${Q}/${q.id}/copies`, { ...writable(q), title: "独立改编题", baseVersion: q.version }, 201);
     const resourceRoot = "/api/modules/resources/items";
@@ -59,7 +69,13 @@ async function prepare({ historyOnly = false } = {}) {
         { ...materials[0], id: randomUUID(), note: "历史讲解备注", afterBlock: 1 },
         { id: randomUUID(), kind: "question", questionId: copy.id, questionVersion: copy.version, note: "", afterBlock: null },
       ] };
-    const original = await call("POST", lessons, { title: "采用材料的备课", intro: doc("第一稿"), sections: historyOnly ? [section] : [], materials }, 201);
+    const intro = historyOnly ? { version: 2, blocks: [
+      ...mixed("开头"),
+      { type: "list", role: "plain", items: [{ label: "1", blocks: mixed("列表") }] },
+      { type: "table", rows: [[{ blocks: mixed("单元格") }]] },
+      { type: "teacher-note", blocks: mixed("注记") },
+    ] } : doc("第一稿");
+    const original = await call("POST", lessons, { title: "采用材料的备课", intro, sections: historyOnly ? [section] : [], materials }, 201);
     const saved = await call("PUT", `${lessons}/${original.id}`, {
       baseVersion: original.version, title: original.title, intro: doc("第二稿"), sections: [], materials: historyOnly ? [] : materials,
     });
@@ -147,6 +163,11 @@ test("personal lesson history retains removed content, placements and files in o
     assert(html.includes("y=\\frac{1}{x+3}"));
     assert(html.indexOf("旧稿独有正文") < html.indexOf("历史讲解备注"));
     assert(html.indexOf("历史讲解备注") < html.indexOf("材料之后的讲解"));
+    for (const label of ["开头", "题干", "答案", "列表", "单元格", "注记"]) {
+      const before = html.indexOf(`${label}图片之前`), after = html.indexOf(`${label}图片之后`);
+      assert(before >= 0 && after > before, `${label}: missing ordered text`);
+      assert.match(html.slice(before, after), /<img\s/, `${label}: image must remain between the two text blocks`);
+    }
     assert(!html.includes('<script>alert("title")</script>'));
     assert(html.includes("&lt;script&gt;"));
     const index = await zip.file("index.html").async("string");

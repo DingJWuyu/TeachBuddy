@@ -83,7 +83,7 @@ ZIP 根含 `manifest.json`、`index.html`（纯静态、无脚本）、`data/` J
 
 每个 dataPath 保存 `{kind, value}` JSON。数学 revision、备课 `lesson-revision`、输出、Job 和 File 元数据独立列出；同对象历史键的 version 区分版本，日程使用 `ScheduleExport` 保存 Entry 和完整 Exception 数组。内部 armedAt/执行去重账本只进入部署备份，个人包能解释已保存日程与历史通知，不声称可重建内部执行账本。历史文件只按已保存的原稿/版本/快照关系标明归属，不为未记录的替换历史编造关联。
 
-备课历史按 `(lessonId, version)` 去重，保留公开课稿投影并附 `savedAt`，不打包数据库内部账户字段。当前课稿与同版本历史对象可并存，kind 不同；历史索引显示标题/版本/时间，并链接当前课稿和附件。历史正文按环节和材料位置阅读，公式保留可复制 LaTeX，完整版式以 JSON 为准；来源可用性是导出时状态，不冒充当时状态。归档课稿的历史纳入，超过保留上限或彻底删除的课稿历史不重建；导出不新增历史版本，已经下载的 ZIP 独立保留。验收见 `apps/api/test/reliability-material-snapshots.test.js` 和 `apps/web/e2e/lessons-portable.config.mjs`。
+备课历史按 `(lessonId, version)` 去重，保留公开课稿投影并附 `savedAt`，不打包数据库内部账户字段。当前课稿与同版本历史对象可并存，kind 不同；历史索引显示标题/版本/时间，并链接当前课稿和附件。历史正文按环节和材料位置阅读；开头文稿、题干和答案中的文字、公式源与图片保持原块及嵌套顺序，公式保留可复制 LaTeX，完整版式以 JSON 为准。来源可用性是导出时状态，不冒充当时状态。归档课稿的历史纳入，超过保留上限或彻底删除的课稿历史不重建；导出不新增历史版本，已经下载的 ZIP 独立保留。验收见 `apps/api/test/reliability-material-snapshots.test.js` 和 `apps/web/e2e/lessons-portable.config.mjs`。
 
 **导入策略确定为内容取回，不提供 ZIP 批量覆盖账户。** 同账户或另一账户都可手工将包内原文件经资源/收录入口重新上传、HTML 经数学入口导入、正文/公式复制到编辑器；新账户生成新 ID 和新归属，不沿包内 accountKey/ID 授权或恢复旧关联。UI 说明此限制。直接上传个人包到恢复命令必须因 kind 不符拒绝，部署备份也不能作为个人导入。整体原 ID/关系还原只由部署级恢复承担，满足“资料可带走”而不额外建设账户迁移平台。
 

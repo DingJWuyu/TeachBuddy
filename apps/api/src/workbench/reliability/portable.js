@@ -4,7 +4,7 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createHash } from "node:crypto";
-import { documentText, images } from "../../modules/questions/materials-content.js";
+import { documentText, walkBlocks } from "../../modules/questions/materials-content.js";
 import { validateArchive } from "./schema.js";
 import { createQuestionsRepository } from "../../modules/questions/repository.js";
 import { createMaterialsStore } from "../../modules/questions/materials-store.js";
@@ -105,13 +105,18 @@ function readableContent(value) {
 // formula sources use the existing extractor; full layout remains in JSON.
 function readableLesson(lesson, files) {
   function document(value) {
-    const pictures = images(value).map(id => {
-      const file = files.find(file => file.id === id);
-      if (!file) throw new Error("Saved lesson image is missing");
-      const href = `../${filePath(file).split("/").map(encodeURIComponent).join("/")}`;
-      return `<p><a href="${escape(href)}"><img src="${escape(href)}" alt="${escape(JSON.parse(file.metadata).name)}" style="max-width:100%;height:auto;max-height:480px"></a></p>`;
-    }).join("");
-    return readableContent(value) + pictures;
+    const parts = [];
+    walkBlocks(value.blocks, block => {
+      if (block.type === "image") {
+        const file = files.find(file => file.id === block.fileId);
+        if (!file) throw new Error("Saved lesson image is missing");
+        const href = `../${filePath(file).split("/").map(encodeURIComponent).join("/")}`;
+        parts.push(`${block.alt ? `<p>${escape(block.alt)}</p>` : ""}<p><a href="${escape(href)}"><img src="${escape(href)}" alt="${escape(block.alt || JSON.parse(file.metadata).name)}" style="max-width:100%;height:auto;max-height:480px"></a></p>`);
+      } else if (block.runs || block.type === "math") {
+        parts.push(readableContent({ version: value.version, blocks: [block] }));
+      }
+    });
+    return parts.join("");
   }
   function reference(ref) {
     const snapshot = ref.snapshot;
