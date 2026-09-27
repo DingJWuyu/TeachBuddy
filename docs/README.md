@@ -22,6 +22,7 @@
 
 | 当前问题 | 权威入口 |
 | --- | --- |
+| 新 session 负责哪个模块、遵守哪些原则、如何接手开发 | [模块开发约定](agents/module-development.md) |
 | 是否属于产品范围，术语指什么 | [产品范围](PRODUCT_SCOPE.md)、[领域词义](../CONTEXT.md) |
 | 页面外壳、辅助栏、跨模块往返如何工作 | [共同交互](WORKBENCH_DESIGN.md) |
 | UI 尺寸、动效、参考及浏览器验证如何处理 | [界面规则](rules/design-and-verification.md) |

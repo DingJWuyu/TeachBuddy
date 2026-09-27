@@ -53,3 +53,7 @@
 - `AGENTS.md` 可以追加内容；非用户明确指示，禁止改写或删除既有内容。
 - 非用户明确指示，禁止修改或删除 setup-matt-pocock-skills 规定的 `docs/agents/issue-tracker.md`、`docs/agents/triage-labels.md`、`docs/agents/domain.md`。
 - 整理文档以“人和 agent 能否更快找到唯一、准确、足够的信息，并且运行和验证链路仍然完整”为完成标准。按 `writing-for-agents` 使用渐进式披露：入口说明何时读什么，详细规则只在权威位置维护。
+
+## 模块 session 接手
+
+负责或接手业务模块时，必须先读[模块开发约定](docs/agents/module-development.md)，按接手流程确认职责、授权、工作树与本模块规格。用户只说“你负责某模块”也使用这个入口；当前 worktree、集成基线和暂停状态以[运行台账](docs/plans/run-state.md)为准。
