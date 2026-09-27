@@ -140,13 +140,13 @@ Word 输出是 DOCX；PDF 从同一过滤后内容和 DOCX 版式转换。页型
 
 ## 短任务与恢复
 
-只为页预览、提取、导出和题面素材这些长操作保存 Job。单进程中顺序执行重操作，UI 轮询 GET（运行时 2 秒，离页停止）；不用消息队列、分布式锁或通用工作流平台。progress.completed/total 按实际页/阶段统计，未知 total=null，不编造百分比。Job.target 不携带账户，账户由服务端持有。
+只为页预览、提取、页识别、导出和题面素材这些长操作保存 Job。单进程中顺序执行重操作，UI 轮询 GET（运行时 2 秒，离页停止）；不用消息队列、分布式锁或通用工作流平台。progress.completed/total 按实际页/阶段统计，未知 total=null，不编造百分比。Job.target 不携带账户，账户由服务端持有。
 
 queued → running → succeeded/partial/failed；停止请求立即持久进入 cancelling，安全检查点后 cancelled；进程重启时遗留 running → interrupted，cancelling → cancelled。partial 表示已有成功内容及明确未完成单元，succeeded 仅表示机器处理完成，收题仍需老师校对。输入损坏或全部失败为 failed。已落盘结果逐单元检查后继续，不能靠内存状态认定成功。
 
-retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择未完成单元，非空必须是该任务 issues 的 unitId。文件单元为 file:<UUID>:page:<N>，文字为 text:<start>:<end>；预览整体失败单元为 file:<UUID>。不得重跑已成功的付费单元；需要重新识别成功页时由老师明确发起新的收录。重试生成新 Job 并指向 attemptOf，旧任务保持；questions 更新 import.jobId 并增加版本后继续，exports 的原 ExportRecord 保留原 Job，新导出请求冻结同一或新备课版本。
+retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择未完成单元，非空必须是该任务 issues 的 unitId。文件提取单元为 file:<UUID>:page:<N>，文字为 text:<start>:<end>；预览整体失败单元为 file:<UUID>，共用页识别单元为 page:<N>。不得重跑已成功的付费单元；需要重新识别成功页时由老师明确发起新的收录。重试生成新 Job 并指向 attemptOf，旧任务保持；questions 更新 import.jobId 并增加版本后继续，exports 的原 ExportRecord 保留原 Job，新导出请求冻结同一或新备课版本。
 
-导出/素材失败用原入口和新键重新生成，retryJob 仅对 preview/extraction 开放，其他 kind 返回 job-not-retryable，避免一个 ExportRecord 指向多种含义。同键重放受理请求始终返回最初任务，之后 GET 当前状态。取消是持久停止意图；已终态则返回原终态，running 先返回 cancelling 并在安全检查点停止，最多保留已完成单元；外部调用迟到结果仅作为该任务证据保存，不重开任务。
+导出/素材失败用原入口和新键重新生成，retryJob 仅对 preview/extraction/recognition 开放，其他 kind 返回 job-not-retryable，避免一个 ExportRecord 指向多种含义。同键重放受理请求始终返回最初任务，之后 GET 当前状态。取消是持久停止意图；已终态则返回原终态，running 先返回 cancelling 并在安全检查点停止，最多保留已完成单元；外部调用迟到结果仅作为该任务证据保存，不重开任务。
 
 本地可重复的转换不涉及新增模型费，恢复可重试；Provider 已发出而无可验证输出时标 provider-result-unknown，后台不自动追加请求。老师在产品中明确点击重试才启动新的受理，部署运维另核准预算。设计 session 不新调模型。R33 在运行接入任务授权下补真实自动提取门槛，不能用此故障分支永久回退为手工录入。
 

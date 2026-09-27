@@ -7,11 +7,13 @@
 - `GET /api/workbench/files/:id/recognition?renditionFileId=...` 返回配置是否可用、固定来源和各页状态；GET 不受理识别。
 - `POST` 同一路径，正文 `{renditionFileId,pages}`，带现有请求保护和幂等键，返回持久受理的 `recognition` Job。
 - `GET /api/workbench/files/:id/recognition/pages/:page?renditionFileId=...` 读取这一份来源的机器结果。省略 rendition 只读当前预览；消费者应传入画面中固定的 rendition。
-- 取消与重试使用现有 Job 接口。`unitId` 为 `page:N`；空重试集合代表原请求全部未完成页。已成功页保持不变。重启将运行中页标为 interrupted，不自动重发。
+- 取消与重试使用现有 Job 接口。`unitId` 为 `page:N`；空重试集合代表原请求全部未完成页。已成功页保持不变。引擎修订变化后拒绝重试旧 Job，需要明确重新发起识别。重启将运行中页标为 interrupted，不自动重发。
 
 原件、rendition、页图均为同账户受管文件，且必须出现在已生成的固定预览映射中。尚无预览返回 `preview-required`；引擎不可用且需要新识别时返回 `recognition-unavailable`。前端保留原件和输入，显示可重试状态。其他账户的文件及结果返回 404。
 
 成功页按账户、页图字节摘要和引擎/转换修订复用。同像素的另一份上传可以复用结果，但返回 `location` 必须绑定本次请求原件、rendition 和绝对页号。模型输出的空页号、相对序号不能覆盖这个映射。活跃请求覆盖全部所选页时返回同一 Job；仍有其他页正在处理时返回 `job-running`，不静默改变选择。
+
+未配置引擎时，既有成功结果仍可读取。取消期间已经完整返回的原始结果和图片作为该 Job 的证据保存，不发布为 ready 或重开任务；请求记录绑定迟到产物，后续重试不能擦除这份绑定。
 
 ## 机器页结果
 

@@ -123,23 +123,34 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
       try {
         const output = await recognizer.run({ bytes: readBytes(principal, page.imageFileId), signal,
           width: page.width, height: page.height });
-        signal?.throwIfAborted();
+        // A completed late response is evidence, even after explicit cancel.
+        // Persist it before the cancellation checkpoint; never publish it ready.
+        if (!db.open) throw new Error('Recognition storage closed');
+        const savedAssets = new Map();
         const storeAsset = async (name, bytes) => {
-          signal?.throwIfAborted();
           return files.store(principal, { name, bytes }, { key: randomUUID(), method: 'POST', path: `/internal/recognition/${value.resultId}` });
         };
         const rawFile = await storeAsset('recognition.json', Buffer.from(JSON.stringify(output.raw)));
         value.rawFileId = rawFile.id;
-        const normalized = await normalizeRecognition({ result: output, storeAsset });
+        value.assetFileIds = [];
+        value.originalAssetFileIds = [];
+        for (const asset of output.assets ?? []) {
+          const saved = await storeAsset(asset.name, asset.bytes);
+          savedAssets.set(asset.name, saved);
+          value.assetFileIds.push(saved.id);
+        }
+        for (const asset of output.originalAssets ?? [])
+          value.originalAssetFileIds.push((await storeAsset(asset.name, asset.bytes)).id);
+        value.assetFileIds.push(...value.originalAssetFileIds);
+        value.derivations = output.derivations ?? [];
+        signal?.throwIfAborted();
+        const normalized = await normalizeRecognition({ result: output, storeAsset: async name => savedAssets.get(name) });
         if (!normalized.text.trim() && !normalized.assetFileIds.length)
           throw Object.assign(new Error('No recognized content'), { code: 'empty-response' });
         content.validate(principal, normalized.document);
-        const originalAssetFileIds = [];
-        for (const asset of output.originalAssets ?? [])
-          originalAssetFileIds.push((await storeAsset(asset.name, asset.bytes)).id);
         signal?.throwIfAborted();
         save(principal, { ...value, ...normalized, rawFileId: rawFile.id, state: 'ready',
-          assetFileIds: [...normalized.assetFileIds, ...originalAssetFileIds], originalAssetFileIds,
+          assetFileIds: value.assetFileIds, originalAssetFileIds: value.originalAssetFileIds,
           derivations: output.derivations ?? [] });
         return readPage(principal, input);
       } catch (error) {
@@ -171,9 +182,24 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
       const issues = [], outputFileIds = [];
       let completed = 0;
       for (const page of input.pages) {
-        signal.throwIfAborted();
-        const value = await ensurePage(principal, { ...input, page }, { signal, retry: true });
-        signal.throwIfAborted();
+        let value;
+        try {
+          signal.throwIfAborted();
+          value = await ensurePage(principal, { ...input, page }, { signal, retry: true });
+          signal.throwIfAborted();
+        } catch (error) {
+          if (!signal.aborted || !db.open) throw error;
+          const late = readPage(principal, { ...input, page });
+          if (late.rawFileId) {
+            input.lateResult = { page, rawFileId: late.rawFileId, assetFileIds: late.assetFileIds ?? [],
+              originalAssetFileIds: late.originalAssetFileIds ?? [], derivations: late.derivations ?? [] };
+            db.prepare('UPDATE materials_recognition_requests SET value=? WHERE jobId=? AND accountKey=?')
+              .run(JSON.stringify(input), job.id, principal.accountKey);
+            outputFileIds.push(late.rawFileId);
+          }
+          issues.push({ code: 'cancelled', unitId: `page:${page}`, field: null, detail: '识别已停止，返回的原始结果仅保留为任务证据。' });
+          return { state: outputFileIds.length ? 'partial' : 'failed', outputFileIds, issues };
+        }
         if (value.state === 'ready') outputFileIds.push(value.rawFileId);
         else issues.push({ code: 'conversion-failed', unitId: `page:${page}`, field: null, detail: '本页未完成识别，可重试。' });
         reportProgress({ completed: ++completed, total: input.pages.length, unit: 'pages' });
@@ -184,6 +210,7 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
       const row = db.prepare('SELECT value FROM materials_recognition_requests WHERE jobId=? AND accountKey=?').get(job.id, principal.accountKey);
       if (!row) throw contractError(problems.notFound());
       const input = JSON.parse(row.value), frozen = source(principal, input);
+      if (input.revision !== revision) throw materialsError('job-not-retryable', 409, '', '识别环境已变更，请重新发起识别。');
       const existing = latestRequest(principal, frozen);
       if (existing && active.has(existing.job.state)) throw materialsError('job-running', 409);
       if (!available) throw materialsError('recognition-unavailable', 503);

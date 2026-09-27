@@ -10,14 +10,14 @@ import { backup, restore, activate } from '../src/workbench/reliability/backup.j
 
 const base = "/api/workbench/files";
 const image = fs.readFileSync(new URL("../../web/e2e/fixtures/materials-questions/figure.png", import.meta.url));
-async function upload(client, name = "scan.png") {
+async function upload(client, name = "scan.png", bytes = image) {
   const boundary = `ocr-${randomUUID()}`;
   const response = await client.request("POST", base, {
     headers: { "Idempotency-Key": randomUUID() },
     contentType: `multipart/form-data; boundary=${boundary}`,
     rawBody: Buffer.concat([
       Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${name}"\r\nContent-Type: image/png\r\n\r\n`),
-      image, Buffer.from(`\r\n--${boundary}--\r\n`),
+      bytes, Buffer.from(`\r\n--${boundary}--\r\n`),
     ]),
   });
   assert.equal(response.status, 201, response.text);
@@ -116,7 +116,7 @@ test("real-auth page recognition replays acceptance, shares completed pixels and
 
 test("recognition failure and cancellation need explicit retry; service restart never resends a page", async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "materials-recognition-recovery-"));
-  let mode = "fail", calls = 0, entered;
+  let mode = "fail", calls = 0, entered, releaseLate;
   const recognizer = { revision: "integration-recovery-1", async run({ signal }) {
     calls++;
     entered?.();
@@ -125,7 +125,8 @@ test("recognition failure and cancellation need explicit retry; service restart 
       signal.addEventListener("abort", () => reject(signal.reason), { once: true });
       if (signal.aborted) reject(signal.reason);
     });
-    return machinePage();
+    if (mode === 'late') await new Promise(resolve => { releaseLate = resolve; });
+    return { ...machinePage(), assets: mode === 'late' ? [{ name: 'late-image.png', bytes: image }] : [] };
   } };
   let world, passed = false;
   try {
@@ -150,6 +151,22 @@ test("recognition failure and cancellation need explicit retry; service restart 
     assert.equal((await waitJob(client, retry.json.id)).state, "cancelled");
     assert.equal(calls, 2);
 
+    mode = 'late';
+    started = new Promise(resolve => { entered = resolve; });
+    const late = await write(client, endpoint, body);
+    await started;
+    await write(client, `/api/workbench/jobs/${late.json.id}/cancel`, {});
+    releaseLate();
+    const stopped = await waitJob(client, late.json.id);
+    assert.equal(stopped.state, 'cancelled');
+    assert.equal(stopped.outputFileIds.length, 1, 'late raw output is retained without reopening the job');
+    const evidence = JSON.parse(world.workbench.db.prepare('SELECT value FROM materials_recognition_requests WHERE jobId=?').get(late.json.id).value).lateResult;
+    assert.equal(evidence.assetFileIds.length, 1);
+    assert.equal((await client.request('GET', `${base}/${evidence.rawFileId}/content`)).status, 200);
+    assert.equal((await client.request('GET', `${base}/${evidence.assetFileIds[0]}/content`)).status, 200);
+    assert.equal((await client.request('GET', `${endpoint}/pages/1${query}`)).json.state, 'interrupted');
+
+    mode = 'wait';
     started = new Promise(resolve => { entered = resolve; });
     const interrupted = await write(client, endpoint, body);
     await started;
@@ -163,13 +180,50 @@ test("recognition failure and cancellation need explicit retry; service restart 
     client.jar = jar;
     assert.equal((await client.request("GET", `/api/workbench/jobs/${interrupted.json.id}`)).json.state, "interrupted");
     assert.equal((await client.request("GET", `${endpoint}/pages/1${query}`)).json.state, "interrupted");
-    assert.equal(calls, 3);
+    assert.equal(calls, 4);
     mode = "success";
     const resumed = await write(client, `/api/workbench/jobs/${interrupted.json.id}/retry`, { unitIds: [] });
     assert.equal(resumed.status, 202, resumed.text);
     assert.equal((await waitJob(client, resumed.json.id)).state, "succeeded");
-    assert.equal(calls, 4);
+    assert.equal(calls, 5);
     assert.equal((await client.request("GET", `${endpoint}/pages/1${query}`)).json.state, "ready");
+    passed = true;
+  } finally {
+    await world?.close();
+    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('retrying a partial job after an engine revision change preserves the original successful page', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'materials-recognition-revision-'));
+  let calls = 0, passed = false, world;
+  const recognizer = { revision: 'revision-1', async run() {
+    if (++calls === 2) throw new Error('Second page failed');
+    return machinePage();
+  } };
+  try {
+    world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
+    let { client } = await registerMath(world, 'recognition-revision@example.test');
+    const pdf = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/P.pdf', import.meta.url));
+    const file = await upload(client, 'two-pages.pdf', pdf), source = await preview(client, file);
+    const endpoint = `${base}/${file.id}/recognition`, query = `?renditionFileId=${source.renditionFileId}`;
+    const accepted = await write(client, endpoint, { renditionFileId: source.renditionFileId, pages: [1, 2] });
+    assert.equal((await waitJob(client, accepted.json.id)).state, 'partial');
+    const original = (await client.request('GET', `${endpoint}/pages/1${query}`)).json;
+    assert.equal(original.state, 'ready');
+    const jar = client.jar;
+    await world.close();
+    world = null;
+    recognizer.revision = 'revision-2';
+    world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
+    client = world.client();
+    client.jar = jar;
+    const retry = await write(client, `/api/workbench/jobs/${accepted.json.id}/retry`, { unitIds: [] });
+    assert.equal(retry.status, 409, retry.text);
+    assert.equal(retry.json.type, '/problems/materials/job-not-retryable');
+    assert.equal(calls, 2, 'an old request cannot silently rerun its successful pages on a new engine');
+    const stored = JSON.parse(world.workbench.db.prepare('SELECT value FROM materials_recognition_results WHERE id=?').get(original.resultId).value);
+    assert.deepEqual(stored.document, original.document);
     passed = true;
   } finally {
     await world?.close();

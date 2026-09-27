@@ -336,9 +336,19 @@ export async function normalizeRecognition({ result, storeAsset }) {
         } else if (node.children) {
           for (const child of node.children) await visit(child);
         } else {
+          const original = sourceOf(node);
+          const unparsedMath = /\\(?!n(?:\W|$))[A-Za-z]+|\\[{}]|[_^]\{/.test(
+            original,
+          );
+          // Markdown decodes escapes in text nodes, including LaTeX braces
+          // and row separators. Keep uncertain math as literal source.
           const text =
-            node.type === "break" ? "\n" : (node.value ?? sourceOf(node));
-          if (/\\(?!n(?:\W|$))[A-Za-z]+|[_^]\{/.test(text))
+            node.type === "break"
+              ? "\n"
+              : node.type === "text" && unparsedMath
+                ? original
+                : (node.value ?? original);
+          if (unparsedMath)
             issue(
               "unparsed-math",
               "文字中含未加数学定界符的 LaTeX，已保留原文字，请核对公式。",
