@@ -763,6 +763,102 @@
   flex: none;
   min-width: 0;
 }
+.res-recognition-presence {
+  flex: none;
+  min-width: 0;
+}
+.res-recognition {
+  border-bottom: 1px solid var(--res-line);
+  padding: 12px 16px;
+  font-size: 13px;
+}
+.res-recognition header,
+.res-recognition-actions,
+.res-recognition-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.res-recognition header {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.res-recognition header > div {
+  min-width: 0;
+}
+.res-recognition header strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.res-recognition p {
+  margin: 4px 0 8px;
+  color: var(--res-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.res-recognition-actions,
+.res-recognition-error {
+  flex-wrap: wrap;
+}
+.res-recognition-actions {
+  margin: 4px 0 8px;
+}
+.res-recognition-error {
+  margin: 8px 0;
+  color: var(--res-ink);
+  overflow-wrap: anywhere;
+}
+.res-recognition .res-icon-button {
+  flex: none;
+}
+.res-recognition-body {
+  max-height: 32vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 4px 2px;
+}
+.res-recognition-document {
+  min-width: 0;
+  outline-offset: -2px;
+}
+.res-recognition-document .wb-paragraph {
+  margin: 0;
+  color: var(--res-ink);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.res-recognition-document :is(h2, h3, h4) {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.res-recognition-body .wb-module-disclosure {
+  margin-top: 8px;
+}
+.res-recognition .res-recognition-text {
+  display: block;
+  width: 100%;
+  height: 140px;
+  max-height: 22vh;
+  min-height: 70px;
+  padding: 10px 12px;
+  border: 1px solid var(--res-line);
+  border-radius: 8px;
+  background: var(--app-surface, #fff);
+  color: var(--res-ink);
+  font: inherit;
+  line-height: 1.7;
+  resize: vertical;
+  box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  .res-recognition {
+    padding: 10px 12px;
+  }
+  .res-recognition .res-recognition-text {
+    height: 120px;
+  }
+}
 .res-page-find {
   display: flex;
   flex-wrap: wrap;

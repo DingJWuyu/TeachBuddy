@@ -21,7 +21,7 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
             )
           : method === "POST"
             ? new RegExp(
-                `^/api/(?:workbench/(?:files(?:/${id}/preview)?|jobs/${id}/retry)|modules/resources/(?:search/retry|items(?:/organize|/${id}/(?:deletion|purge|restore-file))?))$`,
+                `^/api/(?:workbench/(?:files(?:/${id}/(?:preview|recognition))?|jobs/${id}/(?:retry|cancel))|modules/resources/(?:search/retry|items(?:/organize|/${id}/(?:deletion|purge|restore-file))?))$`,
               )
             : null;
       if (

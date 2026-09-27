@@ -23,10 +23,11 @@ export function createResourcesModule({
   mutations,
   files,
   jobs,
+  recognition,
   now = () => new Date().toISOString(),
 }) {
   const history = createResourceHistory(db, files);
-  const textSearch = createResourceTextSearch({ db, files, jobs });
+  const textSearch = createResourceTextSearch({ db, files, jobs, recognition });
   const getRow = db.prepare(
     "SELECT value FROM resource_items WHERE accountKey=? AND id=?",
   );

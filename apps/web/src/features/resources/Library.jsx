@@ -357,13 +357,31 @@ export function Library({
             {searchInfo.unavailable > 0 && (
               <span>
                 {searchInfo.unavailable}{" "}
-                份资料暂无可检索正文，仍可按名称和备注查找。
+                份资料暂无可直接提取的文字，扫描内容可在预览中识别。
               </span>
             )}
             {searchInfo.failed > 0 && (
               <span>
                 {searchInfo.failed} 份资料正文读取失败。
                 <button onClick={onRetrySearch}>重新读取正文</button>
+              </span>
+            )}
+            {searchInfo.ocr?.pendingPages > 0 && (
+              <span>
+                正在识别 {searchInfo.ocr.pendingPages}{" "}
+                页，已完成页面会加入搜索结果。
+              </span>
+            )}
+            {searchInfo.ocr?.unprocessedPages > 0 && (
+              <span>
+                {searchInfo.ocr.unprocessedPages}{" "}
+                页尚无可检索文字，可打开资料后识别。
+              </span>
+            )}
+            {searchInfo.ocr?.failedPages > 0 && (
+              <span>
+                {searchInfo.ocr.failedPages}{" "}
+                页识别未完成，已完成页面仍可检索；可在预览中重试。
               </span>
             )}
           </div>
@@ -471,7 +489,7 @@ export function Library({
                 />
               </span>
               <h2>
-                {loading || searchInfo?.pending
+                {loading || searchInfo?.pending || searchInfo?.ocr?.pendingPages
                   ? "正在读取资料"
                   : searchInfo?.interrupted
                     ? "暂时无法完成检索"
@@ -484,13 +502,15 @@ export function Library({
               {!loading && (
                 <>
                   <p>
-                    {searchInfo?.interrupted
-                      ? "请继续检索，补充尚未读取的结果。"
-                      : filtered
-                        ? "试试其他关键词，或清除筛选条件。"
-                        : deleted
-                          ? "归档的资料会出现在这里，可以恢复或彻底删除。"
-                          : "上传课件、文档或图片，随时预览，也可以加入备课。"}
+                    {searchInfo?.pending || searchInfo?.ocr?.pendingPages
+                      ? "正在补充正文搜索结果，请稍候。"
+                      : searchInfo?.interrupted
+                        ? "请继续检索，补充尚未读取的结果。"
+                        : filtered
+                          ? "试试其他关键词，或清除筛选条件。"
+                          : deleted
+                            ? "归档的资料会出现在这里，可以恢复或彻底删除。"
+                            : "上传课件、文档或图片，随时预览，也可以加入备课。"}
                   </p>
                   {filtered ? (
                     <button onClick={clear}>清除筛选</button>

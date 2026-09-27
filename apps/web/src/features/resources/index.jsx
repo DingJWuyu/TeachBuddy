@@ -1,4 +1,10 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useScene } from "../workbench/useScene.js";
 import { useForegroundRefresh } from "../workbench/useForegroundRefresh.js";
@@ -56,10 +62,14 @@ function ResourceWorkspace({
   }, []);
   const client = useMemo(
     () =>
-      createResourcesClient(transport, () => controller.current.signal, () => {
-        controller.current.abort();
-        shell.notifyIdentityLost?.();
-      }),
+      createResourcesClient(
+        transport,
+        () => controller.current.signal,
+        () => {
+          controller.current.abort();
+          shell.notifyIdentityLost?.();
+        },
+      ),
     [transport, controller],
   );
   const [scene, patchScene] = useScene(shell.accountKey, "resources", {
@@ -79,6 +89,7 @@ function ResourceWorkspace({
     supplement: null,
     libraryPanelOpen: false,
     filtersOpen: false,
+    recognitionOpen: false,
   });
   const sceneRef = useRef(scene);
   sceneRef.current = scene;
@@ -106,6 +117,7 @@ function ResourceWorkspace({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [organize, setOrganize] = useState(null);
   const listRef = useRef(null),
+    opening = useRef(0),
     triggerRef = useRef(null),
     pendingRef = useRef(null),
     busyRef = useRef(false),
@@ -134,7 +146,8 @@ function ResourceWorkspace({
         }
       })
       .catch(() => {
-        if (!signal.aborted) setError("无法保存恢复记录，请允许浏览器存储后重试");
+        if (!signal.aborted)
+          setError("无法保存恢复记录，请允许浏览器存储后重试");
       });
   }, [shell.accountKey]);
   useEffect(() => {
@@ -150,19 +163,25 @@ function ResourceWorkspace({
       if (!active) return;
       setItems(list.items);
       setSearchInfo(list.search ?? null);
-      if (list.search?.pending)
-        searchTimer = setTimeout(async () => {
-          try {
-            receiveSearch(await client.request(`${root}/items?${query}`));
-          } catch (e) {
-            if (active)
-              setSearchInfo((current) => ({
-                ...current,
-                pending: 0,
-                interrupted: true,
-              }));
-          }
-        }, 800);
+      if (list.search?.pending || list.search?.ocr?.pendingPages)
+        searchTimer = setTimeout(
+          async () => {
+            try {
+              receiveSearch(await client.request(`${root}/items?${query}`));
+            } catch (e) {
+              if (active)
+                setSearchInfo((current) => ({
+                  ...current,
+                  pending: 0,
+                  ...(current?.ocr
+                    ? { ocr: { ...current.ocr, pendingPages: 0 } }
+                    : {}),
+                  interrupted: true,
+                }));
+            }
+          },
+          list.search?.ocr?.pendingPages ? 2000 : 800,
+        );
     };
     Promise.all([
       client.request(`${root}/items?${query}`),
@@ -388,6 +407,21 @@ function ResourceWorkspace({
           refresh();
           break;
         }
+        if (record.purpose?.startsWith("recognition")) {
+          if (!value.id || value.kind !== "recognition" || !value.state)
+            throw Object.assign(new Error("识别请求结果未确认"), {
+              unknown: true,
+            });
+          await remember(null);
+          setMessage(
+            record.purpose === "recognition-cancel"
+              ? "已请求停止识别，已完成页面会保留"
+              : "已受理文字识别",
+          );
+          setConflict(null);
+          refresh();
+          break;
+        }
         if (
           record.purpose === "purge"
             ? value.permanentlyDeleted !== true || !value.id
@@ -501,7 +535,7 @@ function ResourceWorkspace({
         setError(e.message);
         setDialog(null);
         if (e.unknown) setAddToLesson(null);
-        if (e.status === 409) {
+        if (e.status === 409 && !record.purpose?.startsWith("recognition")) {
           setConflict({ record });
           refresh();
         }
@@ -618,10 +652,33 @@ function ResourceWorkspace({
     }
     if (next && !controller.current.signal.aborted) await execute(next);
   }
-  function open(id, event) {
+  async function open(id, event) {
+    const request = ++opening.current;
     triggerRef.current = event?.currentTarget;
     const match = searchInfo?.matches[id];
-    const resource = allItems.find((entry) => entry.id === id);
+    let resource = allItems.find((entry) => entry.id === id);
+    if (match?.recognition) {
+      try {
+        resource = await client.request(`${root}/items/${id}`);
+        const source = resource.supplementPreviewFileId || resource.fileId;
+        const preview = await client.request(
+          `/api/workbench/files/${source}/preview`,
+        );
+        if (request !== opening.current) return;
+        const location = match.recognition.location;
+        if (
+          source !== location.fileId ||
+          preview.renditionFileId !== location.renditionFileId
+        )
+          throw new Error("资料文件已更新，请在最新搜索结果中重新打开。");
+      } catch (error) {
+        if (request === opening.current) {
+          setError(error.message);
+          refresh();
+        }
+        return;
+      }
+    }
     if (match?.page && resource) {
       const fileId = resource.supplementPreviewFileId || resource.fileId;
       patchScene((current) => ({
@@ -634,6 +691,7 @@ function ResourceWorkspace({
     }
     patchScene({
       openId: id,
+      recognitionOpen: Boolean(match?.recognition),
       libraryPanelOpen: Boolean(
         shell.isPanelOpen && shell.panelMode === "resource-taxonomy",
       ),
@@ -644,7 +702,8 @@ function ResourceWorkspace({
     setMessage("");
   }
   function close(removed = false) {
-    patchScene({ openId: null });
+    opening.current++;
+    patchScene({ openId: null, recognitionOpen: false });
     if (!shell.isPanelOpen || shell.panelMode === "resource-taxonomy") {
       if (scene.libraryPanelOpen) shell.openPanel?.("resource-taxonomy");
       else if (shell.isPanelOpen) shell.closePanel?.();
@@ -1054,6 +1113,15 @@ function ResourceWorkspace({
                 key={previewId}
                 client={client}
                 fileId={previewId}
+                recognitionOpen={scene.recognitionOpen}
+                onRecognitionOpen={(open) =>
+                  patchScene({ recognitionOpen: open })
+                }
+                recognitionRevision={revision}
+                onRecognitionWrite={(path, input, purpose) =>
+                  write(path, input, purpose, "POST")
+                }
+                recognitionDisabled={disabled}
                 page={page}
                 scrollPosition={scene.previewScroll?.[`${previewId}:${page}`]}
                 onScrollPosition={(position) =>

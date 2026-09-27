@@ -34,7 +34,7 @@ function excerpt(text, offset, length) {
 
 // Cache only immutable file text, not resource membership or search results.
 // The resource's current file/supplement and filters are resolved on every read.
-export function createResourceTextSearch({ db, files, jobs }) {
+export function createResourceTextSearch({ db, files, jobs, recognition }) {
   const cached = db.prepare(
     "SELECT value FROM resource_text_cache WHERE accountKey=? AND fileId=?",
   );
@@ -50,23 +50,26 @@ export function createResourceTextSearch({ db, files, jobs }) {
     try {
       const id = item.supplementPreviewFileId || item.fileId;
       const file = files.read(principal, id);
-      if (["application/pdf", "text/plain"].includes(file.mediaType))
-        return { id, paged: file.mediaType === "application/pdf" };
       const preview = files.preview(principal, id);
+      const ocrSource = preview.renditionFileId
+        ? { fileId: id, renditionFileId: preview.renditionFileId }
+        : null;
+      if (["application/pdf", "text/plain"].includes(file.mediaType))
+        return { id, paged: file.mediaType === "application/pdf", ocrSource };
       if (
         preview.renditionFileId &&
         files.read(principal, preview.renditionFileId).mediaType ===
           "application/pdf"
       )
-        return { id: preview.renditionFileId, paged: true };
+        return { id: preview.renditionFileId, paged: true, ocrSource };
       if (
         preview.jobId &&
         ["queued", "running", "cancelling"].includes(
           jobs?.get(principal, preview.jobId).state,
         )
       )
-        return { state: "pending" };
-      return { state: "unavailable" };
+        return { state: "pending", ocrSource };
+      return { state: "unavailable", ocrSource };
     } catch (error) {
       if (![404, 503].includes(error.status)) throw error;
       return { state: "failed" };
@@ -113,6 +116,8 @@ export function createResourceTextSearch({ db, files, jobs }) {
       );
       if (missing) await extract(principal, missing.id);
       const search = { pending: 0, unavailable: 0, failed: 0, matches: {} };
+      if (recognition)
+        search.ocr = { pendingPages: 0, unprocessedPages: 0, failedPages: 0 };
       const needle = normalize(query);
       const result = items.filter((item) => {
         const metadataMatches = normalize(
@@ -121,18 +126,54 @@ export function createResourceTextSearch({ db, files, jobs }) {
         const entry = sources.get(item.id);
         const value = entry.id ? read(principal, entry.id) : entry;
         const state = value?.state || "pending";
-        if (state !== "ready") {
-          search[state]++;
-          return metadataMatches;
+        if (state !== "ready") search[state]++;
+        const pages = (value?.pages ?? []).map((text, index) => ({
+          page: entry.paged ? index + 1 : null,
+          text,
+        }));
+        if (recognition && entry.ocrSource) {
+          try {
+            const summary = recognition.get(principal, entry.ocrSource);
+            for (const page of summary.pages) {
+              if (["queued", "running", "cancelling"].includes(page.state))
+                search.ocr.pendingPages++;
+              else if (["failed", "interrupted"].includes(page.state))
+                search.ocr.failedPages++;
+              else if (
+                page.state === "unprocessed" &&
+                !value?.pages?.[page.page - 1]?.trim()
+              )
+                search.ocr.unprocessedPages++;
+              if (page.state !== "ready") continue;
+              const recognized = recognition.readPage(principal, {
+                ...entry.ocrSource,
+                page: page.page,
+              });
+              pages.push({
+                page: page.page,
+                text: recognized.text,
+                recognition: {
+                  resultId: recognized.resultId,
+                  location: recognized.location,
+                },
+              });
+            }
+          } catch {
+            // A broken OCR result must not hide this file's native text or
+            // prevent other resources from being searched.
+            search.failed += state === "failed" ? 0 : 1;
+          }
         }
-        for (const [index, text] of value.pages.entries()) {
-          const display = readable(text);
+        pages.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
+        for (const page of pages) {
+          const display = readable(page.text);
           const normalized = normalize(display);
           const offset = normalized.indexOf(needle);
           if (offset < 0) continue;
           search.matches[item.id] = {
-            page: entry.paged ? index + 1 : null,
+            page: page.page,
             excerpt: excerpt(display, offset, needle.length),
+            ...(page.recognition ? { recognition: page.recognition } : {}),
           };
           return true;
         }

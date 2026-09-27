@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "../workbench/chrome/icons.jsx";
 import { PdfText } from "./PdfText.jsx";
 import { PageFind } from "./PageFind.jsx";
+import { Recognition } from "./Recognition.jsx";
 export function FileImage({ client, id, alt, ...props }) {
   const [url, setUrl] = useState(""),
     [error, setError] = useState("");
@@ -41,6 +42,11 @@ export function Preview({
   scrollPosition,
   onScrollPosition,
   onSupplement,
+  recognitionOpen = false,
+  onRecognitionOpen,
+  recognitionRevision,
+  onRecognitionWrite,
+  recognitionDisabled,
 }) {
   const [preview, setPreview] = useState(null),
     [job, setJob] = useState(null),
@@ -51,10 +57,15 @@ export function Preview({
   const [copyMessage, setCopyMessage] = useState("");
   const [findOpen, setFindOpen] = useState(false);
   const findButton = useRef(null);
+  const recognitionButton = useRef(null);
   const [loadedImage, setLoadedImage] = useState(null);
   function closeFind() {
     setFindOpen(false);
     findButton.current?.focus();
+  }
+  function closeRecognition() {
+    onRecognitionOpen?.(false);
+    recognitionButton.current?.focus();
   }
   useEffect(() => {
     setText({ state: "loading", text: "" });
@@ -155,12 +166,13 @@ export function Preview({
       onKeyDown={(event) => {
         if (
           event.key === "Escape" &&
-          findOpen &&
+          (findOpen || recognitionOpen) &&
           !event.nativeEvent.isComposing
         ) {
           event.preventDefault();
           event.stopPropagation();
-          closeFind();
+          if (findOpen) closeFind();
+          else closeRecognition();
         }
       }}
     >
@@ -239,10 +251,33 @@ export function Preview({
             type="button"
             ref={findButton}
             aria-expanded={findOpen}
-            onClick={() => (findOpen ? closeFind() : setFindOpen(true))}
+            onClick={() => {
+              if (findOpen) closeFind();
+              else {
+                onRecognitionOpen?.(false);
+                setFindOpen(true);
+              }
+            }}
           >
             <Icon name="search" size={16} />
             查找本页
+          </button>
+        )}
+        {current && preview?.renditionFileId && onRecognitionWrite && (
+          <button
+            type="button"
+            ref={recognitionButton}
+            aria-expanded={recognitionOpen}
+            onClick={() => {
+              if (recognitionOpen) closeRecognition();
+              else {
+                setFindOpen(false);
+                onRecognitionOpen?.(true);
+              }
+            }}
+          >
+            <Icon name="file" size={16} />
+            识别文字
           </button>
         )}
         {text.state === "ready" && (
@@ -267,6 +302,19 @@ export function Preview({
           </button>
         )}
       </div>
+      {current && preview?.renditionFileId && onRecognitionWrite && (
+        <Recognition
+          open={recognitionOpen}
+          client={client}
+          fileId={fileId}
+          renditionFileId={preview.renditionFileId}
+          page={current.page}
+          revision={recognitionRevision}
+          onWrite={onRecognitionWrite}
+          disabled={recognitionDisabled}
+          onClose={closeRecognition}
+        />
+      )}
       <PageFind
         open={findOpen}
         source={`${preview?.renditionFileId}:${current?.page}`}
@@ -276,7 +324,7 @@ export function Preview({
         onClose={closeFind}
       />
       {((copyMessage && copyMessage !== "本页文字已复制") ||
-        text.state === "empty" ||
+        (text.state === "empty" && !recognitionOpen) ||
         text.state === "failed") && (
         <div className="res-text-status" role="status">
           {copyMessage ||
