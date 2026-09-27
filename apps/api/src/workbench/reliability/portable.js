@@ -191,6 +191,10 @@ export function takeSnapshot(db, principal, loader) {
     ),
     recognitionResults: rows('materials_recognition_results').map(row => JSON.parse(row.value)),
     recognitionRequests: rows('materials_recognition_requests').map(row => ({ jobId: row.jobId, ...JSON.parse(row.value) })),
+    questionRecognitionEvidence: rows('questions_materials_tasks').map(row => {
+      const task = JSON.parse(row.value);
+      return { jobId: row.id, importId: task.importId, lateResults: task.lateResults ?? {} };
+    }).filter(task => Object.keys(task.lateResults).length),
     lessonExportSnapshots: rows("lesson_exports").map((row) => ({
       id: row.id,
       snapshot: JSON.parse(row.snapshot),

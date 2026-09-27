@@ -125,6 +125,7 @@ function contentSchemas(db) {
     lesson_references: ["snapshot"],
     lesson_history: ["snapshot"],
     questions_materials_imports: ["value"],
+    questions_materials_tasks: ["value"],
     resource_items: ["value"],
     math_works: ["value"],
     lesson_exports: ["record", "snapshot"],
