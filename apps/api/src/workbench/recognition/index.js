@@ -156,8 +156,11 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
           derivations: output.derivations ?? [] });
         return readPage(principal, input);
       } catch (error) {
-        if (db.open) save(principal, { ...value, state: signal?.aborted ? 'interrupted' : 'failed',
-          issues: [{ code: signal?.aborted ? 'interrupted' : error.code ?? 'recognition-failed', detail: '本页未完成识别，原稿仍保留。' }] });
+        const cleanupFailed = error?.code === 'recognition-cleanup';
+        if (db.open) save(principal, { ...value, state: signal?.aborted && !cleanupFailed ? 'interrupted' : 'failed',
+          issues: [{ code: cleanupFailed ? error.code : signal?.aborted ? 'interrupted' : error.code ?? 'recognition-failed',
+            detail: cleanupFailed ? '尚未确认识别进程停止，请稍后重试。' : '本页未完成识别，原稿仍保留。' }] });
+        if (cleanupFailed) throw error;
         if (signal?.aborted) throw signal.reason;
         return readPage(principal, input);
       }
@@ -190,6 +193,7 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
           value = await ensurePage(principal, { ...input, page }, { signal, retry: true });
           signal.throwIfAborted();
         } catch (error) {
+          if (error?.code === 'recognition-cleanup') throw error;
           if (!signal.aborted || !db.open) throw error;
           const late = readPage(principal, { ...input, page });
           if (late.rawFileId) {

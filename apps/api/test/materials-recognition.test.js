@@ -152,8 +152,9 @@ test("recognition failure and cancellation need explicit retry; service restart 
     calls++;
     entered?.();
     if (mode === "fail") throw new Error("Model unavailable");
-    if (mode === "wait") await new Promise((resolve, reject) => {
-      signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+    if (mode === "wait" || mode === 'cleanup-failure') await new Promise((resolve, reject) => {
+      signal.addEventListener("abort", () => reject(mode === 'cleanup-failure'
+        ? Object.assign(new Error('Scope stop failed'), { code: 'recognition-cleanup' }) : signal.reason), { once: true });
       if (signal.aborted) reject(signal.reason);
     });
     if (mode === 'late') await new Promise(resolve => { releaseLate = resolve; });
@@ -197,6 +198,16 @@ test("recognition failure and cancellation need explicit retry; service restart 
     assert.equal((await client.request('GET', `${base}/${evidence.assetFileIds[0]}/content`)).status, 200);
     assert.equal((await client.request('GET', `${endpoint}/pages/1${query}`)).json.state, 'interrupted');
 
+    mode = 'cleanup-failure';
+    started = new Promise(resolve => { entered = resolve; });
+    const cleanup = await write(client, endpoint, body);
+    await started;
+    await write(client, `/api/workbench/jobs/${cleanup.json.id}/cancel`, {});
+    const unresolved = await waitJob(client, cleanup.json.id);
+    assert.equal(unresolved.state, 'failed', 'unconfirmed cleanup never claims cancellation completed');
+    assert.match(unresolved.issues[0].detail, /尚未确认识别进程停止/);
+    assert.equal((await client.request('GET', `${endpoint}/pages/1${query}`)).json.issues[0].code, 'recognition-cleanup');
+
     mode = 'wait';
     started = new Promise(resolve => { entered = resolve; });
     const interrupted = await write(client, endpoint, body);
@@ -211,12 +222,12 @@ test("recognition failure and cancellation need explicit retry; service restart 
     client.jar = jar;
     assert.equal((await client.request("GET", `/api/workbench/jobs/${interrupted.json.id}`)).json.state, "interrupted");
     assert.equal((await client.request("GET", `${endpoint}/pages/1${query}`)).json.state, "interrupted");
-    assert.equal(calls, 4);
+    assert.equal(calls, 5);
     mode = "success";
     const resumed = await write(client, `/api/workbench/jobs/${interrupted.json.id}/retry`, { unitIds: [] });
     assert.equal(resumed.status, 202, resumed.text);
     assert.equal((await waitJob(client, resumed.json.id)).state, "succeeded");
-    assert.equal(calls, 5);
+    assert.equal(calls, 6);
     assert.equal((await client.request("GET", `${endpoint}/pages/1${query}`)).json.state, "ready");
     passed = true;
   } finally {

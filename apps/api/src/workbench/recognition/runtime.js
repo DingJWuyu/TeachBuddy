@@ -117,7 +117,7 @@ async function runWorker(args, unit, output, signal) {
     });
     child.once("close", async code => {
       clear();
-      try { await stopScope(unit); } catch (error) { reject(error); return; }
+      try { await stopScope(unit); } catch (error) { error.scope = unit; reject(error); return; }
       if (signal?.aborted) {
         // A completed page may arrive just before cancellation. Let the owner
         // retain the evidence while deciding whether the request is cancelled.
@@ -166,6 +166,7 @@ export function createRecognizer({ home } = {}) {
   } catch { return null; }
   const revision = "paddleocr-vl-1.6/document-1";
   let running = false;
+  let pendingScope;
   return {
     revision,
     async run({ bytes, signal, width, height }) {
@@ -179,6 +180,12 @@ export function createRecognizer({ home } = {}) {
       let work;
       let safeToRemove = true;
       try {
+        // A previous cleanup failure must be resolved before admitting another
+        // model process. Retry only on an explicit caller request.
+        if (pendingScope) {
+          await stopScope(pendingScope);
+          pendingScope = undefined;
+        }
         await checkResources(directory, signal);
         signal?.throwIfAborted();
         const workRoot = path.join(directory, "work");
@@ -203,7 +210,11 @@ export function createRecognizer({ home } = {}) {
           width, height,
         };
       } catch (error) {
-        if (error?.code === "recognition-cleanup") safeToRemove = false;
+        if (error?.code === "recognition-cleanup") {
+          safeToRemove = false;
+          pendingScope = error.scope ?? pendingScope;
+          throw error;
+        }
         if (signal?.aborted) throw signal.reason;
         if (typeof error?.code === "string" && error.code.startsWith("recognition-")) throw error;
         throw failure("recognition-failed", "本页识别未完成，原稿仍保留。");

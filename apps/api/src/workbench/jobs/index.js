@@ -141,7 +141,7 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
         job = save(principal, { ...job, state: "running", updatedAt: stamp() });
         const abort = new AbortController();
         controller = { id: job.id, abort };
-        let result;
+        let result, cleanupFailed = false;
         try {
           result = await handlers[job.kind].run({
             principal,
@@ -164,6 +164,7 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
           for (const id of result.outputFileIds) files.read(principal, id);
           validateSchema("Job", { ...job, ...result });
         } catch (error) {
+          cleanupFailed = error?.code === 'recognition-cleanup';
           result = {
             state: "failed",
             outputFileIds: [],
@@ -172,7 +173,7 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
                 code: "conversion-failed",
                 unitId: null,
                 field: null,
-                detail: "任务未完成，原件仍保留。",
+                detail: cleanupFailed ? "尚未确认识别进程停止，请稍后重试。" : "任务未完成，原件仍保留。",
               },
             ],
           };
@@ -182,7 +183,7 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
         save(principal, {
           ...current,
           ...result,
-          state: current.state === "cancelling" ? "cancelled" : result.state,
+          state: current.state === "cancelling" && !cleanupFailed ? "cancelled" : result.state,
           updatedAt: stamp(),
         });
         controller = undefined;
