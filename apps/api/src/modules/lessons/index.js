@@ -58,7 +58,7 @@ export function createLessonsModule({
   const v3 = math ? createMaterialsLessons({ version: 3, math, repository, mutations, questions, resources, content, db, jobs, files, now }) : null;
   if (v3) router.use("/v3", v3.router);
   return { router, operations, port: { ...materials.port, operations: { ...materials.port.operations, ...v3?.port.operations },
-    ...(v3 ? { listUsagesV3: v3.port.listUsages } : {}),
+    ...(v3 ? { listUsagesV3: v3.port.listUsages, readHistoryForExport: v3.port.readHistoryForExport } : {}),
     readForTeachingLink(principal, id) { const { id: lessonId, version, title, deletedAt } = materials.requireLesson(principal,id); return { id: lessonId, version, title, deletedAt }; }
   }, jobHandlers: materials.jobHandlers };
 }

@@ -147,6 +147,7 @@
             "question-taxonomy",
             "import",
             "lesson",
+            "lesson-revision",
             "resource",
             "resource-taxonomy",
             "resource-file-revision",
