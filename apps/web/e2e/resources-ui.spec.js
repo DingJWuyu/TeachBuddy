@@ -1815,9 +1815,17 @@ test.describe("OCR 资源消费", () => {
       const sample = this.sample;
       if (this.mode === "fail")
         throw new Error("Recognition temporarily unavailable");
-      if (this.mode === "hold") {
+      if (["hold", "cleanup-failure"].includes(this.mode)) {
+        const mode = this.mode;
         await new Promise((resolve, reject) => {
-          const stop = () => reject(signal.reason);
+          const stop = () =>
+            reject(
+              mode === "cleanup-failure"
+                ? Object.assign(new Error("Scope stop failed"), {
+                    code: "recognition-cleanup",
+                  })
+                : signal.reason,
+            );
           this.release = () => {
             signal.removeEventListener("abort", stop);
             resolve();
@@ -1962,6 +1970,9 @@ test.describe("OCR 资源消费", () => {
     await expect(text).toContainText(/解不等式/);
     await expect(page.getByAltText("第 2 页", { exact: true })).toBeVisible();
     expect(recognizer.calls).toBe(1);
+    await expect(
+      page.getByRole("button", { name: "关闭识别文字", exact: true }),
+    ).toHaveAttribute("title", "关闭识别文字（Esc）");
     await text.click();
     await page.keyboard.press("Escape");
     await expect(page.locator(".res-recognition")).toHaveCount(0);
@@ -2029,6 +2040,20 @@ test.describe("OCR 资源消费", () => {
       page.getByRole("button", { name: "重新识别本页", exact: true }),
     ).toBeVisible();
     expect(recognizer.calls).toBe(2);
+    recognizer.mode = "cleanup-failure";
+    await page
+      .getByRole("button", { name: "重新识别本页", exact: true })
+      .click();
+    await expect.poll(() => recognizer.calls).toBe(3);
+    await page.getByRole("button", { name: "停止识别", exact: true }).click();
+    await expect(page.locator(".res-recognition-status")).toContainText(
+      "尚未确认识别进程停止",
+    );
+    await page.reload();
+    await expect(page.locator(".res-recognition-status")).toContainText(
+      "尚未确认识别进程停止",
+    );
+    expect(recognizer.calls).toBe(3);
     recognizer.mode = "ready";
     let lost = true,
       originalKey;
@@ -2063,7 +2088,7 @@ test.describe("OCR 资源消费", () => {
     await expect(
       page.getByRole("region", { name: "第 1 页识别正文" }),
     ).toContainText(/解不等式/);
-    expect(recognizer.calls).toBe(3);
+    expect(recognizer.calls).toBe(4);
   });
 
   test("引擎修订更新后重新识别本页，不困在旧任务重试", async ({ page }) => {
@@ -2093,6 +2118,103 @@ test.describe("OCR 资源消费", () => {
       .click();
     await expect(page.locator(".res-recognition")).toContainText(/解不等式/);
     expect(recognizer.calls).toBe(2);
+  });
+
+  test("另一客户端更新文件后，轮询命中打开最新文件和识别正文", async ({
+    page,
+  }, info) => {
+    await upload(page, {
+      name: "另一客户端新文件.png",
+      mimeType: "image/png",
+      buffer: fs.readFileSync(path.join(fixtureRoot, "I-2/page.png")),
+    });
+    await showRecognition(page);
+    await page
+      .getByRole("button", { name: "识别本页文字", exact: true })
+      .click();
+    await expect(page.locator(".res-recognition")).toContainText("解不等式");
+    const newer = (await api.request("GET", "/api/modules/resources/items"))
+      .json.items[0];
+    await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+    // The other HTTP client keeps an owned file ready before replacing the
+    // resource. Its temporary resource entry is removed, not the managed file.
+    const archived = await api.request(
+      "POST",
+      `/api/modules/resources/items/${newer.id}/deletion`,
+      {
+        headers: { "Idempotency-Key": randomUUID() },
+        body: { baseVersion: newer.version, deleted: true },
+      },
+    );
+    expect(archived.status).toBe(200);
+    expect(
+      (
+        await api.request(
+          "POST",
+          `/api/modules/resources/items/${newer.id}/purge`,
+          {
+            headers: { "Idempotency-Key": randomUUID() },
+            body: { baseVersion: archived.json.version },
+          },
+        )
+      ).status,
+    ).toBe(200);
+    await upload(
+      page,
+      {
+        name: "待更新的资料.png",
+        mimeType: "image/png",
+        buffer: fs.readFileSync(path.join(fixtureRoot, "I-1/page.png")),
+      },
+      false,
+    );
+    const original = (await api.request("GET", "/api/modules/resources/items"))
+      .json.items[0];
+    recognizer.sample = "I-1";
+    recognizer.mode = "hold";
+    await showRecognition(page);
+    await page
+      .getByRole("button", { name: "识别本页文字", exact: true })
+      .click();
+    await expect.poll(() => recognizer.calls).toBe(2);
+    try {
+      await page
+        .getByRole("button", { name: "返回资源库", exact: true })
+        .click();
+      await page.getByLabel("搜索资料").fill("不等式");
+      await expect(page.locator(".res-search-status")).toContainText(
+        "正在识别 1 页",
+      );
+      await expect(page.locator(".res-card-open")).toHaveCount(0);
+      const replaced = await api.request(
+        "PUT",
+        `/api/modules/resources/items/${original.id}/file`,
+        {
+          headers: { "Idempotency-Key": randomUUID() },
+          body: { baseVersion: original.version, fileId: newer.fileId },
+        },
+      );
+      expect(replaced.status).toBe(200);
+      await expect(page.locator(".res-search-excerpt")).toContainText("不等式");
+      await page.locator(".res-card-open").click();
+      await expect(page.locator(".res-detail-title .res-muted")).toHaveText(
+        "另一客户端新文件.png",
+      );
+      await expect(page.locator(".res-recognition")).toContainText("解不等式");
+      await expect(
+        page.getByRole("button", { name: "下载原件", exact: true }),
+      ).toBeEnabled();
+      const downloadEvent = page.waitForEvent("download");
+      await page.getByRole("button", { name: "下载原件", exact: true }).click();
+      expect(
+        fs
+          .readFileSync(await (await downloadEvent).path())
+          .equals(fs.readFileSync(path.join(fixtureRoot, "I-2/page.png"))),
+      ).toBe(true);
+      await screenshot(page, info, "ocr-updated-source");
+    } finally {
+      recognizer.release?.();
+    }
   });
 
   test("搜索补充已完成识别，断网可继续且不会重复发起识别", async ({
@@ -2226,6 +2348,10 @@ test.describe("真实 OCR 运行链", () => {
       )
       .toBeGreaterThan(100);
     await screenshot(page, info, "real-ocr-document");
+    await page.locator(".res-recognition-body").hover();
+    await page.mouse.wheel(0, 600);
+    await expect(document.locator("img")).toBeInViewport({ ratio: 0.8 });
+    await screenshot(page, info, "real-ocr-figure");
     const resource = (await api.request("GET", "/api/modules/resources/items"))
       .json.items[0];
     const preview = (
@@ -2242,6 +2368,22 @@ test.describe("真实 OCR 运行链", () => {
       renditionFileId: preview.renditionFileId,
       page: 1,
     });
+    for (const id of [result.rawFileId, ...result.assetFileIds]) {
+      const response = await page.request.get(
+        `${world.origin}/api/workbench/files/${id}/content`,
+        {
+          headers: {
+            "X-TeachBuddy-Page": api.pageId,
+            Cookie: api.jar.header(),
+          },
+        },
+      );
+      expect(response.ok()).toBe(true);
+      await info.attach(`recognition-file-${id}`, {
+        body: await response.body(),
+        contentType: response.headers()["content-type"],
+      });
+    }
     await page
       .getByRole("button", { name: "复制本页识别文字", exact: true })
       .click();

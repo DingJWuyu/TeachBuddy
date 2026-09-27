@@ -209,13 +209,14 @@ function ResourceWorkspace({
           }),
         );
         if (active) {
-          setFiles(
-            Object.fromEntries(
+          setFiles((current) => ({
+            ...current,
+            ...Object.fromEntries(
               results
                 .filter(([, file]) => file.status === "fulfilled")
                 .map(([id, file]) => [id, file.value]),
             ),
-          );
+          }));
           setPreviews(
             Object.fromEntries(
               results
@@ -661,9 +662,10 @@ function ResourceWorkspace({
       try {
         resource = await client.request(`${root}/items/${id}`);
         const source = resource.supplementPreviewFileId || resource.fileId;
-        const preview = await client.request(
-          `/api/workbench/files/${source}/preview`,
-        );
+        const [preview, currentFile] = await Promise.all([
+          client.request(`/api/workbench/files/${source}/preview`),
+          client.request(`/api/workbench/files/${resource.fileId}`),
+        ]);
         if (request !== opening.current) return;
         const location = match.recognition.location;
         if (
@@ -671,6 +673,20 @@ function ResourceWorkspace({
           preview.renditionFileId !== location.renditionFileId
         )
           throw new Error("资料文件已更新，请在最新搜索结果中重新打开。");
+        // Polling can receive a newer file than the detail snapshot. Commit
+        // the validated resource and its file before opening that preview.
+        setAllItems((items) =>
+          items.some((item) => item.id === id)
+            ? items.map((item) => (item.id === id ? resource : item))
+            : [...items, resource],
+        );
+        setFiles((files) => ({ ...files, [resource.fileId]: currentFile }));
+        setPreviews((previews) => ({ ...previews, [source]: preview }));
+        setFileErrors((errors) => {
+          const next = { ...errors };
+          delete next[resource.fileId];
+          return next;
+        });
       } catch (error) {
         if (request === opening.current) {
           setError(error.message);

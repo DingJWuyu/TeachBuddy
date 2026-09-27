@@ -78,6 +78,10 @@ export function Recognition({
   const completed =
     summary?.pages.filter((p) => p.state === "ready").length ?? 0;
   const failed = ["failed", "interrupted"].includes(result?.state);
+  const failureMessage =
+    result?.issues?.find((issue) => issue.code === "recognition-cleanup")
+      ?.detail ||
+    "本页尚未完成识别。重新识别会发起新的尝试，已完成页面会保留。";
   const mutable = !disabled && !error && !running && summary?.available;
   async function write(path, input, purpose) {
     if (await onWrite(path, input, purpose)) setReload((n) => n + 1);
@@ -103,6 +107,7 @@ export function Recognition({
             type="button"
             className="res-icon-button"
             aria-label="关闭识别文字"
+            title="关闭识别文字（Esc）"
             onClick={onClose}
           >
             <Icon name="close" size={16} />
@@ -188,7 +193,7 @@ export function Recognition({
               {running
                 ? `正在识别，已有 ${completed} / ${summary.pages.length} 页结果。`
                 : failed
-                  ? "本页尚未完成识别。重新识别会发起新的尝试，已完成页面会保留。"
+                  ? failureMessage
                   : ready
                     ? "机器识别结果，尚未校对。"
                     : "本页尚未识别，原文件已保存。"}
