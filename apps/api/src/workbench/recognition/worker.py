@@ -8,7 +8,7 @@ import shutil
 import sys
 from pathlib import Path
 
-REVISION = "paddleocr-vl-1.6/document-1"
+REVISION = "paddleocr-vl-1.6/document-2"
 MODELS = {
     "PP-DocLayoutV3": "7b48a7566925fa464281f930c58eee04fe2c862a",
     "PaddleOCR-VL-1.6": "c5630abae1d940eafe0697512a0325494b02ab42",
@@ -221,7 +221,9 @@ def main():
     pipeline = PaddleOCRVL(pipeline_version="v1.6", paddlex_config=pipeline_config(home), device="gpu:0")
     warmup(paddle)
     count = 0
-    for result in pipeline.predict_iter("/input/page.png"):
+    # Bound visual attention memory on the fixed 8 GiB GPU. This public VLM
+    # setting leaves the source image, layout coordinates and derived crops intact.
+    for result in pipeline.predict_iter("/input/page.png", max_pixels=802816):
         result.save_to_json(str(OUTPUT))
         result.save_to_markdown(str(OUTPUT))
         count += 1

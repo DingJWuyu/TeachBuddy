@@ -5,7 +5,7 @@ import { materialsError } from '../jobs/index.js';
 import { normalizeRecognition } from './document.js';
 
 const active = new Set(['queued', 'running', 'cancelling']);
-const defaultRevision = 'paddleocr-vl-1.6/document-1';
+const defaultRevision = 'paddleocr-vl-1.6/document-2';
 
 /** Owns immutable machine results. Consumers own every subsequent human edit. */
 export function createRecognition({ db, files, readBytes, mutations, jobs, content, recognizer }) {
