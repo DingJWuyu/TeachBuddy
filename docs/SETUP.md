@@ -13,6 +13,15 @@
 - 前端源码保存后自动更新；API 及其加载的 JS 模块保存后自动重启，短暂中断请求。未提交的源码也立即生效，提交不是生效条件。文档修改无需重启。
 - 更换依赖后准备本地数学资产并重启；改变环境变量、证书或通过文件系统读取的契约/schema 后手动重启：`systemctl --user restart teacherworkspace-preview.service`。Node 的模块监听不涵盖所有外部文件。
 
+当前服务是用户级临时单元，完整停止后会被 systemd 回收。若 `start` 提示单元不存在，用原入口重新创建：
+
+```bash
+systemd-run --user --unit=teacherworkspace-preview --collect \
+  --property=WorkingDirectory=/home/liam_t/项目/TeacherWorkspace-preview \
+  --property=Restart=on-failure \
+  /home/liam_t/项目/TeacherWorkspace-preview/.scratch/preview/start.sh
+```
+
 preview 是用户体验的集成现场，由总控协调修改和合并；获准进入 preview 的源码会自动进入该服务。业务 session 在各自 worktree 的独立端口、数据库和文件目录完成实现及自测，合回 preview 后才进入用户体验入口，不占用 50880 或操作其私有配置。
 
 维护前核对代码、依赖及工具路径，完成后实际打开页面并验证受影响功能。当前测试数据可丢弃，具体范围见[运行台账](plans/run-state.md#工作现场与授权)。一次服务状态查询只证明进程存活，不证明业务能力。
