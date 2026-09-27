@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 function buildRecord() {
@@ -22,7 +23,13 @@ function buildRecord() {
 }
 
 export default defineConfig({
-  plugins: [react(), buildRecord()],
+  plugins: [react(), buildRecord(), viteStaticCopy({
+    targets: ['cmaps', 'standard_fonts'].map(directory => ({
+      src: fileURLToPath(new URL(`../../node_modules/pdfjs-dist/${directory}/*`, import.meta.url)),
+      dest: `resources-pdf/${directory}`,
+      rename: { stripBase: true },
+    })),
+  })],
   server: {
     port: 5173
   }

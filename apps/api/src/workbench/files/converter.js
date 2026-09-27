@@ -10,6 +10,7 @@ export async function convertFile({
   officeRoot = process.env.MATERIALS_OFFICE_ROOT,
   timeoutMs = 120000,
   signal,
+  textOnly = false,
 }) {
   fs.mkdirSync(directory, { recursive: true });
   const work = fs.mkdtempSync(path.join(directory, "conversion-"));
@@ -100,6 +101,7 @@ export async function convertFile({
     "/runtime/node",
     "/app/api/worker.mjs",
     mediaType,
+    textOnly ? "text" : "preview",
   );
   try {
     await new Promise((resolve, reject) => {

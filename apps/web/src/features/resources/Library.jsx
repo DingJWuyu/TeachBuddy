@@ -2,6 +2,7 @@ import { Icon } from "../workbench/chrome/icons.jsx";
 import { Popover } from "../workbench/ModuleOverlays.jsx";
 import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import { FileImage } from "./Preview.jsx";
+import { useLayoutEffect, useRef } from "react";
 
 const formats = [
   ["application/pdf", "PDF"],
@@ -30,10 +31,11 @@ export function UploadButton({ onUpload, disabled, first = false }) {
       {first ? "上传第一份资料" : "上传资料"}
       <input
         type="file"
+        multiple
         aria-label={first ? "上传第一份资料" : "上传资料"}
         disabled={disabled}
         onChange={(event) => {
-          onUpload(event.target.files[0]);
+          onUpload(Array.from(event.target.files));
           event.target.value = "";
         }}
       />
@@ -49,9 +51,12 @@ export function Library({
   tax,
   files,
   previews,
+  fileErrors = {},
   client,
   busy,
   loading,
+  searchInfo,
+  onRetrySearch,
   listRef,
   breadcrumbs,
   onOpen,
@@ -59,7 +64,27 @@ export function Library({
   onFolders,
   foldersOpen,
   onPickResources,
+  onOrganize,
+  onAddToLesson,
 }) {
+  const selectionRef = useRef(null);
+  useLayoutEffect(() => {
+    const element = selectionRef.current;
+    const workspace = listRef.current?.closest(".res-workspace");
+    if (!element || !workspace || scene.openId) return;
+    const measure = () =>
+      workspace.style.setProperty(
+        "--res-selection-height",
+        `${element.getBoundingClientRect().height}px`,
+      );
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    measure();
+    return () => {
+      observer.disconnect();
+      workspace.style.removeProperty("--res-selection-height");
+    };
+  }, [scene.selectionMode, Boolean(onPickResources), scene.openId, listRef]);
   const deleted = scene.state === "deleted";
   const filtered = Boolean(
     scene.q || scene.folderId || scene.mediaType || scene.tagIds.length,
@@ -89,7 +114,15 @@ export function Library({
         </div>
         <div className="res-header-actions">
           {deleted ? (
-            <button onClick={() => patchScene({ state: "active" })}>
+            <button
+              onClick={() =>
+                patchScene({
+                  state: "active",
+                  selected: [],
+                  selectionMode: false,
+                })
+              }
+            >
               <Icon name="arrowLeft" size={16} />
               全部资料
             </button>
@@ -116,6 +149,8 @@ export function Library({
                       close();
                       patchScene({
                         state: "deleted",
+                        selected: [],
+                        selectionMode: false,
                         q: "",
                         folderId: "",
                         mediaType: "",
@@ -136,11 +171,25 @@ export function Library({
         {!firstVisit && (
           <>
             <div className="res-browser-toolbar">
+              {items.length > 0 && !onPickResources && (
+                <button
+                  aria-pressed={Boolean(scene.selectionMode)}
+                  onClick={() =>
+                    patchScene({
+                      selectionMode: !scene.selectionMode,
+                      selected: [],
+                    })
+                  }
+                >
+                  选择资料
+                </button>
+              )}
               <label className="res-search">
                 <Icon name="search" size={17} />
                 <input
                   aria-label="搜索资料"
-                  placeholder="搜索名称或备注"
+                  placeholder="搜索名称、备注或正文"
+                  maxLength={200}
                   value={scene.q}
                   onChange={(event) => patchScene({ q: event.target.value })}
                 />
@@ -292,6 +341,33 @@ export function Library({
             )}
           </>
         )}
+        {scene.q && searchInfo && (
+          <div className="res-search-status" role="status">
+            {searchInfo.interrupted && (
+              <span>
+                正文检索已中断。
+                <button onClick={onRetrySearch}>继续检索</button>
+              </span>
+            )}
+            {searchInfo.pending > 0 && (
+              <span>
+                正在读取 {searchInfo.pending} 份资料的正文，结果会自动补充…
+              </span>
+            )}
+            {searchInfo.unavailable > 0 && (
+              <span>
+                {searchInfo.unavailable}{" "}
+                份资料暂无可检索正文，仍可按名称和备注查找。
+              </span>
+            )}
+            {searchInfo.failed > 0 && (
+              <span>
+                {searchInfo.failed} 份资料正文读取失败。
+                <button onClick={onRetrySearch}>重新读取正文</button>
+              </span>
+            )}
+          </div>
+        )}
         <div
           className={`res-items res-${scene.view}${!items.length ? " is-empty" : ""}`}
           ref={listRef}
@@ -326,6 +402,14 @@ export function Library({
                   </div>
                   <div className="res-card-text">
                     <strong title={resource.title}>{resource.title}</strong>
+                    {searchInfo?.matches[resource.id] && (
+                      <span className="res-search-excerpt">
+                        {searchInfo.matches[resource.id].page
+                          ? `第 ${searchInfo.matches[resource.id].page} 页 · `
+                          : "正文 · "}
+                        {searchInfo.matches[resource.id].excerpt}
+                      </span>
+                    )}
                     <span>
                       {tax.folders.find(
                         (folder) => folder.id === resource.folderId,
@@ -342,19 +426,28 @@ export function Library({
                     </span>
                   </div>
                   <span className="res-file-type">{extension}</span>
-                  {["limited", "failed"].includes(preview?.state) && (
+                  {(fileErrors[resource.fileId] ||
+                    ["limited", "failed"].includes(preview?.state)) && (
                     <span className="res-preview-state">
-                      {preview.state === "limited"
-                        ? "预览需核对"
-                        : "暂不可预览"}
+                      {fileErrors[resource.fileId]
+                        ? "文件读取失败"
+                        : preview.state === "limited"
+                          ? "预览需核对"
+                          : "暂不可预览"}
                     </span>
                   )}
                 </button>
-                {onPickResources && !resource.deletedAt && (
+                {(onPickResources
+                  ? !resource.deletedAt
+                  : scene.selectionMode) && (
                   <label className="res-pick">
                     <input
                       type="checkbox"
                       checked={scene.selected.includes(resource.id)}
+                      disabled={
+                        !scene.selected.includes(resource.id) &&
+                        scene.selected.length >= 100
+                      }
                       onChange={() =>
                         patchScene({
                           selected: scene.selected.includes(resource.id)
@@ -363,7 +456,7 @@ export function Library({
                         })
                       }
                     />
-                    选择资料
+                    <span>选择资料</span>
                   </label>
                 )}
               </article>
@@ -378,22 +471,26 @@ export function Library({
                 />
               </span>
               <h2>
-                {loading
+                {loading || searchInfo?.pending
                   ? "正在读取资料"
-                  : filtered
-                    ? "没有找到匹配的资料"
-                    : deleted
-                      ? "没有已归档的资料"
-                      : "把教学资料收在一起"}
+                  : searchInfo?.interrupted
+                    ? "暂时无法完成检索"
+                    : filtered
+                      ? "没有找到匹配的资料"
+                      : deleted
+                        ? "没有已归档的资料"
+                        : "把教学资料收在一起"}
               </h2>
               {!loading && (
                 <>
                   <p>
-                    {filtered
-                      ? "试试其他关键词，或清除筛选条件。"
-                      : deleted
-                        ? "归档的资料会出现在这里，可以恢复或彻底删除。"
-                        : "上传课件、文档或图片，随时预览，也可以加入备课。"}
+                    {searchInfo?.interrupted
+                      ? "请继续检索，补充尚未读取的结果。"
+                      : filtered
+                        ? "试试其他关键词，或清除筛选条件。"
+                        : deleted
+                          ? "归档的资料会出现在这里，可以恢复或彻底删除。"
+                          : "上传课件、文档或图片，随时预览，也可以加入备课。"}
                   </p>
                   {filtered ? (
                     <button onClick={clear}>清除筛选</button>
@@ -412,26 +509,71 @@ export function Library({
             </div>
           )}
         </div>
-        {onPickResources && scene.selected.length > 0 && (
-          <div className="res-selection">
+        {(onPickResources || scene.selectionMode) && (
+          <div className="res-selection" ref={selectionRef}>
             <span>已选 {scene.selected.length} 份</span>
             <button
-              className="res-primary"
+              disabled={!items.length}
               onClick={() =>
-                onPickResources(
-                  scene.selected
-                    .map((id) =>
-                      allItems.find(
-                        (item) => item.id === id && !item.deletedAt,
-                      ),
-                    )
-                    .filter(Boolean),
-                )
+                patchScene({
+                  selected: items.slice(0, 100).map((item) => item.id),
+                })
               }
             >
-              采用所选资料
+              选择当前结果{items.length > 100 ? "前 100 份" : ""}
             </button>
-            <button onClick={() => patchScene({ selected: [] })}>
+            {onPickResources ? (
+              <button
+                className="res-primary"
+                onClick={() =>
+                  onPickResources(
+                    scene.selected
+                      .map((id) =>
+                        allItems.find(
+                          (item) => item.id === id && !item.deletedAt,
+                        ),
+                      )
+                      .filter(Boolean),
+                  )
+                }
+              >
+                采用所选资料
+              </button>
+            ) : (
+              <>
+                {!deleted && (
+                  <>
+                    <button
+                      disabled={busy || !scene.selected.length}
+                      onClick={() => onOrganize("move")}
+                    >
+                      移动
+                    </button>
+                    <button
+                      disabled={busy || !scene.selected.length}
+                      onClick={() => onOrganize("add-tags")}
+                    >
+                      添加标签
+                    </button>
+                    <button
+                      disabled={busy || !scene.selected.length}
+                      onClick={onAddToLesson}
+                    >
+                      加入备课
+                    </button>
+                  </>
+                )}
+                <button
+                  disabled={busy || !scene.selected.length}
+                  onClick={() => onOrganize(deleted ? "restore" : "archive")}
+                >
+                  {deleted ? "恢复" : "归档"}
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => patchScene({ selected: [], selectionMode: false })}
+            >
               取消选择
             </button>
           </div>

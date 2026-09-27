@@ -733,6 +733,7 @@
   scrollbar-color: var(--res-line) transparent;
 }
 .res-page-paper {
+  position: relative;
   margin: 0 auto;
   min-width: 100px;
   background: #fff;
@@ -741,6 +742,87 @@
 .res-page-paper img {
   display: block;
   width: 100%;
+}
+.res-search-status,
+.res-text-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 8px 16px;
+  color: var(--res-muted);
+  font-size: 12px;
+}
+.res-search-status:empty {
+  display: none;
+}
+.res-copy-text {
+  min-width: 112px;
+}
+.res-ui .res-search-excerpt {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+/* PDF.js TextLayer layout rules, scoped to resource previews.
+   https://github.com/mozilla/pdf.js/blob/master/web/text_layer_builder.css
+   Copyright Mozilla Foundation, Apache-2.0. Positioning is owned by PDF.js. */
+.res-pdf-text {
+  color-scheme: only light;
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+.res-pdf-text :is(span, br) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  user-select: text;
+}
+.res-pdf-text > :not(.markedContent),
+.res-pdf-text .markedContent span:not(.markedContent) {
+  --font-height: 0;
+  --scale-x: 1;
+  --rotate: 0deg;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x))
+    scale(var(--min-font-size-inv));
+}
+.res-pdf-text .markedContent {
+  display: contents;
+}
+.res-pdf-text ::selection {
+  background: #6495ed66;
+  color: transparent;
+}
+.res-pdf-text br::selection {
+  background: transparent;
+}
+.res-pdf-text[data-main-rotation="90"] {
+  transform: rotate(90deg) translateY(-100%);
+}
+.res-pdf-text[data-main-rotation="180"] {
+  transform: rotate(180deg) translate(-100%, -100%);
+}
+.res-pdf-text[data-main-rotation="270"] {
+  transform: rotate(270deg) translateX(-100%);
 }
 .res-warning,
 .res-notice {
@@ -1006,7 +1088,7 @@
 }
 .res-status {
   position: absolute;
-  bottom: 16px;
+  bottom: calc(var(--res-selection-height, 0px) + 16px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 8;
@@ -1193,4 +1275,49 @@
     transition: none !important;
     animation: none !important;
   }
+}
+
+.res-page-jump,
+.res-page-jump label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+.res-page-jump input {
+  width: 60px;
+  padding: 4px 6px;
+  border: 1px solid var(--res-line);
+  border-radius: 6px;
+  background: var(--app-surface, #fff);
+}
+.res-preview-toolbar {
+  flex-wrap: wrap;
+}
+.res-pick > span {
+  color: var(--res-muted);
+}
+@media (max-width: 600px) {
+  .res-detail .res-header-actions {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  .res-detail .res-info-toggle > span:not(.res-unsaved-dot) {
+    display: none;
+  }
+}
+.res-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.res-history-entry {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--res-line);
+}
+.res-history-entry p {
+  margin: 4px 0 10px;
+}
+.res-history-entry strong {
+  overflow-wrap: anywhere;
 }

@@ -12,6 +12,7 @@ export function ResourceInfo({
   disabled,
   dirty,
   usages,
+  fileHistory = [],
   usageError,
   onRefresh,
   onOpenLesson,
@@ -157,7 +158,19 @@ export function ResourceInfo({
               <span>{usage.lessonTitle}</span>
               <small>
                 {usage.sectionTitle ?? "备用材料"}
-                {usage.adoptedVersion < item.version ? " · 来源有更新" : ""}
+                {usage.adoptedVersion < item.version &&
+                  (() => {
+                    const adopted = fileHistory.find(
+                      (entry) => entry.version <= usage.adoptedVersion,
+                    );
+                    return !adopted
+                      ? " · 资料有更新"
+                      : adopted.fileId !== item.fileId ||
+                          adopted.supplementPreviewFileId !==
+                            item.supplementPreviewFileId
+                        ? " · 文件有更新"
+                        : " · 资料信息有更新";
+                  })()}
               </small>
               <Icon name="arrowRight" size={14} />
             </button>
@@ -169,7 +182,7 @@ export function ResourceInfo({
       <ModuleDisclosure title="原文件信息" className="res-file-details">
         <div className="res-file-info">
           <strong>{file?.name}</strong>
-          <span>当前版本 {item.version}</span>
+          <span>资料保存版本 {item.version}</span>
           <p>更新文件会保留名称、文件夹、标签与备注。</p>
         </div>
       </ModuleDisclosure>

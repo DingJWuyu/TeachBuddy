@@ -271,6 +271,26 @@ export function createPreviews({
     },
   };
   return {
+    // Used by resources only. Original files and existing preview jobs stay intact.
+    async extractText(principal, id) {
+      const file = files.read(principal, id);
+      if (file.mediaType === "text/plain") {
+        if (file.byteLength > 8 * 1024 * 1024)
+          throw new Error("Text size limit exceeded");
+        return [readBytes(principal, id).toString("utf8")];
+      }
+      if (file.mediaType !== "application/pdf")
+        throw new Error("Text extraction requires PDF");
+      const result = await convertFile({
+        bytes: readBytes(principal, id),
+        mediaType: file.mediaType,
+        directory,
+        ...conversion,
+        textOnly: true,
+        timeoutMs: 12000,
+      });
+      return result.textPages;
+    },
     preview,
     requestPreview,
     ensurePreview,

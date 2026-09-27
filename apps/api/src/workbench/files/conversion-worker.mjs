@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import sharp from "sharp";
 import yauzl from "yauzl";
 import { DOMParser } from "@xmldom/xmldom";
-const [mime] = process.argv.slice(2);
+const [mime, mode] = process.argv.slice(2);
 const input = "/input/source";
 const maxExpanded = 512 * 1024 * 1024;
 async function inspectZip() {
@@ -87,6 +87,19 @@ const office = new Map([
 ]);
 let pdf = input;
 let legacy = false;
+// Resource search reuses Poppler inside the same offline, bounded sandbox.
+// Text extraction is independent of page-image conversion and never changes it.
+if (mode === "text") {
+  if (mime !== "application/pdf") throw new Error("Text extraction requires PDF");
+  const text = execFileSync("/usr/bin/pdftotext", ["-enc", "UTF-8", input, "-"], {
+    encoding: "utf8", maxBuffer: 8 * 1024 * 1024, timeout: 10000,
+  });
+  const pages = text.split("\f");
+  if (!pages.at(-1)?.trim()) pages.pop();
+  if (pages.length > 500) throw new Error("Page limit exceeded");
+  fs.writeFileSync("/output/result.json", JSON.stringify({ pages: [], textPages: pages, pdf: null }));
+  process.exit(0);
+}
 if (office.has(mime)) {
   const ext = office.get(mime);
   legacy = ext === "doc";

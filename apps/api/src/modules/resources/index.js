@@ -1,5 +1,6 @@
 import { createTaxonomy } from "./taxonomy.js";
-import { fold } from "./casefold.js";
+import { createResourceHistory } from "./history.js";
+import { createResourceTextSearch } from "./text-search.js";
 import { randomUUID } from "node:crypto";
 import { Router } from "express";
 import { validateSchema } from "../../workbench/content/schema.js";
@@ -21,8 +22,11 @@ export function createResourcesModule({
   db,
   mutations,
   files,
+  jobs,
   now = () => new Date().toISOString(),
 }) {
+  const history = createResourceHistory(db, files);
+  const textSearch = createResourceTextSearch({ db, files, jobs });
   const getRow = db.prepare(
     "SELECT value FROM resource_items WHERE accountKey=? AND id=?",
   );
@@ -44,7 +48,19 @@ export function createResourcesModule({
   const all = (principal) =>
     rows.all(principal.accountKey).map((row) => JSON.parse(row.value));
   const taxonomy = createTaxonomy({ db, all, save, now });
-  function list(principal, query) {
+  async function list(principal, query) {
+    const fileMetadata = new Map();
+    const fileInfo = (item) => {
+      if (fileMetadata.has(item.fileId)) return fileMetadata.get(item.fileId);
+      try {
+        const file = files.read(principal, item.fileId);
+        fileMetadata.set(item.fileId, file);
+        return file;
+      } catch (error) {
+        if (error.status !== 503 && error.status !== 404) throw error;
+        return null;
+      }
+    };
     const folders = taxonomy.read(principal).folders;
     const inFolder = (id) => {
       while (id) {
@@ -53,33 +69,25 @@ export function createResourcesModule({
       }
       return false;
     };
-    return {
-      items: all(principal)
-        .filter(
-          (item) =>
-            (query.state === "deleted"
-              ? item.deletedAt !== null
-              : item.deletedAt === null) &&
-            (!query.folderId || inFolder(item.folderId)) &&
-            (!query.tagIds ||
-              query.tagIds.every((id) => item.tagIds.includes(id))) &&
-            (!query.mediaType ||
-              files.read(principal, item.fileId).mediaType ===
-                query.mediaType) &&
-            (!query.q ||
-              fold(
-                [
-                  item.title,
-                  item.note,
-                  files.read(principal, item.fileId).name,
-                ].join("\n"),
-              ).includes(fold(query.q))),
-        )
-        .sort(
-          (a, b) =>
-            b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id),
-        ),
-    };
+    const items = all(principal)
+      .filter(
+        (item) =>
+          (query.state === "deleted"
+            ? item.deletedAt !== null
+            : item.deletedAt === null) &&
+          (!query.folderId || inFolder(item.folderId)) &&
+          (!query.tagIds ||
+            query.tagIds.every((id) => item.tagIds.includes(id))) &&
+          (!query.mediaType || fileInfo(item)?.mediaType === query.mediaType) &&
+          (!query.sha256 || fileInfo(item)?.sha256 === query.sha256),
+      )
+      .sort(
+        (a, b) =>
+          b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id),
+      );
+    return query.q?.trim()
+      ? textSearch.search(principal, items, query.q, fileInfo)
+      : { items };
   }
   function current(principal, id, input, allowDeleted = false) {
     const item = read(principal, id);
@@ -115,6 +123,82 @@ export function createResourcesModule({
     };
   }
   const definitions = {
+    retryResourceText: {
+      method: "POST",
+      route: "/search/retry",
+      schema: "Empty",
+      run: ({ principal }) => textSearch.retry(principal),
+    },
+    organizeResources: {
+      method: "POST",
+      route: "/items/organize",
+      schema: "OrganizeResources",
+      run: ({ principal, input }) => {
+        if (
+          new Set(input.items.map((item) => item.id)).size !==
+          input.items.length
+        )
+          throw invalidInput("/items", "duplicate-id");
+        const selected = input.items.map((entry) =>
+          current(principal, entry.id, entry, input.action === "restore"),
+        );
+        if (input.action === "move")
+          taxonomy.validateLinks(principal, {
+            folderId: input.folderId,
+            tagIds: [],
+          });
+        if (input.action === "add-tags")
+          taxonomy.validateLinks(principal, {
+            folderId: null,
+            tagIds: input.tagIds,
+          });
+        if (
+          input.action === "restore" &&
+          selected.some((item) => !item.deletedAt)
+        )
+          throw invalidInput("/items", "invalid-reference");
+        return {
+          items: selected.map((item) => {
+            const patch =
+              input.action === "move"
+                ? { folderId: input.folderId }
+                : input.action === "add-tags"
+                  ? { tagIds: [...new Set([...item.tagIds, ...input.tagIds])] }
+                  : { deletedAt: input.action === "archive" ? now() : null };
+            if (patch.tagIds?.length > 100)
+              throw invalidInput("/tagIds", "out-of-range");
+            return changed(principal, item, patch);
+          }),
+        };
+      },
+    },
+    listResourceFileHistory: {
+      method: "GET",
+      route: "/items/:id/history",
+      run: ({ principal, id }) =>
+        history.describe(principal, read(principal, id)),
+    },
+    restoreResourceFile: {
+      method: "POST",
+      route: "/items/:id/restore-file",
+      schema: "RestoreResourceFile",
+      run: ({ principal, id, input }) => {
+        const item = current(principal, id, input);
+        const revision = history
+          .list(principal, item)
+          .find((entry) => entry.version === input.fileVersion);
+        if (!revision) throw invalidInput("/fileVersion", "invalid-reference");
+        files.read(principal, revision.fileId);
+        if (revision.supplementPreviewFileId)
+          files.read(principal, revision.supplementPreviewFileId);
+        const result = changed(principal, item, {
+          fileId: revision.fileId,
+          supplementPreviewFileId: revision.supplementPreviewFileId,
+        });
+        history.capture(principal, result);
+        return result;
+      },
+    },
     readResourceForReferenceV2: {
       method: "GET",
       route: "/items/:id/for-reference",
@@ -139,10 +223,12 @@ export function createResourcesModule({
       run: ({ principal, id, input }) => {
         const item = current(principal, id, input);
         files.read(principal, input.fileId);
-        return changed(principal, item, {
+        const result = changed(principal, item, {
           fileId: input.fileId,
           supplementPreviewFileId: null,
         });
+        history.capture(principal, result);
+        return result;
       },
     },
     setResourceSupplementPreview: {
@@ -164,9 +250,11 @@ export function createResourcesModule({
           )
             throw invalidInput("/supplementPreviewFileId", "out-of-range");
         }
-        return changed(principal, item, {
+        const result = changed(principal, item, {
           supplementPreviewFileId: input.supplementPreviewFileId,
         });
+        history.capture(principal, result);
+        return result;
       },
     },
     setResourceDeletion: {
@@ -190,6 +278,7 @@ export function createResourcesModule({
         db.prepare(
           "DELETE FROM resource_items WHERE accountKey=? AND id=?",
         ).run(principal.accountKey, id);
+        history.remove(principal, id);
         // Lesson snapshots and managed file bytes have their own lifetime.
         return { id, permanentlyDeleted: true };
       },
@@ -225,7 +314,7 @@ export function createResourcesModule({
         if (!input.title.trim()) throw invalidInput("/title", "empty-content");
         taxonomy.validateLinks(principal, input);
         const timestamp = now();
-        return save(principal, {
+        const result = save(principal, {
           id: randomUUID(),
           version: 1,
           createdAt: timestamp,
@@ -234,6 +323,8 @@ export function createResourcesModule({
           ...input,
           supplementPreviewFileId: null,
         });
+        history.capture(principal, result);
+        return result;
       },
     },
   };
@@ -252,7 +343,11 @@ export function createResourcesModule({
         status,
         body: definition.run({ principal, input, id, query }),
       });
-      if (definition.method === "GET") return action();
+      if (definition.method === "GET")
+        return {
+          status,
+          body: await definition.run({ principal, input, id, query }),
+        };
       if (!uuidPattern.test(key ?? ""))
         throw invalidInput("/headers/Idempotency-Key", "invalid-type");
       return mutations.execute(
@@ -292,9 +387,16 @@ export function createResourcesModule({
 
 function validateQuery(query) {
   for (const key of Object.keys(query))
-    if (!["q", "state", "folderId", "tagIds", "mediaType"].includes(key))
+    if (
+      !["q", "state", "folderId", "tagIds", "mediaType", "sha256"].includes(key)
+    )
       throw invalidInput(`/query/${key}`, "unknown-field");
   const value = { ...query };
+  if (
+    value.sha256 !== undefined &&
+    (typeof value.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(value.sha256))
+  )
+    throw invalidInput("/query/sha256", "out-of-range");
   for (const [key, max] of [
     ["q", 200],
     ["mediaType", 150],

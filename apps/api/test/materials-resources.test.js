@@ -4,10 +4,12 @@ import addFormats from "ajv-formats";
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import { startResourcesFixture } from "../../web/e2e/fixtures/materials-resources/server.mjs";
-const dataDir = new URL("../../../test-results/r32-api/", import.meta.url)
-  .pathname;
+const dataDir = fileURLToPath(
+  new URL("../../../test-results/r32-api/", import.meta.url),
+);
 const schemaRoot = new URL(
   "../../../docs/contracts/workbench/",
   import.meta.url,
@@ -491,7 +493,9 @@ test("MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与
         .status,
       422,
     );
-    const response = await fetch(fixture.origin + base, { headers: { Connection: "close" } });
+    const response = await fetch(fixture.origin + base, {
+      headers: { Connection: "close" },
+    });
     assert.equal(response.status, 401);
     assert.equal(
       (
@@ -504,8 +508,8 @@ test("MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与
     const foreign = await fetch(fixture.origin + base, {
       method: "PUT",
       headers: {
-      // Do not carry a pooled socket across the fixture server lifecycle.
-      Connection: "close",
+        // Do not carry a pooled socket across the fixture server lifecycle.
+        Connection: "close",
         Origin: "http://evil.invalid",
         "Content-Type": "application/json",
         "X-TeachBuddy-Request": "1",
@@ -520,10 +524,9 @@ test("MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与
 
 test("R31旧库追加resources迁移后原文件与数据仍可读取", async () => {
   const { createWorkbench } = await import("../src/workbench/index.js");
-  const directory = new URL(
-    "../../../test-results/r32-upgrade/",
-    import.meta.url,
-  ).pathname;
+  const directory = fileURLToPath(
+    new URL("../../../test-results/r32-upgrade/", import.meta.url),
+  );
   fs.rmSync(directory, { recursive: true, force: true });
   fs.mkdirSync(directory, { recursive: true });
   const old = createWorkbench({
@@ -569,5 +572,103 @@ test("R31旧库追加resources迁移后原文件与数据仍可读取", async ()
     );
   } finally {
     await fixture.close();
+  }
+});
+
+test("正文搜索经 HTTP 跨重启、筛选和账户隔离，重试保持幂等", async () => {
+  let passed = false;
+  fs.mkdirSync(dataDir, { recursive: true });
+  const directory = fs.mkdtempSync(dataDir + "-text-");
+  fixture = await startResourcesFixture({ dataDir: directory });
+  try {
+    const file = await upload();
+    const created = await request("POST", "/api/modules/resources/items", {
+      title: "讲义",
+      fileId: file.id,
+      folderId: null,
+      tagIds: [],
+      note: "",
+    });
+    const route =
+      "/api/modules/resources/items?q=" + encodeURIComponent("三角形");
+    const first = await request("GET", route);
+    assert.equal(first.status, 200);
+    assert.equal(first.body.search.pending, 0);
+    assert.equal(first.body.search.matches[created.body.id].page, 3);
+    assert.match(
+      first.body.search.matches[created.body.id].excerpt,
+      /Q5 三角形/,
+    );
+    assert.deepEqual(
+      (await request("GET", route + "&mediaType=image%2Fpng")).body.items,
+      [],
+    );
+    assert.deepEqual(
+      (await request("GET", route, undefined, { account: "r32-b" })).body.search
+        .matches,
+      {},
+    );
+    await fixture.close();
+    fixture = await startResourcesFixture({ dataDir: directory });
+    assert.deepEqual((await request("GET", route)).body, first.body);
+    const key = randomUUID();
+    const retry = await request(
+      "POST",
+      "/api/modules/resources/search/retry",
+      {},
+      { key },
+    );
+    assert.equal(retry.status, 200);
+    assert.deepEqual(retry.body, { accepted: true });
+    assert.deepEqual(
+      await request("POST", "/api/modules/resources/search/retry", {}, { key }),
+      retry,
+    );
+    assert.deepEqual((await request("GET", route)).body, first.body);
+    assert.equal(
+      (await request("GET", `/api/modules/resources/items/${created.body.id}`))
+        .body.version,
+      1,
+    );
+    const data = new FormData();
+    data.append(
+      "file",
+      new Blob([
+        "分层\n教学与 SIN X 教学材料\n" + "ß".repeat(200) + " Needle 原文",
+      ]),
+      "摘录.txt",
+    );
+    const plain = (await request("POST", "/api/workbench/files", data)).body;
+    const textItem = (
+      await request("POST", "/api/modules/resources/items", {
+        title: "摘录",
+        fileId: plain.id,
+        folderId: null,
+        tagIds: [],
+        note: "",
+      })
+    ).body;
+    const textSearch = (
+      await request(
+        "GET",
+        "/api/modules/resources/items?q=" + encodeURIComponent("分层教学"),
+      )
+    ).body;
+    assert.equal(textSearch.search.matches[textItem.id].page, null);
+    assert.match(textSearch.search.matches[textItem.id].excerpt, /SIN X/);
+    assert.equal(
+      (await request("GET", "/api/modules/resources/items?q=sin%20x")).body
+        .items[0].id,
+      textItem.id,
+    );
+    assert.match(
+      (await request("GET", "/api/modules/resources/items?q=needle")).body
+        .search.matches[textItem.id].excerpt,
+      /Needle 原文/,
+    );
+    passed = true;
+  } finally {
+    await fixture.close();
+    if (passed) fs.rmSync(directory, { recursive: true, force: true });
   }
 });

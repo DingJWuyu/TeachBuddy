@@ -62,6 +62,28 @@ LocatedPart 区分题面/答案/配图/未分配片段；跨页一题包含多�
 
 `POST /api/modules/resources/items/{id}/purge` 接收 `{baseVersion}` 与幂等键，仅允许彻底删除本账户已归档的资料条目，返回 `{id, permanentlyDeleted: true}`。活动资料返回 422 `invalid-input`（`/id`, `invalid-reference`），过期版本返回 409，外账户或不存在返回 404。删除后 GET、恢复及新键再次删除均返回 404；成功原键重放仍返回原成功结果，不能重新创建或恢复条目。已有备课引用通过其快照继续读取文件，受管文件生命周期不由此接口清理。
 
+## 资源正文检索
+
+`listResources` 的非空 `q` 同时匹配名称、原文件名、备注和当前文件可提取正文，返回 `ResourceList.search`。先应用账户、活动/归档、文件夹、标签和格式条件，再匹配关键词；结果排序保持原规则。`matches` 只包含本次返回且正文命中的资源 ID，值为第一处命中的 `page` 和纯文本 `excerpt`；纯文本的页码为 null。
+
+原 PDF 和 UTF-8 纯文本可直接提取，Office 使用已有预览 PDF；有补充 PDF 时以补充文件为准。`resource_text_cache` 按账户与不可变文件 ID 保存派生文字；每次检索重新解析资料当前文件，替换与历史恢复无需修改旧缓存。缓存可重建，不作为个人资料包的用户成果；实例备份可保留缓存。GET 计算派生缓存不改变资源版本、文件或预览任务。
+
+每次查询最多提取一份未缓存文件，`pending` 表示尚待读取或预览仍在运行的资料数；调用方继续同一查询直到为零。`unavailable` 表示没有可提取正文或没有可用的 PDF 预览，`failed` 表示文字/文件读取失败，均不阻断其他匹配。`POST /api/modules/resources/search/retry` 接收 Empty 与幂等键，仅清除本账户失败缓存，下次查询重读；成功原键重放不再次清除。
+
+PDF 文字复用隔离转换器中的 Poppler `pdftotext`，不重复生成页图，也不依赖 Office 路径。文字输出至多 8 MiB、500 页、提取进程至多 12 秒；超过限制记读取失败，原件和既有预览保留。图像与无文字扫描件不做 OCR。前端复制使用本地部署的 PDF.js TextLayer 与同身份授权下载，仅作为资源预览的文字层。
+
+## 资源批量整理与文件历史
+
+`POST /api/modules/resources/items/organize` 接收 `OrganizeResources`，每批 1 至 100 个唯一 `{id, baseVersion}`，操作为移动、追加标签、归档或恢复。所有对象归属、状态和版本在同一幂等事务内校验；任一对象失败则整个批次不写入。成功返回 `ResourceList`，每个对象增加版本；移动仅改变文件夹，追加标签取原标签并集。外账户 404、过期版本 409、重复 ID 或无效分类 422。响应丢失后用原键原请求确认。
+
+`GET /api/modules/resources/items?sha256=<64位小写摘要>` 按当前原件摘要查重，继续遵循活动/归档查询与账户隔离；不自动合并条目。不可读取的文件不会阻断其他资料的名称、备注与格式检索。
+
+`resource_file_history` 属于资源模块，主键为账户、资料 ID 和保存版本。新建、替换原件、采用或移除补充预览、恢复历史文件时保存原件及补充预览身份；备注、标签、分类与归档不新增文件历史。迁移仅记录当时的当前文件，不能还原启用前的历史。
+
+`GET /api/modules/resources/items/{id}/history` 返回倒序 `ResourceFileHistory`，含文件元数据；单个历史原件损坏时保留记录并标记 `unavailable`。`POST /api/modules/resources/items/{id}/restore-file` 接收 `{baseVersion, fileVersion}` 与幂等键，仅允许本账户活动资料采用自身历史文件。校验原件和补充预览可读后，保持资料身份及元数据，以新的资料版本保存并追加文件历史。旧备课快照不变；外账户/不存在 404、版本过期 409、未知历史版本 422。恢复操作可按原键重放，不重复追加历史。
+
+彻底删除条目时同时移除其历史记录，文件字节仍遵循文件保留规则。个人资料包包含 `resource-file-revision` 对象；实例备份包含历史表，并检查其中引用的文件归属与可达性。
+
 ## 内容
 
 Document 是 B11 v1 或本批 v2 的封闭联合。v2 增加图片、标题、选项/小问列表、表格、教师注记；没有任意 HTML/attrs。列表 item 有显示 label 和有序块，可独立增删排序；表格各行列数相同，不支持合并单元格，复杂原稿表格可保留原图供局部校对。题干的实际内容无需先选题型。
@@ -233,7 +255,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 | MC09 / M010 | taxonomy初始{version:1,types:[],tags:[]}，PUT Taxonomy内容带baseVersion；DeleteType | 分类初始空、ID可关联；改名不换ID，删除解除active/deleted题目关联并增加各版本。NFC/casefold同名422 invalid-taxonomy，循环/重复ID同样拒绝。 |
 | MC10 / M011 | CreateManualV2 → QuestionSavedV2；PUT基于保存结果；CopyV2；GET copies/source/for-reference | 直接编辑同ID；复制新ID、采用时Snapshot，笔记/标记按请求。原题删除后副本来源仍可读，relocateQuestion仅修改import题来源位置。 |
 | MC11 / M012 | B11 CreatePasted/引用/未知请求，迁移后GET v2；加入ImageBlock | 原Document v1不强转，旧ID版本关系保留。未知旧请求在原路径重放；旧GET/列表/覆盖新内容返回UnknownVersion，v2可正常操作。 |
-| MC12 / M013 | ResourceFolders；移动/删除folder与tag；listResources组合查询 | 文件夹含后代筛选，多个tag为AND；删除父目录移到保留祖先，不删除资源；q搜索原文件名/名称/备注。 |
+| MC12 / M013 | ResourceFolders；移动/删除folder与tag；listResources组合查询 | 文件夹含后代筛选，多个tag为AND；删除父目录移到保留祖先，不删除资源；q搜索原文件名/名称/备注及当前可提取正文，未完成读取的进度单独返回。 |
 | MC13 / M015 | PreviewLegacyLimited；SupplementPreview | 原DOC显示limited且实际页可读；绑定本账户PDF后resource.version增加，旧引用不变。原fileId已变或PDF不完整拒绝，不能蒙混成ready。 |
 | MC14 / M016 | CreateLessonV2引用ResourceSaved；ReplaceFile；GET LessonSavedV2形状 | 资源ID/名称/分类/备注保持，源版本增加；旧snapshot.fileId仍F1、latestVersion变2；明确采用2才换F2。采用旧版返回ResourceVersionConflict并原子拒绝整课。 |
 | MC15 / M017 | 对question/resource/import/lesson分别SetDeletion；恢复后查usages/文件 | 删除不改文件/来源/已有快照。活动usages不含已删课，恢复同ID；源deleted仍能供保留引用编辑/导出，不允许新引用采用deleted。 |
