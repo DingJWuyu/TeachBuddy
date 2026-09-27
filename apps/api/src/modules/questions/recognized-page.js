@@ -1,6 +1,7 @@
 import { nativeText, questionStart, answerHeading, continuationHeading } from "./extraction.js";
 import { extractionId, questionLabel } from "./extraction-fragments.js";
 import { documentText, images } from "./materials-content.js";
+import { readTeachingTables } from "./recognized-tables.js";
 
 const length = text => [...text].length;
 const slice = (text, start, end) => [...text].slice(start, end).join("");
@@ -24,15 +25,16 @@ function numberedBlocks(block) {
 
 // Split only the text projection. Adopt the original Document blocks and math
 // runs afterwards; OCR text is never reparsed as a provider's question JSON.
-export function readRecognizedPage(page, { section }) {
+export function readRecognizedPage(page, { section, previous }) {
+  const tables = readTeachingTables(page, {section, previous});
   const entries = [], fragments = [];
   const fragment = (text, locations) => {
     for (let i = 0; i < text.length; i += 20000)
       fragments.push({ id: extractionId(page.resultId, "unassigned", fragments.length),
         text: text.slice(i, i + 20000), locations, disposition: "unassigned" });
   };
-  let answerPage = false, sawQuestion = false, cursor = 0, unresolvedTable = false;
-  for (const raw of page.blocks) {
+  let answerPage = false, sawQuestion = false, cursor = 0, unresolvedTable = tables.partial;
+  for (const [order, raw] of page.blocks.entries()) {
     const location = { ...page.location, box: raw.box };
     if (!sawQuestion && answerHeading.test(pageHeading(raw.text))) answerPage = true;
     if (["header", "footer", "number", "header_image", "footer_image"].includes(raw.block_label) ||
@@ -45,6 +47,7 @@ export function readRecognizedPage(page, { section }) {
     }
     for (let block of raw.document.blocks.flatMap(numberedBlocks)) {
       if (block.type === "table") {
+        if (tables.handled.has(block)) continue;
         // No cell geometry proves a question/teacher-activity boundary here.
         // Keep the original structured table in the immutable machine result.
         fragment(documentText({ version: 2, blocks: [block] }), [location]);
@@ -66,7 +69,7 @@ export function readRecognizedPage(page, { section }) {
       }
       sawQuestion ||= questionStart.test(text);
       entries.push({ block, text, start: cursor, end: cursor + length(text), location,
-        rawId: raw.block_id ?? raw.rawIndex, continues });
+        rawId: raw.block_id ?? raw.rawIndex, continues, order });
       cursor += length(text) + 1;
     }
   }
@@ -142,6 +145,7 @@ export function readRecognizedPage(page, { section }) {
       label: draft.title, section, group: "", continues: continues || "",
       text: documentText(adopted.document), document: adopted.document,
       locations: uniqueLocations(adopted.entries), figureLocations: adopted.figures,
+      order: adopted.entries[0]?.order ?? 0,
       doubts: [...localIssues.map(issue => issue.detail), ...(adopted.unassignedFigure ? ["配图归属未确定"] : [])],
       issueCodes: [...new Set(localIssues.map(issue => issue.code === "unparsed-math" ? "uncertain-formula" : "uncertain-text")),
         ...(adopted.unassignedFigure ? ["missing-figure"] : [])],
@@ -152,12 +156,16 @@ export function readRecognizedPage(page, { section }) {
     if (draft.parts.some(part => part.role === "solution")) record(draft, "answer", adopt(draft, "solution"));
   }
   for (const item of parsed.fragments) fragment(item.text, uniqueLocations(within(item.locations)));
+  records.push(...tables.records);
+  records.sort((a, b) => a.order - b.order);
+  records.forEach(record => { delete record.order; });
+  fragments.push(...tables.fragments);
   // Images not represented by a raw text block remain visible through their
   // source page instead of being attached to an arbitrary last question.
   const represented = new Set(page.blocks.flatMap(block => images(block.document)));
   if (images(page.document).some(id => !represented.has(id)))
     fragment("页面中另有未确定归属的配图，请对照原稿。", [page.location]);
-  return { drafts: [], fragments, records,
+  return { drafts: [], fragments, records, teachingTables: tables.recognized, tableContext: tables.context,
     ...(unresolvedTable ? {code: "invalid-output", issueDetail: "表格中的题目、活动或点评尚未可靠区分，已保留在未分配内容中，请对照原稿校对。"} : {}),
     recognition: { resultId: page.resultId, revision: page.revision, rawFileId: page.rawFileId } };
 }

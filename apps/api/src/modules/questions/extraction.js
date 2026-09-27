@@ -524,6 +524,15 @@ export function createExtractionHandler({
       }
       let result, recognitionSource;
       try {
+        const previous = unit.file && task.machineResults?.[`file:${unit.file.id}:page:${unit.page - 1}`]?.tableContext;
+        if (unit.file && !provider && recognition) {
+          const source = {fileId: unit.file.id, renditionFileId: unit.preview.renditionFileId, page: unit.page};
+          const ready = recognition.readPage(p, source);
+          if (ready.state === 'ready' && ready.revision === recognition.get(p, source).revision) {
+            const projected = readRecognizedPage(recognition.readResult(p, ready.resultId, source), {section: unit.file.id, previous});
+            if (projected.teachingTables) result = projected;
+          }
+        }
         if (unit.text !== undefined)
           result = unit.result ?? nativeText(unit.text, unit.location);
         else if (provider)
@@ -537,7 +546,7 @@ export function createExtractionHandler({
             }),
             [unit.location],
           );
-        else if (readPdf && files.read(p, unit.preview.renditionFileId).mediaType === "application/pdf") {
+        else if (!result && readPdf && files.read(p, unit.preview.renditionFileId).mediaType === "application/pdf") {
           result = await readPdf(p, unit, signal);
         }
         if (!result) {
@@ -551,11 +560,11 @@ export function createExtractionHandler({
             continue;
           }
           result = readRecognizedPage(recognition.readResult(p, page.resultId, source), {
-            section: unit.file.id,
+            section: unit.file.id, previous,
           });
         }
         result.records?.forEach((record, index) => {
-          record.id = extractionId(m.id, unit.id, "records", index);
+          record.id = extractionId(m.id, unit.id, "records", record.sourceKey ?? index);
           if (result.recognition || !provider) record.collection = m.id;
         });
         if (unit.file)
