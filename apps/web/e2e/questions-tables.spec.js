@@ -61,6 +61,46 @@ const math=document=>{const result=[];walkBlocks(document.blocks,b=>{if(b.type==
 const intro=()=>response(table([header,['【例19】判断下列函数的性质。','教师组织讨论','设计点评文字']]));
 const tail=()=>response(table([['【练习23】计算 $g(t)=7t+4$。','教师巡视','教学目的']]));
 
+test('HTTP：缺少题目数据的引导语换词或含数学名称仍保留为未分配',async()=>{
+  const file=await upload(sourceImage('I-1'),'introductions.png');
+  const incomplete=[
+    '【例61】判断下列函数的奇偶性。',
+    '【例62】判断以下函数的奇偶性。',
+    '【例63】判断下列函数 $f(x)$ 的奇偶性。',
+    '【练习64】研究函数 $g(t)$ 的单调性。',
+    '【思考65】判断函数性质。<p>(1)</p><p>(2)</p>',
+  ];
+  await recognize(file,[1],[response(table([header,...incomplete.map(body=>[body,'教师讨论','点评'])]))]);
+  const {job,material}=await collect(file,[1]);
+  expect.soft(job.state).toBe('partial');
+  expect.soft(material.drafts.map(d=>d.title)).toEqual([]);
+  for(const number of [61,62,63,64,65])expect.soft(material.fragments.map(f=>f.text).join('\n')).toContain(String(number));
+  expect(recognizer.calls).toHaveLength(1);
+});
+
+for(const boundary of ['<caption>教学环节：新的活动</caption>','<p>【教学环节】新的活动</p>']){
+  test(`HTTP：同识别块的表前边界阻断继承 ${boundary.startsWith('<caption>')?'caption':'paragraph'}`,async()=>{
+    const file=await upload(fs.readFileSync(pdf),'material.pdf');
+    const continued=table([['【练习2】计算 $z(t)=8t+3$。','教师活动','点评']]);
+    const html=boundary.startsWith('<caption>')?continued.replace('<table>',`<table>${boundary}`):boundary+continued;
+    await recognize(file,[1,2],[intro(),response(html)]);
+    const {material}=await collect(file,[1,2]);
+    expect(material.drafts.some(d=>d.title==='练习2')).toBe(false);
+    expect(recognizer.calls).toHaveLength(2);
+  });
+}
+
+test('HTTP：同识别块的表后标题清除跨页范围，新表头仍可重新识别',async()=>{
+  const file=await upload(fs.readFileSync(pdf),'material.pdf');
+  const boundary='<p>教学环节：新的活动</p>';
+  await recognize(file,[1,2,3],[response(table([header,['【例19】判断函数性质。','活动','点评']])+boundary),tail(),
+    response(boundary+table([['设计点评','教学内容','师生活动'],['点评','【练习75】求 $r(t)=4t+2$。','活动']]))]);
+  const {material}=await collect(file,[1,2,3]);
+  expect(material.drafts.some(d=>d.title==='练习23')).toBe(false);
+  expect(material.drafts.filter(d=>d.title==='练习75')).toHaveLength(1);
+  expect(recognizer.calls).toHaveLength(3);
+});
+
 // Both inputs and raw output are external private evidence, not generated here.
 test('HTTP：真实 E.pdf 已有识别页分出练习与思考，保留原7/8和配图',async()=>{
   test.skip(!process.env.M33_PRIVATE_PDF||!process.env.QUESTIONS_OCR_EVIDENCE_DIR,'需要固定私有E及已有doc3页证据');

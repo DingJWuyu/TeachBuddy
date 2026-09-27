@@ -166,6 +166,6 @@ export function readRecognizedPage(page, { section, previous }) {
   if (images(page.document).some(id => !represented.has(id)))
     fragment("页面中另有未确定归属的配图，请对照原稿。", [page.location]);
   return { drafts: [], fragments, records, teachingTables: tables.recognized, tableContext: tables.context,
-    ...(unresolvedTable ? {code: "invalid-output", issueDetail: "表格中的题目、活动或点评尚未可靠区分，已保留在未分配内容中，请对照原稿校对。"} : {}),
+    ...(unresolvedTable ? {code: "invalid-output", issueDetail: `第 ${page.location.page} 页：表格中的题目、活动或点评尚未可靠区分，已保留在未分配内容中，请对照原稿校对。`} : {}),
     recognition: { resultId: page.resultId, revision: page.revision, rawFileId: page.rawFileId } };
 }

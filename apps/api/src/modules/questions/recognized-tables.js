@@ -40,6 +40,24 @@ function parts(blocks) {
   return result;
 }
 
+// A title plus an instruction or a mathematical name is not question data.
+// Require a populated subquestion, an explicit mathematical relation, or a
+// source figure. Other prose stays available for manual assignment.
+function hasQuestionData(blocks, cellHasImage) {
+  const body = text(blocks);
+  if (images({blocks}).length || cellHasImage && /如图|[配附]图|\[图[:：]|图示/.test(body)) return true;
+  if (/(?:^|\n)[ \t]*[（(][0-9０-９]+[）)][ \t]*[^\s，,；;。.:：（）()]/.test(body)) return true;
+  let data = false;
+  const relation = /\S\s*(?:[=<>≤≥≠]|\\(?:leq?|geq?|neq?|in|equiv)(?![a-zA-Z]))\s*\S/;
+  walkBlocks(blocks, block => {
+    if (block.type === 'math') data ||= relation.test(block.latex);
+    for (const run of block.runs ?? []) if (run.type === 'math') data ||= relation.test(run.latex);
+    if (block.type === 'list' && ['subquestions', 'options'].includes(block.role))
+      data ||= block.items.some(item => text(item.blocks).trim());
+  });
+  return data;
+}
+
 export function readTeachingTables(page, {section, previous} = {}) {
   const records = [], fragments = [], handled = new Set();
   const occurrences = new Map();
@@ -53,12 +71,14 @@ export function readTeachingTables(page, {section, previous} = {}) {
   };
   for (const [order, raw] of page.blocks.entries()) {
     if (furniture.has(raw.block_label) || ['paragraph_title', 'doc_title'].includes(raw.block_label) && /^\s*第\s*\d+\s*页/.test(raw.text)) continue;
-    if (!raw.document.blocks.some(block => block.type === 'table')) {
-      context = null;
-      first = false;
-      continue;
-    }
-    for (const table of raw.document.blocks.filter(block => block.type === 'table')) {
+    for (const table of raw.document.blocks) {
+      // Captions and surrounding paragraphs share the raw OCR block with a
+      // table. Their original order still bounds the inherited table scope.
+      if (table.type !== 'table') {
+        context = null;
+        first = false;
+        continue;
+      }
       const location = {...page.location, box: raw.box};
       const header = row => {
         const roles = row.map(cell => role(text(cell.blocks)));
@@ -101,13 +121,12 @@ export function readTeachingTables(page, {section, previous} = {}) {
         row.filter(cell => cell !== content).forEach(cell => fragment(cell.blocks, location));
         const values = parts(content.blocks);
         const markers = values.filter(value => value.marker).length;
+        const cellHasImage = images({blocks: content.blocks}).length > 0;
         let current = null;
         const finish = () => {
           if (!current) return;
           const body = text(current.blocks);
-          let hasMath = false;
-          walkBlocks(current.blocks, block => { hasMath ||= block.type === 'math' || block.runs?.some(run => run.type === 'math'); });
-          if (!body.trim() || /下列/.test(body) && !hasMath && !/[（(][0-9０-９]+[）)]/.test(body) && !images({blocks: current.blocks}).length) {
+          if (!body.trim() || !hasQuestionData(current.blocks, cellHasImage)) {
             fragment([{type: 'paragraph', runs: [{type: 'text', text: current.marker}]}, ...current.blocks], location);
             partial = true; current = null; return;
           }
