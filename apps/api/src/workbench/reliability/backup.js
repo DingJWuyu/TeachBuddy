@@ -116,6 +116,7 @@ function contentSchemas(db) {
     }
   }
   const jsonColumns = {
+    classes_records: ["content"],
     question_items: ["body", "solution", "source"],
     lesson_items: ["intro"],
     lesson_sections: ["content"],

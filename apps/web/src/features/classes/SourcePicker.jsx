@@ -40,6 +40,7 @@ export function SourceChips({ sources, onRemove, onPick, returnPath, disabled = 
             >
               {label}
             </button>
+            {source.unavailable && <span className="wb-muted" role="status">{source.unavailable === 'missing' ? '无法找到资料' : '资料暂不可用'}</span>}
             {source.deleted && <span className="wb-tag is-deleted">已删除</span>}
             {hint && <span className="c-source-hint">{hint}</span>}
             {onRemove && (

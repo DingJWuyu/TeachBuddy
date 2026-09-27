@@ -146,3 +146,27 @@ export function listTeachingWorks({ q = '', kind = '' } = {}) {
     return assertList(body, '作品');
   });
 }
+
+export async function listClassOverview() {
+  return call(async () => assertList((await workbenchGet('/api/modules/classes/overview')).body, '班级进度'));
+}
+
+export async function purgeRecord({ key, id, payload }) {
+  return call(async () => {
+    const { body } = await workbenchPost(`/api/modules/classes/v2/records/${id}/purge`, payload, key);
+    if (body?.id !== id || body.permanentlyDeleted !== true) throw new WorkbenchError(unexpectedSuccessProblem('删除结果无法识别'));
+    return body;
+  });
+}
+export async function setNextNoteVisibility({ key, id, payload }) {
+  return call(async () => assertItem((await workbenchPost(`/api/modules/classes/v2/records/${id}/next-note-visibility`, payload, key)).body, '教学想法'));
+}
+
+export async function moveRecord({ key, id, payload }) {
+  return call(async () => {
+    const { body } = await workbenchPost(`/api/modules/classes/v2/records/${id}/move`, payload, key);
+    if (body?.originalId !== id || body?.record?.classId !== payload.targetClassId) throw new WorkbenchError(unexpectedSuccessProblem('移动结果无法识别'));
+    assertItem(body.record, '移动记录');
+    return body;
+  });
+}

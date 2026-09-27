@@ -1,8 +1,11 @@
+import { DocumentView } from '../workbench/materials/DocumentView.jsx';
 /**
  * Actual records for one class: newest first, readable in place, editable,
  * deletable and restorable. Opening a record edits it inline, so the list keeps
  * its scroll and the editor's draft survives leaving and returning.
  */
+import { useScene } from '../workbench/useScene.js';
+import { RecordSearch, EMPTY_FILTER, hasRecordFilter, matchesRecord } from './RecordSearch.jsx';
 import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../workbench/icons.jsx';
@@ -13,7 +16,7 @@ import { formatRecordedOn } from './model.js';
 import { RecordEditor, RECORD_EXTRA_FIELDS } from './RecordEditor.jsx';
 import { SourceChips } from './SourcePicker.jsx';
 
-function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onChanged, readOnly, justCreated, onRevealed }) {
+function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onChanged, readOnly, justCreated, onRevealed, onPurge, onNextNote, nextNoteBusy, onMove, moveBusy }) {
   const [confirming, setConfirming] = useState(false);
   const deletion = useIdempotentSubmit({ accountKey, name: `pending:class-record-deletion:${record.id}` });
   const deleted = record.deletedAt !== null;
@@ -77,12 +80,18 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
                   删除记录
                 </MenuItem>
               )}
+              {!deleted && <MenuItem icon="classes" disabled={moveBusy || deletion.isRunning || Boolean(deletion.pending)} onClick={() => { close(); onMove(record); }}>移到其他班级</MenuItem>}
+              {deleted && <MenuItem icon="trash" danger onClick={() => { close(); onPurge(record); }}>彻底删除记录</MenuItem>}
+              {!deleted && record.nextNote?.trim() && <MenuItem icon="calendar" disabled={nextNoteBusy} onClick={() => { close(); onNextNote(record, !record.nextNoteHidden); }}>
+                {record.nextNoteHidden ? '恢复想法提示' : '不再提示这条想法'}
+              </MenuItem>}
             </>
           )}
         </Popover>}
       </div>
       <ModulePresence present={!open || readOnly || deleted} mode="collapse">
       {record.note && <p className="c-record-note">{record.note}</p>}
+      {record.content?.blocks.length > 0 && <DocumentView value={record.content} className="c-record-content" />}
       {RECORD_EXTRA_FIELDS.map(([key, label]) => (record[key]
         ? (
           <p className="c-record-field" key={key}>
@@ -128,21 +137,37 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
   );
 }
 
-export function RecordList({ accountKey, generation, records, state, onStateChange, openRecordId, onOpen, onClose, onChanged, readOnly = false, createdId, onRevealed }) {
+export function RecordList({ classId, accountKey, generation, records, state, onStateChange, openRecordId, onOpen, onClose, onChanged, readOnly = false, createdId, onRevealed, onPurge, onNextNote, nextNoteBusy, onMove, moveBusy }) {
+  const [scene, patchScene] = useScene(accountKey, `class-search:${classId}:${state}`, { ...EMPTY_FILTER, open: false, advanced: false });
+  const searchTrigger = useRef(null);
+  function closeSearch() {
+    patchScene({ ...EMPTY_FILTER, open: false });
+    searchTrigger.current?.focus({ preventScroll: true });
+  }
+  const filtered = records.filter(record => matchesRecord(record, scene));
+  const pinned = records.find(record => record.id === openRecordId && !filtered.includes(record));
+  const visible = pinned ? [pinned, ...filtered] : filtered;
   return (
     <section className="c-records" data-region="record-list">
       <div className="c-records-head">
-        <h2 className="c-section-title"><Icon name="history" size={18} />{state === 'deleted' ? '已删除的记录' : '教学记录'} <span className="c-record-count">{records.length}</span></h2>
+        <h2 className="c-section-title"><Icon name="history" size={18} />{state === 'deleted' ? '已删除的记录' : '教学记录'} <span className="c-record-count">{hasRecordFilter(scene) ? `${filtered.length} / ${records.length}` : records.length}</span></h2>
+        <button ref={searchTrigger} className="wb-icon-button" aria-label="查找记录" title="查找记录" aria-expanded={scene.open} onClick={() => patchScene({ ...(scene.open ? EMPTY_FILTER : {}), open: !scene.open })}><Icon name="search" size={17} /></button>
         {state === 'deleted' ? <button className="wb-button c-text-action" onClick={() => { onClose(); onStateChange('active'); }}><Icon name="back" size={14} />返回教学记录</button>
           : <Popover label="教学记录选项">{({ close }) => <MenuItem icon="trash" onClick={() => { close(); onClose(); onStateChange('deleted'); }}>已删除的记录</MenuItem>}</Popover>}
       </div>
+      <ModulePresence present={scene.open} mode="collapse">
+        {scene.open && <RecordSearch filter={scene} onChange={patchScene} records={records} advanced={scene.advanced}
+          onAdvanced={advanced => patchScene({ advanced })} onClose={closeSearch} />}
+      </ModulePresence>
+      {pinned && <p className="wb-muted">当前打开的记录不在筛选范围内，仍显示在下方。</p>}
+      {records.length > 0 && filtered.length === 0 && <p className="wb-empty-note" role="status">没有符合条件的记录，试试其他关键词或清除筛选。</p>}
       {records.length === 0 && (
         <p className="wb-empty-note" data-region="record-empty">
           {state === 'deleted' ? '没有已删除的记录' : '保存的课堂记录会按日期留在这里，下次上课前随时回看。'}
         </p>
       )}
       <ul className="c-record-list" data-region="record-rows">
-        {records.map((record) => (
+        {visible.map((record) => (
           <RecordCard
             key={record.id}
             accountKey={accountKey}
@@ -155,6 +180,7 @@ export function RecordList({ accountKey, generation, records, state, onStateChan
             onChanged={onChanged}
             justCreated={createdId === record.id}
             onRevealed={onRevealed}
+            onPurge={onPurge} onNextNote={onNextNote} nextNoteBusy={nextNoteBusy} onMove={onMove} moveBusy={moveBusy}
           />
         ))}
       </ul>

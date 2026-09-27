@@ -185,8 +185,10 @@ test("WB-MTA002/004/005/007: transactions, tombstones, failures, replay and isol
   assert.equal(before.sources[0].currentLabel, q.title);
   assert.deepEqual(
     await call("GET", `/api/modules/classes/records/${before.id}`),
-    before,
+    Object.fromEntries(Object.entries(before).filter(([key]) => ! ["nextNoteHidden", "content"].includes(key))),
   );
+  assert.equal(before.nextNoteHidden, false);
+  assert.deepEqual(before.content, { version: 2, blocks: [] });
   assert.deepEqual(
     await call(
       "POST",
@@ -218,6 +220,7 @@ test("WB-MTA002/004/005/007: transactions, tombstones, failures, replay and isol
         )
         .all(),
     );
+  const newSource = await call("POST", Q, question("尚未关联的题"), 201);
   const key = randomUUID(),
     payload = { ...legacy.body, expectedVersion: 1, note: "恢复后只保存一次" };
   for (const status of [404, 503]) {
@@ -231,18 +234,22 @@ test("WB-MTA002/004/005/007: transactions, tombstones, failures, replay and isol
     };
     const stable = rows(),
       receipts = count();
-    await call("GET", `${R}/${before.id}`, undefined, status);
-    await call("GET", `${R}?classId=${before.classId}`, undefined, status);
+    const degraded = await call("GET", `${R}/${before.id}`);
+    assert.equal(degraded.note, before.note);
+    assert.equal(degraded.sources[0].unavailable, status === 404 ? 'missing' : 'temporary');
+    assert.equal(degraded.sources[0].deleted, null);
+    assert.ok((await call("GET", `${R}?classId=${before.classId}`)).items.some(item => item.id === before.id));
+    await call("GET", `/api/modules/classes/records/${before.id}`, undefined, status);
     await call(
       "GET",
       `/api/modules/classes/v2/source-records/question/${q.id}`,
       undefined,
       status,
     );
-    await call("PUT", `${R}/${before.id}`, payload, status, key);
+    await call("PUT", `${R}/${before.id}`, { ...payload, sources: [...payload.sources, { kind: "question", id: newSource.id }] }, status, key);
     await call(
       "POST",
-      `${R}/${before.id}/deletion`,
+      `/api/modules/classes/records/${before.id}/deletion`,
       { expectedVersion: 1, deleted: true },
       status,
     );

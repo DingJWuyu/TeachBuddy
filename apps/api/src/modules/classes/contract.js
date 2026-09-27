@@ -1,5 +1,5 @@
 // Classes contract helpers consume the shared B11/T50 problem vocabulary.
-import { workbenchProblemTypes } from '@refatos/shared';
+import { workbenchProblemTypes, recordContentText } from '@refatos/shared';
 import { ContractError, problemStatus, problems as baseProblems } from '../../workbench/problems.js';
 
 /** Build a contract error for a base or module-owned problem. */
@@ -84,5 +84,5 @@ export function recordLabel(record) {
     const text = String(candidate ?? '').trim();
     if (text !== '') return truncateLabel(text);
   }
-  return '';
+  return truncateLabel(recordContentText(record.content));
 }

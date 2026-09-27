@@ -10,7 +10,7 @@ import { ConfirmDialog, MenuItem, Popover } from '../workbench/ModuleOverlays.js
 import { ModuleDisclosure, ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
-import { setClassDeletion, updateClass } from './api.js';
+import { setClassDeletion, updateClass, setNextNoteVisibility } from './api.js';
 import { formatRecordedOn, latestPosition } from './model.js';
 import { RecordComposer } from './RecordComposer.jsx';
 import { RecordList } from './RecordList.jsx';
@@ -33,6 +33,9 @@ export function ClassDetail({
   onChooseClass,
   onHome,
   onDelete,
+  onPurgeRecord,
+  onMoveRecord,
+  moveBusy,
   detailScrollTop,
   onDetailScrollTop
 }) {
@@ -48,7 +51,16 @@ export function ClassDetail({
   const locatedRecord = [...activeRecords, ...(records.deleted ?? [])].find(record => record.id === openRecordId);
   const editing = Boolean(openRecordId && !deleted && (!locatedRecord || !locatedRecord.deletedAt));
   const position = latestPosition(activeRecords);
-  const next = activeRecords.find(record => record.nextNote?.trim());
+  const latestNext = activeRecords.find(record => record.nextNote?.trim());
+  const next = latestNext?.nextNoteHidden ? null : latestNext;
+  const nextNote = useIdempotentSubmit({ accountKey, name: `pending:class-next-note:${classroom.id}` });
+  const [review, patchReview] = useScene(accountKey, `class-review:${classroom.id}`, { open: false, count: 5 });
+  const reviewRecords = activeRecords.filter(record => record.unfinished.trim() || record.commonIssues.trim() || record.nextNote.trim() && !record.nextNoteHidden);
+  async function changeNextNote(record, hidden) {
+    const run = ({ key, payload }) => setNextNoteVisibility({ key, id: payload.id, payload: { expectedVersion: payload.expectedVersion, hidden: payload.hidden } });
+    const result = nextNote.pending ? await nextNote.retry(run) : await nextNote.submit(run, { id: record.id, expectedVersion: record.version, hidden });
+    if (result) onReloadRecords();
+  }
   const [createdId, setCreatedId] = useState(null);
   const scroll = useScrollRestore(detailScrollTop || 0, onDetailScrollTop, classroom.id);
   const pendingScroll = useRef(detailScrollTop || 0);
@@ -227,9 +239,26 @@ export function ClassDetail({
           {next && <div className="c-overview-item" data-region="latest-next-note">
             <span className="c-overview-label"><Icon name="calendar" size={16} />下次教学想法<time dateTime={next.recordedOn}>{formatRecordedOn(next.recordedOn)}</time></span>
             <p>{next.nextNote}</p>
+            {!deleted && <button className="wb-button c-text-action" disabled={nextNote.isRunning || Boolean(nextNote.pending)} onClick={() => changeNextNote(next, true)}>不再提示这条想法</button>}
           </div>}
         </div>}
 
+        {nextNote.status === 'unconfirmed' && <div className="wb-inline-error" role="status">想法提示的修改结果未确认。<button className="wb-button" onClick={() => changeNextNote()}>重试修改想法提示</button></div>}
+        {nextNote.status === 'failed' && <p className="wb-inline-error" role="alert">{nextNote.problem?.message}</p>}
+        {reviewRecords.length > 0 && <div className="c-review">
+          <button className="wb-button c-text-action" aria-expanded={review.open} onClick={() => patchReview({ open: !review.open })}><Icon name="history" size={16} />课前回顾</button>
+          <ModuleDisclosure open={review.open}>
+            <div className="c-review-records" data-region="class-review">
+              {reviewRecords.slice(0, review.count).map(record => <div key={record.id} className="c-review-record">
+                <button className="wb-button c-text-action" onClick={() => openEditor(record.id)}><time>{formatRecordedOn(record.recordedOn)}</time><span>查看原记录</span></button>
+                {record.unfinished && <p><span className="wb-label">还没讲的内容</span>{record.unfinished}</p>}
+                {record.commonIssues && <p><span className="wb-label">学生普遍遇到的问题</span>{record.commonIssues}</p>}
+                {record.nextNote && !record.nextNoteHidden && <p><span className="wb-label">下次教学想法</span>{record.nextNote}</p>}
+              </div>)}
+              {reviewRecords.length > review.count && <button className="wb-button c-text-action" onClick={() => patchReview({ count: review.count + 5 })}>查看更早记录</button>}
+            </div>
+          </ModuleDisclosure>
+        </div>}
         {!deleted && (
           <ModuleDisclosure open={!editing} className="c-composer-disclosure">
           <RecordComposer
@@ -244,6 +273,7 @@ export function ClassDetail({
           </ModuleDisclosure>
         )}
 
+        {activeRecords.some(record => record.sources.some(source => source.unavailable)) && <div className="c-pane-note"><button className="wb-button c-text-action" onClick={onReloadRecords}>重试关联资料</button></div>}
         {recordsStatus === 'loading' && <p className="wb-muted c-pane-note">正在加载记录…</p>}
         {recordsStatus === 'error' && (
           <div className="wb-inline-error c-pane-note" data-region="records-error">
@@ -256,7 +286,8 @@ export function ClassDetail({
           <button className="wb-button" onClick={closeEditor}>返回教学记录</button>
         </div>}
         {(records.active !== null || records.deleted !== null) && (
-          <RecordList
+          <RecordList onMove={onMoveRecord} moveBusy={moveBusy}
+            classId={classroom.id}
             readOnly={deleted}
             accountKey={accountKey}
             generation={generation}
@@ -267,6 +298,7 @@ export function ClassDetail({
             onOpen={openEditor}
             onClose={closeEditor}
             onChanged={onReloadRecords}
+            onPurge={onPurgeRecord} onNextNote={changeNextNote} nextNoteBusy={nextNote.isRunning || Boolean(nextNote.pending)}
             createdId={createdId}
             onRevealed={() => setCreatedId(null)}
           />

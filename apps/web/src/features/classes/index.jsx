@@ -1,3 +1,4 @@
+import { RecordMoveDialog } from './RecordMoveDialog.jsx';
 /**
  * Classes module page: /classes, /classes/:classId and
  * /classes/:classId/records/:recordId.
@@ -13,7 +14,7 @@ import { useScene } from '../workbench/useScene.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import { navigate } from '../workbench/routes.js';
 import { Icon } from '../workbench/icons.jsx';
-import { listClasses, listRecords, purgeClass } from './api.js';
+import { listClasses, listRecords, purgeClass, purgeRecord, moveRecord } from './api.js';
 import { DEFAULT_TIME_ZONE } from './model.js';
 import { ClassList, ClassCreateDialog } from './ClassList.jsx';
 import { ClassDetail } from './ClassDetail.jsx';
@@ -21,6 +22,7 @@ import { ClassHome } from './ClassHome.jsx';
 import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
 import { ConfirmDialog } from '../workbench/ModuleOverlays.jsx';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
+import { readLocal, removeLocal } from '../workbench/storage.js';
 import './classes.css';
 
 const NAVIGATION_EVENT = 'tb:navigate';
@@ -93,6 +95,11 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   const [recordsStatus, setRecordsStatus] = useState('idle');
   const [recordsError, setRecordsError] = useState(null);
   const [recordReload, setRecordReload] = useState(0);
+  const [movingRecord, setMovingRecord] = useState(null);
+  const [moveNotice, setMoveNotice] = useState('');
+  const moving = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:record-move' });
+  const [confirmingRecordPurge, setConfirmingRecordPurge] = useState(null);
+  const recordPurge = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:record-purge' });
   const [confirmingPurge, setConfirmingPurge] = useState(null);
   // The request survives its card disappearing after deletion, including reload.
   const purge = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:class-purge' });
@@ -198,6 +205,41 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
     refreshClasses();
     goHome('archived');
   }
+  async function confirmRecordPurge() {
+    const record = confirmingRecordPurge;
+    setConfirmingRecordPurge(null);
+    const run = ({ key, payload }) => purgeRecord({ key, id: payload.id, payload: { expectedVersion: payload.expectedVersion } });
+    const result = recordPurge.pending ? await recordPurge.retry(run)
+      : record && await recordPurge.submit(run, { id: record.id, expectedVersion: record.version });
+    if (!result) return;
+    removeLocal(shell.accountKey, `draft:class-record:${result.id}`);
+    setRecords(current => ({ ...current, deleted: current.deleted?.filter(item => item.id !== result.id) ?? null }));
+    refreshRecords();
+    if (located.recordId === result.id) closeRecord();
+  }
+  function requestMove(record) {
+    if (moving.isRunning || moving.pending) return;
+    if (readLocal(shell.accountKey, `draft:class-record:${record.id}`) || readLocal(shell.accountKey, `pending:class-image:record:${record.id}`)) {
+      setMoveNotice('这条记录有未保存的修改或图片，请先保存或处理草稿，再移动。');
+      openRecord(record.id);
+      return;
+    }
+    setMoveNotice(''); setMovingRecord(record);
+  }
+  async function confirmMove(targetClassId) {
+    const record = movingRecord;
+    setMovingRecord(null);
+    const run = ({ key, payload }) => moveRecord({ key, id: payload.id, payload: { expectedVersion: payload.expectedVersion, targetClassId: payload.targetClassId } });
+    const result = moving.pending ? await moving.retry(run) : record && await moving.submit(run, { id: record.id, expectedVersion: record.version, targetClassId });
+    if (!result) return;
+    refreshRecords(); refreshClasses();
+    patchScene({ classListOpen: false, recordState: 'active' });
+    setMoveNotice('记录已移动，原记录保留在原班级的“已删除”中。');
+    navigate(`/classes/${result.record.classId}/records/${result.record.id}`);
+  }
+  function requestRecordPurge(record) {
+    if (!recordPurge.isRunning && !recordPurge.pending) setConfirmingRecordPurge(record);
+  }
   function requestPurge(classroom) {
     if (!purge.isRunning && !purge.pending) setConfirmingPurge(classroom);
   }
@@ -215,6 +257,14 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
 
   return (
     <div className="wb-page wb-module c-classes" data-region="classes-index">
+      {moveNotice && <p className="wb-muted c-pane-note" role="status">{moveNotice}<button className="wb-button c-text-action" onClick={() => setMoveNotice('')}>知道了</button></p>}
+      {moving.isRunning && <p className="wb-muted c-pane-note" role="status">正在移动记录…</p>}
+      {moving.status === 'unconfirmed' && <div className="wb-inline-error" role="status">暂时无法确认记录是否移动。<button className="wb-button" onClick={() => confirmMove()}>重试移动记录</button></div>}
+      {moving.status === 'failed' && <p className="wb-inline-error" role="alert">{moving.problem?.message || '移动失败'}<button className="wb-button" onClick={() => { moving.reset(); refreshRecords(); }}>刷新记录</button></p>}
+      {recordPurge.isRunning && <p className="wb-muted c-pane-note" role="status">正在确认记录删除结果…</p>}
+      {recordPurge.status === 'unconfirmed' && <div className="wb-inline-error" role="status">暂时无法确认是否彻底删除记录。
+        <button className="wb-button" onClick={confirmRecordPurge}>重试删除记录</button></div>}
+      {recordPurge.status === 'failed' && <div className="wb-inline-error" role="alert">{recordPurge.problem?.message || '记录删除失败'}<button className="wb-button" onClick={refreshRecords}>刷新记录</button></div>}
       {purge.isRunning && <p className="wb-muted c-pane-note" role="status">正在确认删除结果…</p>}
       {purge.status === 'unconfirmed' && <div className="wb-inline-error" role="status">暂时无法确认是否彻底删除「{purge.pending.payload.name}」。
         <button className="wb-button" onClick={confirmPurge}>重试确认</button></div>}
@@ -240,6 +290,8 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
             onChooseClass={() => patchScene({ classListOpen: true })}
             onHome={() => goHome()}
             onDelete={requestPurge}
+            onPurgeRecord={requestRecordPurge}
+            onMoveRecord={requestMove} moveBusy={moving.isRunning || Boolean(moving.pending)}
             detailScrollTop={scene.detailScroll?.classId === selected.id ? scene.detailScroll.top : 0}
             onDetailScrollTop={(top) => patchScene({ detailScroll: { classId: selected.id, top } })}
           />
@@ -269,6 +321,13 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
         {scene.classListOpen && <ClassChooser onClose={() => patchScene({ classListOpen: false })}>
           {renderClasses(() => patchScene({ classListOpen: false }))}
         </ClassChooser>}
+      </ModulePresence>
+      <ModulePresence present={Boolean(movingRecord)}>
+        {movingRecord && <RecordMoveDialog record={movingRecord} classes={classes.active ?? []} onCancel={() => setMovingRecord(null)} onConfirm={confirmMove} />}
+      </ModulePresence>
+      <ModulePresence present={Boolean(confirmingRecordPurge)}>
+        {confirmingRecordPurge && <ConfirmDialog title="彻底删除记录" message="永久删除这条课堂记录，无法恢复。关联的资料和日程会保留。"
+          confirmLabel="彻底删除" onCancel={() => setConfirmingRecordPurge(null)} onConfirm={confirmRecordPurge} />}
       </ModulePresence>
       <ModulePresence present={Boolean(confirmingPurge)}>
         {confirmingPurge && <ConfirmDialog title="彻底删除班级"

@@ -1,3 +1,4 @@
+import { emptyRecordContent, recordContentText } from '@refatos/shared';
 /**
  * Classes feature model: record input shapes, display projections and the
  * account-today default.
@@ -36,6 +37,7 @@ export function emptyRecordInput(classId, recordedOn) {
     unfinished: '',
     commonIssues: '',
     nextNote: '',
+    content: emptyRecordContent(),
     sources: []
   };
 }
@@ -50,11 +52,13 @@ export function recordInputFromRecord(record) {
     unfinished: record.unfinished,
     commonIssues: record.commonIssues,
     nextNote: record.nextNote,
+    content: record.content ?? emptyRecordContent(),
     sources: (record.sources || []).map((source) => ({
       kind: source.kind,
       id: source.id,
       label: source.currentLabel,
       savedLabel: source.labelAtLink,
+      unavailable: source.unavailable,
       deleted: source.deleted
     }))
   };
@@ -70,6 +74,7 @@ export function recordUpdatePayload(input, baseline) {
     unfinished: input.unfinished,
     commonIssues: input.commonIssues,
     nextNote: input.nextNote,
+    content: input.content ?? emptyRecordContent(),
     sources: input.sources.map((source) => ({ kind: source.kind, id: source.id }))
   };
 }
@@ -83,13 +88,14 @@ export function recordCreatePayload(input) {
     unfinished: input.unfinished,
     commonIssues: input.commonIssues,
     nextNote: input.nextNote,
+    content: input.content ?? emptyRecordContent(),
     sources: input.sources.map((source) => ({ kind: source.kind, id: source.id }))
   };
 }
 
 export function hasAnyRecordText(input) {
   return [input.note, input.position, input.unfinished, input.commonIssues, input.nextNote]
-    .some((value) => String(value ?? '').trim() !== '');
+    .some((value) => String(value ?? '').trim() !== '') || Boolean(recordContentText(input.content));
 }
 
 /** The excerpt shown for one record: its text, or the first non-empty field. */
@@ -99,7 +105,7 @@ export function recordExcerpt(record) {
     const text = String(candidate ?? '').trim();
     if (text !== '') return text;
   }
-  return '';
+  return recordContentText(record.content);
 }
 
 /**
@@ -118,7 +124,7 @@ export function latestPosition(records) {
 export function formatRecordedOn(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ''));
   if (!match) return String(value ?? '');
-  return `${Number(match[2])}月${Number(match[3])}日`;
+  return `${match[1]}年${Number(match[2])}月${Number(match[3])}日`;
 }
 
 export function sourceKindLabel(kind) {
