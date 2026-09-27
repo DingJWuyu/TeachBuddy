@@ -4,13 +4,13 @@
 
 `/home/liam_t/项目/TeacherWorkspace-preview` 是集成树。五个模块各有现存 worktree 和 Codex session，见下表；原 `TeacherWorkspace` 的 main 保持不动。当前分支、HEAD 与未提交修改用 Git 核对，不以文档快照代替。
 
-用户授权“总控”session 读取五个会话、收发消息、协调下一步和处理回到 preview 的集成冲突。五模块已恢复下方指定任务，用户体验入口直接运行 preview 当前源码；每个 session 的写入和运行范围由本轮任务包限定。AI/Agent worktree 不在本轮范围，不扩展全站外壳、文件物理回收或目标设备验证。
+用户授权“总控”session 读取五个会话、收发消息、协调下一步和处理回到 preview 的集成冲突。五模块本轮指定任务的结果与接续见下表，用户体验入口直接运行 preview 当前源码；每个 session 的写入和运行范围由任务包限定。AI/Agent worktree 不在本轮范围，不扩展全站外壳、文件物理回收或目标设备验证。
 
 总控统一负责共享文件、集成候选与实例更新安排；合 main、push、公开部署仍各需对应授权。用户明确现有真实和临时实例的数据全部为可丢弃测试数据，总控可按集成需要清空或重建，不以旧库/旧草稿保留和历史版本迁移作为本轮前置。代码、未提交成果、固定测试输入和运行配置不属于可丢弃业务数据。接收会话回执使用等待通知，不定时轮询。
 
 ## 五模块共同基线
 
-五个模块的已提交成果、未提交 diff 和新增源码均已集成到 preview。五个原 worktree 已保留各自分支并快进到本轮输入 `a3d1064b`，包含同源开发服务、题库/资源库开发模式生命周期修复、[模块开发约定](../agents/module-development.md)和 AGENTS 阅读入口。下述五模块组合验证的受测产品代码为 `0e3a0cc3`；开发模式的增量验证见[运行实例与工具](#运行实例与工具)。
+五个模块的已提交成果、未提交 diff 和新增源码均已集成到 preview。本轮共同开发输入为 `a3d1064b`，包含同源开发服务、题库/资源库开发模式生命周期修复、[模块开发约定](../agents/module-development.md)和 AGENTS 阅读入口；当前产品候选 `ae9d8881` 另包含资源库页内查找与个人资料包课稿历史。五个原 worktree 保留各自分支，集成后统一快进，最终 Git 与同步回执为准。下述五模块组合验证的受测产品代码为 `0e3a0cc3`，本轮增量见[本轮任务与接续](#本轮任务与接续)。
 
 所有目录均位于 `/home/liam_t/项目/`。本轮从五个干净工作区开始，原未提交成果已经包含在共同基线内，不重新应用旧 diff。当前新增修改以实际 Git 和任务回执核对。preview 单独保留用户原有的一条 AGENTS 未提交修改，不混入同步或任务提交。
 
@@ -20,9 +20,9 @@
 | --- | --- | --- | --- |
 | 班级教学 / 班级教学专用 | `TeacherWorkspace-classes` | 记录搜索、课前回顾、公式图片、跨班移动 | 已知模块功能清单完成，真实设备仍待验 |
 | 题库 / 题库专用 | `TeacherWorkspace-questions` | 导入保真、检索、常规双栏 PDF 与明确续题 | OCR、复杂混排 |
-| 资源库 / 资源库模块专用 | `TeacherWorkspace-resources` | 批量整理、文件历史、正文搜索、命中页定位和文字复制 | OCR、独立页内查找、复杂结构复制；文件回收暂缓 |
+| 资源库 / 资源库模块专用 | `TeacherWorkspace-resources` | 批量整理、文件历史、正文搜索、命中页定位、页内查找高亮和文字复制 | OCR、复杂结构复制；文件回收暂缓 |
 | 数学 / 数学工坊管理 | `TeacherWorkspace-math` | 可视化编辑、历史恢复、表达式、几何、截面与动画扩展 | 高级求解等独立后续项；不要求旧 v4 测试库/备份包兼容 |
-| 备课 / 聚焦备课功能模块 | `TeacherWorkspace-lessons` | 复制、撤销、输出选择、历史恢复、环节复用、正文混排与资源原页输出 | 可编辑导入/OCR、个人资料包携带课稿历史 |
+| 备课 / 聚焦备课功能模块 | `TeacherWorkspace-lessons` | 复制、撤销、输出选择、历史恢复、环节复用、正文混排、资源原页输出及个人资料包课稿历史 | 可编辑导入/OCR |
 
 ### 验证与边界
 
@@ -68,17 +68,30 @@ OCR 不阻塞这批成果集成。后续由题库提供识别实验与校对经�
 
 ## 本轮任务与接续
 
-本轮任务包在 preview 的 `.scratch/ocr-coordination/{questions,resources,lessons,math,classes}.md`，同步结果在同目录 `sync-result.json`；调查与验证回执在对应 worktree 的 `.scratch/ocr-coordination/receipt.md`。资源、备课后续实现分别按同目录 `resources-implementation.md`、`lessons-implementation.md`，交付写各树 `implementation-receipt.md`；OCR 新增对照按 `questions-instrumentation-check.md`。仅恢复下表范围，后续派发由总控根据证据更新。
+本轮任务包在 preview 的 `.scratch/ocr-coordination/{questions,resources,lessons,math,classes}.md`，输入同步在同目录 `sync-result.json`，最终集成、验证与五树同步回执在 `result.json`；调查与验证回执在对应 worktree 的 `.scratch/ocr-coordination/receipt.md`。资源、备课后续实现分别按同目录 `resources-implementation.md`、`lessons-implementation.md`，交付写各树 `implementation-receipt.md`；OCR 新增对照按 `questions-instrumentation-check.md`。仅恢复下表范围，后续派发由总控根据证据更新。
 
 | Session | 当前任务 | 写入与完成边界 |
 | --- | --- | --- |
 | 题库 | 已完成有界诊断及排除采样干扰的对照，I1 返回完整原始页 | 约 28 秒单页成功，累计 4/7 次；原始 JSON/Markdown/图已保留，图块底部有裁切。无产品修改；停止新增运行，后续先明确稳定性和图块保真验证 |
-| 资源库 | 消费调查完成，继续实现独立“查找本页” | 仅资源 Web、专用浏览器验证与功能规格；复用现有 PDF.js 文字层，不加 OCR、后端或依赖；已恢复构建与浏览器测试 |
-| 备课 | 消费调查完成，继续补齐个人资料包课稿历史 | 唯一负责任务包指定的备课只读历史投影、portable/schema、共享集成验证与相关规格；只做离线阅读及手工取回，沿用现有备份语义 |
+| 资源库 | “查找本页”已集成，`0f6cd40f`，待命 | 复用 PDF.js 文字层，支持高亮/计数/键盘与逐页导航；无 OCR、后端或依赖变更 |
+| 备课 | 个人资料包课稿历史已集成，`b9b82b07`，待命 | 保留现存最多 50 版及采用快照/附件，离线阅读与手工取回；图文顺序问题已修复，沿用现有备份语义 |
 | 数学工坊 | 开发模式定向自验完成，待命 | 公式及动态作品保存、往返、刷新与服务端重开共 2 项通过；无产品修改，隔离实例已清理 |
 | 班级教学 | 开发模式定向自验完成，待命 | 建班、文字/公式保存、往返刷新与搜索、取消和迟到响应共 4 项通过；无产品修改，隔离实例已清理 |
 
-OCR 先取得运行与真实样本证据，再由总控明确一个共用实现的写者及题库、资源库、备课的接入顺序。公共文件仍由总控控制写权。可独立交付的小项按明确任务并行推进，完成后验收、短周期合回 preview 并同步相关工作树。不因[DAG 剩余节点](mvp-dag.md)自行扩展到其他产品线，也不重新派发已完成的设计与接线。
+资源与备课均完成固定 diff 的 Standards/Spec 两轴独立审查。备课初审的离线图文错序 P2 已由原作者追加修复，复审两轴均为 0 项；资源两轴为 0 项。审查记录在 preview `.scratch/ocr-coordination/review.md`，不将静态审查等同于独立全产品验收。
+
+本轮增量验证如下，均无失败或跳过。作者完成受影响构建与截图复核，总控另检查实际截图并在集成树复跑相关测试。
+
+| 受测范围 | 验证结果 | 证据入口 |
+| --- | --- | --- |
+| 资源库作者候选 `0f6cd40f` | 生产浏览器 27 项、开发模式 9 项通过，覆盖页内查找、扫描页提示及真实 Office 预览 | 资源树 `implementation-receipt.md` |
+| 备课作者候选 `b9b82b07` | 新资料包浏览器 1 项、备课回归 2 项、设置导出重试 1 项、API/集成 14 项通过；图文顺序修复后另复验浏览器 1 项、定向集成 6 项 | 备课树 `implementation-receipt.md` |
+| 集成树 API `07352952` | 课稿能力、历史资料包及可靠性共 14 项通过；后续资源合并无 API 变更 | preview `.scratch/ocr-coordination/integration-api.log` |
+| 集成树开发模式 `ae9d8881` | 页内查找、扫描页提示及四种 Office 原件共 9 项通过 | preview `.scratch/ocr-coordination/integration-development.log` |
+
+50880 已重启以加载资料包 schema，健康检查、登录页与 Vite 来源正常；受影响功能的真实登录操作在上述隔离实例验证。临时测试进程与数据清理后保留日志、截图和复现证据，实际用户实例数据未重建。
+
+下一步聚焦 OCR：先验证去掉诊断采样后入口的稳定性、原图裁切边界及固定页映射，再确定共用结果写者和三个消费者的接入顺序。当前仅成功 I1 一页，原累计 4/7 次，不重置剩余额度或以一次成功代签六页质量。公共文件仍由总控控制写权；五个业务 session 按下一份明确任务恢复，不自行扩展到[DAG 剩余节点](mvp-dag.md)的其他产品线。
 
 后续任务从同步后的对应 worktree 的[功能规格](../README.md#功能规格)取相关资料。按实际共享文件安排唯一写者。运行维护读[SETUP](../SETUP.md)；需要更早的归档现场才读[工作树恢复索引](worktree-archive.md)。
 
