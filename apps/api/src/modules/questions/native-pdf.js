@@ -4,7 +4,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { DOMParser } from '@xmldom/xmldom';
-import { nativeText, questionStart, answerHeading } from './extraction.js';
+import { nativeText, questionStart, answerHeading, continuationHeading } from './extraction.js';
 import { documentText, textDocument } from './materials-content.js';
 import { extractionId } from './extraction-fragments.js';
 const execute = promisify(execFile);
@@ -51,7 +51,7 @@ export function createPdfReader(files) {
       // Keep mid-page headings so nativeText can associate answers with the
       // preceding questions, including questions left / answers right layouts.
       let content = answerPage ? text.split('\n').filter(line => !answerHeading.test(line)).join('\n').trim() : text;
-      const continuation = !answerPage && content.match(/^(?:续第\s*([0-9０-９]+)\s*题|第\s*([0-9０-９]+)\s*题[（(]续[）)])[ \t]*[:：]?[ \t]*(?:\r?\n|$)/);
+      const continuation = !answerPage && content.match(continuationHeading);
       if (continuation) content = (continuation[1] ?? continuation[2]) + '. ' + content.slice(continuation[0].length);
       // Text offsets identify only the first explicit continuation. Public
       // locations still point to the unchanged PDF page, including selected pages.

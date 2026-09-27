@@ -1,0 +1,26 @@
+{
+  "revision": "paddleocr-vl-1.6/document-1",
+  "purpose": "Captured real OCR pages for offline consumer integration; never an OCR accuracy substitute",
+  "pages": [
+    {
+      "name": "I-1",
+      "inputSha256": "01e9e0e7b5b2aba69ade66c7b8241276ac1560cac53f183d77e046e850a0eba7",
+      "rawSha256": "d25773cb1cd9c7ed75b615614d5e629158c3a949757a25585b94206fe63f08d5"
+    },
+    {
+      "name": "I-2",
+      "inputSha256": "c46fda5c6be0337e5b2fbda252100a580e1d95ca382818b90d7ab48a8d28fd80",
+      "rawSha256": "e714ccf17e5dcc7ac1c0f9a9408c04ddc0358628ca156d3ee6db774bf0252bb1"
+    },
+    {
+      "name": "I-3",
+      "inputSha256": "ef9461b3de27e78d3f9b579ef9f712f1f76d73f6cedfc4da39df84810322a1e6",
+      "rawSha256": "37a1c20a4e796179edee9c6cedb0c1fa01338bbd7ec5921c751c03dc131d2d8e"
+    },
+    {
+      "name": "PS-4",
+      "inputSha256": "e88732096ab94ace294b07b564c5d67aadf833cb2a12cdeacf951c77d30009da",
+      "rawSha256": "202ac0f7b19eaef5c478ee65997c13aab2439f2369d125516672e453adb508cb"
+    }
+  ]
+}

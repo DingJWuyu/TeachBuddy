@@ -1,0 +1,76 @@
+[
+  {
+    "name": "imgs/img_in_image_box_485_1202_1156_1658.jpg",
+    "method": "source-rectangle-1.06",
+    "layoutIndex": 11,
+    "originalBbox": [
+      485,
+      1202,
+      1156,
+      1658
+    ],
+    "originalPolygon": [
+      [
+        485.0,
+        1202.0
+      ],
+      [
+        1156.0,
+        1202.0
+      ],
+      [
+        1156.0,
+        1658.0
+      ],
+      [
+        485.0,
+        1658.0
+      ]
+    ],
+    "derivedBbox": [
+      464,
+      1188,
+      1177,
+      1672
+    ],
+    "mediaType": "image/png",
+    "issues": []
+  },
+  {
+    "name": "imgs/img_in_image_box_499_328_1107_801.jpg",
+    "method": "source-rectangle-1.06",
+    "layoutIndex": 4,
+    "originalBbox": [
+      499,
+      328,
+      1107,
+      801
+    ],
+    "originalPolygon": [
+      [
+        499.0,
+        328.0
+      ],
+      [
+        1107.0,
+        328.0
+      ],
+      [
+        1107.0,
+        801.0
+      ],
+      [
+        499.0,
+        801.0
+      ]
+    ],
+    "derivedBbox": [
+      480,
+      313,
+      1126,
+      816
+    ],
+    "mediaType": "image/png",
+    "issues": []
+  }
+]

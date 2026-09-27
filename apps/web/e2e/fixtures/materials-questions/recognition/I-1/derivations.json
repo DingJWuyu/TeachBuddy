@@ -1,0 +1,39 @@
+[
+  {
+    "name": "imgs/img_in_image_box_323_511_1330_984.jpg",
+    "method": "source-rectangle-1.06",
+    "layoutIndex": 10,
+    "originalBbox": [
+      323,
+      511,
+      1330,
+      984
+    ],
+    "originalPolygon": [
+      [
+        323.0,
+        511.0
+      ],
+      [
+        1330.0,
+        511.0
+      ],
+      [
+        1330.0,
+        984.0
+      ],
+      [
+        323.0,
+        984.0
+      ]
+    ],
+    "derivedBbox": [
+      292,
+      496,
+      1361,
+      999
+    ],
+    "mediaType": "image/png",
+    "issues": []
+  }
+]

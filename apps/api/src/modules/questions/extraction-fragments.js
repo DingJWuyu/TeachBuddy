@@ -4,6 +4,7 @@ import {
   emptyDocument,
   textDocument,
   documentText,
+  images,
 } from "./materials-content.js";
 
 // Stable identities belong to a source unit and fragment, never to a question number.
@@ -28,12 +29,13 @@ const matches = (q, f, target = f.label) =>
   questionLabel(q.label) === questionLabel(target);
 // A continuation cannot precede its question in the same original document.
 // Keep same-page fragments and separate image inputs eligible for unique matching.
-const continuesQuestion = (q, f) =>
-  Boolean(f.continues) && matches(q, f, f.continues) &&
+const followsQuestion = (q, f) =>
   !q.locations.some((start) => f.locations.some((tail) =>
     start.kind === "page" && tail.kind === "page" &&
     start.fileId === tail.fileId && start.page > tail.page,
   ));
+const continuesQuestion = (q, f) =>
+  Boolean(f.continues) && matches(q, f, f.continues) && followsQuestion(q, f);
 const unassigned = (f) => ({
   id: f.id,
   text: f.text,
@@ -129,6 +131,22 @@ export function mergeExtractions(results, complete) {
   const questions = records.filter((f) => f.role === "question");
   const answers = records.filter((f) => f.role === "answer");
   const continuations = records.filter((f) => f.role === "continuation");
+  // Prefer explicit source scopes. A separate answer scan may join this import
+  // only when no same-source answer exists and both sides identify one match.
+  const answerCandidates = q => {
+    const scoped = answers.filter(f => matches(q, f));
+    return scoped.length ? scoped : answers.filter(f => q.collection &&
+      q.collection === f.collection && !q.group && !f.group &&
+      questionLabel(q.label) === questionLabel(f.label) &&
+      !questions.some(x => matches(x, f)));
+  };
+  const continuationCandidates = q => {
+    const scoped = continuations.filter(f => continuesQuestion(q, f));
+    return scoped.length ? scoped : continuations.filter(f => q.collection &&
+      q.collection === f.collection && !q.group && !f.group && f.continues &&
+      questionLabel(q.label) === questionLabel(f.continues) && followsQuestion(q, f) &&
+      !questions.some(x => continuesQuestion(x, f)));
+  };
   const used = new Set();
   for (const q of questions) {
     const d = {
@@ -147,31 +165,28 @@ export function mergeExtractions(results, complete) {
     const append = (f, role) => {
       d[role].blocks.push(...structuredClone(f.document.blocks));
       d.parts.push({ role, locations: f.locations });
+      if (f.figureLocations?.length)
+        d.parts.push({ role: "figure", locations: f.figureLocations });
       if (f.doubts.length)
-        d.issues.push(
-          doubt(
-            f.id,
-            role === "solution" ? "incomplete-answer" : "uncertain-text",
-            "/" + role,
-            f.locations,
-          ),
-        );
+        for (const code of role === "solution" ? ["incomplete-answer"]
+          : f.issueCodes?.length ? f.issueCodes : ["uncertain-text"])
+          d.issues.push(doubt(f.id, code, "/" + role, f.locations));
       used.add(f.id);
     };
-    const tails = continuations.filter((f) => continuesQuestion(q, f));
+    const tails = continuationCandidates(q);
     if (
       tails.length === 1 &&
-      questions.filter((x) => continuesQuestion(x, tails[0]))
+      questions.filter((x) => continuationCandidates(x).includes(tails[0]))
         .length === 1
     )
       append(tails[0], "body");
     else if (tails.length)
       d.issues.push(doubt(q.id, "split-boundary", "/body", q.locations));
-    const candidates = answers.filter((f) => matches(q, f));
+    const candidates = answerCandidates(q);
     const a = candidates[0];
     if (
       candidates.length === 1 &&
-      questions.filter((x) => matches(x, a)).length === 1
+      questions.filter((x) => answerCandidates(x).includes(a)).length === 1
     ) {
       append(a, "solution");
       d.answerStatus = a.doubts.length ? "unresolved" : "present";
@@ -190,7 +205,10 @@ export function mergeExtractions(results, complete) {
     if (d.answerStatus === "unresolved")
       d.issues.push(doubt(q.id, "incomplete-answer", "/solution", q.locations));
     if (q.doubts.length)
-      d.issues.push(doubt(q.id, "uncertain-text", "/body", q.locations));
+      for (const code of q.issueCodes?.length ? q.issueCodes : ["uncertain-text"])
+        d.issues.push(doubt(q.id, code, "/body", q.locations));
+    if (q.figureLocations?.length)
+      d.parts.push({ role: "figure", locations: q.figureLocations });
     if (q.figure) {
       d.body.blocks.push({
         type: "image",
@@ -200,7 +218,7 @@ export function mergeExtractions(results, complete) {
       });
       d.parts.push({ role: "figure", locations: [q.figure.location] });
     }
-    if (!q.figure && /如图|[配附]图|\[图[:：]|图示/.test(documentText(d.body)))
+    if (!images(d.body).length && /如图|[配附]图|\[图[:：]|图示/.test(documentText(d.body)))
       d.issues.push(doubt(q.id, "missing-figure", "/body", q.locations));
     drafts.push(d);
   }

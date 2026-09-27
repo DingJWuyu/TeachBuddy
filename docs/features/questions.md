@@ -4,9 +4,17 @@
 
 ## 实现与剩余能力
 
-手工编辑、复制改编、分类、笔记、原稿对照及备课取用已接入。文字/DOCX 原生拆题、文字层 PDF 有固定样本结果；DOCX 保留段内换行，文字 PDF 支持常规双栏阅读顺序和页首明确标注题号的续题。无题号文字可先形成待校对候选，尚不承诺自动识别多题边界。图片、扫描 PDF 没有生产视觉 provider；复杂图文混排、跨栏配图归属、未标明归属的跨页续文及旧 DOC 数学对象仍有限制。完整自动整理继续属于产品目标，质量标准与候选路线见[自动提取](../research/c21-open-source-reuse.md)。
+手工编辑、复制改编、分类、笔记、原稿对照及备课取用已接入。文字/DOCX 原生拆题、文字层 PDF 有固定样本结果；DOCX 保留段内换行，文字 PDF 支持常规双栏阅读顺序和页首明确标注题号的续题。无题号文字可先形成待校对候选，尚不承诺自动识别多题边界。图片及没有文字层的 PDF 页接入共用本地识别，运行配置见[共用页识别](../contracts/workbench/recognition.md)。复杂表格拆题、跨栏配图归属、未标明归属的跨页续文及旧 DOC 数学对象仍有限制。完整自动整理继续属于产品目标，质量标准与候选路线见[自动提取](../research/c21-open-source-reuse.md)。
 
 旧 DOC 只能如实显示 `limited / legacy-object-loss`；人工裁图和改字能保存不等于公式已自动还原。DOCX 的段落原文视图不是 Word 原分页。转换环境的即时状态只见[运行台账](../plans/run-state.md)。
+
+## 图片与扫描页识别
+
+整理任务优先沿用原生 Word/PDF 文字；图片及没有文字层的 PDF 页直接调用共用页识别，成功页可复用，失败页只在明确重试时再识别。工具未配置、资源不足或识别失败时保留原稿与已完成草稿，显示可重试原因。取消后的完整机器证据由共用层保留，题库停止采用；无法确认进程清理时任务显示失败，不能误报停止完成。
+
+题库从机器 Document 取回原始公式源和真实图片，复用文字拆题及跨页归并。答案和明确标号的续题先按同一原件匹配；跨文件只在本次收录中双方唯一时关联，重复题号或不明归属留在未分配内容。配图自动归属限于题号与图片位置明确的单栏，歧义配图保留原稿位置并提示补图。PDF 位置由固定预览映射提供，不采用模型的局部页码。新增处理结果只替换未校对的机器草稿，人工修改、已入库内容及忽略操作继续保留。
+
+识别成功不代表已校对：没有数学定界符的 LaTeX 保留为原文并标出公式疑点，不能仅点“已核对”就入库；题图与题目位置仍需确认，原稿未提供答案时不生成答案。复杂表格的题目、教学活动和点评尚不能可靠分离，保留机器结构及原稿，把文本列入未分配内容并显示部分完成，不能把整张表误当一道题。文字层存在但质量差的 PDF 仍走原生路径，不承诺自动切换 OCR 后修复复杂版式。
 
 ## 浏览、自建和保存
 
@@ -84,10 +92,12 @@ DOCX 保留段内换行和制表符，换行后的题号与答案标记可分别
 
 - 普通题目保存先读[共享契约](../contracts/workbench.md)的身份、内容、引用及写入节；丰富题目、分类和校对再读[材料契约](../contracts/workbench/materials.md#内容)。字段只读对应 OpenAPI 操作，不需要 Agent、数学制作或完整 DAG。
 - 页面 `apps/web/src/features/questions/MaterialsQuestionsPage.jsx`；题库编辑与浮层 `QuestionControls.jsx`；校对拆分 `review-drafts.js`；请求 `materials-api.js`；上传恢复 `uploadRecovery.js`；原稿 `OriginalPane.jsx`。
-- API `apps/api/src/modules/questions/materials-service.js`、`materials-router.js`、`extraction*.js`、`native-word.js`、`native-pdf.js`；共享编辑器 `apps/web/src/features/workbench/materials/DocumentEditor.jsx`。
+- API `apps/api/src/modules/questions/materials-service.js`、`materials-router.js`、`extraction*.js`、`recognized-page.js`、`native-word.js`、`native-pdf.js`；共享编辑器 `apps/web/src/features/workbench/materials/DocumentEditor.jsx`。
 - 当前交互浏览器验证 `apps/web/e2e/questions-ux.config.mjs`，用 `WORKBENCH_WEB_DIST` 指定隔离生产构建，覆盖录题、草稿、改编、分类、文字校对、结构编辑、搜索范围、拆分答案归属、未知保存恢复、归档与彻底删除、来源缺失/读取失败、详情返回及深浅色布局。文件上传另验 DOCX 段内换行、PDF 明示续题与缺页/倒序、双栏题干/选项/答案及入库来源页码、未分配片段处理后的保存重开；历史保存场景见 `manual-questions.config.mjs`。HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；保存基例 [WB-003/004/011-018](../acceptance/first-flow.feature)，材料基例 [WB-M001-012/025-028](../acceptance/materials.feature)。
 
 保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前具名证明范围在[能力证据](../plans/run-state.md#证据边界)。
+
+识别消费者回归见 `apps/web/e2e/questions-recognition.config.mjs`，使用真实注册和 HTTP 链路，固定原始 OCR 产物与实际题图在 `fixtures/materials-questions/recognition/`。覆盖六题、五份原有答案、三图、无答案状态、校对入库与重读、缓存复用、失败重试保留人工修改、歧义题号及取消清理失败。明确续题与数字列表另用受控转录验证通用结构。离线回放证明消费与保存，不代替真实模型、PDF 页图分辨率或浏览器视觉验收；运行时和整页质量按共用识别契约分别验证。
 
 开发模式的列表读取、手动保存和刷新还须通过[开发服务回归](../acceptance/README.md#开发服务回归)。组件重新初始化后恢复读取，过期请求的成功或失败都不能覆盖当前列表状态。
 

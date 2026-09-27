@@ -21,6 +21,7 @@ export function createQuestionsModule({
   content,
   jobs,
   provider,
+  recognition,
 } = {}) {
   if (!db || typeof db.prepare !== "function") {
     throw new TypeError(
@@ -52,6 +53,7 @@ export function createQuestionsModule({
       files,
       jobs,
       provider,
+      recognition,
       content,
       validateLocations: materials.locations,
       readWord: files ? createWordReader(files) : undefined,

@@ -1596,7 +1596,7 @@ export default function MaterialsQuestionsPage({
               <label className="q-file-picker"><QuestionIcon name="upload" size={28} /><strong>选择{capture === '图片' ? '图片' : capture + ' 文件'}</strong><span>{capture === '图片' ? '支持 PNG、JPG、WebP，可一次选择多张' : capture === 'PDF' ? '选择一份 PDF，保留原稿供对照' : '支持 .docx 和 .doc'}</span><input type="file" aria-label="选择原稿" multiple={capture === '图片'} accept={capture === '图片' ? 'image/png,image/jpeg,image/webp' : capture === 'PDF' ? '.pdf' : '.doc,.docx'} onChange={e => setChosenFiles([...e.target.files])} /></label>
               {!chosenFiles.length && collection.fileNames?.length > 0 && <p className="q-muted">继续收录需要重新选择：{collection.fileNames.join('、')}</p>}
               {chosenFiles.length > 0 && <div className="q-chosen-files">{chosenFiles.map((file, i) => <div key={i}><QuestionIcon name="file" /><span>{file.name}</span>{chosenFiles.length > 1 && <button disabled={!i} onClick={() => setChosenFiles(files => { const next = [...files]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; return next; })}>上移</button>}</div>)}</div>}
-              <p className="q-muted">{capture === '图片' ? '原图会完整保留。当前图片自动识别尚未接入，需要对照原图补充题目内容。' : capture === 'PDF' ? '含文字的 PDF 可以整理题目；扫描件暂不能可靠识别。' : '复杂排版和旧版 Word 的公式可能需要对照原稿修正。'}</p>
+              <p className="q-muted">{capture === '图片' ? '原图会完整保留，识别结果需对照检查后再入库。' : capture === 'PDF' ? '可整理文字 PDF 和扫描件；公式、配图和复杂排版请对照原稿检查。' : '复杂排版和旧版 Word 的公式可能需要对照原稿修正。'}</p>
             </>}
             <ModuleDisclosure title="材料名称、出处与处理范围" className="q-capture-metadata">
               <label>材料名称 <span className="q-muted">选填</span><input value={title} placeholder="留空时使用文件名" onChange={e => setTitle(e.target.value)} /></label>

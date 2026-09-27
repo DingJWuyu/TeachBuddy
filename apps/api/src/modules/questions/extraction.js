@@ -1,4 +1,5 @@
 import { locateFigures } from "./extraction-figures.js";
+import { readRecognizedPage } from "./recognized-page.js";
 import { validateSchema } from "../../workbench/content/schema.js";
 import { validateQuestionContent, documentText } from "./materials-content.js";
 import { randomUUID } from "node:crypto";
@@ -13,6 +14,7 @@ import {
 const issue = (code, unitId, detail) => ({ code, unitId, field: null, detail });
 export const questionStart = /^\s*((?:Q\s*)?[0-9０-９]+(?:[.．](?![0-9０-９])|[、:：)）])|例\s*[0-9０-９]+[:：.、]?|练习\s*[0-9０-９]+[:：.、]?)[ \t]*(.*)$/i;
 export const answerHeading = /^\s*(?:【.*(?:答案|解析).*】|(?:第.+页[:：]\s*)?(?:原有答案|(?:原有)?(?:参考答案|答案解析|参考解答))\s*[:：]?\s*$)/;
+export const continuationHeading = /^(?:续第\s*([0-9０-９]+)\s*题|第\s*([0-9０-９]+)\s*题[（(]续[）)])[ \t]*[:：]?[ \t]*(?:\r?\n|$)/;
 const inlineAnswer = /^\s*(?:参考答案|答案|解析|解答)\s*[:：]\s*(.*)$/;
 export function nativeText(text, location) {
   const lines = [];
@@ -106,7 +108,7 @@ export function nativeText(text, location) {
       };
       answer = false;
     } else if (
-      /^\s*(?:教师活动|教学点评|教学建议|(?:说明|注释|编者注)[:：]|(?:保留|转换|导出|格式说明).*?(?:OMML|LaTeX|公式源|公式转成图片))/.test(
+      /^\s*(?:教师活动|教学点评|教学建议|(?:说明|注释|编者注)[:：]|(?:(?:本页|本段|本文)\s*)?(?:保留|转换|导出|格式说明).*?(?:OMML|LaTeX|文字层|公式源|公式转成图片))/.test(
         line.text,
       )
     ) {
@@ -390,6 +392,7 @@ export function createExtractionHandler({
   files,
   jobs,
   provider,
+  recognition,
   readWord,
   readPdf,
   content,
@@ -535,23 +538,23 @@ export function createExtractionHandler({
           );
         else if (readPdf && files.read(p, unit.preview.renditionFileId).mediaType === "application/pdf") {
           result = await readPdf(p, unit, signal);
-          if (!result) {
-            issues.push(issue("provider-unavailable", unit.id,
-              "该页没有可读取的文字层，需要视觉识别。原稿已保存，可先校对或补充文字。"));
+        }
+        if (!result) {
+          const source = { fileId: unit.file.id, renditionFileId: unit.preview.renditionFileId, page: unit.page };
+          const page = await recognition?.ensurePage(p, source, { signal, retry: Boolean(job.attemptOf) });
+          if (signal.aborted) break;
+          if (page?.state !== "ready") {
+            issues.push(issue(page?.state === "unavailable" || !page ? "provider-unavailable" : "provider-result-unknown", unit.id,
+              page?.issues?.[0]?.detail ?? "本地识别暂不可用，原稿已保存；配置恢复后可重试本页。"));
             continue;
           }
-        } else {
-          issues.push(
-            issue(
-              "provider-unavailable",
-              unit.id,
-              "图片视觉识别尚未配置，原稿已保存，可补充文字并继续校对。",
-            ),
-          );
-          continue;
+          result = readRecognizedPage(recognition.readResult(p, page.resultId, source), {
+            section: unit.file.id,
+          });
         }
         result.records?.forEach((record, index) => {
           record.id = extractionId(m.id, unit.id, "records", index);
+          if (result.recognition || !provider) record.collection = m.id;
         });
         if (unit.file)
           result.source = {
@@ -561,7 +564,7 @@ export function createExtractionHandler({
             renditionFileId: unit.preview.renditionFileId,
           };
         if (signal.aborted) break;
-        if (result.records && unit.file) {
+        if (result.records && unit.file && !result.recognition) {
           try {
             await locateFigures({ files, principal: p, unit, result, signal });
           } catch {
@@ -578,7 +581,7 @@ export function createExtractionHandler({
           result.code = "invalid-output";
         if (result.code)
           issues.push(
-            issue(result.code, unit.id, "提取结果不完整，请对照原稿继续。"),
+            issue(result.code, unit.id, result.issueDetail ?? "提取结果不完整，请对照原稿继续。"),
           );
         for (const draft of result.drafts) {
           validateSchema("Draft", draft);
@@ -615,6 +618,7 @@ export function createExtractionHandler({
         completed++;
         reportProgress({ completed, total: units.length, unit: "pages" });
       } catch (e) {
+        if (e?.code === "recognition-cleanup") throw e;
         issues.push(
           issue(
             "provider-result-unknown",
