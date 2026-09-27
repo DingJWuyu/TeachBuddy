@@ -121,7 +121,7 @@ function contentSchemas(db) {
     classes_records: ["content"],
     question_items: ["body", "solution", "source"],
     lesson_items: ["intro"],
-    lesson_sections: ["content"],
+    lesson_sections: ["content", "pageSource"],
     lesson_references: ["snapshot"],
     lesson_history: ["snapshot"],
     questions_materials_imports: ["value"],

@@ -3229,6 +3229,9 @@
       "SectionV3": {
         "type": "object",
         "properties": {
+          "pageSource": {
+            "$ref": "../materials.openapi.yaml#/components/schemas/LessonPageSource"
+          },
           "id": {
             "$ref": "#/components/schemas/Id"
           },

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import Database from 'better-sqlite3';
 import { createIntegration } from "./fixtures/auth-integration/harness.js";
 import { registerMath } from "../../web/e2e/fixtures/math-static/real.mjs";
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
@@ -96,8 +97,34 @@ test("real-auth page recognition replays acceptance, shares completed pixels and
     assert.equal(copy.resultId, page.resultId, "the same owned pixels reuse one machine result");
     assert.equal(copy.location.fileId, duplicate.id, "location binds to the actual source being read");
     assert.equal(calls, 1);
+    const resource = await write(client, '/api/modules/resources/items', {
+      title: '识别来源', fileId: file.id, folderId: null, tagIds: [], note: '',
+    });
+    assert.equal(resource.status, 201, resource.text);
+    const created = await write(client, '/api/modules/lessons/v3', {
+      title: '采用识别页', intro: { version: 2, blocks: [] }, sections: [], materials: [],
+    });
+    assert.equal(created.status, 201, created.text);
+    const adopted = await write(client, `/api/modules/lessons/v3/${created.json.id}/sections/adopt-page`, {
+      baseVersion: created.json.version, resourceId: resource.json.id, resourceVersion: resource.json.version,
+      fileId: file.id, renditionFileId: source.renditionFileId, page: 1, resultId: page.resultId,
+      title: '识别页', content: page.document,
+    });
+    assert.equal(adopted.status, 200, adopted.text);
+    const foreign = await upload(other, 'foreign-source.png');
     await world.close();
     world = null;
+    const db = new Database(path.join(directory, 'workspace.sqlite'));
+    const section = db.prepare('SELECT * FROM lesson_sections WHERE lessonId=?').get(created.json.id);
+    const broken = { ...JSON.parse(section.pageSource), rawFileId: foreign.id };
+    db.prepare('UPDATE lesson_sections SET pageSource=? WHERE sectionId=?').run(JSON.stringify(broken), section.sectionId);
+    try {
+      await assert.rejects(backup({ database: path.join(directory, 'workspace.sqlite'), files: path.join(directory, 'files'), target: `${directory}-foreign`, stopped: true }), /foreign file reference/,
+        'current page source is checked even while the historical snapshot remains valid');
+    } finally {
+      db.prepare('UPDATE lesson_sections SET pageSource=? WHERE sectionId=?').run(section.pageSource, section.sectionId);
+      db.close();
+    }
     await backup({ database: path.join(directory, 'workspace.sqlite'), files: path.join(directory, 'files'), target: `${directory}-backup`, stopped: true });
     restore({ source: `${directory}-backup`, target: `${directory}-restored`, stopped: true });
     activate({ target: `${directory}-restored`, stopped: true });
@@ -105,6 +132,10 @@ test("real-auth page recognition replays acceptance, shares completed pixels and
     const restored = world.workbench.recognition.readResult({ accountKey: session.account.accountKey }, page.resultId,
       { fileId: file.id, renditionFileId: source.renditionFileId, page: 1 });
     assert.deepEqual(restored.document, page.document);
+    const restoredLesson = world.workbench.loader.get('lessons').port.operations.getLessonV3({
+      principal: { accountKey: session.account.accountKey }, id: created.json.id,
+    }).body;
+    assert.deepEqual(restoredLesson, adopted.json);
     assert.equal(world.workbench.recognition.get({ accountKey: session.account.accountKey }, { fileId: file.id, renditionFileId: source.renditionFileId }).pages[0].state, 'ready', 'saved OCR remains readable with the engine unconfigured');
     assert.equal(calls, 1);
     passed = true;
