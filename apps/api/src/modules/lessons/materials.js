@@ -1,5 +1,6 @@
 import { validate as validateMath } from "../../workbench/content/mathSchema.js";
 import { createLessonOrder } from "./order.js";
+import { createLessonHistory } from "./history.js";
 import { lessonDocuments, supportedDocument } from "@refatos/shared";
 import { normalizeSearchQuery, matchesSearch } from "../questions/contract.js";
 import { createLessonExports } from "./exports.js";
@@ -42,7 +43,7 @@ export function createMaterialsLessons({
 }) {
   const order = version === 3 ? createLessonOrder({ db, repository, mutations }) : null;
   const validate = (name, value) => {
-    if (name === "PurgeLesson" || version < 3) return validateSchema(name, value);
+    if (["PurgeLesson", "CopyLesson", "CopyLessonSections", "RestoreLessonVersion"].includes(name) || version < 3) return validateSchema(name, value);
     return validateMath(
       name === "CreateLesson" || name === "UpdateLesson" ? `${name}V3` : name,
       value,
@@ -101,19 +102,19 @@ export function createMaterialsLessons({
       [kind === "math" ? "workId" : `${kind}Id`]: r.questionId,
       [kind === "math" ? "workVersion" : `${kind}Version`]: r.questionVersion,
       note: r.note,
+      afterBlock: r.afterBlock ?? null,
       snapshot,
       latestVersion,
       sourceState,
     };
   };
-  const read = (p, r) => {
+  const read = (p, r, saved = null) => {
     assertRepresentable(r.id);
-    const refs = repository.listReferences(r.id);
+    const refs = saved?.references ?? repository.listReferences(r.id);
     const { accountKey, ...record } = r;
     return {
       ...record,
-      sections: repository
-        .listSections(r.id)
+      sections: (saved?.sections ?? repository.listSections(r.id))
         .map((s) => ({
           id: s.sectionId,
           title: s.title,
@@ -126,6 +127,7 @@ export function createMaterialsLessons({
     };
   };
   const get = (p, id) => read(p, requireLesson(p, id));
+  const history = createLessonHistory({ db, repository, requireLesson });
   function persist(p, id, input) {
     const old = new Map(
       repository.listReferences(id).map((r) => [r.referenceId, r]),
@@ -135,7 +137,7 @@ export function createMaterialsLessons({
       references = [];
     if (!input.title.trim()) throw invalidInput("/title", "empty-content");
     content.validate(p, input.intro);
-    const add = (r, sectionId, position, pointer) => {
+    const add = (r, sectionId, position, pointer, blockCount = 0) => {
       if (ids.has(r.id) || sectionIds.has(r.id))
         throw invalidInput(`${pointer}/id`, "invalid-reference");
       ids.add(r.id);
@@ -150,6 +152,8 @@ export function createMaterialsLessons({
       )
         throw invalidInput(pointer, "invalid-reference");
       let snapshot = prior?.snapshot;
+      const afterBlock = sectionId === null ? null : Object.hasOwn(r, "afterBlock") ? r.afterBlock : prior?.afterBlock ?? null;
+      if (afterBlock !== null && afterBlock > blockCount) throw invalidInput(`${pointer}/afterBlock`, "out-of-range");
       if (!prior || prior.questionVersion !== version) {
         const s = source(p, kind, sourceId);
         if (s.deletedAt !== null) throw contractError(problems.objectDeleted());
@@ -196,6 +200,7 @@ export function createMaterialsLessons({
         questionVersion: version,
         note: r.note,
         snapshot,
+        afterBlock,
         sectionId,
         position,
       });
@@ -210,7 +215,7 @@ export function createMaterialsLessons({
         throw invalidInput(`/sections/${i}/title`, "empty-content");
       content.validate(p, s.content);
       s.references.forEach((r, j) =>
-        add(r, s.id, j, `/sections/${i}/references/${j}`),
+        add(r, s.id, j, `/sections/${i}/references/${j}`, s.content.blocks.length),
       );
       return {
         lessonId: id,
@@ -242,8 +247,10 @@ export function createMaterialsLessons({
       title: input.title,
       intro: input.intro,
     };
+    if (prior) history.capture(prior);
     persist(p, record.id, input);
     prior ? repository.updateLesson(record) : repository.insertLesson(record);
+    history.capture(record);
     return read(p, record);
   }
   function deletion(p, input, id) {
@@ -261,7 +268,9 @@ export function createMaterialsLessons({
       updatedAt: at,
       deletedAt: input.deleted ? at : null,
     };
+    history.capture(r);
     repository.updateLesson(next);
+    history.capture(next);
     return read(p, next);
   }
   function purge(p, input, id) {
@@ -272,6 +281,78 @@ export function createMaterialsLessons({
     exports.remove(p, id);
     repository.purgeLesson(account(p), id);
     return { id, permanentlyDeleted: true };
+  }
+  function copy(p, input, id) {
+    const original = requireLesson(p, id);
+    if (original.version !== input.baseVersion)
+      throw contractError(problems.versionConflict(original.version));
+    assertWritable(original);
+    const at = now().toISOString();
+    const record = { ...original, id: randomUUID(), version: 1,
+      createdAt: at, updatedAt: at, deletedAt: null,
+      title: `${Array.from(original.title).slice(0, 196).join("")}（副本）` };
+    const originalSections = repository.listSections(id);
+    const sections = originalSections.map(section => ({
+      ...section, sectionId: randomUUID(),
+    }));
+    const sectionIds = new Map(originalSections
+      .map((section, index) => [section.sectionId, sections[index].sectionId]));
+    // Reuse adopted snapshots, including archived/removed sources. Copying must
+    // never silently upgrade the source version or trust a client snapshot.
+    const references = repository.listReferences(id).map(reference => ({
+      ...reference, referenceId: randomUUID(),
+      sectionId: sectionIds.get(reference.sectionId) ?? null,
+    }));
+    repository.insertLesson(record);
+    repository.replaceContent(record.id, sections, references);
+    history.capture(record);
+    return read(p, record);
+  }
+  function editable(p, input, id) {
+    const record = requireLesson(p, id);
+    if (record.version !== input.baseVersion) throw contractError(problems.versionConflict(record.version));
+    if (record.deletedAt) throw contractError(problems.objectDeleted());
+    assertWritable(record);
+    return record;
+  }
+  function restoreVersion(p, input, id) {
+    const current = editable(p, input, id);
+    const saved = history.get(p, id, input.version);
+    const document = read(p, saved.record, saved);
+    if (lessonDocuments(document).some(([, value]) => !supportedDocument(value)))
+      throw invalidInput("/version", "unsupported-content-version");
+    history.capture(current);
+    const record = { ...current, title: saved.record.title, intro: saved.record.intro,
+      version: current.version + 1, updatedAt: now().toISOString() };
+    repository.replaceContent(id, saved.sections, saved.references);
+    repository.updateLesson(record);
+    history.capture(record);
+    return read(p, record);
+  }
+  function copySections(p, input, id) {
+    const current = editable(p, input, id);
+    const source = requireLesson(p, input.sourceLessonId);
+    if (source.version !== input.sourceVersion) throw fail(409, "version-conflict", { currentVersion: source.version });
+    assertWritable(source);
+    const originals = repository.listSections(source.id);
+    const selected = input.sectionIds.map(id => originals.find(s => s.sectionId === id));
+    const sections = repository.listSections(id), references = repository.listReferences(id);
+    if (selected.some(s => !s) || new Set(input.sectionIds).size !== input.sectionIds.length)
+      throw invalidInput("/sectionIds", "invalid-reference");
+    const copiedReferences = repository.listReferences(source.id);
+    for (const section of selected) {
+      const sectionId = randomUUID();
+      sections.push({ ...section, accountKey: current.accountKey, sectionId, position: sections.length });
+      references.push(...copiedReferences.filter(r => r.sectionId === section.sectionId)
+        .map(r => ({ ...r, accountKey: current.accountKey, sectionId, referenceId: randomUUID() })));
+    }
+    if (sections.length > 200 || references.length > 1000) throw invalidInput("/sectionIds", "out-of-range");
+    history.capture(current);
+    const record = { ...current, version: current.version + 1, updatedAt: now().toISOString() };
+    repository.replaceContent(id, sections, references);
+    repository.updateLesson(record);
+    history.capture(record);
+    return read(p, record);
   }
   function list(p, query = {}) {
     const text = (blocks) =>
@@ -292,7 +373,13 @@ export function createMaterialsLessons({
           matchesSearch(q, [
             r.title,
             ...text(r.intro.blocks),
-            ...repository.listSections(r.id).flatMap((s) => text(s.content.blocks)),
+            ...repository.listSections(r.id).flatMap((s) => [s.title, ...text(s.content.blocks)]),
+            ...repository.listReferences(r.id).flatMap(({ note, snapshot }) => [
+              note, snapshot.title ?? "", snapshot.fileName ?? "",
+              ...text(snapshot.body?.blocks ?? []),
+              ...text(snapshot.solution?.blocks ?? []),
+              snapshot.source?.latex ?? "", snapshot.source?.caption ?? "",
+            ]),
           ]),
         )
         .map((r) => read(p, r)),
@@ -385,6 +472,17 @@ export function createMaterialsLessons({
   ];
   if (version === 3) {
     definitions.splice(7);
+    definitions.push(["copyLessonSectionsV3", "post", "/items/:id/sections/copy", "CopyLessonSections", 200, copySections]);
+    definitions.push(["restoreLessonVersionV3", "post", "/items/:id/history/restore", "RestoreLessonVersion", 200, restoreVersion]);
+    definitions.push(["listLessonHistoryV3", "get", "/items/:id/history", null, 200, (p, b, id) => history.list(p, id)]);
+    router.get("/:id/history/:revision", (req, res) => {
+      validateIdPath(req.params.id);
+      validateNoQuery(req.query);
+      if (!/^[1-9]\d*$/.test(req.params.revision)) throw invalidInput("/version", "out-of-range");
+      const saved = history.get(req.workbenchPrincipal, req.params.id, Number(req.params.revision));
+      res.json(read(req.workbenchPrincipal, saved.record, saved));
+    });
+    definitions.push(["copyLessonV3", "post", "/items/:id/copy", "CopyLesson", 201, copy]);
     definitions.push([
       "purgeLessonV3", "post", "/items/:id/purge", "PurgeLesson", 200, purge,
     ]);

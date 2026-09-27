@@ -43,6 +43,7 @@ function toReference(row) {
     questionVersion: row.questionVersion,
     note: row.note,
     snapshot: parseJson(row.snapshot),
+    afterBlock: row.afterBlock ?? null,
   };
 }
 
@@ -79,10 +80,10 @@ export function createLessonsRepository(db) {
   const insertReferenceStatement = db.prepare(`
     INSERT INTO lesson_references (
       lessonId, accountKey, referenceId, sectionId, position,
-      questionId, questionVersion, note, snapshot, kind
+      questionId, questionVersion, note, snapshot, kind, afterBlock
     ) VALUES (
       @lessonId, @accountKey, @referenceId, @sectionId, @position,
-      @questionId, @questionVersion, @note, @snapshot, @kind
+      @questionId, @questionVersion, @note, @snapshot, @kind, @afterBlock
     )
   `);
   const listSectionsStatement = db.prepare(
@@ -143,6 +144,7 @@ export function createLessonsRepository(db) {
     },
 
     purgeLesson(accountKey, lessonId) {
+      db.prepare("DELETE FROM lesson_history WHERE accountKey=? AND lessonId=?").run(accountKey, lessonId);
       db.prepare("DELETE FROM lesson_sections WHERE accountKey=? AND lessonId=?")
         .run(accountKey, lessonId);
       db.prepare("DELETE FROM lesson_references WHERE accountKey=? AND lessonId=?")
@@ -191,6 +193,7 @@ export function createLessonsRepository(db) {
           questionVersion: reference.questionVersion,
           note: reference.note,
           snapshot: JSON.stringify(reference.snapshot),
+          afterBlock: reference.afterBlock ?? null,
         });
       }
     },

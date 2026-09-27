@@ -3100,6 +3100,14 @@
             "type": "string",
             "minLength": 0,
             "maxLength": 20000
+          },
+          "afterBlock": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 10000
           }
         },
         "required": [
@@ -3142,6 +3150,14 @@
           },
           "latestVersion": {
             "$ref": "#/components/schemas/Version"
+          },
+          "afterBlock": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 10000
           }
         },
         "required": [

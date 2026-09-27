@@ -86,3 +86,19 @@ export async function listSources(kind, q = "") {
 
 // Public serializer for consumers adding references to a complete lesson draft.
 export { referenceInputFrom } from "./model.js";
+
+export async function copyLesson({ key, id, payload }) {
+  const { body } = await workbenchPost(`/api/modules/lessons/v3/${id}/copy`, payload, key);
+  return assertLesson(body);
+}
+
+export async function getLessonHistory(id) {
+  return (await workbenchGet(`/api/modules/lessons/v3/${id}/history`)).body;
+}
+export async function getLessonVersion(id, version) {
+  return assertLesson((await workbenchGet(`/api/modules/lessons/v3/${id}/history/${version}`)).body);
+}
+export async function applyLessonContent({ key, id, payload }) {
+  const path = payload.action === "history" ? "history/restore" : "sections/copy";
+  return assertLesson((await workbenchPost(`/api/modules/lessons/v3/${id}/${path}`, payload.body, key)).body);
+}

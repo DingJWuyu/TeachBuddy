@@ -1,4 +1,5 @@
 import {
+  Fragment,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -69,6 +70,7 @@ export function LessonDocumentEditor({
   label,
   placeholder = "写下这一环节准备怎么讲，也可以加入题目或资料…",
   readOnly = false,
+  renderBoundary,
 }) {
   const auth = useContext(PUBLIC_AUTH);
   const pending = useRef(null),
@@ -88,7 +90,7 @@ export function LessonDocumentEditor({
     field?.focus();
     focusBlock.current = null;
   }, [value.blocks.length]);
-  const commit = (next) =>
+  const commit = (next, edit) =>
     onChange({
       version:
         latest.current.version === 2 ||
@@ -96,7 +98,7 @@ export function LessonDocumentEditor({
           ? 2
           : 1,
       blocks: next,
-    });
+    }, edit);
   const pick = () =>
     new Promise((resolve) => {
       pending.current = resolve;
@@ -144,14 +146,14 @@ export function LessonDocumentEditor({
     }
     const next = [...latest.current.blocks, block];
     focusBlock.current = next.length - 1;
-    commit(next);
+    commit(next, { index: next.length - 1, remove: 0, insert: 1 });
   }
   function arrange(index, offset) {
     const next = [...blocks];
     if (offset === null) next.splice(index, 1);
     else
       [next[index], next[index + offset]] = [next[index + offset], next[index]];
-    commit(next);
+    commit(next, offset === null ? { index, remove: 1, insert: 0 } : { index, moveTo: index + offset });
   }
   if (readOnly || !supportedDocument(value))
     return <DocumentView value={value} />;
@@ -181,11 +183,12 @@ export function LessonDocumentEditor({
           event.target.value = "";
         }}
       />
+      {renderBoundary?.(0)}
       {blocks.map((block, index) => {
         counts[block.type] = (counts[block.type] ?? 0) + 1;
         const blockLabel = `${label}${names[block.type]} ${counts[block.type]}`;
         return (
-          <div
+          <Fragment key={`${index}:${block.type}`}><div
             className="lesson-edit-block"
             role={block.type === "paragraph" ? undefined : "group"}
             aria-label={
@@ -213,7 +216,7 @@ export function LessonDocumentEditor({
                     commit(
                       blocks.flatMap((item, i) =>
                         i === index ? next.blocks : [item],
-                      ),
+                      ), { index, remove: 1, insert: next.blocks.length },
                     )
                   }
                 />
@@ -259,7 +262,7 @@ export function LessonDocumentEditor({
                 </Popover>
               </div>
             )}
-          </div>
+          </div>{value.blocks.length > 0 && renderBoundary?.(index + 1)}</Fragment>
         );
       })}
       <div className="lesson-document-tools">

@@ -1113,3 +1113,58 @@
   color: var(--app-muted);
   font-size: 12px;
 }
+
+.wb-lesson .lesson-edit-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wb-lesson .lesson-history-actions { display: flex; gap: 12px; flex-shrink: 0; }
+.wb-lesson .lesson-history-actions button { font-size: 12px; }
+.wb-lesson .lesson-history-actions button:disabled { opacity: .4; cursor: default; }
+.lesson-export-reference-list { display: grid; gap: 12px; }
+.lesson-export-reference { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; min-width: 0; }
+.lesson-export-reference > label { display: flex; align-items: flex-start; gap: 8px; flex: 1 1 200px; min-width: 0; }
+.lesson-export-reference > label span { overflow-wrap: anywhere; }
+.lesson-export-reference input[type="checkbox"] { flex-shrink: 0; margin-top: 3px; }
+.lesson-export-reference-space { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lesson-export-reference-space .wb-input { width: 64px; }
+.lesson-export-reference-space label { display: flex; align-items: center; gap: 6px; }
+.lesson-export-reference .wb-text-button { font-size: 12px; }
+
+.wb-lesson .lesson-edit-status > .wb-save-block { min-width: 0; }
+.r34-exports .lesson-export-selection-hint { margin: 0 0 12px; font-size: 13px; line-height: 1.6; }
+
+/* Lesson content tools share the existing dialog, input and surface tokens. */
+.lesson-content-dialog { display: flex; flex-direction: column; max-height: calc(100dvh - 48px); width: min(560px, calc(100vw - 32px)); }
+.lesson-content-dialog.is-wide { width: min(960px, calc(100vw - 32px)); }
+.lesson-content-dialog .wb-dialog-head h2 { margin: 0; font-size: 17px; }
+.lesson-dialog-body { overflow: auto; min-height: 0; min-width: 0; padding: 4px 2px 16px; }
+.lesson-dialog-body > p { font-size: 13px; line-height: 1.6; color: var(--app-muted); }
+.lesson-content-dialog .wb-dialog-actions { flex-shrink: 0; }
+.lesson-content-dialog input:is([type="checkbox"], [type="radio"]) { width: 14px; height: 14px; flex: 0 0 14px; margin: 0; accent-color: var(--app-primary); }
+.lesson-choice-list { display: grid; gap: 4px; }
+.lesson-choice-list label { display: flex; align-items: flex-start; gap: 9px; padding: 10px 8px; border-radius: 8px; font-size: 13px; }
+.lesson-choice-list label:has(input:checked) { background: var(--app-soft); }
+.lesson-choice-list span { min-width: 0; overflow-wrap: anywhere; }
+.lesson-choice-list input { flex-shrink: 0; margin-top: 3px; }
+.lesson-library-search { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; font-size: 12px; }
+.lesson-library-search .wb-input { flex: 1; min-width: 160px; }
+.lesson-library-search label { display: flex; align-items: center; gap: 6px; flex: none; white-space: nowrap; }
+.lesson-library-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 20px; min-height: 240px; }
+.lesson-library-list, .lesson-library-preview { min-width: 0; }
+.lesson-library-list { display: flex; flex-direction: column; gap: 4px; }
+.lesson-library-item { color: inherit; text-align: left; background: transparent; border: 0; border-radius: 8px; padding: 10px; cursor: pointer; }
+.lesson-library-item strong, .lesson-library-item small { display: block; overflow-wrap: anywhere; }
+.lesson-library-item strong { font-size: 13px; font-weight: 500; }
+.lesson-library-item small { color: var(--app-muted); font-size: 11px; margin-top: 5px; }
+.lesson-library-item.is-selected, .lesson-library-item:hover { background: var(--app-soft); }
+.lesson-library-preview { padding-left: 16px; border-left: 1px solid var(--app-line); font-size: 13px; }
+.lesson-library-preview h3 { font-size: 16px; margin: 8px 0 18px; }
+.lesson-library-section { margin: 16px 0 24px; }
+.lesson-library-section h4 { font-size: 14px; }
+.lesson-library-section h4 label { display: flex; gap: 8px; align-items: center; }
+.lesson-resource-output { display: grid; gap: 6px; font-size: 12px; }
+.lesson-resource-output small { max-width: 420px; color: var(--app-muted); line-height: 1.5; }
+.lesson-resource-output label { display: flex; gap: 6px; align-items: center; }
+@media (max-width: 640px) {
+  .lesson-library-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .lesson-library-list { max-height: 180px; overflow-y: auto; }
+  .lesson-library-preview { padding: 0; border-left: 0; border-top: 1px solid var(--app-line); }
+}

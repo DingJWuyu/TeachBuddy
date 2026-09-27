@@ -60,4 +60,15 @@ export const migrations = [
       )`);
     },
   },
+  {
+    id: "lessons_0004_history_and_placement",
+    up(db) {
+      db.exec(`ALTER TABLE lesson_references ADD COLUMN afterBlock INTEGER;
+        CREATE TABLE lesson_history (
+          lessonId TEXT NOT NULL, accountKey TEXT NOT NULL, version INTEGER NOT NULL,
+          savedAt TEXT NOT NULL, title TEXT NOT NULL, snapshot TEXT NOT NULL,
+          PRIMARY KEY (lessonId, version)
+        )`);
+    },
+  },
 ];

@@ -120,7 +120,7 @@ export async function generateDocx(blocks, { files, principal, signal }) {
         for await (const chunk of await files.open(principal, block.fileId)) chunks.push(chunk);
         const image = sharp(Buffer.concat(chunks), { limitInputPixels: 40000000 });
         const meta = await image.metadata();
-        const scale = Math.min(block.widthMm * 96 / 25.4 / meta.width, 650 / meta.height);
+        const scale = Math.min(block.widthMm * 96 / 25.4 / meta.width, (block.pageImage ? 870 : 650) / meta.height);
         const name = `image-${imageIndex++}.png`;
         await fs.writeFile(path.join(directory, name), await image.png().toBuffer());
         result.push(styled({ t: "Para", c: [{ t: "Image", c: [attr([

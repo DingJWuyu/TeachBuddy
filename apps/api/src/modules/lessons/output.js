@@ -22,13 +22,24 @@ export function exportTree(lesson, options) {
     )
   )
     throw materialsError("invalid-export-selection");
+  const references = [...lesson.materials, ...lesson.sections.flatMap(s => s.references)];
+  const excluded = new Set(options.excludedReferenceIds ?? []);
+  const overrides = new Map((options.answerSpaceOverrides ?? []).map(item => [item.referenceId, item.lines]));
+  const resourcePages = new Set(options.resourcePageReferenceIds ?? []);
+  if (excluded.size !== (options.excludedReferenceIds ?? []).length ||
+      [...excluded].some(id => !references.some(r => r.id === id)) ||
+      overrides.size !== (options.answerSpaceOverrides ?? []).length ||
+      [...overrides.keys()].some(id => !references.some(r => r.id === id && (r.kind ?? "question") === "question")) ||
+      resourcePages.size !== (options.resourcePageReferenceIds ?? []).length ||
+      [...resourcePages].some(id => !references.some(r => r.id === id && r.kind === "resource")))
+    throw materialsError("invalid-export-selection");
   const notes = [],
     answers = [],
     blocks = [heading(lesson.title)];
   let number = 0;
-  const filter = (items, field) =>
+  const filter = (items, field, offset = 0) =>
     items.flatMap((block, i) => {
-      const pointer = `${field}/${i}`;
+      const pointer = `${field}/${i + offset}`;
       if (block.type === "teacher-note") {
         if (options.includeTeacherNotes)
           notes.push(...filter(block.blocks, `${pointer}/blocks`));
@@ -50,6 +61,8 @@ export function exportTree(lesson, options) {
       return [next];
     });
   const reference = (ref, field) => {
+    if (excluded.has(ref.id)) return;
+    const answerSpaceLines = overrides.get(ref.id) ?? options.answerSpaceLines;
     if (ref.kind === "math") {
       if (options.kind !== "practice") {
         const source = ref.snapshot.source;
@@ -61,21 +74,23 @@ export function exportTree(lesson, options) {
         else blocks.push({ type: "image", fileId: ref.snapshot.posterFileId, alt: ref.snapshot.title, widthMm: 150, field });
       }
     } else if (ref.kind === "resource") {
-      if (options.kind !== "practice")
+      if (options.kind !== "practice") {
         blocks.push(para(`${ref.snapshot.title} · ${ref.snapshot.fileName}`));
+        if (resourcePages.has(ref.id)) blocks.push({ type: "resource-pages", fileId: ref.snapshot.fileId, title: ref.snapshot.title, field });
+      }
     } else {
       number++;
       blocks.push(
         { ...para(`${number}. ${ref.snapshot.title}`), keepNext: true },
         ...filter(ref.snapshot.body.blocks, `${field}/snapshot/body/blocks`),
       );
-      if (options.kind !== "lesson-plan" && options.answerSpaceLines > 0) {
+      if (options.kind !== "lesson-plan" && answerSpaceLines > 0) {
         // Keep the initial writing area with the question ending. Four lines
         // fit below even our tallest image on A4; longer spaces must be free
         // to continue across pages instead of forming an oversized keep chain.
-        const attachedLines = Math.min(options.answerSpaceLines, 4);
+        const attachedLines = Math.min(answerSpaceLines, 4);
         blocks.at(-1).keepNext = true;
-        for (let i = 0; i < options.answerSpaceLines; i++)
+        for (let i = 0; i < answerSpaceLines; i++)
           blocks.push({
             ...para(" "),
             keepNext: i < attachedLines - 1,
@@ -98,14 +113,19 @@ export function exportTree(lesson, options) {
     filter(lesson.intro.blocks, "/intro/blocks");
   lesson.sections.forEach((s, i) => {
     if (!options.sectionIds.includes(s.id)) return;
-    const body = filter(s.content.blocks, `/sections/${i}/content/blocks`);
-    if (options.kind !== "practice") blocks.push(heading(s.title), ...body);
-    s.references.forEach((r, j) =>
-      reference(r, `/sections/${i}/references/${j}`),
-    );
+    if (options.kind !== "practice") blocks.push(heading(s.title));
+    for (let position = 0; position <= s.content.blocks.length; position++) {
+      if (position > 0) {
+        const body = filter([s.content.blocks[position - 1]], `/sections/${i}/content/blocks`, position - 1);
+        if (options.kind !== "practice") blocks.push(...body);
+      }
+      s.references.forEach((r, j) => {
+        if ((r.afterBlock ?? s.content.blocks.length) === position) reference(r, `/sections/${i}/references/${j}`);
+      });
+    }
   });
   const materials = lesson.materials.filter((r) =>
-    options.materialReferenceIds.includes(r.id),
+    options.materialReferenceIds.includes(r.id) && !excluded.has(r.id),
   );
   if (materials.length && options.kind !== "practice")
     blocks.push(heading("备用材料"));

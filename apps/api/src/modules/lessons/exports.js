@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { exportTree, generateDocx } from "./output.js";
 import { convertFile } from "../../workbench/files/converter.js";
 import { materialsError } from "../../workbench/jobs/index.js";
-import { contractError, problems } from "../../workbench/problems.js";
+import { contractError, invalidInput, problems } from "../../workbench/problems.js";
 const docxType =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 export function createLessonExports({
@@ -40,6 +40,13 @@ export function createLessonExports({
       throw contractError(problems.versionConflict(lesson.version));
     if (lesson.deletedAt) throw contractError(problems.objectDeleted());
     const blocks = exportTree(lesson, input);
+    const pageTypes = new Set(["application/pdf", "application/msword", "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation", "image/png", "image/jpeg", "image/webp"]);
+    for (const block of blocks.filter(b => b.type === "resource-pages")) {
+      if (!pageTypes.has(files.read(principal, block.fileId).mediaType))
+        throw invalidInput("/resourcePageReferenceIds", "out-of-range");
+    }
     const job = jobs.enqueue({
       principal,
       kind: "export",
@@ -96,7 +103,26 @@ export function createLessonExports({
           };
         }
         reportProgress({ completed: 0, total: 3, unit: "stages" });
-        const docx = await generateDocx(snapshot.blocks, { files, principal, signal });
+        const blocks = [];
+        for (const block of snapshot.blocks) {
+          signal.throwIfAborted();
+          if (block.type !== "resource-pages") { blocks.push(block); continue; }
+          stage = "resources";
+          let preview;
+          try {
+            preview = await files.ensurePreview(principal, block.fileId, { signal });
+            if (preview.state !== "ready" || !preview.pages.length) throw new Error("Resource pages unavailable");
+          } catch (error) {
+            throw Object.assign(error, {
+              resourceDetail: `“${block.title}”未能完整转换。请预览原件核对，或取消这份资源的“按原页插入”后重新生成。`,
+              problem: { field: block.field },
+            });
+          }
+          for (const page of preview.pages) blocks.push({ type: "image", fileId: page.imageFileId,
+            alt: `${block.title} · 第 ${page.page} 页`, widthMm: 165, pageImage: true, field: block.field });
+        }
+        stage = "generate";
+        const docx = await generateDocx(blocks, { files, principal, signal });
         signal.throwIfAborted();
         reportProgress({ completed: 1, total: 3, unit: "stages" });
         stage = "convert";
@@ -152,7 +178,7 @@ export function createLessonExports({
               unitId: null,
               field: error.problem?.field ?? null,
               detail:
-                "文件未生成，已保存的备课和旧输出仍保留。修复后重新生成。",
+                error.resourceDetail ?? "文件未生成，已保存的备课和旧输出仍保留。修复后重新生成。",
             },
           ],
         };

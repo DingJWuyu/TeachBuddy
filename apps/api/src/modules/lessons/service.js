@@ -87,7 +87,7 @@ export function createLessonsService({
       ...repository.listSections(record.id).map((s) => s.content),
     ];
     for (const reference of repository.listReferences(record.id)) {
-      if (reference.kind === "resource" || reference.kind === "math")
+      if (reference.kind === "resource" || reference.kind === "math" || reference.afterBlock != null)
         throw invalidInput("/materials", "unsupported-content-version");
       documents.push(reference.snapshot.body, reference.snapshot.solution);
     }

@@ -27,6 +27,7 @@ export function referenceInputFrom(reference) {
     [(reference.kind === "math" ? "work" : reference.kind ?? "question") + "Version"]:
       reference[(reference.kind === "math" ? "work" : reference.kind ?? "question") + "Version"],
     note: reference.note || "",
+    afterBlock: reference.afterBlock ?? null,
   };
 }
 
@@ -288,6 +289,7 @@ export function reorderReference(input, referenceId, offset) {
     const index = references.findIndex(reference => reference.id === referenceId);
     const target = index + offset;
     if (target < 0 || target >= references.length) return;
+    [references[index].afterBlock, references[target].afterBlock] = [references[target].afterBlock, references[index].afterBlock];
     [references[index], references[target]] = [references[target], references[index]];
   });
 }
@@ -347,6 +349,7 @@ export function moveReference(input, referenceId, target) {
       [found] = next.materials.splice(materialIndex, 1);
     }
     if (!found) return;
+    found.afterBlock = null;
     if (target.type === "materials") next.materials.push(found);
     else {
       const section = next.sections.find(
@@ -355,6 +358,37 @@ export function moveReference(input, referenceId, target) {
       if (section) section.references.push(found);
       else next.materials.push(found);
     }
+  });
+}
+
+export function placeReference(input, referenceId, afterBlock) {
+  return updateInput(input, next => {
+    for (const section of next.sections) {
+      const reference = section.references.find(r => r.id === referenceId);
+      if (!reference) continue;
+      reference.afterBlock = afterBlock;
+      section.references.sort((a, b) => (a.afterBlock ?? section.content.blocks.length) - (b.afterBlock ?? section.content.blocks.length));
+    }
+  });
+}
+
+export function changeSectionContent(input, sectionId, content, edit) {
+  return updateInput(input, next => {
+    const section = next.sections.find(s => s.id === sectionId);
+    if (!section) return;
+    for (const reference of section.references) {
+      const position = reference.afterBlock;
+      if (position == null) continue;
+      if (edit?.moveTo !== undefined) {
+        if (position === edit.index + 1) reference.afterBlock = edit.moveTo + 1;
+        else if (position === edit.moveTo + 1) reference.afterBlock = edit.index + 1;
+      } else if (edit && position > edit.index) {
+        reference.afterBlock = Math.max(edit.index, position - edit.remove) + edit.insert;
+      }
+      reference.afterBlock = Math.min(reference.afterBlock, content.blocks.length);
+    }
+    section.content = content;
+    section.references.sort((a, b) => (a.afterBlock ?? content.blocks.length) - (b.afterBlock ?? content.blocks.length));
   });
 }
 

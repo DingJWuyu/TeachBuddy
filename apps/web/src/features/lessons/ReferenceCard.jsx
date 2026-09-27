@@ -173,6 +173,7 @@ export function ReferenceCard({
   onOpenLesson,
   onCopyWork,
   onReorder,
+  onPlacement,
   canMoveUp = false,
   canMoveDown = false,
   readOnly = false,
@@ -246,6 +247,7 @@ export function ReferenceCard({
                     </MenuItem>
                   </>
                 )}
+                {onPlacement && <MenuItem onClick={() => { close(); onPlacement(); }}>放到正文之间</MenuItem>}
                 {targets.map((target) => (
                   <MenuItem
                     key={target.value}
