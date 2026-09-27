@@ -15,6 +15,7 @@ import { migrations as agent } from "../../agent/store.js";
 import { preferenceMigrations } from "../../reliability/preferences.js";
 import { fileMigrations } from "../files/migrations.js";
 import { jobMigrations } from "../jobs/migrations.js";
+import { recognitionMigrations } from '../recognition/migrations.js';
 import { validateSchema } from "../content/schema.js";
 import { rendererVersion } from "../../modules/math/render.js";
 import { createMutations } from "../mutations.js";
@@ -43,6 +44,7 @@ const supported = [
   }).map(([moduleId, migrations]) => ({ moduleId, migrations })),
   ...fileMigrations,
   ...jobMigrations,
+  ...recognitionMigrations,
   ...migrations,
   ...preferenceMigrations,
 ];
@@ -135,6 +137,10 @@ function contentSchemas(db) {
   if (db.prepare("SELECT name FROM sqlite_master WHERE name='resource_file_history'").get())
     for (const row of db.prepare("SELECT accountKey, value FROM resource_file_history").all())
       visit(JSON.parse(row.value), row.accountKey);
+  for (const table of ['materials_recognition_results', 'materials_recognition_requests'])
+    if (db.prepare('SELECT name FROM sqlite_master WHERE name=?').get(table))
+      for (const row of db.prepare(`SELECT accountKey,value FROM ${table}`).all())
+        visit(JSON.parse(row.value), row.accountKey);
   for (const row of db
     .prepare(
       "SELECT r.value,w.accountKey FROM math_revisions r JOIN math_works w ON w.id=r.workId",
@@ -217,6 +223,11 @@ function checkDatabase(db, { allowOlder = false } = {}) {
         .get()
     )
       throw new Error(`Broken relation in ${child}`);
+  }
+  if (db.prepare("SELECT name FROM sqlite_master WHERE name='materials_recognition_requests'").get()) {
+    for (const [column, parent] of [['jobId', 'materials_jobs'], ['fileId', 'materials_files'], ['renditionFileId', 'materials_files']])
+      if (db.prepare(`SELECT 1 FROM materials_recognition_requests c LEFT JOIN ${parent} p ON c.${column}=p.id WHERE p.id IS NULL OR c.accountKey <> p.accountKey LIMIT 1`).get())
+        throw new Error('Broken recognition source or job relation');
   }
   const sourceTables = {
     question: "question_items",

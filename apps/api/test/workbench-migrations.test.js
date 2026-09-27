@@ -1,3 +1,4 @@
+import { recognitionMigrations } from '../src/workbench/recognition/migrations.js';
 import { migrations as reliabilityMigrations } from '../src/workbench/reliability/storage.js';
 import { preferenceMigrations } from '../src/reliability/preferences.js';
 import { migrations as agentMigrations } from '../src/agent/store.js';
@@ -24,7 +25,7 @@ import { startServer } from '../src/server.js';
 import { ACCOUNT_A, createTempRoot, createWorkbenchContext } from './workbench-test-context.js';
 import { resolveFixtureSets } from './fixtures/first-flow/catalog.js';
 
-const PRODUCT_MIGRATIONS = ['materials_files_001', 'materials_jobs_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'lessons_0003_order', 'classes_0001_class_tables', 'schedule_0001_settings_entries', 'schedule_reminders_0001_notifications'];
+const PRODUCT_MIGRATIONS = ['materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'lessons_0003_order', 'lessons_0004_history_and_placement', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications'];
 
 test('an empty database applies migrations once and records them in the ledger', async () => {
   const context = await createWorkbenchContext();
@@ -40,7 +41,7 @@ test('an empty database applies migrations once and records them in the ledger',
     assert.ok(table, 'the fixture migration table must exist');
 
     // A second startup on the same database re-runs nothing.
-    const migrationResult = context.workbench.migrations.run([...fileMigrations, ...jobMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...context.workbench.loader.moduleMigrations(), { moduleId: 'agent', migrations: agentMigrations }]);
+    const migrationResult = context.workbench.migrations.run([...fileMigrations, ...jobMigrations, ...recognitionMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...context.workbench.loader.moduleMigrations(), { moduleId: 'agent', migrations: agentMigrations }]);
     assert.deepEqual(migrationResult.applied, []);
     assert.deepEqual(migrationResult.skipped, [...PRODUCT_MIGRATIONS, 'workbench_probe_init', 'agent_001_conversations']);
   } finally {

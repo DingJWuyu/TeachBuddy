@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { validateSchema } from "../content/schema.js";
 import { contractError, problems, invalidInput } from "../problems.js";
-export const jobKinds = ["preview", "extraction", "export", "question-asset"];
+export const jobKinds = ["preview", "extraction", "export", "question-asset", "recognition"];
 const active = new Set(["queued", "running", "cancelling"]);
 export function materialsError(type, status = 422, field = "", detail = "") {
   return Object.assign(new Error(type), {
@@ -62,7 +62,7 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
       progress: {
         completed: 0,
         total: null,
-        unit: kind === "preview" ? "pages" : "stages",
+        unit: ["preview", "recognition"].includes(kind) ? "pages" : "stages",
       },
       outputFileIds: [],
       issues: [],
@@ -100,7 +100,7 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
     return mutations.execute({ principal, ...mutation, body: input }, () => {
       const job = get(principal, id);
       if (
-        !["preview", "extraction"].includes(job.kind) ||
+        !["preview", "extraction", "recognition"].includes(job.kind) ||
         !["partial", "failed", "interrupted", "cancelled"].includes(job.state)
       )
         throw materialsError("job-not-retryable", 409);
@@ -196,7 +196,7 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
     for (const kind of jobKinds)
       if (
         typeof bindings[kind]?.run !== "function" ||
-        (["preview", "extraction"].includes(kind) &&
+        (["preview", "extraction", "recognition"].includes(kind) &&
           typeof bindings[kind].retry !== "function")
       )
         throw new Error(`Missing materials handler: ${kind}`);

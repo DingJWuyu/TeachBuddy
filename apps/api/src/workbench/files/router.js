@@ -57,7 +57,7 @@ function upload(req) {
     req.pipe(parser);
   });
 }
-export function createFilesRouter({ identity, trustedOrigins, files, ready, logger }) {
+export function createFilesRouter({ identity, trustedOrigins, files, recognition, ready, logger }) {
   const router = express.Router();
   const guards = createGuards({ identity, trustedOrigins });
   router.use((req, res, next) => {
@@ -84,6 +84,16 @@ export function createFilesRouter({ identity, trustedOrigins, files, ready, logg
   materialJsonRoute(router, '/crops', { guards, ready }, 'CropInput', 201, (req,m) => files.crop(req.workbenchPrincipal, req.body, m));
   materialJsonRoute(router, '/:id/preview', { guards, ready }, 'Empty', 202, (req,m) => files.requestPreview(req.workbenchPrincipal, req.params.id, m));
   router.get('/:id/preview', guards.identityGuard, asyncHandler(async (req,res) => { await ready(); res.json(files.preview(req.workbenchPrincipal, req.params.id)); }));
+  materialJsonRoute(router, '/:id/recognition', { guards, ready }, 'RecognitionInput', 202,
+    (req, mutation) => recognition.request(req.workbenchPrincipal, { ...req.body, fileId: req.params.id }, mutation));
+  router.get('/:id/recognition', guards.identityGuard, asyncHandler(async (req, res) => {
+    await ready();
+    res.json(recognition.get(req.workbenchPrincipal, { fileId: req.params.id, renditionFileId: req.query.renditionFileId }));
+  }));
+  router.get('/:id/recognition/pages/:page', guards.identityGuard, asyncHandler(async (req, res) => {
+    await ready();
+    res.json(recognition.readPage(req.workbenchPrincipal, { fileId: req.params.id, renditionFileId: req.query.renditionFileId, page: Number(req.params.page) }));
+  }));
   router.get(
     '/:id',
     guards.identityGuard,

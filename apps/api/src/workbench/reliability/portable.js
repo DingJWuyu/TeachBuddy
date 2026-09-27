@@ -189,6 +189,8 @@ export function takeSnapshot(db, principal, loader) {
     renditions: rows("materials_renditions").map((row) =>
       JSON.parse(row.value),
     ),
+    recognitionResults: rows('materials_recognition_results').map(row => JSON.parse(row.value)),
+    recognitionRequests: rows('materials_recognition_requests').map(row => ({ jobId: row.jobId, ...JSON.parse(row.value) })),
     lessonExportSnapshots: rows("lesson_exports").map((row) => ({
       id: row.id,
       snapshot: JSON.parse(row.snapshot),

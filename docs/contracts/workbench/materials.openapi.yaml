@@ -10,6 +10,114 @@ servers:
 security:
 - SessionCookie: []
 paths:
+  /api/workbench/files/{id}/recognition:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getFileRecognition
+      description: 只读固定预览的识别状态，不触发模型；语义见 recognition.md。
+      parameters:
+      - name: renditionFileId
+        in: query
+        schema:
+          $ref: '#/components/schemas/Id'
+      responses:
+        '200':
+          description: 当前账户原件、固定 rendition 和每页状态。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecognitionSummary'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+    post:
+      operationId: requestFileRecognition
+      description: 冻结来源及页号，复用活跃请求和成功页；重试、取消沿用 Job。仅返回持久受理结果。
+      parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecognitionInput'
+      responses:
+        '202':
+          description: 已受理的识别 Job，尚未表示识别成功。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+  /api/workbench/files/{id}/recognition/pages/{page}:
+    get:
+      operationId: getRecognizedPage
+      description: 返回绑定本次原件与页码的机器结果；同像素复用不会串用另一份原件的 Location。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: page
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      - name: renditionFileId
+        in: query
+        schema:
+          $ref: '#/components/schemas/Id'
+      responses:
+        '200':
+          description: 未完成时保留状态，ready 时提供正文、结构和附件；不是人工校对完成。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecognizedPage'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
   /api/workbench/files:
     post:
       operationId: uploadFile
@@ -2753,6 +2861,92 @@ paths:
           $ref: '#/components/responses/503'
 components:
   schemas:
+    RecognitionInput:
+      type: object
+      properties:
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        pages:
+          type: array
+          minItems: 1
+          maxItems: 500
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+      required: [renditionFileId, pages]
+      additionalProperties: false
+    RecognitionSummary:
+      type: object
+      properties:
+        available:
+          type: boolean
+        revision:
+          type: string
+        fileId:
+          $ref: '#/components/schemas/Id'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        jobId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        pages:
+          type: array
+          items:
+            type: object
+            properties:
+              page:
+                type: integer
+                minimum: 1
+              state:
+                enum: [unprocessed, queued, running, cancelling, ready, failed, interrupted]
+              resultId:
+                anyOf:
+                - $ref: '#/components/schemas/Id'
+                - type: 'null'
+              issues:
+                type: array
+                items:
+                  type: object
+            required: [page, state, resultId, issues]
+      required: [available, revision, fileId, renditionFileId, jobId, pages]
+    RecognizedPage:
+      type: object
+      properties:
+        state:
+          enum: [unprocessed, running, ready, failed, interrupted]
+        resultId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        location:
+          $ref: '#/components/schemas/Location'
+        imageFileId:
+          $ref: '#/components/schemas/Id'
+        width:
+          type: integer
+        height:
+          type: integer
+        document:
+          $ref: '#/components/schemas/Document'
+        text:
+          type: string
+        blocks:
+          type: array
+          items:
+            type: object
+        rawFileId:
+          $ref: '#/components/schemas/Id'
+        assetFileIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+        issues:
+          type: array
+          items:
+            type: object
+      required: [state, resultId, location, imageFileId, width, height, issues]
     Id:
       $ref: ./first-flow.openapi.yaml#/components/schemas/Id
     Version:
@@ -3333,6 +3527,7 @@ components:
           - extraction
           - export
           - question-asset
+          - recognition
         target:
           $ref: '#/components/schemas/JobTarget'
         state:
@@ -4888,6 +5083,21 @@ components:
       additionalProperties: false
       description: 非空关键词查询时返回；计数针对当前账户、状态与分类筛选后的资料。pending 非零时继续同一查询。
       properties:
+        ocr:
+          type: object
+          additionalProperties: false
+          description: 当前筛选资料的页覆盖计数；只对 pendingPages 非零继续轮询。
+          properties:
+            pendingPages:
+              type: integer
+              minimum: 0
+            unprocessedPages:
+              type: integer
+              minimum: 0
+            failedPages:
+              type: integer
+              minimum: 0
+          required: [pendingPages, unprocessedPages, failedPages]
         pending:
           type: integer
           minimum: 0
@@ -4911,6 +5121,15 @@ components:
               excerpt:
                 type: string
                 maxLength: 400
+              recognition:
+                type: object
+                additionalProperties: false
+                properties:
+                  resultId:
+                    $ref: '#/components/schemas/Id'
+                  location:
+                    $ref: '#/components/schemas/PageLocation'
+                required: [resultId, location]
             required: [page, excerpt]
       required: [pending, unavailable, failed, matches]
     ImportList:
@@ -4971,6 +5190,15 @@ components:
     Problem409:
       oneOf:
       - $ref: ./first-flow.openapi.yaml#/components/schemas/Problem409
+      - type: object
+        properties:
+          type:
+            const: /problems/materials/preview-required
+          field:
+            type: string
+          detail:
+            type: string
+        required: [type, field, detail]
       - type: object
         properties:
           type:
@@ -5163,6 +5391,15 @@ components:
     Problem503:
       oneOf:
       - $ref: ./first-flow.openapi.yaml#/components/schemas/Problem503
+      - type: object
+        properties:
+          type:
+            const: /problems/materials/recognition-unavailable
+          field:
+            type: string
+          detail:
+            type: string
+        required: [type, field, detail]
       - type: object
         properties:
           type:

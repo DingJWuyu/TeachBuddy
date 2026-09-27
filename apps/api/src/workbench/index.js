@@ -9,6 +9,8 @@ import { jobMigrations } from "./jobs/migrations.js";
 import { unconnectedHandlers } from "./jobs/fixtures.js";
 import { createJobsRouter } from "./jobs/router.js";
 import { createPreviews } from "./files/preview.js";
+import { createRecognition } from './recognition/index.js';
+import { recognitionMigrations } from './recognition/migrations.js';
 /**
  * Workbench composition root.
  *
@@ -107,6 +109,8 @@ export function createWorkbench({
     }),
   );
   const content = createContent({ files });
+  const recognition = createRecognition({ db, mutations, files, readBytes, jobs, content,
+    recognizer: workbenchEnv.recognition?.recognizer });
   const migrations = createMigrationRunner({ db, clock });
   const loader = createModuleLoader({
     catalog,
@@ -114,7 +118,7 @@ export function createWorkbench({
       ...implementations,
       ...(workbenchEnv.extraImplementations ?? {}),
     },
-    dependencies: { db, mutations, files, content, jobs, clock: { now: () => (clock ? clock() : new Date()).toISOString() } },
+    dependencies: { db, mutations, files, content, jobs, recognition, clock: { now: () => (clock ? clock() : new Date()).toISOString() } },
     logger,
   });
 
@@ -142,6 +146,7 @@ export function createWorkbench({
     identity,
     trustedOrigins: workbenchEnv.trustedOrigins ?? [],
     files,
+    recognition,
     ready: () => initialize(),
     logger,
   });
@@ -164,12 +169,13 @@ export function createWorkbench({
     initialization ??= (async () => {
       await loader.discover();
       const migrationResult = migrations.run(
-        [...fileMigrations, ...jobMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...loader.moduleMigrations()],
+        [...fileMigrations, ...jobMigrations, ...recognitionMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...loader.moduleMigrations()],
         {
           knownModuleIds: [
             "reliability",
             "materials-files",
             "materials-jobs",
+            "materials-recognition",
             "reliability-preferences",
             ...catalog.map((entry) => entry.id),
           ],
@@ -180,10 +186,12 @@ export function createWorkbench({
       );
       reliability.initialize();
       files.initialize();
+      recognition.initialize();
       await loader.instantiate();
       const handlers = {
         ...unconnectedHandlers(),
         ...files.jobHandlers,
+        ...recognition.jobHandlers,
         ...loader.get("questions")?.jobHandlers,
         ...loader.get("lessons")?.jobHandlers,
         ...workbenchEnv.jobHandlers,
@@ -208,6 +216,7 @@ export function createWorkbench({
     db,
     files,
     content,
+    recognition,
     filesRouter,
     reliabilityRouter: reliability.router,
     agentRecoveryGuard: reliability.agentRecoveryGuard,
