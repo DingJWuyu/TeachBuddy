@@ -34,7 +34,8 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
       .filter(
         (x) =>
           !q.q ||
-          [x.title, x.note ?? "", x.body ? documentText(x.body) : "", x.solution ? documentText(x.solution) : ""]
+          [x.title, x.note ?? "", x.body ? documentText(x.body) : "",
+            (q.searchAnswers === true || q.searchAnswers === "true") && x.solution ? documentText(x.solution) : ""]
             .join("\n")
             .toLowerCase()
             .includes(q.q.trim().toLowerCase()),

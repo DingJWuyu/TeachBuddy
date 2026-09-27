@@ -621,6 +621,13 @@ paths:
         required: false
         schema:
           type: boolean
+      - name: searchAnswers
+        in: query
+        required: false
+        description: 默认不搜索答案与解析；明确开启时与题干、标题和笔记一起检索。
+        schema:
+          type: boolean
+          default: false
       responses:
         '200':
           description: 当前账户的持久结果。

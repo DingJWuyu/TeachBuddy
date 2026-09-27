@@ -1,6 +1,7 @@
 import { Popover, ConfirmDialog } from "../workbench/ModuleOverlays.jsx";
 import { ModulePresence, ModuleDisclosure } from "../workbench/ModuleMotion.jsx";
 import { pendingQuestionUpload, uploadQuestionFile } from './uploadRecovery.js';
+import { reviewParagraphs, splitReviewDraft } from './review-drafts.js';
 import React, { useEffect, useRef, useState } from "react";
 import { questionDocuments, supportedDocument } from "@refatos/shared";
 import { DocumentView } from "../workbench/materials/index.js";
@@ -74,6 +75,7 @@ export default function MaterialsQuestionsPage({
     [taxonomy, setTaxonomy] = useState({ version: 1, types: [], tags: [] });
   const [listState, setListState] = useState('loading');
   const [loadError, setLoadError] = useState('');
+  const [sourceAvailability, setSourceAvailability] = useState(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [lifecycleAction, setLifecycleAction] = useState(null);
   const [copyCandidate, setCopyCandidate] = useState(null);
@@ -94,7 +96,7 @@ export default function MaterialsQuestionsPage({
   const includeAnswers = scene.includeAnswers ?? false;
   const editing = scene.kind === 'new' || Boolean(scene.editing);
   const archived = scene.state === 'deleted';
-  const hasFilters = Boolean(scene.q || scene.starred || scene.typeId || scene.tagIds?.length);
+  const hasFilters = Boolean(scene.q || scene.starred || scene.typeId || scene.tagIds?.length || scene.searchAnswers);
   const setIncludeAnswers = includeAnswers => patchScene({ includeAnswers });
   const [text, setText] = useState(collection.text ?? ""),
     [title, setTitle] = useState(collection.title ?? ""),
@@ -111,6 +113,19 @@ export default function MaterialsQuestionsPage({
   const unsupportedQuestion = value && scene.kind !== "import" && value.body
     ? questionDocuments(value).some(([, document]) => !supportedDocument(document))
     : false;
+  const sourcePath = value?.source?.kind === 'import' ? '/imports/' + value.source.importId
+    : value?.source?.kind === 'copy' ? '/items/' + value.source.questionId : null;
+  const sourceMissing = sourceAvailability?.path === sourcePath && sourceAvailability?.state === 'missing';
+  useEffect(() => {
+    let live = true;
+    setSourceAvailability(null);
+    if (sourcePath) get(sourcePath).then(() => {
+      if (live) setSourceAvailability({ path: sourcePath, state: 'available' });
+    }).catch(error => {
+      if (live) setSourceAvailability({ path: sourcePath, state: error.problem?.kind === 'not-found' ? 'missing' : 'unavailable' });
+    });
+    return () => { live = false; };
+  }, [sourcePath]);
   useEffect(() => {
     writeLocal(accountKey, "questions-collection", {
       capture,
@@ -179,6 +194,7 @@ export default function MaterialsQuestionsPage({
     });
     if (filters.typeId) q.set("typeId", filters.typeId);
     if (filters.starred) q.set("starred", "true");
+    if (filters.searchAnswers) q.set("searchAnswers", "true");
     for (const id of filters.tagIds ?? []) q.append("tagIds", id);
     const [list, mats, tax] = await Promise.all([
       get("/items?" + q),
@@ -200,6 +216,7 @@ export default function MaterialsQuestionsPage({
     scene.typeId,
     JSON.stringify(scene.tagIds),
     scene.starred,
+    scene.searchAnswers,
   ]);
   useEffect(() => {
     let live = true;
@@ -397,10 +414,27 @@ export default function MaterialsQuestionsPage({
     patchScene({ kind, id, draftId: null, original: {}, compare, editing: kind === 'new', reviewEditing: false, questionScroll: 0 });
     setMessage("");
   };
+  async function openSource() {
+    const question = value;
+    const from = editorRef.current.scene;
+    const stillCurrent = () => editorRef.current.scene.kind === from.kind && editorRef.current.scene.id === from.id;
+    try {
+      await get(sourcePath);
+      if (!stillCurrent()) return;
+      if (question.source.kind === 'import') {
+        open('import', question.source.importId);
+        patchScene({ draftId: question.source.draftId });
+      } else open('question', question.source.questionId);
+    } catch (error) {
+      if (!stillCurrent()) return;
+      if (error.problem?.kind === 'not-found') setSourceAvailability({ path: sourcePath, state: 'missing' });
+      else throw error;
+    }
+  }
   function returnToLibrary(state = scene.state, clearFilters = false) {
     setValue(null);
     patchScene({ kind: 'list', id: null, state, compare: false, editing: false, reviewEditing: false, draftId: null, selectedIds: [], selecting: false,
-      ...(clearFilters ? { q: '', typeId: '', tagIds: [], starred: false } : {}) });
+      ...(clearFilters ? { q: '', typeId: '', tagIds: [], starred: false, searchAnswers: false } : {}) });
     onReturnToLibrary?.();
     requestAnimationFrame(() => pageNode.current?.querySelector('.q-finder h1')?.focus({ preventScroll: true }));
   }
@@ -554,6 +588,7 @@ export default function MaterialsQuestionsPage({
   const draft = value?.drafts?.find((x) => x.id === selected),
     locked =
       busy || Boolean(value?.deletedAt) || active.has(job?.state) || draft?.disposition === "confirmed";
+  const splitParagraphCount = draft ? reviewParagraphs(draft.body).length : 0;
   const editDraft = (patch) =>
     change({
       ...value,
@@ -716,17 +751,18 @@ export default function MaterialsQuestionsPage({
         </div>}
         {!archived && meaningful(readLocal(accountKey, newDraftKey)) && scene.kind !== 'new' && <button className="q-draft-entry" onClick={() => open('new', null, readLocal(accountKey, newDraftKey)?.source?.kind === 'copy')}><QuestionIcon name="edit" /><span>继续未完成的题目</span><QuestionIcon name="chevron" size={14} /></button>}
         <div className="q-search-row">
-          <div className="q-search"><QuestionIcon name="search" size={17} /><input aria-label="搜索题目" placeholder="搜索题干、公式或笔记" value={scene.q ?? ''} onChange={e => patchScene({ q: e.target.value })} /></div>
+          <div className="q-search"><QuestionIcon name="search" size={17} /><input aria-label="搜索题目" placeholder={scene.searchAnswers ? '搜索题目、答案或笔记' : '搜索题干、公式或笔记'} value={scene.q ?? ''} onChange={e => patchScene({ q: e.target.value })} /></div>
           <button className={`q-icon-button${scene.filtersOpen || hasFilters ? ' is-active' : ''}`} aria-label="筛选题目" title="筛选题目" aria-expanded={Boolean(scene.filtersOpen)} onClick={() => patchScene({ filtersOpen: !scene.filtersOpen })}><QuestionIcon name="filter" /></button>
         </div>
         <ModulePresence present={Boolean(scene.filtersOpen)} mode="collapse">
           <div className="q-filters">
             <label>题型<select aria-label="筛选题型" value={scene.typeId ?? ''} onChange={e => patchScene({ typeId: e.target.value })}><option value="">全部题型</option>{taxonomy.types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
             <label className="q-checkbox"><input type="checkbox" checked={scene.starred} onChange={e => patchScene({ starred: e.target.checked })} />只看已标记</label>
+            <label className="q-checkbox"><input type="checkbox" checked={Boolean(scene.searchAnswers)} onChange={e => patchScene({ searchAnswers: e.target.checked })} />同时搜索答案与解析</label>
             {taxonomy.tags.length > 0 && <div className="q-filter-tags"><span>标签</span>{taxonomy.tags.map(tag => <label key={tag.id} className="q-checkbox"><input type="checkbox" checked={scene.tagIds?.includes(tag.id) ?? false} onChange={e => patchScene({ tagIds: e.target.checked ? [...(scene.tagIds ?? []), tag.id] : scene.tagIds.filter(id => id !== tag.id) })} />{tag.name}</label>)}</div>}
           </div>
         </ModulePresence>
-        {hasFilters && <div className="q-filter-summary"><span>筛选结果 · {items.length} 题</span><button className="q-text-button" onClick={() => patchScene({ q: '', typeId: '', tagIds: [], starred: false })}>清除条件</button></div>}
+        {hasFilters && <div className="q-filter-summary"><span>筛选结果 · {items.length} 题</span><button className="q-text-button" onClick={() => patchScene({ q: '', typeId: '', tagIds: [], starred: false, searchAnswers: false })}>清除条件</button></div>}
         {!registerTools && taxonomyTools}
         <div
           className="q-list"
@@ -1151,7 +1187,7 @@ export default function MaterialsQuestionsPage({
                     ))}</section>}
                     <ModuleDisclosure title="题型与标签">{classification(draft, editDraft)}</ModuleDisclosure>
                     {draft.disposition !== 'confirmed' && <ModuleDisclosure title="调整题目：拆分、合并或忽略" className="q-adjust-question">
-                    <p className="q-muted">只有题目没有分对时才需要调整。原稿始终保留。</p>
+                    <p className="q-muted">同一段有两题时，先修改题目，在分界处换行，再拆分。原稿始终保留。</p>
                     <div className="q-tools">
                       <label>
                         在第{" "}
@@ -1159,55 +1195,25 @@ export default function MaterialsQuestionsPage({
                           aria-label="拆分段落"
                           type="number"
                           min="1"
-                          max={Math.max(1, draft.body.blocks.length - 1)}
-                          disabled={draft.body.blocks.length < 2}
+                          max={Math.max(1, splitParagraphCount - 1)}
+                          disabled={splitParagraphCount < 2}
                           value={splitAt}
                           onChange={(e) => setSplitAt(Number(e.target.value))}
                         />{" "}
                         段后
                       </label>
                       <button
-                        disabled={draft.body.blocks.length < 2}
+                        disabled={splitParagraphCount < 2}
                         onClick={() => {
-                          if (
-                            splitAt < 1 ||
-                            splitAt >= draft.body.blocks.length
-                          )
-                            return;
-                          const copy = {
-                            ...structuredClone(draft),
-                            id: crypto.randomUUID(),
-                            title: draft.title + "（续）",
-                            body: {
-                              ...draft.body,
-                              blocks: draft.body.blocks.slice(splitAt),
-                            },
-                            solution: empty(),
-                            answerStatus: "absent",
-                            parts: draft.parts.filter(
-                              (p) => p.role !== "solution",
-                            ),
-                            issues: draft.issues
-                              .filter((i) => i.field !== "/solution")
-                              .map((i) => ({ ...i, id: crypto.randomUUID() })),
-                          };
+                          const pair = splitReviewDraft(draft, splitAt);
+                          if (!pair) return;
                           change({
                             ...value,
                             drafts: value.drafts.flatMap((d) =>
-                              d.id === selected
-                                ? [
-                                    {
-                                      ...d,
-                                      body: {
-                                        ...d.body,
-                                        blocks: d.body.blocks.slice(0, splitAt),
-                                      },
-                                    },
-                                    copy,
-                                  ]
-                                : [d],
+                              d.id === selected ? pair : [d],
                             ),
                           });
+                          setMessage(draft.answerStatus === 'absent' ? '已拆成两题，请分别检查题干。' : '已拆成两题，原有答案保留在第一题，请分别核对答案。');
                         }}
                       >
                         拆分
@@ -1298,9 +1304,6 @@ export default function MaterialsQuestionsPage({
                 ) : (
                   <p>原稿保留在左侧。处理完成后，题目草稿会出现在这里。</p>
                 )}
-                {draft && <footer className="q-review-footer">
-                  {draft.questionId ? <><span className="q-saved-label"><QuestionIcon name="check" />这道题已入库</span><button onClick={() => open('question', draft.questionId)}>查看题目</button>{value.drafts.some(d => d.disposition === 'pending') && <button className="primary" onClick={() => { const next = value.drafts.find(d => d.disposition === 'pending'); setSelected(next.id); patchScene({ draftId: next.id, original: {}, reviewEditing: false }); }}>检查下一题<QuestionIcon name="chevron" size={15} /></button>}</> : <><span className="q-muted">{draft.issues.filter(i => i.resolution === 'open').length ? `还有 ${draft.issues.filter(i => i.resolution === 'open').length} 项需要检查` : draft.disposition === 'ignored' ? '这道题已忽略，可在调整题目中恢复' : '确认后，这道题会加入题库'}</span><button className="primary" disabled={locked || draft.disposition === 'ignored'} onClick={confirmDraft}><QuestionIcon name="check" />确认这道题</button></>}
-                </footer>}
                 {value.fragments.length > 0 && (
                   <details>
                     <summary>未分配片段 · {value.fragments.length}</summary>
@@ -1358,6 +1361,9 @@ export default function MaterialsQuestionsPage({
                     ))}
                   </details>
                 )}
+                {draft && <footer className="q-review-footer">
+                  {draft.questionId ? <><span className="q-saved-label"><QuestionIcon name="check" />这道题已入库</span><button onClick={() => open('question', draft.questionId)}>查看题目</button>{value.drafts.some(d => d.disposition === 'pending') && <button className="primary" onClick={() => { const next = value.drafts.find(d => d.disposition === 'pending'); setSelected(next.id); patchScene({ draftId: next.id, original: {}, reviewEditing: false }); }}>检查下一题<QuestionIcon name="chevron" size={15} /></button>}</> : <><span className="q-muted">{draft.issues.filter(i => i.resolution === 'open').length ? `还有 ${draft.issues.filter(i => i.resolution === 'open').length} 项需要检查` : draft.disposition === 'ignored' ? '这道题已忽略，可在调整题目中恢复' : '确认后，这道题会加入题库'}</span><button className="primary" disabled={locked || draft.disposition === 'ignored'} onClick={confirmDraft}><QuestionIcon name="check" />确认这道题</button></>}
+                </footer>}
               </section>
             </div>
           </>
@@ -1398,11 +1404,8 @@ export default function MaterialsQuestionsPage({
               {value.answerStatus === 'present' ? <ModuleDisclosure title="答案与解析" open={Boolean(scene.answerOpen)} onOpenChange={answerOpen => patchScene({ answerOpen })} className="q-answer"><DocumentView value={value.solution} /></ModuleDisclosure> : <p className="q-missing-answer">暂未添加答案 <button className="q-text-button" disabled={Boolean(value.deletedAt) || unsupportedQuestion} onClick={() => { beginEdit(true); patchScene({ answerOpen: true }); }}>添加答案</button></p>}
               {value.note && <ModuleDisclosure title="教学笔记" className="q-reader-note"><p>{value.note}</p></ModuleDisclosure>}
             </>}
-            {value.source?.kind === "import" && (
-              <button onClick={() => {
-                open("import", value.source.importId);
-                patchScene({draftId: value.source.draftId});
-              }}>
+            {value.source?.kind === "import" && (sourceMissing ? <p className="q-muted">原始材料已彻底删除，题目内容仍保留。</p> :
+              <button disabled={busy} onClick={() => action(openSource)}>
                 对照原稿
               </button>
             )}
@@ -1411,11 +1414,9 @@ export default function MaterialsQuestionsPage({
                 <button onClick={() => patchScene({compare: true})}>
                   对照原题
                 </button>
-                <button
-                  onClick={() => open("question", value.source.questionId)}
-                >
+                {sourceMissing ? <p className="q-muted">原题已彻底删除，可以继续查看采用时的原题。</p> : <button disabled={busy} onClick={() => action(openSource)}>
                   查看原题
-                </button>
+                </button>}
                 <details>
                   <summary>采用时的原题</summary>
                   <DocumentView value={value.source.snapshot.body} />

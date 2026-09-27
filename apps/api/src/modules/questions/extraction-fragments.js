@@ -18,12 +18,22 @@ const doubt = (id, code, field, locations) => ({
   locations,
   resolution: "open",
 });
-const label = (value) => value.trim().replace(/[.．、:：]\s*$/, "");
+// Normalize identifiers only. Original text and source offsets stay untouched.
+export const questionLabel = (value) => value.normalize("NFKC").trim()
+  .replace(/\s+/g, "").replace(/[.、:)]$/, "").replace(/^q(?=\d)/i, "");
 const matches = (q, f, target = f.label) =>
   Boolean(q.section || q.group) &&
   q.section === f.section &&
   q.group === f.group &&
-  label(q.label) === label(target);
+  questionLabel(q.label) === questionLabel(target);
+// A continuation cannot precede its question in the same original document.
+// Keep same-page fragments and separate image inputs eligible for unique matching.
+const continuesQuestion = (q, f) =>
+  Boolean(f.continues) && matches(q, f, f.continues) &&
+  !q.locations.some((start) => f.locations.some((tail) =>
+    start.kind === "page" && tail.kind === "page" &&
+    start.fileId === tail.fileId && start.page > tail.page,
+  ));
 const unassigned = (f) => ({
   id: f.id,
   text: f.text,
@@ -148,12 +158,10 @@ export function mergeExtractions(results, complete) {
         );
       used.add(f.id);
     };
-    const tails = continuations.filter(
-      (f) => f.continues && matches(q, f, f.continues),
-    );
+    const tails = continuations.filter((f) => continuesQuestion(q, f));
     if (
       tails.length === 1 &&
-      questions.filter((x) => matches(x, tails[0], tails[0].continues))
+      questions.filter((x) => continuesQuestion(x, tails[0]))
         .length === 1
     )
       append(tails[0], "body");
@@ -175,7 +183,7 @@ export function mergeExtractions(results, complete) {
       }
     } else if (
       complete &&
-      !answers.some((f) => !f.label || label(f.label) === label(q.label)) &&
+      !answers.some((f) => !f.label || questionLabel(f.label) === questionLabel(q.label)) &&
       !tails.some((f) => !used.has(f.id))
     )
       d.answerStatus = "absent";

@@ -78,6 +78,8 @@ createImport 先原子持久保存原稿绑定和 extraction Job，然后后台�
 
 未配置视觉识别器时，文字层 PDF 使用本机 Poppler 自动读取，复用题号拆分、明确答案匹配和单栏配图定位；扫描页与图片明确报告视觉识别未配置，不将手动补录算成自动完成。多栏、跨页续题及复杂数学排版仍需核对。DOCX 原生提取保留原文段落到任务记录；`GET imports/{id}` 可附带只读 `originalDocuments`，在没有分页预览时展示文字、公式和配图，并按段落定位。该视图不承诺 Word 的分页和排版；原始文件与已有分页预览保留。旧材料没有该字段时仍使用现有预览或下载。
 
+原生文字无题号时，非空正文保留为待校对候选；仅答案或教师活动不建空题。题号比较使用 NFKC、去空白、去末尾分隔符与 `Q` 前缀，原文和字符范围不改变。答案必须唯一匹配题目，重复题号保留答案片段并标记待核对，不按出现顺序猜测归属。
+
 任务输出必须验证 schema、输入覆盖、题边界、公式、实际配图绑定、原有答案角色和原稿定位，不能照抄 Provider 的 needs_review=false。草稿处置由老师控制；机器必须保留未分配片段与疑点。截断响应只采纳前缀中完整、独立可验证对象，记录 truncated-response，禁止补括号后声称整批成功。已有答案和未提供答案严格区分；识别不生成解答。
 
 saveImportReview 全量原子保存当前草稿/片段数组，baseVersion 与 import 比较；running/queued/cancelling 时返回 import-not-editable，先停止或等终态。新草稿 ID 由客户端创建（拆分/手工补充），移除草稿即丢弃该候选，原件保留。已 confirmed 草稿及其 questionId 只读且不可遗漏；客户端不能把 pending 自改为 confirmed，也不能自填 questionId。commitImportDrafts 是唯一入库动作，验证选中草稿无 open 疑点、answerStatus 非 unresolved、正文与图片/公式齐全，在同一事务建立 Questions 并写映射/新 import version。acknowledged 仅用于非阻断的文字/边界复核；missing-figure、uncertain-formula、incomplete-answer、unverified-location 必须 corrected。忽略草稿不能提交。
@@ -87,6 +89,8 @@ saveImportReview 全量原子保存当前草稿/片段数组，baseVersion 与 i
 重试结束后新机器结果只补充候选，已有人工校对或已入库对象保持。重复机器片段按输入单元与原稿定位关联，不靠重复题号覆盖；老师合并/忽略重复候选。补充原稿操作只追加 fileIds，新照片不能替换旧原稿；该操作在材料终态时受理，为新增文件自动建立新的提取 Job、更新 import.jobId 并增加版本，已有候选保持。运行中补充返回 import-not-editable，先停止或等待。
 
 QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不建立共享分类平台。老师创建的 term/folder ID 是稳定 UUID；名称服务端 trim 后非空，同类名称按 Unicode NFC + casefold 唯一（文件夹仅同父级唯一）。自动模型只可建议集合已有 ID，不能偷偷增改集合。改名保留 ID；删除项原子移除全部 active/deleted 对象关联并增加受影响对象版本，不更改引用快照。文件夹删除将直接资源/子文件夹移到删除前最近的保留祖先，避免循环；树深≤10。taxonomy 全量 PUT 中省略项表示删除，客户端先显示受影响数量；可由现有全量对象列表计算，不另建统计端口。题型单选、标签多选，查询 tagIds 为全部匹配，空查询等于不过滤。
+
+题库 `GET /api/modules/questions/v2/items` 的 `q` 默认搜索标题、题干（包括公式源）和长期笔记；显式 `searchAnswers=true` 时同时搜索答案与解析，省略或 `false` 均排除答案。该参数只接受单个布尔值，非法值或重复参数返回 422 `invalid-input`，字段为 `/query/searchAnswers`、原因 `invalid-type`。原始材料不参与题目搜索。
 
 ## 引用和输出
 

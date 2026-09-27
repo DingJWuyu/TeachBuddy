@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import sharp from 'sharp';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 
@@ -428,4 +429,357 @@ test('题库辅助栏和主面板上下对齐，搜索焦点框包住整个输�
   expect(focus.ring).not.toBe('none');
   expect(focus.inputOutline).toBe('none');
   expect(focus.inputShadow).toBe('none');
+});
+
+async function collectText(page, text) {
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /粘贴文字/ }).click();
+  await page.getByLabel('原始文字').fill(text);
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+}
+
+test('功能：无题号的单题可以校对入库，保留题干、答案和原稿', async ({ page }) => {
+  const text = '求实数 x 的值。\n答案：x 等于三。';
+  await collectText(page, text);
+  await expect(page.getByRole('button', { name: '确认这道题', exact: true })).toBeVisible();
+  await expect(page.locator('.q-review-answer')).toContainText('x 等于三');
+  await page.getByLabel('题干是否完整，是否混入了其他题目？').selectOption('acknowledged');
+  await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('region', { name: '原始材料' })).toContainText(text);
+  const [question] = await records();
+  expect(question.body.blocks[0].runs[0].text).toContain('求实数');
+  expect(question.solution.blocks[0].runs[0].text).toContain('三');
+});
+
+test('功能：答案题号的全半角和标点差异不影响匹配', async ({ page }) => {
+  await collectText(page, '1. 求三加五的结果。\n参考答案\n１、八');
+  await expect(page.locator('.q-review-answer')).toContainText('八');
+  await expect(page.getByText('原稿中未提供答案', { exact: true })).toHaveCount(0);
+  await page.getByLabel('题干是否完整，是否混入了其他题目？').selectOption('acknowledged');
+  await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  const [question] = await records();
+  expect(question.answerStatus).toBe('present');
+  expect(question.solution.blocks[0].runs[0].text).toBe('八');
+});
+
+test('功能：教师活动分隔的无题号题目分别保留题干和答案', async ({ page }) => {
+  await collectText(page, '求三加五的和。\n答案：八\n教师活动：讨论不同解法。\n求九减二的差。\n答案：七');
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toBeVisible();
+  await expect(page.locator('.q-review-answer')).toContainText('八');
+  await page.getByRole('button', { name: '2 待检查', exact: true }).click();
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('求九减二的差');
+  await expect(page.locator('.q-review-answer')).toContainText('七');
+  await expect(page.getByRole('article', { name: '待检查题干' })).not.toContainText('教师活动');
+});
+
+test('功能：原始材料彻底删除后保留题目，来源入口说明原因且不跳到失效详情', async ({ page }) => {
+  await collectText(page, '1. 求三加五的结果。\n答案：八');
+  await page.getByLabel('题干是否完整，是否混入了其他题目？').selectOption('acknowledged');
+  await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  await page.getByRole('button', { name: '材料操作', exact: true }).click();
+  await page.getByRole('button', { name: '归档材料', exact: true }).click();
+  await page.getByRole('button', { name: '确认归档', exact: true }).click();
+  await page.getByRole('button', { name: '题库选项' }).click();
+  await page.getByRole('menuitem', { name: '归档内容', exact: true }).click();
+  await page.locator('.q-imports button').click();
+  await page.getByRole('button', { name: '材料操作', exact: true }).click();
+  await page.getByRole('button', { name: '彻底删除材料', exact: true }).click();
+  await page.getByRole('dialog', { name: '彻底删除材料？' }).getByRole('button', { name: '彻底删除', exact: true }).click();
+  await finder(page).getByRole('button', { name: '返回题库', exact: true }).click();
+  await page.locator('.q-list-entry').click();
+  await expect(page.locator('.q-reading-body')).toContainText('求三加五');
+  await expect(page.getByText('原始材料已彻底删除，题目内容仍保留。', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '对照原稿', exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.q-reading-body')).toContainText('求三加五');
+});
+
+test('功能：搜索答案由用户选择，刷新保留选择，清除条件恢复默认范围', async ({ page }) => {
+  await createQuestion(page, '检索范围练习');
+  await page.getByRole('button', { name: '编辑题目', exact: true }).click();
+  await page.getByRole('button', { name: '添加答案与解析', exact: true }).click();
+  await page.getByRole('textbox', { name: '答案与解析段落 1', exact: true }).fill('仅答案包含蓝莓。');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await page.getByRole('textbox', { name: '搜索题目', exact: true }).fill('蓝莓');
+  await expect(page.locator('.q-list-entry')).toHaveCount(0);
+  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
+  await page.getByRole('checkbox', { name: '同时搜索答案与解析', exact: true }).check();
+  await expect(page.locator('.q-list-entry')).toHaveCount(1);
+  await page.reload();
+  await expect(page.getByRole('checkbox', { name: '同时搜索答案与解析', exact: true })).toBeChecked();
+  await expect(page.locator('.q-list-entry')).toHaveCount(1);
+  await page.getByRole('button', { name: '清除条件', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: '同时搜索答案与解析', exact: true })).not.toBeChecked();
+  await expect(page.getByRole('textbox', { name: '搜索题目', exact: true })).toHaveValue('');
+  await page.getByRole('textbox', { name: '搜索题目', exact: true }).fill('练习');
+  await expect(page.locator('.q-list-entry')).toHaveCount(1);
+});
+
+test('功能：同一段中的两题可按换行拆分，公式保留且答案重新核对', async ({ page }) => {
+  await collectText(page, '1. 先求 x，再求 y。\n答案：第一问答案。第二问答案。');
+  await page.getByRole('button', { name: '修改题目', exact: true }).click();
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('先求 $x$。\n再求 $y$。');
+  await page.getByRole('button', { name: '完成修改', exact: true }).click();
+  await page.getByRole('button', { name: '调整题目：拆分、合并或忽略', exact: true }).click();
+  await expect(page.getByRole('button', { name: '拆分', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '拆分', exact: true }).click();
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toBeVisible();
+  await expect(page.getByLabel('答案状态', { exact: true })).toHaveValue('unresolved');
+  await expect(page.locator('.q-review-answer')).toContainText('第一问答案。第二问答案。');
+  for (const [index, answer] of [[1, '第一问答案。'], [2, '第二问答案。']]) {
+    if (index === 2) await page.getByRole('button', { name: '检查下一题', exact: true }).click();
+    await expect(page.getByLabel('答案状态', { exact: true })).toHaveValue('unresolved');
+    await page.getByRole('button', { name: '修改题目', exact: true }).click();
+    await page.getByRole('textbox', { name: '答案与解析段落 1', exact: true }).fill(answer);
+    await page.getByLabel('答案状态', { exact: true }).selectOption('present');
+    await page.getByRole('button', { name: '完成修改', exact: true }).click();
+    for (const control of await page.locator('.q-review-checks select').all()) await control.selectOption('corrected');
+    await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+    await expect(page.getByRole('button', { name: `${index} 已入库`, exact: true })).toBeVisible();
+  }
+  await page.reload();
+  const saved = await records();
+  expect(saved).toHaveLength(2);
+  expect(saved.flatMap(q => q.body.blocks.flatMap(b => b.runs ?? [])).filter(r => r.type === 'math').map(r => r.latex).sort()).toEqual(['x', 'y']);
+  expect(saved.map(q => q.solution.blocks[0].runs[0].text).sort()).toEqual(['第一问答案。', '第二问答案。'].sort());
+});
+
+test('功能：来源读取失败不误报删除，原题删除后改编快照仍可对照', async ({ page }) => {
+  await createQuestion(page, '可删除的原题');
+  const original = (await records())[0];
+  await page.getByRole('button', { name: '复制改编', exact: true }).click();
+  await page.getByLabel('题目标题').fill('保留的改编题');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '保留的改编题', exact: true })).toBeVisible();
+  const sourceUrl = `**/api/modules/questions/v2/items/${original.id}`;
+  await page.route(sourceUrl, route => route.abort('failed'));
+  await page.reload();
+  await page.getByRole('button', { name: '查看原题', exact: true }).click();
+  await expect(page.locator('.q-message')).toBeVisible();
+  await expect(page.getByText('原题已彻底删除，可以继续查看采用时的原题。', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '保留的改编题', exact: true })).toBeVisible();
+  await page.unroute(sourceUrl);
+  await page.getByRole('button', { name: '查看原题', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '可删除的原题', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '更多题目操作' }).click();
+  await page.getByRole('menuitem', { name: '归档题目', exact: true }).click();
+  await page.getByRole('button', { name: '确认归档', exact: true }).click();
+  await page.getByRole('button', { name: '题库选项' }).click();
+  await page.getByRole('menuitem', { name: '归档内容', exact: true }).click();
+  await page.locator('.q-list-entry').click();
+  await page.getByRole('button', { name: '更多题目操作' }).click();
+  await page.getByRole('menuitem', { name: '彻底删除题目', exact: true }).click();
+  await page.getByRole('dialog', { name: '彻底删除题目？' }).getByRole('button', { name: '彻底删除', exact: true }).click();
+  await finder(page).getByRole('button', { name: '返回题库', exact: true }).click();
+  await page.locator('.q-list-entry').click();
+  await expect(page.getByText('原题已彻底删除，可以继续查看采用时的原题。', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '查看原题', exact: true })).toHaveCount(0);
+  await page.getByText('采用时的原题', { exact: true }).click();
+  await expect(page.locator('.q-question details .katex')).toHaveCount(2);
+  await expect(page.locator('.q-question details .katex').first()).toBeVisible();
+  await page.getByRole('button', { name: '对照原题', exact: true }).click();
+  await expect(page.locator('.q-workspace')).toHaveAttribute('data-compare', 'true');
+});
+
+test('功能：无答案草稿拆分再合并，保存和刷新保留题干与公式', async ({ page }) => {
+  await collectText(page, '1. 先观察 $x$。\n再观察 $y$。');
+  await page.getByRole('button', { name: '调整题目：拆分、合并或忽略', exact: true }).click();
+  await page.getByRole('button', { name: '拆分', exact: true }).click();
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toBeVisible();
+  await page.getByLabel('合并目标', { exact: true }).selectOption({ index: 1 });
+  await page.getByRole('button', { name: '合并', exact: true }).click();
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+  await page.reload();
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('先观察');
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('再观察');
+  for (const control of await page.locator('.q-review-checks select').all()) await control.selectOption('corrected');
+  await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  const [question] = await records();
+  expect(question.answerStatus).toBe('absent');
+  expect(question.body.blocks.flatMap(b => b.runs ?? []).filter(r => r.type === 'math').map(r => r.latex)).toEqual(['x', 'y']);
+});
+
+test('导入：Word 段内换行保留题目边界和各自答案', async ({ page }) => {
+  const { Document, Packer, Paragraph, TextRun } = await import('docx');
+  const doc = new Document({ sections: [{ children: [new Paragraph({ children: [
+    new TextRun('1. 求三加五的和。'), new TextRun({ text: '答案：八', break: 1 }),
+    new TextRun({ text: '2. 求九减二的差。', break: 1 }), new TextRun({ text: '答案：七', break: 1 }),
+  ] })] }] });
+  const file = path.join(world.directory, 'line-breaks.docx');
+  fs.writeFileSync(file, await Packer.toBuffer(doc));
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 Word/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(file);
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toBeVisible();
+  for (const [number, text, answer] of [[1, '求三加五的和', '八'], [2, '求九减二的差', '七']]) {
+    await page.getByRole('button', { name: `${number} 待检查`, exact: true }).click();
+    await expect(page.getByRole('article', { name: '待检查题干' })).toContainText(text);
+    await expect(page.locator('.q-review-answer')).toHaveText(`答案与解析${answer}`);
+    await page.getByLabel('题干是否完整，是否混入了其他题目？').selectOption('acknowledged');
+    await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+    await expect(page.getByRole('button', { name: `${number} 已入库`, exact: true })).toBeVisible();
+  }
+  await page.reload();
+  expect(await records()).toHaveLength(2);
+});
+
+test('导入：PDF 明示续题跨页合并，保留两页来源和后续独立题目', async ({ page, context }) => {
+  const source = await context.newPage();
+  const pdf = path.join(world.directory, 'continuation.pdf');
+  try {
+    await source.setContent(`<html lang="zh-CN"><head><style>@page{size:A4;margin:20mm}body{font:16px sans-serif}.next{break-before:page}p{line-height:1.8}</style></head><body><p>1. 阅读条件并回答问题。</p><p>（1）说明第一个条件。</p><section class="next"><p>续第1题</p><p>（2）说明第二个条件。</p><p>2. 求三加五的和。</p></section></body></html>`);
+    await source.evaluate(() => document.fonts.ready);
+    await source.pdf({ path: pdf, preferCSSPageSize: true });
+  } finally { await source.close(); }
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 PDF/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(pdf);
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByText('整理完成，等待校对', { exact: true })).toBeVisible();
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('第一个条件');
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('第二个条件');
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '3 待检查', exact: true })).toHaveCount(0);
+  for (const control of await page.locator('.q-review-checks select').all()) await control.selectOption('corrected');
+  await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  await page.reload();
+  const [question] = await records();
+  expect(question.source.parts.flatMap(part => part.locations.map(location => location.page)).sort()).toEqual([1, 2]);
+  // Importing only the continuation page must not guess a missing first page,
+  // or attach its content to a question from another import.
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 PDF/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(pdf);
+  await page.getByRole('button', { name: '材料名称、出处与处理范围', exact: true }).click();
+  await page.getByLabel('处理页码').fill('2');
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByText('整理完成，等待校对', { exact: true })).toBeVisible();
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('求三加五的和');
+  await expect(page.getByRole('article', { name: '待检查题干' })).not.toContainText('第二个条件');
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toHaveCount(0);
+  await page.getByText('未分配片段 · 1', { exact: true }).click();
+  await expect(page.locator('.q-review details pre')).toContainText('第二个条件');
+  await page.getByLabel('片段处理', { exact: true }).click();
+  await page.keyboard.press('Escape');
+  await page.getByLabel('片段处理', { exact: true }).selectOption('ignored');
+  await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+  await page.reload();
+  await page.getByText('未分配片段 · 1', { exact: true }).click();
+  await expect(page.getByLabel('片段处理', { exact: true })).toHaveValue('ignored');
+  await page.screenshot({ path: test.info().outputPath('continuation-fragments.png') });
+  const split = path.join(world.directory, 'continuation-page-%d.pdf');
+  const reversed = path.join(world.directory, 'reversed-continuation.pdf');
+  execFileSync('/usr/bin/pdfseparate', [pdf, split]);
+  execFileSync('/usr/bin/pdfunite', [split.replace('%d', '2'), split.replace('%d', '1'), reversed]);
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 PDF/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(reversed);
+  // Page selection belongs to this new import; clear the previous selection.
+  await page.getByRole('button', { name: '材料名称、出处与处理范围', exact: true }).click();
+  await page.getByLabel('处理页码').fill('');
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByText('整理完成，等待校对', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '2 待检查', exact: true }).click();
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('第一个条件');
+  await expect(page.getByRole('article', { name: '待检查题干' })).not.toContainText('第二个条件');
+  await expect(page.getByText('未分配片段 · 1', { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: '账户：题库老师' }).click();
+  await page.getByRole('button', { name: '深色', exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-workbench-theme', 'dark');
+  await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
+  await page.setViewportSize({ width: 600, height: 900 });
+  await page.getByRole('button', { name: '校对结果', exact: true }).click();
+  await page.getByText('未分配片段 · 1', { exact: true }).click();
+  await page.getByLabel('片段处理', { exact: true }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: '确认这道题', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await page.screenshot({ path: test.info().outputPath('continuation-fragments-dark-narrow.png') });
+});
+
+for (const variant of ['对齐双栏', '逆序写入且无结构标签', '长题换行与独立答案页']) {
+test(`导入：双栏 PDF ${variant}按栏整理，题干和选项不串栏`, async ({ page, context }) => {
+  const source = await context.newPage();
+  const pdf = path.join(world.directory, 'two-columns.pdf');
+  const long = variant === '长题换行与独立答案页';
+  const reverse = variant === '逆序写入且无结构标签';
+  const left = `<section style="grid-column:1;grid-row:1"><p>1. 左栏第一题，${long ? '某班先有三位同学到场，随后又来了五位同学，请根据题目中给出的信息计算现在共有多少位同学到场。' : '求三加五的和。'}</p><p>A. 六　B. 七　C. 八　D. 九</p><p>2. 左栏第二题，求九减二的差。</p><p>请说明计算步骤。</p></section>`;
+  const right = '<section style="grid-column:2;grid-row:1"><p>3. 右栏第三题，求四乘二的积。</p><p>A. 六　B. 七　C. 八　D. 九</p><p>4. 右栏第四题，求十除二的商。</p><p>请说明计算步骤。</p></section>';
+  try {
+    await source.setContent(`<html lang="zh-CN"><head><style>@page{size:A4;margin:20mm}body{font:16px "Noto Sans CJK SC",sans-serif}.columns{display:grid;grid-template-columns:1fr 1fr;gap:50px}p{line-height:1.8;margin:0 0 20px}.answers{break-before:page}</style></head><body>${long ? '<h2>数学练习</h2>' : ''}<div class="columns">${reverse ? right + left : left + right}</div><footer>第 1 页</footer>${long ? '<section class="answers"><h2>参考答案</h2><div class="columns"><section><p>1. 八</p><p>2. 七</p></section><section><p>3. 八</p><p>4. 五</p></section></div><footer>第 2 页</footer></section>' : ''}</body></html>`);
+    await source.evaluate(() => document.fonts.ready);
+    await source.pdf({ path: pdf, preferCSSPageSize: true, tagged: !reverse });
+  } finally { await source.close(); }
+  if (reverse) {
+    const raw = execFileSync('/usr/bin/pdftotext', ['-raw', pdf, '-'], { encoding: 'utf8' });
+    expect(raw.indexOf('右栏第三题')).toBeLessThan(raw.indexOf('左栏第一题'));
+  }
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 PDF/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(pdf);
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByText('整理完成，等待校对', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '4 待检查', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '5 待检查', exact: true })).toHaveCount(0);
+  const bodies = [];
+  for (const [number, text] of [[1, '左栏第一题'], [2, '左栏第二题'], [3, '右栏第三题'], [4, '右栏第四题']]) {
+    await page.getByRole('button', { name: `${number} 待检查`, exact: true }).click();
+    const body = page.getByRole('article', { name: '待检查题干' });
+    await expect(body).toContainText(text);
+    await expect(body).not.toContainText(/第 [12] 页|数学练习|参考答案/);
+    if ([1, 3].includes(number)) {
+      await expect(body.getByRole('listitem')).toHaveText(['A六', 'B七', 'C八', 'D九']);
+    }
+    if (long) {
+      await expect(page.locator('.q-review-answer')).toHaveText(`答案与解析${['八', '七', '八', '五'][number - 1]}`);
+      if (number === 1) expect((await body.innerText()).replace(/\s/g, '')).toContain('现在共有多少位同学到场。');
+    }
+    bodies.push(await body.innerText());
+    for (const control of await page.locator('.q-review-checks select').all()) await control.selectOption('corrected');
+    await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+    await expect(page.getByRole('button', { name: `${number} 已入库`, exact: true })).toBeVisible();
+  }
+  expect(bodies[0]).not.toContain('右栏');
+  expect(bodies[1]).not.toContain('右栏');
+  expect(bodies[2]).not.toContain('左栏');
+  expect(bodies[3]).not.toContain('左栏');
+  await page.reload();
+  const saved = await records();
+  expect(saved).toHaveLength(4);
+  for (const question of saved) {
+    expect(question.source.parts.flatMap(p => p.locations.map(l => l.page)).sort()).toEqual(long ? [1, 2] : [1]);
+  }
+});
+}
+
+test('导入：双栏 PDF 左栏题目和右栏答案不能整页误判为答案页', async ({ page, context }) => {
+  const source = await context.newPage();
+  const pdf = path.join(world.directory, 'questions-and-answers.pdf');
+  try {
+    await source.setContent('<html lang="zh-CN"><style>@page{size:A4;margin:20mm}body{font:16px "Noto Sans CJK SC",sans-serif}.columns{display:grid;grid-template-columns:1fr 1fr;gap:50px}</style><div class="columns"><section><p>1. 求三加五的和。</p><p>2. 求九减二的差。</p></section><section><p>参考答案</p><p>1. 八</p><p>2. 七</p></section></div></html>');
+    await source.evaluate(() => document.fonts.ready);
+    await source.pdf({ path: pdf, preferCSSPageSize: true });
+  } finally { await source.close(); }
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 PDF/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(pdf);
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByText('整理完成，等待校对', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toBeVisible();
+  for (const [number, body, answer] of [[1, '求三加五的和', '八'], [2, '求九减二的差', '七']]) {
+    await page.getByRole('button', { name: `${number} 待检查`, exact: true }).click();
+    await expect(page.getByRole('article', { name: '待检查题干' })).toContainText(body);
+    await expect(page.locator('.q-review-answer')).toHaveText(`答案与解析${answer}`);
+  }
+  await expect(page.getByRole('button', { name: '3 待检查', exact: true })).toHaveCount(0);
 });
