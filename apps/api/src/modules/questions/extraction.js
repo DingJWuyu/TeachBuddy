@@ -402,7 +402,8 @@ export function createExtractionHandler({
     let task = s.get("tasks", p, job.id),
       m = s.get("imports", p, task.importId);
     const units = [],
-      issues = [];
+      issues = [],
+      outputFileIds = [];
     if (
       m.input.kind === "text" &&
       (!task.units || task.units.some((x) => x.startsWith("text:")))
@@ -521,7 +522,7 @@ export function createExtractionHandler({
         completed++;
         continue;
       }
-      let result;
+      let result, recognitionSource;
       try {
         if (unit.text !== undefined)
           result = unit.result ?? nativeText(unit.text, unit.location);
@@ -541,8 +542,9 @@ export function createExtractionHandler({
         }
         if (!result) {
           const source = { fileId: unit.file.id, renditionFileId: unit.preview.renditionFileId, page: unit.page };
+          recognitionSource = source;
           const page = await recognition?.ensurePage(p, source, { signal, retry: Boolean(job.attemptOf) });
-          if (signal.aborted) break;
+          signal.throwIfAborted();
           if (page?.state !== "ready") {
             issues.push(issue(page?.state === "unavailable" || !page ? "provider-unavailable" : "provider-result-unknown", unit.id,
               page?.issues?.[0]?.detail ?? "本地识别暂不可用，原稿已保存；配置恢复后可重试本页。"));
@@ -619,6 +621,26 @@ export function createExtractionHandler({
         reportProgress({ completed, total: units.length, unit: "pages" });
       } catch (e) {
         if (e?.code === "recognition-cleanup") throw e;
+        if (signal.aborted) {
+          // A late complete page is evidence of this attempt, never a draft.
+          // Freeze its files before a retry replaces the shared page record.
+          if (recognitionSource && recognition && s.db.open) {
+            const late = recognition.readPage(p, recognitionSource);
+            if (late.rawFileId) {
+              task.lateResults ??= {};
+              task.lateResults[unit.id] = {
+                source: structuredClone(late.location), resultId: late.resultId,
+                revision: late.revision, inputHash: late.inputHash, rawFileId: late.rawFileId,
+                assetFileIds: late.assetFileIds ?? [], originalAssetFileIds: late.originalAssetFileIds ?? [],
+                derivations: late.derivations ?? [],
+              };
+              s.save("tasks", p, task);
+              outputFileIds.push(late.rawFileId, ...(late.assetFileIds ?? []));
+            }
+          }
+          issues.push(issue("cancelled", unit.id, "整理已停止，迟到的识别结果仅保留为本次任务证据。"));
+          break;
+        }
         issues.push(
           issue(
             "provider-result-unknown",
@@ -633,7 +655,7 @@ export function createExtractionHandler({
     const hasContent = Boolean(m.drafts.length || m.fragments.length);
     return {
       state: issues.length ? (hasContent ? "partial" : "failed") : "succeeded",
-      outputFileIds: [],
+      outputFileIds: [...new Set(outputFileIds)],
       issues,
     };
   }
@@ -647,7 +669,10 @@ export function createExtractionHandler({
       });
     const selected = unitIds.length
       ? unitIds
-      : job.issues.map((x) => x.unitId).filter(Boolean);
+      : [...new Set([
+          ...(old.expectedUnits ?? []).filter(id => !old.completed.includes(id)),
+          ...job.issues.map((x) => x.unitId).filter(Boolean),
+        ])];
     const next = jobs.enqueue(
       {
         principal: p,

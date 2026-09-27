@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import JSZip from 'jszip';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { registerMath } from './fixtures/math-static/real.mjs';
 import { pageNames, sourceImage, replayRecognizer } from './fixtures/materials-questions/recognition/replay.mjs';
@@ -176,6 +177,67 @@ test('HTTP：取消时清理未确认按失败上报，保留此前题目且不�
   expect(recognizer.calls).toEqual(['I-1', 'I-2']);
 });
 
+test('HTTP：取消后的迟到原稿和题图绑定旧任务，重试不能覆盖旧证据', async () => {
+  let entered;
+  const reached = new Promise(resolve => { entered = resolve; });
+  const original = recognizer.run.bind(recognizer);
+  recognizer.run = async input => {
+    const result = await original({...input, signal: new AbortController().signal});
+    if (recognizer.calls.at(-1) === 'I-3') await new Promise(resolve => {
+      input.signal.addEventListener('abort', resolve, {once:true});
+      entered();
+    });
+    return result;
+  };
+  const created = await importPages();
+  await reached;
+  await request('POST', `/api/workbench/jobs/${created.jobId}/cancel`, {});
+  const cancelled = await waitJob(created.jobId);
+  expect(cancelled.state).toBe('cancelled');
+  expect(cancelled.outputFileIds).toHaveLength(5);
+  expect((await read(created.id)).drafts).toHaveLength(4);
+  const task = () => JSON.parse(world.workbench.db.prepare('SELECT value FROM questions_materials_tasks WHERE id=?').get(created.jobId).value);
+  const oldTask = task();
+  const evidence = Object.values(oldTask.lateResults)[0];
+  expect(evidence.source.fileId).toBe(created.input.fileIds[2]);
+  expect(evidence.source.page).toBe(1);
+  expect(evidence.originalAssetFileIds).toHaveLength(2);
+  expect(oldTask.completed).not.toContain(`file:${created.input.fileIds[2]}:page:1`);
+  expect(oldTask.machineResults[`file:${created.input.fileIds[2]}:page:1`]).toBeUndefined();
+  expect(cancelled.outputFileIds).toEqual([evidence.rawFileId, ...evidence.assetFileIds]);
+  const oldRaw = (await client.request('GET', `/api/workbench/files/${evidence.rawFileId}/content`)).text;
+  recognizer.run = original;
+  const retry = await request('POST', `/api/workbench/jobs/${created.jobId}/retry`, {unitIds:[]});
+  expect((await waitJob(retry.id)).state).toBe('succeeded');
+  assertSix(await read(created.id));
+  expect(recognizer.calls).toEqual(['I-1','I-2','I-3','I-3','PS-4']);
+  expect(task().lateResults).toEqual(oldTask.lateResults);
+  expect((await request('GET', `/api/workbench/jobs/${created.jobId}`)).outputFileIds).toEqual(cancelled.outputFileIds);
+  for (const id of cancelled.outputFileIds) expect((await client.request('GET', `/api/workbench/files/${id}/content`)).status).toBe(200);
+  expect((await client.request('GET', `/api/workbench/files/${evidence.rawFileId}/content`)).text).toBe(oldRaw);
+  const fileId = created.input.fileIds[2];
+  const latest = await request('GET', `/api/workbench/files/${fileId}/recognition/pages/1?renditionFileId=${fileId}`);
+  expect(latest.rawFileId).not.toBe(evidence.rawFileId);
+  const exported = await request('POST', '/api/reliability/v1/exports', {});
+  let archive;
+  await expect.poll(async () => {
+    archive = await request('GET', `/api/reliability/v1/exports/${exported.id}`);
+    return archive.state;
+  }, {timeout:20000}).toBe('ready');
+  expect((await client.request('GET', archive.downloadPath)).status).toBe(200);
+  const zip = await JSZip.loadAsync(fs.readFileSync(path.join(world.directory, 'personal-exports', `${exported.id}.zip`)));
+  const supplemental = JSON.parse(await zip.file('data/supplemental.json').async('string'));
+  const fixed = supplemental.questionRecognitionEvidence.find(item => item.jobId === created.jobId);
+  expect(fixed).toEqual({jobId:created.jobId, importId:created.id, lateResults:oldTask.lateResults});
+  const manifest = JSON.parse(await zip.file('manifest.json').async('string'));
+  for (const id of cancelled.outputFileIds) {
+    const entry = manifest.files.find(file => file.path.startsWith(`files/${id}/`));
+    expect(entry).toBeTruthy();
+    expect((await zip.file(entry.path).async('nodebuffer')).length).toBe(entry.bytes);
+    if (id === evidence.rawFileId) expect(await zip.file(entry.path).async('string')).toBe(oldRaw);
+  }
+});
+
 test('HTTP：明确续题沿用唯一归并，数字列表不会吞掉题号', async () => {
   // Controlled transcription exercises generic layout forms missing from the
   // fixed accuracy corpus. It is not recorded as real OCR fidelity evidence.
@@ -213,4 +275,84 @@ test('HTTP：另一份同题号材料不能抢走本原件内明确匹配的答�
   expect(material.drafts[0].answerStatus).toBe('present');
   expect(documentText(material.drafts[0].solution)).toContain('5');
   expect(material.drafts[1].solution.blocks).toEqual([]);
+});
+
+test('HTTP：未拆开的教学表格保留为未分配内容，活动标题不生成假题目', async () => {
+  recognizer.run = async ({width, height}) => ({width, height, assets: [], raw: {width, height, parsing_res_list: [
+    {block_id: 0, block_label: 'paragraph_title', block_bbox: [0, 0, width, height * 0.1], block_content: '教学环节：初步应用'},
+    {block_id: 1, block_label: 'table', block_bbox: [0, height * 0.2, width, height * 0.8],
+      block_content: '<table><tr><th>教学内容</th><th>师生活动</th></tr><tr><td>判断函数奇偶性</td><td>教师引导学生讨论</td></tr></table>'},
+  ]}});
+  const created = await importPages(['I-1']);
+  const job = await waitJob(created.jobId);
+  expect(job.state).toBe('partial');
+  expect(job.issues[0].detail).toContain('尚未可靠区分');
+  const material = await read(created.id);
+  expect(material.drafts).toEqual([]);
+  expect(material.fragments.map(f => f.text).join('\n')).toContain('教师引导学生讨论');
+  expect(material.fragments.some(f => f.text === '教学环节：初步应用')).toBe(true);
+});
+
+test('浏览器：图片批次逐题检查公式与配图，修正后入库并刷新', async ({page}, info) => {
+  await page.goto(world.origin);
+  await page.getByLabel('邮箱', {exact:true}).fill(email);
+  await page.getByLabel('密码', {exact:true}).fill('math-password');
+  await page.getByRole('button', {name:'登录', exact:true}).click();
+  await page.getByRole('button', {name:'知道了', exact:true}).click();
+  await page.getByRole('navigation', {name:'功能模块'}).getByRole('link', {name:/^题库/}).click();
+  await page.locator('.q-finder').getByRole('button', {name:'从资料收录', exact:true}).click();
+  const dialog = page.getByRole('dialog', {name:'从资料收录题目'});
+  await dialog.getByRole('button', {name:/上传图片/}).click();
+  await dialog.getByLabel('选择原稿').setInputFiles(pageNames.map(name => ({name:name+'.png', mimeType:'image/png', buffer:sourceImage(name)})));
+  const accepted = page.waitForResponse(response => response.url().endsWith(`${base}/imports`) && response.request().method() === 'POST');
+  await dialog.getByRole('button', {name:'开始整理'}).click();
+  const created = await (await accepted).json();
+  expect((await waitJob(created.jobId)).state).toBe('succeeded');
+  const tabs = page.getByRole('navigation', {name:'选择待检查题目'}).getByRole('button');
+  await expect(tabs).toHaveCount(6);
+  await expect(page.locator('.q-reading-body .katex').first()).toBeVisible();
+  await tabs.nth(1).click();
+  const figure = page.locator('.q-reading-body img');
+  await expect(figure).toBeVisible();
+  await expect.poll(() => figure.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+  await page.screenshot({path:info.outputPath('question-2-light.png'),fullPage:true});
+  for (let i = 0; i < 6; i++) {
+    await tabs.nth(i).click();
+    if (i === 2) {
+      await expect(page.locator('.q-reading-body .katex .mtable')).toBeVisible();
+      await page.screenshot({path:info.outputPath('question-3-cases.png'),fullPage:true});
+    }
+    if (i === 5) {
+      await expect(page.getByText('原稿中未提供答案', {exact:true})).toBeVisible();
+      await page.getByRole('button', {name:'修改题目',exact:true}).click();
+      await page.getByRole('textbox', {name:'题干段落 1',exact:true}).fill('正方体 $ABCD-A_{1}B_{1}C_{1}D_{1}$ 的棱长为 2。');
+      await page.getByRole('textbox', {name:'题干段落 2',exact:true}).fill('（1）求体对角线 $AC_{1}$ 的长；（2）求体积。');
+      await page.getByRole('button', {name:'完成修改',exact:true}).click();
+      await expect(page.locator('.q-reading-body .katex')).toHaveCount(2);
+    }
+    for (const select of await page.locator('.q-review-checks select').all()) await select.selectOption('corrected');
+    await page.getByRole('button', {name:'确认这道题',exact:true}).click();
+    await expect(page.getByText('这道题已入库', {exact:true})).toBeVisible();
+  }
+  expect((await request('GET',`${base}/items`)).items).toHaveLength(6);
+  await page.reload();
+  await expect(tabs).toHaveCount(6);
+  await expect(tabs.nth(5)).toContainText('已入库');
+  await tabs.nth(5).click();
+  await expect(page.getByText('原稿中未提供答案', {exact:true})).toBeVisible();
+  await page.getByRole('button', {name:'查看题目',exact:true}).click();
+  await expect(page.getByRole('heading', {name:'Q6.',exact:true})).toBeVisible();
+  await page.reload();
+  await expect(page.locator('.q-reading-body img')).toBeVisible();
+  await expect(page.locator('.q-reading-body .katex')).toHaveCount(2);
+  await page.getByRole('link', {name:'账户：数学教师'}).click();
+  await page.getByRole('button', {name:'深色',exact:true}).click();
+  await page.getByRole('navigation', {name:'功能模块'}).getByRole('link', {name:/^题库/}).click();
+  await expect(page.locator('html')).toHaveAttribute('data-workbench-theme','dark');
+  for (const width of [1440,600]) {
+    await page.setViewportSize({width,height:900});
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+    await expect(page.getByRole('button', {name:'编辑题目',exact:true})).toBeVisible();
+    await page.screenshot({path:info.outputPath(`question-6-dark-${width}.png`),fullPage:true});
+  }
 });
