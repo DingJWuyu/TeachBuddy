@@ -6,6 +6,14 @@ import { randomUUID } from "node:crypto";
 import JSZip from "jszip";
 import { createIntegration } from "../../api/test/fixtures/auth-integration/harness.js";
 import { registerMath } from "./fixtures/math-static/real.mjs";
+import net from "node:net";
+import https from "node:https";
+import { startServer } from "../../api/src/server.js";
+import {
+  createClient,
+  createMailer,
+  generateSelfSignedCertificate,
+} from "../../api/test/fixtures/auth-contract/harness.js";
 
 let world, api;
 const image = path.resolve(
@@ -42,13 +50,46 @@ async function upload(page, file = image, first = true) {
 }
 
 test.beforeEach(async ({ page }) => {
-  if (!process.env.WORKBENCH_WEB_DIST)
+  if (!process.env.WORKBENCH_WEB_DIST && !process.env.RESOURCE_UI_DEV)
     throw new Error("先构建到隔离目录，再用 WORKBENCH_WEB_DIST 指向该目录");
-  world = await createIntegration({
-    directory: fs.mkdtempSync(path.join(os.tmpdir(), "resources-ui-test-")),
-  });
+  const directory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "resources-ui-test-"),
+  );
+  if (process.env.RESOURCE_UI_DEV) {
+    generateSelfSignedCertificate(directory);
+    const reservation = net.createServer();
+    await new Promise((resolve) => reservation.listen(0, "127.0.0.1", resolve));
+    const port = reservation.address().port;
+    await new Promise((resolve) => reservation.close(resolve));
+    const mailer = createMailer();
+    world = await startServer({
+      dev: true,
+      env: {
+        nodeEnv: "development",
+        port,
+        sqlitePath: path.join(directory, "workspace.sqlite"),
+        authCodeSecret: "isolated-resources-development",
+        workbench: {
+          publicOrigin: `https://localhost:${port}`,
+          filesDir: path.join(directory, "files"),
+          tls: {
+            cert: path.join(directory, "tls-cert.pem"),
+            key: path.join(directory, "tls-key.pem"),
+          },
+        },
+      },
+      sendCode: mailer.sendCode,
+    });
+    Object.assign(world, {
+      directory,
+      mailer,
+      client: () => createClient(world.origin, { transport: https }),
+    });
+  } else world = await createIntegration({ directory });
   ({ client: api } = await registerMath(world, "resources-ui@example.test"));
   await page.goto(world.origin + "/resources");
+  if (process.env.RESOURCE_UI_DEV)
+    await expect(page.locator('script[src="/@vite/client"]')).toHaveCount(1);
   await page
     .getByLabel("邮箱", { exact: true })
     .fill("resources-ui@example.test");
@@ -1065,6 +1106,332 @@ test("批量收录拒绝后重试遇到响应丢失，刷新接续剩余文件",
   ).toHaveLength(2);
 });
 
+async function findSample(context) {
+  const source = await context.newPage();
+  try {
+    await source.setContent(`<style>
+      @page { size: A4; margin: 20mm; }
+      body { margin: 0; font: 22px "Noto Sans CJK SC", sans-serif; }
+      section { height: 900px; position: relative; break-after: page; }
+      section:last-child { break-after: auto; }
+      .last { position: absolute; top: 780px; }
+      </style><section><h1>本页查找样本</h1>
+      <p>函数 Function function FUNCTION</p><p>函数与图像</p>
+      <p><span>跨项</span><strong>匹配</strong></p><p>a+b [x]</p>
+      <p class="last">函数的第三处，在本页底部</p></section>
+      <section><h1>专属词</h1><p>函数只有一处</p></section>`);
+    await source.evaluate(() => document.fonts.ready);
+    return {
+      name: "页内查找样本.pdf",
+      mimeType: "application/pdf",
+      buffer: await source.pdf({ preferCSSPageSize: true }),
+    };
+  } finally {
+    await source.close();
+  }
+}
+async function findHighlights(page) {
+  return page.evaluate(() =>
+    [...CSS.highlights.entries()]
+      .filter(([name]) => name.startsWith("res-find-"))
+      .map(([name, value]) => ({
+        name,
+        texts: [...value].map((range) => range.toString()),
+        rects: [...value].map((range) => {
+          const rect = range.getBoundingClientRect();
+          return {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+          };
+        }),
+      })),
+  );
+}
+
+test("查找本页：真实中英文、跨文字项高亮、键盘导航与复制", async ({
+  page,
+  context,
+}, info) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await upload(page, await findSample(context));
+  await page.getByRole("button", { name: "查找本页", exact: true }).click();
+  const input = page.getByRole("textbox", { name: "查找本页文字" });
+  const status = page.locator(".res-find-status");
+  await expect(input).toBeFocused();
+  await input.pressSequentially("函数");
+  await expect(input).toHaveValue("函数");
+  await expect(status).toHaveText("1 / 3 处");
+  await expect
+    .poll(
+      async () =>
+        (await findHighlights(page)).find(
+          (entry) => !entry.name.endsWith("-current"),
+        )?.texts,
+    )
+    .toEqual(["函数", "函数", "函数"]);
+  await input.press("Enter");
+  await expect(status).toHaveText("2 / 3 处");
+  await input.press("Enter");
+  await expect(status).toHaveText("3 / 3 处");
+  await expect
+    .poll(() =>
+      page.locator(".res-page-scroll").evaluate((node) => node.scrollTop),
+    )
+    .toBeGreaterThan(100);
+  await screenshot(page, info, "find-third-match");
+  await input.press("Shift+Enter");
+  await expect(status).toHaveText("2 / 3 处");
+  await input.fill("跨项匹配");
+  await expect(status).toHaveText("1 / 1 处");
+  await expect(
+    page.locator(".res-pdf-text span").filter({ hasText: /^跨项$/ }),
+  ).toHaveCount(1);
+  await expect(
+    page.locator(".res-pdf-text span").filter({ hasText: /^匹配$/ }),
+  ).toHaveCount(1);
+  await expect
+    .poll(
+      async () =>
+        (await findHighlights(page)).find((entry) =>
+          entry.name.endsWith("-current"),
+        )?.texts,
+    )
+    .toEqual(["跨项匹配"]);
+  await screenshot(page, info, "find-cross-items");
+  await input.fill("a+b [x]");
+  await expect(status).toHaveText("1 / 1 处");
+  await input.fill("Function");
+  await expect(status).toHaveText("1 / 3 处");
+  const line = page
+    .locator(".res-pdf-text span")
+    .filter({ hasText: "Function" })
+    .first();
+  const box = await line.boundingBox();
+  await page.mouse.move(box.x + 1, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width - 1, box.y + box.height / 2, {
+    steps: 12,
+  });
+  await page.mouse.up();
+  await expect
+    .poll(() => page.evaluate(() => getSelection().toString()))
+    .toContain("Function");
+  const selection = await page.evaluate(() => getSelection().toString());
+  await page.getByRole("button", { name: "下一处匹配", exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => getSelection().toString()))
+    .toBe(selection);
+  await page.keyboard.press("Control+c");
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain("Function");
+  await page.getByRole("button", { name: "复制本页文字", exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain("函数的第三处");
+  await input.fill("函数");
+  await page.getByRole("button", { name: "下一处匹配", exact: true }).click();
+  await expect(status).toHaveText("2 / 3 处");
+  await page.getByRole("button", { name: "下一页", exact: true }).click();
+  await expect(status).toHaveText("1 / 1 处");
+  await page.getByRole("button", { name: "上一页", exact: true }).click();
+  await expect(status).toHaveText("1 / 3 处");
+  await input.fill("专属词");
+  await expect(status).toHaveText("本页无匹配");
+  await page.getByRole("button", { name: "下一页", exact: true }).click();
+  await expect(input).toHaveValue("专属词");
+  await expect(status).toHaveText("1 / 1 处");
+  await input.fill("");
+  await expect(status).toHaveText("仅查找当前页");
+  await expect.poll(() => findHighlights(page)).toEqual([]);
+  await input.press("Escape");
+  await expect(
+    page.getByRole("button", { name: "查找本页", exact: true }),
+  ).toBeFocused();
+  await expect(input).not.toBeVisible();
+});
+
+test("查找本页：缩放、深浅主题与窄屏保持高亮和操作可达", async ({
+  page,
+  context,
+}, info) => {
+  await upload(page, await findSample(context));
+  const open = async () => {
+    await page.getByRole("button", { name: "查找本页", exact: true }).click();
+    await page.getByRole("textbox", { name: "查找本页文字" }).fill("函数");
+    await expect(page.locator(".res-find-status")).toHaveText("1 / 3 处");
+  };
+  await open();
+  const width = async () =>
+    (await findHighlights(page)).find((entry) =>
+      entry.name.endsWith("-current"),
+    )?.rects[0].width ?? 0;
+  const original = await width();
+  expect(original).toBeGreaterThan(10);
+  await page.getByLabel("缩放", { exact: true }).selectOption("75");
+  await expect.poll(width).toBeGreaterThan(original * 0.65);
+  await expect.poll(width).toBeLessThan(original * 0.9);
+  await screenshot(page, info, "find-light-75");
+  await page.getByLabel("缩放", { exact: true }).selectOption("200");
+  await expect.poll(width).toBeGreaterThan(original * 1.8);
+  await page.getByRole("button", { name: "下一处匹配", exact: true }).click();
+  await expect(page.locator(".res-find-status")).toHaveText("2 / 3 处");
+  await screenshot(page, info, "find-light-200");
+  await page.getByLabel("缩放", { exact: true }).selectOption("100");
+  await expect(page.locator(".res-find-status")).toHaveText("2 / 3 处");
+  await page.getByRole("link", { name: /^账户：/ }).click();
+  await page.getByRole("button", { name: "深色", exact: true }).click();
+  await expect(page.locator(".wb-shell")).toHaveAttribute("data-theme", "dark");
+  await page
+    .getByRole("navigation", { name: "功能模块" })
+    .getByRole("link", { name: /^资源库/ })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "复制本页文字", exact: true }),
+  ).toBeVisible();
+  await open();
+  await screenshot(page, info, "find-dark-desktop");
+  await page.setViewportSize({ width: 390, height: 844 });
+  const input = page.getByRole("textbox", { name: "查找本页文字" });
+  await input.click();
+  await input.pressSequentially("不存在");
+  await expect(page.locator(".res-find-status")).toHaveText("本页无匹配");
+  await input.fill("跨项匹配");
+  await expect(page.locator(".res-find-status")).toHaveText("1 / 1 处");
+  await page.getByRole("button", { name: "下一处匹配", exact: true }).click();
+  for (const control of [
+    input,
+    page.getByRole("button", { name: "关闭页内查找" }),
+  ]) {
+    const rect = await control.boundingBox();
+    expect(rect.x).toBeGreaterThanOrEqual(0);
+    expect(rect.x + rect.width).toBeLessThanOrEqual(390);
+  }
+  await screenshot(page, info, "find-dark-phone");
+  await page.getByRole("button", { name: "关闭页内查找", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "查找本页", exact: true }),
+  ).toBeFocused();
+  await expect.poll(() => findHighlights(page)).toEqual([]);
+});
+
+test("查找本页：迟到读取、换文件、快速翻页与重新进入不串结果", async ({
+  page,
+  context,
+}, info) => {
+  await upload(page, await findSample(context));
+  const first = (await api.request("GET", "/api/modules/resources/items")).json
+    .items[0];
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  let release;
+  const held = new Promise((resolve) => {
+    release = resolve;
+  });
+  let intercepted = false;
+  await page.route(
+    `**/api/workbench/files/${first.fileId}/content`,
+    async (route) => {
+      const response = await route.fetch();
+      intercepted = true;
+      await held;
+      await route.fulfill({ response }).catch(() => {});
+    },
+  );
+  try {
+    await page.locator(".res-card-open").click();
+    await expect.poll(() => intercepted).toBe(true);
+    await page.getByRole("button", { name: "查找本页", exact: true }).click();
+    await page.getByRole("textbox", { name: "查找本页文字" }).fill("函数");
+    await expect(page.locator(".res-find-status")).toHaveText(
+      "正在读取本页文字…",
+    );
+    await screenshot(page, info, "find-loading");
+    await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+    await upload(page, pdf, false);
+    await page.getByRole("button", { name: "查找本页", exact: true }).click();
+    const input = page.getByRole("textbox", { name: "查找本页文字" });
+    await expect(input).toHaveValue("");
+    await input.fill("三角形");
+    await expect(page.locator(".res-find-status")).toHaveText("本页无匹配");
+    release();
+    await page.getByRole("button", { name: "下一页", exact: true }).click();
+    await page.getByRole("button", { name: "下一页", exact: true }).click();
+    await expect(page.locator(".res-find-status")).toHaveText(/\d+ \/ \d+ 处/);
+    await expect
+      .poll(
+        async () =>
+          (await findHighlights(page)).find((entry) =>
+            entry.name.endsWith("-current"),
+          )?.texts,
+      )
+      .toEqual(["三角形"]);
+    await page.getByRole("button", { name: "上一页", exact: true }).click();
+    await page.getByRole("button", { name: "上一页", exact: true }).click();
+    await expect(page.locator(".res-find-status")).toHaveText("本页无匹配");
+    await expect.poll(() => findHighlights(page)).toEqual([]);
+    await page.reload();
+    await expect(
+      page.getByRole("button", { name: "复制本页文字", exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "查找本页", exact: true }).click();
+    await expect(input).toHaveValue("");
+    await input.fill("二次函数");
+    await expect(page.locator(".res-find-status")).toHaveText(/\d+ \/ \d+ 处/);
+    await screenshot(page, info, "find-reopened");
+    await registerMath(world, "find-other@example.test");
+    await page.getByRole("link", { name: /^账户：/ }).click();
+    await page.getByRole("button", { name: "退出登录", exact: true }).click();
+    await page
+      .getByLabel("邮箱", { exact: true })
+      .fill("find-other@example.test");
+    await page.getByLabel("密码", { exact: true }).fill("math-password");
+    await page.getByRole("button", { name: "登录", exact: true }).click();
+    await page.getByRole("button", { name: "知道了", exact: true }).click();
+    await page
+      .getByRole("navigation", { name: "功能模块" })
+      .getByRole("link", { name: /^资源库/ })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "把教学资料收在一起" }),
+    ).toBeVisible();
+    await expect(page.locator(".res-page-find")).toHaveCount(0);
+    await expect.poll(() => findHighlights(page)).toEqual([]);
+  } finally {
+    release();
+    await page.unroute(`**/api/workbench/files/${first.fileId}/content`);
+  }
+});
+
+test("查找本页：浏览器无高亮能力时保留原预览与复制", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.addInitScript(() =>
+    Object.defineProperty(globalThis, "Highlight", {
+      value: undefined,
+      configurable: true,
+    }),
+  );
+  await page.reload();
+  await upload(page, pdf);
+  await page.getByRole("button", { name: "查找本页", exact: true }).click();
+  await expect(page.locator(".res-find-status")).toHaveText(
+    "当前浏览器暂不支持页内查找，仍可预览与复制。",
+  );
+  await expect(
+    page.getByRole("textbox", { name: "查找本页文字" }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "复制本页文字", exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain("二次函数");
+  await page.getByRole("button", { name: "关闭页内查找", exact: true }).click();
+  await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible();
+});
+
 test("正文检索定位、中文选择复制、刷新与缩放保留文字层", async ({
   page,
   context,
@@ -1213,6 +1580,14 @@ test("扫描 PDF 提示无文字，文字读取失败可重试且不影响页图
   await expect(page.getByRole("button", { name: "复制本页文字" })).toHaveCount(
     0,
   );
+  await page.getByRole("button", { name: "查找本页", exact: true }).click();
+  await page.getByRole("textbox", { name: "查找本页文字" }).fill("函数");
+  await expect(page.locator(".res-find-status")).toHaveText(
+    "本页没有可查找文字。",
+  );
+  await expect(
+    page.getByRole("button", { name: "下一处匹配", exact: true }),
+  ).toBeDisabled();
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await page.getByLabel("搜索资料").fill("扫描讲义");
   await expect(page.locator(".res-card-open")).toHaveCount(1);
@@ -1230,6 +1605,11 @@ test("扫描 PDF 提示无文字，文字读取失败可重试且不影响页图
   await expect(
     page.getByRole("button", { name: "重新读取文字", exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "查找本页", exact: true }).click();
+  await page.getByRole("textbox", { name: "查找本页文字" }).fill("函数");
+  await expect(page.locator(".res-find-status")).toHaveText(
+    "本页文字读取失败，可重新读取。",
+  );
   await expect
     .poll(() =>
       page
@@ -1239,6 +1619,7 @@ test("扫描 PDF 提示无文字，文字读取失败可重试且不影响页图
     .toBeGreaterThan(100);
   await page.unroute("**/api/workbench/files/*/content");
   await page.getByRole("button", { name: "重新读取文字", exact: true }).click();
+  await expect(page.locator(".res-find-status")).toHaveText(/\d+ \/ \d+ 处/);
   await expect(
     page.getByRole("button", { name: "复制本页文字" }),
   ).toBeVisible();
@@ -1367,6 +1748,15 @@ for (const source of [
     await expect
       .poll(() => page.evaluate(() => navigator.clipboard.readText()))
       .toContain(source.includes("c22") ? "教学目标" : "固定样本");
+    await page.getByRole("button", { name: "查找本页", exact: true }).click();
+    await page
+      .getByRole("textbox", { name: "查找本页文字" })
+      .fill(source.includes("c22") ? "教学目标" : "固定样本");
+    await expect(page.locator(".res-find-status")).toHaveText(/\d+ \/ \d+ 处/);
+    await screenshot(page, info, "office-page-find");
+    await page
+      .getByRole("button", { name: "关闭页内查找", exact: true })
+      .click();
     if (source.endsWith(".doc"))
       await expect(page.getByText(/旧 DOC 公式或对象可能缺失/)).toBeVisible();
     for (let number = 1; number <= preview.pageCount; number++) {
