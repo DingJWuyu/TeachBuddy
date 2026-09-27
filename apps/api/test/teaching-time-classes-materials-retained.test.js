@@ -41,7 +41,8 @@ function snapshot(directory, legacyColumns = false) {
               db.prepare(`SELECT * FROM "${name}" ORDER BY rowid`).all().map(row => {
                 if (legacyColumns && name === 'classes_records') {
                   assert.equal(row.nextNoteHidden, 0);
-                  const { nextNoteHidden, ...legacy } = row;
+                  assert.deepEqual(JSON.parse(row.content), { version: 2, blocks: [] });
+                  const { nextNoteHidden, content, ...legacy } = row;
                   return legacy;
                 }
                 return row;
@@ -145,7 +146,7 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
     let call = await start();
     assert.deepEqual(snapshot(candidate, true), { ...oldRows, lesson_order: hash("[]"), classes_removed_objects: hash("[]") });
     assert.deepEqual(files(candidate), oldFiles);
-    assert.deepEqual(await call("GET", `${R}/${seed.saved.id}`), { ...seed.saved, nextNoteHidden: false });
+    assert.deepEqual(await call("GET", `${R}/${seed.saved.id}`), { ...seed.saved, nextNoteHidden: false, content: { version: 2, blocks: [] } });
     assert.deepEqual(
       await call(
         "POST",
@@ -197,7 +198,7 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
       call = await start();
       assert.deepEqual(await call("GET", `${Q}/${seed.item.id}`), upgraded);
       assert.deepEqual(await call("GET", `${R}/${saved.id}`), restored);
-      assert.deepEqual(await call("GET", `${R}/${seed.mixed.id}`), { ...seed.mixed, nextNoteHidden: false });
+      assert.deepEqual(await call("GET", `${R}/${seed.mixed.id}`), { ...seed.mixed, nextNoteHidden: false, content: { version: 2, blocks: [] } });
       assert.deepEqual(
         await call("GET", `/api/modules/math/v1/works/${seed.math.id}`),
         seed.math,

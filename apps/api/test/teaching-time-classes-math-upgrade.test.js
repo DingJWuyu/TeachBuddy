@@ -37,7 +37,7 @@ test('TM-C1/C5 fixed T53 SQLite upgrade preserves old links and successful recei
     const seed=JSON.parse(execFileSync(process.execPath,[path.join(dir,'seed.mjs')],{cwd:dir,encoding:'utf8'}));
     h=await createTeachingTimeClassesHarness({databasePath:db});
     const api=h.agent(h.createAccount('teacher-a'));
-    assert.deepEqual((await api.get(`/api/modules/classes/v2/records/${seed.r.id}`).expect(200)).body,{...seed.r,nextNoteHidden:false});
+    assert.deepEqual((await api.get(`/api/modules/classes/v2/records/${seed.r.id}`).expect(200)).body,{...seed.r,nextNoteHidden:false,content:{version:2,blocks:[]}});
     const id='60000000-0000-4000-8000-000000000001';
     h.db().prepare('INSERT INTO t51_math_adapter(id,accountKey,title) VALUES(?,?,?)').run(id,'teacher-a','升级作品');
     const upgraded=(await api.put(`/api/modules/classes/v2/records/${seed.r.id}`,{...seed.body,expectedVersion:1,sources:[...seed.body.sources,{kind:'math',id}]},{key:'90000000-0000-4000-8000-000000000001'}).expect(200)).body;

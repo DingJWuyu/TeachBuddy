@@ -1,3 +1,4 @@
+import { validateSchema as validateDocumentSchema } from '../../workbench/content/schema.js';
 // Request validation for the classes operations.
 //
 // Shapes come from the frozen teaching-time OpenAPI and are validated with the
@@ -84,15 +85,27 @@ const recordUpdateV2Schema = schema.object([
   ['expectedVersion', () => primitives.version], ...recordFieldList(sourceInputV2Schema)
 ]);
 export function validateCreateRecordV2(input) {
-  return validateRecordBody(recordInputV2Schema, input);
+  return validateRecordV2(recordInputV2Schema, input);
 }
 export function validateUpdateRecordV2(input) {
-  return validateRecordBody(recordUpdateV2Schema, input);
+  return validateRecordV2(recordUpdateV2Schema, input);
 }
 
-function validateRecordBody(shape, input) {
+function validateRecordV2(shape, input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return validateRecordBody(shape, input, true);
+  const { content, ...plain } = input;
+  validateRecordBody(shape, plain, true);
+  if (Object.hasOwn(input, 'content')) validateDocumentSchema('Document', content, '/content');
+  return input;
+}
+
+export function validateMoveRecord(input) {
+  return validateBody(schema.object([['expectedVersion', () => primitives.version], ['targetClassId', () => primitives.id]]), input);
+}
+
+function validateRecordBody(shape, input, allowContent = false) {
   try {
-    return assertRecordRules(validateBody(shape, input));
+    return assertRecordRules(validateBody(shape, input), allowContent);
   } catch (error) {
     if (/^\/sources\/\d+\/kind$/.test(error.problem?.field ?? '') && error.problem?.reason === 'out-of-range') {
       throw invalidInput(error.problem.field, 'invalid-reference');
@@ -106,9 +119,9 @@ function hasAnyText(body) {
     .some((value) => value.trim() !== '');
 }
 
-function assertRecordRules(body) {
+function assertRecordRules(body, allowContent) {
   if (!isCalendarDate(body.recordedOn)) throw invalidInput('/recordedOn', 'out-of-range');
-  if (!hasAnyText(body)) throw invalidInput('/note', 'empty-content');
+  if (!allowContent && !hasAnyText(body)) throw invalidInput('/note', 'empty-content');
   const seen = new Set();
   body.sources.forEach((source, index) => {
     const key = `${source.kind}:${source.id}`;

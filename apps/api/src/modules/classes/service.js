@@ -1,3 +1,4 @@
+import { emptyRecordContent, recordContentText } from '@refatos/shared';
 // Business operations for classes, actual records and their material links.
 //
 // These functions are also the callable surface schedule and the reverse
@@ -24,12 +25,13 @@ import {
   validateDeletion,
   validatePurgeClass,
   validateNextNoteVisibility,
+  validateMoveRecord,
   validateSourceRecordsPath,
   validateUpdateClass,
   validateUpdateRecord
 } from './schema.js';
 
-export function createClassesService({ repository, questions, lessons, math, now = () => new Date() }) {
+export function createClassesService({ repository, questions, lessons, math, content, now = () => new Date() }) {
   const sourceReaders = {
     question: (principal, id) => questions.readForReferenceV2(principal, id),
     lesson: (principal, id) => lessons.readForTeachingLink(principal, id),
@@ -129,6 +131,7 @@ export function createClassesService({ repository, questions, lessons, math, now
   }
 
   function assertRepresentable(record, version, field = '/sources') {
+    if (version === 1 && record.content?.blocks.length) throw invalidInput(field === '/items' ? field : '/content', 'unsupported-content-version');
     if (version === 1 && repository.listSources(record.id).some(source => source.kind === 'math')) {
       throw invalidInput(field, 'unsupported-content-version');
     }
@@ -154,7 +157,7 @@ export function createClassesService({ repository, questions, lessons, math, now
       unfinished: record.unfinished,
       commonIssues: record.commonIssues,
       nextNote: record.nextNote,
-      ...(version >= 2 ? { nextNoteHidden: Boolean(record.nextNoteHidden) } : {}),
+      ...(version >= 2 ? { nextNoteHidden: Boolean(record.nextNoteHidden), content: record.content ?? emptyRecordContent() } : {}),
       sources: repository.listSources(record.id).map((stored) => toSource(principal, stored, version))
     };
   }
@@ -275,6 +278,25 @@ export function createClassesService({ repository, questions, lessons, math, now
     };
   }
 
+  function recordContent(principal, supplied, previous) {
+    const document = supplied ?? previous ?? emptyRecordContent();
+    // Keeping an existing attachment must not make unrelated text edits depend
+    // on its file still being readable. New/changed content is fully validated.
+    if (document.blocks.length && JSON.stringify(document) !== JSON.stringify(previous)) {
+      if (!content) throw new TypeError('classes content writes require the shared content service');
+      try { content.validate(principal, document); }
+      catch (error) {
+        if (typeof error.problem?.field === 'string') error.problem.field = '/content' + error.problem.field;
+        throw error;
+      }
+    }
+    return document;
+  }
+  function assertRecordContent(record) {
+    if (![record.note, record.position, record.unfinished, record.commonIssues, record.nextNote].some(value => value.trim())
+      && !recordContentText(record.content)) throw invalidInput('/note', 'empty-content');
+  }
+
   function createRecord(principal, input, version = 1) {
     const accountKey = requireAccountKey(principal);
     const body = (version === 2 ? validateCreateRecordV2 : validateCreateRecord)(input);
@@ -289,8 +311,11 @@ export function createClassesService({ repository, questions, lessons, math, now
       createdAt: at,
       updatedAt: at,
       deletedAt: null,
-      ...recordText(body)
+      ...recordText(body),
+      content: recordContent(principal, body.content),
+      nextNoteHidden: 0
     };
+    assertRecordContent(record);
     repository.insertRecord(record);
     repository.replaceSources(record.id, accountKey, resolveLinks(principal, body.sources, new Map()));
     return toRecord(principal, record, version);
@@ -318,7 +343,9 @@ export function createClassesService({ repository, questions, lessons, math, now
     // A record belongs to exactly one class for its whole life.
     if (body.classId !== current.classId) throw classMismatch();
     const next = { ...current, version: current.version + 1, updatedAt: timestamp(), ...recordText(body),
-      nextNoteHidden: body.nextNote === current.nextNote ? current.nextNoteHidden : 0 };
+      nextNoteHidden: body.nextNote === current.nextNote ? current.nextNoteHidden : 0,
+      content: recordContent(principal, body.content, current.content) };
+    assertRecordContent(next);
     const existingByKey = new Map(
       repository.listSources(current.id).map((stored) => [`${stored.kind}:${stored.sourceId}`, stored])
     );
@@ -338,6 +365,25 @@ export function createClassesService({ repository, questions, lessons, math, now
     const next = { ...current, version: current.version + 1, updatedAt: at, deletedAt: body.deleted ? at : null };
     repository.updateRecord(next);
     return toRecord(principal, next, version);
+  }
+
+  function moveRecord(principal, recordId, input) {
+    const body = validateMoveRecord(input);
+    const current = requireRecordInActiveClass(principal, recordId);
+    if (current.deletedAt !== null) throw objectDeleted();
+    if (body.expectedVersion !== current.version) throw versionConflict(current.version, current.id);
+    requireClass(principal, body.targetClassId, { allowDeleted: false });
+    if (body.targetClassId === current.classId) throw invalidInput('/targetClassId', 'invalid-reference');
+    const at = timestamp();
+    const moved = { ...current, id: randomUUID(), classId: body.targetClassId, version: 1, createdAt: at, updatedAt: at };
+    repository.insertRecord(moved);
+    repository.replaceSources(moved.id, current.accountKey, repository.listSources(current.id).map(source => ({
+      kind: source.kind, id: source.sourceId, labelAtLink: source.labelAtLink
+    })));
+    // The original identity and class remain valid for existing schedule links.
+    // Both the destination and source deletion share the caller's transaction.
+    repository.updateRecord({ ...current, version: current.version + 1, updatedAt: at, deletedAt: at });
+    return { originalId: current.id, originalClassId: current.classId, record: toRecord(principal, moved, 2) };
   }
 
   function purgeRecord(principal, recordId, input) {
@@ -411,6 +457,7 @@ export function createClassesService({ repository, questions, lessons, math, now
     setClassDeletion,
     purgeClass,
     purgeRecord,
+    moveRecord,
     setNextNoteVisibility,
     listRecords,
     getRecord,

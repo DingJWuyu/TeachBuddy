@@ -1,3 +1,4 @@
+import { recordContentText } from '@refatos/shared';
 import { useRef } from 'react';
 import { Icon } from '../workbench/icons.jsx';
 import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
@@ -10,7 +11,7 @@ export function matchesRecord(record, filter) {
   if (filter.from && record.recordedOn < filter.from || filter.to && record.recordedOn > filter.to) return false;
   if (filter.field && !record[filter.field]?.trim()) return false;
   if (filter.source && !record.sources.some(source => `${source.kind}:${source.id}` === filter.source)) return false;
-  const text = [record.note, ...RECORD_FIELDS.map(field => record[field.key]), ...record.sources.flatMap(source => [sourceLabel(source), source.labelAtLink])]
+  const text = [record.note, recordContentText(record.content), ...RECORD_FIELDS.map(field => record[field.key]), ...record.sources.flatMap(source => [sourceLabel(source), source.labelAtLink])]
     .join(' ').normalize('NFKC').toLocaleLowerCase();
   return filter.query.trim().normalize('NFKC').toLocaleLowerCase().split(/\s+/).every(term => text.includes(term));
 }

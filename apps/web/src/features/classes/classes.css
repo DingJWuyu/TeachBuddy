@@ -656,3 +656,13 @@
 .c-review-record { padding: 10px 0; border-bottom: 1px solid var(--wb-line-soft); }
 .c-review-record p { margin: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; }
 .c-review-record .wb-label { display: block; margin-bottom: 4px; }
+
+.c-content-editor { margin: 8px 0 16px; }
+.c-content-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.c-content-controls { border: 0; margin: 0; padding: 0; min-width: 0; }
+.c-content-controls:disabled { opacity: .65; }
+.c-content-hint { margin: 8px 0 0; font-size: 12px; }
+.c-record-content { margin: 12px 0; overflow-wrap: anywhere; }
+.c-record-content img { height: auto; }
+.c-content-editor .wb-block { min-width: 0; }
+.c-content-editor .wb-math-block-preview { overflow-x: auto; }

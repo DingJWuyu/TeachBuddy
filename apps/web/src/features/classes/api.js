@@ -161,3 +161,12 @@ export async function purgeRecord({ key, id, payload }) {
 export async function setNextNoteVisibility({ key, id, payload }) {
   return call(async () => assertItem((await workbenchPost(`/api/modules/classes/v2/records/${id}/next-note-visibility`, payload, key)).body, '教学想法'));
 }
+
+export async function moveRecord({ key, id, payload }) {
+  return call(async () => {
+    const { body } = await workbenchPost(`/api/modules/classes/v2/records/${id}/move`, payload, key);
+    if (body?.originalId !== id || body?.record?.classId !== payload.targetClassId) throw new WorkbenchError(unexpectedSuccessProblem('移动结果无法识别'));
+    assertItem(body.record, '移动记录');
+    return body;
+  });
+}

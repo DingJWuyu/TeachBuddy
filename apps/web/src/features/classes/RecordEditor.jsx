@@ -1,3 +1,5 @@
+import { RecordContent } from './RecordContent.jsx';
+import { DocumentView } from '../workbench/materials/DocumentView.jsx';
 import { useScene } from '../workbench/useScene.js';
 /**
  * Inline editor for one actual record.
@@ -28,6 +30,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
   const notifiedVersionRef = useRef(null);
   const editorRef = useRef(null);
   const [readWarning, setReadWarning] = useState(null);
+  const [uploadBusy, setUploadBusy] = useState(false);
   const [reload, setReload] = useState(0);
   const loadGeneration = `${generation}:${reload}`;
   const initializedGeneration = useRef(null);
@@ -73,7 +76,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
   useSaveShortcut(() => {
     if (editorRef.current?.closest('[inert]') || [...document.querySelectorAll('[role="dialog"]')].some(dialog => !dialog.closest('[inert]'))) return;
     return savable.pending ? savable.retryConfirm() : savable.save();
-  }, Boolean(input) && !savable.isSaving && !pickerOpen);
+  }, Boolean(input) && !savable.isSaving && !pickerOpen && !uploadBusy);
 
   useEffect(() => {
     // Refresh the list once per confirmed server version; the refresh must not
@@ -127,6 +130,8 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
       </label>
       <RecordFields input={input} onChange={values => setInput(current => ({ ...current, ...values }))}
         fields={fieldScene.fields} onFieldsChange={fields => patchFields({ fields })} onPick={() => setPickerOpen(true)} />
+      <RecordContent key={`${accountKey}:${record.id}`} accountKey={accountKey} scope={`record:${record.id}`} value={input.content}
+        onChange={content => setInput(current => ({ ...current, content }))} onBusyChange={setUploadBusy} />
       {input.sources.length > 0 && <div className="wb-field">
         <SourceChips
           sources={input.sources}
@@ -149,6 +154,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
           renderServer={(server) => (
             <div>
               <p>{server.note}</p>
+              {server.content?.blocks.length > 0 && <DocumentView value={server.content} />}
               {RECORD_EXTRA_FIELDS.map(([key, label]) => (server[key]
                 ? <p key={key}><span className="wb-muted">{label}：</span>{server[key]}</p>
                 : null))}
@@ -156,7 +162,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
           )}
         />
       )}
-      <SaveActions savable={savable} saveLabel="保存修改" />
+      <SaveActions savable={savable} saveLabel="保存修改" disabled={uploadBusy} />
       <ModulePresence present={pickerOpen}>
       {pickerOpen && (
         <SourcePicker

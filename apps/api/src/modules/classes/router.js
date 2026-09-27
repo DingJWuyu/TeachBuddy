@@ -18,6 +18,7 @@ import {
   validateDeletion,
   validatePurgeClass,
   validateNextNoteVisibility,
+  validateMoveRecord,
   validateRecordsQuery,
   validateSourceRecordsPath,
   validateUpdateClass,
@@ -98,6 +99,8 @@ export function createClassesRouter({ service, mutations, version = 1 }) {
   }
 
   if (version === 2) {
+    router.post('/records/:id/move', createMutationHandler({ mutations, method: 'POST', validate: withPathId(validateMoveRecord),
+      write: ({ principal, body, request }) => ({ status: 200, body: service.moveRecord(principal, request.params.id, body) }) }));
     router.post('/records/:id/purge', createMutationHandler({ mutations, method: 'POST', validate: withPathId(validatePurgeClass),
       write: ({ principal, body, request }) => ({ status: 200, body: service.purgeRecord(principal, request.params.id, body) }) }));
     router.post('/records/:id/next-note-visibility', createMutationHandler({ mutations, method: 'POST', validate: withPathId(validateNextNoteVisibility),

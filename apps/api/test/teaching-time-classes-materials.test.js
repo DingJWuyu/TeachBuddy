@@ -185,9 +185,10 @@ test("WB-MTA002/004/005/007: transactions, tombstones, failures, replay and isol
   assert.equal(before.sources[0].currentLabel, q.title);
   assert.deepEqual(
     await call("GET", `/api/modules/classes/records/${before.id}`),
-    Object.fromEntries(Object.entries(before).filter(([key]) => key !== "nextNoteHidden")),
+    Object.fromEntries(Object.entries(before).filter(([key]) => ! ["nextNoteHidden", "content"].includes(key))),
   );
   assert.equal(before.nextNoteHidden, false);
+  assert.deepEqual(before.content, { version: 2, blocks: [] });
   assert.deepEqual(
     await call(
       "POST",

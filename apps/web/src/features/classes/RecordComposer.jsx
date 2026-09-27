@@ -1,3 +1,4 @@
+import { RecordContent } from './RecordContent.jsx';
 import { useScene } from '../workbench/useScene.js';
 /**
  * One-line class record composer.
@@ -35,6 +36,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
   const [pickerScene, patchPicker] = useScene(accountKey, `class-composer-picker:${draftKey ?? classId}`, { open: false });
   const pickerOpen = pickerScene.open;
   const setPickerOpen = open => patchPicker({ open });
+  const [uploadBusy, setUploadBusy] = useState(false);
   const [notice, setNotice] = useState(null);
   const inputRef = useRef(input);
   const alive = useRef(true);
@@ -47,7 +49,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
   }, []);
 
   useEffect(() => {
-    if (!hasAnyRecordText(input) && input.sources.length === 0 && (!journal || (fields.length === 0 && input.recordedOn === todayInZone(timeZone)))) {
+    if (!hasAnyRecordText(input) && input.sources.length === 0 && (!journal || (fields.length === 0 && !input.content?.blocks.length && input.recordedOn === todayInZone(timeZone)))) {
       removeLocal(accountKey, draftName);
       return;
     }
@@ -79,7 +81,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
 
   function settle(result, payload) {
     if (!result || !alive.current) return;
-    const unchanged = JSON.stringify(recordCreatePayload(inputRef.current)) === JSON.stringify(payload);
+    const unchanged = JSON.stringify(recordCreatePayload(inputRef.current)) === JSON.stringify(recordCreatePayload(payload));
     if (unchanged) {
       manualDate.current = false;
       inputRef.current = emptyRecordInput(classId, journal ? todayInZone(timeZone) : inputRef.current.recordedOn);
@@ -92,6 +94,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
   }
 
   async function save() {
+    if (uploadBusy) return;
     if (!hasAnyRecordText(input)) {
       setNotice({ kind: 'error', message: '至少写一句再保存' });
       return;
@@ -108,7 +111,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
   useSaveShortcut(() => {
     if (journal && (formRef.current?.closest('[inert]') || [...document.querySelectorAll('[role="dialog"]')].some(dialog => !dialog.closest('[inert]')))) return;
     return submit.status === 'unconfirmed' ? retryConfirm() : save();
-  }, active && submit.status !== 'running' && (!journal || !pickerOpen));
+  }, active && !uploadBusy && submit.status !== 'running' && (!journal || !pickerOpen));
 
   const problem = submit.problem;
   const statusText = submit.status === 'unconfirmed'
@@ -142,12 +145,13 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
           placeholder="今天这个班讲得怎么样？例如：讲完单调性定义，例2还没讲，下次先复习定义。"
           value={input.note} onChange={event => patch({ note: event.target.value })} />
         <RecordFields input={input} onChange={patch} fields={fields} onFieldsChange={setFields} onPick={() => setPickerOpen(true)} />
+        <RecordContent key={`${accountKey}:${draftKey ?? classId}`} resetKey={submit.result?.id} accountKey={accountKey} scope={`new:${draftKey ?? classId}`} value={input.content} onChange={content => patch({ content })} onBusyChange={setUploadBusy} />
         {input.sources.length > 0 && <SourceChips sources={input.sources} onRemove={source => patch({
           sources: input.sources.filter(item => !(item.kind === source.kind && item.id === source.id))
         })} />}
         <div className="c-composer-footer">
           <span className="c-compose-hint">写一句就能保存</span>
-          <button type="submit" className="wb-button is-primary" disabled={submit.status === 'running'}
+          <button type="submit" className="wb-button is-primary" disabled={submit.status === 'running' || uploadBusy}
             name={submit.status === 'unconfirmed' ? 'retry-confirm' : 'save-record'}>
             {submit.status === 'running' ? '保存中…' : submit.status === 'unconfirmed' ? '重试确认' : '保存记录'}
           </button>

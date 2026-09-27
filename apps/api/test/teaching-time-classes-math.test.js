@@ -56,7 +56,7 @@ test('TM-C1/C2: v2 current titles, tombstones, retained links, remove/relink and
 test('TM-C4/C5: shared records, legacy loss guards and original successful receipt after restart', async () => fixture(async ({h,api,c,input,write}) => {
   const legacyBody = {...input,sources:[]}; const oldKey = h.nextUuid();
   const old = (await write(V1,legacyBody,201,oldKey)).body;
-  assert.deepEqual((await api.get(`${V2}/${old.id}`).expect(200)).body,{...old,nextNoteHidden:false});
+  assert.deepEqual((await api.get(`${V2}/${old.id}`).expect(200)).body,{...old,nextNoteHidden:false,content:{version:2,blocks:[]}});
   const mixed = (await api.put(`${V2}/${old.id}`,{...input,expectedVersion:1},{key:h.nextUuid()}).expect(200)).body;
   assert.equal(mixed.version,2);
   for (const url of [`${V1}/${old.id}`,`${V1}?classId=${c.id}`]) {

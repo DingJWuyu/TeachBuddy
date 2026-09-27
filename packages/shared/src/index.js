@@ -41,3 +41,4 @@ export function getModuleMetadata(moduleId) {
 }
 
 export { canRenderMath, supportedDocument, questionDocuments, lessonDocuments } from './materials/content.js';
+export { emptyRecordContent, recordContentText } from './classRecordContent.js';

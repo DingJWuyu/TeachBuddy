@@ -34,6 +34,8 @@ export function ClassDetail({
   onHome,
   onDelete,
   onPurgeRecord,
+  onMoveRecord,
+  moveBusy,
   detailScrollTop,
   onDetailScrollTop
 }) {
@@ -284,7 +286,7 @@ export function ClassDetail({
           <button className="wb-button" onClick={closeEditor}>返回教学记录</button>
         </div>}
         {(records.active !== null || records.deleted !== null) && (
-          <RecordList
+          <RecordList onMove={onMoveRecord} moveBusy={moveBusy}
             classId={classroom.id}
             readOnly={deleted}
             accountKey={accountKey}

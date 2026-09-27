@@ -202,3 +202,184 @@ test('单条记录彻底删除可取消，响应丢失后刷新仍可确认且�
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page)).toContainText('需要保留的记录');
 });
+
+test('公式与图片按需加入，保存重开可编辑，原文字中的美元符号保持原样', async ({ page }) => {
+  await createClass(page);
+  await page.getByRole('button', { name: '公式与图片', exact: true }).click();
+  await page.getByRole('button', { name: '公式', exact: true }).click();
+  const formula = page.getByRole('textbox', { name: '课堂补充公式 1源', exact: true });
+  await formula.click();
+  await formula.pressSequentially('x^2 + 1');
+  await expect(formula).toHaveValue('x^2 + 1');
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: '图片', exact: true }).click();
+  await (await chooser).setFiles('apps/web/e2e/fixtures/materials-questions/figure.png');
+  await expect(page.locator('.c-content-editor img')).toBeVisible();
+  await expect(page.getByRole('button', { name: '保存记录', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '保存记录', exact: true }).click();
+  await expect(rows(page)).toHaveCount(1);
+  await expect(rows(page).locator('[data-formula-source="x^2 + 1"]')).toBeVisible();
+  await expect(rows(page).locator('img')).toBeVisible();
+  await page.reload();
+  await expect(rows(page).locator('img')).toBeVisible();
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await rows(page).locator('img').scrollIntoViewIfNeeded();
+    const box = await rows(page).locator('img').boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: test.info().outputPath(`content-${viewport.width}.png`) });
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await rows(page).getByRole('button', { name: '编辑记录', exact: true }).click();
+  await expect(formula).toHaveValue('x^2 + 1');
+  await page.getByRole('textbox', { name: '编辑记录内容', exact: true }).fill('价格 $5 与 $10 是原始文字。');
+  await formula.fill('\\unsupportedCommand{x}');
+  await page.getByRole('button', { name: '保存修改', exact: true }).click();
+  await expect(page.locator('[data-region=record-editor] [data-save-status]')).toHaveAttribute('data-save-status', 'saved');
+  await page.getByRole('button', { name: '返回记录', exact: true }).click();
+  await expect(rows(page)).toContainText('价格 $5 与 $10 是原始文字。');
+  await expect(rows(page).locator('.c-record-content [data-formula-failed]')).toContainText('unsupportedCommand');
+  await page.getByRole('button', { name: '查找记录', exact: true }).click();
+  await page.getByRole('searchbox', { name: '搜索课堂记录' }).fill('unsupportedCommand');
+  await expect(rows(page)).toHaveCount(1);
+  await page.getByRole('button', { name: '关闭查找记录' }).click();
+  await rows(page).getByRole('button', { name: '编辑记录', exact: true }).click();
+  await page.getByRole('button', { name: '删除课堂补充图片 1', exact: true }).click();
+  await page.getByRole('button', { name: '删除课堂补充公式 1', exact: true }).click();
+  await page.getByRole('button', { name: '保存修改', exact: true }).click();
+  await expect(page.locator('[data-region=record-editor] [data-save-status]')).toHaveAttribute('data-save-status', 'saved');
+  await page.reload();
+  await expect(page.getByRole('textbox', { name: '编辑记录内容', exact: true })).toHaveValue('价格 $5 与 $10 是原始文字。');
+  await expect(page.locator('[data-region=record-editor] img')).toHaveCount(0);
+});
+
+test('图片上传响应丢失后刷新，原文件确认不重复上传且继续原草稿', async ({ page }) => {
+  await createClass(page);
+  await page.getByRole('textbox', { name: '写一句', exact: true }).fill('图片上传期间的原草稿');
+  await page.getByRole('button', { name: '公式与图片', exact: true }).click();
+  let dropped = false;
+  await page.route('**/api/workbench/files', async route => {
+    if (route.request().method() === 'POST' && !dropped) { dropped = true; await route.fetch(); await route.abort('failed'); }
+    else await route.continue();
+  });
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: '图片', exact: true }).click();
+  await (await chooser).setFiles('apps/web/e2e/fixtures/materials-questions/figure.png');
+  await expect(page.getByRole('button', { name: '重试上传图片', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '保存记录', exact: true })).toBeDisabled();
+  await page.addInitScript(() => {
+    const open = indexedDB.open.bind(indexedDB); let fail = true;
+    indexedDB.open = (...args) => {
+      if (args[0] === 'teachbuddy.classes.uploads' && fail) { fail = false; throw new Error('图片存储暂不可用'); }
+      return open(...args);
+    };
+  });
+  await page.reload();
+  await expect(page.getByRole('alert')).toContainText('图片存储暂不可用');
+  await expect(page.getByRole('button', { name: '保存记录', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: '重试读取图片状态', exact: true }).click();
+  const reselect = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: '重新选择原图片并确认', exact: true }).click();
+  await (await reselect).setFiles('apps/web/e2e/fixtures/materials-questions/figure.png');
+  await expect(page.locator('.c-content-editor img')).toBeVisible();
+  await expect(page.getByRole('button', { name: '保存记录', exact: true })).toBeEnabled();
+  await expect(page.getByRole('textbox', { name: '写一句', exact: true })).toHaveValue('图片上传期间的原草稿');
+  expect(world.workbench.db.prepare('SELECT count(*) n FROM materials_files').get().n).toBe(1);
+  await page.getByRole('button', { name: '保存记录', exact: true }).click();
+  await expect(rows(page).locator('img')).toBeVisible();
+});
+
+test('没有图片待确认时，图片存储故障不影响一句话记录', async ({ page }) => {
+  await page.addInitScript(() => {
+    const open = indexedDB.open.bind(indexedDB);
+    indexedDB.open = (...args) => {
+      if (args[0] === 'teachbuddy.classes.uploads') throw new Error('图片存储暂不可用');
+      return open(...args);
+    };
+  });
+  await page.reload();
+  await createClass(page);
+  await expect(page.getByRole('button', { name: '保存记录', exact: true })).toBeEnabled();
+  await saveRecord(page, '不用图片也可以继续记课');
+  await expect(rows(page)).toContainText('不用图片也可以继续记课');
+});
+
+test('跨班移动可以取消，未知结果刷新后确认，原记录与新记录草稿分别保留', async ({ page }) => {
+  await createClass(page, '原班级');
+  await saveRecord(page, '准备移动的课堂记录');
+  const sourceClass = (await call('GET', C)).items.find(item => item.name === '原班级');
+  const original = (await call('GET', `${R}?classId=${sourceClass.id}`)).items[0];
+  await page.getByRole('button', { name: '返回班级主页', exact: true }).click();
+  await createClass(page, '目标班级');
+  const target = (await call('GET', C)).items.find(item => item.name === '目标班级');
+  await page.getByRole('button', { name: '返回班级主页', exact: true }).click();
+  await page.getByRole('button', { name: '原班级', exact: true }).click();
+  await page.getByRole('textbox', { name: '写一句', exact: true }).fill('下一节课的草稿');
+  await rows(page).getByRole('button', { name: '记录操作' }).click();
+  await page.getByRole('menuitem', { name: '移到其他班级' }).click();
+  await page.getByRole('dialog', { name: '移动课堂记录' }).getByRole('button', { name: '取消' }).click();
+  await expect(rows(page)).toHaveCount(1);
+  await rows(page).getByRole('button', { name: '编辑记录', exact: true }).click();
+  await page.getByRole('textbox', { name: '编辑记录内容', exact: true }).fill('尚未保存的修改');
+  await page.getByRole('button', { name: '返回记录', exact: true }).click();
+  await rows(page).getByRole('button', { name: '记录操作' }).click();
+  await page.getByRole('menuitem', { name: '移到其他班级' }).click();
+  await expect(page.getByRole('dialog', { name: '移动课堂记录' })).toHaveCount(0);
+  await expect(page.getByRole('textbox', { name: '编辑记录内容', exact: true })).toHaveValue('尚未保存的修改');
+  await page.getByRole('button', { name: '保存修改', exact: true }).click();
+  await expect(page.locator('[data-region=record-editor] [data-save-status]')).toHaveAttribute('data-save-status', 'saved');
+  await page.getByRole('button', { name: '返回记录', exact: true }).click();
+  let dropped = false;
+  await page.route('**/api/modules/classes/v2/records/*/move', async route => {
+    if (!dropped) { dropped = true; await route.fetch(); await route.abort('failed'); } else await route.continue();
+  });
+  await rows(page).getByRole('button', { name: '记录操作' }).click();
+  await page.getByRole('menuitem', { name: '移到其他班级' }).click();
+  await page.getByRole('combobox', { name: '移到哪个班级' }).selectOption(target.id);
+  await page.getByRole('button', { name: '移动并打开记录', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试移动记录', exact: true })).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: '重试移动记录', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/classes/${target.id}/records/`));
+  await expect(page.getByRole('textbox', { name: '编辑记录内容', exact: true })).toHaveValue('尚未保存的修改');
+  expect((await call('GET', `${R}?classId=${target.id}`)).items).toHaveLength(1);
+  expect((await call('GET', `${R}/${original.id}`)).deletedAt).not.toBeNull();
+  await page.getByRole('button', { name: '返回班级主页', exact: true }).click();
+  await page.getByRole('button', { name: '原班级', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '写一句', exact: true })).toHaveValue('下一节课的草稿');
+  await expect(rows(page)).toHaveCount(0);
+});
+
+test('升级前不含补充文稿的待确认请求，刷新确认后不把已保存文字当成新草稿', async ({ page }) => {
+  await createClass(page);
+  let dropped = false;
+  await page.route(`**${R}`, async route => {
+    if (route.request().method() === 'POST' && !dropped) {
+      dropped = true;
+      const body = route.request().postDataJSON(); delete body.content;
+      await route.fetch({ postData: JSON.stringify(body) }); await route.abort('failed');
+    } else await route.continue();
+  });
+  await page.getByLabel('写一句', { exact: true }).fill('旧版本保存结果待确认');
+  await page.getByRole('button', { name: '保存记录', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
+  // A retained device fixture from before optional record content existed.
+  await page.evaluate(() => {
+    for (const key of Object.keys(localStorage)) {
+      let envelope; try { envelope = JSON.parse(localStorage.getItem(key)); } catch { continue; }
+      if (envelope?.name?.startsWith('pending:class-record-new:')) delete envelope.value.payload.body.content;
+      else if (envelope?.name?.startsWith('draft:class-record-new:')) delete envelope.value.input.content;
+      else continue;
+      localStorage.setItem(key, JSON.stringify(envelope));
+    }
+  });
+  await page.reload();
+  await page.getByRole('button', { name: '重试确认', exact: true }).click();
+  await expect(page.getByLabel('写一句', { exact: true })).toHaveValue('');
+  await expect(rows(page)).toHaveCount(1);
+  await page.reload();
+  await expect(page.getByLabel('写一句', { exact: true })).toHaveValue('');
+  await expect(rows(page)).toHaveCount(1);
+});

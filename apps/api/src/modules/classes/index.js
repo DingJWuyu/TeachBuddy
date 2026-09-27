@@ -6,7 +6,7 @@ import { createClassesRouter } from './router.js';
 import { createClassesService } from './service.js';
 import { migrations } from './migrations/index.js';
 
-export function createClassesModule({ db, mutations, questions, lessons, math, enableV2 = math !== undefined, now } = {}) {
+export function createClassesModule({ db, mutations, questions, lessons, math, content, enableV2 = math !== undefined, now } = {}) {
   if (!db || typeof db.prepare !== 'function') {
     throw new TypeError('createClassesModule requires a better-sqlite3 Database instance.');
   }
@@ -25,7 +25,7 @@ export function createClassesModule({ db, mutations, questions, lessons, math, e
   }
 
   const repository = createClassesRepository(db);
-  const service = createClassesService({ repository, questions, lessons, math, now });
+  const service = createClassesService({ repository, questions, lessons, math, content, now });
   const router = createClassesRouter({ service, mutations });
 
   if (enableV2) router.use('/v2', createClassesRouter({ service, mutations, version: 2 }));

@@ -1,3 +1,4 @@
+import { emptyRecordContent } from '@refatos/shared';
 // Storage for the classes module: classes, actual records and their links to
 // lesson/question sources. The module owns these tables and no other module
 // reads them; reverse lookups are served from the link index maintained here.
@@ -10,8 +11,11 @@
 // reverse-feedback join cannot drift from the record projection.
 const RECORD_COLUMNS = [
   'id', 'accountKey', 'classId', 'version', 'createdAt', 'updatedAt', 'deletedAt',
-  'recordedOn', 'note', 'position', 'unfinished', 'commonIssues', 'nextNote', 'nextNoteHidden'
+  'recordedOn', 'note', 'position', 'unfinished', 'commonIssues', 'nextNote', 'nextNoteHidden', 'content'
 ];
+
+const decode = row => row ? { ...row, content: JSON.parse(row.content) } : null;
+const encode = row => ({ ...row, nextNoteHidden: row.nextNoteHidden ?? 0, content: JSON.stringify(row.content ?? emptyRecordContent()) });
 
 export function createClassesRepository(db) {
   const recordColumns = RECORD_COLUMNS.join(', ');
@@ -47,22 +51,22 @@ export function createClassesRepository(db) {
   const insertRecord = db.prepare(`
     INSERT INTO classes_records (
       id, accountKey, classId, version, createdAt, updatedAt, deletedAt,
-      recordedOn, note, position, unfinished, commonIssues, nextNote
+      recordedOn, note, position, unfinished, commonIssues, nextNote, nextNoteHidden, content
     ) VALUES (
       @id, @accountKey, @classId, @version, @createdAt, @updatedAt, @deletedAt,
-      @recordedOn, @note, @position, @unfinished, @commonIssues, @nextNote
+      @recordedOn, @note, @position, @unfinished, @commonIssues, @nextNote, @nextNoteHidden, @content
     )
   `);
   const updateRecord = db.prepare(`
     UPDATE classes_records
     SET version = @version, updatedAt = @updatedAt, deletedAt = @deletedAt,
         recordedOn = @recordedOn, note = @note, position = @position,
-        unfinished = @unfinished, commonIssues = @commonIssues, nextNote = @nextNote, nextNoteHidden = @nextNoteHidden
+        unfinished = @unfinished, commonIssues = @commonIssues, nextNote = @nextNote, nextNoteHidden = @nextNoteHidden, content = @content
     WHERE id = @id AND accountKey = @accountKey
   `);
   const selectRecord = db.prepare(`
     SELECT id, accountKey, classId, version, createdAt, updatedAt, deletedAt,
-           recordedOn, note, position, unfinished, commonIssues, nextNote, nextNoteHidden
+           recordedOn, note, position, unfinished, commonIssues, nextNote, nextNoteHidden, content
     FROM classes_records WHERE id = ? AND accountKey = ?
   `);
   const selectRecordsForClass = db.prepare(`
@@ -121,19 +125,19 @@ export function createClassesRepository(db) {
       removeClass.run(classId, accountKey);
     },
 
-    listActiveRecordsForAccount: accountKey => db.prepare('SELECT * FROM classes_records WHERE accountKey = ? AND deletedAt IS NULL ORDER BY recordedOn DESC, createdAt DESC, id ASC').all(accountKey),
+    listActiveRecordsForAccount: accountKey => db.prepare('SELECT * FROM classes_records WHERE accountKey = ? AND deletedAt IS NULL ORDER BY recordedOn DESC, createdAt DESC, id ASC').all(accountKey).map(decode),
     purgeRecord(accountKey, recordId, at) {
       db.prepare(`INSERT INTO classes_removed_objects (id, accountKey, kind, classId, version, removedAt)
         SELECT id, accountKey, 'record', classId, version + 1, ? FROM classes_records WHERE id = ? AND accountKey = ?`).run(at, recordId, accountKey);
       db.prepare('DELETE FROM classes_record_sources WHERE recordId = ? AND accountKey = ?').run(recordId, accountKey);
       db.prepare('DELETE FROM classes_records WHERE id = ? AND accountKey = ?').run(recordId, accountKey);
     },
-    insertRecord: (row) => insertRecord.run(row),
-    updateRecord: (row) => updateRecord.run(row),
-    getRecordForAccount: (accountKey, id) => selectRecord.get(id, accountKey) ?? null,
-    listRecordsForClass: (accountKey, classId) => selectRecordsForClass.all(accountKey, classId),
+    insertRecord: (row) => insertRecord.run(encode(row)),
+    updateRecord: (row) => updateRecord.run(encode(row)),
+    getRecordForAccount: (accountKey, id) => decode(selectRecord.get(id, accountKey)),
+    listRecordsForClass: (accountKey, classId) => selectRecordsForClass.all(accountKey, classId).map(decode),
     listActiveRecordsForSource: (accountKey, kind, sourceId) =>
-      selectActiveRecordsForSource.all(accountKey, kind, sourceId),
+      selectActiveRecordsForSource.all(accountKey, kind, sourceId).map(decode),
 
     listSources: (recordId) => selectSources.all(recordId),
     replaceSources

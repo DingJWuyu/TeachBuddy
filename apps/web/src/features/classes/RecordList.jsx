@@ -1,3 +1,4 @@
+import { DocumentView } from '../workbench/materials/DocumentView.jsx';
 /**
  * Actual records for one class: newest first, readable in place, editable,
  * deletable and restorable. Opening a record edits it inline, so the list keeps
@@ -15,7 +16,7 @@ import { formatRecordedOn } from './model.js';
 import { RecordEditor, RECORD_EXTRA_FIELDS } from './RecordEditor.jsx';
 import { SourceChips } from './SourcePicker.jsx';
 
-function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onChanged, readOnly, justCreated, onRevealed, onPurge, onNextNote, nextNoteBusy }) {
+function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onChanged, readOnly, justCreated, onRevealed, onPurge, onNextNote, nextNoteBusy, onMove, moveBusy }) {
   const [confirming, setConfirming] = useState(false);
   const deletion = useIdempotentSubmit({ accountKey, name: `pending:class-record-deletion:${record.id}` });
   const deleted = record.deletedAt !== null;
@@ -79,6 +80,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
                   删除记录
                 </MenuItem>
               )}
+              {!deleted && <MenuItem icon="classes" disabled={moveBusy || deletion.isRunning || Boolean(deletion.pending)} onClick={() => { close(); onMove(record); }}>移到其他班级</MenuItem>}
               {deleted && <MenuItem icon="trash" danger onClick={() => { close(); onPurge(record); }}>彻底删除记录</MenuItem>}
               {!deleted && record.nextNote?.trim() && <MenuItem icon="calendar" disabled={nextNoteBusy} onClick={() => { close(); onNextNote(record, !record.nextNoteHidden); }}>
                 {record.nextNoteHidden ? '恢复想法提示' : '不再提示这条想法'}
@@ -89,6 +91,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
       </div>
       <ModulePresence present={!open || readOnly || deleted} mode="collapse">
       {record.note && <p className="c-record-note">{record.note}</p>}
+      {record.content?.blocks.length > 0 && <DocumentView value={record.content} className="c-record-content" />}
       {RECORD_EXTRA_FIELDS.map(([key, label]) => (record[key]
         ? (
           <p className="c-record-field" key={key}>
@@ -134,7 +137,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
   );
 }
 
-export function RecordList({ classId, accountKey, generation, records, state, onStateChange, openRecordId, onOpen, onClose, onChanged, readOnly = false, createdId, onRevealed, onPurge, onNextNote, nextNoteBusy }) {
+export function RecordList({ classId, accountKey, generation, records, state, onStateChange, openRecordId, onOpen, onClose, onChanged, readOnly = false, createdId, onRevealed, onPurge, onNextNote, nextNoteBusy, onMove, moveBusy }) {
   const [scene, patchScene] = useScene(accountKey, `class-search:${classId}:${state}`, { ...EMPTY_FILTER, open: false, advanced: false });
   const searchTrigger = useRef(null);
   function closeSearch() {
@@ -177,7 +180,7 @@ export function RecordList({ classId, accountKey, generation, records, state, on
             onChanged={onChanged}
             justCreated={createdId === record.id}
             onRevealed={onRevealed}
-            onPurge={onPurge} onNextNote={onNextNote} nextNoteBusy={nextNoteBusy}
+            onPurge={onPurge} onNextNote={onNextNote} nextNoteBusy={nextNoteBusy} onMove={onMove} moveBusy={moveBusy}
           />
         ))}
       </ul>
