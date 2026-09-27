@@ -1304,9 +1304,6 @@ export default function MaterialsQuestionsPage({
                 ) : (
                   <p>原稿保留在左侧。处理完成后，题目草稿会出现在这里。</p>
                 )}
-                {draft && <footer className="q-review-footer">
-                  {draft.questionId ? <><span className="q-saved-label"><QuestionIcon name="check" />这道题已入库</span><button onClick={() => open('question', draft.questionId)}>查看题目</button>{value.drafts.some(d => d.disposition === 'pending') && <button className="primary" onClick={() => { const next = value.drafts.find(d => d.disposition === 'pending'); setSelected(next.id); patchScene({ draftId: next.id, original: {}, reviewEditing: false }); }}>检查下一题<QuestionIcon name="chevron" size={15} /></button>}</> : <><span className="q-muted">{draft.issues.filter(i => i.resolution === 'open').length ? `还有 ${draft.issues.filter(i => i.resolution === 'open').length} 项需要检查` : draft.disposition === 'ignored' ? '这道题已忽略，可在调整题目中恢复' : '确认后，这道题会加入题库'}</span><button className="primary" disabled={locked || draft.disposition === 'ignored'} onClick={confirmDraft}><QuestionIcon name="check" />确认这道题</button></>}
-                </footer>}
                 {value.fragments.length > 0 && (
                   <details>
                     <summary>未分配片段 · {value.fragments.length}</summary>
@@ -1364,6 +1361,9 @@ export default function MaterialsQuestionsPage({
                     ))}
                   </details>
                 )}
+                {draft && <footer className="q-review-footer">
+                  {draft.questionId ? <><span className="q-saved-label"><QuestionIcon name="check" />这道题已入库</span><button onClick={() => open('question', draft.questionId)}>查看题目</button>{value.drafts.some(d => d.disposition === 'pending') && <button className="primary" onClick={() => { const next = value.drafts.find(d => d.disposition === 'pending'); setSelected(next.id); patchScene({ draftId: next.id, original: {}, reviewEditing: false }); }}>检查下一题<QuestionIcon name="chevron" size={15} /></button>}</> : <><span className="q-muted">{draft.issues.filter(i => i.resolution === 'open').length ? `还有 ${draft.issues.filter(i => i.resolution === 'open').length} 项需要检查` : draft.disposition === 'ignored' ? '这道题已忽略，可在调整题目中恢复' : '确认后，这道题会加入题库'}</span><button className="primary" disabled={locked || draft.disposition === 'ignored'} onClick={confirmDraft}><QuestionIcon name="check" />确认这道题</button></>}
+                </footer>}
               </section>
             </div>
           </>

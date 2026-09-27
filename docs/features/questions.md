@@ -4,7 +4,7 @@
 
 ## 实现与剩余能力
 
-手工编辑、复制改编、分类、笔记、原稿对照及备课取用已接入。文字/DOCX 原生拆题、文字层 PDF 有固定样本结果；无题号文字可先形成待校对候选，尚不承诺自动识别多题边界。图片、扫描 PDF 没有生产视觉 provider，复杂多栏、跨页及旧 DOC 数学对象仍有限制。完整自动整理继续属于产品目标，质量标准与候选路线见[自动提取](../research/c21-open-source-reuse.md)。
+手工编辑、复制改编、分类、笔记、原稿对照及备课取用已接入。文字/DOCX 原生拆题、文字层 PDF 有固定样本结果；DOCX 保留段内换行，文字 PDF 支持页首明确标注题号的续题。无题号文字可先形成待校对候选，尚不承诺自动识别多题边界。图片、扫描 PDF 没有生产视觉 provider，多栏、未标明归属的跨页续文及旧 DOC 数学对象仍有限制。完整自动整理继续属于产品目标，质量标准与候选路线见[自动提取](../research/c21-open-source-reuse.md)。
 
 旧 DOC 只能如实显示 `limited / legacy-object-loss`；人工裁图和改字能保存不等于公式已自动还原。DOCX 的段落原文视图不是 Word 原分页。转换环境的即时状态只见[运行台账](../plans/run-state.md)。
 
@@ -35,6 +35,8 @@
 一次收录多张图片按老师确认的顺序编号；原图字节不旋转重写，识别用的纠偏图映射回原图坐标。PDF 页码从 1 开始，以整份 PDF 为准。只选第 7-8 页时仍显示 7、8，不显示模型局部序号 1、2。Word 优先显示固定转换版本的页面，同时提供原始段落定位；没有可靠分页时明确显示“段落 N”，不把显式分页符数冒充真实页数。文字原稿逐字保留，用字符范围高亮。
 
 原生文字整理按题号识别候选；无题号正文先保留为待校对题目，不能凭空生成答案。答案题号匹配兼容全半角数字、末尾标点和 `Q` 前缀，只有题目与答案均唯一对应才自动关联；同号歧义保留在待核对项和未分配片段。归一化仅用于题号比较，原文与定位不变。只有答案或教师活动的输入不生成空题。
+
+DOCX 保留段内换行和制表符，换行后的题号与答案标记可分别识别。同一 PDF 的页首 `续第 N 题` 或 `第 N 题（续）` 可关联到前页唯一同号题，保留两页原始定位，后续独立题目仍单独整理。缺少前页、同号歧义或页序倒置时，续文保留为未分配片段；不跨收录材料猜测归属。普通跨页正文和多栏阅读顺序仍须人工核对。
 
 关闭、切模块、AI 切换和刷新后，从待整理材料恢复原稿页、缩放、草稿选择和已保存结果；未上传的文件字节不会跨设备恢复，显示重新选择同一文件的动作。已保存材料跨设备可用。停止后显示“正在停止”，重开仍可见；它只停止后续处理，已保存原稿/成功单元保留；已运行请求可能稍后结束，停止后不得自动覆盖草稿。丢失创建响应时先确认原请求，避免建立第二份收录。
 
@@ -81,6 +83,6 @@
 - 普通题目保存先读[共享契约](../contracts/workbench.md)的身份、内容、引用及写入节；丰富题目、分类和校对再读[材料契约](../contracts/workbench/materials.md#内容)。字段只读对应 OpenAPI 操作，不需要 Agent、数学制作或完整 DAG。
 - 页面 `apps/web/src/features/questions/MaterialsQuestionsPage.jsx`；题库编辑与浮层 `QuestionControls.jsx`；校对拆分 `review-drafts.js`；请求 `materials-api.js`；上传恢复 `uploadRecovery.js`；原稿 `OriginalPane.jsx`。
 - API `apps/api/src/modules/questions/materials-service.js`、`materials-router.js`、`extraction*.js`、`native-word.js`；共享编辑器 `apps/web/src/features/workbench/materials/DocumentEditor.jsx`。
-- 当前交互浏览器验证 `apps/web/e2e/questions-ux.config.mjs`，用 `WORKBENCH_WEB_DIST` 指定隔离生产构建，覆盖录题、草稿、改编、分类、文字校对、结构编辑、搜索范围、拆分答案归属、未知保存恢复、归档与彻底删除、来源缺失/读取失败、详情返回及深浅色布局；历史保存场景见 `manual-questions.config.mjs`。HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；保存基例 [WB-003/004/011-018](../acceptance/first-flow.feature)，材料基例 [WB-M001-012/025-028](../acceptance/materials.feature)。
+- 当前交互浏览器验证 `apps/web/e2e/questions-ux.config.mjs`，用 `WORKBENCH_WEB_DIST` 指定隔离生产构建，覆盖录题、草稿、改编、分类、文字校对、结构编辑、搜索范围、拆分答案归属、未知保存恢复、归档与彻底删除、来源缺失/读取失败、详情返回及深浅色布局。文件上传另验 DOCX 段内换行、PDF 明示续题与缺页/倒序、未分配片段处理后的保存重开；历史保存场景见 `manual-questions.config.mjs`。HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；保存基例 [WB-003/004/011-018](../acceptance/first-flow.feature)，材料基例 [WB-M001-012/025-028](../acceptance/materials.feature)。
 
 保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前具名证明范围在[能力证据](../plans/run-state.md#证据边界)。

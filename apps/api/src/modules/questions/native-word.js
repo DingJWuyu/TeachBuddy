@@ -172,8 +172,12 @@ export function createWordReader(files) {
         }
         if (name === "r" && n.prefix === "w") {
           runCount++;
-          for (const t of Array.from(n.getElementsByTagName("w:t")))
-            runs.push({ type: "text", text: t.textContent });
+          for (const child of children(n)) {
+            const kind = local(child);
+            if (kind === "t") runs.push({ type: "text", text: child.textContent });
+            else if (kind === "br" || kind === "cr") runs.push({ type: "text", text: "\n" });
+            else if (kind === "tab") runs.push({ type: "text", text: "\t" });
+          }
           return;
         }
         for (const child of children(n)) await visit(child);

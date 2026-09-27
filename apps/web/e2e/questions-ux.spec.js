@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import sharp from 'sharp';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 
@@ -602,4 +603,106 @@ test('功能：无答案草稿拆分再合并，保存和刷新保留题干与�
   const [question] = await records();
   expect(question.answerStatus).toBe('absent');
   expect(question.body.blocks.flatMap(b => b.runs ?? []).filter(r => r.type === 'math').map(r => r.latex)).toEqual(['x', 'y']);
+});
+
+test('导入：Word 段内换行保留题目边界和各自答案', async ({ page }) => {
+  const { Document, Packer, Paragraph, TextRun } = await import('docx');
+  const doc = new Document({ sections: [{ children: [new Paragraph({ children: [
+    new TextRun('1. 求三加五的和。'), new TextRun({ text: '答案：八', break: 1 }),
+    new TextRun({ text: '2. 求九减二的差。', break: 1 }), new TextRun({ text: '答案：七', break: 1 }),
+  ] })] }] });
+  const file = path.join(world.directory, 'line-breaks.docx');
+  fs.writeFileSync(file, await Packer.toBuffer(doc));
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 Word/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(file);
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toBeVisible();
+  for (const [number, text, answer] of [[1, '求三加五的和', '八'], [2, '求九减二的差', '七']]) {
+    await page.getByRole('button', { name: `${number} 待检查`, exact: true }).click();
+    await expect(page.getByRole('article', { name: '待检查题干' })).toContainText(text);
+    await expect(page.locator('.q-review-answer')).toHaveText(`答案与解析${answer}`);
+    await page.getByLabel('题干是否完整，是否混入了其他题目？').selectOption('acknowledged');
+    await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+    await expect(page.getByRole('button', { name: `${number} 已入库`, exact: true })).toBeVisible();
+  }
+  await page.reload();
+  expect(await records()).toHaveLength(2);
+});
+
+test('导入：PDF 明示续题跨页合并，保留两页来源和后续独立题目', async ({ page, context }) => {
+  const source = await context.newPage();
+  const pdf = path.join(world.directory, 'continuation.pdf');
+  try {
+    await source.setContent(`<html lang="zh-CN"><head><style>@page{size:A4;margin:20mm}body{font:16px sans-serif}.next{break-before:page}p{line-height:1.8}</style></head><body><p>1. 阅读条件并回答问题。</p><p>（1）说明第一个条件。</p><section class="next"><p>续第1题</p><p>（2）说明第二个条件。</p><p>2. 求三加五的和。</p></section></body></html>`);
+    await source.evaluate(() => document.fonts.ready);
+    await source.pdf({ path: pdf, preferCSSPageSize: true });
+  } finally { await source.close(); }
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 PDF/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(pdf);
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByText('整理完成，等待校对', { exact: true })).toBeVisible();
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('第一个条件');
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('第二个条件');
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '3 待检查', exact: true })).toHaveCount(0);
+  for (const control of await page.locator('.q-review-checks select').all()) await control.selectOption('corrected');
+  await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  await page.reload();
+  const [question] = await records();
+  expect(question.source.parts.flatMap(part => part.locations.map(location => location.page)).sort()).toEqual([1, 2]);
+  // Importing only the continuation page must not guess a missing first page,
+  // or attach its content to a question from another import.
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 PDF/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(pdf);
+  await page.getByRole('button', { name: '材料名称、出处与处理范围', exact: true }).click();
+  await page.getByLabel('处理页码').fill('2');
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByText('整理完成，等待校对', { exact: true })).toBeVisible();
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('求三加五的和');
+  await expect(page.getByRole('article', { name: '待检查题干' })).not.toContainText('第二个条件');
+  await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toHaveCount(0);
+  await page.getByText('未分配片段 · 1', { exact: true }).click();
+  await expect(page.locator('.q-review details pre')).toContainText('第二个条件');
+  await page.getByLabel('片段处理', { exact: true }).click();
+  await page.keyboard.press('Escape');
+  await page.getByLabel('片段处理', { exact: true }).selectOption('ignored');
+  await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+  await page.reload();
+  await page.getByText('未分配片段 · 1', { exact: true }).click();
+  await expect(page.getByLabel('片段处理', { exact: true })).toHaveValue('ignored');
+  await page.screenshot({ path: test.info().outputPath('continuation-fragments.png') });
+  const split = path.join(world.directory, 'continuation-page-%d.pdf');
+  const reversed = path.join(world.directory, 'reversed-continuation.pdf');
+  execFileSync('/usr/bin/pdfseparate', [pdf, split]);
+  execFileSync('/usr/bin/pdfunite', [split.replace('%d', '2'), split.replace('%d', '1'), reversed]);
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传 PDF/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles(reversed);
+  // Page selection belongs to this new import; clear the previous selection.
+  await page.getByRole('button', { name: '材料名称、出处与处理范围', exact: true }).click();
+  await page.getByLabel('处理页码').fill('');
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  await expect(page.getByText('整理完成，等待校对', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '2 待检查', exact: true }).click();
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('第一个条件');
+  await expect(page.getByRole('article', { name: '待检查题干' })).not.toContainText('第二个条件');
+  await expect(page.getByText('未分配片段 · 1', { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: '账户：题库老师' }).click();
+  await page.getByRole('button', { name: '深色', exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-workbench-theme', 'dark');
+  await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
+  await page.setViewportSize({ width: 600, height: 900 });
+  await page.getByRole('button', { name: '校对结果', exact: true }).click();
+  await page.getByText('未分配片段 · 1', { exact: true }).click();
+  await page.getByLabel('片段处理', { exact: true }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: '确认这道题', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await page.screenshot({ path: test.info().outputPath('continuation-fragments-dark-narrow.png') });
 });

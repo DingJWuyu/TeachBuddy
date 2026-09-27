@@ -31,33 +31,39 @@ export function createPdfReader(files) {
       const text = stdout.replace(/^\s*第\s*\d+\s*页[^\n]*$/gm, '').replaceAll('\f', '').trim();
       // Parse numbered answers using the same boundaries as question text, then
       // let the existing cross-page merger match only unambiguous labels.
-      const parsed = nativeText(text.replace(/^\s*(?:【.*(?:答案|解析).*】|参考答案[:：]?|答案解析[:：]?|参考解答[:：]?)\s*$/gm, ''), unit.location);
+      let content = text.replace(/^\s*(?:【.*(?:答案|解析).*】|参考答案[:：]?|答案解析[:：]?|参考解答[:：]?)\s*$/gm, '').trim();
+      const continuation = !answerPage && content.match(/^(?:续第\s*([0-9０-９]+)\s*题|第\s*([0-9０-９]+)\s*题[（(]续[）)])[ \t]*[:：]?[ \t]*(?:\r?\n|$)/);
+      if (continuation) content = (continuation[1] ?? continuation[2]) + '. ' + content.slice(continuation[0].length);
+      // Text offsets identify only the first explicit continuation. Public
+      // locations still point to the unchanged PDF page, including selected pages.
+      const parsed = nativeText(content);
       const records = [];
-      function record(draft, role, document, locations) {
+      function record(draft, role, document) {
         const text = documentText(document);
         records.push({
           id: extractionId(unit.file.id, unit.page, records.length), role,
-          label: draft.title, section: unit.file.id, group: '', continues: '',
-          text, document, locations,
+          label: draft.title, section: unit.file.id, group: '', continues: role === 'continuation' ? draft.title : '',
+          text, document, locations: [unit.location],
           doubts: /[⎧⎩⎨�]/.test(text) ? ['原稿数学排版需校对'] : [],
         });
       }
       for (const draft of parsed.drafts) {
         if (answerPage) {
           const blocks = [...draft.body.blocks, ...draft.solution.blocks];
-          record(draft, 'answer', {version: 2, blocks}, [unit.location]);
+          record(draft, 'answer', {version: 2, blocks});
         } else {
-          record(draft, 'question', draft.body, draft.parts.filter(p => p.role === 'body').flatMap(p => p.locations));
-          if (draft.answerStatus === 'present') record(draft, 'answer', draft.solution, draft.parts.filter(p => p.role === 'solution').flatMap(p => p.locations));
+          const continued = continuation && draft.parts[0].locations[0]?.start === 0;
+          record(draft, continued ? 'continuation' : 'question', draft.body);
+          if (draft.answerStatus === 'present') record(draft, 'answer', draft.solution);
         }
       }
       // Unnumbered text remains editable without inventing question boundaries.
       if (!records.length && text) {
-        record({title: `第 ${unit.page} 页`}, answerPage ? 'other' : 'question', textDocument(text), [unit.location]);
+        record({title: `第 ${unit.page} 页`}, answerPage ? 'other' : 'question', textDocument(text));
         records[0].doubts.push('未识别题号，请核对拆题范围');
         parsed.fragments = [];
       }
-      return {drafts: [], fragments: parsed.fragments, records};
+      return {drafts: [], fragments: parsed.fragments.map(fragment => ({...fragment, locations: [unit.location]})), records};
     } finally {
       await fs.rm(directory, {recursive: true, force: true});
     }

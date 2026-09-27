@@ -26,6 +26,14 @@ const matches = (q, f, target = f.label) =>
   q.section === f.section &&
   q.group === f.group &&
   questionLabel(q.label) === questionLabel(target);
+// A continuation cannot precede its question in the same original document.
+// Keep same-page fragments and separate image inputs eligible for unique matching.
+const continuesQuestion = (q, f) =>
+  Boolean(f.continues) && matches(q, f, f.continues) &&
+  !q.locations.some((start) => f.locations.some((tail) =>
+    start.kind === "page" && tail.kind === "page" &&
+    start.fileId === tail.fileId && start.page > tail.page,
+  ));
 const unassigned = (f) => ({
   id: f.id,
   text: f.text,
@@ -150,12 +158,10 @@ export function mergeExtractions(results, complete) {
         );
       used.add(f.id);
     };
-    const tails = continuations.filter(
-      (f) => f.continues && matches(q, f, f.continues),
-    );
+    const tails = continuations.filter((f) => continuesQuestion(q, f));
     if (
       tails.length === 1 &&
-      questions.filter((x) => matches(x, tails[0], tails[0].continues))
+      questions.filter((x) => continuesQuestion(x, tails[0]))
         .length === 1
     )
       append(tails[0], "body");
