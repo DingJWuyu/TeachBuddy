@@ -2,19 +2,60 @@
 
 ## 工作现场与授权
 
-唯一开发树 `/home/liam_t/项目/TeacherWorkspace-preview`，分支 `preview/usable-mvp`。原 `/home/liam_t/项目/TeacherWorkspace` 的 main 保持不动。业务/UI 组合基线 `a1feef7d21bad4afc436044b213316f8c3ddf86e`；当前 HEAD 与未提交修改用 Git 核对，不以文档快照代替。
+`/home/liam_t/项目/TeacherWorkspace-preview` 是集成树。五个模块各有现存 worktree 和 Codex session，见下表；原 `TeacherWorkspace` 的 main 保持不动。当前分支、HEAD 与未提交修改用 Git 核对，不以文档快照代替。
 
-下一项开发由用户指定。资料维护可调整导航和测试输出归属，保持运行依赖及固定输入完整；不改用户运行实例，不新建 worktree，不合 main、不 push、不部署。产品 Agent 和全站外壳改造持续暂停；目标 Word/WPS、课堂设备、iPad/大陆网络和正式部署验证暂缓。
+用户授权“总控”session 读取五个会话、收发消息、协调下一步和处理回到 preview 的集成冲突。当前决定先收拢已完成功能，再推进共同缺口。模块暂停新增功能，保留原 worktree、未提交改动和未跟踪源码；只执行总控明确分配的集成修复。AI/Agent worktree 不在本轮范围，不扩展全站外壳、文件物理回收或目标设备验证。
 
-当前无活动派发任务。无定时 check，不轮询。
+总控统一负责共享文件、集成候选与实例更新安排；合 main、push、公开部署仍各需对应授权。用户明确现有真实和临时实例的数据全部为可丢弃测试数据，总控可按集成需要清空或重建，不以旧库/旧草稿保留和历史版本迁移作为本轮前置。代码、未提交成果、固定测试输入和运行配置不属于可丢弃业务数据。接收会话回执使用等待通知，不定时轮询。
+
+## 五模块共同基线
+
+五个模块的已提交成果、未提交 diff 和新增源码均已集成到 preview。受测代码为 `0e3a0cc3`，当前 HEAD 由 Git 核对；原 worktree 仍冻结在各自输入位置，尚未同步共同基线。
+
+所有目录均位于 `/home/liam_t/项目/`。各原 worktree 的 HEAD、暂存区、diff 和新增源码摘要均已核对未变；后续同步前用 `.scratch/five-module-integration/inputs.json` 再核对，不把原工作区的重复 diff 再次应用到集成树。
+
+| 模块 / session 名称 | 原 Worktree | 已纳入共同基线 | 剩余范围 |
+| --- | --- | --- | --- |
+| 班级教学 / 班级教学专用 | `TeacherWorkspace-classes` | 记录搜索、课前回顾、公式图片、跨班移动 | 已知模块功能清单完成，真实设备仍待验 |
+| 题库 / 题库专用 | `TeacherWorkspace-questions` | 导入保真、检索、常规双栏 PDF 与明确续题 | OCR、复杂混排 |
+| 资源库 / 资源库模块专用 | `TeacherWorkspace-resources` | 批量整理、文件历史、正文搜索、命中页定位和文字复制 | OCR、独立页内查找、复杂结构复制；文件回收暂缓 |
+| 数学 / 数学工坊管理 | `TeacherWorkspace-math` | 可视化编辑、历史恢复、表达式、几何、截面与动画扩展 | 高级求解等独立后续项；不要求旧 v4 测试库/备份包兼容 |
+| 备课 / 聚焦备课功能模块 | `TeacherWorkspace-lessons` | 复制、撤销、输出选择、历史恢复、环节复用、正文混排与资源原页输出 | 可编辑导入/OCR、个人资料包携带课稿历史 |
+
+### 验证与边界
+
+共同候选已通过 shared/API/Web 构建，干净库完整初始化 21 项模块迁移。依赖锁文件由 npm 生成，PDF worker/CMap/字体与数学离线资产进入隔离 Web 构建。
+
+| 验证入口 | 结果 | 覆盖与限制 |
+| --- | --- | --- |
+| `math-workspace.config.mjs` | 23 通过 | 公式、图形、几何、动态、历史与离线演示 |
+| `resources-ui.config.mjs` | 23 通过 | 真实 PDF/Word/PPT、批量整理、历史、正文搜索与复制 |
+| `questions-ux.config.mjs` | 27 通过 | 收录校对、原稿、检索与布局；没有将 OCR 缺口计为通过 |
+| `classes-journal.config.mjs` | 22 通过 | 记录搜索、公式图片与跨班移动 |
+| `manual-lessons.config.mjs` | 29 通过 | 历史恢复、环节复用、混排、取材与真实 Word/PDF 输出；局部文字颜色修正后另有 1 条定向 E2E 及深浅主题 1440/390px 截图复验通过 |
+| 五模块与可靠性 API/集成测试 | 159 通过、0 失败、5 跳过 | 题目/资源/数学来源彻底删除后，已采用快照、题目改编、个人资料包、同版备份还原和备课历史恢复仍可用；跨账户来源、无效历史内容和缺失附件被拒绝 |
+
+浏览器合计 124 条，无失败或跳过。五项 API 跳过均因固定外部输入不可用：三项题库旧库/原稿用例、两项数学 P/M 外部库用例；不将跳过写为通过。没有为可丢弃旧数据新增兼容路径。模块截图由原作者复核，总控另核对修正后的弹窗；这不等价于独立全产品验收或目标设备实测。
+
+验证日志与输入摘要保留于 `.scratch/five-module-integration/`，备课整体验证及弹窗截图位于 `test-results/five-module-integration/`。其余模块截图目录分别为 `test-results/math-workspace/`、`resources-ui/`、`questions-ux/`、`classes-journal/`。测试入口均在 `apps/web/e2e/`；API 命令与各结果见集成目录的 `result.json`。临时补丁包、隔离构建和测试库完成后清理，重跑时按 [SETUP](../SETUP.md#新的隔离环境) 重新构建。
+
+OCR 不阻塞这批成果集成。后续由题库提供识别实验与校对经验，资源库提供文件/页级文字基础，备课消费结果；总控先明确共用结果及职责，再派发实现。文件回收继续暂缓，直到所有历史、引用和任务的保留规则完整。
+
+### 运行实例与工具
+
+`https://localhost:50880` 尚未更新到共同基线。API 来自 `.scratch/preview/deployed-source`，前端来自 `apps/web/dist`；数据库 `.scratch/preview/data/workspace.sqlite`，文件 `.scratch/preview/files`。该部署快照包含备课未提交成果，另外四模块是集成前实现，不能用 preview 的 Git HEAD 代表实例版本。
+
+四个模块临时实例与其数据未改动，备课临时实例已停止。所有业务数据均为可丢弃测试数据；实例切换和数据清理由总控另行安排。
+
+本轮隔离验证使用持久目录 `/home/liam_t/.local/share/teacherworkspace-tools/` 中的 Xpdf 4.06、Pandoc 3.11 与 LibreOffice 26.8。三个工具变量的具体路径见 `.scratch/five-module-integration/tools.env`，用途见 [SETUP](../SETUP.md#文件转换工具)；正式切换时须让实际服务加载同一组工具配置。
 
 ## 已有能力与尚缺结果
 
 | 范围 | 当前事实 | 未完成与下一动作 |
 | --- | --- | --- |
-| 手动六模块 | 业务及新版页面已在同一树，题库/资源/备课/数学/教学日程有不同等级的局部结果 | 按[能力证据](#证据边界)限定声明；没有“全部非 Agent 无缺口”的证据 |
-| 题库自动整理 | 文字/DOCX 原生与文字层 PDF 有固定样本结果，人工校对可持久保存 | 扫描/图片无生产视觉 provider，多栏/跨页/复杂 DOC 不完整；本地 OCR 权重许可未答复，旧在线窗口关闭。后继读[自动提取方案](../research/c21-open-source-reuse.md) |
-| 预览与输出环境 | 服务 active/running，`https://localhost:50880`；runtime.env 中 LibreOffice、Pandoc 两个路径均指向不存在的旧工作树 | 只核实未修复。获维护授权后从稳定工具目录配置，再实际生成/打开文件验证；页面在线不能证明输出可用 |
+| 手动六模块 | preview 已集成五模块新增成果，并通过上述组合验证 | 按[能力证据](#证据边界)限定声明；没有“全部非 Agent 无缺口”的证据 |
+| 题库自动整理 | preview 已支持常规双栏文字 PDF，人工校对可持久保存 | 扫描/图片无生产视觉 provider；隔离 OCR 实验整管线超时。复杂图文/跨页/旧 DOC 仍有限制，后继读[自动提取方案](../research/c21-open-source-reuse.md) |
+| 预览与输出环境 | 隔离候选的真实 Word/PDF 输出通过，50880 仍运行旧部署快照 | 按上节对齐代码、工具、构建与真实数据；页面在线不能证明五模块输出可用 |
 | 设置与帮助 | 导出、退出有真接线；主题/背景全站应用，头像同步侧栏，三者按账户保存；帮助已接中文内容与搜索 | 语言未应用，删除账户禁用；设置无周起点及最近删除聚合，具体[设置边界](../features/settings.md) |
 | 数据与恢复 | 手动资料包、误删恢复、维护备份/还原及身份撤销有本地独立切片 | 当前设置不展示旧恢复现场 UI；全范围恢复、第二设备和正式部署不能由局部结果代签 |
 | UI/UX | 模块、设置、帮助已集成，仍待用户认可整体体验 | 用户授权具体页面后按该页规格改进，保住既有功能；不恢复全站外壳任务 |
@@ -23,9 +64,9 @@
 
 ## 接续决定
 
-下一项工作由用户指定。已知业务、环境和 UI 缺口保留在上表及相关功能规格中，不因[DAG 剩余节点](mvp-dag.md)自行开工，也不重新派发已完成的设计与接线。
+第一步集成与验证已完成。第二步尚未执行：先同步五个原 worktree 到共同基线，处理已经纳入集成的未提交成果，再恢复各模块开发。实例更新另行安排。模块当前继续暂停新增开发，不因[DAG 剩余节点](mvp-dag.md)自行扩展到其他产品线，也不重新派发已完成的设计与接线。
 
-后续获准任务从[功能规格](../README.md#功能规格)取相关资料，按实际共享文件安排唯一写者。运行维护读[SETUP](../SETUP.md)；需要旧未提交材料才读[工作树恢复索引](worktree-archive.md)。
+后续任务从同步后的对应 worktree 的[功能规格](../README.md#功能规格)取相关资料。按实际共享文件安排唯一写者。运行维护读[SETUP](../SETUP.md)；需要更早的归档现场才读[工作树恢复索引](worktree-archive.md)。
 
 ## 证据边界
 
@@ -60,7 +101,7 @@
 
 原始记录在 `.scratch/worktree-consolidation/human-acceptance-20260922.md`，SHA-256 `5c09e0cd73facb2c4b9b07394f427bbaa09a5db9a580bf2779917943d28ea65c`；定位旧现场才读[恢复索引](worktree-archive.md)。
 
-- 旧 Office 制品有 Word/WPS 失败；Pandoc 小样有真人两轮编辑、重开及打印成功反馈，但软件版本和改后制品未收齐，不能代签六份完整输出。当前产品已换路线，仍有工具路径失效。可用输入与核对方法见[人工 Office 样本](../acceptance/samples.md#人工-office-样本)。
+- 目标 Word/WPS 的完整编辑、重开及打印尚未闭环；本机输出或具名人工小样不能代签全部输出。可用输入与核对方法见[人工 Office 样本](../acceptance/samples.md#人工-office-样本)。
 - 个人 Windows Edge/Chrome 断网冷启动具名切片通过，课堂设备仍未测。
 - 用户真实 QQ 收件、注册、找回及新旧密码验证通过；预览邮件曾受代理影响，用户已自行解决，不因此重改整机网络。
 - iPad/学校网络不可达尚未确诊，暂缓目标验证；不能写为产品已 FAIL 或 PASS。
