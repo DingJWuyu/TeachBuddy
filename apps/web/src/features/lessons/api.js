@@ -110,6 +110,8 @@ export async function readRecognitionStatus({ fileId, renditionFileId }) {
   return (await workbenchGet(`/api/workbench/files/${fileId}/recognition${buildQuery({ renditionFileId })}`)).body;
 }
 export async function requestPageRecognition({ key, payload }) {
+  // Only replay a pending operation saved by an older client. New user
+  // requests carry a fixed page, not a previous job or its failed unit IDs.
   if (payload.jobId) {
     try {
       return (await workbenchPost(`/api/workbench/jobs/${payload.jobId}/retry`, {

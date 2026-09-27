@@ -6,7 +6,8 @@ import { registerMath } from './fixtures/math-static/real.mjs';
 import { http, doc } from '../../api/test/teaching-time-classes-materials-fixture.js';
 
 // Browser checks for presentation and interrupted-job recovery only.
-// The controlled pending recognizer never returns OCR output or starts a GPU.
+// Controlled recognizers exercise Jobs and fixed UI content, never a GPU or
+// model accuracy. The real OCR chain lives in lessons-page-real.spec.js.
 let world;
 const pendingRecognizer = { revision: 'controlled-pending-ui', run: ({ signal }) => new Promise((resolve, reject) => {
   signal.addEventListener('abort', () => reject(signal.reason), { once: true });
@@ -133,25 +134,137 @@ test('恢复：运行中的识别可停止，停止回执丢失后刷新仍用�
   await page.screenshot({ path: info.outputPath('stopped.png'), animations: 'disabled' });
 });
 
-test('恢复：旧任务不可重试时，明确重新发起本页识别', async ({ page }) => {
-  const { fileId, call } = await setup(page, { revision: 'controlled-failure-ui', run: async () => { throw new Error('controlled failure'); } });
+test('恢复：重启及引擎更新后，重新识别直接请求固定页', async ({ page }) => {
+  const { fileId, call } = await setup(page, pendingRecognizer);
   await selectPage(page);
+  const accepted = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith(`/files/${fileId}/recognition`));
   await page.getByRole('button', { name: '识别这一页', exact: true }).click();
-  await expect.poll(async () => (await call('GET', `/api/workbench/files/${fileId}/recognition`)).pages[0].state).toBe('failed');
-  // Exact shared revision-guard response, verifying recovery from this rejection.
-  let retries = 0;
-  await page.route('**/api/workbench/jobs/*/retry', route => {
-    retries++;
-    return route.fulfill({ status: 409, contentType: 'application/problem+json', json: {
-      type: '/problems/materials/job-not-retryable', field: '', detail: '识别环境已变更，请重新发起识别。',
-    } });
-  });
-  await page.getByRole('button', { name: '重新识别这一页', exact: true }).click();
-  const fresh = page.getByRole('button', { name: '重新发起识别', exact: true });
-  await expect(fresh).toBeVisible();
+  const previous = await (await accepted).json();
+  await expect.poll(async () => (await call('GET', `/api/workbench/jobs/${previous.id}`)).state).toBe('running');
+  const directory = world.directory, port = Number(new URL(world.origin).port);
+  await world.close();
+  let runs = 0;
+  world = await createIntegration({ directory, port, workbench: { recognition: { recognizer: {
+    revision: 'controlled-next-engine-ui', run: input => { runs++; return pendingRecognizer.run(input); },
+  } } } });
   await page.reload();
-  await expect(fresh).toBeVisible();
-  const posted = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith(`/files/${fileId}/recognition`));
-  await fresh.click(); await posted;
-  expect(retries).toBe(1);
+  await expect.poll(async () => (await call('GET', `/api/workbench/jobs/${previous.id}`)).state).toBe('interrupted');
+  const retry = page.getByRole('button', { name: '重新识别这一页', exact: true });
+  await expect(retry).toBeEnabled();
+  expect(runs).toBe(0);
+  const requests = [];
+  page.on('request', request => {
+    if (request.method() === 'POST' && /\/(recognition|retry)$/.test(new URL(request.url()).pathname))
+      requests.push({ url: request.url(), body: request.postDataJSON() });
+  });
+  await retry.click();
+  await expect.poll(() => runs).toBe(1);
+  expect(requests).toHaveLength(1);
+  expect(requests[0].url).toBe(`${world.origin}/api/workbench/files/${fileId}/recognition`);
+  expect(requests[0].body.pages).toEqual([1]);
+  await page.getByRole('button', { name: '停止识别', exact: true }).click();
+  await expect(page.getByText('识别已停止，原资料和课稿仍保留。', { exact: true })).toBeVisible();
+});
+
+test('恢复：停止清理未确认后重新识别，未知受理回执仍按原键确认', async ({ page }, info) => {
+  let runs = 0, complete;
+  const recognizer = { revision: 'controlled-cleanup-ui', run: ({ signal, width, height }) => new Promise((resolve, reject) => {
+    const attempt = ++runs;
+    if (attempt === 2) complete = () => resolve({ width, height, assets: [], markdown: '仅用于回执恢复验证的固定正文', raw: {
+      width, height, parsing_res_list: [{ block_id: 0, block_label: 'text', block_content: '仅用于回执恢复验证的固定正文', block_bbox: [0, 0, width, height] }],
+    } });
+    const abort = () => reject(attempt === 1
+      ? Object.assign(new Error('Controlled cleanup failure'), { code: 'recognition-cleanup' }) : signal.reason);
+    signal.addEventListener('abort', abort, { once: true });
+    if (signal.aborted) abort();
+  }) };
+  const { fileId, call, lesson } = await setup(page, recognizer);
+  const requests = [], posts = [];
+  let cleanupMessage;
+  page.on('response', response => {
+    const request = response.request(), pathname = new URL(request.url()).pathname;
+    if (request.method() === 'POST' && /\/(recognition|retry)$/.test(pathname))
+      requests.push({ pathname, status: response.status() });
+  });
+  try {
+    await selectPage(page);
+    const accepted = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith(`/files/${fileId}/recognition`));
+    await page.getByRole('button', { name: '识别这一页', exact: true }).click();
+    const first = await (await accepted).json();
+    await expect.poll(() => runs).toBe(1);
+    await page.getByRole('button', { name: '停止识别', exact: true }).click();
+    await expect.poll(async () => (await call('GET', `/api/workbench/jobs/${first.id}`)).state).toBe('failed');
+    const failed = await call('GET', `/api/workbench/jobs/${first.id}`);
+    expect(failed.issues[0].unitId).toBeNull();
+    expect(failed.issues[0].detail).toContain('尚未确认识别进程停止');
+    const retry = page.getByRole('button', { name: '重新识别这一页', exact: true });
+    await expect(retry).toBeEnabled();
+    cleanupMessage = await page.getByRole('alert').innerText();
+    await page.screenshot({ path: info.outputPath('cleanup-failed.png'), animations: 'disabled' });
+
+    // The real server accepts the replacement request, but its first response
+    // is lost. Neither the next load nor confirmation may start a third run.
+    await page.route(`**/api/workbench/files/${fileId}/recognition`, async route => {
+      if (route.request().method() !== 'POST') return route.continue();
+      posts.push({ key: route.request().headers()['idempotency-key'], body: route.request().postDataJSON() });
+      if (posts.length === 1) { await route.fetch(); await route.abort('failed'); }
+      else await route.continue();
+    });
+    await retry.click();
+    await expect.poll(() => runs, { message: 'Explicit retry must reach a new recognition request after cleanup failed' }).toBe(2);
+    await expect(page.getByRole('button', { name: '确认识别请求', exact: true })).toBeVisible();
+    await page.reload();
+    expect(runs).toBe(2);
+    await expect(page.getByRole('button', { name: '停止识别', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: '确认识别请求', exact: true })).toBeEnabled();
+    complete();
+    await expect(page.getByLabel('识别正文段落 1', { exact: true })).toHaveValue('仅用于回执恢复验证的固定正文');
+    await page.getByRole('button', { name: '确认识别请求', exact: true }).click();
+    await expect(page.getByRole('button', { name: '确认识别请求', exact: true })).toHaveCount(0);
+    expect(posts).toHaveLength(2); expect(posts[1]).toEqual(posts[0]);
+    expect(posts[0].body.pages).toEqual([1]); expect(runs).toBe(2);
+    expect(requests.filter(request => request.pathname.endsWith('/retry'))).toHaveLength(0);
+    expect(cleanupMessage).toContain('尚未确认识别进程停止');
+    await expect(page.getByRole('img', { name: '原资料第 1 页', exact: true })).toBeVisible();
+    expect((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).sections).toHaveLength(0);
+  } finally {
+    await info.attach('recovery-requests', { body: JSON.stringify({ runs, cleanupMessage, requests, posts }, null, 2), contentType: 'application/json' });
+  }
+});
+
+test('恢复：其他入口重新识别同页后，备课跟随当前任务并可停止', async ({ page }, info) => {
+  let runs = 0;
+  const recognizer = { revision: 'controlled-other-consumer-ui', run: async ({ signal }) => {
+    if (++runs === 1) throw new Error('Controlled first failure');
+    await new Promise((resolve, reject) => {
+      signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+      if (signal.aborted) reject(signal.reason);
+    });
+  } };
+  const { fileId, call, lesson } = await setup(page, recognizer);
+  await selectPage(page);
+  const accepted = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith(`/files/${fileId}/recognition`));
+  await page.getByRole('button', { name: '识别这一页', exact: true }).click();
+  const original = await (await accepted).json();
+  await expect.poll(async () => (await call('GET', `/api/workbench/jobs/${original.id}`)).state).toBe('failed');
+  await expect(page.getByRole('button', { name: '重新识别这一页', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '返回课稿', exact: true }).click();
+
+  // A second consumer uses the actual shared endpoint. No page result or Job
+  // status is mocked: reopening lessons must discover this running request.
+  const preview = await call('GET', `/api/workbench/files/${fileId}/preview`);
+  const current = await call('POST', `/api/workbench/files/${fileId}/recognition`, { renditionFileId: preview.renditionFileId, pages: [1] }, 202);
+  expect(current.id).not.toBe(original.id);
+  await expect.poll(() => runs).toBe(2);
+  await page.getByRole('button', { name: '从资料提取正文', exact: true }).click();
+  await expect(page.getByRole('button', { name: '停止识别', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '重新识别这一页', exact: true })).toBeDisabled();
+  await page.screenshot({ path: info.outputPath('following-current-job.png'), animations: 'disabled' });
+  const stopped = page.waitForRequest(request => request.method() === 'POST' && request.url().endsWith(`/jobs/${current.id}/cancel`));
+  await page.getByRole('button', { name: '停止识别', exact: true }).click();
+  await stopped;
+  await expect.poll(async () => (await call('GET', `/api/workbench/jobs/${current.id}`)).state).toBe('cancelled');
+  expect((await call('GET', `/api/workbench/jobs/${original.id}`)).state).toBe('failed');
+  expect(runs).toBe(2);
+  expect((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).sections).toHaveLength(0);
 });

@@ -39,9 +39,9 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
     readRecognitionStatus(source).then(status => {
       if (!live) return;
       setAvailable(status.available);
-      // The page may already be running from an earlier visit or another
-      // consumer. Discover its job so this screen can still stop it.
-      if (!scene.jobId && status.jobId && ['queued', 'running', 'cancelling'].includes(status.pages.find(p => p.page === source.page)?.state))
+      // Follow the current page task even if another consumer started it after
+      // this scene cached an older job. Unconfirmed writes have their own keys.
+      if (status.jobId && status.jobId !== scene.jobId && ['queued', 'running', 'cancelling'].includes(status.pages.find(p => p.page === source.page)?.state))
         patchScene({ jobId: status.jobId });
     }).catch(e => { if (live) { setError(e.message); setAvailable(false); } });
     async function load() {
@@ -58,15 +58,17 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
           });
           return;
         }
+        if (["failed", "interrupted"].includes(result.state))
+          setError(result.issues?.[0]?.detail || "识别未完成，原资料和课稿仍保留。可以重新识别这一页。");
         if (scene.jobId) {
           const job = (await workbenchGet(`/api/workbench/jobs/${scene.jobId}`)).body;
           if (!live) return;
           if (["queued", "running", "cancelling"].includes(job.state)) {
-            setState(job.state);
+            setState(job.state); setError("");
             timer = setTimeout(load, 2000);
           } else if (["failed", "interrupted", "cancelled"].includes(job.state)) {
             setState(job.state);
-            setError(job.state === "cancelled" ? "" : "识别未完成，原资料和课稿仍保留。可以重新识别这一页。");
+            setError(job.state === "cancelled" ? "" : job.issues?.[0]?.detail || result.issues?.[0]?.detail || "识别未完成，原资料和课稿仍保留。可以重新识别这一页。");
           } else if (result.state === "running") timer = setTimeout(load, 500);
         } else if (result.state === "running") timer = setTimeout(load, 2000);
       } catch (e) { if (live) { setState("failed"); setError(e.message); } }
@@ -75,20 +77,12 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
     return () => { live = false; clearTimeout(timer); };
   }, [sourceKey, scene.jobId, scene.result, scene.adopted, revision, patchScene]);
 
-  async function sendRecognition(request) {
-    try { return await requestPageRecognition(request); }
-    catch (error) {
-      if (error.problem?.type === '/problems/materials/job-not-retryable' && error.problem.kind === 'conflict')
-        patchScene({ requiresNewRequest: true });
-      throw error;
-    }
-  }
   async function recognize() {
     setError("");
     const job = recognition.pending
-      ? await recognition.retry(sendRecognition)
-      : await recognition.submit(sendRecognition, { ...source, jobId: scene.requiresNewRequest ? null : scene.jobId });
-    if (job) { cancellation.reset(); patchScene({ jobId: job.id, requiresNewRequest: false }); setRevision(n => n + 1); }
+      ? await recognition.retry(requestPageRecognition)
+      : await recognition.submit(requestPageRecognition, { fileId: source.fileId, renditionFileId: source.renditionFileId, page: source.page });
+    if (job) { cancellation.reset(); patchScene({ jobId: job.id }); setRevision(n => n + 1); }
   }
   async function stop() {
     const job = cancellation.pending ? await cancellation.retry(cancelPageRecognition)
@@ -121,12 +115,12 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
     recognition.reset(); adoption.reset(); cancellation.reset(); setError("");
     patchScene({ source: { ...page, resourceId: resource.id, resourceVersion: resource.version,
       resourceTitle: resource.snapshot.title }, result: null, content: null, title: `${resource.snapshot.title} · 第 ${page.page} 页`.slice(0, 200),
-      jobId: null, adopted: false, requiresNewRequest: false });
+      jobId: null, adopted: false });
   }
   function clearPage() {
     setReselect(false);
     recognition.reset(); adoption.reset(); cancellation.reset();
-    patchScene({ source: null, result: null, content: null, jobId: null, requiresNewRequest: false });
+    patchScene({ source: null, result: null, content: null, jobId: null });
   }
   if (!source) return <MaterialsPicker kind="resource" lessonTitle={lesson.title} targetLabel="新教学环节"
     onPickPage={selectPage} onCancel={onClose} />;
@@ -166,11 +160,13 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
         </> : <>
           <p role="status">{state === 'cancelled' ? "识别已停止，原资料和课稿仍保留。" : state === 'cancelling' ? "正在停止识别，原资料和课稿仍保留。" : reading ? "正在读取或识别这一页…" : "将本页文字、公式和配图提取为可编辑内容，确认前可以对照原页修改。"}</p>
           {available === false && <p>当前实例暂时无法识别新页面，原资料和课稿仍保留。稍后可以重新读取。</p>}
-          <button className="wb-button is-primary" disabled={reading || locked || (!recognition.pending && available !== true)} onClick={recognize}>
-            {recognition.pending ? "确认识别请求" : scene.requiresNewRequest ? "重新发起识别" : scene.jobId ? "重新识别这一页" : "识别这一页"}
+          <button className="wb-button is-primary" disabled={recognition.isRunning || locked || (!recognition.pending && (reading || available !== true))} onClick={recognize}>
+            {recognition.pending ? "确认识别请求" : scene.jobId ? "重新识别这一页" : "识别这一页"}
           </button>
           {(error || available === false) && <button className="wb-button" onClick={() => setRevision(n => n + 1)}>重新读取</button>}
         </>}
+        {scene.result && recognition.pending && <button className="wb-button" disabled={recognition.isRunning || locked}
+          onClick={recognize}>确认识别请求</button>}
         {(cancellation.pending || (scene.jobId && ['queued', 'running', 'cancelling'].includes(state))) && <button
           className="wb-button" disabled={cancellation.isRunning || (!cancellation.pending && state === 'cancelling')}
           onClick={stop}>{cancellation.pending ? '确认停止结果' : state === 'cancelling' ? '正在停止识别' : '停止识别'}</button>}
