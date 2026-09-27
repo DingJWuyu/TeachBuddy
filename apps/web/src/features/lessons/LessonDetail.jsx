@@ -1,4 +1,5 @@
 import { LessonLibraryDialog } from "./LessonLibraryDialog.jsx";
+import { LessonPageImport, LessonPageSource } from "./LessonPageImport.jsx";
 import { LessonSectionContent } from "./LessonSectionContent.jsx";
 import { LessonPlacementDialog } from "./LessonPlacementDialog.jsx";
 import {
@@ -179,10 +180,12 @@ export default function LessonDetail({ id }) {
   const [copySaving, setCopySaving] = useState(false);
   const [dialog, setDialog] = useState(null);
   const [localProblem, setLocalProblem] = useState(null);
+  const [importEntering, setImportEntering] = useState(false);
 
   const baseline = savable.baseline;
   const deleted = Boolean(baseline?.deletedAt);
-  const lifecycleBusy = contentSaving || contentSubmit.isRunning || Boolean(contentSubmit.pending) || deleteSubmit.isRunning || Boolean(deleteSubmit.pending) || copySaving || copySubmit.isRunning || Boolean(copySubmit.pending);
+  const pageImportOpen = scene.pageImportId === id;
+  const lifecycleBusy = importEntering || pageImportOpen || contentSaving || contentSubmit.isRunning || Boolean(contentSubmit.pending) || deleteSubmit.isRunning || Boolean(deleteSubmit.pending) || copySaving || copySubmit.isRunning || Boolean(copySubmit.pending);
   const editing = !deleted && (isNew || scene.editingId === id);
   const input =
     !editing && baseline
@@ -206,6 +209,22 @@ export default function LessonDetail({ id }) {
     navigate,
   });
   const picker = pickerFlow.picker;
+
+  async function enterPageImport() {
+    if (lifecycleBusy || savable.pending || savable.isSaving) return;
+    setImportEntering(true); setLocalProblem(null);
+    try {
+      const problem = validateLessonInput(savable.input);
+      if (problem) { setLocalProblem(problem); return; }
+      const saved = isNew || savable.localDraft ? await savable.save() : baseline;
+      if (!saved) return;
+      if (isNew && !savable.checkpoint(saved.id, { move: true })) {
+        setLocalProblem({ message: "无法保留备课现场，请检查浏览器存储后再提取资料。" }); return;
+      }
+      patchScene({ editingId: saved.id, pageImportId: saved.id });
+      if (isNew) navigate(`/lessons/${saved.id}`, { replace: true });
+    } finally { setImportEntering(false); }
+  }
 
   const manuscriptTop = useRef(scene.scrollTop || 0);
   const manuscriptNode = useRef(null);
@@ -528,6 +547,17 @@ export default function LessonDetail({ id }) {
       </ModulePresence>
     </>
   );
+
+  if (pageImportOpen && baseline && !deleted) return <LessonPageImport key={baseline.id} lesson={baseline}
+    onClose={() => patchScene({ pageImportId: null })}
+    onRefresh={savable.adoptServer}
+    onAdopted={async () => {
+      const current = await savable.adoptServer();
+      if (!current) return false;
+      patchScene({ pageImportId: null, editingId: id });
+      requestAnimationFrame(() => document.getElementById(`section-${current.sections.at(-1)?.id}`)?.scrollIntoView({ block: "center" }));
+      return true;
+    }} />;
 
   if (picker && !deleted) {
     const targetReferences =
@@ -1063,6 +1093,8 @@ export default function LessonDetail({ id }) {
               label={`环节文稿 ${index + 1}`} readOnly={unsupported || lifecycleBusy}
               onChange={(content, edit) => savable.setInput(current => changeSectionContent(current, section.id, content, edit))}
               renderReference={referenceActions} />
+            {section.pageSource && <button className="wb-text-button lesson-page-source-link"
+              onClick={() => setDialog({ type: "page-source", source: section.pageSource })}>查看导入原稿</button>}
             {!editing &&
               !section.references.length &&
               !section.content.blocks.length && (
@@ -1097,6 +1129,8 @@ export default function LessonDetail({ id }) {
             </button>
             {baseline && <button className="wb-button" disabled={unsupported || lifecycleBusy || savable.isSaving || Boolean(savable.pending) || saveStatus === "conflict"}
               onClick={() => setDialog("reuse")}><Icon name="copy" size={16} />从其他备课复用环节</button>}
+            <button className="wb-button" disabled={unsupported || lifecycleBusy || savable.isSaving || Boolean(savable.pending) || saveStatus === "conflict"}
+              onClick={enterPageImport}><Icon name="folder" size={16} />从资料提取正文</button>
             <span>例如：课堂导入、例题讲解、课堂练习</span>
           </div>
         )}
@@ -1195,6 +1229,9 @@ export default function LessonDetail({ id }) {
       <ModulePresence present={dialog === "history" || dialog === "reuse"}>
         {(dialog === "history" || dialog === "reuse") && <LessonLibraryDialog key={dialog} mode={dialog} lesson={baseline}
           hasDraft={Boolean(savable.localDraft)} onClose={() => setDialog(null)} onApply={details => handleContent(dialog, details)} />}
+      </ModulePresence>
+      <ModulePresence present={dialog?.type === "page-source"}>
+        {dialog?.type === "page-source" && <LessonPageSource source={dialog.source} onClose={() => setDialog(null)} />}
       </ModulePresence>
       <ModulePresence present={dialog?.type === "placement"}>
         {dialog?.type === "placement" && <LessonPlacementDialog input={input} referenceId={dialog.referenceId}

@@ -71,4 +71,10 @@ export const migrations = [
         )`);
     },
   },
+  {
+    id: "lessons_0005_page_source",
+    up(db) {
+      db.exec("ALTER TABLE lesson_sections ADD COLUMN pageSource TEXT");
+    },
+  },
 ];

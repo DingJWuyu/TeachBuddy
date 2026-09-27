@@ -53,6 +53,7 @@ export function lessonInputFrom(lesson) {
       id: section.id,
       title: section.title,
       content: section.content,
+      ...(section.pageSource ? { pageSource: section.pageSource } : {}),
       references: (section.references || []).map(referenceStateFrom),
     })),
     materials: (lesson.materials || []).map(referenceStateFrom),

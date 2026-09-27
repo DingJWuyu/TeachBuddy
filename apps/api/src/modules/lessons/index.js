@@ -16,6 +16,7 @@ export function createLessonsModule({
   content,
   jobs,
   files,
+  recognition,
   now,
 } = {}) {
   if (!db || typeof db.prepare !== "function") {
@@ -55,7 +56,7 @@ export function createLessonsModule({
     now,
   });
   router.use("/v2", materials.router);
-  const v3 = math ? createMaterialsLessons({ version: 3, math, repository, mutations, questions, resources, content, db, jobs, files, now }) : null;
+  const v3 = math ? createMaterialsLessons({ version: 3, math, repository, mutations, questions, resources, content, db, jobs, files, recognition, now }) : null;
   if (v3) router.use("/v3", v3.router);
   return { router, operations, port: { ...materials.port, operations: { ...materials.port.operations, ...v3?.port.operations },
     ...(v3 ? { listUsagesV3: v3.port.listUsages, readHistoryForExport: v3.port.readHistoryForExport } : {}),

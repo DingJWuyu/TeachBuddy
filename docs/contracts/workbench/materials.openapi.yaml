@@ -1674,6 +1674,64 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CopyLesson'
+  /api/modules/lessons/v3/{id}/sections/adopt-page:
+    post:
+      operationId: adoptLessonPageV3
+      summary: 将校对后的整页内容保存为一个教学环节
+      description: 校验课稿、资源版本及实际预览文件的固定页结果。冻结机器与采用快照，原子保存一个新环节和历史；普通课稿保存按环节身份保留来源，不接收客户端来源快照。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdoptLessonPage'
+      responses:
+        '200':
+          description: 已保存课稿；环节的 pageSource 为服务端拥有的只读快照。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: './math/math.openapi.json#/components/schemas/LessonV3'
+                - type: object
+                  properties:
+                    sections:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/LessonSectionV3'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
   /api/modules/lessons/v3/{id}/sections/copy:
     post:
       operationId: copyLessonSectionsV3
@@ -2998,6 +3056,81 @@ components:
                 $ref: '#/components/schemas/Timestamp'
               title:
                 type: string
+    AdoptLessonPage:
+      type: object
+      additionalProperties: false
+      required: [baseVersion, resourceId, resourceVersion, fileId, renditionFileId, page, resultId, title, content]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+        resourceId:
+          $ref: '#/components/schemas/Id'
+        resourceVersion:
+          $ref: '#/components/schemas/Version'
+        fileId:
+          $ref: '#/components/schemas/Id'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        page:
+          type: integer
+          minimum: 1
+        resultId:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          $ref: '#/components/schemas/DocumentV2'
+    LessonSectionV3:
+      description: 备课 v3 环节读模型。pageSource 随普通保存、复制、复用和历史恢复保留；写输入不接受此字段。
+      allOf:
+      - $ref: './math/math.openapi.json#/components/schemas/SectionV3'
+      - type: object
+        properties:
+          pageSource:
+            $ref: '#/components/schemas/LessonPageSource'
+    LessonPageSource:
+      type: object
+      readOnly: true
+      additionalProperties: false
+      required: [resourceId, resourceVersion, resourceTitle, fileId, fileName, fileSha256, renditionFileId, page, resultId, imageFileId, rawFileId, assetFileIds, location, machineDocument, adoptedDocument]
+      properties:
+        resourceId:
+          $ref: '#/components/schemas/Id'
+        resourceVersion:
+          $ref: '#/components/schemas/Version'
+        resourceTitle:
+          type: string
+        fileId:
+          $ref: '#/components/schemas/Id'
+        fileName:
+          type: string
+        fileSha256:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        page:
+          type: integer
+          minimum: 1
+        resultId:
+          $ref: '#/components/schemas/Id'
+        rawFileId:
+          $ref: '#/components/schemas/Id'
+        imageFileId:
+          $ref: '#/components/schemas/Id'
+        assetFileIds:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+        location:
+          $ref: '#/components/schemas/PageLocation'
+        machineDocument:
+          $ref: '#/components/schemas/DocumentV2'
+        adoptedDocument:
+          $ref: '#/components/schemas/DocumentV2'
     CopyLessonSections:
       type: object
       additionalProperties: false

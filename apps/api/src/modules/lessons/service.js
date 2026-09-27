@@ -82,6 +82,8 @@ export function createLessonsService({
   }
 
   function assertLegacy(record) {
+    if (repository.listSections(record.id).some(section => section.pageSource))
+      throw invalidInput("/sections", "unsupported-content-version");
     const documents = [
       record.intro,
       ...repository.listSections(record.id).map((s) => s.content),

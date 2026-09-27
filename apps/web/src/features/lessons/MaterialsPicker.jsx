@@ -12,7 +12,8 @@ export function MaterialsPicker({
   kind = "question",
   lessonTitle,
   targetLabel,
-  selected,
+  selected = [],
+  onPickPage,
   onToggle,
   onRemoveSelection,
   onConfirm,
@@ -113,7 +114,7 @@ export function MaterialsPicker({
           </span>
           <div>
             <h1>
-              {kind === "math"
+              {onPickPage ? "从资料提取正文" : kind === "math"
                 ? "加入数学作品"
                 : kind === "resource"
                   ? "加入资源"
@@ -141,7 +142,7 @@ export function MaterialsPicker({
             清空选择
           </button>
         )}
-        {awaitingConfirmation ? (
+        {!onPickPage && (awaitingConfirmation ? (
           <button
             className="wb-button is-primary"
             disabled={busy || confirming}
@@ -157,7 +158,7 @@ export function MaterialsPicker({
           >
             加入 {selection.length} {kind === "question" ? "道题" : "份材料"}
           </button>
-        )}
+        ))}
       </header>
       {(error || problem) && <p role="alert">{error || problem.message}</p>}
       <div className="r34-picker-columns">
@@ -190,7 +191,7 @@ export function MaterialsPicker({
               key={item.id}
               className={`r34-picker-row${scene.previewId === item.id ? " is-previewed" : ""}`}
             >
-              <input
+              {!onPickPage && <input
                 type="checkbox"
                 aria-label={`选择 ${item.title}`}
                 checked={selection.includes(item.id)}
@@ -201,7 +202,7 @@ export function MaterialsPicker({
                   existingQuestionIds.includes(item.id)
                 }
                 onChange={() => onToggle(item.id)}
-              />
+              />}
               <button
                 className="wb-text-button"
                 aria-pressed={scene.previewId === item.id}
@@ -237,25 +238,27 @@ export function MaterialsPicker({
                 <button
                   className="wb-button"
                   onClick={() =>
-                    setPreviewFile(
-                      preview.snapshot.supplementPreviewFileId ??
-                        preview.snapshot.fileId,
-                    )
+                    setPreviewFile({
+                      fileId: preview.snapshot.supplementPreviewFileId ?? preview.snapshot.fileId,
+                      source: preview,
+                    })
                   }
                 >
-                  预览 {preview.snapshot.fileName}
+                  {onPickPage ? "预览并选择一页" : `预览 ${preview.snapshot.fileName}`}
                 </button>
               )}
             </>
           ) : (
-            <p className="wb-muted">点击标题先查看内容，勾选后加入课稿。</p>
+            <p className="wb-muted">{onPickPage ? "选择资料，再从预览中选一页，识别并校对后加入课稿。" : "点击标题先查看内容，勾选后加入课稿。"}</p>
           )}
         </section>
       </div>
       <ModulePresence present={Boolean(previewFile)}>
         {previewFile && (
           <FilePreview
-            fileId={previewFile}
+            fileId={previewFile.fileId}
+            title={onPickPage ? "选择要提取的资料页" : undefined}
+            onSelectPage={onPickPage ? page => onPickPage(previewFile.source, page) : undefined}
             onClose={() => setPreviewFile(null)}
           />
         )}

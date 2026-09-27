@@ -102,3 +102,21 @@ export async function applyLessonContent({ key, id, payload }) {
   const path = payload.action === "history" ? "history/restore" : "sections/copy";
   return assertLesson((await workbenchPost(`/api/modules/lessons/v3/${id}/${path}`, payload.body, key)).body);
 }
+
+export async function readRecognizedPage({ fileId, renditionFileId, page }) {
+  return (await workbenchGet(`/api/workbench/files/${fileId}/recognition/pages/${page}${buildQuery({ renditionFileId })}`)).body;
+}
+export async function readRecognitionStatus({ fileId, renditionFileId }) {
+  return (await workbenchGet(`/api/workbench/files/${fileId}/recognition${buildQuery({ renditionFileId })}`)).body;
+}
+export async function requestPageRecognition({ key, payload }) {
+  if (payload.jobId) return (await workbenchPost(`/api/workbench/jobs/${payload.jobId}/retry`, {
+    unitIds: [`page:${payload.page}`],
+  }, key)).body;
+  return (await workbenchPost(`/api/workbench/files/${payload.fileId}/recognition`, {
+    renditionFileId: payload.renditionFileId, pages: [payload.page],
+  }, key)).body;
+}
+export async function adoptLessonPage({ key, id, payload }) {
+  return assertLesson((await workbenchPost(`/api/modules/lessons/v3/${id}/sections/adopt-page`, payload, key)).body);
+}

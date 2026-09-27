@@ -39,11 +39,12 @@ export function createMaterialsLessons({
   db,
   jobs,
   files,
+  recognition,
   now = () => new Date(),
 }) {
   const order = version === 3 ? createLessonOrder({ db, repository, mutations }) : null;
   const validate = (name, value) => {
-    if (["PurgeLesson", "CopyLesson", "CopyLessonSections", "RestoreLessonVersion"].includes(name) || version < 3) return validateSchema(name, value);
+    if (["PurgeLesson", "CopyLesson", "CopyLessonSections", "RestoreLessonVersion", "AdoptLessonPage"].includes(name) || version < 3) return validateSchema(name, value);
     return validateMath(
       name === "CreateLesson" || name === "UpdateLesson" ? `${name}V3` : name,
       value,
@@ -119,6 +120,7 @@ export function createMaterialsLessons({
           id: s.sectionId,
           title: s.title,
           content: s.content,
+          ...(s.pageSource ? { pageSource: s.pageSource } : {}),
           references: refs
             .filter((r) => r.sectionId === s.sectionId)
             .map((r) => ref(p, r)),
@@ -129,6 +131,7 @@ export function createMaterialsLessons({
   const get = (p, id) => read(p, requireLesson(p, id));
   const history = createLessonHistory({ db, repository, requireLesson });
   function persist(p, id, input) {
+    const oldSections = new Map(repository.listSections(id).map(s => [s.sectionId, s]));
     const old = new Map(
       repository.listReferences(id).map((r) => [r.referenceId, r]),
     );
@@ -224,6 +227,7 @@ export function createMaterialsLessons({
         position: i,
         title: s.title,
         content: s.content,
+        pageSource: oldSections.get(s.id)?.pageSource ?? null,
       };
     });
     input.materials.forEach((r, j) => add(r, null, j, `/materials/${j}`));
@@ -354,6 +358,48 @@ export function createMaterialsLessons({
     history.capture(record);
     return read(p, record);
   }
+  function adoptPage(p, input, id) {
+    const current = editable(p, input, id);
+    const resource = source(p, "resource", input.resourceId);
+    if (resource.version !== input.resourceVersion || resource.deletedAt !== null)
+      throw fail(409, "materials/reference-version-conflict", {
+        kind: "resource", id: resource.id, currentVersion: resource.version,
+      });
+    if (![resource.snapshot.fileId, resource.snapshot.supplementPreviewFileId].includes(input.fileId))
+      throw invalidInput("/fileId", "invalid-reference");
+    if (!recognition?.readResult) throw fail(503, "temporarily-unavailable");
+    // This port only reads an immutable, completed result inside the mutation.
+    // Recognition and crop generation always happen before adoption.
+    const binding = { fileId: input.fileId, renditionFileId: input.renditionFileId, page: input.page };
+    const result = recognition.readResult(p, input.resultId, binding);
+    if (result.state !== "ready") throw invalidInput("/resultId", "invalid-reference");
+    if (result.resultId !== input.resultId || Object.entries(binding).some(([key, value]) => result.location?.[key] !== value))
+      throw invalidInput("/resultId", "invalid-reference");
+    if (!input.title.trim()) throw invalidInput("/title", "empty-content");
+    if (!input.content.blocks.length) throw invalidInput("/content", "empty-content");
+    content.validate(p, result.document);
+    content.validate(p, input.content);
+    const file = files.read(p, input.fileId);
+    const retainedFiles = new Set([input.fileId, input.renditionFileId, result.imageFileId, result.rawFileId, ...result.assetFileIds]);
+    for (const fileId of retainedFiles) files.read(p, fileId);
+    const pageSource = {
+      resourceId: resource.id, resourceVersion: resource.version, resourceTitle: resource.snapshot.title,
+      ...binding, fileName: file.name, fileSha256: file.sha256, resultId: result.resultId,
+      imageFileId: result.imageFileId, rawFileId: result.rawFileId, assetFileIds: [...result.assetFileIds],
+      location: structuredClone(result.location), machineDocument: structuredClone(result.document),
+      adoptedDocument: structuredClone(input.content),
+    };
+    const sections = repository.listSections(id);
+    if (sections.length >= 200) throw invalidInput("/sections", "out-of-range");
+    sections.push({ lessonId: id, accountKey: account(p), sectionId: randomUUID(),
+      position: sections.length, title: input.title.trim(), content: input.content, pageSource });
+    history.capture(current);
+    const record = { ...current, version: current.version + 1, updatedAt: now().toISOString() };
+    repository.replaceContent(id, sections, repository.listReferences(id));
+    repository.updateLesson(record);
+    history.capture(record);
+    return read(p, record);
+  }
   function list(p, query = {}) {
     const text = (blocks) =>
       blocks.flatMap((b) => [
@@ -473,6 +519,7 @@ export function createMaterialsLessons({
   if (version === 3) {
     definitions.splice(7);
     definitions.push(["copyLessonSectionsV3", "post", "/items/:id/sections/copy", "CopyLessonSections", 200, copySections]);
+    definitions.push(["adoptLessonPageV3", "post", "/items/:id/sections/adopt-page", "AdoptLessonPage", 200, adoptPage]);
     definitions.push(["restoreLessonVersionV3", "post", "/items/:id/history/restore", "RestoreLessonVersion", 200, restoreVersion]);
     definitions.push(["listLessonHistoryV3", "get", "/items/:id/history", null, 200, (p, b, id) => history.list(p, id)]);
     router.get("/:id/history/:revision", (req, res) => {

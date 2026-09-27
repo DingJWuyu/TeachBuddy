@@ -8,7 +8,7 @@ import {
 } from "../workbench/apiClient.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useIdempotentSubmit } from "../workbench/useIdempotentSubmit.js";
-export function FilePreview({ fileId, onClose }) {
+export function FilePreview({ fileId, onClose, title = "成品预览", onSelectPage }) {
   const dialogRef = useRef(null);
   useModuleDialogFocus(dialogRef, onClose);
   const { accountKey } = useWorkbenchShell();
@@ -39,6 +39,7 @@ export function FilePreview({ fileId, onClose }) {
         ).body;
         if (!live) return;
         setPreview(value);
+        if (value.pages.length && page >= value.pages.length) patchScene({ page: 0 });
         if (value.state === "pending") {
           if (!value.jobId) {
             const job = await request.submit(send, {
@@ -72,7 +73,7 @@ export function FilePreview({ fileId, onClose }) {
   }, [fileId, revision]);
   useEffect(() => {
     const id = preview?.pages?.[page]?.imageFileId;
-    if (!id) return;
+    if (!id) { setUrl(null); return; }
     let live = true,
       objectUrl;
     const abort = new AbortController();
@@ -111,29 +112,29 @@ export function FilePreview({ fileId, onClose }) {
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="成品预览"
+        aria-label={title}
         className="wb-dialog r34-preview"
       >
         <header className="wb-section-head">
-          <button
+          {(preview?.pages.length ?? 0) > 1 && <button
             className="wb-button"
             disabled={!page}
             onClick={() => patchScene({ page: page - 1, scrollTop: 0 })}
           >
             上一页
-          </button>
+          </button>}
           <span>
             {preview?.pages.length
               ? `${page + 1} / ${preview.pages.length}`
               : "正在准备预览"}
           </span>
-          <button
+          {(preview?.pages.length ?? 0) > 1 && <button
             className="wb-button"
             disabled={page >= (preview?.pages.length ?? 0) - 1}
             onClick={() => patchScene({ page: page + 1, scrollTop: 0 })}
           >
             下一页
-          </button>
+          </button>}
           <label>
             缩放
             <select
@@ -152,6 +153,12 @@ export function FilePreview({ fileId, onClose }) {
           <button className="wb-button" onClick={onClose}>
             关闭预览
           </button>
+          {onSelectPage && <button className="wb-button is-primary"
+            disabled={!url || !preview?.renditionFileId || !preview.pages[page] || request.isRunning || Boolean(request.pending)}
+            onClick={() => onSelectPage({ fileId, renditionFileId: preview.renditionFileId,
+              page: preview.pages[page].page, imageFileId: preview.pages[page].imageFileId })}>
+            提取这一页
+          </button>}
         </header>
         {(error || request.problem || request.pending) && (
           <p role="alert">
@@ -178,7 +185,7 @@ export function FilePreview({ fileId, onClose }) {
                   scrollRef.current.scrollTop = scene.scrollTop;
               }}
               src={url}
-              alt={`成品第 ${page + 1} 页`}
+              alt={`${title}第 ${preview?.pages[page]?.page ?? page + 1} 页`}
             />
           )}
         </div>

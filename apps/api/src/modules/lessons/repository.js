@@ -28,6 +28,7 @@ function toSection(row) {
     position: row.position,
     title: row.title,
     content: parseJson(row.content),
+    pageSource: parseJson(row.pageSource),
   };
 }
 
@@ -74,8 +75,8 @@ export function createLessonsRepository(db) {
     "DELETE FROM lesson_references WHERE lessonId = ?",
   );
   const insertSectionStatement = db.prepare(`
-    INSERT INTO lesson_sections (lessonId, accountKey, sectionId, position, title, content)
-    VALUES (@lessonId, @accountKey, @sectionId, @position, @title, @content)
+    INSERT INTO lesson_sections (lessonId, accountKey, sectionId, position, title, content, pageSource)
+    VALUES (@lessonId, @accountKey, @sectionId, @position, @title, @content, @pageSource)
   `);
   const insertReferenceStatement = db.prepare(`
     INSERT INTO lesson_references (
@@ -179,6 +180,7 @@ export function createLessonsRepository(db) {
           position: section.position,
           title: section.title,
           content: JSON.stringify(section.content),
+          pageSource: section.pageSource ? JSON.stringify(section.pageSource) : null,
         });
       }
       for (const reference of references) {
