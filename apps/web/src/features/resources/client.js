@@ -1,13 +1,15 @@
 import { deviceRequestStore } from "../workbench/deviceRequestStore.js";
 // transport is the authenticated page transport supplied by the shell. No raw
 // fetch fallback: uploads and bytes must have the same identity as JSON writes.
-export function createResourcesClient(transport, signal, onIdentityLost) {
+export function createResourcesClient(transport, getSignal, onIdentityLost) {
   if (typeof transport !== "function")
     throw new Error("Resources requires the page-bound transport");
   async function request(
     path,
     { method = "GET", input, key, blob = false } = {},
   ) {
+    // Capture this request's lifecycle even if React later restarts the effect.
+    const signal = getSignal();
     const headers = {};
     let body;
     if (method !== "GET") {

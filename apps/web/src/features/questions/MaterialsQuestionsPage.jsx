@@ -149,8 +149,9 @@ export default function MaterialsQuestionsPage({
   const [splitAt, setSplitAt] = useState(1),
     [mergeId, setMergeId] = useState("");
   useEffect(
-    () => () => {
-      alive.current = false;
+    () => {
+      alive.current = true;
+      return () => { alive.current = false; };
     },
     [],
   );
@@ -209,7 +210,15 @@ export default function MaterialsQuestionsPage({
     }
   }
   useEffect(() => {
-    refresh().catch((e) => { setListState('error'); setMessage(e.message); });
+    let active = true;
+    const request = refresh();
+    const sequence = refreshSequence.current;
+    request.catch((e) => {
+      if (!active || !alive.current || sequence !== refreshSequence.current) return;
+      setListState('error');
+      setMessage(e.message);
+    });
+    return () => { active = false; };
   }, [
     scene.q,
     scene.state,

@@ -10,7 +10,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm-run-all --parallel dev:web dev:api",
+    "predev": "node scripts/math-support/prepare-assets.mjs",
+    "dev": "node --env-file-if-exists=.env --watch apps/api/src/server.js --dev",
     "prototype:sidebar": "vite prototype --host 0.0.0.0 --port 4174 --strictPort",
     "prototype:build": "vite build prototype",
     "dev:web": "npm --workspace @refatos/web run dev",

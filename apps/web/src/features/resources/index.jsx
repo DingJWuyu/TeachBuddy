@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useScene } from "../workbench/useScene.js";
 import { useForegroundRefresh } from "../workbench/useForegroundRefresh.js";
@@ -47,16 +47,21 @@ function ResourceWorkspace({
   onOpenLesson,
   onPickResources,
 }) {
-  const controller = useMemo(() => new AbortController(), []);
+  const controller = useRef(null);
+  // Install the current scope before child effects issue file/preview requests.
+  useLayoutEffect(() => {
+    const active = new AbortController();
+    controller.current = active;
+    return () => active.abort();
+  }, []);
   const client = useMemo(
     () =>
-      createResourcesClient(transport, controller.signal, () => {
-        controller.abort();
+      createResourcesClient(transport, () => controller.current.signal, () => {
+        controller.current.abort();
         shell.notifyIdentityLost?.();
       }),
     [transport, controller],
   );
-  useEffect(() => () => controller.abort(), [controller]);
   const [scene, patchScene] = useScene(shell.accountKey, "resources", {
     q: "",
     folderId: "",
@@ -116,18 +121,21 @@ function ResourceWorkspace({
     return () => clearTimeout(timer);
   }, [message, busy, pending, error]);
   useForegroundRefresh(() => {
-    if (!busyRef.current && !controller.signal.aborted) refresh();
+    if (!busyRef.current && !controller.current.signal.aborted) refresh();
   });
   useEffect(() => {
+    const signal = controller.current.signal;
     pendingStore(shell.accountKey)
       .then((value) => {
-        if (!controller.signal.aborted) {
+        if (!signal.aborted) {
           setPending(value ?? null);
           pendingRef.current = value ?? null;
           setLoaded(true);
         }
       })
-      .catch((e) => setError("无法保存恢复记录，请允许浏览器存储后重试"));
+      .catch(() => {
+        if (!signal.aborted) setError("无法保存恢复记录，请允许浏览器存储后重试");
+      });
   }, [shell.accountKey]);
   useEffect(() => {
     let active = true;
@@ -256,7 +264,7 @@ function ResourceWorkspace({
   async function remember(value) {
     await pendingStore(shell.accountKey, value);
     pendingRef.current = value;
-    if (!controller.signal.aborted) setPending(value);
+    if (!controller.current.signal.aborted) setPending(value);
   }
   async function execute(record) {
     if (busyRef.current) return false;
@@ -489,7 +497,7 @@ function ResourceWorkspace({
       }
       return true;
     } catch (e) {
-      if (!controller.signal.aborted) {
+      if (!controller.current.signal.aborted) {
         setError(e.message);
         setDialog(null);
         if (e.unknown) setAddToLesson(null);
@@ -506,7 +514,7 @@ function ResourceWorkspace({
       return false;
     } finally {
       busyRef.current = false;
-      if (!controller.signal.aborted) setBusy(false);
+      if (!controller.current.signal.aborted) setBusy(false);
     }
   }
   async function requestPreview(id) {
@@ -608,7 +616,7 @@ function ResourceWorkspace({
       busyRef.current = false;
       setBusy(false);
     }
-    if (next && !controller.signal.aborted) await execute(next);
+    if (next && !controller.current.signal.aborted) await execute(next);
   }
   function open(id, event) {
     triggerRef.current = event?.currentTarget;

@@ -23,11 +23,10 @@
 
 ```bash
 npm ci
-npm run build
-node --env-file=/absolute/private/runtime.env apps/api/src/server.js
+npm run dev
 ```
 
-先按[运行指南](docs/SETUP.md)准备配置、证书和持久目录。已有本机体验入口为 `https://localhost:50880`，邮箱验证码注册后使用；不要用开发测试覆盖已有实例数据。
+先按[运行指南](docs/SETUP.md)准备私有 `.env`、证书和持久目录。`npm run dev` 在同一个 HTTPS 地址提供前端热更新和 API 自动重启。已有本机体验入口为 `https://localhost:50880`，直接运行 `TeacherWorkspace-preview` 当前源码，邮箱验证码注册后使用；模块 worktree 使用各自的隔离实例。固定构建的启动方式也见运行指南。
 
 ## 开发资料
 

@@ -8,28 +8,29 @@
 - 地址：`https://localhost:50880`。
 - 用户级服务：`teacherworkspace-preview.service`。
 - 启动入口：开发树 `.scratch/preview/start.sh`；私有运行配置：`.scratch/preview/runtime.env`。
-- 已发布源码：`.scratch/preview/deployed-source/`；Web 静态文件：`apps/web/dist/`。发布快照只包含已部署基线和本次获准改动，避免重启时连带加载其他会话尚未提交的代码；开发树修改需重新验证、更新快照并重启才进入 API 实例。
+- 运行方式：直接读取开发树，Node `--watch` 启动 `apps/api/src/server.js --dev`，Vite 在同一 HTTPS 服务内提供前端与热更新。`.scratch/preview/deployed-source/` 和 `apps/web/dist/` 不参与此服务。
 - 启动入口还加载 `.env` 及用户私有邮件配置。只读键名和路径进行诊断，不打印秘密。
-- 发布快照的转换依赖须在沙箱挂载目录内可解析；逐包指向开发树的绝对软链接会在沙箱中失效。按快照实际依赖布局运行真实 PDF 预览后再更新实例。
+- 前端源码保存后自动更新；API 及其加载的 JS 模块保存后自动重启，短暂中断请求。未提交的源码也立即生效，提交不是生效条件。文档修改无需重启。
+- 更换依赖后准备本地数学资产并重启；改变环境变量、证书或通过文件系统读取的契约/schema 后手动重启：`systemctl --user restart teacherworkspace-preview.service`。Node 的模块监听不涵盖所有外部文件。
 
-当前代码 HEAD、已构建 Web、正在运行的 Node 进程是三个事实，不能互相替代。文档编辑不需要重启服务。用户未要求更新实例时，开发验证不占 50880，不写其数据库、文件、证书或配置，也不覆盖其 Web 构建产物。
+preview 是用户体验的集成现场，由总控协调修改和合并；获准进入 preview 的源码会自动进入该服务。业务 session 在各自 worktree 的独立端口、数据库和文件目录完成实现及自测，合回 preview 后才进入用户体验入口，不占用 50880 或操作其私有配置。
 
-授权维护时使用实际服务管理入口；具体重启必须在候选构建就绪、数据处置符合用户授权且工具路径可用后进行。当前测试数据可丢弃，具体范围见[运行台账](plans/run-state.md#工作现场与授权)。一次服务状态查询只证明进程存活，不证明业务能力。
+维护前核对代码、依赖及工具路径，完成后实际打开页面并验证受影响功能。当前测试数据可丢弃，具体范围见[运行台账](plans/run-state.md#工作现场与授权)。一次服务状态查询只证明进程存活，不证明业务能力。
 
 ## 新的隔离环境
 
 已验证的开发基线使用 Node.js 22.23.2 和 npm workspaces；依赖版本由锁文件固定。新环境从仓库根 `npm ci`，不在运行着的用户实例中做依赖重装。
 
 1. 准备独立端口、数据库、文件目录与 HTTPS 证书。优先使用相应模块已有测试 harness，它们有隔离数据和邮件替身。
-2. 构建实际受测候选。现有 `build:shared` 检查静态目录，`build:api` 使用系统临时目录验证装配和迁移。Web 隔离构建用 `npm --workspace @refatos/web run build -- --outDir /absolute/test/web-dist`；真实认证测试 harness 可通过 `WORKBENCH_WEB_DIST` 选择该产物。构建路径避免隐藏目录（如 `.scratch/`），否则 Express 的 `sendFile` 默认拒绝 SPA 回退请求。
-3. 独立真实认证实例按 [.env.example](../.env.example)配置并补充下面的文件目录；密钥、SMTP 和证书内容不写进提交。
-4. 从仓库根启动：
+2. 独立真实认证实例按 [.env.example](../.env.example)准备私有 `.env`，补充独立文件目录，开发时设置 `NODE_ENV=development`；密钥、SMTP 和证书内容不写进提交。已有测试 harness 继续使用其隔离配置。
+3. 从该 worktree 根目录运行 `npm run dev`。它先准备数学静态资产，再启动同源 HTTPS、前端热更新和 API 自动重启；开发模式忽略 `WORKBENCH_WEB_DIST`。缺少证书或认证配置会拒绝启动，不自动降级为测试身份。
+4. 验证固定构建时，运行 `npm run build:shared` 和 `npm run build:api`；后者使用系统临时目录验证装配和迁移。Web 隔离构建用 `npm --workspace @refatos/web run build -- --outDir /absolute/test/web-dist`，设置 `WORKBENCH_WEB_DIST` 后启动：
 
 ```bash
 node --env-file=/absolute/private/runtime.env apps/api/src/server.js
 ```
 
-Web 与 `/api` 由同一个 HTTPS origin 提供。默认 `npm run dev` 不会替你准备生产认证所需的证书、密钥和邮件配置，不能当作完整产品启动流程。
+Web 与 `/api` 由同一个 HTTPS origin 提供。固定构建不热更新；真实认证测试 harness 也可通过 `WORKBENCH_WEB_DIST` 选择该产物。构建路径避免隐藏目录（如 `.scratch/`），否则 Express 的 `sendFile` 默认拒绝 SPA 回退请求。
 
 ## 必需配置的来源
 
@@ -87,8 +88,8 @@ React 页面
 | `apps/web/src/features/workbench/` | 外壳、共享文稿/保存/冲突/现场与支持页 |
 | `apps/web/src/features/auth/` | 认证页面、会话恢复、请求 transport |
 | `apps/web/src/features/{questions,lessons,resources,math,classes,schedule}/` | 六领域的界面与交互 |
-| `apps/api/src/server.js` | 同源 HTTPS、启动完成后监听、停止连接 |
-| `apps/api/src/app.js` | 组合认证、workbench、API 和 Web 构建产物 |
+| `apps/api/src/server.js` | 同源 HTTPS、可选 Vite 开发服务、启动完成后监听与停止连接 |
+| `apps/api/src/app.js` | 组合认证、workbench、API 和 Web 入口 |
 | `apps/api/src/features/auth/` | 真实账户、会话、页面绑定、验证码、迁移与恢复操作 |
 | `apps/api/src/workbench/` | 共享身份、校验、幂等、迁移、目录装配、文件和任务底座 |
 | `apps/api/src/modules/` | 题库、备课、资源、数学、班级和日程业务 |

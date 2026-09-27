@@ -86,9 +86,14 @@ export function createApp(options = {}) {
   app.get(workbenchPaths.modules, ...workbench.catalogHandler);
   app.get('/api/health', (req, res) => res.json({ app: runtimeEnv.appName, status: 'ok' }));
 
-  // Single-origin entry: when a web build is configured, serve it from the same
-  // origin as the API (SPA fallback for non-API GETs only).
-  if (runtimeEnv.workbench.webDist) {
+  // Development and built assets share the API origin. Keep missing API routes
+  // out of the development SPA fallback as well.
+  if (options.webMiddleware) {
+    app.use((req, res, next) => {
+      if (req.path === '/api' || req.path.startsWith('/api/')) return next();
+      return options.webMiddleware(req, res, next);
+    });
+  } else if (runtimeEnv.workbench.webDist) {
     const webDist = path.resolve(runtimeEnv.workbench.webDist);
     const indexPath = path.join(webDist, 'index.html');
     app.use(express.static(webDist, { index: ['index.html'] }));

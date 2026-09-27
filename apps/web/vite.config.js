@@ -31,6 +31,12 @@ export default defineConfig({
     })),
   })],
   server: {
-    port: 5173
+    port: 5173,
+    // The workspace also contains private instance data and configuration.
+    fs: { allow: [
+      fileURLToPath(new URL('./', import.meta.url)),
+      fileURLToPath(new URL('../../packages/shared/', import.meta.url)),
+      fileURLToPath(new URL('../../node_modules/', import.meta.url)),
+    ] }
   }
 });

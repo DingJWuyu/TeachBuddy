@@ -28,17 +28,31 @@ export function createHttpServer(context) {
 }
 
 export async function startServer(options = {}) {
-  const context = createApp(options);
+  let vite;
+  const context = createApp({
+    ...options,
+    ...(options.dev ? { webMiddleware: (req, res, next) => vite.middlewares(req, res, next) } : {})
+  });
 
   let server;
   try {
     await context.workbench.initialize();
     server = createHttpServer(context);
+    if (options.dev) {
+      const { createServer } = await import('vite');
+      vite = await createServer({
+        root: fileURLToPath(new URL('../../web/', import.meta.url)),
+        // Native JS config avoids temporary bundles triggering Node's watcher.
+        configLoader: 'native',
+        server: { middlewareMode: true, ws: { server } }
+      });
+    }
     await new Promise((resolve, reject) => {
       server.once('error', reject);
       server.listen(context.env.port, resolve);
     });
   } catch (error) {
+    await vite?.close();
     server?.close();
     context.workbench.close();
     throw error;
@@ -48,20 +62,32 @@ export async function startServer(options = {}) {
   const origin = `${scheme}://localhost:${server.address().port}`;
   console.log(`${context.env.appName} running on ${origin}`);
 
-  return { ...context, server, origin };
+  async function close() {
+    // Close HMR sockets before waiting for HTTPS to drain during watch restarts.
+    await vite?.close();
+    await new Promise(resolve => {
+      server.close(resolve);
+      server.closeAllConnections();
+    });
+    context.workbench.close();
+  }
+
+  return { ...context, server, origin, close };
 }
 
 const __filename = fileURLToPath(import.meta.url);
 const isMainModule = process.argv[1] && path.resolve(process.argv[1]) === __filename;
 
 if (isMainModule) {
-  startServer().then(context => {
+  startServer({ dev: process.argv.includes('--dev') }).then(context => {
     let stopping = false;
     const shutdown = () => {
       if (stopping) return;
       stopping = true;
-      context.server.close(() => { context.workbench.close(); });
-      context.server.closeAllConnections();
+      context.close().catch(error => {
+        fs.writeSync(2, `[shutdown] ${error?.stack ?? error}\n`);
+        process.exitCode = 1;
+      });
     };
     process.once('SIGTERM', shutdown);
     process.once('SIGINT', shutdown);

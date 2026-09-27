@@ -4,17 +4,17 @@
 
 `/home/liam_t/项目/TeacherWorkspace-preview` 是集成树。五个模块各有现存 worktree 和 Codex session，见下表；原 `TeacherWorkspace` 的 main 保持不动。当前分支、HEAD 与未提交修改用 Git 核对，不以文档快照代替。
 
-用户授权“总控”session 读取五个会话、收发消息、协调下一步和处理回到 preview 的集成冲突。五模块集成与 worktree 同步已完成，模块继续暂停新增功能，等待下一轮明确任务；同步不自动恢复开发或更新实例。AI/Agent worktree 不在本轮范围，不扩展全站外壳、文件物理回收或目标设备验证。
+用户授权“总控”session 读取五个会话、收发消息、协调下一步和处理回到 preview 的集成冲突。五模块集成与 worktree 同步已完成，用户体验入口直接运行 preview 当前源码；模块继续暂停新增功能，等待下一轮明确任务。AI/Agent worktree 不在本轮范围，不扩展全站外壳、文件物理回收或目标设备验证。
 
 总控统一负责共享文件、集成候选与实例更新安排；合 main、push、公开部署仍各需对应授权。用户明确现有真实和临时实例的数据全部为可丢弃测试数据，总控可按集成需要清空或重建，不以旧库/旧草稿保留和历史版本迁移作为本轮前置。代码、未提交成果、固定测试输入和运行配置不属于可丢弃业务数据。接收会话回执使用等待通知，不定时轮询。
 
 ## 五模块共同基线
 
-五个模块的已提交成果、未提交 diff 和新增源码均已集成到 preview。五个原 worktree 已保留各自分支并快进到同一共同基线，包含[模块开发约定](../agents/module-development.md)和 AGENTS 阅读入口。受测产品代码为 `0e3a0cc3`；当前共同 HEAD 由 Git 核对，后续差异是文档维护。
+五个模块的已提交成果、未提交 diff 和新增源码均已集成到 preview。五个原 worktree 已保留各自分支并快进到共同基线 `b3537f9e`，包含[模块开发约定](../agents/module-development.md)和 AGENTS 阅读入口。下述五模块组合验证的受测产品代码为 `0e3a0cc3`。preview 另有同源开发服务改动，尚未同步到五个模块工作树；接续开发前由总控核对该差异。
 
 所有目录均位于 `/home/liam_t/项目/`。五个模块工作区均干净；原未提交成果已经包含在共同基线内，不重新应用旧 diff。下一轮获准开发后，从该基线形成新的修改，提交方式按当轮指令执行。preview 单独保留用户原有的一条 AGENTS 未提交修改，不混入本次同步。
 
-各树依赖已按共同锁文件对齐，shared 装配与干净 API 初始化分别通过。集成输入摘要在 `.scratch/five-module-integration/inputs.json`，同步版本与 session 回执在 `.scratch/five-module-sync/`。本轮没有重启实例、覆盖服务构建或清理现有实例数据。
+各树依赖已按共同锁文件对齐，shared 装配与干净 API 初始化分别通过。集成输入摘要在 `.scratch/five-module-integration/inputs.json`，同步版本与 session 回执在 `.scratch/five-module-sync/`。
 
 | 模块 / session 名称 | Worktree | 已纳入共同基线 | 剩余范围 |
 | --- | --- | --- | --- |
@@ -45,11 +45,13 @@ OCR 不阻塞这批成果集成。后续由题库提供识别实验与校对经�
 
 ### 运行实例与工具
 
-`https://localhost:50880` 尚未更新到共同基线。API 来自 `.scratch/preview/deployed-source`，前端来自 `apps/web/dist`；数据库 `.scratch/preview/data/workspace.sqlite`，文件 `.scratch/preview/files`。该部署快照包含备课未提交成果，另外四模块是集成前实现，不能用 preview 的 Git HEAD 代表实例版本。
+`https://localhost:50880` 由 `teacherworkspace-preview.service` 直接运行 preview 当前源码，前端使用 Vite 热更新，API 使用 Node `--watch` 自动重启。未提交的源码也会生效。数据库为 `.scratch/preview/data/workspace.sqlite`，文件为 `.scratch/preview/files`；登录、证书与邮件配置沿用已有实例。日常体验不再依赖源码副本或 Web 构建产物，维护与手动重启条件见 [SETUP](../SETUP.md#已有本机实例)。
 
-四个模块临时实例与其数据未改动，备课临时实例已停止。所有业务数据均为可丢弃测试数据；实例切换和数据清理由总控另行安排。
+四个模块临时实例与其数据未改动，备课临时实例已停止。模块继续在各自 worktree 的隔离实例完成开发与自测；合回 preview 后进入用户体验入口。所有业务数据均为可丢弃测试数据，清理仍由总控协调。
 
-本轮隔离验证使用持久目录 `/home/liam_t/.local/share/teacherworkspace-tools/` 中的 Xpdf 4.06、Pandoc 3.11 与 LibreOffice 26.8。三个工具变量的具体路径见 `.scratch/five-module-integration/tools.env`，用途见 [SETUP](../SETUP.md#文件转换工具)；正式切换时须让实际服务加载同一组工具配置。
+实际服务加载持久目录 `/home/liam_t/.local/share/teacherworkspace-tools/` 中的 Xpdf 4.06、Pandoc 3.11 与 LibreOffice 26.8。三个工具变量的路径由 `.scratch/preview/runtime.env` 维护，用途见 [SETUP](../SETUP.md#文件转换工具)。
+
+开发服务隔离验证覆盖真实 HTTPS 注册、五模块导航、前端热更新、API 源码修改与还原自动重启、登录保持、PDF/数学静态资源和私有目录拒绝访问。题库与资源库的组件生命周期支持开发模式重复初始化；两模块 session 已完成相关修复的只读复核。认证回归 8 项、开发模式浏览器 2 项、固定构建资源库 5 项与题库 3 项均通过，覆盖实际上传、PDF 中文文字层、保存刷新和未知结果恢复；shared/API/Web 构建通过。实际 50880 已验证 Vite 页面、前端无需刷新即更新及 API 自动重启后的健康响应。证据位于 `.scratch/live-preview/`，不代替五模块完整功能验收。
 
 ## 已有能力与尚缺结果
 
@@ -57,7 +59,7 @@ OCR 不阻塞这批成果集成。后续由题库提供识别实验与校对经�
 | --- | --- | --- |
 | 手动六模块 | preview 已集成五模块新增成果，并通过上述组合验证 | 按[能力证据](#证据边界)限定声明；没有“全部非 Agent 无缺口”的证据 |
 | 题库自动整理 | preview 已支持常规双栏文字 PDF，人工校对可持久保存 | 扫描/图片无生产视觉 provider；隔离 OCR 实验整管线超时。复杂图文/跨页/旧 DOC 仍有限制，后继读[自动提取方案](../research/c21-open-source-reuse.md) |
-| 预览与输出环境 | 隔离候选的真实 Word/PDF 输出通过，50880 仍运行旧部署快照 | 按上节对齐代码、工具、构建与真实数据；页面在线不能证明五模块输出可用 |
+| 预览与输出环境 | 隔离候选的真实 Word/PDF 输出通过；50880 直接运行集成源码，工具路径已对齐 | 按上节限定服务切换验证；页面在线不能证明五模块输出全部可用 |
 | 设置与帮助 | 导出、退出有真接线；主题/背景全站应用，头像同步侧栏，三者按账户保存；帮助已接中文内容与搜索 | 语言未应用，删除账户禁用；设置无周起点及最近删除聚合，具体[设置边界](../features/settings.md) |
 | 数据与恢复 | 手动资料包、误删恢复、维护备份/还原及身份撤销有本地独立切片 | 当前设置不展示旧恢复现场 UI；全范围恢复、第二设备和正式部署不能由局部结果代签 |
 | UI/UX | 模块、设置、帮助已集成，仍待用户认可整体体验 | 用户授权具体页面后按该页规格改进，保住既有功能；不恢复全站外壳任务 |
@@ -66,7 +68,7 @@ OCR 不阻塞这批成果集成。后续由题库提供识别实验与校对经�
 
 ## 接续决定
 
-第一步集成与验证、第二步 worktree 同步均已完成。五个业务 session 继续待命，下一轮先由总控明确共同缺口及各模块分工，再恢复开发；实例更新另行安排。不因[DAG 剩余节点](mvp-dag.md)自行扩展到其他产品线，也不重新派发已完成的设计与接线。
+五模块集成、共同基线同步及 preview 源码实时服务均已就绪。五个业务 session 继续待命，下一轮先由总控明确共同缺口及各模块分工，再恢复开发。不因[DAG 剩余节点](mvp-dag.md)自行扩展到其他产品线，也不重新派发已完成的设计与接线。
 
 后续任务从同步后的对应 worktree 的[功能规格](../README.md#功能规格)取相关资料。按实际共享文件安排唯一写者。运行维护读[SETUP](../SETUP.md)；需要更早的归档现场才读[工作树恢复索引](worktree-archive.md)。
 

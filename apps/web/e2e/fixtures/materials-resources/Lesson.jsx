@@ -9,7 +9,7 @@ export function Lesson({ onBack, transport }) {
     [zoom, setZoom] = useState(100);
   const controller = useMemo(() => new AbortController(), []),
     client = useMemo(
-      () => createResourcesClient(transport, controller.signal),
+      () => createResourcesClient(transport, () => controller.signal),
       [transport, controller],
     );
   async function load() {
