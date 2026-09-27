@@ -298,10 +298,10 @@ test(
       202,
     );
     assert.equal((await wait(asset.id)).state, "succeeded");
-    const failedImport = await ok(
+    const nativeImport = await ok(
       q + "/imports",
       {
-        title: "无在线Provider",
+        title: "本地文字层 PDF",
         origin: "",
         input: {
           kind: "files",
@@ -312,15 +312,43 @@ test(
       "POST",
       201,
     );
-    const failedJob = await wait(failedImport.jobId);
-    assert.equal(failedJob.state, "failed");
-    assert.ok(failedJob.issues.some((i) => i.code === "provider-unavailable"));
+    const nativeJob = await wait(nativeImport.jobId);
+    assert.equal(nativeJob.state, "succeeded", JSON.stringify(nativeJob));
+    const nativeReview = await ok(q + "/imports/" + nativeImport.id);
+    assert.equal(nativeReview.drafts.length, 1);
+    assert.match(JSON.stringify(nativeReview.drafts[0].body), /二次函数/);
+    assert.equal(nativeReview.drafts[0].answerStatus, "absent");
     assert.equal(
       (await call("/api/workbench/files/" + original.id + "/content")).status,
       200,
     );
+    // A raster original still requires OCR, independently of native PDF support.
+    const imageBytes = fs.readFileSync(
+      new URL("../../web/e2e/fixtures/materials-questions/I-clear.jpg", import.meta.url),
+    );
+    const imageForm = new FormData();
+    imageForm.append("file", new Blob([imageBytes], { type: "image/jpeg" }), "扫描题页.jpg");
+    const scanned = await ok("/api/workbench/files", imageForm, "POST", 201);
+    const failedImport = await ok(
+      q + "/imports",
+      {
+        title: "未配置 OCR 的图片原稿",
+        origin: "",
+        input: { kind: "files", fileIds: [scanned.id], pages: [] },
+      },
+      "POST",
+      201,
+    );
+    const failedJob = await wait(failedImport.jobId);
+    assert.equal(failedJob.state, "failed", JSON.stringify(failedJob));
+    assert.ok(failedJob.issues.some((i) => i.code === "provider-unavailable"));
+    assert.equal((await ok(q + "/imports/" + failedImport.id)).drafts.length, 0);
     await world.close();
     world = await startMaterialsHttp(directory);
+    assert.deepEqual((await ok(q + "/imports/" + nativeImport.id)).drafts, nativeReview.drafts);
+    const retainedScan = await call("/api/workbench/files/" + scanned.id + "/content");
+    assert.equal(retainedScan.status, 200);
+    assert.deepEqual(retainedScan.bytes, imageBytes);
     assert.equal((await ok(l + "/" + lesson.id + "/exports")).items.length, 24);
     assert.equal(
       (await ok(l + "/" + lesson.id)).sections[0].references.length,
@@ -328,7 +356,7 @@ test(
     );
     fs.writeFileSync(
       path.join(directory, "manifest.json"),
-      JSON.stringify({ directory, manifest, failedJob }, null, 2),
+      JSON.stringify({ directory, manifest, nativeJob, failedJob }, null, 2),
     );
     console.log("R34_OUTPUT_MANIFEST " + path.join(directory, "manifest.json"));
   },

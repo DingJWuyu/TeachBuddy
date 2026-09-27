@@ -121,6 +121,7 @@ function contentSchemas(db) {
     lesson_items: ["intro"],
     lesson_sections: ["content"],
     lesson_references: ["snapshot"],
+    lesson_history: ["snapshot"],
     questions_materials_imports: ["value"],
     resource_items: ["value"],
     math_works: ["value"],
@@ -194,6 +195,7 @@ function checkDatabase(db, { allowOlder = false } = {}) {
   const links = [
     ["lesson_sections", "lessonId", "lesson_items"],
     ["lesson_references", "lessonId", "lesson_items"],
+    ["lesson_history", "lessonId", "lesson_items"],
     ["classes_records", "classId", "classes_items"],
     ["classes_record_sources", "recordId", "classes_records"],
     ["math_revisions", "workId", "math_works"],
@@ -228,21 +230,35 @@ function checkDatabase(db, { allowOlder = false } = {}) {
   // existing schedule links; older backups may predate this classes migration.
   const removedTeachingObject = db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='classes_removed_objects'").get()
     ? db.prepare("SELECT 1 FROM classes_removed_objects WHERE id=? AND accountKey=? AND kind=?") : null;
-  function owned(kind, id, account) {
+  function owned(kind, id, account, adoptedSnapshot = null) {
     const table = sourceTables[kind];
-    const present = table && db.prepare(`SELECT 1 FROM ${table} WHERE id=? AND accountKey=?`).get(id, account);
+    const source = table && db.prepare(`SELECT accountKey FROM ${table} WHERE id=?`).get(id);
+    if (source && source.accountKey !== account)
+      throw new Error("Missing or foreign object reference");
     const removed = ["class", "record"].includes(kind) && removedTeachingObject?.get(id, account, kind);
-    if (!present && !removed)
+    // Adopted content survives permanent source deletion. Existing sources must
+    // still belong to this account; nested files are checked by contentSchemas.
+    const captured = table && adoptedSnapshot && typeof adoptedSnapshot === "object" && !Array.isArray(adoptedSnapshot);
+    if (!source && !removed && !captured)
       throw new Error("Missing or foreign object reference");
   }
   for (const row of db.prepare("SELECT * FROM lesson_references").all())
-    owned(row.kind, row.questionId, row.accountKey);
+    owned(row.kind, row.questionId, row.accountKey, JSON.parse(row.snapshot));
+  for (const row of db.prepare("SELECT * FROM lesson_history").all()) {
+    const snapshot = JSON.parse(row.snapshot);
+    if (snapshot.record?.id !== row.lessonId || snapshot.record?.accountKey !== row.accountKey || snapshot.record?.version !== row.version ||
+        !Array.isArray(snapshot.sections) || !Array.isArray(snapshot.references) ||
+        [...snapshot.sections, ...snapshot.references].some(item => item.lessonId !== row.lessonId || item.accountKey !== row.accountKey))
+      throw new Error("Broken lesson history snapshot");
+    for (const reference of snapshot.references)
+      owned(reference.kind, reference.questionId, row.accountKey, reference.snapshot);
+  }
   for (const row of db.prepare("SELECT * FROM classes_record_sources").all())
     owned(row.kind, row.sourceId, row.accountKey);
   for (const row of db
     .prepare("SELECT * FROM question_items WHERE sourceQuestionId IS NOT NULL")
     .all())
-    owned("question", row.sourceQuestionId, row.accountKey);
+    owned("question", row.sourceQuestionId, row.accountKey, JSON.parse(row.source).snapshot);
   for (const row of db.prepare("SELECT * FROM schedule_entries").all()) {
     const course = JSON.parse(row.courseJson);
     if (course.classId) owned("class", course.classId, row.accountKey);

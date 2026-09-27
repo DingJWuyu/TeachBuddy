@@ -330,11 +330,12 @@ export async function writeArchive(snapshot, directory, destination, signal) {
       "application/json",
     );
     const related = [];
-    function relation(kind, id, type, location, adoptedVersion = null) {
+    function relation(kind, id, type, location, adoptedVersion = null, adoptedSnapshot = null) {
       const target = lookup(kind, id);
       if (!target) {
         if (
           id &&
+          !adoptedSnapshot &&
           type !== "conversation-reference" &&
           object.kind !== "conversation"
         )
@@ -359,6 +360,7 @@ export async function writeArchive(snapshot, directory, destination, signal) {
         "copy-source",
         "source",
         value.source.questionVersion ?? null,
+        value.source.snapshot,
       );
     if (object.kind === "question" && value.source?.kind === "import")
       relation("import", value.source.importId, "origin", "source/importId");
@@ -373,6 +375,7 @@ export async function writeArchive(snapshot, directory, destination, signal) {
           "reference-snapshot",
           `references/${i}`,
           r.workVersion ?? r.questionVersion ?? r.resourceVersion,
+          r.snapshot,
         );
     if (object.kind === "record") {
       relation("class", value.classId, "class-record", "classId");

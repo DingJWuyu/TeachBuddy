@@ -16,7 +16,7 @@ import {
 
 const QUESTIONS = '/api/modules/questions/items';
 const LESSONS = '/api/modules/lessons/items';
-const MIGRATION_IDS = ['agent_001_conversations', 'classes_0001_class_tables', 'lessons_0001_lesson_tables', 'lessons_0003_order', 'lessons_materials_001', 'materials_files_001', 'materials_jobs_001', 'math_001', 'questions_0001_question_items', 'questions_materials_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'resources_001', 'schedule_0001_settings_entries', 'schedule_reminders_0001_notifications'];
+const MIGRATION_IDS = ['agent_001_conversations', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'lessons_0001_lesson_tables', 'lessons_0003_order', 'lessons_0004_history_and_placement', 'lessons_materials_001', 'materials_files_001', 'materials_jobs_001', 'math_001', 'questions_0001_question_items', 'questions_materials_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications'];
 
 function appliedMigrations(harness) {
   return harness

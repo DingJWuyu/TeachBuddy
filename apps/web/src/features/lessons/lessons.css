@@ -1142,7 +1142,7 @@
 .lesson-choice-list { display: grid; gap: 4px; }
 .lesson-choice-list label { display: flex; align-items: flex-start; gap: 9px; padding: 10px 8px; border-radius: 8px; font-size: 13px; }
 .lesson-choice-list label:has(input:checked) { background: var(--app-soft); }
-.lesson-choice-list span { min-width: 0; overflow-wrap: anywhere; }
+.lesson-choice-list label > span { min-width: 0; overflow-wrap: anywhere; color: inherit; font-size: inherit; margin-bottom: 0; }
 .lesson-choice-list input { flex-shrink: 0; margin-top: 3px; }
 .lesson-library-search { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; font-size: 12px; }
 .lesson-library-search .wb-input { flex: 1; min-width: 160px; }

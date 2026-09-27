@@ -14,7 +14,7 @@
 
 当前代码 HEAD、已构建 Web、正在运行的 Node 进程是三个事实，不能互相替代。文档编辑不需要重启服务。用户未要求更新实例时，开发验证不占 50880，不写其数据库、文件、证书或配置，也不覆盖其 Web 构建产物。
 
-授权维护时使用实际服务管理入口；具体重启必须在候选构建就绪、用户数据保留且工具路径可用后进行。一次服务状态查询只证明进程存活，不证明业务能力。
+授权维护时使用实际服务管理入口；具体重启必须在候选构建就绪、数据处置符合用户授权且工具路径可用后进行。当前测试数据可丢弃，具体范围见[运行台账](plans/run-state.md#工作现场与授权)。一次服务状态查询只证明进程存活，不证明业务能力。
 
 ## 新的隔离环境
 
@@ -42,6 +42,7 @@ Web 与 `/api` 由同一个 HTTPS origin 提供。默认 `npm run dev` 不会替
 
 - `MATERIALS_PANDOC_PATH` 指向 Pandoc 可执行文件，使用者为 `apps/api/src/modules/lessons/pandoc.js`。
 - `MATERIALS_OFFICE_ROOT` 指向包含 `program/soffice` 的 LibreOffice 根目录，使用者为 `apps/api/src/workbench/files/converter.js`。
+- `QUESTIONS_XPDF_PDFTOHTML` 指向 Xpdf 的 `pdftohtml`，用于题库文字 PDF 的阅读顺序与双栏识别；使用者为 `apps/api/src/modules/questions/native-pdf.js`。Poppler 继续负责页图、裁图和资源正文检索。
 - 转换还调用 `bwrap` 和相应格式工具；准确命令从同目录的 `conversion-worker.mjs` 核对。
 - 工具路径应稳定独立于短期 worktree。归档中的工具包存在不代表运行配置已经指向它。
 
