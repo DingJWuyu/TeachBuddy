@@ -110,12 +110,25 @@ export async function readRecognitionStatus({ fileId, renditionFileId }) {
   return (await workbenchGet(`/api/workbench/files/${fileId}/recognition${buildQuery({ renditionFileId })}`)).body;
 }
 export async function requestPageRecognition({ key, payload }) {
-  if (payload.jobId) return (await workbenchPost(`/api/workbench/jobs/${payload.jobId}/retry`, {
-    unitIds: [`page:${payload.page}`],
-  }, key)).body;
+  if (payload.jobId) {
+    try {
+      return (await workbenchPost(`/api/workbench/jobs/${payload.jobId}/retry`, {
+        unitIds: [`page:${payload.page}`],
+      }, key)).body;
+    } catch (error) {
+      // This known rejection means the old job cannot run under the current
+      // engine. It is not an unknown receipt to replay indefinitely.
+      if (error.problem?.httpStatus === 409 && error.problem.type === '/problems/materials/job-not-retryable')
+        throw new WorkbenchError({ ...error.problem, kind: 'conflict', message: '旧识别任务无法重试，请重新发起这一页的识别。' });
+      throw error;
+    }
+  }
   return (await workbenchPost(`/api/workbench/files/${payload.fileId}/recognition`, {
     renditionFileId: payload.renditionFileId, pages: [payload.page],
   }, key)).body;
+}
+export async function cancelPageRecognition({ key, payload }) {
+  return (await workbenchPost(`/api/workbench/jobs/${payload.jobId}/cancel`, {}, key)).body;
 }
 export async function adoptLessonPage({ key, id, payload }) {
   return assertLesson((await workbenchPost(`/api/modules/lessons/v3/${id}/sections/adopt-page`, payload, key)).body);

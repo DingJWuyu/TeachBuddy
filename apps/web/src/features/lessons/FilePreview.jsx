@@ -185,7 +185,7 @@ export function FilePreview({ fileId, onClose, title = "成品预览", onSelectP
                   scrollRef.current.scrollTop = scene.scrollTop;
               }}
               src={url}
-              alt={`${title}第 ${preview?.pages[page]?.page ?? page + 1} 页`}
+              alt={`${onSelectPage ? "资料" : "成品"}第 ${preview?.pages[page]?.page ?? page + 1} 页`}
             />
           )}
         </div>

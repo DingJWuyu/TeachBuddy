@@ -10,7 +10,7 @@ import { LessonDocumentEditor } from "./LessonDocumentEditor.jsx";
 import { LessonDialog } from "./LessonPlacementDialog.jsx";
 import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import { ConfirmDialog } from "../workbench/ModuleOverlays.jsx";
-import { adoptLessonPage, readRecognizedPage, readRecognitionStatus, requestPageRecognition } from "./api.js";
+import { adoptLessonPage, cancelPageRecognition, readRecognizedPage, readRecognitionStatus, requestPageRecognition } from "./api.js";
 
 // Only the corrected whole-page manuscript is editable. Provenance is read
 // again by the server; client state is never an authoritative source snapshot.
@@ -23,12 +23,13 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
   latest.current = scene;
   const recognition = useIdempotentSubmit({ accountKey, name: `pending:lesson-recognition:${lesson.id}` });
   const adoption = useIdempotentSubmit({ accountKey, name: `pending:lesson-page-adoption:${lesson.id}` });
+  const cancellation = useIdempotentSubmit({ accountKey, name: `pending:lesson-recognition-cancel:${lesson.id}` });
   const [error, setError] = useState(""), [state, setState] = useState("loading"), [revision, setRevision] = useState(0);
   const [returning, setReturning] = useState(false);
   const [reselect, setReselect] = useState(false);
   const [available, setAvailable] = useState(null);
   const source = scene.source;
-  const locked = adoption.isRunning || Boolean(adoption.pending) || scene.adopted;
+  const locked = adoption.isRunning || Boolean(adoption.pending) || scene.adopted || cancellation.isRunning || Boolean(cancellation.pending);
   const sourceKey = source && `${source.fileId}:${source.renditionFileId}:${source.page}`;
 
   useEffect(() => {
@@ -36,7 +37,12 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
     let live = true, timer;
     setState("loading"); setError(""); setAvailable(null);
     readRecognitionStatus(source).then(status => {
-      if (live) setAvailable(status.available);
+      if (!live) return;
+      setAvailable(status.available);
+      // The page may already be running from an earlier visit or another
+      // consumer. Discover its job so this screen can still stop it.
+      if (!scene.jobId && status.jobId && ['queued', 'running', 'cancelling'].includes(status.pages.find(p => p.page === source.page)?.state))
+        patchScene({ jobId: status.jobId });
     }).catch(e => { if (live) { setError(e.message); setAvailable(false); } });
     async function load() {
       try {
@@ -56,11 +62,11 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
           const job = (await workbenchGet(`/api/workbench/jobs/${scene.jobId}`)).body;
           if (!live) return;
           if (["queued", "running", "cancelling"].includes(job.state)) {
-            setState("running");
+            setState(job.state);
             timer = setTimeout(load, 2000);
           } else if (["failed", "interrupted", "cancelled"].includes(job.state)) {
             setState(job.state);
-            setError("识别未完成，原资料和课稿仍保留。可以重新识别这一页。");
+            setError(job.state === "cancelled" ? "" : "识别未完成，原资料和课稿仍保留。可以重新识别这一页。");
           } else if (result.state === "running") timer = setTimeout(load, 500);
         } else if (result.state === "running") timer = setTimeout(load, 2000);
       } catch (e) { if (live) { setState("failed"); setError(e.message); } }
@@ -69,12 +75,25 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
     return () => { live = false; clearTimeout(timer); };
   }, [sourceKey, scene.jobId, scene.result, scene.adopted, revision, patchScene]);
 
+  async function sendRecognition(request) {
+    try { return await requestPageRecognition(request); }
+    catch (error) {
+      if (error.problem?.type === '/problems/materials/job-not-retryable' && error.problem.kind === 'conflict')
+        patchScene({ requiresNewRequest: true });
+      throw error;
+    }
+  }
   async function recognize() {
     setError("");
     const job = recognition.pending
-      ? await recognition.retry(requestPageRecognition)
-      : await recognition.submit(requestPageRecognition, { ...source, jobId: scene.jobId });
-    if (job) { patchScene({ jobId: job.id }); setRevision(n => n + 1); }
+      ? await recognition.retry(sendRecognition)
+      : await recognition.submit(sendRecognition, { ...source, jobId: scene.requiresNewRequest ? null : scene.jobId });
+    if (job) { cancellation.reset(); patchScene({ jobId: job.id, requiresNewRequest: false }); setRevision(n => n + 1); }
+  }
+  async function stop() {
+    const job = cancellation.pending ? await cancellation.retry(cancelPageRecognition)
+      : await cancellation.submit(cancelPageRecognition, { jobId: scene.jobId });
+    if (job) { setState(job.state); setRevision(n => n + 1); }
   }
   const send = ({ key, payload }) => adoptLessonPage({ key, id: lesson.id, payload });
   async function finish(result) {
@@ -99,20 +118,20 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
     }));
   }
   function selectPage(resource, page) {
-    recognition.reset(); adoption.reset(); setError("");
+    recognition.reset(); adoption.reset(); cancellation.reset(); setError("");
     patchScene({ source: { ...page, resourceId: resource.id, resourceVersion: resource.version,
       resourceTitle: resource.snapshot.title }, result: null, content: null, title: `${resource.snapshot.title} · 第 ${page.page} 页`.slice(0, 200),
-      jobId: null, adopted: false });
+      jobId: null, adopted: false, requiresNewRequest: false });
   }
   function clearPage() {
     setReselect(false);
-    recognition.reset(); adoption.reset();
-    patchScene({ source: null, result: null, content: null, jobId: null });
+    recognition.reset(); adoption.reset(); cancellation.reset();
+    patchScene({ source: null, result: null, content: null, jobId: null, requiresNewRequest: false });
   }
   if (!source) return <MaterialsPicker kind="resource" lessonTitle={lesson.title} targetLabel="新教学环节"
     onPickPage={selectPage} onCancel={onClose} />;
 
-  const reading = state === "loading" || state === "running" || recognition.isRunning;
+  const reading = ["loading", "queued", "running", "cancelling"].includes(state) || recognition.isRunning;
   return <div className="wb-module wb-page lesson-picker lesson-page-import">
     <header className="wb-picker-head">
       <div className="lesson-picker-title"><div><h1>校对资料正文</h1>
@@ -123,8 +142,8 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
           onClick={async () => finish(await adoption.retry(send))}>确认加入结果</button>
         : <button className="wb-button is-primary" disabled={locked || !scene.result || !scene.title.trim() || !scene.content?.blocks.length} onClick={adopt}>加入为教学环节</button>}
     </header>
-    {(error || recognition.problem || adoption.problem) && <p role="alert" className="wb-inline-error">
-      {error || adoption.problem?.message || recognition.problem?.message}
+    {(error || recognition.problem || adoption.problem || cancellation.problem) && <p role="alert" className="wb-inline-error">
+      {error || adoption.problem?.message || cancellation.problem?.message || recognition.problem?.message}
       {!locked && adoption.problem?.kind === "conflict" && " 校对稿已保留。返回课稿核对最新版本；资料版本变化时需重新选页。"}
       {!locked && adoption.problem?.kind === "conflict" && !adoption.problem.sourceKind && <button
         className="wb-button" onClick={onRefresh}>读取最新课稿，保留校对</button>}
@@ -139,17 +158,22 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh }) {
           <label>环节名称<input className="wb-input" aria-label="提取后的环节名称" maxLength={200} value={scene.title}
             disabled={locked} onChange={e => patchScene({ title: e.target.value })} /></label>
           <p className="wb-muted">对照原页检查文字、公式和配图。校对后的内容可以继续编辑，原资料保持不变。</p>
-          {scene.result.issues.length > 0 && <p role="status">这一页有识别疑点，请对照原页核对后再加入。</p>}
+          {scene.result.issues.length > 0 && <ModuleDisclosure title="这一页有识别疑点，请对照原页核对" defaultOpen>
+            <ul>{scene.result.issues.map((issue, index) => <li key={index}>{issue.detail || "请检查原页与识别正文是否一致。"}</li>)}</ul>
+          </ModuleDisclosure>}
           <LessonDocumentEditor label="识别正文" value={scene.content} readOnly={locked}
             onChange={content => patchScene({ content })} />
         </> : <>
-          <p role="status">{reading ? "正在读取或识别这一页…" : "将本页文字、公式和配图提取为可编辑内容，确认前可以对照原页修改。"}</p>
+          <p role="status">{state === 'cancelled' ? "识别已停止，原资料和课稿仍保留。" : state === 'cancelling' ? "正在停止识别，原资料和课稿仍保留。" : reading ? "正在读取或识别这一页…" : "将本页文字、公式和配图提取为可编辑内容，确认前可以对照原页修改。"}</p>
           {available === false && <p>当前实例暂时无法识别新页面，原资料和课稿仍保留。稍后可以重新读取。</p>}
-          <button className="wb-button is-primary" disabled={reading || (!recognition.pending && available !== true)} onClick={recognize}>
-            {recognition.pending ? "确认识别请求" : scene.jobId ? "重新识别这一页" : "识别这一页"}
+          <button className="wb-button is-primary" disabled={reading || locked || (!recognition.pending && available !== true)} onClick={recognize}>
+            {recognition.pending ? "确认识别请求" : scene.requiresNewRequest ? "重新发起识别" : scene.jobId ? "重新识别这一页" : "识别这一页"}
           </button>
           {(error || available === false) && <button className="wb-button" onClick={() => setRevision(n => n + 1)}>重新读取</button>}
         </>}
+        {(cancellation.pending || (scene.jobId && ['queued', 'running', 'cancelling'].includes(state))) && <button
+          className="wb-button" disabled={cancellation.isRunning || (!cancellation.pending && state === 'cancelling')}
+          onClick={stop}>{cancellation.pending ? '确认停止结果' : state === 'cancelling' ? '正在停止识别' : '停止识别'}</button>}
         {!locked && !recognition.pending && !recognition.isRunning && <button className="wb-text-button"
           onClick={() => scene.content ? setReselect(true) : clearPage()}>重新选择资料页</button>}
       </section>
