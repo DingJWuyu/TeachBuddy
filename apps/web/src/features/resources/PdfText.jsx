@@ -9,13 +9,15 @@ export function PdfText({ client, renditionId, page, onText }) {
   useEffect(() => {
     let active = true,
       task;
+    const report = (value) =>
+      callback.current({ ...value, renditionId, client, page: null });
     setDocument(null);
-    callback.current({ state: "loading", text: "" });
+    report({ state: "loading", text: "" });
     (async () => {
       const file = await client.request(`/api/workbench/files/${renditionId}`);
       if (!active) return;
       if (file.mediaType !== "application/pdf") {
-        callback.current({ state: "unsupported", text: "" });
+        report({ state: "unsupported", text: "" });
         return;
       }
       const [pdfjs, blob] = await Promise.all([
@@ -38,10 +40,17 @@ export function PdfText({ client, renditionId, page, onText }) {
         standardFontDataUrl: "/resources-pdf/standard_fonts/",
       });
       const pdf = await task.promise;
-      if (active) setDocument({ pdf, TextLayer: pdfjs.TextLayer });
+      if (active)
+        setDocument({
+          pdf,
+          TextLayer: pdfjs.TextLayer,
+          renditionId,
+          client,
+          retry,
+        });
     })().catch(() => {
       if (active)
-        callback.current({
+        report({
           state: "failed",
           text: "",
           retry: () => setRetry((n) => n + 1),
@@ -54,12 +63,20 @@ export function PdfText({ client, renditionId, page, onText }) {
   }, [client, renditionId, retry]);
 
   useEffect(() => {
-    if (!document) return;
+    if (
+      !document ||
+      document.renditionId !== renditionId ||
+      document.client !== client ||
+      document.retry !== retry
+    )
+      return;
     let active = true,
       layer,
       observer;
     const element = container.current;
-    callback.current({ state: "loading", text: "" });
+    const report = (value) =>
+      callback.current({ ...value, renditionId, client, page });
+    report({ state: "loading", text: "" });
     (async () => {
       const pdfPage = await document.pdf.getPage(page);
       const content = await pdfPage.getTextContent();
@@ -68,8 +85,12 @@ export function PdfText({ client, renditionId, page, onText }) {
         .map((item) => (item.str ? item.str + (item.hasEOL ? "\n" : " ") : ""))
         .join("")
         .trim();
+      const lineBreaks = content.items
+        .filter((item) => "str" in item)
+        .map((item) => item.hasEOL);
       let width = 0;
       const render = async () => {
+        if (!active) return;
         const nextWidth = element.parentElement.getBoundingClientRect().width;
         if (!nextWidth || Math.abs(nextWidth - width) < 0.1) return;
         width = nextWidth;
@@ -88,10 +109,15 @@ export function PdfText({ client, renditionId, page, onText }) {
         try {
           await currentLayer.render();
           if (active && currentLayer === layer)
-            callback.current({ state: text ? "ready" : "empty", text });
+            report({
+              state: text ? "ready" : "empty",
+              text,
+              layer: currentLayer,
+              lineBreaks,
+            });
         } catch {
           if (active && currentLayer === layer)
-            callback.current({
+            report({
               state: "failed",
               text: "",
               retry: () => setRetry((n) => n + 1),
@@ -105,7 +131,7 @@ export function PdfText({ client, renditionId, page, onText }) {
       await render();
     })().catch(() => {
       if (active)
-        callback.current({
+        report({
           state: "failed",
           text: "",
           retry: () => setRetry((n) => n + 1),
@@ -117,7 +143,7 @@ export function PdfText({ client, renditionId, page, onText }) {
       layer?.cancel();
       element.replaceChildren();
     };
-  }, [document, page]);
+  }, [document, page, renditionId, client, retry]);
   return (
     <div
       ref={container}

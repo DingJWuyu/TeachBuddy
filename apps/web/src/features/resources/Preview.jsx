@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "../workbench/chrome/icons.jsx";
 import { PdfText } from "./PdfText.jsx";
+import { PageFind } from "./PageFind.jsx";
 export function FileImage({ client, id, alt, ...props }) {
   const [url, setUrl] = useState(""),
     [error, setError] = useState("");
@@ -46,8 +47,15 @@ export function Preview({
     [error, setError] = useState(""),
     [reload, setReload] = useState(0);
   const requestKey = useRef(null);
-  const [text, setText] = useState({ state: "loading", text: "" });
+  const [textResult, setText] = useState({ state: "loading", text: "" });
   const [copyMessage, setCopyMessage] = useState("");
+  const [findOpen, setFindOpen] = useState(false);
+  const findButton = useRef(null);
+  const [loadedImage, setLoadedImage] = useState(null);
+  function closeFind() {
+    setFindOpen(false);
+    findButton.current?.focus();
+  }
   useEffect(() => {
     setText({ state: "loading", text: "" });
     setCopyMessage("");
@@ -102,6 +110,12 @@ export function Preview({
   }, [client, fileId, reload]);
   const current =
     preview?.pages.find((p) => p.page === page) ?? preview?.pages[0];
+  const text =
+    textResult.client === client &&
+    textResult.renditionId === preview?.renditionFileId &&
+    (textResult.page === null || textResult.page === current?.page)
+      ? textResult
+      : { state: "loading", text: "" };
   async function generate() {
     try {
       setError("");
@@ -135,7 +149,21 @@ export function Preview({
     (preview?.state === "failed" ||
       ["failed", "cancelled", "interrupted"].includes(job?.state));
   return (
-    <section className="res-preview" aria-label="文件预览">
+    <section
+      className="res-preview"
+      aria-label="文件预览"
+      onKeyDown={(event) => {
+        if (
+          event.key === "Escape" &&
+          findOpen &&
+          !event.nativeEvent.isComposing
+        ) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeFind();
+        }
+      }}
+    >
       <div className="res-preview-toolbar">
         {preview?.pageCount > 1 ? (
           <>
@@ -206,6 +234,17 @@ export function Preview({
             ))}
           </select>
         </label>
+        {(findOpen || (current && text.state !== "unsupported")) && (
+          <button
+            type="button"
+            ref={findButton}
+            aria-expanded={findOpen}
+            onClick={() => (findOpen ? closeFind() : setFindOpen(true))}
+          >
+            <Icon name="search" size={16} />
+            查找本页
+          </button>
+        )}
         {text.state === "ready" && (
           <button
             className="res-copy-text"
@@ -228,6 +267,14 @@ export function Preview({
           </button>
         )}
       </div>
+      <PageFind
+        open={findOpen}
+        source={`${preview?.renditionFileId}:${current?.page}`}
+        text={text}
+        imageReady={loadedImage === current?.imageFileId}
+        scrollRef={scrollRef}
+        onClose={closeFind}
+      />
       {((copyMessage && copyMessage !== "本页文字已复制") ||
         text.state === "empty" ||
         text.state === "failed") && (
@@ -334,11 +381,13 @@ export function Preview({
                 element.scrollTop = scrollPosition?.top ?? 0;
                 element.scrollLeft = scrollPosition?.left ?? 0;
                 loadedPage.current = current.imageFileId;
+                setLoadedImage(current.imageFileId);
                 onViewed?.(current.page, preview);
               }}
             />
             {preview.renditionFileId && (
               <PdfText
+                key={preview.renditionFileId}
                 client={client}
                 renditionId={preview.renditionFileId}
                 page={current.page}
