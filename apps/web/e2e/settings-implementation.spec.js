@@ -219,6 +219,8 @@ test('键盘语言菜单、真实偏好冲突、教师原文及英文窄屏危�
   await example.getByRole('button', { name: 'Close example', exact: true }).click();
   await page.goto(world.origin + '/settings');
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('button', { name: 'Language', exact: true })).toBeEnabled();
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
   await page.screenshot({ path: info.outputPath('settings-en-390-dark.png'), animations: 'disabled' });
   await page.getByRole('button', { name: 'Delete account', exact: true }).click();
   const confirm = page.getByRole('dialog', { name: 'Delete account?', exact: true });
