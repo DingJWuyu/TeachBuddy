@@ -407,7 +407,7 @@ function HiddenModules({ model, open, onToggle, dragState, onDrop, onStartDrag, 
   );
 }
 
-export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed, openSurface, onToggleSurface, onOpenSurface, onCloseSurface, accountName }) {
+export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed, onExpand, openSurface, onToggleSurface, onOpenSurface, onCloseSurface, accountName }) {
 
   function moduleHref(id) {
     const path = modulePath(id);
@@ -786,7 +786,7 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
             <Icon name={addingGroup ? 'minus' : 'plus'} size={16} />
           </button>
         </div>
-        <NavigationStatus navigation={model.navigation} />
+        <NavigationStatus navigation={model.navigation} railCollapsed={railCollapsed} onExpand={onExpand} />
         {addingGroup && <NewGroupForm onCreate={model.createGroup} onClose={() => setAddingGroup(false)} />}
 
         <nav className="tb-module-nav" aria-label="功能模块">

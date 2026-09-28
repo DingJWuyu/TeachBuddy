@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Icon } from './icons.jsx';
 import { workbenchModules } from '../../modules/moduleRegistry.js';
 import { ModulePresence, useModuleDialogFocus } from '../ModuleMotion.jsx';
 const names = ids => ids.map(id => workbenchModules.find(m => m.id === id)?.name ?? '暂不可用模块').join('、') || '空';
@@ -34,7 +35,7 @@ export function NavigationBusy({ navigation: nav }) {
   const busy = ['saving', 'loading'].includes(nav.status) && nav.loadState !== 'error';
   return busy ? <span className="tb-navigation-busy" role="status" data-navigation-status={nav.status}>{nav.status === 'saving' ? '导航保存中…' : '导航读取中…'}</span> : null;
 }
-export default function NavigationStatus({ navigation: nav }) {
+export default function NavigationStatus({ navigation: nav, railCollapsed, onExpand }) {
   const [comparing, setComparing] = useState(false);
   const failedRead = nav.loadState === 'error';
   const conflict = nav.status === 'conflict';
@@ -42,16 +43,20 @@ export default function NavigationStatus({ navigation: nav }) {
   const text = failedRead ? '导航读取失败' : uncertain ? '导航保存结果未确认' : conflict ? '导航已在别处修改'
     : nav.status === 'failed' ? '导航保存失败' : '';
   return <>
-    {text && <div className="tb-navigation-status" data-navigation-status={nav.status}>
+    {text && (railCollapsed ? <div className="tb-navigation-rail-status" data-navigation-status={nav.status}>
+      <button type="button" aria-label="展开侧栏处理导航同步" title={`${text}，展开侧栏处理`} onClick={onExpand}>
+        <Icon name="info" size={18} />
+      </button>
+    </div> : <div className="tb-navigation-status" data-navigation-status={nav.status}>
       <span role="status">{text}</span>
       {nav.localDraft && (conflict || uncertain || nav.status === 'failed') && <span>本机修改已保留</span>}
       {failedRead && <button type="button" onClick={nav.retryLoad}>重试读取导航</button>}
-      {uncertain && nav.baseline && <button type="button" onClick={nav.retryConfirm}>确认导航保存</button>}
+      {uncertain && !failedRead && nav.baseline && <button type="button" onClick={nav.retryConfirm}>确认导航保存</button>}
       {!uncertain && !failedRead && nav.status === 'failed' && <button type="button" onClick={() => nav.save()}>重试保存导航</button>}
-      {conflict && !nav.pending && (nav.serverObject
+      {conflict && !failedRead && !nav.pending && (nav.serverObject
         ? <button type="button" onClick={() => setComparing(true)}>对照布局</button>
         : <button type="button" onClick={nav.refreshServer}>读取冲突布局</button>)}
-    </div>}
+    </div>)}
     {createPortal(<ModulePresence present={comparing && conflict && !nav.pending && Boolean(nav.serverObject)}>
       {nav.serverObject && <Comparison nav={nav} onClose={() => setComparing(false)} />}
     </ModulePresence>, document.querySelector('.wb-workspace') ?? document.body)}

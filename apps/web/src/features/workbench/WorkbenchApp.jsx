@@ -187,6 +187,7 @@ function WorkbenchContent({ boot }) {
         <div className="wb-body">
           <RestoredSidebar modulePaths={scene.modulePaths} model={layoutModel} routePath={activeModule?.path || route.path} accountName={nickname}
             mobileOpen={Boolean(scene.drawerOpen)} isNarrow={narrow} railCollapsed={!narrow && collapsed}
+            onExpand={() => patchScene({ sidebarCollapsed: false })}
             onNavigate={() => patchScene({ drawerOpen: false })} onCloseMobile={() => patchScene({ drawerOpen: false })}
             openSurface={surface} onToggleSurface={value => setSurface(surface === value ? null : value)}
             onOpenSurface={setSurface} onCloseSurface={() => setSurface(null)} />

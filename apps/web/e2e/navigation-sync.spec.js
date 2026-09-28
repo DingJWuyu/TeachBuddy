@@ -15,6 +15,7 @@ test.afterEach(async ({ context }, info) => {
   await device.close();
   await world.close();
   if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
+  else fs.writeFileSync(info.outputPath('fixture-directory.txt'), world.directory);
 });
 const row = (page, id) => page.locator(`[data-drop-module="${id}"]`);
 const group = page => page.locator('[data-drop-group]').filter({ has: page.getByText('同步备课', { exact: true }) });
@@ -276,4 +277,113 @@ test('真实主题开关、窄屏导航和隐藏恢复', async ({ page }, info) 
   await page.getByRole('button', { name: '资源库。点击恢复到未分组，或拖到其他分组' }).click();
   await settled(page); await page.reload();
   await expect(page.locator('[data-drop-group="ungrouped"] [data-drop-module="resources"]')).toBeVisible();
+});
+
+for (const source of ['直接冲突', '未知结果确认']) test(`${source}草稿连续刷新仍需明确解决，不能自动覆盖远端`, async ({ page }, info) => {
+  await start(page);
+  await other.goto(world.origin); await login(other); await dismissCoach(other); await settled(other);
+  if (source === '未知结果确认') {
+    await other.route('**' + endpoint, async route => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      const response = await route.fetch(); expect(response.status()).toBe(200);
+      await route.abort('failed');
+    });
+    await addGroup(other, '本机已提交未确认');
+    await expect(other.getByRole('button', { name: '确认导航保存', exact: true })).toBeVisible();
+    await addGroup(other, '本机后续草稿');
+    await page.reload(); await settled(page);
+  }
+  await addGroup(page, '远端应保留'); await settled(page);
+  if (source === '直接冲突') await addGroup(other, '本机冲突草稿');
+  else {
+    await other.unroute('**' + endpoint);
+    await other.getByRole('button', { name: '确认导航保存', exact: true }).click();
+  }
+  await expect(other.getByText('导航已在别处修改', { exact: true })).toBeVisible();
+  const remote = await read(page), snapshots = [];
+  try {
+    for (let n = 1; n <= 3; n++) {
+      if (source === '直接冲突' && n > 1) {
+        // Compatibility with drafts written before full baselines were stored,
+        // including an unresolved conflict whose old writer advanced its version.
+        await other.evaluate(({ n, version }) => {
+          for (const key of Object.keys(localStorage).filter(key => key.endsWith(':draft:navigation:account'))) {
+            const value = JSON.parse(localStorage.getItem(key)), draft = value?.value ?? value;
+            if (draft?.status !== 'conflict') continue;
+            delete draft.baseline;
+            if (n === 3) draft.baselineVersion = version;
+            localStorage.setItem(key, JSON.stringify(value));
+          }
+        }, { n, version: remote.version });
+      }
+      if (n === 2) {
+        await other.route('**' + endpoint, route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: '{"type":"/problems/workbench/temporarily-unavailable"}' }));
+        await other.reload();
+        await expect(other.getByRole('button', { name: '重试读取导航', exact: true })).toBeVisible();
+        await expect(other.locator('[data-new-group-toggle]')).toBeDisabled();
+        expect(await read(page)).toEqual(remote);
+        await other.unroute('**' + endpoint);
+      }
+      await other.reload();
+      await expect(other.locator('[data-new-group-toggle]')).toBeEnabled();
+      await expect(other.locator('[data-navigation-status="loading"], [data-navigation-status="saving"]')).toHaveCount(0);
+      // Observe the server after the restored draft has completed its lifecycle.
+      await expect(other.getByText('导航已在别处修改', { exact: true })).toBeVisible();
+      snapshots.push(await read(page));
+      expect(snapshots.at(-1)).toEqual(remote);
+    }
+    await other.getByRole('button', { name: '对照布局', exact: true }).click();
+    await expect(other.getByRole('dialog', { name: '对照导航布局' })).toContainText('远端应保留');
+    await expect(other.locator('.wb-module-presence').filter({ has: other.getByRole('dialog', { name: '对照导航布局' }) })).toHaveAttribute('data-state', 'open');
+    await expect(other.locator('.tb-navigation-comparison').locator('..')).toHaveCSS('opacity', '1');
+    await other.screenshot({ animations: 'disabled', path: info.outputPath('restored-comparison.png') });
+    other.once('dialog', dialog => dialog.accept());
+    await other.getByRole('button', { name: '保留此设备布局', exact: true }).click();
+    await settled(other);
+    const chosen = await read(other);
+    expect(chosen.version).toBe(remote.version + 1);
+    expect(JSON.stringify(chosen.layout)).not.toContain('远端应保留');
+  } finally {
+    snapshots.push(await read(page));
+    fs.writeFileSync(info.outputPath('refresh-server-snapshots.json'), JSON.stringify({ source, remote, snapshots }, null, 2));
+    await other.screenshot({ animations: 'disabled', path: info.outputPath('refresh-conflict.png') });
+  }
+});
+
+for (const failure of ['读取失败', '结果未确认']) test(`折叠侧栏${failure}保留紧凑入口和恢复操作`, async ({ page }, info) => {
+  await start(page);
+  if (failure === '结果未确认') {
+    await page.locator('.tb-account-row').click();
+    await page.getByRole('button', { name: '深色', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-workbench-theme', 'dark');
+    await page.keyboard.press('Escape');
+  }
+  const fail = route => route.request().method() === 'GET'
+    ? route.fulfill({ status: 503, contentType: 'application/problem+json', body: '{"type":"/problems/workbench/temporarily-unavailable"}' })
+    : route.continue();
+  if (failure === '结果未确认') {
+    await page.route('**' + endpoint, async route => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      await route.fetch(); await route.abort('failed');
+    });
+    await addGroup(page, '待确认布局');
+    await expect(page.getByRole('button', { name: '确认导航保存', exact: true })).toBeVisible();
+  }
+  await page.locator('.tb-topbar').hover();
+  await page.getByRole('button', { name: '收起侧栏', exact: true }).click();
+  await expect(page.locator('.tb-sidebar')).toHaveClass(/is-rail-collapsed/);
+  if (failure === '读取失败') { await page.route('**' + endpoint, fail); await page.reload(); }
+  await expect(page.locator('.tb-sidebar')).toHaveClass(/is-rail-collapsed/);
+  await expect(page.locator('[data-navigation-status]')).toHaveCount(1);
+  const sidebar = await page.locator('.tb-sidebar').boundingBox();
+  const first = await row(page, 'questions').boundingBox();
+  fs.writeFileSync(info.outputPath('rail-measurement.json'), JSON.stringify({ failure, sidebar, first }));
+  await page.screenshot({ animations: 'disabled', path: info.outputPath('rail-error.png') });
+  expect(sidebar.width).toBe(72);
+  expect(first.y - sidebar.y).toBeLessThan(64);
+  await page.getByRole('button', { name: '展开侧栏处理导航同步', exact: true }).click();
+  await expect(page.locator('.tb-sidebar')).not.toHaveClass(/is-rail-collapsed/);
+  await page.unroute('**' + endpoint);
+  await page.getByRole('button', { name: failure === '读取失败' ? '重试读取导航' : '确认导航保存', exact: true }).click();
+  await settled(page);
 });

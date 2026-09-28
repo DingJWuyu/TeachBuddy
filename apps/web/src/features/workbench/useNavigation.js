@@ -43,13 +43,14 @@ export function useNavigation(accountKey, generation) {
   useEffect(() => {
     // Claim an unsaved account only after a successful read. The version check
     // protects simultaneous first-use imports from two older devices.
+    if (savable.loadState !== 'ready') return;
     if (!initialized.current && savable.status === 'clean' && savable.baseline?.updatedAt === null) {
       initialized.current = true;
       const input = fromLegacy(legacy) ?? savable.input;
       savable.setInput(input);
       void savable.save({ input });
     } else if (savable.status === 'dirty' && savable.baseline && !savable.pending) void savable.save();
-  }, [savable.status, savable.input, savable.baseline, savable.pending, savable.save, savable.setInput, legacy]);
+  }, [savable.loadState, savable.status, savable.input, savable.baseline, savable.pending, savable.save, savable.setInput, legacy]);
   useEffect(() => {
     if (savable.status === 'conflict' && !savable.pending) void savable.refreshServer();
   }, [savable.status, savable.pending, savable.refreshServer]);
@@ -57,7 +58,7 @@ export function useNavigation(accountKey, generation) {
   const raw = includeNewNavigationModules(savable.input ?? defaultNavigation());
   return {
     ...savable, raw, device,
-    editable: Boolean(savable.baseline) && savable.status !== 'identity',
+    editable: savable.loadState === 'ready' && Boolean(savable.baseline) && savable.status !== 'identity',
     change: recipe => savable.setInput(current => {
       const next = structuredClone(includeNewNavigationModules(current));
       recipe(next);

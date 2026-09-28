@@ -3439,6 +3439,15 @@ body.is-dragging-item * {
 .tb-navigation-status > span { width: 100%; }
 .tb-navigation-status button { padding: 0; border: 0; background: transparent; color: var(--wb-ink); text-decoration: underline; font: inherit; cursor: pointer; }
 
+.tb-navigation-rail-status { display: flex; justify-content: center; padding-top: 8px; }
+.tb-navigation-rail-status button {
+  display: grid; place-items: center; width: 36px; height: 36px; padding: 0;
+  border: 1px solid var(--tb-sidebar-border); border-radius: 6px;
+  background: var(--tb-sidebar-accent); color: var(--tb-sidebar-foreground); cursor: pointer;
+}
+.tb-navigation-rail-status button:hover { border-color: var(--tb-muted); }
+.tb-navigation-rail-status button:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: 2px; }
+
 .tb-navigation-busy { margin-left: auto; margin-right: 8px; font-size: 11px; font-weight: 400; letter-spacing: 0; color: var(--wb-muted); text-transform: none; }
 
 .wb-dialog.tb-navigation-comparison { width: min(640px, calc(100vw - 32px)); }

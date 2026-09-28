@@ -16,6 +16,7 @@ const put = (client, body, key = randomUUID()) => client.request('PUT', path, { 
 test('real auth navigation: isolation, atomic rollback, CAS, replay after restart, validation and export', async () => {
   let world = await createIntegration();
   const directory = world.directory;
+  let passed = false;
   try {
     const a = await registerMath(world, 'navigation-a@example.test');
     const b = await registerMath(world, 'navigation-b@example.test');
@@ -73,7 +74,12 @@ test('real auth navigation: isolation, atomic rollback, CAS, replay after restar
     assert.deepEqual((await client.request('GET', path)).json, current);
     assert.deepEqual((await put(client, body, key)).json, saved.json);
     assert.deepEqual((await client.request('GET', path)).json, current);
-  } finally { await world.close(); fs.rmSync(directory, { recursive: true, force: true }); }
+    passed = true;
+  } finally {
+    await world.close();
+    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+    else console.error(`Navigation fixture retained at ${directory}`);
+  }
 });
 
 test('offline backup restores navigation values and upgrades databases predating navigation', async () => {
@@ -110,5 +116,6 @@ test('offline backup restores navigation values and upgrades databases predating
   } finally {
     await world?.close();
     if (passed) fs.rmSync(root, { recursive: true, force: true });
+    else console.error(`Navigation backup fixture retained at ${root}`);
   }
 });

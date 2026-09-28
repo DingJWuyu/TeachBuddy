@@ -31,6 +31,14 @@ function sameInput(left, right) {
   }
 }
 
+// Older drafts stored only the version. Keep that CAS baseline while newer
+// drafts retain the exact confirmed object, independently of comparison reads.
+function restoreBaseline(local, serverObject = null) {
+  if (local?.baseline) return local.baseline;
+  if (!serverObject || local?.baselineVersion == null) return null;
+  return { ...serverObject, id: local.baselineId ?? serverObject?.id, version: local.baselineVersion };
+}
+
 const EMPTY_STATE = {
   status: 'loading',
   loadState: 'loading',
@@ -106,11 +114,11 @@ export function useSavableDocument({
         if (loadError) {
           // Keep whatever the teacher typed locally; reading failed, not saving.
           commit({
-            status: local?.pending ? 'unconfirmed' : 'dirty',
+            status: local?.status === 'conflict' ? 'conflict' : local?.pending ? 'unconfirmed' : 'dirty',
             loadState: 'error',
             loadError,
             input: local?.input ?? null,
-            baseline: null,
+            baseline: restoreBaseline(local),
             pending: local?.pending ?? null,
             localDraft: Boolean(local)
           });
@@ -156,31 +164,23 @@ export function useSavableDocument({
         return;
       }
 
-      const localVersion = local.baselineVersion ?? null;
+      const baseline = restoreBaseline(local, serverObject);
       const serverVersion = serverObject.version ?? null;
-      const versionMoved = localVersion !== null && localVersion !== serverVersion;
-      if (local.pending) {
+      const versionMoved = baseline ? baseline.version !== serverVersion : !sameInput(local.input, serverInput);
+      // An unresolved conflict remains unresolved even for older drafts whose
+      // stored baseline was already advanced by a comparison read.
+      const conflict = versionMoved || local.status === 'conflict';
+      if (local.pending || conflict) {
         commit({
-          status: versionMoved ? 'conflict' : 'unconfirmed',
+          status: conflict ? 'conflict' : 'unconfirmed',
           loadState: 'ready',
           input: local.input,
-          baseline: versionMoved ? serverObject : { ...serverObject, version: localVersion },
-          pending: local.pending,
-          problem: versionMoved
+          baseline: baseline ?? serverObject,
+          serverObject,
+          pending: local.pending ?? null,
+          problem: conflict
             ? { kind: 'conflict', currentVersion: serverVersion, message: '内容已在别处修改' }
             : null,
-          localDraft: true
-        });
-        return;
-      }
-      if (versionMoved) {
-        commit({
-          status: 'conflict',
-          loadState: 'ready',
-          input: local.input,
-          baseline: serverObject,
-          pending: null,
-          problem: { kind: 'conflict', currentVersion: serverVersion, message: '内容已在别处修改' },
           localDraft: true
         });
         return;
@@ -208,9 +208,13 @@ export function useSavableDocument({
   const persistDraft = useCallback((current) => {
     if (!enabled || !accountKey || !draftId || !current.input) return;
     const name = draftName(kind, draftId);
+    // A legacy draft has no complete object to restore when the read fails.
+    // Leave its stored version intact until a successful read can reconcile it.
+    if (current.loadState === 'error' && !current.baseline) return;
     if (current.pending || keepsDraft(current.status)) {
       const stored = writeLocal(accountKey, name, {
         input: current.input,
+        baseline: current.baseline,
         baselineId: current.baseline?.id ?? null,
         baselineVersion: current.baseline?.version ?? null,
         pending: current.pending,
@@ -245,7 +249,7 @@ export function useSavableDocument({
   const submit = useCallback(async ({ retry = false, input: inputOverride } = {}) => {
     const current = stateRef.current;
     const nextInput = inputOverride ?? current.input;
-    if (!nextInput || !enabled) return null;
+    if (!nextInput || !enabled || current.loadState !== 'ready') return null;
     if (current.status === 'saving' || current.status === 'identity') return null;
     if (current.pending && !retry) return null;
 
@@ -294,7 +298,8 @@ export function useSavableDocument({
             commit((latest) => ({
               ...latest,
               status: 'conflict',
-              baseline: current,
+              baseline: result,
+              serverObject: current,
               pending: null,
               problem: {
                 kind: 'conflict',
@@ -315,6 +320,7 @@ export function useSavableDocument({
         ...latest,
         status: unchanged ? 'saved' : 'dirty',
         baseline: result,
+        serverObject: null,
         // The confirmed input is re-derived from the server object so the editor
         // shows exactly what was stored (server-built snapshots included).
         input: unchanged ? apiRef.current.inputFromObject(result) : latest.input,
@@ -368,6 +374,7 @@ export function useSavableDocument({
         loadError: null,
         input: apiRef.current.inputFromObject(object),
         baseline: object,
+        serverObject: null,
         pending: null,
         problem: null,
         localDraft: false
@@ -402,7 +409,7 @@ export function useSavableDocument({
       if (epoch !== seqRef.current) return null;
       const latest = stateRef.current;
       if (latest.pending || !['clean', 'saved'].includes(latest.status)) {
-        if (latest.baseline && latest.baseline.version !== object.version && !latest.pending)
+        if (!latest.pending && (latest.status === 'conflict' || (latest.baseline && latest.baseline.version !== object.version)))
           commit({ status: 'conflict', serverObject: object, problem: { kind: 'conflict', currentVersion: object.version, message: '内容已在别处修改' } });
       } else {
         commit({ baseline: object, input: apiRef.current.inputFromObject(object), serverObject: null });
@@ -423,7 +430,7 @@ export function useSavableDocument({
     checkpoint: (id = draftId, { move = false } = {}) => {
       const current = stateRef.current;
       const stored = writeLocal(accountKey, draftName(kind, id), {
-        input: current.input, baselineId: current.baseline?.id ?? null,
+        input: current.input, baseline: current.baseline, baselineId: current.baseline?.id ?? null,
         baselineVersion: current.baseline?.version ?? null, pending: current.pending,
         status: current.status, savedAt: current.savedAt
       });
