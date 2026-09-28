@@ -998,19 +998,46 @@ test("native PDF automatically retains six questions, cross-page answers and dia
   assert.deepEqual((await e.q('/imports/' + created.id, null, 'GET')).body, material);
 });
 
-for (const twoColumns of [false, true]) test(`native PDF figure boundary preserves nearby formula and prose, columns=${twoColumns}`, async t => {
+for (const variant of ['boundary', 'columns', 'near-edge', 'contact', 'tagged', 'tagged-mixed']) test(`native PDF figure boundary preserves nearby formula and prose, variant=${variant}`, async t => {
+  const twoColumns = variant === 'columns';
   const e = await environment(t);
   const form = new FormData();
-  form.append('file', new Blob([fs.readFileSync(new URL(`./fixtures/questions/pdf-figure-${twoColumns ? 'columns' : 'boundary'}.pdf`, import.meta.url))]), 'figure-boundary.pdf');
+  form.append('file', new Blob([fs.readFileSync(new URL(`./fixtures/questions/pdf-figure-${variant}.pdf`, import.meta.url))]), 'figure-boundary.pdf');
   const file = (await e.call('/api/workbench/files', form)).body;
   const created = (await e.q('/imports', {title:'图边界', origin:'', input:{kind:'files',fileIds:[file.id],pages:[]}})).body;
   assert.equal((await e.job(created.jobId)).state, 'succeeded');
   const material = (await e.q('/imports/' + created.id, null, 'GET')).body;
   assert.equal(material.drafts.length, twoColumns ? 2 : 1);
+  if (process.env.PDF_STRUCTURE_EVIDENCE) {
+    fs.mkdirSync(process.env.PDF_STRUCTURE_EVIDENCE, {recursive: true});
+    fs.writeFileSync(path.join(process.env.PDF_STRUCTURE_EVIDENCE, variant + '.json'), JSON.stringify(material, null, 2));
+  }
   const body = JSON.stringify(material.drafts[0].body);
   assert.match(body, /Keep the question text/);
   assert.match(body, /Keep this explanation/);
-  assert.match(body, /x ?\+ ?1 ?= ?5/);
+  assert.ok(material.drafts[0].body.blocks.flatMap(b => b.runs ?? [])
+    .some(r => r.type === 'math' && r.latex.replace(/\s/g, '') === 'x+1=5'),
+  'separate formula must remain an editable math node');
+  if (variant === 'contact' || variant === 'tagged') {
+    for (const latex of ['AB=4', 'A=2', ...(variant === 'tagged' ? ['R=9'] : [])]) assert.ok(material.drafts[0].body.blocks.flatMap(b => b.runs ?? [])
+      .some(r => r.type === 'math' && r.latex.replace(/\s/g, '') === latex),
+    'exterior edge or point equation must remain editable: ' + latex);
+  }
+  if (variant === 'tagged-mixed') {
+    // Xpdf joins a Figure label and exterior equation, and two independent
+    // equations on neighbouring baselines. Keep every source character when
+    // the whole native line cannot safely leave editable content.
+    const formulas = material.drafts[0].body.blocks.flatMap(b => b.runs ?? [])
+      .filter(r => r.type === 'math').map(r => r.latex.replace(/\s/g, ''));
+    assert.ok(formulas.includes('AAB=4'), JSON.stringify(formulas));
+    assert.ok(formulas.includes('R=9A=2'), JSON.stringify(formulas));
+    assert.ok(material.drafts[0].issues.some(i => i.code === 'uncertain-text' && i.resolution === 'open'));
+  }
+  if (variant === 'near-edge') {
+    const crop = material.drafts[0].parts.find(p => p.role === 'figure').locations[0].box;
+    // The independently rendered formula starts at 454/900 on the original.
+    assert.ok(crop.y + crop.height <= 454 / 900, 'display padding must not cut through the retained formula');
+  }
   if (twoColumns) {
     assert.ok(material.drafts.every(d => !d.body.blocks.some(b => b.type === 'image')));
     assert.match(JSON.stringify(material.drafts[1].body), /z ?\+ ?2 ?= ?7/);

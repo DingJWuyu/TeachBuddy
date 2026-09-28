@@ -8,8 +8,46 @@ import sharp from "sharp";
 import { nativeText } from './extraction.js';
 import { documentText } from './materials-content.js';
 import { extractionId } from "./extraction-fragments.js";
+import { convertFile } from '../../workbench/files/converter.js';
 const execute = promisify(execFile);
 const normalize = (s) => s.trim().replace(/[.．、:：]\s*$/, "");
+const compact = text => text.normalize('NFKC').replace(/\s/g, '');
+
+// Resolve a Poppler text box to a complete, unique set of PDF.js text items.
+// Missing font glyphs contribute their real footprint, never invented text.
+function matchingText(text, items, tolerance) {
+  const candidates = items.filter(item => item.text.replaceAll('\0', '').trim()
+    && item.y < text.y + text.height && item.y + item.height > text.y
+    && item.x >= text.x - tolerance && item.x < text.x + text.width + tolerance);
+  if (candidates.length > 128) return [];
+  const matches = [];
+  let budget = 256;
+  function match(remaining, right, selected) {
+    if (--budget < 0) return;
+    if (matches.length > 1) return;
+    if (!remaining) { matches.push(selected); return; }
+    for (const item of candidates) {
+      if (selected.includes(item) || Math.abs(item.x - right) > tolerance) continue;
+      const value = compact(item.text.replaceAll('\0', ''));
+      if (value && remaining.startsWith(value)) match(remaining.slice(value.length), item.x + item.width, [...selected, item]);
+    }
+  }
+  match(compact(text.text.replaceAll('\0', '')), text.x, []);
+  return budget >= 0 && matches.length === 1 ? matches[0] : [];
+}
+
+function figureMembership(textBoxes, items, tolerance) {
+  const evidence = new Map(textBoxes.map(text => [text, new Set()]));
+  for (const text of textBoxes) {
+    for (const item of matchingText(text, items, tolerance)) evidence.get(text).add(item.figure);
+  }
+  // The two engines may split one font run differently (e.g. angle + A=).
+  // Require the whole run in the reverse direction as well, never substrings.
+  for (const item of items) {
+    for (const text of matchingText(item, textBoxes, tolerance)) evidence.get(text).add(item.figure);
+  }
+  return new Map([...evidence].map(([text, owners]) => [text, owners.size === 1 ? [...owners][0] : null]));
+}
 async function bytes(files, p, id) {
   const chunks = [];
   for await (const chunk of await files.open(p, id)) chunks.push(chunk);
@@ -76,12 +114,12 @@ function regions(pixels, width, height) {
         b[2] - b[0] < width * 0.85 &&
         b[3] - b[1] < height * 0.65,
     )
-    .map((b) => [
+    .map((b) => ({ink: b, crop: [
       Math.max(0, b[0] - length),
       Math.max(0, b[1] - length),
       Math.min(width, b[2] + length),
       Math.min(height, b[3] + length),
-    ]);
+    ]}));
 }
 
 export async function locateFigures({
@@ -96,9 +134,10 @@ export async function locateFigures({
   if (!questions.length || files.read(principal, unit.preview.renditionFileId).mediaType !== "application/pdf") return;
   const work = await fs.mkdtemp(path.join(os.tmpdir(), "questions-layout-"));
   try {
+    const pdfBytes = await bytes(files, principal, unit.preview.renditionFileId);
     await fs.writeFile(
       path.join(work, "source.pdf"),
-      await bytes(files, principal, unit.preview.renditionFileId),
+      pdfBytes,
     );
     // Same Poppler installation as preview; parsing has no network or host write access.
     const { stdout } = await execute(
@@ -189,6 +228,16 @@ export async function locateFigures({
       .raw()
       .toBuffer({ resolveWithObject: true });
     const detected = regions(data, info.width, info.height);
+    if (!detected.length) return;
+    let structure = null;
+    try {
+      ({structure} = await convertFile({bytes: pdfBytes, mediaType: 'application/pdf',
+        directory: work, structurePage: unit.page, timeoutMs: 25000, signal}));
+    } catch {
+      signal.throwIfAborted();
+      // Optional structural evidence must never make the native text disappear.
+      for (const q of questions) q.doubts.push('配图结构读取失败，图边文字保留待核对');
+    }
     for (const q of questions) {
       const own = anchors.filter((a) => a.label === normalize(q.label));
       if (
@@ -202,13 +251,16 @@ export async function locateFigures({
         .filter((a) => a.y > anchor.y)
         .sort((a, b) => a.y - b.y)[0];
       const candidates = detected.filter(
-        (b) =>
+        ({crop: b}) =>
           b[1] / info.height > anchor.y && b[3] / info.height < (next?.y ?? 1),
       );
       // Multiple regions may be separate diagrams or formula strokes. Leave ambiguous.
       if (candidates.length !== 1 || !/如图|[配附].{0,20}图|图示|正方体|长方体|三角形|棱[锥柱]/.test(q.text))
         continue;
-      const [x, y, right, bottom] = candidates[0];
+      const {ink, crop} = candidates[0];
+      const [x, y, right, bottom] = crop;
+      const geometry = {x: ink[0] / info.width, y: ink[1] / info.height,
+        right: ink[2] / info.width, bottom: ink[3] / info.height};
       const preceding = anchors.filter((a) => a.y < y / info.height);
       const nearestY = Math.max(...preceding.map((a) => a.y));
       if (preceding.filter((a) => a.y === nearestY).length !== 1) continue;
@@ -247,17 +299,51 @@ export async function locateFigures({
           && Math.abs(boxes[0].x - line.x) <= 2 / pw ? boxes : []};
       });
       const initial = location.box;
-      const inside = (x, y) => x >= initial.x && x <= initial.x + initial.width
-        && y >= initial.y && y <= initial.y + initial.height;
-      const adopted = matchedLines.filter(({line, boxes}) => boxes.length
-        // Prose and question boundaries are never diagram annotations.
-        && !/[\p{Script=Han}。！？!?]/u.test(line.text)
-        // Ownership is decided against the original detected region. Expanding
-        // a crop must not make nearby prose or a separate formula a label.
-        && inside(boxes[0].x + boxes[0].width / 2, boxes[0].y + boxes[0].height / 2)
+      const insideGeometry = text => text.x >= geometry.x && text.x + text.width <= geometry.right
+        && text.y >= geometry.y && text.y + text.height <= geometry.bottom;
+      const crossesGeometry = text => text.x + text.width >= geometry.x
+        && text.x <= geometry.right && text.y + text.height >= geometry.y && text.y <= geometry.bottom;
+      const withinLabelMargin = text => text.x + text.width / 2 >= initial.x
+        && text.x + text.width / 2 <= initial.x + initial.width
+        && text.y + text.height / 2 >= initial.y
+        && text.y + text.height / 2 <= initial.y + initial.height;
+      const matched = matchedLines.filter(({boxes}) => boxes.length
+        && withinLabelMargin(boxes[0])
         && boxes.every(text => text.x < initial.x + initial.width && text.x + text.width > initial.x
           && matchedLines.filter(other => other.boxes.includes(text)).length === 1));
-      const labels = adopted.flatMap(({boxes}) => boxes);
+      // Structural membership can prove exterior labels. Without it, crossing
+      // text may complete a crop but only strict interior text can be removed.
+      let members = [];
+      let cropLines, adopted;
+      if (structure?.tagged) {
+        const groups = Array.from({length: structure.figures}, (_, figure) => {
+          const items = structure.items.filter(item => item.figure === figure);
+          const x = Math.min(...items.map(item => item.x)), y = Math.min(...items.map(item => item.y));
+          return {figure, items, x, y, width: Math.max(...items.map(item => item.x + item.width)) - x,
+            height: Math.max(...items.map(item => item.y + item.height)) - y};
+        });
+        const owners = groups.filter(group => group.items.length
+          && group.items.every(item => item.y >= anchor.y && item.y + item.height <= (next?.y ?? 1))
+          && detected.filter(({ink: b}) => group.x < b[2] / info.width
+            && group.x + group.width > b[0] / info.width && group.y < b[3] / info.height
+            && group.y + group.height > b[1] / info.height).length === 1
+          && crossesGeometry(group));
+        const owner = owners.length === 1 ? owners[0] : null;
+        members = owner?.items ?? [];
+        const belongs = figureMembership(textBoxes, structure.items, 2 / pw);
+        adopted = owner ? matchedLines.filter(({boxes}) => boxes.length
+          && boxes.every(text => belongs.get(text) === owner.figure
+            && matchedLines.filter(other => other.boxes.includes(text)).length === 1)) : [];
+        cropLines = adopted;
+        if (!owner) q.doubts.push('配图结构归属不明确，文字保留待核对');
+      } else {
+        cropLines = matched.filter(({boxes}) => boxes.some(crossesGeometry));
+        adopted = cropLines.filter(({line, boxes}) => !/[\p{Script=Han}。！？!?]/u.test(line.text)
+          && boxes.every(insideGeometry));
+      }
+      if (matched.some(item => !adopted.includes(item)))
+        q.doubts.push('图边文字保留为可编辑内容，请核对与配图的归属');
+      const labels = [...members, ...cropLines.flatMap(({boxes}) => boxes)];
       if (labels.length) {
         const left = Math.min(initial.x, ...labels.map(text => text.x));
         const top = Math.min(initial.y, ...labels.map(text => text.y));
@@ -266,8 +352,45 @@ export async function locateFigures({
         // A fragment crossing another question is ambiguous; keep the original.
         if (top >= anchor.y && bottom <= (next?.y ?? 1))
           location.box = {x: left, y: top, width: right - left, height: bottom - top};
-        else adopted.length = 0;
+        else { adopted.length = 0; cropLines.length = 0; }
       }
+      // Display padding may include a neighbouring editable line. Clip only
+      // that padding; the real strokes and adopted labels remain untouched.
+      const included = new Set(cropLines.flatMap(({boxes}) => boxes));
+      const content = {x: Math.min(geometry.x, ...labels.map(t => t.x)),
+        y: Math.min(geometry.y, ...labels.map(t => t.y)),
+        right: Math.max(geometry.right, ...labels.map(t => t.x + t.width)),
+        bottom: Math.max(geometry.bottom, ...labels.map(t => t.y + t.height))};
+      let {x: left, y: top, width, height} = location.box;
+      let cropRight = left + width, cropBottom = top + height;
+      for (const text of textBoxes.filter(t => t.text && !included.has(t))) {
+        if (text.x >= cropRight || text.x + text.width <= left || text.y >= cropBottom || text.y + text.height <= top) continue;
+        if (text.y >= content.bottom) cropBottom = Math.min(cropBottom, text.y);
+        else if (text.y + text.height <= content.y) top = Math.max(top, text.y + text.height);
+        if (text.x >= content.right) cropRight = Math.min(cropRight, text.x);
+        else if (text.x + text.width <= content.x) left = Math.max(left, text.x + text.width);
+      }
+      // A rectangular crop can also enclose unrelated text between its proven
+      // labels. If padding cannot exclude it, show the whole original glyphs
+      // and retain the editable source; crop coverage never grants membership.
+      const overlaps = text => text.x < cropRight && text.x + text.width > left
+        && text.y < cropBottom && text.y + text.height > top;
+      const retained = textBoxes.filter(text => text.text && !included.has(text) && overlaps(text));
+      left = Math.min(left, ...retained.map(text => text.x));
+      top = Math.min(top, ...retained.map(text => text.y));
+      cropRight = Math.max(cropRight, ...retained.map(text => text.x + text.width));
+      cropBottom = Math.max(cropBottom, ...retained.map(text => text.y + text.height));
+      // Expand once only. Crossing a question/page or touching further text is
+      // ambiguous, so leave the entire figure for review instead of cascading.
+      if (![left, top, cropRight, cropBottom].every(Number.isFinite)
+        || left < 0 || top < 0 || cropRight > 1 || cropBottom > 1
+        || cropRight <= left || cropBottom <= top || top < anchor.y || cropBottom > (next?.y ?? 1)
+        || textBoxes.some(text => text.text && !included.has(text) && !retained.includes(text) && overlaps(text))) {
+        q.doubts.push('配图与邻近内容交叠，保留原稿待手动校对');
+        continue;
+      }
+      if (retained.length) q.doubts.push('裁图包含附近正文，请对照原稿核对；正文仍可编辑');
+      location.box = {x: left, y: top, width: cropRight - left, height: cropBottom - top};
       signal.throwIfAborted();
       const file = await files.crop(
         principal,

@@ -12,7 +12,10 @@ export async function convertFile({
   signal,
   textOnly = false,
   wordOnly = false,
+  structurePage = null,
 }) {
+  if (structurePage !== null && (!Number.isInteger(structurePage) || structurePage < 1 || structurePage > 500))
+    throw new Error("Invalid PDF structure page");
   fs.mkdirSync(directory, { recursive: true });
   const work = fs.mkdtempSync(path.join(directory, "conversion-"));
   const input = path.join(work, "input"),
@@ -100,9 +103,12 @@ export async function convertFile({
     "--nofile=256",
     "--",
     "/runtime/node",
+    // Avoid Wasm's multi-GB virtual reservation inside the bounded process.
+    ...(structurePage !== null ? ["--disable-wasm-trap-handler"] : []),
     "/app/api/worker.mjs",
     mediaType,
-    wordOnly ? "word" : textOnly ? "text" : "preview",
+    structurePage !== null ? "structure" : wordOnly ? "word" : textOnly ? "text" : "preview",
+    String(structurePage ?? ""),
   );
   try {
     await new Promise((resolve, reject) => {

@@ -7,6 +7,63 @@ import { DOMParser } from "@xmldom/xmldom";
 const [mime, mode] = process.argv.slice(2);
 const input = "/input/source";
 const maxExpanded = 512 * 1024 * 1024;
+// Figure membership is additional evidence only. Text used by questions still
+// comes from Xpdf/Poppler, including when this parser cannot decode a font.
+if (mode === "structure") {
+  if (mime !== "application/pdf") throw new Error("Structure extraction requires PDF");
+  const {getDocument, Util} = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const task = getDocument({data: new Uint8Array(fs.readFileSync(input)),
+    isEvalSupported: false, useSystemFonts: false, disableFontFace: true});
+  try {
+    const pdf = await task.promise;
+    const page = await pdf.getPage(Number(process.argv[4]));
+    const tree = await page.getStructTree();
+    const members = new Map();
+    let count = 0, nodes = 0;
+    function visit(node, owner = null, depth = 0) {
+      if (++nodes > 20000 || depth > 100) throw new Error("PDF structure limit exceeded");
+      if (node.role === "Figure") owner = count++;
+      if (node.type === "content") {
+        // Repeated references are ambiguous even when repeated in one Figure.
+        members.set(node.id, members.has(node.id) ? null : owner);
+      }
+      for (const child of node.children ?? []) visit(child, owner, depth + 1);
+    }
+    if (tree) visit(tree);
+    const items = [];
+    if (count) {
+      const viewport = page.getViewport({scale: 1});
+      const content = await page.getTextContent({includeMarkedContent: true});
+      if (content.items.length > 20000) throw new Error("PDF text limit exceeded");
+      const stack = [];
+      for (const item of content.items) {
+        if (item.type === "beginMarkedContent" || item.type === "beginMarkedContentProps") {
+          stack.push(item.id ?? null);
+          continue;
+        }
+        if (item.type === "endMarkedContent") { stack.pop(); continue; }
+        if (!item.str?.trim() || !item.width || !item.height) continue;
+        const tx = Util.transform(viewport.transform, item.transform);
+        const style = content.styles[item.fontName];
+        // Rotated/vertical text has no proven correspondence to the native
+        // horizontal line reader. Keep it outside automatic membership matching.
+        if (style.vertical || Math.abs(tx[1]) > 0.0001 || Math.abs(tx[2]) > 0.0001 || tx[0] <= 0) continue;
+        const height = Math.abs(tx[3]);
+        const ascent = Number.isFinite(style.ascent) ? style.ascent : 1;
+        const descent = Number.isFinite(style.descent) ? style.descent : -0.2;
+        const owners = stack.filter(id => id !== null).map(id => members.get(id) ?? null);
+        const unique = [...new Set(owners)];
+        items.push({text: item.str, figure: unique.length === 1 ? unique[0] : null,
+          x: tx[4] / viewport.width, y: (tx[5] - height * ascent) / viewport.height,
+          width: item.width / viewport.width, height: height * (ascent - descent) / viewport.height});
+      }
+    }
+    const result = JSON.stringify({pages: [], structure: {tagged: Boolean(tree), figures: count, items}});
+    if (Buffer.byteLength(result) > 8 * 1024 * 1024) throw new Error("PDF structure output limit exceeded");
+    fs.writeFileSync("/output/result.json", result);
+  } finally { await task.destroy(); }
+  process.exit(0);
+}
 async function inspectZip() {
   await new Promise((resolve, reject) =>
     yauzl.open(input, { lazyEntries: true }, (error, zip) => {
