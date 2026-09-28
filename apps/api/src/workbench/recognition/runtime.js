@@ -164,7 +164,7 @@ export function createRecognizer({ home } = {}) {
     if (!fs.statSync(path.join(directory, "manifest.json")).isFile()) return null;
     if (!fs.statSync(path.join(directory, "requirements.freeze.txt")).isFile()) return null;
   } catch { return null; }
-  const revision = "paddleocr-vl-1.6/document-3";
+  const revision = "paddleocr-vl-1.6/document-4";
   let running = false;
   let pendingScope;
   return {

@@ -8,7 +8,7 @@ import shutil
 import sys
 from pathlib import Path
 
-REVISION = "paddleocr-vl-1.6/document-3"
+REVISION = "paddleocr-vl-1.6/document-4"
 MODELS = {
     "PP-DocLayoutV3": "7b48a7566925fa464281f930c58eee04fe2c862a",
     "PaddleOCR-VL-1.6": "c5630abae1d940eafe0697512a0325494b02ab42",
