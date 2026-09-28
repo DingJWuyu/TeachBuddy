@@ -4,7 +4,7 @@
 
 ## 录入路径与边界
 
-文字/DOCX 沿原生拆题，DOCX 保留段内换行，其段落原文视图不冒充 Word 原分页。文字 PDF 使用 Xpdf 保留阅读顺序，支持常规双栏及页首明确题号的续题，依赖安装见[运行指南](../SETUP.md#题库文字-pdf)。图片和无文字层的 PDF 使用[共用页识别](../contracts/workbench/recognition.md)。
+文字/DOCX 沿原生拆题，DOCX 保留段内换行，其段落原文视图不冒充 Word 原分页。文字 PDF 使用 Xpdf 保留阅读顺序，支持常规双栏及页首明确题号的续题，依赖安装见[运行指南](../SETUP.md#题库文字-pdf)。图片和无文字层的 PDF 使用[共用页识别](../contracts/recognition.md)。
 
 无明确题号、复杂跨栏/表格或归属不明的内容按下面规则保留待校对。旧 DOC 的公式对象损失必须显示 `limited / legacy-object-loss`，人工裁图改字不等于自动还原。完整自动整理仍按[提取判据](../acceptance/mvp-matrix.md#extraction)验收；实现、已验证范围及缺口统一见[项目状态](../plans/run-state.md)。
 
@@ -84,7 +84,7 @@ DOCX 保留段内换行和制表符，换行后的题号与答案标记可分别
 
 题目与收录材料的可恢复移除称为“归档”。确认后离开详情，回到题库列表，同时清除详情路由；刷新继续停留在列表。归档内容从“题库选项”进入，支持查看、恢复和彻底删除。恢复后回到归档列表，该内容重新出现在题库。设备上未保存的题目修改随归档保留，恢复后可继续编辑。
 
-彻底删除只在归档对象上出现，确认框说明不可恢复及具体影响。删除材料不删除已入库的题目；删除题目不删除改编副本或已有备课引用的快照。源对象彻底删除后无法再打开详情或恢复，已有快照仍可阅读。题库所属的材料记录、题目记录及相应处理数据会移除；受管文件保留遵循[材料契约](../contracts/workbench/materials.md#题库归档与彻底删除)。处理仍在运行时，先停止或等待完成再彻底删除。
+彻底删除只在归档对象上出现，确认框说明不可恢复及具体影响。删除材料不删除已入库的题目；删除题目不删除改编副本或已有备课引用的快照。源对象彻底删除后无法再打开详情或恢复，已有快照仍可阅读。题库所属的材料记录、题目记录及相应处理数据会移除；受管文件保留遵循[材料契约](../contracts/materials.md#题库归档与彻底删除)。处理仍在运行时，先停止或等待完成再彻底删除。
 
 题目详情中的来源入口在确认源对象不存在后改为说明，当前题目继续可读；改编题仍可查看采用时的原题和并排对照。临时网络故障不能误报来源已删除，打开失败保留当前题目并允许重试。
 
@@ -94,11 +94,11 @@ DOCX 保留段内换行和制表符，换行后的题号与答案标记可分别
 
 单题或多题加入备课时就地选择目标，成功后留在题库，提供“前往备课”。有未保存修改时显式“保存并加入备课”，引用采用真实保存版本；长期笔记不进入引用，某课备注归备课。原题/改编对照在中央并排，退出恢复浏览现场。
 
-班级关联使用 [材料与教学接缝](../contracts/teaching-time.md#丰富题目关联)，从来源返回原记录并保留草稿，当前题目反馈随题目切换。PPT 素材支持复制题面文字与 LaTeX 源、下载透明题面 PNG 分片和单幅配图；具体像素/分片与权限在[材料契约](../contracts/workbench/materials.md#引用和输出)，不承诺自动制作整套 PPT。
+班级关联使用 [材料与教学接缝](../contracts/teaching-time.md#丰富题目关联)，从来源返回原记录并保留草稿，当前题目反馈随题目切换。PPT 素材支持复制题面文字与 LaTeX 源、下载透明题面 PNG 分片和单幅配图；具体像素/分片与权限在[材料契约](../contracts/materials.md#引用和输出)，不承诺自动制作整套 PPT。
 
 ## 接口、代码与判断结果
 
-- 普通题目保存先读[共享契约](../contracts/workbench.md)的身份、内容、引用及写入节；丰富题目、分类和校对再读[材料契约](../contracts/workbench/materials.md#内容)。字段只读对应 OpenAPI 操作，不需要通读其他模块或完整项目计划。
+- 普通题目保存先读[共享契约](../contracts/workbench.md)的身份、内容、引用及写入节；丰富题目、分类和校对再读[材料契约](../contracts/materials.md#内容)。字段只读对应 OpenAPI 操作，不需要通读其他模块或完整项目计划。
 - 页面 `apps/web/src/features/questions/MaterialsQuestionsPage.jsx`；题库编辑与浮层 `QuestionControls.jsx`；校对拆分 `review-drafts.js`；请求 `materials-api.js`；上传恢复 `uploadRecovery.js`；原稿 `OriginalPane.jsx`。
 - API `apps/api/src/modules/questions/materials-service.js`、`materials-router.js`、`extraction*.js`、`recognized-page.js`、`native-word.js`、`native-pdf.js`；共享编辑器 `apps/web/src/features/workbench/materials/DocumentEditor.jsx`。
 - 当前交互浏览器验证 `apps/web/e2e/questions-ux.config.mjs`，用 `WORKBENCH_WEB_DIST` 指定隔离生产构建，覆盖录题、草稿、改编、分类、文字校对、结构编辑、搜索范围、拆分答案归属、未知保存恢复、归档与彻底删除、来源缺失/读取失败、详情返回及深浅色布局。文件上传另验 DOCX 段内换行、PDF 明示续题与缺页/倒序、双栏题干/选项/答案及入库来源页码、未分配片段处理后的保存重开；历史保存场景见 `manual-questions.config.mjs`。HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；保存基例 [WB-003/004/011-018](../acceptance/first-flow.feature)，材料基例 [WB-M001-012/025-028](../acceptance/materials.feature)。
@@ -107,6 +107,6 @@ DOCX 保留段内换行和制表符，换行后的题号与答案标记可分别
 
 识别消费者使用 `apps/web/e2e/questions-recognition.config.mjs`；结构边界在 `questions-tables.spec.js` 和 API `materials-questions*.test.js`。固定输入及真实产物位置见[样本索引](../acceptance/samples.md#固定输入与回放)。回归核对原题、原有答案、公式、题图、来源页码、未分配范围、跨页阻断与人工状态；重试、取消和迟到结果不得覆盖已校对内容。表格列角色、同格多题配图、隐式续题等详细用例由相应测试维护。
 
-从界面上传、校对入库并刷新读回，实际阅读公式与配图并查看深浅主题和窄屏截图。固定产物回放只证明消费与保存；修改识别配置后须按[共用路线与验证](../contracts/workbench/recognition.md#路线与验证)重新验证真实原稿，不能复用旧缓存冒充新结果。私有 PDF 回放需 `M33_PRIVATE_PDF` 与 `QUESTIONS_OCR_EVIDENCE_DIR`，扩展原页用 `QUESTIONS_OCR_EXPANDED_DIR`，输入页字节须匹配；缺失时明确跳过，不用受控转录代替真实输入通过。
+从界面上传、校对入库并刷新读回，实际阅读公式与配图并查看深浅主题和窄屏截图。固定产物回放只证明消费与保存；修改识别配置后须按[共用路线与验证](../contracts/recognition.md#路线与验证)重新验证真实原稿，不能复用旧缓存冒充新结果。私有 PDF 回放需 `M33_PRIVATE_PDF` 与 `QUESTIONS_OCR_EVIDENCE_DIR`，扩展原页用 `QUESTIONS_OCR_EXPANDED_DIR`，输入页字节须匹配；缺失时明确跳过，不用受控转录代替真实输入通过。
 
 开发模式的列表读取、手动保存和刷新还须通过[开发服务回归](../acceptance/README.md#开发服务回归)。组件重新初始化后恢复读取，过期请求的成功或失败都不能覆盖当前列表状态。

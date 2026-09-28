@@ -2,7 +2,7 @@ openapi: 3.2.1
 info:
   title: TeachBuddy teaching-time
   version: 1.0.0-candidate.1
-  description: T50/v1 READY_FOR_REVIEW。跨操作语义见 ../teaching-time.md；请求严格，响应容忍额外字段。请求上限2MiB；UUID不作为权限。所有操作使用可信账户与no-store。
+  description: T50/v1 READY_FOR_REVIEW。跨操作语义见 docs/contracts/teaching-time.md；请求严格，响应容忍额外字段。请求上限2MiB；UUID不作为权限。所有操作使用可信账户与no-store。
 x-source-revision: 32af4eb53f78d83780c55fd83821733b000f393b
 servers:
 - url: /
@@ -943,7 +943,7 @@ paths:
 components:
   securitySchemes:
     SessionCookie:
-      $ref: ../auth.openapi.yaml#/components/securitySchemes/SessionCookie
+      $ref: auth.openapi.yaml#/components/securitySchemes/SessionCookie
   parameters:
     id:
       name: id
@@ -995,11 +995,11 @@ components:
       schema:
         $ref: '#/components/schemas/Id'
     BrowserRequestProtection:
-      $ref: ../auth.openapi.yaml#/components/parameters/BrowserRequestProtection
+      $ref: auth.openapi.yaml#/components/parameters/BrowserRequestProtection
     RequestOrigin:
-      $ref: ../auth.openapi.yaml#/components/parameters/RequestOrigin
+      $ref: auth.openapi.yaml#/components/parameters/RequestOrigin
     RequestReferer:
-      $ref: ../auth.openapi.yaml#/components/parameters/RequestReferer
+      $ref: auth.openapi.yaml#/components/parameters/RequestReferer
   responses:
     '400':
       description: malformed-json

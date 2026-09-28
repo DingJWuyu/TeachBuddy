@@ -1,10 +1,10 @@
 # 数学契约：作品、源、版本与导出
 
-数学设计已采用。字段唯一归 [math.openapi.json](math/math.openapi.json)，[cases](#数学交换用例)与[samples](math/samples.json)用于交换验证；制作行为见[工坊规格](../../features/math.md)，技术接缝见[数学架构](../../features/math.md#制作实现)。这些定义不声明所有目标环境已经通过。
+数学设计已采用。字段唯一归 [math.openapi.json](../../apps/api/src/contracts/math.openapi.json)，[cases](#数学交换用例)与[samples](../../apps/api/test/fixtures/contracts/math-samples.json)用于交换验证；制作行为见[工坊规格](../features/math.md)，技术接缝见[数学架构](../features/math.md#制作实现)。这些定义不声明所有目标环境已经通过。
 
 ## 共同协议与身份
 
-复用当前 [工作台身份/HTTP/重试](../workbench.md#身份与-http)和 [认证 1.0.0-rc.2](../auth.md)，源候选 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，不退回材料文字中旧 partial 认证。所有本版受保护操作显式外引 PageContext；新增 math/lessons v3 由同一可信 principal 授权。File HTTP 属旧接缝的实现适配，同样通过当前认证 transport 附加页面头；其原 schema 不在此覆盖。
+复用当前 [工作台身份/HTTP/重试](workbench.md#身份与-http)和 [认证 1.0.0-rc.2](auth.md)，源候选 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，不退回材料文字中旧 partial 认证。所有本版受保护操作显式外引 PageContext；新增 math/lessons v3 由同一可信 principal 授权。File HTTP 属旧接缝的实现适配，同样通过当前认证 transport 附加页面头；其原 schema 不在此覆盖。
 
 同源 Cookie、保护头、完整 Origin/Referer 校验、no-store、严格请求/宽容响应、UUID、服务端 UTC、账户隔离、2 MiB JSON 限制、持久幂等与未知结果全部沿用 B11。写入顺序：来源保护 → 身份 → schema → 已成功同键重放 → 归属 → 版本 → 状态 → 业务约束 → 原子提交。JSON 未知字段/重复 query/类型转换拒绝。未提供有效页面绑定为401；外账户/不存在一律404；不能把未注册模块、隐藏导航或 client accountKey 当权限。禁止生产 test-principal，隔离验证须标身份模式。
 
@@ -72,13 +72,13 @@ math provider 是业务模块提供方，非 LLM Provider。`readForReferenceV1`
 
 ReturnTarget 是前端设备内协议，不是信任票据或新服务端会话：lessonId、sectionId（null=本课材料）、baseVersion、拟插入referenceId。完整备课草稿及焦点/滚动由 lessons 保存到账户分区现场，不放进URL/作品Source或Agent提示。math只返回已确认的 Work ID/version，lessons据原稿创建MathReferenceInput，再完整PUT v3。返回操作的幂等键属于备课，和作品保存键分开。目标冲突按UX对照，任何失败都保留已保存作品与原稿。没有跨两次保存的分布式事务。
 
-v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公式snapshot转换为现有Document数学节点，caption仅includeCaption=true时为普通内容；plane/space/dynamic用固定PNG初态，html仅标题和单独演示文件提示。本课引用note仍受includeTeacherNotes控制。practice仍只取题目，纯作品选择返回invalid-export-selection。输出前若固定资产缺失则明确失败，不自动取最新作品；HTML不交Office转换器执行。旧v2导出含math拒绝，旧已受理输出快照/文件不改。输出实现的已测范围与目标 Office 缺口见[能力证据](../../plans/run-state.md#证据边界)。
+v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公式snapshot转换为现有Document数学节点，caption仅includeCaption=true时为普通内容；plane/space/dynamic用固定PNG初态，html仅标题和单独演示文件提示。本课引用note仍受includeTeacherNotes控制。practice仍只取题目，纯作品选择返回invalid-export-selection。输出前若固定资产缺失则明确失败，不自动取最新作品；HTML不交Office转换器执行。旧v2导出含math拒绝，旧已受理输出快照/文件不改。输出实现的已测范围与目标 Office 缺口见[能力证据](../plans/run-state.md#证据边界)。
 
 ## 目录、公共端口与教学反馈
 
 进程内协作见[公共端口](#公共端口)。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及包含教学时间的组合目标；生产只注册实际接好的模块，按 questions/lessons/math/resources/classes/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖，lessons依赖math读取，classes可以依赖math教学链接；反向反馈仅前端组合，不制造math→classes服务端环。
 
-教学链接和 kind=math 分支由[教学记录 v2 契约](../teaching-time.md#数学作品关联)组合；固定 schema 输入与消费版本见该契约，不从其他分支取漂移输入。
+教学链接和 kind=math 分支由[教学记录 v2 契约](teaching-time.md#数学作品关联)组合；固定 schema 输入与消费版本见该契约，不从其他分支取漂移输入。
 
 ## 公共端口
 
@@ -116,7 +116,7 @@ v3教案/讲义输出复用材料 ExportInput/Record/Job 和过滤顺序：公�
 
 ## 数学交换用例
 
-与同提交 [schema](math/math.openapi.json)、[样本](math/samples.json)一起消费。样本 UUID 是隔离 fixture 标识，不是生产种子。前端替身按下表返回已定义结果；后端从公开 HTTP 用相同顺序断言，均不需要另一侧猜字段。替身只能记 self。
+与同提交 [schema](../../apps/api/src/contracts/math.openapi.json)、[样本](../../apps/api/test/fixtures/contracts/math-samples.json)一起消费。样本 UUID 是隔离 fixture 标识，不是生产种子。前端替身按下表返回已定义结果；后端从公开 HTTP 用相同顺序断言，均不需要另一侧猜字段。替身只能记 self。
 
 | ID / BDD | 输入、结果与双侧断言 |
 | --- | --- |

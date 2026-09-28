@@ -3,15 +3,15 @@ import YAML from 'yaml';
 import Ajv from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import { contractError, problems } from '../workbench/problems.js';
-const agent = JSON.parse(fs.readFileSync(new URL('../../../../docs/contracts/agent.openapi.json', import.meta.url)));
-const business = YAML.parse(fs.readFileSync(new URL('../../../../docs/contracts/workbench/first-flow.openapi.yaml', import.meta.url), 'utf8'));
+const agent = JSON.parse(fs.readFileSync(new URL('../contracts/agent.openapi.json', import.meta.url)));
+const business = YAML.parse(fs.readFileSync(new URL('../contracts/workbench.openapi.yaml', import.meta.url), 'utf8'));
 // Keep the C26 tool names and legacy bodies; consume current business schemas
 // for the same operations without projecting away material or math content.
-const contractRoot = new URL('../../../../docs/contracts/', import.meta.url);
-const documents = new Map([['agent.openapi.json', agent], ['workbench/first-flow.openapi.yaml', business]]);
+const contractRoot = new URL('../contracts/', import.meta.url);
+const documents = new Map([['agent.openapi.json', agent], ['workbench.openapi.yaml', business]]);
 const currentSchemas = Object.fromEntries([
-  ...['Question', 'QuestionList', 'CreateQuestion', 'UpdateQuestion', 'CopyQuestion'].map(name => [name, ['workbench/materials.openapi.yaml', name]]),
-  ...['Lesson', 'LessonList', 'CreateLesson', 'UpdateLesson'].map(name => [name, ['workbench/math/math.openapi.json', name + 'V3']]),
+  ...['Question', 'QuestionList', 'CreateQuestion', 'UpdateQuestion', 'CopyQuestion'].map(name => [name, ['materials.openapi.yaml', name]]),
+  ...['Lesson', 'LessonList', 'CreateLesson', 'UpdateLesson'].map(name => [name, ['math.openapi.json', name + 'V3']]),
 ]);
 function resolve(value, file = 'agent.openapi.json', adapt = true) {
   if (Array.isArray(value)) return value.map(v => resolve(v, file, adapt));

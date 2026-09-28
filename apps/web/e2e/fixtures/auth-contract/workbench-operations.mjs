@@ -1,6 +1,6 @@
 /*
  * The fifteen protected workbench operations declared by
- * docs/contracts/workbench/first-flow.openapi.yaml. The harness drives them
+ * apps/api/src/contracts/workbench.openapi.yaml. The harness drives them
  * through useAuth.request; the transport spec checks the page header, the
  * protection header, bodies and keys on every one.
  */

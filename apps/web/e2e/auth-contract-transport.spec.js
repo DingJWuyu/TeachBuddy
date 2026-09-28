@@ -335,7 +335,7 @@ test('退出失败（已回滚）保留现场可重试，不锁业务（O02）',
 
 test('受保护操作清单与工作台契约的 operationId 一致（15 个）', () => {
   const openapi = fs.readFileSync(
-    path.join(REPO_ROOT, 'docs/contracts/workbench/first-flow.openapi.yaml'),
+    path.join(REPO_ROOT, 'apps/api/src/contracts/workbench.openapi.yaml'),
     'utf8',
   );
   const declared = [...openapi.matchAll(/operationId: (\w+)/g)].map((match) => match[1]);

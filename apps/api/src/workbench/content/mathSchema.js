@@ -7,7 +7,7 @@ import addFormats from "ajv-formats";
 import { invalidInput } from "../problems.js";
 const location = fileURLToPath(
   new URL(
-    "../../../../../docs/contracts/workbench/math/math.openapi.json",
+    "../../contracts/math.openapi.json",
     import.meta.url,
   ),
 );

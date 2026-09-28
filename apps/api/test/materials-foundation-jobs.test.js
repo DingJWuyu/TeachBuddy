@@ -177,7 +177,7 @@ test("the frozen material catalog fixture is version 2 without registering unimp
     fs.readFileSync(
       fileURLToPath(
         new URL(
-          "../../../docs/contracts/workbench/materials.openapi.yaml",
+          "../src/contracts/materials.openapi.yaml",
           import.meta.url,
         ),
       ),

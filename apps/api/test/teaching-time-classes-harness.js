@@ -191,7 +191,7 @@ export async function createTeachingTimeClassesHarness(options = {}) {
   };
 }
 
-/** Samples mirror docs/contracts/teaching-time/samples.json for classes. */
+/** Samples mirror apps/api/test/fixtures/contracts/teaching-time-v1-samples.json for classes. */
 export function classSample(overrides = {}) {
   return { name: '高一(1)班', ...overrides };
 }

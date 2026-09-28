@@ -3,7 +3,7 @@
   "info": {
     "title": "TeachBuddy teaching-time with math links",
     "version": "2.0.0-candidate.1",
-    "description": "T50-MATH-CONTRACT@1，READY_FOR_REVIEW/self。语义见 ../teaching-time-math.md；完整包含冻结时间/提醒/班级操作，数学字段外引固定 M40。"
+    "description": "T50-MATH-CONTRACT@1，READY_FOR_REVIEW/self。语义见 docs/contracts/teaching-time.md；完整包含冻结时间/提醒/班级操作，数学字段直接引用 math.openapi.json。"
   },
   "x-source-revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
   "servers": [
@@ -2350,7 +2350,7 @@
   "components": {
     "securitySchemes": {
       "SessionCookie": {
-        "$ref": "../auth.openapi.yaml#/components/securitySchemes/SessionCookie"
+        "$ref": "auth.openapi.yaml#/components/securitySchemes/SessionCookie"
       }
     },
     "parameters": {
@@ -2420,13 +2420,13 @@
         }
       },
       "BrowserRequestProtection": {
-        "$ref": "../auth.openapi.yaml#/components/parameters/BrowserRequestProtection"
+        "$ref": "auth.openapi.yaml#/components/parameters/BrowserRequestProtection"
       },
       "RequestOrigin": {
-        "$ref": "../auth.openapi.yaml#/components/parameters/RequestOrigin"
+        "$ref": "auth.openapi.yaml#/components/parameters/RequestOrigin"
       },
       "RequestReferer": {
-        "$ref": "../auth.openapi.yaml#/components/parameters/RequestReferer"
+        "$ref": "auth.openapi.yaml#/components/parameters/RequestReferer"
       },
       "kindV2": {
         "name": "kind",
@@ -4682,7 +4682,7 @@
             "$ref": "#/components/schemas/SourceInput"
           },
           {
-            "$ref": "inputs/m40/docs/contracts/workbench/math/math.openapi.json#/components/schemas/TeachingMathInput"
+            "$ref": "math.openapi.json#/components/schemas/TeachingMathInput"
           }
         ]
       },
@@ -4692,7 +4692,7 @@
             "$ref": "#/components/schemas/Source"
           },
           {
-            "$ref": "inputs/m40/docs/contracts/workbench/math/math.openapi.json#/components/schemas/TeachingMathSource"
+            "$ref": "math.openapi.json#/components/schemas/TeachingMathSource"
           },
           {
             "$ref": "#/components/schemas/UnavailableSourceV2"
@@ -4736,7 +4736,7 @@
             "maxItems": 100
           },
           "content": {
-            "$ref": "../workbench/materials.openapi.yaml#/components/schemas/Document",
+            "$ref": "materials.openapi.yaml#/components/schemas/Document",
             "description": "可选公式与图片补充；创建省略为空文稿，更新省略保留旧值，显式空文稿移除本记录中的补充。原 note 等字段保持纯文本。"
           }
         },
@@ -4793,7 +4793,7 @@
             "maxItems": 100
           },
           "content": {
-            "$ref": "../workbench/materials.openapi.yaml#/components/schemas/Document",
+            "$ref": "materials.openapi.yaml#/components/schemas/Document",
             "description": "可选公式与图片补充；创建省略为空文稿，更新省略保留旧值，显式空文稿移除本记录中的补充。原 note 等字段保持纯文本。"
           }
         },
@@ -4872,7 +4872,7 @@
             "description": "是否停止提示该条下次想法；原文保留。修改 nextNote 内容后恢复提示。"
           },
           "content": {
-            "$ref": "../workbench/materials.openapi.yaml#/components/schemas/Document",
+            "$ref": "materials.openapi.yaml#/components/schemas/Document",
             "description": "可选公式与图片补充；创建省略为空文稿，更新省略保留旧值，显式空文稿移除本记录中的补充。原 note 等字段保持纯文本。"
           }
         },
@@ -4907,10 +4907,10 @@
         ]
       },
       "ModuleCatalogV3": {
-        "$ref": "inputs/m40/docs/contracts/workbench/math/math.openapi.json#/components/schemas/ModuleCatalogV3"
+        "$ref": "math.openapi.json#/components/schemas/ModuleCatalogV3"
       },
       "TeachingWork": {
-        "$ref": "inputs/m40/docs/contracts/workbench/math/math.openapi.json#/components/schemas/TeachingWork"
+        "$ref": "math.openapi.json#/components/schemas/TeachingWork"
       },
       "UnavailableSourceV2": {
         "type": "object",

@@ -2,7 +2,7 @@ openapi: 3.2.1
 info:
   title: TeachBuddy materials
   version: 1.0.0-candidate.1
-  description: R30/v1 待独立审查。唯一材料 HTTP/schema。B11 保持冻结；v2 question/lesson 与旧对象同 ID、同事务，不复制业务库。语义、版本过渡、错误优先级见 materials.md。
+  description: R30/v1 待独立审查。唯一材料 HTTP/schema。B11 保持冻结；v2 question/lesson 与旧对象同 ID、同事务，不复制业务库。语义、版本过渡、错误优先级见 docs/contracts/materials.md。
 x-contract-status: READY_FOR_REVIEW
 x-source-revision: e6d2c220796ea0746bec3413db7ba259df4c2d45
 servers:
@@ -10,6 +10,114 @@ servers:
 security:
 - SessionCookie: []
 paths:
+  /api/workbench/files/{id}/recognition:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getFileRecognition
+      description: 只读固定预览的识别状态，不触发模型；语义见 recognition.md。
+      parameters:
+      - name: renditionFileId
+        in: query
+        schema:
+          $ref: '#/components/schemas/Id'
+      responses:
+        '200':
+          description: 当前账户原件、固定 rendition 和每页状态。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecognitionSummary'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+    post:
+      operationId: requestFileRecognition
+      description: 冻结来源及页号，复用活跃请求和成功页；重试、取消沿用 Job。仅返回持久受理结果。
+      parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecognitionInput'
+      responses:
+        '202':
+          description: 已受理的识别 Job，尚未表示识别成功。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+  /api/workbench/files/{id}/recognition/pages/{page}:
+    get:
+      operationId: getRecognizedPage
+      description: 返回绑定本次原件与页码的机器结果；同像素复用不会串用另一份原件的 Location。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: page
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      - name: renditionFileId
+        in: query
+        schema:
+          $ref: '#/components/schemas/Id'
+      responses:
+        '200':
+          description: 未完成时保留状态，ready 时提供正文、结构和附件；不是人工校对完成。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecognizedPage'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
   /api/workbench/files:
     post:
       operationId: uploadFile
@@ -60,7 +168,7 @@ paths:
     get:
       operationId: getFile
       summary: getFile
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -133,7 +241,7 @@ paths:
     get:
       operationId: getFilePreview
       summary: getFilePreview
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -163,7 +271,7 @@ paths:
     post:
       operationId: requestFilePreview
       summary: requestFilePreview
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -214,7 +322,7 @@ paths:
     post:
       operationId: cropFileRegion
       summary: cropFileRegion
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -263,7 +371,7 @@ paths:
     get:
       operationId: listJobs
       summary: listJobs
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: kind
         in: query
@@ -298,7 +406,7 @@ paths:
     get:
       operationId: getJob
       summary: getJob
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -329,7 +437,7 @@ paths:
     post:
       operationId: retryJob
       summary: retryJob
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -383,7 +491,7 @@ paths:
     post:
       operationId: cancelJob
       summary: cancelJob
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -434,7 +542,7 @@ paths:
     get:
       operationId: getQuestionTaxonomy
       summary: getQuestionTaxonomy
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters: []
       responses:
         '200':
@@ -459,7 +567,7 @@ paths:
     put:
       operationId: updateQuestionTaxonomy
       summary: updateQuestionTaxonomy
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -508,7 +616,7 @@ paths:
     get:
       operationId: getResourceTaxonomy
       summary: getResourceTaxonomy
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters: []
       responses:
         '200':
@@ -533,7 +641,7 @@ paths:
     put:
       operationId: updateResourceTaxonomy
       summary: updateResourceTaxonomy
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -582,7 +690,7 @@ paths:
     get:
       operationId: listQuestionsV2
       summary: listQuestionsV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: q
         in: query
@@ -621,6 +729,13 @@ paths:
         required: false
         schema:
           type: boolean
+      - name: searchAnswers
+        in: query
+        required: false
+        description: 默认不搜索答案与解析；明确开启时与题干、标题和笔记一起检索。
+        schema:
+          type: boolean
+          default: false
       responses:
         '200':
           description: 当前账户的持久结果。
@@ -644,7 +759,7 @@ paths:
     post:
       operationId: createQuestionV2
       summary: createQuestionV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -695,7 +810,7 @@ paths:
     get:
       operationId: getQuestionV2
       summary: getQuestionV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -725,7 +840,7 @@ paths:
     put:
       operationId: updateQuestionV2
       summary: updateQuestionV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -776,7 +891,7 @@ paths:
     post:
       operationId: setQuestionDeletionV2
       summary: setQuestionDeletionV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -823,11 +938,113 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SetDeletion'
+  /api/modules/questions/v2/items/{id}/purge:
+    post:
+      operationId: purgeQuestionV2
+      summary: purgeQuestionV2
+      description: 仅彻底删除当前账户已归档的内容；已保存的引用快照保留。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionContentPurged'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurgeQuestionContent'
+  /api/modules/questions/v2/imports/{id}/purge:
+    post:
+      operationId: purgeQuestionImport
+      summary: purgeQuestionImport
+      description: 仅彻底删除当前账户已归档的内容；已保存的引用快照保留。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionContentPurged'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurgeQuestionContent'
   /api/modules/questions/v2/items/{id}/for-reference:
     get:
       operationId: readQuestionForReferenceV2
       summary: readQuestionForReferenceV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -858,7 +1075,7 @@ paths:
     get:
       operationId: listQuestionUsagesV2
       summary: listQuestionUsagesV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -885,11 +1102,51 @@ paths:
           $ref: '#/components/responses/422'
         '503':
           $ref: '#/components/responses/503'
+  /api/modules/resources/search/retry:
+    post:
+      operationId: retryResourceText
+      summary: 重新读取失败的资源正文
+      description: 清除本账户失败的派生文字缓存；下一次正文搜索重新读取，原件、预览与资源版本不变。
+      parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empty'
+      responses:
+        '200':
+          description: 已允许重新读取。
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  accepted:
+                    const: true
+                required: [accepted]
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '409':
+          $ref: '#/components/responses/409'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
   /api/modules/resources/items:
     get:
       operationId: listResources
       summary: listResources
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: q
         in: query
@@ -930,6 +1187,11 @@ paths:
           type: string
           minLength: 1
           maxLength: 150
+      - name: sha256
+        in: query
+        schema:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
       responses:
         '200':
           description: 当前账户的持久结果。
@@ -953,7 +1215,7 @@ paths:
     post:
       operationId: createResource
       summary: createResource
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -1002,7 +1264,7 @@ paths:
     get:
       operationId: getResource
       summary: getResource
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1032,7 +1294,7 @@ paths:
     put:
       operationId: updateResource
       summary: updateResource
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1079,11 +1341,140 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateResource'
+  /api/modules/resources/items/{id}/history:
+    get:
+      operationId: listResourceFileHistory
+      summary: listResourceFileHistory
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceFileHistory'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+
+  /api/modules/resources/items/{id}/restore-file:
+    post:
+      operationId: restoreResourceFile
+      summary: restoreResourceFile
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreResourceFile'
+  /api/modules/resources/items/organize:
+    post:
+      operationId: organizeResources
+      summary: organizeResources
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      parameters:
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceList'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizeResources'
   /api/modules/resources/items/{id}/deletion:
     post:
       operationId: setResourceDeletion
       summary: setResourceDeletion
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1130,11 +1521,374 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SetDeletion'
+  /api/modules/resources/items/{id}/purge:
+    post:
+      operationId: purgeResource
+      summary: purgeResource
+      description: 永久移除已归档资料条目。活动资料拒绝；已有备课快照和受管文件保留。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourcePurged'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurgeResource'
+  /api/modules/lessons/v3/{id}/purge:
+    post:
+      operationId: purgeLessonV3
+      summary: 彻底删除已归档备课
+      description: 永久移除当前账户已归档备课的课稿、环节、引用快照和输出记录，停止未完成的输出任务并移除课题顺序项。活动备课返回 422，版本过期返回 409。来源对象、教学记录及独立受管文件保留；同键重放返回首次结果。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonPurged'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurgeLesson'
+  /api/modules/lessons/v3/{id}/copy:
+    post:
+      operationId: copyLessonV3
+      summary: 复制已保存备课
+      description: 按当前账户原备课的 baseVersion 创建独立活动副本。保留已采用的材料快照与备注，环节和引用生成新身份，不复制输出记录或班级记录。原课稿及来源保持不变；原稿版本冲突返回 409，同键重放返回同一副本。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '201':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: 'math.openapi.json#/components/schemas/LessonV3'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyLesson'
+  /api/modules/lessons/v3/{id}/sections/adopt-page:
+    post:
+      operationId: adoptLessonPageV3
+      summary: 将校对后的整页内容保存为一个教学环节
+      description: 校验课稿、资源版本及实际预览文件的固定页结果。冻结机器与采用快照，原子保存一个新环节和历史；普通课稿保存按环节身份保留来源，不接收客户端来源快照。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdoptLessonPage'
+      responses:
+        '200':
+          description: 已保存课稿；环节的 pageSource 为服务端拥有的只读快照。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: 'math.openapi.json#/components/schemas/LessonV3'
+                - type: object
+                  properties:
+                    sections:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/LessonSectionV3'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+  /api/modules/lessons/v3/{id}/sections/copy:
+    post:
+      operationId: copyLessonSectionsV3
+      summary: 将所选来源环节复制到本课末尾
+      description: 校验本课及来源版本，保留采用快照，新建环节与引用身份；在同一事务中保存新版本与历史。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: 'math.openapi.json#/components/schemas/LessonV3'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyLessonSections'
+  /api/modules/lessons/v3/{id}/history/restore:
+    post:
+      operationId: restoreLessonVersionV3
+      summary: 恢复一个已保存版本
+      description: 恢复当前账户课稿历史的正文、环节和采用快照；当前稿保留，结果另存为新版本。归档课稿须先恢复。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 当前账户的持久结果。
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: 'math.openapi.json#/components/schemas/LessonV3'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreLessonVersion'
+  /api/modules/lessons/v3/{id}/history:
+    get:
+      operationId: listLessonHistoryV3
+      summary: 列出最近 50 个课稿版本
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      responses:
+        '200':
+          description: 当前账户的版本列表；旧课稿从启用记录时的当前版本开始。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonHistory'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+  /api/modules/lessons/v3/{id}/history/{version}:
+    get:
+      operationId: getLessonVersionV3
+      summary: 查看一个已保存版本
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: version
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Version'
+      responses:
+        '200':
+          description: 固定的正文与采用快照，来源状态仍反映当前情况。
+          content:
+            application/json:
+              schema:
+                $ref: 'math.openapi.json#/components/schemas/LessonV3'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+
   /api/modules/resources/items/{id}/for-reference:
     get:
       operationId: readResourceForReferenceV2
       summary: readResourceForReferenceV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1165,7 +1919,7 @@ paths:
     get:
       operationId: listResourceUsagesV2
       summary: listResourceUsagesV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1196,7 +1950,7 @@ paths:
     get:
       operationId: listLessonsV2
       summary: listLessonsV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: q
         in: query
@@ -1236,7 +1990,7 @@ paths:
     post:
       operationId: createLessonV2
       summary: createLessonV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -1285,7 +2039,7 @@ paths:
     get:
       operationId: getLessonV2
       summary: getLessonV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1315,7 +2069,7 @@ paths:
     put:
       operationId: updateLessonV2
       summary: updateLessonV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1366,7 +2120,7 @@ paths:
     post:
       operationId: setLessonDeletionV2
       summary: setLessonDeletionV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1417,7 +2171,7 @@ paths:
     post:
       operationId: copyQuestionV2
       summary: copyQuestionV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1470,7 +2224,7 @@ paths:
     get:
       operationId: listQuestionCopiesV2
       summary: listQuestionCopiesV2
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1501,7 +2255,7 @@ paths:
     put:
       operationId: relocateQuestion
       summary: relocateQuestion
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1552,7 +2306,7 @@ paths:
     post:
       operationId: createQuestionAsset
       summary: createQuestionAsset
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1606,7 +2360,7 @@ paths:
     post:
       operationId: createImport
       summary: createImport
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -1658,7 +2412,7 @@ paths:
     get:
       operationId: listImports
       summary: listImports
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: q
         in: query
@@ -1699,7 +2453,7 @@ paths:
     get:
       operationId: getImport
       summary: getImport
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1729,7 +2483,7 @@ paths:
     put:
       operationId: saveImportReview
       summary: saveImportReview
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1783,7 +2537,7 @@ paths:
     post:
       operationId: supplementImport
       summary: supplementImport
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1834,7 +2588,7 @@ paths:
     post:
       operationId: commitImportDrafts
       summary: commitImportDrafts
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1888,7 +2642,7 @@ paths:
     post:
       operationId: setImportDeletion
       summary: setImportDeletion
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1939,7 +2693,7 @@ paths:
     put:
       operationId: replaceResourceFile
       summary: replaceResourceFile
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -1993,7 +2747,7 @@ paths:
     put:
       operationId: setResourceSupplementPreview
       summary: setResourceSupplementPreview
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -2047,7 +2801,7 @@ paths:
     post:
       operationId: createLessonExport
       summary: createLessonExport
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -2110,7 +2864,7 @@ paths:
     get:
       operationId: listLessonExports
       summary: listLessonExports
-      description: 行为见 materials.md 及关联 UX/BDD。
+      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -2165,22 +2919,328 @@ paths:
           $ref: '#/components/responses/503'
 components:
   schemas:
+    RecognitionInput:
+      type: object
+      properties:
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        pages:
+          type: array
+          minItems: 1
+          maxItems: 500
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+      required: [renditionFileId, pages]
+      additionalProperties: false
+    RecognitionSummary:
+      type: object
+      properties:
+        available:
+          type: boolean
+        revision:
+          type: string
+        fileId:
+          $ref: '#/components/schemas/Id'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        jobId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        pages:
+          type: array
+          items:
+            type: object
+            properties:
+              page:
+                type: integer
+                minimum: 1
+              state:
+                enum: [unprocessed, queued, running, cancelling, ready, failed, interrupted]
+              resultId:
+                anyOf:
+                - $ref: '#/components/schemas/Id'
+                - type: 'null'
+              issues:
+                type: array
+                items:
+                  type: object
+            required: [page, state, resultId, issues]
+      required: [available, revision, fileId, renditionFileId, jobId, pages]
+    RecognizedPage:
+      type: object
+      properties:
+        state:
+          enum: [unprocessed, running, ready, failed, interrupted]
+        resultId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        location:
+          $ref: '#/components/schemas/Location'
+        imageFileId:
+          $ref: '#/components/schemas/Id'
+        width:
+          type: integer
+        height:
+          type: integer
+        document:
+          $ref: '#/components/schemas/Document'
+        text:
+          type: string
+        blocks:
+          type: array
+          items:
+            type: object
+        rawFileId:
+          $ref: '#/components/schemas/Id'
+        assetFileIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+        issues:
+          type: array
+          items:
+            type: object
+      required: [state, resultId, location, imageFileId, width, height, issues]
     Id:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Id
+      $ref: workbench.openapi.yaml#/components/schemas/Id
     Version:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Version
+      $ref: workbench.openapi.yaml#/components/schemas/Version
     Timestamp:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Timestamp
+      $ref: workbench.openapi.yaml#/components/schemas/Timestamp
     TextRun:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/TextRun
+      $ref: workbench.openapi.yaml#/components/schemas/TextRun
     MathRun:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/MathRun
+      $ref: workbench.openapi.yaml#/components/schemas/MathRun
     Paragraph:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Paragraph
+      $ref: workbench.openapi.yaml#/components/schemas/Paragraph
     MathBlock:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/MathBlock
+      $ref: workbench.openapi.yaml#/components/schemas/MathBlock
     SetDeletion:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/SetDeletion
+      $ref: workbench.openapi.yaml#/components/schemas/SetDeletion
+    PurgeResource:
+      type: object
+      additionalProperties: false
+      required: [baseVersion]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+    ResourcePurged:
+      type: object
+      additionalProperties: false
+      required: [id, permanentlyDeleted]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        permanentlyDeleted:
+          const: true
+    LessonHistory:
+      type: object
+      required: [items, limit]
+      properties:
+        limit:
+          const: 50
+        items:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            required: [version, savedAt, title]
+            properties:
+              version:
+                $ref: '#/components/schemas/Version'
+              savedAt:
+                $ref: '#/components/schemas/Timestamp'
+              title:
+                type: string
+    AdoptLessonPage:
+      type: object
+      additionalProperties: false
+      required: [baseVersion, resourceId, resourceVersion, fileId, renditionFileId, page, resultId, title, content]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+        resourceId:
+          $ref: '#/components/schemas/Id'
+        resourceVersion:
+          $ref: '#/components/schemas/Version'
+        fileId:
+          $ref: '#/components/schemas/Id'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        page:
+          type: integer
+          minimum: 1
+        resultId:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          $ref: '#/components/schemas/DocumentV2'
+        recognizedImage:
+          $ref: '#/components/schemas/RecognizedLessonImage'
+    RecognizedLessonImage:
+      description: 显式选择原页机器文稿中的配图。父页字段保持原资料语义，配图识别页固定为 1。
+      type: object
+      additionalProperties: false
+      required: [fileId, renditionFileId, resultId]
+      properties:
+        fileId:
+          $ref: '#/components/schemas/Id'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        resultId:
+          $ref: '#/components/schemas/Id'
+    LessonRecognizedImageSource:
+      description: 配图识别的服务端只读快照，与原资料页来源同时保留。
+      type: object
+      readOnly: true
+      additionalProperties: false
+      required: [fileId, renditionFileId, page, resultId, imageFileId, rawFileId, assetFileIds, location, machineDocument]
+      properties:
+        fileId:
+          $ref: '#/components/schemas/Id'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        page:
+          const: 1
+        resultId:
+          $ref: '#/components/schemas/Id'
+        imageFileId:
+          $ref: '#/components/schemas/Id'
+        rawFileId:
+          $ref: '#/components/schemas/Id'
+        assetFileIds:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+        location:
+          $ref: '#/components/schemas/PageLocation'
+        machineDocument:
+          $ref: '#/components/schemas/DocumentV2'
+    LessonSectionV3:
+      description: 备课 v3 环节读模型。pageSource 随普通保存、复制、复用和历史恢复保留；写输入不接受此字段。
+      allOf:
+      - $ref: 'math.openapi.json#/components/schemas/SectionV3'
+      - type: object
+        properties:
+          pageSource:
+            $ref: '#/components/schemas/LessonPageSource'
+    LessonPageSource:
+      type: object
+      readOnly: true
+      additionalProperties: false
+      required: [resourceId, resourceVersion, resourceTitle, fileId, fileName, fileSha256, renditionFileId, page, resultId, imageFileId, rawFileId, assetFileIds, location, machineDocument, adoptedDocument]
+      properties:
+        resourceId:
+          $ref: '#/components/schemas/Id'
+        resourceVersion:
+          $ref: '#/components/schemas/Version'
+        resourceTitle:
+          type: string
+        fileId:
+          $ref: '#/components/schemas/Id'
+        fileName:
+          type: string
+        fileSha256:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        page:
+          type: integer
+          minimum: 1
+        resultId:
+          $ref: '#/components/schemas/Id'
+        rawFileId:
+          $ref: '#/components/schemas/Id'
+        imageFileId:
+          $ref: '#/components/schemas/Id'
+        assetFileIds:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+        location:
+          $ref: '#/components/schemas/PageLocation'
+        machineDocument:
+          $ref: '#/components/schemas/DocumentV2'
+        adoptedDocument:
+          $ref: '#/components/schemas/DocumentV2'
+        recognizedImage:
+          $ref: '#/components/schemas/LessonRecognizedImageSource'
+    CopyLessonSections:
+      type: object
+      additionalProperties: false
+      required: [baseVersion, sourceLessonId, sourceVersion, sectionIds]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+        sourceLessonId:
+          $ref: '#/components/schemas/Id'
+        sourceVersion:
+          $ref: '#/components/schemas/Version'
+        sectionIds:
+          type: array
+          minItems: 1
+          maxItems: 200
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+    RestoreLessonVersion:
+      type: object
+      additionalProperties: false
+      required: [baseVersion, version]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+        version:
+          $ref: '#/components/schemas/Version'
+    CopyLesson:
+      type: object
+      additionalProperties: false
+      required: [baseVersion]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+    PurgeLesson:
+      type: object
+      additionalProperties: false
+      required: [baseVersion]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+    LessonPurged:
+      type: object
+      additionalProperties: false
+      required: [id, permanentlyDeleted]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        permanentlyDeleted:
+          const: true
+    PurgeQuestionContent:
+      type: object
+      additionalProperties: false
+      required: [baseVersion]
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+    QuestionContentPurged:
+      type: object
+      additionalProperties: false
+      required: [id, permanentlyDeleted]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        permanentlyDeleted:
+          const: true
     Box:
       type: object
       properties:
@@ -2450,9 +3510,9 @@ components:
       additionalProperties: false
     Document:
       oneOf:
-      - $ref: ./first-flow.openapi.yaml#/components/schemas/Document
+      - $ref: workbench.openapi.yaml#/components/schemas/Document
       - $ref: '#/components/schemas/DocumentV2'
-      description: v1 原样保留；v2 增加受限结构，不接受 HTML、任意 attrs 或可执行内容。语义与限额见 materials.md#内容。
+      description: v1 原样保留；v2 增加受限结构，不接受 HTML、任意 attrs 或可执行内容。语义与限额见 docs/contracts/materials.md#内容。
     File:
       type: object
       properties:
@@ -2644,6 +3704,7 @@ components:
           - extraction
           - export
           - question-asset
+          - recognition
         target:
           $ref: '#/components/schemas/JobTarget'
         state:
@@ -2902,8 +3963,8 @@ components:
       - snapshot
     Source:
       oneOf:
-      - $ref: ./first-flow.openapi.yaml#/components/schemas/ManualSource
-      - $ref: ./first-flow.openapi.yaml#/components/schemas/PasteSource
+      - $ref: workbench.openapi.yaml#/components/schemas/ManualSource
+      - $ref: workbench.openapi.yaml#/components/schemas/PasteSource
       - $ref: '#/components/schemas/ImportSource'
       - $ref: '#/components/schemas/CopySource'
     Question:
@@ -3000,7 +4061,7 @@ components:
           maxItems: 100
           uniqueItems: true
         source:
-          $ref: ./first-flow.openapi.yaml#/components/schemas/CreateSource
+          $ref: workbench.openapi.yaml#/components/schemas/CreateSource
       required:
       - title
       - body
@@ -3318,6 +4379,29 @@ components:
     Import:
       type: object
       properties:
+        originalDocuments:
+          description: GET 原稿时可返回 DOCX 原文段落，用于没有分页预览时对照；校对写请求不携带本字段。
+          readOnly: true
+          type: array
+          items:
+            type: object
+            required: [fileId, paragraphs]
+            properties:
+              fileId:
+                $ref: '#/components/schemas/Id'
+              paragraphs:
+                type: array
+                items:
+                  type: object
+                  required: [paragraph, document, uncertain]
+                  properties:
+                    paragraph:
+                      type: integer
+                      minimum: 1
+                    document:
+                      $ref: '#/components/schemas/Document'
+                    uncertain:
+                      type: boolean
         id:
           $ref: '#/components/schemas/Id'
         version:
@@ -3556,6 +4640,73 @@ components:
       - tagIds
       - note
       additionalProperties: false
+    OrganizeResources:
+      type: object
+      properties:
+        action:
+          enum: [move, add-tags, archive, restore]
+        items:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: object
+            properties:
+              id:
+                $ref: '#/components/schemas/Id'
+              baseVersion:
+                $ref: '#/components/schemas/Version'
+            required: [id, baseVersion]
+            additionalProperties: false
+        folderId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        tagIds:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Id'
+      required: [action, items, folderId, tagIds]
+      additionalProperties: false
+    RestoreResourceFile:
+      type: object
+      properties:
+        baseVersion:
+          $ref: '#/components/schemas/Version'
+        fileVersion:
+          $ref: '#/components/schemas/Version'
+      required: [baseVersion, fileVersion]
+      additionalProperties: false
+    ResourceFileRevision:
+      type: object
+      properties:
+        version:
+          $ref: '#/components/schemas/Version'
+        createdAt:
+          type: string
+          format: date-time
+        fileId:
+          $ref: '#/components/schemas/Id'
+        supplementPreviewFileId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        file:
+          anyOf:
+          - $ref: '#/components/schemas/File'
+          - type: 'null'
+        unavailable:
+          type: boolean
+      required: [version, createdAt, fileId, supplementPreviewFileId, file, unavailable]
+    ResourceFileHistory:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceFileRevision'
+      required: [items]
     ReplaceResource:
       type: object
       properties:
@@ -3625,6 +4776,11 @@ components:
           type: string
           minLength: 0
           maxLength: 20000
+        afterBlock:
+          description: 环节正文块之后的位置；0 为开头，null 为全部正文之后。省略时保留本处已保存位置。
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 10000
       required:
       - id
       - kind
@@ -3647,6 +4803,11 @@ components:
           type: string
           minLength: 0
           maxLength: 20000
+        afterBlock:
+          description: 环节正文块之后的位置；0 为开头，null 为全部正文之后。省略时保留本处已保存位置。
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 10000
       required:
       - id
       - kind
@@ -3681,6 +4842,11 @@ components:
           - deleted
         latestVersion:
           $ref: '#/components/schemas/Version'
+        afterBlock:
+          description: 环节正文块之后的位置；0 为开头，null 为全部正文之后。省略时保留本处已保存位置。
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 10000
       required:
       - id
       - kind
@@ -3713,6 +4879,11 @@ components:
           - deleted
         latestVersion:
           $ref: '#/components/schemas/Version'
+        afterBlock:
+          description: 环节正文块之后的位置；0 为开头，null 为全部正文之后。省略时保留本处已保存位置。
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 10000
       required:
       - id
       - kind
@@ -3933,6 +5104,35 @@ components:
           minItems: 0
           maxItems: 1000
           uniqueItems: true
+        excludedReferenceIds:
+          description: 从所选环节及备用材料中排除的引用；省略表示不排除。
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          maxItems: 1000
+          uniqueItems: true
+        answerSpaceOverrides:
+          description: 各题单独设置的作答行数；省略的题沿用 answerSpaceLines。
+          type: array
+          maxItems: 1000
+          items:
+            type: object
+            additionalProperties: false
+            required: [referenceId, lines]
+            properties:
+              referenceId:
+                $ref: '#/components/schemas/Id'
+              lines:
+                type: integer
+                minimum: 0
+                maximum: 20
+        resourcePageReferenceIds:
+          description: 将这些资源的采用文件按原页插入；页面不可编辑，原件中的答案与注记不受输出开关过滤。
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
         answerSpaceLines:
           type: integer
           minimum: 0
@@ -4045,6 +5245,8 @@ components:
     ResourceList:
       type: object
       properties:
+        search:
+          $ref: '#/components/schemas/ResourceTextSearch'
         items:
           type: array
           items:
@@ -4053,6 +5255,60 @@ components:
           maxItems: 100000
       required:
       - items
+    ResourceTextSearch:
+      type: object
+      additionalProperties: false
+      description: 非空关键词查询时返回；计数针对当前账户、状态与分类筛选后的资料。pending 非零时继续同一查询。
+      properties:
+        ocr:
+          type: object
+          additionalProperties: false
+          description: 当前筛选资料的页覆盖计数；只对 pendingPages 非零继续轮询。
+          properties:
+            pendingPages:
+              type: integer
+              minimum: 0
+            unprocessedPages:
+              type: integer
+              minimum: 0
+            failedPages:
+              type: integer
+              minimum: 0
+          required: [pendingPages, unprocessedPages, failedPages]
+        pending:
+          type: integer
+          minimum: 0
+        unavailable:
+          type: integer
+          minimum: 0
+          description: 无可提取文字、格式不支持或预览尚不可用的资料数。
+        failed:
+          type: integer
+          minimum: 0
+        matches:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: false
+            properties:
+              page:
+                type: [integer, 'null']
+                minimum: 1
+                description: 第一处正文命中的页码；纯文本没有页码。
+              excerpt:
+                type: string
+                maxLength: 400
+              recognition:
+                type: object
+                additionalProperties: false
+                properties:
+                  resultId:
+                    $ref: '#/components/schemas/Id'
+                  location:
+                    $ref: '#/components/schemas/PageLocation'
+                required: [resultId, location]
+            required: [page, excerpt]
+      required: [pending, unavailable, failed, matches]
     ImportList:
       type: object
       properties:
@@ -4110,7 +5366,16 @@ components:
       - items
     Problem409:
       oneOf:
-      - $ref: ./first-flow.openapi.yaml#/components/schemas/Problem409
+      - $ref: workbench.openapi.yaml#/components/schemas/Problem409
+      - type: object
+        properties:
+          type:
+            const: /problems/materials/preview-required
+          field:
+            type: string
+          detail:
+            type: string
+        required: [type, field, detail]
       - type: object
         properties:
           type:
@@ -4219,7 +5484,7 @@ components:
         - currentVersion
     Problem422:
       oneOf:
-      - $ref: ./first-flow.openapi.yaml#/components/schemas/Problem422
+      - $ref: workbench.openapi.yaml#/components/schemas/Problem422
       - type: object
         properties:
           type:
@@ -4302,7 +5567,16 @@ components:
         - detail
     Problem503:
       oneOf:
-      - $ref: ./first-flow.openapi.yaml#/components/schemas/Problem503
+      - $ref: workbench.openapi.yaml#/components/schemas/Problem503
+      - type: object
+        properties:
+          type:
+            const: /problems/materials/recognition-unavailable
+          field:
+            type: string
+          detail:
+            type: string
+        required: [type, field, detail]
       - type: object
         properties:
           type:
@@ -4320,17 +5594,17 @@ components:
         - field
         - detail
     Problem400:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Problem400
+      $ref: workbench.openapi.yaml#/components/schemas/Problem400
     Problem401:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Problem401
+      $ref: workbench.openapi.yaml#/components/schemas/Problem401
     Problem403:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Problem403
+      $ref: workbench.openapi.yaml#/components/schemas/Problem403
     Problem404:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Problem404
+      $ref: workbench.openapi.yaml#/components/schemas/Problem404
     Problem413:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Problem413
+      $ref: workbench.openapi.yaml#/components/schemas/Problem413
     Problem415:
-      $ref: ./first-flow.openapi.yaml#/components/schemas/Problem415
+      $ref: workbench.openapi.yaml#/components/schemas/Problem415
     Problem:
       oneOf:
       - $ref: '#/components/schemas/Problem400'
@@ -4394,13 +5668,13 @@ components:
       - items
   parameters:
     BrowserRequestProtection:
-      $ref: ./first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection
+      $ref: workbench.openapi.yaml#/components/parameters/BrowserRequestProtection
     RequestOrigin:
-      $ref: ./first-flow.openapi.yaml#/components/parameters/RequestOrigin
+      $ref: workbench.openapi.yaml#/components/parameters/RequestOrigin
     RequestReferer:
-      $ref: ./first-flow.openapi.yaml#/components/parameters/RequestReferer
+      $ref: workbench.openapi.yaml#/components/parameters/RequestReferer
     IdempotencyKey:
-      $ref: ./first-flow.openapi.yaml#/components/parameters/IdempotencyKey
+      $ref: workbench.openapi.yaml#/components/parameters/IdempotencyKey
   responses:
     '400':
       description: 400，已知拒绝不改变业务数据；未知错误按未确认结果处理。
@@ -5835,4 +7109,4 @@ components:
         reason: unsupported-content-version
   securitySchemes:
     SessionCookie:
-      $ref: ./first-flow.openapi.yaml#/components/securitySchemes/SessionCookie
+      $ref: workbench.openapi.yaml#/components/securitySchemes/SessionCookie

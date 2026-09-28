@@ -1,6 +1,6 @@
 Feature: 班级实际反馈、教学时间与作品关联
   # 产品行为规格，不是已执行测试或当前授权。
-  # 精确协议与样本见 docs/contracts/teaching-time.md 及 teaching-time/cases.md。
+  # 精确协议与样本见 docs/contracts/teaching-time.md 及 docs/contracts/teaching-time-cases.md。
 
   Rule: 班级记录、时间与提醒
     Background:

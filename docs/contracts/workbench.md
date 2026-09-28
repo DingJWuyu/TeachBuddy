@@ -1,12 +1,14 @@
 # 工作台共享契约：身份、保存、版本与引用
 
-本页拥有跨模块保存和失败语义。认证由[auth](auth.md)定义；基础题目/备课字段在 [first-flow.openapi.yaml](workbench/first-flow.openapi.yaml)，丰富内容在[材料契约](workbench/materials.md)，数学引用在[数学契约](workbench/math.md)。正反交换见[基础案例](#基础交换用例)。
+本页拥有跨模块保存和失败语义。认证由[auth](auth.md)定义；基础题目/备课字段在 [workbench.openapi.yaml](../../apps/api/src/contracts/workbench.openapi.yaml)，丰富内容在[材料契约](materials.md)，数学引用在[数学契约](math.md)。正反交换见[基础案例](#基础交换用例)。
+
+身份、保存与冲突规则跨模块共用；下文的内容结构、搜索范围和删除接口描述基础题目/备课 API。材料、数学及[教学与时间](teaching-time.md)的扩展行为以各自契约为准。
 
 认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 已采用，15 个基础受保护操作均要求 PageContext。新版本仍保留旧成功请求的原路径重放；接口版本不等于当前验证状态。
 
 ## 身份与 HTTP
 
-沿用 [认证 OpenAPI](auth.openapi.yaml) 中已有的同源 HTTPS、Cookie、固定保护头、完整来源校验、直接 JSON 成功结果、`application/problem+json` 失败、`Cache-Control: no-store`、请求拒绝未知字段与隐式转换、响应允许附加字段的风格。工作台错误使用独立 `/problems/workbench/*` 命名空间。浏览器不拼接 Bearer、不接收 accountId 参数；写请求缺来源/保护头在任何业务变更前拒绝。
+沿用 [认证 OpenAPI](../../apps/api/src/contracts/auth.openapi.yaml) 中已有的同源 HTTPS、Cookie、固定保护头、完整来源校验、直接 JSON 成功结果、`application/problem+json` 失败、`Cache-Control: no-store`、请求拒绝未知字段与隐式转换、响应允许附加字段的风格。工作台错误使用独立 `/problems/workbench/*` 命名空间。浏览器不拼接 Bearer、不接收 accountId 参数；写请求缺来源/保护头在任何业务变更前拒绝。
 
 认证消费上述同版候选的 [auth.md](auth.md)，其真实实现和交付另行验收。登录、退出、Cookie 寿命和认证身份响应由认证拥有。服务端接入边界为 `resolvePrincipal(request) -> { accountKey: string } | null`（允许 Promise），accountKey 来自已验证身份的稳定账户映射。工作台 `getWorkbenchContext` 只返回缓存分区键，不构成认证 API。客户端传回此键不能证明身份。所有读、列表、来源、引用、复制、恢复、请求重放均按该身份授权；无身份 401，不属于该账户或不存在的对象统一 404，不泄漏是否存在。
 
@@ -18,7 +20,7 @@
 
 题目、自定义环节、引用及备课使用稳定 UUID；题目/备课 ID 由服务器创建，环节/引用 ID 由客户端创建，仅用于对象标识与重试，不代表授权。对象创建 `version=1`，每次有效写入严格增加 1，包括删除/恢复；相同内容的新写请求也增加版本。数组顺序就是显示顺序，同份备课所有环节 ID、引用 ID 各自全局唯一；重排保持 ID。时间为服务端 UTC，浏览器按本地时间呈现。
 
-数学文档 v1 是有序段落/独立公式，段落内为文字/行内公式。选项与小问可以用任意段落编写，不要求固定题型。题面与答案为两个独立文档，长期笔记独立保存；本课备注在引用上。原始粘贴文本逐字保留，编辑整理题目不会改原稿。服务端保存公式源，不执行 HTML/脚本；渲染失败不销毁源内容。图片/资产由[材料内容版本](workbench/materials.md#内容)定义明确节点和账户内文件引用。
+数学文档 v1 是有序段落/独立公式，段落内为文字/行内公式。选项与小问可以用任意段落编写，不要求固定题型。题面与答案为两个独立文档，长期笔记独立保存；本课备注在引用上。原始粘贴文本逐字保留，编辑整理题目不会改原稿。服务端保存公式源，不执行 HTML/脚本；渲染失败不销毁源内容。图片/资产由[材料内容版本](materials.md#内容)定义明确节点和账户内文件引用。
 
 创建普通题目可有粘贴来源；来源创建后不改。复制时编辑器以原题题面/答案/标题初始化，笔记为空、标记关闭；首个保存将改编后的完整输入与所用原题版本一起提交，服务器新建独立 ID，来源保存原题 ID、所用版本和内容快照。复制之后两题独立编辑；读取原题的衍生列表可以反向找到副本，原题软删除也不破坏来源快照。直接修改不生成新题或来源。
 
@@ -32,7 +34,7 @@
 
 读取备课同时给出每个来源的 active/deleted 状态及最新版本。该派生状态变化不增加备课版本、不改快照；显示“有更新”只在 active 且版本不同。使用位置从 lessons 的公共查询返回活动备课位置，questions 不读 lessons 表。同题在一个位置可有多个独立引用，普通取题交互去重，“再放一次”才显式创建另一个。请求幂等防重复和老师主动重复引用是两件事。
 
-软删除保留原内容、ID、来源、引用及操作记录，无自动清理期限。没有永久删除。删除题目不级联删副本或备课快照，删除备课不删题目；恢复只改 deletedAt 并增加版本，不重建 ID。恢复原题不自动替换已采用快照。整体备份覆盖这些记录，见[数据管理](../features/data.md)。
+软删除保留原内容、ID、来源、引用及操作记录，无自动清理期限。基础 API 只提供软删除与恢复；当前永久删除能力和关联处理由各模块扩展契约定义。删除题目不级联删副本或备课快照，删除备课不删题目；恢复只改 deletedAt 并增加版本，不重建 ID。恢复原题不自动替换已采用快照。整体备份覆盖这些记录，见[数据管理](../features/data.md)。
 
 ## 写入、冲突与未知结果
 
@@ -71,7 +73,7 @@
 
 遵守 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。权威静态目录位于 `packages/shared/src/`，基础格式见 OpenAPI 的 ModuleCatalog 与同名样本，扩展目录由材料及数学契约定义。当前六模块目录及接缝在 `packages/shared/src/`，日程为 top 类型。questions 无业务依赖，lessons 必需 questions 的引用读取端口。目录纯数据，Web/API 从同一目录投影到各自本地代码映射；构建检查缺映射、重复 ID/路径、缺依赖与环路，启动前检查迁移。停用或隐藏导航不代表拒绝模块 API。
 
-下表描述基础 v1 接缝。当前模块工厂另注入材料及数学依赖，具体参数见[材料公共端口](workbench/materials.md#公共端口)与[数学公共接口](workbench/math.md#公共端口)；`readForReference` 保留供旧调用方，当前丰富引用使用 `readForReferenceV2`。模块内部文件、组件和 SQL 由所属模块维护。
+下表描述基础 v1 接缝。当前模块工厂另注入材料及数学依赖，具体参数见[材料公共端口](materials.md#公共端口)与[数学公共接口](math.md#公共端口)；`readForReference` 保留供旧调用方，当前丰富引用使用 `readForReferenceV2`。模块内部文件、组件和 SQL 由所属模块维护。
 
 | 接缝 | 约定 | 写者/消费者 |
 | --- | --- | --- |
@@ -84,7 +86,7 @@
 | 模块迁移 | 各模块 `migrations/index.js` 导出有序 `migrations` 数组，项 `{id, up(db)}`；ID 前缀 questions_/lessons_，成功 ledger 与迁移同事务，已执行 ID 不重跑。 | B13 提供；B12 runner 汇总 |
 | Web 入口 | 两 feature 的 `index.jsx` 默认导出 React 页面；外壳处理 route、可信 accountKey、共享右栏和按账户的本地恢复。模块 API client 只调用唯一 OpenAPI。 | B14 独占，无需后端参与 UI 内部设计 |
 
-SQLite 内业务写入和幂等成功记录一个事务提交，不使用先写题目再补操作记录的分步确认。公共端口及 write 回调的已知失败抛出带 `status` 和 `problem`（OpenAPI Problem）的 Error；execute 回滚后原样传播，由工作台 HTTP 层映射。未知存储错误回滚并映射 503。write 不返回 Promise，事务中不进行网络调用。模块路由错误按契约返回，单个页面/API 错误不清空别的模块现场。读引用时只过 questions 公共端口；使用位置过 lessons HTTP 操作，避免 questions -> lessons 的反向必需依赖。文件接口见[材料架构](workbench/materials.md#材料实现)。
+SQLite 内业务写入和幂等成功记录一个事务提交，不使用先写题目再补操作记录的分步确认。公共端口及 write 回调的已知失败抛出带 `status` 和 `problem`（OpenAPI Problem）的 Error；execute 回滚后原样传播，由工作台 HTTP 层映射。未知存储错误回滚并映射 503。write 不返回 Promise，事务中不进行网络调用。模块路由错误按契约返回，单个页面/API 错误不清空别的模块现场。读引用时只过 questions 公共端口；使用位置过 lessons HTTP 操作，避免 questions -> lessons 的反向必需依赖。文件接口见[材料架构](materials.md#材料实现)。
 
 ### 持久化与演进
 
@@ -103,7 +105,7 @@ SQLite 内业务写入和幂等成功记录一个事务提交，不使用先写�
 
 ## 基础交换用例
 
-本节消费工作台 `0.1.0-candidate.2` 与认证 `1.0.0-rc.2`，为设计用例，不是运行通过证据。字段和样本值唯一在 [OpenAPI](workbench/first-flow.openapi.yaml)；本页开头区分旧测试身份首流与当前认证接续。前端替身与后端 HTTP 集成都从 `components.examples` 取样本并按下表序列验证，不各造一套模型。
+本节消费工作台 `0.1.0-candidate.2` 与认证 `1.0.0-rc.2`，为设计用例，不是运行通过证据。字段和样本值唯一在 [OpenAPI](../../apps/api/src/contracts/workbench.openapi.yaml)；本页开头区分旧测试身份首流与当前认证接续。前端替身与后端 HTTP 集成都从 `components.examples` 取样本并按下表序列验证，不各造一套模型。
 
 ### 可复现起点
 

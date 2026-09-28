@@ -2,7 +2,7 @@ openapi: 3.2.1
 info:
   title: TeachBuddy 账户入口契约
   version: 1.0.0-rc.2
-  description: AUTH-CONTRACT-CORRECTION@1 限定修订候选；已由限定独立审查冻结，不代表已实现。auth.md 拥有跨操作语义与首错顺序，auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
+  description: AUTH-CONTRACT-CORRECTION@1 限定修订候选；已由限定独立审查冻结，不代表已实现。docs/contracts/auth.md 拥有跨操作语义与首错顺序，docs/contracts/auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
     no-store。
 x-contract-status: frozen
 x-accepted-source:

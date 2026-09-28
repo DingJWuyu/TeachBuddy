@@ -1,7 +1,7 @@
 # language: zh-CN
 功能: WB-AG 早期 Agent 与持久对话
   作为老师，我能从首页或业务右栏操作自己的题目和备课，并保留对话与工作现场。
-  # 首批 Agent 行为规格，当前整线暂停。字段及恢复见 docs/contracts/agent.openapi.json 与 agent.md。
+  # 首批 Agent 行为规格，当前整线暂停。字段及恢复见 apps/api/src/contracts/agent.openapi.json 与 docs/contracts/agent.md。
   # 入口关系参考 prototype/behavior/modules.md，未沿用固定回复或原型 PASS。
   # WB-001 至 WB-019 的适用手工业务、身份与持久场景继续回归，不重新编号。
 

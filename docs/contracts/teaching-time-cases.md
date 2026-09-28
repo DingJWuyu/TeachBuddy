@@ -1,6 +1,6 @@
 # Teaching-time 契约用例
 
-教学时间 v1 验收规格。字段只见 [OpenAPI](teaching-time.openapi.yaml)，下列是独立前后端可重放的交换预期，不是已跑过的产品测试。机器样本见 [samples.json](samples.json)，每项注明 schema 和是否应接受；语义条件仍按本页与[契约入口](../teaching-time.md)验证，JSON Schema 通过不代表跨字段/业务通过。
+教学时间 v1 验收规格。字段只见 [OpenAPI](../../apps/api/src/contracts/teaching-time-v1.openapi.yaml)，下列是独立前后端可重放的交换预期，不是已跑过的产品测试。机器样本见 [samples.json](../../apps/api/test/fixtures/contracts/teaching-time-v1-samples.json)，每项注明 schema 和是否应接受；语义条件仍按本页与[契约入口](teaching-time.md)验证，JSON Schema 通过不代表跨字段/业务通过。
 
 ## 固定数据与执行方法
 
@@ -87,12 +87,12 @@ T52 用同版 classes/lessons 替身验证：course.classId=C1、lessonId=L1、r
 
 ## TT-C6 作品接入（WB-T020）
 
-`teaching-time.openapi.yaml` 的记录 v1 `SourceInput` 只接受 lesson/question；work、math、resource 或未知 blob 字段均为 422。当前记录 v2 的 `SourceInputV2` 已支持 kind=math，见[数学关联与兼容契约](../teaching-time.md#数学作品关联)和[对应场景](#数学关联用例)；work/resource 仍不受支持。验证需同时覆盖 v1 拒绝、v2 真实作品选择/保存/删源/双向回看和旧键确认。已有局部接线不等于 WB-T020 全范围通过，替身及 schema 样本也不能代签。
+`teaching-time-v1.openapi.yaml` 的记录 v1 `SourceInput` 只接受 lesson/question；work、math、resource 或未知 blob 字段均为 422。当前记录 v2 的 `SourceInputV2` 已支持 kind=math，见[数学关联与兼容契约](teaching-time.md#数学作品关联)和[对应场景](#数学关联用例)；work/resource 仍不受支持。验证需同时覆盖 v1 拒绝、v2 真实作品选择/保存/删源/双向回看和旧键确认。已有局部接线不等于 WB-T020 全范围通过，替身及 schema 样本也不能代签。
 
 <a id="tt-c7"></a>
 ## TT-C7 静态目录 v2 校验
 
-本组仅验证教学基础目录 v2 的固定输入。当前六模块组合返回 v3，见[目录版本](../teaching-time.md#静态目录-v2-与当前-v3)，不使用下述四模块样本断言当前运行响应。
+本组仅验证教学基础目录 v2 的固定输入。当前六模块组合返回 v3，见[目录版本](teaching-time.md#静态目录-v2-与当前-v3)，不使用下述四模块样本断言当前运行响应。
 
 在该 v2 fixture 中，`GET /api/modules` 成功返回样本 `catalog-v2`，状态 200，响应为 `version=2` 且 `items` 顺序严格为 `questions`、`lessons`、`classes`、`schedule`；四项完整 descriptor 的 `name`、`path`、`navigation`、`auxiliaryPanel` 和 `requires` 逐项按样本比对。该响应是 v2，不能返回 B11 v1 的 `{items: []}` 形状。
 
@@ -113,7 +113,7 @@ T53 对同一静态输入先校验再投影。以下变体都通过 `ModuleCatal
 
 ## 数学关联用例
 
-教学记录 v2 数学关联验收规格。精确形状见 [OpenAPI](teaching-time-math.openapi.json)，语义见[契约](../teaching-time.md#数学作品关联)。[机器样本](math-samples.json)中的 `valid` 只表示 schema 判断，`exchanges` 才记录跨请求的预期；样本本身不是产品通过记录。
+教学记录 v2 数学关联验收规格。精确形状见 [OpenAPI](../../apps/api/src/contracts/teaching-time-v2.openapi.json)，语义见[契约](teaching-time.md#数学作品关联)。[机器样本](../../apps/api/test/fixtures/contracts/teaching-time-v2-samples.json)中的 `valid` 只表示 schema 判断，`exchanges` 才记录跨请求的预期；样本本身不是产品通过记录。
 
 固定账户 A/B 由可信测试入口提供，客户端不提交 accountKey。C1/C2、L1、Q1、R1 复用本页[基础用例](#固定数据与执行方法)；W1 为 `60000000-0000-4000-8000-000000000001`，R2 为 `30000000-0000-4000-8000-000000000002`。初始时间 `2026-09-21T06:00:00Z`，记录日期 `2026-09-21`，每次写入推进一分钟。W1 初始 title=“函数图象”、version=1、deletedAt=null。真实复验通过公共操作建立对象并映射真实 ID，固定 UUID 仅用于同版替身。
 
@@ -169,4 +169,4 @@ T53 对同一静态输入先校验再投影。以下变体都通过 `ModuleCatal
 
 `catalog-combined-target` 逐字值取自固定 M40 样本：version=3，六模块顺序和 requires 相同。生产投影实际模块子集；数学与教学时间真实装配时 classes 必须含 math.readForTeachingLinkV1。静态 duplicate-id/path、缺 math 提供方、依赖环变体按旧 TT-C7 的 field/reason 拒绝，不能用 shape valid 代替语义校验。
 
-原 79 个 T50 样本、schema、时间/提醒/班级操作仍保留；新 schema 的原 60 个 schema 与所有 schedule 操作逐项相等。记录作品更新/删源不重置 armedAt、不结算或生成通知、不写日程。已有日程关联 R1 时仍使用原 RecordReference，math 故障不影响该摘要。实现变更须验证这些不变量，当前已测范围见[能力证据](../../plans/run-state.md#证据边界)。
+原 79 个 T50 样本、schema、时间/提醒/班级操作仍保留；新 schema 的原 60 个 schema 与所有 schedule 操作逐项相等。记录作品更新/删源不重置 armedAt、不结算或生成通知、不写日程。已有日程关联 R1 时仍使用原 RecordReference，math 故障不影响该摘要。实现变更须验证这些不变量，当前已测范围见[能力证据](../plans/run-state.md#证据边界)。

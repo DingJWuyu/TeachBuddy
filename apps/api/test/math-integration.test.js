@@ -23,7 +23,7 @@ test('MC05/06/11: real composition preserves math snapshots, v2 replay and resta
  const catalog=await h.send('get','/api/modules');assert.equal(catalog.body.version,3);
  const input={title:'往返课',intro:empty,sections:[{id:randomUUID(),title:'探究',content:empty,references:[]}],materials:[]};
  const oldKey=randomUUID();const old=await h.send('post','/api/modules/lessons/v2/items',input,oldKey);assert.equal(old.status,201,JSON.stringify(old.body));
- const sample=JSON.parse(fs.readFileSync(new URL('../../../docs/contracts/workbench/math/samples.json', import.meta.url),'utf8'));
+ const sample=JSON.parse(fs.readFileSync(new URL('./fixtures/contracts/math-samples.json', import.meta.url),'utf8'));
  const creation=sample.find(c=>c.id==='create-formula');
  assert.ok(creation,'frozen formula sample');
  const work=await h.send('post',works,creation.value);assert.equal(work.status,201,JSON.stringify(work.body));
@@ -50,7 +50,7 @@ test('MC05/06/11: real composition preserves math snapshots, v2 replay and resta
 
 test('MC06/10: adopted snapshots survive deletion; real classes reverse links preserve linked labels',async()=>{
  const h=await harness();try {
- const sample=JSON.parse(fs.readFileSync(new URL('../../../docs/contracts/workbench/math/samples.json', import.meta.url),'utf8')).find(c=>c.id==='create-plane').value;
+ const sample=JSON.parse(fs.readFileSync(new URL('./fixtures/contracts/math-samples.json', import.meta.url),'utf8')).find(c=>c.id==='create-plane').value;
  const work=(await h.send('post',works,sample)).body;
  const ref={id:randomUUID(),kind:'math',workId:work.id,workVersion:1,note:'私密'};
  const input={title:'图形课',intro:empty,sections:[],materials:[ref]};
@@ -72,7 +72,7 @@ test('MC06/10: adopted snapshots survive deletion; real classes reverse links pr
 test('MC07: all five math kinds produce real DOCX and PDF without private notes', {timeout:90000}, async()=>{
  const h=await harness();const out=new URL('../../../test-results/evidence/M43/v1/output/',import.meta.url);fs.mkdirSync(out,{recursive:true});
  try {
-  const samples=JSON.parse(fs.readFileSync(new URL('../../../docs/contracts/workbench/math/samples.json',import.meta.url)));
+  const samples=JSON.parse(fs.readFileSync(new URL('./fixtures/contracts/math-samples.json',import.meta.url)));
   const references=[];
   for(const kind of ['formula','plane','space','dynamic','html']){
    let input;

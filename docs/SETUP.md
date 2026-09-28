@@ -11,7 +11,7 @@
 - 运行方式：直接读取开发树，Node `--watch` 启动 `apps/api/src/server.js --dev`，Vite 在同一 HTTPS 服务内提供前端与热更新。`.scratch/preview/deployed-source/` 和 `apps/web/dist/` 不参与此服务。
 - 启动入口还加载 `.env` 及用户私有邮件配置。只读键名和路径进行诊断，不打印秘密。
 - 前端源码保存后自动更新；API 及其加载的 JS 模块保存后自动重启，短暂中断请求。未提交的源码也立即生效，提交不是生效条件。文档修改无需重启。
-- 更换依赖后准备本地数学资产并重启；改变环境变量、证书或通过文件系统读取的契约/schema 后手动重启：`systemctl --user restart teacherworkspace-preview.service`。Node 的模块监听不涵盖所有外部文件。
+- 更换依赖后准备本地数学资产并重启；改变环境变量、证书或 `apps/api/src/contracts/` 等通过文件系统读取的运行定义后手动重启：`systemctl --user restart teacherworkspace-preview.service`。Node 的模块监听不涵盖所有外部文件。
 
 当前服务是用户级临时单元，完整停止后会被 systemd 回收。若 `start` 提示单元不存在，用原入口重新创建：
 
@@ -76,7 +76,7 @@ export QUESTIONS_XPDF_PDFTOHTML="$PWD/.scratch/questions-tools/xpdf-tools-linux-
 
 ## 本地页识别工具
 
-`MATERIALS_OCR_HOME` 指向独立、持久的 PaddleOCR 工具目录。未配置时不运行新识别，已经保存的机器结果仍可读取。识别结果与人工采用的边界见[共用页识别](contracts/workbench/recognition.md)，不把文字搜索命中等同于题目整理或人工校对完成。
+`MATERIALS_OCR_HOME` 指向独立、持久的 PaddleOCR 工具目录。未配置时不运行新识别，已经保存的机器结果仍可读取。识别结果与人工采用的边界见[共用页识别](contracts/recognition.md)，不把文字搜索命中等同于题目整理或人工校对完成。
 
 本机固定环境为 Linux、NVIDIA RTX 5060 Laptop 8 GiB、Python 3.12.14、PaddlePaddle GPU 3.2.1/cu129、PaddleOCR/PaddleX 3.7.0。需要 `bwrap`、用户级 systemd 和 `nvidia-smi`。运行单页子进程，禁止联网和自动下载，复用既有串行 Job；公开 Paddle API 的微型预热用于本机首次 kernel 加载问题，不修改第三方依赖或模型函数。
 
@@ -128,6 +128,7 @@ React 页面
 | `apps/api/src/server.js` | 同源 HTTPS、可选 Vite 开发服务、启动完成后监听与停止连接 |
 | `apps/api/src/app.js` | 组合认证、workbench、API 和 Web 入口 |
 | `apps/api/src/features/auth/` | 真实账户、会话、页面绑定、验证码、迁移与恢复操作 |
+| `apps/api/src/contracts/` | API 机器契约及其本地引用，供运行校验和测试读取；文字语义另见[契约说明](README.md#契约说明) |
 | `apps/api/src/workbench/` | 共享身份、校验、幂等、迁移、目录装配、文件和任务底座 |
 | `apps/api/src/modules/` | 题库、备课、资源、数学、班级和日程业务 |
 | `apps/api/src/workbench/reliability/` | 个人资料包、备份、恢复与维护锁 |

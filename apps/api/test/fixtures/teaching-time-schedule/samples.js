@@ -1,6 +1,6 @@
 /**
  * Fixed T52 samples from the contract cases. IDs match the machine samples in
- * docs/contracts/teaching-time/cases.md so a failure can be replayed verbatim.
+ * docs/contracts/teaching-time-cases.md so a failure can be replayed verbatim.
  */
 export const SAMPLE_IDS = Object.freeze({
   classOne: '10000000-0000-4000-8000-000000000001',

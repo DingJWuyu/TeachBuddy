@@ -201,7 +201,7 @@ export async function seedLegacy(client) {
   const sample = JSON.parse(
     fs.readFileSync(
       new URL(
-        "../../../docs/contracts/workbench/math/samples.json",
+        "./fixtures/contracts/math-samples.json",
         import.meta.url,
       ),
     ),

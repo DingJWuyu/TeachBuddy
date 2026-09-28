@@ -35,7 +35,7 @@ const catalogEntry = (overrides = {}) => ({
 });
 
 test('the shared catalog applies only the frozen teaching question dependency overlay', () => {
-  const sample = JSON.parse(fs.readFileSync(path.join(repoRoot,'docs/contracts/workbench/math/samples.json'))).find(s=>s.id==='catalog-combined-target');
+  const sample = JSON.parse(fs.readFileSync(path.join(repoRoot,'apps/api/test/fixtures/contracts/math-samples.json'))).find(s=>s.id==='catalog-combined-target');
   const expected = structuredClone(sample.value.items);
   expected.find(entry => entry.id === 'classes').requires[0] = 'questions.readForReferenceV2';
   assert.deepEqual(moduleCatalog, expected);
@@ -95,12 +95,12 @@ test('catalog projection enables only implemented modules and rejects orphans', 
 
 test('the shared contract vocabulary stays in the frozen OpenAPI documents', () => {
   const openapi = fs.readFileSync(
-    path.join(repoRoot, 'docs', 'contracts', 'workbench', 'first-flow.openapi.yaml'),
+    path.join(repoRoot, 'apps', 'api', 'src', 'contracts', 'workbench.openapi.yaml'),
     'utf-8'
   );
-  const allOpenapi = openapi + fs.readFileSync(path.join(repoRoot,'docs/contracts/teaching-time/teaching-time.openapi.yaml'),'utf8');
+  const allOpenapi = openapi + fs.readFileSync(path.join(repoRoot,'apps/api/src/contracts/teaching-time-v1.openapi.yaml'),'utf8');
   const authOpenapi = fs.readFileSync(
-    path.join(repoRoot, 'docs', 'contracts', 'auth.openapi.yaml'),
+    path.join(repoRoot, 'apps', 'api', 'src', 'contracts', 'auth.openapi.yaml'),
     'utf-8'
   );
 

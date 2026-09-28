@@ -6,9 +6,9 @@ import { invalidInput } from '../problems.js';
 
 // The frozen YAML is the sole schema source. Walk objects in declaration order
 // so unrelated union branches cannot change B11's first-error field/reason.
-const root = new URL('../../../../../docs/contracts/workbench/', import.meta.url);
+const root = new URL('../../contracts/', import.meta.url);
 const documents = new Map(
-  ['first-flow.openapi.yaml', 'materials.openapi.yaml'].map((name) => [
+  ['workbench.openapi.yaml', 'materials.openapi.yaml'].map((name) => [
     name,
     YAML.parse(fs.readFileSync(new URL(name, root), 'utf8'))
   ])

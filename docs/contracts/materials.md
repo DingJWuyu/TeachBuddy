@@ -1,10 +1,10 @@
 # 材料契约：文件、题目、资源与备课
 
-材料语义已采用，当前能力并非全部达标。精确 HTTP/数据定义在 [materials.openapi.yaml](materials.openapi.yaml)，交换正反例在[案例](#材料交换用例)，技术接缝在[材料实现](#材料实现)。只处理题目保存时读内容、分类和共享保存；涉及文件才展开文件/任务；涉及备课才展开引用/输出。
+材料语义已采用，当前能力并非全部达标。精确 HTTP/数据定义在 [materials.openapi.yaml](../../apps/api/src/contracts/materials.openapi.yaml)，交换正反例在[案例](#材料交换用例)，技术接缝在[材料实现](#材料实现)。只处理题目保存时读内容、分类和共享保存；涉及文件才展开文件/任务；涉及备课才展开引用/输出。
 
 ## 共用规则与真实认证边界
 
-[已冻结 B11](../workbench.md)的可信 principal、同源 Cookie、保护头、Origin/Referer 完整校验、no-store、UUID、服务端 UTC、乐观版本、账户作用域幂等、软删除及未知结果语义原样沿用。本包未重新定义认证、登录/退出、会话过期或账户响应。当前真实身份和页面上下文沿[认证契约](../auth.md)，历史 partial 认证说明不用于现有产品。
+[已冻结 B11](workbench.md)的可信 principal、同源 Cookie、保护头、Origin/Referer 完整校验、no-store、UUID、服务端 UTC、乐观版本、账户作用域幂等、软删除及未知结果语义原样沿用。本包未重新定义认证、登录/退出、会话过期或账户响应。当前真实身份和页面上下文沿[认证契约](auth.md)，历史 partial 认证说明不用于现有产品。
 
 所有操作，包括文件字节、缩略图、裁图、预览、任务、补充原稿和引用读取，先经 `resolvePrincipal(request)`。无身份 401，本账户不存在或外账户对象统一 404。客户端不传 accountKey/accountId，不发任意下载 URL 给服务器拉取。真实认证已装配；可信 test-principal 只用于隔离测试，不能被产品 UI/请求参数启用，不能签真实认证 PASS。
 
@@ -120,7 +120,7 @@ QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不�
 
 当前备课 v3 列表遵循账户保存的课题顺序；尚未参与排序的新课题放在前面，按更新时间降序、ID 升序排列。v1/v2 列表保持原规则。正文编辑不改变已保存的课题顺序。
 
-`GET /api/modules/lessons/v3/order` 返回 `{version, lessonIds}`，包括本账户已删除课题以便恢复原位；没有排序记录时版本为 0。`PUT` 提交 `{baseVersion, lessonIds}`，ID 数组必须恰好包含本账户全部课题且不重复，顺序版本冲突返回 409，缺项或外账户 ID 返回 422。成功仅增加顺序版本，不增加文稿版本。沿用真实身份、页面上下文、写保护和幂等键；未知结果必须用原键原请求确认。精确 schema 见 [v3 OpenAPI](math/math.openapi.json)。
+`GET /api/modules/lessons/v3/order` 返回 `{version, lessonIds}`，包括本账户已删除课题以便恢复原位；没有排序记录时版本为 0。`PUT` 提交 `{baseVersion, lessonIds}`，ID 数组必须恰好包含本账户全部课题且不重复，顺序版本冲突返回 409，缺项或外账户 ID 返回 422。成功仅增加顺序版本，不增加文稿版本。沿用真实身份、页面上下文、写保护和幂等键；未知结果必须用原键原请求确认。精确 schema 见 [v3 OpenAPI](../../apps/api/src/contracts/math.openapi.json)。
 
 列表与右侧“我的备课”的上下移操作交换相邻可见课题；搜索或已删除过滤不移除隐藏课题的排序记录。课题顺序由 lessons 模块独占的 `lesson_order` 保存。
 
@@ -132,9 +132,9 @@ QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不�
 
 导出 POST 先检查 baseVersion，冻结该保存版本的完整服务端快照和选项，返回 ExportRecord + jobId。新源更新不影响已受理输出，snapshot 中文件持续保留。sectionIds 必须唯一且属于该备课；输出始终按备课顺序，不按请求乱序。materialReferenceIds 必须来自未安排集合，按其原顺序置末尾。练习只包含题引用；选中集合没有题返回 invalid-export-selection。生成后 listLessonExports 能找到全部历史输出及其保存版本；软删除备课仍可读取已有输出，恢复不重建。
 
-精确组合规则归 [成果规则](../../features/lessons.md#u-m6-六种成果与手工-ppt)。输出器先构造经过选项过滤的内容树，再生成 DOCX/PDF；关闭选项的答案和注记不得留在 DOCX XML、注释、隐藏段落、PDF 文本或附件里。文件属性不写私人笔记。答案区在全文后按导出题号对应，同题显式重复则按各出现位置编号。讲义/练习的 answerSpaceLines 控制每题后的空白行，教案忽略此选项。
+精确组合规则归 [成果规则](../features/lessons.md#u-m6-六种成果与手工-ppt)。输出器先构造经过选项过滤的内容树，再生成 DOCX/PDF；关闭选项的答案和注记不得留在 DOCX XML、注释、隐藏段落、PDF 文本或附件里。文件属性不写私人笔记。答案区在全文后按导出题号对应，同题显式重复则按各出现位置编号。讲义/练习的 answerSpaceLines 控制每题后的空白行，教案忽略此选项。
 
-Word 输出是 DOCX；PDF 从同一过滤后内容和 DOCX 版式转换。页型 A4、正文可打印宽 170 mm、默认 20 mm 页边距；嵌入可分发中文字体或实测可用替代，公式/题图不跨页裁切，长题按段落继续并保留题号。环节和段落可自然分页，不强行每题一页。数学必需支持范围与目标编辑器证据见[输出验收](../../acceptance/mvp-matrix.md#office)。输出页数和布局在最终内容上校验，失败保留快照与原件，不能返回坏文件下载成功。
+Word 输出是 DOCX；PDF 从同一过滤后内容和 DOCX 版式转换。页型 A4、正文可打印宽 170 mm、默认 20 mm 页边距；嵌入可分发中文字体或实测可用替代，公式/题图不跨页裁切，长题按段落继续并保留题号。环节和段落可自然分页，不强行每题一页。数学必需支持范围与目标编辑器证据见[输出验收](../acceptance/mvp-matrix.md#office)。输出页数和布局在最终内容上校验，失败保留快照与原件，不能返回坏文件下载成功。
 
 用于 PPT 的 question-asset Job 冻结题目版本。question-png 生成透明背景题面分片，includeAnswers=true 时答案另成分片，不含长期笔记；figure-png 必须给属于该快照的 figureFileId，其他模式该字段为 null。PNG 宽度 1600 px，按块分片且单片高度不超过 2400 px；超高单个图等比缩小，公式保持完整。outputFileIds 按显示顺序排列。文字/公式复制直接从 Document 读取，不新增服务端端口。
 
@@ -168,7 +168,7 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 
 ### 选择与数据所有权
 
-沿用 React/Vite、Express、better-sqlite3 单一后端及[静态模块目录](../../adr/0001-use-a-single-static-module-catalog.md)。一个教师规模下顺序执行重转换即可；文件目录和 SQLite 一起备份。不建立上传服务、对象存储网关、通用内容平台、分类平台或队列平台。
+沿用 React/Vite、Express、better-sqlite3 单一后端及[静态模块目录](../adr/0001-use-a-single-static-module-catalog.md)。一个教师规模下顺序执行重转换即可；文件目录和 SQLite 一起备份。不建立上传服务、对象存储网关、通用内容平台、分类平台或队列平台。
 
 材料历史协议使用 ModuleCatalog version=2；当前六模块组合使用数学 schema 的 version=3；questions/resources 无业务模块必需依赖，lessons 声明 questions.readForReferenceV2 与 resources.readForReferenceV2。File/Document/Job 是启动底座，不注册为额外业务模块。只在实际实现集成后注册，Web/API从同一目录投影；旧目录版本客户端按契约升级保护，不另维护一份业务目录。
 
@@ -183,7 +183,7 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 
 自动提取的设计目标为“原生读取保存 + B 视觉辅助 + 结构/完整性校验 + 局部校对”。T/Word 先保留原生段落、OMML、图片关系；结构明确时本地自动拆题，通用文本整理失败时可将文本受控排版为页图走同一 B 路线，不能改成空题手填。PDF/扫描/图片按小批原页或区域提取，跨页续题可带相邻页上下文；答案页归并与题面分开。具体模型请求参数不进入公共 schema。R33 必须以真实输入证明这条完整路径，未通过项如实阻塞该实现能力。
 
-当前 DOCX 生成走 `apps/api/src/modules/lessons/pandoc.js` 的 Pandoc JSON → DOCX；公式由一般 LaTeX 源转换为可编辑 OMML。LibreOffice 负责 PDF 和 Office 预览，Poppler 负责页图/文本；实际工具与字体条件见[运行指南](../../SETUP.md#文件转换工具)。旧 DOC 的公式对象丢失仍需受限状态及补充 PDF，原文件不变。目标 Office 实测和本地 XML 检查是不同证据。
+当前 DOCX 生成走 `apps/api/src/modules/lessons/pandoc.js` 的 Pandoc JSON → DOCX；公式由一般 LaTeX 源转换为可编辑 OMML。LibreOffice 负责 PDF 和 Office 预览，Poppler 负责页图/文本；实际工具与字体条件见[运行指南](../SETUP.md#文件转换工具)。旧 DOC 的公式对象丢失仍需受限状态及补充 PDF，原文件不变。目标 Office 实测和本地 XML 检查是不同证据。
 
 ### 公共端口
 
@@ -204,7 +204,7 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 | 使用位置 | `lessons.listUsages(principal, {kind, id})` | 同步 UsageList；材料版 kind 为 question/resource；v3 另见数学架构，按备课 updatedAt 降序再 referenceId 升序。 |
 | 业务动作 | 各模块 `port.operations.<operationId>({principal, key, input, id, query})` | Promise<{status, body}>，input/查询来自对应 HTTP schema；读取省略 key，缺省 id/query 不传。与 HTTP 共用业务校验与 mutations，不再执行另一份 SQL。 |
 
-Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档，已有 resource/question 引用可供复用。作品制作状态和隔离 HTML 由[数学架构](../../features/math.md#制作实现)定义。
+Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档，已有 resource/question 引用可供复用。作品制作状态和隔离 HTML 由[数学架构](../features/math.md#制作实现)定义。
 
 R31 组合工厂提供 `{db, mutations, files, content, jobs}`；R32/R33/R34 的模块工厂在 B11 形式上分别注入必需端口。lessons 注入 questions/resources，不反向注入 lessons。HTTP 的 usages 挂 lessons；UI 从该公共查询取使用位置，避免必需依赖环。
 
@@ -220,7 +220,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 
 每个重操作使用独立临时目录和 LibreOffice profile，参数走 argv，禁止 shell 拼接用户文件名。关闭转换器网络访问、宏、外部链接、宿主目录访问；子进程非特权，只挂输入只读/输出可写。默认上限：100 MiB 原件、500 页、压缩展开 512 MiB、单页 40M 像素、单转换 120 秒；超限或退出保留原稿和明确错误。图片解码与 DOCX/PPTX 解压同样受限。临时转换成功后清理，失败保留诊断摘要及必要输入引用，不记录 Cookie/密钥或模型 reasoning 到产品日志。
 
-重启先验证 DB 迁移/文件配置，再处理 jobs；queued 可执行，running 标 interrupted，不重发未知 Provider 请求。提取每页/区域的结果与完成状态一起持久提交，重试不从零覆盖校对。task 的成功输出与业务结果一致后才 succeeded。输出及原稿均纳入[部署备份](../../features/data.md#部署备份与还原)，恢复须验证真实字节可达，临时文件清理不承担恢复语义。
+重启先验证 DB 迁移/文件配置，再处理 jobs；queued 可执行，running 标 interrupted，不重发未知 Provider 请求。提取每页/区域的结果与完成状态一起持久提交，重试不从零覆盖校对。task 的成功输出与业务结果一致后才 succeeded。输出及原稿均纳入[部署备份](../features/data.md#部署备份与还原)，恢复须验证真实字节可达，临时文件清理不承担恢复语义。
 
 ### 材料迁移
 
@@ -230,7 +230,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 
 ## 材料交换用例
 
-这些是设计用例，不能标为产品运行 PASS。精确请求、响应和文件格式由 [OpenAPI](materials.openapi.yaml) 的 schemas、paths、examples 唯一拥有；本节定义交换顺序与断言，语义沿本页前述约定。
+这些是设计用例，不能标为产品运行 PASS。精确请求、响应和文件格式由 [OpenAPI](../../apps/api/src/contracts/materials.openapi.yaml) 的 schemas、paths、examples 唯一拥有；本节定义交换顺序与断言，语义沿本页前述约定。
 
 ### 起点与替身
 
@@ -238,7 +238,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 
 前端使用同版 examples 驱动替身：请求先按对应 requestBody 校验，再按以下序列返回结果和延迟/失败；不能只根据按钮名返回成功。后端测试直接调用相同 HTTP 操作并独立断言预期数据，不能以实现生成的快照作为唯一预期。成功/失败之后 GET 验证状态，所有 mutation failure 检查无部分变更。
 
-原件来源按[实验裁决](../../acceptance/mvp-matrix.md)定位 C21 与 C22 固定提交。T/W/P/I/PS 自动拆题用 C21 原件；C22 学生练习是答案泄漏反例，不能作为“无答案”的期望。E 全原件只在保留工作区读取，不复制到本仓库。机器原始结果、校对结果和最终题目分别保存证据。
+原件来源按[实验裁决](../acceptance/mvp-matrix.md)定位 C21 与 C22 固定提交。T/W/P/I/PS 自动拆题用 C21 原件；C22 学生练习是答案泄漏反例，不能作为“无答案”的期望。E 全原件只在保留工作区读取，不复制到本仓库。机器原始结果、校对结果和最终题目分别保存证据。
 
 ### 成功、失败与恢复序列
 
@@ -300,7 +300,7 @@ problem完整字段由schema拥有。业务 field采用JSON Pointer；解析sche
 | practice_docx | 只含所选题目，重新编号，同题多次出现各编号，小问/选项/图保留，无环节说明。 |
 | practice_pdf | 同上且打印稳定；Q2配方关闭答案后消失，Q6未给答案时不补造。 |
 
-每类至少一个教师变体、一个学生变体。每格式原件链接见[六种格式样本](../../acceptance/mvp-matrix.md#office)。Linux可编辑切片与目标Windows/WPS切片各自有实际应用版本与行为证据；保存后XML仍有m:oMath只是补证，不能单独证明实际编辑体验。
+每类至少一个教师变体、一个学生变体。每格式原件链接见[六种格式样本](../acceptance/mvp-matrix.md#office)。Linux可编辑切片与目标Windows/WPS切片各自有实际应用版本与行为证据；保存后XML仍有m:oMath只是补证，不能单独证明实际编辑体验。
 
 ### 验证方法
 

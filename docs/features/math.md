@@ -92,7 +92,7 @@
 
 ## 实现与验证入口
 
-[数学契约](../contracts/workbench/math.md)拥有源、revision、渲染/隔离与导出字段；[制作实现](#制作实现)拥有表达式及渲染接缝。Web/API 分别为 `apps/web/src/features/math/`、`apps/api/src/modules/math/`；制作界面、保存导出与窄屏流程使用 `apps/web/e2e/math-workspace.config.mjs`，扩展数学场景见 `apps/web/e2e/manual-math.config.mjs`，API 使用 `apps/api/test/math-*.test.js`；`math-archive.test.js` 验证归档、彻底删除、版本与账户校验、事务失败回滚、重启幂等及备课快照保留。
+[数学契约](../contracts/math.md)拥有源、revision、渲染/隔离与导出字段；[制作实现](#制作实现)拥有表达式及渲染接缝。Web/API 分别为 `apps/web/src/features/math/`、`apps/api/src/modules/math/`；制作界面、保存导出与窄屏流程使用 `apps/web/e2e/math-workspace.config.mjs`，扩展数学场景见 `apps/web/e2e/manual-math.config.mjs`，API 使用 `apps/api/test/math-*.test.js`；`math-archive.test.js` 验证归档、彻底删除、版本与账户校验、事务失败回滚、重启幂等及备课快照保留。
 
 相关变更检查真实保存重开、第二次修改、准确图式、导出边界、源码/原件不丢及取消覆盖。离线从实际下载物、全新浏览器环境禁网冷启动，不能用在线页面或缓存代替。
 
@@ -100,7 +100,7 @@
 
 公式输入使用 MathLive，公式渲染使用本地 MathJax；静态/动态作品沿用 SVG；[Math.js](https://mathjs.org/docs/expressions/expression_trees.html) 解析表达式后，仅解释封闭的实数运算节点。[Flatten.js](https://github.com/alexbol99/flatten-js) 处理平面构造，[Three.js](https://threejs.org/docs/pages/Plane.html) 的数学组件处理共面性及线面求交；数值搜索复用 [bisect](https://github.com/mikolalysenko/bisect) 与 [一维黄金分割搜索](https://github.com/scijs/minimize-golden-section-1d)。作品撤销使用现有 Zustand 加 Zundo，仅追踪可编辑内容。UI、导出与接入后的 Agent 共用数学规则，函数表达式不执行任意 JavaScript。版本与依赖由代码和锁文件维护，字体、许可证及离线资源随构建提供。离线演示使用 esbuild 打包同一共享运行时和依赖，不拼接或执行用户 JavaScript 表达式。新源字段为可选，已有源保持可读；已有 revision 的海报和离线文件保持不变。
 
-math 拥有制作源、历史版本、渲染与导出；files 拥有不可变字节；lessons 拥有采用快照与返回草稿；classes 拥有实际教学反馈。具体进程内端口及事务约束见[公共端口](../contracts/workbench/math.md#公共端口)。反馈由组合层注入，不形成 math 对 classes 的服务端依赖。
+math 拥有制作源、历史版本、渲染与导出；files 拥有不可变字节；lessons 拥有采用快照与返回草稿；classes 拥有实际教学反馈。具体进程内端口及事务约束见[公共端口](../contracts/math.md#公共端口)。反馈由组合层注入，不形成 math 对 classes 的服务端依赖。
 
 迁移保留已有 File、旧引用和历史 revision，不重写旧成功回执。验证旧库升级、两次重启、真实制作导出及下载物冷启动；完整交付条件见[数学判据](../acceptance/mvp-matrix.md#math)。
 

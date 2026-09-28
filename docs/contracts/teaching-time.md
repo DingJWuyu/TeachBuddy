@@ -1,6 +1,6 @@
 # 教学与时间契约
 
-[OpenAPI](teaching-time/teaching-time.openapi.yaml)拥有基础字段与操作，日历界面另消费[日历扩展](#日历扩展)，[cases](teaching-time/cases.md)拥有交换与失败恢复；[教学实现](../features/teaching-time.md#教学实现)定义进程内接缝。当前记录 v2 另消费[数学关联](#数学作品关联)，题目提供方明确采用[丰富题目读取](#丰富题目关联)。用户行为见[班级与日程](../features/teaching-time.md)。
+[OpenAPI](../../apps/api/src/contracts/teaching-time-v1.openapi.yaml)拥有基础字段与操作，日历界面另消费[日历扩展](#日历扩展)，[cases](teaching-time-cases.md)拥有交换与失败恢复；[教学实现](../features/teaching-time.md#教学实现)定义进程内接缝。当前记录 v2 另消费[数学关联](#数学作品关联)，题目提供方明确采用[丰富题目读取](#丰富题目关联)。用户行为见[班级与日程](../features/teaching-time.md)。
 
 ## 共同协议
 
@@ -60,7 +60,7 @@
 
 记录、其来源关系和成功回执在同一事务处理。沿用 `classes_removed_objects` 仅保留身份及删除摘要，不保留正文或来源标题；其班级仍活动时公共 `readRecord` 的 `classDeletedAt` 为 null。其他记录、来源和日程不被删除，已有日程引用及备份恢复仍能识别删除摘要。未知结果按共同幂等协议以原键原体重试，刷新后保留确认入口，即使记录已从列表消失也可完成确认。
 
-上述操作的精确字段见 [OpenAPI 扩展](teaching-time/teaching-time-math.openapi.json) 的 ClassOverviewList、NextNoteVisibility、RecordPurge 与 RecordPurged。
+上述操作的精确字段见 [OpenAPI 扩展](../../apps/api/src/contracts/teaching-time-v2.openapi.json) 的 ClassOverviewList、NextNoteVisibility、RecordPurge 与 RecordPurged。
 
 
 ## 安排、事项与排序
@@ -143,7 +143,7 @@ classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2`
 
 ### 静态目录 v2 与当前 v3
 
-`teaching-time.openapi.yaml` 的 `catalog-v2` 样本定义教学基础组合：version=2，顺序 questions、lessons、classes、schedule。它只用于该版协议与固定样本，不是当前六模块运行响应。当前 `GET /api/modules` 使用数学契约的 ModuleCatalogV3 和 `packages/shared/src/moduleCatalog.js`，顺序为 questions、lessons、math、resources、classes、schedule；材料版的目录 v2 也不能与教学版 v2 混为同一全集。
+`teaching-time-v1.openapi.yaml` 的 `catalog-v2` 样本定义教学基础组合：version=2，顺序 questions、lessons、classes、schedule。它只用于该版协议与固定样本，不是当前六模块运行响应。当前 `GET /api/modules` 使用数学契约的 ModuleCatalogV3 和 `packages/shared/src/moduleCatalog.js`，顺序为 questions、lessons、math、resources、classes、schedule；材料版的目录 v2 也不能与教学版 v2 混为同一全集。
 
 所有版本的静态目录均核对 ID/path 唯一、requires 提供方存在且依赖无环。校验失败为 `422 invalid-input`；重复项 field 指向对应 `/id` 或 `/path`，reason=duplicate-id，缺依赖/环路 reason=invalid-reference。教学 v2 的固定反例见 cases 的 TT-C7；当前 v3 按自己的 schema 和目录核对。未知目录版本保留设备草稿并提示升级，不忽略依赖继续装配。
 
@@ -165,11 +165,11 @@ classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2`
 
 ## 数学作品关联
 
-精确字段见 [OpenAPI](teaching-time/teaching-time-math.openapi.json)，交换场景见 [math-cases](teaching-time/cases.md#数学关联用例)。数学 Source 类型取[固定输入](teaching-time/inputs/README.md)。本节拥有记录链接与兼容行为，不复制数学制作模型。
+精确字段见 [OpenAPI](../../apps/api/src/contracts/teaching-time-v2.openapi.json)，交换场景见 [数学关联用例](teaching-time-cases.md#数学关联用例)。数学 Source 类型直接引用[数学机器契约](../../apps/api/src/contracts/math.openapi.json)，不维护独立副本。本节拥有记录链接与兼容行为，不复制数学制作模型。
 
 ### 来源与保存
 
-`SourceInputV2 = SourceInput | TeachingMathInput`，`SourceV2 = Source | TeachingMathSource | UnavailableSourceV2`。数学分支外引 M40 原 schema，精确标识为 `kind=math`，不是 `work`。选择器调用 M40 `listWorks`（`GET /api/modules/math/v1/works`），只选本账户 `state=active`；支持其五种 kind，`render=invalid` 也允许关联。教学反馈不要求导出成功，不使用备课版本快照或 File ID。
+`SourceInputV2 = SourceInput | TeachingMathInput`，`SourceV2 = Source | TeachingMathSource | UnavailableSourceV2`。数学分支外引上述 schema，精确标识为 `kind=math`，不是 `work`。选择器调用 `listWorks`（`GET /api/modules/math/v1/works`），只选本账户 `state=active`；支持其五种 kind，`render=invalid` 也允许关联。教学反馈不要求导出成功，不使用备课版本快照或 File ID。
 
 首次关联由 classes 在记录写事务中同步调用 `math.readForTeachingLinkV1(principal,id)`；保存服务器读取的 `title` 为 `labelAtLink`，客户端只提交 kind/id。`TeachingWork.version` 只用于提供方投影，不持久化为关联版本，不做 reference-version-conflict。作品在选择后改名，最终以保存事务读取的标题为准；在保存前删除则整个保存失败。
 

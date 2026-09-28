@@ -11,7 +11,7 @@ const dataDir = fileURLToPath(
   new URL("../../../test-results/r32-api/", import.meta.url),
 );
 const schemaRoot = new URL(
-  "../../../docs/contracts/workbench/",
+  "../src/contracts/",
   import.meta.url,
 );
 const specification = YAML.parse(
@@ -21,9 +21,9 @@ const validator = new Ajv({ strict: false });
 addFormats(validator);
 validator.addSchema(
   YAML.parse(
-    fs.readFileSync(new URL("first-flow.openapi.yaml", schemaRoot), "utf8"),
+    fs.readFileSync(new URL("workbench.openapi.yaml", schemaRoot), "utf8"),
   ),
-  "first-flow.openapi.yaml",
+  "workbench.openapi.yaml",
 );
 validator.addSchema(specification, "materials.openapi.yaml");
 const schemaCache = new Map();

@@ -2,7 +2,7 @@
  * Shared contract constants for the first-flow workbench.
  *
  * Both sides consume the same frozen OpenAPI document
- * (docs/contracts/workbench/first-flow.openapi.yaml); these constants are the
+ * (apps/api/src/contracts/workbench.openapi.yaml); these constants are the
  * small runtime vocabulary that would otherwise be re-typed differently on
  * each side. Values must stay byte-identical to the frozen document: paths,
  * header names, problem type URIs, invalid-input reasons and the JSON body

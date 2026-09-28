@@ -85,7 +85,7 @@ pi SDK 负责模型与工具循环、原生 entries 和上下文重建；应用�
 
 仅允许 `deepseek/deepseek-v4.1-flash` 和 `z-ai/glm-5.3-flash`。精确 ID 在创建、恢复和发请求前校验，不用相似名字或其他目录项 fallback。开发 Codex 模型路由另见[开发约定](../agents/module-development.md#模型与固定派发)。
 
-首批业务工具的具名结果与当前开发授权见[项目状态](../plans/run-state.md)；局部通过不证明完整六模块、任意数学质量、当前余额或未来可用性。材料的本地 OCR 使用独立的[页识别链路](../contracts/workbench/recognition.md)，不以产品 Agent 的开发状态判断其是否可用。
+首批业务工具的具名结果与当前开发授权见[项目状态](../plans/run-state.md)；局部通过不证明完整六模块、任意数学质量、当前余额或未来可用性。材料的本地 OCR 使用独立的[页识别链路](../contracts/recognition.md)，不以产品 Agent 的开发状态判断其是否可用。
 
 ### 费用与未决
 

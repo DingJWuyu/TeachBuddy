@@ -9,7 +9,7 @@
 | 接手模块、派发或执行任务 | [开发约定](agents/module-development.md) | 先确认本次目标、工作树和权限，再读下表对应模块 |
 | 判断是否属于既定目标 | [产品范围](PRODUCT_SCOPE.md) | 页面和跨模块往返读[共同交互](features/workbench.md) |
 | 修改界面 | 对应功能页和[设计与验证规则](rules/design-and-verification.md) | 调整外观时核对当前运行页面及用户指定参考 |
-| 修改存储、接口或跨模块交换 | 功能页指向的契约 | 精确字段继续读其 schema；部分文件被程序直接读取 |
+| 修改存储、接口或跨模块交换 | 功能页指向的文字契约 | 精确字段继续读 `apps/api/src/contracts/` 中的 schema；验证时再读测试 fixtures |
 | 验证改动或准备交付 | [验证指南](acceptance/README.md) | 本次功能选择对应场景；完整交付才展开[验收矩阵](acceptance/mvp-matrix.md) |
 | 核查旧成果或恢复现场 | 项目状态中的[证据入口](plans/run-state.md#证据边界) | 文件已归档时再读[恢复索引](plans/worktree-archive.md) |
 
@@ -30,6 +30,20 @@
 
 模块规格描述行为与实现边界，不授予新增开发、模型调用或外部操作权限。当前暂停和待办只查项目状态及本次用户指令。
 
+## 契约说明
+
+`contracts/` 只保存给人和 agent 阅读的语义说明。按涉及的边界进入，精确字段和交换样本由各页链接到代码与测试目录。
+
+| 涉及的边界 | 先读什么 | 验证时展开 |
+| --- | --- | --- |
+| 身份、会话与页面绑定 | [认证](contracts/auth.md) | [认证案例](contracts/auth-cases.md) |
+| 保存、版本、幂等与引用 | [工作台共享契约](contracts/workbench.md) | 页内基础交换用例 |
+| 文稿、文件、资源与输出 | [材料](contracts/materials.md) | 页内验证入口 |
+| 共用页识别、机器结果与人工采用 | [识别](contracts/recognition.md) | 页内样本与验证入口 |
+| 数学作品与跨模块投影 | [数学](contracts/math.md) | 页内交换样本与兼容用例 |
+| 班级反馈、日程、提醒与数学关联 | [教学与时间](contracts/teaching-time.md) | [教学与时间案例](contracts/teaching-time-cases.md) |
+| 对话、工具和确认执行 | [产品助理](contracts/agent.md) | 页内交换样本 |
+
 ## 维护文档
 
 - 改行为更新对应功能页；改交换语义更新契约；改完成状态更新[项目状态](plans/run-state.md)，并留下能核查该结论的证据入口。公开能力或运行方式改变时同步根 README 或 SETUP。
@@ -37,6 +51,7 @@
 - 入口指针写清触发条件和用途。所有任务必需的约束留在当前层；只影响某类任务的细节放到对应功能、契约或验证页。把同一概念的定义、条件和例外放在一起。
 - 当前文档保留有效信息；完成过程、模型次数、临时端口和派工回执留任务产物，历史从固定 Git 版本读取。代码、配置和 CLI 能直接查到的清单不再抄一份。
 - 文档不收录截图或其他图片；界面以当前运行页面和用户指定参考为准。验收截图留在任务产物中，通过证据入口按需读取。
+- `docs/` 只供人和 agent 阅读，不作为构建、运行或测试的数据依赖。可执行 API 契约放在 `apps/api/src/contracts/`，交换样本放在 `apps/api/test/fixtures/contracts/`；其他运行配置和测试输入归属各自代码或测试目录。固定 Git 版本的兼容测试保留该版本自己的路径。
 - 移动或删除文件前核对入链、锚点、程序加载、测试 fixture 和固定版本引用；保留完整运行及验证链路。受保护文件和自动生成内容遵守根 AGENTS 的边界。
 
 术语与 ADR 按[领域约定](agents/domain.md)，问题记录按[Issue约定](agents/issue-tracker.md)与[标签表](agents/triage-labels.md)。

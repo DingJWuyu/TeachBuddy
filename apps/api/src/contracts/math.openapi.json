@@ -23,7 +23,7 @@
         "operationId": "listWorks",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "q",
@@ -113,19 +113,19 @@
         "operationId": "createWork",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -192,7 +192,7 @@
         "operationId": "getWork",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -255,7 +255,7 @@
         "operationId": "updateWork",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -266,16 +266,16 @@
             }
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -342,7 +342,7 @@
         "operationId": "setWorkDeletion",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -353,16 +353,16 @@
             }
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -429,7 +429,7 @@
         "operationId": "copyWork",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -440,16 +440,16 @@
             }
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -516,7 +516,7 @@
         "operationId": "listWorkVersions",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -581,7 +581,7 @@
         "operationId": "getWorkVersion",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -654,7 +654,7 @@
         "operationId": "exportWork",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -665,16 +665,16 @@
             }
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -741,7 +741,7 @@
         "operationId": "readWorkForReference",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -806,7 +806,7 @@
         "operationId": "listLessonsV3",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "q",
@@ -882,19 +882,19 @@
         "operationId": "createLessonV3",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -961,7 +961,7 @@
         "operationId": "getLessonV3",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -1024,7 +1024,7 @@
         "operationId": "updateLessonV3",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -1035,16 +1035,16 @@
             }
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -1111,7 +1111,7 @@
         "operationId": "setLessonDeletionV3",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -1122,16 +1122,16 @@
             }
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -1198,7 +1198,7 @@
         "operationId": "exportLessonV3",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -1209,16 +1209,16 @@
             }
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -1283,7 +1283,7 @@
         "operationId": "listLessonExportsV3",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -1348,7 +1348,7 @@
         "operationId": "listUsagesV3",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "kind",
@@ -1425,7 +1425,7 @@
         "operationId": "getMathModuleCatalog",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           }
         ],
         "responses": {
@@ -1482,7 +1482,7 @@
         "operationId": "getLessonOrder",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           }
         ],
         "responses": {
@@ -1537,19 +1537,19 @@
         "operationId": "updateLessonOrder",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -1616,7 +1616,7 @@
         "operationId": "purgeWork",
         "parameters": [
           {
-            "$ref": "../../auth.openapi.yaml#/components/parameters/PageContext"
+            "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
           },
           {
             "name": "id",
@@ -1627,16 +1627,16 @@
             }
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/IdempotencyKey"
+            "$ref": "workbench.openapi.yaml#/components/parameters/IdempotencyKey"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/BrowserRequestProtection"
+            "$ref": "workbench.openapi.yaml#/components/parameters/BrowserRequestProtection"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestOrigin"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestOrigin"
           },
           {
-            "$ref": "../first-flow.openapi.yaml#/components/parameters/RequestReferer"
+            "$ref": "workbench.openapi.yaml#/components/parameters/RequestReferer"
           }
         ],
         "responses": {
@@ -1702,33 +1702,33 @@
   "components": {
     "securitySchemes": {
       "SessionCookie": {
-        "$ref": "../../auth.openapi.yaml#/components/securitySchemes/SessionCookie"
+        "$ref": "auth.openapi.yaml#/components/securitySchemes/SessionCookie"
       }
     },
     "schemas": {
       "Id": {
-        "$ref": "../materials.openapi.yaml#/components/schemas/Id"
+        "$ref": "materials.openapi.yaml#/components/schemas/Id"
       },
       "Version": {
-        "$ref": "../materials.openapi.yaml#/components/schemas/Version"
+        "$ref": "materials.openapi.yaml#/components/schemas/Version"
       },
       "Timestamp": {
-        "$ref": "../materials.openapi.yaml#/components/schemas/Timestamp"
+        "$ref": "materials.openapi.yaml#/components/schemas/Timestamp"
       },
       "File": {
-        "$ref": "../materials.openapi.yaml#/components/schemas/File"
+        "$ref": "materials.openapi.yaml#/components/schemas/File"
       },
       "Document": {
-        "$ref": "../materials.openapi.yaml#/components/schemas/Document"
+        "$ref": "materials.openapi.yaml#/components/schemas/Document"
       },
       "UsageList": {
-        "$ref": "../materials.openapi.yaml#/components/schemas/UsageList"
+        "$ref": "materials.openapi.yaml#/components/schemas/UsageList"
       },
       "ExportInput": {
-        "$ref": "../materials.openapi.yaml#/components/schemas/ExportInput"
+        "$ref": "materials.openapi.yaml#/components/schemas/ExportInput"
       },
       "ExportRecord": {
-        "$ref": "../materials.openapi.yaml#/components/schemas/ExportRecord"
+        "$ref": "materials.openapi.yaml#/components/schemas/ExportRecord"
       },
       "Name": {
         "type": "string",
@@ -1746,7 +1746,7 @@
         "type": "string",
         "minLength": 1,
         "maxLength": 1000,
-        "description": "math.md 的封闭数学表达式语法；禁止 JS/eval，常量亦用字符串。"
+        "description": "docs/contracts/math.md 的封闭数学表达式语法；禁止 JS/eval，常量亦用字符串。"
       },
       "Color": {
         "type": "string",
@@ -3174,10 +3174,10 @@
       "ReferenceInputV3": {
         "oneOf": [
           {
-            "$ref": "../materials.openapi.yaml#/components/schemas/QuestionReferenceInput"
+            "$ref": "materials.openapi.yaml#/components/schemas/QuestionReferenceInput"
           },
           {
-            "$ref": "../materials.openapi.yaml#/components/schemas/ResourceReferenceInput"
+            "$ref": "materials.openapi.yaml#/components/schemas/ResourceReferenceInput"
           },
           {
             "$ref": "#/components/schemas/MathReferenceInput"
@@ -3187,10 +3187,10 @@
       "ReferenceV3": {
         "oneOf": [
           {
-            "$ref": "../materials.openapi.yaml#/components/schemas/QuestionReference"
+            "$ref": "materials.openapi.yaml#/components/schemas/QuestionReference"
           },
           {
-            "$ref": "../materials.openapi.yaml#/components/schemas/ResourceReference"
+            "$ref": "materials.openapi.yaml#/components/schemas/ResourceReference"
           },
           {
             "$ref": "#/components/schemas/MathReference"
@@ -3230,7 +3230,7 @@
         "type": "object",
         "properties": {
           "pageSource": {
-            "$ref": "../materials.openapi.yaml#/components/schemas/LessonPageSource"
+            "$ref": "materials.openapi.yaml#/components/schemas/LessonPageSource"
           },
           "id": {
             "$ref": "#/components/schemas/Id"
@@ -3597,7 +3597,7 @@
       "Problem": {
         "anyOf": [
           {
-            "$ref": "../materials.openapi.yaml#/components/schemas/Problem"
+            "$ref": "materials.openapi.yaml#/components/schemas/Problem"
           },
           {
             "$ref": "#/components/schemas/MathProblem"
@@ -3999,7 +3999,7 @@
     },
     "responses": {
       "400": {
-        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -4011,13 +4011,13 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "../materials.openapi.yaml#/components/schemas/Problem400"
+              "$ref": "materials.openapi.yaml#/components/schemas/Problem400"
             }
           }
         }
       },
       "401": {
-        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -4029,13 +4029,13 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "../materials.openapi.yaml#/components/schemas/Problem401"
+              "$ref": "materials.openapi.yaml#/components/schemas/Problem401"
             }
           }
         }
       },
       "403": {
-        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -4047,13 +4047,13 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "../materials.openapi.yaml#/components/schemas/Problem403"
+              "$ref": "materials.openapi.yaml#/components/schemas/Problem403"
             }
           }
         }
       },
       "404": {
-        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -4065,13 +4065,13 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "../materials.openapi.yaml#/components/schemas/Problem404"
+              "$ref": "materials.openapi.yaml#/components/schemas/Problem404"
             }
           }
         }
       },
       "409": {
-        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -4085,7 +4085,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "$ref": "../materials.openapi.yaml#/components/schemas/Problem409"
+                  "$ref": "materials.openapi.yaml#/components/schemas/Problem409"
                 },
                 {
                   "$ref": "#/components/schemas/MathProblem409"
@@ -4096,7 +4096,7 @@
         }
       },
       "413": {
-        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -4110,7 +4110,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "$ref": "../materials.openapi.yaml#/components/schemas/Problem413"
+                  "$ref": "materials.openapi.yaml#/components/schemas/Problem413"
                 },
                 {
                   "$ref": "#/components/schemas/MathProblem413"
@@ -4121,7 +4121,7 @@
         }
       },
       "415": {
-        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -4133,13 +4133,13 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "../materials.openapi.yaml#/components/schemas/Problem415"
+              "$ref": "materials.openapi.yaml#/components/schemas/Problem415"
             }
           }
         }
       },
       "422": {
-        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -4153,7 +4153,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "$ref": "../materials.openapi.yaml#/components/schemas/Problem422"
+                  "$ref": "materials.openapi.yaml#/components/schemas/Problem422"
                 },
                 {
                   "$ref": "#/components/schemas/MathProblem422"
@@ -4164,7 +4164,7 @@
         }
       },
       "503": {
-        "description": "见math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -4178,7 +4178,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "$ref": "../materials.openapi.yaml#/components/schemas/Problem503"
+                  "$ref": "materials.openapi.yaml#/components/schemas/Problem503"
                 },
                 {
                   "$ref": "#/components/schemas/MathProblem503"

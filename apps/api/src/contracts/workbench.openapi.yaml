@@ -2,7 +2,7 @@ openapi: 3.2.1
 info:
   title: TeachBuddy first-flow 工作台契约
   version: 0.1.0-candidate.2
-  description: AUTH-CONTRACT-CORRECTION@1 页面头接续候选，已由限定独立审查冻结；消费认证 1.0.0-rc.2。版本、旧冻结适用范围及业务语义见 ../workbench.md。所有响应 no-store；写请求同源 HTTPS + 保护头；请求拒绝未知字段/隐式类型转换，响应容忍附加字段。JSON 请求体上限 2
+  description: AUTH-CONTRACT-CORRECTION@1 页面头接续候选，已由限定独立审查冻结；消费认证 1.0.0-rc.2。版本、旧冻结适用范围及业务语义见 docs/contracts/workbench.md。所有响应 no-store；写请求同源 HTTPS + 保护头；请求拒绝未知字段/隐式类型转换，响应容忍附加字段。JSON 请求体上限 2
     MiB（解码后的 UTF-8 字节），超限 413。URL/query 非法值 422，未知 query 拒绝。
 x-contract-status: frozen
 x-source-revision: 59a14e95bab667e0a01b8d62f6e87e018ddb1c5f
@@ -592,10 +592,10 @@ paths:
 components:
   securitySchemes:
     SessionCookie:
-      $ref: ../auth.openapi.yaml#/components/securitySchemes/SessionCookie
+      $ref: auth.openapi.yaml#/components/securitySchemes/SessionCookie
   parameters:
     PageContext:
-      $ref: ../auth.openapi.yaml#/components/parameters/PageContext
+      $ref: auth.openapi.yaml#/components/parameters/PageContext
     Id:
       name: id
       in: path
@@ -636,11 +636,11 @@ components:
       schema:
         $ref: '#/components/schemas/Id'
     BrowserRequestProtection:
-      $ref: ../auth.openapi.yaml#/components/parameters/BrowserRequestProtection
+      $ref: auth.openapi.yaml#/components/parameters/BrowserRequestProtection
     RequestOrigin:
-      $ref: ../auth.openapi.yaml#/components/parameters/RequestOrigin
+      $ref: auth.openapi.yaml#/components/parameters/RequestOrigin
     RequestReferer:
-      $ref: ../auth.openapi.yaml#/components/parameters/RequestReferer
+      $ref: auth.openapi.yaml#/components/parameters/RequestReferer
   responses:
     '400':
       description: malformed-json

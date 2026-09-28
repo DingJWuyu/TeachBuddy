@@ -11,7 +11,7 @@ import { invalidInput, unauthenticated } from "./contract.js";
 const contract = YAML.parse(
   fs.readFileSync(
     new URL(
-      "../../../../../docs/contracts/workbench/materials.openapi.yaml",
+      "../../contracts/materials.openapi.yaml",
       import.meta.url,
     ),
     "utf8",

@@ -6,7 +6,7 @@ import { startMathFixture } from "../../web/e2e/fixtures/math-static/server.mjs"
 const samples = JSON.parse(
   fs.readFileSync(
     new URL(
-      "../../../docs/contracts/workbench/math/samples.json",
+      "./fixtures/contracts/math-samples.json",
       import.meta.url,
     ),
     "utf8",

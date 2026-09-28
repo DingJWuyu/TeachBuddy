@@ -80,6 +80,7 @@
 | 证据范围 | 定位 |
 | --- | --- |
 | 本轮全项目文档核准 | preview `.scratch/docs-restructure/receipt.md`；五模块各自 `.scratch/docs-audit/receipt.md`。静态对齐，不冒充新功能验收 |
+| 文档与运行契约解耦 | preview `.scratch/contracts-layout/receipt.md`；schema 等价、样本完整及不含 `docs/` 的构建、API、开发服务和认证传输回归 |
 | OCR 共用、真实页、模块消费与实际界面 | preview `.scratch/ocr-quality/receipt.md`；原始输入/raw、最终转换、模块采用分别记证；基础机制在 `.scratch/ocr-mainline/shared-receipt.md` |
 | 五模块集成及资源查找/资料包增量 | preview `.scratch/five-module-integration/result.json`、`.scratch/ocr-coordination/result.json`；均按各自受测候选读取 |
 | 班级增量与日程证据限制 | preview `.scratch/five-module-integration/classes-browser.log`、`.scratch/five-module-integration/api-final.log`；真实来源组合见 `.scratch/worktree-consolidation/control-records/dag-dispatch/MATERIALS-TEACHING-ACCEPTANCE/1/receipt.md`。旧教学浏览器结果不覆盖新日历，详见 classes 的文档核查回执 |

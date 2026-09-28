@@ -4,7 +4,7 @@ import { ContractError } from "../../../../api/src/workbench/problems.js";
 const schema = YAML.parse(
   fs.readFileSync(
     new URL(
-      "../../../../../docs/contracts/workbench/materials.openapi.yaml",
+      "../../../../api/src/contracts/materials.openapi.yaml",
       import.meta.url,
     ),
     "utf8",

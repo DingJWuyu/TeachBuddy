@@ -1,6 +1,6 @@
 # 共用页识别
 
-题库、资源和备课使用同一个机器页结果。HTTP/schema 以 [materials.openapi.yaml](materials.openapi.yaml) 为准；来源、文件与任务沿用 [materials.md](materials.md)。模块只负责采用、校对及自己的业务结构，不各自启动 OCR 服务。
+题库、资源和备课使用同一个机器页结果。HTTP/schema 以 [materials.openapi.yaml](../../apps/api/src/contracts/materials.openapi.yaml) 为准；来源、文件与任务沿用 [materials.md](materials.md)。模块只负责采用、校对及自己的业务结构，不各自启动 OCR 服务。
 
 ## 入口与状态
 
@@ -45,10 +45,10 @@
 
 ## 路线与验证
 
-当前使用 PaddleOCR-VL 的完整本地管线，版面定位、内容识别和排序一起执行；保留现有 File、Job、Document、Location 与原生 Word/PDF 路径。固定模型、依赖和实际运行参数只在[运行指南](../../SETUP.md#本地页识别工具)及其源码入口维护。资源、备课与题库复用同一识别服务，不各建模型进程、独立缓存或常驻服务。
+当前使用 PaddleOCR-VL 的完整本地管线，版面定位、内容识别和排序一起执行；保留现有 File、Job、Document、Location 与原生 Word/PDF 路径。固定模型、依赖和实际运行参数只在[运行指南](../SETUP.md#本地页识别工具)及其源码入口维护。资源、备课与题库复用同一识别服务，不各建模型进程、独立缓存或常驻服务。
 
 页块解析不等于教学语义：题库负责题目/答案/配图与跨页归属；备课负责校对采用，资源负责阅读和检索。原始机器结果、机械转换与人工采用分别保存、分别判断，不能以人工修正后的产物代签模型准确率。
 
-识别变更依次验证运行与停止恢复、原页对照的原始质量、Document/真实裁图转换、三个模块的保存与使用。先确认共用层，再验消费者；固定产物回放只证明消费，模型或参数改变后必须重新验证真实原页。固定输入在[样本索引](../../acceptance/samples.md#固定输入与回放)，完整要求在[提取判据](../../acceptance/mvp-matrix.md#extraction)，当前结果在[项目状态](../../plans/run-state.md)。
+识别变更依次验证运行与停止恢复、原页对照的原始质量、Document/真实裁图转换、三个模块的保存与使用。先确认共用层，再验消费者；固定产物回放只证明消费，模型或参数改变后必须重新验证真实原页。固定输入在[样本索引](../acceptance/samples.md#固定输入与回放)，完整要求在[提取判据](../acceptance/mvp-matrix.md#extraction)，当前结果在[项目状态](../plans/run-state.md)。
 
 若同类核心失败持续出现，可据固定输入和新证据替换路线，无须维护既有方案；公开评测和 Markdown 流畅度不能替代产品实测。需要重新选型时可追溯冻结调查 `59763ca2c38ef98b03045d785d1c49bcef913c4b:docs/research/c21-open-source-reuse.md`，按当次实际需要重新核验上游事实；旧调查不提供新的费用、模型或环境操作授权。

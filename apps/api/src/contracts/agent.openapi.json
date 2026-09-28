@@ -3,7 +3,7 @@
   "info": {
     "title": "TeachBuddy early Agent",
     "version": "0.1.0-c25.2",
-    "description": "C25/v1 READY_FOR_REVIEW/self。仅新增 /api/agent；既有业务与认证操作语义不变。请求封闭、严格类型、未知 query 拒绝、JSON 上限 2 MiB；响应允许附加字段。身份拒绝先于读取账户内容；写入来源防护先于身份。所有响应 no-store。跨请求语义见 agent.md。"
+    "description": "C25/v1 READY_FOR_REVIEW/self。仅新增 /api/agent；既有业务与认证操作语义不变。请求封闭、严格类型、未知 query 拒绝、JSON 上限 2 MiB；响应允许附加字段。身份拒绝先于读取账户内容；写入来源防护先于身份。所有响应 no-store。跨请求语义见 docs/contracts/agent.md。"
   },
   "servers": [
     {
@@ -790,7 +790,7 @@
                 "type": "string"
               },
               "snapshot": {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                "$ref": "workbench.openapi.yaml#/components/schemas/Question"
               },
               "capturedAt": {
                 "type": "string",
@@ -825,7 +825,7 @@
                 "type": "string"
               },
               "snapshot": {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+                "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
               },
               "capturedAt": {
                 "type": "string",
@@ -1323,13 +1323,13 @@
             "type": "object",
             "properties": {
               "q": {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/parameters/Query/schema"
+                "$ref": "workbench.openapi.yaml#/components/parameters/Query/schema"
               },
               "state": {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/parameters/State/schema"
+                "$ref": "workbench.openapi.yaml#/components/parameters/State/schema"
               },
               "starred": {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/parameters/Starred/schema"
+                "$ref": "workbench.openapi.yaml#/components/parameters/Starred/schema"
               }
             },
             "required": [],
@@ -1363,7 +1363,7 @@
             "type": "object",
             "properties": {
               "state": {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/parameters/State/schema"
+                "$ref": "workbench.openapi.yaml#/components/parameters/State/schema"
               }
             },
             "required": [],
@@ -1379,7 +1379,7 @@
         "type": "object",
         "properties": {
           "body": {
-            "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/CreateQuestion"
+            "$ref": "workbench.openapi.yaml#/components/schemas/CreateQuestion"
           }
         },
         "required": [
@@ -1395,7 +1395,7 @@
             "format": "uuid"
           },
           "body": {
-            "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/UpdateQuestion"
+            "$ref": "workbench.openapi.yaml#/components/schemas/UpdateQuestion"
           }
         },
         "required": [
@@ -1412,7 +1412,7 @@
             "format": "uuid"
           },
           "body": {
-            "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/CopyQuestion"
+            "$ref": "workbench.openapi.yaml#/components/schemas/CopyQuestion"
           }
         },
         "required": [
@@ -1429,7 +1429,7 @@
             "format": "uuid"
           },
           "body": {
-            "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/SetDeletion"
+            "$ref": "workbench.openapi.yaml#/components/schemas/SetDeletion"
           }
         },
         "required": [
@@ -1445,10 +1445,10 @@
             "type": "object",
             "properties": {
               "q": {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/parameters/Query/schema"
+                "$ref": "workbench.openapi.yaml#/components/parameters/Query/schema"
               },
               "state": {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/parameters/State/schema"
+                "$ref": "workbench.openapi.yaml#/components/parameters/State/schema"
               }
             },
             "required": [],
@@ -1475,7 +1475,7 @@
         "type": "object",
         "properties": {
           "body": {
-            "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/CreateLesson"
+            "$ref": "workbench.openapi.yaml#/components/schemas/CreateLesson"
           }
         },
         "required": [
@@ -1491,7 +1491,7 @@
             "format": "uuid"
           },
           "body": {
-            "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/UpdateLesson"
+            "$ref": "workbench.openapi.yaml#/components/schemas/UpdateLesson"
           }
         },
         "required": [
@@ -1508,7 +1508,7 @@
             "format": "uuid"
           },
           "body": {
-            "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/SetDeletion"
+            "$ref": "workbench.openapi.yaml#/components/schemas/SetDeletion"
           }
         },
         "required": [
@@ -1680,10 +1680,10 @@
               {
                 "oneOf": [
                   {
-                    "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                    "$ref": "workbench.openapi.yaml#/components/schemas/Question"
                   },
                   {
-                    "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+                    "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
                   }
                 ]
               },
@@ -1792,19 +1792,19 @@
               "result": {
                 "anyOf": [
                   {
-                    "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                    "$ref": "workbench.openapi.yaml#/components/schemas/Question"
                   },
                   {
-                    "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/QuestionList"
+                    "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
                   },
                   {
-                    "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+                    "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
                   },
                   {
-                    "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/LessonList"
+                    "$ref": "workbench.openapi.yaml#/components/schemas/LessonList"
                   },
                   {
-                    "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/UsageList"
+                    "$ref": "workbench.openapi.yaml#/components/schemas/UsageList"
                   }
                 ]
               }
@@ -1828,10 +1828,10 @@
               "result": {
                 "oneOf": [
                   {
-                    "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                    "$ref": "workbench.openapi.yaml#/components/schemas/Question"
                   },
                   {
-                    "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+                    "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
                   }
                 ]
               }
@@ -2555,7 +2555,7 @@
             "$ref": "#/components/schemas/AgentProblem"
           },
           {
-            "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Problem"
+            "$ref": "workbench.openapi.yaml#/components/schemas/Problem"
           }
         ]
       },
@@ -2624,19 +2624,19 @@
           "result": {
             "anyOf": [
               {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/QuestionList"
+                "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
               },
               {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                "$ref": "workbench.openapi.yaml#/components/schemas/Question"
               },
               {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/LessonList"
+                "$ref": "workbench.openapi.yaml#/components/schemas/LessonList"
               },
               {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+                "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
               },
               {
-                "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/UsageList"
+                "$ref": "workbench.openapi.yaml#/components/schemas/UsageList"
               },
               {
                 "type": "null"
@@ -2772,7 +2772,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/QuestionList"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
                       },
                       {
                         "type": "null"
@@ -2799,7 +2799,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -2826,7 +2826,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/QuestionList"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
                       },
                       {
                         "type": "null"
@@ -2853,7 +2853,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -2880,7 +2880,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -2907,7 +2907,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -2934,7 +2934,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -2961,7 +2961,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/LessonList"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/LessonList"
                       },
                       {
                         "type": "null"
@@ -2988,7 +2988,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
                       },
                       {
                         "type": "null"
@@ -3015,7 +3015,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
                       },
                       {
                         "type": "null"
@@ -3042,7 +3042,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
                       },
                       {
                         "type": "null"
@@ -3069,7 +3069,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
                       },
                       {
                         "type": "null"
@@ -3096,7 +3096,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/UsageList"
+                        "$ref": "workbench.openapi.yaml#/components/schemas/UsageList"
                       },
                       {
                         "type": "null"
@@ -3206,7 +3206,7 @@
         "$ref": "#/components/schemas/Tool_listQuestions"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/QuestionList"
+        "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
       },
       "mutation": false
     },
@@ -3219,7 +3219,7 @@
         "$ref": "#/components/schemas/Tool_getQuestion"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
       },
       "mutation": false
     },
@@ -3232,7 +3232,7 @@
         "$ref": "#/components/schemas/Tool_listDerivatives"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/QuestionList"
+        "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
       },
       "mutation": false
     },
@@ -3245,7 +3245,7 @@
         "$ref": "#/components/schemas/Tool_createQuestion"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
       },
       "mutation": true
     },
@@ -3258,7 +3258,7 @@
         "$ref": "#/components/schemas/Tool_updateQuestion"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
       },
       "mutation": true
     },
@@ -3271,7 +3271,7 @@
         "$ref": "#/components/schemas/Tool_copyQuestion"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
       },
       "mutation": true
     },
@@ -3284,7 +3284,7 @@
         "$ref": "#/components/schemas/Tool_setQuestionDeletion"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Question"
+        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
       },
       "mutation": true
     },
@@ -3297,7 +3297,7 @@
         "$ref": "#/components/schemas/Tool_listLessons"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/LessonList"
+        "$ref": "workbench.openapi.yaml#/components/schemas/LessonList"
       },
       "mutation": false
     },
@@ -3310,7 +3310,7 @@
         "$ref": "#/components/schemas/Tool_getLesson"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
       },
       "mutation": false
     },
@@ -3323,7 +3323,7 @@
         "$ref": "#/components/schemas/Tool_createLesson"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
       },
       "mutation": true
     },
@@ -3336,7 +3336,7 @@
         "$ref": "#/components/schemas/Tool_updateLesson"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
       },
       "mutation": true
     },
@@ -3349,7 +3349,7 @@
         "$ref": "#/components/schemas/Tool_setLessonDeletion"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/Lesson"
+        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
       },
       "mutation": true
     },
@@ -3362,7 +3362,7 @@
         "$ref": "#/components/schemas/Tool_listQuestionUsages"
       },
       "response": {
-        "$ref": "workbench/first-flow.openapi.yaml#/components/schemas/UsageList"
+        "$ref": "workbench.openapi.yaml#/components/schemas/UsageList"
       },
       "mutation": false
     }
@@ -3411,5 +3411,5 @@
     "auth": "6f3003250d170b44e89f6ac9b0a74f91d658a357",
     "authFreeze": "63bfe8f7900b4a2bb7fc9ab5a4145f1c89a6f73b"
   },
-  "x-common-errors": "Common transport, validation, identity and business errors use workbench/first-flow.openapi.yaml Problem and its status mapping unchanged."
+  "x-common-errors": "Common transport, validation, identity and business errors use workbench.openapi.yaml Problem and its status mapping unchanged."
 }
