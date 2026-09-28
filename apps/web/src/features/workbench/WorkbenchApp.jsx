@@ -15,20 +15,13 @@ import { ReferenceAction } from '../agent/ReferenceAction.jsx';
  */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { AuxiliaryPanel, AiWorkspace } from './AuxiliaryPanel.jsx';
+import { AuxiliaryPanel } from './AuxiliaryPanel.jsx';
 import { Icon } from './icons.jsx';
 import { ShellContext, useWorkbenchShell } from './shellContext.js';
 import { useScene } from './useScene.js';
 import { followAnchor, navigate, useRoute } from './routes.js';
 import { WorkbenchSettings } from './WorkbenchSettings.jsx';
-import { resolveWorkbenchModules } from '../modules/moduleRegistry.js';
-import ResourceRoute from './ResourceRoute.jsx';
-import QuestionsPage from '../questions/index.jsx';
-import LessonsPage from '../lessons/index.jsx';
-import ClassesPage from '../classes/index.jsx';
-import SchedulePage from '../schedule/index.jsx';
-import Notifications from '../schedule/notifications/Notifications.jsx';
-import { MathWorkbench } from '../math/index.jsx';
+import { workbenchModules } from '../modules/moduleRegistry.js';
 import { workbenchGet } from './apiClient.js';
 import './workbench.css';
 import './appearance.css';
@@ -47,26 +40,13 @@ function useIsNarrow() {
 }
 
 function NotFound() {
+  const destination = workbenchModules.find(module => module.navigation === 'sidebar');
+  const path = destination?.path || '/';
   return (
     <div className="wb-page wb-not-found" data-region="not-found">
       <p>未找到内容</p>
-      <a className="wb-button" href="/questions" onClick={(event) => followAnchor(event, '/questions')}>返回题库</a>
+      <a className="wb-button" href={path} onClick={(event) => followAnchor(event, path)}>返回{destination?.name || '首页'}</a>
     </div>
-  );
-}
-
-function NavigationRow({ href, active, icon, label, collapsed, onNavigate }) {
-  return (
-    <a
-      className={`wb-nav-row${active ? ' is-active' : ''}`}
-      href={href}
-      aria-current={active ? 'page' : undefined}
-      title={collapsed ? label : undefined}
-      onClick={(event) => followAnchor(event, href, { onNavigate })}
-    >
-      <Icon name={icon} />
-      <span className="wb-nav-label">{label}</span>
-    </a>
   );
 }
 
@@ -117,7 +97,7 @@ function WorkbenchContent({ boot }) {
     }).catch(error => { if (!cancelled) setTimeZoneError(error.message); });
     return () => { cancelled = true; };
   }, [route.path, generation, timeZoneReload]);
-  const modules = useMemo(() => resolveWorkbenchModules(), []);
+  const activeModule = workbenchModules.find(module => module.id === route.moduleId);
 
   const registerTools = useCallback((next) => setTools(next), []);
   const openPanel = useCallback((mode = 'ai') => {
@@ -134,7 +114,7 @@ function WorkbenchContent({ boot }) {
     generation: `${generation}:${agent.businessRevision}`,
     storageFailed,
     narrow,
-    timeZone, setTimeZone,
+    timeZone, setTimeZone, timeZoneError, reloadTimeZone: () => setTimeZoneReload(value => value + 1),
     isPanelOpen: Boolean(scene.panelOpen),
     panelMode: scene.panelMode || 'ai',
     panelWidth: scene.panelWidth || 300,
@@ -154,11 +134,10 @@ function WorkbenchContent({ boot }) {
     },
     openMaterialSource: (path, lessonPath) => { setMaterialNavigation({ sourcePath: path, lessonPath }); navigate(path); }
   }), [logout, accountKey, nickname, generation, agent.businessRevision, storageFailed, narrow, scene.panelMode, scene.panelOpen, scene.panelWidth,
-    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, preferences, appearance, setAppearance]);
+    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, timeZoneError, preferences, appearance, setAppearance]);
 
   const collapsed = narrow ? !scene.drawerOpen : Boolean(scene.sidebarCollapsed);
-  const hasPanel = route.name === 'questions' || route.name === 'question'
-    || route.name === 'lessons' || route.name === 'lesson' || route.name === 'resources' || route.name === 'resource' || ['math', 'classes', 'class', 'class-record', 'schedule'].includes(route.name);
+  const hasPanel = Boolean(activeModule?.auxiliaryPanel);
   const panelOpen = hasPanel && Boolean(scene.panelOpen);
 
   function toggleSidebar() {
@@ -168,27 +147,21 @@ function WorkbenchContent({ boot }) {
 
   let page = null;
   if (route.name === 'home') page = <RestoredHome returnPath={scene.lastWorkPath} />;
-  else if (route.name === 'questions' || route.name === 'question') page = <QuestionsPage route={route} />;
-  else if (route.name === 'lessons' || route.name === 'lesson') page = <LessonsPage route={route} />;
-  else if (route.name === 'resources' || route.name === 'resource') page = <ResourceRoute key={route.path} route={route} transport={transport} />;
-  else if (['classes', 'class', 'class-record'].includes(route.name)) page = timeZoneError ? <div className="wb-inline-error" role="alert">
-    <p>时区读取失败：{timeZoneError}</p><button className="wb-button" onClick={() => setTimeZoneReload(value => value + 1)}>重试读取时区</button>
-  </div> : timeZone ? <ClassesPage route={route} timeZone={timeZone} /> : <p className="wb-muted">正在读取账户时区…</p>;
-  else if (route.name === 'schedule') page = <SchedulePage route={route} />;
-  else if (route.name === 'math') page = <MathWorkbench route={route} />;
+  else if (activeModule) {
+    const Page = activeModule.Page;
+    page = <Page route={route} transport={transport} />;
+  }
   else if (route.name === 'settings') page = <WorkbenchSettings />;
   else if (route.name === 'help') page = <SupportHelp />;
   else if (route.name === 'releases') page = <SupportReleases />;
   else page = <NotFound />;
 
-  const activeModuleId = route.name === 'questions' || route.name === 'question'
-    ? 'questions'
-    : route.name === 'lessons' || route.name === 'lesson' ? 'lessons' : route.name === 'resources' || route.name === 'resource' ? 'resources' : route.name === 'math' ? 'math' : route.name.startsWith('class') ? 'classes' : null;
+  const activeModuleId = activeModule?.id;
 
   useEffect(() => {
-    if (!activeModuleId && route.name !== 'schedule') return;
-    if (scene.lastWorkPath !== window.location.pathname + window.location.search) patchScene({lastWorkPath: window.location.pathname + window.location.search});
     if (!activeModuleId) return;
+    if (scene.lastWorkPath !== window.location.pathname + window.location.search) patchScene({lastWorkPath: window.location.pathname + window.location.search});
+    if (activeModule.navigation !== 'sidebar') return;
     const current = window.location.pathname + window.location.search;
     if (scene.modulePaths?.[activeModuleId] !== current)
       patchScene({ modulePaths: { ...scene.modulePaths, [activeModuleId]: current } });
@@ -212,7 +185,7 @@ function WorkbenchContent({ boot }) {
         </RestoredTopbar>
 
         <div className="wb-body">
-          <RestoredSidebar modulePaths={scene.modulePaths} model={layoutModel} routePath={activeModuleId ? `/${activeModuleId}` : route.path} accountName={nickname}
+          <RestoredSidebar modulePaths={scene.modulePaths} model={layoutModel} routePath={activeModule?.path || route.path} accountName={nickname}
             mobileOpen={Boolean(scene.drawerOpen)} isNarrow={narrow} railCollapsed={!narrow && collapsed}
             onNavigate={() => patchScene({ drawerOpen: false })} onCloseMobile={() => patchScene({ drawerOpen: false })}
             openSurface={surface} onToggleSurface={value => setSurface(surface === value ? null : value)}

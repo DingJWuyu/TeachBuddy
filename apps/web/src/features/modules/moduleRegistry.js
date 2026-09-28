@@ -10,19 +10,19 @@
 
 import { moduleCatalog, modulePorts } from '@refatos/shared';
 import QuestionsPage from '../questions/index.jsx';
-import ResourcesPage from '../resources/index.jsx';
+import ResourceRoute from '../resources/ResourceRoute.jsx';
 import LessonsPage from '../lessons/index.jsx';
 import { MathWorkbench } from '../math/index.jsx';
 
-import ClassesPage from '../classes/index.jsx';
+import { ClassesRoute } from '../classes/index.jsx';
 import SchedulePage from '../schedule/index.jsx';
 const localRegistry = {
-  classes: { Page: ClassesPage, icon: 'classes' },
+  classes: { Page: ClassesRoute, icon: 'classes' },
   schedule: { Page: SchedulePage, icon: 'calendar' },
-  questions: { Page: QuestionsPage, icon: 'bank' },
-  resources: { Page: ResourcesPage, icon: 'folder' },
-  lessons: { Page: LessonsPage, icon: 'prep' },
-  math: { Page: MathWorkbench, icon: 'math' }
+  questions: { Page: QuestionsPage, icon: 'lessons' },
+  resources: { Page: ResourceRoute, icon: 'folder' },
+  lessons: { Page: LessonsPage, icon: 'pencil' },
+  math: { Page: MathWorkbench, icon: 'graph' }
 };
 
 const PORT_PROVIDERS = Object.fromEntries(Object.entries(modulePorts).map(([name, descriptor]) => [name, descriptor.provider]));
@@ -56,9 +56,10 @@ export function resolveWorkbenchModules(descriptors = moduleCatalog) {
   });
 
   return descriptors
-    .filter((descriptor) => descriptor.navigation === 'sidebar')
     .map((descriptor) => ({
       ...descriptor,
       ...localRegistry[descriptor.id]
     }));
 }
+
+export const workbenchModules = resolveWorkbenchModules();

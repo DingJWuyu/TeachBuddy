@@ -6,7 +6,9 @@ import { followAnchor } from '../routes.js';
 import { useScene } from '../useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 import Notifications from './Notifications.jsx';
-const modules = [{id:'questions',name:'题库',icon:'lessons'},{id:'lessons',name:'备课',icon:'pencil'},{id:'math',name:'数学工坊',icon:'graph'},{id:'resources',name:'资源库',icon:'folder'},{id:'classes',name:'班级教学',icon:'classes'}];
+import { workbenchModules } from '../../modules/moduleRegistry.js';
+const modules = workbenchModules.filter(module => module.navigation === 'sidebar');
+const topModules = workbenchModules.filter(module => module.navigation === 'top');
 export default function Topbar({ route, collapsed, toggleSidebar, surface, setSurface, assistantOpen, onToggleAssistant, children }) {
  const ref = useRef(null);
  const { accountKey } = useWorkbenchShell();
@@ -32,7 +34,7 @@ export default function Topbar({ route, collapsed, toggleSidebar, surface, setSu
  </span>;
  return <header className="tb-topbar" ref={ref}>
   <div className="tb-brand-slot"><button className="tb-mobile-menu" onClick={toggleSidebar} aria-label="打开工作台导航"><Icon name="menu" /></button><a className="tb-brand" href="/" onClick={e=>followAnchor(e,'/')}><span className="tb-brand-mark">T</span><span className="tb-brand-wordmark">TeachBuddy</span></a></div>
-  <nav className="tb-global-nav" aria-label="全局导航"><a className={`tb-nav-item${route.name==='home'?' is-current':''}`} href="/" onClick={e=>followAnchor(e,'/')}>首页</a><a className={`tb-nav-item${route.name==='schedule'?' is-current':''}`} href="/calendar" onClick={e=>followAnchor(e,'/calendar')}>日程</a><SupportMenu open={surface==='support'} onOpen={()=>setSurface('support')} onClose={()=>setSurface(null)} onSelect={()=>{}} /></nav>
+  <nav className="tb-global-nav" aria-label="全局导航"><a className={`tb-nav-item${route.name==='home'?' is-current':''}`} href="/" onClick={e=>followAnchor(e,'/')}>首页</a>{topModules.map(module => <a key={module.id} className={`tb-nav-item${route.moduleId===module.id?' is-current':''}`} href={module.path} onClick={e=>followAnchor(e,module.path)}>{module.name}</a>)}<SupportMenu open={surface==='support'} onOpen={()=>setSurface('support')} onClose={()=>setSurface(null)} onSelect={()=>{}} /></nav>
   <div className="tb-top-actions">
    {entry('search','search','全局搜索',null)}
    <Notifications open={surface==='notifications'} onToggle={()=>toggle('notifications')} onClose={()=>setSurface(null)} onAnnounce={announce}/>

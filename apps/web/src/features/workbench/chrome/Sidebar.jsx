@@ -3,10 +3,11 @@ import { useScene } from '../useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 import { SUPPORT_MENU_ITEMS } from './SupportMenu.jsx';
 import { createDragChip } from './dragChip.js';
-import { CALENDAR_PATH, HOME_PATH, modulePath, routeClick, withSearch } from './routes.js';
+import { HOME_PATH, modulePath, routeClick, withSearch } from './routes.js';
 import { Icon } from './icons.jsx';
 import SidebarHead from './SidebarHead.jsx';
-const MODULES = [{id:'questions',name:'题库',icon:'lessons'},{id:'lessons',name:'备课',icon:'pencil'},{id:'math',name:'数学工坊',icon:'graph'},{id:'resources',name:'资源库',icon:'folder'},{id:'classes',name:'班级教学',icon:'classes'}];
+import { workbenchModules } from '../../modules/moduleRegistry.js';
+const MODULES = workbenchModules.filter(module => module.navigation === 'sidebar');
 const INITIAL_LAYOUT = {groups:[{id:'teaching-group',name:'教学',collapsed:false,fixed:false,moduleIds:MODULES.map(m=>m.id)},{id:'ungrouped',name:'未分组',collapsed:false,fixed:true,moduleIds:[]}],hiddenModuleIds:[]};
 function cloneLayout(layout) {
   return {
@@ -47,7 +48,14 @@ function isModuleDropTarget(mark, moduleId, kind) {
 
 export function useLayoutModel(accountKey) {
   const [saved, patchSaved] = useScene(accountKey, 'restored-navigation', { layout: INITIAL_LAYOUT });
-  const layout = saved.layout;
+  // Saved device layouts may still mention modules removed from the catalog.
+  const layout = {
+    ...saved.layout,
+    groups: saved.layout.groups.map(group => ({
+      ...group, moduleIds: group.moduleIds.filter(id => moduleById(id))
+    })),
+    hiddenModuleIds: saved.layout.hiddenModuleIds.filter(id => moduleById(id))
+  };
   const setLayout = value => patchSaved(current => ({ layout: typeof value === 'function' ? value(current.layout) : value }));
   const [announcement, setAnnouncement] = useState('工作台布局已载入');
   /*
@@ -419,6 +427,13 @@ function HiddenModules({ model, open, onToggle, dragState, onDrop, onStartDrag, 
 
 export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed, openSurface, onToggleSurface, onOpenSurface, onCloseSurface, accountName }) {
 
+  function moduleHref(id) {
+    const path = modulePath(id);
+    const remembered = modulePaths[id];
+    return remembered && (remembered === path || remembered.startsWith(path + '/') || remembered.startsWith(path + '?'))
+      ? remembered : path;
+  }
+
   const [addingGroup, setAddingGroup] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
   const [renamingGroupId, setRenamingGroupId] = useState(null);
@@ -731,18 +746,16 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
               <span className="tb-module-icon"><Icon name="home" /></span>
               <span>首页</span>
             </a>
-            <a
-              className={`tb-module-row${routePath === CALENDAR_PATH ? ' is-active' : ''}`}
-              href={withSearch(CALENDAR_PATH)}
-              aria-current={routePath === CALENDAR_PATH ? 'page' : undefined}
-              onClick={(event) => {
-                routeClick(event, CALENDAR_PATH);
-                onCloseMobile();
-              }}
+            {workbenchModules.filter(module => module.navigation === 'top').map(module => <a
+              key={module.id}
+              className={`tb-module-row${routePath === module.path ? ' is-active' : ''}`}
+              href={module.path}
+              aria-current={routePath === module.path ? 'page' : undefined}
+              onClick={(event) => { routeClick(event, module.path); onCloseMobile(); }}
             >
-              <span className="tb-module-icon"><Icon name="calendar" /></span>
-              <span>日程</span>
-            </a>
+              <span className="tb-module-icon"><Icon name={module.icon} /></span>
+              <span>{module.name}</span>
+            </a>)}
             <button
               type="button"
               className="tb-module-row"
@@ -924,7 +937,7 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
                        */
                       <a
                         key={moduleId}
-                        href={modulePaths[moduleId] || modulePath(moduleId)}
+                        href={moduleHref(moduleId)}
                         className={`tb-module-row ${modulePath(moduleId) === routePath ? 'is-active' : ''} ${dragState?.type === 'module' && dragState.id === moduleId ? 'is-dragging' : ''} ${isModuleDropTarget(dragTarget, moduleId, 'before') ? 'is-drop-target is-drop-before' : ''} ${isModuleDropTarget(dragTarget, moduleId, 'after') ? 'is-drop-target is-drop-after' : ''}`}
                         data-drop-module={moduleId}
                         data-label={moduleItem.name}
@@ -938,7 +951,7 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
                         onKeyDown={(event) => handleModuleKeyDown(event, moduleId)}
                         onClick={(event) => {
                           /* Keep the shell mounted for ordinary clicks; modified clicks retain native link behavior. */
-                          routeClick(event, modulePaths[moduleId] || modulePath(moduleId));
+                          routeClick(event, moduleHref(moduleId));
                           onNavigate();
                         }}
                         onDragStart={(event) => startDrag(event, { type: 'module', id: moduleId })}

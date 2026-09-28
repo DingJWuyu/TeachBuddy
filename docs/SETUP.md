@@ -135,7 +135,7 @@ React 页面
 | `packages/shared/` | 两侧消费的静态模块目录及共享定义 |
 | `prototype/` | 已确认 UI/UX 的参考，生产运行不依赖原型源码 |
 
-实际 API 装配映射在 `apps/api/src/workbench/moduleImplementations.js`；前端从对应静态目录消费入口。新增能力先找所属模块，不增加另一套全局注册表。
+实际 API 装配映射在 `apps/api/src/workbench/moduleImplementations.js`；Web 的 `features/modules/moduleRegistry.js` 将共享目录投影为页面与图标，外壳、导航、教程和全局搜索消费同一投影，顶层路由从共享目录匹配。资源深链接适配归属资源模块，班级入口负责呈现共享时区的加载、错误和重试。新增能力先找所属模块，不增加另一套全局注册表。
 
 ### 持久化与失败语义
 

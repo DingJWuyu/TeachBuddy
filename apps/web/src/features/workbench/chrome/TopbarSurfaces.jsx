@@ -6,8 +6,8 @@ import { createDragChip } from './dragChip.js';
 import { Icon } from './icons.jsx';
 import { listClasses } from '../../classes/api.js';
 import { listLessons } from '../../lessons/api.js';
-import { modulePath, navigate, routeClick, withSearch } from './routes.js';
-const WORKBENCH_MODULES = [{id:'questions',name:'题库',icon:'lessons'},{id:'lessons',name:'备课',icon:'pencil'},{id:'math',name:'数学工坊',icon:'graph'},{id:'resources',name:'资源库',icon:'folder'},{id:'classes',name:'班级教学',icon:'classes'}];
+import { navigate, routeClick, withSearch } from './routes.js';
+import { workbenchModules } from '../../modules/moduleRegistry.js';
 
 /* ------------------------------------------------------------------ search */
 
@@ -15,8 +15,7 @@ const SEARCH_GROUPS = [
   {
     group: '功能模块',
     items: [
-      ...WORKBENCH_MODULES.map((item) => ({ id: 'm-' + item.id, name: item.name, hint: '个人教学工作台', icon: item.icon, route: modulePath(item.id) })),
-      { id: 'm-schedule', name: '日程', hint: '课程、时间段与待办', icon: 'calendar', route: '/calendar' }
+      ...workbenchModules.map((item) => ({ id: 'm-' + item.id, name: item.name, hint: item.id === 'schedule' ? '课程、时间段与待办' : '个人教学工作台', icon: item.icon, route: item.path }))
     ]
   },
 

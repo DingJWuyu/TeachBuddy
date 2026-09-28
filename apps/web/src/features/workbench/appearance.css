@@ -90,6 +90,22 @@
 .wb-shell:is([data-route="questions"], [data-route="question"], [data-route="lessons"], [data-route="lesson"], [data-route="math"], [data-route="resources"], [data-route="resource"], [data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="help"]) .wb-main {
   padding: var(--app-workspace-padding);
 }
+/* Keep teaching pages and their shared assistant inside one canvas inset. */
+.wb-shell.tb-prototype:is([data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="schedule"]) .wb-workspace {
+  padding: var(--app-workspace-padding);
+  gap: 16px;
+}
+.wb-shell.tb-prototype:is([data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="schedule"]) :is(.wb-main, .cal-page) {
+  padding: 0;
+}
+.wb-shell.tb-prototype:is([data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="schedule"]) .wb-aux {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: var(--wb-shadow);
+}
+.wb-shell.tb-prototype:is([data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="schedule"]).is-narrow .wb-aux {
+  inset: var(--app-workspace-padding);
+}
 .wb-shell .wb-split { padding: 0; gap: 16px; }
 .wb-shell :is(.q-finder, .q-main, .q-copy-source, .res-library, .res-detail, .math-main, .wb-lessons-index, .help-directory, .help-body) {
   background: var(--app-surface);

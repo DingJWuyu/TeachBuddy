@@ -1,11 +1,15 @@
 import { useLayoutEffect, useState } from "react";
-import ResourcesPage from "../resources/index.jsx";
-import { readLocal, writeLocal } from "./storage.js";
-import { useWorkbenchShell } from "./shellContext.js";
-import { navigate } from "./routes.js";
+import ResourcesPage from "./index.jsx";
+import { readLocal, writeLocal } from "../workbench/storage.js";
+import { useWorkbenchShell } from "../workbench/shellContext.js";
+import { navigate } from "../workbench/routes.js";
 
 /** Adapt the shell deep link to the resource module's account-scoped scene. */
-export default function ResourceRoute({ route, transport }) {
+export default function ResourceRoute(props) {
+  return <ResourceEntry key={props.route.path} {...props} />;
+}
+
+function ResourceEntry({ route, transport }) {
   const { accountKey } = useWorkbenchShell();
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);

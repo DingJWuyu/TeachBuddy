@@ -343,3 +343,12 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
 
 export { SourceRecordsPanel, ClassRecordPicker } from './FeedbackPanel.jsx';
 export { RecordComposer } from './RecordComposer.jsx';
+
+/** Keep account time-zone loading and retry visible at the class entry. */
+export function ClassesRoute({ route }) {
+  const { timeZone, timeZoneError, reloadTimeZone } = useWorkbenchShell();
+  if (timeZoneError) return <div className="wb-inline-error" role="alert">
+    <p>时区读取失败：{timeZoneError}</p><button className="wb-button" onClick={reloadTimeZone}>重试读取时区</button>
+  </div>;
+  return timeZone ? <ClassesPage route={route} timeZone={timeZone} /> : <p className="wb-muted">正在读取账户时区…</p>;
+}

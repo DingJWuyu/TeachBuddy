@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { moduleCatalog } from '@refatos/shared';
 
 const NAVIGATION_EVENT = 'tb:navigate';
 
@@ -14,27 +15,37 @@ function parseRoute(pathname) {
   const path = pathname || '/';
   const segments = path.split('/').filter(Boolean);
   if (segments.length === 0) return { name: 'home', path: '/' };
-  if (segments.length === 1) {
-    if (segments[0] === 'questions') return { name: 'questions', path: '/questions' };
-    if (segments[0] === 'lessons') return { name: 'lessons', path: '/lessons' };
-    if (segments[0] === 'resources') return { name: 'resources', path: '/resources' };
-    if (segments[0] === 'math') return { name: 'math', path, workId: new URLSearchParams(window.location.search).get('workId') };
-    if (segments[0] === 'classes') return { name: 'classes', path };
-    if (segments[0] === 'calendar') return { name: 'schedule', path, search: window.location.search };
-    if (['help', 'releases'].includes(segments[0])) return { name: segments[0], path };
-    if (segments[0] === 'settings') return { name: 'settings', path: '/settings' };
+  const descriptor = moduleCatalog.find(module => module.path === `/${segments[0]}`);
+  if (descriptor) {
+    const modulePath = ['questions', 'lessons', 'resources'].includes(descriptor.id)
+      ? descriptor.path + (segments[1] ? `/${segments[1]}` : '') : path;
+    const base = { moduleId: descriptor.id, path: modulePath };
+    if (segments.length === 1) {
+      if (descriptor.id === 'math') return { ...base, name: 'math', workId: new URLSearchParams(window.location.search).get('workId') };
+      if (descriptor.id === 'schedule') return { ...base, name: 'schedule', search: window.location.search };
+      return { ...base, name: descriptor.id };
+    }
+    // Subroutes retain the module's existing route shape. Malformed URL IDs
+    // belong to the unknown-route page rather than crashing the whole shell.
+    try {
+      if (segments.length === 2) {
+        const id = decodeURIComponent(segments[1]);
+        if (descriptor.id === 'classes') return { ...base, name: 'class', classId: id };
+        if (descriptor.id === 'resources') return { ...base, name: 'resource', id };
+        if (descriptor.id === 'questions') return { ...base, name: 'question', id };
+        if (descriptor.id === 'lessons') return { ...base, name: 'lesson', id };
+      }
+      if (descriptor.id === 'classes' && segments.length === 4 && segments[2] === 'records') {
+        return { ...base, name: 'class-record', classId: decodeURIComponent(segments[1]), recordId: decodeURIComponent(segments[3]) };
+      }
+    } catch (error) {
+      if (!(error instanceof URIError)) throw error;
+    }
   }
+  if (segments.length === 1 && ['help', 'releases', 'settings'].includes(segments[0])) return { name: segments[0], path: segments[0] === 'settings' ? '/settings' : path };
   if (segments[0] === 'help' && (segments.length === 2 || segments.length === 3)) {
     return { name: 'help', path, topicId: segments[1], articleId: segments[2] };
   }
-  if (segments.length === 2) {
-    const id = decodeURIComponent(segments[1]);
-    if (segments[0] === 'classes') return { name: 'class', classId: id, path };
-    if (segments[0] === 'resources') return { name: 'resource', id, path: `/resources/${segments[1]}` };
-    if (segments[0] === 'questions') return { name: 'question', id, path: `/questions/${segments[1]}` };
-    if (segments[0] === 'lessons') return { name: 'lesson', id, path: `/lessons/${segments[1]}` };
-  }
-  if (segments.length === 4 && segments[0] === 'classes' && segments[2] === 'records') return { name: 'class-record', classId: decodeURIComponent(segments[1]), recordId: decodeURIComponent(segments[3]), path };
   return { name: 'unknown', path };
 }
 
