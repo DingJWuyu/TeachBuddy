@@ -179,7 +179,7 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
   function selectPage(resource, page) {
     recognition.reset(); adoption.reset(); cancellation.reset(); setError("");
     patchScene({ source: { ...page, resourceId: resource.id, resourceVersion: resource.version,
-      resourceTitle: resource.snapshot.title }, result: null, content: null, title: `${resource.snapshot.title} · 第 ${page.page} 页`.slice(0, 200),
+      resourceTitle: resource.snapshot.title }, result: null, content: null, title: t("{{title}} · 第 {{page}} 页", { title: resource.snapshot.title, page: page.page }).slice(0, 200),
       jobId: null, adopted: false, selectedImage: null, issueBox: null });
   }
   function clearPage() {
@@ -189,7 +189,7 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
   }
   if (!source && imageParent) return <FilePreview fileId={imageParent.fileId} onClose={onClose}
     title={t("准备校对配图")} imageLabel={imageLabel} selectLabel={t("校对这张配图")}
-    onSelectPage={page => patchScene({ source: page, title: `${origin.resourceTitle} · 第 ${origin.page} 页 · 配图 ${imageParent.number}`.slice(0, 200) })} />;
+    onSelectPage={page => patchScene({ source: page, title: t("{{title}} · 第 {{page}} 页 · 配图 {{number}}", { title: origin.resourceTitle, page: origin.page, number: imageParent.number }).slice(0, 200) })} />;
   if (!source) return <MaterialsPicker kind="resource" lessonTitle={lesson.title} targetLabel={t("新教学环节")}
     onPickPage={selectPage} onCancel={onClose} />;
   const images = imageParent ? [] : displayedImages(scene.result);
@@ -207,7 +207,7 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
   return <div className="wb-module wb-page lesson-picker lesson-page-import">
     <header className="wb-picker-head">
       <div className="lesson-picker-title"><div><h1>{imageParent ? t("校对配图内容") : t("校对资料正文")}</h1>
-        <p>{origin.resourceTitle} {t("· 第")} {origin.page} {t("页")}{imageParent ? t(" · 配图 {{number}}", { number: imageParent.number }) : ""}{t("，确认后保存为一个教学环节。")}</p></div></div>
+        <p>{t("{{title}} · 第 {{page}} 页", { title: origin.resourceTitle, page: origin.page })}{imageParent ? t(" · 配图 {{number}}", { number: imageParent.number }) : ""}{t("，确认后保存为一个教学环节。")}</p></div></div>
       <button className="wb-button" disabled={locked || recognition.isRunning || Boolean(recognition.pending)} onClick={onClose}>{imageParent ? t("返回整页校对") : t("返回课稿")}</button>
       {scene.adopted ? <button className="wb-button is-primary" disabled={returning} onClick={returnToLesson}>{t("已加入，返回课稿")}</button>
         : adoption.pending ? <button className="wb-button is-primary" disabled={adoption.isRunning}

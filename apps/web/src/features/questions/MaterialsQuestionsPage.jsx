@@ -1126,7 +1126,7 @@ export default function MaterialsQuestionsPage({
                 </nav>
                 {draft ? (
                   <fieldset disabled={locked} className="q-review-fields">
-                    <div className="q-review-current"><h3>{t("第")} {value.drafts.indexOf(draft) + 1} {t("题")} <span className="q-muted">{t("共")} {value.drafts.length} {t("题")}</span></h3>{draft.disposition !== 'confirmed' && <button className="q-text-button" onClick={() => patchScene({ reviewEditing: !scene.reviewEditing })}><QuestionIcon name={scene.reviewEditing ? 'check' : 'edit'} size={16} />{scene.reviewEditing ? t("完成修改") : t("修改题目")}</button>}</div>
+                    <div className="q-review-current"><h3>{t("第 {{number}} 题", { number: value.drafts.indexOf(draft) + 1 })} <span className="q-muted">{t("共 {{count}} 题", { count: value.drafts.length })}</span></h3>{draft.disposition !== 'confirmed' && <button className="q-text-button" onClick={() => patchScene({ reviewEditing: !scene.reviewEditing })}><QuestionIcon name={scene.reviewEditing ? 'check' : 'edit'} size={16} />{scene.reviewEditing ? t("完成修改") : t("修改题目")}</button>}</div>
                     {scene.reviewEditing ? <>
                       <label className="q-title-field">{t("题目名称")}<input aria-label={t("草稿标题")} value={draft.title} onChange={e => editDraft({ title: e.target.value })} /></label>
                       <QuestionDocumentEditor value={draft.body} onChange={body => editDraft({ body })} onPickImage={pickImage} readOnly={locked} />
