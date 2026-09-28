@@ -78,6 +78,7 @@ export function createApp(options = {}) {
   if (!testIdentity && (!workbench.filesRouter || !workbench.jobsRouter))
     throw new Error('The authenticated composition requires files and jobs.');
   app.use('/api/reliability/v1', workbench.preferencesRouter);
+  if (workbench.navigationRouter) app.use('/api/workbench/navigation', workbench.navigationRouter);
   if (workbench.reliabilityRouter) app.use('/api/reliability/v1', workbench.reliabilityRouter);
   if (workbench.filesRouter) app.use('/api/workbench/files', workbench.filesRouter);
   if (workbench.jobsRouter) app.use('/api/workbench/jobs', workbench.jobsRouter);

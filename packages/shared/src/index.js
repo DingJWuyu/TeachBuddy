@@ -33,3 +33,5 @@ export {
 
 export { canRenderMath, supportedDocument, questionDocuments, lessonDocuments } from './materials/content.js';
 export { emptyRecordContent, recordContentText } from './classRecordContent.js';
+
+export { defaultNavigation, validNavigation, includeNewNavigationModules, navigationLayoutSchema } from './navigation.js';

@@ -58,7 +58,7 @@ function WorkbenchContent({ boot }) {
   const agent = useAgent();
   const { logout, accountKey, nickname, generation, storageFailed, reportIdentityLost, transport } = boot;
   const route = useRoute();
-  const layoutModel = useLayoutModel(accountKey);
+  const layoutModel = useLayoutModel(accountKey, generation);
   const [surface, setSurface] = useState(null);
   const preferences = usePreferences(accountKey, generation);
   const appearance = useMemo(() => ({ theme: 'light', background: 'grid', avatar: '', ...preferences.input }), [preferences.input]);

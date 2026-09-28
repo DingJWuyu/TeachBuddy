@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useScene } from '../useScene.js';
+import { useNavigation } from '../useNavigation.js';
+import NavigationStatus, { NavigationBusy } from './NavigationStatus.jsx';
 import { useWorkbenchShell } from '../shellContext.js';
 import { SUPPORT_MENU_ITEMS } from './SupportMenu.jsx';
 import { createDragChip } from './dragChip.js';
@@ -8,13 +9,6 @@ import { Icon } from './icons.jsx';
 import SidebarHead from './SidebarHead.jsx';
 import { workbenchModules } from '../../modules/moduleRegistry.js';
 const MODULES = workbenchModules.filter(module => module.navigation === 'sidebar');
-const INITIAL_LAYOUT = {groups:[{id:'teaching-group',name:'教学',collapsed:false,fixed:false,moduleIds:MODULES.map(m=>m.id)},{id:'ungrouped',name:'未分组',collapsed:false,fixed:true,moduleIds:[]}],hiddenModuleIds:[]};
-function cloneLayout(layout) {
-  return {
-    groups: layout.groups.map((group) => ({ ...group, moduleIds: [...group.moduleIds] })),
-    hiddenModuleIds: [...layout.hiddenModuleIds]
-  };
-}
 
 function moduleById(moduleId) {
   return MODULES.find((moduleItem) => moduleItem.id === moduleId);
@@ -46,17 +40,16 @@ function isModuleDropTarget(mark, moduleId, kind) {
   return head === `module-${kind}` && markedModuleId === moduleId;
 }
 
-export function useLayoutModel(accountKey) {
-  const [saved, patchSaved] = useScene(accountKey, 'restored-navigation', { layout: INITIAL_LAYOUT });
-  // Saved device layouts may still mention modules removed from the catalog.
+export function useLayoutModel(accountKey, generation) {
+  const navigation = useNavigation(accountKey, generation);
   const layout = {
-    ...saved.layout,
-    groups: saved.layout.groups.map(group => ({
-      ...group, moduleIds: group.moduleIds.filter(id => moduleById(id))
+    ...navigation.raw,
+    groups: navigation.raw.groups.map(group => ({
+      ...group, fixed: group.id === 'ungrouped', collapsed: Boolean(navigation.device.collapsed[group.id]),
+      moduleIds: group.moduleIds.filter(id => moduleById(id))
     })),
-    hiddenModuleIds: saved.layout.hiddenModuleIds.filter(id => moduleById(id))
+    hiddenModuleIds: navigation.raw.hiddenModuleIds.filter(id => moduleById(id))
   };
-  const setLayout = value => patchSaved(current => ({ layout: typeof value === 'function' ? value(current.layout) : value }));
   const [announcement, setAnnouncement] = useState('工作台布局已载入');
   /*
    * Bumped on every accepted change. Consumers that only care that the layout
@@ -65,49 +58,37 @@ export function useLayoutModel(accountKey) {
    */
   const [revision, setRevision] = useState(0);
 
-  /*
-   * Every layout change is written through. This is the one piece of state that
-   * outlives the session, so it is also the one that has to survive the route
-   * change, the reload and the browser restart a user would actually perform.
-   */
   function update(message, recipe) {
-    setLayout((current) => {
-      const next = cloneLayout(current);
-      recipe(next);
-      
-      return next;
-    });
-    setRevision((current) => current + 1);
+    if (!navigation.editable) { setAnnouncement('导航尚未读取，请先重试读取'); return false; }
+    navigation.change(recipe);
+    setRevision(current => current + 1);
     setAnnouncement(message);
+    return true;
   }
 
   return {
+    navigation,
     layout,
     revision,
     announcement,
     announce: setAnnouncement,
     reset() {
-      const next = cloneLayout(INITIAL_LAYOUT);
-      
-      setLayout(next);
+      if (!navigation.editable) return;
+      navigation.reset();
       setAnnouncement('已恢复默认布局');
     },
     toggleGroup(groupId) {
-      update('已切换分组展开状态', (next) => {
-        const group = next.groups.find((item) => item.id === groupId);
-        if (group) group.collapsed = !group.collapsed;
-      });
+      navigation.toggleGroup(groupId);
+      setAnnouncement('已切换分组展开状态');
     },
     createGroup(name) {
       const trimmedName = name.trim();
-      if (!trimmedName) return false;
+      if (!navigation.editable || !trimmedName || trimmedName.length > 80) return false;
       update(`已创建分组 ${trimmedName}`, (next) => {
-        const ungroupedIndex = next.groups.findIndex((group) => group.fixed);
+        const ungroupedIndex = next.groups.findIndex((group) => group.id === 'ungrouped');
         next.groups.splice(ungroupedIndex, 0, {
-          id: `group-${Date.now()}`,
+          id: `group-${crypto.randomUUID()}`,
           name: trimmedName,
-          collapsed: false,
-          fixed: false,
           moduleIds: []
         });
       });
@@ -115,17 +96,17 @@ export function useLayoutModel(accountKey) {
     },
     renameGroup(groupId, name) {
       const trimmedName = name.trim();
-      if (!trimmedName) return false;
+      if (!navigation.editable || !trimmedName || trimmedName.length > 80) return false;
       update(`分组已重命名为 ${trimmedName}`, (next) => {
-        const group = next.groups.find((item) => item.id === groupId && !item.fixed);
+        const group = next.groups.find((item) => item.id === groupId && item.id !== 'ungrouped');
         if (group) group.name = trimmedName;
       });
       return true;
     },
     deleteGroup(groupId) {
       update('分组已删除，原有模块已移到未分组', (next) => {
-        const group = next.groups.find((item) => item.id === groupId && !item.fixed);
-        const ungrouped = next.groups.find((item) => item.fixed);
+        const group = next.groups.find((item) => item.id === groupId && item.id !== 'ungrouped');
+        const ungrouped = next.groups.find((item) => item.id === 'ungrouped');
         if (!group || !ungrouped) return;
         ungrouped.moduleIds.push(...group.moduleIds.filter((id) => !ungrouped.moduleIds.includes(id)));
         next.groups = next.groups.filter((item) => item.id !== groupId);
@@ -134,7 +115,7 @@ export function useLayoutModel(accountKey) {
     moveGroup(sourceId, targetId) {
       if (sourceId === targetId) return;
       update('分组顺序已调整', (next) => {
-        const sourceIndex = next.groups.findIndex((group) => group.id === sourceId && !group.fixed);
+        const sourceIndex = next.groups.findIndex((group) => group.id === sourceId && group.id !== 'ungrouped');
         const targetIndex = next.groups.findIndex((group) => group.id === targetId);
         if (sourceIndex < 0 || targetIndex < 0) return;
         const [source] = next.groups.splice(sourceIndex, 1);
@@ -153,7 +134,7 @@ export function useLayoutModel(accountKey) {
      */
     hideGroup(groupId) {
       update('分组已删除，其中的模块已移入垃圾桶', (next) => {
-        const sourceIndex = next.groups.findIndex((group) => group.id === groupId && !group.fixed);
+        const sourceIndex = next.groups.findIndex((group) => group.id === groupId && group.id !== 'ungrouped');
         if (sourceIndex < 0) return;
         const [group] = next.groups.splice(sourceIndex, 1);
         for (const moduleId of group.moduleIds) {
@@ -184,9 +165,10 @@ export function useLayoutModel(accountKey) {
         const group = next.groups[groupIndex];
         const moduleIndex = group.moduleIds.indexOf(moduleId);
         if (direction === 'up' || direction === 'down') {
-          const offset = direction === 'up' ? -1 : 1;
-          const targetIndex = moduleIndex + offset;
-          if (targetIndex < 0 || targetIndex >= group.moduleIds.length) return;
+          const visible = group.moduleIds.filter(id => moduleById(id));
+          const target = visible[visible.indexOf(moduleId) + (direction === 'up' ? -1 : 1)];
+          if (!target) return;
+          const targetIndex = group.moduleIds.indexOf(target);
           [group.moduleIds[moduleIndex], group.moduleIds[targetIndex]] = [group.moduleIds[targetIndex], group.moduleIds[moduleIndex]];
           return;
         }
@@ -207,7 +189,7 @@ export function useLayoutModel(accountKey) {
       update(`${moduleById(moduleId)?.name || '模块'}已恢复到未分组`, (next) => {
         removeModule(next.groups, moduleId);
         next.hiddenModuleIds = next.hiddenModuleIds.filter((id) => id !== moduleId);
-        const ungrouped = next.groups.find((group) => group.fixed);
+        const ungrouped = next.groups.find((group) => group.id === 'ungrouped');
         if (ungrouped && !ungrouped.moduleIds.includes(moduleId)) ungrouped.moduleIds.push(moduleId);
       });
     }
@@ -321,7 +303,7 @@ function NewGroupForm({ onCreate, onClose }) {
         if (onCreate(name)) onClose();
       }}
     >
-      <input name="new-group-name" aria-label="新分组名称" value={name} onChange={(event) => setName(event.target.value)} placeholder="分组名称" />
+      <input name="new-group-name" aria-label="新分组名称" maxLength={80} value={name} onChange={(event) => setName(event.target.value)} placeholder="分组名称" />
     </form>
   );
 }
@@ -406,7 +388,7 @@ function HiddenModules({ model, open, onToggle, dragState, onDrop, onStartDrag, 
             return (
               <button
                 key={moduleId}
-                draggable
+                draggable={model.navigation.editable}
                 aria-label={`${moduleItem.name}。点击恢复到未分组，或拖到其他分组`}
                 onClick={() => model.restoreModule(moduleId)}
                 onDragStart={(event) => onStartDrag(event, { type: 'module', id: moduleId })}
@@ -513,7 +495,7 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
   }
 
   function openContextMenu(event, group) {
-    if (group.fixed) return;
+    if (group.fixed || !model.navigation.editable) return;
     event.preventDefault();
     setContextMenu({
       group,
@@ -535,6 +517,7 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
   }
 
   function startDrag(event, payload) {
+    if (!model.navigation.editable) { event.preventDefault(); return; }
     setDragState(payload);
     const map = new Map();
     const ends = new Map();
@@ -791,8 +774,10 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
 
         <div className="tb-workspace-heading">
           <strong>工作台</strong>
+          <NavigationBusy navigation={model.navigation} />
           <button
             type="button"
+            disabled={!model.navigation.editable}
             data-new-group-toggle
             aria-label={addingGroup ? '关闭新建分组' : '新建分组'}
             aria-expanded={addingGroup}
@@ -801,6 +786,7 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
             <Icon name={addingGroup ? 'minus' : 'plus'} size={16} />
           </button>
         </div>
+        <NavigationStatus navigation={model.navigation} />
         {addingGroup && <NewGroupForm onCreate={model.createGroup} onClose={() => setAddingGroup(false)} />}
 
         <nav className="tb-module-nav" aria-label="功能模块">
@@ -845,7 +831,7 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
             >
               <div
                 className={`tb-group-heading ${dragState?.type === 'group' && dragState.id === group.id ? 'is-dragging' : ''}`}
-                draggable={!group.fixed && renamingGroupId !== group.id}
+                draggable={model.navigation.editable && !group.fixed && renamingGroupId !== group.id}
                 onDragStart={(event) => startDrag(event, { type: 'group', id: group.id })}
                 onDrag={followDrag}
                 onDragEnd={finishDrag}
@@ -859,6 +845,7 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
                   <input
                     autoFocus
                     className="tb-group-rename"
+                    maxLength={80}
                     name={`rename-${group.id}`}
                     aria-label={`重命名分组 ${group.name}`}
                     value={renameDraft}
@@ -945,7 +932,7 @@ export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate
                         onPointerLeave={() => setRailTooltip(null)}
                         onFocus={(event) => showRailTooltip(event, moduleItem.name)}
                         onBlur={() => setRailTooltip(null)}
-                        draggable
+                        draggable={model.navigation.editable}
                         aria-current={modulePath(moduleId) === routePath ? 'page' : undefined}
                         aria-label={`${moduleItem.name}${modulePath(moduleId) === routePath ? '，当前页面' : ''}。Enter 打开；可拖动；Alt 加方向键移动；Delete 隐藏`}
                         onKeyDown={(event) => handleModuleKeyDown(event, moduleId)}

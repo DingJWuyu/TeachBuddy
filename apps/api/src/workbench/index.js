@@ -1,3 +1,4 @@
+import { createNavigationRouter, navigationMigrations } from './navigation.js';
 import { createReliability } from './reliability/index.js';
 import { migrations as reliabilityMigrations, acquireLock } from './reliability/storage.js';
 import fs from 'node:fs';
@@ -162,6 +163,8 @@ export function createWorkbench({
   const reliability = createReliability({ db, loader, mutations, identity, trustedOrigins: workbenchEnv.trustedOrigins ?? [], ready: () => initialize(), filesDirectory: workbenchEnv.filesDir ?? path.join(path.dirname(env.sqlitePath), 'files'), logger });
   const preferencesRouter = createPreferencesRouter({ db, mutations, identity,
     trustedOrigins: workbenchEnv.trustedOrigins ?? [], ready: () => initialize(), logger, clock });
+  const navigationRouter = createNavigationRouter({ db, mutations, identity, catalog,
+    trustedOrigins: workbenchEnv.trustedOrigins ?? [], ready: () => initialize(), logger, clock });
   let initialization = null;
   let agent;
   let closed = false;
@@ -170,7 +173,7 @@ export function createWorkbench({
     initialization ??= (async () => {
       await loader.discover();
       const migrationResult = migrations.run(
-        [...fileMigrations, ...jobMigrations, ...recognitionMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...loader.moduleMigrations()],
+        [...fileMigrations, ...jobMigrations, ...recognitionMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...navigationMigrations, ...loader.moduleMigrations()],
         {
           knownModuleIds: [
             "reliability",
@@ -178,6 +181,7 @@ export function createWorkbench({
             "materials-jobs",
             "materials-recognition",
             "reliability-preferences",
+            "workbench-navigation",
             ...catalog.map((entry) => entry.id),
           ],
         },
@@ -222,6 +226,7 @@ export function createWorkbench({
     reliabilityRouter: reliability.router,
     agentRecoveryGuard: reliability.agentRecoveryGuard,
     preferencesRouter,
+    navigationRouter,
     jobs,
     jobsRouter,
     identity,

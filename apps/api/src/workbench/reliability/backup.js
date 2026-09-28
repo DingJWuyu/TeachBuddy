@@ -12,6 +12,7 @@ import { migrations as math } from "../../modules/math/migrations.js";
 import { migrations as classes } from "../../modules/classes/migrations/index.js";
 import { migrations as schedule } from "../teachingTime.js";
 import { migrations as agent } from "../../agent/store.js";
+import { navigationMigrations } from "../navigation.js";
 import { preferenceMigrations } from "../../reliability/preferences.js";
 import { fileMigrations } from "../files/migrations.js";
 import { jobMigrations } from "../jobs/migrations.js";
@@ -47,6 +48,7 @@ const supported = [
   ...recognitionMigrations,
   ...migrations,
   ...preferenceMigrations,
+  ...navigationMigrations,
 ];
 const ledger = (db) =>
   db.prepare("SELECT id,moduleId FROM workbench_migrations ORDER BY id").all();
@@ -166,7 +168,7 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     .sort((a, b) => a.id.localeCompare(b.id));
   const actual = ledger(db);
   const optional = new Set(
-    migrations.flatMap((s) => s.migrations.map((m) => m.id)),
+    [...migrations, ...navigationMigrations].flatMap((s) => s.migrations.map((m) => m.id)),
   );
   if (
     actual.some((a) => !expected.some((e) => equal(e, a))) ||

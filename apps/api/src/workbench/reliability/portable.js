@@ -210,6 +210,10 @@ export function takeSnapshot(db, principal, loader) {
         updatedAt: row.updatedAt,
       });
   }
+  if (db.prepare("SELECT 1 FROM sqlite_master WHERE name='workbench_navigation'").get()) {
+    const row = db.prepare('SELECT * FROM workbench_navigation WHERE accountKey=?').get(account);
+    if (row) add('layout', { id: 'navigation', version: row.version, ...JSON.parse(row.layoutJson), updatedAt: row.updatedAt });
+  }
   const owner = db
     .prepare("SELECT id,nickname FROM auth_accounts WHERE accountKey=?")
     .get(account);
