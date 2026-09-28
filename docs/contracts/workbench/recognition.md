@@ -31,6 +31,8 @@
 
 机械转换只表达模型实际返回的内容。不得添加答案、重画原图、纠正数学结论或用固定题号规则修补样本。原始图块与从原页像素派生的裁图分别记录；派生不得使用旧 polygon 掩膜截掉图形。
 
+普通正文中的大写几何点名加整数下标可恢复为数学 run；上下文明确的字面换行可恢复为同一单元格内的段落。恢复保留 `math-recovered` / `text-lines-recovered` 校对提示和原 block 定位，原始 JSON 与块内容不变。代码、链接、路径、引用中的字面表达及无法确定的数学记法保持原文和疑点。该规则不修补任意 LaTeX，也不推断题目边界。
+
 ## 模块接缝
 
 服务端依赖 `recognition` 提供 `get`、`readPage`、`readResult`、`request` 和 `ensurePage`。`readResult(principal,resultId,source)` 同时核对已完成结果和来源。题库 extraction Job 在自己的执行内调用 `ensurePage(principal,{fileId,renditionFileId,page},{signal,retry})`，不能把子任务排入同一串行执行器再等待。已有失败页默认只读，显式重试才重新执行。
