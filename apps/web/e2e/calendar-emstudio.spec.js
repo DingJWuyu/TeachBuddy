@@ -28,6 +28,7 @@ async function capture(page, name) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-09-25T06:00:00Z'));
   pageErrors = []; page.on('pageerror', error => pageErrors.push(error.message));
   world = await createIntegration({ directory: fs.mkdtempSync(path.join(os.tmpdir(), 'calendar-e2e-')), workbenchClock: () => new Date('2026-09-25T06:00:00Z') });
   ({ client } = await registerMath(world, 'calendar@example.test'));

@@ -3,7 +3,9 @@ import { useWorkbenchShell } from '../workbench/shellContext.js';
 import { useScene } from '../workbench/useScene.js';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
-import { CalendarDialog, CalendarIcon, IconButton, MiniCalendar, MonthTitle, ViewMenu } from './CalendarControls.jsx';
+import { CalendarDialog, CalendarIcon, CalendarMenu, IconButton, MiniCalendar, MonthTitle, ViewMenu } from './CalendarControls.jsx';
+import { DeletedDialog } from './CalendarDetails.jsx';
+import { MoveItemDialog, PriorityDialog, TimeZoneDialog } from './CalendarItems.jsx';
 import CalendarEditor from './CalendarEditor.jsx';
 import TimeGrid from './TimeGrid.jsx';
 import { addDays, contentOf, contentProblem, diffDays, monday, newContent, shiftMonth, timeFromEvent, titleOf, todayInZone } from './calendarModel.js';
@@ -24,10 +26,13 @@ async function runWrite({ key, payload }) {
   if (payload.kind === 'override') return api.setException({ key, id: payload.id, originDate: payload.origin,
     payload: { expectedVersion: payload.version, mode: 'override', content: overrideContent(payload.content) } });
   if (payload.kind === 'cancel') return api.setException({ key, id: payload.id, originDate: payload.origin, payload: { expectedVersion: payload.version, mode: 'cancelled' } });
-  return api.setEntryDeletion({ key, id: payload.id, payload: { expectedVersion: payload.version, deleted: true } });
+  if (payload.kind === 'inherit') return api.setException({ key, id: payload.id, originDate: payload.origin, payload: { expectedVersion: payload.version, mode: 'inherit' } });
+  if (payload.kind === 'settings') return api.updateSettings({ key, payload: payload.content });
+  if (payload.kind === 'moveItem') return api.moveItem({ key, payload: payload.content });
+  return api.setEntryDeletion({ key, id: payload.id, payload: { expectedVersion: payload.version, deleted: payload.kind !== 'restore' } });
 }
 
-function Upcoming({ entries, occurrences, labels, today, grouped, onGroup, onNew, onOpen }) {
+function Upcoming({ entries, occurrences, labels, today, grouped, onGroup, onNew, onOpen, onManage, zone }) {
   const items = entries.map(entry => {
     const next = occurrences.find(x => x.key.entryId === entry.id && x.time.date >= today);
     return { entry, occurrence: next, date: next?.time.date ?? entry.time?.date ?? '' };
@@ -43,7 +48,8 @@ function Upcoming({ entries, occurrences, labels, today, grouped, onGroup, onNew
   };
   const groups = [...labels, { id: '', name: '无标签', color: '#9ba0aa' }].map(label => ({ label,
     rows: items.filter(x => label.id ? (x.occurrence ?? x.entry).calendar?.tags.includes(label.id) : !labels.some(l => (x.occurrence ?? x.entry).calendar?.tags.includes(l.id))) })).filter(x => x.rows.length);
-  return <section className="cal-upcoming" aria-label="即将到来"><header><h2><CalendarIcon name="clock" size={18}/>即将到来<span>({items.length})</span></h2><div><IconButton name={grouped ? 'tag' : 'calendar'} label={grouped ? '按日期显示' : '按标签分组'} aria-pressed={grouped} onClick={onGroup}/><IconButton name="plus" label="新建任务" onClick={onNew}/></div></header>
+  return <section className="cal-upcoming" aria-label="即将到来"><header><h2><CalendarIcon name="clock" size={18}/>即将到来<span>({items.length})</span></h2><div><CalendarMenu label="日程管理" className="cal-management-menu" trigger={<CalendarIcon name="more"/>}>{close => <><button role="menuitem" onClick={() => { onNew(true); close(); }}>新建未排期任务</button><button role="menuitem" onClick={() => { onManage('priority'); close(); }}>优先事项</button><div className="cal-menu-divider"/><button role="menuitem" onClick={() => { onManage('deleted'); close(); }}>已删除任务</button><button role="menuitem" onClick={() => { onManage('zone'); close(); }}>显示时区</button></>}</CalendarMenu><IconButton name={grouped ? 'tag' : 'calendar'} label={grouped ? '按日期显示' : '按标签分组'} aria-pressed={grouped} onClick={onGroup}/><IconButton name="plus" label="新建任务" onClick={() => onNew(false)}/></div></header>
+    <div className="cal-list-tools"><button onClick={() => onNew(true)}>+ 未排期</button><button onClick={() => onManage('priority')}>优先事项</button><button className="cal-zone-link" onClick={() => onManage('zone')} title={`显示时区：${zone}`}>{zone.split('/').at(-1).replaceAll('_', ' ')}</button></div>
     {items.length === 0 ? <div className="cal-empty"><CalendarIcon name="calendar" size={28}/><p>暂无安排</p></div> : grouped ? groups.map(({ label, rows }) => <div className="cal-upcoming-group" key={label.id}><h3><span className="cal-group-tag-icon" style={{ color: label.color }}><CalendarIcon name="tag" size={20}/></span><span className="cal-group-name" title={label.name}>{label.name}</span><span className="cal-group-count">{rows.length}</span></h3>{rows.map(row)}</div>) : <div className="cal-upcoming-list">{items.map(row)}</div>}
   </section>;
 }
@@ -57,6 +63,7 @@ export default function SchedulePage({ route }) {
   const sceneRef = useRef(scene); sceneRef.current = scene;
   const mounted = useRef(true);
   const [zone, setZone] = useState('Asia/Shanghai');
+  const [settings, setSettings] = useState(null);
   const [range, setRange] = useState({ from: scene.anchor, to: addDays(scene.anchor, 6) });
   const [data, setData] = useState({ entries: [], occurrences: [], upcoming: [], labels: [] });
   const [displayMonth, setDisplayMonth] = useState(scene.anchor.slice(0, 7));
@@ -68,6 +75,8 @@ export default function SchedulePage({ route }) {
   const [deletePrompt, setDeletePrompt] = useState(false);
   const [movePrompt, setMovePrompt] = useState(null);
   const [mobileSidebar, setMobileSidebar] = useState(false);
+  const [management, setManagement] = useState(null);
+  const [itemToMove, setItemToMove] = useState(null);
   const flight = useRef(null);
   const op = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:schedule-calendar' });
   const opRef = useRef(op); opRef.current = op;
@@ -89,22 +98,29 @@ export default function SchedulePage({ route }) {
     setLoadState('loading');
     Promise.all([api.getSettings(), api.listEntries(), api.listOccurrences(range), api.listLabels(), api.listOccurrences({ from: today, to: addDays(today, 366) })]).then(([settings, entries, result, labels, upcoming]) => {
       if (cancelled) return;
-      setZone(settings.timeZone); setData({ entries, occurrences: result.items, labels, upcoming: upcoming.items }); setLoadState('ready'); setLoadError('');
+      setSettings(settings); setZone(settings.timeZone); setData({ entries, occurrences: result.items, labels, upcoming: upcoming.items }); setLoadState('ready'); setLoadError('');
     }).catch(error => { if (!cancelled) { setLoadState('error'); setLoadError(error.problem?.message ?? '日程未能更新'); } });
     return () => { cancelled = true; };
   }, [range.from, range.to, revision, shell.generation, today]);
   useForegroundRefresh(reload);
 
-  function applySaved(result, payload) {
+  async function applySaved(result, payload) {
     if (!mounted.current || !result) return false;
     const current = sceneRef.current.draft;
-    if (['delete', 'cancel'].includes(payload.kind)) {
+    if (payload.kind === 'settings') {
+      setSettings(result); setZone(result.timeZone); shell.setTimeZone(result.timeZone); setManagement(null);
+    } else if (payload.kind === 'moveItem') {
+      setItemToMove(null);
+      await openEntry(result.to.id, null, true);
+    } else if (['delete', 'cancel'].includes(payload.kind)) {
       if (current?.id === payload.id) setDraft(null);
+    } else if (['restore', 'inherit'].includes(payload.kind)) {
+      await openEntry(payload.id, payload.origin, true);
     } else if (current && payload.clientId && current.clientId === payload.clientId) {
       const entry = result.id ? result : { ...current.entry, version: result.entryVersion };
       const origin = payload.kind === 'override' ? current.origin : entry.repeat ? current.origin ?? entry.time.date : null;
       setDraft({ ...current, id: result.id ?? current.id, version: result.version ?? result.entryVersion,
-        origin, entry, baseline: payload.draftContent ?? payload.content, scope: null, forceSeries: false, savePaused: false });
+        origin, entry, courseState: result.courseState ?? current.courseState, baseline: payload.draftContent ?? payload.content, scope: null, forceSeries: false, savePaused: false });
     }
     setValidation(''); reload(); return true;
   }
@@ -136,7 +152,7 @@ export default function SchedulePage({ route }) {
       content.time.date = addDays(current.entry.time.date, delta);
       if (!current.forceSeries) shiftRepeat(content, delta);
     }
-    if (content.repeat) content.course.recordIds = [];
+    if (content.repeat && !single) content.course.recordIds = [];
     return perform({ kind: !current.id ? 'create' : single ? 'override' : 'update', id: current.id, origin: current.origin,
       version: current.version, clientId: current.clientId, content, draftContent: current.content });
   }
@@ -158,12 +174,12 @@ export default function SchedulePage({ route }) {
     if (!await leaveEditor()) return;
     setDraft(null); setValidation(''); setMobileSidebar(false);
   }
-  function patchContent(patch, forceSeries = false) {
+  function patchContent(patch, forceSeries = false, scope = null) {
     const current = sceneRef.current.draft;
     if (!current) return;
     setValidation('');
     if (opRef.current.status === 'failed') opRef.current.reset();
-    setDraft({ ...current, content: { ...current.content, ...patch }, forceSeries: forceSeries || current.forceSeries });
+    setDraft({ ...current, content: { ...current.content, ...patch }, forceSeries: forceSeries || current.forceSeries, scope: scope ?? current.scope });
   }
   async function openEntry(id, origin = null, bypass = false) {
     if (!bypass && !await leaveEditor()) return;
@@ -173,14 +189,16 @@ export default function SchedulePage({ route }) {
       if (!mounted.current) return;
       const content = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
       const readOnly = entry.deletedAt ? '任务已删除' : occurrence && occurrence.state !== 'active' ? occurrence.state === 'cancelled' ? '这次任务已取消' : '这次任务已不在重复范围内' : null;
-      setDraft({ clientId: crypto.randomUUID(), id, origin, version: entry.version, entry, content, baseline: structuredClone(content), zone, scope: null, readOnly });
+      setDraft({ clientId: crypto.randomUUID(), id, origin, version: entry.version, entry, content, courseState: occurrence?.courseState ?? entry.courseState, baseline: structuredClone(content), zone, scope: null, readOnly, occurrenceState: occurrence?.state, isException: occurrence?.isException });
       if (!bypass && shell.isPanelOpen) shell.closePanel();
       setValidation(''); setMobileSidebar(true);
+      return true;
     } catch (error) { setLoadError(error.problem?.message ?? '无法打开任务'); }
   }
-  async function create(start, end, allDay = false) {
+  async function create(start, end, allDay = false, unscheduled = false) {
     if (!await leaveEditor()) return;
     const content = newContent(zone, start, end, allDay);
+    if (unscheduled) content.time = null;
     setDraft({ clientId: crypto.randomUUID(), id: null, origin: null, version: null, entry: null, content, baseline: null, zone });
     if (shell.isPanelOpen) shell.closePanel();
     setValidation(''); setMobileSidebar(true);
@@ -193,6 +211,35 @@ export default function SchedulePage({ route }) {
     if (!entry) { setValidation('读取失败，请重试'); return; }
     const ok = await perform({ kind: scope === 'instance' && current.origin ? 'cancel' : 'delete', id: current.id, origin: current.origin, version: entry.version });
     if (ok) setDeletePrompt(false);
+  }
+  async function restore() {
+    const current = sceneRef.current.draft;
+    if (!current?.id) return;
+    if (opRef.current.pending) return perform(null, true);
+    return perform({ kind: current.entry.deletedAt ? 'restore' : 'inherit', id: current.id, origin: current.origin, version: current.version });
+  }
+  async function startItemMove(itemId) {
+    if (!await flush({ explicit: true })) return;
+    const item = sceneRef.current.draft?.content.items.find(x => x.id === itemId);
+    if (item) setItemToMove(item);
+  }
+  async function moveItem(itemId, target) {
+    if (opRef.current.pending) return perform(null, true);
+    const current = sceneRef.current.draft;
+    if (!current?.id) return;
+    return perform({ kind: 'moveItem', id: current.id, content: { itemId, fromEntryId: current.id, fromVersion: current.version,
+      toEntryId: target?.id ?? null, toVersion: target?.version ?? null, toIndex: target?.items.length ?? 0 } });
+  }
+  async function priority(row, value) {
+    setManagement(null);
+    if (!await openEntry(row.entryId, row.originDate)) return;
+    const content = sceneRef.current.draft.content;
+    patchContent({ items: content.items.map(item => item.id === row.itemId ? { ...item, priority: value } : item) });
+  }
+  async function saveZone(timeZone) {
+    if (opRef.current.pending) return perform(null, true);
+    if (!settings) return;
+    return perform({ kind: 'settings', content: { expectedVersion: settings.version, timeZone } });
   }
   async function moveEvent(info, scope) {
     if (!await leaveEditor()) { info.revert(); return; }
@@ -230,8 +277,8 @@ export default function SchedulePage({ route }) {
   useEffect(() => {
     const keydown = event => {
       const typing = event.target.closest('input,textarea,select,[contenteditable="true"]');
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && sceneRef.current.draft) { event.preventDefault(); actionsRef.current.flush({ explicit: true }); return; }
       if (document.querySelector('[role="dialog"], [role="menu"]:not([inert] *)')) return;
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && sceneRef.current.draft) { event.preventDefault(); actionsRef.current.flush({ explicit: true }); return; }
       if (event.key === 'Escape') { actionsRef.current.closeEditor(); return; }
       if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
       const kind = { d: 'day', w: 'week', m: 'month' }[event.key.toLowerCase()];
@@ -280,12 +327,16 @@ export default function SchedulePage({ route }) {
         const view = dragged ? { kind: 'days', days: diffDays(from, to) + 1 } : scene.view;
         setDisplayMonth(from.slice(0, 7)); updateScene({ anchor: view.kind === 'week' ? monday(from) : from, view, month: from.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 });
       }}/>
-      {draft ? <CalendarEditor key={draft.clientId} draft={draft} onPatch={patchContent} onClose={closeEditor} onDelete={() => draft.id ? setDeletePrompt(true) : closeEditor()}
+      {draft ? <CalendarEditor key={draft.clientId} draft={draft} onPatch={patchContent} onClose={closeEditor} onDelete={() => draft.id ? setDeletePrompt(true) : closeEditor()} onRestore={restore} onMoveItem={startItemMove} locked={op.pending?.payload.kind === 'moveItem'}
         labels={data.labels} onLabels={labelsChanged} accountKey={shell.accountKey} status={op.status} error={saveError}
         onRetry={() => op.pending ? perform(null, true) : flush({ explicit: true })}
         onReload={op.problem?.kind === 'conflict' ? async () => { try { const entry = await api.getEntry(draft.id); setDraft({ ...sceneRef.current.draft, entry, version: entry.version, savePaused: true }); op.reset(); setValidation('已读取最新版本；本地输入保留，请重新保存'); } catch { setValidation('读取失败，请重试'); } } : null}/>
-        : <Upcoming entries={data.entries} occurrences={data.upcoming} labels={data.labels} today={today} grouped={scene.grouped} onGroup={() => updateScene({ grouped: !scene.grouped })} onNew={() => create()} onOpen={openEntry}/>}
+        : <Upcoming entries={data.entries} occurrences={data.upcoming} labels={data.labels} today={today} zone={zone} grouped={scene.grouped} onGroup={() => updateScene({ grouped: !scene.grouped })} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onOpen={openEntry} onManage={setManagement}/>}
     </aside>
+    {management === 'deleted' && <DeletedDialog entries={data.entries} revision={revision} onClose={() => setManagement(null)} onOpen={(id, origin) => { setManagement(null); openEntry(id, origin); }}/>}
+    {management === 'priority' && <PriorityDialog occurrences={data.occurrences} entries={data.entries} zone={zone} onClose={() => setManagement(null)} onPriority={priority} onOpen={(id, origin) => { setManagement(null); openEntry(id, origin); }}/>}
+    {management === 'zone' && <TimeZoneDialog zone={zone} onClose={() => setManagement(null)} onSave={saveZone} busy={op.isRunning} pending={Boolean(op.pending)} error={op.problem?.message}/>}
+    {itemToMove && <MoveItemDialog item={itemToMove} sourceId={draft?.id} entries={data.entries} onMove={moveItem} onClose={() => setItemToMove(null)} busy={op.isRunning} pending={Boolean(op.pending)} error={op.problem?.message}/>}
     {scopePrompt && <CalendarDialog title="编辑重复任务" onClose={() => { setScopePrompt(false); if (draft) setDraft({ ...draft, content: structuredClone(draft.baseline) }); }}><p>将修改应用到哪些任务？</p><footer><button onClick={() => { setScopePrompt(false); flush({ scope: 'instance' }); }}>仅此任务</button><button className="is-primary" onClick={() => { setScopePrompt(false); flush({ scope: 'series' }); }}>所有重复任务</button></footer></CalendarDialog>}
     {deletePrompt && <CalendarDialog title="删除任务" onClose={() => setDeletePrompt(false)}><p>删除“{titleOf(draft.content)}”？</p><footer><button onClick={() => setDeletePrompt(false)}>取消</button>{draft.origin && <button className="is-danger" disabled={op.isRunning} onClick={() => remove('instance')}>仅此任务</button>}<button className="is-danger" disabled={op.isRunning || Boolean(op.pending)} onClick={() => remove('series')}>{draft.origin ? '所有重复任务' : '删除'}</button></footer></CalendarDialog>}
     {movePrompt && <CalendarDialog title="调整重复任务" onClose={() => { movePrompt.revert(); setMovePrompt(null); }}><p>将时间调整应用到哪些任务？</p><footer><button onClick={() => moveEvent(movePrompt, 'instance')}>仅此任务</button><button className="is-primary" onClick={() => moveEvent(movePrompt, 'series')}>所有重复任务</button></footer></CalendarDialog>}

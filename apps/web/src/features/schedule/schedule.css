@@ -87,6 +87,7 @@
 .cal-page .cal-upcoming h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; }
 .cal-upcoming h2 span { color: light-dark(#707078, var(--app-muted)); font-size: 14px; font-weight: 400; margin-left: 0; }
 .cal-upcoming > header > div { display: flex; gap: 6px; }
+.cal-management-menu > .cal-menu-trigger { width: 24px; height: 32px; }
 .cal-upcoming > header .cal-icon-button:last-child { color: #fff; background: #2e3137; border-color: #2e3137; }
 .cal-upcoming-row { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; height: 48px; padding: 6px 8px; margin: 0 -4px; border: 0; border-radius: 6px; text-align: left; background: transparent; }
 .cal-upcoming-row:hover { background: light-dark(#f7f7f8, var(--app-soft)); }
@@ -111,6 +112,7 @@
 .cal-input, .cal-field > input, .cal-field > select, .cal-field-pair input, .cal-dialog input:not([type='radio']), .cal-dialog select { display: block; width: 100%; height: 40px; padding: 8px 12px; border: 1px solid light-dark(#e3e3e3, var(--app-line)); border-radius: 6px; background: light-dark(#fff, var(--app-surface)); box-shadow: 0 1px 2px #00000003; font-size: 14px; line-height: 20px; }
 .cal-input:focus, .cal-field input:focus, .cal-dialog input:focus { border-color: #565961; outline: none; }
 .cal-field { display: flex; flex-direction: column; min-width: 0; gap: 8px; font-size: 14px; line-height: 14px; font-weight: 400; color: light-dark(#2e3137, var(--app-text)); }
+.cal-field > span, .cal-record-options label > span { margin: 0; color: inherit; font-size: inherit; }
 .cal-editor > .cal-field, .cal-field-pair { margin-top: 16px; }
 .cal-field-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .cal-field-pair input { padding: 8px 10px; }
@@ -124,9 +126,6 @@
 .cal-notes:empty::before { content: attr(data-placeholder); color: light-dark(#aaa, var(--app-faint)); pointer-events: none; }
 .cal-updated { display: block; color: light-dark(#85858b, var(--app-muted)); text-align: right; font-size: 11px; margin-top: 6px; }
 .cal-repeat-summary, .cal-assign-time { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; padding: 0; margin-top: 14px; color: light-dark(#767a82, var(--app-muted)) !important; font-size: 12px !important; }
-.cal-existing-items { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-.cal-existing-items label { display: flex; align-items: center; gap: 8px; color: light-dark(#777, var(--app-muted)); }
-.cal-existing-items input { width: 100%; border: 1px solid light-dark(#eee, var(--app-line)); border-radius: 5px; padding: 5px; }
 .cal-menu-host { position: relative; }
 .cal-menu-trigger { border: 0; background: transparent; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 .cal-task-menu > .cal-menu-trigger { width: 24px; height: 24px; border-radius: 6px; }
@@ -156,6 +155,43 @@
 .cal-dialog > header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .cal-dialog h2 { font-size: 18px; font-weight: 600; margin: 0; }
 .cal-dialog p { margin: 0 0 16px; }
+.cal-help { color: light-dark(#77787e, var(--app-muted)); font-size: 12px; line-height: 1.7; }
+.cal-dialog .cal-field-pair + .cal-help { margin-top: 12px; }
+.cal-details-fields { display: flex; flex-direction: column; gap: 18px; }
+.cal-detail-summary { display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 12px; padding: 0; text-align: left; border: 0; background: transparent; font-size: 12px !important; color: light-dark(#767a82, var(--app-muted)) !important; }
+.cal-detail-summary > :first-child { flex: none; }
+.cal-detail-summary > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-record-options { margin: 0; padding: 0; border: 0; min-width: 0; }
+.cal-record-options legend { margin-bottom: 10px; font-size: 14px; }
+.cal-record-options label { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 13px; line-height: 1.6; }
+.cal-dialog .cal-record-options input[type='checkbox'] { width: 16px; height: 16px; flex: none; padding: 0; margin: 2px 0 0; box-shadow: none; }
+.cal-record-options span { min-width: 0; overflow-wrap: anywhere; }
+.cal-restore-button { margin-top: 18px; padding: 8px 12px; border: 1px solid light-dark(#ddd, var(--app-line)); background: light-dark(#f7f7f8, var(--app-soft)); border-radius: 6px; }
+.cal-deleted-list { display: flex; flex-direction: column; gap: 4px; }
+.cal-deleted-list button { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; border: 0; border-radius: 6px; padding: 10px; background: transparent; text-align: left; overflow-wrap: anywhere; }
+.cal-deleted-list button:hover { background: light-dark(#f5f5f5, var(--app-soft)); }
+.cal-deleted-list small { color: light-dark(#77787e, var(--app-muted)); }
+.cal-list-tools { display: flex; gap: 12px; align-items: center; margin: -12px 0 16px; }
+.cal-list-tools button { border: 0; background: transparent; padding: 2px 0; font-size: 12px; color: light-dark(#767a82, var(--app-muted)); }
+.cal-list-tools .cal-zone-link { margin-left: auto; max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-entry-items { margin-top: 16px; }
+.cal-entry-items h3, .cal-priority-group h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 500; }
+.cal-entry-items h3 span, .cal-priority-group h3 small { color: light-dark(#85858b, var(--app-muted)); font-weight: 400; }
+.cal-item-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; min-width: 0; }
+.cal-item-row input { flex: 1; width: 0; padding: 6px; border: 1px solid transparent; border-radius: 5px; background: transparent; font-size: 13px; }
+.cal-item-row input:hover, .cal-item-row input:focus { border-color: light-dark(#e3e3e3, var(--app-line)); }
+.cal-item-row .cal-menu-trigger { width: 26px; height: 30px; }
+.cal-priority-mark { display: inline-block; flex: none; width: 5px; height: 14px; border-radius: 3px; background: light-dark(#c3c5cb, var(--app-faint)); }
+.cal-priority-mark.is-high { background: #df7865; }
+.cal-priority-mark.is-low { background: #75a5ae; }
+.cal-add-item { display: flex; align-items: center; gap: 6px; border: 0; background: transparent; padding: 6px 0; font-size: 12px !important; color: light-dark(#767a82, var(--app-muted)) !important; }
+.cal-move-item-text { overflow-wrap: anywhere; }
+.cal-priority-group { margin-top: 20px; }
+.cal-priority-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+.cal-priority-row > button { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; border: 0; background: transparent; padding: 0; text-align: left; }
+.cal-priority-row > button span { overflow-wrap: anywhere; max-width: 100%; font-size: 13px; }
+.cal-priority-row small { font-size: 11px; color: light-dark(#77787e, var(--app-muted)); }
+.cal-dialog .cal-priority-row select { width: 64px; flex: none; height: 32px; padding: 4px; font-size: 12px; }
 .cal-dialog > header .cal-icon-button { width: 24px; height: 24px; border: 0; }
 .cal-dialog footer { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 20px; }
 .cal-dialog footer > button { min-height: 36px; padding: 6px 14px; border: 1px solid light-dark(#e3e3e3, var(--app-line)); border-radius: 7px; background: light-dark(#fff, var(--app-surface)); }
