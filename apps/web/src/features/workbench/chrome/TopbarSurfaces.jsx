@@ -1,3 +1,6 @@
+import i18n from "../../../i18n/index.js";
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
 import { useScene } from '../useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 
@@ -7,21 +10,22 @@ import { Icon } from './icons.jsx';
 import { listClasses } from '../../classes/api.js';
 import { listLessons } from '../../lessons/api.js';
 import { navigate, routeClick, withSearch } from './routes.js';
-import { workbenchModules } from '../../modules/moduleRegistry.js';
+import { workbenchModules, moduleDisplayName } from '../../modules/moduleRegistry.js';
 
 /* ------------------------------------------------------------------ search */
 
-const SEARCH_GROUPS = [
+const searchGroups = () => [
   {
-    group: '功能模块',
+    group: t("功能模块"),
     items: [
-      ...workbenchModules.map((item) => ({ id: 'm-' + item.id, name: item.name, hint: item.id === 'schedule' ? '课程、时间段与待办' : '个人教学工作台', icon: item.icon, route: item.path }))
+      ...workbenchModules.map((item) => ({ id: 'm-' + item.id, name: moduleDisplayName(item), hint: item.id === 'schedule' ? t("课程、时间段与待办") : t("个人教学工作台"), icon: item.icon, route: item.path }))
     ]
   },
 
 ];
 
 export function SearchModal({ onClose, onAnnounce }) {
+  const { t } = useTranslation("workbench");
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef(null);
@@ -36,7 +40,7 @@ export function SearchModal({ onClose, onAnnounce }) {
     setProblems([]);
     Promise.allSettled([listClasses(), listLessons()]).then(results => {
       if (cancelled) return;
-      const labels = ['班级', '备课'];
+      const labels = [t("班级"), t("备课")];
       setSources(results.flatMap((result, index) => result.status === 'fulfilled' ? [{
         group: labels[index],
         items: result.value.map(item => ({
@@ -47,7 +51,7 @@ export function SearchModal({ onClose, onAnnounce }) {
           route: `/${index === 0 ? 'classes' : 'lessons'}/${encodeURIComponent(item.id)}`
         }))
       }] : []));
-      setProblems(results.flatMap((result, index) => result.status === 'rejected' ? [`${labels[index]}读取失败：${result.reason.message}`] : []));
+      setProblems(results.flatMap((result, index) => result.status === 'rejected' ? [t("{{value}}读取失败：{{message}}", { value: labels[index], message: result.reason.message })] : []));
       setLoading(false);
     });
     return () => { cancelled = true; };
@@ -55,13 +59,13 @@ export function SearchModal({ onClose, onAnnounce }) {
 
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return [...SEARCH_GROUPS, ...sources]
+    return [...searchGroups(), ...sources]
       .map((group) => ({
         ...group,
         items: group.items.filter((item) => `${item.name}${item.hint}`.toLowerCase().includes(needle))
       }))
       .filter((group) => group.items.length > 0);
-  }, [query, sources]);
+  }, [query, sources, i18n.resolvedLanguage]);
 
   const flat = useMemo(() => groups.flatMap((group) => group.items), [groups]);
 
@@ -71,14 +75,14 @@ export function SearchModal({ onClose, onAnnounce }) {
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [query, sources]);
+  }, [query, sources, i18n.resolvedLanguage]);
 
   /*
    * Results navigate to the destination they name, so search leaves the shell
    * showing the page the user picked instead of only announcing it.
    */
   function openItem(item) {
-    onAnnounce(`已打开「${item.name}」`);
+    onAnnounce(t("已打开「{{name}}」", { name: item.name }));
     onClose();
     navigate(item.route);
   }
@@ -108,7 +112,7 @@ export function SearchModal({ onClose, onAnnounce }) {
         aria-labelledby="tb-search-title"
         onKeyDown={handleKeyDown}
       >
-        <h2 className="sr-only" id="tb-search-title">全局搜索</h2>
+        <h2 className="sr-only" id="tb-search-title">{t("全局搜索")}</h2>
         <div className="tb-search-input-row">
           <Icon name="search" size={20} />
           <input
@@ -116,25 +120,25 @@ export function SearchModal({ onClose, onAnnounce }) {
             className="tb-search-input"
             type="search"
             value={query}
-            placeholder="搜索模块、班级、备课…"
-            aria-label="搜索模块、班级、备课"
+            placeholder={t("搜索模块、班级、备课…")}
+            aria-label={t("搜索模块、班级、备课")}
             onChange={(event) => setQuery(event.target.value)}
           />
-          <button type="button" className="tb-search-close" aria-label="关闭搜索" onClick={onClose}>
+          <button type="button" className="tb-search-close" aria-label={t("关闭搜索")} onClick={onClose}>
             <Icon name="close" size={16} />
           </button>
         </div>
         <div className="tb-search-results">
-          {loading && <div className="tb-search-state" role="status">正在读取班级和备课…</div>}
+          {loading && <div className="tb-search-state" role="status">{t("正在读取班级和备课…")}</div>}
           {problems.length > 0 && <div className="tb-search-state" role="alert">
             {problems.map(problem => <p key={problem}>{problem}</p>)}
-            <button className="wb-button" onClick={() => setReload(value => value + 1)}>重试</button>
+            <button className="wb-button" onClick={() => setReload(value => value + 1)}>{t("重试")}</button>
           </div>}
           {!loading && problems.length === 0 && flat.length === 0 && (
             <div className="tb-search-empty">
               <Icon name="search" size={20} />
-              <p>没有匹配「{query}」的结果</p>
-              <span>试试模块、班级或备课名称。</span>
+              <p>{t("没有匹配「")}{query}{t("」的结果")}</p>
+              <span>{t("试试模块、班级或备课名称。")}</span>
             </div>
           )}
           {groups.map((group) => (
@@ -152,7 +156,7 @@ export function SearchModal({ onClose, onAnnounce }) {
                     onClick={(event) => {
                       routeClick(event, item.route);
                       if (event.defaultPrevented) {
-                        onAnnounce(`已打开「${item.name}」`);
+                        onAnnounce(t("已打开「{{name}}」", { name: item.name }));
                         onClose();
                       }
                     }}
@@ -179,6 +183,7 @@ export function SearchModal({ onClose, onAnnounce }) {
 // read status never means a teaching task is completed.
 
 export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem }) {
+  const { t } = useTranslation("workbench");
   /*
    * Which notification is in flight, and whether it is over the trash. A drag
    * that has not reached the trash yet must not lose anything: removal happens
@@ -210,7 +215,7 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem }) {
     const dragged = items.find((item) => item.id === draggingId);
     if (dragged) {
       onChange(items.filter((item) => item.id !== dragged.id));
-      onAnnounce('通知已删除');
+      onAnnounce(t("通知已删除"));
     }
     setDraggingId(null);
     setOverTrash(false);
@@ -225,24 +230,22 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem }) {
       aria-labelledby="tb-notifications-title"
     >
       <div className="tb-popover-head">
-        <h2 id="tb-notifications-title">通知</h2>
+        <h2 id="tb-notifications-title">{t("通知")}</h2>
         {unread > 0 && (
           <button
             type="button"
             className="tb-popover-action"
             onClick={() => {
               onChange(items.map((item) => ({ ...item, read: true })));
-              onAnnounce('已全部标为已读');
+              onAnnounce(t("已全部标为已读"));
             }}
-          >
-            全部已读
-          </button>
+          > {t("全部已读")} </button>
         )}
       </div>
       {items.length === 0 ? (
         <div className="tb-popover-empty">
           <Icon name="bell" size={20} />
-          <p>暂无通知</p>
+          <p>{t("暂无通知")}</p>
         </div>
       ) : (
         /*
@@ -258,11 +261,11 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem }) {
               key={item.id}
               draggable={item.read}
               aria-pressed={item.eventId ? undefined : item.read}
-              title={item.eventId ? '查看对应时间段' : item.read ? '点击标为未读，或拖到垃圾桶删除' : '点击标为已读'}
+              title={item.eventId ? t("查看对应时间段") : item.read ? t("点击标为未读，或拖到垃圾桶删除") : t("点击标为已读")}
               onClick={() => {
                 if (item.eventId) { onOpenItem?.(item); return; }
                 setRead(item.id, !item.read);
-                onAnnounce(item.read ? `「${item.text}」已标为未读` : `「${item.text}」已标为已读`);
+                onAnnounce(item.read ? t("「{{text}}」已标为未读", { text: item.text }) : t("「{{text}}」已标为已读", { text: item.text }));
               }}
               onDragStart={(event) => {
                 setDraggingId(item.id);
@@ -308,7 +311,7 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem }) {
         }}
       >
         <span className="tb-notification-trash-icon"><Icon name="trash" size={16} /></span>
-        <span>删除消息</span>
+        <span>{t("删除消息")}</span>
       </div>
     </div>
   );
@@ -324,7 +327,8 @@ const FEEDBACK_TYPES = [
 ];
 
 export function FeedbackPanel({ onAnnounce, onClose }) {
-  const [type, setType] = useState('建议');
+  const { t } = useTranslation("workbench");
+  const [type, setType] = useState("建议");
   const { accountKey } = useWorkbenchShell();
   const [feedback, patchFeedback] = useScene(accountKey, 'feedback', { body: '', records: [] });
   const body = feedback.body;
@@ -337,10 +341,10 @@ export function FeedbackPanel({ onAnnounce, onClose }) {
       <div className="tb-popover tb-popover-feedback" role="dialog" aria-labelledby="tb-feedback-title">
         <div className="tb-feedback-sent">
           <span className="tb-feedback-sent-mark"><Icon name="check" size={20} /></span>
-          <h2 id="tb-feedback-title">已记录，谢谢你的反馈！</h2>
+          <h2 id="tb-feedback-title">{t("已记录，谢谢你的反馈！")}</h2>
           {/* The acknowledgement replaces the form, so it has to carry its own
               way out; otherwise the only exits are Escape and a click outside. */}
-          <button type="button" className="tb-feedback-dismiss" onClick={onClose}>知道了</button>
+          <button type="button" className="tb-feedback-dismiss" onClick={onClose}>{t("知道了")}</button>
         </div>
       </div>
     );
@@ -349,18 +353,18 @@ export function FeedbackPanel({ onAnnounce, onClose }) {
   return (
     <div className="tb-popover tb-popover-feedback" role="dialog" aria-labelledby="tb-feedback-title">
       <div className="tb-popover-head">
-        <h2 id="tb-feedback-title">发送反馈</h2>
-        <div className="tb-feedback-types" role="group" aria-label="反馈类型">
+        <h2 id="tb-feedback-title">{t("发送反馈")}</h2>
+        <div className="tb-feedback-types" role="group" aria-label={t("反馈类型")}>
           {FEEDBACK_TYPES.map((item) => (
             <button
               type="button"
-              key={item.label}
+              key={t(item.label)}
               className={`tb-chip${item.label === type ? ' is-current' : ''}`}
               style={{ '--tb-chip-color': item.color, '--tb-chip-tint': item.tint }}
               aria-pressed={item.label === type}
               onClick={() => setType(item.label)}
             >
-              {item.label}
+              {t(item.label)}
             </button>
           ))}
         </div>
@@ -368,14 +372,12 @@ export function FeedbackPanel({ onAnnounce, onClose }) {
       <textarea
         className="tb-feedback-body"
         value={body}
-        placeholder="说说你的想法，或者遇到的问题…"
-        aria-label="反馈内容"
+        placeholder={t("说说你的想法，或者遇到的问题…")}
+        aria-label={t("反馈内容")}
         onChange={(event) => setBody(event.target.value)}
       />
       <div className="tb-feedback-foot">
-        <p className="tb-feedback-hint">
-          粘贴截图：
-          <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>
+        <p className="tb-feedback-hint"> {t("粘贴截图：")} <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>
         </p>
         <button
           type="button"
@@ -384,11 +386,9 @@ export function FeedbackPanel({ onAnnounce, onClose }) {
           onClick={() => {
             patchFeedback({ body: '', records: [...feedback.records, { type, body, createdAt: new Date().toISOString() }] });
             setSent(true);
-            onAnnounce('反馈已记录');
+            onAnnounce(t("反馈已记录"));
           }}
-        >
-          发送
-        </button>
+        > {t("发送")} </button>
       </div>
     </div>
   );
@@ -397,17 +397,18 @@ export function FeedbackPanel({ onAnnounce, onClose }) {
 /* ---------------------------------------------------------------- tutorial */
 
 export function TutorialPanel({ modules, completed, onComplete, onAnnounce }) {
+  const { t } = useTranslation("workbench");
   const done = modules.filter((module) => completed.includes(module.id)).length;
 
   return (
     <div className="tb-popover tb-popover-tutorial" role="dialog" aria-labelledby="tb-tutorial-title">
-      <h2 id="tb-tutorial-title">快速上手</h2>
-      <p className="tb-popover-desc">选一个功能，看看它怎么用。</p>
+      <h2 id="tb-tutorial-title">{t("快速上手")}</h2>
+      <p className="tb-popover-desc">{t("选一个功能，看看它怎么用。")}</p>
       <div className="tb-progress">
-        <span className="tb-progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={modules.length} aria-valuenow={done} aria-label="教程完成进度">
+        <span className="tb-progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={modules.length} aria-valuenow={done} aria-label={t("教程完成进度")}>
           <span className="tb-progress-fill" style={{ width: `${modules.length ? (done / modules.length) * 100 : 0}%` }} />
         </span>
-        <span className="tb-progress-label">已完成 {done} / {modules.length}</span>
+        <span className="tb-progress-label">{t("已完成")} {done} / {modules.length}</span>
       </div>
       <div className="tb-popover-list">
         {modules.map((module) => {
@@ -419,12 +420,12 @@ export function TutorialPanel({ modules, completed, onComplete, onAnnounce }) {
               key={module.id}
               onClick={() => {
                 onComplete(module.id);
-                onAnnounce(isDone ? `「${module.name}」教程已重置` : `已完成「${module.name}」教程`);
+                onAnnounce(isDone ? t("「{{value}}」教程已重置", { value: moduleDisplayName(module) }) : t("已完成「{{value}}」教程", { value: moduleDisplayName(module) }));
               }}
             >
               <span className="tb-row-check" aria-hidden="true">{isDone && <Icon name="check" size={12} />}</span>
               <span className="tb-row-icon"><Icon name={module.icon} size={16} /></span>
-              <span className="tb-row-label">{module.name}</span>
+              <span className="tb-row-label">{moduleDisplayName(module)}</span>
             </button>
           );
         })}
@@ -436,6 +437,7 @@ export function TutorialPanel({ modules, completed, onComplete, onAnnounce }) {
 /* ----------------------------------------------------------------- privacy */
 
 export function PrivacyPanel() {
+  useTranslation("workbench");
   return (
     <div className="tb-popover tb-popover-privacy" role="dialog" aria-labelledby="tb-privacy-title">
       <span className="tb-privacy-mark" aria-hidden="true"><Icon name="shield" size={20} /></span>
@@ -447,11 +449,12 @@ export function PrivacyPanel() {
 /* --------------------------------------------------------------- coach mark */
 
 export function CoachMark({ onDismiss }) {
+  const { t } = useTranslation("workbench");
   return (
     <div className="tb-coach" role="dialog" aria-labelledby="tb-coach-text">
       <span className="tb-coach-caret" aria-hidden="true" />
-      <p id="tb-coach-text">想了解什么功能，就点击对应项来学习吧～</p>
-      <button type="button" className="tb-coach-dismiss" onClick={onDismiss}>知道了</button>
+      <p id="tb-coach-text">{t("想了解什么功能，就点击对应项来学习吧～")}</p>
+      <button type="button" className="tb-coach-dismiss" onClick={onDismiss}>{t("知道了")}</button>
     </div>
   );
 }
@@ -468,6 +471,7 @@ const BURSTS = [
 const PARTICLES = 14;
 
 export function TutorialCelebration({ onClose }) {
+  const { t } = useTranslation("workbench");
   return (
     <div className="tb-celebration" role="dialog" aria-modal="true" aria-labelledby="tb-celebration-title">
       <div className="tb-celebration-scrim" onPointerDown={onClose} />
@@ -494,9 +498,9 @@ export function TutorialCelebration({ onClose }) {
       </div>
       <div className="tb-celebration-card">
         <span className="tb-celebration-mark" aria-hidden="true"><Icon name="tutorial" size={24} /></span>
-        <h2 id="tb-celebration-title">恭喜您完成了所有引导！</h2>
-        <p>请尽情享受吧～</p>
-        <button type="button" className="tb-button-primary" onClick={onClose}>好的</button>
+        <h2 id="tb-celebration-title">{t("恭喜您完成了所有引导！")}</h2>
+        <p>{t("请尽情享受吧～")}</p>
+        <button type="button" className="tb-button-primary" onClick={onClose}>{t("好的")}</button>
       </div>
     </div>
   );

@@ -1,10 +1,21 @@
+import i18n from '../../i18n/index.js';
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
 import { Icon } from '../workbench/icons.jsx';
 
+export function mathStatusLabel(status) {
+  const labels = {
+    '已保存': t('已保存'), '未保存': t('未保存'), '保存结果待确认': t('保存结果待确认'),
+    '保存中': t('保存中'), '保存失败': t('保存失败'),
+  };
+  return labels[status] ?? status;
+}
+
 export const workshopKinds = [
-  { kind: 'formula', title: '公式', purpose: '排出清晰公式，放进讲义或课件' },
-  { kind: 'plane', title: '平面图形', purpose: '画函数图像、几何图形与标注' },
-  { kind: 'space', title: '空间图形', purpose: '制作立体几何示意图' },
-  { kind: 'dynamic', title: '动态演示', purpose: '拖动参数，观察图形如何变化' },
+  { kind: 'formula', get title() { return t("公式"); }, get purpose() { return t("排出清晰公式，放进讲义或课件"); } },
+  { kind: 'plane', get title() { return t("平面图形"); }, get purpose() { return t("画函数图像、几何图形与标注"); } },
+  { kind: 'space', get title() { return t("空间图形"); }, get purpose() { return t("制作立体几何示意图"); } },
+  { kind: 'dynamic', get title() { return t("动态演示"); }, get purpose() { return t("拖动参数，观察图形如何变化"); } },
 ];
 
 export function WorkIllustration({ kind }) {
@@ -25,40 +36,41 @@ export function WorkIllustration({ kind }) {
 }
 
 export default function WorkspaceHome({ draft, status, items, search, deleted, busy, onSearch, onDeleted, onNew, onOpen, onResume, onDiscard, onImport, onImportSource, onRestore, onPurge }) {
+  const { t } = useTranslation('math');
   return <div className="math-home">
     <section aria-labelledby="math-start-heading">
-      <h2 id="math-start-heading" tabIndex={-1}>这节课，需要什么数学素材？</h2>
+      <h2 id="math-start-heading" tabIndex={-1}>{t("这节课，需要什么数学素材？")}</h2>
       <div className="math-start-options">
-        {workshopKinds.map(({ kind, title, purpose }) => <button key={kind} className="math-start-option" aria-label={`新建${title}`} disabled={busy} onClick={() => onNew(kind)}>
+        {workshopKinds.map(({ kind, title, purpose }) => <button key={kind} className="math-start-option" aria-label={t("新建{{title}}", { title: title })} disabled={busy} onClick={() => onNew(kind)}>
           <WorkIllustration kind={kind}/><span><strong>{title}</strong><small>{purpose}</small></span>
           <Icon name="chevron"/>
         </button>)}
       </div>
-      <div className="math-import-actions"><button className="math-import-link" disabled={busy} onClick={onImport}><Icon name="folder"/>导入已有 HTML 演示</button>
-      <button className="math-import-link" disabled={busy} onClick={onImportSource}><Icon name="folder"/>导入制作源 JSON</button></div>
+      <div className="math-import-actions"><button className="math-import-link" disabled={busy} onClick={onImport}><Icon name="folder"/>{t("导入已有 HTML 演示")}</button>
+      <button className="math-import-link" disabled={busy} onClick={onImportSource}><Icon name="folder"/>{t("导入制作源 JSON")}</button></div>
     </section>
-    {draft && status !== '已保存' && <section className="math-resume" aria-label="本设备草稿">
-      <div><strong>{draft.title}</strong><span>{status === '未保存' ? '草稿保留在本设备，可继续制作' : status}</span></div>
-      <button onClick={onResume}>继续制作</button><button className="math-icon-button" title="丢弃草稿" aria-label="丢弃草稿" disabled={busy} onClick={onDiscard}><Icon name="trash"/></button>
+    {draft && status !== "已保存" && <section className="math-resume" aria-label={t("本设备草稿")}>
+      <div><strong>{draft.title}</strong><span>{status === "未保存" ? t("草稿保留在本设备，可继续制作") : mathStatusLabel(status)}</span></div>
+      <button onClick={onResume}>{t("继续制作")}</button><button className="math-icon-button" title={t("丢弃草稿")} aria-label={t("丢弃草稿")} disabled={busy} onClick={onDiscard}><Icon name="trash"/></button>
     </section>}
     <section className="math-library" aria-labelledby="math-library-heading">
-      <div className="math-library-heading"><h2 id="math-library-heading">我的作品</h2>
-        <label className="math-library-search"><Icon name="search"/><input aria-label="搜索作品" placeholder="搜索作品" value={search} onChange={e => onSearch(e.target.value)}/></label>
-        <label className="math-deleted-filter"><input type="checkbox" checked={deleted} onChange={e => onDeleted(e.target.checked)}/>已归档</label>
+      <div className="math-library-heading"><h2 id="math-library-heading">{t("我的作品")}</h2>
+        <label className="math-library-search"><Icon name="search"/><input aria-label={t("搜索作品")} placeholder={t("搜索作品")} value={search} onChange={e => onSearch(e.target.value)}/></label>
+        <label className="math-deleted-filter"><input type="checkbox" checked={deleted} onChange={e => onDeleted(e.target.checked)}/>{t("已归档")}</label>
       </div>
       <div className="math-work-list">
         {items.map(item => <div key={item.id} className="math-work-entry">
           <button className="math-work-row" disabled={busy} onClick={() => onOpen(item)}>
           <span className="math-work-symbol"><Icon name="math" size={20}/></span>
-          <span><strong>{item.title}</strong><small>{workshopKinds.find(k => k.kind === (item.kind ?? item.source?.kind))?.title ?? 'HTML 演示'}</small></span><Icon name="chevron"/>
+          <span><strong>{item.title}</strong><small>{workshopKinds.find(k => k.kind === (item.kind ?? item.source?.kind))?.title ?? t("HTML 演示")}</small></span><Icon name="chevron"/>
           </button>
-          {deleted && <div className="math-archive-actions" role="group" aria-label={`${item.title}的归档操作`}>
-            <button disabled={busy} onClick={() => onRestore(item)}>恢复</button>
-            <button className="math-danger-button" disabled={busy} onClick={() => onPurge(item)}>彻底删除</button>
+          {deleted && <div className="math-archive-actions" role="group" aria-label={t("{{title}}的归档操作", { title: item.title })}>
+            <button disabled={busy} onClick={() => onRestore(item)}>{t("恢复")}</button>
+            <button className="math-danger-button" disabled={busy} onClick={() => onPurge(item)}>{t("彻底删除")}</button>
           </div>}
         </div>)}
       </div>
-      {!items.length && <p className="math-library-empty">{search ? '没有找到匹配的作品' : deleted ? '没有已归档的作品' : '制作并保存后，你的作品会留在这里。'}</p>}
+      {!items.length && <p className="math-library-empty">{search ? t("没有找到匹配的作品") : deleted ? t("没有已归档的作品") : t("制作并保存后，你的作品会留在这里。")}</p>}
     </section>
   </div>;
 }

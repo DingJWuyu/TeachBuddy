@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next';
+
 import { useCallback, useEffect, useState } from 'react';
 import { AuthProvider, AuthGate, useAuth } from './features/auth/index.jsx';
 import WorkbenchRoot from './features/workbench/WorkbenchRoot.jsx';
 
 function PrepareLogin({ onReady }) {
+  const { t } = useTranslation('auth');
   const { request } = useAuth();
   const [attempt, setAttempt] = useState(0);
   const [failed, setFailed] = useState(false);
@@ -29,8 +32,8 @@ function PrepareLogin({ onReady }) {
     return () => { live = false; controller.abort(); };
   }, [attempt, request, onReady]);
   return <div className="wb-gate"><div className="wb-gate-card" aria-busy={!failed}>
-    <h1>{failed ? '暂时无法准备登录' : '正在准备登录'}</h1>
-    {failed && <button className="wb-button" onClick={() => setAttempt(value => value + 1)}>重试</button>}
+    <h1>{failed ? t("暂时无法准备登录") : t("正在准备登录")}</h1>
+    {failed && <button className="wb-button" onClick={() => setAttempt(value => value + 1)}>{t("重试")}</button>}
   </div></div>;
 }
 

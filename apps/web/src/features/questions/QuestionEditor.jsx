@@ -1,3 +1,6 @@
+import i18n from "../../i18n/index.js";
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: "questions", ...options });
 /**
  * Question editor.
  *
@@ -14,6 +17,7 @@ import { validateQuestionInput } from './model.js';
 import { QuestionTitle, QuestionBody, SolutionDetails } from './QuestionReader.jsx';
 
 export function QuestionServerVersion({ server }) {
+  useTranslation("questions");
   return (
     <>
       <QuestionTitle question={server} />
@@ -23,7 +27,8 @@ export function QuestionServerVersion({ server }) {
   );
 }
 
-export function QuestionEditor({ savable, saveLabel = '保存', footer = null }) {
+export function QuestionEditor({ savable, saveLabel = t("保存"), footer = null }) {
+  const { t } = useTranslation("questions");
   const [localProblem, setLocalProblem] = useState(null);
   const titleRef = useRef(null);
   const bodyRef = useRef(null);
@@ -51,12 +56,12 @@ export function QuestionEditor({ savable, saveLabel = '保存', footer = null })
   return (
     <div className="wb-editor" data-region="question-editor">
       <div className="wb-field">
-        <label className="wb-label" htmlFor="wb-question-title">标题（可留空）</label>
+        <label className="wb-label" htmlFor="wb-question-title">{t("标题（可留空）")}</label>
         <input
           id="wb-question-title"
           ref={titleRef}
           className="wb-input"
-          aria-label="标题"
+          aria-label={t("标题")}
           maxLength={200}
           value={input.title}
           onChange={(event) => savable.setInput((current) => ({ ...current, title: event.target.value }))}
@@ -69,30 +74,30 @@ export function QuestionEditor({ savable, saveLabel = '保存', footer = null })
         ref={bodyRef}
         data-field="body"
       >
-        <span className="wb-label">题面</span>
+        <span className="wb-label">{t("题面")}</span>
         {problem?.field === '/body' && <span className="wb-field-error">{problem.message}</span>}
         <DocumentEditor
-          label="题面"
+          label={t("题面")}
           document={input.body}
           onChange={(body) => savable.setInput((current) => ({ ...current, body }))}
         />
       </div>
 
       <div className="wb-field">
-        <span className="wb-label">答案与解析</span>
+        <span className="wb-label">{t("答案与解析")}</span>
         <DocumentEditor
-          label="答案"
+          label={t("答案")}
           document={input.solution}
           onChange={(solution) => savable.setInput((current) => ({ ...current, solution }))}
         />
       </div>
 
       <div className="wb-field">
-        <label className="wb-label" htmlFor="wb-question-note">教学笔记</label>
+        <label className="wb-label" htmlFor="wb-question-note">{t("教学笔记")}</label>
         <textarea
           id="wb-question-note"
           className="wb-input"
-          aria-label="教学笔记"
+          aria-label={t("教学笔记")}
           rows={3}
           maxLength={20000}
           value={input.note}
@@ -105,9 +110,7 @@ export function QuestionEditor({ savable, saveLabel = '保存', footer = null })
           type="checkbox"
           checked={Boolean(input.starred)}
           onChange={(event) => savable.setInput((current) => ({ ...current, starred: event.target.checked }))}
-        />
-        标记为常用
-      </label>
+        /> {t("标记为常用")} </label>
 
       <footer className="wb-editor-foot">
         <SaveStatus savable={savable} />

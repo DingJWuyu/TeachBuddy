@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from "react";
 
 export function PdfText({ client, renditionId, page, onText }) {
+  const { t } = useTranslation("resources");
   const container = useRef(null);
   const [document, setDocument] = useState(null);
   const [retry, setRetry] = useState(0);
@@ -148,7 +150,7 @@ export function PdfText({ client, renditionId, page, onText }) {
     <div
       ref={container}
       className="res-pdf-text"
-      aria-label={`第 ${page} 页文字`}
+      aria-label={t("第 {{page}} 页文字", { page: page })}
     />
   );
 }

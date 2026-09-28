@@ -1,5 +1,4 @@
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -147,7 +146,7 @@ export async function locateFigures({
   const records = result.records ?? [];
   const questions = records.filter((r) => r.role === "question");
   if (!questions.length || files.read(principal, unit.preview.renditionFileId).mediaType !== "application/pdf") return;
-  const work = await fs.mkdtemp(path.join(os.tmpdir(), "questions-layout-"));
+  const work = files.temporaryDirectory(principal, 'questions-layout-');
   try {
     const pdfBytes = await bytes(files, principal, unit.preview.renditionFileId);
     await fs.writeFile(

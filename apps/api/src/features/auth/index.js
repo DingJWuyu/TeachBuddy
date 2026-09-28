@@ -17,6 +17,7 @@ import express from 'express';
 import { authProblem, isAuthProblem } from './problems.js';
 import { createAuthStore } from './store.js';
 import { createAuthOperations } from './operations.js';
+import { createAccountDeletion } from './account-deletion.js';
 import { createBodyReader, createRequestGuard, normalizePublicOrigin, readJsonBody } from './protocol.js';
 
 function resolveCodeSecret(explicit) {
@@ -96,6 +97,9 @@ export function createAuthModule(options = {}) {
   router.get('/session', handle((request) => operations.getSessionStatus(request), { write: false }));
   router.post('/session', handle((request, body) => operations.changeSession(request, body)));
   router.post('/logout', handle((request, body) => operations.logout(request, body)));
+  if (options.deleteAccountData) router.post('/account-deletion', handle(createAccountDeletion({
+    db, operations, store, codeSecret, now, cleanup: options.deleteAccountData,
+  })));
 
   router.use((error, request, response, next) => {
     if (response.headersSent) {
@@ -112,5 +116,5 @@ export function createAuthModule(options = {}) {
     response.send(JSON.stringify(problem.toBody()));
   });
 
-  return { router, resolvePrincipal: operations.resolvePrincipal };
+  return { router, resolvePrincipal: operations.resolvePrincipal, isAccountActive: store.isAccountActive };
 }

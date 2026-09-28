@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { RecordMoveDialog } from './RecordMoveDialog.jsx';
 /**
  * Classes module page: /classes, /classes/:classId and
@@ -29,11 +31,12 @@ const NAVIGATION_EVENT = 'tb:navigate';
 const EMPTY_ROUTE = Object.freeze({ name: 'classes', classId: null, recordId: null });
 
 function ClassChooser({ children, onClose }) {
+  const { t } = useTranslation('classes');
   const ref = useRef(null);
   useModuleDialogFocus(ref, onClose);
   return <div className="wb-dialog-host wb-module-dialog" data-overlay="dialog">
     <div className="wb-dialog-scrim" role="presentation" onClick={onClose} />
-    <div ref={ref} className="wb-dialog c-chooser-dialog" role="dialog" aria-modal="true" aria-label="切换班级">{children}</div>
+    <div ref={ref} className="wb-dialog c-chooser-dialog" role="dialog" aria-modal="true" aria-label={t("切换班级")}>{children}</div>
   </div>;
 }
 
@@ -77,6 +80,7 @@ export function useClassesRoute() {
 }
 
 export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}) {
+  const { t } = useTranslation('classes');
   const shell = useWorkbenchShell();
   const localRoute = useClassesRoute();
   const located = route ?? localRoute;
@@ -117,7 +121,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
       })
       .catch((problem) => {
         if (cancelled) return;
-        setClassesError(problem.problem || { message: '无法加载班级' });
+        setClassesError(problem.problem || { message: t("无法加载班级") });
         setClassesStatus('error');
       });
     return () => { cancelled = true; };
@@ -150,7 +154,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
       })
       .catch((problem) => {
         if (cancelled) return;
-        setRecordsError(problem.problem || { message: '无法加载记录' });
+        setRecordsError(problem.problem || { message: t("无法加载记录") });
         setRecordsStatus('error');
       });
     return () => { cancelled = true; };
@@ -220,7 +224,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   function requestMove(record) {
     if (moving.isRunning || moving.pending) return;
     if (readLocal(shell.accountKey, `draft:class-record:${record.id}`) || readLocal(shell.accountKey, `pending:class-image:record:${record.id}`)) {
-      setMoveNotice('这条记录有未保存的修改或图片，请先保存或处理草稿，再移动。');
+      setMoveNotice(t("这条记录有未保存的修改或图片，请先保存或处理草稿，再移动。"));
       openRecord(record.id);
       return;
     }
@@ -234,7 +238,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
     if (!result) return;
     refreshRecords(); refreshClasses();
     patchScene({ classListOpen: false, recordState: 'active' });
-    setMoveNotice('记录已移动，原记录保留在原班级的“已删除”中。');
+    setMoveNotice(t("记录已移动，原记录保留在原班级的“已删除”中。"));
     navigate(`/classes/${result.record.classId}/records/${result.record.id}`);
   }
   function requestRecordPurge(record) {
@@ -257,18 +261,18 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
 
   return (
     <div className="wb-page wb-module c-classes" data-region="classes-index">
-      {moveNotice && <p className="wb-muted c-pane-note" role="status">{moveNotice}<button className="wb-button c-text-action" onClick={() => setMoveNotice('')}>知道了</button></p>}
-      {moving.isRunning && <p className="wb-muted c-pane-note" role="status">正在移动记录…</p>}
-      {moving.status === 'unconfirmed' && <div className="wb-inline-error" role="status">暂时无法确认记录是否移动。<button className="wb-button" onClick={() => confirmMove()}>重试移动记录</button></div>}
-      {moving.status === 'failed' && <p className="wb-inline-error" role="alert">{moving.problem?.message || '移动失败'}<button className="wb-button" onClick={() => { moving.reset(); refreshRecords(); }}>刷新记录</button></p>}
-      {recordPurge.isRunning && <p className="wb-muted c-pane-note" role="status">正在确认记录删除结果…</p>}
-      {recordPurge.status === 'unconfirmed' && <div className="wb-inline-error" role="status">暂时无法确认是否彻底删除记录。
-        <button className="wb-button" onClick={confirmRecordPurge}>重试删除记录</button></div>}
-      {recordPurge.status === 'failed' && <div className="wb-inline-error" role="alert">{recordPurge.problem?.message || '记录删除失败'}<button className="wb-button" onClick={refreshRecords}>刷新记录</button></div>}
-      {purge.isRunning && <p className="wb-muted c-pane-note" role="status">正在确认删除结果…</p>}
-      {purge.status === 'unconfirmed' && <div className="wb-inline-error" role="status">暂时无法确认是否彻底删除「{purge.pending.payload.name}」。
-        <button className="wb-button" onClick={confirmPurge}>重试确认</button></div>}
-      {purge.status === 'failed' && <div className="wb-inline-error" role="alert">{purge.problem?.message || '删除失败，请重试'}<button className="wb-button" onClick={refreshClasses}>刷新班级</button></div>}
+      {moveNotice && <p className="wb-muted c-pane-note" role="status">{moveNotice}<button className="wb-button c-text-action" onClick={() => setMoveNotice('')}>{t("知道了")}</button></p>}
+      {moving.isRunning && <p className="wb-muted c-pane-note" role="status">{t("正在移动记录…")}</p>}
+      {moving.status === 'unconfirmed' && <div className="wb-inline-error" role="status">{t("暂时无法确认记录是否移动。")}<button className="wb-button" onClick={() => confirmMove()}>{t("重试移动记录")}</button></div>}
+      {moving.status === 'failed' && <p className="wb-inline-error" role="alert">{moving.problem?.message || t("移动失败")}<button className="wb-button" onClick={() => { moving.reset(); refreshRecords(); }}>{t("刷新记录")}</button></p>}
+      {recordPurge.isRunning && <p className="wb-muted c-pane-note" role="status">{t("正在确认记录删除结果…")}</p>}
+      {recordPurge.status === 'unconfirmed' && <div className="wb-inline-error" role="status">{t("暂时无法确认是否彻底删除记录。")}
+        <button className="wb-button" onClick={confirmRecordPurge}>{t("重试删除记录")}</button></div>}
+      {recordPurge.status === 'failed' && <div className="wb-inline-error" role="alert">{recordPurge.problem?.message || t("记录删除失败")}<button className="wb-button" onClick={refreshRecords}>{t("刷新记录")}</button></div>}
+      {purge.isRunning && <p className="wb-muted c-pane-note" role="status">{t("正在确认删除结果…")}</p>}
+      {purge.status === 'unconfirmed' && <div className="wb-inline-error" role="status">{t("暂时无法确认是否彻底删除「")}{purge.pending.payload.name}」。
+        <button className="wb-button" onClick={confirmPurge}>{t("重试确认")}</button></div>}
+      {purge.status === 'failed' && <div className="wb-inline-error" role="alert">{purge.problem?.message || t("删除失败，请重试")}<button className="wb-button" onClick={refreshClasses}>{t("刷新班级")}</button></div>}
       <div className={`c-layout${showSidebar ? ' has-class-list' : ''}`}>
         {selected ? (
           <ClassDetail
@@ -297,15 +301,15 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
           />
         ) : selectedId ? (
           <section className="c-class-placeholder" data-region="class-placeholder">
-            <header className="c-class-head"><button className="wb-icon-button" aria-label="返回班级主页" title="返回班级主页" onClick={() => goHome()}><Icon name="back" size={20} /></button><h1>班级教学</h1></header>
-            {classesStatus === 'loading' && <p className="wb-muted c-pane-note">正在加载班级…</p>}
-            {classesStatus === 'error' && <div className="wb-inline-error c-welcome" role="alert"><p>{classesError?.message || '无法加载班级'}</p><button className="wb-button" onClick={refreshClasses}>重试加载</button></div>}
+            <header className="c-class-head"><button className="wb-icon-button" aria-label={t("返回班级主页")} title={t("返回班级主页")} onClick={() => goHome()}><Icon name="back" size={20} /></button><h1>{t("班级教学")}</h1></header>
+            {classesStatus === 'loading' && <p className="wb-muted c-pane-note">{t("正在加载班级…")}</p>}
+            {classesStatus === 'error' && <div className="wb-inline-error c-welcome" role="alert"><p>{classesError?.message || t("无法加载班级")}</p><button className="wb-button" onClick={refreshClasses}>{t("重试加载")}</button></div>}
             {classesStatus === 'ready' && selectedId && (
               <div className="c-welcome">
-                <p>未找到这个班级</p>
+                <p>{t("未找到这个班级")}</p>
                 <button type="button" className="wb-button" name="back-to-classes" onClick={() => goHome()}>
                   <Icon name="back" size={14} />
-                  返回班级主页
+                  {t("返回班级主页")}
                 </button>
               </div>
             )}
@@ -326,13 +330,13 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
         {movingRecord && <RecordMoveDialog record={movingRecord} classes={classes.active ?? []} onCancel={() => setMovingRecord(null)} onConfirm={confirmMove} />}
       </ModulePresence>
       <ModulePresence present={Boolean(confirmingRecordPurge)}>
-        {confirmingRecordPurge && <ConfirmDialog title="彻底删除记录" message="永久删除这条课堂记录，无法恢复。关联的资料和日程会保留。"
-          confirmLabel="彻底删除" onCancel={() => setConfirmingRecordPurge(null)} onConfirm={confirmRecordPurge} />}
+        {confirmingRecordPurge && <ConfirmDialog title={t("彻底删除记录")} message={t("永久删除这条课堂记录，无法恢复。关联的资料和日程会保留。")}
+          confirmLabel={t("彻底删除")} onCancel={() => setConfirmingRecordPurge(null)} onConfirm={confirmRecordPurge} />}
       </ModulePresence>
       <ModulePresence present={Boolean(confirmingPurge)}>
-        {confirmingPurge && <ConfirmDialog title="彻底删除班级"
-          message={`永久删除「${confirmingPurge.name}」及其全部课堂记录，无法恢复。关联的备课、题目、作品和日程会保留。`}
-          confirmLabel="彻底删除" onCancel={() => setConfirmingPurge(null)} onConfirm={confirmPurge} />}
+        {confirmingPurge && <ConfirmDialog title={t("彻底删除班级")}
+          message={t("永久删除「{{className}}」及其全部课堂记录，无法恢复。关联的备课、题目、作品和日程会保留。", { className: confirmingPurge.name })}
+          confirmLabel={t("彻底删除")} onCancel={() => setConfirmingPurge(null)} onConfirm={confirmPurge} />}
       </ModulePresence>
       <ModulePresence present={Boolean(scene.creatingClass)}>
         {scene.creatingClass && <ClassCreateDialog accountKey={shell.accountKey} onCreated={handleClassCreated} onClose={() => patchScene({ creatingClass: false })} />}
@@ -346,9 +350,10 @@ export { RecordComposer } from './RecordComposer.jsx';
 
 /** Keep account time-zone loading and retry visible at the class entry. */
 export function ClassesRoute({ route }) {
+  const { t } = useTranslation('classes');
   const { timeZone, timeZoneError, reloadTimeZone } = useWorkbenchShell();
   if (timeZoneError) return <div className="wb-inline-error" role="alert">
-    <p>时区读取失败：{timeZoneError}</p><button className="wb-button" onClick={reloadTimeZone}>重试读取时区</button>
+    <p>{t("时区读取失败：")}{timeZoneError}</p><button className="wb-button" onClick={reloadTimeZone}>{t("重试读取时区")}</button>
   </div>;
-  return timeZone ? <ClassesPage route={route} timeZone={timeZone} /> : <p className="wb-muted">正在读取账户时区…</p>;
+  return timeZone ? <ClassesPage route={route} timeZone={timeZone} /> : <p className="wb-muted">{t("正在读取账户时区…")}</p>;
 }

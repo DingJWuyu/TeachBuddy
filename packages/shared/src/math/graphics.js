@@ -104,7 +104,7 @@ export function viewportTransform(viewport) {
 }
 export function renderGraphic(
   source,
-  { width, background = "transparent", parameters = {}, interactive = false } = {},
+  { width, background = "transparent", parameters = {}, interactive = false, selectionLabel = name => `选择 ${name}` } = {},
 ) {
   const viewport = source.scene?.viewport ?? source.viewport;
   if (source.scene) source = { ...source, scene: { ...source.scene, elements: resolveElements(source.scene.elements, parameters, { viewport }).elements } };
@@ -116,7 +116,7 @@ export function renderGraphic(
     labels = [];
   const style = (s) =>
     `stroke="${escapeXml(s.stroke)}" fill="${escapeXml(s.fill ?? "none")}" stroke-width="${escapeXml(s.width)}"${s.dash === "solid" ? "" : ` stroke-dasharray="${s.dash === "dashed" ? "8 5" : "2 4"}"`} stroke-linejoin="round" stroke-linecap="round"`;
-  const selection = (kind, index, name) => interactive ? ` data-selection="${kind}:${index}" role="button" tabindex="0" aria-label="选择 ${escapeXml(name)}"` : '';
+  const selection = (kind, index, name) => interactive ? ` data-selection="${kind}:${index}" role="button" tabindex="0" aria-label="${escapeXml(selectionLabel(name))}"` : '';
   const label = (p, text, s, offset = { dx: 0, dy: 0 }, attributes = '') => {
     if (!text) return;
     // Each character fits in one em; wrapping also bounds arbitrarily long CJK labels.

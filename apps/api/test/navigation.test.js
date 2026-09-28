@@ -89,7 +89,7 @@ test('offline backup restores navigation values and upgrades databases predating
   let passed = false;
   try {
     const { client, session } = await registerMath(world, 'navigation-backup@example.test');
-    const layout = defaultNavigation(); layout.groups[0].name = '备份中的布局';
+    const layout = defaultNavigation(); layout.groups[0].name = '备份中的布局'; delete layout.groups[0].nameKey;
     const result = await put(client, { baseVersion: 1, layout });
     assert.equal(result.status, 200);
     const accountKey = session.account.accountKey;
@@ -103,6 +103,7 @@ test('offline backup restores navigation values and upgrades databases predating
     // Recreate the additive migration boundary of the pre-navigation product.
     const old = new Database(database);
     const accountBefore = old.prepare('SELECT * FROM auth_accounts WHERE accountKey=?').get(accountKey);
+    old.exec("DROP TABLE auth_account_deletions; DELETE FROM workbench_migrations WHERE id='auth_0008_account_deletions'");
     old.exec("DROP TABLE workbench_navigation; DELETE FROM workbench_migrations WHERE moduleId='workbench-navigation'; DELETE FROM workbench_mutation_keys WHERE path='/api/workbench/navigation'");
     old.close();
     await backup({ database, files: pathTools.join(directory, 'files'), target: pathTools.join(root, 'old-backup'), stopped: true });
@@ -111,6 +112,8 @@ test('offline backup restores navigation values and upgrades databases predating
     assert.equal(upgraded.prepare('SELECT COUNT(*) AS n FROM workbench_navigation').get().n, 0);
     assert.ok(upgraded.prepare("SELECT id FROM workbench_migrations WHERE id='workbench_navigation_001'").get());
     assert.deepEqual(upgraded.prepare('SELECT * FROM auth_accounts WHERE accountKey=?').get(accountKey), accountBefore);
+    assert.equal(upgraded.prepare('SELECT count(*) n FROM auth_account_deletions').get().n, 0);
+    assert.ok(upgraded.prepare("SELECT 1 FROM workbench_migrations WHERE id='auth_0008_account_deletions'").get());
     upgraded.close();
     passed = true;
   } finally {

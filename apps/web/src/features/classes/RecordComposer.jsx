@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { RecordContent } from './RecordContent.jsx';
 import { useScene } from '../workbench/useScene.js';
 /**
@@ -22,6 +24,7 @@ import { SourceChips, SourcePicker } from './SourcePicker.jsx';
 import { RecordFields, RECORD_FIELDS } from './RecordFields.jsx';
 
 export function RecordComposer({ accountKey, classId, timeZone, onCreated, initialSources = [], draftKey, journal = false, active = true }) {
+  const { t } = useTranslation('classes');
   const draftName = `draft:class-record-new:${draftKey ?? classId}`;
   const [input, setInput] = useState(() => {
     const stored = readLocal(accountKey, draftName);
@@ -89,14 +92,14 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
       setExpanded(false);
       setFields([]);
     }
-    setNotice({ kind: 'saved', message: unchanged ? (journal ? '记录已保存' : '已保存') : '上次内容已保存，新输入仍为草稿' });
+    setNotice({ kind: 'saved', message: unchanged ? (journal ? t("记录已保存") : t("已保存")) : t("上次内容已保存，新输入仍为草稿") });
     onCreated(result);
   }
 
   async function save() {
     if (uploadBusy) return;
     if (!hasAnyRecordText(input)) {
-      setNotice({ kind: 'error', message: '至少写一句再保存' });
+      setNotice({ kind: 'error', message: t("至少写一句再保存") });
       return;
     }
     const payload = recordCreatePayload(input);
@@ -115,8 +118,8 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
 
   const problem = submit.problem;
   const statusText = submit.status === 'unconfirmed'
-    ? '暂时无法确认是否保存'
-    : submit.status === 'failed' ? (problem?.message || '保存失败') : notice?.message;
+    ? t("暂时无法确认是否保存")
+    : submit.status === 'failed' ? (problem?.message || t("保存失败")) : notice?.message;
   const statusKind = submit.status === 'unconfirmed'
     ? 'unconfirmed'
     : submit.status === 'failed' ? 'error' : (notice?.kind || 'idle');
@@ -134,15 +137,15 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
     >
       {journal ? <>
         <div className="c-composer-heading">
-          <h2><Icon name="prep" size={18} />记一条课堂记录</h2>
+          <h2><Icon name="prep" size={18} />{t("记一条课堂记录")}</h2>
           <label className="c-compact-date">
-            <input className="wb-input" type="date" aria-label="记录日期" value={input.recordedOn}
+            <input className="wb-input" type="date" aria-label={t("记录日期")} value={input.recordedOn}
               onChange={event => patch({ recordedOn: event.target.value })} />
           </label>
-          {input.recordedOn !== todayInZone(timeZone) && <button type="button" className="wb-button c-text-action" onClick={() => patch({ recordedOn: todayInZone(timeZone) })}>今天</button>}
+          {input.recordedOn !== todayInZone(timeZone) && <button type="button" className="wb-button c-text-action" onClick={() => patch({ recordedOn: todayInZone(timeZone) })}>{t("今天")}</button>}
         </div>
-        <textarea className="wb-input c-composer-input" aria-label="写一句" rows={3}
-          placeholder="今天这个班讲得怎么样？例如：讲完单调性定义，例2还没讲，下次先复习定义。"
+        <textarea className="wb-input c-composer-input" aria-label={t("写一句")} rows={3}
+          placeholder={t("今天这个班讲得怎么样？例如：讲完单调性定义，例2还没讲，下次先复习定义。")}
           value={input.note} onChange={event => patch({ note: event.target.value })} />
         <RecordFields input={input} onChange={patch} fields={fields} onFieldsChange={setFields} onPick={() => setPickerOpen(true)} />
         <RecordContent key={`${accountKey}:${draftKey ?? classId}`} resetKey={submit.result?.id} accountKey={accountKey} scope={`new:${draftKey ?? classId}`} value={input.content} onChange={content => patch({ content })} onBusyChange={setUploadBusy} />
@@ -150,30 +153,30 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
           sources: input.sources.filter(item => !(item.kind === source.kind && item.id === source.id))
         })} />}
         <div className="c-composer-footer">
-          <span className="c-compose-hint">写一句就能保存</span>
+          <span className="c-compose-hint">{t("写一句就能保存")}</span>
           <button type="submit" className="wb-button is-primary" disabled={submit.status === 'running' || uploadBusy}
             name={submit.status === 'unconfirmed' ? 'retry-confirm' : 'save-record'}>
-            {submit.status === 'running' ? '保存中…' : submit.status === 'unconfirmed' ? '重试确认' : '保存记录'}
+            {submit.status === 'running' ? t("保存中…") : submit.status === 'unconfirmed' ? t("重试确认") : t("保存记录")}
           </button>
         </div>
       </> : <>
       <div className="c-composer-row">
         <textarea
           className="wb-input c-composer-input"
-          aria-label="写一句"
+          aria-label={t("写一句")}
           rows={2}
-          placeholder="记下今天的教学进展或课堂反馈…"
+          placeholder={t("记下今天的教学进展或课堂反馈…")}
           value={input.note}
           onChange={(event) => patch({ note: event.target.value })}
         />
       </div>
       <div className="c-composer-actions">
         <label className="c-date-field">
-          <span className="wb-label">日期</span>
+          <span className="wb-label">{t("日期")}</span>
           <input
             className="wb-input"
             type="date"
-            aria-label="记录日期"
+            aria-label={t("记录日期")}
             value={input.recordedOn}
             onChange={(event) => patch({ recordedOn: event.target.value })}
           />
@@ -185,16 +188,16 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
           aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
         >
-          {expanded ? '收起补充' : '补充进度与资料'}
+          {expanded ? t("收起补充") : t("补充进度与资料")}
         </button>
         <span className="c-composer-spacer" />
         {submit.status === 'unconfirmed' ? (
           <button type="button" className="wb-button is-primary" name="retry-confirm" onClick={retryConfirm}>
-            重试确认
+            {t("重试确认")}
           </button>
         ) : (
           <button type="submit" className="wb-button is-primary" name="save-record">
-            保存
+            {t("保存")}
           </button>
         )}
       </div>
@@ -203,47 +206,47 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
       {expanded && (
         <div className="c-composer-extra" data-region="record-supplement">
           <label className="wb-field">
-            <span className="wb-label">教到哪里</span>
+            <span className="wb-label">{t("教到哪里")}</span>
             <textarea
               className="wb-input c-textarea"
-              aria-label="教学位置"
+              aria-label={t("教学位置")}
               rows={2}
               value={input.position}
               onChange={(event) => patch({ position: event.target.value })}
             />
           </label>
           <label className="wb-field">
-            <span className="wb-label">未讲内容</span>
+            <span className="wb-label">{t("未讲内容")}</span>
             <textarea
               className="wb-input c-textarea"
-              aria-label="未讲内容"
+              aria-label={t("未讲内容")}
               rows={2}
               value={input.unfinished}
               onChange={(event) => patch({ unfinished: event.target.value })}
             />
           </label>
           <label className="wb-field">
-            <span className="wb-label">共性问题</span>
+            <span className="wb-label">{t("共性问题")}</span>
             <textarea
               className="wb-input c-textarea"
-              aria-label="共性问题"
+              aria-label={t("共性问题")}
               rows={2}
               value={input.commonIssues}
               onChange={(event) => patch({ commonIssues: event.target.value })}
             />
           </label>
           <label className="wb-field">
-            <span className="wb-label">下次备注</span>
+            <span className="wb-label">{t("下次备注")}</span>
             <textarea
               className="wb-input c-textarea"
-              aria-label="下次备注"
+              aria-label={t("下次备注")}
               rows={2}
               value={input.nextNote}
               onChange={(event) => patch({ nextNote: event.target.value })}
             />
           </label>
           <div className="wb-field">
-            <span className="wb-label">关联资料</span>
+            <span className="wb-label">{t("关联资料")}</span>
             <SourceChips
               sources={input.sources}
               onRemove={(source) => patch({
@@ -265,7 +268,7 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
             {statusText}
           </span>
         )}
-        {!statusText && hasAnyRecordText(input) && <span className="wb-draft-hint">草稿在此设备</span>}
+        {!statusText && hasAnyRecordText(input) && <span className="wb-draft-hint">{t("草稿在此设备")}</span>}
       </div>
 
       <ModulePresence present={pickerOpen}>

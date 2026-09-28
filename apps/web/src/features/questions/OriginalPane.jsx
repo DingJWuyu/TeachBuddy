@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState, useRef } from "react";
 import { ControlledImage, DocumentView } from "../workbench/materials/DocumentView.jsx";
 import { get, write, download } from "./materials-api.js";
@@ -11,6 +12,7 @@ export default function OriginalPane({
   onScene,
   readOnly = false,
 }) {
+  const { t } = useTranslation("questions");
   const files = [
     ...(material.input.fileIds ?? []),
     ...material.supplementFileIds,
@@ -60,9 +62,9 @@ export default function OriginalPane({
         if (!value.pages.length && value.state !== "failed")
           timer = setTimeout(refresh, 2000);
         if (value.state === "failed")
-          setError("原稿预览失败，可下载原稿或补充清晰照片");
+          setError(t("原稿预览失败，可下载原稿或补充清晰照片"));
       } catch {
-        if (active) setError("原稿预览暂不可用");
+        if (active) setError(t("原稿预览暂不可用"));
       }
     }
     if (fileId) refresh();
@@ -75,7 +77,7 @@ export default function OriginalPane({
   const original = originalDocuments.find(item => item.fileId === fileId);
   const paragraph = scene.paragraph ?? loc?.paragraph;
   const legacyWord = preview?.issues.includes("legacy-object-loss");
-  const paragraphLabel = legacyWord ? "转换稿段落" : "原文段落";
+  const paragraphLabel = legacyWord ? t("转换稿段落") : t("原文段落");
   const paragraphView = Boolean(original?.paragraphs.length && (scene.originalView === "paragraphs" || !current));
   const restoreParagraph = () => {
     const pane = nativePane.current;
@@ -102,20 +104,20 @@ export default function OriginalPane({
       p.locations.map((l) => ({ ...l, role: p.role })),
     ) ?? [];
   const roleName = {
-    body: "题面",
-    solution: "答案",
-    figure: "配图",
-    unassigned: "未分配",
+    body: t("题面"),
+    solution: t("答案"),
+    figure: t("配图"),
+    unassigned: t("未分配"),
   };
   return (
-    <section className={`q-original${paragraphView ? " is-word-view" : ""}`} aria-label="原始材料">
+    <section className={`q-original${paragraphView ? " is-word-view" : ""}`} aria-label={t("原始材料")}>
       <header>
-        <strong>原始材料</strong>
-        {fileId && <button onClick={() => download(fileId)}>下载原稿</button>}
+        <strong>{t("原始材料")}</strong>
+        {fileId && <button onClick={() => download(fileId)}>{t("下载原稿")}</button>}
       </header>
-      {material.origin && <p className="q-origin">出处：{material.origin}</p>}
+      {material.origin && <p className="q-origin">{t("出处：")}{material.origin}</p>}
       {preview?.issues.includes("legacy-object-loss") && (
-        <p role="status">旧版 DOC 转换可能丢失公式或嵌入对象，请下载原稿核对；缺失内容可补充文字或清晰照片。</p>
+        <p role="status">{t("旧版 DOC 转换可能丢失公式或嵌入对象，请下载原稿核对；缺失内容可补充文字或清晰照片。")}</p>
       )}
       {material.input.kind === "text" && (
         <pre>
@@ -141,45 +143,42 @@ export default function OriginalPane({
         <>
           <div className="q-tools">
             {files.length > 1 && <select
-              aria-label="原稿文件"
+              aria-label={t("原稿文件")}
               value={fileId}
               onChange={(e) => onScene({ fileId: e.target.value, page: 1, paragraph: null })}
             >
               {files.map((id, i) => (
-                <option key={id} value={id}>
-                  原稿 {i + 1}
+                <option key={id} value={id}> {t("原稿")} {i + 1}
                 </option>
               ))}
             </select>}
             {current && Boolean(original?.paragraphs.length) && <select
-              aria-label="原稿视图" value={paragraphView ? "paragraphs" : "pages"}
+              aria-label={t("原稿视图")} value={paragraphView ? "paragraphs" : "pages"}
               onChange={e => onScene({originalView: e.target.value})}>
-              <option value="pages">分页预览</option>
+              <option value="pages">{t("分页预览")}</option>
               <option value="paragraphs">{paragraphLabel}</option>
             </select>}
-            {!paragraphView && Boolean(preview?.pages.length) && <>{preview.pages.length === 1 ? <span className="q-muted">第 1 页</span> : <select
-              aria-label="原稿页码"
+            {!paragraphView && Boolean(preview?.pages.length) && <>{preview.pages.length === 1 ? <span className="q-muted">{t("第 1 页")}</span> : <select
+              aria-label={t("原稿页码")}
               value={page}
               onChange={(e) => onScene({ page: Number(e.target.value) })}
             >
               {(preview?.pages ?? []).map((x) => (
-                <option key={x.page} value={x.page}>
-                  第 {x.page} 页
-                </option>
+                <option key={x.page} value={x.page}> {t("第")} {x.page} {t("页")} </option>
               ))}
             </select>}
             <select
-              aria-label="原稿缩放"
+              aria-label={t("原稿缩放")}
               value={scene.zoom ?? 1}
               onChange={(e) => onScene({ zoom: Number(e.target.value) })}
             >
-              <option value="1">适合宽度</option>
+              <option value="1">{t("适合宽度")}</option>
               <option value="1.5">150%</option>
               <option value="2">200%</option>
             </select></>}
           </div>
           {paragraphView && (
-            <p>{paragraphLabel}{paragraph ? ` · 段落 ${paragraph}` : ""}，不对应原稿页码。</p>
+            <p>{paragraphLabel}{paragraph ? t(" · 段落 {{paragraph}}", { paragraph: paragraph }) : ""}{t("，不对应原稿页码。")}</p>
           )}
           {current && !paragraphView ? (
             <div className="q-page-scroll" ref={pageNode} onLoadCapture={restoreScroll}
@@ -209,7 +208,7 @@ export default function OriginalPane({
               >
                 <ControlledImage
                   fileId={current.imageFileId}
-                  alt={`原稿第 ${page} 页`}
+                  alt={t("原稿第 {{page}} 页", { page: page })}
                   widthMm={170}
                 />
                 {box && (
@@ -229,37 +228,33 @@ export default function OriginalPane({
             <div className="q-word-original" ref={nativePane} onLoadCapture={restoreParagraph}>
               {original.paragraphs.map(item => <article key={item.paragraph}
                 data-paragraph={item.paragraph} className={item.paragraph === paragraph ? "is-current" : ""}>
-                <small>段落 {item.paragraph}</small>
+                <small>{t("段落")} {item.paragraph}</small>
                 <DocumentView value={item.document} />
-                {item.uncertain && <p>此段公式请与下载的原稿核对。</p>}
+                {item.uncertain && <p>{t("此段公式请与下载的原稿核对。")}</p>}
               </article>)}
             </div>
           ) : (
-            <p>{error || "原稿已保存，预览尚未就绪"}</p>
+            <p>{error || t("原稿已保存，预览尚未就绪")}</p>
           )}
-          {!readOnly && current && !paragraphView && <ModuleDisclosure title="调整原稿选区" open={Boolean(scene.adjusting)} onOpenChange={adjusting => onScene({ adjusting })}>
-          <p className="q-muted">在原稿上拖选区域，再选择用于定位或裁图。</p>
+          {!readOnly && current && !paragraphView && <ModuleDisclosure title={t("调整原稿选区")} open={Boolean(scene.adjusting)} onOpenChange={adjusting => onScene({ adjusting })}>
+          <p className="q-muted">{t("在原稿上拖选区域，再选择用于定位或裁图。")}</p>
           <div className="q-tools">
             <select
-              aria-label="定位用途"
+              aria-label={t("定位用途")}
               value={locationRole}
               onChange={(e) => setLocationRole(e.target.value)}
             >
-              <option value="body">题面定位</option>
-              <option value="solution">答案定位</option>
+              <option value="body">{t("题面定位")}</option>
+              <option value="solution">{t("答案定位")}</option>
             </select>
             <button
               disabled={readOnly || !box || !draft}
               onClick={() => onLocation(location(), locationRole)}
-            >
-              保存选区定位
-            </button>
+            > {t("保存选区定位")} </button>
             <button
               disabled={readOnly || !box || !draft}
               onClick={() => onCrop(location())}
-            >
-              裁图加入题面
-            </button>
+            > {t("裁图加入题面")} </button>
           </div>
           </ModuleDisclosure>}
           {error && <button
@@ -276,9 +271,7 @@ export default function OriginalPane({
                   setError(e.message);
                 }
               }}
-            >
-              重新生成预览
-            </button>}
+            > {t("重新生成预览")} </button>}
         </>
       )}
       {positions.length > 0 && (
@@ -293,8 +286,7 @@ export default function OriginalPane({
                     ? onScene({ textStart: l.start })
                     : onScene({ fileId: l.fileId, paragraph: l.paragraph, originalView: "paragraphs" })
               }
-            >
-              定位{roleName[l.role]}{l.kind === 'page' ? ` · 第 ${l.page} 页` : l.kind === 'docx' ? ` · 段落 ${l.paragraph}` : ''}
+            > {t("定位")}{roleName[l.role]}{l.kind === 'page' ? t(" · 第 {{page}} 页", { page: l.page }) : l.kind === 'docx' ? t(" · 段落 {{paragraph}}", { paragraph: l.paragraph }) : ''}
             </button>
           ))}
         </div>

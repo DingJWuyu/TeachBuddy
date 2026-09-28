@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: 'auth', ...options });
+
 /*
  * Account-entry state machine. It owns the page context, the HTTP client, the
  * activation/restore handoff and the session re-check triggers; the surface
@@ -6,11 +9,13 @@
  * The public seam is `useAuth()` -> { status, account, request, logout }.
  * Everything else is internal to the feature.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { PROBLEM, createAuthClient, createTransport } from './api.js';
 import { createPageContext } from './pageContext.js';
 import { normalizeEmail, trimmed } from './rules.js';
 import { COPY, bannerProblem, fieldProblem } from './presentation.js';
+import { readDeletion, rememberDeletion, forgetDeletion, deletionRequestId, clearDeletedAccountDeviceData } from './deletion.js';
+import i18n from '../../i18n/index.js';
 
 export const INTERNAL_AUTH = createContext(null);
 export const PUBLIC_AUTH = createContext(null);
@@ -54,16 +59,24 @@ function signedOut(current, patch = {}) {
 }
 
 export function logoutError(kind, outcome) {
-  const error = new Error(kind === 'unconfirmed' ? '退出结果暂未确认' : '退出失败，请重试');
+  const error = new Error(kind === 'unconfirmed' ? t("退出结果暂未确认") : t("退出失败，请重试"));
   error.kind = kind === 'unconfirmed' ? 'logout-unconfirmed' : 'logout-failed';
   error.problemType = outcome?.type ?? outcome?.reason ?? null;
   return error;
 }
 
 export default function AuthProvider({ children, timeoutMs = 10_000 }) {
-  const [state, setState] = useState(INITIAL_STATE);
+  useTranslation('auth');
+
+  const [state, setState] = useState(() => {
+    const deletion = readDeletion();
+    return deletion ? { ...INITIAL_STATE, status: 'deleting', deletion, account: deletion.account } : INITIAL_STATE;
+  });
   const stateRef = useRef(state);
   stateRef.current = state;
+  useLayoutEffect(() => {
+    if (state.status !== 'active') void i18n.changeLanguage(state.deletion?.locale || 'zh-CN');
+  }, [state.status, state.deletion?.locale]);
 
   const pageContextRef = useRef(null);
   if (pageContextRef.current === null) pageContextRef.current = createPageContext();
@@ -73,6 +86,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   const bootStartedRef = useRef(false);
   const lockedRef = useRef(false);
   const logoutTargetRef = useRef(undefined);
+  const deletionRunningRef = useRef(false);
   const channelRef = useRef(null);
   const recheckRef = useRef(null);
   const restoreRef = useRef(null);
@@ -154,7 +168,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     }));
   }, [bumpIdentity]);
 
-  const expireSession = useCallback((notice = COPY.expired) => {
+  const expireSession = useCallback((notice = () => COPY.expired) => {
     // I06 has proved this page's target invalid, including after a lost I07
     // response. Release that target here; another logout could clear a peer's
     // newly bootstrapped browser container.
@@ -163,7 +177,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     setLocked(false);
     rotatePageContext();
     setState((current) => signedOut(current, {
-      notice: notice ? { message: notice, tone: 'error' } : null,
+      notice: notice ? { get message() { return typeof notice === 'function' ? notice() : notice; }, tone: 'error' } : null,
     }));
   }, [rotatePageContext]);
 
@@ -214,7 +228,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     bumpIdentity();
     setState((current) => signedOut(current, {
       registrationOpen: data.registrationOpen,
-      notice: notice ? { message: notice, tone: 'error' } : null,
+      notice: notice ? { get message() { return typeof notice === 'function' ? notice() : notice; }, tone: 'error' } : null,
     }));
   }, [bumpIdentity, setActive]);
 
@@ -250,7 +264,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     if (outcome.kind === 'problem' && outcome.type === PROBLEM.SESSION_INVALID) {
       bumpIdentity();
       setState((current) => signedOut(current, {
-        notice: { message: COPY.expired, tone: 'error' },
+        notice: { get message() { return COPY.expired; }, tone: 'error' },
       }));
       return;
     }
@@ -260,6 +274,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   restoreRef.current = restore;
 
   const boot = useCallback(async () => {
+    if (stateRef.current.deletion) return;
     const generation = generationRef.current;
     setState((current) => ({ ...current, status: 'booting', notice: null, errorKind: null }));
     const outcome = await client.getSession();
@@ -273,7 +288,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
       return;
     }
     if (outcome.kind === 'problem' && outcome.type === PROBLEM.SESSION_INVALID) {
-      await bootstrap({ generation, notice: COPY.expired });
+      await bootstrap({ generation, notice: () => COPY.expired });
       return;
     }
     setState((current) => ({ ...current, status: 'error', errorKind: 'boot', notice: null }));
@@ -283,7 +298,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     const generation = generationRef.current;
     const epoch = identityEpochRef.current;
     const current = stateRef.current;
-    if (current.status === 'booting' || current.status === 'recovering') return;
+    if (current.status === 'booting' || current.status === 'recovering' || current.deletion) return;
     const outcome = await client.getSession();
     if (generation !== generationRef.current || epoch !== identityEpochRef.current) return;
     const now = stateRef.current;
@@ -403,14 +418,14 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
           banner: { message: banner.message, tone: banner.tone, clearPassword: banner.clearPassword === true },
         };
       }
-      return { ok: false, banner: { message: COPY.storeRetry, tone: 'error' } };
+      return { ok: false, banner: { get message() { return COPY.storeRetry; }, tone: 'error' } };
     }
     if (outcome.kind === 'unknown-problem') {
       if (mutating) return { ok: false, unknown: true };
-      return { ok: false, banner: { message: COPY.serviceRetry, tone: 'error' } };
+      return { ok: false, banner: { get message() { return COPY.serviceRetry; }, tone: 'error' } };
     }
     if (outcome.reason === 'offline') {
-      return { ok: false, banner: { message: COPY.offline, tone: 'error' } };
+      return { ok: false, banner: { get message() { return COPY.offline; }, tone: 'error' } };
     }
     if (mutating) return { ok: false, unknown: true };
     const message = outcome.reason === 'timeout'
@@ -574,7 +589,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
       const banner = bannerProblem(outcome, purpose === 'registration' ? 'register' : 'password-reset');
       if (banner) return { ok: false, banner: { message: banner.message, tone: banner.tone } };
     }
-    return { ok: false, banner: { message: COPY.retrySend, tone: 'error' } };
+    return { ok: false, banner: { get message() { return COPY.retrySend; }, tone: 'error' } };
   }, [client, live, nextOperation]);
 
   const resetPassword = useCallback(async ({ email, challengeId, verificationCode, password }) => {
@@ -642,6 +657,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   }, []);
 
   const logout = useCallback(async () => {
+    if (stateRef.current.deletion) throw new Error('Account deletion is awaiting confirmation');
     const target = logoutTargetRef.current !== undefined
       ? logoutTargetRef.current
       : (stateRef.current.session?.id ?? null);
@@ -670,15 +686,54 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     throw logoutError('unconfirmed', outcome);
   }, [client, notifyPeers, rotatePageContext]);
 
+  const deleteAccount = useCallback(async email => {
+    if (deletionRunningRef.current) return;
+    const current = stateRef.current;
+    const deletion = current.deletion ?? {
+      account: current.account, locale: i18n.language,
+      body: { requestId: deletionRequestId(), sessionId: current.session?.id, email: normalizeEmail(email) },
+    };
+    if (!deletion.account || !deletion.body.sessionId) throw new Error('deletion-identity');
+    rememberDeletion(deletion);
+    deletionRunningRef.current = true;
+    lockedRef.current = true; setLocked(true); bumpIdentity();
+    setState(value => ({ ...value, status: 'deleting', deletion, deletionRunning: true, deletionError: null }));
+    try {
+      const outcome = await client.deleteAccount(deletion.body);
+      if (outcome.kind !== 'no-content') {
+        const rejected = outcome.kind === 'problem' && [400, 403, 415, 422].includes(outcome.status);
+        if (rejected && !current.deletion) {
+          forgetDeletion(); lockedRef.current = false; setLocked(false);
+          setState(value => ({ ...value, ...current, deletion: null }));
+          throw new Error('deletion-rejected');
+        }
+        setState(value => ({ ...value, deletionRunning: false,
+          deletionError: outcome.type === PROBLEM.DELETION_INCOMPLETE ? 'incomplete' : 'unknown' }));
+        return;
+      }
+      // A 401 or anonymous session is never a substitute for this 204 receipt.
+      try { await clearDeletedAccountDeviceData(deletion.account.accountKey); forgetDeletion(); }
+      catch {
+        setState(value => ({ ...value, deletionRunning: false, deletionError: 'device' }));
+        return;
+      }
+      lockedRef.current = false; setLocked(false);
+      rotatePageContext(); notifyPeers();
+      setState(value => signedOut(value, { deletion: null, deletionRunning: false, deletionError: null }));
+    } finally { deletionRunningRef.current = false; }
+  }, [bumpIdentity, client, notifyPeers, rotatePageContext]);
+
   const publicValue = useMemo(() => ({
     status: state.status,
     account: state.status === 'active' ? state.account : null,
     request,
     logout,
-  }), [state.status, state.account, request, logout]);
+    deleteAccount,
+  }), [state.status, state.account, request, logout, deleteAccount]);
 
   const internalValue = useMemo(() => ({
     ...state,
+    deleteAccount,
     locked,
     registrationOpen: state.registrationOpen,
     login,
@@ -697,6 +752,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     request,
   }), [
     state,
+    deleteAccount,
     locked,
     login,
     register,
@@ -711,6 +767,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     dismissNotice,
     logout,
     request,
+    i18n.resolvedLanguage,
   ]);
 
   return (

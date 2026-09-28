@@ -27,7 +27,7 @@ export function createResourcesModule({
   now = () => new Date().toISOString(),
 }) {
   const history = createResourceHistory(db, files);
-  const textSearch = createResourceTextSearch({ db, files, jobs, recognition });
+  const textSearch = createResourceTextSearch({ db, files, jobs, recognition, mutations });
   const getRow = db.prepare(
     "SELECT value FROM resource_items WHERE accountKey=? AND id=?",
   );

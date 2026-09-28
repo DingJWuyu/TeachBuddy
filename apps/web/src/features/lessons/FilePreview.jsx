@@ -1,3 +1,6 @@
+import i18n from '../../i18n/index.js';
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: 'lessons', ...options });
 import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 import { useScene } from "../workbench/useScene.js";
 import { useEffect, useRef, useState } from "react";
@@ -8,7 +11,13 @@ import {
 } from "../workbench/apiClient.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useIdempotentSubmit } from "../workbench/useIdempotentSubmit.js";
-export function FilePreview({ fileId, onClose, title = "成品预览", onSelectPage, selectLabel = "提取这一页", imageLabel }) {
+const previewIssueKeys = {
+  'unsupported-format': 'previewIssue.unsupported',
+  'conversion-failed': 'previewIssue.conversion',
+  'legacy-object-loss': 'previewIssue.legacy',
+};
+export function FilePreview({ fileId, onClose, title = t("成品预览"), onSelectPage, selectLabel = t("提取这一页"), imageLabel }) {
+  const { t } = useTranslation('lessons');
   const dialogRef = useRef(null);
   useModuleDialogFocus(dialogRef, onClose);
   const { accountKey } = useWorkbenchShell();
@@ -52,15 +61,15 @@ export function FilePreview({ fileId, onClose, title = "成品预览", onSelectP
               await workbenchGet(`/api/workbench/jobs/${value.jobId}`)
             ).body;
             if (["interrupted", "cancelled", "failed"].includes(job.state)) {
-              setError("预览已中断或失败，可重新生成。");
+              setError(t("预览已中断或失败，可重新生成。"));
               return;
             }
           }
           if (live) timer = setTimeout(load, 2000);
         } else if (value.state === "failed")
-          setError("预览未完成，原文件仍保留，可重试。");
+          setError(t("预览未完成，原文件仍保留，可重试。"));
         else if (value.state === "limited")
-          setError("预览需核对：" + value.issues.join("、"));
+          setError(t("预览需核对：") + value.issues.map(code => Object.hasOwn(previewIssueKeys, code) ? t(previewIssueKeys[code]) : code).join(i18n.resolvedLanguage === 'en' ? '; ' : '、'));
       } catch (e) {
         if (live) setError(e.message);
       }
@@ -121,25 +130,25 @@ export function FilePreview({ fileId, onClose, title = "成品预览", onSelectP
             disabled={!page}
             onClick={() => patchScene({ page: page - 1, scrollTop: 0 })}
           >
-            上一页
+            {t("上一页")}
           </button>}
           <span>
             {imageLabel || (preview?.pages.length
               ? `${page + 1} / ${preview.pages.length}`
-              : "正在准备预览")}
+              : t("正在准备预览"))}
           </span>
           {(preview?.pages.length ?? 0) > 1 && <button
             className="wb-button"
             disabled={page >= (preview?.pages.length ?? 0) - 1}
             onClick={() => patchScene({ page: page + 1, scrollTop: 0 })}
           >
-            下一页
+            {t("下一页")}
           </button>}
           <label>
-            缩放
+            {t("缩放")}
             <select
               className="wb-input"
-              aria-label="预览缩放"
+              aria-label={t("预览缩放")}
               value={zoom}
               onChange={(e) => patchScene({ zoom: Number(e.target.value) })}
             >
@@ -151,7 +160,7 @@ export function FilePreview({ fileId, onClose, title = "成品预览", onSelectP
             </select>
           </label>
           <button className="wb-button" onClick={onClose}>
-            关闭预览
+            {t("关闭预览")}
           </button>
           {onSelectPage && <button className="wb-button is-primary"
             disabled={!url || !preview?.renditionFileId || !preview.pages[page] || request.isRunning || Boolean(request.pending)}
@@ -162,13 +171,13 @@ export function FilePreview({ fileId, onClose, title = "成品预览", onSelectP
         </header>
         {(error || request.problem || request.pending) && (
           <p role="alert">
-            {error || request.problem?.message || "上次预览请求尚未确认"}
+            {error || request.problem?.message || t("上次预览请求尚未确认")}
             <button
               className="wb-button"
               disabled={request.isRunning}
               onClick={retry}
             >
-              {request.pending ? "重试确认预览" : "重试预览"}
+              {request.pending ? t("重试确认预览") : t("重试预览")}
             </button>
           </p>
         )}
@@ -185,7 +194,7 @@ export function FilePreview({ fileId, onClose, title = "成品预览", onSelectP
                   scrollRef.current.scrollTop = scene.scrollTop;
               }}
               src={url}
-              alt={imageLabel || `${onSelectPage ? "资料" : "成品"}第 ${preview?.pages[page]?.page ?? page + 1} 页`}
+              alt={imageLabel || t("{{documentType}}第 {{page}} 页", { documentType: onSelectPage ? t("资料") : t("成品"), page: preview?.pages[page]?.page ?? page + 1 })}
             />
           )}
         </div>

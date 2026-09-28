@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   useEffect,
   useId,
@@ -59,6 +60,7 @@ export function PageFind({
   scrollRef,
   onClose,
 }) {
+  const { t } = useTranslation("resources");
   const [query, setQuery] = useState("");
   const [selection, setSelection] = useState(null);
   const scrolled = useRef(null);
@@ -168,33 +170,33 @@ export function PageFind({
     });
   }
   const status = !supported
-    ? "当前浏览器暂不支持页内查找，仍可预览与复制。"
+    ? t("当前浏览器暂不支持页内查找，仍可预览与复制。")
     : text.state === "loading"
-      ? "正在读取本页文字…"
+      ? t("正在读取本页文字…")
       : text.state === "failed"
-        ? "本页文字读取失败，可重新读取。"
+        ? t("本页文字读取失败，可重新读取。")
         : ["empty", "unsupported"].includes(text.state)
-          ? "本页没有可查找文字。"
+          ? t("本页没有可查找文字。")
           : !query.trim()
-            ? "仅查找当前页"
+            ? t("仅查找当前页")
             : ranges.length
-              ? `${selected + 1} / ${ranges.length} 处`
-              : "本页无匹配";
+              ? t("{{value}} / {{count}} 处", { value: selected + 1, count: ranges.length })
+              : t("本页无匹配");
   return (
     <ModulePresence
       present={open}
       mode="collapse"
       className="res-find-presence"
     >
-      <div className="res-page-find" role="search" aria-label="查找本页">
+      <div className="res-page-find" role="search" aria-label={t("查找本页")}>
         <style>{`.res-pdf-text::highlight(${allName}) { background-color: #facc1566; color: transparent; }
           .res-pdf-text::highlight(${currentName}) { background-color: #fb923c99; color: transparent; }`}</style>
         <label className="res-find-input">
           <Icon name="search" size={16} />
           <input
             ref={input}
-            aria-label="查找本页文字"
-            placeholder="查找本页文字"
+            aria-label={t("查找本页文字")}
+            placeholder={t("查找本页文字")}
             value={query}
             maxLength={200}
             disabled={!supported}
@@ -222,8 +224,8 @@ export function PageFind({
           <button
             type="button"
             className="res-icon-button"
-            aria-label="上一处匹配"
-            title="上一处匹配（Shift+Enter）"
+            aria-label={t("上一处匹配")}
+            title={t("上一处匹配（Shift+Enter）")}
             disabled={!ranges.length}
             onClick={() => move(-1)}
           >
@@ -232,8 +234,8 @@ export function PageFind({
           <button
             type="button"
             className="res-icon-button"
-            aria-label="下一处匹配"
-            title="下一处匹配（Enter）"
+            aria-label={t("下一处匹配")}
+            title={t("下一处匹配（Enter）")}
             disabled={!ranges.length}
             onClick={() => move(1)}
           >
@@ -242,8 +244,8 @@ export function PageFind({
           <button
             type="button"
             className="res-icon-button"
-            aria-label="关闭页内查找"
-            title="关闭页内查找（Esc）"
+            aria-label={t("关闭页内查找")}
+            title={t("关闭页内查找（Esc）")}
             onClick={onClose}
           >
             <Icon name="close" size={16} />

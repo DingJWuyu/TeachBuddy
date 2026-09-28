@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "../workbench/chrome/icons.jsx";
 import { PdfText } from "./PdfText.jsx";
 import { PageFind } from "./PageFind.jsx";
 import { Recognition } from "./Recognition.jsx";
 export function FileImage({ client, id, alt, ...props }) {
+  const { t } = useTranslation("resources");
   const [url, setUrl] = useState(""),
     [error, setError] = useState("");
   useEffect(() => {
@@ -28,7 +30,7 @@ export function FileImage({ client, id, alt, ...props }) {
   return url ? (
     <img src={url} alt={alt} {...props} />
   ) : (
-    <span className="res-muted">{error || "载入页面…"}</span>
+    <span className="res-muted">{error || t("载入页面…")}</span>
   );
 }
 export function Preview({
@@ -48,6 +50,7 @@ export function Preview({
   onRecognitionWrite,
   recognitionDisabled,
 }) {
+  const { t } = useTranslation("resources");
   const [preview, setPreview] = useState(null),
     [job, setJob] = useState(null),
     [error, setError] = useState(""),
@@ -162,7 +165,7 @@ export function Preview({
   return (
     <section
       className="res-preview"
-      aria-label="文件预览"
+      aria-label={t("文件预览")}
       onKeyDown={(event) => {
         if (
           event.key === "Escape" &&
@@ -181,8 +184,8 @@ export function Preview({
           <>
             <button
               className="res-icon-button"
-              aria-label="上一页"
-              title="上一页"
+              aria-label={t("上一页")}
+              title={t("上一页")}
               onClick={() => onPage(Math.max(1, page - 1))}
               disabled={!current || page <= 1}
             >
@@ -203,11 +206,10 @@ export function Preview({
                   onPage(number);
               }}
             >
-              <label>
-                第{" "}
+              <label> {t("第")}{" "}
                 <input
                   key={current?.page}
-                  aria-label="跳转页码"
+                  aria-label={t("跳转页码")}
                   name="page"
                   type="number"
                   min="1"
@@ -215,14 +217,13 @@ export function Preview({
                   defaultValue={current?.page ?? 1}
                   required
                 />{" "}
-                / {preview.pageCount} 页
-              </label>
-              <button type="submit">跳转</button>
+                / {preview.pageCount} {t("页")} </label>
+              <button type="submit">{t("跳转")}</button>
             </form>
             <button
               className="res-icon-button"
-              aria-label="下一页"
-              title="下一页"
+              aria-label={t("下一页")}
+              title={t("下一页")}
               onClick={() => onPage(Math.min(preview.pageCount, page + 1))}
               disabled={!current || page >= preview.pageCount}
             >
@@ -230,12 +231,11 @@ export function Preview({
             </button>
           </>
         ) : (
-          <span className="res-muted">{current ? "共 1 页" : "文件预览"}</span>
+          <span className="res-muted">{current ? t("共 1 页") : t("文件预览")}</span>
         )}
-        <label>
-          缩放{" "}
+        <label> {t("缩放")}{" "}
           <select
-            aria-label="缩放"
+            aria-label={t("缩放")}
             value={zoom}
             onChange={(e) => onZoom(Number(e.target.value))}
           >
@@ -259,9 +259,7 @@ export function Preview({
               }
             }}
           >
-            <Icon name="search" size={16} />
-            查找本页
-          </button>
+            <Icon name="search" size={16} /> {t("查找本页")} </button>
         )}
         {current && preview?.renditionFileId && onRecognitionWrite && (
           <button
@@ -276,28 +274,26 @@ export function Preview({
               }
             }}
           >
-            <Icon name="file" size={16} />
-            识别文字
-          </button>
+            <Icon name="file" size={16} /> {t("识别文字")} </button>
         )}
         {text.state === "ready" && (
           <button
             className="res-copy-text"
-            aria-label="复制本页文字"
-            title="也可在页面上拖选文字后复制"
+            aria-label={t("复制本页文字")}
+            title={t("也可在页面上拖选文字后复制")}
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(text.text);
                 setCopyMessage("本页文字已复制");
               } catch {
                 setCopyMessage(
-                  "无法访问剪贴板，请选中文字后按 Ctrl+C 或 ⌘C 复制",
+                  t("无法访问剪贴板，请选中文字后按 Ctrl+C 或 ⌘C 复制"),
                 );
               }
             }}
           >
             <span role="status">
-              {copyMessage === "本页文字已复制" ? copyMessage : "复制本页文字"}
+              {copyMessage === "本页文字已复制" ? t("本页文字已复制") : t("复制本页文字")}
             </span>
           </button>
         )}
@@ -329,31 +325,29 @@ export function Preview({
         <div className="res-text-status" role="status">
           {copyMessage ||
             (text.state === "empty"
-              ? "本页没有可提取文字，可能是扫描页或图片。"
-              : "文字暂时无法读取，仍可查看页面或下载原件。")}
+              ? t("本页没有可提取文字，可能是扫描页或图片。")
+              : t("文字暂时无法读取，仍可查看页面或下载原件。"))}
           {text.state === "failed" && (
-            <button onClick={text.retry}>重新读取文字</button>
+            <button onClick={text.retry}>{t("重新读取文字")}</button>
           )}
         </div>
       )}
       {preview?.state === "limited" && (
         <div className="res-warning">
           <Icon name="info" size={16} />
-          <span>
-            预览需核对：
-            {preview.issues.includes("legacy-object-loss")
-              ? "旧 DOC 公式或对象可能缺失，请与原件对照，可补充 PDF。"
-              : "部分内容或字体需核对。"}
+          <span> {t("预览需核对：")} {preview.issues.includes("legacy-object-loss")
+              ? t("旧 DOC 公式或对象可能缺失，请与原件对照，可补充 PDF。")
+              : t("部分内容或字体需核对。")}
           </span>
           {onSupplement && (
-            <button onClick={onSupplement}>补充 PDF 预览</button>
+            <button onClick={onSupplement}>{t("补充 PDF 预览")}</button>
           )}
         </div>
       )}
       {error && (
         <div role="alert" className="res-warning">
           {error}
-          <button onClick={() => setReload((n) => n + 1)}>重新读取预览</button>
+          <button onClick={() => setReload((n) => n + 1)}>{t("重新读取预览")}</button>
         </div>
       )}
       {!preview?.pages.length && (
@@ -363,18 +357,16 @@ export function Preview({
           </span>
           <h2>
             {unsupported
-              ? "此格式暂不支持在线预览"
+              ? t("此格式暂不支持在线预览")
               : failed
-                ? "暂时无法预览"
-                : "正在准备预览"}
+                ? t("暂时无法预览")
+                : t("正在准备预览")}
           </h2>
-          <p>
-            原文件已保存，可以随时下载。
-            {unsupported
-              ? "请下载后用对应软件打开，或补充 PDF 预览。"
+          <p> {t("原文件已保存，可以随时下载。")} {unsupported
+              ? t("请下载后用对应软件打开，或补充 PDF 预览。")
               : failed
-                ? "转换未完成，请确认原文件能正常打开，或补充 PDF 预览。"
-                : "预览完成后会自动显示。"}
+                ? t("转换未完成，请确认原文件能正常打开，或补充 PDF 预览。")
+                : t("预览完成后会自动显示。")}
           </p>
           {preview && !preparing && !unsupported && (
             <button
@@ -385,12 +377,12 @@ export function Preview({
             >
               {preview?.state === "failed" ||
               ["failed", "cancelled", "interrupted"].includes(job?.state)
-                ? "重试预览"
-                : "生成预览"}
+                ? t("重试预览")
+                : t("生成预览")}
             </button>
           )}
           {failed && onSupplement && (
-            <button onClick={onSupplement}>补充 PDF 预览</button>
+            <button onClick={onSupplement}>{t("补充 PDF 预览")}</button>
           )}
         </div>
       )}
@@ -423,7 +415,7 @@ export function Preview({
               key={current.imageFileId}
               client={client}
               id={current.imageFileId}
-              alt={`第 ${current.page} 页`}
+              alt={t("第 {{page}} 页", { page: current.page })}
               onLoad={() => {
                 const element = scrollRef.current;
                 element.scrollTop = scrollPosition?.top ?? 0;

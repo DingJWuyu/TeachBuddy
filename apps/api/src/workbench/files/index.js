@@ -171,6 +171,29 @@ export function createFiles({ db, mutations, directory, clock = () => new Date()
     return result.body;
   }
   return {
+    accountWorkDirectory(principal) {
+      mutations.assertAccountActive(principal);
+      const target = path.join(directory, 'work', digest(Buffer.from(principal.accountKey)));
+      fs.mkdirSync(target, { recursive: true, mode: 0o700 });
+      return target;
+    },
+    temporaryDirectory(principal, prefix) {
+      const target = this.accountWorkDirectory(principal);
+      return fs.mkdtempSync(path.join(target, prefix));
+    },
+    accountFileNames(accountKey) {
+      return db.prepare('SELECT DISTINCT blobName FROM materials_files WHERE accountKey=?').all(accountKey)
+        .map(row => row.blobName);
+    },
+    removeAccountFiles(accountKey, names) {
+      for (const name of names) {
+        if (!/^[0-9a-f-]+\.blob$/.test(name)) throw storageError();
+        if (db.prepare('SELECT 1 FROM materials_files WHERE blobName=? AND accountKey<>?').get(name, accountKey)) continue;
+        fs.rmSync(path.join(blobs, name), { force: true });
+      }
+      fs.rmSync(path.join(directory, 'work', digest(Buffer.from(accountKey))), { recursive: true, force: true });
+      syncDirectory(blobs);
+    },
     initialize,
     readBytes,
     store,

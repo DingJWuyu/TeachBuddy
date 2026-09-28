@@ -15,6 +15,9 @@
  */
 
 export const PROBLEM = Object.freeze({
+  DELETION_CONFIRMATION_MISMATCH: '/problems/auth/deletion-confirmation-mismatch',
+  DELETION_IN_PROGRESS: '/problems/auth/deletion-in-progress',
+  DELETION_INCOMPLETE: '/problems/auth/deletion-incomplete',
   REQUEST_NOT_ALLOWED: '/problems/auth/request-not-allowed',
   MALFORMED_JSON: '/problems/auth/malformed-json',
   UNSUPPORTED_MEDIA_TYPE: '/problems/auth/unsupported-media-type',
@@ -265,6 +268,9 @@ export function createAuthClient({ getPageContext, timeoutMs = 10_000 }) {
   }
 
   return {
+    deleteAccount(body) {
+      return call({ path: '/api/auth/account-deletion', body, allowNoContent: true });
+    },
     login({ email, password, rememberMe }) {
       return call({
         path: AUTH_PATHS.login,
@@ -392,4 +398,3 @@ export function createTransport({ getPageContext, onUnauthorized, isLocked }) {
     return response;
   };
 }
-

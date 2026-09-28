@@ -1,9 +1,12 @@
+import { useTranslation } from 'react-i18next';
 import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
+import { weekdayLabel } from './model.js';
 import { addDays, diffDays, monday, monthDays, monthTitle, shiftMonth } from './calendarModel.js';
 
 export function CalendarIcon({ name, size = 18 }) {
+  useTranslation("schedule");
   const paths = {
     calendar: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></>,
     grid: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18M7 15h.01M12 15h.01M17 15h.01M7 18h.01M12 18h.01M17 18h.01"/></>,
@@ -19,14 +22,17 @@ export function CalendarIcon({ name, size = 18 }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] ?? paths.calendar}</svg>;
 }
 export function IconButton({ name, label, ...props }) {
+  useTranslation("schedule");
   return <button type="button" className="cal-icon-button" aria-label={label} title={label} {...props}><CalendarIcon name={name}/></button>;
 }
 export function MonthTitle({ date, icon = 'calendar' }) {
+  useTranslation("schedule");
   const title = monthTitle(date);
   return <div className="cal-month-title"><span className="cal-title-icon"><CalendarIcon name={icon} size={22}/></span><h1>{title.month}<span>{title.year}</span></h1></div>;
 }
 
 export function CalendarMenu({ label, trigger, className = '', children }) {
+  useTranslation("schedule");
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const panel = useRef(null);
@@ -72,38 +78,43 @@ export function CalendarMenu({ label, trigger, className = '', children }) {
 }
 const CalendarVisible = createContext(true);
 export function CalendarOverlay({ present, children }) {
+  useTranslation("schedule");
   return createPortal(<CalendarVisible.Provider value={present}><ModulePresence present={present} mode="overlay" className="cal-overlay-presence">{children}</ModulePresence></CalendarVisible.Provider>, document.body);
 }
 function CalendarDialogFocus({ dialogRef, onClose }) {
+  useTranslation("schedule");
   useModuleDialogFocus(dialogRef, onClose);
   useEffect(() => { dialogRef.current?.querySelector('input:not(:disabled), textarea:not(:disabled), select:not(:disabled)')?.focus(); }, [dialogRef]);
   return null;
 }
 export function CalendarDialog({ title, onClose, children }) {
+  const { t } = useTranslation("schedule");
   const ref = useRef(null);
   const active = useContext(CalendarVisible);
   return <div className="cal-dialog-backdrop" onPointerDown={event => { if (event.target === event.currentTarget) onClose(); }}>
     <section className="cal-dialog" role="dialog" aria-modal="true" aria-label={title} ref={ref}>
       {active && <CalendarDialogFocus dialogRef={ref} onClose={onClose}/>}
-      <header><h2>{title}</h2><IconButton name="close" label="关闭" onClick={onClose}/></header>{children}
+      <header><h2>{title}</h2><IconButton name="close" label={t("关闭")} onClick={onClose}/></header>{children}
     </section>
   </div>;
 }
 export function ViewMenu({ view, onChange }) {
+  const { t } = useTranslation("schedule");
   const [custom, setCustom] = useState(false);
   const [days, setDays] = useState(view.days ?? 7);
-  const label = { day: '日', week: '周', month: '月' }[view.kind] ?? `${view.days} 天`;
-  return <><CalendarMenu label="日历视图" className="cal-view-menu" trigger={<>{label}<CalendarIcon name="down" size={16}/></>}>
+  const label = { day: t("日"), week: t("周"), month: t("月") }[view.kind] ?? t("{{days}} 天", { days: view.days });
+  return <><CalendarMenu label={t("日历视图")} className="cal-view-menu" trigger={<>{label}<CalendarIcon name="down" size={16}/></>}>
     {close => <>
-      {[['day', '日', 'D'], ['week', '周', 'W'], ['month', '月', 'M']].map(([kind, title, key]) => <button type="button" role="menuitemradio" aria-checked={view.kind === kind} key={kind} onClick={() => { onChange({ kind, days: kind === 'day' ? 1 : 7 }); close(); }}><span>{title}</span><kbd>{key}</kbd></button>)}
-      <div className="cal-menu-divider"/><div className="cal-submenu-host"><button type="button" role="menuitem" aria-haspopup="menu">天数<CalendarIcon name="right" size={15}/></button>
-        <div className="cal-submenu" role="menu">{Array.from({ length: 8 }, (_, i) => i + 2).map(count => <button key={count} type="button" role="menuitemradio" aria-checked={view.kind === 'days' && view.days === count} onClick={() => { onChange({ kind: 'days', days: count }); close(); }}>{count} 天<kbd>{count}</kbd></button>)}<div className="cal-menu-divider"/><button type="button" role="menuitem" onClick={() => { setDays(view.days ?? 7); setCustom(true); close(); }}>其他…</button></div>
+      {[['day', t("日"), 'D'], ['week', t("周"), 'W'], ['month', t("月"), 'M']].map(([kind, title, key]) => <button type="button" role="menuitemradio" aria-checked={view.kind === kind} key={kind} onClick={() => { onChange({ kind, days: kind === 'day' ? 1 : 7 }); close(); }}><span>{title}</span><kbd>{key}</kbd></button>)}
+      <div className="cal-menu-divider"/><div className="cal-submenu-host"><button type="button" role="menuitem" aria-haspopup="menu">{t("天数")}<CalendarIcon name="right" size={15}/></button>
+        <div className="cal-submenu" role="menu">{Array.from({ length: 8 }, (_, i) => i + 2).map(count => <button key={count} type="button" role="menuitemradio" aria-checked={view.kind === 'days' && view.days === count} onClick={() => { onChange({ kind: 'days', days: count }); close(); }}>{count} {t("天")}<kbd>{count}</kbd></button>)}<div className="cal-menu-divider"/><button type="button" role="menuitem" onClick={() => { setDays(view.days ?? 7); setCustom(true); close(); }}>{t("其他…")}</button></div>
       </div>
     </>}
-  </CalendarMenu><CalendarOverlay present={custom}>{custom && <CalendarDialog title="自定义天数" onClose={() => setCustom(false)}><label className="cal-field">天数<input type="number" min="1" max="31" value={days} onChange={e => setDays(e.target.value)}/></label><footer><button onClick={() => setCustom(false)}>取消</button><button className="is-primary" disabled={!Number.isInteger(Number(days)) || days < 1 || days > 31} onClick={() => { onChange({ kind: 'days', days: Number(days) }); setCustom(false); }}>完成</button></footer></CalendarDialog>}</CalendarOverlay></>;
+  </CalendarMenu><CalendarOverlay present={custom}>{custom && <CalendarDialog title={t("自定义天数")} onClose={() => setCustom(false)}><label className="cal-field">{t("天数")}<input type="number" min="1" max="31" value={days} onChange={e => setDays(e.target.value)}/></label><footer><button onClick={() => setCustom(false)}>{t("取消")}</button><button className="is-primary" disabled={!Number.isInteger(Number(days)) || days < 1 || days > 31} onClick={() => { onChange({ kind: 'days', days: Number(days) }); setCustom(false); }}>{t("完成")}</button></footer></CalendarDialog>}</CalendarOverlay></>;
 }
 
 export function MiniCalendar({ month, from, to, today, onMonth, onSelect }) {
+  const { t } = useTranslation("schedule");
   const [drag, setDrag] = useState(null);
   const dragRef = useRef(null);
   const gridRef = useRef(null);
@@ -124,15 +135,15 @@ export function MiniCalendar({ month, from, to, today, onMonth, onSelect }) {
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     onSelect(selection.start < selection.end ? selection.start : selection.end, selection.start < selection.end ? selection.end : selection.start, selection.start !== selection.end);
   };
-  return <section className="cal-mini" aria-label="选择日期范围">
-    <header><MonthTitle date={`${month}-01`} icon="grid"/><div className="cal-mini-nav"><IconButton name="left" label="上个月" onClick={() => onMonth(shiftMonth(month, -1))}/><IconButton name="right" label="下个月" onClick={() => onMonth(shiftMonth(month, 1))}/></div></header>
+  return <section className="cal-mini" aria-label={t("选择日期范围")}>
+    <header><MonthTitle date={`${month}-01`} icon="grid"/><div className="cal-mini-nav"><IconButton name="left" label={t("上个月")} onClick={() => onMonth(shiftMonth(month, -1))}/><IconButton name="right" label={t("下个月")} onClick={() => onMonth(shiftMonth(month, 1))}/></div></header>
     <div className="cal-mini-grid" ref={gridRef} onPointerMove={event => {
       if (!dragRef.current) return;
       const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-date]');
       if (!cell || !gridRef.current.contains(cell)) return;
       dragRef.current = { ...dragRef.current, end: cell.dataset.date }; setDrag(dragRef.current);
     }} onPointerUp={finish} onPointerCancel={() => { dragRef.current = null; setDrag(null); }}>
-      {['一', '二', '三', '四', '五', '六', '日'].map(day => <span className="cal-mini-weekday" key={day}>{day}</span>)}
+      {Array.from({ length: 7 }, (_, index) => weekdayLabel(addDays('2024-01-01', index))).map(day => <span className="cal-mini-weekday" key={day}>{day}</span>)}
       {dates.map((date, index) => <div key={date} className={`cal-mini-cell${date >= start && date <= end ? ' in-range' : ''}${date === start || index % 7 === 0 ? ' range-start' : ''}${date === end || index % 7 === 6 ? ' range-end' : ''}`}>
         <button type="button" data-date={date} aria-label={date} aria-pressed={date >= start && date <= end} className={`${date === today ? 'is-today' : ''} ${date.slice(0, 7) !== month ? 'is-outside' : ''}`} onPointerDown={event => {
           if (event.button !== 0) return;

@@ -9,7 +9,7 @@ export function materialsError(type, status = 422, field = "", detail = "") {
     problem: { type: `/problems/materials/${type}`, field, detail },
   });
 }
-export function createJobs({ db, mutations, files, clock = () => new Date(), logger }) {
+export function createJobs({ db, mutations, files, clock = () => new Date(), logger, isAccountActive = () => true }) {
   let handlers,
     executing = false,
     closed = false,
@@ -134,13 +134,15 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
         if (!row) break;
         const principal = { accountKey: row.accountKey };
         let job = JSON.parse(row.value);
-        if (job.state === "cancelling") {
+        if (job.state === "cancelling" || !isAccountActive(row.accountKey)) {
           save(principal, { ...job, state: "cancelled", updatedAt: stamp() });
           continue;
         }
         job = save(principal, { ...job, state: "running", updatedAt: stamp() });
         const abort = new AbortController();
-        controller = { id: job.id, abort };
+        let settle;
+        const done = new Promise(resolve => { settle = resolve; });
+        controller = { id: job.id, accountKey: row.accountKey, abort, done, settle };
         let result, cleanupFailed = false;
         try {
           result = await handlers[job.kind].run({
@@ -178,7 +180,7 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
             ],
           };
         }
-        if (closed) break;
+        if (closed) { controller.settle(); break; }
         const current = get(principal, job.id);
         save(principal, {
           ...current,
@@ -186,9 +188,11 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
           state: current.state === "cancelling" && !cleanupFailed ? "cancelled" : result.state,
           updatedAt: stamp(),
         });
+        controller.settle();
         controller = undefined;
       }
     } finally {
+      controller?.settle();
       executing = false;
     }
   }
@@ -230,6 +234,19 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
     );
   }
   return {
+    async cancelAccountAndWait(accountKey) {
+      // Revocation is already durable before this call. Queued work must never
+      // enter a handler, including after a server restart.
+      db.transaction(() => {
+        for (const row of db.prepare('SELECT value FROM materials_jobs WHERE accountKey=?').all(accountKey)) {
+          const job = JSON.parse(row.value);
+          if (active.has(job.state)) save({ accountKey }, { ...job,
+            state: controller?.id === job.id ? 'cancelling' : 'cancelled', updatedAt: stamp() });
+        }
+      })();
+      const current = controller?.accountKey === accountKey ? controller : null;
+      if (current) { current.abort.abort(); await current.done; }
+    },
     enqueue,
     get,
     list,

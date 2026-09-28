@@ -1,3 +1,6 @@
+const t = (key, options) => i18n.t(key, { ns: 'auth', ...options });
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n/index.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import BrandMark from './BrandMark.jsx';
 import PasswordToggle from './PasswordToggle.jsx';
@@ -13,35 +16,35 @@ import {
 
 const MODE_COPY = {
   login: {
-    title: '登录',
-    submit: '登录',
-    pending: '登录中',
-    switchText: '还没有账户？',
-    switchAction: '创建账户',
+    get title() { return t("登录"); },
+    get submit() { return t("登录"); },
+    get pending() { return t("登录中"); },
+    get switchText() { return t("还没有账户？"); },
+    get switchAction() { return t("创建账户"); },
     switchMode: 'register',
   },
   register: {
-    title: '注册',
-    submit: '注册',
-    pending: '注册中',
-    switchText: '已经有账户？',
-    switchAction: '登录',
+    get title() { return t("注册"); },
+    get submit() { return t("注册"); },
+    get pending() { return t("注册中"); },
+    get switchText() { return t("已经有账户？"); },
+    get switchAction() { return t("登录"); },
     switchMode: 'login',
   },
   'recovery-request': {
-    title: '找回密码',
-    submit: '发送验证码',
-    pending: '发送中',
-    switchText: '想起密码了？',
-    switchAction: '返回登录',
+    get title() { return t("找回密码"); },
+    get submit() { return t("发送验证码"); },
+    get pending() { return t("发送中"); },
+    get switchText() { return t("想起密码了？"); },
+    get switchAction() { return t("返回登录"); },
     switchMode: 'login',
   },
   'recovery-confirm': {
-    title: '设置新密码',
-    submit: '重置密码',
-    pending: '提交中',
+    get title() { return t("设置新密码"); },
+    get submit() { return t("重置密码"); },
+    get pending() { return t("提交中"); },
     switchText: '',
-    switchAction: '返回登录',
+    get switchAction() { return t("返回登录"); },
     switchMode: 'login',
   },
 };
@@ -58,6 +61,7 @@ function emptyChallenge() {
 }
 
 export default function AuthSurface() {
+  const { t } = useTranslation('auth');
   const auth = useInternalAuth();
   const [mode, setMode] = useState('login');
   const [name, setName] = useState('');
@@ -271,7 +275,7 @@ export default function AuthSurface() {
       if (result.cooldown) {
         setResendAt(serverNow() + result.cooldown.retryAfterSeconds * 1000);
         setBanner({
-          message: `请 ${result.cooldown.retryAfterSeconds} 秒后再重新发送。`,
+          message: t("请 {{count}} 秒后再重新发送。", { count: result.cooldown.retryAfterSeconds }),
           tone: 'error',
         });
         return;
@@ -284,7 +288,7 @@ export default function AuthSurface() {
 
   async function submitLogin() {
     if (!checkEmail(email)) return;
-    if (!checkPassword(password, '密码')) return;
+    if (!checkPassword(password, t("密码"))) return;
     clearMessages();
     const id = begin('submit');
     try {
@@ -304,7 +308,7 @@ export default function AuthSurface() {
       return;
     }
     if (!checkNickname(name)) return;
-    if (!checkPassword(password, '密码')) return;
+    if (!checkPassword(password, t("密码"))) return;
     if (password !== passwordConfirmation) {
       fail('confirmation', COPY.confirmationMismatch);
       return;
@@ -347,7 +351,7 @@ export default function AuthSurface() {
       fail('code', COPY.codeShape);
       return;
     }
-    if (!checkPassword(password, '新密码')) return;
+    if (!checkPassword(password, t("新密码"))) return;
     if (password !== passwordConfirmation) {
       fail('confirmation', COPY.confirmationMismatch);
       return;
@@ -420,10 +424,10 @@ export default function AuthSurface() {
 
   const codeNote = useMemo(() => {
     if (!codeSent) return null;
-    const label = codeExpired ? '验证码已过期，请重新发送' : `验证码已发送至 ${codeEmail}，${minutesLeft} 分钟内有效`;
+    const label = codeExpired ? t("验证码已过期，请重新发送") : t("验证码已发送至 {{email}}，{{count}} 分钟内有效", { email: codeEmail, count: minutesLeft });
     return { label, address: codeEmail, long: codeEmail.length > 64, expired: codeExpired };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [codeSent, codeEmail, codeExpired, minutesLeft, tick]);
+  }, [codeSent, codeEmail, codeExpired, minutesLeft, tick, t]);
 
   function renderCodeNote() {
     if (!codeNote) return null;
@@ -432,8 +436,8 @@ export default function AuthSurface() {
     }
     return (
       <small className="ae-field-note is-long-address" aria-label={codeNote.label}>
-        <span className="ae-code-note-label">{codeNote.expired ? '验证码已过期，' : '验证码已发送至'}</span>
-        <span className="ae-code-note-expiry">{codeNote.expired ? '请重新发送' : `${minutesLeft} 分钟内有效`}</span>
+        <span className="ae-code-note-label">{codeNote.expired ? t("验证码已过期，") : t("验证码已发送至")}</span>
+        <span className="ae-code-note-expiry">{codeNote.expired ? t("请重新发送") : t("{{count}} 分钟内有效", { count: minutesLeft })}</span>
         <span className="ae-code-note-address" title={codeNote.address} aria-label={codeNote.address}>{codeNote.address}</span>
       </small>
     );
@@ -455,7 +459,7 @@ export default function AuthSurface() {
             id="ae-code"
             inputMode="numeric"
             autoComplete="one-time-code"
-            placeholder={isRegistration ? '例如 309614' : '例如 841207'}
+            placeholder={isRegistration ? t("例如 309614") : t("例如 841207")}
             value={verificationCode}
             onChange={(event) => edit(setVerificationCode, event.target.value)}
           />
@@ -465,12 +469,12 @@ export default function AuthSurface() {
             onClick={() => sendCode(isRegistration ? 'registration' : 'password-reset')}
             disabled={secondsLeft > 0 || busy === 'code'}
           >
-            {busy === 'code' ? '发送中' : secondsLeft > 0 ? `${secondsLeft}s 后重发` : '重新发送'}
+            {busy === 'code' ? t("发送中") : secondsLeft > 0 ? t("{{count}}s 后重发", { count: secondsLeft }) : t("重新发送")}
           </button>
         </div>
         {renderCodeNote()}
         {isRecoveryConfirm && (
-          <small className="ae-field-hint">没有收到验证码？冷却结束后可以重新发送，也可以更换邮箱。</small>
+          <small className="ae-field-hint">{t("没有收到验证码？冷却结束后可以重新发送，也可以更换邮箱。")}</small>
         )}
         {fieldErrorFor('code')}
       </div>
@@ -486,27 +490,27 @@ export default function AuthSurface() {
           </header>
           <div className="ae-card">
             <div className="ae-card-head">
-              <h1>保存登录状态</h1>
+              <h1>{t("保存登录状态")}</h1>
             </div>
             {activeNotice && (
               <div className={`ae-notice is-${activeNotice.tone || 'error'}`} role={activeNotice.tone === 'error' ? 'alert' : 'status'}>
                 <span>{activeNotice.message}</span>
-                <button className="ae-notice-dismiss" type="button" aria-label="关闭提示" onClick={onNoticeDismiss}>×</button>
+                <button className="ae-notice-dismiss" type="button" aria-label={t("关闭提示")} onClick={onNoticeDismiss}>×</button>
               </div>
             )}
             <div className="ae-session-recovery">
               <p>
-                {auth.pending?.origin === 'register' ? '账户已创建，但登录状态未能保存。' : '登录已完成，但登录状态未能保存。'}
-                继续当前会话可以立即进入工作台，也可以重试保存登录状态。
+                {auth.pending?.origin === 'register' ? t("账户已创建，但登录状态未能保存。") : t("登录已完成，但登录状态未能保存。")}
+                {t("继续当前会话可以立即进入工作台，也可以重试保存登录状态。")}
               </p>
               <button className="ae-primary" type="button" onClick={() => runPendingCommand(auth.continuePending)} disabled={busy === 'submit'}>
-                {busy === 'submit' ? '处理中' : '继续进入工作台'}
+                {busy === 'submit' ? t("处理中") : t("继续进入工作台")}
               </button>
               <button className="ae-send is-block" type="button" onClick={() => runPendingCommand(auth.retryPersist)} disabled={busy === 'submit'}>
-                重试保存登录状态
+                {t("重试保存登录状态")}
               </button>
               <button className="ae-text-action ae-recovery-return" type="button" onClick={() => switchMode('login')}>
-                返回登录
+                {t("返回登录")}
               </button>
             </div>
           </div>
@@ -533,7 +537,7 @@ export default function AuthSurface() {
               role={activeNotice.tone === 'error' ? 'alert' : 'status'}
             >
               <span>{activeNotice.message}</span>
-              <button className="ae-notice-dismiss" type="button" aria-label="关闭提示" onClick={onNoticeDismiss}>×</button>
+              <button className="ae-notice-dismiss" type="button" aria-label={t("关闭提示")} onClick={onNoticeDismiss}>×</button>
             </div>
           )}
 
@@ -541,7 +545,7 @@ export default function AuthSurface() {
             <div className="ae-closed-state">
               <p>{COPY.registrationClosed}</p>
               <button className="ae-send is-block" type="button" onClick={() => switchMode('login')}>
-                返回登录
+                {t("返回登录")}
               </button>
             </div>
           ) : (
@@ -549,7 +553,7 @@ export default function AuthSurface() {
               {isRegistration && (
                 <div className={`ae-field${fieldError.field === 'name' ? ' has-error' : ''}`}>
                   <div className="ae-field-head">
-                    <label htmlFor="ae-name">昵称</label>
+                    <label htmlFor="ae-name">{t("昵称")}</label>
                     <small className="ae-field-count">{codePointLength(name.trim())}/40</small>
                   </div>
                   <input
@@ -564,7 +568,7 @@ export default function AuthSurface() {
 
               <div className={`ae-field${fieldError.field === 'email' ? ' has-error' : ''}`}>
                 <div className="ae-field-head">
-                  <label htmlFor="ae-email">邮箱</label>
+                  <label htmlFor="ae-email">{t("邮箱")}</label>
                 </div>
                 {isRecoveryConfirm ? (
                   <input
@@ -593,8 +597,8 @@ export default function AuthSurface() {
                 )}
                 {isRecoveryConfirm && (
                   <small className="ae-field-hint">
-                    验证码只对这个地址有效，
-                    <button type="button" className="ae-inline-action" onClick={changeRecoveryEmail}>更换邮箱</button>
+                    {t("验证码只对这个地址有效，")}
+                    <button type="button" className="ae-inline-action" onClick={changeRecoveryEmail}>{t("更换邮箱")}</button>
                   </small>
                 )}
                 {fieldErrorFor('email')}
@@ -608,23 +612,23 @@ export default function AuthSurface() {
                     onClick={() => sendCode('registration')}
                     disabled={secondsLeft > 0 || busy === 'code'}
                   >
-                    {busy === 'code' ? '发送中' : secondsLeft > 0 ? `${secondsLeft}s 后重发` : '发送验证码'}
+                    {busy === 'code' ? t("发送中") : secondsLeft > 0 ? t("{{count}}s 后重发", { count: secondsLeft }) : t("发送验证码")}
                   </button>
                   {fieldErrorFor('code')}
                 </div>
               )}
 
-              {isRegistration && codeSent && renderCodeField('邮箱验证码')}
-              {isRecoveryConfirm && codeSent && renderCodeField('验证码')}
+              {isRegistration && codeSent && renderCodeField(t("邮箱验证码"))}
+              {isRecoveryConfirm && codeSent && renderCodeField(t("验证码"))}
 
               {!isRecoveryRequest && (
                 <div className={`ae-field${fieldError.field === 'password' ? ' has-error' : ''}`}>
                   <div className="ae-field-head">
-                    <label htmlFor="ae-password">{isRecoveryConfirm ? '新密码' : '密码'}</label>
+                    <label htmlFor="ae-password">{isRecoveryConfirm ? t("新密码") : t("密码")}</label>
                     <small className="ae-field-count">{codePointLength(password)}/128</small>
                     {mode === 'login' && (
                       <button className="ae-text-action" type="button" onClick={() => switchMode('recovery-request')}>
-                        忘记密码？
+                        {t("忘记密码？")}
                       </button>
                     )}
                   </div>
@@ -633,7 +637,7 @@ export default function AuthSurface() {
                       id="ae-password"
                       type={passwordVisible ? 'text' : 'password'}
                       autoComplete={isRegistration || isRecoveryConfirm ? 'new-password' : 'current-password'}
-                      placeholder="至少 8 位"
+                      placeholder={t("至少 8 位")}
                       value={password}
                       onChange={(event) => edit(setPassword, event.target.value)}
                     />
@@ -649,7 +653,7 @@ export default function AuthSurface() {
               {(isRegistration || isRecoveryConfirm) && (
                 <div className={`ae-field${fieldError.field === 'confirmation' ? ' has-error' : ''}`}>
                   <div className="ae-field-head">
-                    <label htmlFor="ae-password-confirmation">{isRegistration ? '确认密码' : '确认新密码'}</label>
+                    <label htmlFor="ae-password-confirmation">{isRegistration ? t("确认密码") : t("确认新密码")}</label>
                   </div>
                   <input
                     id="ae-password-confirmation"
@@ -665,7 +669,7 @@ export default function AuthSurface() {
               {mode === 'login' && (
                 <label className="ae-check">
                   <input type="checkbox" checked={remember} onChange={(event) => edit(setRemember, event.target.checked)} />
-                  <span>记住我</span>
+                  <span>{t("记住我")}</span>
                 </label>
               )}
 
@@ -673,9 +677,9 @@ export default function AuthSurface() {
                 <label className={`ae-check is-terms${fieldError.field === 'agreed' ? ' has-error' : ''}`}>
                   <input type="checkbox" checked={agreed} onChange={(event) => edit(setAgreed, event.target.checked)} />
                   <span>
-                    注册即表示同意
+                    {t("注册即表示同意")}
                     {' '}
-                    <a href="#terms" onClick={(event) => event.preventDefault()}>服务条款</a>
+                    <a href="#terms" onClick={(event) => event.preventDefault()}>{t("服务条款")}</a>
                     {fieldErrorFor('agreed')}
                   </span>
                 </label>
@@ -687,23 +691,23 @@ export default function AuthSurface() {
                 disabled={busy !== '' || (isRecoveryRequest && secondsLeft > 0)}
                 aria-busy={busy !== ''}
               >
-                {busy ? copy.pending : isRecoveryRequest && secondsLeft > 0 ? `${secondsLeft}s 后重发` : copy.submit}
+                {busy ? copy.pending : isRecoveryRequest && secondsLeft > 0 ? t("{{count}}s 后重发", { count: secondsLeft }) : copy.submit}
               </button>
             </form>
           )}
         </div>
 
         <p className="ae-switch">
-          {closed ? '已经有账户？' : copy.switchText}
+          {closed ? t("已经有账户？") : copy.switchText}
           {' '}
           <button type="button" onClick={() => switchMode(closed ? 'login' : copy.switchMode)}>
-            {closed ? '登录' : copy.switchAction}
+            {closed ? t("登录") : copy.switchAction}
           </button>
         </p>
         {!isRegistration && (
           <p className="ae-help">
-            登录遇到问题？邮箱联系管理员：
-            <a href="mailto:example@example.com">example@example.com</a>（请一并发送故障截图）
+            {t("登录遇到问题？邮箱联系管理员：")}
+            <a href="mailto:example@example.com">example@example.com</a>{t("（请一并发送故障截图）")}
           </p>
         )}
       </div>

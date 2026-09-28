@@ -1,3 +1,5 @@
+import i18n from '../../i18n/index.js';
+const t = (key, options) => i18n.t(key, { ns: 'lessons', ...options });
 /**
  * In-lesson picking flow (U5): save the draft, keep the target and selection in
  * the scene, add the batch through the normal save lifecycle, and handle a target
@@ -58,7 +60,7 @@ export function useLessonPickerFlow({
     setTargetGone(false);
     setConflict(false);
     if (savable.pending) {
-      setProblem({ message: "先确认上一次保存结果，再进入取题" });
+      setProblem({ message: t("先确认上一次保存结果，再进入取题") });
       return;
     }
     setEntering(true);
@@ -67,13 +69,13 @@ export function useLessonPickerFlow({
       const saved = await savable.save();
       if (!saved) {
         setEntering(false);
-        setProblem({ message: "当前备课未能保存，先处理保存问题再取题" });
+        setProblem({ message: t("当前备课未能保存，先处理保存问题再取题") });
         return;
       }
       lessonId = saved.id;
       if (isNew && !savable.checkpoint(lessonId, { move: true })) {
         setEntering(false);
-        setProblem({ message: "无法保留备课现场，请检查浏览器存储后再取题" });
+        setProblem({ message: t("无法保留备课现场，请检查浏览器存储后再取题") });
         return;
       }
     }

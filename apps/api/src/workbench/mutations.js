@@ -34,7 +34,7 @@ export function requestFingerprint({ method, path, body }) {
     .digest('hex');
 }
 
-export function createMutations({ db, clock = () => new Date() }) {
+export function createMutations({ db, clock = () => new Date(), assertAccountActive = () => {} }) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS workbench_mutation_keys (
       accountKey TEXT NOT NULL,
@@ -76,6 +76,7 @@ export function createMutations({ db, clock = () => new Date() }) {
     }
 
     const requestHash = requestFingerprint({ method, path, body });
+    assertAccountActive(principal);
     const existing = selectStatement.get(accountKey, key);
     if (existing) {
       if (existing.method !== method || existing.path !== path || existing.requestHash !== requestHash) {
@@ -85,6 +86,7 @@ export function createMutations({ db, clock = () => new Date() }) {
     }
 
     const transaction = db.transaction(() => {
+      assertAccountActive(principal);
       const result = write();
       if (result && typeof result.then === 'function') {
         throw new Error('A workbench write callback must be synchronous.');
@@ -112,6 +114,7 @@ export function createMutations({ db, clock = () => new Date() }) {
 
   return {
     execute,
+    assertAccountActive,
 
     /** Test/diagnostic helper: number of confirmed requests for one account. */
     count(accountKey) {

@@ -1,3 +1,5 @@
+import i18n from "../../i18n/index.js";
+import { useTranslation } from 'react-i18next';
 import RestoredHome from './chrome/Home.jsx';
 import RestoredSidebar, { useLayoutModel } from './chrome/Sidebar.jsx';
 import RestoredTopbar from './chrome/Topbar.jsx';
@@ -21,7 +23,7 @@ import { ShellContext, useWorkbenchShell } from './shellContext.js';
 import { useScene } from './useScene.js';
 import { followAnchor, navigate, useRoute } from './routes.js';
 import { WorkbenchSettings } from './WorkbenchSettings.jsx';
-import { workbenchModules } from '../modules/moduleRegistry.js';
+import { workbenchModules, moduleDisplayName } from '../modules/moduleRegistry.js';
 import { workbenchGet } from './apiClient.js';
 import './workbench.css';
 import './appearance.css';
@@ -40,21 +42,24 @@ function useIsNarrow() {
 }
 
 function NotFound() {
+  const { t } = useTranslation("workbench");
   const destination = workbenchModules.find(module => module.navigation === 'sidebar');
   const path = destination?.path || '/';
   return (
     <div className="wb-page wb-not-found" data-region="not-found">
-      <p>未找到内容</p>
-      <a className="wb-button" href={path} onClick={(event) => followAnchor(event, path)}>返回{destination?.name || '首页'}</a>
+      <p>{t("未找到内容")}</p>
+      <a className="wb-button" href={path} onClick={(event) => followAnchor(event, path)}>{t("返回")}{moduleDisplayName(destination) || t("首页")}</a>
     </div>
   );
 }
 
 export default function WorkbenchApp({ boot }) {
+  useTranslation("workbench");
   return <AgentProvider key={boot.accountKey} accountKey={boot.accountKey}><WorkbenchContent boot={boot} /></AgentProvider>;
 }
 
 function WorkbenchContent({ boot }) {
+  const { t } = useTranslation("workbench");
   const agent = useAgent();
   const { logout, accountKey, nickname, generation, storageFailed, reportIdentityLost, transport } = boot;
   const route = useRoute();
@@ -63,6 +68,9 @@ function WorkbenchContent({ boot }) {
   const preferences = usePreferences(accountKey, generation);
   const appearance = useMemo(() => ({ theme: 'light', background: 'grid', avatar: '', ...preferences.input }), [preferences.input]);
   const setAppearance = useCallback(patch => preferences.setInput(values => ({ ...values, ...patch })), [preferences.setInput]);
+  const locale = preferences.input?.locale || 'zh-CN';
+  const setLocale = useCallback(locale => preferences.setInput(values => ({ ...values, locale })), [preferences.setInput]);
+  useLayoutEffect(() => { void i18n.changeLanguage(locale); }, [locale]);
   useEffect(() => {
     if (preferences.status === 'dirty' && preferences.baseline) void preferences.save();
   }, [preferences.status, preferences.input, preferences.baseline, preferences.save]);
@@ -107,6 +115,7 @@ function WorkbenchContent({ boot }) {
   const shell = useMemo(() => ({
     logout,
     preferences,
+    locale, setLocale,
     appearance, setAppearance,
     resetDeviceScene: boot.resetDeviceScene, deviceClearNotice: boot.deviceClearNotice,
     accountKey,
@@ -134,7 +143,7 @@ function WorkbenchContent({ boot }) {
     },
     openMaterialSource: (path, lessonPath) => { setMaterialNavigation({ sourcePath: path, lessonPath }); navigate(path); }
   }), [logout, accountKey, nickname, generation, agent.businessRevision, storageFailed, narrow, scene.panelMode, scene.panelOpen, scene.panelWidth,
-    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, timeZoneError, preferences, appearance, setAppearance]);
+    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, timeZoneError, preferences, appearance, setAppearance, locale, setLocale]);
 
   const collapsed = narrow ? !scene.drawerOpen : Boolean(scene.sidebarCollapsed);
   const hasPanel = Boolean(activeModule?.auxiliaryPanel);
@@ -193,21 +202,19 @@ function WorkbenchContent({ boot }) {
             onOpenSurface={setSurface} onCloseSurface={() => setSurface(null)} />
           <div className="wb-workspace">
             <main className="wb-main" data-region="main">
-              {boot.recoveryChanged && <div className="wb-storage-warning" role="status">工作台已从备份恢复。</div>}
+              {boot.recoveryChanged && <div className="wb-storage-warning" role="status">{t("工作台已从备份恢复。")}</div>}
               {recoveryNotice && <div className="wb-recovery-notice" role="status">
-                <span>已恢复本设备的未保存输入，请检查后继续。</span>
-                <button className="wb-icon-button" aria-label="关闭恢复提示" onClick={() => setRecoveryNotice(false)}><Icon name="close" size={14} /></button>
+                <span>{t("已恢复本设备的未保存输入，请检查后继续。")}</span>
+                <button className="wb-icon-button" aria-label={t("关闭恢复提示")} onClick={() => setRecoveryNotice(false)}><Icon name="close" size={14} /></button>
               </div>}
               {storageFailed && (
-                <div className="wb-storage-warning" role="alert" data-region="storage-warning">
-                  草稿无法保留，请先保存
-                </div>
+                <div className="wb-storage-warning" role="alert" data-region="storage-warning"> {t("草稿无法保留，请先保存")} </div>
               )}
               {materialNavigation.sourcePath === route.path + window.location.search && materialNavigation.lessonPath && (
-                <div className="wb-material-return"><button className="wb-button" onClick={() => navigate(materialNavigation.lessonPath)}>返回备课现场</button></div>
+                <div className="wb-material-return"><button className="wb-button" onClick={() => navigate(materialNavigation.lessonPath)}>{t("返回备课现场")}</button></div>
               )}
               {materialNavigation.questionUsage?.lessonPath === route.path && (
-                <div className="wb-material-return"><button className="wb-button" onClick={() => navigate(materialNavigation.questionUsage.sourcePath)}>返回题库现场</button></div>
+                <div className="wb-material-return"><button className="wb-button" onClick={() => navigate(materialNavigation.questionUsage.sourcePath)}>{t("返回题库现场")}</button></div>
               )}
               {page}
             </main>

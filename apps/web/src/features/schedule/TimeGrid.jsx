@@ -1,16 +1,21 @@
+import i18n from "../../i18n/index.js";
+import { useTranslation } from 'react-i18next';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
+import zhCnLocale from '@fullcalendar/core/locales/zh-cn';
+import { formatDateLabel, weekdayLabel } from './model.js';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { addDays, eventOf, formatClock, monday, shiftMonth, weekday } from './calendarModel.js';
+import { addDays, eventOf, formatClock, monday, shiftMonth } from './calendarModel.js';
 import { localParts } from './zoned.js';
 
 const plugins = [timeGridPlugin, dayGridPlugin, interactionPlugin];
-const weekNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
 
 export default function TimeGrid({ view, anchor, zone, occurrences, labels, selected, onSelect, onOpen, onMove, onRange, onDay,
   scroll, monthScroll, onScroll, onMonthScroll, disabled }) {
+  const { t } = useTranslation("schedule");
   const ref = useRef(null);
   const host = useRef(null);
   const callbacks = useRef({ onRange, onScroll, onMonthScroll });
@@ -23,7 +28,7 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
   const restoreScroll = useRef(null);
   const visible = useMemo(() => month ? extended?.key === monthStart ? extended.range : { start: addDays(monday(monthStart), -28), end: addDays(monday(`${shiftMonth(anchor.slice(0, 7), 1)}-01`), 42) } : undefined, [month, monthStart, extended]);
   const visibleRef = useRef(visible); visibleRef.current = visible;
-  const events = useMemo(() => occurrences.map(value => eventOf(value, zone, labels)), [occurrences, zone, labels]);
+  const events = useMemo(() => occurrences.map(value => eventOf(value, zone, labels)), [occurrences, zone, labels, i18n.resolvedLanguage]);
   const todayParts = localParts(zone, Date.now());
   useEffect(() => { if (!selected || selected.id) ref.current?.getApi().unselect(); }, [selected?.id, selected?.clientId]);
   useEffect(() => {
@@ -74,21 +79,21 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
     return () => cancelAnimationFrame(frame);
   }, [visible]);
   return <div className={`cal-grid-wrap${month ? ' is-month' : ''}`} ref={host} data-region="time-grid">
-    <FullCalendar ref={ref} key={`${kind}:${month ? monthStart : view.days}`} plugins={plugins} initialView={kind} initialDate={anchor}
+    <FullCalendar ref={ref} key={`${kind}:${month ? monthStart : view.days}`} plugins={plugins} locales={[zhCnLocale]} locale={i18n.resolvedLanguage?.startsWith("zh") ? "zh-cn" : "en"} initialView={kind} initialDate={anchor}
       views={{ calendarDays: { type: 'timeGrid', duration: { days: view.days || 7 } }, calendarMonth: { type: 'dayGrid' } }}
       visibleRange={visible} height={month ? 'auto' : '100%'} headerToolbar={false} firstDay={1} timeZone="UTC"
       now={`${todayParts.date}T${formatClock(todayParts.minutes)}:00Z`} nowIndicator={!month}
       slotDuration="00:15:00" snapDuration="00:05:00" slotLabelInterval="01:00" scrollTime="00:00:00" scrollTimeReset={false}
       slotLabelFormat={{ hour: 'numeric', meridiem: 'short', omitZeroMinute: true }}
-      slotLabelContent={arg => `${arg.date.getUTCHours() % 12 || 12} ${arg.date.getUTCHours() < 12 ? 'AM' : 'PM'}`}
+      slotLabelContent={arg => new Intl.DateTimeFormat(i18n.resolvedLanguage, { hour: 'numeric', timeZone: 'UTC' }).format(arg.date)}
       eventTimeFormat={{ hour: 'numeric', minute: '2-digit', meridiem: false, omitZeroMinute: false }}
       allDayText="" allDaySlot allDayMaintainDuration={false} eventResizableFromStart editable={!disabled} selectable={!disabled}
       selectMirror={false} selectMinDistance={3} longPressDelay={250} eventDragMinDistance={5} dragRevertDuration={180}
-      unselectAuto={false} eventDisplay="block" dayMaxEvents={month} moreLinkText={n => `还有 ${n} 项`}
+      unselectAuto={false} eventDisplay="block" dayMaxEvents={month} moreLinkText={n => t("还有 {{n}} 项", { n: n })}
       events={events} eventClassNames={info => selected && info.event.extendedProps.occurrence?.key.entryId === selected.id &&
         (info.event.extendedProps.occurrence?.key.originDate ?? null) === (selected.origin ?? null) ? ['is-selected'] : []}
-      dayHeaderContent={arg => <span className="cal-day-heading"><span>{weekNames[weekday(arg.date.toISOString().slice(0, 10))]}</span>{!month && <button type="button" className={arg.isToday ? 'is-today' : ''} aria-label={`查看 ${arg.date.toISOString().slice(0, 10)}`} onClick={() => onDay(arg.date.toISOString().slice(0, 10))}>{arg.date.getUTCDate()}</button>}</span>}
-      dayCellContent={arg => month ? <span className={arg.isToday ? 'cal-today-dot' : ''}>{arg.date.getUTCDate() === 1 ? `${arg.date.getUTCMonth() + 1}月 1` : arg.date.getUTCDate()}</span> : null}
+      dayHeaderContent={arg => <span className="cal-day-heading"><span>{weekdayLabel(arg.date.toISOString().slice(0, 10))}</span>{!month && <button type="button" className={arg.isToday ? 'is-today' : ''} aria-label={t("查看 {{value}}", { value: arg.date.toISOString().slice(0, 10) })} onClick={() => onDay(arg.date.toISOString().slice(0, 10))}>{arg.date.getUTCDate()}</button>}</span>}
+      dayCellContent={arg => month ? <span className={arg.isToday ? 'cal-today-dot' : ''}>{arg.date.getUTCDate() === 1 ? formatDateLabel(arg.date.toISOString().slice(0, 10)) : arg.date.getUTCDate()}</span> : null}
       dayCellClassNames={arg => month && arg.date.toISOString().slice(0, 7) !== anchor.slice(0, 7) ? ['cal-outside-month'] : []}
       eventContent={info => <div className={`cal-event-content${month || info.event.allDay ? ' is-compact' : ''}`}>
         {month || info.event.allDay ? <i style={{ background: info.event.extendedProps.color }}/> : <span className="cal-event-time">{info.timeText.replace('–', ' - ')}</span>}

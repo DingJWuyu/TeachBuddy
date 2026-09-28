@@ -10,7 +10,7 @@ export const preferenceMigrations = [{ moduleId: 'reliability-preferences', migr
   )`); }
 }] }];
 
-const defaults = { readingSize: 'standard', motion: 'system', externalAi: 'deepseek', theme: 'light', background: 'grid', avatar: '' };
+const defaults = { readingSize: 'standard', motion: 'system', externalAi: 'deepseek', theme: 'light', background: 'grid', avatar: '', locale: 'zh-CN' };
 function validate(body, request) {
   if (Object.keys(request.query).length) throw invalidInput('/query', 'unknown-field');
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw invalidInput('/', 'invalid-type');
@@ -22,7 +22,7 @@ function validate(body, request) {
   for (const [name, choices] of Object.entries({ readingSize: ['standard', 'large'], motion: ['system', 'reduce'], externalAi: ['deepseek', 'doubao'] })) {
     if (!choices.includes(values[name])) throw invalidInput(`/values/${name}`, 'out-of-range');
   }
-  for (const [name, choices] of Object.entries({ theme: ['light', 'dark'], background: ['grid', 'parchment', 'circles', 'stripes'] })) {
+  for (const [name, choices] of Object.entries({ theme: ['light', 'dark'], background: ['grid', 'parchment', 'circles', 'stripes'], locale: ['zh-CN', 'en'] })) {
     if (Object.hasOwn(values, name) && !choices.includes(values[name])) throw invalidInput(`/values/${name}`, 'out-of-range');
   }
   if (Object.hasOwn(values, 'avatar') && (typeof values.avatar !== 'string' || values.avatar.length > 131072)) throw invalidInput('/values/avatar', 'out-of-range');

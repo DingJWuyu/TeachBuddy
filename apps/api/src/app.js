@@ -46,6 +46,7 @@ export function createApp(options = {}) {
         throw new Error('The preconstructed workbench must use the same single trusted HTTPS origin as createApp.');
       }
       workbench.identity.resolvePrincipal = runtimeEnv.workbench.resolvePrincipal;
+      workbench.identity.isAccountActive = accountKey => authModule?.isAccountActive(accountKey) ?? false;
     }
     dataStore = options.dataStore ?? createDataStore(runtimeEnv, { db: workbench.db });
     if (!testIdentity) {
@@ -60,7 +61,8 @@ export function createApp(options = {}) {
         codeSecret: runtimeEnv.authCodeSecret,
         isRegistrationOpen: () => runtimeEnv.registrationOpen,
         sendCode: options.sendCode ?? createAuthCodeSender(runtimeEnv),
-        now: options.now
+        now: options.now,
+        deleteAccountData: input => workbench.deleteAccountData(input),
       });
     }
   } catch (error) {

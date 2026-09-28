@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 /**
  * "加入备课" from the question bank: pick an existing lesson or create one, pick
@@ -17,6 +18,7 @@ import { excerptFor } from '../workbench/documents.js';
 const MATERIALS = { type: 'materials', sectionId: null };
 
 export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOpenLesson }) {
+  const { t } = useTranslation("questions");
   const dialogRef = useRef(null);
   useModuleDialogFocus(dialogRef, onClose);
   const [lessons, setLessons] = useState([]);
@@ -36,7 +38,7 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
     let cancelled = false;
     listLessons({ state: 'active' })
       .then((items) => { if (!cancelled) setLessons(items); })
-      .catch((error) => { if (!cancelled) setLoadError(error.problem || { message: '无法加载备课列表' }); });
+      .catch((error) => { if (!cancelled) setLoadError(error.problem || { message: t("无法加载备课列表") }); });
     return () => { cancelled = true; };
   }, []);
 
@@ -48,7 +50,7 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
       setLesson(full);
       setTarget(MATERIALS);
     } catch (error) {
-      setLoadError(error.problem || { message: '无法读取备课' });
+      setLoadError(error.problem || { message: t("无法读取备课") });
     }
   }
 
@@ -79,7 +81,7 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
     const payload = addSubmit.pending?.payload
       ?? appendReferencesToLesson(lessonObject, position, plan.inputs);
     if (!payload) {
-      setLoadError({ message: '目标环节已不存在' });
+      setLoadError({ message: t("目标环节已不存在") });
       return;
     }
     const saved = await addSubmit.submit(
@@ -119,26 +121,25 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
   const busy = createSubmit.isRunning || addSubmit.isRunning || creating;
   const problem = addSubmit.problem || createSubmit.problem || loadError;
   const targetLabel = target.type === 'materials'
-    ? '本课材料'
-    : (lesson?.sections || []).find((section) => section.id === target.sectionId)?.title || '环节';
+    ? t("本课材料")
+    : (lesson?.sections || []).find((section) => section.id === target.sectionId)?.title || t("环节");
 
   return (
     <div className="wb-module wb-dialog-host" data-overlay="dialog">
       <div className="wb-dialog-scrim" onClick={onClose} role="presentation" />
-      <div ref={dialogRef} className="wb-dialog wb-add-dialog" role="dialog" aria-modal="true" aria-label="加入备课">
+      <div ref={dialogRef} className="wb-dialog wb-add-dialog" role="dialog" aria-modal="true" aria-label={t("加入备课")}>
         <header className="wb-dialog-head">
-          <h2>加入备课</h2>
-          <button type="button" className="wb-icon-button" aria-label="关闭" onClick={onClose}>
+          <h2>{t("加入备课")}</h2>
+          <button type="button" className="wb-icon-button" aria-label={t("关闭")} onClick={onClose}>
             <Icon name="close" />
           </button>
         </header>
 
         {result ? (
           <div className="wb-add-result" data-region="add-result">
-            <p>已加入「{result.title}」 · {targetLabel}</p>
+            <p>{t("已加入「")}{result.title}」 · {targetLabel}</p>
             {skipped.length > 0 && (
-              <p className="wb-muted" data-region="add-skipped">
-                已在此处，跳过：{skipped.map((item) => excerptFor(item.title, item.body, 16)).join('、')}
+              <p className="wb-muted" data-region="add-skipped"> {t("已在此处，跳过：")}{skipped.map((item) => excerptFor(item.title, item.body, 16)).join('、')}
               </p>
             )}
             <div className="wb-dialog-actions">
@@ -147,14 +148,14 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
                 event.preventDefault();
                 const reference = targetReferences(result, target).find((item) => questions.some((question) => question.id === item.questionId));
                 onOpenLesson(result.id, reference?.id, "add-to-lesson");
-              }}>前往备课</a>
-              <button type="button" className="wb-button is-primary" onClick={onClose}>留在题库</button>
+              }}>{t("前往备课")}</a>
+              <button type="button" className="wb-button is-primary" onClick={onClose}>{t("留在题库")}</button>
             </div>
           </div>
         ) : (
           <>
             <div className="wb-dialog-section">
-              <h3>目标备课</h3>
+              <h3>{t("目标备课")}</h3>
               {lessons.length > 0 && (
                 <ul className="wb-choice-list" data-region="lesson-choices">
                   {lessons.map((item) => (
@@ -174,8 +175,8 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
               <div className="wb-new-lesson">
                 <input
                   className="wb-input"
-                  aria-label="新备课课题"
-                  placeholder="新建备课"
+                  aria-label={t("新备课课题")}
+                  placeholder={t("新建备课")}
                   value={newTitle}
                   onChange={(event) => setNewTitle(event.target.value)}
                 />
@@ -184,15 +185,13 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
                   className="wb-button"
                   disabled={!newTitle.trim() || busy}
                   onClick={createTargetLesson}
-                >
-                  新建
-                </button>
+                > {t("新建")} </button>
               </div>
             </div>
 
             {lesson && (
               <div className="wb-dialog-section">
-                <h3>目标位置</h3>
+                <h3>{t("目标位置")}</h3>
                 <ul className="wb-choice-list" data-region="target-choices">
                   <li>
                     <button
@@ -200,9 +199,7 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
                       className={`wb-choice${target.type === 'materials' ? ' is-active' : ''}`}
                       aria-pressed={target.type === 'materials'}
                       onClick={() => setTarget(MATERIALS)}
-                    >
-                      本课材料
-                    </button>
+                    > {t("本课材料")} </button>
                   </li>
                   {(lesson.sections || []).map((section) => (
                     <li key={section.id}>
@@ -242,9 +239,7 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
                       onDone?.(saved);
                     }
                   }}
-                >
-                  重试确认
-                </button>
+                > {t("重试确认")} </button>
               ) : (
                 <button
                   type="button"
@@ -253,12 +248,12 @@ export function AddToLessonDialog({ accountKey, questions, onClose, onDone, onOp
                   disabled={busy || (!lesson && !newTitle.trim())}
                   onClick={handleConfirm}
                 >
-                  {busy ? '正在加入…' : '加入'}
+                  {busy ? t("正在加入…") : t("加入")}
                 </button>
               )}
-              <button type="button" className="wb-button" onClick={onClose}>取消</button>
+              <button type="button" className="wb-button" onClick={onClose}>{t("取消")}</button>
             </div>
-            <p className="wb-muted" data-region="add-count">已选 {questions.length} 题，将按选择顺序加入</p>
+            <p className="wb-muted" data-region="add-count">{t("已选")} {questions.length} {t("题，将按选择顺序加入")}</p>
           </>
         )}
       </div>

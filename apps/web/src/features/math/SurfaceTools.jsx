@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { defaultStyle } from "./model.js";
 
 export function addSurface(source, kind) {
@@ -36,6 +38,7 @@ export default function SurfaceProperties({
   onChange,
   Fields,
 }) {
+  const { t } = useTranslation('math');
   return (
     <div className="math-fields">
       <Fields
@@ -44,13 +47,13 @@ export default function SurfaceProperties({
       />
       {kind === "face" ? (
         <>
-          <p className="math-hint">沿面的边界依次选择顶点，所有顶点须共面。</p>
+          <p className="math-hint">{t("沿面的边界依次选择顶点，所有顶点须共面。")}</p>
           {value.vertices.map((id, i) => (
             <div className="math-surface-vertex" key={i}>
               <label>
-                顶点 {i + 1}
+                {t("顶点")} {i + 1}
                 <select
-                  aria-label={`面顶点 ${i + 1}`}
+                  aria-label={t("面顶点 {{number}}", { number: i + 1 })}
                   value={id}
                   onChange={(e) =>
                     onChange({
@@ -77,7 +80,7 @@ export default function SurfaceProperties({
                   })
                 }
               >
-                移除
+                {t("移除")}
               </button>
             </div>
           ))}
@@ -96,13 +99,13 @@ export default function SurfaceProperties({
               })
             }
           >
-            添加面顶点
+            {t("添加面顶点")}
           </button>
         </>
       ) : (
         <>
           <p className="math-hint">
-            截平面：ax + by + cz = d。随顶点和系数变化重新计算。
+            {t("截平面：ax + by + cz = d。随顶点和系数变化重新计算。")}
           </p>
           <Fields
             value={value.plane}
@@ -110,7 +113,7 @@ export default function SurfaceProperties({
             onChange={(plane) => onChange({ ...value, plane })}
           />
           <p className="math-hint">
-            适用于已定义完整面的封闭凸多面体，正方体与棱锥示例可直接使用。
+            {t("适用于已定义完整面的封闭凸多面体，正方体与棱锥示例可直接使用。")}
           </p>
         </>
       )}

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { LessonLibraryDialog } from "./LessonLibraryDialog.jsx";
 import { LessonPageImport, LessonPageSource } from "./LessonPageImport.jsx";
 import { LessonSectionContent } from "./LessonSectionContent.jsx";
@@ -82,9 +84,10 @@ import { LessonIndex, LessonOutline } from "./LessonPanels.jsx";
 import { SourceRecordsPanel } from "../classes/index.jsx";
 
 function MaterialMenu({ target, disabled, pickerFlow, mathReturn, name }) {
+  const { t } = useTranslation('lessons');
   return (
     <Popover
-      label="加入材料"
+      label={t("加入材料")}
       icon={null}
       buttonClassName="wb-button"
       className="wb-material-menu"
@@ -100,7 +103,7 @@ function MaterialMenu({ target, disabled, pickerFlow, mathReturn, name }) {
               pickerFlow.enter(target);
             }}
           >
-            加入题目
+            {t("加入题目")}
           </MenuItem>
           <MenuItem
             disabled={disabled || pickerFlow.entering}
@@ -109,7 +112,7 @@ function MaterialMenu({ target, disabled, pickerFlow, mathReturn, name }) {
               pickerFlow.enter(target, "resource");
             }}
           >
-            加入资源
+            {t("加入资源")}
           </MenuItem>
           <MenuItem
             disabled={disabled || pickerFlow.entering}
@@ -118,7 +121,7 @@ function MaterialMenu({ target, disabled, pickerFlow, mathReturn, name }) {
               pickerFlow.enter(target, "math");
             }}
           >
-            加入数学作品
+            {t("加入数学作品")}
           </MenuItem>
           <MenuItem
             disabled={disabled}
@@ -127,7 +130,7 @@ function MaterialMenu({ target, disabled, pickerFlow, mathReturn, name }) {
               mathReturn.enter(target);
             }}
           >
-            制作数学作品
+            {t("制作数学作品")}
           </MenuItem>
         </>
       )}
@@ -136,6 +139,7 @@ function MaterialMenu({ target, disabled, pickerFlow, mathReturn, name }) {
 }
 
 export default function LessonDetail({ id }) {
+  const { t } = useTranslation('lessons');
   const shell = useWorkbenchShell();
   const [scene, patchScene] = useScene(shell.accountKey, "lesson-detail", {
     picker: null,
@@ -222,7 +226,7 @@ export default function LessonDetail({ id }) {
       const saved = isNew || savable.localDraft ? await savable.save() : baseline;
       if (!saved) return;
       if (isNew && !savable.checkpoint(saved.id, { move: true })) {
-        setLocalProblem({ message: "无法保留备课现场，请检查浏览器存储后再提取资料。" }); return;
+        setLocalProblem({ message: t("无法保留备课现场，请检查浏览器存储后再提取资料。") }); return;
       }
       patchScene({ editingId: saved.id, pageImportId: saved.id });
       if (isNew) navigate(`/lessons/${saved.id}`, { replace: true });
@@ -261,12 +265,12 @@ export default function LessonDetail({ id }) {
   useAuxiliaryTools([
     {
       id: "lessons-index",
-      label: "我的备课",
+      label: t("我的备课"),
       render: () => <LessonIndex currentId={baseline?.id || id} />,
     },
     {
       id: "lesson-outline",
-      label: "本课大纲",
+      label: t("本课大纲"),
       render: () => (
         <LessonOutline
           input={input}
@@ -347,11 +351,11 @@ export default function LessonDetail({ id }) {
   }
   const copyFeedback = (copySubmit.problem || copySubmit.pending) && (
     <div className="wb-inline-error" role="status">
-      <p>{copySubmit.isRunning ? "正在创建副本…" : copySubmit.problem?.message || "副本创建结果未确认"}</p>
+      <p>{copySubmit.isRunning ? t("正在创建副本…") : copySubmit.problem?.message || t("副本创建结果未确认")}</p>
       {copySubmit.pending && <button className="wb-button" disabled={copySubmit.isRunning}
-        onClick={async () => finishCopy(await copySubmit.retry(sendCopy))}>确认备课副本</button>}
+        onClick={async () => finishCopy(await copySubmit.retry(sendCopy))}>{t("确认备课副本")}</button>}
       {!copySubmit.pending && copySubmit.problem?.kind === "conflict" &&
-        <button className="wb-button" onClick={() => window.location.reload()}>重新读取备课</button>}
+        <button className="wb-button" onClick={() => window.location.reload()}>{t("重新读取备课")}</button>}
     </div>
   );
 
@@ -372,10 +376,10 @@ export default function LessonDetail({ id }) {
     } finally { setContentSaving(false); }
   }
   const contentFeedback = (contentSubmit.problem || contentSubmit.pending) && <div className="wb-inline-error" role="status">
-    <p>{contentSubmit.isRunning ? "正在更新课稿…" : contentSubmit.problem?.message || "更新结果未确认"}</p>
+    <p>{contentSubmit.isRunning ? t("正在更新课稿…") : contentSubmit.problem?.message || t("更新结果未确认")}</p>
     {contentSubmit.pending && <button className="wb-button" disabled={contentSubmit.isRunning}
-      onClick={async () => { setContentSaving(true); try { await finishContent(await contentSubmit.retry(sendContent)); } finally { setContentSaving(false); } }}>确认课稿更新</button>}
-    {!contentSubmit.pending && contentSubmit.problem?.kind === "conflict" && <button className="wb-button" onClick={() => window.location.reload()}>重新读取备课</button>}
+      onClick={async () => { setContentSaving(true); try { await finishContent(await contentSubmit.retry(sendContent)); } finally { setContentSaving(false); } }}>{t("确认课稿更新")}</button>}
+    {!contentSubmit.pending && contentSubmit.problem?.kind === "conflict" && <button className="wb-button" onClick={() => window.location.reload()}>{t("重新读取备课")}</button>}
   </div>;
 
   function sendLifecycle({ key, payload }) {
@@ -450,8 +454,8 @@ export default function LessonDetail({ id }) {
     >
       <p>
         {deleteSubmit.isRunning
-          ? "正在处理备课…"
-          : deleteSubmit.problem?.message || "上次操作的结果未确认"}
+          ? t("正在处理备课…")
+          : deleteSubmit.problem?.message || t("上次操作的结果未确认")}
       </p>
       {deleteSubmit.pending && (
         <button
@@ -463,12 +467,12 @@ export default function LessonDetail({ id }) {
             finishLifecycle(await deleteSubmit.retry(sendLifecycle), payload);
           }}
         >
-          重试确认
+          {t("重试确认")}
         </button>
       )}
       {!deleteSubmit.pending && deleteSubmit.problem?.kind === "conflict" && (
         <button className="wb-button" onClick={() => window.location.reload()}>
-          重新读取备课
+          {t("重新读取备课")}
         </button>
       )}
     </div>
@@ -483,7 +487,7 @@ export default function LessonDetail({ id }) {
         {lifecycleFeedback}
         {copyFeedback}
       {contentFeedback}
-        <p>这份备课已不存在。</p>
+        <p>{t("这份备课已不存在。")}</p>
         <a
           className="wb-link"
           href="/lessons"
@@ -492,7 +496,7 @@ export default function LessonDetail({ id }) {
             navigate("/lessons");
           }}
         >
-          返回备课列表
+          {t("返回备课列表")}
         </a>
       </div>
     );
@@ -504,13 +508,13 @@ export default function LessonDetail({ id }) {
         className="wb-module wb-page wb-inline-error"
         data-region="lesson-load-error"
       >
-        <p>{savable.loadError?.message || "读取失败"}</p>
+        <p>{savable.loadError?.message || t("读取失败")}</p>
         <button
           type="button"
           className="wb-button"
           onClick={savable.adoptServer}
         >
-          重试
+          {t("重试")}
         </button>
       </div>
     );
@@ -525,7 +529,7 @@ export default function LessonDetail({ id }) {
         role="status"
         data-region="lesson-loading"
       >
-        正在读取备课…
+        {t("正在读取备课…")}
       </div>
     );
   }
@@ -535,9 +539,9 @@ export default function LessonDetail({ id }) {
       <ModulePresence present={Boolean(pickerFlow.targetGone && picker)}>
         {pickerFlow.targetGone && picker && (
           <ConfirmDialog
-            title="目标环境已变化"
-            message={`环节「${targetLabel(input, picker.target)}」在本课已不存在。选题仍保留，可以改选本课材料或取消。`}
-            confirmLabel="改选本课材料"
+            title={t("目标环境已变化")}
+            message={t("环节「{{sectionTitle}}」在本课已不存在。选题仍保留，可以改选本课材料或取消。", { sectionTitle: targetLabel(input, picker.target) })}
+            confirmLabel={t("改选本课材料")}
             onCancel={pickerFlow.dismissTargetGone}
             onConfirm={pickerFlow.moveToMaterials}
           />
@@ -546,9 +550,9 @@ export default function LessonDetail({ id }) {
       <ModulePresence present={Boolean(pickerFlow.conflict && picker)}>
         {pickerFlow.conflict && picker && (
           <ConfirmDialog
-            title="备课已在别处修改"
-            message="取回服务器版本才能继续加入，选题会保留；本地尚未保存的文稿不会被自动丢弃，请先自行处理。"
-            confirmLabel="取回服务器版本"
+            title={t("备课已在别处修改")}
+            message={t("取回服务器版本才能继续加入，选题会保留；本地尚未保存的文稿不会被自动丢弃，请先自行处理。")}
+            confirmLabel={t("取回服务器版本")}
             onCancel={pickerFlow.dismissConflict}
             onConfirm={pickerFlow.takeServerVersion}
           />
@@ -633,7 +637,7 @@ export default function LessonDetail({ id }) {
                 ? document.getElementById(
                     `section-${input.sections[Number(section[1])]?.id}`,
                   )
-                : document.querySelector('[data-document-editor="开头文稿"]');
+                : document.querySelector(`[data-document-editor="${t('开头文稿')}"]`);
               area?.scrollIntoView({ block: "center" });
               area?.querySelector("textarea")?.focus();
             }, 0);
@@ -642,7 +646,7 @@ export default function LessonDetail({ id }) {
     );
 
   const targets = [
-    { value: "materials", label: "备用材料" },
+    { value: "materials", label: t("备用材料") },
     ...(input.sections || [])
       .map((section) => targetValue({ type: "section", sectionId: section.id }))
       .map((value, index) => ({ value, label: input.sections[index].title })),
@@ -738,27 +742,27 @@ export default function LessonDetail({ id }) {
     >
       {mathReturn.pending && (
         <div className="wb-inline-error" role="status">
-          <span>{mathReturn.problem || "作品已保存，正在确认加入备课"}</span>
+          <span>{mathReturn.problem || t("作品已保存，正在确认加入备课")}</span>
           <button
             className="wb-button"
             disabled={mathReturn.busy}
             onClick={mathReturn.retry}
           >
-            确认带回
+            {t("确认带回")}
           </button>
           <button
             className="wb-button"
             disabled={mathReturn.busy}
             onClick={mathReturn.toMaterials}
           >
-            放入本课材料
+            {t("放入本课材料")}
           </button>
           <button
             className="wb-button"
             disabled={mathReturn.busy}
             onClick={mathReturn.cancel}
           >
-            取消带回
+            {t("取消带回")}
           </button>
         </div>
       )}
@@ -772,10 +776,10 @@ export default function LessonDetail({ id }) {
             }}
           >
             <Icon name="back" size={16} />
-            我的备课
+            {t("我的备课")}
           </button>
           <span>/</span>
-          <span>{editing ? "编辑课稿" : "课稿"}</span>
+          <span>{editing ? t("编辑课稿") : t("课稿")}</span>
         </div>
         <div className="lesson-heading-row">
           <span className="lesson-page-icon">
@@ -785,10 +789,10 @@ export default function LessonDetail({ id }) {
             {editing ? (
               <input
                 className="wb-input lesson-title-input"
-                aria-label="课题"
-                placeholder="这节课的课题是什么？"
+                aria-label={t("课题")}
+                placeholder={t("这节课的课题是什么？")}
                 readOnly={unsupported || lifecycleBusy}
-                value={input.title === "未命名备课" ? "" : input.title}
+                value={input.title === t("未命名备课") ? "" : input.title}
                 maxLength={200}
                 onChange={(event) =>
                   savable.setInput((current) => ({
@@ -802,8 +806,8 @@ export default function LessonDetail({ id }) {
             )}
             <span className="lesson-title-hint">
               {editing
-                ? "先写思路，再按需要组织教学环节。"
-                : `${input.sections.length} 个教学环节 · ${input.sections.reduce((count, section) => count + section.references.length, input.materials.length)} 份材料`}
+                ? t("先写思路，再按需要组织教学环节。")
+                : t("{{sectionCount}} 个教学环节 · {{materialCount}} 份材料", { sectionCount: input.sections.length, materialCount: input.sections.reduce((count, section) => count + section.references.length, input.materials.length) })}
             </span>
           </div>
           <div className="wb-lesson-actions">
@@ -814,12 +818,12 @@ export default function LessonDetail({ id }) {
                   disabled={!baseline || saveStatus === "saving"}
                   onClick={() => setEditing(false)}
                 >
-                  查看课稿
+                  {t("查看课稿")}
                 </button>
                 <SaveActions
                   savable={savable}
                   onSave={handleSave}
-                  saveLabel="保存备课"
+                  saveLabel={t("保存备课")}
                   disabled={unsupported || lifecycleBusy}
                 />
               </>
@@ -830,7 +834,7 @@ export default function LessonDetail({ id }) {
                   onClick={() => setEditing(true)}
                 >
                   <Icon name="prep" size={16} />
-                  {savable.localDraft ? "继续编辑草稿" : "编辑备课"}
+                  {savable.localDraft ? t("继续编辑草稿") : t("编辑备课")}
                 </button>
               )
             )}
@@ -842,15 +846,15 @@ export default function LessonDetail({ id }) {
                 }
                 title={
                   !editing && savable.localDraft
-                    ? "请先继续编辑并保存草稿"
+                    ? t("请先继续编辑并保存草稿")
                     : undefined
                 }
                 onClick={() => patchScene({ exportsOpen: true })}
               >
-                生成教学资料
+                {t("生成教学资料")}
               </button>
             )}
-            <Popover label="备课操作">
+            <Popover label={t("备课操作")}>
               {({ close }) => (
                 <>
                   <MenuItem
@@ -859,7 +863,7 @@ export default function LessonDetail({ id }) {
                       shell.openPanel("lesson-outline");
                     }}
                   >
-                    查看本课大纲
+                    {t("查看本课大纲")}
                   </MenuItem>
                   <MenuItem
                     onClick={() => {
@@ -867,13 +871,13 @@ export default function LessonDetail({ id }) {
                       shell.openPanel("lessons-index");
                     }}
                   >
-                    切换备课
+                    {t("切换备课")}
                   </MenuItem>
                   {baseline && <MenuItem disabled={lifecycleBusy || savable.isSaving || Boolean(savable.pending)}
-                    onClick={() => { close(); setDialog("history"); }}>查看已保存版本</MenuItem>}
+                    onClick={() => { close(); setDialog("history"); }}>{t("查看已保存版本")}</MenuItem>}
                   {baseline && (
                     <MenuItem icon="copy" disabled={unsupported || lifecycleBusy || savable.isSaving || Boolean(savable.pending) || saveStatus === "conflict"}
-                      onClick={() => { close(); setDialog("copy"); }}>复制备课</MenuItem>
+                      onClick={() => { close(); setDialog("copy"); }}>{t("复制备课")}</MenuItem>
                   )}
                   {baseline && !deleted && (
                     <MenuItem
@@ -889,7 +893,7 @@ export default function LessonDetail({ id }) {
                         setDialog("archive");
                       }}
                     >
-                      归档备课
+                      {t("归档备课")}
                     </MenuItem>
                   )}
                   {baseline && savable.localDraft && (
@@ -900,7 +904,7 @@ export default function LessonDetail({ id }) {
                         setDialog("discard-draft");
                       }}
                     >
-                      放弃草稿
+                      {t("放弃草稿")}
                     </MenuItem>
                   )}
                 </>
@@ -910,19 +914,19 @@ export default function LessonDetail({ id }) {
         </div>
         {editing && <div className="lesson-edit-status">
           <SaveStatus savable={savable} />
-          <div className="lesson-history-actions" aria-label="本次编辑历史">
-            <button className="wb-text-button" title="撤销本次未保存的修改 (Ctrl/⌘ Z)" disabled={!savable.history.canUndo || lifecycleBusy || unsupported} onClick={savable.history.undo}>撤销</button>
-            <button className="wb-text-button" title="重做 (Ctrl/⌘ Shift Z)" disabled={!savable.history.canRedo || lifecycleBusy || unsupported} onClick={savable.history.redo}>重做</button>
+          <div className="lesson-history-actions" aria-label={t("本次编辑历史")}>
+            <button className="wb-text-button" title={t("撤销本次未保存的修改 (Ctrl/⌘ Z)")} disabled={!savable.history.canUndo || lifecycleBusy || unsupported} onClick={savable.history.undo}>{t("撤销")}</button>
+            <button className="wb-text-button" title={t("重做 (Ctrl/⌘ Shift Z)")} disabled={!savable.history.canRedo || lifecycleBusy || unsupported} onClick={savable.history.redo}>{t("重做")}</button>
           </div>
         </div>}
       </header>
       {!editing && !deleted && savable.localDraft && (
         <div className="lesson-draft-banner" role="status">
           <span>
-            这里显示已保存的课稿。此设备还有未保存的修改，继续编辑后可保存并生成资料。
+            {t("这里显示已保存的课稿。此设备还有未保存的修改，继续编辑后可保存并生成资料。")}
           </span>
           <button className="wb-button" onClick={() => setEditing(true)}>
-            继续编辑草稿
+            {t("继续编辑草稿")}
           </button>
         </div>
       )}
@@ -930,10 +934,10 @@ export default function LessonDetail({ id }) {
       {deleted && (
         <div className="lesson-archive-banner" data-region="lesson-archived">
           <div>
-            <strong>这份备课已归档</strong>
+            <strong>{t("这份备课已归档")}</strong>
             <p>
-              课稿和材料都保留，恢复后可以继续编辑。
-              {savable.localDraft ? "此设备的未保存草稿也已保留。" : ""}
+              {t("课稿和材料都保留，恢复后可以继续编辑。")}
+              {savable.localDraft ? t("此设备的未保存草稿也已保留。") : ""}
             </p>
           </div>
           <button
@@ -941,14 +945,14 @@ export default function LessonDetail({ id }) {
             disabled={lifecycleBusy || unsupported}
             onClick={() => handleDeletion(false)}
           >
-            恢复备课
+            {t("恢复备课")}
           </button>
           <button
             className="wb-button is-danger"
             disabled={lifecycleBusy || Boolean(savable.pending)}
             onClick={() => setDialog("purge")}
           >
-            彻底删除
+            {t("彻底删除")}
           </button>
         </div>
       )}
@@ -965,7 +969,7 @@ export default function LessonDetail({ id }) {
             const current = await savable.adoptServer();
             if (current) mathReturn.adoptBaseline(current.version);
           }}
-          hint="当前备课草稿保留在这里。采用服务器版本会丢弃本地输入，请先对照。"
+          hint={t("当前备课草稿保留在这里。采用服务器版本会丢弃本地输入，请先对照。")}
           renderServer={(server) => (
             <>
               <h4>{server.title}</h4>
@@ -996,12 +1000,12 @@ export default function LessonDetail({ id }) {
         <section className="lesson-intro-section">
           <div className="lesson-content-heading">
             <Icon name="prep" size={16} />
-            <h2>讲课思路</h2>
+            <h2>{t("讲课思路")}</h2>
           </div>
           {editing ? (
             <DocumentEditor
-              label="开头文稿"
-              placeholder="这节课准备怎么讲？先写下目标、思路，或者一句提醒…"
+              label={t("开头文稿")}
+              placeholder={t("这节课准备怎么讲？先写下目标、思路，或者一句提醒…")}
               readOnly={unsupported || lifecycleBusy}
               value={input.intro}
               onChange={(intro) =>
@@ -1011,7 +1015,7 @@ export default function LessonDetail({ id }) {
           ) : input.intro.blocks.length ? (
             <DocumentView value={input.intro} />
           ) : (
-            <p className="lesson-quiet-empty">还没有写下讲课思路。</p>
+            <p className="lesson-quiet-empty">{t("还没有写下讲课思路。")}</p>
           )}
         </section>
         {(input.sections || []).map((section, index) => (
@@ -1026,11 +1030,11 @@ export default function LessonDetail({ id }) {
               {editing ? (
                 <input
                   className="wb-input wb-section-title"
-                  aria-label={`环节名称 ${index + 1}`}
+                  aria-label={t("环节名称 {{number}}", { number: index + 1 })}
                   readOnly={unsupported || lifecycleBusy}
                   value={section.title}
                   maxLength={200}
-                  placeholder="例如：例题讲解"
+                  placeholder={t("例如：例题讲解")}
                   onChange={(event) =>
                     savable.setInput((current) =>
                       renameSection(current, section.id, event.target.value),
@@ -1049,7 +1053,7 @@ export default function LessonDetail({ id }) {
                     mathReturn={mathReturn}
                     name="pick-section"
                   />
-                  <Popover label={`环节操作 ${section.title}`}>
+                  <Popover label={t("环节操作 {{sectionTitle}}", { sectionTitle: section.title })}>
                     {({ close }) => (
                       <>
                         <MenuItem
@@ -1061,7 +1065,7 @@ export default function LessonDetail({ id }) {
                             );
                           }}
                         >
-                          上移环节
+                          {t("上移环节")}
                         </MenuItem>
                         <MenuItem
                           disabled={
@@ -1076,7 +1080,7 @@ export default function LessonDetail({ id }) {
                             );
                           }}
                         >
-                          下移环节
+                          {t("下移环节")}
                         </MenuItem>
                         <MenuItem
                           icon="trash"
@@ -1090,7 +1094,7 @@ export default function LessonDetail({ id }) {
                             });
                           }}
                         >
-                          删除环节
+                          {t("删除环节")}
                         </MenuItem>
                       </>
                     )}
@@ -1099,15 +1103,15 @@ export default function LessonDetail({ id }) {
               )}
             </header>
             <LessonSectionContent section={section} editing={editing}
-              label={`环节文稿 ${index + 1}`} readOnly={unsupported || lifecycleBusy}
+              label={t("环节文稿 {{number}}", { number: index + 1 })} readOnly={unsupported || lifecycleBusy}
               onChange={(content, edit) => savable.setInput(current => changeSectionContent(current, section.id, content, edit))}
               renderReference={referenceActions} />
             {section.pageSource && <button className="wb-text-button lesson-page-source-link"
-              onClick={() => setDialog({ type: "page-source", source: section.pageSource })}>查看导入原稿</button>}
+              onClick={() => setDialog({ type: "page-source", source: section.pageSource })}>{t("查看导入原稿")}</button>}
             {!editing &&
               !section.references.length &&
               !section.content.blocks.length && (
-                <p className="lesson-quiet-empty">这个环节还没有内容。</p>
+                <p className="lesson-quiet-empty">{t("这个环节还没有内容。")}</p>
               )}
           </section>
         ))}
@@ -1134,18 +1138,18 @@ export default function LessonDetail({ id }) {
               }}
             >
               <Icon name="plus" size={17} />
-              添加教学环节
+              {t("添加教学环节")}
             </button>
             {baseline && <button className="wb-button" disabled={unsupported || lifecycleBusy || savable.isSaving || Boolean(savable.pending) || saveStatus === "conflict"}
-              onClick={() => setDialog("reuse")}><Icon name="copy" size={16} />从其他备课复用环节</button>}
+              onClick={() => setDialog("reuse")}><Icon name="copy" size={16} />{t("从其他备课复用环节")}</button>}
             <button className="wb-button" disabled={unsupported || lifecycleBusy || savable.isSaving || Boolean(savable.pending) || saveStatus === "conflict"}
-              onClick={enterPageImport}><Icon name="folder" size={16} />从资料提取正文</button>
-            <span>例如：课堂导入、例题讲解、课堂练习</span>
+              onClick={enterPageImport}><Icon name="folder" size={16} />{t("从资料提取正文")}</button>
+            <span>{t("例如：课堂导入、例题讲解、课堂练习")}</span>
           </div>
         )}
         {(editing || input.materials.length > 0) && (
           <ModuleDisclosure
-            title={`备用材料${input.materials.length ? ` · ${input.materials.length}` : ""}`}
+            title={t("备用材料{{countSuffix}}", { countSuffix: input.materials.length ? ` · ${input.materials.length}` : "" })}
             className="lesson-materials"
             open={Boolean(scene.materialsOpen)}
             onOpenChange={(materialsOpen) => patchScene({ materialsOpen })}
@@ -1153,7 +1157,7 @@ export default function LessonDetail({ id }) {
             <div data-region="materials">
               <div className="lesson-materials-head">
                 <p>
-                  先收集，还没放进教学环节的材料。默认不加入生成的教学资料。
+                  {t("先收集，还没放进教学环节的材料。默认不加入生成的教学资料。")}
                 </p>
                 {editing && (
                   <MaterialMenu
@@ -1170,13 +1174,13 @@ export default function LessonDetail({ id }) {
                   {input.materials.map(referenceActions)}
                 </div>
               ) : (
-                <p className="lesson-quiet-empty">还没有备用材料。</p>
+                <p className="lesson-quiet-empty">{t("还没有备用材料。")}</p>
               )}
             </div>
           </ModuleDisclosure>
         )}
         {input.sections.some((section) => section.references.length) && (
-          <ModuleDisclosure title="本课材料总览" className="lesson-materials">
+          <ModuleDisclosure title={t("本课材料总览")} className="lesson-materials">
             <div className="lesson-material-overview">
               {input.sections.flatMap((section) =>
                 section.references.map((ref) => (
@@ -1199,7 +1203,7 @@ export default function LessonDetail({ id }) {
                       }
                       size={16}
                     />
-                    <span>{ref.snapshot?.title || "题目"}</span>
+                    <span>{ref.snapshot?.title || t("题目")}</span>
                     <small>{section.title}</small>
                     <Icon name="chevron" size={14} />
                   </button>
@@ -1210,7 +1214,7 @@ export default function LessonDetail({ id }) {
         )}
         {baseline?.id && (
           <ModuleDisclosure
-            title="教学反馈"
+            title={t("教学反馈")}
             className="lesson-feedback"
             open={Boolean(scene.feedbackOpen)}
             onOpenChange={(feedbackOpen) => patchScene({ feedbackOpen })}
@@ -1254,9 +1258,9 @@ export default function LessonDetail({ id }) {
       <ModulePresence present={dialog === "discard-draft"}>
         {dialog === "discard-draft" && (
           <ConfirmDialog
-            title="放弃草稿"
-            message="未保存的修改将被移除，备课回到已保存的版本。"
-            confirmLabel="放弃草稿"
+            title={t("放弃草稿")}
+            message={t("未保存的修改将被移除，备课回到已保存的版本。")}
+            confirmLabel={t("放弃草稿")}
             onCancel={() => setDialog(null)}
             onConfirm={() => {
               savable.discardDraft();
@@ -1266,18 +1270,18 @@ export default function LessonDetail({ id }) {
         )}
       </ModulePresence>
       <ModulePresence present={dialog === "copy"}>
-        {dialog === "copy" && <ConfirmDialog title="创建备课副本？"
+        {dialog === "copy" && <ConfirmDialog title={t("创建备课副本？")}
           message={savable.localDraft && !deleted
-            ? "先保存当前修改，再创建一份独立副本并打开。保留原备课，材料沿用本课已采用的版本。"
-            : `创建一份独立副本并打开。保留原备课，材料沿用本课已采用的版本；不复制输出和班级记录。${savable.localDraft ? "仅复制已保存课稿，未保存草稿仍保留在原备课。" : ""}`}
-          confirmLabel="创建副本" onCancel={() => setDialog(null)} onConfirm={handleCopy} />}
+            ? t("先保存当前修改，再创建一份独立副本并打开。保留原备课，材料沿用本课已采用的版本。")
+            : t("创建一份独立副本并打开。保留原备课，材料沿用本课已采用的版本；不复制输出和班级记录。{{draftNotice}}", { draftNotice: savable.localDraft ? t("仅复制已保存课稿，未保存草稿仍保留在原备课。") : "" })}
+          confirmLabel={t("创建副本")} onCancel={() => setDialog(null)} onConfirm={handleCopy} />}
       </ModulePresence>
       <ModulePresence present={dialog === "archive"}>
         {dialog === "archive" && (
           <ConfirmDialog
-            title="归档备课"
-            message="归档后返回备课主页。课稿和材料会保留，可在“已归档备课”中恢复；未保存的草稿保留在此设备。"
-            confirmLabel="归档备课"
+            title={t("归档备课")}
+            message={t("归档后返回备课主页。课稿和材料会保留，可在“已归档备课”中恢复；未保存的草稿保留在此设备。")}
+            confirmLabel={t("归档备课")}
             onCancel={() => setDialog(null)}
             onConfirm={() => handleDeletion(true)}
           />
@@ -1286,9 +1290,9 @@ export default function LessonDetail({ id }) {
       <ModulePresence present={dialog === "purge"}>
         {dialog === "purge" && (
           <ConfirmDialog
-            title="彻底删除备课"
-            message={`彻底删除“${baseline.title}”及其课稿、已保存版本、环节、本课材料和输出记录，无法恢复。本设备的这份草稿也会移除。来源题目、资源、数学作品和班级教学记录仍保留。`}
-            confirmLabel="彻底删除"
+            title={t("彻底删除备课")}
+            message={t("彻底删除“{{lessonTitle}}”及其课稿、已保存版本、环节、本课材料和输出记录，无法恢复。本设备的这份草稿也会移除。来源题目、资源、数学作品和班级教学记录仍保留。", { lessonTitle: baseline.title })}
+            confirmLabel={t("彻底删除")}
             onCancel={() => setDialog(null)}
             onConfirm={handlePurge}
           />
@@ -1298,10 +1302,10 @@ export default function LessonDetail({ id }) {
       <ModulePresence present={Boolean(dialog?.type === "delete-section")}>
         {dialog?.type === "delete-section" && (
           <ConfirmDialog
-            title="删除环节"
-            message="环节里的材料会移入备用材料；也可以连同材料一起从这份备课移除。"
-            confirmLabel="移入备用材料并删除"
-            secondaryLabel="连同材料一起移除"
+            title={t("删除环节")}
+            message={t("环节里的材料会移入备用材料；也可以连同材料一起从这份备课移除。")}
+            confirmLabel={t("移入备用材料并删除")}
+            secondaryLabel={t("连同材料一起移除")}
             onSecondary={() => {
               savable.setInput((current) =>
                 deleteSection(current, dialog.sectionId, {

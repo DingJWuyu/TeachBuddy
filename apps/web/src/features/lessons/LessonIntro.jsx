@@ -1,8 +1,12 @@
+import i18n from '../../i18n/index.js';
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: 'lessons', ...options });
 import { useRef } from "react";
 import { Icon } from "../workbench/icons.jsx";
 import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 
 export function LessonExample({ onClose, onStart }) {
+  const { t } = useTranslation('lessons');
   const ref = useRef(null);
   useModuleDialogFocus(ref, onClose);
   return (
@@ -13,16 +17,16 @@ export function LessonExample({ onClose, onStart }) {
         className="wb-module wb-dialog lesson-example"
         role="dialog"
         aria-modal="true"
-        aria-label="备课示例"
+        aria-label={t("备课示例")}
       >
         <header>
           <div>
-            <span className="lesson-eyebrow">备课示例</span>
+            <span className="lesson-eyebrow">{t("备课示例")}</span>
             <h2>函数的单调性</h2>
           </div>
           <button
             className="wb-icon-button"
-            aria-label="关闭示例"
+            aria-label={t("关闭示例")}
             onClick={onClose}
           >
             <Icon name="close" />
@@ -62,9 +66,9 @@ export function LessonExample({ onClose, onStart }) {
           </div>
         </section>
         <footer>
-          <span>新建后按自己的内容填写，环节可以自由调整。</span>
+          <span>{t("新建后按自己的内容填写，环节可以自由调整。")}</span>
           <button className="wb-button is-primary" onClick={onStart}>
-            开始我的备课
+            {t("开始我的备课")}
           </button>
         </footer>
       </section>
@@ -72,7 +76,7 @@ export function LessonExample({ onClose, onStart }) {
   );
 }
 
-export function LessonIdentity({ title = "备课", subtitle, children }) {
+export function LessonIdentity({ title = t("备课"), subtitle, children }) {
   return (
     <header className="lesson-page-heading">
       <div className="lesson-page-identity">

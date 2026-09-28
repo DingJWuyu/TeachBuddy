@@ -3,7 +3,7 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { validateArchive } from "./schema.js";
 import { randomUUID } from "node:crypto";
-import { prepareRestoredAuth } from "../../features/auth/recovery.js";
+import { prepareRestoredAuth, assertNoPendingAccountDeletion } from "../../features/auth/recovery.js";
 import { migrations as auth } from "../../features/auth/migrations/index.js";
 import { migrations as questions } from "../../modules/questions/migrations/index.js";
 import { migrations as lessons } from "../../modules/lessons/migrations/index.js";
@@ -168,7 +168,7 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     .sort((a, b) => a.id.localeCompare(b.id));
   const actual = ledger(db);
   const optional = new Set(
-    [...migrations, ...navigationMigrations].flatMap((s) => s.migrations.map((m) => m.id)),
+    [...migrations, ...navigationMigrations].flatMap((s) => s.migrations.map((m) => m.id)).concat('auth_0008_account_deletions'),
   );
   if (
     actual.some((a) => !expected.some((e) => equal(e, a))) ||
@@ -197,7 +197,11 @@ function checkDatabase(db, { allowOlder = false } = {}) {
       for (const r of db
         .prepare(`SELECT DISTINCT accountKey FROM ${name}`)
         .all())
-        if (!accounts.has(r.accountKey))
+        if (name === 'auth_account_deletions' && r.accountKey === null) {
+          if (db.prepare(`SELECT 1 FROM auth_account_deletions WHERE accountKey IS NULL AND
+            (completedAt IS NULL OR accountId IS NOT NULL OR filesJson IS NOT NULL) LIMIT 1`).get())
+            throw new Error('Invalid account deletion receipt');
+        } else if (!accounts.has(r.accountKey))
           throw new Error(`Unowned rows in ${name}`);
     }
   }
@@ -385,6 +389,7 @@ export async function backup({ database, files, target, stopped }) {
     db = new Database(database, { fileMustExist: true, readonly: true });
     db.pragma("synchronous = FULL");
     checkDatabase(db, { allowOlder: true });
+    assertNoPendingAccountDeletion(db);
     fs.mkdirSync(staging, { mode: 0o700 });
     // SQLite backup includes committed WAL content; never copy the main file alone.
     await db.backup(path.join(staging, "workspace.sqlite"));
@@ -509,7 +514,7 @@ export function restore({ source, target, stopped }) {
     }
     const first = prepareRestoredAuth({ db });
     if (
-      first.contractRevision !== "auth-recovery/1" ||
+      first.contractRevision !== "auth-recovery/2" ||
       first.outcome !== "cleared" ||
       Object.values(first.remaining).some((n) => n !== 0)
     )

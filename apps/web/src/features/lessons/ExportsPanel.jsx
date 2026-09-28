@@ -1,3 +1,6 @@
+import i18n from '../../i18n/index.js';
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: 'lessons', ...options });
 import {
   ModulePresence,
   ModuleDisclosure,
@@ -17,12 +20,20 @@ import { FilePreview } from "./FilePreview.jsx";
 import { LessonExportSelection } from "./LessonExportSelection.jsx";
 import { Icon } from "../workbench/icons.jsx";
 import { SaveStatus } from "../workbench/SaveStatus.jsx";
+const exportIssueKeys = {
+  'cancelled': 'exportIssue.cancelled',
+  'missing-asset': 'exportIssue.missingAsset',
+  'disk-full': 'exportIssue.diskFull',
+  'conversion-failed': 'exportIssue.conversionFailed',
+  'interrupted': 'exportIssue.interrupted',
+};
 const kinds = {
-  "lesson-plan": "教案 / 提纲",
-  handout: "导学案 / 讲义",
-  practice: "练习",
+  get "lesson-plan"() { return t("教案 / 提纲"); },
+  get handout() { return t("导学案 / 讲义"); },
+  get practice() { return t("练习"); },
 };
 export function ExportsPanel({ savable, onClose }) {
+  const { t } = useTranslation('lessons');
   const shell = useWorkbenchShell(),
     lesson = savable.baseline;
   const [scene, patchScene] = useScene(
@@ -119,7 +130,7 @@ export function ExportsPanel({ savable, onClose }) {
     ).body;
     if (!body?.id || !body.jobId || !body.lessonVersion || !body.options)
       throw new WorkbenchError(
-        unexpectedSuccessProblem("生成请求结果无法识别"),
+        unexpectedSuccessProblem(t("生成请求结果无法识别")),
       );
     return body;
   };
@@ -130,7 +141,7 @@ export function ExportsPanel({ savable, onClose }) {
         ? savable.baseline
         : await savable.save();
     if (!saved) {
-      setError("请先处理备课保存问题");
+      setError(t("请先处理备课保存问题"));
       return;
     }
     const result = await submit.submit(send, {
@@ -148,21 +159,21 @@ export function ExportsPanel({ savable, onClose }) {
         : [...o[key], id],
     }));
   return (
-    <section className="wb-module r34-exports" aria-label="输出备课">
+    <section className="wb-module r34-exports" aria-label={t("输出备课")}>
       <header className="lesson-export-heading">
         <button className="wb-text-button" onClick={() => onClose()}>
           <Icon name="back" size={16} />
-          返回课稿
+          {t("返回课稿")}
         </button>
-        <h1>生成教学资料</h1>
+        <h1>{t("生成教学资料")}</h1>
         <p>
-          {savable.input.title || "未命名备课"} · 选择用途，生成后可预览和下载。
+          {savable.input.title || t("未命名备课")} {t("· 选择用途，生成后可预览和下载。")}
         </p>
       </header>
       <div className="lesson-export-body">
         <fieldset className="lesson-export-kinds">
-          <legend>这份资料准备怎么用？</legend>
-          <div role="radiogroup" aria-label="资料用途">
+          <legend>{t("这份资料准备怎么用？")}</legend>
+          <div role="radiogroup" aria-label={t("资料用途")}>
             {Object.entries(kinds).map(([key, title]) => (
               <button
                 key={key}
@@ -215,9 +226,9 @@ export function ExportsPanel({ savable, onClose }) {
                 <span>
                   {
                     {
-                      "lesson-plan": "给自己用，按教学环节组织讲课思路与材料。",
-                      handout: "发给学生，保留讲解内容、题目和作答空间。",
-                      practice: "集中练习，只收集所选环节中的题目。",
+                      "lesson-plan": t("给自己用，按教学环节组织讲课思路与材料。"),
+                      handout: t("发给学生，保留讲解内容、题目和作答空间。"),
+                      practice: t("集中练习，只收集所选环节中的题目。"),
                     }[key]
                   }
                 </span>
@@ -227,12 +238,12 @@ export function ExportsPanel({ savable, onClose }) {
         </fieldset>
         <div className="lesson-export-settings">
           <section>
-            <h2>文件与内容</h2>
+            <h2>{t("文件与内容")}</h2>
             <fieldset className="lesson-export-format">
-              <legend>文件格式</legend>
+              <legend>{t("文件格式")}</legend>
               {[
-                ["docx", "Word", "可以继续编辑"],
-                ["pdf", "PDF", "适合直接打印"],
+                ["docx", "Word", t("可以继续编辑")],
+                ["pdf", "PDF", t("适合直接打印")],
               ].map(([value, name, hint]) => (
                 <label key={value}>
                   <input
@@ -262,7 +273,7 @@ export function ExportsPanel({ savable, onClose }) {
                 }
               />
               <span>
-                附上答案与解析<small>放在全部题目之后，单独成节。</small>
+                {t("附上答案与解析")}<small>{t("放在全部题目之后，单独成节。")}</small>
               </span>
             </label>
             <label className="lesson-export-check">
@@ -277,15 +288,15 @@ export function ExportsPanel({ savable, onClose }) {
                 }
               />
               <span>
-                附上教师注记<small>包括课稿里的教师注记和本课材料备注。</small>
+                {t("附上教师注记")}<small>{t("包括课稿里的教师注记和本课材料备注。")}</small>
               </span>
             </label>
             {options.kind !== "lesson-plan" && (
               <label className="lesson-answer-space">
-                题后作答空白
+                {t("题后作答空白")}
                 <input
                   className="wb-input"
-                  aria-label="作答空白行"
+                  aria-label={t("作答空白行")}
                   type="number"
                   min="0"
                   max="20"
@@ -297,45 +308,45 @@ export function ExportsPanel({ savable, onClose }) {
                     }))
                   }
                 />
-                行
+                {t("行")}
               </label>
             )}
           </section>
           <aside className="lesson-export-summary">
-            <h2>本次生成</h2>
+            <h2>{t("本次生成")}</h2>
             <p>
               <strong>{kinds[options.kind]}</strong>
               <span>
-                {options.format === "docx" ? resourcePageCount ? "Word · 正文可编辑，原页为图片" : "Word · 可编辑" : "PDF · 可打印"}
+                {options.format === "docx" ? resourcePageCount ? t("Word · 正文可编辑，原页为图片") : t("Word · 可编辑") : t("PDF · 可打印")}
               </span>
             </p>
             <ul>
-              <li>{options.sectionIds.length} 个教学环节 · {questionCount} 道题</li>
-              {resourcePageCount > 0 && <li>{resourcePageCount} 份资源按原页插入，包含原件全部内容</li>}
+              <li>{options.sectionIds.length} {t("个教学环节 ·")} {questionCount} {t("道题")}</li>
+              {resourcePageCount > 0 && <li>{resourcePageCount} {t("份资源按原页插入，包含原件全部内容")}</li>}
               <li>
                 {options.materialReferenceIds.length
-                  ? `另外包含 ${options.materialReferenceIds.length} 份备用材料`
-                  : "不包含备用材料"}
+                  ? t("另外包含 {{count}} 份备用材料", { count: options.materialReferenceIds.length })
+                  : t("不包含备用材料")}
               </li>
               <li>
-                {options.includeAnswers ? "附答案与解析" : "不附答案与解析"}
+                {options.includeAnswers ? t("附答案与解析") : t("不附答案与解析")}
               </li>
               <li>
-                {options.includeTeacherNotes ? "附教师注记" : "不附教师注记"}
+                {options.includeTeacherNotes ? t("附教师注记") : t("不附教师注记")}
               </li>
             </ul>
-            <small>选项只影响这次生成，课稿和来源材料保持原样。</small>
+            <small>{t("选项只影响这次生成，课稿和来源材料保持原样。")}</small>
           </aside>
         </div>
         {(savable.input.sections.length > 0 ||
           savable.input.materials.length > 0) && (
           <ModuleDisclosure
-            title="选择环节与备用材料"
+            title={t("选择环节与备用材料")}
             className="lesson-export-scope"
           >
             {!!savable.input.sections.length && (
               <fieldset>
-                <legend>包含的教学环节</legend>
+                <legend>{t("包含的教学环节")}</legend>
                 {savable.input.sections.map((section) => (
                   <label key={section.id}>
                     <input
@@ -350,7 +361,7 @@ export function ExportsPanel({ savable, onClose }) {
             )}
             {!!savable.input.materials.length && (
               <fieldset>
-                <legend>另外加入备用材料</legend>
+                <legend>{t("另外加入备用材料")}</legend>
                 {savable.input.materials.map((reference) => (
                   <label key={reference.id}>
                     <input
@@ -362,7 +373,7 @@ export function ExportsPanel({ savable, onClose }) {
                         toggle("materialReferenceIds", reference.id)
                       }
                     />
-                    {reference.snapshot?.title || "题目"}
+                    {reference.snapshot?.title || t("题目")}
                   </label>
                 ))}
               </fieldset>
@@ -374,7 +385,7 @@ export function ExportsPanel({ savable, onClose }) {
         )}
         {savable.localDraft && (
           <p className="lesson-export-save-hint">
-            生成前会先保存当前课稿，包括尚未保存的修改。
+            {t("生成前会先保存当前课稿，包括尚未保存的修改。")}
           </p>
         )}
         {!["clean", "saved"].includes(savable.status) && (
@@ -388,13 +399,13 @@ export function ExportsPanel({ savable, onClose }) {
                 className="wb-text-button"
                 onClick={() => onClose(submit.problem.field)}
               >
-                返回错误位置
+                {t("返回错误位置")}
               </button>
             )}
           </p>
         )}
         <div className="r34-output-list">
-          {records.length > 0 && <h2>已生成的资料</h2>}
+          {records.length > 0 && <h2>{t("已生成的资料")}</h2>}
           {records.map((r) => (
             <article key={r.id}>
               <div>
@@ -402,9 +413,9 @@ export function ExportsPanel({ savable, onClose }) {
                   {kinds[r.options.kind]} · {r.options.format.toUpperCase()}
                 </strong>
                 <span className="wb-muted">
-                  版本 {r.lessonVersion} · 答案
-                  {r.options.includeAnswers ? "开" : "关"} · 注记
-                  {r.options.includeTeacherNotes ? "开" : "关"}
+                  {t("版本")} {r.lessonVersion} {t("· 答案")}
+                  {r.options.includeAnswers ? t("开") : t("关")} {t("· 注记")}
+                  {r.options.includeTeacherNotes ? t("开") : t("关")}
                 </span>
               </div>
               {r.fileId ? (
@@ -413,29 +424,29 @@ export function ExportsPanel({ savable, onClose }) {
                     className="wb-button"
                     onClick={() => setPreview(r.fileId)}
                   >
-                    预览成品
+                    {t("预览成品")}
                   </button>
                   <button
                     className="wb-button"
                     onClick={() =>
                       openLessonFile(
                         r.fileId,
-                        `${savable.input.title || "备课"}-${kinds[r.options.kind]}.${r.options.format}`,
+                        `${savable.input.title || "备课"}-${({ "lesson-plan": "教案 / 提纲", handout: "导学案 / 讲义", practice: "练习" })[r.options.kind]}.${r.options.format}`,
                       ).catch((e) => setError(e.message))
                     }
                   >
-                    下载
+                    {t("下载")}
                   </button>
                 </>
               ) : (
                 <span>
                   {{
-                    queued: "等待生成",
-                    running: "正在生成",
-                    cancelling: "正在停止",
-                    cancelled: "已停止",
-                    interrupted: "服务重启，需重新生成",
-                    failed: "生成失败，可重新生成",
+                    queued: t("等待生成"),
+                    running: t("正在生成"),
+                    cancelling: t("正在停止"),
+                    cancelled: t("已停止"),
+                    interrupted: t("服务重启，需重新生成"),
+                    failed: t("生成失败，可重新生成"),
                   }[r.job.state] ?? r.job.state}
                 </span>
               )}
@@ -455,18 +466,18 @@ export function ExportsPanel({ savable, onClose }) {
                     }
                   }}
                 >
-                  停止
+                  {t("停止")}
                 </button>
               )}
               {r.job.issues.map((issue, i) => (
-                <p key={i} role="alert">
-                  {issue.detail}
+                <p key={i} role="alert" title={issue.detail}>
+                  {Object.hasOwn(exportIssueKeys, issue.code) ? t(exportIssueKeys[issue.code]) : issue.detail}
                   {issue.field && (
                     <button
                       className="wb-text-button"
                       onClick={() => onClose(issue.field)}
                     >
-                      返回课稿检查
+                      {t("返回课稿检查")}
                     </button>
                   )}
                 </p>
@@ -476,7 +487,7 @@ export function ExportsPanel({ savable, onClose }) {
         </div>
       </div>
       <footer className="lesson-export-footer">
-        <span>{emptyPractice ? "至少选择一道题才能生成练习。" : "生成后可预览成品，再下载文件。"}</span>
+        <span>{emptyPractice ? t("至少选择一道题才能生成练习。") : t("生成后可预览成品，再下载文件。")}</span>
         {submit.pending ? (
           <button
             className="wb-button"
@@ -485,7 +496,7 @@ export function ExportsPanel({ savable, onClose }) {
               setRevision((n) => n + 1);
             }}
           >
-            重试确认生成请求
+            {t("重试确认生成请求")}
           </button>
         ) : (
           <button
@@ -494,8 +505,8 @@ export function ExportsPanel({ savable, onClose }) {
             onClick={create}
           >
             {submit.isRunning || savable.status === "saving"
-              ? "正在提交…"
-              : "保存并生成"}
+              ? t("正在提交…")
+              : t("保存并生成")}
           </button>
         )}
       </footer>

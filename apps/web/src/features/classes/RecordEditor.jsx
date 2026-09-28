@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { RecordContent } from './RecordContent.jsx';
 import { DocumentView } from '../workbench/materials/DocumentView.jsx';
 import { useScene } from '../workbench/useScene.js';
@@ -23,6 +25,7 @@ import { useSaveShortcut } from '../workbench/useSaveShortcut.js';
 export const RECORD_EXTRA_FIELDS = RECORD_FIELDS.map(field => [field.key, field.label]);
 
 export function RecordEditor({ accountKey, generation, record, onSaved, onClose }) {
+  const { t } = useTranslation('classes');
   const [pickerScene, patchPicker] = useScene(accountKey, `class-record-picker:${record.id}`, { open: false });
   const pickerOpen = pickerScene.open;
   const setPickerOpen = open => patchPicker({ open });
@@ -51,7 +54,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
       // every write still checks its version/ownership on the server. Later
       // conflict/adoption reads must fail normally rather than adopt a cache.
       if (error.problem?.kind === 'identity') throw error;
-      setReadWarning(error.problem || { message: '未能读取记录' });
+      setReadWarning(error.problem || { message: t("未能读取记录") });
       if (!initialRead) throw error;
       return knownRecord.current;
     }
@@ -91,9 +94,9 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
     return (
       <div className="c-record-editor" data-region="record-editor">
         <p className="wb-muted">
-          {savable.loadState === 'error' ? (savable.loadError?.message || '无法读取记录') : '正在加载记录…'}
+          {savable.loadState === 'error' ? (savable.loadError?.message || t("无法读取记录")) : t("正在加载记录…")}
         </p>
-        <button type="button" className="wb-button" name="record-close" onClick={onClose}>返回记录</button>
+        <button type="button" className="wb-button" name="record-close" onClick={onClose}>{t("返回记录")}</button>
       </div>
     );
   }
@@ -101,28 +104,28 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
   return (
     <div ref={editorRef} className="c-record-editor" data-region="record-editor">
       {readWarning && <div className="wb-inline-error" role="status" data-region="record-read-warning">
-        未能更新记录，当前显示上次内容；草稿保留，可移除异常关联后保存。
-        <button type="button" className="wb-button" onClick={() => setReload(value => value + 1)} disabled={savable.isSaving}>重试读取</button>
+        {t("未能更新记录，当前显示上次内容；草稿保留，可移除异常关联后保存。")}
+        <button type="button" className="wb-button" onClick={() => setReload(value => value + 1)} disabled={savable.isSaving}>{t("重试读取")}</button>
       </div>}
       <div className="c-editor-head">
-        <span className="wb-label">编辑记录</span>
-        <button type="button" className="wb-button" name="record-close" onClick={onClose}>返回记录</button>
+        <span className="wb-label">{t("编辑记录")}</span>
+        <button type="button" className="wb-button" name="record-close" onClick={onClose}>{t("返回记录")}</button>
       </div>
       <label className="wb-field">
-        <span className="wb-label">日期</span>
+        <span className="wb-label">{t("日期")}</span>
         <input
           className="wb-input"
           type="date"
-          aria-label="编辑记录日期"
+          aria-label={t("编辑记录日期")}
           value={input.recordedOn}
           onChange={(event) => setInput((current) => ({ ...current, recordedOn: event.target.value }))}
         />
       </label>
       <label className="wb-field">
-        <span className="wb-label">课堂记录</span>
+        <span className="wb-label">{t("课堂记录")}</span>
         <textarea
           className="wb-input c-textarea"
-          aria-label="编辑记录内容"
+          aria-label={t("编辑记录内容")}
           rows={3}
           value={input.note}
           onChange={(event) => setInput((current) => ({ ...current, note: event.target.value }))}
@@ -146,7 +149,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
       {savable.status === 'conflict' && (
         <ConflictResolution
           savable={savable}
-          hint="当前草稿保留在这里。采用服务器版本会丢弃本地输入，请先对照。"
+          hint={t("当前草稿保留在这里。采用服务器版本会丢弃本地输入，请先对照。")}
           onAdopt={async () => {
             const object = await savable.adoptServer();
             if (object) onSaved(object);
@@ -162,7 +165,7 @@ export function RecordEditor({ accountKey, generation, record, onSaved, onClose 
           )}
         />
       )}
-      <SaveActions savable={savable} saveLabel="保存修改" disabled={uploadBusy} />
+      <SaveActions savable={savable} saveLabel={t("保存修改")} disabled={uploadBusy} />
       <ModulePresence present={pickerOpen}>
       {pickerOpen && (
         <SourcePicker

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 const EYE = (
   <>
     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
@@ -15,13 +17,14 @@ const EYE_OFF = (
 );
 
 export default function PasswordToggle({ visible, onToggle }) {
+  const { t } = useTranslation('auth');
   return (
     <button
       className="ae-password-toggle"
       type="button"
-      aria-label={visible ? '隐藏密码' : '显示密码'}
+      aria-label={visible ? t("隐藏密码") : t("显示密码")}
       aria-pressed={visible}
-      title={visible ? '隐藏密码' : '显示密码'}
+      title={visible ? t("隐藏密码") : t("显示密码")}
       onClick={onToggle}
     >
       <svg

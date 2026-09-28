@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Icon } from "../workbench/chrome/icons.jsx";
 import { ModuleDisclosure } from "../workbench/ModuleMotion.jsx";
 
@@ -17,10 +18,11 @@ export function ResourceInfo({
   onRefresh,
   onOpenLesson,
 }) {
+  const { t } = useTranslation("resources");
   if (!item || !draft)
     return (
       <div className="res-info res-ui">
-        <p className="res-muted">正在读取资料信息…</p>
+        <p className="res-muted">{t("正在读取资料信息…")}</p>
       </div>
     );
   return (
@@ -32,7 +34,7 @@ export function ResourceInfo({
         <div>
           <strong>{file?.name ?? item.title}</strong>
           <span>
-            {item.deletedAt ? "已归档，恢复后可以继续整理" : "整理这份资料"}
+            {item.deletedAt ? t("已归档，恢复后可以继续整理") : t("整理这份资料")}
           </span>
         </div>
       </div>
@@ -43,10 +45,8 @@ export function ResourceInfo({
           onSave();
         }}
       >
-        <label>
-          名称
-          <input
-            aria-label="资源名称"
+        <label> {t("名称")} <input
+            aria-label={t("资源名称")}
             maxLength={200}
             value={draft.title}
             onChange={(event) => onEdit({ title: event.target.value })}
@@ -55,27 +55,25 @@ export function ResourceInfo({
         </label>
         <div className="res-field">
           <div className="res-field-heading">
-            <label htmlFor="resource-folder">文件夹</label>
+            <label htmlFor="resource-folder">{t("文件夹")}</label>
             <button
               type="button"
               className="res-text-button"
               disabled={disabled || !!item.deletedAt}
               onClick={() => onManage("folder")}
             >
-              <Icon name="plus" size={13} />
-              新建
-            </button>
+              <Icon name="plus" size={13} /> {t("新建")} </button>
           </div>
           <select
             id="resource-folder"
-            aria-label="资源文件夹"
+            aria-label={t("资源文件夹")}
             value={draft.folderId ?? ""}
             onChange={(event) =>
               onEdit({ folderId: event.target.value || null })
             }
             disabled={!!item.deletedAt}
           >
-            <option value="">未归入文件夹</option>
+            <option value="">{t("未归入文件夹")}</option>
             {tax.folders.map((folder) => (
               <option key={folder.id} value={folder.id}>
                 {folder.name}
@@ -84,7 +82,7 @@ export function ResourceInfo({
           </select>
         </div>
         <fieldset disabled={!!item.deletedAt}>
-          <legend>标签</legend>
+          <legend>{t("标签")}</legend>
           <div className="res-tag-options">
             {tax.tags.map((tag) => (
               <label key={tag.id} className="res-tag-option">
@@ -110,14 +108,12 @@ export function ResourceInfo({
             onClick={() => onManage("tag")}
           >
             <Icon name="plus" size={13} />
-            {tax.tags.length ? "新建标签" : "添加第一个标签"}
+            {tax.tags.length ? t("新建标签") : t("添加第一个标签")}
           </button>
         </fieldset>
-        <label>
-          备注
-          <textarea
-            aria-label="资源笔记"
-            placeholder="记下用途、使用方法或下次备课的想法…"
+        <label> {t("备注")} <textarea
+            aria-label={t("资源笔记")}
+            placeholder={t("记下用途、使用方法或下次备课的想法…")}
             maxLength={20000}
             value={draft.note}
             onChange={(event) => onEdit({ note: event.target.value })}
@@ -130,23 +126,19 @@ export function ResourceInfo({
               type="submit"
               className="res-primary"
               disabled={disabled || !dirty || !draft.title.trim()}
-            >
-              保存修改
-            </button>
+            > {t("保存修改")} </button>
             <span className="res-muted" role="status">
-              {dirty ? "有未保存的修改" : "资料信息已保存"}
+              {dirty ? t("有未保存的修改") : t("资料信息已保存")}
             </span>
           </div>
         )}
       </form>
       <section className="res-usages">
         <h2>
-          <Icon name="lessons" size={16} />
-          用于哪些备课<span className="res-count">{usages.length}</span>
+          <Icon name="lessons" size={16} /> {t("用于哪些备课")}<span className="res-count">{usages.length}</span>
         </h2>
         {usageError ? (
-          <p role="alert">
-            使用位置暂时无法读取。<button onClick={onRefresh}>重试</button>
+          <p role="alert"> {t("使用位置暂时无法读取。")}<button onClick={onRefresh}>{t("重试")}</button>
           </p>
         ) : usages.length ? (
           usages.map((usage) => (
@@ -157,33 +149,33 @@ export function ResourceInfo({
             >
               <span>{usage.lessonTitle}</span>
               <small>
-                {usage.sectionTitle ?? "备用材料"}
+                {usage.sectionTitle ?? t("备用材料")}
                 {usage.adoptedVersion < item.version &&
                   (() => {
                     const adopted = fileHistory.find(
                       (entry) => entry.version <= usage.adoptedVersion,
                     );
                     return !adopted
-                      ? " · 资料有更新"
+                      ? t(" · 资料有更新")
                       : adopted.fileId !== item.fileId ||
                           adopted.supplementPreviewFileId !==
                             item.supplementPreviewFileId
-                        ? " · 文件有更新"
-                        : " · 资料信息有更新";
+                        ? t(" · 文件有更新")
+                        : t(" · 资料信息有更新");
                   })()}
               </small>
               <Icon name="arrowRight" size={14} />
             </button>
           ))
         ) : (
-          <p className="res-muted">尚未加入备课</p>
+          <p className="res-muted">{t("尚未加入备课")}</p>
         )}
       </section>
-      <ModuleDisclosure title="原文件信息" className="res-file-details">
+      <ModuleDisclosure title={t("原文件信息")} className="res-file-details">
         <div className="res-file-info">
           <strong>{file?.name}</strong>
-          <span>资料保存版本 {item.version}</span>
-          <p>更新文件会保留名称、文件夹、标签与备注。</p>
+          <span>{t("资料保存版本")} {item.version}</span>
+          <p>{t("更新文件会保留名称、文件夹、标签与备注。")}</p>
         </div>
       </ModuleDisclosure>
     </div>

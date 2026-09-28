@@ -3,8 +3,8 @@ import { moduleCatalog } from './moduleCatalog.js';
 // Account data keeps absent module IDs. Filtering belongs only to the view.
 export function defaultNavigation(catalog = moduleCatalog) {
   return { structureVersion: 1, defaultLayoutVersion: 1, groups: [
-    { id: 'teaching-group', name: '教学', moduleIds: catalog.filter(m => m.navigation === 'sidebar').map(m => m.id) },
-    { id: 'ungrouped', name: '未分组', moduleIds: [] }
+    { id: 'teaching-group', name: '教学', nameKey: 'teaching', moduleIds: catalog.filter(m => m.navigation === 'sidebar').map(m => m.id) },
+    { id: 'ungrouped', name: '未分组', nameKey: 'ungrouped', moduleIds: [] }
   ], hiddenModuleIds: [] };
 }
 
@@ -18,6 +18,7 @@ export const navigationLayoutSchema = {
       type: 'object', additionalProperties: false, required: ['id', 'name', 'moduleIds'], properties: {
         id: { type: 'string', minLength: 1, maxLength: 100, pattern: '^[a-zA-Z0-9_-]+$' },
         name: { type: 'string', minLength: 1, maxLength: 80, pattern: '\\S' },
+        nameKey: { type: 'string', enum: ['teaching', 'ungrouped'] },
         moduleIds: { type: 'array', maxItems: 500, items: { type: 'string', minLength: 1, maxLength: 100, pattern: '^[a-zA-Z0-9_-]+$' } }
       }
     } },
@@ -37,6 +38,10 @@ export function validNavigation(layout) {
     if (!group || !id(group.id) || groups.has(group.id) || typeof group.name !== 'string' ||
         !group.name.trim() || group.name.length > 80 || !Array.isArray(group.moduleIds) || group.moduleIds.length > 500) return false;
     groups.add(group.id);
+    if (group.nameKey !== undefined && !(
+      (group.nameKey === 'teaching' && group.id === 'teaching-group' && group.name === '教学') ||
+      (group.nameKey === 'ungrouped' && group.id === 'ungrouped' && group.name === '未分组')
+    )) return false;
     for (const moduleId of group.moduleIds) {
       if (!id(moduleId) || modules.has(moduleId)) return false;
       modules.add(moduleId);

@@ -1,11 +1,12 @@
 openapi: 3.2.1
 info:
   title: TeachBuddy 账户入口契约
-  version: 1.0.0-rc.2
-  description: AUTH-CONTRACT-CORRECTION@1 限定修订候选；已由限定独立审查冻结，不代表已实现。docs/contracts/auth.md 拥有跨操作语义与首错顺序，docs/contracts/auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
+  version: 1.1.0-candidate.1
+  description: I01-I07 沿用 AUTH-CONTRACT-CORRECTION@1 冻结契约；I08 为账户删除扩展候选，独立验收状态以运行台账为准。docs/contracts/auth.md 拥有跨操作语义与首错顺序，docs/contracts/auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
     no-store。
-x-contract-status: frozen
+x-contract-status: candidate
 x-accepted-source:
+  scope: I01-I07
   commit: c7420af8c2740ddee5e01caa6da8bf7f57c134e2
   prototype-tree: 6f4a7d30c16a67b44af1e7a9c1157abb6d065b6b
   integrated-commit: 5b12a9063cc0b692103df73997cb8963506bd9ea
@@ -672,6 +673,104 @@ paths:
             examples:
               sample:
                 $ref: '#/components/examples/Logout'
+  /api/auth/account-deletion:
+    post:
+      operationId: deleteAccount
+      summary: 删除当前账户并核实原请求结果
+      x-interaction-id: I08
+      x-contract-status: candidate
+      description: 首次必须为当前页面的真实 active 会话并确认账户邮箱。先撤销全部会话、锁定账户，完成全部受管数据清理才返回204；失败或未知必须保留原请求和Cookie核实。重复仅由原Cookie与完全相同body证明，不授予业务身份。详见auth.md的I08。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      security:
+      - SessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountDeletionRequest'
+      responses:
+        '204':
+          description: 账户和受管资料已清理，或原请求已确认完成；无body，不清容器Cookie。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '403':
+          $ref: '#/components/responses/RequestNotAllowed'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '401':
+          description: 请求未获接受；type确定语义，字段错误附field。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ProblemDetailsBase'
+                - properties:
+                    type:
+                      enum:
+                      - /problems/auth/session-invalid
+        '409':
+          description: 请求未获接受；type确定语义，字段错误附field。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ProblemDetailsBase'
+                - properties:
+                    type:
+                      enum:
+                      - /problems/auth/browser-context-required
+                      - /problems/auth/deletion-in-progress
+        '422':
+          description: 请求未获接受；type确定语义，字段错误附field。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ProblemDetailsBase'
+                - properties:
+                    type:
+                      enum:
+                      - /problems/auth/invalid-request-body
+                      - /problems/auth/unknown-field
+                      - /problems/auth/required-field
+                      - /problems/auth/invalid-field-type
+                      - /problems/auth/invalid-field-value
+                      - /problems/auth/email-empty
+                      - /problems/auth/email-invalid-format
+                      - /problems/auth/deletion-confirmation-mismatch
+        '503':
+          description: 删除未完成或存储不可用；不承诺回滚，保持原请求核实。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ProblemDetailsBase'
+                - properties:
+                    type:
+                      enum:
+                      - /problems/auth/deletion-incomplete
+                      - /problems/auth/account-store-unavailable
+                      - /problems/auth/service-unavailable
 components:
   securitySchemes:
     SessionCookie:
@@ -1542,6 +1641,22 @@ components:
       - sessionId
       additionalProperties: false
       description: 定向撤销页面绑定或同容器恢复目标；null 不选择其他会话，无目标也返回204。
+    AccountDeletionRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - requestId
+      - sessionId
+      - email
+      properties:
+        requestId:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+          description: 加密随机源生成的32字节随机串，发出前在本设备持久保存；所有核实复用原值。
+        sessionId:
+          $ref: '#/components/schemas/OpaqueId'
+        email:
+          $ref: '#/components/schemas/EmailInput'
     ProblemDetailsBase:
       type: object
       properties:

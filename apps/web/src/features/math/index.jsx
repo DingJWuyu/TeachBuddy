@@ -1,3 +1,6 @@
+import i18n from '../../i18n/index.js';
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
 import { addSurface } from './SurfaceTools.jsx';
 import { constructionIssue } from '../../../../../packages/shared/src/math/geometry.js';
 import { useMathConfirm } from "./useMathConfirm.jsx";
@@ -11,7 +14,7 @@ import { reselectDeviceFile } from '../workbench/deviceRequestStore.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import DynamicPreview from "./DynamicPreview.jsx";
 import GraphTools from "./GraphTools.jsx";
-import WorkspaceHome, { WorkIllustration } from "./WorkspaceHome.jsx";
+import WorkspaceHome, { WorkIllustration, mathStatusLabel } from "./WorkspaceHome.jsx";
 import GraphicPreview from "./GraphicPreview.jsx";
 import FormulaEditor from "./FormulaEditor.jsx";
 import FormulaPreview from "./FormulaPreview.jsx";
@@ -40,67 +43,66 @@ import { useDraftHistory } from './useDraftHistory.js';
 import WorkHistory from './WorkHistory.jsx';
 const base = "/api/modules/math/v1/works";
 const names = {
-  dynamic: "演示",
+  get dynamic() { return t("演示"); },
   html: "HTML",
-  name: "参数名",
-  initial: "初值",
-  step: "步长",
-  formula: "公式",
-  plane: "平面图形",
-  space: "空间图形",
-  function: "函数",
-  piecewise: "分段函数",
-  face: "面",
-  section: "截面",
-  tickLabels: "刻度与轴名",
-  point: "点",
-  line: "线段",
-  ellipse: "圆 / 椭圆",
-  polyline: "多边形",
-  text: "文字",
-  id: "名称",
+  get name() { return t("参数名"); },
+  get initial() { return t("初值"); },
+  get step() { return t("步长"); },
+  get formula() { return t("公式"); },
+  get plane() { return t("平面图形"); },
+  get space() { return t("空间图形"); },
+  get function() { return t("函数"); },
+  get piecewise() { return t("分段函数"); },
+  get face() { return t("面"); },
+  get section() { return t("截面"); },
+  get tickLabels() { return t("刻度与轴名"); },
+  get point() { return t("点"); },
+  get line() { return t("线段"); },
+  get ellipse() { return t("圆 / 椭圆"); },
+  get polyline() { return t("多边形"); },
+  get text() { return t("文字"); },
+  get id() { return t("名称"); },
   x: "x",
   y: "y",
   z: "z",
-  expression: "表达式",
-  min: "最小值",
-  max: "最大值",
-  text: "文字",
-  dx: "水平偏移",
-  dy: "垂直偏移",
-  stroke: "颜色",
-  fill: "填充",
-  width: "宽度",
-  dash: "线型",
-  fontSize: "字号",
-  closed: "闭合",
-  arrow: "箭头",
-  from: "起点",
-  to: "终点",
-  rx: "水平半径",
-  ry: "垂直半径",
-  xMin: "x 最小",
-  xMax: "x 最大",
-  yMin: "y 最小",
-  yMax: "y 最大",
-  height: "高度",
-  axes: "坐标轴",
-  grid: "网格",
-  at: "坐标",
-  center: "中心",
-  domain: "定义域",
-  label: "标签",
-  style: "样式",
-  points: "顶点",
-  azimuth: "方位角",
-  elevation: "仰角",
+  get expression() { return t("表达式"); },
+  get min() { return t("最小值"); },
+  get max() { return t("最大值"); },
+  get dx() { return t("水平偏移"); },
+  get dy() { return t("垂直偏移"); },
+  get stroke() { return t("颜色"); },
+  get fill() { return t("填充"); },
+  get width() { return t("宽度"); },
+  get dash() { return t("线型"); },
+  get fontSize() { return t("字号"); },
+  get closed() { return t("闭合"); },
+  get arrow() { return t("箭头"); },
+  get from() { return t("起点"); },
+  get to() { return t("终点"); },
+  get rx() { return t("水平半径"); },
+  get ry() { return t("垂直半径"); },
+  get xMin() { return t("x 最小"); },
+  get xMax() { return t("x 最大"); },
+  get yMin() { return t("y 最小"); },
+  get yMax() { return t("y 最大"); },
+  get height() { return t("高度"); },
+  get axes() { return t("坐标轴"); },
+  get grid() { return t("网格"); },
+  get at() { return t("坐标"); },
+  get center() { return t("中心"); },
+  get domain() { return t("定义域"); },
+  get label() { return t("标签"); },
+  get style() { return t("样式"); },
+  get points() { return t("顶点"); },
+  get azimuth() { return t("方位角"); },
+  get elevation() { return t("仰角"); },
 };
 function hasContent(draft) {
   if (!draft) return false;
   if (draft.id || draft.source.kind === 'html' || Object.keys(draft.parameterEdits ?? {}).length) return true;
   const kind = draft.source.kind;
   const empty = kind === 'dynamic' ? emptyDynamicSource() : emptySource(kind);
-  return draft.title !== `未命名${names[kind]}` || JSON.stringify(draft.source) !== JSON.stringify(empty);
+  return draft.title !== `未命名${({ dynamic: "演示", html: "HTML", formula: "公式", plane: "平面图形", space: "空间图形" })[kind]}` || JSON.stringify(draft.source) !== JSON.stringify(empty);
 }
 function fitSpace(source) {
   const points = source.points.map(p => projectSpace(p, source.azimuth, source.elevation));
@@ -108,6 +110,7 @@ function fitSpace(source) {
   return { ...source, viewport: { ...source.viewport, xMin: Math.min(...xs) - 1, xMax: Math.max(...xs) + 1, yMin: Math.min(...ys) - 1, yMax: Math.max(...ys) + 1 } };
 }
 function Fields({ value, onChange, prefix = "" }) {
+  const { t } = useTranslation('math');
   return (
     <div className="math-fields">
       {Object.entries(value)
@@ -147,7 +150,7 @@ function Fields({ value, onChange, prefix = "" }) {
                             })
                           }
                         >
-                          移除顶点 {i + 1}
+                          {t("移除顶点")} {i + 1}
                         </button>
                       </div>
                     ))}{" "}
@@ -160,7 +163,7 @@ function Fields({ value, onChange, prefix = "" }) {
                         })
                       }
                     >
-                      添加顶点
+                      {t("添加顶点")}
                     </button>
                   </>
                 ) : (
@@ -192,12 +195,12 @@ function Fields({ value, onChange, prefix = "" }) {
                     <option key={v} value={v}>
                       {
                         {
-                          solid: "实线",
-                          dashed: "虚线",
-                          dotted: "点线",
-                          none: "无",
-                          end: "终点",
-                          both: "两端",
+                          solid: t("实线"),
+                          dashed: t("虚线"),
+                          dotted: t("点线"),
+                          none: t("无"),
+                          end: t("终点"),
+                          both: t("两端"),
                         }[v]
                       }
                     </option>
@@ -253,6 +256,7 @@ function AuthenticatedMath({ route }) {
   );
 }
 function MathSession({ transport, route }) {
+  const { t } = useTranslation('math');
   const shell = useContext(ShellContext);
   const Tools = shell ? MathTools : "aside";
   const [font, setFont] = useState(null);
@@ -266,7 +270,7 @@ function MathSession({ transport, route }) {
         if (live) setFont(value);
       },
       () => {
-        if (live) setFontError("本地字体加载失败，预览暂不可用。");
+        if (live) setFontError(t("本地字体加载失败，预览暂不可用。"));
       },
     );
     return () => {
@@ -329,7 +333,7 @@ function MathSession({ transport, route }) {
         if (live) setImportPending(value ?? null);
       },
       () => {
-        if (live) setMessage("无法恢复待确认的文件上传，请检查设备存储");
+        if (live) setMessage(t("无法恢复待确认的文件上传，请检查设备存储"));
       },
     );
     return () => {
@@ -348,7 +352,7 @@ function MathSession({ transport, route }) {
       file && !importPending &&
       hasContent(draft) &&
       status !== "已保存" &&
-      !await confirm("导入会替换当前未保存稿，是否继续？")
+      !await confirm(t("导入会替换当前未保存稿，是否继续？"))
     )
       return;
     const epoch = generation.current;
@@ -385,19 +389,19 @@ function MathSession({ transport, route }) {
     try {
       if (!request) {
         if (!file) return;
-        if (file.size > 1024 * 1024) throw new Error('制作源超过 1 MiB，请选择工坊下载的 JSON 文件。');
+        if (file.size > 1024 * 1024) throw new Error(t("制作源超过 1 MiB，请选择工坊下载的 JSON 文件。"));
         let source;
-        try { source = JSON.parse(await file.text()); } catch { throw new Error('文件不是有效的制作源 JSON，当前草稿已保留。'); }
+        try { source = JSON.parse(await file.text()); } catch { throw new Error(t("文件不是有效的制作源 JSON，当前草稿已保留。")); }
         if (!source || source.schemaVersion !== 1 || !['formula', 'plane', 'space', 'dynamic'].includes(source.kind))
-          throw new Error('请选择工坊下载的公式或图形制作源 JSON；HTML 演示请使用 HTML 导入入口。');
+          throw new Error(t("请选择工坊下载的公式或图形制作源 JSON；HTML 演示请使用 HTML 导入入口。"));
         if (epoch !== generation.current) return;
-        if (hasContent(draftRef.current) && status !== '已保存' && !await confirm('导入作品会替换当前未保存稿，是否继续？')) return;
+        if (hasContent(draftRef.current) && status !== "已保存" && !await confirm(t("导入作品会替换当前未保存稿，是否继续？"))) return;
         request = { kind: 'import-source', path: base, method: 'POST', key: crypto.randomUUID(),
-          input: { title: file.name.replace(/\.json$/i, '').slice(0, 200) || '导入作品', source, originalFileId: null } };
+          input: { title: file.name.replace(/\.json$/i, '').slice(0, 200) || t("导入作品"), source, originalFileId: null } };
       }
       if (epoch !== generation.current) return;
       if (!writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status, selected, search, deleted, format, background, exportWidth }))
-        throw new Error('设备存储空间不足，请先整理设备草稿，再重试导入。');
+        throw new Error(t("设备存储空间不足，请先整理设备草稿，再重试导入。"));
       setPending(request);
       // The existing creation endpoint validates the complete source before it
       // reaches an editor. An invalid import never replaces the current draft.
@@ -405,8 +409,8 @@ function MathSession({ transport, route }) {
       const saved = await mathRequest(request.path, request);
       if (epoch !== generation.current) return;
       setPending(null); setDraft(saved); draftRef.current = saved;
-      history.reset(saved); setSelected(0); setConflict(null); setStatus('已保存'); setDeleted(false);
-      setMessage('制作源已导入为新作品，可以继续修改。');
+      history.reset(saved); setSelected(0); setConflict(null); setStatus("已保存"); setDeleted(false);
+      setMessage(t("制作源已导入为新作品，可以继续修改。"));
       patchView({ screen: 'editor', toolTab: 'objects', selectionKind: 'object', exportOpen: false, formulaMode: null, formulaBuilder: null });
       if (shell?.panelMode === 'math-tools') shell.closePanel();
       if (!deleted) await refresh();
@@ -510,9 +514,9 @@ function MathSession({ transport, route }) {
     if (storage && loadedStorage === storage && !locked) {
       try {
         if (!writeLocal(account, 'math-workspace', { draft, pending, status, selected, search, deleted, format, background, exportWidth }))
-          setMessage('设备草稿无法保留，请先保存到服务端');
+          setMessage(t("设备草稿无法保留，请先保存到服务端"));
       } catch {
-        setMessage("设备草稿空间不足，请保存到服务端");
+        setMessage(t("设备草稿空间不足，请保存到服务端"));
       }
     }
   }, [draft, pending, status, storage, loadedStorage, locked, selected, search, deleted, format, background, exportWidth]);
@@ -549,8 +553,8 @@ function MathSession({ transport, route }) {
     const saved = await mathRequest(`${base}/${started.id}`);
     if (epoch !== generation.current || draftRef.current !== started || inFlight.current || liveSave.current.pending) return;
     if (saved.version === started.version) return;
-    if (liveSave.current.status === '已保存') setDraft(saved);
-    else { setConflict(saved); setMessage('服务器内容已变化，本地稿保留，请对照当前版本'); }
+    if (liveSave.current.status === "已保存") setDraft(saved);
+    else { setConflict(saved); setMessage(t("服务器内容已变化，本地稿保留，请对照当前版本")); }
   });
   useEffect(() => {
     if (account) refresh();
@@ -562,23 +566,23 @@ function MathSession({ transport, route }) {
     }
     setMessage(
       e.status === 409
-        ? "版本冲突，本地稿已保留"
+        ? t("版本冲突，本地稿已保留")
         : e.status === 503
-          ? "暂时无法保存或读取，请稍后确认"
+          ? t("暂时无法保存或读取，请稍后确认")
           : e.problem?.field
-            ? `请检查 ${e.problem.field}`
+            ? t("请检查 {{field}}", { field: e.problem.field })
             : e.message,
     );
   }
   function edit(next, track = true) {
     if (draftRef.current?.deletedAt && next?.id === draftRef.current.id) return;
     if (pending?.kind && pending.kind !== "save") {
-      setMessage("请先确认当前操作结果");
+      setMessage(t("请先确认当前操作结果"));
       return;
     }
     if (track && draftRef.current) history.record(draftRef.current, next);
     draftRef.current = next;
-    writeLocal(account, 'math-workspace', { draft: next, pending, status: '未保存', selected, search, deleted, format, background, exportWidth });
+    writeLocal(account, 'math-workspace', { draft: next, pending, status: "未保存", selected, search, deleted, format, background, exportWidth });
     setDraft(next);
     setStatus("未保存");
     setMessage("");
@@ -588,18 +592,18 @@ function MathSession({ transport, route }) {
   }
   async function newDraft(kind) {
     if (pending) {
-      setMessage("请先确认上次保存结果");
+      setMessage(t("请先确认上次保存结果"));
       return;
     }
     if (
       hasContent(draft) &&
       status !== "已保存" &&
-      !await confirm("新建作品会替换当前未保存稿，是否继续？")
+      !await confirm(t("新建作品会替换当前未保存稿，是否继续？"))
     )
       return;
     history.reset(null);
     edit({
-      title: `未命名${names[kind]}`,
+      title: `未命名${({ dynamic: "演示", html: "HTML", formula: "公式", plane: "平面图形", space: "空间图形" })[kind]}`,
       source: kind === "dynamic" ? emptyDynamicSource() : emptySource(kind),
       originalFileId: null,
     }, false);
@@ -611,13 +615,13 @@ function MathSession({ transport, route }) {
   }
   async function open(item) {
     if (pending) {
-      setMessage("请先确认上次保存结果");
+      setMessage(t("请先确认上次保存结果"));
       return;
     }
     if (
       status !== "已保存" &&
       hasContent(draft) &&
-      !await confirm("打开作品会替换当前未保存稿，是否继续？")
+      !await confirm(t("打开作品会替换当前未保存稿，是否继续？"))
     )
       return;
     const epoch = generation.current;
@@ -640,7 +644,7 @@ function MathSession({ transport, route }) {
     if (inFlight.current) return;
     if (pending?.kind === 'import-source') return importSource();
     if (!pending && Object.keys(draft.parameterEdits ?? {}).length) {
-      setMessage("请先应用参数设置，再保存作品");
+      setMessage(t("请先应用参数设置，再保存作品"));
       return;
     }
     if (["deletion", "purge"].includes(pending?.kind)) return deletion();
@@ -650,7 +654,7 @@ function MathSession({ transport, route }) {
       draft.source.kind === "html" &&
       (!draft.id || status !== "已保存")
     ) {
-      setMessage("请先保存当前源码，再另存作品");
+      setMessage(t("请先保存当前源码，再另存作品"));
       return;
     }
     const epoch = generation.current,
@@ -715,7 +719,7 @@ function MathSession({ transport, route }) {
     const operation = Symbol("math-request");
     inFlight.current = operation;
     setBusy(true);
-    writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status: '保存结果待确认', selected, search, deleted, format, background, exportWidth });
+    writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status: "保存结果待确认", selected, search, deleted, format, background, exportWidth });
     setPending(request);
     setStatus("保存中");
     setMessage("");
@@ -767,11 +771,11 @@ function MathSession({ transport, route }) {
   async function exportFile() {
     if (inFlight.current) return;
     if (pending && pending.kind !== "export") {
-      setMessage("请先确认当前操作结果");
+      setMessage(t("请先确认当前操作结果"));
       return;
     }
     if (!pending && (!draft?.id || status !== "已保存")) {
-      setMessage("请先保存当前作品");
+      setMessage(t("请先保存当前作品"));
       return;
     }
     const epoch = generation.current;
@@ -793,7 +797,7 @@ function MathSession({ transport, route }) {
     const operation = Symbol("math-request");
     inFlight.current = operation;
     setBusy(true);
-    writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status: '保存结果待确认', selected, search, deleted, format, background, exportWidth });
+    writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status: "保存结果待确认", selected, search, deleted, format, background, exportWidth });
     setPending(request);
     try {
       const result = await mathRequest(request.path, request);
@@ -828,16 +832,16 @@ function MathSession({ transport, route }) {
   async function deletion(permanent = false, target = draftRef.current) {
     if (inFlight.current) return;
     if (pending && !['deletion', 'purge'].includes(pending.kind)) {
-      setMessage('请先确认当前操作结果');
+      setMessage(t("请先确认当前操作结果"));
       return;
     }
-    if (!pending && (!target?.id || (target.id === draftRef.current?.id && status !== '已保存'))) {
-      setMessage('请先保存当前修改，再归档作品');
+    if (!pending && (!target?.id || (target.id === draftRef.current?.id && status !== "已保存"))) {
+      setMessage(t("请先保存当前修改，再归档作品"));
       return;
     }
     if (!pending && permanent && !await confirm(
-      `彻底删除“${target.title}”？作品及历史版本将无法恢复。已有备课中采用的内容和已下载文件仍保留。`,
-      { title: '彻底删除作品', confirmLabel: '彻底删除' },
+      t("彻底删除“{{title}}”？作品及历史版本将无法恢复。已有备课中采用的内容和已下载文件仍保留。", { title: target.title }),
+      { title: t("彻底删除作品"), confirmLabel: t("彻底删除") },
     )) return;
     const epoch = generation.current;
     const request = pending ?? {
@@ -863,11 +867,11 @@ function MathSession({ transport, route }) {
       setDraft(next);
       setPending(null);
       setConflict(null);
-      if (currentTarget) setStatus('已保存');
-      writeLocal(account, 'math-workspace', { draft: next, pending: null, status: currentTarget ? '已保存' : status, selected, search, deleted, format, background, exportWidth });
+      if (currentTarget) setStatus("已保存");
+      writeLocal(account, 'math-workspace', { draft: next, pending: null, status: currentTarget ? "已保存" : status, selected, search, deleted, format, background, exportWidth });
       if (removed && currentTarget) goHome();
       if (request.kind === 'deletion' && request.input.deleted) setDeleted(false);
-      setMessage(request.kind === 'purge' ? '作品已彻底删除' : request.input.deleted ? '作品已归档，可在“已归档”中恢复' : '作品已恢复');
+      setMessage(request.kind === 'purge' ? t("作品已彻底删除") : request.input.deleted ? t("作品已归档，可在“已归档”中恢复") : t("作品已恢复"));
       refresh();
     } catch (e) {
       if (epoch !== generation.current || inFlight.current !== operation) return;
@@ -898,7 +902,7 @@ function MathSession({ transport, route }) {
         (object, index) => index !== selected && object.id === next.id,
       )
     ) {
-      setMessage("对象标识已存在，请使用不同标识");
+      setMessage(t("对象标识已存在，请使用不同标识"));
       return;
     }
     const replacement = objects.map((v, i) => i === selected ? next : v);
@@ -907,7 +911,7 @@ function MathSession({ transport, route }) {
       ...e, construction: { ...e.construction, refs: e.construction.refs.map(id => id === renamed.from ? renamed.to : id) },
     } : e);
     if (draft.source.scene && constructionIssue(references)) {
-      setMessage('构造引用须有效且不能形成循环'); return;
+      setMessage(t("构造引用须有效且不能形成循环")); return;
     }
     source(
       updateObjects(
@@ -956,15 +960,15 @@ function MathSession({ transport, route }) {
     requestAnimationFrame(() => document.getElementById('math-start-heading')?.focus({ preventScroll: true }));
   }
   async function discard() {
-    if (pending || busy) { setMessage('请先确认当前操作结果'); return; }
-    if (!await confirm('丢弃本设备的未保存修改？已保存的作品仍会保留。')) return;
+    if (pending || busy) { setMessage(t("请先确认当前操作结果")); return; }
+    if (!await confirm(t("丢弃本设备的未保存修改？已保存的作品仍会保留。"))) return;
     setDraft(null); draftRef.current = null; setMessage(''); setConflict(null);
   }
   function resume() { patchView({ screen: 'editor' }); }
   async function useTemplate() {
     const kind = draft.source.kind;
     const empty = kind === 'dynamic' ? emptyDynamicSource() : emptySource(kind);
-    if (JSON.stringify(draft.source) !== JSON.stringify(empty) && !await confirm('使用示例会替换当前图形及设置，是否继续？')) return;
+    if (JSON.stringify(draft.source) !== JSON.stringify(empty) && !await confirm(t("使用示例会替换当前图形及设置，是否继续？"))) return;
     const example = kind === 'dynamic' ? dynamicSource() : kind === 'space' ? fitSpace(cubeSource()) : { ...empty, scene: { ...empty.scene, elements: [{ ...newElement('function', 'f1'), expression: 'x^2' }] } };
     edit({ ...draft, source: example, parameterEdits: {} });
     setSelected(0); patchView({ selectionKind: 'object' });
@@ -993,13 +997,13 @@ function MathSession({ transport, route }) {
     let next;
     if (kind === 'edge') next = { ...draft.source, edges: draft.source.edges.filter((_, i) => i !== selected) };
     else if (kind === 'face' || kind === 'section') {
-      if (kind === 'face' && draft.source.sections?.length && !await confirm('移除此面也会移除依赖完整多面体的截面，是否继续？')) return;
+      if (kind === 'face' && draft.source.sections?.length && !await confirm(t("移除此面也会移除依赖完整多面体的截面，是否继续？"))) return;
       const key = kind === 'face' ? 'faces' : 'sections';
       next = { ...draft.source, [key]: draft.source[key].filter((_, i) => i !== selected), ...(kind === 'face' && draft.source.sections ? { sections: [] } : {}) };
     } else {
       next = updateObjects(draft.source, objects.filter((_, i) => i !== selected));
       const dependents = draft.source.scene ? objects.length - next.scene.elements.length - 1 : (draft.source.faces?.length ?? 0) - (next.faces?.length ?? 0) + (draft.source.sections?.length ?? 0) - (next.sections?.length ?? 0);
-      if (dependents > 0 && !await confirm(`移除此对象也会移除 ${dependents} 个依赖它的构造、面或截面，是否继续？`)) return;
+      if (dependents > 0 && !await confirm(t("移除此对象也会移除 {{count}} 个依赖它的构造、面或截面，是否继续？", { count: dependents }))) return;
     }
     source(next); setSelected(0); patchView({ selectionKind: 'object' });
   }
@@ -1024,15 +1028,15 @@ function MathSession({ transport, route }) {
   }, [canChangeHistory, history.canUndo, history.canRedo, draft]);
   async function restoreVersion(version) {
     if (!canChangeHistory) return;
-    if (status !== '已保存' && !await confirm('恢复历史版本会替换当前未保存修改，是否继续？')) return;
+    if (status !== "已保存" && !await confirm(t("恢复历史版本会替换当前未保存修改，是否继续？"))) return;
     edit({ ...draftRef.current, title: version.title, source: version.source, htmlText: undefined, htmlUploadKey: undefined, parameterEdits: {} });
     setHistoryOpen(false); setSelected(0);
     patchView({ formulaMode: null, formulaBuilder: null, selectionKind: 'object' });
-    setMessage(`已恢复版本 ${version.version} 为草稿，保存后生成新版本。`);
+    setMessage(t("已恢复版本 {{version}} 为草稿，保存后生成新版本。", { version: version.version }));
   }
   async function makeDynamicCopy() {
     if (!canChangeHistory || draft.source.kind !== 'plane') return;
-    if (status !== '已保存') { setMessage('请先保存平面图形，再制作动态副本。'); return; }
+    if (status !== "已保存") { setMessage(t("请先保存平面图形，再制作动态副本。")); return; }
     const suffix = ' · 动态演示';
     const next = { title: `${draft.title.slice(0, 200 - suffix.length)}${suffix}`, originalFileId: null,
       source: { ...emptyDynamicSource(), scene: structuredClone(draft.source.scene) } };
@@ -1040,7 +1044,7 @@ function MathSession({ transport, route }) {
     if (route?.workId) shell?.navigate('/math');
     setFormat('html'); setSelected(0); setConflict(null);
     patchView({ selectionKind: 'object', exportOpen: false }); showTools('parameters');
-    setMessage('已保留原图。设置参数，并在图形表达式中使用参数名；保存后建立独立的动态作品。');
+    setMessage(t("已保留原图。设置参数，并在图形表达式中使用参数名；保存后建立独立的动态作品。"));
   }
   function expandTool(key, open) {
     patchView(current => ({ groups: { ...current.groups, [key]: open } }));
@@ -1048,32 +1052,32 @@ function MathSession({ transport, route }) {
   if (locked)
     return (
       <main className="math-lock">
-        <h1>请重新验证身份</h1>
-        <p>原账户草稿已保留</p>
-        <button onClick={identify}>重新验证</button>
+        <h1>{t("请重新验证身份")}</h1>
+        <p>{t("原账户草稿已保留")}</p>
+        <button onClick={identify}>{t("重新验证")}</button>
       </main>
     );
   return (
     <div className="math-workbench wb-module">
-      <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
+      <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== "已保存"} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
       {confirmationDialog}
       <section className="math-main">
         <header className="math-workspace-header">
-          <div className="math-workspace-identity"><span className="math-module-icon"><Icon name="math" size={25}/></span><h1 className="math-heading">数学工坊</h1></div>
+          <div className="math-workspace-identity"><span className="math-module-icon"><Icon name="math" size={25}/></span><h1 className="math-heading">{t("数学工坊")}</h1></div>
           {!home && <WorkspaceToolbar draft={draft} busy={busy} readOnly={readOnly} pending={pending} empty={!hasContent(draft)}
             exportOpen={!!viewScene.exportOpen} onHome={goHome} onSave={() => save()} onCopy={() => save(true)}
             onHistory={() => setHistoryOpen(true)} onDynamic={makeDynamicCopy}
             onDelete={() => deletion()} onPurge={() => deletion(true)} onExport={() => patchView({ exportOpen: !viewScene.exportOpen })} onUsage={() => patchView({ usageOpen: !viewScene.usageOpen })}/>}
-          <input ref={importFile} type="file" accept=".html,.htm" aria-label="导入 HTML 文件" hidden onChange={e => { importHtml(e.target.files[0]); e.target.value = ''; }}/>
-          <input ref={sourceFile} type="file" accept=".json,application/json" aria-label="导入制作源文件" hidden onChange={e => { importSource(e.target.files[0]); e.target.value = ''; }}/>
-          {importPending && <button disabled={busy} onClick={() => importHtml()}>{importPending.requiresReselection ? '重选原文件并确认上传' : '重试原文件上传'}</button>}
+          <input ref={importFile} type="file" accept=".html,.htm" aria-label={t("导入 HTML 文件")} hidden onChange={e => { importHtml(e.target.files[0]); e.target.value = ''; }}/>
+          <input ref={sourceFile} type="file" accept=".json,application/json" aria-label={t("导入制作源文件")} hidden onChange={e => { importSource(e.target.files[0]); e.target.value = ''; }}/>
+          {importPending && <button disabled={busy} onClick={() => importHtml()}>{importPending.requiresReselection ? t("重选原文件并确认上传") : t("重试原文件上传")}</button>}
         </header>
         {!home && <div className="math-document-bar">
-          <button className="math-return" onClick={goHome}><Icon name="back"/><span>返回工坊</span></button>
-          <input aria-label="作品名称" readOnly={!!draft.deletedAt} value={draft.title} onChange={e => edit({ ...draft, title: e.target.value })}/>
-          <span className="math-workspace-status" role="status">{draft.deletedAt ? '已归档' : status}</span>
-          {!draft.deletedAt && <div className="math-undo-actions" aria-label="编辑历史">
-            {['undo', 'redo'].map(direction => <button key={direction} className="math-icon-button" aria-label={direction === 'undo' ? '撤销' : '重做'} title={direction === 'undo' ? '撤销 (Ctrl/Cmd+Z)' : '重做 (Ctrl/Cmd+Shift+Z)'} disabled={!canChangeHistory || !(direction === 'undo' ? history.canUndo : history.canRedo)} onClick={() => moveHistory(direction)}>
+          <button className="math-return" onClick={goHome}><Icon name="back"/><span>{t("返回工坊")}</span></button>
+          <input className="math-work-title" aria-label={t("作品名称")} readOnly={!!draft.deletedAt} value={draft.title} onChange={e => edit({ ...draft, title: e.target.value })}/>
+          <span className="math-workspace-status" role="status">{draft.deletedAt ? t("已归档") : mathStatusLabel(status)}</span>
+          {!draft.deletedAt && <div className="math-undo-actions" aria-label={t("编辑历史")}>
+            {['undo', 'redo'].map(direction => <button key={direction} className="math-icon-button" aria-label={direction === 'undo' ? t("撤销") : t("重做")} title={direction === 'undo' ? t("撤销 (Ctrl/Cmd+Z)") : t("重做 (Ctrl/Cmd+Shift+Z)")} disabled={!canChangeHistory || !(direction === 'undo' ? history.canUndo : history.canRedo)} onClick={() => moveHistory(direction)}>
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={direction === 'redo' ? { transform: 'scaleX(-1)' } : undefined}><path d="M7 4 3 8l4 4M3 8h8a5 5 0 0 1 0 10"/></svg>
             </button>)}
           </div>}
@@ -1091,12 +1095,12 @@ function MathSession({ transport, route }) {
           <div role="alert" className="math-message">
             {fontError}
             <button onClick={() => setFontAttempt((value) => value + 1)}>
-              重试字体
+              {t("重试字体")}
             </button>
           </div>
         )}
-        {pending && home && <div className="math-message" role="status">上次操作结果待确认。<button disabled={busy} onClick={() => save()}>确认操作结果</button></div>}
-        {!home && draft.deletedAt && <div className="math-archive-notice">已归档，恢复后可继续编辑。</div>}
+        {pending && home && <div className="math-message" role="status">{t("上次操作结果待确认。")}<button disabled={busy} onClick={() => save()}>{t("确认操作结果")}</button></div>}
+        {!home && draft.deletedAt && <div className="math-archive-notice">{t("已归档，恢复后可继续编辑。")}</div>}
         {message && (
           <div role="alert" className="math-message">
             {message}
@@ -1104,52 +1108,52 @@ function MathSession({ transport, route }) {
         )}
         {conflict && (
           <div className="math-message">
-            服务器版本 {conflict}，本地版本 {draft.version}
+            {t("服务器版本")} {conflict}{t("，本地版本")} {draft.version}
             <button
               onClick={() => {
                 setDraft({ ...draft, version: conflict });
                 setConflict(null);
-                setMessage("请核对本地修改后保存");
+                setMessage(t("请核对本地修改后保存"));
               }}
             >
-              以服务器版本为基线保留本地稿
+              {t("以服务器版本为基线保留本地稿")}
             </button>
           </div>
         )}
         {!home && draft && <ModulePresence present={!!viewScene.exportOpen} mode="collapse">
-          <section id="math-export-options" className="math-export-options" aria-label="导出作品">
-            <label>文件格式<select
-              aria-label="导出格式"
+          <section id="math-export-options" className="math-export-options" aria-label={t("导出作品")}>
+            <label>{t("文件格式")}<select
+              aria-label={t("导出格式")}
               value={format}
               onChange={(e) => setFormat(e.target.value)}
             >
               {draft.source.kind !== "html" && (
                 <>
-                  <option value="png">图片 · PNG</option>
-                  <option value="svg">矢量图片 · SVG</option>
+                  <option value="png">{t("图片 · PNG")}</option>
+                  <option value="svg">{t("矢量图片 · SVG")}</option>
                 </>
               )}
               {["dynamic", "html"].includes(draft.source.kind) && (
-                <option value="html">离线演示 · HTML</option>
+                <option value="html">{t("离线演示 · HTML")}</option>
               )}
               <option value="source">
-                {draft.source.kind === "html" ? "当前源码 HTML" : "制作源 JSON"}
+                {draft.source.kind === "html" ? t("当前源码 HTML") : t("制作源 JSON")}
               </option>
             </select></label>
             {!["source", "html"].includes(format) && (
               <>
-                <label>背景<select
-                  aria-label="导出背景"
+                <label>{t("背景")}<select
+                  aria-label={t("导出背景")}
                   value={background}
                   onChange={(e) => setBackground(e.target.value)}
                 >
-                  <option value="transparent">透明</option>
+                  <option value="transparent">{t("透明")}</option>
                   {draft.source.kind !== "formula" && (
-                    <option value="white">白底</option>
+                    <option value="white">{t("白底")}</option>
                   )}
                 </select></label>
-                <label>宽度（像素）<input
-                  aria-label="导出宽度"
+                <label>{t("宽度（像素）")}<input
+                  aria-label={t("导出宽度")}
                   type="number"
                   value={exportWidth}
                   min="200"
@@ -1159,21 +1163,21 @@ function MathSession({ transport, route }) {
               </>
             )}
             <button className="math-primary" disabled={busy || (!pending && (!draft.id || status !== "已保存"))} onClick={exportFile}>
-              下载作品
+              {t("下载作品")}
             </button>
-            {(!draft.id || status !== '已保存') && !pending && <span className="math-hint">保存作品后即可下载</span>}
+            {(!draft.id || status !== "已保存") && !pending && <span className="math-hint">{t("保存作品后即可下载")}</span>}
           </section>
         </ModulePresence>}
-        {!home && !draft.deletedAt && graphical && <div className="math-editing-toolbar" aria-label="制作操作">
-          <Popover label="添加图形" icon={null} align="start" buttonClassName="math-action-button">{({ close }) => <>
-            {(draft.source.kind === 'space' ? ['point', 'edge', 'face', 'section'] : ['function', 'piecewise', 'point', 'line', 'ellipse', 'polyline', 'text']).map(type => <MenuItem key={type} disabled={(type === 'edge' && objects.length < 2) || (type === 'face' && objects.length < 3) || (type === 'section' && (draft.source.faces?.length ?? 0) < 4)} onClick={() => { close(); addGraphic(type); }}>添加{type === 'edge' ? '棱' : names[type]}</MenuItem>)}
-            {draft.source.scene && <MenuItem onClick={() => { close(); showTools('construct'); }}>关联构造…</MenuItem>}
-            {draft.source.kind === 'space' && <MenuItem onClick={async () => { close(); if (objects.length && !await confirm('使用棱锥会替换当前图形，是否继续？')) return; source(fitSpace(pyramidSource())); selectGraphic('object:0'); }}>棱锥示例</MenuItem>}
+        {!home && !draft.deletedAt && graphical && <div className="math-editing-toolbar" aria-label={t("制作操作")}>
+          <Popover label={t("添加图形")} icon={null} align="start" buttonClassName="math-action-button">{({ close }) => <>
+            {(draft.source.kind === 'space' ? ['point', 'edge', 'face', 'section'] : ['function', 'piecewise', 'point', 'line', 'ellipse', 'polyline', 'text']).map(type => <MenuItem key={type} disabled={(type === 'edge' && objects.length < 2) || (type === 'face' && objects.length < 3) || (type === 'section' && (draft.source.faces?.length ?? 0) < 4)} onClick={() => { close(); addGraphic(type); }}>{t("添加")}{type === 'edge' ? t("棱") : names[type]}</MenuItem>)}
+            {draft.source.scene && <MenuItem onClick={() => { close(); showTools('construct'); }}>{t("关联构造…")}</MenuItem>}
+            {draft.source.kind === 'space' && <MenuItem onClick={async () => { close(); if (objects.length && !await confirm(t("使用棱锥会替换当前图形，是否继续？"))) return; source(fitSpace(pyramidSource())); selectGraphic('object:0'); }}>{t("棱锥示例")}</MenuItem>}
           </>}</Popover>
-          <button onClick={() => showTools('objects')}>图形与标注</button>
-          {draft.source.scene && <button onClick={() => showTools('analysis')}>函数分析</button>}
-          {draft.source.kind === 'dynamic' && <><button onClick={() => showTools('parameters')}>设置滑杆</button><button onClick={() => showTools('steps')}>编排步骤</button></>}
-          <button className="math-icon-button math-canvas-settings" title="画布设置" aria-label="画布设置" onClick={() => showTools('canvas')}>
+          <button onClick={() => showTools('objects')}>{t("图形与标注")}</button>
+          {draft.source.scene && <button onClick={() => showTools('analysis')}>{t("函数分析")}</button>}
+          {draft.source.kind === 'dynamic' && <><button onClick={() => showTools('parameters')}>{t("设置滑杆")}</button><button onClick={() => showTools('steps')}>{t("编排步骤")}</button></>}
+          <button className="math-icon-button math-canvas-settings" title={t("画布设置")} aria-label={t("画布设置")} onClick={() => showTools('canvas')}>
             <svg className="wb-icon" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true" focusable="false">
               <path d="M3 5h3m4 0h7M3 10h8m4 0h2M3 15h3m4 0h7"/><circle cx="8" cy="5" r="2"/><circle cx="13" cy="10" r="2"/><circle cx="8" cy="15" r="2"/>
             </svg>
@@ -1186,10 +1190,10 @@ function MathSession({ transport, route }) {
           : draft.deletedAt ? <div className="math-archived-preview">
             {draft.source.kind === 'formula' ? <FormulaPreview source={draft.source} retry={fontAttempt}/>
               : ['plane', 'space', 'dynamic'].includes(draft.source.kind) ? <GraphicPreview source={draft.source} font={font}/>
-              : <p>HTML 演示已归档，可下载查看或恢复后运行。</p>}
+              : <p>{t("HTML 演示已归档，可下载查看或恢复后运行。")}</p>}
           </div> : readOnly ? (
             <div className="math-formula">
-              <p>作品格式需要更新，请升级后编辑。</p>
+              <p>{t("作品格式需要更新，请升级后编辑。")}</p>
               <pre>{JSON.stringify(draft.source, null, 2)}</pre>
             </div>
           ) : draft.source.kind === "html" ? (
@@ -1203,10 +1207,10 @@ function MathSession({ transport, route }) {
             />
           ) : graphical && !objects.length ? (
             <div className="math-canvas-start"><WorkIllustration kind={draft.source.kind}/>
-              <h2>{draft.source.kind === 'space' ? '从一个立体图形开始' : draft.source.kind === 'dynamic' ? '让图形动起来' : '画出第一个图形'}</h2>
-              <p>{draft.source.kind === 'space' ? '选择示例后，可以改顶点、添加棱和调整观察角度。' : draft.source.kind === 'dynamic' ? '先试着拖动参数，再调整图形和讲解步骤。' : '输入函数表达式，或添加点、线段和标注。'}</p>
-              <div><button className="math-primary" onClick={useTemplate}>{draft.source.kind === 'space' ? '正方体示例' : draft.source.kind === 'dynamic' ? '试试二次函数演示' : '从 y = x² 开始'}</button>
-              <button onClick={() => addGraphic(draft.source.kind === 'space' ? 'point' : 'function')}>{draft.source.kind === 'space' ? '添加空间点' : '添加函数'}</button></div>
+              <h2>{draft.source.kind === 'space' ? t("从一个立体图形开始") : draft.source.kind === 'dynamic' ? t("让图形动起来") : t("画出第一个图形")}</h2>
+              <p>{draft.source.kind === 'space' ? t("选择示例后，可以改顶点、添加棱和调整观察角度。") : draft.source.kind === 'dynamic' ? t("先试着拖动参数，再调整图形和讲解步骤。") : t("输入函数表达式，或添加点、线段和标注。")}</p>
+              <div><button className="math-primary" onClick={useTemplate}>{draft.source.kind === 'space' ? t("正方体示例") : draft.source.kind === 'dynamic' ? t("试试二次函数演示") : t("从 y = x² 开始")}</button>
+              <button onClick={() => addGraphic(draft.source.kind === 'space' ? 'point' : 'function')}>{draft.source.kind === 'space' ? t("添加空间点") : t("添加函数")}</button></div>
             </div>
           ) : draft.source.kind === "dynamic" ? (
             <DynamicPreview
@@ -1220,7 +1224,7 @@ function MathSession({ transport, route }) {
             />
           ) : draft.source.kind === "formula" ? (
             <FormulaEditor source={draft.source} onChange={source} view={viewScene} onView={patchView} confirm={confirm} retry={fontAttempt}
-              savedInvalid={draft.render?.state === 'invalid' && status === '已保存'}/>
+              savedInvalid={draft.render?.state === 'invalid' && status === "已保存"}/>
           ) : <GraphicPreview source={draft.source} font={font} selection={selection} onSelect={selectGraphic}/>}
         </div>
       </section>

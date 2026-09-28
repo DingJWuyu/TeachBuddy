@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { Icon } from "../workbench/chrome/icons.jsx";
 import { ResourceDialog } from "./ResourceDialog.jsx";
 
 export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
+  const { t } = useTranslation("resources");
   function folderRows(parent = null, depth = 0) {
     return value.folders
       .filter((folder) => folder.parentId === parent)
@@ -24,8 +26,8 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
             </button>
             <button
               className="res-icon-button"
-              aria-label={`管理文件夹 ${folder.name}`}
-              title={`管理文件夹 ${folder.name}`}
+              aria-label={t("管理文件夹 {{name}}", { name: folder.name })}
+              title={t("管理文件夹 {{name}}", { name: folder.name })}
               disabled={disabled}
               onClick={() => onManage("folder", folder)}
             >
@@ -39,11 +41,11 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
   return (
     <div className="res-tools res-ui wb-module">
       <div className="res-tool-head">
-        <h2>文件夹</h2>
+        <h2>{t("文件夹")}</h2>
         <button
           className="res-icon-button"
-          aria-label="新建文件夹"
-          title="新建文件夹"
+          aria-label={t("新建文件夹")}
+          title={t("新建文件夹")}
           disabled={disabled}
           onClick={() => onManage("folder")}
         >
@@ -65,19 +67,19 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
           }
         >
           <Icon name="inbox" size={16} />
-          <span>全部资料</span>
+          <span>{t("全部资料")}</span>
         </button>
       </div>
       {folderRows()}
       {!value.folders.length && (
-        <p className="res-muted res-tax-hint">按学科、章节或用途整理资料。</p>
+        <p className="res-muted res-tax-hint">{t("按学科、章节或用途整理资料。")}</p>
       )}
       <div className="res-tool-head">
-        <h2>标签</h2>
+        <h2>{t("标签")}</h2>
         <button
           className="res-icon-button"
-          aria-label="新建标签"
-          title="新建标签"
+          aria-label={t("新建标签")}
+          title={t("新建标签")}
           disabled={disabled}
           onClick={() => onManage("tag")}
         >
@@ -85,9 +87,7 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
         </button>
       </div>
       {!value.tags.length && (
-        <p className="res-muted res-tax-hint">
-          给资料加上标签，之后更容易找到。
-        </p>
+        <p className="res-muted res-tax-hint"> {t("给资料加上标签，之后更容易找到。")} </p>
       )}
       {value.tags.map((tag) => (
         <div className="res-tax-row" key={tag.id}>
@@ -109,8 +109,8 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
           </button>
           <button
             className="res-icon-button"
-            aria-label={`管理标签 ${tag.name}`}
-            title={`管理标签 ${tag.name}`}
+            aria-label={t("管理标签 {{name}}", { name: tag.name })}
+            title={t("管理标签 {{name}}", { name: tag.name })}
             disabled={disabled}
             onClick={() => onManage("tag", tag)}
           >
@@ -133,9 +133,7 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
             })
           }
         >
-          <Icon name="trash" size={16} />
-          已归档资料
-        </button>
+          <Icon name="trash" size={16} /> {t("已归档资料")} </button>
       </div>
     </div>
   );
@@ -150,11 +148,12 @@ export function TaxonomyDialog({
   disabled,
   items,
 }) {
+  const { t } = useTranslation("resources");
   const { edit, name = "", parentId = "", remove = false } = draft;
   const folder = edit.kind === "folder";
-  const noun = folder ? "文件夹" : "标签";
+  const noun = folder ? t("文件夹") : t("标签");
   const group = folder ? "folders" : "tags";
-  const title = `${remove ? "删除" : edit.item ? "编辑" : "新建"}${noun}`;
+  const title = `${remove ? t("删除") : edit.item ? t("编辑") : t("新建")}${noun}`;
   const descendants = new Set(edit.item ? [edit.item.id] : []);
   for (let size = -1; descendants.size !== size; ) {
     size = descendants.size;
@@ -190,7 +189,7 @@ export function TaxonomyDialog({
         <h2>{title}</h2>
         <button
           className="res-icon-button"
-          aria-label={`关闭${title}`}
+          aria-label={t("关闭{{title}}", { title: title })}
           onClick={onClose}
         >
           <Icon name="close" size={17} />
@@ -198,40 +197,33 @@ export function TaxonomyDialog({
       </header>
       <form onSubmit={save}>
         {remove ? (
-          <p>
-            删除“{edit.item.name}”？
+          <p> {t("删除“")}{edit.item.name}”？
             {
               items.filter((item) =>
                 folder
                   ? item.folderId === edit.item.id
                   : item.tagIds.includes(edit.item.id),
               ).length
-            }{" "}
-            份资料
-            {folder
-              ? "及直接子文件夹会移到上级，资料不会被删除。"
-              : "会移除此标签，资料仍然保留。"}
+            }{" "} {t("份资料")} {folder
+              ? t("及直接子文件夹会移到上级，资料不会被删除。")
+              : t("会移除此标签，资料仍然保留。")}
           </p>
         ) : (
           <>
-            <label>
-              名称
-              <input
+            <label> {t("名称")} <input
                 value={name}
                 maxLength={200}
                 onChange={(event) => onChange({ name: event.target.value })}
               />
             </label>
             {folder && (
-              <label>
-                上级文件夹
-                <select
+              <label> {t("上级文件夹")} <select
                   value={parentId}
                   onChange={(event) =>
                     onChange({ parentId: event.target.value })
                   }
                 >
-                  <option value="">无上级文件夹</option>
+                  <option value="">{t("无上级文件夹")}</option>
                   {value.folders
                     .filter((item) => !descendants.has(item.id))
                     .map((item) => (
@@ -250,22 +242,19 @@ export function TaxonomyDialog({
               type="button"
               className="res-danger res-delete-tax"
               onClick={() => onChange({ remove: true })}
-            >
-              删除{noun}
+            > {t("删除")}{noun}
             </button>
           )}
-          <button type="button" onClick={onClose}>
-            取消
-          </button>
+          <button type="button" onClick={onClose}> {t("取消")} </button>
           <button
             className={remove ? "res-danger" : "res-primary"}
             disabled={disabled || (!remove && !name.trim())}
           >
             {remove
-              ? `确认删除${noun}`
+              ? t("确认删除{{noun}}", { noun: noun })
               : edit.item
-                ? `保存${noun}`
-                : `创建${noun}`}
+                ? t("保存{{noun}}", { noun: noun })
+                : t("创建{{noun}}", { noun: noun })}
           </button>
         </footer>
       </form>

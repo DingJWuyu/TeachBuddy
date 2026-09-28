@@ -141,7 +141,7 @@ test('old database retains stable accountKey, credentials, layout and migration 
       assert.equal(login.status, 200, login.text);
       assert.equal(login.json.account.accountKey, legacy.id);
       assert.equal(login.json.account.nickname, '旧账户');
-      assert.equal(world.workbench.db.prepare("SELECT COUNT(*) n FROM workbench_migrations WHERE moduleId='auth'").get().n, 7);
+      assert.equal(world.workbench.db.prepare("SELECT COUNT(*) n FROM workbench_migrations WHERE moduleId='auth'").get().n, 8);
       assert.equal(world.dataStore.forAccount(legacy.id).list('workspaceLayouts').length, 1);
     } finally { await world.close(); }
   }
@@ -164,7 +164,7 @@ test('real server waits for all migrations and refuses missing TLS configuration
     workbench: { publicOrigin: 'https://127.0.0.1', tls: { cert: path.join(directory, 'tls-cert.pem'), key: path.join(directory, 'tls-key.pem') } } };
   const running = await startServer({ env, sendCode: async () => {} });
   try {
-    assert.equal(running.workbench.db.prepare("SELECT COUNT(*) n FROM workbench_migrations WHERE moduleId='auth'").get().n, 7);
+    assert.equal(running.workbench.db.prepare("SELECT COUNT(*) n FROM workbench_migrations WHERE moduleId='auth'").get().n, 8);
     assert.ok(running.workbench.loader.enabledIds().includes('questions'));
     assert.notEqual(running.server.address().port, 0);
   } finally { await new Promise(resolve => running.server.close(resolve)); running.workbench.close(); }

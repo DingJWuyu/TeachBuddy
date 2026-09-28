@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useLayoutEffect, useState } from "react";
 import ResourcesPage from "./index.jsx";
 import { readLocal, writeLocal } from "../workbench/storage.js";
@@ -6,10 +7,12 @@ import { navigate } from "../workbench/routes.js";
 
 /** Adapt the shell deep link to the resource module's account-scoped scene. */
 export default function ResourceRoute(props) {
+  useTranslation("resources");
   return <ResourceEntry key={props.route.path} {...props} />;
 }
 
 function ResourceEntry({ route, transport }) {
+  const { t } = useTranslation("resources");
   const { accountKey } = useWorkbenchShell();
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -46,13 +49,11 @@ function ResourceEntry({ route, transport }) {
   if (failed)
     return (
       <div className="wb-page wb-inline-error" role="alert">
-        <p>无法打开指定资料，请允许本地存储后重试。</p>
+        <p>{t("无法打开指定资料，请允许本地存储后重试。")}</p>
         <button
           className="wb-button"
           onClick={() => setRetry((value) => value + 1)}
-        >
-          重试打开资料
-        </button>
+        > {t("重试打开资料")} </button>
       </div>
     );
   return (

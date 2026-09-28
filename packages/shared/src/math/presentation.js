@@ -10,13 +10,17 @@ export function mountDynamic(
   fontStyle = "",
   options = {},
 ) {
+  const labels = { steps: '演示步骤', play: '播放', pause: '暂停', clear: '清除轨迹', reset: '重置',
+    automatic: label => `自动演示 · ${label}`, slider: name => `${name} 滑杆`, number: name => `${name} 数值`,
+    undefined: ids => `此取值下无定义：${ids.join('、')}`, error: error => error.message, ...options.labels };
   let state = stateFor(source, source.steps.some(step => step.id === options.initialState?.stepId) ? options.initialState.stepId : undefined);
   if (options.initialState?.values) for (const parameter of source.parameters) {
     const value = options.initialState.values[parameter.name];
     if (Number.isFinite(value)) state.values[parameter.name] = snap(parameter, value);
   }
   root.innerHTML =
-    '<div class="scene-actions"><nav aria-label="演示步骤"></nav><div class="playback"></div></div><p class="step-description"></p><div class="plot"></div><div class="controls"></div><p class="notice" role="status"></p>';
+    '<div class="scene-actions"><nav></nav><div class="playback"></div></div><p class="step-description"></p><div class="plot"></div><div class="controls"></div><p class="notice" role="status"></p>';
+  root.querySelector('nav').setAttribute('aria-label', labels.steps);
   const plot = root.querySelector(".plot"),
     controls = root.querySelector(".controls");
   const sliders = new Map(), traces = new Map();
@@ -29,7 +33,7 @@ export function mountDynamic(
   function pause() {
     playing = false;
     if (frame !== null) cancelAnimationFrame(frame);
-    frame = null; play.textContent = '播放'; play.setAttribute('aria-pressed', 'false');
+    frame = null; play.textContent = labels.play; play.setAttribute('aria-pressed', 'false');
     if (!destroyed) options.onState?.(structuredClone(state));
   }
   function tick(time) {
@@ -49,19 +53,19 @@ export function mountDynamic(
     frame = requestAnimationFrame(tick);
   }
   if (animated) {
-    const caption = document.createElement('span'); caption.textContent = `自动演示 · ${animated.label}`;
-    play.textContent = '播放'; play.setAttribute('aria-pressed', 'false');
+    const caption = document.createElement('span'); caption.textContent = labels.automatic(animated.label);
+    play.textContent = labels.play; play.setAttribute('aria-pressed', 'false');
     play.onclick = () => {
       if (playing) { pause(); return; }
       phase = (state.values[animated.name] - animated.min) / (animated.max - animated.min);
       if (animation.mode === 'once' && phase >= 1) { phase = 0; traces.clear(); }
-      playing = true; play.textContent = '暂停'; play.setAttribute('aria-pressed', 'true');
+      playing = true; play.textContent = labels.pause; play.setAttribute('aria-pressed', 'true');
       lastTime = performance.now(); frame = requestAnimationFrame(tick);
     };
     playback.append(caption, play);
   }
   if (source.traceIds?.length) {
-    const clear = document.createElement('button'); clear.textContent = '清除轨迹';
+    const clear = document.createElement('button'); clear.textContent = labels.clear;
     clear.onclick = () => { traces.clear(); draw(true, false); };
     playback.append(clear);
   }
@@ -85,7 +89,7 @@ export function mountDynamic(
       input.step = p.step;
       input.setAttribute(
         "aria-label",
-        `${p.name} ${type === "range" ? "滑杆" : "数值"}`,
+        type === 'range' ? labels.slider(p.name) : labels.number(p.name),
       );
       input.addEventListener("input", () => {
         if (input.value !== "" && Number.isFinite(Number(input.value)))
@@ -108,7 +112,7 @@ export function mountDynamic(
     nav.append(button);
   }
   const reset = document.createElement("button");
-  reset.textContent = "重置";
+  reset.textContent = labels.reset;
   reset.onclick = () => {
     pause(); traces.clear();
     state = stateFor(source, state.stepId);
@@ -189,7 +193,7 @@ export function mountDynamic(
       }
       svg?.append(group);
       root.querySelector(".notice").textContent = undefinedIds.length
-        ? `此取值下无定义：${undefinedIds.join("、")}`
+        ? labels.undefined(undefinedIds)
         : "";
       for (const p of source.parameters)
         for (const type of ["range", "number"])
@@ -211,7 +215,7 @@ export function mountDynamic(
       }
     } catch (error) {
       plot.replaceChildren();
-      root.querySelector(".notice").textContent = error.message;
+      root.querySelector(".notice").textContent = labels.error(error);
     }
   }
   draw();

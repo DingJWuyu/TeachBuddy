@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useScene } from '../useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
@@ -36,10 +37,12 @@ function useDismiss(open, close, refs) {
 }
 
 function Flag({ flag, className }) {
+  useTranslation("workbench");
   return <img className={className} src={FLAGS[`./flags/${flag}.svg`]} alt="" aria-hidden="true" />;
 }
 
 export function LanguageMenu({ current, onSelect, onClose, triggerRef }) {
+  useTranslation("workbench");
   const menuRef = useRef(null);
   const dismiss = useDismiss(true, onClose, [menuRef, triggerRef]);
   useEffect(() => { menuRef.current?.querySelector('[aria-checked="true"]')?.focus(); }, []);
@@ -69,11 +72,12 @@ export function LanguageMenu({ current, onSelect, onClose, triggerRef }) {
 export function SemesterPopover({
   semesters, activeId, onPick, onEdit, onCreate, onClose, triggerRef
 }) {
+  const { t } = useTranslation("workbench");
   const popoverRef = useRef(null);
   const dismiss = useDismiss(true, onClose, [popoverRef, triggerRef]);
   useEffect(() => { popoverRef.current?.querySelector('[aria-selected="true"]')?.focus(); }, []);
   return (
-    <div className="tb-semester-popover tb-head-surface" role="dialog" aria-label="学期" ref={popoverRef} onKeyDown={dismiss}>
+    <div className="tb-semester-popover tb-head-surface" role="dialog" aria-label={t("学期")} ref={popoverRef} onKeyDown={dismiss}>
       <div className="tb-semester-list" role="listbox">
         {semesters.map((semester) => (
           <div
@@ -101,7 +105,7 @@ export function SemesterPopover({
             <button
               type="button"
               className="tb-semester-edit"
-              aria-label={`编辑${semester.name}`}
+              aria-label={t("编辑{{name}}", { name: semester.name })}
               onClick={(event) => {
                 event.stopPropagation();
                 onEdit(semester);
@@ -115,7 +119,7 @@ export function SemesterPopover({
       <div className="tb-semester-create-row">
         <button type="button" className="tb-semester-create" onClick={onCreate}>
           <Icon name="plus" size={14} />
-          <span>新学期</span>
+          <span>{t("新学期")}</span>
         </button>
       </div>
     </div>
@@ -125,6 +129,7 @@ export function SemesterPopover({
 /* The copy panel is shared: creating offers it as one of two starting modes,
  * editing always shows it and adds the note about existing data. */
 function CopyPanel({ candidates, source, onPickSource, picked, onToggle, notice, sourceOpen, setSourceOpen, sourceButtonRef }) {
+  const { t } = useTranslation("workbench");
   const sourceRef = useRef(null);
   const closeSource = ({ restoreFocus = false } = {}) => {
     setSourceOpen(false);
@@ -139,7 +144,7 @@ function CopyPanel({ candidates, source, onPickSource, picked, onToggle, notice,
     <div className="tb-copy-panel">
       <div className="tb-copy-source-block">
         <div className="tb-copy-field">
-          <span className="tb-field-label">复制来源</span>
+          <span className="tb-field-label">{t("复制来源")}</span>
           <div className="tb-copy-source-wrap" ref={sourceRef} onKeyDown={dismiss}>
             <button
               type="button"
@@ -147,16 +152,16 @@ function CopyPanel({ candidates, source, onPickSource, picked, onToggle, notice,
               ref={sourceButtonRef}
               aria-haspopup="listbox"
               aria-expanded={sourceOpen}
-              aria-label={source ? `复制来源：${source.name}` : '复制来源'}
+              aria-label={source ? t("复制来源：{{name}}", { name: source.name }) : t("复制来源")}
               onClick={() => setSourceOpen((open) => !open)}
             >
               <span className={source ? undefined : 'tb-copy-source-placeholder'}>
-                {source ? source.name : '选择学期...'}
+                {source ? source.name : t("选择学期...")}
               </span>
               <Icon name="chevron" size={16} />
             </button>
             {sourceOpen ? (
-              <div className="tb-copy-source-menu" role="listbox" aria-label="复制来源">
+              <div className="tb-copy-source-menu" role="listbox" aria-label={t("复制来源")}>
                 {candidates.map((semester) => (
                   <button
                     key={semester.id}
@@ -179,7 +184,7 @@ function CopyPanel({ candidates, source, onPickSource, picked, onToggle, notice,
             ) : null}
           </div>
         </div>
-        <span className="tb-field-label">复制内容</span>
+        <span className="tb-field-label">{t("复制内容")}</span>
       </div>
 
       <div className="tb-copy-body">
@@ -210,7 +215,7 @@ function CopyPanel({ candidates, source, onPickSource, picked, onToggle, notice,
           </div>
         ) : (
           <div className="tb-copy-empty">
-            <p>选择来源学期，查看可导入的内容。</p>
+            <p>{t("选择来源学期，查看可导入的内容。")}</p>
           </div>
         )}
       </div>
@@ -228,6 +233,7 @@ function CopyPanel({ candidates, source, onPickSource, picked, onToggle, notice,
 }
 
 function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete }) {
+  const { t } = useTranslation("workbench");
   const isEdit = mode === 'edit';
   const [moreOpen, setMoreOpen] = useState(false);
   const [sourceOpen, setSourceOpen] = useState(false);
@@ -276,7 +282,7 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
 
   const notice = source
     ? { tone: 'info', text: copyNotice(source.name) }
-    : (isEdit ? { tone: 'warn', text: '导入的项目将添加到此学期，现有数据不会被移除。' } : null);
+    : (isEdit ? { tone: 'warn', text: t("导入的项目将添加到此学期，现有数据不会被移除。") } : null);
 
   return createPortal(
     <dialog
@@ -311,12 +317,12 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
       >
         <div className="tb-dialog-form">
           <div className="tb-dialog-head">
-            <button type="button" className="tb-dialog-close" onClick={onClose} aria-label="取消">
+            <button type="button" className="tb-dialog-close" onClick={onClose} aria-label={t("取消")}>
               <Icon name="close" size={16} />
             </button>
             <div className="tb-dialog-title-row">
               <h2 id="tb-semester-dialog-title" className="tb-dialog-title">
-                {isEdit ? '编辑学期' : '创建学期'}
+                {isEdit ? t("编辑学期") : t("创建学期")}
               </h2>
               {isEdit ? (
                 <div className="tb-dialog-more-wrap" ref={moreRef} onKeyDown={dismissMore}>
@@ -324,7 +330,7 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
                     type="button"
                     className="tb-dialog-more"
                     ref={moreButtonRef}
-                    aria-label="更多"
+                    aria-label={t("更多")}
                     aria-haspopup="menu"
                     aria-expanded={moreOpen}
                     onClick={() => setMoreOpen((open) => !open)}
@@ -342,24 +348,22 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
                           setMoreOpen(false);
                           onDelete(semester);
                         }}
-                      >
-                        删除
-                      </button>
+                      > {t("删除")} </button>
                     </div>
                   ) : null}
                 </div>
               ) : null}
             </div>
-            <p className="tb-dialog-desc">{isEdit ? '更新学期详情。' : '为新学期定义名称和日期范围。'}</p>
+            <p className="tb-dialog-desc">{isEdit ? t("更新学期详情。") : t("为新学期定义名称和日期范围。")}</p>
           </div>
 
           <div className="tb-dialog-body">
             <div className="tb-field">
-              <label className="tb-field-label" htmlFor="tb-semester-name">名称 *</label>
+              <label className="tb-field-label" htmlFor="tb-semester-name">{t("名称 *")}</label>
               <input
                 id="tb-semester-name"
                 className="tb-field-input"
-                placeholder="例如：2026年秋季学期"
+                placeholder={t("例如：2026年秋季学期")}
                 autoFocus
                 required
                 value={name}
@@ -368,7 +372,7 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
             </div>
             <div className="tb-field-dates">
               <div className="tb-field">
-                <label className="tb-field-label" htmlFor="tb-semester-start">开始日期 *</label>
+                <label className="tb-field-label" htmlFor="tb-semester-start">{t("开始日期 *")}</label>
                 <input
                   id="tb-semester-start"
                   className="tb-field-input"
@@ -379,7 +383,7 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
                 />
               </div>
               <div className="tb-field">
-                <label className="tb-field-label" htmlFor="tb-semester-end">结束日期 *</label>
+                <label className="tb-field-label" htmlFor="tb-semester-end">{t("结束日期 *")}</label>
                 <input
                   id="tb-semester-end"
                   min={start || undefined}
@@ -393,7 +397,7 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
             </div>
             {isEdit ? null : (
               <div className="tb-field-mode">
-                <span className="tb-field-label">起始方式</span>
+                <span className="tb-field-label">{t("起始方式")}</span>
                 <div className="tb-mode-cards">
                   <button
                     type="button"
@@ -401,8 +405,8 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
                     aria-pressed={startMode === 'fresh'}
                     onClick={() => { setStartMode('fresh'); setSourceOpen(false); }}
                   >
-                    <span className="tb-mode-card-head"><Icon name="sparkles" size={16} /><span>从头开始</span></span>
-                    <p className="tb-mode-card-note">使用默认设置的空学期。</p>
+                    <span className="tb-mode-card-head"><Icon name="sparkles" size={16} /><span>{t("从头开始")}</span></span>
+                    <p className="tb-mode-card-note">{t("使用默认设置的空学期。")}</p>
                   </button>
                   <button
                     type="button"
@@ -410,8 +414,8 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
                     aria-pressed={startMode === 'copy'}
                     onClick={() => setStartMode('copy')}
                   >
-                    <span className="tb-mode-card-head"><Icon name="copy" size={16} /><span>从已有学期复制</span></span>
-                    <p className="tb-mode-card-note">从其他学期导入数据。</p>
+                    <span className="tb-mode-card-head"><Icon name="copy" size={16} /><span>{t("从已有学期复制")}</span></span>
+                    <p className="tb-mode-card-note">{t("从其他学期导入数据。")}</p>
                   </button>
                 </div>
               </div>
@@ -422,7 +426,7 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
 
         <div className="tb-dialog-preview">
           <div className="tb-dialog-preview-head">
-            <h3>{showCopy ? '从其他学期复制' : '全新开始'}</h3>
+            <h3>{showCopy ? t("从其他学期复制") : t("全新开始")}</h3>
           </div>
           {showCopy ? (
             <CopyPanel
@@ -445,14 +449,14 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
             <div className="tb-dialog-preview-body">
               <div className="tb-preview-card">
                 <div className="tb-preview-mark"><Icon name="sparkles" size={24} /></div>
-                <p>您的新学期将以空白状态开始。您可以从零开始添加班级、学生和课程，或随时切换到「从已有学期复制」。</p>
+                <p>{t("您的新学期将以空白状态开始。您可以从零开始添加班级、学生和课程，或随时切换到「从已有学期复制」。")}</p>
               </div>
             </div>
           )}
         </div>
         <div className="tb-dialog-foot">
-          <button type="submit" className="tb-dialog-submit">{isEdit ? '保存更改' : '创建学期'}</button>
-          <button type="button" className="tb-dialog-cancel" onClick={onClose}>取消</button>
+          <button type="submit" className="tb-dialog-submit">{isEdit ? t("保存更改") : t("创建学期")}</button>
+          <button type="button" className="tb-dialog-cancel" onClick={onClose}>{t("取消")}</button>
         </div>
       </form>
     </dialog>,
@@ -461,10 +465,10 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
 }
 
 export default function SidebarHead({ accountName, onAnnounce, openSurface, onToggleSurface, onOpenSurface, onCloseSurface, visible }) {
-  const { accountKey, appearance } = useWorkbenchShell();
-  const [languageScene, patchLanguage] = useScene(accountKey, 'shell-language', { code: 'zh-CN' });
-  const language = LANGUAGES.find(item => item.code === languageScene.code) || LANGUAGES.find(item => item.code === 'zh-CN');
-  const setLanguage = item => patchLanguage({ code: item.code });
+  const { t } = useTranslation("workbench");
+  const { accountKey, appearance, locale, setLocale, preferences } = useWorkbenchShell();
+  const language = LANGUAGES.find(item => item.code === locale) || LANGUAGES.find(item => item.code === 'zh-CN');
+  const setLanguage = item => setLocale(item.code);
   const languageOpen = openSurface === 'language';
   const semesterOpen = openSurface === 'semester';
   const [termState, patchTerms] = useScene(accountKey, 'semester-navigation', { semesters: [], activeId: null });
@@ -484,7 +488,7 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
   const close = (options) => onCloseSurface(options);
   const closeDialog = () => close({ restoreFocus: true });
 
-  const activeSemester = semesters.find((item) => item.id === activeSemesterId) ?? semesters[0] ?? { name: '创建学期' };
+  const activeSemester = semesters.find((item) => item.id === activeSemesterId) ?? semesters[0] ?? { name: t("创建学期") };
 
   const announce = (message) => {
     if (typeof onAnnounce === 'function') onAnnounce(message);
@@ -495,18 +499,18 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
     setSemesters(remaining);
     if (semester.id === activeSemesterId) setActiveSemesterId(remaining[0]?.id ?? null);
     closeDialog();
-    announce(`已删除 ${semester.name}`);
+    announce(t("已删除 {{name}}", { name: semester.name }));
   }
 
   function submitDialog(values) {
-    const copied = values.sourceId && values.picked.length ? '，已保留复制选项' : '';
+    const copied = values.sourceId && values.picked.length ? t("，已保留复制选项") : '';
     if (dialog.mode === 'edit') {
       setSemesters((list) => list.map((item) => (
         item.id === dialog.semester.id
           ? { ...item, name: values.name, start: values.start, end: values.end, sourceId: values.sourceId, picked: values.picked }
           : item
       )));
-      announce(`已保存 ${values.name}${copied}`);
+      announce(t("已保存 {{name}}{{copied}}", { name: values.name, copied: copied }));
     } else {
       const created = {
         id: nextSemesterId(semesters),
@@ -517,7 +521,7 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
       };
       setSemesters((list) => [...list, created]);
       setActiveSemesterId(created.id);
-      announce(`已创建 ${values.name}${copied}`);
+      announce(t("已创建 {{name}}{{copied}}", { name: values.name, copied: copied }));
     }
     closeDialog();
   }
@@ -525,14 +529,15 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
   return (
     <>
       <div className="tb-account-block">
-        <a className="tb-account-row" href={SETTINGS_HREF} aria-label={`账户：${accountName}`} title={accountName} onClick={(event) => routeClick(event, SETTINGS_HREF)}>
-          <span className="tb-avatar" data-slot="avatar">{appearance.avatar ? <img src={appearance.avatar} alt="账户头像" /> : Array.from(accountName)[0] || '师'}</span>
+        <a className="tb-account-row" href={SETTINGS_HREF} aria-label={t("账户：{{accountName}}", { accountName: accountName })} title={accountName} onClick={(event) => routeClick(event, SETTINGS_HREF)}>
+          <span className="tb-avatar" data-slot="avatar">{appearance.avatar ? <img src={appearance.avatar} alt={t("账户头像")} /> : Array.from(accountName)[0] || t("师")}</span>
           <p className="tb-account-name">{accountName}</p>
         </a>
         <button
           type="button"
           ref={languageButtonRef}
           className="tb-language-row"
+          disabled={!preferences.baseline || preferences.status === 'identity'}
           data-surface="language"
           aria-label={language.native}
           aria-haspopup="menu"
@@ -550,7 +555,7 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
             onSelect={(next) => {
               setLanguage(next);
               close({ restoreFocus: true });
-              announce(`已选择语言： ${next.native}`);
+              announce(t("已选择语言： {{native}}", { native: next.native }));
             }}
           />
         ) : null}
@@ -575,7 +580,7 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
           <Icon name="calendar" size={14} />
           <span className="tb-term-name">{activeSemester.name}</span>
           <Icon name="select" size={14} />
-          {tooltipOpen && !semesterOpen ? <span className="tb-term-tooltip" role="tooltip">切换学期</span> : null}
+          {tooltipOpen && !semesterOpen ? <span className="tb-term-tooltip" role="tooltip">{t("切换学期")}</span> : null}
         </button>
 
         {semesterOpen ? (
@@ -587,7 +592,7 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
             onPick={(semester) => {
               setActiveSemesterId(semester.id);
               close({ restoreFocus: true });
-              announce(`已切换到 ${semester.name}`);
+              announce(t("已切换到 {{name}}", { name: semester.name }));
             }}
             onEdit={(semester) => {
               setDialogData({ mode: 'edit', semester });

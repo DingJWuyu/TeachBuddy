@@ -1,3 +1,6 @@
+import i18n from "../../i18n/index.js";
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './icons.jsx';
 import { ModulePresence, useModuleDialogFocus } from './ModuleMotion.jsx';
@@ -5,6 +8,7 @@ export { MenuItem } from './overlays.jsx';
 
 /** Module menus are separate from chrome so their interaction does not alter the shell. */
 export function Popover({ label, icon = 'more', children, align = 'end', className = '', buttonClassName = 'wb-icon-button' }) {
+  useTranslation("workbench");
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
@@ -47,7 +51,8 @@ export function Popover({ label, icon = 'more', children, align = 'end', classNa
   </div>;
 }
 
-export function ConfirmDialog({ title, message, confirmLabel = '确认', secondaryLabel = null, onSecondary, onConfirm, onCancel }) {
+export function ConfirmDialog({ title, message, confirmLabel = t("确认"), secondaryLabel = null, onSecondary, onConfirm, onCancel }) {
+  const { t } = useTranslation("workbench");
   const ref = useRef(null);
   useModuleDialogFocus(ref, onCancel);
   return <div className="wb-dialog-host wb-module-dialog" data-overlay="dialog">
@@ -55,7 +60,7 @@ export function ConfirmDialog({ title, message, confirmLabel = '确认', seconda
     <div ref={ref} className="wb-dialog" role="dialog" aria-modal="true" aria-label={title}>
       <h2>{title}</h2><p>{message}</p>
       <div className="wb-dialog-actions">
-        <button type="button" className="wb-button" onClick={onCancel}>取消</button>
+        <button type="button" className="wb-button" onClick={onCancel}>{t("取消")}</button>
         {secondaryLabel && <button type="button" className="wb-button is-danger" name="dialog-secondary" onClick={onSecondary}>{secondaryLabel}</button>}
         <button type="button" className="wb-button is-primary" name="dialog-confirm" onClick={onConfirm}>{confirmLabel}</button>
       </div>

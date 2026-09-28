@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { useState } from "react";
 import { findFunctionPoints } from "../../../../../packages/shared/src/math/analysis.js";
 import { dynamicState } from "../../../../../packages/shared/src/math/dynamic.js";
@@ -5,6 +7,7 @@ import { newElement } from "./model.js";
 import { updateObjects } from "./editing.js";
 
 export default function AnalysisTools({ source, onChange, onSelect }) {
+  const { t } = useTranslation('math');
   const curves = source.scene.elements.filter((e) => e.type === "function");
   const [first, setFirst] = useState(curves[0]?.id ?? "");
   const [second, setSecond] = useState("");
@@ -20,7 +23,7 @@ export default function AnalysisTools({ source, onChange, onSelect }) {
     try {
       const f = curves.find((e) => e.id === first),
         g = second ? curves.find((e) => e.id === second) : null;
-      if (!f || (second && !g)) throw new Error("请先添加并选择函数");
+      if (!f || (second && !g)) throw new Error(t("请先添加并选择函数"));
       const points = findFunctionPoints(f, g, {
         min: Number(range.min),
         max: Number(range.max),
@@ -30,7 +33,7 @@ export default function AnalysisTools({ source, onChange, onSelect }) {
       setError("");
     } catch (error) {
       setResult(null);
-      setError(error.message);
+      setError(error);
     }
   }
   function addPoints() {
@@ -50,16 +53,16 @@ export default function AnalysisTools({ source, onChange, onSelect }) {
   return (
     <div className="math-fields">
       <p className="math-hint">
-        查找指定范围内的零点或交点。动态作品按保存的开场值计算。
+        {t("查找指定范围内的零点或交点。动态作品按保存的开场值计算。")}
       </p>
       <label>
-        函数
+        {t("函数")}
         <select
-          aria-label="分析函数"
+          aria-label={t("分析函数")}
           value={first}
           onChange={(e) => setFirst(e.target.value)}
         >
-          <option value="">选择函数</option>
+          <option value="">{t("选择函数")}</option>
           {curves.map((f) => (
             <option key={f.id} value={f.id}>
               {f.id} · {f.expression}
@@ -68,13 +71,13 @@ export default function AnalysisTools({ source, onChange, onSelect }) {
         </select>
       </label>
       <label>
-        与谁相交
+        {t("与谁相交")}
         <select
-          aria-label="相交对象"
+          aria-label={t("相交对象")}
           value={second}
           onChange={(e) => setSecond(e.target.value)}
         >
-          <option value="">x 轴（求零点）</option>
+          <option value="">{t("x 轴（求零点）")}</option>
           {curves
             .filter((f) => f.id !== first)
             .map((f) => (
@@ -86,8 +89,8 @@ export default function AnalysisTools({ source, onChange, onSelect }) {
       </label>
       <div className="math-analysis-range">
         {[
-          ["min", "查找起点"],
-          ["max", "查找终点"],
+          ["min", t("查找起点")],
+          ["max", t("查找终点")],
         ].map(([key, name]) => (
           <label key={key}>
             {name}
@@ -105,19 +108,20 @@ export default function AnalysisTools({ source, onChange, onSelect }) {
         disabled={!curves.length}
         onClick={calculate}
       >
-        查找{second ? "交点" : "零点"}
+        {t("查找")}{second ? t("交点") : t("零点")}
       </button>
       {error && (
-        <p role="alert" className="math-message">
-          {error}
+        <p role="alert" className="math-message" title={error.message}>
+          {error.reason === 'invalid-geometry' ? t('sourceError.analysisRange')
+            : error.reason === 'invalid-expression' ? t('sourceError.expression') : error.message}
         </p>
       )}
       {current && (
-        <div className="math-analysis-results" aria-label="分析结果">
+        <div className="math-analysis-results" aria-label={t("分析结果")}>
           <p>
             {result.points.length
-              ? `找到 ${result.points.length} 个候选点（近似值）`
-              : "此范围内未找到孤立的候选点"}
+              ? t("找到 {{count}} 个候选点（近似值）", { count: result.points.length })
+              : t("此范围内未找到孤立的候选点")}
           </p>
           {result.points.map((p, i) => (
             <p key={i}>
@@ -131,16 +135,16 @@ export default function AnalysisTools({ source, onChange, onSelect }) {
               }
               onClick={addPoints}
             >
-              作为固定点加入图形
+              {t("作为固定点加入图形")}
             </button>
           )}
         </div>
       )}
       {result && !current && (
-        <p className="math-hint">函数或范围已变化，请重新查找。</p>
+        <p className="math-hint">{t("函数或范围已变化，请重新查找。")}</p>
       )}
       <p className="math-hint">
-        数值查找可能遗漏密集或极窄的交点，可缩小范围再查。加入的点固定于本次结果。
+        {t("数值查找可能遗漏密集或极窄的交点，可缩小范围再查。加入的点固定于本次结果。")}
       </p>
     </div>
   );

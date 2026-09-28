@@ -1,3 +1,5 @@
+import i18n from '../../i18n/index.js';
+const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
 import {
   snapParameter,
   parameterOnGrid,
@@ -23,21 +25,21 @@ export function parameterError(source, parameter, index) {
       "log10",
     ].includes(parameter.name)
   )
-    return "参数名须以英文字母开头，不能使用 x、pi 或函数名。";
+    return t("参数名须以英文字母开头，不能使用 x、pi 或函数名。");
   if (
     source.parameters.some((p, i) => i !== index && p.name === parameter.name)
   )
-    return "参数名不能重复。";
+    return t("参数名不能重复。");
   if (
     !(parameter.min < parameter.max) ||
     !(parameter.step > 0) ||
     !parameterOnGrid(parameter, parameter.max)
   )
-    return "最大值须大于最小值，且范围须能被正数步长整分。";
+    return t("最大值须大于最小值，且范围须能被正数步长整分。");
   if (!parameterOnGrid(parameter, parameter.initial))
-    return "初值须在范围内，并落在步长刻度上。";
+    return t("初值须在范围内，并落在步长刻度上。");
   if (!parameter.label.trim() || parameter.label.length > 100)
-    return "参数标签须为1至100字。";
+    return t("参数标签须为1至100字。");
   if (
     [parameter.min, parameter.max, parameter.initial].some(
       (v) => !Number.isFinite(v) || Math.abs(v) > 1000000,
@@ -45,7 +47,7 @@ export function parameterError(source, parameter, index) {
     parameter.step < 0.000001 ||
     parameter.step > 1000000
   )
-    return "参数范围与初值须在正负一百万以内，步长须在百万分之一至一百万之间。";
+    return t("参数范围与初值须在正负一百万以内，步长须在百万分之一至一百万之间。");
   return "";
 }
 

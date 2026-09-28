@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { readLocal, writeLocal } from '../workbench/storage.js';
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { renderGraphic } from "../../../../../packages/shared/src/math/graphics.js";
@@ -9,6 +11,7 @@ import {
 import { mountDynamic } from "../../../../../packages/shared/src/math/presentation.js";
 import { mathFontStyle } from "../../../../../packages/shared/src/math/formula.js";
 export default function DynamicPreview({ source, font, onChange, accountKey, workId, onSelect, selectedId }) {
+  const { t, i18n } = useTranslation('math');
   const root = useRef(null),
     runtime = useRef(null);
   const [show, setShow] = useState(false);
@@ -59,19 +62,28 @@ export default function DynamicPreview({ source, font, onChange, accountKey, wor
       snapParameter,
       mathFontStyle(font),
       { initialState: saved?.sourceJson === sourceJson ? saved.state : null,
+        labels: {
+          error: error => error.reason === 'invalid-geometry' ? t('sourceError.geometry')
+            : error.reason === 'invalid-expression' ? t('sourceError.expression') : error.message,
+          steps: t('演示步骤'), play: t('播放'), pause: t('暂停'), clear: t('清除轨迹'), reset: t('重置'),
+          automatic: label => t('自动演示 · {{label}}', { label }),
+          slider: name => t('{{name}} 滑杆', { name }),
+          number: name => t('{{name}} 数值', { name }),
+          undefined: ids => t('此取值下无定义：{{objects}}', { objects: ids.join(i18n.resolvedLanguage === 'en' ? ', ' : '、') }),
+        },
         onState: state => { if (accountKey) writeLocal(accountKey, name, { sourceJson, state }); } },
     );
     highlight();
     const observer = new MutationObserver(highlight);
     observer.observe(root.current, { childList: true, subtree: true });
     return () => { observer.disconnect(); runtime.current?.destroy(); runtime.current = null; };
-  }, [source, font, accountKey, workId]);
+  }, [source, font, accountKey, workId, i18n.resolvedLanguage, t]);
   return (
     <div ref={container} className={`math-dynamic${show ? " math-presenting" : ""}`} style={{ transformOrigin: 'top left' }}>
       <div className="math-add">
-        {!show && <span className="math-preview-label">试演 · 拖动不会修改作品</span>}
+        {!show && <span className="math-preview-label">{t("试演 · 拖动不会修改作品")}</span>}
         <button aria-pressed={show} onClick={() => togglePresentation(!show)}>
-          {show ? "退出课堂展示" : "课堂展示"}
+          {show ? t("退出课堂展示") : t("课堂展示")}
         </button>
         {!show && (
           <button
@@ -100,7 +112,7 @@ export default function DynamicPreview({ source, font, onChange, accountKey, wor
               });
             }}
           >
-            设为开场画面
+            {t("设为开场画面")}
           </button>
         )}
       </div>

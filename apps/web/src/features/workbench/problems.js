@@ -1,3 +1,7 @@
+import i18n from '../../i18n/index.js';
+
+const t = (key, options) => i18n.t(key, { ns: 'errors', ...options });
+
 /**
  * Workbench Problem mapping.
  *
@@ -23,45 +27,62 @@ const PROBLEM_TYPES = {
   temporarilyUnavailable: '/problems/workbench/temporarily-unavailable'
 };
 
-const REASON_TEXT = {
-  required: '为必填项',
-  'unknown-field': '包含不认识的字段',
-  'invalid-type': '格式不正确',
-  'out-of-range': '超出允许范围',
-  'empty-content': '不能只有空白',
-  'duplicate-id': '存在重复的 ID',
-  'invalid-reference': '题目引用不合法',
-  'unsupported-content-version': '内容版本不受支持'
+const REASON_KEYS = {
+  required: 'invalid.required',
+  'unknown-field': 'invalid.unknownField',
+  'invalid-type': 'invalid.type',
+  'out-of-range': 'invalid.range',
+  'empty-content': 'invalid.empty',
+  'duplicate-id': 'invalid.duplicateId',
+  'invalid-reference': 'invalid.reference',
+  'unsupported-content-version': 'invalid.contentVersion'
 };
 
 const FIELD_LABELS = [
-  [/^\/title$/, '标题'],
-  [/^\/body$/, '题面'],
-  [/^\/solution$/, '答案'],
-  [/^\/note$/, '笔记'],
-  [/^\/starred$/, '标记'],
-  [/^\/source(\/|$)/, '来源'],
-  [/^\/intro$/, '开头文稿'],
-  [/^\/sections\/(\d+)\/title$/, '环节标题'],
-  [/^\/sections\/(\d+)\/content$/, '环节文稿'],
-  [/^\/sections\/(\d+)\/references\/(\d+)\/questionId$/, '引用题目'],
-  [/^\/sections\/(\d+)\/references\/(\d+)\/questionVersion$/, '引用版本'],
-  [/^\/sections\/(\d+)\/references\/(\d+)\/note$/, '本课备注'],
-  [/^\/materials\/(\d+)\/questionId$/, '材料题目'],
-  [/^\/materials\/(\d+)\/questionVersion$/, '材料版本'],
-  [/^\/materials\/(\d+)\/note$/, '本课备注'],
-  [/^\/baseVersion$/, '版本'],
-  [/^\/deleted$/, '删除状态'],
-  [/^\/query\//, '查询条件'],
-  [/^\/headers\//, '请求头']
+  [/^\/title$/, 'field.title'],
+  [/^\/body$/, 'field.body'],
+  [/^\/solution$/, 'field.solution'],
+  [/^\/note$/, 'field.note'],
+  [/^\/starred$/, 'field.starred'],
+  [/^\/source(\/|$)/, 'field.source'],
+  [/^\/intro$/, 'field.intro'],
+  [/^\/sections\/(\d+)\/title$/, 'field.sectionTitle'],
+  [/^\/sections\/(\d+)\/content$/, 'field.sectionContent'],
+  [/^\/sections\/(\d+)\/references\/(\d+)\/questionId$/, 'field.referenceQuestion'],
+  [/^\/sections\/(\d+)\/references\/(\d+)\/questionVersion$/, 'field.referenceVersion'],
+  [/^\/sections\/(\d+)\/references\/(\d+)\/note$/, 'field.lessonNote'],
+  [/^\/materials\/(\d+)\/questionId$/, 'field.materialQuestion'],
+  [/^\/materials\/(\d+)\/questionVersion$/, 'field.materialVersion'],
+  [/^\/materials\/(\d+)\/note$/, 'field.lessonNote'],
+  [/^\/baseVersion$/, 'field.version'],
+  [/^\/deleted$/, 'field.deletion'],
+  [/^\/query\//, 'field.query'],
+  [/^\/headers\//, 'field.headers']
 ];
 
+// Only known, static caller copy is mapped. Dynamic descriptions are preserved.
+const CALLER_MESSAGE_KEYS = new Map([
+  ["无法连接服务，暂不能确认是否保存", "caller.connection"],
+  ["导航布局返回内容无法确认", "caller.navigationResult"],
+  ["此设备的原导航无法读取，原布局已保留", "caller.navigationStored"],
+  ["无法读取服务器内容", "caller.readServer"],
+  ["无法准备草稿", "caller.prepareDraft"],
+  ["保存失败", "caller.saveFailed"],
+  ["上次操作的结果未确认，请重试确认", "caller.previousResult"],
+  ["操作结果未确认", "caller.actionResult"],
+]);
+
+function callerMessage(message) {
+  const key = CALLER_MESSAGE_KEYS.get(message);
+  return key ? t(key) : message;
+}
+
 function describeField(field) {
-  if (!field) return '请求内容';
+  if (!field) return t('field.request');
   for (const [pattern, label] of FIELD_LABELS) {
-    if (pattern.test(field)) return label;
+    if (pattern.test(field)) return t(label);
   }
-  return '请求内容';
+  return t('field.request');
 }
 
 function problemFor(status, body) {
@@ -72,10 +93,10 @@ function problemFor(status, body) {
   // a known rejection for a save.
   problem.httpStatus = status;
   if (type === '/problems/materials/reference-version-conflict' && status === 409) {
-    return {...problem,kind:'conflict',currentVersion:body.currentVersion,sourceKind:body.kind,sourceId:body.id,message:`来源有更新（当前版本 ${body.currentVersion}），请对照后重新采用`};
+    return {...problem,kind:'conflict',currentVersion:body.currentVersion,sourceKind:body.kind,sourceId:body.id,get message() { return t('sourceUpdated', { version: body.currentVersion }); }};
   }
   if (['/problems/materials/unsupported-formula','/problems/materials/invalid-export-selection'].includes(type) && status === 422) {
-    return {...problem,kind:'invalid',field:body.field,detail:body.detail,message:body.detail || (type.endsWith('unsupported-formula')?'此公式无法生成可编辑 Word，请修正源后重试':'请选择本课中的有效环节或备用材料；练习至少包含一道题')};
+    return {...problem,kind:'invalid',field:body.field,detail:body.detail,get message() { return t(type.endsWith('unsupported-formula') ? 'unsupportedFormula' : 'invalidExportSelection'); }};
   }
   if (type === PROBLEM_TYPES.versionConflict) {
     problem.kind = 'conflict';
@@ -106,8 +127,7 @@ function problemFor(status, body) {
     // 503 and every unknown Problem belong to the unconfirmed family.
     problem.kind = 'unconfirmed';
   }
-  problem.message = describeProblem(problem);
-  return problem;
+  return { ...problem, get message() { return describeProblem(problem); } };
 }
 
 /** HTTP response -> problem. Non-JSON or oversized bodies stay unconfirmed. */
@@ -119,7 +139,7 @@ export function problemFromResponse(status, body) {
 }
 
 export function unconfirmedProblem(reason) {
-  const problem = { kind: 'unconfirmed', status: 0, type: null, message: reason };
+  const problem = { kind: 'unconfirmed', status: 0, type: null, get message() { return callerMessage(reason); } };
   return problem;
 }
 
@@ -132,7 +152,7 @@ export function unexpectedSuccessProblem(detail) {
     kind: 'unconfirmed',
     status: 0,
     type: null,
-    message: detail || '服务返回的结果无法识别，暂不能确认是否保存'
+    get message() { return detail ? callerMessage(detail) : t('unknownSuccess'); }
   };
 }
 
@@ -140,30 +160,31 @@ function describeProblem(problem) {
   if (!problem) return '';
   switch (problem.kind) {
     case 'identity':
-      return '登录状态已失效，请重新验证身份后继续';
+      return t('identity');
     case 'forbidden':
-      return '请求来源或保护头无效，保存被拒绝';
+      return t('forbidden');
     case 'not-found':
-      return '未找到内容，可能已被删除或不属于当前账户';
+      return t('notFound');
     case 'conflict': {
       if (problem.questionId) {
-        return `引用的题目已在别处修改（当前版本 ${problem.currentVersion ?? '未知'}）`;
+        return t('questionConflict', { version: problem.currentVersion ?? t('unknown') });
       }
-      return `内容已在别处修改（服务器版本 ${problem.currentVersion ?? '未知'}）`;
+      return t('versionConflict', { version: problem.currentVersion ?? t('unknown') });
     }
     case 'deleted':
-      return '对象已被删除，恢复后才能继续编辑';
+      return t('deleted');
     case 'key-reused':
-      return '这次提交的请求键已用于另一次操作，请作为新的提交重试';
+      return t('keyReused');
     case 'invalid': {
-      if (problem.type === PROBLEM_TYPES.payloadTooLarge) return '内容超过 2 MiB 上限';
-      if (problem.type === PROBLEM_TYPES.unsupportedMediaType) return '请求类型不受支持';
-      if (problem.type === PROBLEM_TYPES.malformedJson) return '请求内容不是合法 JSON';
-      if (!problem.reason) return '请求内容无效';
-      return `${describeField(problem.field)}${REASON_TEXT[problem.reason] || '无效'}`;
+      if (problem.type === PROBLEM_TYPES.payloadTooLarge) return t('payloadTooLarge');
+      if (problem.type === PROBLEM_TYPES.unsupportedMediaType) return t('unsupportedMediaType');
+      if (problem.type === PROBLEM_TYPES.malformedJson) return t('malformedJson');
+      if (!problem.reason) return t('invalidRequest');
+      const key = Object.hasOwn(REASON_KEYS, problem.reason) ? REASON_KEYS[problem.reason] : 'invalid.fallback';
+      return t(key, { field: describeField(problem.field) });
     }
     case 'unconfirmed':
     default:
-      return problem.message || '暂时无法确认是否保存';
+      return problem.message ? callerMessage(problem.message) : t('unconfirmed');
   }
 }

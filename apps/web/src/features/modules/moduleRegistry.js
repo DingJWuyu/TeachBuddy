@@ -1,3 +1,4 @@
+import i18n from '../../i18n/index.js';
 /**
  * Web projection of the single static module catalog.
  *
@@ -63,3 +64,9 @@ export function resolveWorkbenchModules(descriptors = moduleCatalog) {
 }
 
 export const workbenchModules = resolveWorkbenchModules();
+
+// The catalog name is data; localize only known product module identities.
+export function moduleDisplayName(module) {
+  const id = typeof module === 'string' ? module : module?.id;
+  return localRegistry[id] ? i18n.t(`modules.${id}`, { ns: 'workbench' }) : module?.name ?? '';
+}

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import React, { useEffect, useState } from "react";
 import {
@@ -11,6 +13,7 @@ export default function HtmlEditor({
   onError,
   onDownload,
 }) {
+  const { t, i18n } = useTranslation('math');
   const [text, setText] = useState(null),
     [error, setError] = useState(""),
     [editing, setEditing] = useState(false),
@@ -25,7 +28,7 @@ export default function HtmlEditor({
       .blob(`/api/workbench/files/${draft.source.fileId}/content`)
       .then(async (blob) => {
         if (blob.size > htmlLimit)
-          throw new Error("文件超过 1 MiB，无法编辑或运行；可以取回原件。");
+          throw new Error(t("文件超过 1 MiB，无法编辑或运行；可以取回原件。"));
         const text = new TextDecoder("utf-8", { fatal: true }).decode(
           await blob.arrayBuffer(),
         );
@@ -36,7 +39,7 @@ export default function HtmlEditor({
           setError(
             error.status
               ? error.message
-              : "编码不支持或文件超过 1 MiB，无法编辑或运行；可以取回原件。",
+              : t("编码不支持或文件超过 1 MiB，无法编辑或运行；可以取回原件。"),
           );
           if (error.status) onError(error);
         }
@@ -55,29 +58,29 @@ export default function HtmlEditor({
           disabled={!draft.id || current === null || !!error}
           onClick={() => setEditing(!editing)}
         >
-          {editing ? "收起源码" : "编辑源码"}
+          {editing ? t("收起源码") : t("编辑源码")}
         </button>
         <button
           disabled={current === null || !!error || tooLarge}
           onClick={() => setRunning(!running)}
         >
-          {running ? "关闭预览" : "运行预览"}
+          {running ? t("关闭预览") : t("运行预览")}
         </button>
         <button onClick={() => onDownload(draft.originalFileId)}>
-          取回原文件
+          {t("取回原文件")}
         </button>
       </div>
-      {!draft.id && <p>原件已上传，保存作品后可修改源码。</p>}
+      {!draft.id && <p>{t("原件已上传，保存作品后可修改源码。")}</p>}
       {(error || tooLarge) && (
         <p role="alert">
-          {error || "源码超过 1 MiB，可保存及取回，无法运行预览。"}
+          {error || t("源码超过 1 MiB，可保存及取回，无法运行预览。")}
         </p>
       )}
       <ModulePresence present={editing} mode="collapse">{editing && (
         <label>
-          HTML 源码
+          {t("HTML 源码")}
           <textarea
-            aria-label="HTML 源码"
+            aria-label={t("HTML 源码")}
             spellCheck="false"
             value={current ?? ""}
             onChange={(e) => {
@@ -94,9 +97,14 @@ export default function HtmlEditor({
       </ModulePresence>
       <ModulePresence present={running} mode="collapse">{running && (
         <iframe
-          title="作品隔离预览"
+          title={t("作品隔离预览")}
           sandbox="allow-scripts"
-          srcDoc={isolatedHtml(current)}
+          srcDoc={isolatedHtml(current, true, {
+            language: i18n.resolvedLanguage,
+            title: t('isolation.title'), frame: t('isolation.frame'), stop: t('isolation.stop'),
+            external: t('isolation.external'), selfContained: t('isolation.selfContained'),
+            failure: t('isolation.failure'), navigation: t('isolation.navigation'), stopped: t('isolation.stopped'),
+          })}
         />
       )}</ModulePresence>
     </div>

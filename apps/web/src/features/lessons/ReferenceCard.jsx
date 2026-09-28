@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import {
   ModulePresence,
   useModuleDialogFocus,
@@ -20,6 +22,7 @@ import { Popover, MenuItem } from "../workbench/ModuleOverlays.jsx";
 import { ModuleDisclosure } from "../workbench/ModuleMotion.jsx";
 
 function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
+  const { t } = useTranslation('lessons');
   const dialogRef = useRef(null);
   useModuleDialogFocus(dialogRef, onClose);
   const [current, setCurrent] = useState(null);
@@ -36,7 +39,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
         if (!cancelled) setCurrent({ ...question, ...question.snapshot });
       })
       .catch((problem) => {
-        if (!cancelled) setError(problem.problem?.message || "无法读取来源");
+        if (!cancelled) setError(problem.problem?.message || t("无法读取来源"));
       });
     return () => {
       cancelled = true;
@@ -56,14 +59,14 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
         className="wb-dialog wb-compare-dialog"
         role="dialog"
         aria-modal="true"
-        aria-label="对照更新"
+        aria-label={t("对照更新")}
       >
         <header className="wb-dialog-head">
-          <h2>对照更新</h2>
+          <h2>{t("对照更新")}</h2>
           <button
             type="button"
             className="wb-icon-button"
-            aria-label="关闭"
+            aria-label={t("关闭")}
             onClick={onClose}
           >
             <Icon name="close" />
@@ -73,7 +76,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
         <div className="wb-compare-grid">
           <section className="wb-compare-side" data-region="reference-old">
             <h3>
-              本课采用版本{" "}
+              {t("本课采用版本")}{" "}
               {reference.workVersion ??
                 reference.questionVersion ??
                 reference.resourceVersion}
@@ -90,7 +93,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
                   )
                 }
               >
-                预览本课采用文件
+                {t("预览本课采用文件")}
               </button>
             ) : (
               <DocumentView value={reference.snapshot?.body} />
@@ -100,7 +103,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
             )}
           </section>
           <section className="wb-compare-side" data-region="reference-new">
-            <h3>来源当前版本 {current?.version ?? "…"}</h3>
+            <h3>{t("来源当前版本")} {current?.version ?? "…"}</h3>
             {current && (
               <>
                 {reference.kind === "math" ? (
@@ -114,7 +117,7 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
                       )
                     }
                   >
-                    预览来源当前文件
+                    {t("预览来源当前文件")}
                   </button>
                 ) : (
                   <DocumentView value={current.body} />
@@ -141,10 +144,10 @@ function UpdateCompareDialog({ reference, onAdopt, onClose, readOnly }) {
             }
             onClick={() => onAdopt(current.version, current.snapshot)}
           >
-            采用更新
+            {t("采用更新")}
           </button>
           <button type="button" className="wb-button" onClick={onClose}>
-            取消
+            {t("取消")}
           </button>
         </div>
       </div>
@@ -178,12 +181,13 @@ export function ReferenceCard({
   canMoveDown = false,
   readOnly = false,
 }) {
+  const { t } = useTranslation('lessons');
   const [compareOpen, setCompareOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(Boolean(reference.note));
   const [previewFile, setPreviewFile] = useState(null);
   const excerpt =
     excerptFor(reference.snapshot?.title || "", reference.snapshot?.body, 40) ||
-    "题目";
+    t("题目");
   const hasUpdate =
     reference.sourceState === "active" &&
     Number.isInteger(reference.latestVersion) &&
@@ -201,14 +205,14 @@ export function ReferenceCard({
       <header className="wb-reference-head">
         <h4>{excerpt}</h4>
         <span className="wb-muted">
-          采用版本{" "}
+          {t("采用版本")}{" "}
           {reference.workVersion ??
             reference.questionVersion ??
             reference.resourceVersion}
         </span>
         {reference.sourceState === "deleted" && (
           <span className="wb-tag is-deleted" data-region="source-deleted">
-            来源已删除
+            {t("来源已删除")}
           </span>
         )}
         {hasUpdate && (
@@ -218,11 +222,11 @@ export function ReferenceCard({
             name="view-update"
             onClick={() => setCompareOpen(true)}
           >
-            有更新 · 查看
+            {t("有更新 · 查看")}
           </button>
         )}
         {!readOnly && (
-          <Popover label={`材料操作 ${excerpt}`}>
+          <Popover label={t("材料操作 {{excerpt}}", { excerpt: excerpt })}>
             {({ close }) => (
               <>
                 {onReorder && (
@@ -234,7 +238,7 @@ export function ReferenceCard({
                         onReorder(-1);
                       }}
                     >
-                      上移材料
+                      {t("上移材料")}
                     </MenuItem>
                     <MenuItem
                       disabled={!canMoveDown}
@@ -243,11 +247,11 @@ export function ReferenceCard({
                         onReorder(1);
                       }}
                     >
-                      下移材料
+                      {t("下移材料")}
                     </MenuItem>
                   </>
                 )}
-                {onPlacement && <MenuItem onClick={() => { close(); onPlacement(); }}>放到正文之间</MenuItem>}
+                {onPlacement && <MenuItem onClick={() => { close(); onPlacement(); }}>{t("放到正文之间")}</MenuItem>}
                 {targets.map((target) => (
                   <MenuItem
                     key={target.value}
@@ -256,7 +260,7 @@ export function ReferenceCard({
                       onMove(target.value);
                     }}
                   >
-                    移到{target.label}
+                    {t("移到")}{target.label}
                   </MenuItem>
                 ))}
                 <MenuItem
@@ -266,7 +270,7 @@ export function ReferenceCard({
                     onPlaceAgain();
                   }}
                 >
-                  再放一次
+                  {t("再放一次")}
                 </MenuItem>
                 {onCopyWork && (
                   <MenuItem
@@ -275,7 +279,7 @@ export function ReferenceCard({
                       onCopyWork();
                     }}
                   >
-                    另存作品并替换本处
+                    {t("另存作品并替换本处")}
                   </MenuItem>
                 )}
                 <MenuItem
@@ -286,7 +290,7 @@ export function ReferenceCard({
                     onRemove();
                   }}
                 >
-                  从本课移除
+                  {t("从本课移除")}
                 </MenuItem>
               </>
             )}
@@ -307,7 +311,7 @@ export function ReferenceCard({
                 )
               }
             >
-              {reference.snapshot.fileName} · 预览采用文件
+              {reference.snapshot.fileName} {t("· 预览采用文件")}
             </button>
             <button
               className="wb-text-button"
@@ -318,7 +322,7 @@ export function ReferenceCard({
                 )
               }
             >
-              下载原件
+              {t("下载原件")}
             </button>
           </div>
         ) : (
@@ -327,7 +331,7 @@ export function ReferenceCard({
       </div>
       {reference.snapshot?.solution &&
         (reference.snapshot.solution.blocks || []).length > 0 && (
-          <ModuleDisclosure className="wb-answer" title="答案与解析">
+          <ModuleDisclosure className="wb-answer" title={t("答案与解析")}>
             <DocumentView document={reference.snapshot.solution} />
           </ModuleDisclosure>
         )}
@@ -335,7 +339,7 @@ export function ReferenceCard({
         reference.note && (
           <div className="lesson-reference-note-read">
             <Icon name="prep" size={14} />
-            <span>本课备注：{reference.note}</span>
+            <span>{t("本课备注：")}{reference.note}</span>
           </div>
         )
       ) : (
@@ -346,18 +350,18 @@ export function ReferenceCard({
               onClick={() => setNoteOpen(true)}
             >
               <Icon name="plus" size={14} />
-              添加本课备注
+              {t("添加本课备注")}
             </button>
           )}
           <ModulePresence present={noteOpen} mode="collapse">
             <label className="wb-reference-note">
               <span className="lesson-note-label">
-                <span>本课备注</span>
+                <span>{t("本课备注")}</span>
                 {!reference.note && (
                   <button
                     className="wb-icon-button"
                     type="button"
-                    aria-label="收起空备注"
+                    aria-label={t("收起空备注")}
                     onClick={() => setNoteOpen(false)}
                   >
                     <Icon name="close" size={14} />
@@ -367,8 +371,8 @@ export function ReferenceCard({
               <textarea
                 className="wb-input"
                 rows={2}
-                aria-label={`本课备注 ${excerpt}`}
-                placeholder="记下这道题怎么讲，或提醒自己注意什么…"
+                aria-label={t("本课备注 {{excerpt}}", { excerpt: excerpt })}
+                placeholder={t("记下这道题怎么讲，或提醒自己注意什么…")}
                 value={reference.note || ""}
                 onChange={(event) => onNoteChange(event.target.value)}
               />
@@ -382,7 +386,7 @@ export function ReferenceCard({
           className="wb-text-button lesson-source-link"
           onClick={onOpenLesson}
         >
-          查看来源
+          {t("查看来源")}
           <Icon name="chevron" size={13} />
         </button>
       )}

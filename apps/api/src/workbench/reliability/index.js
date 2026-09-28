@@ -39,7 +39,7 @@ export function createReliability({
   const directory = path.join(path.dirname(db.name), "personal-exports");
   const router = express.Router(),
     guards = createGuards({ identity, trustedOrigins });
-  const running = new Set();
+  const running = new Map();
   const controller = new AbortController();
   let closed = false;
   const save = (record) =>
@@ -55,10 +55,13 @@ export function createReliability({
   };
   function start(id) {
     if (running.has(id) || closed) return;
-    running.add(id);
+    const abort = new AbortController();
+    let settle;
+    const done = new Promise(resolve => { settle = resolve; });
+    running.set(id, { abort, done });
     setImmediate(async () => {
       try {
-        if (closed) return;
+        if (closed || abort.signal.aborted) return;
         const row = db
             .prepare("SELECT * FROM reliability_exports WHERE id=?")
             .get(id),
@@ -70,7 +73,7 @@ export function createReliability({
           JSON.parse(row.snapshot),
           filesDirectory,
           path.join(directory, `${id}.zip`),
-          controller.signal,
+          AbortSignal.any([controller.signal, abort.signal]),
         );
         if (closed) return;
         record.state = "ready";
@@ -99,6 +102,7 @@ export function createReliability({
         logger?.error("personal export failed", error);
       } finally {
         running.delete(id);
+        settle();
       }
     });
   }
@@ -250,6 +254,27 @@ export function createReliability({
   );
   agentRecoveryGuard.use(createWorkbenchErrorHandler({ logger }));
   return {
+    async cancelAccountAndWait(accountKey) {
+      const handles = db.prepare('SELECT id FROM reliability_exports WHERE accountKey=?').all(accountKey)
+        .map(row => running.get(row.id)).filter(Boolean);
+      for (const handle of handles) handle.abort.abort();
+      await Promise.all(handles.map(handle => handle.done));
+    },
+    accountExportIds(accountKey) {
+      return db.prepare('SELECT id FROM reliability_exports WHERE accountKey=?').all(accountKey).map(row => row.id);
+    },
+    removeAccountExports(accountKey, ids) {
+      for (const id of ids) {
+        validateIdPath(id);
+        if (db.prepare('SELECT 1 FROM reliability_exports WHERE id=? AND accountKey<>?').get(id, accountKey))
+          throw new Error('Export belongs to another account');
+        for (const suffix of ['.zip', '.zip.part']) fs.rmSync(path.join(directory, id + suffix), { force: true });
+      }
+      if (fs.existsSync(directory)) {
+        const fd = fs.openSync(directory, 'r');
+        try { fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
+      }
+    },
     router,
     agentRecoveryGuard,
     initialize() {

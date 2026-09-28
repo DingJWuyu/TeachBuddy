@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import React, { useState } from "react";
 import { ToolPanel } from './WorkspaceControls.jsx';
 import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
@@ -10,6 +12,7 @@ import {
 } from "./editing.js";
 
 function ParameterEditor({ source, index, Fields, onChange, edits, onEdits, confirm }) {
+  const { t } = useTranslation('math');
   const parameter = source.parameters[index];
   const draft = edits[parameter.name] ?? parameter;
   const setDraft = (next) =>
@@ -42,24 +45,24 @@ function ParameterEditor({ source, index, Fields, onChange, edits, onEdits, conf
               onChange(updateParameter(source, index, draft), cleared());
           }}
         >
-          应用参数 {index + 1}
+          {t("应用参数")} {index + 1}
         </button>
         <button
           onClick={async () => {
             if (
               await confirm(
-                `移除参数 ${parameter.name}，公式中的该参数将固定为初值 ${parameter.initial}。是否继续？`,
+                t("移除参数 {{name}}，公式中的该参数将固定为初值 {{initial}}。是否继续？", { name: parameter.name, initial: parameter.initial }),
               )
             )
               onChange(removeParameter(source, index), cleared());
           }}
         >
-          移除参数 {parameter.name}
+          {t("移除参数")} {parameter.name}
         </button>
       </div>
       {changed && (
         <p className="math-hint">
-          应用后同步公式和步骤取值，超出范围的取值移至最近刻度。
+          {t("应用后同步公式和步骤取值，超出范围的取值移至最近刻度。")}
         </p>
       )}
     </section>
@@ -76,6 +79,7 @@ export default function DynamicTools({
   onEdits,
   confirm,
 }) {
+  const { t } = useTranslation('math');
   const set = (key, value) => onChange({ ...source, [key]: value });
   const unbound = source.scene.elements.filter(
     (e) => e.type === "point" && !e.construction && !source.drags.some((d) => d.pointId === e.id),
@@ -102,28 +106,28 @@ export default function DynamicTools({
             disabled={source.parameters.length >= 20}
             onClick={() => { onExpanded(`parameter-${source.parameters.length}`, true); onChange(addParameter(source)); }}
           >
-            添加参数
+            {t("添加参数")}
           </button>
         </div>
-        <ModuleDisclosure title="自动播放与轨迹" open={!!expanded.animation} onOpenChange={open => onExpanded('animation', open)}>
+        <ModuleDisclosure title={t("自动播放与轨迹")} open={!!expanded.animation} onOpenChange={open => onExpanded('animation', open)}>
           <div className="math-dynamic-fields">
             {source.parameters.length > 0 && <>
-              <label>播放参数<select aria-label="播放参数" value={source.animation?.parameter ?? source.parameters[0].name} onChange={e => set('animation', { seconds: 8, mode: 'bounce', ...source.animation, parameter: e.target.value })}>{source.parameters.map(p => <option key={p.name} value={p.name}>{p.label}</option>)}</select></label>
-              <label>单程秒数<input aria-label="单程秒数" type="number" min="1" max="120" value={source.animation?.seconds ?? 8} onChange={e => set('animation', { parameter: source.parameters[0].name, mode: 'bounce', ...source.animation, seconds: Number(e.target.value) })}/></label>
-              <label>播放方式<select aria-label="播放方式" value={source.animation?.mode ?? 'bounce'} onChange={e => set('animation', { parameter: source.parameters[0].name, seconds: 8, ...source.animation, mode: e.target.value })}><option value="bounce">往返</option><option value="loop">循环</option><option value="once">播放一次</option></select></label>
+              <label>{t("播放参数")}<select aria-label={t("播放参数")} value={source.animation?.parameter ?? source.parameters[0].name} onChange={e => set('animation', { seconds: 8, mode: 'bounce', ...source.animation, parameter: e.target.value })}>{source.parameters.map(p => <option key={p.name} value={p.name}>{p.label}</option>)}</select></label>
+              <label>{t("单程秒数")}<input aria-label={t("单程秒数")} type="number" min="1" max="120" value={source.animation?.seconds ?? 8} onChange={e => set('animation', { parameter: source.parameters[0].name, mode: 'bounce', ...source.animation, seconds: Number(e.target.value) })}/></label>
+              <label>{t("播放方式")}<select aria-label={t("播放方式")} value={source.animation?.mode ?? 'bounce'} onChange={e => set('animation', { parameter: source.parameters[0].name, seconds: 8, ...source.animation, mode: e.target.value })}><option value="bounce">{t("往返")}</option><option value="loop">{t("循环")}</option><option value="once">{t("播放一次")}</option></select></label>
             </>}
-            <fieldset><legend>记录点的采样轨迹</legend>{source.scene.elements.filter(e => e.type === 'point').map(p => <label key={p.id}><input type="checkbox" checked={(source.traceIds ?? []).includes(p.id)} disabled={!(source.traceIds ?? []).includes(p.id) && (source.traceIds?.length ?? 0) >= 10} onChange={e => set('traceIds', e.target.checked ? [...(source.traceIds ?? []), p.id] : source.traceIds.filter(id => id !== p.id))}/>{p.id} 的轨迹</label>)}</fieldset>
-            <p className="math-hint">播放和轨迹只用于试演，重置或换步骤后清空轨迹。下载的演示保留相同设置。</p>
+            <fieldset><legend>{t("记录点的采样轨迹")}</legend>{source.scene.elements.filter(e => e.type === 'point').map(p => <label key={p.id}><input type="checkbox" checked={(source.traceIds ?? []).includes(p.id)} disabled={!(source.traceIds ?? []).includes(p.id) && (source.traceIds?.length ?? 0) >= 10} onChange={e => set('traceIds', e.target.checked ? [...(source.traceIds ?? []), p.id] : source.traceIds.filter(id => id !== p.id))}/>{p.id} {t("的轨迹")}</label>)}</fieldset>
+            <p className="math-hint">{t("播放和轨迹只用于试演，重置或换步骤后清空轨迹。下载的演示保留相同设置。")}</p>
           </div>
         </ModuleDisclosure>
         <details>
-          <summary>拖动图上的点</summary>
+          <summary>{t("拖动图上的点")}</summary>
           {source.drags.map((drag, i) => (
             <section className="math-dynamic-fields" key={i}>
               <label>
-                拖动点
+                {t("拖动点")}
                 <select
-                  aria-label={`拖动 ${i + 1} 点`}
+                  aria-label={t("拖动 {{number}} 点", { number: i + 1 })}
                   value={drag.pointId}
                   onChange={(e) =>
                     onChange(
@@ -147,7 +151,7 @@ export default function DynamicTools({
                 <label key={axis}>
                   {axis}
                   <select
-                    aria-label={`拖动 ${i + 1} ${axis}`}
+                    aria-label={t("拖动 {{number}} {{axis}}", { number: i + 1, axis: axis })}
                     value={drag[`${axis}Parameter`] ?? ""}
                     onChange={(e) => {
                       const next = {
@@ -162,7 +166,7 @@ export default function DynamicTools({
                       else onChange(updateDrag(source, i, next));
                     }}
                   >
-                    <option value="">锁定</option>
+                    <option value="">{t("锁定")}</option>
                     {source.parameters.map((p) => (
                       <option key={p.name}>{p.name}</option>
                     ))}
@@ -177,7 +181,7 @@ export default function DynamicTools({
                   )
                 }
               >
-                移除拖动 {i + 1}
+                {t("移除拖动")} {i + 1}
               </button>
             </section>
           ))}
@@ -202,7 +206,7 @@ export default function DynamicTools({
               );
             }}
           >
-            添加拖动
+            {t("添加拖动")}
           </button>
         </details>
       </ToolPanel>
@@ -210,9 +214,9 @@ export default function DynamicTools({
         <div>
           {source.steps.length > 0 && (
             <label>
-              初始步骤
+              {t("初始步骤")}
               <select
-                aria-label="初始步骤"
+                aria-label={t("初始步骤")}
                 value={source.initialStepId ?? ""}
                 onChange={(e) => set("initialStepId", e.target.value)}
               >
@@ -231,22 +235,22 @@ export default function DynamicTools({
                 source.steps.map((s, j) => (i === j ? next : s)),
               );
             return (
-              <ModuleDisclosure key={step.id} title={`${i + 1} · ${step.title || '未命名步骤'}`}
+              <ModuleDisclosure key={step.id} title={t("{{number}} · {{title}}", { number: i + 1, title: step.title || t("未命名步骤") })}
                 open={expanded[`step-${step.id}`] ?? i === 0} onOpenChange={open => onExpanded(`step-${step.id}`, open)} className="math-parameter-group">
               <section className="math-dynamic-fields">
                 <label>
-                  步骤标题
+                  {t("步骤标题")}
                   <input
-                    aria-label={`步骤 ${i + 1} 标题`}
+                    aria-label={t("步骤 {{number}} 标题", { number: i + 1 })}
                     value={step.title}
                     maxLength={200}
                     onChange={(e) => update({ ...step, title: e.target.value })}
                   />
                 </label>
                 <label>
-                  步骤说明
+                  {t("步骤说明")}
                   <textarea
-                    aria-label={`步骤 ${i + 1} 说明`}
+                    aria-label={t("步骤 {{number}} 说明", { number: i + 1 })}
                     value={step.description ?? ""}
                     maxLength={2000}
                     onChange={(e) =>
@@ -259,7 +263,7 @@ export default function DynamicTools({
                     {p.label} ({p.name})
                     <input
                       type="number"
-                      aria-label={`步骤 ${i + 1} ${p.name}`}
+                      aria-label={t("步骤 {{number}} {{name}}", { number: i + 1, name: p.name })}
                       min={p.min}
                       max={p.max}
                       step={p.step}
@@ -280,7 +284,7 @@ export default function DynamicTools({
                   </label>
                 ))}
                 <fieldset>
-                  <legend>显示对象</legend>
+                  <legend>{t("显示对象")}</legend>
                   {source.scene.elements.map((object) => (
                     <label key={object.id}>
                       <input
@@ -308,7 +312,7 @@ export default function DynamicTools({
                       set("steps", steps);
                     }}
                   >
-                    上移步骤 {i + 1}
+                    {t("上移步骤")} {i + 1}
                   </button>
                   <button
                     onClick={() =>
@@ -323,7 +327,7 @@ export default function DynamicTools({
                       })
                     }
                   >
-                    移除步骤 {i + 1}
+                    {t("移除步骤")} {i + 1}
                   </button>
                 </div>
               </section></ModuleDisclosure>
@@ -353,7 +357,7 @@ export default function DynamicTools({
               });
             }}
           >
-            添加步骤
+            {t("添加步骤")}
           </button>
         </div>
       </ToolPanel>

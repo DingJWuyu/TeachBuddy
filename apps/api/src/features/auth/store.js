@@ -93,6 +93,13 @@ export function createAuthStore(db) {
   };
 
   return {
+    isAccountDeleting(accountId) {
+      return Boolean(db.prepare('SELECT 1 FROM auth_account_deletions WHERE accountId=?').get(accountId));
+    },
+    isAccountActive(accountKey) {
+      return Boolean(db.prepare(`SELECT 1 FROM auth_accounts a WHERE accountKey=?
+        AND NOT EXISTS (SELECT 1 FROM auth_account_deletions d WHERE d.accountId=a.id)`).get(accountKey));
+    },
     getAccountByEmail(email) {
       return statements.accountByEmail.get(email) ?? null;
     },

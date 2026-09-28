@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 /**
  * In-lesson question picker (U5): the main area temporarily becomes 找题 for one
  * lesson target. Selection order is the reference order, already-used questions
@@ -24,6 +26,7 @@ export function QuestionPicker({
   busy = false,
   problem = null
 }) {
+  const { t } = useTranslation('lessons');
   const [query, setQuery] = useState('');
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('loading');
@@ -45,7 +48,7 @@ export function QuestionPicker({
       })
       .catch((error) => {
         if (seq !== seqRef.current) return;
-        setLoadError(error.problem || { message: '读取失败' });
+        setLoadError(error.problem || { message: t("读取失败") });
         setStatus('error');
       });
   }, [query]);
@@ -90,15 +93,15 @@ export function QuestionPicker({
       <header className="wb-picker-head">
         <button type="button" className="wb-button" name="picker-back" onClick={onCancel}>
           <Icon name="back" size={15} />
-          返回「{lessonTitle} · {targetLabel}」
+          {t("返回「")}{lessonTitle} · {targetLabel}」
         </button>
         <div className="wb-search">
           <Icon name="search" size={15} />
           <input
             className="wb-input"
             type="search"
-            aria-label="搜索题目"
-            placeholder="搜索题目"
+            aria-label={t("搜索题目")}
+            placeholder={t("搜索题目")}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -110,7 +113,7 @@ export function QuestionPicker({
           disabled={busy || selected.length === 0}
           onClick={handleConfirm}
         >
-          {busy ? '正在加入…' : `确认加入 ${selected.length} 题`}
+          {busy ? t("正在加入…") : t("确认加入 {{count}} 题", { count: selected.length })}
         </button>
       </header>
 
@@ -118,9 +121,9 @@ export function QuestionPicker({
         <div className="wb-picker-notice" data-region="picker-notice" role="alert">
           {missing.length > 0 && (
             <>
-              <p>有选中项已不可用，未加入任何题目。</p>
+              <p>{t("有选中项已不可用，未加入任何题目。")}</p>
               <button type="button" className="wb-button" onClick={() => { onRemoveSelection(missing); setMissing([]); }}>
-                移除这些选择
+                {t("移除这些选择")}
               </button>
             </>
           )}
@@ -129,15 +132,15 @@ export function QuestionPicker({
       )}
 
       <div className="wb-picker-body">
-        <section className="wb-list-pane" data-region="picker-list" aria-label="找题">
-          {status === 'loading' && <p className="wb-muted">正在加载题目…</p>}
+        <section className="wb-list-pane" data-region="picker-list" aria-label={t("找题")}>
+          {status === 'loading' && <p className="wb-muted">{t("正在加载题目…")}</p>}
           {status === 'error' && (
             <div className="wb-inline-error">
               <p>{loadError?.message}</p>
-              <button type="button" className="wb-button" onClick={() => setQuery((current) => current)}>重试</button>
+              <button type="button" className="wb-button" onClick={() => setQuery((current) => current)}>{t("重试")}</button>
             </div>
           )}
-          {status === 'ready' && items.length === 0 && <p className="wb-empty-note">没有匹配的题目</p>}
+          {status === 'ready' && items.length === 0 && <p className="wb-empty-note">{t("没有匹配的题目")}</p>}
           <ul className="wb-list">
             {items.map((item) => (
               <QuestionRow
@@ -153,17 +156,17 @@ export function QuestionPicker({
           </ul>
         </section>
 
-        <section className="wb-preview-pane" data-region="picker-preview" aria-label="题目预览">
+        <section className="wb-preview-pane" data-region="picker-preview" aria-label={t("题目预览")}>
           {preview ? (
             <article className="wb-reader">
               <h2 className="wb-object-title">
-                {preview.title || excerptFor('', preview.body, 30) || '未命名题目'}
+                {preview.title || excerptFor('', preview.body, 30) || t("未命名题目")}
               </h2>
               <QuestionBody document={preview.body} />
               <SolutionDetails document={preview.solution} />
             </article>
           ) : (
-            <p className="wb-empty-note">选择题目后可预览</p>
+            <p className="wb-empty-note">{t("选择题目后可预览")}</p>
           )}
         </section>
       </div>

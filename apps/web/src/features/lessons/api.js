@@ -1,3 +1,5 @@
+import i18n from '../../i18n/index.js';
+const t = (key, options) => i18n.t(key, { ns: 'lessons', ...options });
 /** Lessons module API surface. */
 
 import {
@@ -15,7 +17,7 @@ function assertLesson(payload) {
     typeof payload.id !== "string" ||
     !Number.isInteger(payload.version)
   ) {
-    throw new WorkbenchError(unexpectedSuccessProblem("备课结果无法识别"));
+    throw new WorkbenchError(unexpectedSuccessProblem(t("备课结果无法识别")));
   }
   return payload;
 }
@@ -25,7 +27,7 @@ export async function listLessons({ q = "", state = "active" } = {}) {
     `/api/modules/lessons/v3${buildQuery({ q, state })}`,
   );
   if (!body || !Array.isArray(body.items)) {
-    throw new WorkbenchError(unexpectedSuccessProblem("备课列表无法识别"));
+    throw new WorkbenchError(unexpectedSuccessProblem(t("备课列表无法识别")));
   }
   return body.items;
 }
@@ -65,7 +67,7 @@ export async function setLessonDeletion({ key, id, payload, version = 3 }) {
 export async function purgeLesson({ key, id, payload }) {
   const { body } = await workbenchPost(`/api/modules/lessons/v3/${id}/purge`, payload, key);
   if (body?.id !== id || body.permanentlyDeleted !== true)
-    throw new WorkbenchError(unexpectedSuccessProblem("删除结果无法确认"));
+    throw new WorkbenchError(unexpectedSuccessProblem(t("删除结果无法确认")));
   return body;
 }
 
@@ -121,7 +123,7 @@ export async function requestPageRecognition({ key, payload }) {
       // This known rejection means the old job cannot run under the current
       // engine. It is not an unknown receipt to replay indefinitely.
       if (error.problem?.httpStatus === 409 && error.problem.type === '/problems/materials/job-not-retryable')
-        throw new WorkbenchError({ ...error.problem, kind: 'conflict', message: '旧识别任务无法重试，请重新发起这一页的识别。' });
+        throw new WorkbenchError({ ...error.problem, kind: 'conflict', message: t("旧识别任务无法重试，请重新发起这一页的识别。") });
       throw error;
     }
   }

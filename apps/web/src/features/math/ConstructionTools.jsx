@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { useState } from "react";
 import {
   constructionKinds,
@@ -19,14 +21,15 @@ const inputLabels = {
   circle: ["圆心", "圆上点"],
 };
 export function ConstructionFields({ construction, elements, id, onChange }) {
+  const { t } = useTranslation('math');
   const rule = constructionKinds[construction.kind];
   return (
     <div className="math-fields">
       {rule.inputs.map((type, i) => (
         <label key={i}>
-          {inputLabels[construction.kind][i]}
+          {t(inputLabels[construction.kind][i])}
           <select
-            aria-label={inputLabels[construction.kind][i]}
+            aria-label={t(inputLabels[construction.kind][i])}
             value={construction.refs[i] ?? ""}
             onChange={(e) =>
               onChange({
@@ -37,7 +40,7 @@ export function ConstructionFields({ construction, elements, id, onChange }) {
               })
             }
           >
-            <option value="">请选择</option>
+            <option value="">{t("请选择")}</option>
             {elements
               .filter((e) => e.id !== id && acceptsConstructionInput(type, e))
               .map((e) => (
@@ -50,16 +53,16 @@ export function ConstructionFields({ construction, elements, id, onChange }) {
       ))}
       {construction.kind === "intersection" && (
         <label>
-          交点分支
+          {t("交点分支")}
           <select
-            aria-label="交点分支"
+            aria-label={t("交点分支")}
             value={construction.branch ?? 0}
             onChange={(e) =>
               onChange({ ...construction, branch: Number(e.target.value) })
             }
           >
-            <option value={0}>第一个交点</option>
-            <option value={1}>第二个交点</option>
+            <option value={0}>{t("第一个交点")}</option>
+            <option value={1}>{t("第二个交点")}</option>
           </select>
         </label>
       )}
@@ -67,6 +70,7 @@ export function ConstructionFields({ construction, elements, id, onChange }) {
   );
 }
 export default function ConstructionTools({ source, onChange, onSelect }) {
+  const { t } = useTranslation('math');
   const [construction, setConstruction] = useState({
       kind: "midpoint",
       refs: ["", ""],
@@ -81,7 +85,7 @@ export default function ConstructionTools({ source, onChange, onSelect }) {
     try {
       const next = [...elements, element];
       if (constructionIssue(next))
-        throw new Error("请为构造选择两个不同且有效的对象");
+        throw new Error(t("请为构造选择两个不同且有效的对象"));
       resolveElements(
         next,
         source.kind === "dynamic" ? dynamicState(source).values : {},
@@ -91,18 +95,18 @@ export default function ConstructionTools({ source, onChange, onSelect }) {
       onSelect(`object:${elements.length}`);
       setError("");
     } catch (e) {
-      setError(e.message);
+      setError(e);
     }
   }
   return (
     <div className="math-fields">
       <p className="math-hint">
-        选择已有点、直线或圆，构造随原对象变化的图形。
+        {t("选择已有点、直线或圆，构造随原对象变化的图形。")}
       </p>
       <label>
-        构造方式
+        {t("构造方式")}
         <select
-          aria-label="构造方式"
+          aria-label={t("构造方式")}
           value={construction.kind}
           onChange={(e) => {
             setConstruction({ kind: e.target.value, refs: ["", ""] });
@@ -111,7 +115,7 @@ export default function ConstructionTools({ source, onChange, onSelect }) {
         >
           {Object.entries(constructionKinds).map(([kind, rule]) => (
             <option key={kind} value={kind}>
-              {rule.label}
+              {t(`construction.${kind}`)}
             </option>
           ))}
         </select>
@@ -123,7 +127,7 @@ export default function ConstructionTools({ source, onChange, onSelect }) {
       />
       {["parallel", "perpendicular", "projection", "intersection"].includes(
         construction.kind,
-      ) && <p className="math-hint">线段按所在直线计算；交点支持直线与圆。</p>}
+      ) && <p className="math-hint">{t("线段按所在直线计算；交点支持直线与圆。")}</p>}
       <button
         className="math-primary"
         disabled={
@@ -132,11 +136,12 @@ export default function ConstructionTools({ source, onChange, onSelect }) {
         }
         onClick={add}
       >
-        添加{constructionKinds[construction.kind].label}
+        {t("添加")}{t(`construction.${construction.kind}`)}
       </button>
       {error && (
-        <p role="alert" className="math-message">
-          {error}
+        <p role="alert" className="math-message" title={error.message}>
+          {error.reason === 'invalid-geometry' ? t('sourceError.geometry')
+            : error.reason === 'invalid-expression' ? t('sourceError.expression') : error.message}
         </p>
       )}
     </div>

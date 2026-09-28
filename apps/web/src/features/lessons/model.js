@@ -1,3 +1,5 @@
+import i18n from '../../i18n/index.js';
+const t = (key, options) => i18n.t(key, { ns: 'lessons', ...options });
 /**
  * Lesson editor input <-> contract payload, plus the structural edits the UX
  * requires (sections, references, moving and adopting versions).
@@ -78,7 +80,7 @@ export function validateLessonInput(input) {
       kind: "invalid",
       field: unsupported[0],
       reason: "unsupported-content-version",
-      message: `这段内容来自更新的文档版本 ${unsupported[1]?.version}，本版本不能保存`,
+      message: t("这段内容来自更新的文档版本 {{version}}，本版本不能保存", { version: unsupported[1]?.version }),
     };
   }
   if (!input || !String(input.title || "").trim()) {
@@ -86,7 +88,7 @@ export function validateLessonInput(input) {
       kind: "invalid",
       field: "/title",
       reason: "out-of-range",
-      message: "课题不能为空",
+      message: t("课题不能为空"),
     };
   }
   if (String(input.title).length > 200) {
@@ -94,7 +96,7 @@ export function validateLessonInput(input) {
       kind: "invalid",
       field: "/title",
       reason: "out-of-range",
-      message: "课题超出允许范围",
+      message: t("课题超出允许范围"),
     };
   }
   const badSection = (input.sections || []).findIndex(
@@ -105,7 +107,7 @@ export function validateLessonInput(input) {
       kind: "invalid",
       field: `/sections/${badSection}/title`,
       reason: "out-of-range",
-      message: "环节名称不能为空",
+      message: t("环节名称不能为空"),
     };
   }
   const ids = new Set();
@@ -116,7 +118,7 @@ export function validateLessonInput(input) {
           kind: "invalid",
           field: "/sections",
           reason: "duplicate-id",
-          message: "引用 ID 重复",
+          message: t("引用 ID 重复"),
         };
       }
       ids.add(reference.id);
@@ -157,10 +159,10 @@ export function buildUpdateLessonPayload(input, baseline) {
  */
 /** Human label of a picking/placement target. */
 export function targetLabel(input, target) {
-  if (!target || target.type === "materials") return "本课材料";
+  if (!target || target.type === "materials") return t("本课材料");
   return (
     (input.sections || []).find((section) => section.id === target.sectionId)
-      ?.title || "环节"
+      ?.title || t("环节")
   );
 }
 

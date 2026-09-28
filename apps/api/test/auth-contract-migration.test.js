@@ -37,6 +37,7 @@ describe('认证迁移', () => {
       .map((row) => row.name)
       .sort();
     assert.deepEqual(tables, [
+      'auth_account_deletions',
       'auth_accounts',
       'auth_challenges',
       'auth_containers',

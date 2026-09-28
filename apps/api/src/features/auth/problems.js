@@ -85,6 +85,9 @@ const PROBLEM_DEFINITIONS = {
   },
   sessionInvalid: { status: 401, type: 'session-invalid', title: 'Session is invalid' },
   sessionStateConflict: { status: 409, type: 'session-state-conflict', title: 'Session state conflicts' },
+  deletionConfirmationMismatch: { status: 422, type: 'deletion-confirmation-mismatch', title: 'Confirmation does not match this account' },
+  deletionInProgress: { status: 409, type: 'deletion-in-progress', title: 'Continue the original account deletion request' },
+  deletionIncomplete: { status: 503, type: 'deletion-incomplete', title: 'Account deletion is not complete; retry the original request' },
   serviceUnavailable: { status: 503, type: 'service-unavailable', title: 'Service is unavailable' }
 };
 

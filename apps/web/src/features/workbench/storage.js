@@ -11,6 +11,10 @@ const selected = new Map();
 const blocked = new Set();
 const recovered = new Set();
 export function hasRecoveredDrafts(account) { return recovered.has(account); }
+export function isDeletedAccount(account) {
+  try { return storage()?.getItem(`tb.account.deleted:${account}`) === '1'; }
+  catch (error) { report(error); return true; }
+}
 function notifyRecovery(account, name, value) {
   if (/draft|pending|collection/.test(name) || Object.keys(value?.drafts ?? {}).length || value?.editor?.pending || (value?.editor && JSON.stringify(value.editor.drafts) !== JSON.stringify(value.editor.baseline))) {
     recovered.add(account);
@@ -87,6 +91,7 @@ export function readLocal(account, name) {
   } catch (error) { blocked.add(key); report(error); return null; }
 }
 export function writeLocal(account, name, value) {
+  if (isDeletedAccount(account)) return false;
   const store = storage(); if (!store || !account) return false;
   const key = scope(account, name);
   try {

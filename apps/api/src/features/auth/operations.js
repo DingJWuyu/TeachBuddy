@@ -115,6 +115,7 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
   // outcome to their own response shape (503 / 401 / anonymous).
   function sessionAuthorization(session, account, atMs) {
     if (!account) return 'missing-account';
+    if (store.isAccountDeleting(account.id)) return 'invalid';
     if (session.revokedAt || isExpired(session, atMs)) return 'invalid';
     if (account.passwordVersion !== session.passwordVersion) return 'stale';
     return 'live';
@@ -227,7 +228,7 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
     return challenge;
   }
 
-  async function issueChallenge(purpose, email, requireOpen) {
+  async function issueChallenge(purpose, email, requireOpen, accountId = null) {
     return withKeyLock(purpose + ':' + email, async () => {
       const requestedAtMs = clock();
       const latest = storage('accountStoreUnavailable', () => store.getLatestChallenge(purpose, email));
@@ -249,6 +250,8 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
       const timestamp = iso(issuedAtMs);
       const challenge = storage('codeDeliveryUnavailable', () =>
         commit(() => {
+          if (accountId && (!store.getAccountById(accountId) || store.isAccountDeleting(accountId)))
+            throw authProblem('emailNotRegistered', { field: 'email' });
           store.replaceActiveChallenges(purpose, email, timestamp);
           return store.insertChallenge({
             id: randomOpaqueId('chl'),
@@ -279,7 +282,7 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
     let verification = { ok: false, legacy: false };
     if (account) verification = verifyPassword(password, account.passwordHash);
     else verifyPassword(password, dummyPasswordHash());
-    if (!verification.ok) throw authProblem('credentialsRejected');
+    if (!verification.ok || store.isAccountDeleting(account.id)) throw authProblem('credentialsRejected');
     accountView(account);
 
     const atMs = clock();
@@ -364,8 +367,8 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
     readPageContext(request);
     const email = readEmailField(input.email);
     const account = storage('accountStoreUnavailable', () => store.getAccountByEmail(email));
-    if (!account) throw authProblem('emailNotRegistered', { field: 'email' });
-    const challenge = await issueChallenge('password-reset', email, false);
+    if (!account || store.isAccountDeleting(account.id)) throw authProblem('emailNotRegistered', { field: 'email' });
+    const challenge = await issueChallenge('password-reset', email, false, account.id);
     return { status: 200, body: challenge };
   }
 
@@ -379,7 +382,7 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
 
     const account = storage('accountStoreUnavailable', () => store.getAccountByEmail(email));
     verifyChallenge({ challengeId, purpose: 'password-reset', email, code, problemName: 'accountStoreUnavailable' });
-    if (!account) throw authProblem('accountStoreUnavailable');
+    if (!account || store.isAccountDeleting(account.id)) throw authProblem('accountStoreUnavailable');
 
     const passwordHash = hashPassword(password);
     const atMs = clock();
@@ -693,6 +696,17 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
   }
 
   return {
+    authorizeAccountDeletion(request, sessionId) {
+      const pageId = readPageContext(request);
+      const container = requireBrowserContainer(request, 'sessionStoreUnavailable');
+      const binding = store.getPageBinding(container.id, pageId);
+      const session = store.getSession(sessionId);
+      if (!session || session.containerId !== container.id || binding?.sessionId !== sessionId || session.state !== 'active')
+        throw authProblem('sessionInvalid');
+      const account = store.getAccountById(session.accountId);
+      if (sessionAuthorization(session, account, clock()) !== 'live') throw authProblem('sessionInvalid');
+      return account;
+    },
     login,
     requestRegistrationCode,
     register,

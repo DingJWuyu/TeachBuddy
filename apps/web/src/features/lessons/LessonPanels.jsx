@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 /** Auxiliary panel tools for the lessons module: 我的备课 and 本课大纲. */
 
 import { useEffect, useState } from "react";
@@ -9,6 +11,7 @@ import { useLessonOrder, LessonOrderButtons } from "./LessonOrder.jsx";
 import { Popover, MenuItem } from "../workbench/ModuleOverlays.jsx";
 
 export function LessonIndex({ currentId }) {
+  const { t } = useTranslation('lessons');
   const shell = useWorkbenchShell();
   const [state, setState] = useState("active");
   const [query, setQuery] = useState("");
@@ -44,15 +47,15 @@ export function LessonIndex({ currentId }) {
         <input
           className="wb-input"
           type="search"
-          aria-label="搜索备课"
-          placeholder="搜索备课"
+          aria-label={t("搜索备课")}
+          placeholder={t("搜索备课")}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
       <div className="lesson-tool-heading">
-        <span>{state === "deleted" ? "已归档的备课" : "我的备课"}</span>
-        <Popover label="备课目录选项">
+        <span>{state === "deleted" ? t("已归档的备课") : t("我的备课")}</span>
+        <Popover label={t("备课目录选项")}>
           {({ close }) => (
             <MenuItem
               onClick={() => {
@@ -60,25 +63,25 @@ export function LessonIndex({ currentId }) {
                 setState(state === "active" ? "deleted" : "active");
               }}
             >
-              {state === "active" ? "查看已归档备课" : "查看我的备课"}
+              {state === "active" ? t("查看已归档备课") : t("查看我的备课")}
             </MenuItem>
           )}
         </Popover>
       </div>
       {status === "error" && (
         <div className="wb-muted">
-          读取失败
+          {t("读取失败")}
           <button
             className="wb-text-button"
             onClick={() => setRevision((value) => value + 1)}
           >
-            重新读取
+            {t("重新读取")}
           </button>
         </div>
       )}
       {order.feedback}
       {status === "ready" && items.length === 0 && (
-        <p className="wb-empty-note">没有备课</p>
+        <p className="wb-empty-note">{t("没有备课")}</p>
       )}
       <ul className="wb-tool-list" data-region="lesson-index-list">
         {items.map((item, index) => (
@@ -91,7 +94,7 @@ export function LessonIndex({ currentId }) {
             >
               <span className="wb-nav-label">{item.title}</span>
               {item.deletedAt && (
-                <span className="wb-tag is-deleted">已归档</span>
+                <span className="wb-tag is-deleted">{t("已归档")}</span>
               )}
             </button>
             {!item.deletedAt && items.length > 1 && (
@@ -111,18 +114,19 @@ export function LessonIndex({ currentId }) {
         name="new-lesson"
         onClick={() => navigate("/lessons/new")}
       >
-        新建备课
+        {t("新建备课")}
       </button>
     </div>
   );
 }
 
 export function LessonOutline({ input, onFocus, onMove, readOnly = false }) {
+  const { t } = useTranslation('lessons');
   const sections = input.sections || [];
   if (sections.length === 0) {
     return (
       <p className="wb-empty-note" data-region="outline-empty">
-        还没有环节
+        {t("还没有环节")}
       </p>
     );
   }
@@ -136,10 +140,10 @@ export function LessonOutline({ input, onFocus, onMove, readOnly = false }) {
             onClick={() => onFocus(section.id)}
           >
             <span className="lesson-outline-number">{index + 1}</span>
-            <span>{section.title || "未命名环节"}</span>
+            <span>{section.title || t("未命名环节")}</span>
           </button>
           {!readOnly && sections.length > 1 && (
-            <Popover label={`调整大纲 ${section.title}`}>
+            <Popover label={t("调整大纲 {{title}}", { title: section.title })}>
               {({ close }) => (
                 <>
                   <MenuItem
@@ -149,7 +153,7 @@ export function LessonOutline({ input, onFocus, onMove, readOnly = false }) {
                       onMove(section.id, -1);
                     }}
                   >
-                    上移环节
+                    {t("上移环节")}
                   </MenuItem>
                   <MenuItem
                     disabled={index === sections.length - 1}
@@ -158,7 +162,7 @@ export function LessonOutline({ input, onFocus, onMove, readOnly = false }) {
                       onMove(section.id, 1);
                     }}
                   >
-                    下移环节
+                    {t("下移环节")}
                   </MenuItem>
                 </>
               )}

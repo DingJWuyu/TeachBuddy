@@ -259,7 +259,7 @@
 .math-formula textarea[aria-label="LaTeX"] {
   height: 90px;
 }
-.math-formula textarea[aria-label="中文说明"] {
+.math-formula-caption {
   height: 64px;
 }
 
@@ -330,8 +330,8 @@
 .math-workbench .math-primary:hover { background: #6953a9; }
 .math-workbench button, .math-tools-panel button { transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease; }
 .math-workbench button:active:not(:disabled), .math-tools-panel button:active:not(:disabled) { background-color: var(--wb-purple-soft, light-dark(#f3f0fa, var(--app-soft))); color: var(--wb-purple, #7963bd); }
-.math-main header > input[aria-label="作品名称"] { border-color: transparent; background: light-dark(#f7f7f6, var(--app-soft)); font-weight: 500; }
-.math-main header > input[aria-label="作品名称"]:focus { background: light-dark(white, var(--app-surface)); border-color: var(--wb-line, light-dark(#e3e3e3, var(--app-line))); }
+.math-main header > input.math-work-title { border-color: transparent; background: light-dark(#f7f7f6, var(--app-soft)); font-weight: 500; }
+.math-main header > input.math-work-title:focus { background: light-dark(white, var(--app-surface)); border-color: var(--wb-line, light-dark(#e3e3e3, var(--app-line))); }
 .math-main footer { align-items: center; padding: 10px 18px; }
 .math-main footer .math-delete { margin-left: auto; color: light-dark(#777, var(--app-muted)); border-color: transparent; }
 .math-empty { width: min(540px, 100%); padding: 36px 28px; text-align: left; }

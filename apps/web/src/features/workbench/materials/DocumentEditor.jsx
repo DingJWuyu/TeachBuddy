@@ -1,3 +1,6 @@
+import i18n from "../../../i18n/index.js";
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
 import { useState } from 'react';
 import { supportedDocument } from '@refatos/shared';
 import { parseInlineRuns, serializeInlineRuns } from '../documents.js';
@@ -16,12 +19,13 @@ const kinds = {
   'teacher-note': '教师注记'
 };
 function Controls({ index, count, label, change }) {
+  const { t } = useTranslation("workbench");
   return (
     <div className="wb-block-controls">
       <button
         type="button"
         className="wb-icon-button"
-        aria-label={`上移${label}`}
+        aria-label={t("上移{{label}}", { label: label })}
         disabled={!index}
         onClick={() => change('up')}
       >
@@ -30,7 +34,7 @@ function Controls({ index, count, label, change }) {
       <button
         type="button"
         className="wb-icon-button"
-        aria-label={`下移${label}`}
+        aria-label={t("下移{{label}}", { label: label })}
         disabled={index === count - 1}
         onClick={() => change('down')}
       >
@@ -39,7 +43,7 @@ function Controls({ index, count, label, change }) {
       <button
         type="button"
         className="wb-icon-button"
-        aria-label={`删除${label}`}
+        aria-label={t("删除{{label}}", { label: label })}
         onClick={() => change('remove')}
       >
         <Icon name="close" size={14} />
@@ -48,6 +52,7 @@ function Controls({ index, count, label, change }) {
   );
 }
 function Text({ value, change, label }) {
+  useTranslation("workbench");
   return (
     <textarea
       className="wb-input wb-auto-textarea"
@@ -59,6 +64,7 @@ function Text({ value, change, label }) {
   );
 }
 function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
+  const { t } = useTranslation("workbench");
   const [error, setError] = useState('');
   async function pick() {
     try {
@@ -66,7 +72,7 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
       if (file) change({ ...block, fileId: file.id });
       setError('');
     } catch {
-      setError('图片未能保存，请重试。');
+      setError(t("图片未能保存，请重试。"));
     }
   }
   switch (block.type) {
@@ -76,14 +82,13 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
         <div className="wb-inline-editor">
           {block.type === 'heading' && (
             <select
-              aria-label={`${label}层级`}
+              aria-label={t("{{label}}层级", { label: label })}
               value={block.level}
               onChange={(e) => change({ ...block, level: Number(e.target.value) })}
             >
               {[1, 2, 3].map((n) => (
                 <option key={n} value={n}>
-                  {n} 级标题
-                </option>
+                  {n} {t("级标题")} </option>
               ))}
             </select>
           )}
@@ -101,7 +106,7 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
       return (
         <div className="wb-math-block-editor">
           <Text
-            label={`${label}源`}
+            label={t("{{label}}源", { label: label })}
             value={block.latex}
             change={(latex) => change({ ...block, latex })}
           />
@@ -114,18 +119,14 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
       return (
         <div>
           <ControlledImage {...block} onOpenFile={onOpenFile} />
-          <label>
-            图像说明
-            <Text
-              label={`${label}说明`}
+          <label> {t("图像说明")} <Text
+              label={t("{{label}}说明", { label: label })}
               value={block.alt}
               change={(alt) => change({ ...block, alt })}
             />
           </label>
-          <label>
-            宽度（毫米）
-            <input
-              aria-label={`${label}宽度`}
+          <label> {t("宽度（毫米）")} <input
+              aria-label={t("{{label}}宽度", { label: label })}
               type="number"
               min="5"
               max="170"
@@ -133,16 +134,14 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
               onChange={(e) => change({ ...block, widthMm: Number(e.target.value) })}
             />
           </label>
-          <button type="button" disabled={!onPickImage} onClick={pick}>
-            替换图片
-          </button>
+          <button type="button" disabled={!onPickImage} onClick={pick}> {t("替换图片")} </button>
           {error && <p role="alert">{error}</p>}
         </div>
       );
     case 'teacher-note':
       return (
         <div className="material-note">
-          <span>教师注记</span>
+          <span>{t("教师注记")}</span>
           <BlockList
             blocks={block.blocks}
             change={(blocks) => change({ ...block, blocks })}
@@ -157,24 +156,24 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
       return (
         <div>
           <select
-            aria-label={`${label}用途`}
+            aria-label={t("{{label}}用途", { label: label })}
             value={block.role}
             onChange={(e) => change({ ...block, role: e.target.value })}
           >
             {[
-              ['plain', '普通列表'],
-              ['options', '选项'],
-              ['subquestions', '小问']
+              ['plain', t("普通列表")],
+              ['options', t("选项")],
+              ['subquestions', t("小问")]
             ].map(([id, text]) => (
               <option key={id} value={id}>
-                {text}
+                {t(text)}
               </option>
             ))}
           </select>
           {block.items.map((item, i) => (
             <div className="material-list-item" key={i}>
               <Text
-                label={`${label}项目 ${i + 1}标号`}
+                label={t("{{label}}项目 {{detail}}标号", { label: label, detail: i + 1 })}
                 value={item.label}
                 change={(text) =>
                   change({
@@ -191,7 +190,7 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
                     items: block.items.map((x, j) => (i === j ? { ...x, blocks } : x))
                   })
                 }
-                label={`${label}项目 ${i + 1}`}
+                label={t("{{label}}项目 {{detail}}", { label: label, detail: i + 1 })}
                 leaf
                 onOpenFile={onOpenFile}
                 onPickImage={onPickImage}
@@ -199,7 +198,7 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
               <Controls
                 index={i}
                 count={block.items.length}
-                label={`${label}项目 ${i + 1}`}
+                label={t("{{label}}项目 {{detail}}", { label: label, detail: i + 1 })}
                 change={(action) => change({ ...block, items: reorder(block.items, i, action) })}
               />
             </div>
@@ -209,9 +208,7 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
             onClick={() =>
               change({ ...block, items: [...block.items, { label: '', blocks: [paragraph()] }] })
             }
-          >
-            添加项目
-          </button>
+          > {t("添加项目")} </button>
         </div>
       );
     case 'table':
@@ -233,7 +230,7 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
                             )
                           })
                         }
-                        label={`${label}第 ${i + 1} 行第 ${j + 1} 列`}
+                        label={t("{{label}}第 {{detail}} 行第 {{extra}} 列", { label: label, detail: i + 1, extra: j + 1 })}
                         leaf
                         onOpenFile={onOpenFile}
                         onPickImage={onPickImage}
@@ -253,31 +250,23 @@ function BlockEditor({ block, change, label, onOpenFile, onPickImage }) {
                   rows: [...block.rows, block.rows[0].map(() => ({ blocks: [] }))]
                 })
               }
-            >
-              添加行
-            </button>
+            > {t("添加行")} </button>
             <button
               type="button"
               disabled={block.rows.length === 1}
               onClick={() => change({ ...block, rows: block.rows.slice(0, -1) })}
-            >
-              删除末行
-            </button>
+            > {t("删除末行")} </button>
             <button
               type="button"
               onClick={() =>
                 change({ ...block, rows: block.rows.map((row) => [...row, { blocks: [] }]) })
               }
-            >
-              添加列
-            </button>
+            > {t("添加列")} </button>
             <button
               type="button"
               disabled={block.rows[0].length === 1}
               onClick={() => change({ ...block, rows: block.rows.map((row) => row.slice(0, -1)) })}
-            >
-              删除末列
-            </button>
+            > {t("删除末列")} </button>
           </div>
         </div>
       );
@@ -302,6 +291,7 @@ function BlockList({
   onOpenFile,
   onPickImage
 }) {
+  const { t } = useTranslation("workbench");
   const [error, setError] = useState('');
   async function append(type) {
     let block;
@@ -318,7 +308,7 @@ function BlockList({
         if (!file) return;
         block = { type, fileId: file.id, alt: '', widthMm: 100 };
       } catch {
-        setError('图片未能保存，请重试。');
+        setError(t("图片未能保存，请重试。"));
         return;
       }
     }
@@ -335,7 +325,7 @@ function BlockList({
     <div className="material-block-list">
       {blocks.map((block, i) => {
         counts[block.type] = (counts[block.type] ?? 0) + 1;
-        const blockLabel = `${label}${kinds[block.type]} ${counts[block.type]}`;
+        const blockLabel = `${label} ${t(kinds[block.type])} ${counts[block.type]}`;
         return (
           <div className="wb-block material-edit-block" key={i}>
             <BlockEditor
@@ -363,11 +353,11 @@ function BlockList({
               disabled={type === 'image' && !onPickImage}
               onClick={() => append(type)}
             >
-              {text}
+              {t(text)}
             </button>
           ))}
-        {secondary.length > 0 && <Popover label="更多内容" icon={null} buttonClassName="wb-button" align="start">
-          {({ close }) => secondary.map(([type, text]) => <MenuItem key={type} onClick={() => { append(type); close(); }}>{text}</MenuItem>)}
+        {secondary.length > 0 && <Popover label={t("更多内容")} icon={null} buttonClassName="wb-button" align="start">
+          {({ close }) => secondary.map(([type, text]) => <MenuItem key={type} onClick={() => { append(type); close(); }}>{t(text)}</MenuItem>)}
         </Popover>}
       </div>
       {error && <p role="alert">{error}</p>}
@@ -382,15 +372,14 @@ export function DocumentEditor({
   onOpenFile,
   onPickImage,
   allowTeacherNotes = true,
-  label = '文稿'
+  label = t("文稿")
 }) {
+  const { t } = useTranslation("workbench");
   const source = value ?? document;
   if (value === undefined && source?.version === 2)
     return (
       <div data-document-editor={label}>
-        <p className="wb-field-error" data-region="unsupported-version">
-          这段内容来自更新的文档版本 2，在这里只读保留，不会被改写。
-        </p>
+        <p className="wb-field-error" data-region="unsupported-version"> {t("这段内容来自更新的文档版本 2，在这里只读保留，不会被改写。")} </p>
         <DocumentView value={source} onOpenFile={onOpenFile} />
       </div>
     );

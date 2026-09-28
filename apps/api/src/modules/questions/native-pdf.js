@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises';
-import os from 'node:os';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -14,7 +13,7 @@ const execute = promisify(execFile);
 // The generated HTML is parsed locally as data, never rendered in the browser.
 export function createPdfReader(files) {
   return async function readPdf(principal, unit, signal) {
-    const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'questions-pdf-'));
+    const directory = files.temporaryDirectory(principal, 'questions-pdf-');
     try {
       const chunks = [];
       for await (const chunk of await files.open(principal, unit.preview.renditionFileId)) chunks.push(chunk);

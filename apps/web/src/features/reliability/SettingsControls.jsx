@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Presence } from '../workbench/chrome/Presence.jsx';
 
 export function SettingsDisclosure({ title, children, className = '' }) {
+  useTranslation("reliability");
   const [open, setOpen] = useState(false);
   const id = useId();
   return <div className={`settings-disclosure ${className}`} data-open={open}>
@@ -13,6 +15,7 @@ export function SettingsDisclosure({ title, children, className = '' }) {
 }
 
 function SettingsDialogBody({ title, children, confirmLabel, onConfirm, onClose, danger, confirmDisabled, closeLabel, className = '' }) {
+  const { t } = useTranslation("reliability");
   const dialog = useRef(null);
   const titleId = useId();
   useEffect(() => {
@@ -27,12 +30,13 @@ function SettingsDialogBody({ title, children, confirmLabel, onConfirm, onClose,
       const box = event.currentTarget.getBoundingClientRect();
       if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) onClose();
     } }}>
-    <div className="settings-dialog-heading"><h2 id={titleId}>{title}</h2><button type="button" className="settings-dialog-close" onClick={onClose} aria-label="关闭">×</button></div>
+    <div className="settings-dialog-heading"><h2 id={titleId}>{title}</h2><button type="button" className="settings-dialog-close" onClick={onClose} aria-label={t("关闭")}>×</button></div>
     <div className="settings-confirm-copy">{children}</div>
-    <div className="settings-confirm-actions"><button type="button" className="wb-button" onClick={onClose} autoFocus>{closeLabel || (confirmLabel ? '取消' : '关闭')}</button>
+    <div className="settings-confirm-actions"><button type="button" className="wb-button" onClick={onClose} autoFocus>{closeLabel || (confirmLabel ? t("取消") : t("关闭"))}</button>
       {confirmLabel && <button type="button" className={`wb-button ${danger ? 'settings-danger-button' : 'settings-primary'}`} disabled={confirmDisabled} onClick={onConfirm}>{confirmLabel}</button>}</div>
   </dialog>;
 }
 export function SettingsConfirm({ show, ...props }) {
+  useTranslation("reliability");
   return <Presence show={show}><SettingsDialogBody {...props} /></Presence>;
 }

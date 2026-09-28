@@ -1,3 +1,5 @@
+import i18n from '../../i18n/index.js';
+const t = (key, options) => i18n.t(key, { ns: 'classes', ...options });
 import { emptyRecordContent, recordContentText } from '@refatos/shared';
 /**
  * Classes feature model: record input shapes, display projections and the
@@ -124,15 +126,15 @@ export function latestPosition(records) {
 export function formatRecordedOn(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ''));
   if (!match) return String(value ?? '');
-  return `${match[1]}年${Number(match[2])}月${Number(match[3])}日`;
+  return new Intl.DateTimeFormat(i18n.resolvedLanguage, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
 }
 
 export function sourceKindLabel(kind) {
-  return { question: '题目', lesson: '备课', math: '作品' }[kind];
+  return { question: t("题目"), lesson: t("备课"), math: t("作品") }[kind];
 }
 
 export function sourceFallbackLabel(kind) {
-  return { question: '未命名题目', lesson: '未命名备课', math: '未命名作品' }[kind];
+  return { question: t("未命名题目"), lesson: t("未命名备课"), math: t("未命名作品") }[kind];
 }
 
 /**
@@ -158,7 +160,7 @@ export function sourceHistoryHint(source) {
   if (!saved) return null;
   const label = sourceLabel(source);
   if (saved === label) return null;
-  return `记录时：${saved}`;
+  return t("记录时：{{savedTitle}}", { savedTitle: saved });
 }
 
 /** Product path of a source, so a saved link can be opened from the record. */

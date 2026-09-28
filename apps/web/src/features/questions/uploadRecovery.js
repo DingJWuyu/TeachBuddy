@@ -1,3 +1,5 @@
+import i18n from "../../i18n/index.js";
+const t = (key, options) => i18n.t(key, { ns: "questions", ...options });
 import { deviceRequestStore } from '../workbench/deviceRequestStore.js';
 import { readLocal, writeLocal } from '../workbench/storage.js';
 import { upload } from './materials-api.js';
@@ -13,13 +15,13 @@ export async function uploadQuestionFile(account, transport, file) {
   const previous = await store(account);
   const known = readLocal(account, 'questions-uploaded-files') ?? {};
   if (known[fingerprint] && previous?.fingerprint !== fingerprint) return known[fingerprint];
-  if (previous && previous.fingerprint !== fingerprint) throw new Error(`请先重新选择原文件“${previous.file.name}”，确认上次上传结果。`);
+  if (previous && previous.fingerprint !== fingerprint) throw new Error(t("请先重新选择原文件“{{name}}”，确认上次上传结果。", { name: previous.file.name }));
   const request = previous ?? { key: crypto.randomUUID(), file, fingerprint };
   await store(account, 'put', request);
   try {
     const result = await upload(transport, request.file, request.key);
-    if (!result?.id) throw new Error('上传结果无法确认，请重新选择原文件重试');
-    if (!writeLocal(account, 'questions-uploaded-files', { ...known, [fingerprint]: result })) throw new Error('文件已上传，但设备记录无法保留，请检查存储权限后确认原请求');
+    if (!result?.id) throw new Error(t("上传结果无法确认，请重新选择原文件重试"));
+    if (!writeLocal(account, 'questions-uploaded-files', { ...known, [fingerprint]: result })) throw new Error(t("文件已上传，但设备记录无法保留，请检查存储权限后确认原请求"));
     await store(account, 'delete');
     return result;
   } catch (error) {

@@ -1,5 +1,4 @@
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { BorderStyle, BuilderElement, Document, Paragraph, Packer, StringValueElement, TableProperties } from "docx";
@@ -113,7 +112,7 @@ async function referenceDocument() {
   }));
 }
 export async function generateDocx(blocks, { files, principal, signal }) {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "lesson-pandoc-"));
+  const directory = files.temporaryDirectory(principal, 'lesson-pandoc-');
   let imageIndex = 0;
   const inline = (runs) => runs.flatMap((run) => run.type === "math" ? [math(run.latex)] : text(run.text));
   const styled = (block, keepNext, together = false) => keepNext || together

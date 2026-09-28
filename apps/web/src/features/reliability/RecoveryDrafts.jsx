@@ -1,3 +1,5 @@
+import i18n from "../../i18n/index.js";
+import { useTranslation } from 'react-i18next';
 import { useState } from "react";
 import { recoveryArchives, archivedUploads } from "./deviceRecovery.js";
 function download(blob, name) {
@@ -9,6 +11,7 @@ function download(blob, name) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 export function RecoveryDrafts({ accountKey }) {
+  const { t } = useTranslation("reliability");
   const [archives] = useState(() => recoveryArchives(accountKey)),
     [uploads, setUploads] = useState([]),
     [error, setError] = useState("");
@@ -16,7 +19,7 @@ export function RecoveryDrafts({ accountKey }) {
     try {
       setUploads(await archivedUploads(accountKey, id));
     } catch {
-      setError("无法读取恢复前的上传，请保留本设备数据后重试。");
+      setError(t("无法读取恢复前的上传，请保留本设备数据后重试。"));
     }
   }
   function files(value) {
@@ -28,16 +31,13 @@ export function RecoveryDrafts({ accountKey }) {
   if (!archives.length) return null;
   return (
     <section className="wb-panel reliability-data">
-      <h2>恢复前的本设备草稿</h2>
-      <p>
-        工作台已从备份恢复。旧草稿和待确认请求已隔离，不会自动重放；请先对照当前资料，再复制所需内容保存。
-      </p>
+      <h2>{t("恢复前的本设备草稿")}</h2>
+      <p> {t("工作台已从备份恢复。旧草稿和待确认请求已隔离，不会自动重放；请先对照当前资料，再复制所需内容保存。")} </p>
       {archives.map((archive) => (
         <details key={archive.to}>
           <summary>
-            {new Date(archive.createdAt).toLocaleString("zh-CN")} ·{" "}
-            {Object.keys(archive.records).length} 项设备记录
-          </summary>
+            {new Date(archive.createdAt).toLocaleString(i18n.resolvedLanguage)} ·{" "}
+            {Object.keys(archive.records).length} {t("项设备记录")} </summary>
           <button
             className="wb-button"
             onClick={() =>
@@ -48,12 +48,8 @@ export function RecoveryDrafts({ accountKey }) {
                 "TeachBuddy-恢复前草稿.json",
               )
             }
-          >
-            下载原始草稿
-          </button>
-          <button className="wb-button" onClick={() => showUploads(archive.to)}>
-            查看恢复前上传
-          </button>
+          > {t("下载原始草稿")} </button>
+          <button className="wb-button" onClick={() => showUploads(archive.to)}> {t("查看恢复前上传")} </button>
           <pre>{JSON.stringify(archive.records, null, 2)}</pre>
         </details>
       ))}
@@ -73,9 +69,8 @@ export function RecoveryDrafts({ accountKey }) {
             <button
               key={j}
               className="wb-button"
-              onClick={() => download(file, file.name || "恢复前上传文件")}
-            >
-              下载 {file.name || "原文件"}
+              onClick={() => download(file, file.name || t("恢复前上传文件"))}
+            > {t("下载")} {file.name || t("原文件")}
             </button>
           ))}
         </div>

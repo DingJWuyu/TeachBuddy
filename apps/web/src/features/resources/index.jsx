@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, {
   useEffect,
   useLayoutEffect,
@@ -36,6 +37,7 @@ export default function ResourcesPage({
   onOpenLesson,
   onPickResources,
 }) {
+  useTranslation("resources");
   const shell = useWorkbenchShell();
   return (
     <ResourceWorkspace
@@ -53,6 +55,7 @@ function ResourceWorkspace({
   onOpenLesson,
   onPickResources,
 }) {
+  const { t } = useTranslation("resources");
   const controller = useRef(null);
   // Install the current scope before child effects issue file/preview requests.
   useLayoutEffect(() => {
@@ -147,7 +150,7 @@ function ResourceWorkspace({
       })
       .catch(() => {
         if (!signal.aborted)
-          setError("无法保存恢复记录，请允许浏览器存储后重试");
+          setError(t("无法保存恢复记录，请允许浏览器存储后重试"));
       });
   }, [shell.accountKey]);
   useEffect(() => {
@@ -231,7 +234,7 @@ function ResourceWorkspace({
                   ([, file, preview]) =>
                     file.status === "rejected" || preview.status === "rejected",
                 )
-                .map(([id]) => [id, "文件暂时无法读取，请重试"]),
+                .map(([id]) => [id, t("文件暂时无法读取，请重试")]),
             ),
           );
         }
@@ -289,7 +292,7 @@ function ResourceWorkspace({
   async function execute(record) {
     if (busyRef.current) return false;
     if (record.requiresReselection) {
-      setError("请重新选择原文件核对名称、长度和内容，再确认上传");
+      setError(t("请重新选择原文件核对名称、长度和内容，再确认上传"));
       return false;
     }
     // A retry may commit even after a prior definite rejection. Until this
@@ -325,7 +328,7 @@ function ResourceWorkspace({
         });
         if (record.purpose === "upload") {
           if (!value.id || !value.name)
-            throw Object.assign(new Error("上传结果未确认"), { unknown: true });
+            throw Object.assign(new Error(t("上传结果未确认")), { unknown: true });
           const meta = record.meta;
           if (meta.kind === "supplement") {
             patchScene({
@@ -376,7 +379,7 @@ function ResourceWorkspace({
             !Array.isArray(value.items) ||
             value.items.length !== record.input.items.length
           )
-            throw Object.assign(new Error("批量整理结果未确认"), {
+            throw Object.assign(new Error(t("批量整理结果未确认")), {
               unknown: true,
             });
           const drafts = { ...sceneRef.current.drafts };
@@ -403,21 +406,21 @@ function ResourceWorkspace({
           patchScene({ selected: [], selectionMode: false, drafts });
           await remember(null);
           setMessage(
-            `已${{ move: "移动", "add-tags": "添加标签：", archive: "归档", restore: "恢复" }[record.input.action]} ${value.items.length} 份资料`,
+            t("已{{value}} {{count}} 份资料", { value: { move: t("移动"), "add-tags": t("添加标签："), archive: t("归档"), restore: t("恢复") }[record.input.action], count: value.items.length }),
           );
           refresh();
           break;
         }
         if (record.purpose?.startsWith("recognition")) {
           if (!value.id || value.kind !== "recognition" || !value.state)
-            throw Object.assign(new Error("识别请求结果未确认"), {
+            throw Object.assign(new Error(t("识别请求结果未确认")), {
               unknown: true,
             });
           await remember(null);
           setMessage(
             record.purpose === "recognition-cancel"
-              ? "已请求停止识别，已完成页面会保留"
-              : "已受理文字识别",
+              ? t("已请求停止识别，已完成页面会保留")
+              : t("已受理文字识别"),
           );
           setConflict(null);
           refresh();
@@ -428,7 +431,7 @@ function ResourceWorkspace({
             ? value.permanentlyDeleted !== true || !value.id
             : !Number.isInteger(value.version)
         )
-          throw Object.assign(new Error("保存结果未确认"), { unknown: true });
+          throw Object.assign(new Error(t("保存结果未确认")), { unknown: true });
         if (record.purpose === "purge" || record.purpose === "deletion") {
           const purged = record.purpose === "purge";
           const drafts = { ...sceneRef.current.drafts };
@@ -505,19 +508,19 @@ function ResourceWorkspace({
           {
             create:
               record.batchTotal > 1
-                ? `已处理 ${(record.completed ?? 0) + 1} / ${record.batchTotal} 份资料`
-                : "文件已保存",
-            replace: "文件已更新",
-            "restore-file": "已恢复历史文件，已有备课引用保持不变",
-            metadata: "资料信息已保存",
-            taxonomy: "整理已保存",
-            supplement: "已采用补充预览",
-            lesson: "已加入备课",
+                ? t("已处理 {{value}} / {{batchTotal}} 份资料", { value: (record.completed ?? 0) + 1, batchTotal: record.batchTotal })
+                : t("文件已保存"),
+            replace: t("文件已更新"),
+            "restore-file": t("已恢复历史文件，已有备课引用保持不变"),
+            metadata: t("资料信息已保存"),
+            taxonomy: t("整理已保存"),
+            supplement: t("已采用补充预览"),
+            lesson: t("已加入备课"),
             deletion: value.deletedAt
-              ? "资料已归档，可在已归档资料中恢复"
-              : "资料已恢复",
-            purge: "资料已彻底删除",
-          }[record.purpose] ?? "已保存",
+              ? t("资料已归档，可在已归档资料中恢复")
+              : t("资料已恢复"),
+            purge: t("资料已彻底删除"),
+          }[record.purpose] ?? t("已保存"),
         );
         setConflict(null);
         setDialog(null);
@@ -561,7 +564,7 @@ function ResourceWorkspace({
       });
       refresh();
     } catch (e) {
-      setError(`原件已保存，预览未确认：${e.message}`);
+      setError(t("原件已保存，预览未确认：{{message}}", { message: e.message }));
     }
   }
   function write(path, input, purpose, method = "PUT") {
@@ -577,7 +580,7 @@ function ResourceWorkspace({
     );
     if (invalid) {
       setError(
-        `“${invalid.name}”超过限制：每份文件最多 100 MB，文件名最多 200 个字符。请调整后重新选择。`,
+        t("“{{name}}”超过限制：每份文件最多 100 MB，文件名最多 200 个字符。请调整后重新选择。", { name: invalid.name }),
       );
       return;
     }
@@ -642,7 +645,7 @@ function ResourceWorkspace({
       await remember(next);
       setError("");
       setMessage(
-        record.definiteFailure ? "已跳过未保存的资料" : "已跳过重复资料",
+        record.definiteFailure ? t("已跳过未保存的资料") : t("已跳过重复资料"),
       );
     } catch (error) {
       next = null;
@@ -672,7 +675,7 @@ function ResourceWorkspace({
           source !== location.fileId ||
           preview.renditionFileId !== location.renditionFileId
         )
-          throw new Error("资料文件已更新，请在最新搜索结果中重新打开。");
+          throw new Error(t("资料文件已更新，请在最新搜索结果中重新打开。"));
         // Polling can receive a newer file than the detail snapshot. Commit
         // the validated resource and its file before opening that preview.
         setAllItems((items) =>
@@ -795,7 +798,7 @@ function ResourceWorkspace({
     shell.registerTools([
       {
         id: "resource-taxonomy",
-        label: scene.openId ? "资料信息" : "文件夹与标签",
+        label: scene.openId ? t("资料信息") : t("文件夹与标签"),
         render: () =>
           scene.openId ? (
             <ResourceInfo
@@ -907,12 +910,12 @@ function ResourceWorkspace({
           <header className="res-header res-surface">
             <button className="res-back-button" onClick={() => close()}>
               <Icon name="arrowLeft" size={17} />
-              <span>返回资源库</span>
+              <span>{t("返回资源库")}</span>
             </button>
             <div className="res-detail-title">
-              <h1>{item?.title ?? "读取资料…"}</h1>
+              <h1>{item?.title ?? t("读取资料…")}</h1>
               <span className="res-muted">
-                {item?.deletedAt ? "已归档资料" : file?.name}
+                {item?.deletedAt ? t("已归档资料") : file?.name}
               </span>
             </div>
             <div className="res-header-actions">
@@ -921,18 +924,14 @@ function ResourceWorkspace({
                   className="res-primary"
                   disabled={disabled}
                   onClick={() => setDialog({ kind: "delete", item })}
-                >
-                  恢复资料
-                </button>
+                > {t("恢复资料")} </button>
               ) : (
                 <button
                   disabled={disabled || !item}
                   className="res-primary"
                   onClick={() => setAddToLesson([item])}
                 >
-                  <Icon name="lessons" size={16} />
-                  加入备课
-                </button>
+                  <Icon name="lessons" size={16} /> {t("加入备课")} </button>
               )}
               <button
                 disabled={!file}
@@ -943,21 +942,21 @@ function ResourceWorkspace({
                 }
               >
                 <Icon name="arrowDown" size={16} />
-                <span>下载原件</span>
+                <span>{t("下载原件")}</span>
               </button>
               <button
                 aria-expanded={Boolean(infoOpen)}
-                aria-label="资料信息"
-                title="资料信息"
+                aria-label={t("资料信息")}
+                title={t("资料信息")}
                 className={`res-info-toggle${infoOpen ? " is-selected" : ""}`}
                 onClick={toggleTools}
               >
                 <Icon name="info" size={17} />
-                <span>资料信息</span>
+                <span>{t("资料信息")}</span>
                 {dirty && <span className="res-unsaved-dot" />}
               </button>
               <Popover
-                label="资料更多操作"
+                label={t("资料更多操作")}
                 className="res-menu"
                 buttonClassName="res-icon-button"
               >
@@ -971,9 +970,7 @@ function ResourceWorkspace({
                         setHistoryOpen(true);
                       }}
                     >
-                      <Icon name="file" size={16} />
-                      文件历史版本
-                    </button>
+                      <Icon name="file" size={16} /> {t("文件历史版本")} </button>
                     {!item?.deletedAt && (
                       <>
                         <button
@@ -984,9 +981,7 @@ function ResourceWorkspace({
                             replaceInput.current?.click();
                           }}
                         >
-                          <Icon name="upload" size={16} />
-                          更新文件
-                        </button>
+                          <Icon name="upload" size={16} /> {t("更新文件")} </button>
                         <button
                           role="menuitem"
                           disabled={disabled || !item || !!item.deletedAt}
@@ -995,9 +990,7 @@ function ResourceWorkspace({
                             supplementInput.current?.click();
                           }}
                         >
-                          <Icon name="file" size={16} />
-                          补充 PDF 预览
-                        </button>
+                          <Icon name="file" size={16} /> {t("补充 PDF 预览")} </button>
                         {item?.supplementPreviewFileId && (
                           <button
                             role="menuitem"
@@ -1014,9 +1007,7 @@ function ResourceWorkspace({
                                 "supplement",
                               );
                             }}
-                          >
-                            移除补充预览
-                          </button>
+                          > {t("移除补充预览")} </button>
                         )}
                       </>
                     )}
@@ -1032,9 +1023,7 @@ function ResourceWorkspace({
                             setDialog({ kind: "delete", item });
                           }}
                         >
-                          <Icon name="trash" size={16} />
-                          归档资料
-                        </button>
+                          <Icon name="trash" size={16} /> {t("归档资料")} </button>
                       </>
                     )}
                     {item?.deletedAt && (
@@ -1047,9 +1036,7 @@ function ResourceWorkspace({
                           setDialog({ kind: "purge", item });
                         }}
                       >
-                        <Icon name="trash" size={16} />
-                        彻底删除
-                      </button>
+                        <Icon name="trash" size={16} /> {t("彻底删除")} </button>
                     )}
                   </>
                 )}
@@ -1058,7 +1045,7 @@ function ResourceWorkspace({
             <input
               ref={replaceInput}
               hidden
-              aria-label="更新文件"
+              aria-label={t("更新文件")}
               type="file"
               disabled={disabled || !!item?.deletedAt}
               onChange={(event) => {
@@ -1069,7 +1056,7 @@ function ResourceWorkspace({
             <input
               ref={supplementInput}
               hidden
-              aria-label="补充 PDF 预览"
+              aria-label={t("补充 PDF 预览")}
               type="file"
               accept="application/pdf,.pdf"
               disabled={disabled || !!item?.deletedAt}
@@ -1084,21 +1071,17 @@ function ResourceWorkspace({
               {fileErrors[item.fileId] && (
                 <div className="res-warning" role="alert">
                   {fileErrors[item.fileId]}
-                  <button onClick={refresh}>重新读取文件</button>
+                  <button onClick={refresh}>{t("重新读取文件")}</button>
                 </div>
               )}
               {item.supplementPreviewFileId && !supplement && (
                 <div className="res-notice">
-                  <Icon name="info" size={16} />
-                  正在查看本版本补充 PDF，原件保持不变。
-                </div>
+                  <Icon name="info" size={16} /> {t("正在查看本版本补充 PDF，原件保持不变。")} </div>
               )}
               {supplement?.resourceId === item.id && (
                 <div className="res-warning">
-                  <span>
-                    核对补充 PDF：{supplement.name} · 已看{" "}
-                    {supplement.viewed.length} / {supplement.total ?? "…"} 页
-                  </span>
+                  <span> {t("核对补充 PDF：")}{supplement.name} {t("· 已看")}{" "}
+                    {supplement.viewed.length} / {supplement.total ?? "…"} {t("页")} </span>
                   <button
                     className="res-primary"
                     disabled={
@@ -1117,12 +1100,8 @@ function ResourceWorkspace({
                         "supplement",
                       )
                     }
-                  >
-                    采用补充 PDF
-                  </button>
-                  <button onClick={() => patchScene({ supplement: null })}>
-                    取消补充
-                  </button>
+                  > {t("采用补充 PDF")} </button>
+                  <button onClick={() => patchScene({ supplement: null })}> {t("取消补充")} </button>
                 </div>
               )}
               <Preview
@@ -1191,21 +1170,18 @@ function ResourceWorkspace({
           <span role={error && !busy ? "alert" : undefined}>
             {busy
               ? pending?.batchTotal
-                ? `正在收录第 ${(pending.completed ?? 0) + 1} / ${pending.batchTotal} 份，请稍候…`
-                : "正在保存，请稍候…"
+                ? t("正在收录第 {{value}} / {{batchTotal}} 份，请稍候…", { value: (pending.completed ?? 0) + 1, batchTotal: pending.batchTotal })
+                : t("正在保存，请稍候…")
               : error || message}
           </span>
           {lastLesson && (
-            <button onClick={() => onOpenLesson?.(lastLesson)}>
-              前往备课：{lastLesson.lessonTitle}
+            <button onClick={() => onOpenLesson?.(lastLesson)}> {t("前往备课：")}{lastLesson.lessonTitle}
             </button>
           )}
           {pending?.requiresReselection && !busy ? (
-            <label className="res-button">
-              重新选择原文件
-              <input
+            <label className="res-button"> {t("重新选择原文件")} <input
                 type="file"
-                aria-label="重新选择原文件"
+                aria-label={t("重新选择原文件")}
                 onChange={async (event) => {
                   const file = event.target.files[0];
                   event.target.value = "";
@@ -1222,13 +1198,13 @@ function ResourceWorkspace({
             pending &&
             !pending.duplicateMatches?.length &&
             !busy && (
-              <button onClick={() => execute(pending)}>重试确认原请求</button>
+              <button onClick={() => execute(pending)}>{t("重试确认原请求")}</button>
             )
           )}
           {!pending && !busy && (
             <button
               className="res-icon-button"
-              aria-label="关闭提示"
+              aria-label={t("关闭提示")}
               onClick={() => {
                 setMessage("");
                 setError("");
@@ -1239,38 +1215,34 @@ function ResourceWorkspace({
             </button>
           )}
           {pending?.definiteFailure && !busy && (
-            <button onClick={skipDuplicate}>跳过未保存的资料</button>
+            <button onClick={skipDuplicate}>{t("跳过未保存的资料")}</button>
           )}
         </div>
       </ModulePresence>
       <ModulePresence present={Boolean(pending?.duplicateMatches?.length)}>
         {pending?.duplicateMatches?.length > 0 && (
-          <ResourceDialog label="发现重复资料" onClose={skipDuplicate}>
-            <h2>这份文件已经收录过</h2>
-            <p>“{pending.input.title}”与以下资料的文件内容相同：</p>
+          <ResourceDialog label={t("发现重复资料")} onClose={skipDuplicate}>
+            <h2>{t("这份文件已经收录过")}</h2>
+            <p>“{pending.input.title}{t("”与以下资料的文件内容相同：")}</p>
             <ul>
               {pending.duplicateMatches.map((match) => (
                 <li key={match.id}>
                   {match.title}
-                  {match.deletedAt ? "（已归档）" : ""}
+                  {match.deletedAt ? t("（已归档）") : ""}
                 </li>
               ))}
             </ul>
-            <p>可跳过这份资料，或另存一份并分别整理。</p>
+            <p>{t("可跳过这份资料，或另存一份并分别整理。")}</p>
             <div className="res-actions">
               <button
                 className="res-primary"
                 disabled={busy}
                 onClick={skipDuplicate}
-              >
-                跳过这份资料
-              </button>
+              > {t("跳过这份资料")} </button>
               <button
                 disabled={busy}
                 onClick={() => execute({ ...pending, duplicateMatches: null })}
-              >
-                仍然另存一份
-              </button>
+              > {t("仍然另存一份")} </button>
             </div>
           </ResourceDialog>
         )}
@@ -1336,12 +1308,12 @@ function ResourceWorkspace({
       </ModulePresence>
       <ModulePresence present={!!conflict}>
         {conflict && (
-          <ResourceDialog label="版本冲突" onClose={() => setConflict(null)}>
-            <h2>内容已在其他地方更新</h2>
+          <ResourceDialog label={t("版本冲突")} onClose={() => setConflict(null)}>
+            <h2>{t("内容已在其他地方更新")}</h2>
             <p>
               {conflict.record.purpose === "organize"
-                ? "所选资料中有内容已变化，本次整理全部未生效。请关闭提示后重新选择资料。"
-                : `你的输入仍保留。当前资源：${item?.title ?? ""}，版本 ${item?.version ?? ""}。`}
+                ? t("所选资料中有内容已变化，本次整理全部未生效。请关闭提示后重新选择资料。")
+                : t("你的输入仍保留。当前资源：{{value}}，版本 {{detail}}。", { value: item?.title ?? "", detail: item?.version ?? "" })}
             </p>
             <pre>{item?.note}</pre>
             <button
@@ -1349,12 +1321,10 @@ function ResourceWorkspace({
                 if (item && conflict.record.purpose === "metadata")
                   edit({ baseVersion: item.version });
                 setConflict(null);
-                setError("请核对分类和笔记，再次保存");
+                setError(t("请核对分类和笔记，再次保存"));
               }}
-            >
-              保留草稿并对照当前版本
-            </button>
-            <button onClick={() => setConflict(null)}>稍后处理</button>
+            > {t("保留草稿并对照当前版本")} </button>
+            <button onClick={() => setConflict(null)}>{t("稍后处理")}</button>
           </ResourceDialog>
         )}
       </ModulePresence>
@@ -1363,42 +1333,39 @@ function ResourceWorkspace({
           <ResourceDialog
             label={
               dialog.kind === "replace"
-                ? "更新文件确认"
+                ? t("更新文件确认")
                 : dialog.kind === "purge"
-                  ? "彻底删除确认"
-                  : "归档恢复确认"
+                  ? t("彻底删除确认")
+                  : t("归档恢复确认")
             }
             onClose={() => setDialog(null)}
           >
             <h2>
               {dialog.kind === "replace"
-                ? "更新当前文件"
+                ? t("更新当前文件")
                 : dialog.kind === "purge"
-                  ? "彻底删除资料"
+                  ? t("彻底删除资料")
                   : dialog.item.deletedAt
-                    ? "恢复资料"
-                    : "归档资料"}
+                    ? t("恢复资料")
+                    : t("归档资料")}
             </h2>
             {dialog.kind === "replace" ? (
               <>
                 <p>
                   {file?.name} → {dialog.source.name}
                 </p>
-                <p>名称、文件夹、标签和备注都会保留。</p>
+                <p>{t("名称、文件夹、标签和备注都会保留。")}</p>
                 {usages.length > 0 && (
-                  <p>
-                    已有 {usages.length}{" "}
-                    处备课引用仍保留旧文件，需要时可在备课中采用新版。
-                  </p>
+                  <p> {t("已有")} {usages.length}{" "} {t("处备课引用仍保留旧文件，需要时可在备课中采用新版。")} </p>
                 )}
               </>
             ) : (
               <p>
                 {dialog.kind === "purge"
-                  ? `“${dialog.item.title}”将从资源库永久删除，无法恢复。已有备课引用的文件会保留。`
+                  ? t("“{{title}}”将从资源库永久删除，无法恢复。已有备课引用的文件会保留。", { title: dialog.item.title })
                   : dialog.item.deletedAt
-                    ? "恢复后可以继续查看和整理这份资料。"
-                    : "资料会移入“已归档资料”，可以随时恢复。已有备课仍可使用引用的文件。"}
+                    ? t("恢复后可以继续查看和整理这份资料。")
+                    : t("资料会移入“已归档资料”，可以随时恢复。已有备课仍可使用引用的文件。")}
               </p>
             )}
             <div className="res-actions">
@@ -1437,17 +1404,15 @@ function ResourceWorkspace({
                           "POST",
                         )
                 }
-              >
-                确认
-                {dialog.kind === "replace"
-                  ? "更新"
+              > {t("确认")} {dialog.kind === "replace"
+                  ? t("更新")
                   : dialog.kind === "purge"
-                    ? "彻底删除"
+                    ? t("彻底删除")
                     : dialog.item.deletedAt
-                      ? "恢复"
-                      : "归档"}
+                      ? t("恢复")
+                      : t("归档")}
               </button>
-              <button onClick={() => setDialog(null)}>取消</button>
+              <button onClick={() => setDialog(null)}>{t("取消")}</button>
             </div>
           </ResourceDialog>
         )}

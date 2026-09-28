@@ -1,3 +1,5 @@
+import i18n from "../../i18n/index.js";
+import { useTranslation } from 'react-i18next';
 import { SettingsConfirm, SettingsDisclosure } from "./SettingsControls.jsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -16,8 +18,9 @@ const states = {
   failed: "生成失败",
   interrupted: "已中断",
 };
-const date = (value) => new Date(value).toLocaleString("zh-CN");
+const date = (value) => new Date(value).toLocaleString(i18n.resolvedLanguage);
 export function DataManagement({ accountActions, dangerActions }) {
+  const { t } = useTranslation("reliability");
   const [exports, setExports] = useState([]),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
@@ -35,13 +38,13 @@ export function DataManagement({ accountActions, dangerActions }) {
       /^\/api\/modules\/(questions\/v2\/(items|imports)|lessons\/v3|resources\/items|math\/v1\/works|classes\/(items|v2\/records)|schedule\/entries)\/[0-9a-f-]{36}\/deletion$/.test(
         payload.path,
       ) || payload.path === `${base}/exports`;
-    if (!allowed) throw new Error("无法识别待确认请求，原始内容仍保留。");
+    if (!allowed) throw new Error(t("无法识别待确认请求，原始内容仍保留。"));
     const current = (await workbenchGet(`${base}/context`)).body;
     if (current.recoveryId !== payload.recoveryId)
-      throw Object.assign(new Error("恢复点已变化"), {
+      throw Object.assign(new Error(t("恢复点已变化")), {
         problem: {
           kind: "unconfirmed",
-          message: "工作台已从备份恢复，请核对这份请求。旧请求不会重新执行。",
+          message: t("工作台已从备份恢复，请核对这份请求。旧请求不会重新执行。"),
         },
       });
     return workbenchPost(payload.path, payload.body, key);
@@ -97,7 +100,7 @@ export function DataManagement({ accountActions, dangerActions }) {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
-      setError(e.message || "下载未完成，请重试。");
+      setError(e.message || t("下载未完成，请重试。"));
     } finally {
       setBusy("");
     }
@@ -109,36 +112,36 @@ export function DataManagement({ accountActions, dangerActions }) {
       if (await action.retry(run)) {
         await refresh();
         if (isExport) setExportOpen(true);
-        setMessage("操作结果已确认");
+        setMessage(t("操作结果已确认"));
       }
     } finally {
       setBusy("");
     }
   }
   return <>
-    <div className="settings-sheet settings-account-sheet"><h2 className="settings-account-title">账户</h2>
+    <div className="settings-sheet settings-account-sheet"><h2 className="settings-account-title">{t("账户")}</h2>
     <section className="settings-row reliability-export-row" aria-labelledby="personal-data-title">
-      <div className="settings-row-copy"><h2 id="personal-data-title">您的数据</h2><p>以 ZIP 文件下载你的 TeachBuddy 个人资料</p></div>
-      <button className="wb-button" disabled={!!busy || !!action.pending} onClick={() => { setExportOpen(true); createExport(); }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5"/></svg>导出数据</button>
+      <div className="settings-row-copy"><h2 id="personal-data-title">{t("您的数据")}</h2><p>{t("以 ZIP 文件下载你的 TeachBuddy 个人资料")}</p></div>
+      <button className="wb-button" disabled={!!busy || !!action.pending} onClick={() => { setExportOpen(true); createExport(); }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5"/></svg>{t("导出数据")}</button>
     </section>
     {accountActions}
     {message && <p role="status">{message}</p>}
     {!exportOpen && (error || action.problem) && <p role="alert">{error || action.problem.message}</p>}
-    {!exportOpen && action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>重试确认操作</button><SettingsDisclosure title="查看待确认请求"><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>放弃重试</button></SettingsDisclosure></div>}
+    {!exportOpen && action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>{t("放弃重试")}</button></SettingsDisclosure></div>}
     </div>
     {dangerActions}
-    <SettingsConfirm show={exportOpen} title="导出个人资料" onClose={() => setExportOpen(false)}>
-      <p>资料包包含已保存及已删除的资料、原文件与对话。下载后解压，打开 index.html 阅读。</p>
-      <p className="wb-note">文件可重新上传，正文与公式可复制；资料包不能覆盖账户或恢复原关联。</p>
-      {busy === 'export' && <p role="status">正在生成资料包…</p>}
-      {error && !action.pending && <button className="wb-button" disabled={!!busy} onClick={createExport}>重试生成</button>}
-      {exports.length > 0 && <ul className="reliability-list" aria-label="个人资料导出记录">{exports.map(item => <li key={item.id}>
-        <div><span>{date(item.snapshotAt)}</span><small>{states[item.state]}</small>{item.problem && <small>{item.problem.detail}</small>}</div>
-        {item.state === 'ready' && <button className="wb-button" disabled={!!busy} onClick={() => download(item)}>下载资料包</button>}
+    <SettingsConfirm show={exportOpen} title={t("导出个人资料")} onClose={() => setExportOpen(false)}>
+      <p>{t("资料包包含已保存及已删除的资料、原文件与对话。下载后解压，打开 index.html 阅读。")}</p>
+      <p className="wb-note">{t("文件可重新上传，正文与公式可复制；资料包不能覆盖账户或恢复原关联。")}</p>
+      {busy === 'export' && <p role="status">{t("正在生成资料包…")}</p>}
+      {error && !action.pending && <button className="wb-button" disabled={!!busy} onClick={createExport}>{t("重试生成")}</button>}
+      {exports.length > 0 && <ul className="reliability-list" aria-label={t("个人资料导出记录")}>{exports.map(item => <li key={item.id}>
+        <div><span>{date(item.snapshotAt)}</span><small>{t(states[item.state])}</small>{item.problem && <small>{item.problem.detail}</small>}</div>
+        {item.state === 'ready' && <button className="wb-button" disabled={!!busy} onClick={() => download(item)}>{t("下载资料包")}</button>}
       </li>)}</ul>}
       {(error || action.problem) && <p role="alert">{error || action.problem.message}</p>}
-      {action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>重试确认操作</button><SettingsDisclosure title="查看待确认请求"><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>放弃重试</button></SettingsDisclosure></div>}
+      {action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>{t("放弃重试")}</button></SettingsDisclosure></div>}
     </SettingsConfirm>
-    <SettingsConfirm show={resetOpen} title="放弃重试？" confirmLabel="放弃重试" onClose={() => setResetOpen(false)} onConfirm={() => { action.reset(); setResetOpen(false); }}><p>放弃重试不会撤销已完成的操作。请保留请求并核对当前资料后再开始新操作。</p></SettingsConfirm>
+    <SettingsConfirm show={resetOpen} title={t("放弃重试？")} confirmLabel={t("放弃重试")} onClose={() => setResetOpen(false)} onConfirm={() => { action.reset(); setResetOpen(false); }}><p>{t("放弃重试不会撤销已完成的操作。请保留请求并核对当前资料后再开始新操作。")}</p></SettingsConfirm>
   </>;
 }

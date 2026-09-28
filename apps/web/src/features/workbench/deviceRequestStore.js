@@ -1,4 +1,4 @@
-import { listLocalNames, readLocal, removeLocal, writeLocal } from './storage.js';
+import { listLocalNames, readLocal, removeLocal, writeLocal, isDeletedAccount } from './storage.js';
 async function fileIdentity(file) {
   const sha256 = [...new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer()))]
     .map(value => value.toString(16).padStart(2, '0')).join('');
@@ -24,6 +24,7 @@ export async function deviceRequestStore({ database, storeName, account, name, a
     request.onerror = () => reject(request.error);
   });
   const transact = (method, key, data) => new Promise((resolve, reject) => {
+    if (method === 'put' && isDeletedAccount(account)) { reject(new Error('Account deleted')); return; }
     const tx = db.transaction(storeName, method === 'get' ? 'readonly' : 'readwrite');
     const store = tx.objectStore(storeName);
     const request = method === 'put' ? store.put(data, key) : store[method](key);

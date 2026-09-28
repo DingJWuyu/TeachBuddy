@@ -1,10 +1,10 @@
 # 账户入口契约
 
-采用认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 的 PageContext 约定。源版本 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，协议已冻结且真实接入；完整目标环境结果见[账户规格](../features/identity.md)和[能力证据](../plans/run-state.md#证据边界)。
+I01-I07 采用认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 的 PageContext 约定。源版本 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，协议已冻结且真实接入；完整目标环境结果见[账户规格](../features/identity.md)和[能力证据](../plans/run-state.md#证据边界)。
 
 [OpenAPI](../../apps/api/src/contracts/auth.openapi.yaml)拥有方法、地址、字段、状态码与样本；本文拥有跨操作语义；[交换用例](auth-cases.md)拥有前后端独立验证条件。接线见[技术接线](../features/identity.md#技术接线)，页面见[账户规格](../features/identity.md)。原型 CA/S 编号用于追溯表单场景，入口为[认证行为](../../prototype/behavior/auth.md)，不代表产品已通过对应场景。
 
-覆盖登录、开放注册、两类发码、重置、恢复、记住我失败恢复和退出交换。设置退出已接入真实 I07；CA53 编号仍对应退出场景。注册默认开放，关闭只阻止新注册及注册发码。条款链接不跳转；不新增管理后台、条款版本、刷新令牌、Bearer 或账户管理功能。术语沿用 [CONTEXT](../../CONTEXT.md)；本包的会话、挑战和页面上下文是协议术语，不更改业务词义。
+覆盖登录、开放注册、两类发码、重置、恢复、记住我失败恢复和退出交换。设置退出已接入真实 I07；CA53 编号仍对应退出场景。注册默认开放，关闭只阻止新注册及注册发码。条款链接不跳转；I08 提供教师自助永久删除；不新增管理后台、条款版本、刷新令牌或 Bearer。术语沿用 [CONTEXT](../../CONTEXT.md)；本包的会话、挑战和页面上下文是协议术语，不更改业务词义。
 
 ## HTTP 与输入
 
@@ -57,7 +57,7 @@ Cookie 被浏览器完全禁用时，没有任何可用当前会话，应停在�
 
 ## 退出交换 I07
 
-设置入口由工作台 A11 调用 `POST /api/auth/logout`，body 的 sessionId 来自最近可信会话状态，未建立会话时传 null。来源保护始终执行。撤销当前 Cookie 容器中、与请求页面绑定的指定会话；也允许撤销 GET 返回的同容器 remembered 恢复目标。撤销该会话的所有页面绑定和匹配恢复指针，不撤销其他设备/独立登录会话或其他账户。pending 同样可撤销；这不是“退出全部设备”，只有密码重置会全账户撤销。
+设置入口由工作台 A11 调用 `POST /api/auth/logout`，body 的 sessionId 来自最近可信会话状态，未建立会话时传 null。来源保护始终执行。撤销当前 Cookie 容器中、与请求页面绑定的指定会话；也允许撤销 GET 返回的同容器 remembered 恢复目标。撤销该会话的所有页面绑定和匹配恢复指针，不撤销其他设备/独立登录会话或其他账户。pending 同样可撤销；这不是“退出全部设备”，密码重置和 I08 账户删除会全账户撤销。
 
 已撤销、缺 Cookie、无匹配目标或重复退出均 204，无响应体、不透露其他容器的 sessionId 是否存在。只清除目标；旧退出请求不得撤销同页稍后新建的不同 sessionId。服务端先持久撤销再返回 204。容器已无其他活动/pending/可恢复会话时，发固定属性相同且 Max-Age=0 的清除 Cookie；还有其他页面会话则保留载体，目标身份已无授权。缺 Cookie 时仍可发送清除头。
 
@@ -99,9 +99,19 @@ Cookie 被浏览器完全禁用时，没有任何可用当前会话，应停在�
 | S43-S44 | 注册关闭和业务结果未知 |
 | S45-S47 | I06 的保存失败、恢复等待、恢复失败 |
 
+## 账户删除交换 I08
+
+`POST /api/auth/account-deletion` 接受封闭请求 `{requestId, sessionId, email}`。requestId 是浏览器用加密随机源产生的 32 字节小写十六进制串；sessionId 来自当前可信会话，email 使用既有邮箱规范化。来源保护、页面头、类型和无缓存规则不变。首次请求必须通过当前 Cookie、页面绑定、active 会话和账户校验，确认邮箱必须与该账户相同；错误邮箱为 422 `deletion-confirmation-mismatch`，未授权为 401 `session-invalid`。
+
+受理事务先记录删除意图并撤销该账户全部会话、页面绑定和记住我指针。此后旧 principal、在途写入、登录和密码重置均不能重新授予该账户写权限。清理范围归[账户永久删除](../features/data.md#账户永久删除)：等待该账户作业与进程结束，清理受管文件和业务资料，再原子删除认证账户、全部挑战及旧认证镜像。其他账户继续使用。
+
+完成前保留账户锁和受管文件清单；清理失败为 503 `deletion-incomplete`，不是已回滚承诺。只在上述清理全部完成后返回 204。完成回执仅保留 requestId 的 SHA-256、原 Cookie/sessionId/规范邮箱/requestId 的 HMAC 证明和完成时间，不再保存账户标识、邮箱或文件清单。
+
+原请求可在同 Cookie 下重复核实，刷新后的新页面头仍须合法。HMAC 核实只允许完成原删除，不建立身份；其他 Cookie、改动的 body 或新 requestId 不可代用。204 回执不清容器 Cookie，以便回执丢失后继续核实，也不影响同容器其他账户。新请求遇同账户删除已受理为 409 `deletion-in-progress`。前端发出前持久保存原意图；任何未知、401 或匿名状态都不能当成删除成功，只有原请求 204 才清理本设备资料并进入匿名页。同邮箱重新注册创建新 accountKey，不继承旧数据。
+
 ## 部署恢复的认证撤销
 
-内部契约 `auth-recovery/1` 已接受且有本地独立切片，固定来源见[能力证据](../plans/run-state.md#证据边界)。这里拥有认证接口、表级不变量和错误；整体停服、复制、两次读回复核、开放及回退流程只归[数据恢复](../features/data.md#部署备份与还原)。它不是 I06 的浏览器 remembered 会话恢复。
+当前内部契约为 `auth-recovery/2`，要求账户删除迁移及完成回执清理。固定历史切片的适用 revision 以[能力证据](../plans/run-state.md#证据边界)为准。这里拥有认证接口、表级不变量和错误；整体停服、复制、两次读回复核、开放及回退流程只归[数据恢复](../features/data.md#部署备份与还原)。它不是 I06 的浏览器 remembered 会话恢复。
 
 ### 唯一操作接口
 
@@ -114,14 +124,14 @@ import { prepareRestoredAuth } from './features/auth/recovery.js';
 const result = prepareRestoredAuth({ db });
 // 仅在 COMMIT 成功后返回：
 // {
-//   contractRevision: 'auth-recovery/1',
+//   contractRevision: 'auth-recovery/2',
 //   outcome: 'cleared',
-//   removed: { pageBindings: 3, sessions: 2, containers: 1, challenges: 4 },
-//   remaining: { pageBindings: 0, sessions: 0, containers: 0, challenges: 0 }
+//   removed: { pageBindings: 3, sessions: 2, containers: 1, challenges: 4, deletions: 1 },
+//   remaining: { pageBindings: 0, sessions: 0, containers: 0, challenges: 0, deletions: 0 }
 // }
 ```
 
-输入只接受 `db`，不接收 accountKey、Cookie、AUTH_CODE_SECRET、email 或 sessionId。不需创建 auth router，不启动服务，不加载邮件或环境密钥。返回计数为本次事务内非负整数；`remaining` 四项必须均为 0。返回值不是可在其他路径/下一轮恢复中复用的开放许可证。
+输入只接受 `db`，不接收 accountKey、Cookie、AUTH_CODE_SECRET、email 或 sessionId。不需创建 auth router，不启动服务，不加载邮件或环境密钥。返回计数为本次事务内非负整数；`remaining` 五项必须均为 0。返回值不是可在其他路径/下一轮恢复中复用的开放许可证。
 
 调用方是 F62 的离线恢复流程，后续 D71 复用。认证实现负责表结构和事务，F62 只知道本接口、恢复顺序及结果；F62 不复制清理 SQL、不反向依赖内部 store。
 
@@ -129,10 +139,12 @@ const result = prepareRestoredAuth({ db });
 
 1. F62 只传独立恢复副本的连接。原库、备份源与恢复目录必须物理分离，排除同路径、软链接及硬链接别名；原库和原备份均不作恢复写目标。打开目标须要求文件已存在，路径错误不能隐式创建空库。
 2. 目标无其他连接、服务进程、后台作业或流量；关闭旧应用及其所有后台写者，停止自动重启，排空/终止在途请求。数据库写锁不等于服务停用，`offline: true` 一类自报布尔值也不算证明。
-3. F62 通过已有共享 runner 在目标完成支持的迁移、账本兼容和库完整性检查，保留迁移账本。当前支持的认证集是 `auth_0001_accounts`、`auth_0002_challenges`、`auth_0003_containers`、`auth_0004_sessions`、`auth_0005_meta`、`auth_0006_legacy_accounts`、`auth_0007_drop_auth_meta`。更老库先按支持链迁移；未知/缺失认证迁移、缺表/必需列、非空 `auth_legacy_gaps` 均不得继续。迁移导致的账户映射变化必须在此之前由原认证拥有者解决，不从业务引用猜建账户。
+3. F62 通过已有共享 runner 在目标完成支持的迁移、账本兼容和库完整性检查，保留迁移账本。当前支持的认证集是 `auth_0001_accounts`、`auth_0002_challenges`、`auth_0003_containers`、`auth_0004_sessions`、`auth_0005_meta`、`auth_0006_legacy_accounts`、`auth_0007_drop_auth_meta`、`auth_0008_account_deletions`。更老库先按支持链迁移；未知/缺失认证迁移、缺表/必需列、非空 `auth_legacy_gaps` 均不得继续。迁移导致的账户映射变化必须在此之前由原认证拥有者解决，不从业务引用猜建账户。
 4. 操作检查持久、可写、已打开的主库连接，未嵌套事务；核对上述认证迁移和所需结构。拒绝附加库参与清理、内存库、只读库及不安全的无回滚日志配置；F62 使用可持久提交的正常 SQLite 配置，不以降低同步保证来绕过错误。不存在“自动建表后当成功”分支。
 
 路径与进程独占归 F62；函数无法从一个连接证明系统中没有其他进程。该能力限制是调用前置条件，不隐含新增锁服务或部署平台。
+
+目标若含 `completedAt IS NULL` 的删除意图，返回 `AUTH_RECOVERY_PRECONDITION`，不撤销锁定、不清理该意图，也不接管来源实例的进程。须在原实例以原请求完成删除，再生成一致备份。
 
 ### 原子清理范围
 
@@ -144,8 +156,9 @@ const result = prepareRestoredAuth({ db });
 | 2 | `DELETE FROM auth_sessions` | pending、page/remembered active、已撤销及已到期会话全部删除。 |
 | 3 | `DELETE FROM auth_containers` | 空容器、所有 Cookie 摘要载体及 rememberedSessionId 指针全部删除。 |
 | 4 | `DELETE FROM auth_challenges` | 注册及重置的活动、已消费、已替换、过期及耗尽挑战全部删除。 |
+| 5 | `DELETE FROM auth_account_deletions` | 已完成的最小删除回执全部删除；未完成意图在事务清理前拒绝。 |
 
-事务内先记录删除计数，再断言四表均空；保护 `auth_accounts` 的全部列（含 id、accountKey、passwordHash/passwordVersion）及 `auth_legacy_gaps`、迁移账本未变。清理实现不写业务表、文件或旧 `users` 表；如发现结构/关联约束不兼容、保留数据发生变化或任何清理失败，回滚整个事务并抛错。固定 schema 无这些清理表到业务表的级联；未来新增此类依赖须先修订本契约。
+事务内先记录删除计数，再断言五表均空；保护 `auth_accounts` 的全部列（含 id、accountKey、passwordHash/passwordVersion）及 `auth_legacy_gaps`、迁移账本未变。清理实现不写业务表、文件或旧 `users` 表；如发现结构/关联约束不兼容、保留数据发生变化或任何清理失败，回滚整个事务并抛错。固定 schema 无这些清理表到业务表的级联；未来新增此类依赖须先修订本契约。
 
 COMMIT 是唯一成功分界；提交前的计数或日志不得标记成功。错误时如事务仍活动，显式回滚；已知回滚保留调用前目标数据。I/O/进程中断导致提交结果不可确定时，不承诺一定回滚，必须归为结果未知且保持目标关闭。原库不受影响来自副本隔离，不来自对损坏介质的回滚承诺。
 

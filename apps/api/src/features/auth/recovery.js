@@ -4,15 +4,15 @@ import Database from 'better-sqlite3';
 import { isDeepStrictEqual } from 'node:util';
 
 // Pin this revision independently of the ordinary migration runner: adding a
-// migration must not silently expand auth-recovery/1's supported schema.
+// migration must not silently expand auth-recovery/2's supported schema.
 const migrationIds = [
   'auth_0001_accounts', 'auth_0002_challenges', 'auth_0003_containers',
   'auth_0004_sessions', 'auth_0005_meta', 'auth_0006_legacy_accounts',
-  'auth_0007_drop_auth_meta'
+  'auth_0007_drop_auth_meta', 'auth_0008_account_deletions'
 ];
 const clearTables = {
   pageBindings: 'auth_page_bindings', sessions: 'auth_sessions',
-  containers: 'auth_containers', challenges: 'auth_challenges'
+  containers: 'auth_containers', challenges: 'auth_challenges', deletions: 'auth_account_deletions'
 };
 const requiredColumns = {
   auth_accounts: 'id accountKey email nickname passwordHash passwordVersion createdAt updatedAt',
@@ -21,11 +21,17 @@ const requiredColumns = {
   auth_sessions: 'id containerId accountId state persistence rememberRequested passwordVersion issuedAt expiresAt activatedAt revokedAt createdAt updatedAt',
   auth_page_bindings: 'containerId pageId sessionId createdAt updatedAt',
   auth_legacy_gaps: 'accountId email reason detail recordedAt',
+  auth_account_deletions: 'requestHash proof accountId accountKey filesJson completedAt',
   workbench_migrations: 'id moduleId appliedAt'
 };
 const quote = name => '"' + name.replaceAll('"', '""') + '"';
 function failure(kind, stage) {
   return Object.assign(new Error(`Authentication recovery stopped at ${stage}`), { code: `AUTH_RECOVERY_${kind}` });
+}
+export function assertNoPendingAccountDeletion(db) {
+  if (db.prepare("SELECT 1 FROM main.sqlite_schema WHERE type='table' AND name='auth_account_deletions'").get() &&
+      db.prepare('SELECT 1 FROM main.auth_account_deletions WHERE completedAt IS NULL LIMIT 1').get())
+    throw failure('PRECONDITION', 'account-deletion-incomplete');
 }
 function checkConnection(db) {
   if (!(db instanceof Database) || !db.open || db.readonly || db.memory || db.inTransaction) {
@@ -55,7 +61,11 @@ function checkSchema(db) {
     throw failure('SCHEMA', 'auth-migrations');
   }
   if (db.prepare('SELECT 1 FROM main.auth_legacy_gaps LIMIT 1').get()) throw failure('SCHEMA', 'legacy-gaps');
-  // The supported schema has no foreign keys or triggers involving the four
+  // A copied target cannot resume cleanup of processes belonging to its source.
+  // Preserve this locked state and refuse restoration until the source's
+  // authorized deletion has completed and a new consistent backup is taken.
+  assertNoPendingAccountDeletion(db);
+  // The supported schema has no foreign keys or triggers involving the five
   // cleared tables. Reject unknown side effects before deleting anything.
   const cleared = Object.values(clearTables);
   for (const table of tables) {
@@ -100,7 +110,7 @@ export function prepareRestoredAuth(options) {
     if (!isDeepStrictEqual(before, preserved(db))) throw failure('INVARIANT', stage);
     stage = 'commit';
     db.exec('COMMIT');
-    return { contractRevision: 'auth-recovery/1', outcome: 'cleared', removed, remaining };
+    return { contractRevision: 'auth-recovery/2', outcome: 'cleared', removed, remaining };
   } catch (error) {
     if (began && db.inTransaction) {
       try { db.exec('ROLLBACK'); }

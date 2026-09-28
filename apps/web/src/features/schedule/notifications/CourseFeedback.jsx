@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 /** Record creation and schedule linking are two separate confirmed saves. */
 import { ModulePresence } from '../../workbench/ModuleMotion.jsx';
 import { useState } from 'react';
@@ -9,6 +10,7 @@ import { navigate } from '../../workbench/routes.js';
 import * as api from '../api.js';
 
 export default function CourseFeedback({ entryId, originDate, course, timeZone, onLinked }) {
+  const { t } = useTranslation("schedule");
   const shell = useWorkbenchShell();
   const name = `course-feedback:${entryId}:${originDate ?? ''}`;
   const [scene, patch] = useScene(shell.accountKey, name, { record: null, linked: false, open: false });
@@ -28,7 +30,7 @@ export default function CourseFeedback({ entryId, originDate, course, timeZone, 
         const entry = await api.getEntry(entryId);
         const occurrence = await api.getOccurrence(entryId, originDate);
         const content = originDate ? occurrence : entry;
-        if (content.course.classId !== record.classId) throw new Error('安排班级已改变，请在安排中重新选择记录');
+        if (content.course.classId !== record.classId) throw new Error(t("安排班级已改变，请在安排中重新选择记录"));
         const body = Object.fromEntries(['title', 'items', 'time', 'course', 'reminder'].map(key => [key, content[key]]));
         body.course = { ...content.course, recordIds: [...new Set([...content.course.recordIds, record.id])] };
         const payload = originDate
@@ -41,21 +43,21 @@ export default function CourseFeedback({ entryId, originDate, course, timeZone, 
   }
   return <div className="sch-field" data-region="course-feedback">
     {course.recordIds.map(id => <button key={id} type="button" className="wb-text-button"
-      onClick={() => navigate(`/classes/${course.classId}/records/${id}`)}>查看实际记录</button>)}
-    {!open && !scene.record && <button type="button" className="wb-button" onClick={() => setOpen(true)}>记课后情况</button>}
+      onClick={() => navigate(`/classes/${course.classId}/records/${id}`)}>{t("查看实际记录")}</button>)}
+    {!open && !scene.record && <button type="button" className="wb-button" onClick={() => setOpen(true)}>{t("记课后情况")}</button>}
     <ModulePresence present={open && !scene.record} mode="collapse">
     {open && !scene.record && <RecordComposer key={name} accountKey={shell.accountKey} classId={course.classId}
       timeZone={timeZone} draftKey={name}
-      initialSources={course.lessonId ? [{ kind: 'lesson', id: course.lessonId, label: '本次备课' }] : []}
+      initialSources={course.lessonId ? [{ kind: 'lesson', id: course.lessonId, label: t("本次备课") }] : []}
       onCreated={record => { patch({ record, linked: false }); setOpen(false); }} />}
     </ModulePresence>
-    {open && !scene.record && <button type="button" className="wb-text-button" onClick={() => setOpen(false)}>收起</button>}
+    {open && !scene.record && <button type="button" className="wb-text-button" onClick={() => setOpen(false)}>{t("收起")}</button>}
     {scene.record && <div>
-      <p>{scene.linked ? '记录已保存并关联安排' : '记录已保存，尚未关联安排'}</p>
-      <button type="button" className="wb-text-button" onClick={() => navigate(`/classes/${scene.record.classId}/records/${scene.record.id}`)}>打开已保存记录</button>
+      <p>{scene.linked ? t("记录已保存并关联安排") : t("记录已保存，尚未关联安排")}</p>
+      <button type="button" className="wb-text-button" onClick={() => navigate(`/classes/${scene.record.classId}/records/${scene.record.id}`)}>{t("打开已保存记录")}</button>
       {!scene.linked && <button type="button" className="wb-button" disabled={submit.isRunning} onClick={() => link()}>
-        {submit.problem || error ? '重试关联' : '关联回本次安排'}</button>}
-      {scene.linked && <button type="button" className="wb-text-button" onClick={() => { patch({ record: null, linked: false, open: false }); setOpen(true); }}>再记一句</button>}
+        {submit.problem || error ? t("重试关联") : t("关联回本次安排")}</button>}
+      {scene.linked && <button type="button" className="wb-text-button" onClick={() => { patch({ record: null, linked: false, open: false }); setOpen(true); }}>{t("再记一句")}</button>}
     </div>}
     {(submit.problem || error) && <p role="alert">{error || submit.problem.message}</p>}
   </div>;

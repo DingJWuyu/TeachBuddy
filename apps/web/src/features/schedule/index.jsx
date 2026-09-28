@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWorkbenchShell } from '../workbench/shellContext.js';
 import { useScene } from '../workbench/useScene.js';
@@ -10,6 +11,7 @@ import CalendarEditor from './CalendarEditor.jsx';
 import TimeGrid from './TimeGrid.jsx';
 import { addDays, contentOf, contentProblem, diffDays, monday, newContent, shiftMonth, timeFromEvent, titleOf, todayInZone } from './calendarModel.js';
 import { localParts } from './zoned.js';
+import { formatDateLabel } from './model.js';
 import * as api from './api.js';
 import './schedule.css';
 
@@ -33,6 +35,7 @@ async function runWrite({ key, payload }) {
 }
 
 function Upcoming({ entries, occurrences, labels, today, grouped, onGroup, onNew, onOpen, onManage, zone }) {
+  const { t } = useTranslation("schedule");
   const items = entries.map(entry => {
     const next = occurrences.find(x => x.key.entryId === entry.id && x.time.date >= today);
     return { entry, occurrence: next, date: next?.time.date ?? entry.time?.date ?? '' };
@@ -43,18 +46,19 @@ function Upcoming({ entries, occurrences, labels, today, grouped, onGroup, onNew
     return <button type="button" className="cal-upcoming-row" key={entry.id} onClick={() => onOpen(entry.id, occurrence?.key.originDate ?? (entry.repeat ? entry.time.date : null))}>
       <i style={{ background: tags[0]?.color ?? '#9ba0aa' }}/><span className="cal-upcoming-title">{titleOf(occurrence ?? entry)}</span>
       {!grouped && tags[0] && <span className="cal-tag" style={{ '--tag-color': tags[0].color }}>{tags[0].name}</span>}
-      <time>{date ? `${Number(date.slice(5, 7))}月 ${Number(date.slice(8))}` : '未排期'}</time>
+      <time>{date ? formatDateLabel(date) : t("未排期")}</time>
     </button>;
   };
-  const groups = [...labels, { id: '', name: '无标签', color: '#9ba0aa' }].map(label => ({ label,
+  const groups = [...labels, { id: '', name: t("无标签"), color: '#9ba0aa' }].map(label => ({ label,
     rows: items.filter(x => label.id ? (x.occurrence ?? x.entry).calendar?.tags.includes(label.id) : !labels.some(l => (x.occurrence ?? x.entry).calendar?.tags.includes(l.id))) })).filter(x => x.rows.length);
-  return <section className="cal-upcoming" aria-label="即将到来"><header><h2><CalendarIcon name="clock" size={18}/>即将到来<span>({items.length})</span></h2><div><CalendarMenu label="日程管理" className="cal-management-menu" trigger={<CalendarIcon name="more"/>}>{close => <><button role="menuitem" onClick={() => { onNew(true); close(); }}>新建未排期任务</button><button role="menuitem" onClick={() => { onManage('priority'); close(); }}>优先事项</button><div className="cal-menu-divider"/><button role="menuitem" onClick={() => { onManage('deleted'); close(); }}>已删除任务</button><button role="menuitem" onClick={() => { onManage('zone'); close(); }}>显示时区</button></>}</CalendarMenu><IconButton name={grouped ? 'tag' : 'calendar'} label={grouped ? '按日期显示' : '按标签分组'} aria-pressed={grouped} onClick={onGroup}/><IconButton name="plus" label="新建任务" onClick={() => onNew(false)}/></div></header>
-    <div className="cal-list-tools"><button onClick={() => onNew(true)}>+ 未排期</button><button onClick={() => onManage('priority')}>优先事项</button><button className="cal-zone-link" onClick={() => onManage('zone')} title={`显示时区：${zone}`}>{zone.split('/').at(-1).replaceAll('_', ' ')}</button></div>
-    {items.length === 0 ? <div className="cal-empty"><CalendarIcon name="calendar" size={28}/><p>暂无安排</p></div> : grouped ? groups.map(({ label, rows }) => <div className="cal-upcoming-group" key={label.id}><h3><span className="cal-group-tag-icon" style={{ color: label.color }}><CalendarIcon name="tag" size={20}/></span><span className="cal-group-name" title={label.name}>{label.name}</span><span className="cal-group-count">{rows.length}</span></h3>{rows.map(row)}</div>) : <div className="cal-upcoming-list">{items.map(row)}</div>}
+  return <section className="cal-upcoming" aria-label={t("即将到来")}><header><h2><CalendarIcon name="clock" size={18}/>{t("即将到来")}<span>({items.length})</span></h2><div><CalendarMenu label={t("日程管理")} className="cal-management-menu" trigger={<CalendarIcon name="more"/>}>{close => <><button role="menuitem" onClick={() => { onNew(true); close(); }}>{t("新建未排期任务")}</button><button role="menuitem" onClick={() => { onManage('priority'); close(); }}>{t("优先事项")}</button><div className="cal-menu-divider"/><button role="menuitem" onClick={() => { onManage('deleted'); close(); }}>{t("已删除任务")}</button><button role="menuitem" onClick={() => { onManage('zone'); close(); }}>{t("显示时区")}</button></>}</CalendarMenu><IconButton name={grouped ? 'tag' : 'calendar'} label={grouped ? t("按日期显示") : t("按标签分组")} aria-pressed={grouped} onClick={onGroup}/><IconButton name="plus" label={t("新建任务")} onClick={() => onNew(false)}/></div></header>
+    <div className="cal-list-tools"><button onClick={() => onNew(true)}>{t("+ 未排期")}</button><button onClick={() => onManage('priority')}>{t("优先事项")}</button><button className="cal-zone-link" onClick={() => onManage('zone')} title={t("显示时区：{{zone}}", { zone: zone })}>{zone.split('/').at(-1).replaceAll('_', ' ')}</button></div>
+    {items.length === 0 ? <div className="cal-empty"><CalendarIcon name="calendar" size={28}/><p>{t("暂无安排")}</p></div> : grouped ? groups.map(({ label, rows }) => <div className="cal-upcoming-group" key={label.id}><h3><span className="cal-group-tag-icon" style={{ color: label.color }}><CalendarIcon name="tag" size={20}/></span><span className="cal-group-name" title={label.name}>{label.name}</span><span className="cal-group-count">{rows.length}</span></h3>{rows.map(row)}</div>) : <div className="cal-upcoming-list">{items.map(row)}</div>}
   </section>;
 }
 
 export default function SchedulePage({ route }) {
+  const { t } = useTranslation("schedule");
   const shell = useWorkbenchShell();
   const initialToday = todayInZone('Asia/Shanghai');
   const [scene, patchScene] = useScene(shell.accountKey, 'schedule-calendar', {
@@ -99,7 +103,7 @@ export default function SchedulePage({ route }) {
     Promise.all([api.getSettings(), api.listEntries(), api.listOccurrences(range), api.listLabels(), api.listOccurrences({ from: today, to: addDays(today, 366) })]).then(([settings, entries, result, labels, upcoming]) => {
       if (cancelled) return;
       setSettings(settings); setZone(settings.timeZone); shell.setTimeZone(settings.timeZone); setData({ entries, occurrences: result.items, labels, upcoming: upcoming.items }); setLoadState('ready'); setLoadError('');
-    }).catch(error => { if (!cancelled) { setLoadState('error'); setLoadError(error.problem?.message ?? '日程未能更新'); } });
+    }).catch(error => { if (!cancelled) { setLoadState('error'); setLoadError(error.problem?.message ?? t("日程未能更新")); } });
     return () => { cancelled = true; };
   }, [range.from, range.to, revision, shell.generation, today]);
   useForegroundRefresh(reload);
@@ -145,7 +149,7 @@ export default function SchedulePage({ route }) {
     if (!current || same(current.content, current.baseline)) return !opRef.current.pending;
     if (opRef.current.pending) return false;
     if (current.savePaused && !confirmConflict) {
-      setValidation('请先核对服务器内容，再重新保存或采用服务器内容');
+      setValidation(t("请先核对服务器内容，再重新保存或采用服务器内容"));
       return false;
     }
     const issue = contentProblem(current.content);
@@ -196,12 +200,12 @@ export default function SchedulePage({ route }) {
       const occurrence = origin ? await api.getOccurrence(id, origin) : null;
       if (!mounted.current) return;
       const content = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
-      const readOnly = entry.deletedAt ? '任务已删除' : occurrence && occurrence.state !== 'active' ? occurrence.state === 'cancelled' ? '这次任务已取消' : '这次任务已不在重复范围内' : null;
+      const readOnly = entry.deletedAt ? t("任务已删除") : occurrence && occurrence.state !== 'active' ? occurrence.state === 'cancelled' ? t("这次任务已取消") : t("这次任务已不在重复范围内") : null;
       setDraft({ clientId: crypto.randomUUID(), id, origin, version: entry.version, entry, content, courseState: occurrence?.courseState ?? entry.courseState, baseline: structuredClone(content), zone, scope: null, readOnly, occurrenceState: occurrence?.state, isException: occurrence?.isException });
       if (!bypass && shell.isPanelOpen) shell.closePanel();
       setValidation(''); setMobileSidebar(true);
       return true;
-    } catch (error) { setLoadError(error.problem?.message ?? '无法打开任务'); }
+    } catch (error) { setLoadError(error.problem?.message ?? t("无法打开任务")); }
   }
   async function create(start, end, allDay = false, unscheduled = false) {
     if (!await leaveEditor()) return;
@@ -216,7 +220,7 @@ export default function SchedulePage({ route }) {
     if (!current?.id) { setDraft(null); setDeletePrompt(false); return; }
     if (flight.current) await flight.current;
     const entry = await api.getEntry(current.id).catch(() => null);
-    if (!entry) { setValidation('读取失败，请重试'); return; }
+    if (!entry) { setValidation(t("读取失败，请重试")); return; }
     const ok = await perform({ kind: scope === 'instance' && current.origin ? 'cancel' : 'delete', id: current.id, origin: current.origin, version: entry.version });
     if (ok) setDeletePrompt(false);
   }
@@ -234,7 +238,7 @@ export default function SchedulePage({ route }) {
       const entries = await api.listEntries();
       if (!mounted.current) return;
       setData(current => ({ ...current, entries })); setItemToMove(item);
-    } catch (error) { setValidation(error.problem?.message ?? '未能加载目标安排，请重试'); }
+    } catch (error) { setValidation(error.problem?.message ?? t("未能加载目标安排，请重试")); }
   }
   async function moveItem(itemId, target) {
     if (opRef.current.pending) return perform(null, true);
@@ -264,8 +268,8 @@ export default function SchedulePage({ route }) {
       const baseline = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
       setDraft({ ...sceneRef.current.draft, entry, version: entry.version, baseline, serverCourseState: occurrence?.courseState ?? entry.courseState, savePaused: !same(sceneRef.current.draft.content, baseline) });
       setItemToMove(null); op.reset(); reload();
-      setValidation('已读取最新版本；本地输入保留，请核对后继续');
-    } catch { setValidation('读取失败，请重试'); }
+      setValidation(t("已读取最新版本；本地输入保留，请核对后继续"));
+    } catch { setValidation(t("读取失败，请重试")); }
   }
   function adoptServer() {
     const current = sceneRef.current.draft;
@@ -293,7 +297,7 @@ export default function SchedulePage({ route }) {
       const ok = await perform({ kind: single ? 'override' : 'update', id: entry.id, origin: occurrence.key.originDate, version: entry.version, content });
       if (!ok) info.revert();
       else if (sceneRef.current.draft?.id === entry.id) await openEntry(entry.id, single ? occurrence.key.originDate : entry.repeat ? content.time.date : null, true);
-    } catch (error) { info.revert(); setLoadError(error.problem?.message ?? '调整时间未能保存'); }
+    } catch (error) { info.revert(); setLoadError(error.problem?.message ?? t("调整时间未能保存")); }
     setMovePrompt(null);
   }
   function changeView(view) {
@@ -335,26 +339,26 @@ export default function SchedulePage({ route }) {
         updateScene({ anchor: value.date, month: value.date.slice(0, 7), scroll: Math.max(0, (value.minutes / 60 - 1) * 104) });
       }
       await openEntry(id, origin, true);
-    }).catch(error => { if (!cancelled) setLoadError(error.problem?.message ?? '无法打开这项安排'); });
+    }).catch(error => { if (!cancelled) setLoadError(error.problem?.message ?? t("无法打开这项安排")); });
     return () => { cancelled = true; };
   }, [route?.search, shell.generation]);
 
   const highlightFrom = scene.view.kind === 'month' ? '' : scene.view.kind === 'week' ? monday(scene.anchor) : scene.anchor;
   const highlightTo = highlightFrom ? addDays(highlightFrom, (scene.view.kind === 'day' ? 1 : scene.view.kind === 'week' ? 7 : scene.view.days) - 1) : '';
-  const saveError = validation || op.problem?.message || (draft?.savePaused ? '本地输入已保留，请确认后重新保存' : '');
+  const saveError = validation || op.problem?.message || (draft?.savePaused ? t("本地输入已保留，请确认后重新保存") : '');
   const labelsChanged = label => { setData(current => ({ ...current, labels: label.deleted ? current.labels.filter(x => x.id !== label.id) : [...current.labels.filter(x => x.id !== label.id), label] })); reload(); };
   return <div className={`cal-page${mobileSidebar ? ' sidebar-open' : ''}${shell.isPanelOpen && shell.panelMode === 'ai' ? ' has-ai' : ''}`} data-region="schedule">
-    {(loadError || (op.problem && !draft)) && <div className="cal-load-error" role="alert">{loadError || op.problem.message}<button onClick={() => op.pending ? perform(null, true) : reload()}>重试</button></div>}
-    <section className="cal-board" aria-label="日历"><header className="cal-toolbar"><MonthTitle date={scene.view.kind === 'month' ? `${displayMonth}-01` : scene.anchor}/><div className="cal-toolbar-actions"><ViewMenu view={scene.view} onChange={changeView}/><button className="cal-today-button" onClick={() => { setDisplayMonth(today.slice(0, 7)); updateScene({ anchor: scene.view.kind === 'week' ? monday(today) : today, month: today.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 }); }}>今天</button><IconButton name="left" label="上一段" onClick={() => navigate(-1)}/><IconButton name="right" label="下一段" onClick={() => navigate(1)}/><span className="cal-mobile-toggle"><IconButton name="grid" label="打开月份与任务" onClick={() => setMobileSidebar(true)}/></span></div></header>
+    {(loadError || (op.problem && !draft)) && <div className="cal-load-error" role="alert">{loadError || op.problem.message}<button onClick={() => op.pending ? perform(null, true) : reload()}>{t("重试")}</button></div>}
+    <section className="cal-board" aria-label={t("日历")}><header className="cal-toolbar"><MonthTitle date={scene.view.kind === 'month' ? `${displayMonth}-01` : scene.anchor}/><div className="cal-toolbar-actions"><ViewMenu view={scene.view} onChange={changeView}/><button className="cal-today-button" onClick={() => { setDisplayMonth(today.slice(0, 7)); updateScene({ anchor: scene.view.kind === 'week' ? monday(today) : today, month: today.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 }); }}>{t("今天")}</button><IconButton name="left" label={t("上一段")} onClick={() => navigate(-1)}/><IconButton name="right" label={t("下一段")} onClick={() => navigate(1)}/><span className="cal-mobile-toggle"><IconButton name="grid" label={t("打开月份与任务")} onClick={() => setMobileSidebar(true)}/></span></div></header>
       <TimeGrid key={scene.view.kind === 'month' ? `${scene.anchor}:${scene.monthJump}` : 'time'} view={scene.view} anchor={scene.anchor} zone={zone} occurrences={data.occurrences} labels={data.labels} selected={draft}
         onRange={(from, to) => setRange(current => current.from === from && current.to === to ? current : { from, to })}
         onSelect={create} onOpen={occurrence => openEntry(occurrence.key.entryId, occurrence.key.originDate)} onMove={moveEvent}
         onDay={date => updateScene({ anchor: date, view: { kind: 'day', days: 1 }, month: date.slice(0, 7) })}
         onMonthScroll={(month, monthScroll) => { setDisplayMonth(month); updateScene({ month, monthScroll }); }}
         scroll={scene.scroll} monthScroll={scene.monthScroll} onScroll={scroll => updateScene({ scroll })} disabled={op.isRunning || Boolean(op.pending)}/>
-      {loadState === 'loading' && <span className="cal-loading" role="status">正在加载…</span>}
+      {loadState === 'loading' && <span className="cal-loading" role="status">{t("正在加载…")}</span>}
     </section>
-    <aside className="cal-sidebar" aria-label="月份与任务"><div className="cal-mobile-close"><IconButton name="close" label="关闭月份与任务" onClick={() => setMobileSidebar(false)}/></div>
+    <aside className="cal-sidebar" aria-label={t("月份与任务")}><div className="cal-mobile-close"><IconButton name="close" label={t("关闭月份与任务")} onClick={() => setMobileSidebar(false)}/></div>
       <MiniCalendar month={scene.month} from={highlightFrom} to={highlightTo} today={today} onMonth={month => updateScene({ month })} onSelect={(from, to, dragged) => {
         const view = dragged ? { kind: 'days', days: diffDays(from, to) + 1 } : scene.view;
         setDisplayMonth(from.slice(0, 7)); updateScene({ anchor: view.kind === 'week' ? monday(from) : from, view, month: from.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 });
@@ -370,9 +374,9 @@ export default function SchedulePage({ route }) {
     {management === 'priority' && <PriorityDialog occurrences={data.occurrences} entries={data.entries} zone={zone} onClose={() => setManagement(null)} onPriority={priority} onOpen={(id, origin) => { setManagement(null); openEntry(id, origin); }}/>}
     {management === 'zone' && <TimeZoneDialog zone={zone} onClose={() => setManagement(null)} onSave={saveZone} busy={op.isRunning} pending={Boolean(op.pending)} error={op.problem?.message}/>}
     {itemToMove && <MoveItemDialog item={itemToMove} sourceId={draft?.id} entries={data.entries} onMove={moveItem} onClose={() => setItemToMove(null)} onReload={op.problem?.kind === 'conflict' ? reloadConflict : null} busy={op.isRunning} pending={Boolean(op.pending)} error={op.problem?.message}/>}
-    {scopePrompt && <CalendarDialog title="编辑重复任务" onClose={() => { setScopePrompt(false); if (draft) setDraft({ ...draft, content: structuredClone(draft.baseline) }); }}><p>将修改应用到哪些任务？</p><footer><button onClick={() => { setScopePrompt(false); flush({ scope: 'instance', confirmConflict: true }); }}>仅此任务</button><button className="is-primary" onClick={() => { setScopePrompt(false); flush({ scope: 'series', confirmConflict: true }); }}>所有重复任务</button></footer></CalendarDialog>}
-    {deletePrompt && <CalendarDialog title="删除任务" onClose={() => setDeletePrompt(false)}><p>删除“{titleOf(draft.content)}”？</p><footer><button onClick={() => setDeletePrompt(false)}>取消</button>{draft.origin && <button className="is-danger" disabled={op.isRunning} onClick={() => remove('instance')}>仅此任务</button>}<button className="is-danger" disabled={op.isRunning || Boolean(op.pending)} onClick={() => remove('series')}>{draft.origin ? '所有重复任务' : '删除'}</button></footer></CalendarDialog>}
-    {movePrompt && <CalendarDialog title="调整重复任务" onClose={() => { movePrompt.revert(); setMovePrompt(null); }}><p>将时间调整应用到哪些任务？</p><footer><button onClick={() => moveEvent(movePrompt, 'instance')}>仅此任务</button><button className="is-primary" onClick={() => moveEvent(movePrompt, 'series')}>所有重复任务</button></footer></CalendarDialog>}
+    {scopePrompt && <CalendarDialog title={t("编辑重复任务")} onClose={() => { setScopePrompt(false); if (draft) setDraft({ ...draft, content: structuredClone(draft.baseline) }); }}><p>{t("将修改应用到哪些任务？")}</p><footer><button onClick={() => { setScopePrompt(false); flush({ scope: 'instance', confirmConflict: true }); }}>{t("仅此任务")}</button><button className="is-primary" onClick={() => { setScopePrompt(false); flush({ scope: 'series', confirmConflict: true }); }}>{t("所有重复任务")}</button></footer></CalendarDialog>}
+    {deletePrompt && <CalendarDialog title={t("删除任务")} onClose={() => setDeletePrompt(false)}><p>{t("删除“")}{titleOf(draft.content)}”？</p><footer><button onClick={() => setDeletePrompt(false)}>{t("取消")}</button>{draft.origin && <button className="is-danger" disabled={op.isRunning} onClick={() => remove('instance')}>{t("仅此任务")}</button>}<button className="is-danger" disabled={op.isRunning || Boolean(op.pending)} onClick={() => remove('series')}>{draft.origin ? t("所有重复任务") : t("删除")}</button></footer></CalendarDialog>}
+    {movePrompt && <CalendarDialog title={t("调整重复任务")} onClose={() => { movePrompt.revert(); setMovePrompt(null); }}><p>{t("将时间调整应用到哪些任务？")}</p><footer><button onClick={() => moveEvent(movePrompt, 'instance')}>{t("仅此任务")}</button><button className="is-primary" onClick={() => moveEvent(movePrompt, 'series')}>{t("所有重复任务")}</button></footer></CalendarDialog>}
     </CalendarOverlay>
   </div>;
 }

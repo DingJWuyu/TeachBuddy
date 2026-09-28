@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useScene } from "../workbench/useScene.js";
@@ -24,6 +26,7 @@ export function MaterialsPicker({
   problem,
   existingQuestionIds = [],
 }) {
+  const { t } = useTranslation('lessons');
   const shell = useWorkbenchShell();
   const [scene, patchScene] = useScene(
     shell.accountKey,
@@ -88,7 +91,7 @@ export function MaterialsPicker({
         selection.map((id) => readSource(kind, id)),
       );
       if (sources.some((s) => s.deletedAt))
-        throw new Error("所选材料已删除，请重新选择");
+        throw new Error(t("所选材料已删除，请重新选择"));
       onConfirm(sources);
     } catch (e) {
       setError(e.message);
@@ -114,15 +117,15 @@ export function MaterialsPicker({
           </span>
           <div>
             <h1>
-              {onPickPage ? "从资料提取正文" : kind === "math"
-                ? "加入数学作品"
+              {onPickPage ? t("从资料提取正文") : kind === "math"
+                ? t("加入数学作品")
                 : kind === "resource"
-                  ? "加入资源"
-                  : "加入题目"}
+                  ? t("加入资源")
+                  : t("加入题目")}
             </h1>
             <p>
-              加入到：{lessonTitle} /{" "}
-              {targetLabel === "本课材料" ? "备用材料" : targetLabel}
+              {t("加入到：")}{lessonTitle} /{" "}
+              {targetLabel === t("本课材料") ? t("备用材料") : targetLabel}
             </p>
           </div>
         </div>
@@ -131,7 +134,7 @@ export function MaterialsPicker({
           disabled={busy || confirming || awaitingConfirmation}
           onClick={onCancel}
         >
-          返回课稿
+          {t("返回课稿")}
         </button>
         {!!selected.length && onRemoveSelection && (
           <button
@@ -139,7 +142,7 @@ export function MaterialsPicker({
             disabled={busy || confirming || awaitingConfirmation}
             onClick={() => onRemoveSelection(selected)}
           >
-            清空选择
+            {t("清空选择")}
           </button>
         )}
         {!onPickPage && (awaitingConfirmation ? (
@@ -148,7 +151,7 @@ export function MaterialsPicker({
             disabled={busy || confirming}
             onClick={onRetry}
           >
-            重试确认取材
+            {t("重试确认取材")}
           </button>
         ) : (
           <button
@@ -156,7 +159,7 @@ export function MaterialsPicker({
             disabled={busy || confirming || !selection.length}
             onClick={confirm}
           >
-            加入 {selection.length} {kind === "question" ? "道题" : "份材料"}
+            {t("加入")} {selection.length} {kind === "question" ? t("道题") : t("份材料")}
           </button>
         ))}
       </header>
@@ -166,13 +169,13 @@ export function MaterialsPicker({
           <input
             className="wb-input"
             type="search"
-            aria-label="搜索材料"
+            aria-label={t("搜索材料")}
             placeholder={
               kind === "question"
-                ? "搜索题目"
+                ? t("搜索题目")
                 : kind === "math"
-                  ? "搜索数学作品"
-                  : "搜索资源"
+                  ? t("搜索数学作品")
+                  : t("搜索资源")
             }
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -180,10 +183,10 @@ export function MaterialsPicker({
           {!items.length && (
             <p className="wb-empty-note">
               {loading
-                ? "正在读取材料…"
+                ? t("正在读取材料…")
                 : query
-                  ? "没有匹配的材料"
-                  : "暂无可选材料"}
+                  ? t("没有匹配的材料")
+                  : t("暂无可选材料")}
             </p>
           )}
           {items.map((item) => (
@@ -193,7 +196,7 @@ export function MaterialsPicker({
             >
               {!onPickPage && <input
                 type="checkbox"
-                aria-label={`选择 ${item.title}`}
+                aria-label={t("选择 {{title}}", { title: item.title })}
                 checked={selection.includes(item.id)}
                 disabled={
                   busy ||
@@ -208,13 +211,13 @@ export function MaterialsPicker({
                 aria-pressed={scene.previewId === item.id}
                 onClick={() => patchScene({ previewId: item.id })}
               >
-                {item.title || "未命名题目"}
+                {item.title || t("未命名题目")}
               </button>
               <span className="wb-muted">
                 {selected.includes(item.id)
-                  ? `第 ${selected.indexOf(item.id) + 1} 项`
+                  ? t("第 {{number}} 项", { number: selected.indexOf(item.id) + 1 })
                   : existingQuestionIds.includes(item.id)
-                    ? "已在此环节"
+                    ? t("已在此环节")
                     : ""}
               </span>
             </div>
@@ -228,7 +231,7 @@ export function MaterialsPicker({
                 <>
                   <DocumentView value={preview.snapshot.body} />
                   <details>
-                    <summary>答案与解析</summary>
+                    <summary>{t("答案与解析")}</summary>
                     <DocumentView value={preview.snapshot.solution} />
                   </details>
                 </>
@@ -244,12 +247,12 @@ export function MaterialsPicker({
                     })
                   }
                 >
-                  {onPickPage ? "预览并选择一页" : `预览 ${preview.snapshot.fileName}`}
+                  {onPickPage ? t("预览并选择一页") : t("预览 {{fileName}}", { fileName: preview.snapshot.fileName })}
                 </button>
               )}
             </>
           ) : (
-            <p className="wb-muted">{onPickPage ? "选择资料，再从预览中选一页，识别并校对后加入课稿。" : "点击标题先查看内容，勾选后加入课稿。"}</p>
+            <p className="wb-muted">{onPickPage ? t("选择资料，再从预览中选一页，识别并校对后加入课稿。") : t("点击标题先查看内容，勾选后加入课稿。")}</p>
           )}
         </section>
       </div>
@@ -257,7 +260,7 @@ export function MaterialsPicker({
         {previewFile && (
           <FilePreview
             fileId={previewFile.fileId}
-            title={onPickPage ? "选择要提取的资料页" : undefined}
+            title={onPickPage ? t("选择要提取的资料页") : undefined}
             onSelectPage={onPickPage ? page => onPickPage(previewFile.source, page) : undefined}
             onClose={() => setPreviewFile(null)}
           />

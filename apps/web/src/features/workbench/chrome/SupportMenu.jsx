@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from './icons.jsx';
 import { routeClick, withSearch } from './routes.js';
@@ -10,6 +11,7 @@ export const SUPPORT_MENU_ITEMS = [
 ];
 
 export default function SupportMenu({ open, onOpen, onClose, onSelect }) {
+  const { t } = useTranslation("workbench");
   return (
     <span
       className="tb-support-wrap"
@@ -25,9 +27,7 @@ export default function SupportMenu({ open, onOpen, onClose, onSelect }) {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={onOpen}
-      >
-        支持
-        <Icon name="chevron" size={16} />
+      > {t("支持")} <Icon name="chevron" size={16} />
       </button>
       {open && (
         <div className="tb-support-menu" role="menu">
@@ -45,7 +45,7 @@ export default function SupportMenu({ open, onOpen, onClose, onSelect }) {
               }}
             >
               <Icon name={item.icon} size={16} />
-              <span>{item.label}</span>
+              <span>{t(item.label)}</span>
             </a>
           ))}
         </div>

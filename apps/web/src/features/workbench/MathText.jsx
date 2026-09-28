@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 /**
  * Read-side rendering of math documents.
  *
@@ -26,11 +27,11 @@ function renderLatex(latex, displayMode) {
 }
 
 export function MathFormula({ latex, display = false }) {
+  const { t } = useTranslation("workbench");
   const result = useMemo(() => renderLatex(latex ?? '', display), [latex, display]);
   if (result.failed) {
     return (
-      <span className="wb-formula-failed" data-formula-failed="1">
-        公式预览失败：{latex}
+      <span className="wb-formula-failed" data-formula-failed="1"> {t("公式预览失败：")}{latex}
       </span>
     );
   }
@@ -44,6 +45,7 @@ export function MathFormula({ latex, display = false }) {
 }
 
 function ParagraphView({ block }) {
+  useTranslation("workbench");
   const runs = block.runs || [];
   if (runs.length === 0) return <p className="wb-paragraph is-empty" aria-hidden="true" />;
   return (
@@ -58,9 +60,10 @@ function ParagraphView({ block }) {
 }
 
 export function DocumentView({ document, className = '' }) {
+  const { t } = useTranslation("workbench");
   const blocks = document?.blocks || [];
   if (blocks.length === 0) {
-    return <p className={`wb-paragraph is-empty ${className}`.trim()}>暂无内容</p>;
+    return <p className={`wb-paragraph is-empty ${className}`.trim()}>{t("暂无内容")}</p>;
   }
   return (
     <div className={`wb-document ${className}`.trim()}>

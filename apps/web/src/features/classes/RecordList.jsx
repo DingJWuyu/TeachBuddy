@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { DocumentView } from '../workbench/materials/DocumentView.jsx';
 /**
  * Actual records for one class: newest first, readable in place, editable,
@@ -17,6 +19,7 @@ import { RecordEditor, RECORD_EXTRA_FIELDS } from './RecordEditor.jsx';
 import { SourceChips } from './SourcePicker.jsx';
 
 function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onChanged, readOnly, justCreated, onRevealed, onPurge, onNextNote, nextNoteBusy, onMove, moveBusy }) {
+  const { t } = useTranslation('classes');
   const [confirming, setConfirming] = useState(false);
   const deletion = useIdempotentSubmit({ accountKey, name: `pending:class-record-deletion:${record.id}` });
   const deleted = record.deletedAt !== null;
@@ -46,14 +49,14 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
     <li ref={row} className={`c-record${open && !deleted && !readOnly ? ' is-editing' : ''}${deleted ? ' is-deleted' : ''}`} data-record-id={record.id} data-record-state={deleted ? 'deleted' : 'active'}>
       <div className="c-record-head">
         <time className="c-record-date" dateTime={record.recordedOn}><Icon name="calendar" size={14} />{formatRecordedOn(record.recordedOn)}</time>
-        {deleted && <span className="wb-tag is-deleted">已删除</span>}
+        {deleted && <span className="wb-tag is-deleted">{t("已删除")}</span>}
         <span className="c-record-spacer" />
         {!deleted && !readOnly && !open && (
           <button type="button" className="wb-button c-text-action" name="record-open" onClick={() => onOpen(record.id)}>
-            编辑记录
+            {t("编辑记录")}
           </button>
         )}
-        {!readOnly && <Popover label="记录操作" icon="more">
+        {!readOnly && <Popover label={t("记录操作")} icon="more">
           {({ close }) => (
             <>
               {deleted ? (
@@ -65,7 +68,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
                     submitDeletion(false);
                   }}
                 >
-                  恢复记录
+                  {t("恢复记录")}
                 </MenuItem>
               ) : (
                 <MenuItem
@@ -77,13 +80,13 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
                     setConfirming(true);
                   }}
                 >
-                  删除记录
+                  {t("删除记录")}
                 </MenuItem>
               )}
-              {!deleted && <MenuItem icon="classes" disabled={moveBusy || deletion.isRunning || Boolean(deletion.pending)} onClick={() => { close(); onMove(record); }}>移到其他班级</MenuItem>}
-              {deleted && <MenuItem icon="trash" danger onClick={() => { close(); onPurge(record); }}>彻底删除记录</MenuItem>}
+              {!deleted && <MenuItem icon="classes" disabled={moveBusy || deletion.isRunning || Boolean(deletion.pending)} onClick={() => { close(); onMove(record); }}>{t("移到其他班级")}</MenuItem>}
+              {deleted && <MenuItem icon="trash" danger onClick={() => { close(); onPurge(record); }}>{t("彻底删除记录")}</MenuItem>}
               {!deleted && record.nextNote?.trim() && <MenuItem icon="calendar" disabled={nextNoteBusy} onClick={() => { close(); onNextNote(record, !record.nextNoteHidden); }}>
-                {record.nextNoteHidden ? '恢复想法提示' : '不再提示这条想法'}
+                {record.nextNoteHidden ? t("恢复想法提示") : t("不再提示这条想法")}
               </MenuItem>}
             </>
           )}
@@ -104,12 +107,12 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
       </ModulePresence>
       {deletion.status === 'unconfirmed' && (
         <div className="c-record-problem" data-region="record-action-problem">
-          <span>上次操作的结果未确认，请重试确认</span>
-          <button type="button" className="wb-button" name="record-action-retry" onClick={retryDeletion}>重试确认</button>
+          <span>{t("上次操作的结果未确认，请重试确认")}</span>
+          <button type="button" className="wb-button" name="record-action-retry" onClick={retryDeletion}>{t("重试确认")}</button>
         </div>
       )}
       {deletion.status === 'failed' && (
-        <p className="wb-inline-error" data-region="record-action-problem">{deletion.problem?.message || '操作失败'}</p>
+        <p className="wb-inline-error" data-region="record-action-problem">{deletion.problem?.message || t("操作失败")}</p>
       )}
       <ModulePresence present={open && !readOnly && !deleted} mode="collapse">
       {open && !readOnly && !deleted && (
@@ -125,9 +128,9 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
       <ModulePresence present={confirming}>
       {confirming && (
         <ConfirmDialog
-          title="删除记录"
-          message="记录会保留在“已删除”中，可随时恢复。"
-          confirmLabel="删除"
+          title={t("删除记录")}
+          message={t("记录会保留在“已删除”中，可随时恢复。")}
+          confirmLabel={t("删除")}
           onCancel={() => setConfirming(false)}
           onConfirm={() => submitDeletion(true)}
         />
@@ -138,6 +141,7 @@ function RecordCard({ accountKey, generation, record, open, onOpen, onClose, onC
 }
 
 export function RecordList({ classId, accountKey, generation, records, state, onStateChange, openRecordId, onOpen, onClose, onChanged, readOnly = false, createdId, onRevealed, onPurge, onNextNote, nextNoteBusy, onMove, moveBusy }) {
+  const { t } = useTranslation('classes');
   const [scene, patchScene] = useScene(accountKey, `class-search:${classId}:${state}`, { ...EMPTY_FILTER, open: false, advanced: false });
   const searchTrigger = useRef(null);
   function closeSearch() {
@@ -150,20 +154,20 @@ export function RecordList({ classId, accountKey, generation, records, state, on
   return (
     <section className="c-records" data-region="record-list">
       <div className="c-records-head">
-        <h2 className="c-section-title"><Icon name="history" size={18} />{state === 'deleted' ? '已删除的记录' : '教学记录'} <span className="c-record-count">{hasRecordFilter(scene) ? `${filtered.length} / ${records.length}` : records.length}</span></h2>
-        <button ref={searchTrigger} className="wb-icon-button" aria-label="查找记录" title="查找记录" aria-expanded={scene.open} onClick={() => patchScene({ ...(scene.open ? EMPTY_FILTER : {}), open: !scene.open })}><Icon name="search" size={17} /></button>
-        {state === 'deleted' ? <button className="wb-button c-text-action" onClick={() => { onClose(); onStateChange('active'); }}><Icon name="back" size={14} />返回教学记录</button>
-          : <Popover label="教学记录选项">{({ close }) => <MenuItem icon="trash" onClick={() => { close(); onClose(); onStateChange('deleted'); }}>已删除的记录</MenuItem>}</Popover>}
+        <h2 className="c-section-title"><Icon name="history" size={18} />{state === 'deleted' ? t("已删除的记录") : t("教学记录")} <span className="c-record-count">{hasRecordFilter(scene) ? `${filtered.length} / ${records.length}` : records.length}</span></h2>
+        <button ref={searchTrigger} className="wb-icon-button" aria-label={t("查找记录")} title={t("查找记录")} aria-expanded={scene.open} onClick={() => patchScene({ ...(scene.open ? EMPTY_FILTER : {}), open: !scene.open })}><Icon name="search" size={17} /></button>
+        {state === 'deleted' ? <button className="wb-button c-text-action" onClick={() => { onClose(); onStateChange('active'); }}><Icon name="back" size={14} />{t("返回教学记录")}</button>
+          : <Popover label={t("教学记录选项")}>{({ close }) => <MenuItem icon="trash" onClick={() => { close(); onClose(); onStateChange('deleted'); }}>{t("已删除的记录")}</MenuItem>}</Popover>}
       </div>
       <ModulePresence present={scene.open} mode="collapse">
         {scene.open && <RecordSearch filter={scene} onChange={patchScene} records={records} advanced={scene.advanced}
           onAdvanced={advanced => patchScene({ advanced })} onClose={closeSearch} />}
       </ModulePresence>
-      {pinned && <p className="wb-muted">当前打开的记录不在筛选范围内，仍显示在下方。</p>}
-      {records.length > 0 && filtered.length === 0 && <p className="wb-empty-note" role="status">没有符合条件的记录，试试其他关键词或清除筛选。</p>}
+      {pinned && <p className="wb-muted">{t("当前打开的记录不在筛选范围内，仍显示在下方。")}</p>}
+      {records.length > 0 && filtered.length === 0 && <p className="wb-empty-note" role="status">{t("没有符合条件的记录，试试其他关键词或清除筛选。")}</p>}
       {records.length === 0 && (
         <p className="wb-empty-note" data-region="record-empty">
-          {state === 'deleted' ? '没有已删除的记录' : '保存的课堂记录会按日期留在这里，下次上课前随时回看。'}
+          {state === 'deleted' ? t("没有已删除的记录") : t("保存的课堂记录会按日期留在这里，下次上课前随时回看。")}
         </p>
       )}
       <ul className="c-record-list" data-region="record-rows">

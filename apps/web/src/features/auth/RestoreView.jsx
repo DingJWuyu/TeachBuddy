@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import BrandMark from './BrandMark.jsx';
 import { COPY } from './presentation.js';
 
@@ -20,6 +22,7 @@ export function BootCard() {
 }
 
 export default function RestoreCard({ checking, message, onRetry, onReturn }) {
+  const { t } = useTranslation('auth');
   return (
     <div className="ae-page" data-auth-surface={checking ? 'restoring' : 'restore-failed'}>
       <div className="ae-shell">
@@ -28,16 +31,16 @@ export default function RestoreCard({ checking, message, onRetry, onReturn }) {
         </header>
         <div className="ae-card ae-restore-card">
           <div className="ae-card-head">
-            <h1>{checking ? '恢复登录状态' : '恢复失败'}</h1>
+            <h1>{checking ? t("恢复登录状态") : t("恢复失败")}</h1>
           </div>
           {checking ? (
-            <p className="ae-restore-message" role="status">正在恢复登录状态，请稍候…</p>
+            <p className="ae-restore-message" role="status">{t("正在恢复登录状态，请稍候…")}</p>
           ) : (
             <>
               <p className="ae-restore-message" role="alert">{message || COPY.restoreFailed}</p>
               <div className="ae-restore-actions">
-                <button className="ae-primary" type="button" onClick={onRetry}>重试</button>
-                <button className="ae-send is-block" type="button" onClick={onReturn}>返回登录</button>
+                <button className="ae-primary" type="button" onClick={onRetry}>{t("重试")}</button>
+                <button className="ae-send is-block" type="button" onClick={onReturn}>{t("返回登录")}</button>
               </div>
             </>
           )}

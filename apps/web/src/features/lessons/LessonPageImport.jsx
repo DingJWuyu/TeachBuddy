@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { useEffect, useRef, useState } from "react";
 import { useScene } from "../workbench/useScene.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
@@ -12,6 +14,37 @@ import { LessonDialog } from "./LessonPlacementDialog.jsx";
 import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 import { ConfirmDialog } from "../workbench/ModuleOverlays.jsx";
 import { adoptLessonPage, cancelPageRecognition, readRecognizedPage, readRecognitionStatus, requestPageRecognition } from "./api.js";
+
+const recognitionIssueKeys = {
+  "recognition-unavailable": "recognitionIssue.recognition-unavailable",
+  "recognition-resources": "recognitionIssue.recognition-resources",
+  "recognition-cleanup": "recognitionIssue.recognition-cleanup",
+  "recognition-timeout": "recognitionIssue.recognition-timeout",
+  "recognition-invalid-output": "recognitionIssue.recognition-invalid-output",
+  "recognition-invalid-input": "recognitionIssue.recognition-invalid-input",
+  "recognition-busy": "recognitionIssue.recognition-busy",
+  "recognition-failed": "recognitionIssue.recognition-failed",
+  "empty-response": "recognitionIssue.empty-response",
+  "provider-unavailable": "recognitionIssue.provider-unavailable",
+  "interrupted": "recognitionIssue.interrupted",
+  "cancelled": "recognitionIssue.cancelled",
+  "conversion-failed": "recognitionIssue.conversion-failed",
+  "invalid-output": "recognitionIssue.invalid-output",
+  "invalid-location": "recognitionIssue.invalid-location",
+  "missing-asset": "recognitionIssue.missing-asset",
+  "structure-flattened": "recognitionIssue.structure-flattened",
+  "merged-cells": "recognitionIssue.merged-cells",
+  "uneven-table": "recognitionIssue.uneven-table",
+  "text-lines-recovered": "recognitionIssue.text-lines-recovered",
+  "unsupported-html": "recognitionIssue.unsupported-html",
+  "html-recovered": "recognitionIssue.html-recovered",
+  "text-format-uncertain": "recognitionIssue.text-format-uncertain",
+  "unparsed-math": "recognitionIssue.unparsed-math",
+  "math-recovered": "recognitionIssue.math-recovered",
+  "heading-level": "recognitionIssue.heading-level",
+  "structure-as-text": "recognitionIssue.structure-as-text",
+  "unassigned-image": "recognitionIssue.unassigned-image",
+};
 
 function displayedImages(result) {
   const found = new Map(), assets = new Set(result?.assetFileIds ?? []);
@@ -31,6 +64,10 @@ function displayedImages(result) {
 // editor. Their drafts and request keys are separate; adoption rechecks both
 // immutable sources on the server.
 export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageParent = null }) {
+  const { t } = useTranslation('lessons');
+  const issueMessage = issue => typeof issue === 'string' ? issue : issue
+    ? Object.hasOwn(recognitionIssueKeys, issue.code) ? t(recognitionIssueKeys[issue.code]) : issue.detail || t('请检查原页与识别正文是否一致。')
+    : '';
   const { accountKey } = useWorkbenchShell();
   const reviewId = imageParent ? `${lesson.id}:image:${imageParent.result.resultId}:${imageParent.fileId}` : lesson.id;
   const [scene, patchScene] = useScene(accountKey, `lesson-page-import:${reviewId}`, {
@@ -47,7 +84,7 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
   const [available, setAvailable] = useState(null);
   const source = scene.source;
   const origin = imageParent?.source ?? source;
-  const imageLabel = imageParent && `原资料第 ${origin.page} 页 · 配图 ${imageParent.number}`;
+  const imageLabel = imageParent && t("原资料第 {{page}} 页 · 配图 {{number}}", { page: origin.page, number: imageParent.number });
   const locked = adoption.isRunning || Boolean(adoption.pending) || scene.adopted || cancellation.isRunning || Boolean(cancellation.pending);
   const sourceKey = source && `${source.fileId}:${source.renditionFileId}:${source.page}`;
 
@@ -70,17 +107,17 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
         setState(result.state);
         if (result.state === "ready") {
           if (result.document?.version !== 2 || !Array.isArray(result.document.blocks) || !result.resultId)
-            throw new Error("识别内容暂时无法编辑，请重新读取。");
+            throw new Error(t("识别内容暂时无法编辑，请重新读取。"));
           // Enrich older saved review scenes without replacing teacher edits.
           if (!latest.current.result || latest.current.result.resultId === result.resultId) patchScene({
             result: { resultId: result.resultId, issues: result.issues ?? [], document: result.document, assetFileIds: result.assetFileIds ?? [] },
             ...(!latest.current.result ? { content: result.document } : {}),
           });
-          else setError("原识别结果已变化。整页校对稿仍保留；如需识别配图，请重新选择资料页。");
+          else setError(t("原识别结果已变化。整页校对稿仍保留；如需识别配图，请重新选择资料页。"));
           return;
         }
         if (["failed", "interrupted"].includes(result.state))
-          setError(result.issues?.[0]?.detail || "识别未完成，原资料和课稿仍保留。可以重新识别这一页。");
+          setError(result.issues?.[0] || t("识别未完成，原资料和课稿仍保留。可以重新识别这一页。"));
         if (scene.jobId) {
           const job = (await workbenchGet(`/api/workbench/jobs/${scene.jobId}`)).body;
           if (!live) return;
@@ -91,7 +128,7 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
             timer = setTimeout(load, 2000);
           } else if (result.state !== "failed" && ["failed", "interrupted", "cancelled"].includes(job.state)) {
             setState(job.state);
-            setError(job.state === "cancelled" ? "" : job.issues?.[0]?.detail || result.issues?.[0]?.detail || "识别未完成，原资料和课稿仍保留。可以重新识别这一页。");
+            setError(job.state === "cancelled" ? "" : job.issues?.[0] || result.issues?.[0] || t("识别未完成，原资料和课稿仍保留。可以重新识别这一页。"));
           } else if (result.state === "running") timer = setTimeout(load, 500);
         } else if (result.state === "running") timer = setTimeout(load, 2000);
       } catch (e) { if (live) { setState("failed"); setError(e.message); } }
@@ -122,7 +159,7 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
     setReturning(true);
     try {
       if (await onAdopted()) patchScene({ source: null, result: null, content: null, title: "", jobId: null, adopted: false });
-      else setError("环节已保存，课稿尚未重新读取。请重试返回。");
+      else setError(t("环节已保存，课稿尚未重新读取。请重试返回。"));
     } finally { setReturning(false); }
   }
   async function adopt() {
@@ -147,9 +184,9 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
     patchScene({ source: null, result: null, content: null, jobId: null, selectedImage: null });
   }
   if (!source && imageParent) return <FilePreview fileId={imageParent.fileId} onClose={onClose}
-    title="准备校对配图" imageLabel={imageLabel} selectLabel="校对这张配图"
+    title={t("准备校对配图")} imageLabel={imageLabel} selectLabel={t("校对这张配图")}
     onSelectPage={page => patchScene({ source: page, title: `${origin.resourceTitle} · 第 ${origin.page} 页 · 配图 ${imageParent.number}`.slice(0, 200) })} />;
-  if (!source) return <MaterialsPicker kind="resource" lessonTitle={lesson.title} targetLabel="新教学环节"
+  if (!source) return <MaterialsPicker kind="resource" lessonTitle={lesson.title} targetLabel={t("新教学环节")}
     onPickPage={selectPage} onCancel={onClose} />;
   const images = imageParent ? [] : displayedImages(scene.result);
   const selectedImage = images.find(image => image.fileId === scene.selectedImage);
@@ -165,80 +202,81 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
   const reading = ["loading", "queued", "running", "cancelling"].includes(state) || recognition.isRunning;
   return <div className="wb-module wb-page lesson-picker lesson-page-import">
     <header className="wb-picker-head">
-      <div className="lesson-picker-title"><div><h1>{imageParent ? "校对配图内容" : "校对资料正文"}</h1>
-        <p>{origin.resourceTitle} · 第 {origin.page} 页{imageParent ? ` · 配图 ${imageParent.number}` : ""}，确认后保存为一个教学环节。</p></div></div>
-      <button className="wb-button" disabled={locked || recognition.isRunning || Boolean(recognition.pending)} onClick={onClose}>{imageParent ? "返回整页校对" : "返回课稿"}</button>
-      {scene.adopted ? <button className="wb-button is-primary" disabled={returning} onClick={returnToLesson}>已加入，返回课稿</button>
+      <div className="lesson-picker-title"><div><h1>{imageParent ? t("校对配图内容") : t("校对资料正文")}</h1>
+        <p>{origin.resourceTitle} {t("· 第")} {origin.page} {t("页")}{imageParent ? t(" · 配图 {{number}}", { number: imageParent.number }) : ""}{t("，确认后保存为一个教学环节。")}</p></div></div>
+      <button className="wb-button" disabled={locked || recognition.isRunning || Boolean(recognition.pending)} onClick={onClose}>{imageParent ? t("返回整页校对") : t("返回课稿")}</button>
+      {scene.adopted ? <button className="wb-button is-primary" disabled={returning} onClick={returnToLesson}>{t("已加入，返回课稿")}</button>
         : adoption.pending ? <button className="wb-button is-primary" disabled={adoption.isRunning}
-          onClick={async () => finish(await adoption.retry(send))}>确认加入结果</button>
-        : <button className="wb-button is-primary" disabled={locked || !scene.result || !scene.title.trim() || !scene.content?.blocks.length} onClick={adopt}>加入为教学环节</button>}
+          onClick={async () => finish(await adoption.retry(send))}>{t("确认加入结果")}</button>
+        : <button className="wb-button is-primary" disabled={locked || !scene.result || !scene.title.trim() || !scene.content?.blocks.length} onClick={adopt}>{t("加入为教学环节")}</button>}
     </header>
     {(error || recognition.problem || adoption.problem || cancellation.problem) && <p role="alert" className="wb-inline-error">
-      {error || adoption.problem?.message || cancellation.problem?.message || recognition.problem?.message}
-      {!locked && adoption.problem?.kind === "conflict" && " 校对稿已保留。返回课稿核对最新版本；资料版本变化时需重新选页。"}
+      {issueMessage(error) || adoption.problem?.message || cancellation.problem?.message || recognition.problem?.message}
+      {!locked && adoption.problem?.kind === "conflict" && t("校对稿已保留。返回课稿核对最新版本；资料版本变化时需重新选页。")}
       {!locked && adoption.problem?.kind === "conflict" && !adoption.problem.sourceKind && <button
-        className="wb-button" onClick={onRefresh}>读取最新课稿，保留校对</button>}
+        className="wb-button" onClick={onRefresh}>{t("读取最新课稿，保留校对")}</button>}
     </p>}
     <div className="lesson-page-import-body">
-      <ModuleDisclosure title={imageLabel || `原资料 · 第 ${source.page} 页`} open={scene.originalOpen ?? true}
+      <ModuleDisclosure title={imageLabel || t("原资料 · 第 {{page}} 页", { page: source.page })} open={scene.originalOpen ?? true}
         onOpenChange={originalOpen => patchScene({ originalOpen })}>
-        <ControlledImage fileId={source.imageFileId} alt={imageLabel || `原资料第 ${source.page} 页`} widthMm={170} />
+        <ControlledImage fileId={source.imageFileId} alt={imageLabel || t("原资料第 {{page}} 页", { page: source.page })} widthMm={170} />
       </ModuleDisclosure>
-      <section className="lesson-page-review" aria-label="识别正文校对">
+      <section className="lesson-page-review" aria-label={t("识别正文校对")}>
         {scene.result ? <>
-          <label>环节名称<input className="wb-input" aria-label="提取后的环节名称" maxLength={200} value={scene.title}
+          <label>{t("环节名称")}<input className="wb-input" aria-label={t("提取后的环节名称")} maxLength={200} value={scene.title}
             disabled={locked} onChange={e => patchScene({ title: e.target.value })} /></label>
-          <p className="wb-muted">{imageParent ? "整页校对稿已保留。这里的内容将单独加入课稿，请对照配图核对；空白单元格需由你填写。" : "对照原页检查文字、公式和配图。校对后的内容可以继续编辑，原资料保持不变。"}</p>
-          {scene.result.issues.length > 0 && <ModuleDisclosure title="这一页有识别疑点，请对照原页核对" defaultOpen>
-            <ul>{scene.result.issues.map((issue, index) => <li key={index}>{issue.detail || "请检查原页与识别正文是否一致。"}</li>)}</ul>
+          <p className="wb-muted">{imageParent ? t("整页校对稿已保留。这里的内容将单独加入课稿，请对照配图核对；空白单元格需由你填写。") : t("对照原页检查文字、公式和配图。校对后的内容可以继续编辑，原资料保持不变。")}</p>
+          {scene.result.issues.length > 0 && <ModuleDisclosure title={t("这一页有识别疑点，请对照原页核对")} defaultOpen>
+            <ul>{scene.result.issues.map((issue, index) => <li key={index} title={issue.detail}>{issueMessage(issue)}</li>)}</ul>
           </ModuleDisclosure>}
-          <LessonDocumentEditor label="识别正文" value={scene.content} readOnly={locked}
+          <LessonDocumentEditor label={t("识别正文")} value={scene.content} readOnly={locked}
             onChange={content => patchScene({ content })} />
-          {images.length > 0 && <ModuleDisclosure title="识别配图中的文字或表格">
-            <p className="wb-muted">选择一张配图单独校对，整页校对稿会保留。确认后另存为一个教学环节。</p>
+          {images.length > 0 && <ModuleDisclosure title={t("识别配图中的文字或表格")}>
+            <p className="wb-muted">{t("选择一张配图单独校对，整页校对稿会保留。确认后另存为一个教学环节。")}</p>
             <div className="lesson-recognition-images">{images.map((image, index) => <div key={image.fileId}>
-              <ControlledImage fileId={image.fileId} alt={`可识别配图 ${index + 1}`} widthMm={80} />
+              <ControlledImage fileId={image.fileId} alt={t("可识别配图 {{number}}", { number: index + 1 })} widthMm={80} />
               <button className="wb-button" disabled={locked || recognition.isRunning || Boolean(recognition.pending)}
-                onClick={() => patchScene({ selectedImage: image.fileId })}>选择配图 {index + 1}</button>
+                onClick={() => patchScene({ selectedImage: image.fileId })}>{t("选择配图")} {index + 1}</button>
             </div>)}</div>
           </ModuleDisclosure>}
         </> : <>
-          <p role="status">{state === 'cancelled' ? "识别已停止，原资料和课稿仍保留。" : state === 'cancelling' ? "正在停止识别，原资料和课稿仍保留。" : reading ? "正在读取或识别这一页…" : "将本页文字、公式和配图提取为可编辑内容，确认前可以对照原页修改。"}</p>
-          {available === false && <p>当前实例暂时无法识别新页面，原资料和课稿仍保留。稍后可以重新读取。</p>}
+          <p role="status">{state === 'cancelled' ? t("识别已停止，原资料和课稿仍保留。") : state === 'cancelling' ? t("正在停止识别，原资料和课稿仍保留。") : reading ? t("正在读取或识别这一页…") : t("将本页文字、公式和配图提取为可编辑内容，确认前可以对照原页修改。")}</p>
+          {available === false && <p>{t("当前实例暂时无法识别新页面，原资料和课稿仍保留。稍后可以重新读取。")}</p>}
           <button className="wb-button is-primary" disabled={recognition.isRunning || locked || (!recognition.pending && (reading || available !== true))} onClick={recognize}>
-            {recognition.pending ? "确认识别请求" : imageParent ? (scene.jobId ? "重新识别这张图" : "识别这张图") : scene.jobId ? "重新识别这一页" : "识别这一页"}
+            {recognition.pending ? t("确认识别请求") : imageParent ? (scene.jobId ? t("重新识别这张图") : t("识别这张图")) : scene.jobId ? t("重新识别这一页") : t("识别这一页")}
           </button>
-          {(error || available === false) && <button className="wb-button" onClick={() => setRevision(n => n + 1)}>重新读取</button>}
+          {(error || available === false) && <button className="wb-button" onClick={() => setRevision(n => n + 1)}>{t("重新读取")}</button>}
         </>}
         {scene.result && recognition.pending && <button className="wb-button" disabled={recognition.isRunning || locked}
-          onClick={recognize}>确认识别请求</button>}
+          onClick={recognize}>{t("确认识别请求")}</button>}
         {(cancellation.pending || (scene.jobId && ['queued', 'running', 'cancelling'].includes(state))) && <button
           className="wb-button" disabled={cancellation.isRunning || (!cancellation.pending && state === 'cancelling')}
-          onClick={stop}>{cancellation.pending ? '确认停止结果' : state === 'cancelling' ? '正在停止识别' : '停止识别'}</button>}
+          onClick={stop}>{cancellation.pending ? t("确认停止结果") : state === 'cancelling' ? t("正在停止识别") : t("停止识别")}</button>}
         {!imageParent && !locked && !recognition.pending && !recognition.isRunning && <button className="wb-text-button"
-          onClick={() => scene.content ? setReselect(true) : clearPage()}>重新选择资料页</button>}
+          onClick={() => scene.content ? setReselect(true) : clearPage()}>{t("重新选择资料页")}</button>}
       </section>
     </div>
-    <ModulePresence present={reselect}>{reselect && <ConfirmDialog title="重新选择资料页"
-      message="这一页尚未加入课稿的校对内容将被丢弃，课稿和原资料保持不变。"
-      confirmLabel="重新选页" onCancel={() => setReselect(false)} onConfirm={clearPage} />}</ModulePresence>
+    <ModulePresence present={reselect}>{reselect && <ConfirmDialog title={t("重新选择资料页")}
+      message={t("这一页尚未加入课稿的校对内容将被丢弃，课稿和原资料保持不变。")}
+      confirmLabel={t("重新选页")} onCancel={() => setReselect(false)} onConfirm={clearPage} />}</ModulePresence>
   </div>;
 }
 
 export function LessonPageSource({ source, onClose }) {
+  const { t } = useTranslation('lessons');
   return (
-    <LessonDialog wide title="导入时的资料" onClose={onClose}>
-      <p>{source.resourceTitle} · {source.fileName} · 第 {source.page} 页</p>
-      <p className="wb-muted">这里保留导入时的内容。后来对课稿的修改不会改变这份记录。</p>
-      <ModuleDisclosure title="查看原页"><ControlledImage fileId={source.imageFileId}
-        alt={`导入原稿第 ${source.page} 页`} widthMm={170} /></ModuleDisclosure>
-      <h3>采用时的正文</h3><DocumentView value={source.adoptedDocument} />
+    <LessonDialog wide title={t("导入时的资料")} onClose={onClose}>
+      <p>{source.resourceTitle} · {source.fileName} {t("· 第")} {source.page} {t("页")}</p>
+      <p className="wb-muted">{t("这里保留导入时的内容。后来对课稿的修改不会改变这份记录。")}</p>
+      <ModuleDisclosure title={t("查看原页")}><ControlledImage fileId={source.imageFileId}
+        alt={t("导入原稿第 {{page}} 页", { page: source.page })} widthMm={170} /></ModuleDisclosure>
+      <h3>{t("采用时的正文")}</h3><DocumentView value={source.adoptedDocument} />
       {source.recognizedImage && <>
-        <ModuleDisclosure title="查看所选配图"><ControlledImage fileId={source.recognizedImage.fileId}
-          alt={`原稿第 ${source.page} 页中的配图`} widthMm={170} /></ModuleDisclosure>
-        <ModuleDisclosure title="配图机器识别原文"><DocumentView value={source.recognizedImage.machineDocument} /></ModuleDisclosure>
+        <ModuleDisclosure title={t("查看所选配图")}><ControlledImage fileId={source.recognizedImage.fileId}
+          alt={t("原稿第 {{page}} 页中的配图", { page: source.page })} widthMm={170} /></ModuleDisclosure>
+        <ModuleDisclosure title={t("配图机器识别原文")}><DocumentView value={source.recognizedImage.machineDocument} /></ModuleDisclosure>
       </>}
-      <ModuleDisclosure title={source.recognizedImage ? "整页机器识别原文" : "机器识别原文"}><DocumentView value={source.machineDocument} /></ModuleDisclosure>
+      <ModuleDisclosure title={source.recognizedImage ? t("整页机器识别原文") : t("机器识别原文")}><DocumentView value={source.machineDocument} /></ModuleDisclosure>
     </LessonDialog>
   );
 }

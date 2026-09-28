@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { useContext, useEffect, useRef, useState } from 'react';
 import { emptyRecordContent } from '@refatos/shared';
 import { PUBLIC_AUTH } from '../auth/AuthProvider.jsx';
@@ -9,6 +11,7 @@ import { readLocal } from '../workbench/storage.js';
 import { deviceRequestStore, reselectDeviceFile } from '../workbench/deviceRequestStore.js';
 
 export function RecordContent({ accountKey, scope, value, onChange, onBusyChange, resetKey }) {
+  const { t } = useTranslation('classes');
   const auth = useContext(PUBLIC_AUTH);
   const documentValue = value ?? emptyRecordContent();
   const [scene, patchScene] = useScene(accountKey, `class-content:${scope}`, { open: false });
@@ -73,11 +76,11 @@ export function RecordContent({ accountKey, scope, value, onChange, onBusyChange
         if (response.status >= 400 && response.status < 500 && response.status !== 401) {
           await store('delete'); if (alive.current) setPending(null);
         }
-        throw new Error(result.detail || '图片上传结果未确认，请重试。');
+        throw new Error(result.detail || t("图片上传结果未确认，请重试。"));
       }
       if (!result.id || !['image/png', 'image/jpeg', 'image/webp'].includes(result.mediaType)) {
         await store('delete'); if (alive.current) setPending(null);
-        throw new Error('请选择 PNG、JPEG 或 WebP 图片。');
+        throw new Error(t("请选择 PNG、JPEG 或 WebP 图片。"));
       }
       request = { ...request, result };
       await store('put', request);
@@ -97,25 +100,25 @@ export function RecordContent({ accountKey, scope, value, onChange, onBusyChange
   }
   const open = scene.open || documentValue.blocks.length > 0 || Boolean(pending) || Boolean(error);
   return <div className="c-content-editor">
-    {!open && <button type="button" className="wb-button c-text-action" onClick={() => patchScene({ open: true })}><Icon name="math" size={16} />公式与图片</button>}
-    <input ref={picker} type="file" accept="image/png,image/jpeg,image/webp" aria-label="上传课堂图片" hidden onChange={selectFile}
+    {!open && <button type="button" className="wb-button c-text-action" onClick={() => patchScene({ open: true })}><Icon name="math" size={16} />{t("公式与图片")}</button>}
+    <input ref={picker} type="file" accept="image/png,image/jpeg,image/webp" aria-label={t("上传课堂图片")} hidden onChange={selectFile}
       onCancel={() => { resolvePick.current?.(null); resolvePick.current = null; }} />
     <ModulePresence present={open} mode="collapse">
-      <div className="c-content-heading"><span className="wb-label">公式与图片</span>
-        {!documentValue.blocks.length && !pending && <button type="button" className="wb-icon-button" aria-label="收起公式与图片" onClick={() => patchScene({ open: false })}><Icon name="close" size={14} /></button>}
+      <div className="c-content-heading"><span className="wb-label">{t("公式与图片")}</span>
+        {!documentValue.blocks.length && !pending && <button type="button" className="wb-icon-button" aria-label={t("收起公式与图片")} onClick={() => patchScene({ open: false })}><Icon name="close" size={14} /></button>}
       </div>
       <fieldset disabled={busy} className="c-content-controls">
-        <DocumentEditor value={documentValue} label="课堂补充" onChange={onChange} onPickImage={pickImage} allowTeacherNotes={false} />
+        <DocumentEditor value={documentValue} label={t("课堂补充")} onChange={onChange} onPickImage={pickImage} allowTeacherNotes={false} />
       </fieldset>
-      {sending && <p className="wb-muted" role="status">正在上传图片…</p>}
-      {pending && !sending && !pending.result && <p className="wb-muted" role="status">图片上传结果未确认。
+      {sending && <p className="wb-muted" role="status">{t("正在上传图片…")}</p>}
+      {pending && !sending && !pending.result && <p className="wb-muted" role="status">{t("图片上传结果未确认。")}
         <button type="button" className="wb-button" onClick={() => pending.requiresReselection ? picker.current.click() : send(pending)}>
-          {pending.requiresReselection ? '重新选择原图片并确认' : '重试上传图片'}</button></p>}
+          {pending.requiresReselection ? t("重新选择原图片并确认") : t("重试上传图片")}</button></p>}
       {error && <p className="wb-inline-error" role="alert">{error}
-        {!ready && <button type="button" className="wb-button" onClick={readPending}>重试读取图片状态</button>}
-        {pending?.result && <button type="button" className="wb-button" onClick={() => { attach(pending.result); setPending({ ...pending }); }}>重试确认图片</button>}
+        {!ready && <button type="button" className="wb-button" onClick={readPending}>{t("重试读取图片状态")}</button>}
+        {pending?.result && <button type="button" className="wb-button" onClick={() => { attach(pending.result); setPending({ ...pending }); }}>{t("重试确认图片")}</button>}
       </p>}
-      {documentValue.blocks.length > 0 && <p className="wb-muted c-content-hint">保存记录后，公式与图片才会加入课堂记录。</p>}
+      {documentValue.blocks.length > 0 && <p className="wb-muted c-content-hint">{t("保存记录后，公式与图片才会加入课堂记录。")}</p>}
     </ModulePresence>
   </div>;
 }

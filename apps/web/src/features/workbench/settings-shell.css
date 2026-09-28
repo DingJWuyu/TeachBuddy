@@ -58,7 +58,7 @@
 .settings-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .settings-confirm .settings-primary { background: #303238; color: #fff; border-color: #303238; }
 .settings-confirm .settings-primary:hover { background: #46484f; }
-.settings-confirm .settings-danger-button { background: #c83e3e; color: #fff; border-color: #c83e3e; }
+.settings-confirm .settings-confirm-actions .wb-button.settings-danger-button { background: #c83e3e; color: #fff; border-color: #c83e3e; }
 .settings-avatar-dialog { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
 .settings-avatar-dialog p { color: light-dark(#737373, var(--app-muted)); font-size: 12px; }
 .settings-avatar-actions { display: flex; gap: 8px; }
@@ -137,3 +137,9 @@
 .wb-settings .settings-row h2 { margin: 0; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--settings-text); }
 .wb-settings .settings-danger-row h2 { font-size: 15px; }
 .wb-settings .settings-danger-row p { color: var(--settings-muted); }
+
+.settings-delete-confirm { display: grid; gap: 8px; margin-top: 20px; font-weight: 500; }
+.settings-delete-confirm input { width: 100%; min-width: 0; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--app-line); border-radius: 8px; background: var(--app-surface); color: var(--app-text); font: inherit; }
+.settings-delete-confirm input:focus-visible { outline: 2px solid var(--app-text); outline-offset: 2px; }
+
+.settings-confirm .settings-confirm-actions .wb-button.settings-danger-button:hover { background: #b02e2e; border-color: #b02e2e; }

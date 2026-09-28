@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import { referenceInputFrom as inputReference } from "../lessons/api.js";
 import { Icon } from "../workbench/chrome/icons.jsx";
 export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
+  const { t } = useTranslation("resources");
   const sequence = useRef(0);
   const dialogRef = useRef(null);
   useModuleDialogFocus(dialogRef, onClose);
@@ -82,13 +84,13 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
         className="res-dialog"
         role="dialog"
         aria-modal="true"
-        aria-label="加入备课"
+        aria-label={t("加入备课")}
       >
         <header className="res-dialog-heading">
-          <h2>加入备课</h2>
+          <h2>{t("加入备课")}</h2>
           <button
             className="res-icon-button"
-            aria-label="关闭加入备课"
+            aria-label={t("关闭加入备课")}
             onClick={onClose}
           >
             <Icon name="close" size={17} />
@@ -96,20 +98,16 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
         </header>
         <p>
           {resources.length === 1
-            ? `将“${resources[0].title}”放入已有备课。`
-            : `将所选 ${resources.length} 份资料放入已有备课。`}
-          原文件仍保存在资源库。
-        </p>
+            ? t("将“{{title}}”放入已有备课。", { title: resources[0].title })
+            : t("将所选 {{count}} 份资料放入已有备课。", { count: resources.length })} {t("原文件仍保存在资源库。")} </p>
         {error && <p role="alert">{error}</p>}
-        <label>
-          选择备课
-          <select
-            aria-label="选择备课"
+        <label> {t("选择备课")} <select
+            aria-label={t("选择备课")}
             value={selectedId}
             onChange={(e) => choose(e.target.value)}
           >
             <option value="">
-              {loading ? "正在读取备课…" : "选择一份备课"}
+              {loading ? t("正在读取备课…") : t("选择一份备课")}
             </option>
             {lessons.map((l) => (
               <option key={l.id} value={l.id}>
@@ -119,17 +117,15 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
           </select>
         </label>
         {!loading && !lessons.length && !error && (
-          <p>你还没有备课。创建备课后，就可以从这里加入资料。</p>
+          <p>{t("你还没有备课。创建备课后，就可以从这里加入资料。")}</p>
         )}
         {lesson && (
-          <label>
-            放入位置
-            <select
-              aria-label="放入位置"
+          <label> {t("放入位置")} <select
+              aria-label={t("放入位置")}
               value={section}
               onChange={(e) => setSection(e.target.value)}
             >
-              <option value="">备用材料</option>
+              <option value="">{t("备用材料")}</option>
               {lesson.sections.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.title}
@@ -139,14 +135,12 @@ export function AddToLesson({ client, resources, onSave, onClose, disabled }) {
           </label>
         )}
         <div className="res-actions">
-          <button onClick={onClose}>取消</button>
+          <button onClick={onClose}>{t("取消")}</button>
           <button
             className="res-primary"
             disabled={disabled || !lesson}
             onClick={save}
-          >
-            确认加入
-          </button>
+          > {t("确认加入")} </button>
         </div>
       </div>
     </div>

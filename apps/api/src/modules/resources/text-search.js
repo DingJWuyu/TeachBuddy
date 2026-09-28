@@ -34,7 +34,7 @@ function excerpt(text, offset, length) {
 
 // Cache only immutable file text, not resource membership or search results.
 // The resource's current file/supplement and filters are resolved on every read.
-export function createResourceTextSearch({ db, files, jobs, recognition }) {
+export function createResourceTextSearch({ db, files, jobs, recognition, mutations }) {
   const cached = db.prepare(
     "SELECT value FROM resource_text_cache WHERE accountKey=? AND fileId=?",
   );
@@ -89,7 +89,10 @@ export function createResourceTextSearch({ db, files, jobs, recognition }) {
       } catch {
         value = { state: "failed", pages: [] };
       }
-      if (db.open) save.run(principal.accountKey, id, JSON.stringify(value));
+      if (db.open) {
+        mutations.assertAccountActive(principal);
+        save.run(principal.accountKey, id, JSON.stringify(value));
+      }
     })();
     inFlight.set(key, work);
     try {

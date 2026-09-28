@@ -1,3 +1,5 @@
+import i18n from "../../i18n/index.js";
+const t = (key, options) => i18n.t(key, { ns: "questions", ...options });
 /**
  * Question editor input <-> contract payload.
  *
@@ -72,7 +74,7 @@ export function validateQuestionInput(input) {
       kind: 'invalid',
       field: '/body',
       reason: 'unsupported-content-version',
-      message: `题面包含文档版本 ${bodyVersion}，本版本不能保存`
+      message: t("题面包含文档版本 {{bodyVersion}}，本版本不能保存", { bodyVersion: bodyVersion })
     };
   }
   const solutionVersion = unsupportedVersion(pruneDocument(input.solution));
@@ -81,20 +83,20 @@ export function validateQuestionInput(input) {
       kind: 'invalid',
       field: '/solution',
       reason: 'unsupported-content-version',
-      message: `答案包含文档版本 ${solutionVersion}，本版本不能保存`
+      message: t("答案包含文档版本 {{solutionVersion}}，本版本不能保存", { solutionVersion: solutionVersion })
     };
   }
   const hasBody = body.blocks.some((block) => (block.type === 'math'
     ? Boolean((block.latex || '').trim())
     : (block.runs || []).some((run) => (run.type === 'math' ? Boolean((run.latex || '').trim()) : Boolean((run.text || '').trim())))));
   if (!hasBody) {
-    return { kind: 'invalid', type: '/problems/workbench/invalid-input', field: '/body', reason: 'empty-content', message: '题面不能只有空白' };
+    return { kind: 'invalid', type: '/problems/workbench/invalid-input', field: '/body', reason: 'empty-content', message: t("题面不能只有空白") };
   }
   if ((input.title || '').length > 200) {
-    return { kind: 'invalid', field: '/title', reason: 'out-of-range', message: '标题超出允许范围' };
+    return { kind: 'invalid', field: '/title', reason: 'out-of-range', message: t("标题超出允许范围") };
   }
   if ((input.note || '').length > 20000) {
-    return { kind: 'invalid', field: '/note', reason: 'out-of-range', message: '笔记超出允许范围' };
+    return { kind: 'invalid', field: '/note', reason: 'out-of-range', message: t("笔记超出允许范围") };
   }
   return null;
 }

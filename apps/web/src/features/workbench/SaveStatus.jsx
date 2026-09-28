@@ -1,3 +1,6 @@
+import i18n from "../../i18n/index.js";
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
 /**
  * Honest save feedback. Every label here is derived from the save lifecycle so
  * the UI can never show "已保存" for a submission the server did not confirm.
@@ -22,10 +25,11 @@ const STATUS_TEXT = {
 };
 
 function saveStatusText(status) {
-  return STATUS_TEXT[status] || '';
+  return STATUS_TEXT[status] ? t(STATUS_TEXT[status]) : '';
 }
 
 export function SaveStatus({ savable, showDraftHint = true }) {
+  const { t } = useTranslation("workbench");
   const shell = useWorkbenchShell();
   const { status, problem, localDraft, baseline, input } = savable;
   const [copied, setCopied] = useState(false);
@@ -43,7 +47,7 @@ export function SaveStatus({ savable, showDraftHint = true }) {
       await navigator.clipboard.writeText(payload);
       setCopied(true);
     } catch (error) {
-      window.prompt('复制输入内容', payload);
+      window.prompt(t("复制输入内容"), payload);
     }
   }
 
@@ -54,18 +58,19 @@ export function SaveStatus({ savable, showDraftHint = true }) {
         <span className="wb-save-reason">{reason}</span>
       )}
       {showDraftHint && localDraft && keepsDraft(status) && (
-        <span className="wb-draft-hint">草稿在此设备</span>
+        <span className="wb-draft-hint">{t("草稿在此设备")}</span>
       )}
       {shell.storageFailed && input && (
         <button type="button" className="wb-text-button" name="copy-input" onClick={copyInput}>
-          {copied ? '已复制' : '复制输入'}
+          {copied ? t("已复制") : t("复制输入")}
         </button>
       )}
     </div>
   );
 }
 
-export function SaveActions({ savable, onSave, saveLabel = '保存', disabled = false, children }) {
+export function SaveActions({ savable, onSave, saveLabel = t("保存"), disabled = false, children }) {
+  const { t } = useTranslation("workbench");
   const { status, pending } = savable;
   const saving = status === 'saving';
   const needsConfirm = Boolean(pending) || needsConfirmation(status);
@@ -79,9 +84,7 @@ export function SaveActions({ savable, onSave, saveLabel = '保存', disabled = 
           name="retry-confirm"
           disabled={saving}
           onClick={() => (onSave ? onSave({ retry: true }) : savable.retryConfirm())}
-        >
-          重试确认
-        </button>
+        > {t("重试确认")} </button>
       ) : (
         <button
           type="button"
@@ -90,7 +93,7 @@ export function SaveActions({ savable, onSave, saveLabel = '保存', disabled = 
           disabled={saving || disabled || isBlockingWrite(status)}
           onClick={() => (onSave ? onSave() : savable.save())}
         >
-          {saving ? '保存中…' : saveLabel}
+          {saving ? t("保存中…") : saveLabel}
         </button>
       )}
     </div>

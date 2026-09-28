@@ -1,3 +1,5 @@
+import i18n from "../../i18n/index.js";
+const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
 /** Schedule module API surface: the only endpoints this feature may call. */
 
 import { WorkbenchError, buildQuery, workbenchGet, workbenchPost, workbenchPut } from '../workbench/apiClient.js';
@@ -14,7 +16,7 @@ async function scheduleWrite(request) {
   } catch (error) {
     const problem = error.problem;
     if (problem?.httpStatus === 422 && problem.type === '/problems/workbench/reminder-not-future') {
-      throw new WorkbenchError({ ...problem, kind: 'invalid', field: '/reminder', message: '提醒时间已过去，请调整时间或关闭提醒' });
+      throw new WorkbenchError({ ...problem, kind: 'invalid', field: '/reminder', message: t("提醒时间已过去，请调整时间或关闭提醒") });
     }
     throw error;
   }
@@ -22,14 +24,14 @@ async function scheduleWrite(request) {
 
 function assertObject(payload, label) {
   if (!payload || typeof payload !== 'object' || typeof payload.id !== 'string' || !Number.isInteger(payload.version)) {
-    throw new WorkbenchError(unexpectedSuccessProblem(`${label}结果无法识别`));
+    throw new WorkbenchError(unexpectedSuccessProblem(t("{{label}}结果无法识别", { label: label })));
   }
   return payload;
 }
 
 function assertList(payload, label) {
   if (!payload || !Array.isArray(payload.items)) {
-    throw new WorkbenchError(unexpectedSuccessProblem(`${label}列表无法识别`));
+    throw new WorkbenchError(unexpectedSuccessProblem(t("{{label}}列表无法识别", { label: label })));
   }
   return payload;
 }
@@ -37,7 +39,7 @@ function assertList(payload, label) {
 export async function getSettings() {
   const { body } = await workbenchGet('/api/modules/schedule/settings');
   if (!body || typeof body.timeZone !== 'string' || !Number.isInteger(body.version)) {
-    throw new WorkbenchError(unexpectedSuccessProblem('日程设置无法识别'));
+    throw new WorkbenchError(unexpectedSuccessProblem(t("日程设置无法识别")));
   }
   return body;
 }
@@ -45,7 +47,7 @@ export async function getSettings() {
 export async function updateSettings({ key, payload }) {
   const { body } = await workbenchPut('/api/modules/schedule/settings', payload, key);
   if (!body || typeof body.timeZone !== 'string' || !Number.isInteger(body.version)) {
-    throw new WorkbenchError(unexpectedSuccessProblem('日程设置无法识别'));
+    throw new WorkbenchError(unexpectedSuccessProblem(t("日程设置无法识别")));
   }
   return body;
 }
@@ -53,33 +55,33 @@ export async function updateSettings({ key, payload }) {
 export async function listEntries({ state = 'active', placement = 'all' } = {}) {
   const query = buildQuery({ state, placement });
   const { body } = await workbenchGet(`/api/modules/schedule/entries${query}`);
-  return assertList(body, '安排').items;
+  return assertList(body, t("安排")).items;
 }
 
 export async function getEntry(id) {
   const { body } = await workbenchGet(`/api/modules/schedule/entries/${id}`);
-  return assertObject(body, '安排');
+  return assertObject(body, t("安排"));
 }
 
 export async function createEntry({ key, payload }) {
   const { body } = await scheduleWrite(workbenchPost('/api/modules/schedule/entries', payload, key));
-  return assertObject(body, '安排');
+  return assertObject(body, t("安排"));
 }
 
 export async function updateEntry({ key, id, payload }) {
   const { body } = await scheduleWrite(workbenchPut(`/api/modules/schedule/entries/${id}`, payload, key));
-  return assertObject(body, '安排');
+  return assertObject(body, t("安排"));
 }
 
 export async function setEntryDeletion({ key, id, payload }) {
   const { body } = await workbenchPost(`/api/modules/schedule/entries/${id}/deletion`, payload, key);
-  return assertObject(body, '安排');
+  return assertObject(body, t("安排"));
 }
 
 export async function listExceptions(id) {
   const { body } = await workbenchGet(`/api/modules/schedule/entries/${id}/exceptions`);
   if (!body || !Array.isArray(body.items)) {
-    throw new WorkbenchError(unexpectedSuccessProblem('单次调整列表无法识别'));
+    throw new WorkbenchError(unexpectedSuccessProblem(t("单次调整列表无法识别")));
   }
   return body;
 }
@@ -90,14 +92,14 @@ export async function setException({ key, id, originDate, payload }) {
     payload,
     key
   ));
-  if (!body || !body.key) throw new WorkbenchError(unexpectedSuccessProblem('单次安排无法识别'));
+  if (!body || !body.key) throw new WorkbenchError(unexpectedSuccessProblem(t("单次安排无法识别")));
   return body;
 }
 
 export async function getOccurrence(id, originDate) {
   const query = buildQuery({ originDate });
   const { body } = await workbenchGet(`/api/modules/schedule/entries/${id}/occurrence${query}`);
-  if (!body || !body.key) throw new WorkbenchError(unexpectedSuccessProblem('这次安排无法识别'));
+  if (!body || !body.key) throw new WorkbenchError(unexpectedSuccessProblem(t("这次安排无法识别")));
   return body;
 }
 
@@ -105,20 +107,20 @@ export async function listOccurrences({ from, to }) {
   const query = buildQuery({ from, to });
   const { body } = await workbenchGet(`/api/modules/schedule/occurrences${query}`);
   if (!body || !body.timeZone || !Array.isArray(body.items)) {
-    throw new WorkbenchError(unexpectedSuccessProblem('日期范围结果无法识别'));
+    throw new WorkbenchError(unexpectedSuccessProblem(t("日期范围结果无法识别")));
   }
   return body;
 }
 
 export async function moveItem({ key, payload }) {
   const { body } = await workbenchPost('/api/modules/schedule/item-moves', payload, key);
-  if (!body || !body.from || !body.to) throw new WorkbenchError(unexpectedSuccessProblem('移动结果无法识别'));
+  if (!body || !body.from || !body.to) throw new WorkbenchError(unexpectedSuccessProblem(t("移动结果无法识别")));
   return body;
 }
 
 export async function listClasses() {
   const { body } = await workbenchGet('/api/modules/classes/items');
-  return assertList(body, '班级').items;
+  return assertList(body, t("班级")).items;
 }
 
 export function listClassRecords(classId) {
@@ -127,13 +129,13 @@ export function listClassRecords(classId) {
 
 export async function listLabels() {
   const { body } = await workbenchGet('/api/modules/schedule/labels');
-  return assertList(body, '标签').items;
+  return assertList(body, t("标签")).items;
 }
 export async function createLabel({ key, payload }) {
   const { body } = await workbenchPost('/api/modules/schedule/labels', payload, key);
-  return assertObject(body, '标签');
+  return assertObject(body, t("标签"));
 }
 export async function updateLabel({ key, id, payload }) {
   const { body } = await workbenchPut(`/api/modules/schedule/labels/${id}`, payload, key);
-  return assertObject(body, '标签');
+  return assertObject(body, t("标签"));
 }

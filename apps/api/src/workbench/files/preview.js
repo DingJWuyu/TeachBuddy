@@ -86,6 +86,7 @@ export function createPreviews({
   }
   const inFlight = new Map();
   let conversionQueue = Promise.resolve();
+  const textConversions = new Map();
   async function ensurePreview(principal, id, { signal } = {}) {
     const current = preview(principal, id);
     if (["ready", "limited"].includes(current.state)) {
@@ -118,8 +119,8 @@ export function createPreviews({
           convertFile({
             bytes: readBytes(principal, id),
             mediaType: file.mediaType,
-            directory,
             ...conversion,
+            directory: files.accountWorkDirectory(principal),
             signal,
           }),
         );
@@ -287,21 +288,30 @@ export function createPreviews({
       }
       if (file.mediaType !== "application/pdf")
         throw new Error("Text extraction requires PDF");
+      mutations.assertAccountActive(principal);
+      const abort = new AbortController();
+      let settled;
+      const done = new Promise(resolve => { settled = resolve; });
+      const handle = { accountKey: principal.accountKey, abort, done };
+      textConversions.set(handle, handle);
+      try {
       const result = await convertFile({
         bytes: readBytes(principal, id),
         mediaType: file.mediaType,
-        directory,
         ...conversion,
+        directory: files.accountWorkDirectory(principal),
+        signal: abort.signal,
         textOnly: true,
         timeoutMs: 12000,
       });
       return result.textPages;
+      } finally { textConversions.delete(handle); settled(); }
     },
     async convertWord(principal, id, {signal} = {}) {
       const file = files.read(principal, id);
       if (file.mediaType !== "application/msword") throw new Error("Native Word conversion requires DOC");
       const next = conversionQueue.then(() => convertFile({bytes: readBytes(principal, id),
-        mediaType: file.mediaType, directory, ...conversion, signal, wordOnly: true}));
+        mediaType: file.mediaType, ...conversion, directory: files.accountWorkDirectory(principal), signal, wordOnly: true}));
       conversionQueue = next.catch(() => {});
       const result = await next;
       signal?.throwIfAborted();
@@ -314,6 +324,11 @@ export function createPreviews({
     requestPreview,
     ensurePreview,
     crop,
+    async cancelAccountConversionsAndWait(accountKey) {
+      const active = [...textConversions.values()].filter(handle => handle.accountKey === accountKey);
+      for (const handle of active) handle.abort.abort();
+      await Promise.all(active.map(handle => handle.done));
+    },
     jobHandlers: { preview: handler },
   };
 }

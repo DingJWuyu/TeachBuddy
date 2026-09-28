@@ -129,7 +129,7 @@ export function createLessonExports({
         const converted = await convertFile({
           bytes: docx,
           mediaType: docxType,
-          directory: path.join(path.dirname(db.name), "lesson-conversions"),
+          directory: files.accountWorkDirectory(principal),
           signal,
         });
         if (

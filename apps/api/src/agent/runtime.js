@@ -35,7 +35,9 @@ export function createPiRuntime({ store, executor, identity, config = {} }) {
     });
   }
   async function run(account, id, turnId, request) {
-    const handle = { session: null, reason: null }; running.set(turnId, handle);
+    let settle;
+    const done = new Promise(resolve => { settle = resolve; });
+    const handle = { account, session: null, reason: null, done }; running.set(turnId, handle);
     const deadline = Date.now() + 180000;
     const timer = setTimeout(() => { handle.reason = 'run-limit'; void handle.session?.abort(); }, 180000);
     let failure = null;
@@ -59,6 +61,7 @@ export function createPiRuntime({ store, executor, identity, config = {} }) {
         noExtensions: true, noSkills: true, noPromptTemplates: true, noThemes: true, noContextFiles: true, systemPrompt: SYSTEM });
       await loader.reload();
       async function authorize() {
+        if (handle.reason === 'auth-invalid') throw new Error('Account deleted');
         let p;
         try { p = await identity.resolvePrincipal(request); } catch (error) {
           handle.reason = error.status === 401 ? 'auth-invalid' : 'store-unavailable'; throw error;
@@ -86,6 +89,7 @@ export function createPiRuntime({ store, executor, identity, config = {} }) {
       const created = await createAgentSession({ modelRuntime: runtime, model, sessionManager: manager, settingsManager: settings,
         resourceLoader: loader, noTools: 'builtin', tools: toolDefinitions.map(t => t.name), customTools, thinkingLevel: 'off' });
       const session = created.session; handle.session = session;
+      if (handle.reason === 'auth-invalid') throw new Error('Account deleted');
       if (created.modelFallbackMessage || session.model?.id !== turn.modelId || session.model?.provider !== PROVIDER) throw agentError('model-unavailable');
       const messageIds = new Map();
       const messageKey = message => message.timestamp;
@@ -170,10 +174,16 @@ export function createPiRuntime({ store, executor, identity, config = {} }) {
     } catch (error) { failure = error.code?.startsWith('SQLITE_') ? 'store-unavailable' : error.problem?.type === '/problems/agent/model-unavailable' ? 'model-unavailable' : 'provider-error'; }
     finally {
       clearTimeout(timer);
-      try { finish(account, id, turnId, handle.reason ?? failure); } finally { handle.session?.dispose(); running.delete(turnId); }
+      try { finish(account, id, turnId, handle.reason ?? failure); }
+      finally { try { handle.session?.dispose(); } finally { running.delete(turnId); settle(); } }
     }
   }
   return { configured, run,
+    async stopAccountAndWait(account) {
+      const handles = [...running.values()].filter(handle => handle.account === account);
+      for (const handle of handles) { handle.reason = 'auth-invalid'; void handle.session?.abort(); }
+      await Promise.all(handles.map(handle => handle.done));
+    },
     stop(turnId) { void running.get(turnId)?.session?.abort(); },
     close() { for (const h of running.values()) void h.session?.abort(); },
     recover() {

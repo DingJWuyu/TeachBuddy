@@ -1,7 +1,9 @@
+import i18n from "../../i18n/index.js";
+const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
 import { addDays, diffDays, instantAt, localParts } from './zoned.js';
 import { formatClock, parseClock, todayInZone, titleOf } from './model.js';
 export { addDays, diffDays, formatClock, parseClock, todayInZone, titleOf };
-export const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
 export const COLORS = ['#ff6b75', '#3edc81', '#5b9cf5', '#a78bfa', '#ffb454', '#f27ab8', '#43c6c6', '#9ba0aa'];
 export const dateOnly = date => date.toISOString().slice(0, 10);
 export const weekday = date => new Date(`${date}T00:00:00Z`).getUTCDay();
@@ -11,7 +13,7 @@ export function shiftMonth(month, amount) {
   return dateOnly(new Date(Date.UTC(year, value - 1 + amount, 1))).slice(0, 7);
 }
 export const monthDays = month => new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0)).getUTCDate();
-export const monthTitle = date => ({ month: MONTHS[Number(date.slice(5, 7)) - 1], year: date.slice(0, 4) });
+export const monthTitle = date => ({ month: new Intl.DateTimeFormat(i18n.resolvedLanguage, { month: 'long', timeZone: 'UTC' }).format(new Date(`${date.slice(0, 7)}-01T00:00:00Z`)), year: date.slice(0, 4) });
 export const blankCalendar = () => ({ allDay: false, notes: '', tags: [] });
 export function contentOf(entry) {
   return { title: entry.title, items: structuredClone(entry.items ?? []), time: entry.time ? { ...entry.time } : null,
@@ -45,15 +47,15 @@ export function changeEnd(content, date, clock) {
   return { ...content.time, durationMinutes: Math.round((end - start) / 60000) };
 }
 export function contentProblem(content) {
-  if (!content.title.trim() && !content.items.some(item => item.text.trim())) return '请输入任务标题';
-  if (content.items.some(item => !item.text.trim())) return '请填写空白事项，或将它移除';
+  if (!content.title.trim() && !content.items.some(item => item.text.trim())) return t("请输入任务标题");
+  if (content.items.some(item => !item.text.trim())) return t("请填写空白事项，或将它移除");
   if (content.time) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(content.time.date) || content.time.date < '1900-01-01' || content.time.date > '2100-12-31') return '请选择有效日期';
-    if (parseClock(content.time.startTime) === null) return '请选择开始时间';
-    if (!Number.isInteger(content.time.durationMinutes) || content.time.durationMinutes <= 0) return '结束时间需要晚于开始时间';
-    if (content.time.durationMinutes > 527040) return '单次任务最多跨越 366 天';
-    if (endOf(content).date > '2100-12-31') return '结束日期超出可用范围';
-    if (content.repeat?.until < content.time.date) return '重复结束日期不能早于开始日期';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(content.time.date) || content.time.date < '1900-01-01' || content.time.date > '2100-12-31') return t("请选择有效日期");
+    if (parseClock(content.time.startTime) === null) return t("请选择开始时间");
+    if (!Number.isInteger(content.time.durationMinutes) || content.time.durationMinutes <= 0) return t("结束时间需要晚于开始时间");
+    if (content.time.durationMinutes > 527040) return t("单次任务最多跨越 366 天");
+    if (endOf(content).date > '2100-12-31') return t("结束日期超出可用范围");
+    if (content.repeat?.until < content.time.date) return t("重复结束日期不能早于开始日期");
   }
   return null;
 }
@@ -95,7 +97,7 @@ export function presetRepeat(kind, date) {
     monthly: kind === 'monthly-weekday' ? 'weekday' : 'date', count: 0 };
 }
 export function repeatLabel(repeat) {
-  if (!repeat) return '不重复';
-  const unit = { daily: '天', weekly: '周', monthly: '月', yearly: '年' }[repeat.frequency ?? 'weekly'];
-  return `每${(repeat.interval ?? 1) > 1 ? repeat.interval : ''}${unit}`;
+  if (!repeat) return t("不重复");
+  const frequency = repeat.frequency ?? 'weekly';
+  return (repeat.interval ?? 1) === 1 ? t(`repeat.${frequency}.single`) : t(`repeat.${frequency}`, { count: repeat.interval });
 }

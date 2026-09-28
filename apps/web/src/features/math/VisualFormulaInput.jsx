@@ -1,6 +1,9 @@
+import { useTranslation } from 'react-i18next';
+
 import { useEffect, useRef, useState } from 'react';
 
 export default function VisualFormulaInput({ value, onChange }) {
+  const { t, i18n } = useTranslation('math');
   const host = useRef(null);
   const field = useRef(null);
   const allowFocus = useRef(() => {});
@@ -17,9 +20,10 @@ export default function VisualFormulaInput({ value, onChange }) {
       if (!live) return;
       MathfieldElement.fontsDirectory = null; // Vite bundles the pinned local fonts.
       MathfieldElement.soundsDirectory = null;
+      MathfieldElement.locale = i18n.resolvedLanguage;
       const input = new MathfieldElement();
       input.mathVirtualKeyboardPolicy = 'manual';
-      input.setAttribute('aria-label', '可视化公式输入');
+      input.setAttribute('aria-label', t("可视化公式输入"));
       input.value = current.current.value;
       input.addEventListener('input', () => current.current.onChange(input.value));
       host.current.replaceChildren(input);
@@ -53,20 +57,25 @@ export default function VisualFormulaInput({ value, onChange }) {
       field.current.resetUndo();
     }
   }, [value, ready]);
+  useEffect(() => {
+    if (!field.current) return;
+    field.current.constructor.locale = i18n.resolvedLanguage;
+    field.current.setAttribute('aria-label', t('可视化公式输入'));
+  }, [ready, i18n.resolvedLanguage, t]);
   function insert(latex) {
     allowFocus.current();
     field.current?.focus();
     field.current?.insert(latex, { selectionMode: 'placeholder' });
   }
   return <div className="math-visual-formula">
-    <p className="math-hint">点击公式中的位置直接输入，用方向键移动。选中内容后，可将它放入分式或根式。</p>
-    {error && <p role="alert">公式编辑器暂时无法加载，源码仍保留。<button onClick={() => retry(n => n + 1)}>重试</button></p>}
-    {!ready && !error && <p role="status">正在准备公式编辑器…</p>}
+    <p className="math-hint">{t("点击公式中的位置直接输入，用方向键移动。选中内容后，可将它放入分式或根式。")}</p>
+    {error && <p role="alert">{t("公式编辑器暂时无法加载，源码仍保留。")}<button onClick={() => retry(n => n + 1)}>{t("重试")}</button></p>}
+    {!ready && !error && <p role="status">{t("正在准备公式编辑器…")}</p>}
     <div ref={host} className="math-visual-field"/>
-    <div className="math-insert" aria-label="插入公式结构">
+    <div className="math-insert" aria-label={t("插入公式结构")}>
       {[
-        ['分式', '\\frac{#@}{#?}'], ['根式', '\\sqrt{#@}'], ['上标', '#@^{#?}'], ['下标', '#@_{#?}'],
-        ['向量', '\\overrightarrow{#@}'], ['分段式', '\\begin{cases}#? & #?\\\\#? & #?\\end{cases}'],
+        [t("分式"), '\\frac{#@}{#?}'], [t("根式"), '\\sqrt{#@}'], [t("上标"), '#@^{#?}'], [t("下标"), '#@_{#?}'],
+        [t("向量"), '\\overrightarrow{#@}'], [t("分段式"), '\\begin{cases}#? & #?\\\\#? & #?\\end{cases}'],
       ].map(([label, latex]) => <button key={label} disabled={!ready} onMouseDown={event => event.preventDefault()} onClick={() => insert(latex)}>{label}</button>)}
     </div>
   </div>;

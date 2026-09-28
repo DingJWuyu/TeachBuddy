@@ -1,3 +1,5 @@
+import i18n from '../../i18n/index.js';
+const t = (key, options) => i18n.t(key, { ns: 'lessons', ...options });
 import { useEffect, useRef, useState } from 'react';
 import { useScene } from '../workbench/useScene.js';
 import { addReferences, removeReference, replaceReference, targetLabel, targetReferences } from './model.js';
@@ -10,11 +12,11 @@ export function useMathReturn({ shell, savable, id, onEnter }) {
   const [busy, setBusy] = useState(false);
   const consumed = useRef(false);
   async function enter(target, replacement = null) {
-    if (savable.pending || savable.isSaving) { setProblem('先确认上一次保存结果'); return; }
+    if (savable.pending || savable.isSaving) { setProblem(t("先确认上一次保存结果")); return; }
     let saved = savable.baseline;
     if (!saved?.id) saved = await savable.save();
     if (!saved) return;
-    if (!savable.checkpoint(saved.id)) { setProblem('无法保留备课现场，请检查浏览器存储后再进入工坊'); return; }
+    if (!savable.checkpoint(saved.id)) { setProblem(t("无法保留备课现场，请检查浏览器存储后再进入工坊")); return; }
     onEnter?.(saved.id);
     patch({ target: {
       lessonId: saved.id, sectionId: target.sectionId ?? null, baseVersion: saved.version,
@@ -37,20 +39,20 @@ export function useMathReturn({ shell, savable, id, onEnter }) {
     setProblem(null); setBusy(true);
     try {
       const server = await getLesson(id);
-      if (server.deletedAt) { setProblem('目标备课已删除，请恢复或重新选择备课'); return; }
+      if (server.deletedAt) { setProblem(t("目标备课已删除，请恢复或重新选择备课")); return; }
       if (server.version !== target.baseVersion || server.version !== savable.baseline.version || savable.status === 'conflict') {
-        savable.compareServer(server); setProblem('备课有更新，请先对照并处理版本冲突，再确认带回'); return;
+        savable.compareServer(server); setProblem(t("备课有更新，请先对照并处理版本冲突，再确认带回")); return;
       }
       if (target.sectionId && (
         ((target.sectionWasSaved ?? true) && !server.sections.some(s => s.id === target.sectionId)) ||
         !savable.input.sections.some(s => s.id === target.sectionId)
-      )) { setProblem('目标环节已删除，请明确选择本课材料或取消带回'); return; }
+      )) { setProblem(t("目标环节已删除，请明确选择本课材料或取消带回")); return; }
       const placement = target.sectionId ? { type: 'section', sectionId: target.sectionId } : { type: 'materials' };
       let input = scene.inserted ? undoInsertion(savable.input, scene.target) : savable.input;
       const existing = targetReferences(input, placement);
       const inserted = existing.some(r => r.id === target.referenceId);
       if (target.replaceId && !inserted && !existing.some(r => r.id === target.replaceId)) {
-        setProblem('原引用已移除，请选择本课材料或取消带回'); return;
+        setProblem(t("原引用已移除，请选择本课材料或取消带回")); return;
       }
       const same = existing.find(r => r.kind === 'math' && r.workId === scene.result.id);
       if (!inserted && (!same || target.replaceId)) {
@@ -63,7 +65,7 @@ export function useMathReturn({ shell, savable, id, onEnter }) {
       patch({ target, inserted: true });
       const result = await savable.save({ input });
       if (result) patch({ target: null, result: null, inserted: false });
-    } catch (error) { setProblem(error.problem?.message ?? '暂时无法带回，作品和原稿已保留'); }
+    } catch (error) { setProblem(error.problem?.message ?? t("暂时无法带回，作品和原稿已保留")); }
     finally { setBusy(false); }
   }
   function cancel() {

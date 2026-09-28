@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Icon } from "../workbench/chrome/icons.jsx";
 import { Popover } from "../workbench/ModuleOverlays.jsx";
 import { ModulePresence } from "../workbench/ModuleMotion.jsx";
@@ -23,16 +24,17 @@ const formats = [
 ];
 
 export function UploadButton({ onUpload, disabled, first = false }) {
+  const { t } = useTranslation("resources");
   return (
     <label
       className={`res-button res-primary${disabled ? " is-disabled" : ""}`}
     >
       <Icon name="upload" size={17} />
-      {first ? "上传第一份资料" : "上传资料"}
+      {first ? t("上传第一份资料") : t("上传资料")}
       <input
         type="file"
         multiple
-        aria-label={first ? "上传第一份资料" : "上传资料"}
+        aria-label={first ? t("上传第一份资料") : t("上传资料")}
         disabled={disabled}
         onChange={(event) => {
           onUpload(Array.from(event.target.files));
@@ -67,6 +69,7 @@ export function Library({
   onOrganize,
   onAddToLesson,
 }) {
+  const { t } = useTranslation("resources");
   const selectionRef = useRef(null);
   useLayoutEffect(() => {
     const element = selectionRef.current;
@@ -104,11 +107,11 @@ export function Library({
             <Icon name={deleted ? "trash" : "folder"} size={23} />
           </span>
           <div>
-            <h1 tabIndex={-1}>{deleted ? "已归档资料" : "资源库"}</h1>
+            <h1 tabIndex={-1}>{deleted ? t("已归档资料") : t("资源库")}</h1>
             <p>
               {deleted
-                ? "暂时不用的资料，可恢复或彻底删除"
-                : "收藏教学资料，随时查看与取用"}
+                ? t("暂时不用的资料，可恢复或彻底删除")
+                : t("收藏教学资料，随时查看与取用")}
             </p>
           </div>
         </div>
@@ -123,22 +126,20 @@ export function Library({
                 })
               }
             >
-              <Icon name="arrowLeft" size={16} />
-              全部资料
-            </button>
+              <Icon name="arrowLeft" size={16} /> {t("全部资料")} </button>
           ) : (
             <>
               {onFolders && (
                 <button aria-expanded={foldersOpen} onClick={onFolders}>
                   <Icon name="folder" size={17} />
-                  <span>文件夹与标签</span>
+                  <span>{t("文件夹与标签")}</span>
                 </button>
               )}
               {!firstVisit && (
                 <UploadButton disabled={busy} onUpload={onUpload} />
               )}
               <Popover
-                label="资源库更多操作"
+                label={t("资源库更多操作")}
                 className="res-menu"
                 buttonClassName="res-icon-button"
               >
@@ -158,9 +159,7 @@ export function Library({
                       });
                     }}
                   >
-                    <Icon name="trash" size={16} />
-                    已归档资料
-                  </button>
+                    <Icon name="trash" size={16} /> {t("已归档资料")} </button>
                 )}
               </Popover>
             </>
@@ -180,15 +179,13 @@ export function Library({
                       selected: [],
                     })
                   }
-                >
-                  选择资料
-                </button>
+                > {t("选择资料")} </button>
               )}
               <label className="res-search">
                 <Icon name="search" size={17} />
                 <input
-                  aria-label="搜索资料"
-                  placeholder="搜索名称、备注或正文"
+                  aria-label={t("搜索资料")}
+                  placeholder={t("搜索名称、备注或正文")}
                   maxLength={200}
                   value={scene.q}
                   onChange={(event) => patchScene({ q: event.target.value })}
@@ -196,7 +193,7 @@ export function Library({
                 {scene.q && (
                   <button
                     className="res-icon-button"
-                    aria-label="清除搜索"
+                    aria-label={t("清除搜索")}
                     onClick={() => patchScene({ q: "" })}
                   >
                     <Icon name="close" size={14} />
@@ -220,9 +217,7 @@ export function Library({
                   aria-hidden="true"
                 >
                   <path d="M4 6h16M7 12h10M10 18h4" />
-                </svg>
-                筛选
-                {(scene.mediaType || scene.tagIds.length > 0) && (
+                </svg> {t("筛选")} {(scene.mediaType || scene.tagIds.length > 0) && (
                   <span className="res-count">
                     {Number(Boolean(scene.mediaType)) + scene.tagIds.length}
                   </span>
@@ -231,12 +226,12 @@ export function Library({
               <div
                 className="res-view-switch"
                 role="group"
-                aria-label="资料显示方式"
+                aria-label={t("资料显示方式")}
               >
                 <button
                   className="res-icon-button"
-                  aria-label="缩略图视图"
-                  title="缩略图视图"
+                  aria-label={t("缩略图视图")}
+                  title={t("缩略图视图")}
                   aria-pressed={scene.view === "grid"}
                   onClick={() => patchScene({ view: "grid" })}
                 >
@@ -244,8 +239,8 @@ export function Library({
                 </button>
                 <button
                   className="res-icon-button"
-                  aria-label="列表视图"
-                  title="列表视图"
+                  aria-label={t("列表视图")}
+                  title={t("列表视图")}
                   aria-pressed={scene.view === "list"}
                   onClick={() => patchScene({ view: "list" })}
                 >
@@ -258,26 +253,24 @@ export function Library({
               mode="collapse"
             >
               <div id="resource-filters" className="res-filter-panel">
-                <label>
-                  文件类型
-                  <select
-                    aria-label="格式筛选"
+                <label> {t("文件类型")} <select
+                    aria-label={t("格式筛选")}
                     value={scene.mediaType}
                     onChange={(event) =>
                       patchScene({ mediaType: event.target.value })
                     }
                   >
-                    <option value="">全部类型</option>
+                    <option value="">{t("全部类型")}</option>
                     {formats.map(([value, name]) => (
                       <option value={value} key={value}>
-                        {name}
+                        {t(name)}
                       </option>
                     ))}
                   </select>
                 </label>
                 {tax.tags.length > 0 && (
                   <fieldset>
-                    <legend>按标签筛选</legend>
+                    <legend>{t("按标签筛选")}</legend>
                     <div className="res-tag-options">
                       {tax.tags.map((tag) => (
                         <label className="res-tag-option" key={tag.id}>
@@ -301,10 +294,8 @@ export function Library({
               </div>
             </ModulePresence>
             <div className="res-location">
-              <nav aria-label="当前资料文件夹">
-                <button onClick={() => patchScene({ folderId: "" })}>
-                  全部资料
-                </button>
+              <nav aria-label={t("当前资料文件夹")}>
+                <button onClick={() => patchScene({ folderId: "" })}> {t("全部资料")} </button>
                 {breadcrumbs.map((folder) => (
                   <span key={folder.id}>
                     <Icon name="arrowRight" size={12} />
@@ -314,7 +305,7 @@ export function Library({
                   </span>
                 ))}
               </nav>
-              <span>{loading ? "正在读取…" : `${items.length} 份资料`}</span>
+              <span>{loading ? t("正在读取…") : t("{{count}} 份资料", { count: items.length })}</span>
             </div>
             {(scene.mediaType || scene.tagIds.length > 0) && (
               <div className="res-chips">
@@ -344,45 +335,31 @@ export function Library({
         {scene.q && searchInfo && (
           <div className="res-search-status" role="status">
             {searchInfo.interrupted && (
-              <span>
-                正文检索已中断。
-                <button onClick={onRetrySearch}>继续检索</button>
+              <span> {t("正文检索已中断。")} <button onClick={onRetrySearch}>{t("继续检索")}</button>
               </span>
             )}
             {searchInfo.pending > 0 && (
-              <span>
-                正在读取 {searchInfo.pending} 份资料的正文，结果会自动补充…
-              </span>
+              <span> {t("正在读取")} {searchInfo.pending} {t("份资料的正文，结果会自动补充…")} </span>
             )}
             {searchInfo.unavailable > 0 && (
               <span>
-                {searchInfo.unavailable}{" "}
-                份资料暂无可直接提取的文字，扫描内容可在预览中识别。
-              </span>
+                {searchInfo.unavailable}{" "} {t("份资料暂无可直接提取的文字，扫描内容可在预览中识别。")} </span>
             )}
             {searchInfo.failed > 0 && (
               <span>
-                {searchInfo.failed} 份资料正文读取失败。
-                <button onClick={onRetrySearch}>重新读取正文</button>
+                {searchInfo.failed} {t("份资料正文读取失败。")} <button onClick={onRetrySearch}>{t("重新读取正文")}</button>
               </span>
             )}
             {searchInfo.ocr?.pendingPages > 0 && (
-              <span>
-                正在识别 {searchInfo.ocr.pendingPages}{" "}
-                页，已完成页面会加入搜索结果。
-              </span>
+              <span> {t("正在识别")} {searchInfo.ocr.pendingPages}{" "} {t("页，已完成页面会加入搜索结果。")} </span>
             )}
             {searchInfo.ocr?.unprocessedPages > 0 && (
               <span>
-                {searchInfo.ocr.unprocessedPages}{" "}
-                页尚无可检索文字，可打开资料后识别。
-              </span>
+                {searchInfo.ocr.unprocessedPages}{" "} {t("页尚无可检索文字，可打开资料后识别。")} </span>
             )}
             {searchInfo.ocr?.failedPages > 0 && (
               <span>
-                {searchInfo.ocr.failedPages}{" "}
-                页识别未完成，已完成页面仍可检索；可在预览中重试。
-              </span>
+                {searchInfo.ocr.failedPages}{" "} {t("页识别未完成，已完成页面仍可检索；可在预览中重试。")} </span>
             )}
           </div>
         )}
@@ -397,7 +374,7 @@ export function Library({
             const preview = previews[resource.fileId];
             const extension =
               files[resource.fileId]?.name.split(".").pop()?.toUpperCase() ||
-              "文件";
+              t("文件");
             return (
               <article className="res-card" key={resource.id}>
                 <button
@@ -409,7 +386,7 @@ export function Library({
                       <FileImage
                         client={client}
                         id={preview.pages[0].imageFileId}
-                        alt={`${resource.title} 缩略图`}
+                        alt={t("{{title}} 缩略图", { title: resource.title })}
                       />
                     ) : (
                       <div className="res-file-placeholder">
@@ -423,15 +400,15 @@ export function Library({
                     {searchInfo?.matches[resource.id] && (
                       <span className="res-search-excerpt">
                         {searchInfo.matches[resource.id].page
-                          ? `第 ${searchInfo.matches[resource.id].page} 页 · `
-                          : "正文 · "}
+                          ? t("第 {{page}} 页 · ", { page: searchInfo.matches[resource.id].page })
+                          : t("正文 · ")}
                         {searchInfo.matches[resource.id].excerpt}
                       </span>
                     )}
                     <span>
                       {tax.folders.find(
                         (folder) => folder.id === resource.folderId,
-                      )?.name || "未归入文件夹"}
+                      )?.name || t("未归入文件夹")}
                       {resource.tagIds.length
                         ? ` · ${resource.tagIds
                             .map(
@@ -448,10 +425,10 @@ export function Library({
                     ["limited", "failed"].includes(preview?.state)) && (
                     <span className="res-preview-state">
                       {fileErrors[resource.fileId]
-                        ? "文件读取失败"
+                        ? t("文件读取失败")
                         : preview.state === "limited"
-                          ? "预览需核对"
-                          : "暂不可预览"}
+                          ? t("预览需核对")
+                          : t("暂不可预览")}
                     </span>
                   )}
                 </button>
@@ -474,7 +451,7 @@ export function Library({
                         })
                       }
                     />
-                    <span>选择资料</span>
+                    <span>{t("选择资料")}</span>
                   </label>
                 )}
               </article>
@@ -490,39 +467,37 @@ export function Library({
               </span>
               <h2>
                 {loading || searchInfo?.pending || searchInfo?.ocr?.pendingPages
-                  ? "正在读取资料"
+                  ? t("正在读取资料")
                   : searchInfo?.interrupted
-                    ? "暂时无法完成检索"
+                    ? t("暂时无法完成检索")
                     : filtered
-                      ? "没有找到匹配的资料"
+                      ? t("没有找到匹配的资料")
                       : deleted
-                        ? "没有已归档的资料"
-                        : "把教学资料收在一起"}
+                        ? t("没有已归档的资料")
+                        : t("把教学资料收在一起")}
               </h2>
               {!loading && (
                 <>
                   <p>
                     {searchInfo?.pending || searchInfo?.ocr?.pendingPages
-                      ? "正在补充正文搜索结果，请稍候。"
+                      ? t("正在补充正文搜索结果，请稍候。")
                       : searchInfo?.interrupted
-                        ? "请继续检索，补充尚未读取的结果。"
+                        ? t("请继续检索，补充尚未读取的结果。")
                         : filtered
-                          ? "试试其他关键词，或清除筛选条件。"
+                          ? t("试试其他关键词，或清除筛选条件。")
                           : deleted
-                            ? "归档的资料会出现在这里，可以恢复或彻底删除。"
-                            : "上传课件、文档或图片，随时预览，也可以加入备课。"}
+                            ? t("归档的资料会出现在这里，可以恢复或彻底删除。")
+                            : t("上传课件、文档或图片，随时预览，也可以加入备课。")}
                   </p>
                   {filtered ? (
-                    <button onClick={clear}>清除筛选</button>
+                    <button onClick={clear}>{t("清除筛选")}</button>
                   ) : (
                     !deleted && (
                       <UploadButton first disabled={busy} onUpload={onUpload} />
                     )
                   )}
                   {firstVisit && (
-                    <span className="res-empty-hint">
-                      上传即保存，文件夹和标签可以稍后整理
-                    </span>
+                    <span className="res-empty-hint"> {t("上传即保存，文件夹和标签可以稍后整理")} </span>
                   )}
                 </>
               )}
@@ -531,7 +506,7 @@ export function Library({
         </div>
         {(onPickResources || scene.selectionMode) && (
           <div className="res-selection" ref={selectionRef}>
-            <span>已选 {scene.selected.length} 份</span>
+            <span>{t("已选")} {scene.selected.length} {t("份")}</span>
             <button
               disabled={!items.length}
               onClick={() =>
@@ -539,8 +514,7 @@ export function Library({
                   selected: items.slice(0, 100).map((item) => item.id),
                 })
               }
-            >
-              选择当前结果{items.length > 100 ? "前 100 份" : ""}
+            > {t("选择当前结果")}{items.length > 100 ? t("前 100 份") : ""}
             </button>
             {onPickResources ? (
               <button
@@ -556,9 +530,7 @@ export function Library({
                       .filter(Boolean),
                   )
                 }
-              >
-                采用所选资料
-              </button>
+              > {t("采用所选资料")} </button>
             ) : (
               <>
                 {!deleted && (
@@ -566,36 +538,28 @@ export function Library({
                     <button
                       disabled={busy || !scene.selected.length}
                       onClick={() => onOrganize("move")}
-                    >
-                      移动
-                    </button>
+                    > {t("移动")} </button>
                     <button
                       disabled={busy || !scene.selected.length}
                       onClick={() => onOrganize("add-tags")}
-                    >
-                      添加标签
-                    </button>
+                    > {t("添加标签")} </button>
                     <button
                       disabled={busy || !scene.selected.length}
                       onClick={onAddToLesson}
-                    >
-                      加入备课
-                    </button>
+                    > {t("加入备课")} </button>
                   </>
                 )}
                 <button
                   disabled={busy || !scene.selected.length}
                   onClick={() => onOrganize(deleted ? "restore" : "archive")}
                 >
-                  {deleted ? "恢复" : "归档"}
+                  {deleted ? t("恢复") : t("归档")}
                 </button>
               </>
             )}
             <button
               onClick={() => patchScene({ selected: [], selectionMode: false })}
-            >
-              取消选择
-            </button>
+            > {t("取消选择")} </button>
           </div>
         )}
       </div>

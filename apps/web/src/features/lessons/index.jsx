@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 /** Lessons module entry: my lessons list, drafts and the lesson route. */
 
 import { useEffect, useRef, useState } from "react";
@@ -18,6 +20,7 @@ import { excerptFor } from "../workbench/documents.js";
 import "./lessons.css";
 
 function LessonsIndex() {
+  const { t } = useTranslation('lessons');
   const shell = useWorkbenchShell();
   const [exampleOpen, setExampleOpen] = useState(false);
   const [scene, patchScene] = useScene(shell.accountKey, "lessons", {
@@ -52,7 +55,7 @@ function LessonsIndex() {
       })
       .catch((problem) => {
         if (seq !== seqRef.current) return;
-        setError(problem.problem || { message: "读取失败" });
+        setError(problem.problem || { message: t("读取失败") });
         setStatus("error");
       });
   }, [scene.listQuery, scene.listState, reloadToken, shell.generation]);
@@ -66,9 +69,9 @@ function LessonsIndex() {
       className="wb-module wb-page wb-lessons-index"
       data-region="lessons-index"
     >
-      <LessonIdentity subtitle="整理讲课思路和课堂材料，生成教案、讲义或练习。">
+      <LessonIdentity subtitle={t("整理讲课思路和课堂材料，生成教案、讲义或练习。")}>
         <div className="lesson-index-actions">
-          <Popover label="备课列表选项">
+          <Popover label={t("备课列表选项")}>
             {({ close }) => (
               <MenuItem
                 onClick={() => {
@@ -80,8 +83,8 @@ function LessonsIndex() {
                 }}
               >
                 {scene.listState === "deleted"
-                  ? "查看我的备课"
-                  : "查看已归档备课"}
+                  ? t("查看我的备课")
+                  : t("查看已归档备课")}
               </MenuItem>
             )}
           </Popover>
@@ -92,7 +95,7 @@ function LessonsIndex() {
             onClick={() => navigate("/lessons/new")}
           >
             <Icon name="plus" size={17} />
-            新建备课
+            {t("新建备课")}
           </button>
         </div>
       </LessonIdentity>
@@ -105,8 +108,8 @@ function LessonsIndex() {
             <input
               className="wb-input"
               type="search"
-              aria-label="搜索备课"
-              placeholder="搜索课题或内容"
+              aria-label={t("搜索备课")}
+              placeholder={t("搜索课题或内容")}
               value={scene.listQuery}
               onChange={(event) =>
                 patchScene({ listQuery: event.target.value })
@@ -114,14 +117,14 @@ function LessonsIndex() {
             />
           </div>
           <span className="lesson-list-label">
-            {scene.listState === "deleted" ? "已归档的备课" : "我的备课"}
+            {scene.listState === "deleted" ? t("已归档的备课") : t("我的备课")}
           </span>
         </div>
       )}
 
       {scene.listState === "deleted" && items.length > 0 && (
         <p className="lesson-archive-help">
-          打开一份归档备课，可以恢复使用或彻底删除。
+          {t("打开一份归档备课，可以恢复使用或彻底删除。")}
         </p>
       )}
       {hasDraft && scene.listState !== "deleted" && (
@@ -132,13 +135,13 @@ function LessonsIndex() {
             onClick={() => navigate("/lessons/new")}
           >
             <Icon name="prep" size={15} />
-            <span>继续上次未保存的备课</span>
-            <span className="wb-muted">草稿在此设备</span>
+            <span>{t("继续上次未保存的备课")}</span>
+            <span className="wb-muted">{t("草稿在此设备")}</span>
           </button>
         </div>
       )}
 
-      {status === "loading" && <p className="wb-muted">正在加载备课…</p>}
+      {status === "loading" && <p className="wb-muted">{t("正在加载备课…")}</p>}
       {order.feedback}
       {status === "error" && (
         <div className="wb-inline-error" data-region="lessons-error">
@@ -148,7 +151,7 @@ function LessonsIndex() {
             className="wb-button"
             onClick={() => setReloadToken((token) => token + 1)}
           >
-            重试
+            {t("重试")}
           </button>
         </div>
       )}
@@ -159,24 +162,24 @@ function LessonsIndex() {
           </span>
           <h2>
             {scene.listQuery
-              ? "没有找到这份备课"
+              ? t("没有找到这份备课")
               : scene.listState === "deleted"
-                ? "没有已归档的备课"
-                : "从准备一节课开始"}
+                ? t("没有已归档的备课")
+                : t("从准备一节课开始")}
           </h2>
           <p>
             {scene.listQuery
-              ? "试试课题里的其他词，或清空搜索。"
+              ? t("试试课题里的其他词，或清空搜索。")
               : scene.listState === "deleted"
-                ? "归档的备课会保留在这里，可以恢复或彻底删除。"
-                : "先写下这节课准备怎么讲，需要时再加入题目、资料和数学作品。"}
+                ? t("归档的备课会保留在这里，可以恢复或彻底删除。")
+                : t("先写下这节课准备怎么讲，需要时再加入题目、资料和数学作品。")}
           </p>
           {scene.listQuery ? (
             <button
               className="wb-button"
               onClick={() => patchScene({ listQuery: "" })}
             >
-              清空搜索
+              {t("清空搜索")}
             </button>
           ) : (
             scene.listState === "active" && (
@@ -186,13 +189,13 @@ function LessonsIndex() {
                   onClick={() => navigate("/lessons/new")}
                 >
                   <Icon name="plus" />
-                  新建第一份备课
+                  {t("新建第一份备课")}
                 </button>
                 <button
                   className="wb-text-button"
                   onClick={() => setExampleOpen(true)}
                 >
-                  看看一份备课示例
+                  {t("看看一份备课示例")}
                   <Icon name="chevron" size={14} />
                 </button>
               </div>
@@ -202,15 +205,15 @@ function LessonsIndex() {
             <div className="lesson-outcome-hints">
               <span>
                 <Icon name="prep" />
-                教案 · 上课参考
+                {t("教案 · 上课参考")}
               </span>
               <span>
                 <Icon name="copy" />
-                讲义 · 发给学生
+                {t("讲义 · 发给学生")}
               </span>
               <span>
                 <Icon name="question" />
-                练习 · 巩固知识
+                {t("练习 · 巩固知识")}
               </span>
             </div>
           )}
@@ -241,21 +244,21 @@ function LessonsIndex() {
                         item.sections
                           ?.map((section) => section.title)
                           .join(" · ") ||
-                        "还没有写下讲课思路"}
+                        t("还没有写下讲课思路")}
                     </span>
                     <span className="lesson-row-meta">
-                      {item.sections?.length || 0} 个教学环节 ·{" "}
+                      {item.sections?.length || 0} {t("个教学环节 ·")}{" "}
                       {(item.materials?.length || 0) +
                         (item.sections || []).reduce(
                           (count, section) => count + section.references.length,
                           0,
                         )}{" "}
-                      份材料
+                      {t("份材料")}
                     </span>
                   </span>
                   <span className="wb-row-tags">
                     {item.deletedAt && (
-                      <span className="wb-tag is-deleted">已归档</span>
+                      <span className="wb-tag is-deleted">{t("已归档")}</span>
                     )}
                   </span>
                 </button>
@@ -285,6 +288,7 @@ function LessonsIndex() {
 }
 
 export default function LessonsPage({ route }) {
+
   if (route.name === "lesson")
     return <LessonDetail key={route.id} id={route.id} />;
   return <LessonsIndex />;

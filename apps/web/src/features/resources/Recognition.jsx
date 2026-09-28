@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "../workbench/chrome/icons.jsx";
 import {
@@ -19,6 +20,7 @@ export function Recognition({
   disabled,
   onClose,
 }) {
+  const { t } = useTranslation("resources");
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [reload, setReload] = useState(0);
@@ -54,7 +56,7 @@ export function Recognition({
         if (active(job?.state) || summary.pages.some((p) => active(p.state)))
           timer = setTimeout(read, 2000);
       } catch (error) {
-        if (live) setError(`识别结果暂时无法读取：${error.message}`);
+        if (live) setError(t("识别结果暂时无法读取：{{message}}", { message: error.message }));
       }
     }
     void read();
@@ -79,9 +81,9 @@ export function Recognition({
     summary?.pages.filter((p) => p.state === "ready").length ?? 0;
   const failed = ["failed", "interrupted"].includes(result?.state);
   const failureMessage =
-    result?.issues?.find((issue) => issue.code === "recognition-cleanup")
-      ?.detail ||
-    "本页尚未完成识别。重新识别会发起新的尝试，已完成页面会保留。";
+    result?.issues?.some((issue) => issue.code === "recognition-cleanup")
+      ? t('recognition.cleanupPending')
+      : t("本页尚未完成识别。重新识别会发起新的尝试，已完成页面会保留。");
   const mutable = !disabled && !error && !running && summary?.available;
   async function write(path, input, purpose) {
     if (await onWrite(path, input, purpose)) setReload((n) => n + 1);
@@ -97,17 +99,17 @@ export function Recognition({
       mode="collapse"
       className="res-recognition-presence"
     >
-      <section className="res-recognition" aria-label="识别文字">
+      <section className="res-recognition" aria-label={t("识别文字")}>
         <header>
           <div>
-            <strong>第 {page} 页识别文字</strong>
-            <p>识别扫描内容后，可搜索和复制。请与原页核对。</p>
+            <strong>{t("第")} {page} {t("页识别文字")}</strong>
+            <p>{t("识别扫描内容后，可搜索和复制。请与原页核对。")}</p>
           </div>
           <button
             type="button"
             className="res-icon-button"
-            aria-label="关闭识别文字"
-            title="关闭识别文字（Esc）"
+            aria-label={t("关闭识别文字")}
+            title={t("关闭识别文字（Esc）")}
             onClick={onClose}
           >
             <Icon name="close" size={16} />
@@ -116,12 +118,10 @@ export function Recognition({
         {error && (
           <div className="res-recognition-error" role="alert">
             <span>{error}</span>
-            <button onClick={() => setReload((n) => n + 1)}>
-              重新读取识别结果
-            </button>
+            <button onClick={() => setReload((n) => n + 1)}> {t("重新读取识别结果")} </button>
           </div>
         )}
-        {!current && !error && <p role="status">正在读取识别状态…</p>}
+        {!current && !error && <p role="status">{t("正在读取识别状态…")}</p>}
         {current && (
           <>
             <div className="res-recognition-actions">
@@ -132,7 +132,7 @@ export function Recognition({
                   onClick={() => recognize([page])}
                 >
                   <Icon name="search" size={16} />
-                  {failed ? "重新识别本页" : "识别本页文字"}
+                  {failed ? t("重新识别本页") : t("识别本页文字")}
                 </button>
               )}
               {!running &&
@@ -147,9 +147,7 @@ export function Recognition({
                           .map((p) => p.page),
                       )
                     }
-                  >
-                    识别剩余 {summary.pages.length - completed} 页
-                  </button>
+                  > {t("识别剩余")} {summary.pages.length - completed} {t("页")} </button>
                 )}
               {running && job && (
                 <button
@@ -162,13 +160,13 @@ export function Recognition({
                     )
                   }
                 >
-                  {job.state === "cancelling" ? "正在停止…" : "停止识别"}
+                  {job.state === "cancelling" ? t("正在停止…") : t("停止识别")}
                 </button>
               )}
               {ready && result.text?.trim() && (
                 <button
                   className="res-copy-recognition"
-                  aria-label="复制本页识别文字"
+                  aria-label={t("复制本页识别文字")}
                   onClick={async () => {
                     try {
                       await navigator.clipboard.writeText(result.text);
@@ -176,7 +174,7 @@ export function Recognition({
                         setCopy("识别文字已复制");
                     } catch {
                       if (copyScope.current === source) {
-                        setCopy("复制未成功，可在下方原文中选择文字后复制。");
+                        setCopy(t("复制未成功，可在下方原文中选择文字后复制。"));
                         setTextOpen(true);
                       }
                     }
@@ -184,48 +182,46 @@ export function Recognition({
                 >
                   <Icon name="copy" size={16} />
                   <span role="status">
-                    {copy === "识别文字已复制" ? copy : "复制本页识别文字"}
+                    {copy === "识别文字已复制" ? t("识别文字已复制") : t("复制本页识别文字")}
                   </span>
                 </button>
               )}
             </div>
             <p className="res-recognition-status" role="status">
               {running
-                ? `正在识别，已有 ${completed} / ${summary.pages.length} 页结果。`
+                ? t("正在识别，已有 {{completed}} / {{count}} 页结果。", { completed: completed, count: summary.pages.length })
                 : failed
                   ? failureMessage
                   : ready
-                    ? "机器识别结果，尚未校对。"
-                    : "本页尚未识别，原文件已保存。"}
+                    ? t("机器识别结果，尚未校对。")
+                    : t("本页尚未识别，原文件已保存。")}
               {!summary.available &&
                 !running &&
-                " 文字识别暂不可用，仍可查看和下载原件。"}
+                t(" 文字识别暂不可用，仍可查看和下载原件。")}
             </p>
             {ready && (
               <>
                 {result.issues?.length > 0 && (
-                  <p className="res-recognition-review">
-                    这页有需要核对的公式、表格或版式，请以原页为准。
-                  </p>
+                  <p className="res-recognition-review"> {t("这页有需要核对的公式、表格或版式，请以原页为准。")} </p>
                 )}
                 {result.document?.blocks?.length > 0 && (
                   <div className="res-recognition-body">
                     <section
                       className="res-recognition-document"
-                      aria-label={`第 ${page} 页识别正文`}
+                      aria-label={t("第 {{page}} 页识别正文", { page: page })}
                       tabIndex={0}
                     >
                       <DocumentView value={result.document} />
                     </section>
                     {result.text?.trim() && (
                       <ModuleDisclosure
-                        title="查看可复制原文"
+                        title={t("查看可复制原文")}
                         open={textOpen}
                         onOpenChange={setTextOpen}
                       >
                         <textarea
                           className="res-recognition-text"
-                          aria-label={`第 ${page} 页识别原文`}
+                          aria-label={t("第 {{page}} 页识别原文", { page: page })}
                           readOnly
                           value={result.text}
                         />
@@ -234,7 +230,7 @@ export function Recognition({
                   </div>
                 )}
                 {!result.text?.trim() && (
-                  <p>本页没有识别到文字，仍可查看原图。</p>
+                  <p>{t("本页没有识别到文字，仍可查看原图。")}</p>
                 )}
               </>
             )}

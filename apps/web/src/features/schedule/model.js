@@ -1,3 +1,5 @@
+import i18n from "../../i18n/index.js";
+const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
 /**
  * Pure schedule helpers: draft conversion, labels, day layout and the global
  * priority view. No React and no I/O, so the grid and the panels stay thin.
@@ -21,7 +23,7 @@ export const SNAP_MINUTES = 15;
 export const HOUR_HEIGHT = 44;
 export const MIN_COLUMN_WIDTH = 160;
 export const DEFAULT_RANGE_DAYS = 7;
-const WEEKDAY_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
 
 export function todayInZone(zone) {
   return localParts(zone, Date.now()).date;
@@ -50,18 +52,18 @@ export function weekdayOf(date) {
 
 export function weekdayLabel(date) {
   const index = weekdayOf(date);
-  return index === null ? '' : WEEKDAY_LABELS[index];
+  return index === null ? '' : new Intl.DateTimeFormat(i18n.resolvedLanguage, { weekday: 'short', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 }
 
 export function formatDateLabel(date) {
   const parts = parseDateParts(date);
   if (!parts) return date;
-  return `${parts.month}月${parts.day}日`;
+  return new Intl.DateTimeFormat(i18n.resolvedLanguage, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 }
 
 export function formatRangeLabel(from, to) {
   const days = diffDays(from, to) + 1;
-  return `${formatDateLabel(from)} - ${formatDateLabel(to)} · ${days} 天`;
+  return t("{{value}} - {{detail}} · {{days}} 天", { value: formatDateLabel(from), detail: formatDateLabel(to), days: days });
 }
 
 export function formatInstantLabel(iso, zone) {
@@ -74,7 +76,7 @@ export function titleOf(entry) {
   const title = String(entry?.title ?? '').trim();
   if (title !== '') return title;
   const item = String(entry?.items?.[0]?.text ?? '').trim();
-  return item !== '' ? item : '未命名安排';
+  return item !== '' ? item : t("未命名安排");
 }
 
 /** Exact reminder instant text for the current draft, or null when unset. */

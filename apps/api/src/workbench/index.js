@@ -33,6 +33,8 @@ import { moduleImplementations } from "./moduleImplementations.js";
 import { openWorkbenchDatabase } from "./storage.js";
 import { createIdentity, assertWorkbenchRuntimeConfig } from "./identity.js";
 import { createMutations } from "./mutations.js";
+import { contractError, problems } from './problems.js';
+import { eraseAccountRows } from './account-deletion.js';
 import { createMigrationRunner } from "./migrations.js";
 import { createWorkbenchLogger } from "./logger.js";
 import { createModuleLoader } from "./moduleLoader.js";
@@ -85,7 +87,10 @@ export function createWorkbench({
       resolvePrincipal: workbenchEnv.resolvePrincipal ?? undefined,
     });
   const catalog = workbenchEnv.catalogOverride ?? moduleCatalog;
-  const mutations = createMutations({ db, clock });
+  const mutations = createMutations({ db, clock, assertAccountActive(principal) {
+    if (identity.isAccountActive && !identity.isAccountActive(principal.accountKey))
+      throw contractError(problems.unauthenticated());
+  } });
   const { readBytes, ...files } = createFiles({
     db,
     mutations,
@@ -93,7 +98,8 @@ export function createWorkbench({
       workbenchEnv.filesDir ?? path.join(path.dirname(env.sqlitePath), "files"),
     clock,
   });
-  const jobs = createJobs({ db, mutations, files, clock, logger });
+  const jobs = createJobs({ db, mutations, files, clock, logger,
+    isAccountActive: accountKey => identity.isAccountActive?.(accountKey) ?? true });
   Object.assign(
     files,
     createPreviews({
@@ -112,7 +118,8 @@ export function createWorkbench({
   );
   const content = createContent({ files });
   const recognition = createRecognition({ db, mutations, files, readBytes, jobs, content,
-    recognizer: workbenchEnv.recognition?.recognizer ?? createRecognizer({ home: workbenchEnv.recognition?.home }) });
+    recognizer: workbenchEnv.recognition?.recognizer ?? createRecognizer({ home: workbenchEnv.recognition?.home,
+      workDirectory: path.join(workbenchEnv.filesDir ?? path.join(path.dirname(env.sqlitePath), 'files'), 'recognition-work') }) });
   const migrations = createMigrationRunner({ db, clock });
   const loader = createModuleLoader({
     catalog,
@@ -240,6 +247,23 @@ export function createWorkbench({
     modulesRouter,
     catalogHandler,
     initialize,
+    async deleteAccountData({ accountKey, files: savedFiles, rememberFiles }) {
+      await initialize();
+      // Account revocation precedes this method. Keep rows until every producer
+      // has settled, so cancellation can finish against its original records.
+      await Promise.all([
+        jobs.cancelAccountAndWait(accountKey),
+        agent.runtime.stopAccountAndWait(accountKey),
+        reliability.cancelAccountAndWait(accountKey),
+        files.cancelAccountConversionsAndWait(accountKey),
+      ]);
+      await recognition.cleanupAccount(accountKey);
+      const manifest = savedFiles ?? { blobs: files.accountFileNames(accountKey), exports: reliability.accountExportIds(accountKey) };
+      if (!savedFiles) rememberFiles(manifest);
+      files.removeAccountFiles(accountKey, manifest.blobs);
+      reliability.removeAccountExports(accountKey, manifest.exports);
+      eraseAccountRows(db, accountKey);
+    },
 
     close() {
       if (closed) return;

@@ -1,3 +1,6 @@
+import i18n from '../../i18n/index.js';
+import { useTranslation } from 'react-i18next';
+const t = (key, options) => i18n.t(key, { ns: 'lessons', ...options });
 import {
   Fragment,
   useContext,
@@ -17,13 +20,13 @@ import { Popover, MenuItem } from "../workbench/ModuleOverlays.jsx";
 import { Icon } from "../workbench/icons.jsx";
 
 const names = {
-  paragraph: "段落",
-  math: "公式",
-  image: "图片",
-  heading: "标题",
-  list: "列表",
-  table: "表格",
-  "teacher-note": "教师注记",
+  get paragraph() { return t("段落"); },
+  get math() { return t("公式"); },
+  get image() { return t("图片"); },
+  get heading() { return t("标题"); },
+  get list() { return t("列表"); },
+  get table() { return t("表格"); },
+  get "teacher-note"() { return t("教师注记"); },
 };
 const paragraph = () => ({ type: "paragraph", runs: [] });
 
@@ -68,10 +71,11 @@ export function LessonDocumentEditor({
   value,
   onChange,
   label,
-  placeholder = "写下这一环节准备怎么讲，也可以加入题目或资料…",
+  placeholder = t("写下这一环节准备怎么讲，也可以加入题目或资料…"),
   readOnly = false,
   renderBoundary,
 }) {
+  const { t } = useTranslation('lessons');
   const auth = useContext(PUBLIC_AUTH);
   const pending = useRef(null),
     picker = useRef(null),
@@ -115,9 +119,9 @@ export function LessonDocumentEditor({
         headers: { "X-TeachBuddy-Request": "1", "Idempotency-Key": input.key },
         body,
       });
-      if (!response.ok) throw new Error("图片尚未确认保存，请重试确认");
+      if (!response.ok) throw new Error(t("图片尚未确认保存，请重试确认"));
       const file = await response.json();
-      if (!file.id) throw new Error("图片保存结果无法识别");
+      if (!file.id) throw new Error(t("图片保存结果无法识别"));
       pending.current?.(file);
       pending.current = null;
       setUpload(null);
@@ -192,7 +196,7 @@ export function LessonDocumentEditor({
             className="lesson-edit-block"
             role={block.type === "paragraph" ? undefined : "group"}
             aria-label={
-              block.type === "paragraph" ? undefined : `${blockLabel}内容块`
+              block.type === "paragraph" ? undefined : t("{{blockLabel}}内容块", { blockLabel: blockLabel })
             }
             data-lesson-block={block.type}
             key={`${index}:${block.type}`}
@@ -225,7 +229,7 @@ export function LessonDocumentEditor({
             {value.blocks.length > 0 && (
               <div className="lesson-block-menu">
                 <Popover
-                  label={`${names[block.type]}操作 ${counts[block.type]}`}
+                  label={t("{{blockType}}操作 {{number}}", { blockType: names[block.type], number: counts[block.type] })}
                 >
                   {({ close }) => (
                     <>
@@ -236,7 +240,7 @@ export function LessonDocumentEditor({
                           arrange(index, -1);
                         }}
                       >
-                        上移{names[block.type]}
+                        {t("上移")}{names[block.type]}
                       </MenuItem>
                       <MenuItem
                         disabled={index === blocks.length - 1}
@@ -245,7 +249,7 @@ export function LessonDocumentEditor({
                           arrange(index, 1);
                         }}
                       >
-                        下移{names[block.type]}
+                        {t("下移")}{names[block.type]}
                       </MenuItem>
                       <MenuItem
                         danger
@@ -255,7 +259,7 @@ export function LessonDocumentEditor({
                           arrange(index, null);
                         }}
                       >
-                        删除{names[block.type]}
+                        {t("删除")}{names[block.type]}
                       </MenuItem>
                     </>
                   )}
@@ -267,7 +271,7 @@ export function LessonDocumentEditor({
       })}
       <div className="lesson-document-tools">
         <Popover
-          label="插入内容"
+          label={t("插入内容")}
           icon={null}
           buttonClassName="wb-button lesson-insert-button"
           align="start"
@@ -287,15 +291,15 @@ export function LessonDocumentEditor({
             ))
           }
         </Popover>
-        <span>公式、图片、列表或教师注记</span>
+        <span>{t("公式、图片、列表或教师注记")}</span>
       </div>
       {upload && (
         <div className="lesson-upload-feedback" role="status">
-          {error || "正在保存图片…"}
+          {error || t("正在保存图片…")}
           {error && (
             <>
               <button className="wb-button" onClick={() => send(upload)}>
-                重试确认图片
+                {t("重试确认图片")}
               </button>
               <button
                 className="wb-button"
@@ -306,7 +310,7 @@ export function LessonDocumentEditor({
                   setError("");
                 }}
               >
-                取消
+                {t("取消")}
               </button>
             </>
           )}
