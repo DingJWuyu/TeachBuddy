@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
-import { Document, Paragraph, Packer } from "docx";
+import { BorderStyle, BuilderElement, Document, Paragraph, Packer, StringValueElement, TableProperties } from "docx";
 import sharp from "sharp";
 import { materialsError } from "../../workbench/jobs/index.js";
 
@@ -71,9 +71,19 @@ function runPandoc(document, directory, signal) {
 async function referenceDocument() {
   // docx supplies layout/styles only. Pandoc alone writes all document content,
   // formulas, relationships and packaging; no formula XML is imported or patched.
+  const grid = { style: BorderStyle.SINGLE, size: 4, color: "666666" };
+  const tableStyle = new BuilderElement({
+    name: "w:style",
+    attributes: { type: { key: "w:type", value: "table" }, id: { key: "w:styleId", value: "Table" } },
+    children: [new StringValueElement("w:name", "Table"), new TableProperties({
+      borders: Object.fromEntries(["top", "left", "bottom", "right", "insideHorizontal", "insideVertical"].map(edge => [edge, grid])),
+      cellMargin: { top: 60, bottom: 60, left: 60, right: 60 },
+    })],
+  });
   return Packer.toBuffer(new Document({
     creator: "", title: "", description: "",
     styles: {
+      importedStyles: [tableStyle],
       default: {
         document: { run: { font: "Noto Sans CJK SC", size: 22 },
           paragraph: { spacing: { line: 300, after: 120 }, widowControl: true } },
