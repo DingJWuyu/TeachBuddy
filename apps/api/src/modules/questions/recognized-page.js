@@ -8,6 +8,10 @@ const slice = (text, start, end) => [...text].slice(start, end).join("");
 const paragraphText = block => (block.runs ?? []).map(run =>
   run.type === "math" ? run.latex.replace(/[\r\n]/g, " ") : run.text).join("");
 const pageHeading = text => text.replace(/^\s*第\s*\d+\s*页\s*[·:：-]?\s*/, "");
+const teachingHeading = /^\s*(?:教学环节|师生活动|教师活动|设计点评)\s*[:：][^\r\n]*$/;
+const reportHeading = text => /^(?:课堂小结|教学总结|教学反思|教学成效(?:与分析)?|调查(?:报告|过程|目的))(?:\s*[:：].*)?$/.test(text.trim()
+  .replace(/^(?:[（(]?[一二三四五六七八九十百零〇0-9０-９]+[）).、．])\s*/, "")
+  .replace(/^教学环节\s*[:：]\s*/, ""));
 const uniqueLocations = entries => [...new Map(entries.map(entry =>
   [JSON.stringify(entry.location), entry.location])).values()];
 
@@ -33,32 +37,28 @@ export function readRecognizedPage(page, { section, previous }) {
       fragments.push({ id: extractionId(page.resultId, "unassigned", fragments.length),
         text: text.slice(i, i + 20000), locations, disposition: "unassigned" });
   };
-  let answerPage = false, sawQuestion = false, cursor = 0, unresolvedTable = tables.partial;
+  let answerPage = false, sawQuestion = false, reportScope = false, cursor = 0, unresolvedTable = tables.partial;
   for (const [order, raw] of page.blocks.entries()) {
     const location = { ...page.location, box: raw.box };
-    if (!sawQuestion && answerHeading.test(pageHeading(raw.text))) answerPage = true;
+    if (answerHeading.test(pageHeading(raw.text))) {
+      reportScope = false;
+      if (!sawQuestion) answerPage = true;
+    }
     if (["header", "footer", "number", "header_image", "footer_image"].includes(raw.block_label) ||
         /^\s*第\s*\d+\s*页/.test(raw.text) && ["paragraph_title", "doc_title"].includes(raw.block_label) ||
         answerPage && answerHeading.test(pageHeading(raw.text))) continue;
     if (raw.document.blocks.length === 1 && ["heading", "paragraph"].includes(raw.document.blocks[0].type) &&
-        /^\s*(?:教学环节|师生活动|教师活动|设计点评)\s*[:：][^\r\n]*$/.test(raw.text)) {
+        teachingHeading.test(raw.text)) {
+      reportScope = reportHeading(raw.text);
       fragment(raw.text, [location]);
       continue;
     }
     for (let block of raw.document.blocks.flatMap(numberedBlocks)) {
       if (block.type === "table") {
-        if (tables.handled.has(block)) continue;
+        if (tables.handled.has(block)) { reportScope = false; continue; }
         // No cell geometry proves a question/teacher-activity boundary here.
         // Keep the original structured table in the immutable machine result.
         fragment(documentText({ version: 2, blocks: [block] }), [location]);
-        unresolvedTable = true;
-        continue;
-      }
-      // Teaching tables provide the proved exercise scope on these pages.
-      // Surrounding lesson outlines and numbered reports remain source text,
-      // rather than becoming unnumbered questions or stealing a table's title.
-      if (tables.recognized) {
-        fragment(documentText({version: 2, blocks: [block]}), [location]);
         unresolvedTable = true;
         continue;
       }
@@ -66,6 +66,18 @@ export function readRecognizedPage(page, { section, previous }) {
         : block.type === "math" ? block.latex.replace(/[\r\n]/g, " ")
         : block.type === "image" ? "[配图]"
         : documentText({ version: 2, blocks: [block] });
+      // Only an explicit summary/report heading excludes surrounding prose.
+      // Clear question labels, answers and new sections resume native parsing.
+      if (tables.recognized) {
+        if (reportHeading(text)) reportScope = true;
+        else if (teachingHeading.test(text) || block.type === "heading" || answerHeading.test(pageHeading(text)) ||
+            /^\s*(?:Q\s*[0-9０-９]+|例\s*[0-9０-９]+|练习\s*[0-9０-９]+)/i.test(text)) reportScope = false;
+        if (teachingHeading.test(text) || reportScope) {
+          fragment(text, [location]);
+          if (reportScope) unresolvedTable = true;
+          continue;
+        }
+      }
       const continuation = !entries.length && !answerPage && text.match(continuationHeading);
       const continues = continuation ? continuation[1] ?? continuation[2] : "";
       if (continues && block.runs) {

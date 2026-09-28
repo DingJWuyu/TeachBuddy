@@ -171,6 +171,43 @@ test('HTTP：数字题后的集中配图不猜归属，新小结及表外报告�
   expect(material.fragments.map(f=>f.text).join('\n')).toContain('调查过程');
 });
 
+test('HTTP：教学表外明确题目和原有答案仍按原路径收录',async()=>{
+  const file=await upload(sourceImage('I-1'),'outside-questions.png');
+  await recognize(file,[1],[response('<p>Q7. 已知 $g(x)=2x+1$，求 $g(3)$。</p><p>答案：$7$。</p>'+table([header,
+    ['【练习8】已知 $f(x)=x^2$，求 $f(3)$。','教师组织讨论','设计点评']])+
+    '<p>Q9. 已知 $h(t)=t+4$，求 $h(2)$。</p><p>答案：$6$。</p>')]);
+  const {material}=await collect(file,[1]);
+  expect(material.drafts.map(d=>d.title)).toEqual(expect.arrayContaining(['Q7.','练习8','Q9.']));
+  expect(material.drafts).toHaveLength(3);
+  for(const [title,answer] of [['Q7.','7'],['Q9.','6']]){
+    const draft=material.drafts.find(d=>d.title===title);
+    expect(math(draft.body)).toHaveLength(2);expect(draft.answerStatus).toBe('present');expect(math(draft.solution)).toEqual([answer]);
+  }
+});
+
+test('HTTP：报告范围不吞后续明确题号和新练习范围，原报告不变成题目',async()=>{
+  const file=await upload(sourceImage('I-1'),'bounded-report.png');
+  await recognize(file,[1],[response(table([header,['【练习8】计算 $f(x)=x^2$。','活动','点评']])+
+    '<h2>（十）教学成效与分析</h2><p>1. 调查过程</p><p>调查目的：了解课堂效果。</p><p>2. 数据记录</p>'+
+    '<p>Q9. 求 $g(2)$，其中 $g(x)=3x$。</p><p>答案：$6$。</p>'+
+    '<h2>教学环节：课后练习</h2><p>10. 求 $h(1)$，其中 $h(t)=t+3$。</p>')]);
+  const {material}=await collect(file,[1]);
+  expect(material.drafts.map(d=>d.title)).toEqual(expect.arrayContaining(['练习8','Q9.','10.']));expect(material.drafts).toHaveLength(3);
+  expect(material.drafts.every(d=>!documentText(d.body).match(/调查|记录|成效/))).toBe(true);
+  expect(math(material.drafts.find(d=>d.title==='Q9.').solution)).toEqual(['6']);
+  expect(material.fragments.map(f=>f.text).join('\n')).toContain('数据记录');
+});
+
+test('HTTP：教学报告之后的明确答案范围仍与表外原题匹配',async()=>{
+  const file=await upload(sourceImage('I-1'),'outside-answer.png');
+  await recognize(file,[1],[response('<p>Q7. 已知 $g(x)=2x+1$，求 $g(3)$。</p>'+table([header,
+    ['【练习8】计算 $f(x)=x^2$。','活动','点评']])+
+    '<h2>课堂小结</h2><p>1. 调查过程</p><h2>参考答案</h2><p>Q7. $7$。</p>')]);
+  const {material}=await collect(file,[1]);expect(material.drafts).toHaveLength(2);
+  const draft=material.drafts.find(d=>d.title==='Q7.');expect(draft.answerStatus).toBe('present');
+  expect(math(draft.solution)).toEqual(['7']);expect(documentText(draft.body)).not.toContain('调查');
+});
+
 test('HTTP：唯一缺题目数据的表格题可续接，保留原片段且跨页疑点阻止入库',async()=>{
   const file=await upload(fs.readFileSync(pdf),'unseen.pdf');
   await recognize(file,[1,2],[response(startTable(missing)),response(endTable(ordered+'\\n【问题12】不能混入题干。\\n教师：组织讨论。'))]);
