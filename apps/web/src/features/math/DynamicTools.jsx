@@ -34,7 +34,7 @@ function ParameterEditor({ source, index, Fields, onChange, edits, onEdits, conf
         prefix={`parameter-${index}-`}
         onChange={setDraft}
       />
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert">{t(error)}</p>}
       <div className="math-add">
         <button
           disabled={!changed}

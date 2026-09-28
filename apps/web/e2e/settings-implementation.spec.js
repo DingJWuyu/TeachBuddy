@@ -34,6 +34,46 @@ test('语言选择立即应用真实界面并写入账户偏好', async ({ page 
     await page.screenshot({ path: info.outputPath('language.png'), animations: 'disabled' });
   }
 });
+test('数学参数校验随当前语言显示，修正后可保存重开原始内容', async ({ page }, info) => {
+  await page.goto(world.origin + '/math');
+  await page.getByRole('button', { name: '新建动态演示', exact: true }).click();
+  await page.getByRole('button', { name: '试试二次函数演示', exact: true }).click();
+  await page.getByRole('button', { name: '设置滑杆', exact: true }).click();
+  const name = page.getByLabel('parameter-0-name', { exact: true });
+  await name.fill('x');
+  await page.getByRole('button', { name: '应用参数 1', exact: true }).click();
+  const error = page.locator('.math-dynamic-fields [role=alert]');
+  await expect(error).toHaveText('参数名须以英文字母开头，不能使用 x、pi 或函数名。');
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await expect(error).toHaveText('Parameter names must start with an English letter and cannot be x, pi, or a function name.');
+  await expect(name).toHaveValue('x');
+  await page.screenshot({ path: info.outputPath('math-parameter-error-en.png'), animations: 'disabled' });
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: '简体中文 Chinese (Simplified)', exact: true }).click();
+  await expect(error).toHaveText('参数名须以英文字母开头，不能使用 x、pi 或函数名。');
+  await name.fill('b');
+  await page.getByRole('button', { name: '应用参数 1', exact: true }).click();
+  await expect(error).toHaveCount(0);
+  await page.getByLabel('作品名称', { exact: true }).fill('教师原文参数探究');
+  const saved = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/api/modules/math/v1/works'));
+  await page.getByRole('button', { name: '保存', exact: true }).click();
+  const response = await saved;
+  expect(response.status()).toBe(201);
+  const work = await response.json();
+  expect(work.title).toBe('教师原文参数探究');
+  expect(work.source.parameters[0]).toMatchObject({ name: 'b', label: '系数 a' });
+  expect(work.source.scene.elements[0].expression).toBe('b*(x-h)^2+k');
+  await expect(page.locator('.math-workspace-status')).toHaveText('已保存');
+  await page.reload();
+  await expect(page.getByLabel('作品名称', { exact: true })).toHaveValue(work.title);
+  await page.getByRole('button', { name: '设置滑杆', exact: true }).click();
+  await expect(name).toHaveValue('b');
+  const reopened = await page.request.get(world.origin + '/api/modules/math/v1/works/' + work.id, { headers: headers(page) });
+  expect(reopened.status()).toBe(200);
+  expect((await reopened.json()).source).toEqual(work.source);
+});
+
 test('删除账户提供可执行的危险确认', async ({ page }, info) => {
   await page.getByRole('button', { name: '删除账户', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '删除账户？', exact: true });
