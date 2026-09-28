@@ -320,6 +320,7 @@ export async function normalizeRecognition({ result, storeAsset }) {
 
   async function parseMarkdown(source, recover = true) {
     const tree = markdown.parse(source);
+    let protectedUntil = 0;
     const definitions = new Map();
     for (const node of tree.children)
       if (node.type === "definition") definitions.set(node.identifier, node);
@@ -333,6 +334,7 @@ export async function normalizeRecognition({ result, storeAsset }) {
     };
     async function inline(nodes, type = "paragraph", level) {
       const output = [];
+      const paragraphEnd = nodes.at(-1)?.position.end.offset ?? 0;
       let runs = [];
       const appendText = text => {
         for (let i = 0; i < text.length; i += 20000)
@@ -344,6 +346,16 @@ export async function normalizeRecognition({ result, storeAsset }) {
         runs = [];
       };
       const visit = async (node, allowRecovery = recover) => {
+        const start = node.position.start.offset, end = node.position.end.offset;
+        if (end <= protectedUntil) return;
+        if (start < protectedUntil && !node.children) {
+          // A Markdown token can span the HTML closing tag. Keep its remaining
+          // source, since its decoded value also includes the consumed prefix.
+          appendText(source.slice(protectedUntil, end));
+          issue('text-format-uncertain',
+            'HTML 与 Markdown 的边界交叠，剩余文字已原样保留，请对照原稿核对。');
+          return;
+        }
         if (node.type === "inlineMath")
           runs.push({ type: "math", latex: latexOf(node) });
         else if (node.type === "image" || node.type === "imageReference") {
@@ -352,12 +364,22 @@ export async function normalizeRecognition({ result, storeAsset }) {
           output.push(await image(url, node.alt ?? ""));
         } else if (node.type === "html") {
           flush();
-          output.push(...(await parseHtml(node.value, allowRecovery)));
+          if (/^<(code|pre|a)(?=[\s/>])/i.test(node.value)) {
+            // HTML scopes follow original-source offsets, not Markdown sibling
+            // lists. The closing tag can be in another emphasis or paragraph.
+            const element = children(parseFragment(source.slice(start),
+              {sourceCodeLocationInfo: true}))[0];
+            const closing = element?.sourceCodeLocation?.endTag;
+            protectedUntil = closing ? start + closing.endOffset : paragraphEnd;
+            if (!closing) issue('text-format-uncertain',
+              '行内 HTML 字面区域未完整闭合，已保留本段内容，请对照原稿核对。');
+            output.push(...await parseHtml(source.slice(start, protectedUntil), false));
+          } else output.push(...(await parseHtml(node.value, allowRecovery)));
         } else if (node.children) {
           const original = sourceOf(node);
           // A malformed subscript may become Markdown emphasis spanning other
           // words. Preserve its delimiters instead of accepting a valid prefix.
-          if (['emphasis', 'strong'].includes(node.type) &&
+          if (start >= protectedUntil && ['emphasis', 'strong'].includes(node.type) &&
               (original.startsWith('_{') ||
                (original.endsWith('_') && source[node.position.end.offset] === '{'))) {
             appendText(original);
@@ -365,8 +387,8 @@ export async function normalizeRecognition({ result, storeAsset }) {
               '文字中的下标与 Markdown 标记边界不明确，已保留原文，请核对公式。');
             return;
           }
-          await visitNodes(node.children,
-            allowRecovery && !['link', 'linkReference'].includes(node.type));
+          for (const child of node.children)
+            await visit(child, allowRecovery && !['link', 'linkReference'].includes(node.type));
         } else {
           const original = sourceOf(node);
           const unparsedMath = node.type === 'text' && hasUnparsedMath(original);
@@ -407,39 +429,18 @@ export async function normalizeRecognition({ result, storeAsset }) {
           appendText(text);
         }
       };
-      const htmlTag = node => node.type === 'html'
-        ? node.value.match(/^<(\/?)(code|pre|a)(?=[\s/>])/i) : null;
-      const visitNodes = async (items, allowRecovery = recover) => {
-        for (let i = 0; i < items.length; i++) {
-          const node = items[i], tag = htmlTag(node);
-          if (tag && !tag[1]) {
-            // Inline HTML is split into opening tag, Markdown nodes and closing
-            // tag. Give parse5 the whole protected fragment, including its
-            // literal Markdown/TeX content, instead of losing the parent scope.
-            let depth = 1, end = i + 1;
-            for (; end < items.length; end++) {
-              const next = htmlTag(items[end]);
-              if (next && next[2].toLowerCase() === tag[2].toLowerCase())
-                depth += next[1] ? -1 : 1;
-              if (!depth) break;
-            }
-            if (depth) issue('text-format-uncertain',
-              '行内 HTML 字面区域未完整闭合，已保留本段内容，请对照原稿核对。');
-            end = Math.min(end, items.length - 1);
-            flush();
-            output.push(...await parseHtml(source.slice(node.position.start.offset,
-              items[end].position.end.offset), false));
-            i = end;
-          } else await visit(node, allowRecovery);
-        }
-      };
-      await visitNodes(nodes);
+      for (const node of nodes) await visit(node);
       flush();
       return output;
     }
     async function blocks(nodes) {
       const output = [];
       for (const node of nodes) {
+        if (node.position.end.offset <= protectedUntil) continue;
+        if (node.position.start.offset < protectedUntil && !node.children) {
+          output.push(...await inline([node]));
+          continue;
+        }
         if (node.type === "paragraph" || node.type === "heading") {
           if (node.depth > 3)
             issue("heading-level", "标题层级超过三级，保留为三级标题。");
@@ -457,9 +458,12 @@ export async function normalizeRecognition({ result, storeAsset }) {
         else if (node.type === "list") {
           const items = [];
           for (const [i, item] of node.children.entries()) {
+            if (item.position.end.offset <= protectedUntil) continue;
+            const label = item.position.start.offset < protectedUntil ? ''
+              : node.ordered ? `${(node.start ?? 1) + i}.` : '';
             const content = leafBlocks(await blocks(item.children));
             items.push({
-              label: node.ordered ? `${(node.start ?? 1) + i}.` : "",
+              label,
               blocks: content.length
                 ? content
                 : [{ type: "paragraph", runs: [] }],

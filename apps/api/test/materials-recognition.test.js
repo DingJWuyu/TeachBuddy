@@ -177,6 +177,13 @@ test('OCR numbered line boundaries and adjacent HTML image separators recover wi
     String.raw`命令 <code>A_{1}\n中文</code> 保持字面`,
     String.raw`链接 <a href="https://example.test/A_{1}">A_{1}\n中文</a> 保持字面`,
     String.raw`命令 **<code>*B_{2}*\n中文</code>** 保持字面`,
+    String.raw`命令 **前缀 <code>A_{1}**\n中文</code> 保持字面`,
+    String.raw`链接 **前缀 <a href="https://example.test/A_{1}">A_{1}**\n中文</a> 保持字面`,
+    '命令 <code>`A_{1}</code>剩余` 后文',
+    '命令 <code>A_{1}\n\n第二段</code> 后文\n\n恢复 P_{12}\\n最后',
+    '命令 **前缀 <code>A_{1}**\\n中文\n\n下一段 P_{12}\\n最后',
+    '命令 <code>A_{1} **前缀</code> 后缀** 结束',
+    '1. <code>A_{1}\n2. B_{2}</code> 后文\n3. P_{12}\\n最后',
   ];
   const raw = {width:240,height:160,parsing_res_list:sources.map((block_content,block_id)=>({
     block_id,block_label:'text',block_content,block_bbox:[1,1,200,100],
@@ -213,6 +220,33 @@ test('OCR numbered line boundaries and adjacent HTML image separators recover wi
       assert.equal(content(id).flatMap(b=>b.runs ?? []).map(r=>r.text).join(''),
         `${id===8 ? '链接' : '命令'} ${expected} 保持字面`);
     }
+    for (const id of [10,11]) {
+      const expected=String.raw`A_{1}**\n中文`;
+      assert(content(id).some(b=>b.runs?.some(r=>r.type==='text' && r.text===expected)),`cross-subtree HTML literal ${id}`);
+      assert.equal(content(id).flatMap(b=>b.runs ?? []).map(r=>r.text ?? r.latex).join(''),
+        `${id===11 ? '链接' : '命令'} 前缀 ${expected} 保持字面`);
+      assert.equal(page.issues.some(i=>['text-lines-recovered','math-recovered','text-format-uncertain'].includes(i.code) && i.blockId===id),false);
+    }
+    const textOf=id=>content(id).flatMap(b=>b.runs ?? []).map(r=>r.text ?? r.latex).join('');
+    assert.equal(textOf(12),'命令 `A_{1}剩余` 后文');
+    assert(page.issues.some(i=>i.code==='text-format-uncertain' && i.blockId===12));
+    assert.equal(textOf(13),'命令 A_{1}\n\n第二段 后文恢复 P_{12}最后');
+    assert(content(13).some(b=>b.runs?.some(r=>r.text==='A_{1}\n\n第二段')));
+    assert.equal(page.issues.some(i=>i.code==='text-format-uncertain' && i.blockId===13),false);
+    assert.equal(textOf(14),'命令 前缀 A_{1}**\\n中文下一段 P_{12}最后');
+    assert(page.issues.some(i=>i.code==='text-format-uncertain' && i.blockId===14));
+    for (const id of [13,14]) {
+      assert.deepEqual(content(id).flatMap(b=>b.runs ?? []).filter(r=>r.type==='math').map(r=>r.latex),['P_{12}']);
+      assert.equal(content(id).at(-1).runs[0].text,'最后');
+    }
+    assert.equal(textOf(15),'命令 A_{1} **前缀 后缀 结束');
+    assert.equal(page.issues.some(i=>['text-lines-recovered','math-recovered','text-format-uncertain'].includes(i.code) && i.blockId===15),false);
+    assert.deepEqual(content(16),[{type:'list',role:'plain',items:[
+      {label:'1.',blocks:[{type:'paragraph',runs:[{type:'text',text:'A_{1}\n2. B_{2}'}]}]},
+      {label:'',blocks:[{type:'paragraph',runs:[{type:'text',text:' 后文'}]}]},
+      {label:'3.',blocks:[{type:'paragraph',runs:[{type:'math',latex:'P_{12}'}]},
+        {type:'paragraph',runs:[{type:'text',text:'最后'}]}]},
+    ]}]);
     assert(page.issues.some(i=>i.code==='text-lines-recovered' && i.blockId===0));
     assert(page.issues.some(i=>i.code==='text-lines-recovered' && i.blockId===1));
     for(const id of [2,3,4,5,7,8,9])assert.equal(page.issues.some(i=>i.code==='text-lines-recovered' && i.blockId===id),false,`protected block ${id}`);
