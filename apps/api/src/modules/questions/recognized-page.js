@@ -55,7 +55,7 @@ export function readRecognizedPage(page, { section, previous }) {
     }
     for (let block of raw.document.blocks.flatMap(numberedBlocks)) {
       if (block.type === "table") {
-        if (tables.handled.has(block)) { reportScope = false; continue; }
+        if (tables.handled.has(block)) continue;
         // No cell geometry proves a question/teacher-activity boundary here.
         // Keep the original structured table in the immutable machine result.
         fragment(documentText({ version: 2, blocks: [block] }), [location]);

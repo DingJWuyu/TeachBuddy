@@ -208,6 +208,26 @@ test('HTTP：教学报告之后的明确答案范围仍与表外原题匹配',as
   expect(math(draft.solution)).toEqual(['7']);expect(documentText(draft.body)).not.toContain('调查');
 });
 
+for(const scope of ['教学环节：课堂小结','调查报告'])test(`HTTP：${scope}范围穿过教学表，表后回顾列表仍未分配`,async()=>{
+  const file=await upload(sourceImage('I-1'),'summary-table.png');
+  await recognize(file,[1],[response(`<h2>${scope}</h2>`+table([header,
+    ['回顾奇偶函数的性质。','学生回顾','整理知识']])+'<p>1. 回顾本节学习内容。</p>')]);
+  const {material}=await collect(file,[1]);expect(material.drafts).toEqual([]);
+  expect(material.fragments.map(f=>f.text).join('\n')).toContain('回顾本节学习内容');
+});
+
+for(const boundary of ['<h2>教学环节：课后练习</h2><p>11.','<p>Q11.'])test(`HTTP：小结表后遇到${boundary.includes('环节')?'新练习环节':'明确Q题号'}恢复表外收录`,async()=>{
+  const file=await upload(sourceImage('I-1'),'summary-then-exercise.png');
+  await recognize(file,[1],[response('<h2>教学环节：课堂小结</h2>'+table([header,
+    ['回顾奇偶函数的性质。','学生回顾','整理知识']])+'<p>1. 回顾本节学习内容。</p>'+boundary+
+    ' 已知 $g(t)=t+3$，求 $g(2)$。</p><p>答案：$5$。</p>')]);
+  const {material}=await collect(file,[1]);expect(material.drafts).toHaveLength(1);
+  const draft=material.drafts[0];expect(draft.title).toBe(boundary.includes('环节')?'11.':'Q11.');
+  expect(math(draft.body)).toEqual(['g(t)=t+3','g(2)']);expect(math(draft.solution)).toEqual(['5']);
+  expect(documentText(draft.body)).not.toContain('回顾');
+  expect(material.fragments.map(f=>f.text).join('\n')).toContain('回顾本节学习内容');
+});
+
 test('HTTP：唯一缺题目数据的表格题可续接，保留原片段且跨页疑点阻止入库',async()=>{
   const file=await upload(fs.readFileSync(pdf),'unseen.pdf');
   await recognize(file,[1,2],[response(startTable(missing)),response(endTable(ordered+'\\n【问题12】不能混入题干。\\n教师：组织讨论。'))]);
