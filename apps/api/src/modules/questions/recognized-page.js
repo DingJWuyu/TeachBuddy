@@ -54,6 +54,14 @@ export function readRecognizedPage(page, { section, previous }) {
         unresolvedTable = true;
         continue;
       }
+      // Teaching tables provide the proved exercise scope on these pages.
+      // Surrounding lesson outlines and numbered reports remain source text,
+      // rather than becoming unnumbered questions or stealing a table's title.
+      if (tables.recognized) {
+        fragment(documentText({version: 2, blocks: [block]}), [location]);
+        unresolvedTable = true;
+        continue;
+      }
       let text = block.runs ? paragraphText(block)
         : block.type === "math" ? block.latex.replace(/[\r\n]/g, " ")
         : block.type === "image" ? "[配图]"

@@ -65,6 +65,112 @@ const ordered='(1) $u(t)=2t+9$ (2) $v(t)=t^3-2$ (3) $w(t)=1/t$';
 const startTable=body=>table([header,[body,'教学活动','点评']]);
 const endTable=body=>table([[body,'','点评']]);
 
+test('HTTP：真实 E9 的数字题号拆成三题，两张原图只属于首题，小结不造题',async()=>{
+  test.skip(!process.env.M33_PRIVATE_PDF||!process.env.QUESTIONS_OCR_EXPANDED_DIR,'需要固定私有E及document-4的E9真实证据');
+  const at=name=>path.join(process.env.QUESTIONS_OCR_EXPANDED_DIR,'E-9',name);
+  const saved=JSON.parse(fs.readFileSync(at('result.json'))),raw=JSON.parse(fs.readFileSync(at('raw.json')));
+  recognizer.revision=saved.revision;
+  const file=await upload(fs.readFileSync(process.env.M33_PRIVATE_PDF),'E.pdf');
+  await recognize(file,[9],[input=>{
+    const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+    expect(hash(input.bytes)).toBe(hash(fs.readFileSync(at('page.png'))));
+    return {raw,width:raw.width,height:raw.height,derivations:saved.derivations,
+      assets:saved.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(saved.assetFileIds[i]+'.bin'))})),
+      originalAssets:saved.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(saved.originalAssetFileIds[i]+'.bin'))}))};
+  }]);
+  const {job,material}=await collect(file,[9]);
+  expect(job.state).toBe('partial');expect(material.drafts.map(d=>d.title)).toEqual(['1.','2.','3.']);
+  expect(material.drafts.map(d=>images(d.body).length)).toEqual([2,0,0]);
+  const source={blocks:saved.blocks[2].document.blocks[0].rows[1][0].blocks};
+  expect(material.drafts.flatMap(d=>math(d.body))).toEqual(math(source));
+  expect(material.drafts.map(d=>math(d.body).length)).toEqual([2,2,4]);
+  for(const draft of material.drafts){
+    expect(documentText(draft.body)).not.toMatch(/教学成效|调查过程|调查目的|教师在|课后作业|学生学习的难点|辨析偶函数/);
+    expect(draft.solution.blocks).toEqual([]);expect(draft.parts.every(p=>p.locations.every(l=>l.page===9&&l.fileId===file.id))).toBe(true);
+  }
+  expect(material.fragments.map(f=>f.text).join('\n')).toContain('调查过程');
+  for(const imageId of images(material.drafts[0].body))expect((await client.request('GET',`/api/workbench/files/${imageId}/content`)).status).toBe(200);
+  expect(recognizer.calls).toHaveLength(1);
+});
+
+test('HTTP：最终 document-4 四图保留六题五答案三图，几何下标不经手工重录入库',async()=>{
+  test.skip(!process.env.QUESTIONS_OCR_EXPANDED_DIR,'需要最终真实document-4产物');
+  const files=[];
+  for(const name of ['I-1','I-2','I-3','PS-4']){
+    const at=filename=>path.join(process.env.QUESTIONS_OCR_EXPANDED_DIR,name,filename);
+    const saved=JSON.parse(fs.readFileSync(at('result.json'))),raw=JSON.parse(fs.readFileSync(at('raw.json')));
+    expect(saved.revision).toBe('paddleocr-vl-1.6/document-4');
+    const file=await upload(fs.readFileSync(at('page.png')),name+'.png');files.push(file);
+    await recognize(file,[1],[input=>{
+      const hash=bytes=>createHash('sha256').update(bytes).digest('hex');expect(hash(input.bytes)).toBe(hash(fs.readFileSync(at('page.png'))));
+      return {raw,width:raw.width,height:raw.height,derivations:saved.derivations,
+        assets:saved.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(saved.assetFileIds[i]+'.bin'))})),
+        originalAssets:saved.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(saved.originalAssetFileIds[i]+'.bin'))}))};
+    }]);
+  }
+  const created=await request('POST',`${base}/imports`,{title:'最终四图',origin:'',input:{kind:'files',fileIds:files.map(f=>f.id),pages:[]}});
+  expect((await waitJob(created.jobId)).state).toBe('succeeded');
+  let material=await request('GET',`${base}/imports/${created.id}`);
+  expect(material.drafts.map(d=>d.title)).toEqual(['Q1.','Q2.','Q3.','Q4.','Q5.','Q6.']);
+  expect(material.drafts.map(d=>d.answerStatus)).toEqual(['present','present','present','present','present','absent']);
+  expect(material.drafts.map(d=>images(d.body).length)).toEqual([0,1,0,0,1,1]);
+  expect(math(material.drafts[5].body)).toEqual(['ABCD-A_{1}B_{1}C_{1}D_{1}','AC_{1}']);
+  const machine=structuredClone(material.drafts);
+  material=await request('PUT',`${base}/imports/${material.id}`,{baseVersion:material.version,
+    drafts:material.drafts.map(d=>({...d,issues:d.issues.map(i=>({...i,resolution:'corrected'}))})),fragments:material.fragments});
+  const committed=await request('POST',`${base}/imports/${material.id}/commit`,{baseVersion:material.version,draftIds:material.drafts.map(d=>d.id)});
+  for(let i=0;i<6;i++){
+    const q=await request('GET',`${base}/items/${committed.questions[i].id}`);
+    expect(q.body).toEqual(machine[i].body);expect(q.solution).toEqual(machine[i].solution);
+  }
+  expect(recognizer.calls).toHaveLength(4);
+});
+
+test('HTTP：练习范围的变号题目按原顺序拆分，下一题之前的连续双图只归前题',async()=>{
+  const figure=fs.readFileSync(new URL('./fixtures/materials-questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
+  const file=await upload(sourceImage('I-1'),'numbered.png');
+  const html='<p>教学环节：随堂练习</p>'+table([header,[
+    '１７． 如图求 $u(t)=1.25t+8$。<img src="imgs/one.png"/><img src="imgs/two.png"/>\\n１８． 判断 $v(t)$ 在 $(2,5]$ 上的性质。',
+    '教师：1. 示范 $u(t)=0$。','点评：2. 训练 $v(t)=1$。']]);
+  await recognize(file,[1],[response(html,[{name:'imgs/one.png',bytes:figure},{name:'imgs/two.png',bytes:figure}])]);
+  const {material}=await collect(file,[1]);
+  expect(material.drafts.map(d=>d.title)).toEqual(['１７．','１８．']);
+  expect(material.drafts.map(d=>images(d.body).length)).toEqual([2,0]);
+  expect(material.drafts.map(d=>math(d.body))).toEqual([['u(t)=1.25t+8'],['v(t)','(2,5]']]);
+  expect(material.drafts.every(d=>d.issues.some(i=>i.code==='split-boundary'&&i.resolution==='open'))).toBe(true);
+  expect(material.drafts.every(d=>!documentText(d.body).includes('教师')&&!documentText(d.body).includes('点评'))).toBe(true);
+});
+
+for(const scope of ['教学环节：课堂小结','教学环节：回顾练习',''])test(`HTTP：数字列表在${scope||'未明确练习范围'}不生成题目`,async()=>{
+  const file=await upload(sourceImage('I-1'),'outline.png');
+  await recognize(file,[1],[response((scope?`<p>${scope}</p>`:'')+table([header,['1. 回顾 $f(-x)=f(x)$。<p>2. 总结 $g(-x)=-g(x)$。</p>','活动','点评']]))]);
+  const {material}=await collect(file,[1]);expect(material.drafts).toEqual([]);
+  expect(material.fragments.map(f=>f.text).join('\n')).toContain('回顾');
+});
+
+test('HTTP：检测表不把空题、函数名称、小数或引用中的数字当新题',async()=>{
+  const file=await upload(sourceImage('I-1'),'number-boundaries.png');
+  await recognize(file,[1],[response('<p>教学环节：单元检测</p>'+table([header,
+    ['1. 判断函数 $f(x)$ 的性质。','活动','点评'],
+    ['2.','活动','点评'],
+    ['1.5 是一个观测值，$a=1.5$。','活动','点评'],
+    ['3. 已知 $h(t)=2t+7$，保留字符串 "\\n4. 示例"。','活动','点评'],
+  ]))]);
+  const {material}=await collect(file,[1]);expect(material.drafts.map(d=>d.title)).toEqual(['3.']);
+  expect(documentText(material.drafts[0].body)).toContain('\\n4. 示例');
+});
+
+test('HTTP：数字题后的集中配图不猜归属，新小结及表外报告保持未分配',async()=>{
+  const figure=fs.readFileSync(new URL('./fixtures/materials-questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
+  const file=await upload(sourceImage('I-1'),'mixed.png');
+  const html='<p>教学环节：课后作业</p>'+table([header,['1. 如图判断 $a(t)=2t$。<p>2. 如图判断 $b(t)=t^2$。</p><img src="imgs/shared.png"/>','活动','点评']])+
+    '<p>教学环节：课堂小结</p>'+table([header,['1. 回顾 $f(-x)=f(x)$。','活动','点评']])+'<p>1. 调查过程</p><p>调查目的：分析课堂效果。</p>';
+  await recognize(file,[1],[response(html,[{name:'imgs/shared.png',bytes:figure}])]);
+  const {material}=await collect(file,[1]);expect(material.drafts.map(d=>d.title)).toEqual(['1.','2.']);
+  expect(material.drafts.every(d=>images(d.body).length===0&&d.issues.some(i=>i.code==='missing-figure'))).toBe(true);
+  expect(material.fragments.map(f=>f.text).join('\n')).toContain('调查过程');
+});
+
 test('HTTP：唯一缺题目数据的表格题可续接，保留原片段且跨页疑点阻止入库',async()=>{
   const file=await upload(fs.readFileSync(pdf),'unseen.pdf');
   await recognize(file,[1,2],[response(startTable(missing)),response(endTable(ordered+'\\n【问题12】不能混入题干。\\n教师：组织讨论。'))]);

@@ -60,7 +60,11 @@ function assertSix(material) {
   expect(material.drafts.map(d => d.answerStatus)).toEqual(['present', 'present', 'present', 'present', 'present', 'absent']);
   expect(material.drafts.map(d => images(d.body).length)).toEqual([0, 1, 0, 0, 1, 1]);
   expect(material.drafts[5].solution.blocks).toEqual([]);
-  expect(material.drafts[5].issues.some(i => i.code === 'uncertain-formula')).toBe(true);
+  const geometry = [];
+  walkBlocks(material.drafts[5].body.blocks, b => {
+    for (const run of b.runs ?? []) if (run.type === 'math') geometry.push(run.latex);
+  });
+  expect(geometry).toEqual(['ABCD-A_{1}B_{1}C_{1}D_{1}', 'AC_{1}']);
   expect(documentText(material.drafts[3].body)).not.toContain('文字层');
   expect(material.fragments.some(f => f.text.includes('文字层'))).toBe(true);
   const formulae = [];
@@ -92,14 +96,9 @@ test('HTTP：共用 OCR 生成六题、五答案、三图，校对入库后刷�
     body: {baseVersion: material.version, draftIds: material.drafts.map(d => d.id)}, headers: {'Idempotency-Key': randomUUID()},
   });
   expect(uncorrected.status).toBe(409);
-  // Simulate explicit teacher correction of the reported bare LaTeX. The
-  // machine result remains untouched; no answer is supplied for question 6.
-  material.drafts[5].body.blocks[0].runs = [
-    {type: 'text', text: '正方体 '}, {type: 'math', latex: 'ABCD-A_{1}B_{1}C_{1}D_{1}'}, {type: 'text', text: ' 的棱长为 2。'},
-  ];
-  material.drafts[5].body.blocks[1].runs = [
-    {type: 'text', text: '（1）求体对角线'}, {type: 'math', latex: 'AC_{1}'}, {type: 'text', text: '的长；（2）求体积。'},
-  ];
+  // The shared mapper restores bounded geometry notation. Teacher review
+  // confirms the machine body without retyping subscripts or adding answers.
+  const machineGeometry = structuredClone(material.drafts[5].body);
   material = await request('PUT', `${base}/imports/${material.id}`, {baseVersion: material.version,
     drafts: material.drafts.map(d => ({...d, issues: d.issues.map(i => ({...i, resolution: 'corrected'}))})),
     fragments: material.fragments});
@@ -107,6 +106,7 @@ test('HTTP：共用 OCR 生成六题、五答案、三图，校对入库后刷�
     baseVersion: material.version, draftIds: material.drafts.map(d => d.id),
   });
   expect(committed.questions).toHaveLength(6);
+  expect(committed.questions[5].body).toEqual(machineGeometry);
   expect((await request('GET', `${base}/items`)).items).toHaveLength(6);
   for (const question of committed.questions) {
     const reopened = await request('GET', `${base}/items/${question.id}`);
@@ -310,7 +310,7 @@ test('HTTP：首格是教学环节的表格仍提示结构未拆开，不能作�
   expect(text).toContain('教师引导学生讨论');
 });
 
-test('浏览器：图片批次逐题检查公式与配图，修正后入库并刷新', async ({page}, info) => {
+test('浏览器：图片批次逐题校对，几何下标自动恢复后入库并刷新', async ({page}, info) => {
   await page.goto(world.origin);
   await page.getByLabel('邮箱', {exact:true}).fill(email);
   await page.getByLabel('密码', {exact:true}).fill('math-password');
@@ -341,10 +341,6 @@ test('浏览器：图片批次逐题检查公式与配图，修正后入库并�
     }
     if (i === 5) {
       await expect(page.getByText('原稿中未提供答案', {exact:true})).toBeVisible();
-      await page.getByRole('button', {name:'修改题目',exact:true}).click();
-      await page.getByRole('textbox', {name:'题干段落 1',exact:true}).fill('正方体 $ABCD-A_{1}B_{1}C_{1}D_{1}$ 的棱长为 2。');
-      await page.getByRole('textbox', {name:'题干段落 2',exact:true}).fill('（1）求体对角线 $AC_{1}$ 的长；（2）求体积。');
-      await page.getByRole('button', {name:'完成修改',exact:true}).click();
       await expect(page.locator('.q-reading-body .katex')).toHaveCount(2);
     }
     for (const select of await page.locator('.q-review-checks select').all()) await select.selectOption('corrected');

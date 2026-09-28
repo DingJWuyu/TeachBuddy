@@ -11,11 +11,14 @@ const role = value => roles.get(value.replace(/\s|[:：]$/g, ''));
 const heading = /^【\s*((?:例题?|练习|思考)\s*[0-9０-９]*)\s*】$/;
 const sectionHeading = /^\s*(?:教学环节\s*[:：]|【\s*教学环节\s*】)/;
 const activity = /^\s*(?:教学环节|教师|师|学生)\s*[:：]/;
+const exerciseScope = value => sectionHeading.test(value) && /检测|练习|作业/.test(value) && !/小结|总结|回顾|点评|反思/.test(value);
+const numericHeading = /^\s*([0-9０-９]+[.．、])(?:\s+|$)/;
+const intervalData = latex => /^\s*(?:\\left\s*)?[[(]\s*[^,]+,\s*[^,]+[\])]\s*$/.test(latex);
 const furniture = new Set(['header', 'footer', 'number', 'header_image', 'footer_image']);
 
 // The shared HTML parser already owns table structure, math and asset IDs.
 // Split text boundaries only; never flatten a math run into another parser.
-function parts(blocks) {
+function parts(blocks, numbered = false) {
   const result = [];
   for (const block of blocks) {
     if (!block.runs) { result.push(structuredClone(block)); continue; }
@@ -38,20 +41,27 @@ function parts(blocks) {
     }
     flush();
   }
-  return result;
+  if (!numbered) return result;
+  return result.flatMap(block => {
+    const run = block.type === 'paragraph' && block.runs[0];
+    const match = run?.type === 'text' && run.text.match(numericHeading);
+    if (!match) return [block];
+    const body = {...block, runs: [{...run, text: run.text.slice(match[0].length)}, ...block.runs.slice(1)]};
+    return [{marker: match[1], numbered: true}, ...(text([body]).trim() ? [body] : [])];
+  });
 }
 
 // A title plus an instruction or a mathematical name is not question data.
 // Require a populated subquestion, an explicit mathematical relation, or a
 // source figure. Other prose stays available for manual assignment.
-function hasQuestionData(blocks, cellHasImage) {
+function hasQuestionData(blocks, cellHasImage, numbered = false) {
   const body = text(blocks);
   if (images({blocks}).length || cellHasImage && /如图|[配附]图|\[图[:：]|图示/.test(body)) return true;
   if (/(?:^|\n)[ \t]*[（(][0-9０-９]+[）)][ \t]*[^\s，,；;。.:：（）()]/.test(body)) return true;
   let data = false;
   walkBlocks(blocks, block => {
-    if (block.type === 'math') data ||= hasMathRelation(block.latex);
-    for (const run of block.runs ?? []) if (run.type === 'math') data ||= hasMathRelation(run.latex);
+    if (block.type === 'math') data ||= hasMathRelation(block.latex) || numbered && intervalData(block.latex);
+    for (const run of block.runs ?? []) if (run.type === 'math') data ||= hasMathRelation(run.latex) || numbered && intervalData(run.latex);
     if (block.type === 'list' && ['subquestions', 'options'].includes(block.role))
       data ||= block.items.some(item => text(item.blocks).trim());
   });
@@ -61,7 +71,7 @@ function hasQuestionData(blocks, cellHasImage) {
 export function readTeachingTables(page, {section, previous} = {}) {
   const records = [], fragments = [], handled = new Set();
   const occurrences = new Map();
-  let context = null, recognized = false, partial = false, first = true;
+  let context = null, recognized = false, partial = false, first = true, numberedScope = false;
   const fragment = (blocks, location) => {
     const value = text(blocks);
     if (!value.trim()) return;
@@ -76,6 +86,7 @@ export function readTeachingTables(page, {section, previous} = {}) {
       // Captions and surrounding paragraphs share the raw OCR block with a
       // table. Their original order still bounds the inherited table scope.
       if (table.type !== 'table') {
+        numberedScope = exerciseScope(text([table]));
         context = null;
         first = false;
         continue;
@@ -105,10 +116,11 @@ export function readTeachingTables(page, {section, previous} = {}) {
         const roles = header(row);
         if (roles) {
           context = {roles, group: extractionId(page.resultId, order, rowIndex), location: page.location,
-            box: raw.box, revision: page.revision};
+            box: raw.box, revision: page.revision, numbered: numberedScope};
           continue;
         }
         if (row.some(cell => sectionHeading.test(text(cell.blocks)))) {
+          numberedScope = row.some(cell => exerciseScope(text(cell.blocks)));
           row.forEach(cell => fragment(cell.blocks, location)); context = null; continue;
         }
         if (context?.inherited && row.some((cell, index) => context.roles[index] !== 'content' &&
@@ -123,7 +135,7 @@ export function readTeachingTables(page, {section, previous} = {}) {
         }
         const content = row[context.roles.indexOf('content')];
         row.filter(cell => cell !== content).forEach(cell => fragment(cell.blocks, location));
-        const values = parts(content.blocks);
+        const values = parts(content.blocks, context.numbered && plainRows.get(table)?.has(rowIndex));
         const markers = values.filter(value => value.marker).length;
         const cellHasImage = images({blocks: content.blocks}).length > 0;
         context.pending = null;
@@ -138,9 +150,10 @@ export function readTeachingTables(page, {section, previous} = {}) {
           records.push({id: sourceKey, role: 'question', sourceKey,
             label: current.label, section, group: context.group, continues: '', text: documentText(document), document,
             locations, figureLocations: images(document).length ? [location] : [],
-            doubts: [...(continuation?.doubts ?? []), ...localIssues.map(issue => issue.detail), ...(context.inherited ? ['沿连续原页的表头识别内容列，请核对列归属。'] : [])],
+            doubts: [...(continuation?.doubts ?? []), ...localIssues.map(issue => issue.detail), ...(context.inherited ? ['沿连续原页的表头识别内容列，请核对列归属。'] : []),
+              ...(current.numbered ? ['按教学环节和数字题号拆分，请核对题目边界与配图归属。'] : [])],
             issueCodes: [...new Set([...(continuation?.issueCodes ?? []), ...localIssues.map(issue => issue.code === 'unparsed-math' ? 'uncertain-formula' : 'uncertain-text')]),
-              ...(context.inherited ? ['split-boundary'] : [])], order});
+              ...(context.inherited || current.numbered ? ['split-boundary'] : [])], order});
         };
         if (rowIndex === 0 && context.inherited && pending && plainRows.get(table)?.has(rowIndex)) {
           const boundary = values.findIndex(value => value.marker || activity.test(text([value])));
@@ -152,7 +165,7 @@ export function readTeachingTables(page, {section, previous} = {}) {
         const finish = () => {
           if (!current) return;
           const body = text(current.blocks);
-          if (!body.trim() || !hasQuestionData(current.blocks, cellHasImage)) {
+          if (!body.trim() || !hasQuestionData(current.blocks, cellHasImage, current.numbered)) {
             fragment([{type: 'paragraph', runs: [{type: 'text', text: current.marker}]}, ...current.blocks], location);
             context.pendingCount = (context.pendingCount ?? 0) + 1;
             if (body.trim() && markers === 1 && rowIndex === table.rows.length - 1 && plainRows.get(table)?.has(rowIndex))
@@ -164,16 +177,17 @@ export function readTeachingTables(page, {section, previous} = {}) {
           emit(current);
           current = null;
         };
-        for (const value of values) {
+        for (const [valueIndex, value] of values.entries()) {
           if (value.marker) {
             finish();
-            const match = value.marker.match(heading);
-            if (match) current = {label: match[1].replace(/\s/g, ''), marker: value.marker, blocks: []};
+            const match = value.numbered ? [value.marker, value.marker] : value.marker.match(heading);
+            if (match) current = {label: match[1].replace(/\s/g, ''), marker: value.marker, blocks: [], ...(value.numbered ? {numbered: true} : {})};
             else { context.pending = null; fragment([{type: 'paragraph', runs: [{type: 'text', text: value.marker}]}], location); partial = true; }
           } else if (activity.test(text([value]))) {
             finish(); context.pending = null; fragment([value], location);
           } else if (current) {
-            if (value.type === 'image' && markers > 1) {
+            const closedNumberedSpan = current.numbered && values.slice(valueIndex + 1).find(part => part.marker)?.numbered;
+            if (value.type === 'image' && markers > 1 && !closedNumberedSpan) {
               fragment([value], location); partial = true;
             } else current.blocks.push(value);
           } else {
