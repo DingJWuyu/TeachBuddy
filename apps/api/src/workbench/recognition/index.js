@@ -10,7 +10,7 @@ const defaultRevision = 'paddleocr-vl-1.6/document-4';
 /** Owns immutable machine results. Consumers own every subsequent human edit. */
 export function createRecognition({ db, files, readBytes, mutations, jobs, content, recognizer }) {
   const revision = recognizer?.revision ?? defaultRevision;
-  const available = Boolean(recognizer);
+  const available = recognizer?.available ?? Boolean(recognizer);
   const inFlight = new Map();
 
   function source(principal, { fileId, renditionFileId }) {
@@ -118,7 +118,7 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
       const value = save(principal, { resultId: current?.resultId ?? randomUUID(), revision,
         inputHash: page.inputHash, state: 'running', issues: [] });
       try {
-        const output = await recognizer.run({ bytes: readBytes(principal, page.imageFileId), signal,
+        const output = await recognizer.run({ accountKey: principal.accountKey, bytes: readBytes(principal, page.imageFileId), signal,
           width: page.width, height: page.height });
         // A completed late response is evidence, even after explicit cancel.
         // Persist it before the cancellation checkpoint; never publish it ready.
@@ -223,6 +223,11 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
     },
   };
   return { get, readPage, readResult, request, ensurePage, jobHandlers: { recognition: handler },
+    async cleanupAccount(accountKey) {
+      await Promise.allSettled([...inFlight.entries()]
+        .filter(([key]) => key.startsWith(`${accountKey}/`)).map(([, work]) => work));
+      await recognizer?.cleanupAccount?.(accountKey);
+    },
     initialize() {
       for (const row of db.prepare("SELECT accountKey,value FROM materials_recognition_results WHERE json_extract(value,'$.state')='running'").all()) {
         const value = JSON.parse(row.value);

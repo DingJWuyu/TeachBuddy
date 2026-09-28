@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
@@ -13,11 +13,11 @@ function failure(code, message) {
   return Object.assign(new Error(message), { code });
 }
 
-async function checkResources(home, signal) {
+async function checkResources(workDirectory, signal) {
   const available = Number(
     fs.readFileSync("/proc/meminfo", "utf8").match(/^MemAvailable:\s+(\d+)/m)?.[1],
   ) * 1024;
-  const disk = fs.statfsSync(home);
+  const disk = fs.statfsSync(workDirectory);
   let gpu;
   try {
     const { stdout } = await execute("/usr/bin/nvidia-smi", [
@@ -152,31 +152,77 @@ function readAsset(output, item) {
 }
 
 /** A fixed local page engine. Scheduling and result persistence belong to the caller. */
-export function createRecognizer({ home } = {}) {
-  if (!home) return null;
+export function createRecognizer({ home, workDirectory } = {}) {
+  if (!workDirectory) return null;
+  const workRoot = path.resolve(workDirectory);
   let directory;
+  let available = false;
   try {
     directory = fs.realpathSync(path.resolve(home));
     const python = fs.realpathSync(path.join(directory, "venv/bin/python"));
-    if (!python.startsWith(`${directory}${path.sep}`)) return null;
+    if (!python.startsWith(`${directory}${path.sep}`)) throw new Error("Invalid Python path");
     for (const name of ["python", "models/PP-DocLayoutV3", "models/PaddleOCR-VL-1.6"])
-      if (!fs.statSync(path.join(directory, name)).isDirectory()) return null;
-    if (!fs.statSync(path.join(directory, "manifest.json")).isFile()) return null;
-    if (!fs.statSync(path.join(directory, "requirements.freeze.txt")).isFile()) return null;
-  } catch { return null; }
+      if (!fs.statSync(path.join(directory, name)).isDirectory()) throw new Error("Missing model");
+    if (!fs.statSync(path.join(directory, "manifest.json")).isFile()) throw new Error("Missing manifest");
+    if (!fs.statSync(path.join(directory, "requirements.freeze.txt")).isFile()) throw new Error("Missing dependencies");
+    available = true;
+  } catch {}
   const revision = "paddleocr-vl-1.6/document-4";
   let running = false;
+  let runningAccount;
   let pendingScope;
+  const cleaning = new Set();
+
+  function accountDirectory(accountKey, create = false) {
+    if (typeof accountKey !== "string" || !accountKey)
+      throw failure("recognition-invalid-input", "识别任务缺少账户归属。");
+    const target = path.join(workRoot, createHash("sha256").update(accountKey).digest("hex"));
+    if (create) fs.mkdirSync(target, { recursive: true, mode: 0o700 });
+    if (!fs.existsSync(target)) return null;
+    if (fs.lstatSync(target).isSymbolicLink() || !fs.statSync(target).isDirectory() ||
+        fs.realpathSync(target) !== path.join(fs.realpathSync(workRoot), path.basename(target)))
+      throw failure("recognition-cleanup", "识别临时目录归属未能确认。");
+    return target;
+  }
+
+  async function cleanupAccount(accountKey) {
+    const root = accountDirectory(accountKey);
+    if (runningAccount === accountKey || cleaning.has(accountKey))
+      throw failure("recognition-cleanup", "识别任务尚未停止，请稍后重试清理。");
+    if (!root) return;
+    cleaning.add(accountKey);
+    try {
+      for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+        const work = path.join(root, entry.name);
+        if (!entry.isDirectory() || !/^page-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(entry.name))
+          throw failure("recognition-cleanup", "识别临时目录归属未能确认。");
+        const owner = JSON.parse(fs.readFileSync(path.join(work, "owner.json"), "utf8"));
+        const unit = `teachbuddy-ocr-${entry.name.slice(5)}`;
+        if (owner.accountKey !== accountKey || owner.unit !== unit)
+          throw failure("recognition-cleanup", "识别临时目录归属未能确认。");
+        await stopScope(unit);
+        fs.rmSync(work, { recursive: true, force: true });
+        if (pendingScope === unit) pendingScope = undefined;
+      }
+      fs.rmdirSync(root);
+    } catch (error) {
+      if (error?.code === "recognition-cleanup") throw error;
+      throw failure("recognition-cleanup", "识别临时数据未完成清理，请稍后重试。");
+    } finally { cleaning.delete(accountKey); }
+  }
   return {
-    revision,
-    async run({ bytes, signal, width, height }) {
+    revision, available, cleanupAccount,
+    async run({ accountKey, bytes, signal, width, height }) {
       signal?.throwIfAborted();
+      if (!available) throw failure("recognition-unavailable", "本地识别环境暂不可用。");
+      accountDirectory(accountKey);
       if (!(bytes instanceof Uint8Array) || !bytes.length || bytes.length > 64 * 1024 ** 2 ||
           !Number.isSafeInteger(width) || !Number.isSafeInteger(height) ||
           width <= 0 || height <= 0 || width * height > 40_000_000)
         throw failure("recognition-invalid-input", "识别页的图片或尺寸无效。");
-      if (running) throw failure("recognition-busy", "已有页面正在识别，请稍后重试。");
+      if (running || cleaning.has(accountKey)) throw failure("recognition-busy", "已有页面正在识别或清理，请稍后重试。");
       running = true;
+      runningAccount = accountKey;
       let work;
       let safeToRemove = true;
       try {
@@ -186,16 +232,19 @@ export function createRecognizer({ home } = {}) {
           await stopScope(pendingScope);
           pendingScope = undefined;
         }
-        await checkResources(directory, signal);
+        const accountRoot = accountDirectory(accountKey, true);
+        await checkResources(accountRoot, signal);
         signal?.throwIfAborted();
-        const workRoot = path.join(directory, "work");
-        fs.mkdirSync(workRoot, { recursive: true, mode: 0o700 });
-        work = fs.mkdtempSync(path.join(workRoot, "page-"));
+        const id = randomUUID();
+        const unit = `teachbuddy-ocr-${id}`;
+        work = path.join(accountRoot, `page-${id}`);
+        fs.mkdirSync(work, { mode: 0o700 });
+        fs.writeFileSync(path.join(work, "owner.tmp.json"), JSON.stringify({ accountKey, unit }), { mode: 0o600 });
+        fs.renameSync(path.join(work, "owner.tmp.json"), path.join(work, "owner.json"));
         const input = path.join(work, "input"), output = path.join(work, "output");
         fs.mkdirSync(input); fs.mkdirSync(output);
         fs.writeFileSync(path.join(input, "page.png"), bytes, { mode: 0o400 });
         fs.writeFileSync(path.join(input, "request.json"), JSON.stringify({ width, height }), { mode: 0o400 });
-        const unit = `teachbuddy-ocr-${randomUUID()}`;
         await runWorker(command(directory, input, output, unit), unit, output, signal);
         const result = JSON.parse(fs.readFileSync(path.join(output, "result.json"), "utf8"));
         if (result.width !== width || result.height !== height ||
@@ -220,6 +269,7 @@ export function createRecognizer({ home } = {}) {
         throw failure("recognition-failed", "本页识别未完成，原稿仍保留。");
       } finally {
         running = false;
+        runningAccount = undefined;
         if (work && safeToRemove) {
           try { fs.rmSync(work, { recursive: true, force: true }); }
           catch { throw failure("recognition-cleanup", "识别临时数据未完成清理，请稍后重试。"); }

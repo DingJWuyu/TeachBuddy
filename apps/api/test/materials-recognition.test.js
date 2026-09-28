@@ -360,8 +360,12 @@ test("real-auth page recognition replays acceptance, shares completed pixels and
 
 test("recognition failure and cancellation need explicit retry; service restart never resends a page", async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "materials-recognition-recovery-"));
-  let mode = "fail", calls = 0, entered, releaseLate;
-  const recognizer = { revision: "integration-recovery-1", async run({ signal }) {
+  let mode = "fail", calls = 0, entered, releaseLate, lastAccount;
+  const cleanedAccounts = [];
+  const recognizer = { revision: "integration-recovery-1", async cleanupAccount(accountKey) {
+    cleanedAccounts.push(accountKey);
+  }, async run({ signal, accountKey }) {
+    lastAccount = accountKey;
     calls++;
     entered?.();
     if (mode === "fail") throw new Error("Model unavailable");
@@ -376,7 +380,7 @@ test("recognition failure and cancellation need explicit retry; service restart 
   let world, passed = false;
   try {
     world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
-    let { client } = await registerMath(world, "recognition-recovery@example.test");
+    let { client, session } = await registerMath(world, "recognition-recovery@example.test");
     const file = await upload(client), source = await preview(client, file);
     const endpoint = `${base}/${file.id}/recognition`;
     const query = `?renditionFileId=${source.renditionFileId}`;
@@ -385,6 +389,9 @@ test("recognition failure and cancellation need explicit retry; service restart 
     assert.equal((await waitJob(client, failed.json.id)).state, "failed");
     assert.equal((await client.request("GET", `${endpoint}/pages/1${query}`)).json.state, "failed");
     assert.equal(calls, 1);
+    assert.equal(lastAccount, session.account.accountKey, 'runtime receives the authenticated account owner');
+    await world.workbench.recognition.cleanupAccount(session.account.accountKey);
+    assert.deepEqual(cleanedAccounts, [session.account.accountKey]);
     assert.equal((await client.request("GET", endpoint + query)).json.pages[0].state, "failed");
     assert.equal(calls, 1);
     mode = "wait";
