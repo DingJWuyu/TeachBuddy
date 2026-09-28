@@ -35,9 +35,18 @@ export function createPdfReader(files) {
       const html = path.join(output, 'page', `page${unit.page}.html`);
       if ((await fs.stat(html)).size > 8 * 1024 * 1024) throw new Error('PDF text output exceeds limit');
       const page = new DOMParser().parseFromString(await fs.readFile(html, 'utf8'), 'text/html');
-      const stdout = Array.from(page.getElementsByTagName('div'))
+      const background = page.getElementsByTagName('img')[0];
+      const pageWidth = Number(background?.getAttribute('width'));
+      const pageHeight = Number(background?.getAttribute('height'));
+      const sourceLines = Array.from(page.getElementsByTagName('div'))
         .filter(node => node.getAttribute('class')?.split(/\s+/).includes('txt'))
-        .map(node => node.textContent).join('\n');
+        .map(node => {
+          const style = node.getAttribute('style') ?? '';
+          const heights = Array.from(node.getElementsByTagName('span')).map(span => Number(span.getAttribute('style')?.match(/font-size:([\d.]+)px/)?.[1]));
+          return {text: node.textContent, x: Number(style.match(/left:([\d.]+)px/)?.[1]) / pageWidth,
+            y: Number(style.match(/top:([\d.]+)px/)?.[1]) / pageHeight, height: Math.max(...heights) / pageHeight};
+        });
+      const stdout = sourceLines.map(line => line.text).join('\n');
       if (!stdout.trim()) return null;
       const lines = stdout.split('\n');
       // A page header may itself identify an answer page. Classify it before
@@ -55,6 +64,14 @@ export function createPdfReader(files) {
       if (continuation) content = (continuation[1] ?? continuation[2]) + '. ' + content.slice(continuation[0].length);
       // Text offsets identify only the first explicit continuation. Public
       // locations still point to the unchanged PDF page, including selected pages.
+      let sourceCursor = 0, offset = 0;
+      const positionedLines = content.split('\n').map(text => {
+        const index = sourceLines.findIndex((line, i) => i >= sourceCursor && line.text === text);
+        const line = {text, start: offset, end: offset + [...text].length, ...(index < 0 ? {} : sourceLines[index])};
+        if (index >= 0) sourceCursor = index + 1;
+        offset = line.end + 1;
+        return line;
+      });
       const parsed = nativeText(content);
       const records = [];
       function record(draft, role, document) {
@@ -63,6 +80,9 @@ export function createPdfReader(files) {
           id: extractionId(unit.file.id, unit.page, records.length), role,
           label: draft.title, section: unit.file.id, group: '', continues: role === 'continuation' ? draft.title : '',
           text, document, locations: [unit.location],
+          ...(role === 'question' ? {nativeLines: positionedLines.filter(line => (draft.parts ?? [])
+            .filter(part => part.role === 'body').flatMap(part => part.locations)
+            .some(location => line.start < location.end && line.end > location.start))} : {}),
           doubts: /[⎧⎩⎨�]/.test(text) ? ['原稿数学排版需校对'] : [],
         });
       }

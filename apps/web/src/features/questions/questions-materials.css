@@ -211,6 +211,10 @@
 .q-review-footer > span { flex: 1 1 160px; }
 .q-saved-label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
 .q-review-switch { display: none !important; }
+.q-original.is-word-view { display: flex; flex-direction: column; overflow: hidden; }
+.q-original.is-word-view > :not(.q-word-original) { flex-shrink: 0; }
+.q-word-original { flex: 1; min-height: 100px; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.q-original.is-word-view .q-location-tools { max-height: 120px; overflow: auto; }
 .q-word-original article { padding: 8px; border-left: 2px solid transparent; }
 .q-word-original article.is-current { background: var(--q-soft); border-left-color: var(--app-primary); }
 .q-word-original small { color: var(--q-muted); font-size: 11px; }

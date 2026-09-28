@@ -297,6 +297,18 @@ export function createPreviews({
       });
       return result.textPages;
     },
+    async convertWord(principal, id, {signal} = {}) {
+      const file = files.read(principal, id);
+      if (file.mediaType !== "application/msword") throw new Error("Native Word conversion requires DOC");
+      const next = conversionQueue.then(() => convertFile({bytes: readBytes(principal, id),
+        mediaType: file.mediaType, directory, ...conversion, signal, wordOnly: true}));
+      conversionQueue = next.catch(() => {});
+      const result = await next;
+      signal?.throwIfAborted();
+      return files.store(principal, {name: "converted.docx", bytes: result.word}, {
+        key: internalKey(`${id}/native-word-v1/${createHash("sha256").update(result.word).digest("hex")}`), method: "POST", path: `/internal/word/${id}`,
+      });
+    },
     preview,
     readRendition,
     requestPreview,

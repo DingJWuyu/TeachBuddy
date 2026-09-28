@@ -73,8 +73,8 @@ export function createQuestionsModule({
           taxonomy: store.taxonomy(principal),
           imports: store.list("imports", principal),
           recognitionEvidence: store.list("tasks", principal)
-            .filter(task => Object.keys(task.lateResults ?? {}).length)
-            .map(task => ({ jobId: task.id, importId: task.importId, lateResults: task.lateResults })),
+            .filter(task => Object.keys(task.lateResults ?? {}).length || Object.keys(task.nativeWordSources ?? {}).length)
+            .map(task => ({ jobId: task.id, importId: task.importId, lateResults: task.lateResults, nativeWordSources: task.nativeWordSources, originalDocuments: task.originalDocuments })),
         };
       },
       readForReferenceV2(principal, id) {

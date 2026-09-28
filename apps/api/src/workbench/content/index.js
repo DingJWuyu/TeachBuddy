@@ -46,7 +46,7 @@ export function validateLocation(
   files,
   principal,
   location,
-  { text = '', originals = [], renditions = [], paragraphs = [] } = {}
+  { text = '', originals = [], renditions = [], paragraphs = [], nativeWordSource } = {}
 ) {
   validateSchema('Location', location);
   if (location.kind === 'text') {
@@ -57,10 +57,16 @@ export function validateLocation(
   const original = files.read(principal, location.fileId);
   if (!originals.includes(location.fileId)) throw invalidInput('/fileId', 'out-of-range');
   if (location.kind === 'docx') {
+    const wordType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    let hasWordSource = original.mediaType === wordType;
+    if (original.mediaType === 'application/msword' && nativeWordSource?.format === 'libreoffice-docx-v1') {
+      const converted = files.read(principal, nativeWordSource.fileId);
+      hasWordSource = converted.mediaType === wordType &&
+        original.sha256 === nativeWordSource.originalSha256 && converted.sha256 === nativeWordSource.sha256;
+    }
     const runCount = paragraphs[location.paragraph - 1];
     if (
-      original.mediaType !==
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      !hasWordSource ||
       runCount === undefined ||
       location.runStart >= location.runEnd ||
       location.runEnd > runCount

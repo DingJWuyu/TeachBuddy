@@ -74,10 +74,15 @@ export default function OriginalPane({
   const current = preview?.pages.find((x) => x.page === page);
   const original = originalDocuments.find(item => item.fileId === fileId);
   const paragraph = scene.paragraph ?? loc?.paragraph;
-  useEffect(() => {
-    const node = nativePane.current?.querySelector(`[data-paragraph="${Number(paragraph)}"]`);
-    node?.scrollIntoView({block: "nearest"});
-  }, [original, paragraph]);
+  const legacyWord = preview?.issues.includes("legacy-object-loss");
+  const paragraphLabel = legacyWord ? "转换稿段落" : "原文段落";
+  const paragraphView = Boolean(original?.paragraphs.length && (scene.originalView === "paragraphs" || !current));
+  const restoreParagraph = () => {
+    const pane = nativePane.current;
+    const node = pane?.querySelector(`[data-paragraph="${Number(paragraph)}"]`);
+    if (node) pane.scrollTop += node.getBoundingClientRect().top - pane.getBoundingClientRect().top;
+  };
+  useEffect(restoreParagraph, [original, paragraph, paragraphView]);
   const point = (e) => {
     const r = e.currentTarget.getBoundingClientRect();
     return {
@@ -103,7 +108,7 @@ export default function OriginalPane({
     unassigned: "未分配",
   };
   return (
-    <section className="q-original" aria-label="原始材料">
+    <section className={`q-original${paragraphView ? " is-word-view" : ""}`} aria-label="原始材料">
       <header>
         <strong>原始材料</strong>
         {fileId && <button onClick={() => download(fileId)}>下载原稿</button>}
@@ -138,7 +143,7 @@ export default function OriginalPane({
             {files.length > 1 && <select
               aria-label="原稿文件"
               value={fileId}
-              onChange={(e) => onScene({ fileId: e.target.value, page: 1 })}
+              onChange={(e) => onScene({ fileId: e.target.value, page: 1, paragraph: null })}
             >
               {files.map((id, i) => (
                 <option key={id} value={id}>
@@ -146,7 +151,13 @@ export default function OriginalPane({
                 </option>
               ))}
             </select>}
-            {Boolean(preview?.pages.length) && <>{preview.pages.length === 1 ? <span className="q-muted">第 1 页</span> : <select
+            {current && Boolean(original?.paragraphs.length) && <select
+              aria-label="原稿视图" value={paragraphView ? "paragraphs" : "pages"}
+              onChange={e => onScene({originalView: e.target.value})}>
+              <option value="pages">分页预览</option>
+              <option value="paragraphs">{paragraphLabel}</option>
+            </select>}
+            {!paragraphView && Boolean(preview?.pages.length) && <>{preview.pages.length === 1 ? <span className="q-muted">第 1 页</span> : <select
               aria-label="原稿页码"
               value={page}
               onChange={(e) => onScene({ page: Number(e.target.value) })}
@@ -167,10 +178,10 @@ export default function OriginalPane({
               <option value="2">200%</option>
             </select></>}
           </div>
-          {loc?.kind === "docx" && (
-            <p>段落 {scene.paragraph ?? loc.paragraph}</p>
+          {paragraphView && (
+            <p>{paragraphLabel}{paragraph ? ` · 段落 ${paragraph}` : ""}，不对应原稿页码。</p>
           )}
-          {current ? (
+          {current && !paragraphView ? (
             <div className="q-page-scroll" ref={pageNode} onLoadCapture={restoreScroll}
               onScroll={event => onScene({ scrollPositions: { ...scene.scrollPositions,
                 [scrollKey]: { top: event.currentTarget.scrollTop, left: event.currentTarget.scrollLeft } } })}>
@@ -215,8 +226,7 @@ export default function OriginalPane({
               </div>
             </div>
           ) : original?.paragraphs.length ? (
-            <div className="q-word-original" ref={nativePane}>
-              <p>原文段落</p>
+            <div className="q-word-original" ref={nativePane} onLoadCapture={restoreParagraph}>
               {original.paragraphs.map(item => <article key={item.paragraph}
                 data-paragraph={item.paragraph} className={item.paragraph === paragraph ? "is-current" : ""}>
                 <small>段落 {item.paragraph}</small>
@@ -227,7 +237,7 @@ export default function OriginalPane({
           ) : (
             <p>{error || "原稿已保存，预览尚未就绪"}</p>
           )}
-          {!readOnly && current && <ModuleDisclosure title="调整原稿选区" open={Boolean(scene.adjusting)} onOpenChange={adjusting => onScene({ adjusting })}>
+          {!readOnly && current && !paragraphView && <ModuleDisclosure title="调整原稿选区" open={Boolean(scene.adjusting)} onOpenChange={adjusting => onScene({ adjusting })}>
           <p className="q-muted">在原稿上拖选区域，再选择用于定位或裁图。</p>
           <div className="q-tools">
             <select
@@ -272,16 +282,16 @@ export default function OriginalPane({
         </>
       )}
       {positions.length > 0 && (
-        <div className="q-tools">
+        <div className="q-tools q-location-tools">
           {positions.map((l, i) => (
             <button
               key={i}
               onClick={() =>
                 l.kind === "page"
-                  ? onScene({ fileId: l.fileId, page: l.page })
+                  ? onScene({ fileId: l.fileId, page: l.page, originalView: "pages" })
                   : l.kind === "text"
                     ? onScene({ textStart: l.start })
-                    : onScene({ fileId: l.fileId, paragraph: l.paragraph })
+                    : onScene({ fileId: l.fileId, paragraph: l.paragraph, originalView: "paragraphs" })
               }
             >
               定位{roleName[l.role]}{l.kind === 'page' ? ` · 第 ${l.page} 页` : l.kind === 'docx' ? ` · 段落 ${l.paragraph}` : ''}

@@ -120,13 +120,21 @@ if (office.has(mime)) {
       "--nolockcheck",
       "--norestore",
       "--convert-to",
-      "pdf",
+      mode === "word" ? "docx:Office Open XML Text" : "pdf",
       "--outdir",
       "/output",
       `/output/source.${ext}`,
     ],
     { timeout: 110000, stdio: "pipe", maxBuffer: 1024 * 1024 },
   );
+  if (mode === "word") {
+    if (ext !== "doc") throw new Error("Native Word conversion requires DOC");
+    const word = "/output/source.docx";
+    if (!fs.statSync(word).size || fs.statSync(word).size > 100 * 1024 * 1024)
+      throw new Error("Word conversion output size limit exceeded");
+    fs.writeFileSync("/output/result.json", JSON.stringify({pages: [], word: "source.docx", pdf: null}));
+    process.exit(0);
+  }
   pdf = "/output/source.pdf";
 }
 let pages = [];

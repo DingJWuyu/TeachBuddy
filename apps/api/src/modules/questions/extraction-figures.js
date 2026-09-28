@@ -5,6 +5,8 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { DOMParser } from "@xmldom/xmldom";
 import sharp from "sharp";
+import { nativeText } from './extraction.js';
+import { documentText } from './materials-content.js';
 import { extractionId } from "./extraction-fragments.js";
 const execute = promisify(execFile);
 const normalize = (s) => s.trim().replace(/[.．、:：]\s*$/, "");
@@ -219,6 +221,53 @@ export async function locateFigures({
           height: (bottom - y) / info.height,
         },
       };
+      const textBoxes = Array.from(page.getElementsByTagName('text')).map(node => ({
+        text: node.textContent.normalize('NFKC').replace(/\s/g, ''),
+        x: Number(node.getAttribute('left')) / pw, y: Number(node.getAttribute('top')) / ph,
+        width: Number(node.getAttribute('width')) / pw, height: Number(node.getAttribute('height')) / ph,
+      }));
+      // Xpdf may join vertices on different baselines into one line (for
+      // example A₁ D₁). Match the entire original text to Poppler's fragments;
+      // a page-wide horizontal band is not that line's footprint.
+      const matchedLines = (q.nativeLines ?? []).map(line => {
+        let remaining = line.text.normalize('NFKC').replace(/\s/g, '');
+        const boxes = [];
+        // Both tools round page coordinates to integer pixels independently.
+        const candidates = textBoxes.filter(text => text.text
+          && text.y < line.y + line.height + 2 / ph && text.y + text.height > line.y - 2 / ph
+          && text.x + text.width >= line.x - 2 / pw)
+          .sort((a, b) => a.x - b.x || a.y - b.y);
+        for (const text of candidates) {
+          if (!remaining.startsWith(text.text)) continue;
+          boxes.push(text);
+          remaining = remaining.slice(text.text.length);
+          if (!remaining) break;
+        }
+        return {line, boxes: !remaining && boxes.length
+          && Math.abs(boxes[0].x - line.x) <= 2 / pw ? boxes : []};
+      });
+      const initial = location.box;
+      const inside = (x, y) => x >= initial.x && x <= initial.x + initial.width
+        && y >= initial.y && y <= initial.y + initial.height;
+      const adopted = matchedLines.filter(({line, boxes}) => boxes.length
+        // Prose and question boundaries are never diagram annotations.
+        && !/[\p{Script=Han}。！？!?]/u.test(line.text)
+        // Ownership is decided against the original detected region. Expanding
+        // a crop must not make nearby prose or a separate formula a label.
+        && inside(boxes[0].x + boxes[0].width / 2, boxes[0].y + boxes[0].height / 2)
+        && boxes.every(text => text.x < initial.x + initial.width && text.x + text.width > initial.x
+          && matchedLines.filter(other => other.boxes.includes(text)).length === 1));
+      const labels = adopted.flatMap(({boxes}) => boxes);
+      if (labels.length) {
+        const left = Math.min(initial.x, ...labels.map(text => text.x));
+        const top = Math.min(initial.y, ...labels.map(text => text.y));
+        const right = Math.max(initial.x + initial.width, ...labels.map(text => text.x + text.width));
+        const bottom = Math.max(initial.y + initial.height, ...labels.map(text => text.y + text.height));
+        // A fragment crossing another question is ambiguous; keep the original.
+        if (top >= anchor.y && bottom <= (next?.y ?? 1))
+          location.box = {x: left, y: top, width: right - left, height: bottom - top};
+        else adopted.length = 0;
+      }
       signal.throwIfAborted();
       const file = await files.crop(
         principal,
@@ -229,6 +278,14 @@ export async function locateFigures({
           path: "/internal/questions/figures",
         },
       );
+      if (adopted.length) {
+        const removed = new Set(adopted.map(({line}) => line));
+        const cleaned = nativeText(q.nativeLines.filter(line => !removed.has(line)).map(line => line.text).join('\n')).drafts;
+        if (cleaned.length === 1 && normalize(cleaned[0].title) === normalize(q.label)) {
+          q.document = cleaned[0].body;
+          q.text = documentText(q.document);
+        }
+      }
       q.figure = {
         fileId: file.id,
         location,

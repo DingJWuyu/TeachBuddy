@@ -11,6 +11,7 @@ export async function convertFile({
   timeoutMs = 120000,
   signal,
   textOnly = false,
+  wordOnly = false,
 }) {
   fs.mkdirSync(directory, { recursive: true });
   const work = fs.mkdtempSync(path.join(directory, "conversion-"));
@@ -101,7 +102,7 @@ export async function convertFile({
     "/runtime/node",
     "/app/api/worker.mjs",
     mediaType,
-    textOnly ? "text" : "preview",
+    wordOnly ? "word" : textOnly ? "text" : "preview",
   );
   try {
     await new Promise((resolve, reject) => {
@@ -154,6 +155,7 @@ export async function convertFile({
         ...p,
         bytes: fs.readFileSync(path.join(output, p.name)),
       })),
+      word: result.word ? fs.readFileSync(path.join(output, result.word)) : null,
       pdf: result.pdf ? fs.readFileSync(path.join(output, result.pdf)) : null,
     };
   } catch (error) {

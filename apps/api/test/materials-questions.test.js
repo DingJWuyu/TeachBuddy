@@ -977,9 +977,49 @@ test("native PDF automatically retains six questions, cross-page answers and dia
   assert.match(JSON.stringify(material.drafts[0].solution), /根号内非负/);
   assert.ok(material.drafts[0].parts.some(p => p.role === 'solution' && p.locations.some(l => l.page === 4)));
   for (const number of [1, 4, 5]) assert.ok(material.drafts[number].body.blocks.some(b => b.type === 'image'), 'diagram for Q' + (number + 1));
+  const paragraphs = number => material.drafts[number].body.blocks.filter(b => b.type === 'paragraph')
+    .map(b => b.runs.map(r => r.text ?? r.latex).join(''));
+  assert.deepEqual(paragraphs(1), [
+    '已知 f(x)=x^{2}-2x-3，配坐标轴与抛物线图，标出顶点和两个横轴交点。',
+    '图中红点为 (-1,0)、(1,-4)、(3,0)。',
+  ]);
+  assert.deepEqual(paragraphs(4), [
+    '如图，直角三角形 ABC，\\angle A=90^{\\circ}。求 BC 的长及 \\tan  B。',
+    '图示 A 在左下、B 在右下、C 在左上；AB 边标 4，AC 边标 3。',
+  ]);
+  assert.deepEqual(paragraphs(5), ['正方体 ABCD-A_{1}B_{1}C_{1}D_{1} 的棱长为 2。']);
+  assert.match(JSON.stringify(material.drafts[5].body.blocks.find(b => b.type === 'list')), /AC_\{1\}/);
+  const cube = material.drafts[5].parts.find(p => p.role === 'figure').locations[0];
+  // D₁'s original-page text box ends at 898 / 1262. The old crop cut off
+  // both that vertex and the dashed lower edges, even though an image existed.
+  assert.ok(cube.box.y + cube.box.height >= 898 / 1262);
   assert.deepEqual(await e.bytes(file.id), original);
   await e.restart();
   assert.deepEqual((await e.q('/imports/' + created.id, null, 'GET')).body, material);
+});
+
+for (const twoColumns of [false, true]) test(`native PDF figure boundary preserves nearby formula and prose, columns=${twoColumns}`, async t => {
+  const e = await environment(t);
+  const form = new FormData();
+  form.append('file', new Blob([fs.readFileSync(new URL(`./fixtures/questions/pdf-figure-${twoColumns ? 'columns' : 'boundary'}.pdf`, import.meta.url))]), 'figure-boundary.pdf');
+  const file = (await e.call('/api/workbench/files', form)).body;
+  const created = (await e.q('/imports', {title:'图边界', origin:'', input:{kind:'files',fileIds:[file.id],pages:[]}})).body;
+  assert.equal((await e.job(created.jobId)).state, 'succeeded');
+  const material = (await e.q('/imports/' + created.id, null, 'GET')).body;
+  assert.equal(material.drafts.length, twoColumns ? 2 : 1);
+  const body = JSON.stringify(material.drafts[0].body);
+  assert.match(body, /Keep the question text/);
+  assert.match(body, /Keep this explanation/);
+  assert.match(body, /x ?\+ ?1 ?= ?5/);
+  if (twoColumns) {
+    assert.ok(material.drafts.every(d => !d.body.blocks.some(b => b.type === 'image')));
+    assert.match(JSON.stringify(material.drafts[1].body), /z ?\+ ?2 ?= ?7/);
+    assert.doesNotMatch(body, /Right column|z ?\+ ?2/);
+  } else {
+    assert.ok(material.drafts[0].body.blocks.some(b => b.type === 'image'));
+    const paragraphs = material.drafts[0].body.blocks.filter(b => b.type === 'paragraph');
+    assert.ok(!paragraphs.some(b => /^[AB]$/.test(b.runs.map(r => r.text ?? r.latex).join(''))));
+  }
 });
 
 test("question search excludes answers by default and accepts only explicit boolean answer scope", async (t) => {

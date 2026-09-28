@@ -12,8 +12,8 @@ import {
   questionLabel,
 } from "./extraction-fragments.js";
 const issue = (code, unitId, detail) => ({ code, unitId, field: null, detail });
-export const questionStart = /^\s*((?:Q\s*)?[0-9０-９]+(?:[.．](?![0-9０-９])|[、:：)）])|例\s*[0-9０-９]+[:：.、]?|练习\s*[0-9０-９]+[:：.、]?)[ \t]*(.*)$/i;
-export const answerHeading = /^\s*(?:【.*(?:答案|解析).*】|(?:第.+页[:：]\s*)?(?:原有答案|(?:原有)?(?:参考答案|答案解析|参考解答))\s*[:：]?\s*$)/;
+export const questionStart = /^\s*(Q\s*[0-9０-９]+(?=\s*$)|(?:Q\s*)?[0-9０-９]+(?:[.．](?![0-9０-９])|[、:：)）])|例\s*[0-9０-９]+[:：.、]?|练习\s*[0-9０-９]+[:：.、]?)[ \t]*(.*)$/i;
+export const answerHeading = /^\s*(?:【.*(?:答案|解析).*】|(?:第.+页[:：]\s*)?(?:已有答案(?:解析)?|原有答案|(?:原有)?(?:参考答案|答案解析|参考解答))\s*[:：]?\s*$)/;
 export const continuationHeading = /^(?:续第\s*([0-9０-９]+)\s*题|第\s*([0-9０-９]+)\s*题[（(]续[）)])[ \t]*[:：]?[ \t]*(?:\r?\n|$)/;
 const inlineAnswer = /^\s*(?:参考答案|答案|解析|解答)\s*[:：]\s*(.*)$/;
 export function nativeText(text, location) {
@@ -423,7 +423,7 @@ export function createExtractionHandler({
       const file = files.read(p, id);
       try {
         if (
-          file.mediaType.endsWith("wordprocessingml.document") &&
+          (file.mediaType.endsWith("wordprocessingml.document") || file.mediaType === "application/msword") &&
           readWord &&
           !m.input.pages?.some((x) => x.fileId === id)
         ) {
@@ -443,7 +443,20 @@ export function createExtractionHandler({
               ),
             );
           }
-          const parsed = await readWord(p, file);
+          let nativeFileId;
+          if (file.mediaType === "application/msword") {
+            task.nativeWordSources ??= {};
+            let source = task.nativeWordSources[id];
+            if (!source) {
+              const converted = await files.convertWord(p, id, {signal});
+              source = {fileId: converted.id, sha256: converted.sha256, originalSha256: file.sha256, format: "libreoffice-docx-v1"};
+              task.nativeWordSources[id] = source;
+              s.save("tasks", p, task);
+            }
+            nativeFileId = source.fileId;
+            outputFileIds.push(nativeFileId);
+          }
+          const parsed = await readWord(p, {...file, nativeFileId});
           task.paragraphs[id] = parsed.paragraphs;
           task.originalDocuments ??= {};
           task.originalDocuments[id] = parsed.original;

@@ -63,6 +63,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
             originals,
             renditions: task.renditions ?? [],
             paragraphs: task.paragraphs?.[l.fileId] ?? [],
+            nativeWordSource: task.nativeWordSources?.[l.fileId],
           });
         } catch (e) {
           if (e.status === 404) throw e;

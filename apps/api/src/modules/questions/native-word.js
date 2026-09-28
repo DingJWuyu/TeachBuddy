@@ -13,7 +13,13 @@ function latex(n, warnings = []) {
     one = (k) => c.find((x) => local(x) === k),
     read = (k) => (one(k) ? latex(one(k), warnings) : "");
   if (name === "t") return n.textContent;
-  if (name === "f") return `\\frac{${read("num")}}{${read("den")}}`;
+  if (name === "f") {
+    const properties = one("fPr");
+    const type = children(properties ?? {}).find(x => local(x) === "type")?.getAttribute("m:val");
+    // Linear Office fractions can include interval punctuation in their runs.
+    // Preserve the slash layout instead of moving that punctuation below a bar.
+    return type === "lin" ? `{${read("num")}}/{${read("den")}}` : `\\frac{${read("num")}}{${read("den")}}`;
+  }
   if (name === "rad")
     return `\\sqrt${read("deg") ? `[${read("deg")}]` : ""}{${read("e")}}`;
   if (name === "sSup") return `{${read("e")}}^{${read("sup")}}`;
@@ -133,7 +139,7 @@ async function unzip(bytes) {
 export function createWordReader(files) {
   return async (p, file) => {
     const chunks = [];
-    for await (const b of await files.open(p, file.id)) chunks.push(b);
+    for await (const b of await files.open(p, file.nativeFileId ?? file.id)) chunks.push(b);
     const entries = await unzip(Buffer.concat(chunks));
     const parse = (bytes) => {
       const text = bytes?.toString("utf8") ?? "";
@@ -170,10 +176,12 @@ export function createWordReader(files) {
           runCount++;
           return;
         }
+        if (name === "object" || name === "pict") unsupported = true;
         if (name === "r" && n.prefix === "w") {
           runCount++;
           for (const child of children(n)) {
             const kind = local(child);
+            if (kind === "object" || kind === "pict") unsupported = true;
             if (kind === "t") runs.push({ type: "text", text: child.textContent });
             else if (kind === "br" || kind === "cr") runs.push({ type: "text", text: "\n" });
             else if (kind === "tab") runs.push({ type: "text", text: "\t" });
