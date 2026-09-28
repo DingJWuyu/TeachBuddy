@@ -70,8 +70,19 @@ export function timeFromEvent(event, zone) {
   const start = event.startStr.slice(0, 10);
   const startTime = event.allDay ? '00:00' : event.startStr.slice(11, 16);
   const end = event.endStr || `${addDays(start, 1)}T00:00:00Z`;
-  const schedulingZone = event.extendedProps?.occurrence?.time.timeZone ?? zone;
-  if (event.allDay) return { date: start, startTime: '00:00', durationMinutes: diffDays(start, end.slice(0, 10)) * 1440, timeZone: schedulingZone };
+  const occurrence = event.extendedProps?.occurrence;
+  const schedulingZone = occurrence?.time.timeZone ?? zone;
+  if (event.allDay) {
+    const days = diffDays(start, end.slice(0, 10));
+    if (occurrence?.calendar?.allDay) {
+      // 全天卡片所在的显示日期可能与排课日期不同，移动和拉伸都应用日期增量。
+      const previousStart = localParts(zone, Date.parse(occurrence.startsAt)).date;
+      const previousEnd = localParts(zone, Date.parse(occurrence.endsAt)).date;
+      return { ...occurrence.time, date: addDays(occurrence.time.date, diffDays(previousStart, start)),
+        durationMinutes: occurrence.time.durationMinutes + (days - diffDays(previousStart, previousEnd)) * 1440 };
+    }
+    return { date: start, startTime: '00:00', durationMinutes: days * 1440, timeZone: zone };
+  }
   const startMs = instantAt(zone, start, parseClock(startTime));
   const endMs = instantAt(zone, end.slice(0, 10), parseClock(end.slice(11, 16) || '00:00'));
   const local = localParts(schedulingZone, startMs);

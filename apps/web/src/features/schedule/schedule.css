@@ -231,3 +231,10 @@
 @media (max-width: 950px) { .cal-page { padding: 20px; grid-template-columns: minmax(0, 1fr); } .cal-sidebar { display: none; } .cal-mobile-toggle, .cal-mobile-close { display: block; } .cal-page.sidebar-open .cal-sidebar { display: flex; position: absolute; top: 20px; bottom: 20px; right: 20px; width: 340px; max-width: calc(100% - 40px); z-index: 10; box-shadow: 0 12px 50px #0002; animation: cal-pop 180ms ease-out; } .cal-mobile-close { text-align: right; margin: -6px -6px 4px; } .cal-mobile-close .cal-icon-button { border: 0; } }
 @media (max-width: 600px) { .cal-page { padding: 12px; } .cal-toolbar { padding: 12px; height: auto; min-height: 96px; flex-wrap: wrap; gap: 8px; } .cal-page .cal-toolbar h1 { font-size: 22px; } .cal-toolbar-actions { width: 100%; } .cal-toolbar .cal-icon-button, .cal-toolbar .cal-today-button, .cal-view-menu > .cal-menu-trigger { height: 34px; border-radius: 8px; } .cal-toolbar .cal-icon-button { width: 34px; } .cal-mobile-toggle { margin-left: auto; } .cal-page.sidebar-open .cal-sidebar { top: 12px; bottom: 12px; right: 12px; max-width: calc(100% - 24px); } .cal-grid-wrap .fc-timegrid { min-width: 480px; } .cal-grid-wrap { overflow-x: auto; } .cal-event-content { padding: 4px 6px; } .cal-load-error { left: 16px; right: 16px; } }
 @media (prefers-reduced-motion: reduce) { .cal-page *, .cal-dialog-backdrop, .cal-dialog, .cal-menu * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+.cal-conflict-preview { margin-top: 12px; padding: 12px; border: 1px solid var(--cal-line); border-radius: 10px; font-size: 12px; }
+.cal-conflict-preview summary { cursor: pointer; font-weight: 600; }
+.cal-conflict-preview dl { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 8px; margin: 12px 0; }
+.cal-conflict-preview dt { color: var(--cal-muted); }
+.cal-conflict-preview dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.cal-conflict-preview ul { margin: 0; padding-left: 16px; }

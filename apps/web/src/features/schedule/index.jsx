@@ -98,7 +98,7 @@ export default function SchedulePage({ route }) {
     setLoadState('loading');
     Promise.all([api.getSettings(), api.listEntries(), api.listOccurrences(range), api.listLabels(), api.listOccurrences({ from: today, to: addDays(today, 366) })]).then(([settings, entries, result, labels, upcoming]) => {
       if (cancelled) return;
-      setSettings(settings); setZone(settings.timeZone); setData({ entries, occurrences: result.items, labels, upcoming: upcoming.items }); setLoadState('ready'); setLoadError('');
+      setSettings(settings); setZone(settings.timeZone); shell.setTimeZone(settings.timeZone); setData({ entries, occurrences: result.items, labels, upcoming: upcoming.items }); setLoadState('ready'); setLoadError('');
     }).catch(error => { if (!cancelled) { setLoadState('error'); setLoadError(error.problem?.message ?? '日程未能更新'); } });
     return () => { cancelled = true; };
   }, [range.from, range.to, revision, shell.generation, today]);
@@ -108,7 +108,8 @@ export default function SchedulePage({ route }) {
     if (!mounted.current || !result) return false;
     const current = sceneRef.current.draft;
     if (payload.kind === 'settings') {
-      setSettings(result); setZone(result.timeZone); shell.setTimeZone(result.timeZone); setManagement(null);
+      // 幂等重放可能返回旧版本；由 reload 读取当前设置后统一更新显示时区。
+      setManagement(null);
     } else if (payload.kind === 'moveItem') {
       setItemToMove(null);
       await openEntry(result.to.id, null, true);
@@ -138,11 +139,15 @@ export default function SchedulePage({ route }) {
     flight.current = pending;
     try { return await pending; } finally { if (flight.current === pending) flight.current = null; }
   }
-  async function flush({ explicit = false, scope } = {}) {
+  async function flush({ explicit = false, scope, confirmConflict = false } = {}) {
     if (flight.current) { await flight.current; }
     const current = sceneRef.current.draft;
     if (!current || same(current.content, current.baseline)) return !opRef.current.pending;
     if (opRef.current.pending) return false;
+    if (current.savePaused && !confirmConflict) {
+      setValidation('请先核对服务器内容，再重新保存或采用服务器内容');
+      return false;
+    }
     const issue = contentProblem(current.content);
     if (issue) { if (explicit) setValidation(issue); return false; }
     const choice = scope ?? current.scope;
@@ -257,10 +262,16 @@ export default function SchedulePage({ route }) {
       const occurrence = current.origin ? await api.getOccurrence(current.id, current.origin) : null;
       if (!mounted.current || sceneRef.current.draft?.clientId !== current.clientId) return;
       const baseline = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
-      setDraft({ ...sceneRef.current.draft, entry, version: entry.version, baseline, savePaused: true });
+      setDraft({ ...sceneRef.current.draft, entry, version: entry.version, baseline, serverCourseState: occurrence?.courseState ?? entry.courseState, savePaused: !same(sceneRef.current.draft.content, baseline) });
       setItemToMove(null); op.reset(); reload();
       setValidation('已读取最新版本；本地输入保留，请核对后继续');
     } catch { setValidation('读取失败，请重试'); }
+  }
+  function adoptServer() {
+    const current = sceneRef.current.draft;
+    if (!current?.savePaused) return;
+    setDraft({ ...current, content: structuredClone(current.baseline), courseState: current.serverCourseState, savePaused: false, forceSeries: false, scope: null });
+    setValidation('');
   }
   async function moveEvent(info, scope) {
     if (!await leaveEditor()) { info.revert(); return; }
@@ -299,7 +310,7 @@ export default function SchedulePage({ route }) {
     const keydown = event => {
       const typing = event.target.closest('input,textarea,select,[contenteditable="true"]');
       if ([...document.querySelectorAll('[role="dialog"], [role="menu"]')].some(node => !node.closest('[inert]'))) return;
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && sceneRef.current.draft) { event.preventDefault(); actionsRef.current.flush({ explicit: true }); return; }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && sceneRef.current.draft) { event.preventDefault(); actionsRef.current.flush({ explicit: true, confirmConflict: true }); return; }
       if (event.key === 'Escape') { actionsRef.current.closeEditor(); return; }
       if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
       const kind = { d: 'day', w: 'week', m: 'month' }[event.key.toLowerCase()];
@@ -350,7 +361,7 @@ export default function SchedulePage({ route }) {
       }}/>
       {draft ? <CalendarEditor key={draft.clientId} draft={draft} onPatch={patchContent} onClose={closeEditor} onDelete={() => draft.id ? setDeletePrompt(true) : closeEditor()} onRestore={restore} onMoveItem={startItemMove} locked={op.pending?.payload.kind === 'moveItem'}
         labels={data.labels} onLabels={labelsChanged} accountKey={shell.accountKey} status={op.status} error={saveError}
-        onRetry={() => op.pending ? perform(null, true) : flush({ explicit: true })}
+        onRetry={() => op.pending ? perform(null, true) : flush({ explicit: true, confirmConflict: true })} onAdoptServer={adoptServer}
         onReload={op.problem?.kind === 'conflict' ? reloadConflict : null}/>
         : <Upcoming entries={data.entries} occurrences={data.upcoming} labels={data.labels} today={today} zone={zone} grouped={scene.grouped} onGroup={() => updateScene({ grouped: !scene.grouped })} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onOpen={openEntry} onManage={setManagement}/>}
     </aside>
@@ -359,7 +370,7 @@ export default function SchedulePage({ route }) {
     {management === 'priority' && <PriorityDialog occurrences={data.occurrences} entries={data.entries} zone={zone} onClose={() => setManagement(null)} onPriority={priority} onOpen={(id, origin) => { setManagement(null); openEntry(id, origin); }}/>}
     {management === 'zone' && <TimeZoneDialog zone={zone} onClose={() => setManagement(null)} onSave={saveZone} busy={op.isRunning} pending={Boolean(op.pending)} error={op.problem?.message}/>}
     {itemToMove && <MoveItemDialog item={itemToMove} sourceId={draft?.id} entries={data.entries} onMove={moveItem} onClose={() => setItemToMove(null)} onReload={op.problem?.kind === 'conflict' ? reloadConflict : null} busy={op.isRunning} pending={Boolean(op.pending)} error={op.problem?.message}/>}
-    {scopePrompt && <CalendarDialog title="编辑重复任务" onClose={() => { setScopePrompt(false); if (draft) setDraft({ ...draft, content: structuredClone(draft.baseline) }); }}><p>将修改应用到哪些任务？</p><footer><button onClick={() => { setScopePrompt(false); flush({ scope: 'instance' }); }}>仅此任务</button><button className="is-primary" onClick={() => { setScopePrompt(false); flush({ scope: 'series' }); }}>所有重复任务</button></footer></CalendarDialog>}
+    {scopePrompt && <CalendarDialog title="编辑重复任务" onClose={() => { setScopePrompt(false); if (draft) setDraft({ ...draft, content: structuredClone(draft.baseline) }); }}><p>将修改应用到哪些任务？</p><footer><button onClick={() => { setScopePrompt(false); flush({ scope: 'instance', confirmConflict: true }); }}>仅此任务</button><button className="is-primary" onClick={() => { setScopePrompt(false); flush({ scope: 'series', confirmConflict: true }); }}>所有重复任务</button></footer></CalendarDialog>}
     {deletePrompt && <CalendarDialog title="删除任务" onClose={() => setDeletePrompt(false)}><p>删除“{titleOf(draft.content)}”？</p><footer><button onClick={() => setDeletePrompt(false)}>取消</button>{draft.origin && <button className="is-danger" disabled={op.isRunning} onClick={() => remove('instance')}>仅此任务</button>}<button className="is-danger" disabled={op.isRunning || Boolean(op.pending)} onClick={() => remove('series')}>{draft.origin ? '所有重复任务' : '删除'}</button></footer></CalendarDialog>}
     {movePrompt && <CalendarDialog title="调整重复任务" onClose={() => { movePrompt.revert(); setMovePrompt(null); }}><p>将时间调整应用到哪些任务？</p><footer><button onClick={() => moveEvent(movePrompt, 'instance')}>仅此任务</button><button className="is-primary" onClick={() => moveEvent(movePrompt, 'series')}>所有重复任务</button></footer></CalendarDialog>}
     </CalendarOverlay>

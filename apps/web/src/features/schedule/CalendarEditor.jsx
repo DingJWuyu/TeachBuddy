@@ -3,7 +3,7 @@ import { CalendarDialog, CalendarIcon, CalendarMenu, CalendarOverlay, IconButton
 import { COLORS, changeEnd, endOf, formatClock, presetRepeat, repeatLabel, todayInZone, weekday } from './calendarModel.js';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import * as api from './api.js';
-import { CourseDialog, CourseSummary, ReminderDialog, reminderLabel } from './CalendarDetails.jsx';
+import { ConflictPreview, CourseDialog, CourseSummary, ReminderDialog, reminderLabel } from './CalendarDetails.jsx';
 import { EntryItems } from './CalendarItems.jsx';
 import { dstAdjustment } from './model.js';
 
@@ -47,7 +47,7 @@ export function TagPicker({ tags, labels, onChange, accountKey, onLabels }) {
   </CalendarMenu><CalendarOverlay present={Boolean(editing)}>{editing && <LabelDialog label={editing.id ? editing : null} accountKey={accountKey} onClose={() => setEditing(null)} onDone={label => { onLabels(label); if (!label.deleted && !editing.id) onChange([...tags, label.id]); setEditing(null); }}/>}</CalendarOverlay></>;
 }
 
-export default function CalendarEditor({ draft, onPatch, onClose, onDelete, onRestore, onMoveItem, locked, labels, onLabels, accountKey, status, onRetry, onReload, error }) {
+export default function CalendarEditor({ draft, onPatch, onClose, onDelete, onRestore, onMoveItem, locked, labels, onLabels, accountKey, status, onRetry, onReload, onAdoptServer, error }) {
   const content = draft.content;
   const end = endOf(content);
   const [repeatOpen, setRepeatOpen] = useState(false);
@@ -94,10 +94,12 @@ export default function CalendarEditor({ draft, onPatch, onClose, onDelete, onRe
     <EntryItems items={content.items} repeating={Boolean(content.repeat)} onChange={items => onPatch({ items })} onMove={onMoveItem} onRemoveLast={draft.id && !content.title.trim() ? onDelete : null}/>
     {draft.entry?.updatedAt && <time className="cal-updated">{new Intl.DateTimeFormat('en-US', { timeZone: draft.zone, hour: 'numeric', minute: '2-digit' }).format(new Date(draft.entry.updatedAt))}</time>}
     {errorPanel}
+    {draft.savePaused && <ConflictPreview content={draft.baseline} courseState={draft.serverCourseState} labels={labels} onAdopt={() => setDetails('adopt')}/>}
     <CalendarOverlay present={repeatOpen || Boolean(details)}>
     {repeatOpen && <RepeatDialog value={content.repeat} date={content.time.date} onSave={setRepeat} onClose={() => setRepeatOpen(false)}/>}
     {details === 'reminder' && <ReminderDialog value={content.reminder} onClose={() => setDetails(null)} onSave={reminder => { onPatch({ reminder }); setDetails(null); }}/>}
     {details === 'course' && <CourseDialog draft={draft} onClose={() => setDetails(null)} onSave={(course, single) => { onPatch({ course }, false, single ? 'instance' : null); setDetails(null); }}/>}
+    {details === 'adopt' && <CalendarDialog title="采用服务器内容" onClose={() => setDetails(null)}><p>用服务器内容替换当前本地输入？未保存的本地修改将被丢弃。</p><footer><button onClick={() => setDetails(null)}>取消</button><button className="is-primary" onClick={() => { onAdoptServer(); setDetails(null); }}>采用</button></footer></CalendarDialog>}
     {details === 'unschedule' && <CalendarDialog title="移回未排期" onClose={() => setDetails(null)}><p>移除这项任务的时间和提醒，并取消它与实际记录的关联。实际教学记录会保留。</p><footer><button onClick={() => setDetails(null)}>取消</button><button className="is-primary" onClick={() => { onPatch({ time: null, repeat: null, reminder: null, course: { ...content.course, recordIds: [] }, calendar: { ...content.calendar, allDay: false } }); setDetails(null); }}>移回未排期</button></footer></CalendarDialog>}
     </CalendarOverlay>
   </section>;

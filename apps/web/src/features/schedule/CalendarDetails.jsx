@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CalendarDialog } from './CalendarControls.jsx';
-import { titleOf } from './calendarModel.js';
+import { endOf, repeatLabel, titleOf } from './calendarModel.js';
 import * as api from './api.js';
 
 export const reminderLabel = reminder => reminder.minutes === 0 ? '结束时提醒' : `结束${reminder.side === 'before' ? '前' : '后'} ${reminder.minutes} 分钟提醒`;
@@ -83,4 +83,21 @@ export function DeletedDialog({ entries, onOpen, onClose, revision }) {
     <p className="cal-help">打开任务可查看并恢复。取消的单次任务也在这里。</p>
     {error ? <p className="cal-error" role="alert">{error}<button onClick={() => setRetry(x => x + 1)}>重试加载</button></p> : !items ? <p role="status">正在加载…</p> : !items.length ? <p className="cal-help">没有已删除任务。</p> : <div className="cal-deleted-list">{items.map(entry => <button key={`${entry.id}:${entry.origin ?? ''}`} onClick={() => onOpen(entry.id, entry.origin ?? (entry.repeat ? entry.time.date : null))}><span>{titleOf(entry)}</span><small>{entry.cancelled ? `${entry.origin} · 单次取消` : '已删除'}</small></button>)}</div>}
   </CalendarDialog>;
+}
+
+export function ConflictPreview({ content, courseState, labels, onAdopt }) {
+  const end = endOf(content);
+  const course = content.course;
+  return <details className="cal-conflict-preview"><summary>查看服务器内容</summary>
+    <dl>
+      <dt>标题</dt><dd>{content.title || '无标题'}</dd>
+      <dt>时间</dt><dd>{content.time ? `${content.time.date} ${content.calendar.allDay ? '全天' : content.time.startTime} 至 ${end.date} ${content.calendar.allDay ? '' : end.time}（${content.time.timeZone}）` : '未排期'}</dd>
+      <dt>重复</dt><dd>{repeatLabel(content.repeat)}{content.repeat && ` · 截至 ${content.repeat.until}${content.repeat.count ? ` · ${content.repeat.count} 次` : ''}${content.repeat.frequency === 'weekly' ? ` · 星期${content.repeat.weekdays.map(day => '日一二三四五六'[day]).join('、')}` : ''}`}</dd>
+      <dt>事项</dt><dd>{content.items.length ? <ul>{content.items.map(item => <li key={item.id}>{item.text} · {{ high: '高', normal: '普通', low: '低' }[item.priority] || item.priority}优先级</li>)}</ul> : '无'}</dd>
+      <dt>备注</dt><dd>{content.calendar.notes || '无'}</dd>
+      <dt>标签</dt><dd>{labels.filter(label => content.calendar.tags.includes(label.id)).map(label => label.name).join('、') || '无'}</dd>
+      <dt>提醒</dt><dd>{content.reminder ? reminderLabel(content.reminder) : '无'}</dd>
+      <dt>教学关联</dt><dd>{[course.classId && linkLabel(courseState?.classroom), course.lessonId && linkLabel(courseState?.lesson), course.recordIds.length > 0 && `${course.recordIds.length} 条教学记录：${(courseState?.records ?? []).map(linkLabel).join('、')}`].filter(Boolean).join(' · ') || '无'}</dd>
+    </dl><button onClick={onAdopt}>采用服务器内容</button>
+  </details>;
 }
