@@ -34,15 +34,23 @@ export function recoverTextFormat(source, before = '', after = '') {
   let end = 0;
   const quotes = quotedRanges(source);
   for (const match of source.matchAll(/\\n/g)) {
-    const start = match.index, after = start + 2;
-    const before = source[start - 1] ?? '', next = source[after] ?? '';
+    const start = match.index, stop = start + 2;
+    const previous = source[start - 1] ?? '', next = source[stop] ?? '';
     // TeX control words, escaped backslashes and identifiers are not line
     // separators. Inspect the original source, before Markdown decodes escapes.
-    if (before === '\\' || /[A-Za-z0-9_{}]/.test(next)) continue;
-    const word = wordAt(source, start, after);
-    if ((!before.trim() && !next.trim()) ||
-        quotes.some(([a,b]) => start >= a && after <= b) ||
-        /[A-Za-z0-9_\\/:"'“”‘’]/.test(before) || /["'“”‘’]/.test(next) ||
+    if (previous === '\\' || /[A-Za-z]/.test(next)) continue;
+    // A number is only a list marker with punctuation and a following body;
+    // bare numeric macro arguments and decimals remain literal.
+    const numberedLine = /^\d{1,9}[.)、．）](?:[ \t]+(?=\S)|(?=[\p{Script=Han}【（]))/u
+      .test(source.slice(stop));
+    if (/[0-9_{}\[\]^]/.test(next) && !numberedLine) {
+      uncertainLines = true;
+      continue;
+    }
+    const word = wordAt(source, start, stop);
+    if ((!previous.trim() && !next.trim()) ||
+        quotes.some(([a,b]) => start >= a && stop <= b) ||
+        /[A-Za-z0-9_\\/:"'“”‘’]/.test(previous) || /["'“”‘’]/.test(next) ||
         /[\/]|[A-Za-z]:|\\\\/.test(word)) {
       uncertainLines = true;
       continue;
@@ -50,7 +58,7 @@ export function recoverTextFormat(source, before = '', after = '') {
     append(source.slice(end, start), end ? '' : before, '');
     parts.push({type: 'break'});
     linesRecovered = true;
-    end = after;
+    end = stop;
   }
   append(source.slice(end), end ? '' : before, after);
   return {parts, mathRecovered, linesRecovered, uncertainLines};

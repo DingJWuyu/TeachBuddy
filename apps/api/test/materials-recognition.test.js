@@ -165,6 +165,69 @@ test('OCR formatting recovers bounded notation and table lines while preserving 
   }
 });
 
+test('OCR numbered line boundaries and adjacent HTML image separators recover without decoding commands', async () => {
+  const sources = [
+    String.raw`<table><tr><td>定义。\n12. 下一条。\n3.总结。\n4) 第四条。</td><td>保留</td></tr></table>`,
+    String.raw`<table><tr><td><img src="one.png" alt="one"/>\n<img src="two.png" alt="two\n20. caption"/></td></tr></table>`,
+    String.raw`保留 \n2 与 \n2.5、\n2_{1}、\nu2、\n{2}、\n[2]、\n^2、\n2.、\n3.foo。`,
+    String.raw`<table><tr><td>\n</td><td><img src="one.png"/>\n<span>说明</span></td></tr></table>`,
+    String.raw`<img src="one.png"/>\\n<img src="two.png"/>`,
+    String.raw`<table><tr><td><code>\n12. test</code></td><td>"句子\n23.下一句"</td><td>C:\n24. 路径</td><td>https://example.test/\n25. 路径</td><td>双转义\\n26.文字</td></tr></table>`,
+    String.raw`P_{12}\n第二行`,
+    String.raw`命令 <code>A_{1}\n中文</code> 保持字面`,
+    String.raw`链接 <a href="https://example.test/A_{1}">A_{1}\n中文</a> 保持字面`,
+    String.raw`命令 **<code>*B_{2}*\n中文</code>** 保持字面`,
+  ];
+  const raw = {width:240,height:160,parsing_res_list:sources.map((block_content,block_id)=>({
+    block_id,block_label:'text',block_content,block_bbox:[1,1,200,100],
+  }))};
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(),'recognition-numbered-lines-'));
+  let world, passed = false;
+  try {
+    world = await createIntegration({directory,workbench:{recognition:{recognizer:{
+      revision:'format-numbered-lines',async run(){return {raw,width:240,height:160,
+        assets:['one.png','two.png'].map(name=>({name,bytes:image}))};},
+    }}}});
+    let {client} = await registerMath(world,'recognition-numbered-lines@example.test');
+    const file=await upload(client),source=await preview(client,file),endpoint=`${base}/${file.id}/recognition`;
+    const accepted=await write(client,endpoint,{renditionFileId:source.renditionFileId,pages:[1]});
+    assert.equal((await waitJob(client,accepted.json.id)).state,'succeeded');
+    const url=`${endpoint}/pages/1?renditionFileId=${source.renditionFileId}`;
+    const page=(await client.request('GET',url)).json;
+    const content=id=>page.blocks.find(b=>b.block_id===id).document.blocks;
+    assert.deepEqual(content(0)[0].rows[0][0].blocks.map(b=>b.runs.map(r=>r.text).join('')),
+      ['定义。','12. 下一条。','3.总结。','4) 第四条。']);
+    assert.deepEqual(content(1)[0].rows[0][0].blocks.map(b=>b.type),['image','image']);
+    assert.equal(content(1)[0].rows[0][0].blocks[1].alt,String.raw`two\n20. caption`);
+    assert.equal(content(2)[0].runs.map(r=>r.text).join(''),sources[2]);
+    assert.equal(content(3)[0].rows[0][0].blocks[0].runs[0].text,String.raw`\n`);
+    assert(content(3)[0].rows[0][1].blocks.some(b=>b.runs?.some(r=>r.text===String.raw`\n`)));
+    assert(content(4).some(b=>b.runs?.some(r=>r.text===String.raw`\\n`)));
+    assert.deepEqual(content(6),[
+      {type:'paragraph',runs:[{type:'math',latex:'P_{12}'}]},
+      {type:'paragraph',runs:[{type:'text',text:'第二行'}]},
+    ]);
+    for(const [id,expected] of [[7,String.raw`A_{1}\n中文`],[8,String.raw`A_{1}\n中文`],[9,String.raw`*B_{2}*\n中文`]]) {
+      assert(content(id).some(b=>b.runs?.some(r=>r.type==='text' && r.text===expected)),`inline HTML literal ${id}`);
+      assert.equal(content(id).some(b=>b.runs?.some(r=>r.type==='math')),false);
+      assert.equal(content(id).flatMap(b=>b.runs ?? []).map(r=>r.text).join(''),
+        `${id===8 ? '链接' : '命令'} ${expected} 保持字面`);
+    }
+    assert(page.issues.some(i=>i.code==='text-lines-recovered' && i.blockId===0));
+    assert(page.issues.some(i=>i.code==='text-lines-recovered' && i.blockId===1));
+    for(const id of [2,3,4,5,7,8,9])assert.equal(page.issues.some(i=>i.code==='text-lines-recovered' && i.blockId===id),false,`protected block ${id}`);
+    assert.deepEqual(JSON.parse((await client.request('GET',`${base}/${page.rawFileId}/content`)).text),raw);
+    const jar=client.jar;await world.close();world=null;
+    world=await createIntegration({directory});client=world.client();client.jar=jar;
+    assert.deepEqual((await client.request('GET',url)).json,page);
+    passed=true;
+  } finally {
+    await world?.close();
+    if(passed)fs.rmSync(directory,{recursive:true,force:true});
+    else console.error(`Retained numbered line reproduction: ${directory}`);
+  }
+});
+
 // The injected recognizer only exercises persistence/recovery. Real model
 // fidelity and the complete upload-to-module path are verified separately.
 test("real-auth page recognition replays acceptance, shares completed pixels and preserves source ownership", async () => {

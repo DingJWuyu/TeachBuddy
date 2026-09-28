@@ -262,8 +262,14 @@ export async function normalizeRecognition({ result, storeAsset }) {
       if (buffer.trim()) output.push(...(await parseMarkdown(buffer, recover)));
       buffer = "";
     };
-    for (const node of nodes) {
+    for (const [index, node] of nodes.entries()) {
       if (node.nodeName === "#text") {
+        if (recover && node.value.trim() === '\\n' &&
+            nodes[index - 1]?.tagName === 'img' && nodes[index + 1]?.tagName === 'img') {
+          issue('text-lines-recovered',
+            '已按相邻图片结构恢复换行分隔，原始标记保留在识别原稿中，请对照原页核对。');
+          continue;
+        }
         buffer += node.value;
         continue;
       }
@@ -359,8 +365,8 @@ export async function normalizeRecognition({ result, storeAsset }) {
               '文字中的下标与 Markdown 标记边界不明确，已保留原文，请核对公式。');
             return;
           }
-          for (const child of node.children)
-            await visit(child, allowRecovery && !['link', 'linkReference'].includes(node.type));
+          await visitNodes(node.children,
+            allowRecovery && !['link', 'linkReference'].includes(node.type));
         } else {
           const original = sourceOf(node);
           const unparsedMath = node.type === 'text' && hasUnparsedMath(original);
@@ -401,7 +407,33 @@ export async function normalizeRecognition({ result, storeAsset }) {
           appendText(text);
         }
       };
-      for (const node of nodes) await visit(node);
+      const htmlTag = node => node.type === 'html'
+        ? node.value.match(/^<(\/?)(code|pre|a)(?=[\s/>])/i) : null;
+      const visitNodes = async (items, allowRecovery = recover) => {
+        for (let i = 0; i < items.length; i++) {
+          const node = items[i], tag = htmlTag(node);
+          if (tag && !tag[1]) {
+            // Inline HTML is split into opening tag, Markdown nodes and closing
+            // tag. Give parse5 the whole protected fragment, including its
+            // literal Markdown/TeX content, instead of losing the parent scope.
+            let depth = 1, end = i + 1;
+            for (; end < items.length; end++) {
+              const next = htmlTag(items[end]);
+              if (next && next[2].toLowerCase() === tag[2].toLowerCase())
+                depth += next[1] ? -1 : 1;
+              if (!depth) break;
+            }
+            if (depth) issue('text-format-uncertain',
+              '行内 HTML 字面区域未完整闭合，已保留本段内容，请对照原稿核对。');
+            end = Math.min(end, items.length - 1);
+            flush();
+            output.push(...await parseHtml(source.slice(node.position.start.offset,
+              items[end].position.end.offset), false));
+            i = end;
+          } else await visit(node, allowRecovery);
+        }
+      };
+      await visitNodes(nodes);
       flush();
       return output;
     }
