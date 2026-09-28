@@ -41,6 +41,7 @@ export function createScheduleModule({ db, mutations, classes, lessons, beforeCh
   return {
     router,
     port: {
+      readForExport: service.readForExport,
       readOccurrence: (principal, key) => service.readOccurrence(principal, key),
       listReminderCandidates: (principal, now) => service.listReminderCandidates(principal, now)
     }

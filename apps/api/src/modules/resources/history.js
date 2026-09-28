@@ -51,6 +51,11 @@ export function createResourceHistory(db, files) {
     };
   }
   return {
+    readForExport(principal) {
+      return db.prepare("SELECT resourceId,value FROM resource_file_history WHERE accountKey=?")
+        .all(principal.accountKey)
+        .map(row => ({ resourceId: row.resourceId, revision: JSON.parse(row.value) }));
+    },
     capture,
     list,
     describe,

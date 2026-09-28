@@ -449,6 +449,13 @@ export function createClassesService({ repository, questions, lessons, math, con
   }
 
   return {
+    readForExport(principal) {
+      const accountKey = requireAccountKey(principal);
+      return {
+        classes: repository.listClassesForAccount(accountKey).map(toClass),
+        records: repository.listRecordsForAccount(accountKey).map(record => toRecord(principal, record, 2)),
+      };
+    },
     listClasses,
     overview,
     getClass,

@@ -185,5 +185,12 @@ export function createLessonExports({
       }
     },
   };
-  return { create, list, remove, handler };
+  function readForExport(principal) {
+    const saved = db.prepare("SELECT id,record,snapshot FROM lesson_exports WHERE accountKey=?").all(principal.accountKey);
+    return {
+      exports: saved.map(row => JSON.parse(row.record)),
+      exportSnapshots: saved.map(row => ({ id: row.id, snapshot: JSON.parse(row.snapshot) })),
+    };
+  }
+  return { create, list, remove, handler, readForExport };
 }

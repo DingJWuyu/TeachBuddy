@@ -13,10 +13,11 @@ export function createTaxonomy({ db, all, save, now }) {
   const put = db.prepare(
     "INSERT INTO resource_taxonomy VALUES (?,?) ON CONFLICT(accountKey) DO UPDATE SET value=excluded.value",
   );
-  const read = (principal) => {
+  const readStored = (principal) => {
     const row = get.get(principal.accountKey);
-    return row ? JSON.parse(row.value) : { version: 1, folders: [], tags: [] };
+    return row ? JSON.parse(row.value) : null;
   };
+  const read = principal => readStored(principal) ?? { version: 1, folders: [], tags: [] };
   function validateLinks(principal, input) {
     const tax = read(principal);
     if (input.folderId && !tax.folders.some((f) => f.id === input.folderId))
@@ -95,5 +96,5 @@ export function createTaxonomy({ db, all, save, now }) {
     put.run(principal.accountKey, JSON.stringify(result));
     return result;
   }
-  return { read, update, validateLinks };
+  return { read, readStored, update, validateLinks };
 }

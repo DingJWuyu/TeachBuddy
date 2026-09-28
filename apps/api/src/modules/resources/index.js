@@ -383,7 +383,13 @@ export function createResourcesModule({
     );
   }
   materialErrors(router);
-  return { router, port: { operations, readForReferenceV2 } };
+  return { router, port: {
+    operations,
+    readForReferenceV2,
+    readForExport(principal) {
+      return { resources: all(principal), taxonomy: taxonomy.readStored(principal), fileRevisions: history.readForExport(principal) };
+    },
+  } };
 }
 
 function validateQuery(query) {

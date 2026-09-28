@@ -479,6 +479,20 @@ export function createMaterialsLessons({
     };
   }
   const exports = createLessonExports({ db, jobs, files, getLesson: get, now });
+  function readHistoryForExport(principal, id) {
+    return history.list(principal, id).items.map(({ version, savedAt }) => {
+      const saved = history.get(principal, id, version);
+      return { ...read(principal, saved.record, saved), savedAt };
+    });
+  }
+  function readForExport(principal) {
+    const records = repository.listLessonsForAccount(account(principal));
+    return {
+      lessons: records.map(record => read(principal, record)),
+      revisions: records.flatMap(record => readHistoryForExport(principal, record.id)),
+      ...exports.readForExport(principal),
+    };
+  }
   const operations = {};
   const router = Router();
   order?.mount(router);
@@ -618,12 +632,8 @@ export function createMaterialsLessons({
     port: {
       operations,
       listUsages,
-      readHistoryForExport(principal, id) {
-        return history.list(principal, id).items.map(({ version, savedAt }) => {
-          const saved = history.get(principal, id, version);
-          return { ...read(principal, saved.record, saved), savedAt };
-        });
-      },
+      readHistoryForExport,
+      readForExport,
     },
     jobHandlers: { export: exports.handler },
     get,

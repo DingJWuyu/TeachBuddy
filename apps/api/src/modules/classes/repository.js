@@ -125,6 +125,7 @@ export function createClassesRepository(db) {
       removeClass.run(classId, accountKey);
     },
 
+    listRecordsForAccount: accountKey => db.prepare(`SELECT ${recordColumns} FROM classes_records WHERE accountKey = ?`).all(accountKey).map(decode),
     listActiveRecordsForAccount: accountKey => db.prepare('SELECT * FROM classes_records WHERE accountKey = ? AND deletedAt IS NULL ORDER BY recordedOn DESC, createdAt DESC, id ASC').all(accountKey).map(decode),
     purgeRecord(accountKey, recordId, at) {
       db.prepare(`INSERT INTO classes_removed_objects (id, accountKey, kind, classId, version, removedAt)

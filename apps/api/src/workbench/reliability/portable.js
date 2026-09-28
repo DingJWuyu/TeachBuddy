@@ -6,16 +6,8 @@ import { pipeline } from "node:stream/promises";
 import { createHash } from "node:crypto";
 import { documentText, walkBlocks } from "../../modules/questions/materials-content.js";
 import { validateArchive } from "./schema.js";
-import { createQuestionsRepository } from "../../modules/questions/repository.js";
-import { createMaterialsStore } from "../../modules/questions/materials-store.js";
-import { createClassesRepository } from "../../modules/classes/repository.js";
-import { createClassesService } from "../../modules/classes/service.js";
-import { createScheduleService } from "../../modules/schedule/service.js";
-import { createScheduleRepository } from "../../modules/schedule/repository.js";
-import { mapExceptionRow } from "../../modules/schedule/repository.js";
 import { sha256, revision, syncDir } from "./storage.js";
 
-const withoutAccount = ({ accountKey, ...value }) => value;
 const escape = (value) =>
   String(value).replace(
     /[&<>"']/g,
@@ -138,21 +130,12 @@ function readableLesson(lesson, files) {
 // provider configuration are deliberately absent; teacher text is never redacted.
 export function takeSnapshot(db, principal, loader) {
   const account = principal.accountKey;
-  const classes = createClassesService({
-    repository: createClassesRepository(db),
-    questions: loader.get("questions").port,
-    lessons: loader.get("lessons").port,
-    math: loader.get("math").port,
-  });
-  const schedule = createScheduleService({
-    repository: createScheduleRepository(db),
-    classes: loader.get("classes").port,
-    lessons: loader.get("lessons").port,
-    beforeChange() {
-      throw new Error("Export must not settle notifications");
-    },
-    clock: { now: () => new Date().toISOString() },
-  });
+  const questions = loader.get("questions").port.readForExport(principal);
+  const resources = loader.get("resources").port.readForExport(principal);
+  const math = loader.get("math").port.readForExport(principal);
+  const lessons = loader.get("lessons").port.readForExport(principal);
+  const classes = loader.get("classes").port.readForExport(principal);
+  const schedule = loader.get("schedule").port.readForExport(principal);
   const rows = (table) =>
     db.prepare(`SELECT * FROM ${table} WHERE accountKey=?`).all(account);
   const objects = [];
@@ -166,86 +149,42 @@ export function takeSnapshot(db, principal, loader) {
     rows(table).forEach((row) =>
       add(kind, JSON.parse(row[column]), row.id ?? kind),
     );
-  const store = createMaterialsStore(db, createQuestionsRepository(db));
-  store.questions(principal).forEach((value) => add("question", value));
-  add("question-taxonomy", store.taxonomy(principal));
-  values("questions_materials_imports", "import");
-  values("resource_items", "resource");
-  values("resource_taxonomy", "resource-taxonomy");
-  rows("resource_file_history").forEach(row =>
-    add("resource-file-revision", JSON.parse(row.value), row.resourceId, row.version),
-  );
-  values("math_works", "math");
-  db.prepare(
-    "SELECT r.* FROM math_revisions r JOIN math_works w ON w.id=r.workId WHERE w.accountKey=?",
-  )
-    .all(account)
-    .forEach((row) =>
-      add("math-revision", JSON.parse(row.value), row.workId, row.version),
-    );
+  questions.questions.forEach(value => add("question", value));
+  add("question-taxonomy", questions.taxonomy);
+  questions.imports.forEach(value => add("import", value));
+  resources.resources.forEach(value => add("resource", value));
+  if (resources.taxonomy) add("resource-taxonomy", resources.taxonomy);
+  resources.fileRevisions.forEach(({ resourceId, revision }) =>
+    add("resource-file-revision", revision, resourceId, revision.version));
+  math.works.forEach(value => add("math", value));
+  math.revisions.forEach(({ workId, revision }) =>
+    add("math-revision", revision, workId, revision.version));
   const supplemental = {
-    mathExports: rows("math_exports").map((row) => JSON.parse(row.value)),
+    mathExports: math.exports,
     previews: rows("materials_previews").map((row) => JSON.parse(row.value)),
     renditions: rows("materials_renditions").map((row) =>
       JSON.parse(row.value),
     ),
     recognitionResults: rows('materials_recognition_results').map(row => JSON.parse(row.value)),
     recognitionRequests: rows('materials_recognition_requests').map(row => ({ jobId: row.jobId, ...JSON.parse(row.value) })),
-    questionRecognitionEvidence: rows('questions_materials_tasks').map(row => {
-      const task = JSON.parse(row.value);
-      return { jobId: row.id, importId: task.importId, lateResults: task.lateResults ?? {} };
-    }).filter(task => Object.keys(task.lateResults).length),
-    lessonExportSnapshots: rows("lesson_exports").map((row) => ({
-      id: row.id,
-      snapshot: JSON.parse(row.snapshot),
-    })),
+    questionRecognitionEvidence: questions.recognitionEvidence,
+    lessonExportSnapshots: lessons.exportSnapshots,
   };
-  const lessons = loader.get("lessons").port;
-  rows("lesson_items").forEach((row) => {
-    add("lesson", lessons.operations.getLessonV3({ principal, id: row.id }).body);
+  lessons.lessons.forEach(lesson => {
+    add("lesson", lesson);
     const seen = new Set();
-    for (const revision of lessons.readHistoryForExport(principal, row.id)) {
+    for (const revision of lessons.revisions.filter(revision => revision.id === lesson.id)) {
       if (seen.has(revision.version)) continue;
       seen.add(revision.version);
-      add("lesson-revision", revision, row.id, revision.version);
+      add("lesson-revision", revision, lesson.id, revision.version);
     }
   });
-  rows("lesson_exports").forEach((row) =>
-    add("lesson-export", JSON.parse(row.record), row.id),
-  );
-  rows("classes_items").forEach((row) => add("class", withoutAccount(row)));
-  rows("classes_records").forEach((row) =>
-    add("record", classes.getRecordV2(principal, row.id)),
-  );
-  rows("schedule_entries").forEach((row) =>
-    add(
-      "entry",
-      {
-        entry: schedule.getEntry(principal, row.id),
-        exceptions: db
-          .prepare(
-            "SELECT * FROM schedule_exceptions WHERE entryId=? ORDER BY originDate",
-          )
-          .all(row.id)
-          .map(mapExceptionRow),
-      },
-      row.id,
-      row.version,
-    ),
-  );
-  rows("schedule_notifications").forEach((row) =>
-    add("notification", {
-      id: row.id,
-      key: { entryId: row.entryId, originDate: row.originDate || null },
-      title: row.title,
-      dueAt: row.dueAt,
-      readAt: row.readAt,
-      dismissedAt: row.dismissedAt,
-    }),
-  );
-  rows("schedule_settings").forEach((row) =>
-    add("schedule-settings", { timeZone: row.timeZone, version: row.version }),
-  );
+  lessons.exports.forEach(value => add("lesson-export", value));
+  classes.classes.forEach(value => add("class", value));
+  classes.records.forEach(value => add("record", value));
+  schedule.entries.forEach(value => add("entry", value, value.entry.id, value.entry.version));
+  schedule.notifications.forEach(value => add("notification", value));
+  if (schedule.settings) add("schedule-settings", schedule.settings);
   rows("agent_conversations").forEach((row) =>
     add("conversation", JSON.parse(row.document).snapshot, row.id),
   );

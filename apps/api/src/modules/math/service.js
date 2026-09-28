@@ -414,5 +414,16 @@ export function createMathService({ db, mutations, files }) {
         return { status: created ? 201 : 200, body: persist(principal, work) };
       });
     };
-  return { operations, readForReferenceV1, readForTeachingLinkV1 };
+  function readForExport(principal) {
+    const accountKey = principalKey(principal);
+    return {
+      works: db.prepare("SELECT value FROM math_works WHERE accountKey=?")
+        .all(accountKey).map(row => JSON.parse(row.value)),
+      revisions: db.prepare("SELECT r.workId,r.value FROM math_revisions r JOIN math_works w ON w.id=r.workId WHERE w.accountKey=?")
+        .all(accountKey).map(row => ({ workId: row.workId, revision: JSON.parse(row.value) })),
+      exports: db.prepare("SELECT value FROM math_exports WHERE accountKey=?")
+        .all(accountKey).map(row => JSON.parse(row.value)),
+    };
+  }
+  return { operations, readForReferenceV1, readForTeachingLinkV1, readForExport };
 }

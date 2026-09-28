@@ -33,6 +33,7 @@ export function createClassesModule({ db, mutations, questions, lessons, math, c
   return {
     router,
     port: {
+      readForExport: service.readForExport,
       ...(enableV2 ? { listSourceRecordsV2: service.listSourceRecordsV2 } : {}),
       readClass(principal, id) {
         return service.readClass(principal, id);

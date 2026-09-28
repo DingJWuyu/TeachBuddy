@@ -83,5 +83,12 @@ export function createReminders({ db, mutations, schedule, clock }) {
     mutations, method: 'POST', validate: validateBatch,
     write: ({ principal, body }) => ({ status: 200, body: { items: change(principal, body.ids, body.action) } })
   }));
-  return { router, captureDue };
+  return {
+    router,
+    captureDue,
+    readForExport(principal) {
+      return db.prepare('SELECT * FROM schedule_notifications WHERE accountKey=?')
+        .all(principal.accountKey).map(project);
+    },
+  };
 }

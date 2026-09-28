@@ -10,6 +10,11 @@ export function createScheduleModule(dependencies) {
     beforeChange: (principal, now) => reminders.captureDue(principal, now)
   });
   reminders = createReminders({ ...dependencies, schedule: schedule.port });
+  const readScheduleForExport = schedule.port.readForExport;
+  schedule.port.readForExport = principal => ({
+    ...readScheduleForExport(principal),
+    notifications: reminders.readForExport(principal),
+  });
   schedule.router.use(reminders.router);
   return schedule;
 }

@@ -67,6 +67,16 @@ export function createQuestionsModule({
     jobHandlers,
     port: {
       operations: v2.operations,
+      readForExport(principal) {
+        return {
+          questions: store.questions(principal),
+          taxonomy: store.taxonomy(principal),
+          imports: store.list("imports", principal),
+          recognitionEvidence: store.list("tasks", principal)
+            .filter(task => Object.keys(task.lateResults ?? {}).length)
+            .map(task => ({ jobId: task.id, importId: task.importId, lateResults: task.lateResults })),
+        };
+      },
       readForReferenceV2(principal, id) {
         return materials.service.readQuestionForReferenceV2({ principal, id });
       },

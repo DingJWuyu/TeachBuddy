@@ -345,6 +345,15 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
   }
 
   return {
+    readForExport(principal) {
+      const settings = repository.readSettings(principal.accountKey);
+      return {
+        entries: repository.listEntries(principal.accountKey).map(entry => ({
+          entry: entryView(principal, entry), exceptions: repository.listExceptions(entry.id),
+        })),
+        settings: settings ? { timeZone: settings.timeZone, version: settings.version } : null,
+      };
+    },
     listLabels(principal) {
       return { items: repository.listLabels(principal.accountKey) };
     },
