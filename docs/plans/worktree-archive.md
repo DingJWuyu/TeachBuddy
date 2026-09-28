@@ -1,6 +1,6 @@
 # 工作树恢复索引
 
-当前运行和开发只使用 `/home/liam_t/项目/TeacherWorkspace-preview`，常驻分支为 `preview/usable-mvp`；`/home/liam_t/项目/TeacherWorkspace` 保留 `main`，并承载两树共用的 `.git`，不能作为旧副本删除。两树以 `git worktree list` 核对。
+仅在找回旧任务、证据或未提交现场时读本页；当前工作树分工、授权和集成状态见[项目状态](run-state.md)，分支用 `git worktree list` 核对。`/home/liam_t/项目/TeacherWorkspace` 承载共享 `.git`，不能作为旧副本删除。
 
 ## Git 历史
 

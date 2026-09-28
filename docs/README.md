@@ -1,35 +1,40 @@
-# 文档索引
+# 文档入口
 
-了解产品读根 [README](../README.md)。接续工作读[当前状态](plans/run-state.md)。日常修改从下表选一个功能，按任务需要继续展开，不要求通读目录。
+先按任务选入口；进入功能页后，仅在其触发条件满足时展开契约、样本和证据。
+
+| 要做什么 | 先读什么 | 何时继续展开 |
+| --- | --- | --- |
+| 了解产品、体验或启动 | 根[README](../README.md) | 配置、隔离实例或维护操作读[SETUP](SETUP.md) |
+| 查看进度、选下一项工作 | [项目状态](plans/run-state.md) | 核查某项结论才读其证据；实施时进入对应功能页 |
+| 接手模块、派发或执行任务 | [开发约定](agents/module-development.md) | 先确认本次目标、工作树和权限，再读下表对应模块 |
+| 判断是否属于既定目标 | [产品范围](PRODUCT_SCOPE.md) | 页面和跨模块往返读[共同交互](WORKBENCH_DESIGN.md) |
+| 修改界面 | 对应功能页和[设计与验证规则](rules/design-and-verification.md) | 调整某页面外观时才看该页指定参考图 |
+| 修改存储、接口或跨模块交换 | 功能页指向的契约 | 精确字段继续读其 schema；部分文件被程序直接读取 |
+| 验证改动或准备交付 | [验证指南](acceptance/README.md) | 本次功能选择对应场景；完整交付才展开[验收矩阵](acceptance/mvp-matrix.md) |
+| 核查旧成果或恢复现场 | 项目状态中的[证据入口](plans/run-state.md#证据边界) | 文件已归档时再读[恢复索引](plans/worktree-archive.md) |
 
 ## 功能规格
 
-功能页拥有用户行为、实现入口和局部验证方法。改变交换语义、存储或跨模块调用时才读它指向的契约；核对字段时再进入 OpenAPI 和样本。
-
-| 修改什么 | 入口 |
+| 任务范围 | 唯一行为入口 |
 | --- | --- |
-| 录题、提取校对、分类、原稿、改编 | [题库](features/questions.md) |
-| 文稿、环节、取材、引用更新、Word/PDF | [备课](features/lessons.md) |
-| 上传、文件夹、预览、替换 | [资源库](features/resources.md) |
+| 题库、提取校对、分类、原稿、改编 | [题库](features/questions.md) |
+| 课稿、环节、取材、引用更新、Word/PDF | [备课](features/lessons.md) |
+| 上传、文件夹、预览、检索、替换 | [资源库](features/resources.md) |
 | 公式、图形、动态作品、源码、离线演示 | [数学工坊](features/math.md) |
 | 班级反馈、日程、重复、提醒 | [教学与时间](features/teaching-time.md) |
 | 偏好、退出、帮助、更新日志 | [设置与帮助](features/settings.md) |
-| 个人资料包、模块误删恢复、备份还原 | [数据管理](features/data.md) |
+| 个人资料包、模块恢复、实例备份还原、外部 AI | [数据管理](features/data.md) |
 | 登录、注册、邮件、身份交接 | [账户](features/identity.md) |
-| 对话、业务工具、模型接入 | [产品 Agent](features/agent.md) |
+| 产品内对话、业务工具、模型接入 | [产品助理](features/agent.md) |
 
-## 按需展开
+模块规格描述行为与实现边界，不授予新增开发、模型调用或外部操作权限。当前暂停和待办只查项目状态及本次用户指令。
 
-| 当前问题 | 权威入口 |
-| --- | --- |
-| 新 session 负责哪个模块、遵守哪些原则、如何接手开发 | [模块开发约定](agents/module-development.md) |
-| 是否属于产品范围，术语指什么 | [产品范围](PRODUCT_SCOPE.md)、[领域词义](../CONTEXT.md) |
-| 页面外壳、辅助栏、跨模块往返如何工作 | [共同交互](WORKBENCH_DESIGN.md) |
-| UI 尺寸、动效、参考及浏览器验证如何处理 | [界面规则](rules/design-and-verification.md) |
-| 如何运行、隔离测试、配置转换工具或部署 | [运行指南](SETUP.md) |
-| 验证哪些行为、使用哪些样本 | [验证入口](acceptance/README.md)；完整交付才展开[矩阵](acceptance/mvp-matrix.md) |
-| 当前还有什么缺口、可以执行什么 | [当前状态](plans/run-state.md)；全局依赖见[DAG](plans/mvp-dag.md) |
-| 如何派发、选择模型和接收回执 | [执行约定](plans/execution-protocol.md) |
-| 如何操作 Issue 或调整稳定架构 | [Issue 约定](agents/issue-tracker.md)、[ADR](adr/) |
+## 维护文档
 
-`contracts/` 保存协议语义、精确 schema、样本和必要的固定输入；部分文件由后端直接读取。`acceptance/` 保存行为判据，测试输入位于对应测试的 `fixtures/`，运行输出位于忽略的 `test-results/`。截图只在对应页面的视觉参考中按需查看。自动提取方案仅在继续该路线时由[题库](features/questions.md)进入。
+- 改行为更新对应功能页；改交换语义更新契约；改完成状态更新[项目状态](plans/run-state.md)，并留下能核查该结论的证据入口。公开能力或运行方式改变时同步根 README 或 SETUP。
+- 产品目标只由 PRODUCT_SCOPE 及其功能规格维护；状态、缺陷和下一步只在项目状态维护。模块的输入限制属于行为约定，不自动成为开发待办。规则在一处维护，其他页面链接到它。
+- 入口指针写清触发条件和用途。所有任务必需的约束留在当前层；只影响某类任务的细节放到对应功能、契约或验证页。把同一概念的定义、条件和例外放在一起。
+- 当前文档保留有效信息；完成过程、模型次数、临时端口和派工回执留任务产物，历史从固定 Git 版本读取。代码、配置和 CLI 能直接查到的清单不再抄一份。
+- 移动或删除文件前核对入链、锚点、程序加载、测试 fixture 和固定版本引用；保留完整运行及验证链路。受保护文件和自动生成内容遵守根 AGENTS 的边界。
+
+术语与 ADR 按[领域约定](agents/domain.md)，问题记录按[Issue约定](agents/issue-tracker.md)与[标签表](agents/triage-labels.md)。

@@ -58,6 +58,22 @@ Web 与 `/api` 由同一个 HTTPS origin 提供。固定构建不热更新；真
 
 当前实例的工具可用性与待处理项由[台账](plans/run-state.md)维护；修改运行配置后必须实际转换并打开文件验证。
 
+### 题库文字 PDF
+
+题库使用独立的 Xpdf 4.06 `pdftohtml` 可执行文件读取文字层；页面预览与配图定位继续使用已有 Poppler。Xpdf 的 HTML 保留按阅读顺序排列的逐行文字，适配层只取文字节点，不向浏览器提供生成的 HTML，也不自建分栏算法。`pdftotext -layout` 会跨栏拼横行，Xpdf 默认纯文本又会合并段落内的题号行，因此二者不能替代此入口。
+
+Linux x86-64 的官方包为 [xpdf-tools-linux-4.06.tar.gz](https://dl.xpdfreader.com/xpdf-tools-linux-4.06.tar.gz)，SHA-256 为 `940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3`。解压并保留完整包后，将运行环境的 `QUESTIONS_XPDF_PDFTOHTML` 指向 `bin64/pdftohtml` 的绝对路径；未配置时查找 `/usr/local/bin/xpdf-pdftohtml`，不要指向 Poppler 的同名命令。开发测试可以装在当前 worktree 的 `.scratch/questions-tools/`，部署时放在独立持久工具目录。安装步骤：
+
+```bash
+mkdir -p .scratch/questions-tools
+curl --fail --location https://dl.xpdfreader.com/xpdf-tools-linux-4.06.tar.gz -o .scratch/questions-tools/xpdf-tools-linux-4.06.tar.gz
+printf '%s\n' '940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3  .scratch/questions-tools/xpdf-tools-linux-4.06.tar.gz' | sha256sum -c -
+tar -xzf .scratch/questions-tools/xpdf-tools-linux-4.06.tar.gz -C .scratch/questions-tools
+export QUESTIONS_XPDF_PDFTOHTML="$PWD/.scratch/questions-tools/xpdf-tools-linux-4.06/bin64/pdftohtml"
+```
+
+启动 API、HTTP 测试和上述浏览器验证时使用同一配置。读取在已有 Bubblewrap 禁网沙箱内逐页执行，输入只读，输出写入独立临时目录并在结束后清理，沿用时间与内存限制。工具缺失或失败时原稿保留、整理任务失败，修复配置后可重试；不静默退回会串栏的路径。Xpdf 包声明 GPL v2 或 v3，重分发二进制需保留包内 README、手册、COPYING 和 COPYING3；本仓库只调用外部工具，不收录其二进制或源码。
+
 ## 本地页识别工具
 
 `MATERIALS_OCR_HOME` 指向独立、持久的 PaddleOCR 工具目录。未配置时不运行新识别，已经保存的机器结果仍可读取。识别结果与人工采用的边界见[共用页识别](contracts/workbench/recognition.md)，不把文字搜索命中等同于题目整理或人工校对完成。

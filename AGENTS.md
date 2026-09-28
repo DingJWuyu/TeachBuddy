@@ -3,11 +3,11 @@
 ## 项目入口
 
 - 核对实际能力或运行状态时读 `README.md`；`prototype/` 是交互参考，`apps/` 才是真实产品实现位置，旧演示 API 不约束新契约。
-- 编排 MVP 时从 `docs/plans/mvp-dag.md` 进入调度视图；了解总体进度时可从 `docs/ROADMAP.md` 导航。
-- 当前编排状态和下一步读取 `docs/plans/run-state.md`；它只维护执行台账，不替代 DAG 的依赖与授权视图。唯一开发树为当前 `TeacherWorkspace-preview`；旧任务现场按 `docs/plans/worktree-archive.md` 查找。
-- 仅编排者：效率优先，在依赖与权限允许时并行使用 worktree；某条 flow 等用户时继续其他可推进的 flow。派发 prompt 保持最小必要，模型路由和具体规则见 `docs/plans/execution-protocol.md#orchestration`，任务包见 `docs/plans/task-package.md`。
-- 需要选择或解释 skill 流程时读取 `docs/plans/skill-routing.md`；任务包点名 skill 时，完整读取其 `SKILL.md` 及直接引用。业务 session 之间不互聊、不扩 DAG；skill 明确要求的有界内部 subagent 由调用 session 管理并聚合，只是该规则的有限例外，不单列 DAG 节点。
-- 接到设计、实现或独立验收任务时，从本次任务包的必读清单进入对应节点、规格和 `docs/plans/execution-protocol.md` 的本角色章节；按触发条件补读，不要求通读 DAG 或其他模块。
+- 查找文档时从 `docs/README.md` 按任务进入；总体进度、剩余事项、依赖顺序与当前授权统一读取 `docs/plans/run-state.md`。
+- 用户体验与集成使用当前 `TeacherWorkspace-preview`；模块工作树和暂停状态以项目状态为准。恢复旧任务现场时读取 `docs/plans/worktree-archive.md`。
+- 仅编排者：效率优先，在依赖与权限允许时并行使用 worktree；某条工作线等用户时继续其他可推进的工作线。派发 prompt 保持最小必要，任务包、模型和具体规则见 `docs/agents/module-development.md#编排`。
+- 需要选择或解释 skill 流程时读取开发约定的编排节；任务包点名 skill 时，完整读取其 `SKILL.md` 及直接引用。业务 session 之间不互聊、不扩任务；skill 明确要求的有界内部 subagent 由调用 session 管理并聚合，只是该规则的有限例外，不单列业务任务。
+- 接到设计、实现或独立验收任务时，从本次任务的必读清单进入规格和 `docs/agents/module-development.md`；按角色和触发条件补读，不要求通读项目状态或其他模块。
 - 设计或核查范围时读取 `docs/PRODUCT_SCOPE.md` 的相关段落；页面和跨模块行为读取 `docs/WORKBENCH_DESIGN.md` 的相关段落。范围不能由旧代码或原型反推。
 - 登录注册由独立 session 负责；涉及身份交接或退出时读取 `docs/contracts/auth.md`，核对其源版本与未完成项，不把讨论中的契约当成已实现能力。
 
@@ -34,7 +34,7 @@
 
 ### 开发模型路由
 
-派发任务或恢复执行时，按 [MVP 执行协议的模型映射](docs/plans/execution-protocol.md#模型与固定派发)选择 Codex CLI 模型与 effort，并记录到任务包和回执。开发任务停用 dsh，不设自动降级；skill 内部助手继承调用 session。产品内的 pi runtime 与产品模型白名单另行约束。
+派发任务或恢复执行时，按 [开发约定的模型映射](docs/agents/module-development.md#模型与固定派发)选择 Codex CLI 模型与 effort，并记录到任务包和回执。开发任务停用 dsh，不设自动降级；skill 内部助手继承调用 session。产品内的 pi runtime 与产品模型白名单另行约束。
 
 ### Issue tracker
 

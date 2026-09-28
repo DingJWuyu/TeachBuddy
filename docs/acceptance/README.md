@@ -13,7 +13,7 @@
 | 跨模块组合 | 受影响的真实跨模块路径及必要回归 |
 | 开发服务、组件挂载与清理 | [开发服务回归](#开发服务回归)，保留 React StrictMode，验证重复初始化后仍可读取、上传和保存 |
 
-测试文件/config 从[功能规格](../README.md#功能规格)进入；命令以根和各 workspace 的 `package.json` 为准。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。教学基础和数学关联各有独立 Background，不混用前置条件。
+测试文件/config 从[功能规格](../README.md#功能规格)进入；命令以根和各 workspace 的 `package.json` 为准。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。教学基础和数学关联各有独立 Background，不混用前置条件。旧场景中的“软删除”对应可恢复的归档/删除；永久删除另按模块规格验收，不用归档场景证明不可恢复操作。
 
 ## 开发服务回归
 

@@ -1,6 +1,21 @@
 # 数学与材料质量样本
 
-本页定义固定题意与人工核对答案。它们用于评估保真，不把答案表喂给提取器。已物化输入位置见[提取方案](../research/c21-open-source-reuse.md)，当前本树可运行 fixture 在 `apps/web/e2e/fixtures/materials/` 与 `materials-questions/`。不需要为阅读文档重新生成、下载或调用模型。
+本页定义固定题意与人工核对答案。它们用于评估保真，不把答案表喂给提取器。输入与回放位置见[固定输入](#固定输入与回放)。不需要为阅读文档重新生成、下载或调用模型。
+
+## 固定输入与回放
+
+只在复现或补验时读取；先核对输入摘要、识别修订及受测版本，不为阅读文档重跑模型。`.scratch` 是本机证据位置，新环境缺少时按[恢复索引](../plans/worktree-archive.md)查找，缺输入明确未验。
+
+| 用途 | 输入位置与使用方式 |
+| --- | --- |
+| 通用材料、题库与 Office | `apps/web/e2e/fixtures/materials/`、`materials-questions/`、`office/`；原始提取实验输入可从 `ecd1ed6d8f974fba20ac92d40d5b6b943a3b0170:experiments/C21/next-1/` 的 Git 树追溯 |
+| 完整外部 PDF E | preview `.scratch/ocr-mainline/fixed-inputs/E.pdf`，原件摘要及页定义见下节 |
+| 扩展 E9/E10 原页 | preview `.scratch/ocr-quality/expanded-inputs/`；预期内容对照真实原页，不能从输出反推 |
+| 真实原始识别与备课配图回放 | preview `.scratch/ocr-quality/real-http/`，其中 `data/` 含备课配图回放所需数据库与文件，属于保留证据；`LESSONS_REGION_REPLAY_ROOT` 指向此目录 |
+| 最终整页转换与题库扩展回放 | preview `.scratch/ocr-quality/final-http-r2/pages/`；题库回放参数及私有 PDF 要求见[题库验证](../features/questions.md#接口代码与判断结果) |
+| 仓库内消费回放 | `apps/web/e2e/fixtures/materials-questions/recognition/` 与 `resources-recognition/`，使用真实机器产物；可重放不等于当前模型新识别 |
+
+`SHA:路径` 用 `git show` 读取文件或 `git ls-tree` 查目录；已执行结果和版本只从[证据入口](../plans/run-state.md#证据边界)核对。固定输入与机器证据不能因测试业务数据可丢弃而删除。
 
 ## 提取与 Office 共用样本
 
@@ -25,13 +40,13 @@
 | F | I 第2页副本，将 Q3 条件中的一个数字遮住；另准备截断的 PDF 副本。 | 缺失数字应待核对，损坏 PDF 应明确失败；不伪造原始信息，其他题仍可保留。 |
 | E | 华南师范大学公开《函数的基本性质单元教学设计》PDF，第7-8页（PDF 序号，从1开始），保留全文件作原稿。 | 例6跨页、练习与思考两组各有小问，三列表格混有教学点评，第8页思考有函数图；按三个题组评分，小问不强制拆成顶层题。 |
 
-E 是已有真实教学材料，不依赖用户再找样本：[原件 URL](https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf)。2026-09-21 本机下载核对：1,115,735 bytes，13页 A4，SHA-256 `b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a`。默认 Python 请求曾返回403，带普通浏览器 User-Agent 与 `Referer: https://maths.scnu.edu.cn/` 成功；这是公开文件请求，不涉及登录或密钥。C20 用 Poppler 渲染并目视检查了第8页，确认公式、图和三列表格存在，未做提取实验。下载若字节变化先记录差异，不能默默用更简单材料替代。受版权保护原件不提交仓库，实验目录保留原文件及校验值供复核。
+E 是已有真实教学材料，不依赖用户再找样本：[原件 URL](https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf)。2026-09-21 本机下载核对：1,115,735 bytes，13页 A4，SHA-256 `b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a`。默认 Python 请求曾返回403，带普通浏览器 User-Agent 与 `Referer: https://maths.scnu.edu.cn/` 成功；这是公开文件请求，不涉及登录或密钥。下载若字节变化先记录差异，不能默默用更简单材料替代。受版权保护原件不提交仓库，实验目录保留原文件及校验值供复核。
 
 E 的期望结构仅由原页核对：例6与续页合并、练习三小问保持一组、思考三小问与图保持一组；原件无明确答案的地方留空。先人工确定范围后再看机器结果，避免按结果改评分单位。
 
 ## Office 格式与成果
 
-C22 可以独立按上述内容物化，不依赖 C21 生成文件或完成实验。
+Office 样本可按上述内容独立物化，不等待识别实验。
 
 | ID | 固定材料与输出 |
 | --- | --- |
@@ -43,11 +58,11 @@ C22 可以独立按上述内容物化，不依赖 C21 生成文件或完成实�
 
 O-L/O-H/O-X 都分别输出学生 DOCX/PDF 与教师 DOCX/PDF，共12个小文件。学生版关闭答案和注记，教师版开启二者；教师注记使用自编标记串 `C22教师注记-勿发学生`，答案区使用 `C22答案解析`。至少一个成果具有行内分式、独立根式/上下标与跨页段落。检查结构和版面可读性，不硬定每个编辑器的页数一致。
 
-这些是可重复生成的兼容性样本，不宣称代表所有历史 WPS 文档。R35 后续以老师实际常用资料再验，不把收集私人资料设为当前 C22 开工前置。
+这些是可重复生成的兼容性样本，不宣称代表所有历史 WPS 文档。后续用老师实际常用资料补验，不把收集私人资料设为固定样本验证的前置。
 
 ### 人工 Office 样本
 
-固定文件在 [Office fixtures](../../apps/web/e2e/fixtures/office/)：`docx/` 含教案、讲义、练习的学生/教师六份 DOCX；`source/` 含对应 Markdown、公式和配图。`make-sources.py` 重建 Markdown 源，不生成 DOCX，也不代表产品转换器。目标环境验证暂缓，只有获准的对应任务才执行以下操作。
+固定文件在 [Office fixtures](../../apps/web/e2e/fixtures/office/)：`docx/` 含教案、讲义、练习的学生/教师六份 DOCX；`source/` 含对应 Markdown、公式和配图。`make-sources.py` 重建 Markdown 源，不生成 DOCX，也不代表产品转换器。目标环境的当前安排见[项目状态](../plans/run-state.md#用户验收与待决定)，在相应验收任务中执行以下操作。
 
 1. 在 Word、WPS 中分别从 [学生讲义](../../apps/web/e2e/fixtures/office/docx/handout-student.docx) 原件开始。确认中文、分式、根式、分段函数、对数公式和配图完整。
 2. 第一轮改“我的判断”的中文、例 1 分母 `x-2` 为 `x-5`、第二页根式内指数 `2` 为 `3`。另存带软件名的新 DOCX，关闭重开，核对修改及公式可编辑性。

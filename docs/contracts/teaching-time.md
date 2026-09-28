@@ -85,6 +85,8 @@ T52 拥有账户的 schedule-settings，timeZone 为 IANA 名称，首次读取�
 
 ## 重复和单次例外
 
+本节的周重复与不可变系列限制属于基础请求；携带日历字段的扩展请求按[日历扩展](#日历扩展)处理频率、系列起日和类型变化。实例身份、版本、删除和通知原则共同适用。
+
 每个重复安排每周一次，首日就是 time.date，repeat.until 为含首日的最后原始日期，必须 >= time.date。无重复用 null；暂不引入 RRULE、多星期规则或“此后全部”。重复模板的首日、时区及重复/非重复种类在首次保存后不变；非重复安排可自由改日期/时区、排期或移回未排期。整组可改起始时刻、时长、结束日期、标题、事项、课程关联和提醒。改变重复首日/星期或种类通过新建安排与删除旧安排，UI 明确执行两件事，不伪称改了一次。
 
 实例身份为 `(entryId, originDate)`，originDate 是该系列原始排课日；非重复为 `(entryId, null)`。调课改变实际 time，但身份不变。周例外只有 override 或 cancelled；override 保存完整可编辑内容且 repeat 不可再次定义，按 originDate 覆盖模板，取消这次不生成新的 Entry。读取返回实例实际时间、模板版本、是否例外；指定单个实例可返回取消/删除状态供通知定位。
@@ -147,7 +149,7 @@ classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2`
 
 ### 记录来源 v1 与 v2
 
-本页基础 schema 的记录 v1 SourceInput 仅含 lesson/question，拒绝 math、work、resource 和任意 JSON 扩展。当前记录使用[教学记录 v2](#数学作品关联)：新增 kind=math，真实提供方及前端反向反馈均已接线。v1 读取含 math 对象时的整体拒绝、v2 兼容旧记录、旧键原路径确认均沿该扩展，不能通过删掉 math 字段进行有损降级。真实完整教学验收与目标设备仍按[剩余依赖](../plans/mvp-dag.md)推进，不因接口存在标全范围通过。
+本页基础 schema 的记录 v1 SourceInput 仅含 lesson/question，拒绝 math、work、resource 和任意 JSON 扩展。当前记录使用[教学记录 v2](#数学作品关联)：新增 kind=math，真实提供方及前端反向反馈均已接线。v1 读取含 math 对象时的整体拒绝、v2 兼容旧记录、旧键原路径确认均沿该扩展，不能通过删掉 math 字段进行有损降级。真实完整教学验收与目标设备仍按[接续顺序](../plans/run-state.md#接续顺序与完成条件)推进，不因接口存在标全范围通过。
 
 ## 场景与操作映射
 
@@ -221,7 +223,7 @@ classes 已通过 `lessons.readForTeachingLink`、`questions.readForReferenceV2`
 
 当前目录使用 `ModuleCatalogV3`。classes 同步消费 `questions.readForReferenceV2`、`lessons.readForTeachingLink`、`math.readForTeachingLinkV1`；math 服务端不依赖 classes，反馈由前端组合，避免反向等待。目录只注册真实实现，缺依赖/重复/环路阻止装配。
 
-新增关联、反查入口与旧路径传播提供方真实 404/503；v2 既有关联按上述异常投影处理。只有成功读取 tombstone 才显示已删除。新版接口和样本可用不等于实际往返已验，验证[教学场景](../acceptance/teaching-time.feature)与真实提供方；阶段完成条件见[DAG](../plans/mvp-dag.md)。
+新增关联、反查入口与旧路径传播提供方真实 404/503；v2 既有关联按上述异常投影处理。只有成功读取 tombstone 才显示已删除。新版接口和样本可用不等于实际往返已验，验证[教学场景](../acceptance/teaching-time.feature)与真实提供方；阶段完成条件见[项目状态](../plans/run-state.md#接续顺序与完成条件)。
 
 ## 丰富题目关联
 
