@@ -478,5 +478,14 @@
   "recognitionIssue.math-recovered": "Math formatting was recovered. The original text remains in the recognition source; check the original page.",
   "recognitionIssue.heading-level": "Headings deeper than level three were kept as level-three headings.",
   "recognitionIssue.structure-as-text": "Some structures were kept as plain text. Check the original.",
-  "recognitionIssue.unassigned-image": "Images without a linked text block were kept at the end of the page. Check their positions."
+  "recognitionIssue.unassigned-image": "Images without a linked text block were kept at the end of the page. Check their positions.",
+  "example.topic": "Monotonicity of functions",
+  "example.introduction": "Observe how a function increases or decreases on a graph, then describe it mathematically. Once your lesson document is ready, generate a lesson plan, handout, or exercises.",
+  "example.observeTitle": "Observe the graph",
+  "example.observeBody": "Show a familiar function graph and ask students: as the independent variable increases, how does the function value change?",
+  "example.explainTitle": "Explain a worked example",
+  "example.explainBody": "Add an example from your question bank here. The question appears in the lesson document, and its answer can be expanded when needed.",
+  "example.question": "Determine the monotonicity of {{formula}} and explain your reasoning.",
+  "example.practiceTitle": "Classroom practice",
+  "example.practiceBody": "Add practice questions and leave space for students to answer. Use teacher notes for reminders intended only for you."
 }

@@ -170,3 +170,62 @@ test('语言保存回执丢失后原键核实，保留期间的新选择并同�
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Language', exact: true })).toBeVisible();
 });
+
+
+test('键盘语言菜单、真实偏好冲突、教师原文及英文窄屏危险确认', async ({ page }, info) => {
+  await page.goto(world.origin + '/classes');
+  await page.getByRole('button', { name: '创建班级', exact: true }).first().click();
+  const create = page.getByRole('dialog', { name: '创建班级', exact: true });
+  await create.getByLabel('班级名称', { exact: true }).fill('保留中文名称');
+  await create.getByRole('button', { name: '创建班级', exact: true }).click();
+  await expect(create).not.toBeVisible();
+  const original = world.workbench.db.prepare('SELECT * FROM classes_items').all();
+  await page.goto(world.origin + '/settings');
+  await expect(page.getByRole('button', { name: '语言', exact: true })).toBeEnabled();
+  let conflictInjected = false;
+  await page.route('**/api/reliability/v1/preferences', async route => {
+    if (route.request().method() !== 'PUT' || conflictInjected) return route.continue();
+    conflictInjected = true;
+    const baseline = route.request().postDataJSON();
+    const competing = await page.request.put(world.origin + '/api/reliability/v1/preferences', {
+      headers: { ...headers(page), 'X-TeachBuddy-Request': '1', Origin: world.origin, 'Idempotency-Key': crypto.randomUUID() },
+      data: { baseVersion: baseline.baseVersion, values: { ...baseline.values, locale: 'zh-CN', theme: 'dark' } },
+    });
+    expect(competing.status()).toBe(200);
+    await route.continue();
+  });
+  const sidebar = page.locator('.tb-language-row');
+  await sidebar.focus(); await page.keyboard.press('Enter');
+  await page.keyboard.press('End');
+  await expect(page.getByRole('menuitemradio', { name: 'English', exact: true })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(sidebar).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Use saved settings', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Use saved settings', exact: true }).click();
+  await expect(page.getByRole('button', { name: '语言', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '语言', exact: true }).focus();
+  await page.keyboard.press('ArrowDown'); await page.keyboard.press('End'); await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: 'Language', exact: true })).toBeFocused();
+  await expect.poll(async () => (await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json()).values.locale).toBe('en');
+  await page.goto(world.origin + '/classes');
+  await expect(page.getByRole('button', { name: '保留中文名称', exact: true })).toBeVisible();
+  expect(world.workbench.db.prepare('SELECT * FROM classes_items').all()).toEqual(original);
+  await page.goto(world.origin + '/lessons');
+  await page.getByRole('button', { name: 'View a lesson plan example', exact: true }).click();
+  const example = page.getByRole('dialog', { name: 'Lesson plan example', exact: true });
+  await expect(example).toBeVisible();
+  expect(await example.innerText()).not.toMatch(/[\u3400-\u9fff]/);
+  await page.screenshot({ path: info.outputPath('lesson-example-en.png'), animations: 'disabled' });
+  await example.getByRole('button', { name: 'Close example', exact: true }).click();
+  await page.goto(world.origin + '/settings');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: info.outputPath('settings-en-390-dark.png'), animations: 'disabled' });
+  await page.getByRole('button', { name: 'Delete account', exact: true }).click();
+  const confirm = page.getByRole('dialog', { name: 'Delete account?', exact: true });
+  await expect(confirm).toHaveCSS('opacity', '1');
+  await page.screenshot({ path: info.outputPath('delete-en-390-dark.png'), animations: 'disabled' });
+  const box = await confirm.boundingBox(); expect(box.x).toBeGreaterThanOrEqual(0); expect(box.x + box.width).toBeLessThanOrEqual(390);
+  await page.keyboard.press('Escape');
+  await expect(confirm).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Delete account', exact: true })).toBeFocused();
+});

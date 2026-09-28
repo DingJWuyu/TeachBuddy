@@ -145,6 +145,10 @@ export function createAuthStore(db) {
       return statements.challengeById.get(id) ?? null;
     },
 
+    hasAccountDeletionReceipt(containerId) {
+      return Boolean(db.prepare('SELECT 1 FROM auth_account_deletions WHERE containerId=? LIMIT 1').get(containerId));
+    },
+
     getContainer(id) {
       return statements.containerById.get(id) ?? null;
     },

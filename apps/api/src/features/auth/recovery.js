@@ -21,7 +21,7 @@ const requiredColumns = {
   auth_sessions: 'id containerId accountId state persistence rememberRequested passwordVersion issuedAt expiresAt activatedAt revokedAt createdAt updatedAt',
   auth_page_bindings: 'containerId pageId sessionId createdAt updatedAt',
   auth_legacy_gaps: 'accountId email reason detail recordedAt',
-  auth_account_deletions: 'requestHash proof accountId accountKey filesJson completedAt',
+  auth_account_deletions: 'requestHash proof containerId accountId accountKey filesJson completedAt',
   workbench_migrations: 'id moduleId appliedAt'
 };
 const quote = name => '"' + name.replaceAll('"', '""') + '"';

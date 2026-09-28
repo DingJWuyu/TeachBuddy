@@ -1,7 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { authProblem } from './problems.js';
 import { readClosedObject, readEmailField, OPAQUE_ID_PATTERN, REQUEST_SCHEMAS } from './validation.js';
-import { readPageContext, readSessionCookie } from './protocol.js';
+import { readPageContext, readSessionCookie, hashSessionToken } from './protocol.js';
 
 // The original request is a narrowly scoped continuation. It remains usable
 // after all account sessions are revoked, but grants no business identity.
@@ -64,8 +64,8 @@ export function createAccountDeletion({ db, operations, store, codeSecret, now, 
       if (account.email !== email) throw authProblem('deletionConfirmationMismatch', { field: 'email' });
       if (store.isAccountDeleting(account.id)) throw authProblem('deletionInProgress');
       db.transaction(() => {
-        db.prepare('INSERT INTO auth_account_deletions VALUES (?, ?, ?, ?, NULL, NULL)')
-          .run(requestHash, proof, account.id, account.accountKey);
+        db.prepare('INSERT INTO auth_account_deletions VALUES (?, ?, ?, ?, ?, NULL, NULL)')
+          .run(requestHash, proof, hashSessionToken(token), account.id, account.accountKey);
         const timestamp = new Date(now()).toISOString();
         store.revokeAccountSessions(account.id, timestamp);
         store.deleteBindingsForAccountSessions(account.id);

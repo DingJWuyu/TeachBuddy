@@ -641,7 +641,9 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
           }
         }
 
-        if (store.countLiveSessions(container.id, iso(atMs)) === 0) {
+        // The anonymous carrier is still needed to verify pending or completed
+        // deletion requests after a lost response in another tab.
+        if (store.countLiveSessions(container.id, iso(atMs)) === 0 && !store.hasAccountDeletionReceipt(container.id)) {
           store.deleteBindingsForContainer(container.id);
           store.deleteContainer(container.id);
           return { clearCookie: true };

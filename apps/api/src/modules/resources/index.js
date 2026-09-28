@@ -436,3 +436,9 @@ function validateInput(schema, input) {
   if (input.tagIds && new Set(input.tagIds).size !== input.tagIds.length)
     throw invalidInput("/tagIds", "duplicate-id");
 }
+
+// Account lifecycle owned by this module; the composition root owns the transaction.
+export function deleteAccountData(db, accountKey) {
+  for (const table of ['resource_file_history', 'resource_text_cache', 'resource_taxonomy', 'resource_items'])
+    db.prepare(`DELETE FROM ${table} WHERE accountKey=?`).run(accountKey);
+}

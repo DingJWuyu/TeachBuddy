@@ -65,7 +65,7 @@ test("account appearance persists, isolates accounts, validates avatars and pres
     const bytes = await sharp(randomBytes(256 * 256 * 3), { raw: { width: 256, height: 256, channels: 3 } }).webp({ quality: 90 }).toBuffer();
     const avatar = `data:image/webp;base64,${bytes.toString("base64")}`;
     assert(avatar.length > 16384);
-    const body = { baseVersion: initial.version, values: { ...initial.values, theme: "dark", background: "stripes", avatar } };
+    const body = { baseVersion: initial.version, values: { ...initial.values, theme: "dark", background: "stripes", avatar, locale: "en" } };
     const key = randomUUID();
     const put = (body, requestKey = randomUUID()) => a.client.request("PUT", url, { body, headers: { "Idempotency-Key": requestKey } });
     const saved = await put(body, key);
@@ -75,7 +75,7 @@ test("account appearance persists, isolates accounts, validates avatars and pres
     assert.equal((await b.client.request("GET", url)).json.values.avatar, "");
     assert.equal((await b.client.request("GET", url)).json.values.theme, "light");
     assert.equal((await put(body)).status, 409);
-    for (const invalid of [{ theme: "unknown" }, { background: "unknown" }, { avatar: "data:image/svg+xml,<svg/>" }, { avatar: "data:image/webp;base64,AAAA" }]) {
+    for (const invalid of [{ locale: "fr" }, { theme: "unknown" }, { background: "unknown" }, { avatar: "data:image/svg+xml,<svg/>" }, { avatar: "data:image/webp;base64,AAAA" }]) {
       const result = await put({ baseVersion: saved.json.version, values: { ...saved.json.values, ...invalid } });
       assert(result.status >= 400 && result.status < 500, result.text);
       assert.equal((await a.client.request("GET", url)).json.version, saved.json.version);
@@ -83,6 +83,7 @@ test("account appearance persists, isolates accounts, validates avatars and pres
     const legacy = await put({ baseVersion: saved.json.version, values: { readingSize: "large", motion: "system", externalAi: "deepseek" } });
     assert.equal(legacy.status, 200, legacy.text);
     assert.equal(legacy.json.values.theme, "dark");
+    assert.equal(legacy.json.values.locale, "en");
     assert.equal(legacy.json.values.avatar, avatar);
     const removed = await put({ baseVersion: legacy.json.version, values: { ...legacy.json.values, avatar: "" } });
     assert.equal(removed.status, 200, removed.text);

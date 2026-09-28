@@ -22,7 +22,7 @@ export function LessonExample({ onClose, onStart }) {
         <header>
           <div>
             <span className="lesson-eyebrow">{t("备课示例")}</span>
-            <h2>函数的单调性</h2>
+            <h2>{t("example.topic")}</h2>
           </div>
           <button
             className="wb-icon-button"
@@ -33,35 +33,35 @@ export function LessonExample({ onClose, onStart }) {
           </button>
         </header>
         <p className="lesson-example-intro">
-          从图像观察增减变化，再用数学语言描述。整理好自己的课稿后，可以生成教案、讲义或练习。
+          {t("example.introduction")}
         </p>
         <section>
           <span className="lesson-step-number">1</span>
           <div>
-            <h3>观察图像</h3>
+            <h3>{t("example.observeTitle")}</h3>
             <p>
-              展示熟悉的函数图像，请学生描述：自变量增加时，函数值怎样变化？
+              {t("example.observeBody")}
             </p>
           </div>
         </section>
         <section>
           <span className="lesson-step-number">2</span>
           <div>
-            <h3>例题讲解</h3>
+            <h3>{t("example.explainTitle")}</h3>
             <p>
-              在这里加入题库中的例题，题面直接显示在课稿里，答案可以按需展开。
+              {t("example.explainBody")}
             </p>
             <div className="lesson-example-question">
-              判断函数 f(x) = 2x + 1 的单调性，并说明理由。
+              {t("example.question", { formula: "f(x) = 2x + 1" })}
             </div>
           </div>
         </section>
         <section>
           <span className="lesson-step-number">3</span>
           <div>
-            <h3>课堂练习</h3>
+            <h3>{t("example.practiceTitle")}</h3>
             <p>
-              加入练习题，留出学生作答空间。只给自己看的提醒可以写成教师注记。
+              {t("example.practiceBody")}
             </p>
           </div>
         </section>

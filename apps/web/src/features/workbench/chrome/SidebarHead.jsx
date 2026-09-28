@@ -47,7 +47,15 @@ export function LanguageMenu({ current, onSelect, onClose, triggerRef }) {
   const dismiss = useDismiss(true, onClose, [menuRef, triggerRef]);
   useEffect(() => { menuRef.current?.querySelector('[aria-checked="true"]')?.focus(); }, []);
   return (
-    <div className="tb-language-menu tb-head-surface" role="menu" ref={menuRef} onKeyDown={dismiss}>
+    <div className="tb-language-menu tb-head-surface" role="menu" ref={menuRef} onKeyDown={event => {
+      dismiss(event);
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const options = [...menuRef.current.querySelectorAll('[role="menuitemradio"]')];
+      const index = options.indexOf(document.activeElement);
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
+      options[next]?.focus();
+    }}>
       {LANGUAGES.map((language) => (
         <button
           key={language.code}
@@ -485,7 +493,10 @@ export default function SidebarHead({ accountName, onAnnounce, openSurface, onTo
     if (!visible && ['language', 'semester', 'semester-dialog'].includes(openSurface)) onCloseSurface();
   }, [visible, openSurface, onCloseSurface]);
 
-  const close = (options) => onCloseSurface(options);
+  const close = ({ restoreFocus = false } = {}) => {
+    onCloseSurface();
+    if (restoreFocus) (languageOpen ? languageButtonRef : semesterButtonRef).current?.focus();
+  };
   const closeDialog = () => close({ restoreFocus: true });
 
   const activeSemester = semesters.find((item) => item.id === activeSemesterId) ?? semesters[0] ?? { name: t("创建学期") };

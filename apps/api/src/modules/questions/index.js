@@ -91,3 +91,9 @@ export { migrations };
 // Callable business surface for future agent adapters (C25/C26); it has no
 // HTTP dependency, so a caller can invoke the same operations the API uses.
 export { createQuestionsService } from "./service.js";
+
+// Account lifecycle owned by this module; the composition root owns the transaction.
+export function deleteAccountData(db, accountKey) {
+  for (const table of ['question_items', 'questions_materials_meta', 'questions_materials_imports', 'questions_materials_taxonomy', 'questions_materials_tasks'])
+    db.prepare(`DELETE FROM ${table} WHERE accountKey=?`).run(accountKey);
+}

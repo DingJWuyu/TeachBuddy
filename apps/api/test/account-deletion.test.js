@@ -257,3 +257,35 @@ test('real Agent SDK abort settles before account erasure and another account re
   assert.equal(world.workbench.db.prepare('SELECT count(*) n FROM agent_events').get().n, 0);
   assert.equal(p.requests(), 1);
 });
+
+
+for (const pending of [true, false]) test(`late logout preserves original deletion verification for ${pending ? 'pending' : 'completed'} deletion`, async t => {
+  const world = await createIntegration();
+  t.after(() => world.close());
+  const a = await register(world, `cookie-${pending}@example.test`);
+  const other = await register(world, `other-cookie-${pending}@example.test`);
+  const oldPage = world.client(); oldPage.jar = a.client.jar;
+  const file = await upload(a.client);
+  const blob = path.join(world.directory, 'files', 'blobs', world.workbench.db.prepare('SELECT blobName FROM materials_files WHERE id=?').get(file.json.id).blobName);
+  const bytes = fs.readFileSync(blob);
+  if (pending) { fs.unlinkSync(blob); fs.mkdirSync(blob); }
+  const body = deletionBody(a.session), cookie = a.client.jar.header();
+  const accepted = await remove(a.client, body);
+  assert.equal(accepted.status, pending ? 503 : 204, accepted.text);
+  // Treat the first completed response as lost: only the original continuation
+  // proves completion; a late logout must not erase its HttpOnly credential.
+  const logout = await oldPage.request('POST', '/api/auth/logout', { body: { sessionId: a.session.id } });
+  assert.equal(logout.status, 204);
+  assert.equal(a.client.jar.header(), cookie);
+  assert.equal(logout.headers['set-cookie'], undefined);
+  assert.equal((await oldPage.request('GET', '/api/workbench/context')).status, 401);
+  assert.equal((await other.client.request('GET', '/api/workbench/context')).status, 200);
+  assert.equal((await remove(other.client, body)).status, 401);
+  assert.equal((await remove(a.client, { ...body, requestId: randomBytes(32).toString('hex') })).status, 401);
+  if (pending) { fs.rmdirSync(blob); fs.writeFileSync(blob, bytes); }
+  assert.equal((await remove(a.client, body)).status, 204);
+  noAccountRows(world.workbench.db, a.principal.accountKey);
+  assert.equal(fs.existsSync(blob), false);
+  assert.equal((await other.client.request('POST', '/api/auth/logout', { body: { sessionId: other.session.id } })).status, 204);
+  assert.equal(other.client.jar.size(), 0);
+});

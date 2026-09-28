@@ -478,5 +478,14 @@
   "recognitionIssue.math-recovered": "已恢复数学格式，原文字保留在识别原稿中，请对照原页核对。",
   "recognitionIssue.heading-level": "标题层级超过三级，保留为三级标题。",
   "recognitionIssue.structure-as-text": "部分结构已按纯文字保留，请核对原稿。",
-  "recognitionIssue.unassigned-image": "未关联到文字块的图片保留在页末，请核对位置。"
+  "recognitionIssue.unassigned-image": "未关联到文字块的图片保留在页末，请核对位置。",
+  "example.topic": "函数的单调性",
+  "example.introduction": "从图像观察增减变化，再用数学语言描述。整理好自己的课稿后，可以生成教案、讲义或练习。",
+  "example.observeTitle": "观察图像",
+  "example.observeBody": "展示熟悉的函数图像，请学生描述：自变量增加时，函数值怎样变化？",
+  "example.explainTitle": "例题讲解",
+  "example.explainBody": "在这里加入题库中的例题，题面直接显示在课稿里，答案可以按需展开。",
+  "example.question": "判断函数 {{formula}} 的单调性，并说明理由。",
+  "example.practiceTitle": "课堂练习",
+  "example.practiceBody": "加入练习题，留出学生作答空间。只给自己看的提醒可以写成教师注记。"
 }

@@ -47,3 +47,10 @@ export function createMathModule({ db, mutations, files, content }) {
   return { router, port, migrations };
 }
 export { migrations };
+
+// Account lifecycle owned by this module; the composition root owns the transaction.
+export function deleteAccountData(db, accountKey) {
+  db.prepare('DELETE FROM math_revisions WHERE workId IN (SELECT id FROM math_works WHERE accountKey=?)').run(accountKey);
+  for (const table of ['math_exports', 'math_works'])
+    db.prepare(`DELETE FROM ${table} WHERE accountKey=?`).run(accountKey);
+}

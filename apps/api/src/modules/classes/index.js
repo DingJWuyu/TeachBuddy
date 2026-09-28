@@ -52,3 +52,9 @@ export { migrations };
 // Callable business surface for future agent adapters; it has no HTTP
 // dependency, so a caller can invoke the same operations the API uses.
 export { createClassesService } from './service.js';
+
+// Account lifecycle owned by this module; the composition root owns the transaction.
+export function deleteAccountData(db, accountKey) {
+  for (const table of ['classes_record_sources', 'classes_records', 'classes_removed_objects', 'classes_items'])
+    db.prepare(`DELETE FROM ${table} WHERE accountKey=?`).run(accountKey);
+}

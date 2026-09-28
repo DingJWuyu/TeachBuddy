@@ -213,7 +213,7 @@ export const migrations = [
     id: 'auth_0008_account_deletions',
     up(db) {
       db.exec(`CREATE TABLE auth_account_deletions (
-        requestHash TEXT PRIMARY KEY, proof TEXT NOT NULL,
+        requestHash TEXT PRIMARY KEY, proof TEXT NOT NULL, containerId TEXT NOT NULL,
         accountId TEXT UNIQUE, accountKey TEXT UNIQUE,
         filesJson TEXT, completedAt TEXT
       );`);

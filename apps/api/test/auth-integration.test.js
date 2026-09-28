@@ -170,3 +170,24 @@ test('real server waits for all migrations and refuses missing TLS configuration
   } finally { await new Promise(resolve => running.server.close(resolve)); running.workbench.close(); }
   await assert.rejects(startServer({ env: { ...env, workbench: { ...env.workbench, tls: null } }, sendCode: async () => {} }), /TLS_CERT/);
 });
+
+
+test('SPA deep links serve the fixed index from a hidden build directory without exposing hidden assets', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'settings-hidden-web-'));
+  const webDist = path.join(root, '.scratch', 'dist');
+  fs.mkdirSync(webDist, { recursive: true });
+  fs.writeFileSync(path.join(webDist, 'index.html'), '<!doctype html><title>Workspace shell</title>');
+  fs.writeFileSync(path.join(webDist, '.private'), 'PRIVATE BUILD FILE');
+  const world = await createIntegration({ webDist });
+  let passed = false;
+  t.after(async () => { await world.close(); if (passed) { fs.rmSync(root, { recursive: true, force: true }); fs.rmSync(world.directory, { recursive: true, force: true }); } else console.error('Hidden build fixture retained:', root, world.directory); });
+  const client = world.client();
+  for (const route of ['/', '/settings']) {
+    const response = await client.request('GET', route);
+    assert.equal(response.status, 200, response.text);
+    assert.ok(response.text.includes('Workspace shell'));
+  }
+  assert.ok(!(await client.request('GET', '/.private')).text.includes('PRIVATE BUILD FILE'));
+  assert.equal((await client.request('GET', '/api/missing')).status, 404);
+  passed = true;
+});

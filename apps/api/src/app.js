@@ -102,7 +102,7 @@ export function createApp(options = {}) {
     app.use(express.static(webDist, { index: ['index.html'] }));
     app.use((req, res, next) => {
       if (req.method !== 'GET' || req.path === '/api' || req.path.startsWith('/api/')) return next();
-      return res.sendFile(indexPath);
+      return res.sendFile(indexPath, { dotfiles: 'allow' });
     });
   }
 

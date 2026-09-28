@@ -609,7 +609,7 @@ paths:
       summary: 撤销指定当前会话
       x-interaction-id: I07
       x-contract-status: frozen
-      description: 缺Cookie/无匹配/重复均204。sessionId=null不选择或撤销其他身份。剩余会话为空才清除Cookie。响应未知时重试同目标。
+      description: 缺Cookie/无匹配/重复均204。sessionId=null不选择或撤销其他身份。剩余会话为空且没有该容器的删除核实回执时才清除Cookie。删除未完成或已完成但回执未知时，匿名载体保留以供原请求核实。响应未知时重试同目标。
       parameters:
       - $ref: '#/components/parameters/PageContext'
       - $ref: '#/components/parameters/BrowserRequestProtection'
