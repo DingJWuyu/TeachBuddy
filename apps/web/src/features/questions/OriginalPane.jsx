@@ -49,6 +49,14 @@ export default function OriginalPane({
     pageNode.current.scrollLeft = saved?.left ?? 0;
   };
   useEffect(restoreScroll, [fileId, page, preview?.pages]);
+  const focusedIssue = useRef(null);
+  function focusIssue() {
+    const image = pageNode.current?.querySelector('img');
+    if (!box || !image?.complete || !scene.focusIssue || focusedIssue.current === scene.focusIssue) return;
+    pageNode.current.scrollTop = Math.max(0, (box.y + box.height / 2) * image.clientHeight - pageNode.current.clientHeight / 2);
+    focusedIssue.current = scene.focusIssue;
+  }
+  useEffect(focusIssue, [scene.focusIssue, preview?.pages]);
   useEffect(() => {
     let active = true;
     setPreview(null);
@@ -181,7 +189,7 @@ export default function OriginalPane({
             <p>{paragraphLabel}{paragraph ? t(" · 段落 {{paragraph}}", { paragraph: paragraph }) : ""}{t("，不对应原稿页码。")}</p>
           )}
           {current && !paragraphView ? (
-            <div className="q-page-scroll" ref={pageNode} onLoadCapture={restoreScroll}
+            <div className="q-page-scroll" ref={pageNode} onLoadCapture={() => {restoreScroll(); focusIssue();}}
               onScroll={event => onScene({ scrollPositions: { ...scene.scrollPositions,
                 [scrollKey]: { top: event.currentTarget.scrollTop, left: event.currentTarget.scrollLeft } } })}>
               <div

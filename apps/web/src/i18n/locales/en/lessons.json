@@ -487,5 +487,9 @@
   "example.explainBody": "Add an example from your question bank here. The question appears in the lesson document, and its answer can be expanded when needed.",
   "example.question": "Determine the monotonicity of {{formula}} and explain your reasoning.",
   "example.practiceTitle": "Classroom practice",
-  "example.practiceBody": "Add practice questions and leave space for students to answer. Use teacher notes for reminders intended only for you."
+  "example.practiceBody": "Add practice questions and leave space for students to answer. Use teacher notes for reminders intended only for you.",
+  "这行有不一致的识别结果，请对照原稿核对。": "Recognition results disagree on this line. Please check the original.",
+  "这行有较大留白，请对照原稿核对。": "This line has a large gap. Please check the original.",
+  "查看疑点位置": "Show location in original",
+  "原稿疑点位置": "Location to check in original"
 }

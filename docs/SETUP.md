@@ -82,7 +82,58 @@ export QUESTIONS_XPDF_PDFTOHTML="$PWD/.scratch/questions-tools/xpdf-tools-linux-
 
 VLM 通过官方 `max_pixels` 参数限制每块内部识别分辨率，避免大表格的视觉 attention 超出显存；原页保持不变。版面采用官方矩形裁切模式，表格范围保守扩边，避免边缘文字被旧多边形遮掉；原始结果记录实际范围，配图仍从原页像素裁取。小字和复杂表格仍须对照原稿校对。改变识别参数时同时递增结果修订和工具清单修订，不能把旧缓存当作新配置的验证结果。参数入口见[官方说明](https://www.paddleocr.ai/main/en/version3.x/pipeline_usage/PaddleOCR-VL.html)。
 
-当前持久目录为 `/home/liam_t/.local/share/teacherworkspace-tools/paddleocr-vl-1.6`，布局为 `python/`、`venv/`、`models/`、`requirements.freeze.txt` 与 `manifest.json`。两个模型分别固定到 PaddleOCR-VL-1.6 `c5630abae1d940eafe0697512a0325494b02ab42` 和 PP-DocLayoutV3 `7b48a7566925fa464281f930c58eee04fe2c862a`。清单记录 25 个模型文件与依赖清单的 SHA-256，许可随模型保留；依赖和权重不进入 Git。
+内容复核 profile 为 `/home/liam_t/.local/share/teacherworkspace-tools/paddleocr-vl-1.6-content-check`，修订 `paddleocr-vl-1.6/document-5`，布局为 `python/`、`venv/`、`models/`、`requirements.freeze.txt` 与 `manifest.json`。主模型固定到 PaddleOCR-VL-1.6 `c5630abae1d940eafe0697512a0325494b02ab42` 和 PP-DocLayoutV3 `7b48a7566925fa464281f930c58eee04fe2c862a`；新增 PP-OCRv5 mobile det/rec 使用 CPU 串行复核。四个模型、许可及依赖清单共 36 个文件逐项记录 SHA-256；依赖和权重不进入 Git。运行配置显式选择 profile，准备新目录不会自动切换已有服务。
+
+单页 scope 限制内存 6 GiB、禁止 swap，启动前要求实际可用 RAM 至少 6.5 GiB、GPU 0 空闲显存至少 7 GiB、工作盘空闲至少 25 GiB。准入不足不启动模型；运行中达到上限会失败并允许重试，原件保留。此限制来自固定本机实测，不保证任意复杂页面都能完成。
+
+<details>
+<summary>从既有固定环境准备独立内容复核 profile</summary>
+
+在仓库根目录执行。旧目录必须是上面列明版本的完整本机环境；目标目录应为新目录，不能覆盖在线 profile。复制使用可用的文件系统 reflink，新 venv 的解释器必须属于目标目录。
+
+```bash
+ocrSource=/home/liam_t/.local/share/teacherworkspace-tools/paddleocr-vl-1.6
+ocrTarget=/home/liam_t/.local/share/teacherworkspace-tools/paddleocr-vl-1.6-content-check
+mkdir "$ocrTarget"
+cp --reflink=auto -a "$ocrSource/python" "$ocrTarget/python"
+"$ocrTarget/python/bin/python3.12" -m venv --without-pip "$ocrTarget/venv"
+cp --reflink=auto -a "$ocrSource/venv/lib/python3.12/site-packages" "$ocrTarget/venv/lib/python3.12/"
+cp --reflink=auto -a "$ocrSource/models" "$ocrTarget/models"
+cp "$ocrSource/requirements.freeze.txt" "$ocrTarget/requirements.freeze.txt"
+ocrDownload=$(mktemp -d)
+for ocrModel in PP-OCRv5_mobile_det PP-OCRv5_mobile_rec; do
+  curl -fL "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/${ocrModel}_infer.tar" -o "$ocrDownload/$ocrModel.tar"
+done
+printf '%s  %s\n' \
+  50446e5d01ac2a73d5319c89513281f6578414c888c602f9af13f93feefffc58 "$ocrDownload/PP-OCRv5_mobile_det.tar" \
+  566b9512b34e34a9f0db54d87b51fa5a0b9ed2cf1ab7e49728cc0b8b5a64f414 "$ocrDownload/PP-OCRv5_mobile_rec.tar" | sha256sum -c -
+```
+
+两个校验均成功后再解包。官方 [det](https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det/blob/main/README.md) 和 [rec](https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec/blob/main/README.md) model card 声明 Apache-2.0；同时保留声明和许可证全文。
+
+```bash
+for ocrModel in PP-OCRv5_mobile_det PP-OCRv5_mobile_rec; do
+  tar -xf "$ocrDownload/$ocrModel.tar" -C "$ocrDownload"
+  mv "$ocrDownload/${ocrModel}_infer" "$ocrTarget/models/$ocrModel"
+  curl -fL "https://huggingface.co/PaddlePaddle/$ocrModel/raw/main/README.md" -o "$ocrTarget/models/$ocrModel/README.md"
+  cp "$ocrTarget/models/PaddleOCR-VL-1.6/LICENSE" "$ocrTarget/models/$ocrModel/LICENSE"
+done
+"$ocrTarget/venv/bin/python" - "$ocrTarget" <<'PY'
+import hashlib, json, pathlib, runpy, sys
+home = pathlib.Path(sys.argv[1]).resolve()
+worker = runpy.run_path('apps/api/src/workbench/recognition/worker.py')
+files = [home / 'requirements.freeze.txt', *sorted(p for p in (home / 'models').rglob('*') if p.is_file())]
+manifest = {'revision': worker['REVISION'], 'models': worker['MODELS'], 'files': {
+    str(p.relative_to(home)): hashlib.file_digest(p.open('rb'), 'sha256').hexdigest() for p in files}}
+(home / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+worker['verify_environment'](home)
+assert pathlib.Path(sys.executable).resolve().is_relative_to(home)
+PY
+```
+
+确认许可、清单校验和实际单页识别成功后清理下载临时目录。将私有运行配置的 `MATERIALS_OCR_HOME` 改为新 profile，再由实例维护者重启 API；保留旧 profile 可供明确回退。不要把模型放进仓库任务产物目录，也不要复制旧 `work/` 原页。
+
+</details>
 
 移到另一目录时用目标 Python 重新创建 venv，再安装固定依赖；不能复制指向实验 worktree 的绝对解释器链接。模型目录保持完整，配置指向新目录后重启 API，再从真实上传验证文字、公式、裁图与取消。运行适配与准确参数由 `apps/api/src/workbench/recognition/runtime.js`、`worker.py` 维护，逐页资源准入失败会留在可重试状态，不停其他进程或改驱动/swap。此配置只证明当前主机路径，不代表其他设备已验证。
 

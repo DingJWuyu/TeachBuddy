@@ -18,7 +18,7 @@ test('an unconfirmed OCR scope blocks another worker until explicit retry stops 
   const accountKey = 'account-one';
   const accountDirectory = (root, key) => path.join(root, createHash('sha256').update(key).digest('hex'));
   const pageDirectories = root => fs.readdirSync(root, { withFileTypes: true }).filter(item => item.isDirectory()).map(item => item.name);
-  for (const name of ['python', 'venv/bin', 'models/PP-DocLayoutV3', 'models/PaddleOCR-VL-1.6'])
+  for (const name of ['python', 'venv/bin', 'models/PP-DocLayoutV3', 'models/PaddleOCR-VL-1.6', 'models/PP-OCRv5_mobile_det', 'models/PP-OCRv5_mobile_rec'])
     fs.mkdirSync(path.join(home, name), { recursive: true });
   fs.writeFileSync(path.join(home, 'python/python'), 'process boundary fixture');
   fs.symlinkSync('../../python/python', path.join(home, 'venv/bin/python'));

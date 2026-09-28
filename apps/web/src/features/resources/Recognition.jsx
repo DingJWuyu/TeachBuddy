@@ -19,6 +19,7 @@ export function Recognition({
   onWrite,
   disabled,
   onClose,
+  onLocateIssue,
 }) {
   const { t } = useTranslation("resources");
   const [data, setData] = useState(null);
@@ -202,7 +203,14 @@ export function Recognition({
             {ready && (
               <>
                 {result.issues?.length > 0 && (
-                  <p className="res-recognition-review"> {t("这页有需要核对的公式、表格或版式，请以原页为准。")} </p>
+                  <ul className="res-recognition-review">
+                    {result.issues.map((issue, index) => <li key={index}>
+                      {issue.code === 'ocr-text-conflict' ? t('这行有不一致的识别结果，请对照原稿核对。')
+                        : issue.code === 'ocr-source-gap' ? t('这行有较大留白，请对照原稿核对。')
+                          : t('这页有需要核对的公式、表格或版式，请以原页为准。')}
+                      {issue.box && <button onClick={() => onLocateIssue(issue.box)}>{t("查看疑点位置")}</button>}
+                    </li>)}
+                  </ul>
                 )}
                 {result.document?.blocks?.length > 0 && (
                   <div className="res-recognition-body">

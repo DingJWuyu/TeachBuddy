@@ -19,6 +19,10 @@ const doubt = (id, code, field, locations) => ({
   locations,
   resolution: "open",
 });
+const contentDoubts = (record, field) => (record.recognitionIssues ?? []).map((issue, index) => ({
+  ...doubt(extractionId(record.id, "content", index), "uncertain-text", field, issue.locations),
+  detail: issue.detail,
+}));
 // Normalize identifiers only. Original text and source offsets stay untouched.
 export const questionLabel = (value) => value.normalize("NFKC").trim()
   .replace(/\s+/g, "").replace(/[.、:)]$/, "").replace(/^q(?=\d)/i, "");
@@ -167,6 +171,7 @@ export function mergeExtractions(results, complete) {
       d.parts.push({ role, locations: f.locations });
       if (f.figureLocations?.length)
         d.parts.push({ role: "figure", locations: f.figureLocations });
+      d.issues.push(...contentDoubts(f, "/" + role));
       if (f.doubts.length)
         for (const code of role === "solution" ? ["incomplete-answer"]
           : f.issueCodes?.length ? f.issueCodes : ["uncertain-text"])
@@ -189,9 +194,9 @@ export function mergeExtractions(results, complete) {
       questions.filter((x) => answerCandidates(x).includes(a)).length === 1
     ) {
       append(a, "solution");
-      d.answerStatus = a.doubts.length ? "unresolved" : "present";
+      d.answerStatus = a.doubts.length || a.recognitionIssues?.length ? "unresolved" : "present";
       if (/^(?:原稿)?未提供答案(?:解析)?[。.]?$/.test(a.text.trim())) {
-        if (complete && !a.doubts.length) {
+        if (complete && !a.doubts.length && !a.recognitionIssues?.length) {
           d.solution = emptyDocument();
           d.answerStatus = "absent";
         } else d.answerStatus = "unresolved";
@@ -207,6 +212,7 @@ export function mergeExtractions(results, complete) {
     if (q.doubts.length)
       for (const code of q.issueCodes?.length ? q.issueCodes : ["uncertain-text"])
         d.issues.push(doubt(q.id, code, "/body", q.locations));
+    d.issues.push(...contentDoubts(q, "/body"));
     if (q.figureLocations?.length)
       d.parts.push({ role: "figure", locations: q.figureLocations });
     if (q.figure) {

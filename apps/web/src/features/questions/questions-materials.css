@@ -201,8 +201,9 @@
 .q-review-answer .material-document > :last-child { margin-bottom: 0; }
 .q-review-checks { border: 1px solid light-dark(#e8dcb9, #615634); border-radius: 8px; padding: 14px; background: light-dark(#fcfaf3, #2c291f); }
 .q-review-checks h4 { font-size: 13px; margin-bottom: 12px; }
-.q-workspace .q-issue { flex-wrap: nowrap; align-items: flex-start; gap: 12px; padding: 8px 0; font-size: 13px; }
+.q-workspace .q-issue { display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 12px; padding: 8px 0; font-size: 13px; }
 .q-workspace .q-issue > span { flex: 1; line-height: 1.7; color: inherit; }
+.q-workspace .q-issue-location { display: block; margin-top: 4px; font-size: 12px; }
 .q-issue select { width: 95px; flex: none; padding: 5px 8px; font-size: 12px; }
 .q-issue[data-resolved="true"] { color: var(--q-muted); }
 .q-answer-state { font-size: 13px; }

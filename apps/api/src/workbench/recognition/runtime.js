@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const execute = promisify(execFile);
 const worker = fileURLToPath(new URL("./worker.py", import.meta.url));
+const contentCheck = fileURLToPath(new URL("./content_check.py", import.meta.url));
 const GiB = 1024 ** 3;
 
 function failure(code, message) {
@@ -30,14 +31,14 @@ async function checkResources(workDirectory, signal) {
     signal?.throwIfAborted();
     throw failure("recognition-unavailable", "本地识别环境暂不可用。");
   }
-  if (!(available >= 8 * GiB && gpu >= 7 * 1024 && disk.bavail * disk.bsize >= 25 * GiB))
+  if (!(available >= 6.5 * GiB && gpu >= 7 * 1024 && disk.bavail * disk.bsize >= 25 * GiB))
     throw failure("recognition-resources", "当前可用资源不足，请稍后重试识别。");
 }
 
 function command(home, input, output, unit) {
   const args = [
     "--user", "--unit", unit, "--scope", "--quiet",
-    "-p", "MemoryMax=8G", "-p", "MemorySwapMax=0",
+    "-p", "MemoryMax=6G", "-p", "MemorySwapMax=0",
     "/usr/bin/timeout", "--foreground", "--kill-after=5", "295",
     "/usr/bin/bwrap", "--die-with-parent", "--unshare-all",
     "--cap-drop", "ALL", "--clearenv",
@@ -57,6 +58,7 @@ function command(home, input, output, unit) {
   args.push("--ro-bind", path.join(home, "requirements.freeze.txt"), path.join(home, "requirements.freeze.txt"));
   args.push(
     "--ro-bind", worker, "/worker.py",
+    "--ro-bind", contentCheck, "/content_check.py",
     "--ro-bind", input, "/input",
     "--bind", output, "/output",
     "--setenv", "PATH", "/usr/bin",
@@ -161,13 +163,13 @@ export function createRecognizer({ home, workDirectory } = {}) {
     directory = fs.realpathSync(path.resolve(home));
     const python = fs.realpathSync(path.join(directory, "venv/bin/python"));
     if (!python.startsWith(`${directory}${path.sep}`)) throw new Error("Invalid Python path");
-    for (const name of ["python", "models/PP-DocLayoutV3", "models/PaddleOCR-VL-1.6"])
+    for (const name of ["python", "models/PP-DocLayoutV3", "models/PaddleOCR-VL-1.6", "models/PP-OCRv5_mobile_det", "models/PP-OCRv5_mobile_rec"])
       if (!fs.statSync(path.join(directory, name)).isDirectory()) throw new Error("Missing model");
     if (!fs.statSync(path.join(directory, "manifest.json")).isFile()) throw new Error("Missing manifest");
     if (!fs.statSync(path.join(directory, "requirements.freeze.txt")).isFile()) throw new Error("Missing dependencies");
     available = true;
   } catch {}
-  const revision = "paddleocr-vl-1.6/document-4";
+  const revision = "paddleocr-vl-1.6/document-5";
   let running = false;
   let runningAccount;
   let pendingScope;

@@ -533,6 +533,30 @@ export async function normalizeRecognition({ result, storeAsset }) {
     pageBlocks.push(...content);
   }
   blockId = null;
+  const checks = result.raw.content_check;
+  if (checks !== undefined) {
+    if (checks?.revision !== "pp-ocrv5-mobile/content-check-2" || !Array.isArray(checks.issues))
+      throw failure("invalid-output", "内容复核结果无效。");
+    for (const check of checks.issues) {
+      const raw = blocks.find(block => (block.block_id ?? block.rawIndex) === check.blockId);
+      if (!raw || !["ocr-text-conflict", "ocr-source-gap"].includes(check.code))
+        throw failure("invalid-output", "内容疑点缺少有效来源。");
+      blockId = check.blockId;
+      const box = boxOf(check.bbox);
+      if (!box) throw failure("invalid-output", "内容疑点缺少有效位置。", blockId);
+      const source = [...raw.block_content];
+      const hasRange = Number.isInteger(check.sourceStart) && Number.isInteger(check.sourceEnd) &&
+        check.sourceStart >= 0 && check.sourceEnd > check.sourceStart && check.sourceEnd <= source.length;
+      const hanCount = chars => (chars.join("").match(/[\u4e00-\u9fff]/g) ?? []).length;
+      issues.push({ code: check.code, blockId, box,
+        detail: check.code === "ocr-text-conflict" ? "这行有不一致的识别结果，请对照原稿核对。"
+          : "这行有较大留白，请对照原稿核对。",
+        ...(hasRange ? { sourceHanStart: hanCount(source.slice(0, check.sourceStart)),
+          sourceHanEnd: hanCount(source.slice(0, check.sourceEnd)) } : {}),
+      });
+    }
+  }
+  blockId = null;
   for (const name of assets.keys()) {
     if (used.has(name)) continue;
     issue(

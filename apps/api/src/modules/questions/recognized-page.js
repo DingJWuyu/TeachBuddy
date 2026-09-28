@@ -5,6 +5,7 @@ import { readTeachingTables } from "./recognized-tables.js";
 
 const length = text => [...text].length;
 const slice = (text, start, end) => [...text].slice(start, end).join("");
+const han = text => (text.match(/[\u4e00-\u9fff]/g) ?? []).join("");
 const paragraphText = block => (block.runs ?? []).map(run =>
   run.type === "math" ? run.latex.replace(/[\r\n]/g, " ") : run.text).join("");
 const pageHeading = text => text.replace(/^\s*第\s*\d+\s*页\s*[·:：-]?\s*/, "");
@@ -40,6 +41,8 @@ export function readRecognizedPage(page, { section, previous }) {
   let answerPage = false, sawQuestion = false, reportScope = false, cursor = 0, unresolvedTable = tables.partial;
   for (const [order, raw] of page.blocks.entries()) {
     const location = { ...page.location, box: raw.box };
+    let sourceHanOffset = 0;
+    const alignedSource = han(raw.block_content ?? "") === han(raw.text);
     if (answerHeading.test(pageHeading(raw.text))) {
       reportScope = false;
       if (!sawQuestion) answerPage = true;
@@ -89,7 +92,9 @@ export function readRecognizedPage(page, { section, previous }) {
       }
       sawQuestion ||= questionStart.test(text);
       entries.push({ block, text, start: cursor, end: cursor + length(text), location,
-        rawId: raw.block_id ?? raw.rawIndex, continues, order });
+        rawId: raw.block_id ?? raw.rawIndex, continues, order,
+        sourceHanStart: alignedSource ? sourceHanOffset : null });
+      sourceHanOffset += han(text).length;
       cursor += length(text) + 1;
     }
   }
@@ -149,7 +154,10 @@ export function readRecognizedPage(page, { section, previous }) {
           if (!block.runs.length) continue;
         }
         blocks.push(block);
-        accepted.push(entry);
+        accepted.push({ ...entry, sourceHanStart: entry.sourceHanStart === null ? null
+          : entry.sourceHanStart + han(slice(entry.text, 0, start)).length,
+          sourceHanEnd: entry.sourceHanStart === null ? null
+            : entry.sourceHanStart + han(slice(entry.text, 0, end)).length });
         if (block.type === "image") figures.push(entry.location);
       }
     }
@@ -158,13 +166,16 @@ export function readRecognizedPage(page, { section, previous }) {
   const records = [];
   function record(draft, role, adopted) {
     if (!adopted.document.blocks.length) return;
-    const localIssues = page.issues.filter(issue => issue.blockId == null ||
-      adopted.entries.some(entry => entry.rawId === issue.blockId));
+    const localIssues = page.issues.filter(issue => !issue.box && (issue.blockId == null ||
+      adopted.entries.some(entry => entry.rawId === issue.blockId)));
     const continues = role === "question" ? adopted.entries[0]?.continues : "";
     records.push({ id: extractionId(page.resultId, records.length), role: continues ? "continuation" : role,
       label: draft.title, section, group: "", continues: continues || "",
       text: documentText(adopted.document), document: adopted.document,
       locations: uniqueLocations(adopted.entries), figureLocations: adopted.figures,
+      sourceRanges: adopted.entries.map(entry => ({blockId: entry.rawId,
+        start: entry.sourceHanStart, end: entry.sourceHanEnd})),
+      recognitionIssues: [],
       order: adopted.entries[0]?.order ?? 0,
       doubts: [...localIssues.map(issue => issue.detail), ...(adopted.unassignedFigure ? ["配图归属未确定"] : [])],
       issueCodes: [...new Set(localIssues.map(issue => issue.code === "unparsed-math" ? "uncertain-formula" : "uncertain-text")),
@@ -177,6 +188,15 @@ export function readRecognizedPage(page, { section, previous }) {
   }
   for (const item of parsed.fragments) fragment(item.text, uniqueLocations(within(item.locations)));
   records.push(...tables.records);
+  for (const issue of page.issues.filter(issue => issue.box)) {
+    const owners = records.filter(record => record.sourceRanges?.some(range =>
+      range.blockId === issue.blockId && (range.start === null || issue.sourceHanStart === undefined ||
+        range.start < issue.sourceHanEnd && range.end > issue.sourceHanStart)));
+    const locations = [{...page.location, box: issue.box}];
+    if (owners.length === 1) owners[0].recognitionIssues.push({ detail: issue.detail, locations });
+    else fragment(`未确定题目归属的识别疑点：${issue.detail}`, locations);
+  }
+  for (const record of records) delete record.sourceRanges;
   records.sort((a, b) => a.order - b.order);
   records.forEach(record => { delete record.order; });
   fragments.push(...tables.fragments);

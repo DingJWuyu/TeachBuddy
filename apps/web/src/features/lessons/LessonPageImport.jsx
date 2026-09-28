@@ -16,6 +16,8 @@ import { ConfirmDialog } from "../workbench/ModuleOverlays.jsx";
 import { adoptLessonPage, cancelPageRecognition, readRecognizedPage, readRecognitionStatus, requestPageRecognition } from "./api.js";
 
 const recognitionIssueKeys = {
+  "ocr-text-conflict": "这行有不一致的识别结果，请对照原稿核对。",
+  "ocr-source-gap": "这行有较大留白，请对照原稿核对。",
   "recognition-unavailable": "recognitionIssue.recognition-unavailable",
   "recognition-resources": "recognitionIssue.recognition-resources",
   "recognition-cleanup": "recognitionIssue.recognition-cleanup",
@@ -74,6 +76,8 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
     source: null, result: null, content: null, title: "", jobId: null, adopted: false,
   });
   const latest = useRef(scene);
+  const issueMark = useRef(null);
+  useEffect(() => { issueMark.current?.scrollIntoView({block: 'center', inline: 'nearest'}); }, [scene.issueBox]);
   latest.current = scene;
   const recognition = useIdempotentSubmit({ accountKey, name: `pending:lesson-recognition:${reviewId}` });
   const adoption = useIdempotentSubmit({ accountKey, name: `pending:lesson-page-adoption:${reviewId}` });
@@ -176,12 +180,12 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
     recognition.reset(); adoption.reset(); cancellation.reset(); setError("");
     patchScene({ source: { ...page, resourceId: resource.id, resourceVersion: resource.version,
       resourceTitle: resource.snapshot.title }, result: null, content: null, title: `${resource.snapshot.title} · 第 ${page.page} 页`.slice(0, 200),
-      jobId: null, adopted: false, selectedImage: null });
+      jobId: null, adopted: false, selectedImage: null, issueBox: null });
   }
   function clearPage() {
     setReselect(false);
     recognition.reset(); adoption.reset(); cancellation.reset();
-    patchScene({ source: null, result: null, content: null, jobId: null, selectedImage: null });
+    patchScene({ source: null, result: null, content: null, jobId: null, selectedImage: null, issueBox: null });
   }
   if (!source && imageParent) return <FilePreview fileId={imageParent.fileId} onClose={onClose}
     title={t("准备校对配图")} imageLabel={imageLabel} selectLabel={t("校对这张配图")}
@@ -219,7 +223,13 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
     <div className="lesson-page-import-body">
       <ModuleDisclosure title={imageLabel || t("原资料 · 第 {{page}} 页", { page: source.page })} open={scene.originalOpen ?? true}
         onOpenChange={originalOpen => patchScene({ originalOpen })}>
-        <ControlledImage fileId={source.imageFileId} alt={imageLabel || t("原资料第 {{page}} 页", { page: source.page })} widthMm={170} />
+        <div className="lesson-source-image">
+          <ControlledImage fileId={source.imageFileId} alt={imageLabel || t("原资料第 {{page}} 页", { page: source.page })} widthMm={170} />
+          {scene.issueBox && <span className="lesson-issue-box" aria-label={t("原稿疑点位置")}
+            ref={issueMark}
+            style={{left: `${scene.issueBox.x * 100}%`, top: `${scene.issueBox.y * 100}%`,
+              width: `${scene.issueBox.width * 100}%`, height: `${scene.issueBox.height * 100}%`}} />}
+        </div>
       </ModuleDisclosure>
       <section className="lesson-page-review" aria-label={t("识别正文校对")}>
         {scene.result ? <>
@@ -227,7 +237,9 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
             disabled={locked} onChange={e => patchScene({ title: e.target.value })} /></label>
           <p className="wb-muted">{imageParent ? t("整页校对稿已保留。这里的内容将单独加入课稿，请对照配图核对；空白单元格需由你填写。") : t("对照原页检查文字、公式和配图。校对后的内容可以继续编辑，原资料保持不变。")}</p>
           {scene.result.issues.length > 0 && <ModuleDisclosure title={t("这一页有识别疑点，请对照原页核对")} defaultOpen>
-            <ul>{scene.result.issues.map((issue, index) => <li key={index} title={issue.detail}>{issueMessage(issue)}</li>)}</ul>
+            <ul>{scene.result.issues.map((issue, index) => <li key={index} title={issueMessage(issue)}>{issueMessage(issue)}
+              {issue.box && <button className="wb-text-button" onClick={() => patchScene({originalOpen: true, issueBox: issue.box})}>{t("查看疑点位置")}</button>}
+            </li>)}</ul>
           </ModuleDisclosure>}
           <LessonDocumentEditor label={t("识别正文")} value={scene.content} readOnly={locked}
             onChange={content => patchScene({ content })} />

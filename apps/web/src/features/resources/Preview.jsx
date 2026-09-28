@@ -62,6 +62,10 @@ export function Preview({
   const findButton = useRef(null);
   const recognitionButton = useRef(null);
   const [loadedImage, setLoadedImage] = useState(null);
+  const [issueBox, setIssueBox] = useState(null);
+  const issueMark = useRef(null);
+  useEffect(() => { setIssueBox(null); }, [fileId, page]);
+  useEffect(() => { issueMark.current?.scrollIntoView({block: 'center', inline: 'nearest'}); }, [issueBox]);
   function closeFind() {
     setFindOpen(false);
     findButton.current?.focus();
@@ -309,6 +313,7 @@ export function Preview({
           onWrite={onRecognitionWrite}
           disabled={recognitionDisabled}
           onClose={closeRecognition}
+          onLocateIssue={box => setIssueBox({...box})}
         />
       )}
       <PageFind
@@ -434,6 +439,9 @@ export function Preview({
                 onText={setText}
               />
             )}
+            {issueBox && <span ref={issueMark} className="res-issue-box" aria-label={t("原稿疑点位置")}
+              style={{left: `${issueBox.x * 100}%`, top: `${issueBox.y * 100}%`,
+                width: `${issueBox.width * 100}%`, height: `${issueBox.height * 100}%`}} />}
           </div>
         )}
       </div>

@@ -339,5 +339,9 @@
   "problem.invalidReference": "关联的资料、文件或分类无效，请重新选择。",
   "problem.contentVersion": "内容版本暂不支持，原资料保持不变。",
   "problem.invalidInput": "请求内容无效，请检查后重试。",
-  "recognition.cleanupPending": "尚未确认识别进程停止，请稍后重试。"
+  "recognition.cleanupPending": "尚未确认识别进程停止，请稍后重试。",
+  "这行有不一致的识别结果，请对照原稿核对。": "这行有不一致的识别结果，请对照原稿核对。",
+  "这行有较大留白，请对照原稿核对。": "这行有较大留白，请对照原稿核对。",
+  "查看疑点位置": "查看疑点位置",
+  "原稿疑点位置": "原稿疑点位置"
 }

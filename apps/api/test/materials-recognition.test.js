@@ -576,3 +576,59 @@ test('fixed rendition HTTP reads preserve source ownership, local page availabil
     if (passed) fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('localized content issues survive HTTP save and restart without blocking another question in the same OCR block', async () => {
+  const content = '1. 已知函数 y=7x，求当 x=2 时的值。\n\n2. 计算 8+6 的值。';
+  const raw = { width: 240, height: 160, parsing_res_list: [
+    {block_id: 0, block_label: 'text', block_content: content, block_bbox: [5,5,235,150]},
+  ], content_check: {revision:'pp-ocrv5-mobile/content-check-2', raw:{rec_texts:['求当 x= 时的值']}, issues:[
+    {code:'ocr-text-conflict', blockId:0, bbox:[90,20,170,40], sourceStart:content.indexOf('当'), sourceEnd:content.indexOf('时')+1},
+  ]}};
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'recognition-content-'));
+  let world,passed=false;
+  try {
+    world=await createIntegration({directory,workbench:{recognition:{recognizer:{revision:'content-http',async run(){return {raw,width:240,height:160,assets:[]}}}}}});
+    let {client}=await registerMath(world,'content-http@example.test');
+    const file=await upload(client);
+    const baseImport='/api/modules/questions/v2/imports';
+    const accepted=await write(client,baseImport,{title:'局部疑点',origin:'固定原件',input:{kind:'files',fileIds:[file.id],pages:[]}});
+    assert.equal(accepted.status,201,accepted.text);
+    assert.equal((await waitJob(client,accepted.json.jobId)).state,'succeeded');
+    const url=`${baseImport}/${accepted.json.id}`;
+    let material=(await client.request('GET',url)).json;
+    assert.equal(material.drafts.length,2);
+    const issues=material.drafts.map(d=>d.issues.filter(i=>i.code==='uncertain-text'));
+    assert.equal(issues[0].length,1);assert.equal(issues[1].length,0);
+    assert.equal(issues[0][0].detail,'这行有不一致的识别结果，请对照原稿核对。');
+    assert.deepEqual(issues[0][0].locations[0].box,{x:90/240,y:20/160,width:80/240,height:20/160});
+    const source=await preview(client,file);
+    const pageUrl=`${base}/${file.id}/recognition/pages/1?renditionFileId=${source.renditionFileId}`;
+    const page=(await client.request('GET',pageUrl)).json;
+    assert.deepEqual(JSON.parse((await client.request('GET',`${base}/${page.rawFileId}/content`)).text),raw);
+    const drafts=structuredClone(material.drafts);
+    drafts[1].issues=drafts[1].issues.map(issue=>({...issue,resolution:'corrected'}));
+    let saved=await client.request('PUT',url,{body:{baseVersion:material.version,drafts,fragments:material.fragments},headers:{'Idempotency-Key':randomUUID()}});
+    assert.equal(saved.status,200,saved.text);
+    const committed=await write(client,url+'/commit',{baseVersion:saved.json.version,draftIds:[drafts[1].id]});
+    assert.equal(committed.status,200,committed.text);
+    assert.equal(committed.json.questions.length,1);
+    material=committed.json.import;
+    const corrected=structuredClone(material.drafts);
+    corrected[0].body={version:2,blocks:[{type:'paragraph',runs:[{type:'text',text:'已知函数 y=7x，x 的值在原稿中缺失，待补充。'}]}]};
+    corrected[0].issues=corrected[0].issues.map(issue=>({...issue,resolution:'corrected'}));
+    saved=await client.request('PUT',url,{body:{baseVersion:material.version,drafts:corrected,fragments:material.fragments},headers:{'Idempotency-Key':randomUUID()}});
+    assert.equal(saved.status,200,saved.text);
+    const jar=client.jar;await world.close();world=null;
+    world=await createIntegration({directory});client=world.client();client.jar=jar;
+    const reopened=(await client.request('GET',url)).json;
+    assert.deepEqual(reopened.drafts[0].body,corrected[0].body);
+    assert.deepEqual(reopened.drafts[0].issues,corrected[0].issues);
+    assert.equal(reopened.drafts[1].disposition,'confirmed');
+    assert.deepEqual((await client.request('GET',pageUrl)).json,page);
+    passed=true;
+  }finally{
+    await world?.close();
+    if(passed)fs.rmSync(directory,{recursive:true,force:true});
+    else console.error(`Retained content issue integration: ${directory}`);
+  }
+});

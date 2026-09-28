@@ -1,5 +1,6 @@
 """One offline page, using fixed local PaddleOCR models and public GPU warmup."""
 import hashlib
+import gc
 import importlib.metadata
 import json
 import math
@@ -8,10 +9,12 @@ import shutil
 import sys
 from pathlib import Path
 
-REVISION = "paddleocr-vl-1.6/document-4"
+REVISION = "paddleocr-vl-1.6/document-5"
 MODELS = {
     "PP-DocLayoutV3": "7b48a7566925fa464281f930c58eee04fe2c862a",
     "PaddleOCR-VL-1.6": "c5630abae1d940eafe0697512a0325494b02ab42",
+    "PP-OCRv5_mobile_det": "50446e5d01ac2a73d5319c89513281f6578414c888c602f9af13f93feefffc58",
+    "PP-OCRv5_mobile_rec": "566b9512b34e34a9f0db54d87b51fa5a0b9ed2cf1ab7e49728cc0b8b5a64f414",
 }
 DEPENDENCIES = {"paddleocr": "3.7.0", "paddlex": "3.7.0", "paddlepaddle-gpu": "3.2.1"}
 OUTPUT = Path("/output")
@@ -215,7 +218,8 @@ def main():
     except (OSError, ValueError, Image.DecompressionBombError) as error:
         raise InvalidInput("Input image cannot be decoded") from error
     import paddle
-    from paddleocr import PaddleOCRVL
+    from paddleocr import PaddleOCRVL, PaddleOCR
+    from content_check import content_issues
     if paddle.version.cuda() != "12.9":
         raise EnvironmentChanged("Paddle CUDA runtime version mismatch")
     pipeline = PaddleOCRVL(pipeline_version="v1.6", paddlex_config=pipeline_config(home), device="gpu:0")
@@ -236,6 +240,30 @@ def main():
     if (raw["width"], raw["height"]) != page.size:
         raise ValueError("Output coordinates do not match source pixels")
     assets, originals, derivations = derive_assets(raw, page)
+    # Release the GPU recognizer before the independent CPU pass. These are
+    # public pipeline calls; decoder methods and model weights stay untouched.
+    del pipeline, result
+    gc.collect()
+    paddle.device.cuda.empty_cache()
+    verifier = PaddleOCR(
+        ocr_version="PP-OCRv5", device="cpu", cpu_threads=2, enable_mkldnn=False,
+        text_detection_model_name="PP-OCRv5_mobile_det",
+        text_detection_model_dir=str(home / "models/PP-OCRv5_mobile_det"),
+        text_recognition_model_name="PP-OCRv5_mobile_rec",
+        text_recognition_model_dir=str(home / "models/PP-OCRv5_mobile_rec"),
+        use_doc_orientation_classify=False, use_doc_unwarping=False,
+        use_textline_orientation=False, text_recognition_batch_size=1,
+        text_det_limit_side_len=960, text_det_limit_type="max",
+        text_rec_score_thresh=0.0, return_word_box=True,
+    )
+    checks = list(verifier.predict("/input/page.png"))
+    if len(checks) != 1:
+        raise ValueError("Expected one independent recognition page")
+    checks[0].save_to_json(str(OUTPUT / "content-check.json"))
+    independent = json.loads((OUTPUT / "content-check.json").read_text())
+    raw["content_check"] = {"revision": "pp-ocrv5-mobile/content-check-2", "raw": independent,
+                            "issues": content_issues(raw, independent, page)}
+    (OUTPUT / "raw.json").write_text(json.dumps(raw, ensure_ascii=False))
     output = {"width": page.width, "height": page.height, "assets": assets,
               "originalAssets": originals, "derivations": derivations}
     (OUTPUT / "result.tmp.json").write_text(json.dumps(output, ensure_ascii=False))

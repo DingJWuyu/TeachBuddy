@@ -743,6 +743,14 @@
   display: block;
   width: 100%;
 }
+.res-issue-box {
+  position: absolute;
+  border: 2px solid #b87508;
+  background: #ffca4429;
+  pointer-events: none;
+}
+.res-recognition-review li { margin: 6px 0; }
+.res-recognition-review li button { margin-left: 8px; text-decoration: underline; }
 .res-search-status,
 .res-text-status {
   display: flex;

@@ -1136,8 +1136,8 @@ export default function MaterialsQuestionsPage({
                     {(scene.reviewEditing || draft.answerStatus === 'unresolved') && <label className="q-answer-state">{t("答案是否完整")}<select data-question-answer-status aria-label={t("答案状态")} value={draft.answerStatus} onChange={e => editDraft({ answerStatus: e.target.value })}><option value="absent">{t("未提供答案")}</option><option value="present">{t("已有完整答案")}</option><option value="unresolved">{t("答案待核对")}</option></select></label>}
                     {draft.issues.length > 0 && <section className="q-review-checks" aria-label={t("需要检查的内容")}><h4>{draft.issues.some(i => i.resolution === 'open') ? t("请对照原稿检查") : t("检查已完成")}</h4>
                     {draft.issues.map((issue) => (
-                      <label className="q-issue" key={issue.id} data-issue-id={issue.id} data-resolved={issue.resolution !== 'open'}>
-                        <span>{({
+                      <div className="q-issue" key={issue.id} data-issue-id={issue.id} data-resolved={issue.resolution !== 'open'}>
+                        <span id={`issue-${issue.id}`}>{issue.detail && t(issue.detail, { defaultValue: issue.detail }) || ({
                           'split-boundary': new Set(issue.locations.filter(l => l.kind === 'page').map(l => l.page)).size > 1
                             ? t("这道题包含跨页内容，请对照原稿检查归属。归属不对时可在“调整题目”中拆分或忽略，原始片段仍保留。")
                             : t("题干是否完整，是否混入了其他题目？"),
@@ -1147,8 +1147,16 @@ export default function MaterialsQuestionsPage({
                           'incomplete-answer': t("答案可能不完整，请对照原稿补充。"),
                           'uncertain-text': t("这些文字是否与原稿一致？"),
                           'truncated-input': t("内容可能被截断，请补全题目。"),
-                        })[issue.code] || issue.detail || t("请核对这处内容。")}</span>
+                        })[issue.code] || issue.detail || t("请核对这处内容。")}
+                        {issue.locations.find(location => location.kind === 'page' && location.box) &&
+                          <button className="q-text-button q-issue-location" onClick={() => {
+                            const location = issue.locations.find(location => location.kind === 'page' && location.box);
+                            patchScene({ original: { ...scene.original, fileId: location.fileId, page: location.page,
+                              originalView: 'pages', selection: location, focusIssue: Date.now() } });
+                          }}>{t("查看疑点位置")}</button>}
+                        </span>
                         <select
+                          aria-labelledby={`issue-${issue.id}`}
                           value={issue.resolution}
                           onChange={(e) =>
                             editDraft({
@@ -1171,7 +1179,7 @@ export default function MaterialsQuestionsPage({
                             <option value="acknowledged">{t("已核对")}</option>
                           )}
                         </select>
-                      </label>
+                      </div>
                     ))}</section>}
                     <ModuleDisclosure title={t("题型与标签")}>{classification(draft, editDraft)}</ModuleDisclosure>
                     {draft.disposition !== 'confirmed' && <ModuleDisclosure title={t("调整题目：拆分、合并或忽略")} className="q-adjust-question">
@@ -1290,7 +1298,7 @@ export default function MaterialsQuestionsPage({
                     <summary>{t("未分配片段 ·")} {value.fragments.length}</summary>
                     {value.fragments.map((f) => (
                       <div key={f.id}>
-                        <pre>{f.text}</pre>
+                        <pre>{["未确定题目归属的识别疑点：这行有不一致的识别结果，请对照原稿核对。", "未确定题目归属的识别疑点：这行有较大留白，请对照原稿核对。"].includes(f.text) ? t(f.text) : f.text}</pre>
                         <select
                           aria-label={t("片段处理")}
                           value={f.disposition}
