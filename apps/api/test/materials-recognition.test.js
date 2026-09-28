@@ -8,6 +8,7 @@ import Database from 'better-sqlite3';
 import { createIntegration } from "./fixtures/auth-integration/harness.js";
 import { registerMath } from "../../web/e2e/fixtures/math-static/real.mjs";
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
+import { replayRecognizer, sourceImage } from '../../web/e2e/fixtures/materials-questions/recognition/replay.mjs';
 
 const base = "/api/workbench/files";
 const image = fs.readFileSync(new URL("../../web/e2e/fixtures/materials-questions/figure.png", import.meta.url));
@@ -48,6 +49,121 @@ function machinePage() {
     { block_id: 0, block_label: "text", block_content: text, block_bbox: [10, 10, 200, 50], block_order: 1 },
   ] }, markdown: text, assets: [] };
 }
+
+test('captured OCR geometry recovers inline subscripts through HTTP and survives restart without changing raw', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'recognition-format-'));
+  const recognizer = await replayRecognizer();
+  let world, passed = false;
+  try {
+    world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
+    let { client } = await registerMath(world, 'recognition-format@example.test');
+    const file = await upload(client, 'geometry.png', sourceImage('I-3'));
+    const source = await preview(client, file);
+    const endpoint = `${base}/${file.id}/recognition`;
+    const query = `?renditionFileId=${source.renditionFileId}`;
+    const accepted = await write(client, endpoint, { renditionFileId: source.renditionFileId, pages: [1] });
+    assert.equal((await waitJob(client, accepted.json.id)).state, 'succeeded');
+    const page = (await client.request('GET', `${endpoint}/pages/1${query}`)).json;
+    const raw = JSON.parse(fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/recognition/I-3/raw.json', import.meta.url)));
+    const storedRaw = await client.request('GET', `${base}/${page.rawFileId}/content`);
+    assert.deepEqual(JSON.parse(storedRaw.text), raw);
+    assert.deepEqual(page.blocks.map(b => b.block_content), raw.parsing_res_list.map(b => b.block_content));
+    assert.deepEqual(page.blocks.find(b => b.block_id === 4).document.blocks[0].runs, [
+      { type: 'text', text: 'Q6. 正方体 ' },
+      { type: 'math', latex: 'ABCD-A_{1}B_{1}C_{1}D_{1}' },
+      { type: 'text', text: ' 的棱长为 2。' },
+    ]);
+    assert.deepEqual(page.blocks.find(b => b.block_id === 5).document.blocks[0].runs, [
+      { type: 'text', text: '（1）求体对角线' }, { type: 'math', latex: 'AC_{1}' },
+      { type: 'text', text: '的长；（2）求体积。' },
+    ]);
+    assert(page.issues.some(i => i.code === 'math-recovered' && i.blockId === 4));
+    assert.equal(page.issues.some(i => i.code === 'unparsed-math'), false);
+    assert.equal(page.document.blocks.filter(b => b.type === 'image').length, 2);
+    const jar = client.jar;
+    await world.close(); world = null;
+    world = await createIntegration({ directory });
+    client = world.client(); client.jar = jar;
+    const reopened = (await client.request('GET', `${endpoint}/pages/1${query}`)).json;
+    assert.deepEqual(reopened.document, page.document);
+    assert.deepEqual(reopened.issues, page.issues);
+    assert.deepEqual(reopened.location, page.location);
+    assert.equal(reopened.rawFileId, page.rawFileId);
+    assert.deepEqual(recognizer.calls, ['I-3']);
+    passed = true;
+  } finally {
+    await world?.close();
+    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+    else console.error(`Retained recognition reproduction: ${directory}`);
+  }
+});
+
+test('OCR formatting recovers bounded notation and table lines while preserving literal contexts over HTTP', async () => {
+  const sources = [
+    '连接P_{12}Q_{3}，保留 ABC 与 ordinary English。',
+    String.raw`<table><tr><td>第一行\n第二行 $f(x)=\begin{cases}x,&x<0\\-x,&x>0\end{cases}$\n(2) 下一问</td><td>相邻单元格</td></tr></table>`,
+    'file_name version_1 abcA_{1} A_{1}word A_{1}B_{2 A_{1}_{2} A_{i+1}',
+    String.raw`\neq \nu \nabla \newcommand \{A_{1}\} A_{1}.png C:\notes C:\n https://example.test/A_{1} /tmp/A_{1} A_{1}/B`,
+    '`A_{1}\\nB`',
+    '```text\nA_{1}\\nB\n```',
+    String.raw`<pre>A_{1}\nB</pre><code>C_{2}\nD</code>`,
+    String.raw`双反斜杠\\n保留。`,
+    String.raw`[A_{1}\nB](https://example.test/A_{1})`,
+    String.raw`<a href="https://example.test/A_{1}">A_{1}\nB</a>`,
+    String.raw`文本 $A_{1}\neq B_{2}$ 后续。`,
+    String.raw`输入 \n 表示换行，原字符串 "P_{2}\n中文" 保留。`,
+    String.raw`前缀\nSuffix ABC version_1。`,
+    String.raw`源码 " P_{2} \n 中文 " 与 ‘Q_{3}\n测试’ 保留。`,
+  ];
+  const raw = { width: 240, height: 160, parsing_res_list: sources.map((block_content, block_id) => ({
+    block_id, block_label: 'text', block_content, block_bbox: [1,1,200,100],
+  })) };
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'recognition-boundaries-'));
+  let world, passed = false;
+  try {
+    world = await createIntegration({ directory, workbench: { recognition: { recognizer: {
+      revision: 'format-boundaries', async run() { return {raw, assets: [], width: 240, height: 160}; },
+    } } } });
+    const {client} = await registerMath(world, 'recognition-boundaries@example.test');
+    const file = await upload(client), source = await preview(client, file);
+    const baseUrl = `${base}/${file.id}/recognition`;
+    const accepted = await write(client, baseUrl, {renditionFileId:source.renditionFileId,pages:[1]});
+    assert.equal((await waitJob(client, accepted.json.id)).state, 'succeeded');
+    const page = (await client.request('GET', `${baseUrl}/pages/1?renditionFileId=${source.renditionFileId}`)).json;
+    const content = id => page.blocks.find(b=>b.block_id===id).document.blocks;
+    const runs = blocks => blocks.flatMap(b=>b.runs ?? (b.rows ?? []).flatMap(row=>row.flatMap(cell=>runs(cell.blocks))));
+    assert.deepEqual(runs(content(0)).filter(r=>r.type==='math').map(r=>r.latex), ['P_{12}Q_{3}']);
+    const table = content(1)[0];
+    assert.equal(table.type, 'table');
+    assert.equal(table.rows[0].length, 2);
+    assert.equal(table.rows[0][0].blocks.length, 3, 'literal newlines become visible paragraph boundaries');
+    assert.deepEqual(table.rows[0][0].blocks.map(b=>b.runs.map(r=>r.text ?? r.latex).join('')), [
+      '第一行', String.raw`第二行 f(x)=\begin{cases}x,&x<0\\-x,&x>0\end{cases}`, '(2) 下一问',
+    ]);
+    assert.equal(table.rows[0][1].blocks[0].runs[0].text, '相邻单元格');
+    assert(page.issues.some(i=>i.code==='text-lines-recovered' && i.blockId===1));
+    for(const id of [2,3,4,5,6,7,8,9,11,12,13]) {
+      assert.equal(runs(content(id)).some(r=>r.type==='math'), false, `literal source ${id} is not a formula`);
+      assert.equal(page.issues.some(i=>['math-recovered','text-lines-recovered'].includes(i.code) && i.blockId===id),false, `literal source ${id} has no recovery`);
+    }
+    assert.equal(content(2)[0].runs.map(r=>r.text).join(''),sources[2]);
+    assert.equal(content(3)[0].runs.map(r=>r.text).join(''),sources[3]);
+    assert.equal(content(4)[0].runs[0].text,'A_{1}\\nB');
+    assert.equal(content(5)[0].runs[0].text,'A_{1}\\nB');
+    assert.deepEqual(content(6).map(b=>b.runs[0].text),['A_{1}\\nB','C_{2}\\nD']);
+    assert.equal(content(7)[0].runs[0].text,sources[7]);
+    for(const id of [11,12,13]) assert.equal(content(id)[0].runs.map(r=>r.text).join(''),sources[id]);
+    assert(page.issues.some(i=>i.code==='text-format-uncertain' && i.blockId===11));
+    assert.deepEqual(runs(content(10)).filter(r=>r.type==='math').map(r=>r.latex),[String.raw`A_{1}\neq B_{2}`]);
+    assert(page.issues.some(i=>i.code==='unparsed-math' && i.blockId===2));
+    assert.deepEqual(JSON.parse((await client.request('GET',`${base}/${page.rawFileId}/content`)).text),raw);
+    passed = true;
+  } finally {
+    await world?.close();
+    if(passed)fs.rmSync(directory,{recursive:true,force:true});
+    else console.error(`Retained boundary reproduction: ${directory}`);
+  }
+});
 
 // The injected recognizer only exercises persistence/recovery. Real model
 // fidelity and the complete upload-to-module path are verified separately.

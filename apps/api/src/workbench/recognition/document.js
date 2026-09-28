@@ -3,6 +3,7 @@ import remarkParse from "remark-parse";
 import remarkMath from "remark-math";
 import { parseFragment } from "parse5";
 import { createContent } from "../content/index.js";
+import { hasUnparsedMath, recoverTextFormat } from './text-format.js';
 
 const markdown = unified().use(remarkParse).use(remarkMath);
 const documentOf = (blocks) => ({ version: 2, blocks });
@@ -175,7 +176,7 @@ export async function normalizeRecognition({ result, storeAsset }) {
     });
   }
 
-  async function table(node) {
+  async function table(node, recover = true) {
     const rows = children(node).flatMap((child) =>
       child.tagName === "tr"
         ? [child]
@@ -229,7 +230,7 @@ export async function normalizeRecognition({ result, storeAsset }) {
           }
         }
         grid[rowIndex][column].blocks = leafBlocks(
-          await htmlChildren(children(cell)),
+          await htmlChildren(children(cell), recover),
         );
         column += colSpan;
       }
@@ -250,15 +251,15 @@ export async function normalizeRecognition({ result, storeAsset }) {
     );
     const captionBlocks = [];
     for (const caption of captions)
-      captionBlocks.push(...(await htmlChildren(children(caption))));
+      captionBlocks.push(...(await htmlChildren(children(caption), recover)));
     return [...captionBlocks, { type: "table", rows: normalized }];
   }
 
-  async function htmlChildren(nodes) {
+  async function htmlChildren(nodes, recover = true) {
     const output = [];
     let buffer = "";
     const flush = async () => {
-      if (buffer.trim()) output.push(...(await parseMarkdown(buffer)));
+      if (buffer.trim()) output.push(...(await parseMarkdown(buffer, recover)));
       buffer = "";
     };
     for (const node of nodes) {
@@ -275,7 +276,15 @@ export async function normalizeRecognition({ result, storeAsset }) {
       if (node.tagName === "img") {
         output.push(await image(attr(node, "src"), attr(node, "alt") ?? ""));
       } else if (node.tagName === "table") {
-        output.push(...(await table(node)));
+        output.push(...(await table(node, recover)));
+      } else if (["code", "pre"].includes(node.tagName)) {
+        const literal = node => node.nodeName === '#text' ? node.value
+          : node.tagName === 'br' ? '\n' : children(node).map(literal).join('');
+        const text = literal(node);
+        const runs = [];
+        for (let i = 0; i < text.length; i += 20000)
+          runs.push({type: 'text', text: text.slice(i, i + 20000)});
+        if (runs.length) output.push({type: 'paragraph', runs});
       } else {
         if (
           ["script", "style", "iframe", "object", "svg"].includes(node.tagName)
@@ -284,13 +293,14 @@ export async function normalizeRecognition({ result, storeAsset }) {
             "unsupported-html",
             "识别结果含不支持的 HTML 元素，按纯文字保留，请核对原稿。",
           );
-        output.push(...(await htmlChildren(children(node))));
+        output.push(...(await htmlChildren(children(node), recover &&
+          !['a', 'script', 'style', 'iframe', 'object', 'svg'].includes(node.tagName))));
       }
     }
     await flush();
     return output;
   }
-  async function parseHtml(value) {
+  async function parseHtml(value, recover = true) {
     const fragment = parseFragment(value, {
       onParseError() {
         issue(
@@ -299,10 +309,10 @@ export async function normalizeRecognition({ result, storeAsset }) {
         );
       },
     });
-    return htmlChildren(children(fragment));
+    return htmlChildren(children(fragment), recover);
   }
 
-  async function parseMarkdown(source) {
+  async function parseMarkdown(source, recover = true) {
     const tree = markdown.parse(source);
     const definitions = new Map();
     for (const node of tree.children)
@@ -318,12 +328,16 @@ export async function normalizeRecognition({ result, storeAsset }) {
     async function inline(nodes, type = "paragraph", level) {
       const output = [];
       let runs = [];
+      const appendText = text => {
+        for (let i = 0; i < text.length; i += 20000)
+          runs.push({type: 'text', text: text.slice(i, i + 20000)});
+      };
       const flush = () => {
         if (runs.length)
           output.push({ type, ...(level ? { level } : {}), runs });
         runs = [];
       };
-      const visit = async (node) => {
+      const visit = async (node, allowRecovery = recover) => {
         if (node.type === "inlineMath")
           runs.push({ type: "math", latex: latexOf(node) });
         else if (node.type === "image" || node.type === "imageReference") {
@@ -332,29 +346,59 @@ export async function normalizeRecognition({ result, storeAsset }) {
           output.push(await image(url, node.alt ?? ""));
         } else if (node.type === "html") {
           flush();
-          output.push(...(await parseHtml(node.value)));
+          output.push(...(await parseHtml(node.value, allowRecovery)));
         } else if (node.children) {
-          for (const child of node.children) await visit(child);
+          const original = sourceOf(node);
+          // A malformed subscript may become Markdown emphasis spanning other
+          // words. Preserve its delimiters instead of accepting a valid prefix.
+          if (['emphasis', 'strong'].includes(node.type) &&
+              (original.startsWith('_{') ||
+               (original.endsWith('_') && source[node.position.end.offset] === '{'))) {
+            appendText(original);
+            if (allowRecovery) issue('unparsed-math',
+              '文字中的下标与 Markdown 标记边界不明确，已保留原文，请核对公式。');
+            return;
+          }
+          for (const child of node.children)
+            await visit(child, allowRecovery && !['link', 'linkReference'].includes(node.type));
         } else {
           const original = sourceOf(node);
-          const unparsedMath = /\\(?!n(?:\W|$))[A-Za-z]+|\\[{}]|[_^]\{/.test(
-            original,
-          );
+          const unparsedMath = node.type === 'text' && hasUnparsedMath(original);
           // Markdown decodes escapes in text nodes, including LaTeX braces
           // and row separators. Keep uncertain math as literal source.
-          const text =
+          let text =
             node.type === "break"
               ? "\n"
               : node.type === "text" && unparsedMath
                 ? original
                 : (node.value ?? original);
-          if (unparsedMath)
+          if (node.type === 'text' && /\\\\/.test(original)) text = original;
+          if (allowRecovery && node.type === 'text' && original === node.value) {
+            const restored = recoverTextFormat(original,
+              source[node.position.start.offset - 1] ?? '', source[node.position.end.offset] ?? '');
+            if (restored.mathRecovered) issue('math-recovered',
+              '已按完整下标标注恢复数学格式，原文字保留在识别原稿中，请对照原页核对。');
+            if (restored.linesRecovered) issue('text-lines-recovered',
+              '已将识别文字的换行标记恢复为段落，请对照原页核对。');
+            if (restored.uncertainLines) issue('text-format-uncertain',
+              '文字中的反斜杠可能属于路径或字面说明，已保留原文，请核对换行。');
+            for (const part of restored.parts) {
+              if (part.type === 'break') flush();
+              else if (part.type === 'math') runs.push(part);
+              else {
+                if (hasUnparsedMath(part.text)) issue('unparsed-math',
+                  '文字中含未加数学定界符的 LaTeX，已保留原文字，请核对公式。');
+                appendText(part.text);
+              }
+            }
+            return;
+          }
+          if (unparsedMath && allowRecovery)
             issue(
               "unparsed-math",
               "文字中含未加数学定界符的 LaTeX，已保留原文字，请核对公式。",
             );
-          for (let i = 0; i < text.length; i += 20000)
-            runs.push({ type: "text", text: text.slice(i, i + 20000) });
+          appendText(text);
         }
       };
       for (const node of nodes) await visit(node);
@@ -377,7 +421,7 @@ export async function normalizeRecognition({ result, storeAsset }) {
         } else if (node.type === "math")
           output.push({ type: "math", latex: latexOf(node) });
         else if (node.type === "html")
-          output.push(...(await parseHtml(node.value)));
+          output.push(...(await parseHtml(node.value, recover)));
         else if (node.type === "list") {
           const items = [];
           for (const [i, item] of node.children.entries()) {
