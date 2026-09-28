@@ -35,7 +35,7 @@
 | --- | --- |
 | Word/WPS 人工编辑与打印 | [Office fixtures](../../apps/web/e2e/fixtures/office/) 的六份 DOCX、源文本/公式/图片；按[人工操作](samples.md#人工-office-样本)核对。输入样本不是产品转换成功证明。 |
 | 备课当前真实输出 | `apps/web/e2e/fixtures/materials-lessons/verify-outputs.mjs` 生成 `test-results/evidence/R34/v1/outputs/`，再由同目录 `office.py` 读取处理；必须先生成本次候选输出。 |
-| 设置/帮助外观 | [视觉参考](../features/settings.md#视觉参考)，仅在改对应页面时查看 |
+| 设置/帮助外观 | 按[界面规则](../rules/design-and-verification.md)核对当前运行页面及用户指定参考；截图留本次验证产物 |
 | Agent 真实模型保留库 | `apps/api/test/fixtures/c26/live.mjs` 生成模型报告和隔离数据；`apps/web/e2e/c26/agent.spec.js` 读取。二者共用 `AGENT_EVIDENCE_DIR`，默认 `test-results/evidence/C26/v1`。需匹配的报告及其 directory，恢复旧现场见[恢复索引](../plans/worktree-archive.md)；缺输入不授权新模型请求。 |
 | API 字段与兼容 | 相关功能指向的 `docs/contracts/` schema、samples 及固定外引用；部分由后端直接读取，保留完整引用闭包 |
 | 已有能力证明 | [当前证据](../plans/run-state.md#证据边界)，按固定 Git 版本读取；未变范围可引用已有结论，新候选验证受影响部分 |
