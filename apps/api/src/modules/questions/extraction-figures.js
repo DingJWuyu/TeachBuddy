@@ -13,6 +13,21 @@ const execute = promisify(execFile);
 const normalize = (s) => s.trim().replace(/[.．、:：]\s*$/, "");
 const compact = text => text.normalize('NFKC').replace(/\s/g, '');
 
+function structureFailureDetail(error) {
+  // Keep converter/error headings, not echoed code or stack frames. The worker
+  // runs without credentials, but its diagnostic text is still untrusted input.
+  return `${error?.name ?? 'Error'}: ${error?.message ?? 'PDF structure conversion failed'}`
+    .split(/\r?\n/)
+    .filter((line, index) => index === 0 || /^(?:[A-Za-z]*Error)(?: \[[A-Z_]+\])?:/.test(line.trim()))
+    .join('\n')
+    .replace(/((?:authorization|cookie|api[_-]?key|token|password|secret|credential)\s*[:=])[^\r\n]*/gi, '$1 [REDACTED]')
+    .replace(/\bBearer\s+\S+/gi, 'Bearer [REDACTED]')
+    .replace(/\b(?:https?|file):\/\/[^\s"'<>]+/gi, '[URL]')
+    .replace(/(?:[A-Za-z]:\\|\/)[^\s"'<>),;]+/g, '[PATH]')
+    .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[EMAIL]')
+    .slice(0, 1000);
+}
+
 // Resolve a Poppler text box to a complete, unique set of PDF.js text items.
 // Missing font glyphs contribute their real footprint, never invented text.
 function matchingText(text, items, tolerance) {
@@ -233,8 +248,13 @@ export async function locateFigures({
     try {
       ({structure} = await convertFile({bytes: pdfBytes, mediaType: 'application/pdf',
         directory: work, structurePage: unit.page, timeoutMs: 25000, signal}));
-    } catch {
+    } catch (error) {
       signal.throwIfAborted();
+      // The existing extraction transaction persists the complete page result.
+      // Preserve the diagnostic there before the temporary work is removed.
+      (result.diagnostics ??= []).push({stage: 'pdf-figure-structure', detail: structureFailureDetail(error),
+        source: {fileId: unit.file.id, sha256: unit.file.sha256,
+          renditionFileId: unit.preview.renditionFileId, page: unit.page}});
       // Optional structural evidence must never make the native text disappear.
       for (const q of questions) q.doubts.push('配图结构读取失败，图边文字保留待核对');
     }
