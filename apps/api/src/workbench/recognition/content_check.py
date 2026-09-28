@@ -5,7 +5,6 @@ be compared as plain text. A matching result does not certify correctness.
 """
 import re
 import unicodedata
-from difflib import SequenceMatcher
 
 import numpy as np
 
@@ -42,16 +41,19 @@ def empty_operand(first, second):
 
 
 def conflicts(source, observed):
-    # Consecutive matched Chinese characters anchor the same visible segment.
+    # The entire observed Chinese sequence must identify one source occurrence.
+    # Repeated question wording is ambiguous even when only the numbers differ.
+    # Never choose the first occurrence or use a guessed paragraph/line height.
     # Do not compare whole multi-line blocks or discard mathematical operators
     # to force equivalence. Neither source is treated as a corrected answer.
     a, b = list(HAN.finditer(observed)), list(HAN.finditer(source))
-    matching = []
-    for group in SequenceMatcher(None, [m.group() for m in a], [m.group() for m in b], autojunk=False).get_matching_blocks():
-        matching.extend((group.a + i, group.b + i) for i in range(group.size))
-    for (pa, pb), (qa, qb) in zip(matching, matching[1:]):
-        if qa != pa + 1 or qb != pb + 1:
-            continue
+    text = "".join(m.group() for m in b)
+    anchor = "".join(m.group() for m in a)
+    start = text.find(anchor)
+    if not anchor or start < 0 or text.find(anchor, start + 1) >= 0:
+        return
+    for pa in range(len(a) - 1):
+        qa, pb, qb = pa + 1, start + pa, start + pa + 1
         independent = observed[a[pa].end():a[qa].start()]
         primary = source[b[pb].end():b[qb].start()]
         if len(independent) > 100 or len(primary) > 300:
