@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CalendarDialog, CalendarIcon, CalendarMenu, IconButton } from './CalendarControls.jsx';
+import { CalendarDialog, CalendarIcon, CalendarMenu, CalendarOverlay, IconButton } from './CalendarControls.jsx';
 import { COLORS, changeEnd, endOf, formatClock, presetRepeat, repeatLabel, todayInZone, weekday } from './calendarModel.js';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import * as api from './api.js';
@@ -34,7 +34,7 @@ function LabelDialog({ label, accountKey, onDone, onClose }) {
     if (result) onDone(result);
   }
   return <CalendarDialog title={label ? '编辑标签' : '创建标签'} onClose={onClose}>
-    <label className="cal-field">名称<input aria-label="标签名称" maxLength="60" value={name} onChange={e => setName(e.target.value)} autoFocus/></label>
+    <label className="cal-field">名称<input aria-label="标签名称" maxLength="60" value={name} onChange={e => setName(e.target.value)}/></label>
     <fieldset className="cal-label-colors"><legend>颜色</legend>{COLORS.map(value => <button key={value} type="button" aria-label={`颜色 ${value}`} aria-pressed={color === value} style={{ background: value }} onClick={() => setColor(value)}>{value === color && <CalendarIcon name="check" size={16}/>}</button>)}</fieldset>
     {operation.problem && <p className="cal-error" role="alert">{operation.problem.message}</p>}
     <footer>{label && <button className="is-danger" disabled={operation.isRunning} onClick={() => save(true)}>删除标签</button>}<button onClick={onClose}>取消</button><button className="is-primary" disabled={!name.trim() || operation.isRunning} onClick={() => save()}>{operation.pending ? '重试确认' : '保存'}</button></footer>
@@ -44,7 +44,7 @@ export function TagPicker({ tags, labels, onChange, accountKey, onLabels }) {
   const [editing, setEditing] = useState(null);
   return <><CalendarMenu label="标签" className="cal-tag-picker" trigger={<><span className="cal-tags">{tags.length && labels.some(x => tags.includes(x.id)) ? labels.filter(x => tags.includes(x.id)).map(label => <span className="cal-tag" style={{ '--tag-color': label.color }} key={label.id}>{label.name}</span>) : <span className="cal-placeholder">选择标签...</span>}</span><CalendarIcon name="down" size={16}/></>}>
     {close => <>{labels.map(label => <div className="cal-label-option" key={label.id}><button type="button" role="menuitemcheckbox" aria-checked={tags.includes(label.id)} onClick={() => onChange(tags.includes(label.id) ? tags.filter(x => x !== label.id) : [...tags, label.id])}><span className="cal-tag" style={{ '--tag-color': label.color }}>{label.name}</span>{tags.includes(label.id) && <CalendarIcon name="check" size={14}/>}</button><IconButton name="edit" label={`编辑标签 ${label.name}`} onClick={() => { setEditing(label); close(); }}/></div>)}<div className="cal-menu-divider"/><button type="button" role="menuitem" onClick={() => { setEditing({}); close(); }}>+ 创建标签</button></>}
-  </CalendarMenu>{editing && <LabelDialog label={editing.id ? editing : null} accountKey={accountKey} onClose={() => setEditing(null)} onDone={label => { onLabels(label); if (!label.deleted && !editing.id) onChange([...tags, label.id]); setEditing(null); }}/>}</>;
+  </CalendarMenu><CalendarOverlay present={Boolean(editing)}>{editing && <LabelDialog label={editing.id ? editing : null} accountKey={accountKey} onClose={() => setEditing(null)} onDone={label => { onLabels(label); if (!label.deleted && !editing.id) onChange([...tags, label.id]); setEditing(null); }}/>}</CalendarOverlay></>;
 }
 
 export default function CalendarEditor({ draft, onPatch, onClose, onDelete, onRestore, onMoveItem, locked, labels, onLabels, accountKey, status, onRetry, onReload, error }) {
@@ -94,9 +94,11 @@ export default function CalendarEditor({ draft, onPatch, onClose, onDelete, onRe
     <EntryItems items={content.items} repeating={Boolean(content.repeat)} onChange={items => onPatch({ items })} onMove={onMoveItem} onRemoveLast={draft.id && !content.title.trim() ? onDelete : null}/>
     {draft.entry?.updatedAt && <time className="cal-updated">{new Intl.DateTimeFormat('en-US', { timeZone: draft.zone, hour: 'numeric', minute: '2-digit' }).format(new Date(draft.entry.updatedAt))}</time>}
     {errorPanel}
+    <CalendarOverlay present={repeatOpen || Boolean(details)}>
     {repeatOpen && <RepeatDialog value={content.repeat} date={content.time.date} onSave={setRepeat} onClose={() => setRepeatOpen(false)}/>}
     {details === 'reminder' && <ReminderDialog value={content.reminder} onClose={() => setDetails(null)} onSave={reminder => { onPatch({ reminder }); setDetails(null); }}/>}
     {details === 'course' && <CourseDialog draft={draft} onClose={() => setDetails(null)} onSave={(course, single) => { onPatch({ course }, false, single ? 'instance' : null); setDetails(null); }}/>}
     {details === 'unschedule' && <CalendarDialog title="移回未排期" onClose={() => setDetails(null)}><p>移除这项任务的时间和提醒，并取消它与实际记录的关联。实际教学记录会保留。</p><footer><button onClick={() => setDetails(null)}>取消</button><button className="is-primary" onClick={() => { onPatch({ time: null, repeat: null, reminder: null, course: { ...content.course, recordIds: [] }, calendar: { ...content.calendar, allDay: false } }); setDetails(null); }}>移回未排期</button></footer></CalendarDialog>}
+    </CalendarOverlay>
   </section>;
 }

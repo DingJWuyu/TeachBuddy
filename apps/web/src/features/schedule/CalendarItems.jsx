@@ -30,14 +30,14 @@ export function EntryItems({ items, repeating, onChange, onMove, onRemoveLast })
   </div>;
 }
 
-export function MoveItemDialog({ item, sourceId, entries, onMove, onClose, busy, error, pending }) {
+export function MoveItemDialog({ item, sourceId, entries, onMove, onClose, onReload, busy, error, pending }) {
   const [targetId, setTargetId] = useState('');
   const targets = entries.filter(x => x.id !== sourceId && !x.repeat);
   const target = targets.find(x => x.id === targetId);
   return <CalendarDialog title="移动事项" onClose={onClose}>
     <p className="cal-move-item-text">{item.text}</p><p className="cal-help">只移动这条事项，保留它的优先级。目标安排的时间和教学关联保持原样。</p>
     <label className="cal-field">移到<select aria-label="移到" value={targetId} disabled={busy || pending} onChange={e => setTargetId(e.target.value)}><option value="">新建未排期任务</option>{targets.map(x => <option key={x.id} value={x.id}>{titleOf(x)} · {x.time ? `${x.time.date} ${x.time.startTime}` : '未排期'}</option>)}</select></label>
-    {error && <p className="cal-error" role="alert">{error}</p>}
+    {error && <p className="cal-error" role="alert">{error}{onReload && <button onClick={onReload}>读取最新安排</button>}</p>}
     <footer><button onClick={onClose}>取消</button><button className="is-primary" disabled={busy} onClick={() => onMove(item.id, target ?? null)}>{pending ? '重试确认' : '移动事项'}</button></footer>
   </CalendarDialog>;
 }

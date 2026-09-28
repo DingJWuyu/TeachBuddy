@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
 import { addDays, diffDays, monday, monthDays, monthTitle, shiftMonth } from './calendarModel.js';
@@ -67,17 +67,27 @@ export function CalendarMenu({ label, trigger, className = '', children }) {
       const index = buttons.indexOf(document.activeElement);
       event.preventDefault();
       buttons[event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowUp' ? -1 : 1) + buttons.length) % buttons.length]?.focus();
-    }}>{children(() => setOpen(false))}</div></ModulePresence></div>, document.body)}
+    }}>{children(() => { setOpen(false); ref.current?.querySelector('button')?.focus(); })}</div></ModulePresence></div>, document.body)}
   </div>;
+}
+const CalendarVisible = createContext(true);
+export function CalendarOverlay({ present, children }) {
+  return createPortal(<CalendarVisible.Provider value={present}><ModulePresence present={present} mode="overlay" className="cal-overlay-presence">{children}</ModulePresence></CalendarVisible.Provider>, document.body);
+}
+function CalendarDialogFocus({ dialogRef, onClose }) {
+  useModuleDialogFocus(dialogRef, onClose);
+  useEffect(() => { dialogRef.current?.querySelector('input:not(:disabled), textarea:not(:disabled), select:not(:disabled)')?.focus(); }, [dialogRef]);
+  return null;
 }
 export function CalendarDialog({ title, onClose, children }) {
   const ref = useRef(null);
-  useModuleDialogFocus(ref, onClose);
-  return createPortal(<div className="cal-dialog-backdrop" onPointerDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+  const active = useContext(CalendarVisible);
+  return <div className="cal-dialog-backdrop" onPointerDown={event => { if (event.target === event.currentTarget) onClose(); }}>
     <section className="cal-dialog" role="dialog" aria-modal="true" aria-label={title} ref={ref}>
+      {active && <CalendarDialogFocus dialogRef={ref} onClose={onClose}/>}
       <header><h2>{title}</h2><IconButton name="close" label="关闭" onClick={onClose}/></header>{children}
     </section>
-  </div>, document.body);
+  </div>;
 }
 export function ViewMenu({ view, onChange }) {
   const [custom, setCustom] = useState(false);
@@ -90,7 +100,7 @@ export function ViewMenu({ view, onChange }) {
         <div className="cal-submenu" role="menu">{Array.from({ length: 8 }, (_, i) => i + 2).map(count => <button key={count} type="button" role="menuitemradio" aria-checked={view.kind === 'days' && view.days === count} onClick={() => { onChange({ kind: 'days', days: count }); close(); }}>{count} 天<kbd>{count}</kbd></button>)}<div className="cal-menu-divider"/><button type="button" role="menuitem" onClick={() => { setDays(view.days ?? 7); setCustom(true); close(); }}>其他…</button></div>
       </div>
     </>}
-  </CalendarMenu>{custom && <CalendarDialog title="自定义天数" onClose={() => setCustom(false)}><label className="cal-field">天数<input type="number" min="1" max="31" value={days} onChange={e => setDays(e.target.value)} autoFocus/></label><footer><button onClick={() => setCustom(false)}>取消</button><button className="is-primary" disabled={!Number.isInteger(Number(days)) || days < 1 || days > 31} onClick={() => { onChange({ kind: 'days', days: Number(days) }); setCustom(false); }}>完成</button></footer></CalendarDialog>}</>;
+  </CalendarMenu><CalendarOverlay present={custom}>{custom && <CalendarDialog title="自定义天数" onClose={() => setCustom(false)}><label className="cal-field">天数<input type="number" min="1" max="31" value={days} onChange={e => setDays(e.target.value)}/></label><footer><button onClick={() => setCustom(false)}>取消</button><button className="is-primary" disabled={!Number.isInteger(Number(days)) || days < 1 || days > 31} onClick={() => { onChange({ kind: 'days', days: Number(days) }); setCustom(false); }}>完成</button></footer></CalendarDialog>}</CalendarOverlay></>;
 }
 
 export function MiniCalendar({ month, from, to, today, onMonth, onSelect }) {

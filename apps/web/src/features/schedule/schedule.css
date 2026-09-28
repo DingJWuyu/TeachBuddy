@@ -151,6 +151,12 @@
 .cal-load-error { position: absolute; left: 48px; right: 48px; top: 8px; font-size: 12px; color: #b74040; z-index: 5; }
 .cal-loading { position: absolute; right: 14px; bottom: 8px; font-size: 11px; color: light-dark(#999, var(--app-muted)); pointer-events: none; }
 .cal-dialog-backdrop { position: fixed; inset: 0; z-index: 300; background: #0005; display: grid; place-items: center; padding: 24px; animation: cal-fade 150ms ease-out; }
+.cal-overlay-presence { position: fixed; inset: 0; z-index: 300; opacity: 1; transition: opacity 180ms ease; }
+.cal-overlay-presence[data-state='closed'] { opacity: 0; pointer-events: none; }
+.cal-overlay-presence .cal-dialog-backdrop { animation: none; }
+.cal-overlay-presence .cal-dialog { animation: none; transform: translateY(0) scale(1); transition: transform 180ms cubic-bezier(.2,.8,.2,1); }
+.cal-overlay-presence[data-state='closed'] .cal-dialog { transform: translateY(4px) scale(.97); }
+@media (prefers-reduced-motion: reduce) { .cal-overlay-presence, .cal-overlay-presence .cal-dialog { transition: none; } }
 .cal-dialog { width: min(384px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; background: light-dark(#fff, var(--app-surface)); border: 1px solid light-dark(#e8e8e8, var(--app-line)); border-radius: 12px; box-shadow: 0 16px 60px #0002; padding: 24px; animation: cal-pop 180ms cubic-bezier(.2,.8,.2,1); }
 .cal-dialog > header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .cal-dialog h2 { font-size: 18px; font-weight: 600; margin: 0; }

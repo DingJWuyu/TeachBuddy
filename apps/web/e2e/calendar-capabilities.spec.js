@@ -251,3 +251,76 @@ test('主题真实切换、窄屏展开字段可达，账户草稿和未知请�
   await page.getByRole('button', { name: '重试确认', exact: true }).click();
   await expect.poll(async () => (await call('GET', `${E}/${task.id}`)).title).toBe('账户甲后续草稿');
 });
+
+test('通知地址进入后删除返回日历，刷新不重新打开已删除任务', async ({ page }) => {
+  const task = await call('POST', E, input('通知打开的任务'));
+  await page.goto(`${world.origin}/calendar?entry=${task.id}`);
+  await expect(page.locator('[name=entry-title]')).toHaveValue(task.title);
+  await action(page, '删除任务');
+  await page.getByRole('dialog', { name: '删除任务', exact: true }).getByRole('button', { name: '删除', exact: true }).click();
+  await expect(page.locator('.cal-editor')).toHaveCount(0);
+  await expect(page).toHaveURL(`${world.origin}/calendar`);
+  await page.reload(); await expect(page.locator('.cal-editor')).toHaveCount(0);
+});
+
+test('提醒弹窗退出动效、Escape焦点和快速反向', async ({ page }) => {
+  await page.getByRole('button', { name: '新建任务', exact: true }).click();
+  await page.locator('[name=entry-title]').fill('动效检查');
+  await page.locator('[name=entry-start]').fill('15:00');
+  await expect.poll(async () => Boolean(await saved('动效检查'))).toBeTruthy();
+  await action(page, '设置提醒');
+  const dialog = page.getByRole('dialog', { name: '提醒', exact: true });
+  await expect(dialog).toBeVisible();
+  await expect.poll(() => dialog.evaluate(node => Number(getComputedStyle(node.closest('.cal-overlay-presence') || node).opacity))).toBe(1);
+  await page.evaluate(() => {
+    window.calendarExitFrames = [];
+    let count = 0;
+    function frame() {
+      const node = [...document.querySelectorAll('[role=dialog]')].find(x => x.getAttribute('aria-label') === '提醒');
+      if (node) {
+        const owner = node.closest('.cal-overlay-presence') || node;
+        window.calendarExitFrames.push({ inert: Boolean(node.closest('[inert]')), opacity: Number(getComputedStyle(owner).opacity) });
+      }
+      if (++count < 60) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
+  await page.keyboard.press('Escape');
+  await expect.poll(() => page.evaluate(() => window.calendarExitFrames.some(x => x.inert && x.opacity > 0 && x.opacity < 1))).toBeTruthy();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '任务操作', exact: true })).toBeFocused();
+  await action(page, '设置提醒'); await page.keyboard.press('Escape');
+  await action(page, '设置提醒'); await expect(dialog).toBeVisible();
+  await page.getByLabel('分钟数').fill('23');
+  await dialog.getByRole('button', { name: '完成', exact: true }).click();
+  await expect.poll(async () => (await saved('动效检查'))?.reminder).toEqual({ side: 'before', minutes: 23 });
+});
+
+test('提醒明确拒绝可修正，事项移动冲突回滚并能核对后继续', async ({ page }) => {
+  const source = await call('POST', E, input('移动源', { items: [{ id: randomUUID(), text: '原事项', priority: 'normal' }] }));
+  const target = await call('POST', E, input('移动目标'));
+  await page.reload(); await open(page, source.title);
+  await action(page, '设置提醒'); const reminder = page.getByRole('dialog', { name: '提醒', exact: true });
+  await reminder.getByLabel('分钟数').fill('180'); await reminder.getByRole('button', { name: '完成', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('提醒时间已过去');
+  expect((await call('GET', `${E}/${source.id}`)).reminder).toBeNull();
+  await page.getByRole('button', { name: '结束前 180 分钟提醒', exact: true }).click();
+  await reminder.getByLabel('分钟数').fill('5'); await reminder.getByRole('button', { name: '完成', exact: true }).click();
+  await expect.poll(async () => (await call('GET', `${E}/${source.id}`)).reminder?.minutes).toBe(5);
+  await page.getByRole('button', { name: '事项 1 操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '移到其他安排…', exact: true }).click();
+  const move = page.getByRole('dialog', { name: '移动事项', exact: true });
+  await move.getByLabel('移到', { exact: true }).selectOption(target.id);
+  await call('PUT', `${E}/${target.id}`, { ...input('另一窗口的目标'), expectedVersion: target.version });
+  await move.getByRole('button', { name: '移动事项', exact: true }).click();
+  await expect(move.getByRole('alert')).toBeVisible();
+  expect((await call('GET', `${E}/${source.id}`)).items).toHaveLength(1);
+  expect((await call('GET', `${E}/${target.id}`)).items).toHaveLength(0);
+  await move.getByRole('button', { name: '读取最新安排', exact: true }).click();
+  await page.getByRole('button', { name: '事项 1 操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '移到其他安排…', exact: true }).click();
+  await move.getByLabel('移到', { exact: true }).selectOption(target.id);
+  await move.getByRole('button', { name: '移动事项', exact: true }).click();
+  await expect(page.locator('[name=entry-title]')).toHaveValue('另一窗口的目标');
+  expect((await call('GET', `${E}/${target.id}`)).items).toEqual(source.items);
+});
