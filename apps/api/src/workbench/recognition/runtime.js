@@ -177,12 +177,16 @@ export function createRecognizer({ home, workDirectory } = {}) {
     if (typeof accountKey !== "string" || !accountKey)
       throw failure("recognition-invalid-input", "识别任务缺少账户归属。");
     const target = path.join(workRoot, createHash("sha256").update(accountKey).digest("hex"));
-    if (create) fs.mkdirSync(target, { recursive: true, mode: 0o700 });
-    if (!fs.existsSync(target)) return null;
-    if (fs.lstatSync(target).isSymbolicLink() || !fs.statSync(target).isDirectory() ||
-        fs.realpathSync(target) !== path.join(fs.realpathSync(workRoot), path.basename(target)))
+    try {
+      if (create) fs.mkdirSync(target, { recursive: true, mode: 0o700 });
+      const stat = fs.lstatSync(target);
+      const actual = fs.realpathSync(target);
+      if (stat.isDirectory() && actual === path.join(fs.realpathSync(workRoot), path.basename(target))) return actual;
+    } catch (error) {
+      if (error.code === "ENOENT" && !create) return null;
       throw failure("recognition-cleanup", "识别临时目录归属未能确认。");
-    return target;
+    }
+    throw failure("recognition-cleanup", "识别临时目录归属未能确认。");
   }
 
   async function cleanupAccount(accountKey) {
@@ -192,16 +196,33 @@ export function createRecognizer({ home, workDirectory } = {}) {
     if (!root) return;
     cleaning.add(accountKey);
     try {
-      for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
-        const work = path.join(root, entry.name);
-        if (!entry.isDirectory() || !/^page-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(entry.name))
+      const entries = fs.readdirSync(root, { withFileTypes: true });
+      const pageName = /^page-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+      for (const entry of entries) {
+        if (entry.isDirectory() && pageName.test(entry.name) && entries.some(item => item.name === `${entry.name}.owner.json`)) continue;
+        const name = entry.name.replace(/\.owner\.json(?:\.tmp)?$/, "");
+        if (!entry.isFile() || !pageName.test(name) || name === entry.name)
           throw failure("recognition-cleanup", "识别临时目录归属未能确认。");
-        const owner = JSON.parse(fs.readFileSync(path.join(work, "owner.json"), "utf8"));
-        const unit = `teachbuddy-ocr-${entry.name.slice(5)}`;
-        if (owner.accountKey !== accountKey || owner.unit !== unit)
+        const record = path.join(root, entry.name);
+        const work = path.join(root, name);
+        if (entry.name.endsWith(".tmp")) {
+          // The page directory and worker are created only after this record's
+          // atomic rename. A interrupted record write cannot contain an input.
+          try { fs.lstatSync(work); }
+          catch (error) {
+            if (error.code !== "ENOENT") throw error;
+            fs.unlinkSync(record);
+            continue;
+          }
+          throw failure("recognition-cleanup", "识别临时目录归属未能确认。");
+        }
+        const owner = JSON.parse(fs.readFileSync(record, "utf8"));
+        const unit = `teachbuddy-ocr-${name.slice(5)}`;
+        if (owner.accountKey !== accountKey || owner.unit !== unit || owner.workRoot !== path.dirname(root))
           throw failure("recognition-cleanup", "识别临时目录归属未能确认。");
         await stopScope(unit);
         fs.rmSync(work, { recursive: true, force: true });
+        fs.unlinkSync(record);
         if (pendingScope === unit) pendingScope = undefined;
       }
       fs.rmdirSync(root);
@@ -224,6 +245,7 @@ export function createRecognizer({ home, workDirectory } = {}) {
       running = true;
       runningAccount = accountKey;
       let work;
+      let ownerFile;
       let safeToRemove = true;
       try {
         // A previous cleanup failure must be resolved before admitting another
@@ -238,9 +260,10 @@ export function createRecognizer({ home, workDirectory } = {}) {
         const id = randomUUID();
         const unit = `teachbuddy-ocr-${id}`;
         work = path.join(accountRoot, `page-${id}`);
+        ownerFile = `${work}.owner.json`;
+        fs.writeFileSync(`${ownerFile}.tmp`, JSON.stringify({ accountKey, unit, workRoot: path.dirname(accountRoot) }), { mode: 0o600 });
+        fs.renameSync(`${ownerFile}.tmp`, ownerFile);
         fs.mkdirSync(work, { mode: 0o700 });
-        fs.writeFileSync(path.join(work, "owner.tmp.json"), JSON.stringify({ accountKey, unit }), { mode: 0o600 });
-        fs.renameSync(path.join(work, "owner.tmp.json"), path.join(work, "owner.json"));
         const input = path.join(work, "input"), output = path.join(work, "output");
         fs.mkdirSync(input); fs.mkdirSync(output);
         fs.writeFileSync(path.join(input, "page.png"), bytes, { mode: 0o400 });
@@ -271,7 +294,11 @@ export function createRecognizer({ home, workDirectory } = {}) {
         running = false;
         runningAccount = undefined;
         if (work && safeToRemove) {
-          try { fs.rmSync(work, { recursive: true, force: true }); }
+          try {
+            fs.rmSync(work, { recursive: true, force: true });
+            fs.rmSync(ownerFile, { force: true });
+            fs.rmSync(`${ownerFile}.tmp`, { force: true });
+          }
           catch { throw failure("recognition-cleanup", "识别临时数据未完成清理，请稍后重试。"); }
         }
       }
