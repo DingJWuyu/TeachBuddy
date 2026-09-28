@@ -707,8 +707,17 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
           setState(value => ({ ...value, ...current, deletion: null }));
           throw new Error('deletion-rejected');
         }
+        let contextLost = false;
+        if (outcome.kind === 'problem' && [PROBLEM.BROWSER_CONTEXT_REQUIRED, PROBLEM.SESSION_INVALID].includes(outcome.type)) {
+          // A restore removes authentication containers and completed receipts.
+          // A read can establish that the browser context is gone, never that
+          // the original account deletion succeeded in the current database.
+          const check = await client.getSession();
+          contextLost = (check.kind === 'result' && !check.data.browserReady)
+            || (check.kind === 'problem' && check.type === PROBLEM.SESSION_INVALID);
+        }
         setState(value => ({ ...value, deletionRunning: false,
-          deletionError: outcome.type === PROBLEM.DELETION_INCOMPLETE ? 'incomplete' : 'unknown' }));
+          deletionError: contextLost ? 'context-lost' : outcome.type === PROBLEM.DELETION_INCOMPLETE ? 'incomplete' : 'unknown' }));
         return;
       }
       // A 401 or anonymous session is never a substitute for this 204 receipt.
@@ -723,6 +732,19 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     } finally { deletionRunningRef.current = false; }
   }, [bumpIdentity, client, notifyPeers, rotatePageContext]);
 
+  const returnFromDeletionVerification = useCallback(async () => {
+    if (deletionRunningRef.current || stateRef.current.deletionError !== 'context-lost') return;
+    // Explicitly leave an unverifiable intent. Preserve account-scoped device
+    // drafts: no successful deletion receipt was received by this browser.
+    forgetDeletion();
+    lockedRef.current = false; setLocked(false);
+    rotatePageContext();
+    setState(current => signedOut(current, {
+      status: 'booting', deletion: null, deletionRunning: false, deletionError: null,
+    }));
+    await bootstrap({ generation: generationRef.current, notice: () => COPY.deletionUnverifiable });
+  }, [bootstrap, rotatePageContext]);
+
   const publicValue = useMemo(() => ({
     status: state.status,
     account: state.status === 'active' ? state.account : null,
@@ -734,6 +756,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   const internalValue = useMemo(() => ({
     ...state,
     deleteAccount,
+    returnFromDeletionVerification,
     locked,
     registrationOpen: state.registrationOpen,
     login,
@@ -753,6 +776,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   }), [
     state,
     deleteAccount,
+    returnFromDeletionVerification,
     locked,
     login,
     register,

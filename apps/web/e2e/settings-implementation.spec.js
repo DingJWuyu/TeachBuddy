@@ -1,9 +1,13 @@
 import fs from 'node:fs';
+import path from 'node:path';
+import { backup, restore, activate } from '../../api/src/workbench/reliability/backup.js';
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { register, login, headers, track } from './teaching-time-auth/helpers.mjs';
 let world;
+let extraDirectories;
 test.beforeEach(async ({ page }) => {
+  extraDirectories = [];
   world = await createIntegration({ port: 48967 });
   await register(page, world);
   const coach = page.getByRole('button', { name: '知道了', exact: true });
@@ -12,8 +16,8 @@ test.beforeEach(async ({ page }) => {
 });
 test.afterEach(async ({ context }, info) => {
   await context.close(); await world.close();
-  if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
-  else fs.writeFileSync(info.outputPath('fixture-directory.txt'), world.directory);
+  if (info.status === info.expectedStatus) for (const directory of [world.directory, ...extraDirectories]) fs.rmSync(directory, { recursive: true, force: true });
+  else fs.writeFileSync(info.outputPath('fixture-directory.txt'), [world.directory, ...extraDirectories].join('\n'));
 });
 test('语言选择立即应用真实界面并写入账户偏好', async ({ page }, info) => {
   const before = await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json();
@@ -230,4 +234,54 @@ test('键盘语言菜单、真实偏好冲突、教师原文及英文窄屏危�
   await page.keyboard.press('Escape');
   await expect(confirm).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Delete account', exact: true })).toBeFocused();
+});
+
+
+test('维护恢复清除删除回执后明确无法核实，可重新准备登录且不清未确认设备资料', async ({ page, browser }, info) => {
+  const other = await browser.newContext({ ignoreHTTPSErrors: true });
+  try { const b = await other.newPage(); await register(b, world, 'teacher-b@example.test'); }
+  finally { await other.close(); }
+  const account = world.workbench.db.prepare('SELECT accountKey FROM auth_accounts WHERE email=?').get('teacher-a@example.test').accountKey;
+  const deviceKey = `tb.workbench.v1:${account}:unconfirmed-note`;
+  await page.evaluate(key => localStorage.setItem(key, '未确认设备原文'), deviceKey);
+  const bytes = Buffer.from('用于验证删除物理失败的原文件');
+  const file = await world.workbench.files.store({ accountKey: account }, { name: 'original.txt', bytes }, { key: crypto.randomUUID(), method: 'POST', path: '/api/workbench/files' });
+  const blob = path.join(world.directory, 'files', 'blobs', world.workbench.db.prepare('SELECT blobName FROM materials_files WHERE id=?').get(file.id).blobName);
+  fs.unlinkSync(blob); fs.mkdirSync(blob);
+  const attempts = [];
+  page.on('request', request => { if (request.url().endsWith('/api/auth/account-deletion')) attempts.push(request.postDataJSON()); });
+  await page.getByRole('button', { name: '删除账户', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '删除账户？', exact: true });
+  await dialog.getByLabel('输入账户邮箱以确认').fill('teacher-a@example.test');
+  await dialog.getByRole('button', { name: '永久删除账户', exact: true }).click();
+  await expect(page.getByText('删除尚未完成，账户已锁定。请重试完成清理。', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '重新准备登录', exact: true })).toHaveCount(0);
+  fs.rmdirSync(blob); fs.writeFileSync(blob, bytes);
+  await page.route('**/api/auth/account-deletion', async route => { await route.fetch(); await route.abort('failed'); });
+  await page.getByRole('button', { name: '重试核实删除', exact: true }).click();
+  await expect(page.getByText('删除结果尚未确认。请使用原请求核实，不要将登录失效当作删除成功。', { exact: true })).toBeVisible();
+  expect(attempts[1]).toEqual(attempts[0]);
+  await page.unroute('**/api/auth/account-deletion');
+  const source = world.directory, archived = source + '-backup', restored = source + '-restored';
+  extraDirectories.push(source, archived);
+  await world.close();
+  await backup({ database: path.join(source, 'workspace.sqlite'), files: path.join(source, 'files'), target: archived, stopped: true });
+  const recovery = restore({ source: archived, target: restored, stopped: true });
+  expect(recovery.auth.first.removed.deletions).toBe(1);
+  activate({ target: restored, stopped: true });
+  world = await createIntegration({ directory: restored, port: 48967 });
+  const verify = page.waitForResponse('**/api/auth/account-deletion');
+  await page.getByRole('button', { name: '重试核实删除', exact: true }).click();
+  expect((await verify).status()).toBe(409);
+  await expect(page.getByText('浏览器验证信息已失效，原删除结果无法继续核实。服务器可能已从备份恢复。重新登录后请核对账户和资料。', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '重新准备登录', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  expect(await page.evaluate(key => localStorage.getItem(key), deviceKey)).toBe('未确认设备原文');
+  expect(await page.evaluate(() => sessionStorage.getItem('teachbuddy:account-deletion'))).toBe(null);
+  await page.screenshot({ path: info.outputPath('restored-deletion-login.png'), animations: 'disabled' });
+  await login(page, 'teacher-b@example.test');
+  await expect(page.locator('.wb-shell')).toBeVisible();
+  expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts WHERE email=?').get('teacher-a@example.test').n).toBe(0);
+  await page.reload();
+  await expect(page.locator('.wb-shell')).toBeVisible();
 });

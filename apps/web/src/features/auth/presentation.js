@@ -7,6 +7,7 @@ import i18n from '../../i18n/index.js';
 import { PROBLEM } from './api.js';
 
 export const COPY = Object.freeze({
+  get deletionUnverifiable() { return t("浏览器验证信息已失效，原删除结果无法继续核实。服务器可能已从备份恢复。重新登录后请核对账户和资料。"); },
   get emailEmpty() { return t("请填写邮箱。"); },
   get emailInvalid() { return t("邮箱格式不正确。"); },
   get nicknameEmpty() { return t("请填写昵称。"); },
