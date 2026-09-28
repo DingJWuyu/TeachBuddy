@@ -98,7 +98,7 @@ export function createApp(options = {}) {
     const indexPath = path.join(webDist, 'index.html');
     app.use(express.static(webDist, { index: ['index.html'] }));
     app.use((req, res, next) => {
-      if (req.method !== 'GET' || req.path.startsWith('/api/')) return next();
+      if (req.method !== 'GET' || req.path === '/api' || req.path.startsWith('/api/')) return next();
       return res.sendFile(indexPath);
     });
   }
