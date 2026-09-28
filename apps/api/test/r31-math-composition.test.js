@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
-import { mathSupportCatalog, moduleCatalog } from '@refatos/shared';
-import { mathSupportImplementations } from '../src/workbench/moduleImplementations.js';
+import { moduleCatalog } from '@refatos/shared';
+import { moduleImplementations } from '../src/workbench/moduleImplementations.js';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { emptySource, newElement } from '../../web/src/features/math/model.js';
 
-const workbench = { catalogOverride: mathSupportCatalog, extraImplementations: mathSupportImplementations };
+const workbench = { catalogOverride: moduleCatalog, extraImplementations: moduleImplementations };
 const works = '/api/modules/math/v1/works';
 
 async function register(world, email) {

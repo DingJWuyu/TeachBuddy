@@ -57,14 +57,12 @@ export function createWorkbenchEnv(overrides = {}) {
 export function createEnv(overrides = {}) {
   const nodeEnv = overrides.nodeEnv ?? process.env.NODE_ENV ?? 'development';
   const port = Number(overrides.port ?? process.env.PORT ?? 4000);
-  const authSecret = overrides.authSecret ?? process.env.AUTH_SECRET ?? 'refatos-dev-secret';
   const smtpHost = overrides.smtpHost ?? process.env.SMTP_HOST ?? '';
   const smtpPort = Number(overrides.smtpPort ?? process.env.SMTP_PORT ?? 587);
   const smtpUser = overrides.smtpUser ?? process.env.SMTP_USER ?? '';
   const smtpPassword = overrides.smtpPassword ?? process.env.SMTP_PASSWORD ?? '';
   const smtpFrom = overrides.smtpFrom ?? process.env.SMTP_FROM ?? smtpUser;
   const smtpSecureInput = overrides.smtpSecure ?? process.env.SMTP_SECURE ?? false;
-  const corsOriginsInput = overrides.corsOrigins ?? process.env.CORS_ORIGINS ?? '';
   const sqlitePathInput = overrides.sqlitePath ?? process.env.SQLITE_PATH ?? process.env.DATABASE_URL ?? path.join(dataDir, 'refatos.sqlite');
   const sqlitePath = path.isAbsolute(sqlitePathInput) ? sqlitePathInput : path.resolve(process.cwd(), sqlitePathInput);
 
@@ -73,7 +71,6 @@ export function createEnv(overrides = {}) {
     appName: overrides.appName ?? 'RefatOS API',
     nodeEnv,
     port,
-    authSecret,
     authCodeSecret: overrides.authCodeSecret ?? process.env.AUTH_CODE_SECRET ?? '',
     registrationOpen: ![false, 'false', '0'].includes(overrides.registrationOpen ?? process.env.AUTH_REGISTRATION_OPEN ?? true),
     smtpHost,
@@ -82,7 +79,6 @@ export function createEnv(overrides = {}) {
     smtpPassword,
     smtpFrom,
     smtpSecure: smtpSecureInput === true || smtpSecureInput === 'true' || smtpSecureInput === '1',
-    corsOrigins: listValue(corsOriginsInput),
     sqlitePath,
     workbench: createWorkbenchEnv(overrides)
   };

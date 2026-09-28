@@ -12,8 +12,6 @@ const context = await startServer({
   env: {
     nodeEnv: 'test',
     port: 4100,
-    authSecret: 'teacher-workspace-e2e-secret',
-    corsOrigins: ['http://127.0.0.1:5183'],
     sqlitePath: path.join(rootDir, 'data', 'workspace.sqlite')
   },
   mailSender: {

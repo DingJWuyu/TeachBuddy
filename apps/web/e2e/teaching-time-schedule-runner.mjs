@@ -63,8 +63,6 @@ export async function startScheduleRunner({ dataDir, port = 47113, reset = true 
     appName: 'T52 schedule e2e runner',
     nodeEnv: 'test',
     port,
-    authSecret: 't52-schedule-e2e-secret',
-    corsOrigins: [origin],
     sqlitePath: path.join(rootDir, 'workspace.sqlite'),
     workbench: {
       mode: 'test-principal',

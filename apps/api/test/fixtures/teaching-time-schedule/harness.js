@@ -43,8 +43,6 @@ export async function createScheduleHarness(options = {}) {
   const env = createEnv({
     appName: 'T52 schedule harness',
     nodeEnv: 'test',
-    authSecret: 't52-schedule-harness-auth-secret',
-    corsOrigins: [trustedOrigin],
     sqlitePath,
     workbench: {
       mode: 'test-principal',

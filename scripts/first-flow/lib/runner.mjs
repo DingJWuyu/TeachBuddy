@@ -172,8 +172,6 @@ export async function startFirstFlowRunner(options = {}) {
     appName: 'TeachBuddy first-flow runner',
     nodeEnv: 'test',
     port,
-    authSecret: 'teacher-workspace-first-flow-runner-secret',
-    corsOrigins: [origin],
     sqlitePath: pathFor(dataDir, 'data', 'workspace.sqlite'),
     workbench: {
       mode,

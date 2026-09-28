@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AuthProvider, AuthGate, useAuth } from '../../../src/features/auth/index.jsx';
 import { bindWorkbenchTransport, workbenchBlob } from '../../../src/features/workbench/apiClient.js';
-import { mathSupportCatalog } from '@refatos/shared';
+import { moduleCatalog } from '@refatos/shared';
 import { resolveWorkbenchModules } from '../../../src/features/modules/moduleRegistry.js';
 import { DocumentView } from '../../../src/features/workbench/materials/index.js';
 
-const modules = resolveWorkbenchModules(mathSupportCatalog);
+const modules = resolveWorkbenchModules(moduleCatalog);
 
 function Files() {
   const { request, logout } = useAuth();

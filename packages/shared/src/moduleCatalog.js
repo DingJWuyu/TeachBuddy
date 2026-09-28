@@ -99,4 +99,3 @@ export const modulePorts = Object.freeze({
 export const moduleCatalogIdPattern = /^[a-z][a-z0-9-]*$/;
 export const moduleCatalogPathPattern = /^\/[a-z][a-z0-9-]*$/;
 export const moduleCatalogNavigationValues = Object.freeze(['sidebar', 'top']);
-export const mathSupportCatalog = moduleCatalog;

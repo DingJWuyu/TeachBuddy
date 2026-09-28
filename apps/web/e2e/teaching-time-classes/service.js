@@ -68,8 +68,6 @@ export function createTeachingTimeClassesService({ webDist = T51_WEB_DIST, clock
       appName: 'T51 classes E2E',
       nodeEnv: 'test',
       port: T51_PORT,
-      authSecret: 't51-classes-e2e-auth-secret',
-      corsOrigins: [T51_ORIGIN],
       sqlitePath: path.join(T51_DATA_DIR, 'data', 'workspace.sqlite'),
       workbench: {
         mode: 'test-principal',

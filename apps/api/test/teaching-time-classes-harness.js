@@ -50,8 +50,6 @@ export async function createTeachingTimeClassesHarness(options = {}) {
   const env = createEnv({
     appName: 'T51 classes harness',
     nodeEnv: 'test',
-    authSecret: 't51-classes-harness-auth-secret',
-    corsOrigins: [trustedOrigin],
     sqlitePath,
     workbench: {
       mode: 'test-principal',

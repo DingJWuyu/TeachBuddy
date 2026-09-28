@@ -40,8 +40,6 @@ export async function createWorkbenchContext(options = {}) {
     env: {
       nodeEnv,
       sqlitePath: databasePath,
-      authSecret: 'teacher-workspace-workbench-secret',
-      corsOrigins: [TEST_ORIGIN],
       workbench: {
         mode: 'test-principal',
         testPrincipals: principals,

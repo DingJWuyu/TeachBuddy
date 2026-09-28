@@ -7,8 +7,8 @@ import { build } from 'vite';
 import react from '@vitejs/plugin-react';
 import sharp from 'sharp';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
-import { mathSupportCatalog } from '@refatos/shared';
-import { mathSupportImplementations } from '../../api/src/workbench/moduleImplementations.js';
+import { moduleCatalog } from '@refatos/shared';
+import { moduleImplementations } from '../../api/src/workbench/moduleImplementations.js';
 import { prepareMathAssets } from '../../../scripts/math-support/prepare-assets.mjs';
 
 const require = createRequire(import.meta.url);
@@ -56,7 +56,7 @@ test('local distribution renders MathJax and Chinese fonts in a network-disabled
 });
 
 test('real A11 page transport uploads, displays, downloads and restores R31 files; logout rejects old binding', async ({ page }) => {
-  const world = await createIntegration({ webDist, workbench: { catalogOverride: mathSupportCatalog, extraImplementations: mathSupportImplementations } });
+  const world = await createIntegration({ webDist, workbench: { catalogOverride: moduleCatalog, extraImplementations: moduleImplementations } });
   const observed = [];
   let pageId;
   page.on('request', request => {

@@ -6,7 +6,6 @@
  */
 export {
   moduleCatalog,
-  mathSupportCatalog,
   moduleCatalogVersion,
   moduleCatalogIdPattern,
   moduleCatalogPathPattern,
@@ -31,14 +30,6 @@ export {
   workbenchProblemStatus,
   workbenchInvalidInputReasons
 } from './contract.js';
-
-export function getModuleMetadata(moduleId) {
-  const moduleItem = moduleCatalog.find((item) => item.id === moduleId);
-  if (!moduleItem) {
-    throw new Error(`Unknown teacher module: ${moduleId}`);
-  }
-  return moduleItem;
-}
 
 export { canRenderMath, supportedDocument, questionDocuments, lessonDocuments } from './materials/content.js';
 export { emptyRecordContent, recordContentText } from './classRecordContent.js';

@@ -15,7 +15,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   assertModuleCatalog,
   moduleCatalog,
-  mathSupportCatalog,
   projectModuleCatalog
 } from '../src/index.js';
 
@@ -33,12 +32,11 @@ function listDirectories(dirPath) {
 const catalogProblems = [];
 try {
   assertModuleCatalog(moduleCatalog);
-  assertModuleCatalog(mathSupportCatalog);
 } catch (error) {
   catalogProblems.push(...String(error.message).split('\n').slice(1).map((line) => line.replace(/^- /, '')));
 }
 
-const catalogIds = new Set(mathSupportCatalog.map((entry) => entry.id));
+const catalogIds = new Set(moduleCatalog.map((entry) => entry.id));
 
 // API side: the compile-time map is the only way a module becomes enabled.
 const apiModulesDir = path.join(repoRoot, 'apps', 'api', 'src', 'modules');
@@ -47,9 +45,8 @@ let apiImplemented = [];
 if (!fs.existsSync(implementationEntry)) {
   problems.push('apps/api/src/workbench/moduleImplementations.js is missing the compile-time module mapping');
 } else {
-  const { moduleImplementations, mathSupportImplementations } = await import(pathToFileURL(implementationEntry).href);
-  projectModuleCatalog(Object.keys(moduleImplementations ?? {}), moduleCatalog);
-  apiImplemented = Object.keys(mathSupportImplementations ?? {});
+  const { moduleImplementations } = await import(pathToFileURL(implementationEntry).href);
+  apiImplemented = Object.keys(moduleImplementations ?? {});
   for (const moduleId of apiImplemented) {
     if (!catalogIds.has(moduleId)) {
       problems.push(`moduleImplementations.${moduleId} has no catalog mapping (unknown module ID)`);
@@ -84,7 +81,7 @@ for (const featureName of listDirectories(webFeaturesDir)) {
 
 for (const [side, implemented] of [['API', apiImplemented], ['Web', webImplemented]]) {
   try {
-    projectModuleCatalog(implemented, mathSupportCatalog);
+    projectModuleCatalog(implemented, moduleCatalog);
   } catch (error) {
     problems.push(`${side} projection: ${error.message}`);
   }
@@ -97,7 +94,7 @@ if (catalogProblems.length || problems.length) {
 }
 
 console.log(
-  `Module catalog ok: default ${moduleCatalog.length}, isolated math ${mathSupportCatalog.length} entries, `
+  `Module catalog ok: ${moduleCatalog.length} entries, `
   + `API implementations [${apiImplemented.join(', ')}], `
   + `Web implementations [${webImplemented.join(', ')}]`
 );

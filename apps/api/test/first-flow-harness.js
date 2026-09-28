@@ -48,8 +48,6 @@ export async function createFirstFlowHarness(options = {}) {
   const env = createEnv({
     appName: 'B13 first-flow harness',
     nodeEnv: 'test',
-    authSecret: 'b13-first-flow-harness-auth-secret',
-    corsOrigins: [trustedOrigin],
     sqlitePath,
     workbench: {
       mode: 'test-principal',

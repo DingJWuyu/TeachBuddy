@@ -18,7 +18,6 @@ export async function harness() {
   const adapters = referenceAdapters();
   const env = createEnv({
     nodeEnv: "test",
-    authSecret: "r34-isolated-test-secret",
     sqlitePath: path.join(dir, "db.sqlite"),
     workbench: {
       mode: "test-principal",

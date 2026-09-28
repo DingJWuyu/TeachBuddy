@@ -7,4 +7,3 @@ export const moduleImplementations = Object.freeze({
   classes: Object.freeze({ factory: () => import('../modules/classes/index.js'), migrations: () => import('../modules/classes/migrations/index.js') }),
   schedule: Object.freeze({ factory: () => import('./teachingTime.js'), migrations: () => import('./teachingTime.js') })
 });
-export const mathSupportImplementations = moduleImplementations;

@@ -35,8 +35,6 @@ test('classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数
   const baseEnv = createEnv({
     appName: 'T51 migration base',
     nodeEnv: 'test',
-    authSecret: 't51-migration-auth-secret',
-    corsOrigins: [TRUSTED_ORIGIN],
     sqlitePath,
     workbench: {
       mode: 'test-principal',

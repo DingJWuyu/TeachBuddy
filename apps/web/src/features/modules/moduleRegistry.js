@@ -62,10 +62,3 @@ export function resolveWorkbenchModules(descriptors = moduleCatalog) {
       ...localRegistry[descriptor.id]
     }));
 }
-
-/**
- * The previous shell keeps its own module list: its layout API has not reported
- * any module, and the workbench catalog is not a replacement for that legacy
- * contract.
- */
-export const frontendModules = Object.freeze([]);
