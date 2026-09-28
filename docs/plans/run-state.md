@@ -6,15 +6,9 @@
 
 用户体验直接运行 `TeacherWorkspace-preview` 源码，入口与维护方式见[SETUP](../SETUP.md#已有本机实例)。原 `TeacherWorkspace` 的 main 不在本轮开发范围；当前分支、HEAD 及未提交文件用 Git 核对。
 
-总控负责各专属 session 的收发消息、公共文件唯一写者、集成与冲突。题库、备课、资源、数学、班级分别保留同级 `TeacherWorkspace-{questions,lessons,resources,math,classes}`；旧现场见[恢复索引](worktree-archive.md)。作者树保留的旧 diff 已有集成成果，但整树未必已同步为 preview 的干净基线；不能直接再次应用或 reset，接续先核对源码和冻结增量。AI/Agent 开发暂停，其 worktree 与原 main 保持。
+总控负责各专属 session 的收发消息、公共文件唯一写者、集成与冲突。常驻仅保留原 `TeacherWorkspace` 和集成树 `TeacherWorkspace-preview`；旧模块工作树及同级 archive 已删除，必要源码与证据按[恢复索引](worktree-archive.md)查找。旧专属 session 标记 `old - `，仅供查阅。以后开发模块时从当前 preview 基线创建新 session、新分支和新 worktree，按[开发约定](../agents/module-development.md#git-与运行现场)执行。AI/Agent 开发仍暂停，冻结成果保留不表示继续实施。
 
-当前集成基线已完成文档校准、代码清理、必要架构改进及日程、导航和材料修复的独立验收。用户授权总控自主安排专属 session、工作树及技术决策；OCR 破损文字疑点处理、全站中英切换与账户删除已完成集成，数据处理协议继续占位。各作者现场待命，接续任务先同步当前基线。当前任务包、实际 session、精确基线与回执在 preview `.scratch/ocr-settings/`，上轮集成证据在 `.scratch/product-next/`。
-
-| 本轮工作线 | 工作树 | 目标 |
-| --- | --- | --- |
-| 日程 | `TeacherWorkspace-schedule` | 已集成提醒、恢复、教学关联、未排期、多事项、优先事项和显示时区；独立浏览器原7项及新增12项通过，专属作者树保留待命 |
-| 材料质量临时专项 | `TeacherWorkspace-materials` | 已集成局部文字冲突/留白提示、三消费者原页定位及校对保存；真实缺字与无损对照具名验证通过，能力边界见共用识别契约 |
-| 工作台 | `TeacherWorkspace-workbench` | 已集成简体中文/English 账户偏好及真实账户删除、失败核实和恢复后重新登录；协议继续占位 |
+当前集成基线已完成文档校准、代码清理、必要架构改进及日程、导航和材料修复的独立验收。用户授权总控自主安排专属 session、工作树及技术决策；OCR 破损文字疑点处理、全站中英切换与账户删除已完成集成，数据处理协议继续占位。当前功能任务包、实际 session、精确基线与回执在 preview `.scratch/ocr-settings/`，上轮集成证据在 `.scratch/product-next/`；不从旧作者现场重复应用增量。
 
 合 main、push、公开部署、费用和模型窗口按对应授权执行；旧实验额度不延续。测试业务数据可丢弃，不以旧库、草稿保留或历史迁移作为开发前置；代码、未提交成果、固定输入、有效证据和私有配置须保留。
 
@@ -97,7 +91,7 @@
 | 本轮 OCR 与设置 | preview `.scratch/ocr-settings/integration-receipt.md`；分别记录真实模型运行、原始结果回放、三模块消费、中英切换、删除与恢复。具体输入限制见[共用识别](../contracts/recognition.md)，不保证任意破损全检 |
 | 代码整理、架构及独立验收 | preview `.scratch/codebase-cleanup/receipt.md`，包含固定差异、Standards/Spec、真实身份和数据、跨模块消费及实际文件输出证据 |
 | 本轮日程、导航与材料专项 | preview `.scratch/product-next/coordination.md` 和各工作线 `*-receipt.md`；三线均已集成，根独立验收及实际组合版本见 `integration-receipt.md`。材料原始评分与本轮PDF复评分开，不能沿用修复前的P结果 |
-| 本轮全项目文档核准 | preview `.scratch/docs-restructure/receipt.md`；五模块各自 `.scratch/docs-audit/receipt.md`。静态对齐，不冒充新功能验收 |
+| 本轮全项目文档核准 | preview `.scratch/docs-restructure/receipt.md`；五模块作者回执按[恢复索引](worktree-archive.md)定位。静态对齐，不冒充新功能验收 |
 | 文档与运行契约解耦 | preview `.scratch/contracts-layout/receipt.md`；schema 等价、样本完整及不含 `docs/` 的构建、API、开发服务和认证传输回归 |
 | OCR 共用、真实页、模块消费与实际界面 | preview `.scratch/ocr-quality/receipt.md`；原始输入/raw、最终转换、模块采用分别记证；基础机制在 `.scratch/ocr-mainline/shared-receipt.md` |
 | 五模块集成及资源查找/资料包增量 | preview `.scratch/five-module-integration/result.json`、`.scratch/ocr-coordination/result.json`；均按各自受测候选读取 |
