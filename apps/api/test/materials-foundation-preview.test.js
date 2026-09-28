@@ -298,11 +298,12 @@ sys.stdout.buffer.write(out.getvalue())`,
     })
   ).body;
   assert.equal((await limited.finish(accepted.id)).state, "failed");
+  const workDirectory = limited.runtime.workbench.files.accountWorkDirectory({ accountKey: "r31-a" });
   const failures = fs
-    .readdirSync(path.join(limited.dir, "files/conversions"))
+    .readdirSync(workDirectory)
     .map((dir) =>
       fs.readFileSync(
-        path.join(limited.dir, "files/conversions", dir, "failure.txt"),
+        path.join(workDirectory, dir, "failure.txt"),
         "utf8",
       ),
     );
