@@ -1,5 +1,7 @@
 // Upgrade a database actually created by the immutable T53 product, including
 // its successful v1 receipt. No old migration or receipt is rewritten.
+// The archived app imports cors, retained only as an API devDependency so a
+// clean install can run this fixed-version fixture without changing old code.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

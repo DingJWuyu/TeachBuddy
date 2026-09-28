@@ -158,7 +158,7 @@ test('a confirmed request replays after the API process restarts on the same dat
     assert.equal(restarted.workbench.mutations.count(ACCOUNT_A), 1);
     assert.deepEqual(
       restarted.workbench.migrations.appliedIds(),
-      ['materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'lessons_0003_order', 'lessons_0004_history_and_placement', 'lessons_0005_page_source', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications', 'workbench_probe_init', 'agent_001_conversations']
+      ['materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'workbench_navigation_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'lessons_0003_order', 'lessons_0004_history_and_placement', 'lessons_0005_page_source', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications', 'workbench_probe_init', 'agent_001_conversations']
     );
   } finally {
     restarted.dataStore.close();
