@@ -183,16 +183,19 @@ export default function LessonDetail({ id }) {
   const [importEntering, setImportEntering] = useState(false);
 
   const baseline = savable.baseline;
-  const deleted = Boolean(baseline?.deletedAt);
+  // Lifecycle controls describe the latest known object; editing keeps its own
+  // original baseline until the teacher explicitly resolves a content conflict.
+  const currentObject = savable.serverObject ?? baseline;
+  const deleted = Boolean(currentObject?.deletedAt);
   const pageImportOpen = scene.pageImportId === id;
   const lifecycleBusy = importEntering || pageImportOpen || contentSaving || contentSubmit.isRunning || Boolean(contentSubmit.pending) || deleteSubmit.isRunning || Boolean(deleteSubmit.pending) || copySaving || copySubmit.isRunning || Boolean(copySubmit.pending);
   const editing = !deleted && (isNew || scene.editingId === id);
   const input =
-    !editing && baseline
-      ? lessonInputFrom(baseline)
+    !editing && currentObject
+      ? lessonInputFrom(currentObject)
       : savable.input || emptyLessonInput();
   const setEditing = (active) => patchScene({ editingId: active ? id : null });
-  const unsupported = [baseline, input]
+  const unsupported = [currentObject, input]
     .filter(Boolean)
     .some((lesson) =>
       lessonDocuments(lesson).some(
@@ -400,7 +403,12 @@ export default function LessonDetail({ id }) {
       // unsaved text based on that confirmed version so it can resume later.
       writeLocal(shell.accountKey, name, {
         ...draft,
+        baseline: result,
         baselineVersion: result.version,
+        // A lost lifecycle response can produce a version conflict on reload.
+        // Restore the pre-operation state only after confirming that same request;
+        // a conflict already present before the operation remains unresolved.
+        status: payload.draftStatus ?? draft.status,
       });
     }
     patchScene({
@@ -418,7 +426,8 @@ export default function LessonDetail({ id }) {
       return;
     const payload = {
       apiVersion: 3,
-      body: { baseVersion: baseline.version, deleted: nextDeleted },
+      draftStatus: savable.status,
+      body: { baseVersion: currentObject.version, deleted: nextDeleted },
     };
     setDialog(null);
     finishLifecycle(await deleteSubmit.submit(sendLifecycle, payload), payload);
@@ -427,7 +436,7 @@ export default function LessonDetail({ id }) {
   async function handlePurge() {
     const payload = {
       action: "purge",
-      body: { baseVersion: baseline.version },
+      body: { baseVersion: currentObject.version },
     };
     setDialog(null);
     finishLifecycle(await deleteSubmit.submit(sendLifecycle, payload), payload);
