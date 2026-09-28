@@ -77,7 +77,8 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
   });
   const latest = useRef(scene);
   const issueMark = useRef(null);
-  useEffect(() => { issueMark.current?.scrollIntoView({block: 'center', inline: 'nearest'}); }, [scene.issueBox]);
+  const focusIssue = () => { issueMark.current?.scrollIntoView({block: 'center', inline: 'nearest'}); };
+  useEffect(focusIssue, [scene.issueBox]);
   latest.current = scene;
   const recognition = useIdempotentSubmit({ accountKey, name: `pending:lesson-recognition:${reviewId}` });
   const adoption = useIdempotentSubmit({ accountKey, name: `pending:lesson-page-adoption:${reviewId}` });
@@ -223,7 +224,7 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
     <div className="lesson-page-import-body">
       <ModuleDisclosure title={imageLabel || t("原资料 · 第 {{page}} 页", { page: source.page })} open={scene.originalOpen ?? true}
         onOpenChange={originalOpen => patchScene({ originalOpen })}>
-        <div className="lesson-source-image">
+        <div className="lesson-source-image" onLoadCapture={focusIssue}>
           <ControlledImage fileId={source.imageFileId} alt={imageLabel || t("原资料第 {{page}} 页", { page: source.page })} widthMm={170} />
           {scene.issueBox && <span className="lesson-issue-box" aria-label={t("原稿疑点位置")}
             ref={issueMark}
@@ -238,7 +239,7 @@ export function LessonPageImport({ lesson, onClose, onAdopted, onRefresh, imageP
           <p className="wb-muted">{imageParent ? t("整页校对稿已保留。这里的内容将单独加入课稿，请对照配图核对；空白单元格需由你填写。") : t("对照原页检查文字、公式和配图。校对后的内容可以继续编辑，原资料保持不变。")}</p>
           {scene.result.issues.length > 0 && <ModuleDisclosure title={t("这一页有识别疑点，请对照原页核对")} defaultOpen>
             <ul>{scene.result.issues.map((issue, index) => <li key={index} title={issueMessage(issue)}>{issueMessage(issue)}
-              {issue.box && <button className="wb-text-button" onClick={() => patchScene({originalOpen: true, issueBox: issue.box})}>{t("查看疑点位置")}</button>}
+              {issue.box && <button className="wb-text-button" onClick={() => patchScene({originalOpen: true, issueBox: {...issue.box}})}>{t("查看疑点位置")}</button>}
             </li>)}</ul>
           </ModuleDisclosure>}
           <LessonDocumentEditor label={t("识别正文")} value={scene.content} readOnly={locked}

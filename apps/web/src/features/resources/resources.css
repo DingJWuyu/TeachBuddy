@@ -779,6 +779,9 @@
   border-bottom: 1px solid var(--res-line);
   padding: 12px 16px;
   font-size: 13px;
+  max-height: 40vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .res-recognition header,
 .res-recognition-actions,
@@ -820,9 +823,6 @@
   flex: none;
 }
 .res-recognition-body {
-  max-height: 32vh;
-  overflow: auto;
-  overscroll-behavior: contain;
   padding: 4px 2px;
 }
 .res-recognition-document {

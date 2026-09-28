@@ -129,6 +129,7 @@ manifest = {'revision': worker['REVISION'], 'models': worker['MODELS'], 'files':
 worker['verify_environment'](home)
 assert pathlib.Path(sys.executable).resolve().is_relative_to(home)
 PY
+"$ocrTarget/venv/bin/python" apps/api/test/recognition-content-check.test.py
 ```
 
 确认许可、清单校验和实际单页识别成功后清理下载临时目录。将私有运行配置的 `MATERIALS_OCR_HOME` 改为新 profile，再由实例维护者重启 API；保留旧 profile 可供明确回退。不要把模型放进仓库任务产物目录，也不要复制旧 `work/` 原页。
