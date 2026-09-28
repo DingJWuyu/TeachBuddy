@@ -7,7 +7,7 @@
 | 了解产品、体验或启动 | 根[README](../README.md) | 配置、隔离实例或维护操作读[SETUP](SETUP.md) |
 | 查看进度、选下一项工作 | [项目状态](plans/run-state.md) | 核查某项结论才读其证据；实施时进入对应功能页 |
 | 接手模块、派发或执行任务 | [开发约定](agents/module-development.md) | 先确认本次目标、工作树和权限，再读下表对应模块 |
-| 判断是否属于既定目标 | [产品范围](PRODUCT_SCOPE.md) | 页面和跨模块往返读[共同交互](WORKBENCH_DESIGN.md) |
+| 判断是否属于既定目标 | [产品范围](PRODUCT_SCOPE.md) | 页面和跨模块往返读[共同交互](features/workbench.md) |
 | 修改界面 | 对应功能页和[设计与验证规则](rules/design-and-verification.md) | 调整某页面外观时才看该页指定参考图 |
 | 修改存储、接口或跨模块交换 | 功能页指向的契约 | 精确字段继续读其 schema；部分文件被程序直接读取 |
 | 验证改动或准备交付 | [验证指南](acceptance/README.md) | 本次功能选择对应场景；完整交付才展开[验收矩阵](acceptance/mvp-matrix.md) |
@@ -17,6 +17,7 @@
 
 | 任务范围 | 唯一行为入口 |
 | --- | --- |
+| 工作台外壳、导航、辅助栏与跨模块往返 | [工作台共同交互](features/workbench.md) |
 | 题库、提取校对、分类、原稿、改编 | [题库](features/questions.md) |
 | 课稿、环节、取材、引用更新、Word/PDF | [备课](features/lessons.md) |
 | 上传、文件夹、预览、检索、替换 | [资源库](features/resources.md) |

@@ -8,7 +8,7 @@
 - 仅编排者：效率优先，在依赖与权限允许时并行使用 worktree；某条工作线等用户时继续其他可推进的工作线。派发 prompt 保持最小必要，任务包、模型和具体规则见 `docs/agents/module-development.md#编排`。
 - 需要选择或解释 skill 流程时读取开发约定的编排节；任务包点名 skill 时，完整读取其 `SKILL.md` 及直接引用。业务 session 之间不互聊、不扩任务；skill 明确要求的有界内部 subagent 由调用 session 管理并聚合，只是该规则的有限例外，不单列业务任务。
 - 接到设计、实现或独立验收任务时，从本次任务的必读清单进入规格和 `docs/agents/module-development.md`；按角色和触发条件补读，不要求通读项目状态或其他模块。
-- 设计或核查范围时读取 `docs/PRODUCT_SCOPE.md` 的相关段落；页面和跨模块行为读取 `docs/WORKBENCH_DESIGN.md` 的相关段落。范围不能由旧代码或原型反推。
+- 设计或核查范围时读取 `docs/PRODUCT_SCOPE.md` 的相关段落；页面和跨模块行为读取 `docs/features/workbench.md` 的相关段落。范围不能由旧代码或原型反推。
 - 登录注册由独立 session 负责；涉及身份交接或退出时读取 `docs/contracts/auth.md`，核对其源版本与未完成项，不把讨论中的契约当成已实现能力。
 
 ## Rules
@@ -29,6 +29,7 @@
 - 设计系统架构、契约、技术方案等技术设计时，牢记第一性原理、奥卡姆剃刀、消融实验、批判性思维、独立思考、发现未知的未知、高内聚低耦合。
 - 实现代码时，牢记第一性原理、奥卡姆剃刀、消融实验、高内聚低耦合。
 - 编写文档时，禁止写 changelog/repair 式的无用历史信息，文档只保存当下，不承载历史，必须遵循 write-for-agents skill。
+- 改动完毕代码后，要同步更新相关的文档，更新文档要遵循对应的规范。
 
 ## Agent skills
 

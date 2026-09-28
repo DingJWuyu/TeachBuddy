@@ -13,7 +13,7 @@
 | 身份 | [auth.feature](auth.feature)、[auth-cases](../contracts/auth-cases.md) | 真实登录/恢复/退出、邮件与页面绑定、第二设备/账户隔离及恢复后旧身份失效 |
 | Agent | [agent.feature](agent.feature)、[完整工具设计](../features/agent.md#实现与接续边界) | 真模型真实业务操作、新题而非固定示例、手工冲突/停止/恢复、六模块全部覆盖 |
 | 数据 | [数据管理](../features/data.md) | 可阅读个人包、软删除关系保持、停服一致备份、干净目标还原、旧请求隔离与认证撤销 |
-| 现场与支持页 | [共同交互](../WORKBENCH_DESIGN.md)、[设置](../features/settings.md)、[界面规则](../rules/design-and-verification.md) | 各模块草稿/选择/滚动、失效身份、设置真实生效与当前删减、帮助可达、渐进交互 |
+| 现场与支持页 | [共同交互](../features/workbench.md)、[设置](../features/settings.md)、[界面规则](../rules/design-and-verification.md) | 各模块草稿/选择/滚动、失效身份、设置真实生效与当前删减、帮助可达、渐进交互 |
 | 交付环境 | [SETUP](../SETUP.md) | 桌面/平板、目标课堂离线、同源 HTTPS、持久数据/文件、干净启动/恢复和实际交付 SHA |
 
 <a id="extraction"></a>
