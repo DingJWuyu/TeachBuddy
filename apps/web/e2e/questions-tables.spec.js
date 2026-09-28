@@ -60,6 +60,100 @@ const response=(html,assets=[])=>({width,height})=>({width,height,assets,raw:{wi
 const math=document=>{const result=[];walkBlocks(document.blocks,b=>{if(b.type==='math')result.push(b.latex);for(const run of b.runs??[])if(run.type==='math')result.push(run.latex);});return result;};
 const intro=()=>response(table([header,['【例19】判断下列函数的性质。','教师组织讨论','设计点评文字']]));
 const tail=()=>response(table([['【练习23】计算 $g(t)=7t+4$。','教师巡视','教学目的']]));
+const missing='【思考37】研究以下函数的性质。';
+const ordered='(1) $u(t)=2t+9$ (2) $v(t)=t^3-2$ (3) $w(t)=1/t$';
+const startTable=body=>table([header,[body,'教学活动','点评']]);
+const endTable=body=>table([[body,'','点评']]);
+
+test('HTTP：唯一缺题目数据的表格题可续接，保留原片段且跨页疑点阻止入库',async()=>{
+  const file=await upload(fs.readFileSync(pdf),'unseen.pdf');
+  await recognize(file,[1,2],[response(startTable(missing)),response(endTable(ordered+'\\n【问题12】不能混入题干。\\n教师：组织讨论。'))]);
+  let {material}=await collect(file,[1,2]);
+  expect(material.drafts.map(d=>d.title)).toEqual(['思考37']);
+  const draft=material.drafts[0];
+  expect(math(draft.body)).toEqual(['u(t)=2t+9','v(t)=t^3-2','w(t)=1/t']);
+  expect(documentText(draft.body)).not.toMatch(/问题12|教师|不能混入/);
+  expect(draft.parts[0].locations.map(l=>l.page)).toEqual([1,2]);
+  expect(material.fragments.map(f=>f.text).join('\n')).toContain('【思考37】');
+  expect(material.fragments.map(f=>f.text).join('\n')).toContain('u(t)=2t+9');
+  draft.answerStatus='absent';draft.issues=draft.issues.map(i=>({...i,resolution:i.code==='split-boundary'?'open':'corrected'}));
+  material=await request('PUT',`${base}/imports/${material.id}`,{baseVersion:material.version,drafts:material.drafts,fragments:material.fragments});
+  const blocked=await client.request('POST',`${base}/imports/${material.id}/commit`,{headers:{'Idempotency-Key':randomUUID()},body:{baseVersion:material.version,draftIds:[draft.id]}});
+  expect(blocked.status).toBe(409);expect(blocked.text).toContain('draft-not-ready');
+  expect(recognizer.calls).toHaveLength(2);
+});
+
+const continuationCases=[
+  ['新题标题',startTable(missing),endTable('【练习88】'+ordered)],
+  ['教师活动开头',startTable(missing),endTable('教师：组织讨论。\\n'+ordered)],
+  ['独立新题说明',startTable(missing),endTable('独立练习：计算以下各式。\\n'+ordered)],
+  ['空小问',startTable(missing),endTable('(1) $u(t)=2t$ (2)')],
+  ['小问序号断开',startTable(missing),endTable('(1) $u(t)=2t$ (3) $v(t)=t^2$')],
+  ['同格两个待续题',startTable('【例31】判断函数性质。【思考37】研究以下函数的性质。'),endTable(ordered)],
+  ['两行待续题',table([header,['【例31】判断函数性质。','活动','点评'],[missing,'活动','点评']]),endTable(ordered)],
+  ['前题后有教师活动',startTable(missing+'\\n教师：下面另做练习。'),endTable(ordered)],
+  ['列数变化',startTable(missing),table([[ordered,'活动','点评','旁注']])],
+  ['续行合并格',startTable(missing),`<table><tr><td colspan="2">${ordered}</td><td>点评</td></tr></table>`],
+  ['前页题目合并格',`<table><tr>${header.map(h=>`<td>${h}</td>`).join('')}</tr><tr><td colspan="2">${missing}</td><td>点评</td></tr></table>`,endTable(ordered)],
+  ['跨行覆盖',startTable(missing),`<table><tr><td>${ordered}</td><td rowspan="2">活动</td><td>点评</td></tr><tr><td>教师活动</td><td>点评</td></tr></table>`],
+  ['续行缺少单元格',startTable(missing),table([[ordered,'点评'],['课堂小结','活动','点评']])],
+  ['新caption',startTable(missing),endTable(ordered).replace('<table>','<table><caption>教学环节：新的活动</caption>')],
+  ['表前新标题',startTable(missing),'<p>教学环节：新的活动</p>'+endTable(ordered)],
+];
+for(const [name,first,last] of continuationCases)test(`HTTP：隐式续题不跨越${name}`,async()=>{
+  const file=await upload(fs.readFileSync(pdf),'material.pdf');
+  await recognize(file,[1,2],[response(first),response(last)]);
+  const {material}=await collect(file,[1,2]);
+  expect(material.drafts.some(d=>d.parts.some(part=>new Set(part.locations.map(l=>l.page)).size>1))).toBe(false);
+  expect(recognizer.calls).toHaveLength(2);
+});
+
+test('HTTP：隐式续题不借用未选前页、非相邻页或另一原件',async()=>{
+  const file=await upload(fs.readFileSync(pdf),'material.pdf');
+  await recognize(file,[1,2,3],[response(startTable(missing)),response(endTable(ordered)),response(endTable(ordered))]);
+  for(const pages of [[2],[1,3]]){
+    const {material}=await collect(file,pages);expect(material.drafts.some(d=>d.title==='思考37')).toBe(false);
+  }
+  const first=await upload(sourceImage('I-1'),'first.png'),second=await upload(sourceImage('I-2'),'second.png');
+  await recognize(first,[1],[response(startTable(missing))]);await recognize(second,[1],[response(endTable(ordered))]);
+  const created=await request('POST',`${base}/imports`,{title:'两个原件',origin:'',input:{kind:'files',fileIds:[first.id,second.id],pages:[]}});
+  await waitJob(created.jobId);const material=await request('GET',`${base}/imports/${created.id}`);
+  expect(material.drafts).toEqual([]);expect(recognizer.calls).toHaveLength(5);
+});
+
+for(const interruption of ['failed','cancelled'])test(`HTTP：隐式续题在${interruption}后重试，人工稿、忽略和入库身份保留`,async()=>{
+  const file=await upload(fs.readFileSync(path.resolve('apps/web/e2e/fixtures/materials-questions/PS.pdf')),'scan.pdf');
+  let entered, resumed=false;const reached=new Promise(resolve=>{entered=resolve;});
+  recognizer.run=async input=>{
+    recognizer.calls.push('controlled');
+    if(recognizer.calls.length===1)return response(startTable(missing))(input);
+    if(!resumed){
+      if(interruption==='failed')throw Error('Controlled page failure');
+      entered();await new Promise((resolve,reject)=>input.signal.addEventListener('abort',()=>reject(input.signal.reason),{once:true}));
+    }
+    return response(endTable(ordered))(input);
+  };
+  const created=await request('POST',`${base}/imports`,{title:'可恢复续题',origin:'',input:{kind:'files',fileIds:[file.id],pages:[{fileId:file.id,pages:[1,2]}]}});
+  if(interruption==='cancelled'){await reached;await request('POST',`/api/workbench/jobs/${created.jobId}/cancel`,{});}
+  const stopped=await waitJob(created.jobId);expect(stopped.state).toBe(interruption==='failed'?'partial':'cancelled');
+  expect((await request('GET',`${base}/imports/${created.id}`)).drafts).toEqual([]);
+  resumed=true;
+  let retry=await request('POST',`/api/workbench/jobs/${created.jobId}/retry`,{unitIds:[]});await waitJob(retry.id);
+  let material=await request('GET',`${base}/imports/${created.id}`);expect(material.drafts).toHaveLength(1);
+  const draft=structuredClone(material.drafts[0]);draft.title='老师的跨页校对';draft.disposition='ignored';
+  walkBlocks(draft.body.blocks,b=>{for(const r of b.runs??[])if(r.type==='math')r.latex='u(t)=17t+6';});
+  material=await request('PUT',`${base}/imports/${created.id}`,{baseVersion:material.version,drafts:[draft],fragments:material.fragments});
+  retry=await request('POST',`/api/workbench/jobs/${retry.id}/retry`,{unitIds:[`file:${file.id}:page:2`]});await waitJob(retry.id);
+  material=await request('GET',`${base}/imports/${created.id}`);expect(material.drafts).toEqual([draft]);
+  draft.disposition='pending';draft.answerStatus='absent';draft.issues=draft.issues.map(i=>({...i,resolution:'corrected'}));
+  material=await request('PUT',`${base}/imports/${created.id}`,{baseVersion:material.version,drafts:[draft],fragments:material.fragments});
+  const committed=await request('POST',`${base}/imports/${created.id}/commit`,{baseVersion:material.version,draftIds:[draft.id]});
+  retry=await request('POST',`/api/workbench/jobs/${retry.id}/retry`,{unitIds:[`file:${file.id}:page:2`]});await waitJob(retry.id);
+  material=await request('GET',`${base}/imports/${created.id}`);expect(material.drafts).toHaveLength(1);
+  expect(material.drafts[0].questionId).toBe(committed.questions[0].id);expect(material.drafts[0].body).toEqual(draft.body);
+  expect((await request('GET',`${base}/items/${committed.questions[0].id}`)).body).toEqual(draft.body);
+  expect(recognizer.calls).toHaveLength(3);
+});
 
 test('HTTP：缺少题目数据的引导语换词或含数学名称仍保留为未分配',async()=>{
   const file=await upload(sourceImage('I-1'),'introductions.png');
@@ -102,7 +196,7 @@ test('HTTP：同识别块的表后标题清除跨页范围，新表头仍可重�
 });
 
 // Both inputs and raw output are external private evidence, not generated here.
-test('HTTP：真实 E.pdf 已有识别页分出练习与思考，保留原7/8和配图',async()=>{
+test('HTTP：真实 E.pdf 提取三题，例题续页保留四个原式与两页来源',async()=>{
   test.skip(!process.env.M33_PRIVATE_PDF||!process.env.QUESTIONS_OCR_EVIDENCE_DIR,'需要固定私有E及已有doc3页证据');
   const directory=process.env.QUESTIONS_OCR_EVIDENCE_DIR;
   const responses=[7,8].map(number=>{
@@ -120,13 +214,18 @@ test('HTTP：真实 E.pdf 已有识别页分出练习与思考，保留原7/8和
   await recognize(file,[7,8],responses);
   const {job,material}=await collect(file,[7,8]);
   expect(job.state).toBe('partial');expect(recognizer.calls).toHaveLength(2);
-  expect(material.drafts.map(d=>d.title)).toEqual(['练习','思考']);
-  const [practice,thought]=material.drafts;
+  expect(material.drafts.map(d=>d.title)).toEqual(['例6','练习','思考']);
+  const [example,practice,thought]=material.drafts;
   const rawPage=JSON.parse(fs.readFileSync(path.join(directory,'E-8/result.json')));
+  expect(math(example.body)).toEqual(math({blocks:rawPage.blocks[0].document.blocks[0].rows[0][0].blocks}));
+  expect(math(example.body)).toHaveLength(4);
+  expect(documentText(example.body)).not.toMatch(/问题6|除了定义法|教师/);
+  expect([...new Set(example.parts.flatMap(part=>part.locations.map(l=>l.page)))]).toEqual([7,8]);
+  expect(example.issues.some(i=>i.code==='split-boundary'&&i.resolution==='open')).toBe(true);
   expect(math(practice.body)).toEqual(math({blocks:rawPage.blocks[0].document.blocks[0].rows[1][0].blocks}));
   expect(math(thought.body)).toEqual(math({blocks:rawPage.blocks[0].document.blocks[0].rows[2][0].blocks}));
   expect(images(thought.body)).toHaveLength(1);
-  for(const draft of material.drafts){
+  for(const draft of [practice,thought]){
     expect(documentText(draft.body)).not.toMatch(/教师在PPT|学生在教师|设置三个题目|引导学生既要/);
     expect(draft.solution.blocks).toEqual([]);
     expect(draft.parts.every(part=>part.locations.every(l=>l.fileId===file.id&&l.page===8))).toBe(true);

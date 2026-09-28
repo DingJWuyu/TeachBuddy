@@ -1161,7 +1161,9 @@ export default function MaterialsQuestionsPage({
                     {draft.issues.map((issue) => (
                       <label className="q-issue" key={issue.id} data-issue-id={issue.id} data-resolved={issue.resolution !== 'open'}>
                         <span>{({
-                          'split-boundary': '题干是否完整，是否混入了其他题目？',
+                          'split-boundary': new Set(issue.locations.filter(l => l.kind === 'page').map(l => l.page)).size > 1
+                            ? '这道题包含跨页内容，请对照原稿检查归属。归属不对时可在“调整题目”中拆分或忽略，原始片段仍保留。'
+                            : '题干是否完整，是否混入了其他题目？',
                           'uncertain-formula': '请检查并修正这道题的公式。',
                           'missing-figure': '请补上原稿中的配图。',
                           'unverified-location': '请确认这道题在原稿中的位置。',
