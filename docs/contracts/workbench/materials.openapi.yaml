@@ -3082,6 +3082,48 @@ components:
           maxLength: 200
         content:
           $ref: '#/components/schemas/DocumentV2'
+        recognizedImage:
+          $ref: '#/components/schemas/RecognizedLessonImage'
+    RecognizedLessonImage:
+      description: 显式选择原页机器文稿中的配图。父页字段保持原资料语义，配图识别页固定为 1。
+      type: object
+      additionalProperties: false
+      required: [fileId, renditionFileId, resultId]
+      properties:
+        fileId:
+          $ref: '#/components/schemas/Id'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        resultId:
+          $ref: '#/components/schemas/Id'
+    LessonRecognizedImageSource:
+      description: 配图识别的服务端只读快照，与原资料页来源同时保留。
+      type: object
+      readOnly: true
+      additionalProperties: false
+      required: [fileId, renditionFileId, page, resultId, imageFileId, rawFileId, assetFileIds, location, machineDocument]
+      properties:
+        fileId:
+          $ref: '#/components/schemas/Id'
+        renditionFileId:
+          $ref: '#/components/schemas/Id'
+        page:
+          const: 1
+        resultId:
+          $ref: '#/components/schemas/Id'
+        imageFileId:
+          $ref: '#/components/schemas/Id'
+        rawFileId:
+          $ref: '#/components/schemas/Id'
+        assetFileIds:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+        location:
+          $ref: '#/components/schemas/PageLocation'
+        machineDocument:
+          $ref: '#/components/schemas/DocumentV2'
     LessonSectionV3:
       description: 备课 v3 环节读模型。pageSource 随普通保存、复制、复用和历史恢复保留；写输入不接受此字段。
       allOf:
@@ -3131,6 +3173,8 @@ components:
           $ref: '#/components/schemas/DocumentV2'
         adoptedDocument:
           $ref: '#/components/schemas/DocumentV2'
+        recognizedImage:
+          $ref: '#/components/schemas/LessonRecognizedImageSource'
     CopyLessonSections:
       type: object
       additionalProperties: false

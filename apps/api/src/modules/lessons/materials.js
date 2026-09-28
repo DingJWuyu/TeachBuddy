@@ -3,6 +3,7 @@ import { createLessonOrder } from "./order.js";
 import { createLessonHistory } from "./history.js";
 import { lessonDocuments, supportedDocument } from "@refatos/shared";
 import { normalizeSearchQuery, matchesSearch } from "../questions/contract.js";
+import { images } from "../questions/materials-content.js";
 import { createLessonExports } from "./exports.js";
 import { materialErrors } from "../../workbench/jobs/router.js";
 import { randomUUID } from "node:crypto";
@@ -379,6 +380,23 @@ export function createMaterialsLessons({
     if (!input.content.blocks.length) throw invalidInput("/content", "empty-content");
     content.validate(p, result.document);
     content.validate(p, input.content);
+    let recognizedImage;
+    if (input.recognizedImage) {
+      const selected = input.recognizedImage;
+      if (!images(result.document).includes(selected.fileId) || !result.assetFileIds.includes(selected.fileId))
+        throw invalidInput("/recognizedImage/fileId", "invalid-reference");
+      const imageBinding = { fileId: selected.fileId, renditionFileId: selected.renditionFileId, page: 1 };
+      const child = recognition.readResult(p, selected.resultId, imageBinding);
+      if (child.state !== "ready" || child.resultId !== selected.resultId ||
+          Object.entries(imageBinding).some(([key, value]) => child.location?.[key] !== value))
+        throw invalidInput("/recognizedImage/resultId", "invalid-reference");
+      content.validate(p, child.document);
+      for (const fileId of new Set([selected.fileId, selected.renditionFileId, child.imageFileId, child.rawFileId, ...child.assetFileIds]))
+        files.read(p, fileId);
+      recognizedImage = { ...imageBinding, resultId: child.resultId,
+        imageFileId: child.imageFileId, rawFileId: child.rawFileId, assetFileIds: [...child.assetFileIds],
+        location: structuredClone(child.location), machineDocument: structuredClone(child.document) };
+    }
     const file = files.read(p, input.fileId);
     const retainedFiles = new Set([input.fileId, input.renditionFileId, result.imageFileId, result.rawFileId, ...result.assetFileIds]);
     for (const fileId of retainedFiles) files.read(p, fileId);
@@ -388,6 +406,7 @@ export function createMaterialsLessons({
       imageFileId: result.imageFileId, rawFileId: result.rawFileId, assetFileIds: [...result.assetFileIds],
       location: structuredClone(result.location), machineDocument: structuredClone(result.document),
       adoptedDocument: structuredClone(input.content),
+      ...(recognizedImage ? { recognizedImage } : {}),
     };
     const sections = repository.listSections(id);
     if (sections.length >= 200) throw invalidInput("/sections", "out-of-range");

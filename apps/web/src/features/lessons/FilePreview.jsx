@@ -8,7 +8,7 @@ import {
 } from "../workbench/apiClient.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useIdempotentSubmit } from "../workbench/useIdempotentSubmit.js";
-export function FilePreview({ fileId, onClose, title = "成品预览", onSelectPage }) {
+export function FilePreview({ fileId, onClose, title = "成品预览", onSelectPage, selectLabel = "提取这一页", imageLabel }) {
   const dialogRef = useRef(null);
   useModuleDialogFocus(dialogRef, onClose);
   const { accountKey } = useWorkbenchShell();
@@ -124,9 +124,9 @@ export function FilePreview({ fileId, onClose, title = "成品预览", onSelectP
             上一页
           </button>}
           <span>
-            {preview?.pages.length
+            {imageLabel || (preview?.pages.length
               ? `${page + 1} / ${preview.pages.length}`
-              : "正在准备预览"}
+              : "正在准备预览")}
           </span>
           {(preview?.pages.length ?? 0) > 1 && <button
             className="wb-button"
@@ -157,7 +157,7 @@ export function FilePreview({ fileId, onClose, title = "成品预览", onSelectP
             disabled={!url || !preview?.renditionFileId || !preview.pages[page] || request.isRunning || Boolean(request.pending)}
             onClick={() => onSelectPage({ fileId, renditionFileId: preview.renditionFileId,
               page: preview.pages[page].page, imageFileId: preview.pages[page].imageFileId })}>
-            提取这一页
+            {selectLabel}
           </button>}
         </header>
         {(error || request.problem || request.pending) && (
@@ -185,7 +185,7 @@ export function FilePreview({ fileId, onClose, title = "成品预览", onSelectP
                   scrollRef.current.scrollTop = scene.scrollTop;
               }}
               src={url}
-              alt={`${onSelectPage ? "资料" : "成品"}第 ${preview?.pages[page]?.page ?? page + 1} 页`}
+              alt={imageLabel || `${onSelectPage ? "资料" : "成品"}第 ${preview?.pages[page]?.page ?? page + 1} 页`}
             />
           )}
         </div>

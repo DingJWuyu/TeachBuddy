@@ -633,6 +633,9 @@
 }
 .lesson-page-review > label { display: grid; gap: 8px; }
 .lesson-page-review > p { margin: 12px 0; }
+.lesson-recognition-images { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 16px; }
+.lesson-recognition-images > div { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.lesson-recognition-images img { max-height: 160px; object-fit: contain; object-position: left; }
 .lesson-page-source-link { margin-top: 12px; }
 @media (max-width: 760px) {
   .lesson-page-import .lesson-picker-title { flex: 1 0 100%; min-width: 0; }

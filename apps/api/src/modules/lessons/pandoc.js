@@ -87,6 +87,10 @@ async function referenceDocument() {
         // prevents it from treating the keep styles as missing and recreating them.
         { id: "Normal", name: "Normal" },
         { id: "BodyText", name: "Body Text", basedOn: "Normal", next: "BodyText" },
+        // Pandoc uses both styles inside tables. Missing definitions make
+        // LibreOffice flatten the cells when importing the generated DOCX.
+        { id: "FirstParagraph", name: "First Paragraph", basedOn: "BodyText", next: "BodyText" },
+        { id: "Compact", name: "Compact", basedOn: "BodyText", paragraph: { spacing: { before: 36, after: 36 } } },
         { id: "KeepNext", name: "Keep Next", basedOn: "BodyText", paragraph: { keepNext: true, keepLines: true } },
         { id: "KeepTogether", name: "Keep Together", basedOn: "BodyText", paragraph: { keepLines: true } },
       ],
@@ -143,7 +147,9 @@ export async function generateDocx(blocks, { files, principal, signal }) {
           rows.push([attr(), cells]);
         }
         result.push({ t: "Table", c: [attr(), [null, []],
-          block.rows[0].map(() => [{ t: "AlignDefault" }, { t: "ColWidthDefault" }]),
+          // Use the available page width, rather than the writer's narrower
+          // automatic grid, which can clip inline formulas in numeric tables.
+          block.rows[0].map(() => [{ t: "AlignDefault" }, { t: "ColWidth", c: 1 / block.rows[0].length }]),
           [attr(), []], [[attr(), 0, [], rows]], [attr(), []]] });
       }
     }
