@@ -485,3 +485,87 @@ test('retrying a partial job after an engine revision change preserves the origi
     if (passed) fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('fixed rendition HTTP reads preserve source ownership, local page availability and first errors', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'rendition-boundary-'));
+  const world = await createIntegration({ directory });
+  let passed = false;
+  try {
+    const { client } = await registerMath(world, 'rendition-a@example.test');
+    const { client: other } = await registerMath(world, 'rendition-b@example.test');
+    const first = await upload(client), old = await preview(client, first);
+    const sharp = (await import('sharp')).default;
+    const second = await upload(client, 'other.png', await sharp(image).resize(120, 80).png().toBuffer()), next = await preview(client, second);
+    const foreign = await upload(other), foreignPreview = await preview(other, foreign);
+    const untouched = await upload(client, 'unconverted.png');
+    const page = (fileId, renditionId, number = 1) => client.request('GET', `${base}/${fileId}/recognition/pages/${number}?renditionFileId=${renditionId}`);
+    const location = { kind: 'page', fileId: first.id, renditionFileId: old.renditionFileId, page: 1, box: { x: 0, y: 0, width: 0.5, height: 0.5 } };
+    const crop = (patch = {}, key) => write(client, `${base}/crops`, { location: { ...location, ...patch } }, key);
+    function invalid(response, field, status = 422) {
+      assert.equal(response.status, status, response.text);
+      if (status === 422) {
+        assert.equal(response.json.type, '/problems/workbench/invalid-input');
+        assert.equal(response.json.reason, 'out-of-range');
+        assert.equal(response.json.field, field);
+      }
+    }
+    for (const [fileId, renditionFileId, status] of [
+      [first.id, next.renditionFileId, 422],
+      [first.id, foreignPreview.renditionFileId, 404],
+      [foreign.id, old.renditionFileId, 404],
+      [untouched.id, untouched.id, 422],
+    ]) {
+      invalid(await page(fileId, renditionFileId), '/renditionFileId', status);
+      invalid(await crop({ fileId, renditionFileId }), '/location', status);
+    }
+    const noPreview = await client.request('GET', `${base}/${untouched.id}/recognition`);
+    assert.equal(noPreview.status, 409);
+    assert.equal(noPreview.json.type, '/problems/materials/preview-required');
+    invalid(await page(first.id, old.renditionFileId, 2), '/page');
+    invalid(await page(foreign.id, old.renditionFileId, 0), '/page');
+    invalid(await crop({ page: 2 }), '/location/page');
+    invalid(await crop({ page: 2, box: null }), '/location');
+    invalid(await crop({ page: 2, box: { x: 0.9, y: 0, width: 0.5, height: 0.5 } }), '/location');
+    // Persist a second valid fixed mapping and change only the current preview.
+    // This fixture checks fixed mapping consumption, not the converter itself.
+    const db = world.workbench.db;
+    const account = db.prepare('SELECT accountKey FROM materials_files WHERE id=?').get(first.id).accountKey;
+    const current = { ...next, fileId: first.id };
+    db.prepare('INSERT INTO materials_renditions VALUES (?,?,?,?)').run(first.id, next.renditionFileId, account, JSON.stringify(current));
+    db.prepare('UPDATE materials_previews SET value=? WHERE fileId=?').run(JSON.stringify(current), first.id);
+    const limited = { ...old, state: 'limited', pageCount: 2, issues: ['legacy-object-loss'], pages: [...old.pages, { ...old.pages[0], page: 2, imageFileId: randomUUID() }] };
+    db.prepare('UPDATE materials_renditions SET value=? WHERE fileId=? AND renditionId=?').run(JSON.stringify(limited), first.id, old.renditionFileId);
+    const fixed = await page(first.id, old.renditionFileId);
+    assert.equal(fixed.status, 200, fixed.text);
+    assert.equal(fixed.json.imageFileId, old.pages[0].imageFileId);
+    assert.deepEqual(fixed.json.location, { ...location, box: null });
+    const key = randomUUID(), saved = await crop({}, key);
+    assert.equal(saved.status, 201, saved.text);
+    const cropRow = db.prepare('SELECT blobName FROM materials_files WHERE id=?').get(saved.json.id);
+    const size = await sharp(fs.readFileSync(path.join(directory, 'files/blobs', cropRow.blobName))).metadata();
+    assert.equal(size.width, Math.round(old.pages[0].width / 2));
+    assert.equal(size.height, Math.round(old.pages[0].height / 2));
+    assert.equal((await client.request('GET', `${base}/${first.id}/preview`)).json.renditionFileId, next.renditionFileId);
+    const renditionRow = db.prepare('SELECT blobName FROM materials_files WHERE id=?').get(next.renditionFileId);
+    const renditionDisk = path.join(directory, 'files/blobs', renditionRow.blobName), renditionBytes = fs.readFileSync(renditionDisk);
+    fs.appendFileSync(renditionDisk, 'corrupt digest');
+    try {
+      assert.equal((await page(first.id, next.renditionFileId)).status, 503);
+      assert.equal((await crop({ renditionFileId: next.renditionFileId, box: null })).status, 503);
+    } finally { fs.writeFileSync(renditionDisk, renditionBytes); }
+    const original = db.prepare('SELECT blobName FROM materials_files WHERE id=?').get(first.id);
+    const disk = path.join(directory, 'files/blobs', original.blobName), bytes = fs.readFileSync(disk);
+    fs.unlinkSync(disk);
+    try {
+      assert.equal((await page(first.id, old.renditionFileId)).status, 503);
+      assert.equal((await crop({ page: 2, box: null })).status, 503);
+      const replayed = await crop({}, key);
+      assert.equal(replayed.status, 201, replayed.text);
+      assert.equal(replayed.json.id, saved.json.id);
+    } finally { fs.writeFileSync(disk, bytes); }
+    passed = true;
+  } finally {
+    await world.close();
+    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+  }
+});

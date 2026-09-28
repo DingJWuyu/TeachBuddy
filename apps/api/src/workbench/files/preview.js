@@ -36,6 +36,15 @@ export function createPreviews({
       .get(id, principal.accountKey);
     return row ? JSON.parse(row.value) : pending(id);
   }
+  function readRendition(principal, { fileId, renditionFileId }) {
+    files.read(principal, fileId);
+    files.read(principal, renditionFileId);
+    const row = db.prepare(
+      "SELECT value FROM materials_renditions WHERE fileId=? AND renditionId=? AND accountKey=?",
+    ).get(fileId, renditionFileId, principal.accountKey);
+    if (!row) throw invalidInput("/renditionFileId", "out-of-range");
+    return JSON.parse(row.value);
+  }
   function save(principal, value) {
     validateSchema("Preview", value);
     db.prepare(
@@ -186,21 +195,18 @@ export function createPreviews({
       return saved;
     }
     const l = input.location;
-    files.read(principal, l.fileId);
-    files.read(principal, l.renditionFileId);
-    const row = db
-      .prepare(
-        "SELECT value FROM materials_renditions WHERE fileId=? AND renditionId=? AND accountKey=?",
-      )
-      .get(l.fileId, l.renditionFileId, principal.accountKey);
-    if (
-      !row ||
-      !l.box ||
-      l.box.x + l.box.width > 1 ||
-      l.box.y + l.box.height > 1
-    )
+    let rendition;
+    try {
+      rendition = readRendition(principal, l);
+    } catch (error) {
+      if (error.problem?.type === "/problems/workbench/invalid-input" &&
+          error.problem.field === "/renditionFileId" && error.problem.reason === "out-of-range")
+        throw invalidInput("/location", "out-of-range");
+      throw error;
+    }
+    if (!l.box || l.box.x + l.box.width > 1 || l.box.y + l.box.height > 1)
       throw invalidInput("/location", "out-of-range");
-    const page = JSON.parse(row.value).pages.find((p) => p.page === l.page);
+    const page = rendition.pages.find((p) => p.page === l.page);
     if (!page) throw invalidInput("/location/page", "out-of-range");
     const left = Math.floor(l.box.x * page.width),
       top = Math.floor(l.box.y * page.height);
@@ -292,6 +298,7 @@ export function createPreviews({
       return result.textPages;
     },
     preview,
+    readRendition,
     requestPreview,
     ensurePreview,
     crop,

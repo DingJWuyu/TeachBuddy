@@ -17,11 +17,8 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
     files.read(principal, fileId);
     if (!renditionFileId) renditionFileId = files.preview(principal, fileId).renditionFileId;
     if (!renditionFileId) throw materialsError('preview-required', 409);
-    files.read(principal, renditionFileId);
-    const row = db.prepare('SELECT value FROM materials_renditions WHERE fileId=? AND renditionId=? AND accountKey=?')
-      .get(fileId, renditionFileId, principal.accountKey);
-    if (!row) throw invalidInput('/renditionFileId', 'out-of-range');
-    return { fileId, renditionFileId, pages: JSON.parse(row.value).pages };
+    const rendition = files.readRendition(principal, { fileId, renditionFileId });
+    return { fileId, renditionFileId, pages: rendition.pages };
   }
 
   function pageSource(principal, input) {
