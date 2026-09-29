@@ -142,6 +142,6 @@ ZIP 根含 `manifest.json`、`index.html`（纯静态、无脚本）、`data/` J
 
 ## 验证
 
-HTTP `apps/api/test/reliability.test.js`；当前可见设置使用 `apps/web/e2e/settings-shell.config.mjs`。旧 `apps/web/e2e/manual-data/manual-data.config.mjs` 有部分旧设置入口，执行前按当前 UI 选取，不以旧断言恢复已删除功能。
+HTTP 使用 `apps/api/test/reliability.test.js`，可见设置使用 `apps/web/e2e/settings-shell.config.mjs`。`apps/web/e2e/manual-data/manual-data.config.mjs` 验证资料包实际下载和离线阅读、停服备份与恢复、身份撤销，以及恢复后设备草稿与上传请求隔离；`apps/web/e2e/manual-support/playwright.config.mjs` 验证跨模块草稿、双标签页、版本冲突与未确认请求。两套均自行创建隔离数据，不读取已有实例。
 
 恢复在隔离数据上验证原件/源码/关系、旧 Cookie 失效、恢复点变化后旧请求不重放、失败保留原库。服务重启不等于部署备份恢复，导出成功不等于真正恢复成功。当前能力边界和目标环境空缺见[项目状态](../plans/run-state.md)。

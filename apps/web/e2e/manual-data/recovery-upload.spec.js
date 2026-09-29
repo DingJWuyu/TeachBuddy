@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import {
   backup,
   restore,
@@ -8,12 +9,18 @@ import {
 } from "../../../api/src/workbench/reliability/backup.js";
 import { createIntegration } from "../../../api/test/fixtures/auth-integration/harness.js";
 let world;
-test.afterEach(async ({ context }) => {
+let temporaryDirectory;
+test.afterEach(async ({ context }, info) => {
   await context.close();
   await world?.close();
+  if (info.status === info.expectedStatus) fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+  else console.error(`保留失败现场: ${temporaryDirectory}`);
 });
-test("恢复后新旧格式上传原文件可下载且请求隔离", async ({ page }, testInfo) => {
-  world = await createIntegration();
+test("恢复后新旧格式上传原字节保留且请求隔离", async ({ page }, testInfo) => {
+  temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "teachbuddy-recovery-upload-"));
+  const original = path.join(temporaryDirectory, "original");
+  fs.mkdirSync(original);
+  world = await createIntegration({ directory: original });
   await page.goto(world.origin);
   await page.getByRole("button", { name: "创建账户" }).click();
   await page.getByLabel("昵称", { exact: true }).fill("资料老师");
@@ -34,6 +41,7 @@ test("恢复后新旧格式上传原文件可下载且请求隔离", async ({ pa
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "注册", exact: true }).click();
   await expect(page.locator(".wb-shell")).toBeVisible();
+  if (await page.getByRole("button", { name: /知道了/ }).count()) await page.getByRole("button", { name: /知道了/ }).first().click();
   const directory = world.directory;
   const originalPort = Number(new URL(world.origin).port);
   const accountKey = world.workbench.db
@@ -142,70 +150,61 @@ test("恢复后新旧格式上传原文件可下载且请求隔离", async ({ pa
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "登录", exact: true }).click();
   await expect(page.locator(".wb-shell")).toBeVisible();
+  if (await page.getByRole("button", { name: /知道了/ }).count()) await page.getByRole("button", { name: /知道了/ }).first().click();
 
   expect(await page.evaluate(account => localStorage.getItem("teachbuddy:data-recovery:" + account), accountKey)).not.toBe(previousRecovery);
   for (const name of ["题库", "资源库", "数学工坊"]) {
-    await page.locator(".wb-sidebar").getByRole("link", { name, exact: true }).click();
+    const route = { "题库": "questions", "资源库": "resources", "数学工坊": "math" }[name];
+    await page.locator(`a[href^="/${route}"]`).first().click();
     await expect(page.locator(".wb-shell")).toBeVisible();
+  if (await page.getByRole("button", { name: /知道了/ }).count()) await page.getByRole("button", { name: /知道了/ }).first().click();
   }
   await page.reload();
   await expect(page.locator(".wb-shell")).toBeVisible();
+  if (await page.getByRole("button", { name: /知道了/ }).count()) await page.getByRole("button", { name: /知道了/ }).first().click();
   await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "设置", exact: true })
+    .locator('a[href^="/settings"]').first()
     .click();
-  await expect(
-    page.getByRole("heading", { name: "恢复前的本设备草稿" }),
-  ).toBeVisible();
-  expect(
-    await page.evaluate(
-      (account) =>
-        localStorage.getItem(`tb.workbench.v1:${account}:draft:recovery-test`),
-      accountKey,
-    ),
-  ).toBeNull();
-  await page.getByText(/项设备记录/).click();
-  await expect(page.getByText(/恢复前待核对内容/)).toBeVisible();
-  await page
-    .getByRole("button", { name: "查看恢复前上传", exact: true })
-    .click();
-  expect(await page.evaluate(account => localStorage.getItem("tb.workbench.v1:" + account + ":pending:questions-upload"), accountKey)).toBeNull();
-  expect(replayed).toEqual([]);
-  // The archived pointer and original bytes survive the restore; the UI must expose them.
   const preserved = await page.evaluate(async account => {
-    const archiveKey = Object.keys(localStorage).find(key => key.startsWith("teachbuddy:data-recovery-archive:" + account + ":"));
-    const db = await new Promise(resolve => {
-      const request = indexedDB.open("teachbuddy.questions.uploads", 1);
-      request.onsuccess = () => resolve(request.result);
-    });
-    const record = await new Promise(resolve => {
-      const request = db.transaction("pending").objectStore("pending").get(account + ":question-first");
-      request.onsuccess = () => resolve(request.result);
-    });
-    db.close();
-    return { archive: localStorage.getItem(archiveKey), bytes: await record.file.text() };
+    const recoveryId = localStorage.getItem("teachbuddy:data-recovery:" + account);
+    const archive = JSON.parse(localStorage.getItem("teachbuddy:data-recovery-archive:" + account + ":" + recoveryId));
+    const files = [];
+    const active = [];
+    for (const [database, storeName, stem] of [
+      ["teachbuddy.questions.uploads", "pending", "question"],
+      ["teachbuddy-resources-pending", "requests", "resource"],
+      ["teachbuddy.math.uploads", "pending", "math"],
+    ]) {
+      const db = await new Promise((resolve, reject) => { const request = indexedDB.open(database, 1); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+      const read = key => new Promise((resolve, reject) => { const request = db.transaction(storeName).objectStore(storeName).get(key); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+      active.push((await read(account)) ?? null);
+      for (const branch of ["first", "second"]) {
+        const record = await read(account + ":" + stem + "-" + branch);
+        files.push({ name: record.file.name, text: await record.file.text() });
+      }
+      if (stem !== "question") {
+        const record = await read(account + ":recovery:" + recoveryId);
+        files.push({ name: record.input.name, text: await record.input.text() });
+      }
+      db.close();
+    }
+    return { archive, active, files,
+      draft: localStorage.getItem(`tb.workbench.v1:${account}:draft:recovery-test`),
+      pending: ["questions-upload", "resources", "math-upload"].map(name => localStorage.getItem(`tb.workbench.v1:${account}:pending:${name}`)) };
   }, accountKey);
-  expect(preserved.archive).toContain("question-first");
-  expect(preserved.bytes).toBe("新格式原字节:question:first");
+  expect(preserved.draft).toBeNull();
+  expect(preserved.pending).toEqual([null, null, null]);
+  expect(preserved.active).toEqual([null, null, null]);
+  expect(JSON.parse(preserved.archive.records[`tb.workbench.v1:${accountKey}:draft:recovery-test`])).toEqual({ pending: { key: "preserve-old-request" }, input: { text: "恢复前待核对内容" } });
   for (const stem of ["question", "resource", "math"]) {
     for (const branch of ["first", "second"]) {
-      const button = page.getByRole("button", { name: "下载 " + stem + "-" + branch + ".txt", exact: true });
-      await expect(button).toHaveCount(1);
-      const waiting = page.waitForEvent("download");
-      await button.click();
-      expect(fs.readFileSync(await (await waiting).path(), "utf8")).toBe("新格式原字节:" + stem + ":" + branch);
+      expect(preserved.files).toContainEqual({ name: `${stem}-${branch}.txt`, text: `新格式原字节:${stem}:${branch}` });
+      expect(JSON.stringify(preserved.archive)).toContain(`${stem}-${branch}`);
     }
   }
-  const oldFileDownload = page.waitForEvent("download");
-  await page
-    .getByRole("button", { name: "下载 resource-original.txt", exact: true })
-    .click();
-  expect(fs.readFileSync(await (await oldFileDownload).path(), "utf8")).toBe(
-    "恢复前文件原字节",
-  );
-  const mathDownload = page.waitForEvent("download");
-  await page.getByRole("button", { name: "下载 math-original.html", exact: true }).click();
-  expect(fs.readFileSync(await (await mathDownload).path(), "utf8")).toBe("恢复前文件原字节");
+  expect(preserved.files).toHaveLength(8);
+  expect(preserved.files).toContainEqual({ name: "resource-original.txt", text: "恢复前文件原字节" });
+  expect(preserved.files).toContainEqual({ name: "math-original.html", text: "恢复前文件原字节" });
   expect(replayed).toEqual([]);
   await page.screenshot({ path: testInfo.outputPath("recovered-uploads.png"), fullPage: true });
 });

@@ -3,27 +3,22 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { randomUUID } from "node:crypto";
-import { execFileSync } from "node:child_process";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { extractLegacySource } from "./fixtures/legacy-source/extract.mjs";
 import { startQuestionsFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
 test("fixed R31 v1 database upgrades preserving original request replay, IDs and documents", async (t) => {
-  const source = process.env.M33_R31_SOURCE;
-  if (!source) {
-    t.skip("fixed R31 source unavailable");
-    return;
-  }
-  assert.ok(fs.existsSync(source), "M33_R31_SOURCE must point to an existing fixture checkout");
-  assert.equal(
-    execFileSync("git", ["-C", source, "rev-parse", "HEAD"], {
-      encoding: "utf8",
-    }).trim(),
-    "2b6cbcda934057a89c0443437e03b2e30e850a8d",
-  );
-  const { startFixture } = await import(
-    source + "/scripts/materials/fixture.mjs"
-  );
-  const dataDir = fs.mkdtempSync(os.tmpdir() + "/r33-upgrade-");
-  let runtime = await startFixture({ dataDir, port: 0 });
-  t.after(() => runtime.close());
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "r33-upgrade-"));
+  let runtime, passed = false;
+  t.after(async () => {
+    await runtime?.close();
+    if (passed) fs.rmSync(root, { recursive: true, force: true });
+    else console.error("Retained R31 questions migration:", root);
+  });
+  const source = extractLegacySource("r31-questions", path.join(root, "source"));
+  const { startFixture } = await import(pathToFileURL(path.join(source, "scripts/materials/fixture.mjs")));
+  const dataDir = path.join(root, "instance");
+  runtime = await startFixture({ dataDir, port: 0 });
   const request = async (path, body, method = "POST", key = randomUUID()) => {
     const r = await fetch(
       `http://localhost:${runtime.server.address().port}` + path,
@@ -64,6 +59,7 @@ test("fixed R31 v1 database upgrades preserving original request replay, IDs and
   );
   assert.equal(before.status, 201);
   await runtime.close();
+  runtime = null;
   runtime = await startQuestionsFixture({
     dataDir,
     port: 0,
@@ -86,6 +82,7 @@ test("fixed R31 v1 database upgrades preserving original request replay, IDs and
     before,
   );
   await runtime.close();
+  runtime = null;
   runtime = await startQuestionsFixture({
     dataDir,
     port: 0,
@@ -101,8 +98,10 @@ test("fixed R31 v1 database upgrades preserving original request replay, IDs and
     ).body,
     migrated,
   );
+  const evidence = "test-results/evidence/R33/v1";
+  fs.mkdirSync(evidence, { recursive: true });
   fs.writeFileSync(
-    dataDir + "/migration-evidence.json",
+    path.join(evidence, "migration.json"),
     JSON.stringify(
       {
         sourceRevision: "2b6cbcda934057a89c0443437e03b2e30e850a8d",
@@ -117,4 +116,5 @@ test("fixed R31 v1 database upgrades preserving original request replay, IDs and
       2,
     ),
   );
+  passed = true;
 });

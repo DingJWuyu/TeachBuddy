@@ -24,7 +24,58 @@
       "gzipMtime": 0,
       "gzipSha256": "225d7fd25f0a4a93e7779c12f996ed4fc857ee8da1dd9abe951a9810a6545705",
       "tarSha256": "1ffa6e2d8707c4d82bd20b5c3402315ef7613f3e065e2a5e38630d89b431ac5a"
+    },
+    "r31-math": {
+      "commit": "5f696b8ce611e67d940ce149ce13946a50b65510",
+      "paths": [
+        "apps/api/src",
+        "apps/api/package.json",
+        "packages/shared",
+        "package.json",
+        "docs/contracts/workbench/first-flow.openapi.yaml",
+        "docs/contracts/workbench/materials.openapi.yaml"
+      ],
+      "archive": "r31-math.tar.gz",
+      "gzipMtime": 0,
+      "gzipSha256": "7dfe011c414b020dadf57e43eaaab2ca9d0e16a74d86b7010d2bfdbc72459d92",
+      "tarSha256": "71fad906c919f064fddc310c74490e1b780402ab0ffaaec0c2710d603689d443",
+      "sourceEvidence": {
+        "commit": "1e8ec794ec4a19e05f3ca43800d3c7bedfc79d51",
+        "description": "Composition commit message pins this R31 source before the original math-support upgrade check; also recorded in 26c89fb4:docs/acceptance/evidence/R31-MATH-SUPPORT/v1/composition-provenance.json."
+      }
+    },
+    "r31-questions": {
+      "commit": "2b6cbcda934057a89c0443437e03b2e30e850a8d",
+      "paths": [
+        "apps/api/src",
+        "apps/api/package.json",
+        "packages/shared",
+        "package.json",
+        "docs/contracts/workbench/first-flow.openapi.yaml",
+        "docs/contracts/workbench/materials.openapi.yaml",
+        "docs/contracts/workbench/math/math.openapi.json",
+        "scripts/materials/fixture.mjs"
+      ],
+      "archive": "r31-questions.tar.gz",
+      "gzipMtime": 0,
+      "gzipSha256": "b55b5a89900ea7a42c1eadc25fdc4d3786b28bdd351a645b0eac54222d76d9d3",
+      "tarSha256": "937e701b04acb1e8a47203e81fec983f674f2314becb0f11a785974f8fa0fa71"
+    },
+    "b16": {
+      "commit": "612f0a9868743a1d5eea7e6f236d3ff903752439",
+      "paths": [
+        "apps/api/src",
+        "apps/api/package.json",
+        "packages/shared",
+        "package.json",
+        "scripts/first-flow/lib/runner.mjs",
+        "apps/api/test/fixtures/first-flow"
+      ],
+      "archive": "b16.tar.gz",
+      "gzipMtime": 0,
+      "gzipSha256": "7d752b0ed8b988df3905c3817101be669d2aa141ba20ba7d75d951576ff28a5a",
+      "tarSha256": "6ad46394a848769d17a4e6e6bdcf0530c2b706c37b2a38627196a85dc7178946"
     }
   },
-  "scope": "Only the existing fixed-version upgrade entrypoints are executed. Their application/shared modules and classes harness do not load docs. Other unused test files retain their original docs/contracts references; this archive is not a standalone legacy full-suite checkout."
+  "scope": "Only the existing fixed-version upgrade entrypoints are executed. The R31 archives include their original machine contracts at historical docs paths because those products load them at runtime. Current code never reads repository docs as runtime inputs. Other unused archived fixture references remain unchanged; these are not standalone legacy full-suite checkouts."
 }

@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { pathToFileURL } from "node:url";
 import JSZip from "jszip";
 import {
@@ -10,13 +11,18 @@ import {
 } from "../../../api/src/workbench/reliability/backup.js";
 import { createIntegration } from "../../../api/test/fixtures/auth-integration/harness.js";
 let world;
-test.afterEach(async ({ context }) => {
+let temporaryDirectory;
+test.afterEach(async ({ context }, info) => {
   await context.close();
   await world?.close();
+  if (info.status === info.expectedStatus) fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+  else console.error(`保留失败现场: ${temporaryDirectory}`);
 });
-test("个人资料入口、导出与最近删除", async ({ page }) => {
+test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ page }) => {
+  temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "teachbuddy-data-"));
+  fs.mkdirSync(path.join(temporaryDirectory, "original"));
   world = await createIntegration({
-    directory: fs.mkdtempSync(path.resolve(".tmp-md/run-")),
+    directory: path.join(temporaryDirectory, "original"),
   });
   await page.goto(world.origin);
   await page.getByRole("button", { name: "创建账户" }).click();
@@ -38,41 +44,28 @@ test("个人资料入口、导出与最近删除", async ({ page }) => {
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "注册", exact: true }).click();
   await expect(page.locator(".wb-shell")).toBeVisible();
+  if (await page.getByRole("button", { name: /知道了/ }).count()) await page.getByRole("button", { name: /知道了/ }).first().click();
   await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "题库", exact: true })
+    .locator('a[href^="/questions"]').first()
     .click();
-  await page.getByRole("button", { name: "自建", exact: true }).click();
+  await page.locator(".q-finder").getByRole("button", { name: "手动录题", exact: true }).click();
   await page.getByLabel("题目标题", { exact: true }).fill("需要恢复的函数题");
-  await page.getByRole("button", { name: "段落", exact: true }).first().click();
   await page
     .locator(".q-question textarea")
     .first()
     .fill("求函数 f(x)=x² 的最小值。");
   await page.getByRole("button", { name: "保存题目", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "删除题目", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "删除题目", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "恢复题目", exact: true }),
-  ).toBeVisible();
-  await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "设置", exact: true })
-    .click();
-  await expect(
-    page.getByRole("button", { name: "导出个人资料", exact: true }),
-  ).toBeVisible();
-  await expect(page.getByRole("list", { name: "已删除资料" })).toContainText(
-    "需要恢复的函数题",
-  );
-  await page.reload();
-  await page
-    .getByRole("list", { name: "已删除资料" })
-    .getByRole("button", { name: "恢复", exact: true })
-    .click();
-  await expect(page.getByRole("status").filter({ hasText: "已恢复" })).toContainText("已恢复");
+  await page.getByRole("button", { name: "更多题目操作" }).click();
+  await page.getByRole("menuitem", { name: "归档题目", exact: true }).click();
+  await page.getByRole("button", { name: "确认归档", exact: true }).click();
+  await expect(page.locator(".q-message")).toContainText("已归档");
+  await page.getByRole("button", { name: "题库选项" }).click();
+  await page.getByRole("menuitem", { name: "归档内容", exact: true }).click();
+  await page.locator(".q-list-entry button").click();
+  await page.getByRole("button", { name: "恢复题目", exact: true }).click();
+  await page.getByRole("button", { name: "确认恢复", exact: true }).click();
+  await expect(page.locator(".q-message")).toContainText("已恢复");
+  await page.locator('a[href^="/settings"]').first().click();
   let lost = false;
   await page.route("**/api/reliability/v1/exports", async (route) => {
     if (route.request().method() === "POST" && !lost) {
@@ -81,7 +74,7 @@ test("个人资料入口、导出与最近删除", async ({ page }) => {
       await route.abort("failed");
     } else await route.continue();
   });
-  await page.getByRole("button", { name: "导出个人资料", exact: true }).click();
+  await page.getByRole("button", { name: "导出数据", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "重试确认操作", exact: true }),
   ).toBeVisible();
@@ -121,10 +114,9 @@ test("个人资料入口、导出与最近删除", async ({ page }) => {
   await expect(offline.getByText('求函数 f(x)=x² 的最小值。',{exact:true})).toBeVisible();
   await offline.close();
 
+  await page.getByRole("dialog", { name: "导出个人资料" }).locator(".settings-dialog-close").click();
   await page.reload();
-  await expect(
-    page.getByRole("button", { name: "下载资料包", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "导出数据", exact: true })).toBeVisible();
   const evidence = path.resolve(
     process.env.MANUAL_DATA_EVIDENCE_DIR || "test-results/manual-data/evidence",
   );
@@ -134,12 +126,11 @@ test("个人资料入口、导出与最近删除", async ({ page }) => {
     animations: "disabled",
   });
   await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "题库", exact: true })
+    .locator('a[href^="/questions"]').first()
     .click();
-  await expect(page.getByLabel("题目标题", { exact: true })).toHaveValue(
-    "需要恢复的函数题",
-  );
+  await page.getByRole("button", { name: "返回题库", exact: true }).click();
+  await page.locator(".q-list-entry button").click();
+  await expect(page.getByRole("heading", { name: "需要恢复的函数题", exact: true })).toBeVisible();
   const directory = world.directory;
   const originalPort = Number(new URL(world.origin).port);
   const accountKey = world.workbench.db
@@ -212,46 +203,39 @@ test("个人资料入口、导出与最近删除", async ({ page }) => {
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "登录", exact: true }).click();
   await expect(page.locator(".wb-shell")).toBeVisible();
+  if (await page.getByRole("button", { name: /知道了/ }).count()) await page.getByRole("button", { name: /知道了/ }).first().click();
   await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "题库", exact: true })
+    .locator('a[href^="/questions"]').first()
     .click();
   await expect(
     page.getByText("需要恢复的函数题", { exact: true }).first(),
   ).toBeVisible();
   await page.reload();
   await expect(page.locator(".wb-shell")).toBeVisible();
+  if (await page.getByRole("button", { name: /知道了/ }).count()) await page.getByRole("button", { name: /知道了/ }).first().click();
   await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "设置", exact: true })
+    .locator('a[href^="/settings"]').first()
     .click();
-  await expect(
-    page.getByRole("heading", { name: "恢复前的本设备草稿" }),
-  ).toBeVisible();
-  expect(
-    await page.evaluate(
-      (account) =>
-        localStorage.getItem(`tb.workbench.v1:${account}:draft:recovery-test`),
-      accountKey,
-    ),
-  ).toBeNull();
-  await page.getByText(/项设备记录/).click();
-  await expect(page.getByText(/恢复前待核对内容/)).toBeVisible();
-  await page
-    .getByRole("button", { name: "查看恢复前上传", exact: true })
-    .click();
-  const oldFileDownload = page.waitForEvent("download");
-  await page
-    .getByRole("button", { name: "下载 resource-original.txt", exact: true })
-    .click();
-  expect(fs.readFileSync(await (await oldFileDownload).path(), "utf8")).toBe(
-    "恢复前文件原字节",
-  );
-  await expect(
-    page.getByRole("button", { name: "下载 math-original.html", exact: true }),
-  ).toBeVisible();
-  await page.screenshot({
-    path: path.join(evidence, "restored-login.png"),
-    animations: "disabled",
-  });
+  const recovery = await page.evaluate(async (account) => {
+    const recoveryId = localStorage.getItem(`teachbuddy:data-recovery:${account}`);
+    const archive = JSON.parse(localStorage.getItem(`teachbuddy:data-recovery-archive:${account}:${recoveryId}`));
+    const uploads = [];
+    for (const [name, storeName] of [["teachbuddy-resources-pending", "requests"], ["teachbuddy.math.uploads", "pending"]]) {
+      const db = await new Promise((resolve, reject) => { const request = indexedDB.open(name, 1); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+      const read = key => new Promise((resolve, reject) => { const request = db.transaction(storeName).objectStore(storeName).get(key); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+      const active = await read(account);
+      const archived = await read(`${account}:recovery:${recoveryId}`);
+      uploads.push({ active: active ?? null, name: archived.input.name, text: await archived.input.text() });
+      db.close();
+    }
+    return { active: localStorage.getItem(`tb.workbench.v1:${account}:draft:recovery-test`), archive, uploads };
+  }, accountKey);
+  expect(recovery.active).toBeNull();
+  expect(JSON.parse(recovery.archive.records[`tb.workbench.v1:${accountKey}:draft:recovery-test`])).toEqual({ pending: { key: "preserve-old-request" }, input: { text: "恢复前待核对内容" } });
+  expect(recovery.uploads).toEqual([
+    { active: null, name: "resource-original.txt", text: "恢复前文件原字节" },
+    { active: null, name: "math-original.html", text: "恢复前文件原字节" },
+  ]);
+  await expect(page.getByRole("button", { name: "导出数据", exact: true })).toBeVisible();
+  await page.screenshot({ path: path.join(evidence, "restored-login.png"), animations: "disabled" });
 });

@@ -43,6 +43,6 @@
 
 `apps/web/src/features/workbench/WorkbenchSettings.jsx`、`settings-shell.css` 拥有设置；`SupportPages.jsx`、`helpContent.js`、`support-shell.css` 拥有帮助。真实导出在 `apps/web/src/features/reliability/DataManagement.jsx`；退出调用认证 transport。字段和数据保护见[数据管理](data.md)与[认证退出](../contracts/auth.md#退出交换-i07)。
 
-功能边界以上文为准；交互动效、焦点、参考尺寸见[界面规则](../rules/design-and-verification.md)。修改设置时用 `apps/web/e2e/settings-shell.config.mjs` 的隔离真实认证/可靠性服务；帮助用 `help-shell.config.mjs`。旧 manual-data/support 配置有已移除界面断言，不能据此恢复旧功能。
+功能边界以上文为准；交互动效、焦点、参考尺寸见[界面规则](../rules/design-and-verification.md)。修改设置时用 `apps/web/e2e/settings-shell.config.mjs` 的隔离真实认证/可靠性服务；帮助用 `help-shell.config.mjs`。资料包及备份恢复用 `manual-data/manual-data.config.mjs`，跨模块草稿、冲突和未确认请求用 `manual-support/playwright.config.mjs`；这些入口均相对于 `apps/web/e2e/`。
 
 完成相关 UI 修改应实际检查桌面及 390px 窄屏、各页面主题/背景组合、头像上传/删除同步侧栏及重新登录读回、键盘菜单、弹层退出中间态、快速反向和焦点恢复；同时确认偏好保存失败可重试、真实导出和退出可用。语言和删号使用 `apps/web/e2e/settings-implementation.config.mjs` 与 `apps/api/test/account-deletion.test.js` 验证真实认证、跨账户和未知结果。后端用 `apps/api/test/reliability.test.js` 核对账户隔离、版本冲突、旧字段兼容及头像输入校验。帮助另检查搜索空结果、无效文章、刷新返回和目录现场。当前验证入口见[核查入口](../plans/run-state.md#核查入口)。
