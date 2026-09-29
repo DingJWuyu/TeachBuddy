@@ -45,12 +45,15 @@ async function setup(page, info) {
   await expect(page.getByLabel('提取后的环节名称', { exact: true })).toBeVisible();
   expect(replay.replays).toBe(0);
   const imageNumber = [...new Set(images(parent.document))].indexOf(replay.imageId) + 1;
-  expect(imageNumber).toBeGreaterThan(0);
+  expect(imageNumber).toBe(2);
+  expect(images(parent.document)).toEqual([replay.otherImageId, replay.imageId]);
+  expect(parent.document.blocks[0].rows[2][1].blocks[3].fileId).toBe(replay.imageId);
   return { replay, call, lesson, parent, imageNumber };
 }
 async function selectImage(page, number) {
   const disclosure = page.getByRole('button', { name: '识别配图中的文字或表格', exact: true });
   if (await disclosure.getAttribute('aria-expanded') !== 'true') await disclosure.click();
+  await expect(page.getByRole('button', { name: /^选择配图 \d+$/ })).toHaveCount(2);
   await page.getByRole('button', { name: `选择配图 ${number}`, exact: true }).click();
 }
 async function loseFirstResponse(page, pattern) {
@@ -100,6 +103,8 @@ test('配图：受控父稿与真实表格配图回放，预览/识别/采用丢
   await page.getByRole('button', { name: '返回整页校对', exact: true }).click();
   await expect(page.getByLabel('提取后的环节名称', { exact: true })).toHaveValue('整页校对稿保留');
   await expect(page.getByLabel('识别正文段落 1', { exact: true })).toHaveValue('这段整页校对不能被配图覆盖');
+  const parentTexts = await editor.locator('textarea').evaluateAll(nodes => nodes.map(node => node.value));
+  expect(parentTexts).toEqual(expect.arrayContaining(['数值表前的说明保持原样', '数值表后的说明保持原样']));
   await selectImage(page, imageNumber);
   await expect(cell).toHaveValue('9'); expect(replay.replays).toBe(1);
   for (const theme of ['light', 'dark']) {

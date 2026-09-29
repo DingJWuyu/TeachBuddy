@@ -13,9 +13,9 @@ export function loadRegionReplay(root = process.env.LESSONS_REGION_REPLAY_ROOT ?
   const raw = JSON.parse(read('raw.json'));
   const digest = bytes => createHash('sha256').update(bytes).digest('hex');
   assert.equal(digest(read('recognizer-input.png')), child.inputHash);
-  const fileId = randomUUID(), imageId = randomUUID(), parentResultId = randomUUID();
+  const fileId = randomUUID(), imageId = randomUUID(), otherImageId = randomUUID(), parentResultId = randomUUID();
   const binding = { fileId, renditionFileId: fileId, page: 7 };
-  const evidence = { binding, parentResultId, imageId, child, replays: 0, beforeReplay: null };
+  const evidence = { binding, parentResultId, imageId, otherImageId, child, replays: 0, beforeReplay: null };
   evidence.recognizer = { revision: child.revision, async run(input) {
     assert.equal(digest(input.bytes), child.inputHash, 'Replay must match the genuine crop preview bytes');
     assert.equal(input.width, 471); assert.equal(input.height, 199);
@@ -36,14 +36,25 @@ export function loadRegionReplay(root = process.env.LESSONS_REGION_REPLAY_ROOT ?
     };
     add('controlled-lesson.pdf', 'application/pdf', read('source.pdf'), fileId);
     add('recorded-table.png', 'image/png', read('table.png'), imageId);
+    add('self-authored-triangle.png', 'image/png', read('other-image.png'), otherImageId);
     const originalId = add('unselected-original.png', 'image/png', read('table.png'));
     const pages = Array.from({ length: 8 }, (_, i) => ({ page: i + 1, width: 707, height: 1000,
       imageFileId: add(`page-${i + 1}.png`, 'image/png', read(`page-${i + 1}.png`)) }));
     const preview = { fileId, renditionFileId: fileId, jobId: null, state: 'ready', pageCount: 8, pages, issues: [] };
-    const document = { version: 2, blocks: [{ type: 'image', fileId: imageId, alt: '数值表', widthMm: 125 }] };
+    const paragraph = text => ({ type: 'paragraph', runs: [{ type: 'text', text }] });
+    const cell = text => ({ blocks: [paragraph(text)] });
+    // Keep the selected image deep in a multi-image teaching table. This is a
+    // controlled parent, not a claim that the recognizer produced this wrapper.
+    const document = { version: 2, blocks: [{ type: 'table', rows: [
+      [cell('教学内容'), cell('师生活动'), cell('设计点评')],
+      [cell('观察自编三角形'), { blocks: [{ type: 'image', fileId: otherImageId, alt: '自编三角形', widthMm: 30 }] }, cell('另一配图保持原样')],
+      [cell('填写数值表'), { blocks: [paragraph('数值表前的说明保持原样'), paragraph('先观察自变量'),
+        paragraph('再填写函数值'), { type: 'image', fileId: imageId, alt: '数值表', widthMm: 70 },
+        paragraph('数值表后的说明保持原样')] }, cell('校对配图不改写父稿')],
+    ] }] };
     const parent = { resultId: parentResultId, revision: child.revision, inputHash: digest(read('page-7.png')),
       state: 'ready', issues: [], rawFileId: add('controlled-parent.json', 'application/json', Buffer.from(JSON.stringify({ kind: 'controlled-parent', document }))),
-      assetFileIds: [imageId, originalId], originalAssetFileIds: [originalId], derivations: [], document,
+      assetFileIds: [otherImageId, imageId, originalId], originalAssetFileIds: [originalId], derivations: [], document,
       text: '', blocks: [] };
     world.workbench.db.prepare('INSERT INTO materials_previews VALUES (?,?,?)').run(fileId, accountKey, JSON.stringify(preview));
     world.workbench.db.prepare('INSERT INTO materials_renditions VALUES (?,?,?,?)').run(fileId, fileId, accountKey, JSON.stringify(preview));

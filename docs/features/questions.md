@@ -107,7 +107,7 @@ DOCX 保留段内换行和制表符，换行后的题号与答案标记可分别
 - API `apps/api/src/modules/questions/materials-service.js`、`materials-router.js`、`extraction*.js`、`recognized-page.js`、`native-word.js`、`native-pdf.js`；共享编辑器 `apps/web/src/features/workbench/materials/DocumentEditor.jsx`。
 - 当前交互浏览器验证 `apps/web/e2e/questions-ux.config.mjs`，用 `WORKBENCH_WEB_DIST` 指定隔离生产构建，覆盖录题、草稿、改编、分类、文字校对、结构编辑、搜索范围、拆分答案归属、未知保存恢复、归档与彻底删除、来源缺失/读取失败、详情返回及深浅色布局。文件上传另验 DOCX 段内换行、PDF 明示续题与缺页/倒序、双栏题干/选项/答案及入库来源页码、未分配片段处理后的保存重开；历史保存场景见 `manual-questions.config.mjs`。HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；保存基例 [WB-003/004/011-018](../acceptance/first-flow.feature)，材料基例 [WB-M001-012/025-028](../acceptance/materials.feature)。
 
-保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前具名证明范围在[能力证据](../plans/run-state.md#核查入口)。
+保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前能力边界见[项目状态](../plans/run-state.md)，回归从[核查入口](../plans/run-state.md#核查入口)进入。
 
 识别消费者使用 `apps/web/e2e/questions-recognition.config.mjs`；结构边界在 `questions-tables.spec.js` 和 API `materials-questions*.test.js`。固定输入及真实产物位置见[样本索引](../acceptance/samples.md#固定输入与回放)。回归核对原题、原有答案、公式、题图、来源页码、未分配范围、跨页阻断与人工状态；重试、取消和迟到结果不得覆盖已校对内容。表格列角色、同格多题配图、隐式续题等详细用例由相应测试维护。
 

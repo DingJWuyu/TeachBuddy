@@ -15,6 +15,12 @@
 
 测试文件/config 从[功能规格](../README.md#功能规格)进入；命令以根和各 workspace 的 `package.json` 为准。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。教学基础和数学关联各有独立 Background，不混用前置条件。旧场景中的“软删除”对应可恢复的归档/删除；永久删除另按模块规格验收，不用归档场景证明不可恢复操作。
 
+## 浏览器准备
+
+新环境在仓库根目录完成 `npm ci` 后，执行 `npx playwright install chromium`，安装锁定 Playwright 版本对应的浏览器。支持的 Linux 发行版若缺系统库，使用 `npx playwright install --with-deps chromium` 同时安装依赖，该步骤可能需要系统管理员权限；具体支持范围见 [Playwright 官方安装说明](https://playwright.dev/docs/browsers#install-system-dependencies)。更新 Playwright 后重新执行安装。
+
+开发服务、备课配图和题库识别回归使用上述浏览器，不要求本机已有 Google Chrome。旧专项 config 如显式指定其他浏览器，执行前核对其要求，不能用本机现有缓存代替新环境准备。
+
 ## 开发服务回归
 
 运行 `npm run predev` 后执行 `npx playwright test -c apps/web/e2e/development.config.mjs`。它启动真实同源 HTTPS 与 Vite，使用隔离数据库、文件目录和邮件替身，覆盖资源上传、PDF 中文文字层、模块往返与刷新，以及题库读取、手动保存和重开。该入口不读取已有实例配置，也不占用 50880。
@@ -38,4 +44,4 @@
 | 设置/帮助外观 | 按[界面规则](../rules/design-and-verification.md)核对当前运行页面及用户指定参考；截图留本次验证产物 |
 | Agent 真实模型保留库 | `apps/api/test/fixtures/c26/live.mjs` 生成模型报告和隔离数据；`apps/web/e2e/c26/agent.spec.js` 读取。二者共用 `AGENT_EVIDENCE_DIR`，默认 `test-results/evidence/C26/v1`。执行前核对报告与数据目录来自同一候选；新环境缺少它们时标记未验证，真实模型请求须有本次授权。Agent 扩展开发仍按[项目状态](../plans/run-state.md)暂停。 |
 | API 字段与兼容 | 从[文字契约](../README.md#契约说明)进入；机器契约在 `apps/api/src/contracts/`，交换样本在 `apps/api/test/fixtures/contracts/`。测试以固定样本和预期行为验证实现，不能只用实现自身生成预期结果。旧版本兼容用例从固定 Git 版本读取当时的输入。 |
-| 已有能力证明 | [项目状态的核查入口](../plans/run-state.md#核查入口)指向当前源码、固定样本和可重现测试；既往本机结果只证明当时的候选。新候选按影响范围补验，缺少输入或目标设备时记未验证。 |
+| 当前能力核查 | [项目状态的核查入口](../plans/run-state.md#核查入口)指向当前源码、固定样本和可重现测试；既往本机结果只证明当时的候选。新候选按影响范围补验，缺少输入或目标设备时记未验证。 |

@@ -56,7 +56,7 @@ PDF 与 Word/PPT 的 PDF 预览保留原页图，在其上叠加 PDF.js 文字�
 
 Web `apps/web/src/features/resources/`，API `apps/api/src/modules/resources/`；共用 `apps/api/src/workbench/files/` 与 `jobs/`。真实认证浏览器流程入口 `apps/web/e2e/resources-ui.config.mjs`，用 `WORKBENCH_WEB_DIST` 指向[隔离构建](../SETUP.md#新的隔离环境)，截图和 trace 可用 `RESOURCE_UI_RESULTS` 指定目录。Office 格式专项入口 `apps/web/e2e/manual-resources.config.mjs`，HTTP `apps/api/test/materials-resources.test.js`，验收 [WB-M013-017](../acceptance/materials.feature)。
 
-按本次改动选择下列回归，已执行范围只见[项目状态](../plans/run-state.md#核查入口)：
+按本次改动选择下列回归，执行范围与剩余验证见[项目状态](../plans/run-state.md)：
 
 - 收录与整理：真实上传、保存刷新、重复选择与队列接续；批量取消/过期版本整批拒绝；归档后返回、彻底删除确认/取消及刷新；请求未知结果按原键确认，账户隔离不变。
 - 预览与版本：真实 DOC/DOCX/PPT/PPTX/PDF/图片逐页解码、缩放和下载，Office 路径失效不影响独立格式。检查替换/历史恢复、分类备注和文件身份；备课旧快照保持，明确采用新版后重开。图片 DOM 可见与页图实际载入分别检查，封面不替代内容。

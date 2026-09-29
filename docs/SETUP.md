@@ -78,6 +78,8 @@ WantedBy=default.target
 
 当前实例的工具可用性与待处理项由[台账](plans/run-state.md)维护；修改运行配置后必须实际转换并打开文件验证。
 
+新机器从 [Pandoc 官方安装入口](https://pandoc.org/installing.html)和 [LibreOffice 官方安装入口](https://www.libreoffice.org/installation-instructions/)准备工具；本机验证版本分别为 3.11 与 26.8，其他版本须重新核对输出。通过系统包管理器安装 Poppler、Bubblewrap、Fontconfig 和中文字体（例如 Noto Sans CJK SC），确保 `/usr/bin/pdfinfo`、`/usr/bin/pdftoppm`、`/usr/bin/pdftotext` 与 `bwrap` 可执行。用 `fc-match ':lang=zh-cn'` 核对实际中文字体，再运行材料回归并打开生成文件。Xpdf 按下节单独安装，不能用 Poppler 同名程序代替。浏览器回归另需[安装 Playwright 浏览器](acceptance/README.md#浏览器准备)。
+
 ### 题库文字 PDF
 
 题库使用独立的 Xpdf 4.06 `pdftohtml` 可执行文件读取文字层；页面预览与配图定位继续使用已有 Poppler。Xpdf 的 HTML 保留按阅读顺序排列的逐行文字，适配层只取文字节点，不向浏览器提供生成的 HTML，也不自建分栏算法。`pdftotext -layout` 会跨栏拼横行，Xpdf 默认纯文本又会合并段落内的题号行，因此二者不能替代此入口。
@@ -204,21 +206,13 @@ curl -fL 'https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec/resolve/682f20
 
 ### 4. 完整性与运行验证
 
-这一步逐个比对仓库固定清单，包括额外文件和缺失文件，并调用 worker 自身的环境验证。只在全部通过后将私有运行配置的 `MATERIALS_OCR_HOME` 指向 `ocrHome`，由实例维护者重启 API；再用真实上传的一页检查文字、公式、配图及取消路径。不能用原始结果回放替代 GPU 推理。
+调用 worker 自身的环境验证，核对固定版本、文件库存和摘要。只在全部通过后将私有运行配置的 `MATERIALS_OCR_HOME` 指向 `ocrHome`，由实例维护者重启 API；再用真实上传的一页检查文字、公式、配图及取消路径。不能用原始结果回放替代 GPU 推理。
 
 ```bash
 "$ocrHome/venv/bin/python" - "$ocrHome" "$projectRoot" <<'PY'
-import hashlib, json, pathlib, runpy, sys
+import pathlib, runpy, sys
 home = pathlib.Path(sys.argv[1]).resolve()
 repo = pathlib.Path(sys.argv[2]).resolve()
-manifest = json.loads((home / 'manifest.json').read_text())
-actual = {'requirements.freeze.txt'} | {
-    str(p.relative_to(home)) for p in (home / 'models').rglob('*') if p.is_file()
-}
-assert actual == set(manifest['files']), (sorted(actual - set(manifest['files'])), sorted(set(manifest['files']) - actual))
-for name, expected in manifest['files'].items():
-    with (home / name).open('rb') as stream:
-        assert hashlib.file_digest(stream, 'sha256').hexdigest() == expected, name
 worker = runpy.run_path(str(repo / 'apps/api/src/workbench/recognition/worker.py'))
 worker['verify_environment'](home)
 assert pathlib.Path(sys.executable).resolve().is_relative_to(home)

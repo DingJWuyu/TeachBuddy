@@ -7,6 +7,7 @@ import JSZip from 'jszip';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
 import { http, doc } from './teaching-time-classes-materials-fixture.js';
+import { images } from '../src/modules/questions/materials-content.js';
 import { loadRegionReplay, blankCells } from './fixtures/lessons-region-replay.js';
 
 const base = '/api/modules/lessons/v3';
@@ -30,6 +31,10 @@ test('image adoption HTTP/SQLite: controlled parent and genuine crop replay, pro
   try {
     const { client, session } = await registerMath(world, 'lesson-image-api@example.test'), call = http(client);
     const accountKey = session.account.accountKey, { parent, preview } = replay.seed(world, accountKey);
+    assert.equal(parent.document.blocks[0].rows[2][1].blocks[3].fileId, replay.imageId);
+    assert.deepEqual(images(parent.document), [replay.otherImageId, replay.imageId]);
+    assert.equal(parent.document.blocks[0].rows[2][1].blocks[0].runs[0].text, '数值表前的说明保持原样');
+    assert.equal(parent.document.blocks[0].rows[2][1].blocks[4].runs[0].text, '数值表后的说明保持原样');
     let resource = await call('POST', '/api/modules/resources/items', { title: '受控配图资料', fileId: replay.binding.fileId, folderId: null, tagIds: [], note: '' }, 201);
     let lesson = await call('POST', base, { title: '配图独立校对', intro: doc('保留整课'), sections: [], materials: [] }, 201);
     const url = `${base}/${lesson.id}`, adoptUrl = `${url}/sections/adopt-page`;

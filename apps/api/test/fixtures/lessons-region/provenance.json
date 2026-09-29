@@ -1,6 +1,6 @@
 {
   "kind": "controlled-parent-with-recorded-crop",
-  "parent": "Self-authored eight-page PDF and controlled recognition record. Not a genuine full E7 recognition.",
+  "parent": "Self-authored eight-page PDF and controlled recognition record. Page 7 has a three-column teaching table, a self-authored triangle and the recorded numeric crop nested at rows[2][1].blocks[3], with surrounding text. Not a genuine full E7 recognition.",
   "crop": {
     "source": "https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf",
     "sourcePdfSha256": "b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a",

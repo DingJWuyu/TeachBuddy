@@ -7,5 +7,5 @@ export default defineConfig({
   timeout: 60000, expect: { timeout: 10000 }, reporter: 'list',
   outputDir: `../../../test-results/questions-ux/${Date.now()}`,
   use: { ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 },
-    launchOptions: { executablePath: '/opt/google/chrome/chrome' }, trace: 'retain-on-failure' },
+    trace: 'retain-on-failure' },
 });
