@@ -1,0 +1,30 @@
+{
+  "kind": "immutable-legacy-source",
+  "description": "Exact git archive tar bytes compressed with gzip mtime=0. Tests execute these original products to create old databases before upgrading; archived files are unchanged.",
+  "fixtures": {
+    "a11": {
+      "commit": "9ecabbf60cbbaecce2e9be8191d270068eb675cf",
+      "paths": [
+        "apps/api",
+        "packages",
+        "package.json"
+      ],
+      "archive": "a11.tar.gz",
+      "gzipMtime": 0,
+      "gzipSha256": "6fa13d3c416e88df0799b64ab25f3996b54941f662a1e3680328da6d24e6c9ff",
+      "tarSha256": "57aee78a7270cb6aaacef300bcd10a08eae0b484e1527efcb7236e0f947e2290"
+    },
+    "t53": {
+      "commit": "ff248141ac60668cca958b1212bcc2dfcf799490",
+      "paths": [
+        "apps/api",
+        "packages/shared"
+      ],
+      "archive": "t53.tar.gz",
+      "gzipMtime": 0,
+      "gzipSha256": "225d7fd25f0a4a93e7779c12f996ed4fc857ee8da1dd9abe951a9810a6545705",
+      "tarSha256": "1ffa6e2d8707c4d82bd20b5c3402315ef7613f3e065e2a5e38630d89b431ac5a"
+    }
+  },
+  "scope": "Only the existing fixed-version upgrade entrypoints are executed. Their application/shared modules and classes harness do not load docs. Other unused test files retain their original docs/contracts references; this archive is not a standalone legacy full-suite checkout."
+}

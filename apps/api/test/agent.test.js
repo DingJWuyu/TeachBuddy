@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
 import { createIntegration } from './fixtures/c26/harness.js';
 import { provider } from './fixtures/c26/provider.js';
 import { valid } from '../src/agent/schema.js';
@@ -284,7 +285,11 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 const repoRoot=fileURLToPath(new URL('../../../',import.meta.url));
 test('WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录保持',async()=>{
  const source=fs.mkdtempSync(nodePath.join(os.tmpdir(),'c26-a11-source-'));
- const archive=execFileSync('git',['archive','9ecabbf60cbbaecce2e9be8191d270068eb675cf','apps/api','packages','package.json'],{cwd:repoRoot});
+ // Exact git archive of 9ecabbf60cbbaecce2e9be8191d270068eb675cf; see fixture provenance.
+ const packed=fs.readFileSync(new URL('./fixtures/legacy-source/a11.tar.gz',import.meta.url));
+ assert.equal(createHash('sha256').update(packed).digest('hex'),'6fa13d3c416e88df0799b64ab25f3996b54941f662a1e3680328da6d24e6c9ff');
+ const archive=gunzipSync(packed);
+ assert.equal(createHash('sha256').update(archive).digest('hex'),'57aee78a7270cb6aaacef300bcd10a08eae0b484e1527efcb7236e0f947e2290');
  execFileSync('tar',['-x','-C',source],{input:archive});
  // Resolve the archived workspace package, not today's six-module catalog.
  fs.mkdirSync(nodePath.join(source,'node_modules/@refatos'),{recursive:true});

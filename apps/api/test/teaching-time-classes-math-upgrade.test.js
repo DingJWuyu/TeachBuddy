@@ -4,20 +4,25 @@
 // clean install can run this fixed-version fixture without changing old code.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createTeachingTimeClassesHarness } from './teaching-time-classes-harness.js';
-const base='ff248141ac60668cca958b1212bcc2dfcf799490';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../../..');
 test('TM-C1/C5 fixed T53 SQLite upgrade preserves old links and successful receipt', async () => {
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'t51-math-upgrade-'));
   const db=path.join(dir,'data.sqlite');
   let h, passed=false;
   try {
-    const archive=execFileSync('git',['archive',base,'apps/api','packages/shared'],{cwd:root,maxBuffer:20*1024*1024});
+    // Exact git archive of ff248141ac60668cca958b1212bcc2dfcf799490; see fixture provenance.
+    const packed=fs.readFileSync(new URL('./fixtures/legacy-source/t53.tar.gz',import.meta.url));
+    assert.equal(createHash('sha256').update(packed).digest('hex'),'225d7fd25f0a4a93e7779c12f996ed4fc857ee8da1dd9abe951a9810a6545705');
+    const archive=gunzipSync(packed);
+    assert.equal(createHash('sha256').update(archive).digest('hex'),'1ffa6e2d8707c4d82bd20b5c3402315ef7613f3e065e2a5e38630d89b431ac5a');
     execFileSync('tar',['-x','-C',dir],{input:archive});
     fs.mkdirSync(path.join(dir,'node_modules','@refatos'),{recursive:true});
     for(const entry of fs.readdirSync(path.join(root,'node_modules'))) {
