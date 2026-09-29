@@ -43,6 +43,7 @@
 | Word/WPS 人工编辑与打印 | [Office fixtures](../../apps/web/e2e/fixtures/office/) 的六份 DOCX、源文本/公式/图片；按[人工操作](samples.md#人工-office-样本)核对。输入样本不是产品转换成功证明。 |
 | 备课当前真实输出 | `apps/web/e2e/fixtures/materials-lessons/verify-outputs.mjs` 生成 `test-results/evidence/R34/v1/outputs/`，再由同目录 `office.py` 读取处理；必须先生成本次候选输出。 |
 | 设置/帮助外观 | 按[界面规则](../rules/design-and-verification.md)核对当前运行页面及用户指定参考；截图留本次验证产物 |
+| 题干/答案原稿独立定位 | 先运行 `node apps/web/e2e/fixtures/materials-questions/build.mjs` 构建隔离题库页面，再执行 `npx playwright test -c apps/web/e2e/fixtures/materials-questions/playwright.config.mjs materials-questions-fragments.spec.js`。该 test-principal fixture 使用自己的页面入口，不能用真实认证主应用构建替代。 |
 | Agent 真实模型保留库 | `apps/api/test/fixtures/c26/live.mjs` 生成模型报告和隔离数据；`apps/web/e2e/c26/agent.spec.js` 读取。二者共用 `AGENT_EVIDENCE_DIR`，默认 `test-results/evidence/C26/v1`。执行前核对报告与数据目录来自同一候选；新环境缺少它们时标记未验证，真实模型请求须有本次授权。Agent 扩展开发仍按[项目状态](../plans/run-state.md)暂停。 |
 | API 字段与兼容 | 从[文字契约](../README.md#契约说明)进入；机器契约在 `apps/api/src/contracts/`，交换样本在 `apps/api/test/fixtures/contracts/`。测试以固定样本和预期行为验证实现，不能只用实现自身生成预期结果。 |
 | 固定旧版升级 | `npm run test:api` 包含 A11/T53 及 R31 题库升级；数学和材料旧版分别执行 `node scripts/math-support/verify-upgrade.mjs`、`node scripts/materials/verify-migration.mjs`。入口从 `apps/api/test/fixtures/legacy-source/` 的不可变源码包创建旧库，来源、路径和摘要见同目录 `provenance.json`；不需要旧 checkout、Git 归档引用或环境变量。归档内部保留当时的路径。 |

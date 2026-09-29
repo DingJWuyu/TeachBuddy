@@ -3,10 +3,9 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 import { startQuestionsFixture } from "./fixtures/materials-questions/server.mjs";
-const out = "test-results/evidence/R33/v1/attempt4";
 test("synthetic page fragments use real upload, review, independent answer navigation and reload", async ({
   page,
-}) => {
+}, testInfo) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'questions-fragments-'));
   const runtime = await startQuestionsFixture({
     dataDir: dir,
@@ -96,7 +95,7 @@ test("synthetic page fragments use real upload, review, independent answer navig
       [1024, 768],
     ]) {
       await page.setViewportSize({ width, height });
-      await page.screenshot({ path: `${out}/fragments-${width}.png` });
+      await page.screenshot({ path: testInfo.outputPath(`fragments-${width}.png`) });
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
@@ -104,7 +103,7 @@ test("synthetic page fragments use real upload, review, independent answer navig
       ).toBe(true);
     }
     fs.writeFileSync(
-      `${out}/browser-synthetic.json`,
+      testInfo.outputPath("browser-synthetic.json"),
       JSON.stringify(
         {
           identity: "test-principal",

@@ -56,11 +56,15 @@ const write = (client, url, body, key = randomUUID()) =>
 
 test("account appearance persists, isolates accounts, validates avatars and preserves legacy preferences", async () => {
   const directory = fs.mkdtempSync(path.join(root, "appearance-"));
-  const world = await createIntegration({ directory });
+  let world = await createIntegration({ directory });
   try {
     const a = await account(world), b = await account(world, "other@example.test");
     const url = "/api/reliability/v1/preferences";
-    const initial = (await a.client.request("GET", url)).json;
+    const anonymous = await world.client().request("GET", url, { page: null });
+    assert.equal(anonymous.status, 401, anonymous.text);
+    const initialResponse = await a.client.request("GET", url);
+    assert.equal(initialResponse.headers["cache-control"], "no-store");
+    const initial = initialResponse.json;
     assert.equal(initial.values.theme, "light");
     const bytes = await sharp(randomBytes(256 * 256 * 3), { raw: { width: 256, height: 256, channels: 3 } }).webp({ quality: 90 }).toBuffer();
     const avatar = `data:image/webp;base64,${bytes.toString("base64")}`;
@@ -68,12 +72,39 @@ test("account appearance persists, isolates accounts, validates avatars and pres
     const body = { baseVersion: initial.version, values: { ...initial.values, theme: "dark", background: "stripes", avatar, locale: "en" } };
     const key = randomUUID();
     const put = (body, requestKey = randomUUID()) => a.client.request("PUT", url, { body, headers: { "Idempotency-Key": requestKey } });
+    const unprotected = await a.client.request("PUT", url, { body, protect: false, origin: null });
+    assert.equal(unprotected.status, 403, unprotected.text);
+    const extraField = await put({ ...body, extra: true });
+    assert.equal(extraField.status, 422, extraField.text);
+    const extraQuery = await a.client.request("GET", url + "?extra=true");
+    assert.equal(extraQuery.status, 422, extraQuery.text);
     const saved = await put(body, key);
     assert.equal(saved.status, 200, saved.text);
+    assert.equal(saved.json.version, initial.version + 1);
     assert.deepEqual((await put(body, key)).json, saved.json);
+    const changedReplay = await put({ ...body, baseVersion: saved.json.version }, key);
+    assert.equal(changedReplay.status, 409, changedReplay.text);
     assert.equal((await a.client.request("GET", url)).json.values.avatar, avatar);
     assert.equal((await b.client.request("GET", url)).json.values.avatar, "");
     assert.equal((await b.client.request("GET", url)).json.values.theme, "light");
+    await world.close();
+    world = null;
+    world = await createIntegration({ directory });
+    const reopened = world.client();
+    const bootstrap = await reopened.request("POST", "/api/auth/session", { body: { action: "bootstrap" } });
+    assert.equal(bootstrap.status, 200, bootstrap.text);
+    const login = await reopened.request("POST", "/api/auth/login", {
+      body: { email: "data@example.test", password: "Manual-data-123", rememberMe: true },
+    });
+    assert.equal(login.status, 200, login.text);
+    const activated = await reopened.request("POST", "/api/auth/session", {
+      body: { action: "activate", sessionId: login.json.id, rememberMe: true },
+    });
+    assert.equal(activated.status, 200, activated.text);
+    const persisted = await reopened.request("GET", url);
+    assert.equal(persisted.status, 200, persisted.text);
+    assert.deepEqual(persisted.json, saved.json);
+    a.client = reopened;
     assert.equal((await put(body)).status, 409);
     for (const invalid of [{ locale: "fr" }, { theme: "unknown" }, { background: "unknown" }, { avatar: "data:image/svg+xml,<svg/>" }, { avatar: "data:image/webp;base64,AAAA" }]) {
       const result = await put({ baseVersion: saved.json.version, values: { ...saved.json.values, ...invalid } });
@@ -95,7 +126,7 @@ test("account appearance persists, isolates accounts, validates avatars and pres
     assert.equal(upgraded.background, "grid");
     assert.equal(upgraded.readingSize, "large");
   } finally {
-    await world.close();
+    await world?.close();
   }
 });
 async function untilReady(client, id) {

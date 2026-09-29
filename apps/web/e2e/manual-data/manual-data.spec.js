@@ -18,7 +18,7 @@ test.afterEach(async ({ context }, info) => {
   if (info.status === info.expectedStatus) fs.rmSync(temporaryDirectory, { recursive: true, force: true });
   else console.error(`保留失败现场: ${temporaryDirectory}`);
 });
-test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ page }) => {
+test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ page }, testInfo) => {
   temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "teachbuddy-data-"));
   fs.mkdirSync(path.join(temporaryDirectory, "original"));
   world = await createIntegration({
@@ -117,12 +117,8 @@ test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ pa
   await page.getByRole("dialog", { name: "导出个人资料" }).locator(".settings-dialog-close").click();
   await page.reload();
   await expect(page.getByRole("button", { name: "导出数据", exact: true })).toBeVisible();
-  const evidence = path.resolve(
-    process.env.MANUAL_DATA_EVIDENCE_DIR || "test-results/manual-data/evidence",
-  );
-  fs.mkdirSync(evidence, { recursive: true });
   await page.screenshot({
-    path: path.join(evidence, "data-settings.png"),
+    path: testInfo.outputPath("data-settings.png"),
     animations: "disabled",
   });
   await page
@@ -237,5 +233,5 @@ test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ pa
     { active: null, name: "math-original.html", text: "恢复前文件原字节" },
   ]);
   await expect(page.getByRole("button", { name: "导出数据", exact: true })).toBeVisible();
-  await page.screenshot({ path: path.join(evidence, "restored-login.png"), animations: "disabled" });
+  await page.screenshot({ path: testInfo.outputPath("restored-login.png"), animations: "disabled" });
 });
