@@ -71,8 +71,8 @@ test('日程自动保存中刷新按原请求确认，后续输入继续保存',
   await page.getByLabel('标题', { exact: true }).fill('保存中的日程输入');
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
   await page.reload();
-  await page.unroute('**/api/modules/schedule/entries');
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
+  await page.unroute('**/api/modules/schedule/entries');
   await page.getByLabel('标题', { exact: true }).fill('确认期间新增的日程输入');
   const replay = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/schedule/entries'));
   await page.getByRole('button', { name: '重试确认', exact: true }).click();
@@ -101,7 +101,9 @@ test('日程删除响应丢失后刷新仍用原键确认', async ({ page }) => 
   await page.getByRole('menuitem', { name: '删除任务', exact: true }).click();
   await page.getByRole('dialog', { name: '删除任务', exact: true }).getByRole('button', { name: '删除', exact: true }).click();
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
-  await page.reload(); await page.unroute('**/api/modules/schedule/entries/*/deletion');
+  await page.reload();
+  await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
+  await page.unroute('**/api/modules/schedule/entries/*/deletion');
   const wait = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/deletion'));
   await page.getByRole('button', { name: '重试确认', exact: true }).click();
   const request = await wait;
@@ -192,9 +194,10 @@ test('资源两标签页上传互不覆盖，原文件确认后筛选与视图�
   await expect(page.getByRole('button', { name: '重试确认原请求' })).toBeVisible();
   await second.getByLabel(/^上传(第一份)?资料$/).setInputFiles({ name: '乙页原图.png', mimeType: 'image/png', buffer });
   await expect(second.getByRole('heading', { name: '乙页原图.png', exact: true })).toBeVisible();
-  await page.reload(); await page.unroute('**/api/workbench/files');
+  await page.reload();
   await expect(page.locator('.wb-shell')).toBeVisible({ timeout: 20000 });
   await expect(page.getByLabel('重新选择原文件')).toBeVisible();
+  await page.unroute('**/api/workbench/files');
   let replayCount = 0;
   page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/workbench/files')) replayCount += 1; });
   const different = Buffer.from(buffer); different[different.length - 1] ^= 1;
@@ -260,8 +263,9 @@ test('数学 HTML 上传重开后校验原文件并以原键确认', async ({ pa
   await page.getByRole('button', { name: '导入已有 HTML 演示', exact: true }).click();
   await (await chooser).setFiles(file);
   await expect(page.getByRole('button', { name: '重试原文件上传' })).toBeVisible();
-  await page.reload(); await page.unroute('**/api/workbench/files');
+  await page.reload();
   await expect(page.getByRole('button', { name: '重选原文件并确认上传' })).toBeVisible();
+  await page.unroute('**/api/workbench/files');
   const replay = page.waitForRequest(request => request.method() === 'POST' && request.url().endsWith('/api/workbench/files'));
   await page.getByLabel('导入 HTML 文件').setInputFiles(file);
   expect((await replay).headers()['idempotency-key']).toBe(key);
