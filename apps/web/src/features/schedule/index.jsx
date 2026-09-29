@@ -116,13 +116,13 @@ export default function SchedulePage({ route }) {
       setManagement(null);
     } else if (payload.kind === 'moveItem') {
       setItemToMove(null);
-      await openEntry(result.to.id, null, true);
+      await openEntry(result.to.id, null, { bypass: true });
     } else if (['delete', 'cancel'].includes(payload.kind)) {
       if (current?.id === payload.id) setDraft(null);
       setDeletePrompt(false);
       if (new URLSearchParams(route?.search ?? '').get('entry') === payload.id) shell.navigate('/calendar');
     } else if (['restore', 'inherit'].includes(payload.kind)) {
-      await openEntry(payload.id, payload.origin, true);
+      await openEntry(payload.id, payload.origin, { bypass: true });
     } else if (current && payload.clientId && current.clientId === payload.clientId) {
       const entry = result.id ? result : { ...current.entry, version: result.entryVersion };
       const origin = payload.kind === 'override' ? current.origin : entry.repeat ? current.origin ?? entry.time.date : null;
@@ -193,7 +193,7 @@ export default function SchedulePage({ route }) {
     if (opRef.current.status === 'failed') opRef.current.reset();
     setDraft({ ...current, content: { ...current.content, ...patch }, forceSeries: forceSeries || current.forceSeries, scope: scope ?? current.scope });
   }
-  async function openEntry(id, origin = null, bypass = false) {
+  async function openEntry(id, origin = null, { bypass = false, preserveDraft = false } = {}) {
     if (!bypass && !await leaveEditor()) return;
     try {
       const entry = await api.getEntry(id);
@@ -201,7 +201,11 @@ export default function SchedulePage({ route }) {
       if (!mounted.current) return;
       const content = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
       const readOnly = entry.deletedAt ? t("任务已删除") : occurrence && occurrence.state !== 'active' ? occurrence.state === 'cancelled' ? t("这次任务已取消") : t("这次任务已不在重复范围内") : null;
-      setDraft({ clientId: crypto.randomUUID(), id, origin, version: entry.version, entry, content, courseState: occurrence?.courseState ?? entry.courseState, baseline: structuredClone(content), zone, scope: null, readOnly, occurrenceState: occurrence?.state, isException: occurrence?.isException });
+      const current = sceneRef.current.draft;
+      // 深链接恢复时，未提交输入和它的编辑基线必须一起保留。
+      const keepDraft = preserveDraft && current?.id === id && current.origin === origin
+        && (current.savePaused || !same(current.content, current.baseline) || opRef.current.pending);
+      if (!keepDraft) setDraft({ clientId: crypto.randomUUID(), id, origin, version: entry.version, entry, content, courseState: occurrence?.courseState ?? entry.courseState, baseline: structuredClone(content), zone, scope: null, readOnly, occurrenceState: occurrence?.state, isException: occurrence?.isException });
       if (!bypass && shell.isPanelOpen) shell.closePanel();
       setValidation(''); setMobileSidebar(true);
       return true;
@@ -296,7 +300,7 @@ export default function SchedulePage({ route }) {
       if (issue) { setLoadError(issue); info.revert(); return; }
       const ok = await perform({ kind: single ? 'override' : 'update', id: entry.id, origin: occurrence.key.originDate, version: entry.version, content });
       if (!ok) info.revert();
-      else if (sceneRef.current.draft?.id === entry.id) await openEntry(entry.id, single ? occurrence.key.originDate : entry.repeat ? content.time.date : null, true);
+      else if (sceneRef.current.draft?.id === entry.id) await openEntry(entry.id, single ? occurrence.key.originDate : entry.repeat ? content.time.date : null, { bypass: true });
     } catch (error) { info.revert(); setLoadError(error.problem?.message ?? t("调整时间未能保存")); }
     setMovePrompt(null);
   }
@@ -338,7 +342,7 @@ export default function SchedulePage({ route }) {
         const value = localParts(zone, Date.parse(occurrence.startsAt));
         updateScene({ anchor: value.date, month: value.date.slice(0, 7), scroll: Math.max(0, (value.minutes / 60 - 1) * 104) });
       }
-      await openEntry(id, origin, true);
+      await openEntry(id, origin, { bypass: true, preserveDraft: true });
     }).catch(error => { if (!cancelled) setLoadError(error.problem?.message ?? t("无法打开这项安排")); });
     return () => { cancelled = true; };
   }, [route?.search, shell.generation]);
