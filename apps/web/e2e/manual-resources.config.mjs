@@ -11,7 +11,6 @@ export default defineConfig({
   use: {
     actionTimeout: 15000,
     ignoreHTTPSErrors: true,
-    launchOptions: { executablePath: "/opt/google/chrome/chrome" },
     viewport: { width: 1440, height: 900 },
     trace: "retain-on-failure",
   },

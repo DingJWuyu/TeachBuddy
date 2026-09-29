@@ -19,7 +19,7 @@
 
 新环境在仓库根目录完成 `npm ci` 后，执行 `npx playwright install chromium`，安装锁定 Playwright 版本对应的浏览器。支持的 Linux 发行版若缺系统库，使用 `npx playwright install --with-deps chromium` 同时安装依赖，该步骤可能需要系统管理员权限；具体支持范围见 [Playwright 官方安装说明](https://playwright.dev/docs/browsers#install-system-dependencies)。更新 Playwright 后重新执行安装。
 
-开发服务、备课配图和题库识别回归使用上述浏览器，不要求本机已有 Google Chrome。旧专项 config 如显式指定其他浏览器，执行前核对其要求，不能用本机现有缓存代替新环境准备。
+浏览器回归使用上述 Chromium，不依赖某台主机的 Google Chrome 安装路径。专项需要其他浏览器时，在对应配置与验证说明中明确安装步骤；新环境验证使用独立浏览器缓存，不能用本机现有缓存代替准备。
 
 ## 开发服务回归
 
@@ -31,6 +31,7 @@
 
 - 按[运行指南](../SETUP.md#新的隔离环境)选择独立端口、库、文件目录与构建产物。Pandoc/Office 路径必须指向可用工具；测试不能读取或改写用户实例。
 - 测试输出写 `test-results/`，证据默认在 `test-results/evidence/`；支持环境变量的入口可指定独占目录。两者均为可清理的运行产物，不存放唯一用户成果或固定输入。
+- Playwright 截图通过 `testInfo.outputPath()` 写入用例独立目录；临时实例用系统临时目录和 `mkdtemp` 创建，或先创建明确的输出父目录。测试自行准备本次输入，不能依赖另一用例或旧运行留下目录。
 - 运行前核对 fixture/config：部分旧用例仍针对已移除的设置 UI，不能为旧断言恢复已删除功能。绝对路径、外部工具和真实模型验证另核对当前条件。
 - 记录 real-auth / test-principal、real-mail / fake-mail、真实服务 / 替身及实际候选。self、independent、user 分别表示作者自验、独立验收、真人反馈；退出码和局部 PASS 不代表整个产品。
 - 失败保留本次现场；成功后清理临时数据。固定样本和用户已有成果保留在测试自动清理范围之外。

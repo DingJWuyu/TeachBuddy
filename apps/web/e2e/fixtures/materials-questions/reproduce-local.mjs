@@ -3,7 +3,6 @@ import fs from "node:fs";
 const out = "test-results/evidence/R33/v1/attempt2";
 fs.mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({
-  executablePath: "/opt/google/chrome/chrome",
   args: ["--no-sandbox"],
 });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });

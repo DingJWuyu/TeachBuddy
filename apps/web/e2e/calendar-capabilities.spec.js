@@ -38,12 +38,11 @@ async function manage(page, name) {
 async function close(page) { await page.getByRole('button', { name: '关闭任务', exact: true }).click(); await expect(page.locator('.cal-editor')).toHaveCount(0); }
 async function open(page, title) { await page.locator('.cal-upcoming-row').filter({ hasText: title }).click(); }
 async function shot(page, name) {
-  const directory = path.resolve('.scratch/schedule-experience/visual'); fs.mkdirSync(directory, { recursive: true });
   await page.evaluate(() => document.fonts.ready);
   await expect.poll(() => page.locator('.cal-overlay-presence:not([inert])').evaluateAll(nodes => nodes.every(node => node.dataset.state === 'open' && Number(getComputedStyle(node).opacity) === 1))).toBeTruthy();
   await expect(page.locator('.cal-overlay-presence:not([inert]) [role=status]')).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
-  await page.screenshot({ path: path.join(directory, `${name}.png`), animations: 'disabled' });
+  await page.screenshot({ path: test.info().outputPath(`${name}.png`), animations: 'disabled' });
 }
 test.beforeEach(async ({ page }) => {
   if (!process.env.WORKBENCH_WEB_DIST) throw new Error('Use an isolated production build.');

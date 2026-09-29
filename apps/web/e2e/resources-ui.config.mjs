@@ -11,7 +11,6 @@ export default defineConfig({
   use: {
     ignoreHTTPSErrors: true,
     viewport: { width: 1440, height: 1000 },
-    launchOptions: { executablePath: "/opt/google/chrome/chrome" },
     trace: "retain-on-failure",
   },
 });

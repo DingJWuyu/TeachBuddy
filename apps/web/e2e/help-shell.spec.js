@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { startTeachingAuth } from './teaching-time-auth/service.mjs';
 import { register } from './teaching-time-auth/helpers.mjs';
 let world, directory;
 test.beforeEach(async ({ page }) => {
-  fs.mkdirSync('.scratch/help-test', { recursive: true });
-  directory = fs.mkdtempSync(path.resolve('.scratch/help-test/account-'));
+  world = undefined;
+  directory = fs.mkdtempSync(path.join(os.tmpdir(), 'help-shell-'));
   world = await startTeachingAuth({ directory });
   await register(page, world);
   const coach = page.getByRole('button', { name: /知道了/ });
@@ -17,12 +18,13 @@ test.beforeEach(async ({ page }) => {
 test.afterEach(async ({}, info) => {
   await world?.close();
   if (info.status === info.expectedStatus) fs.rmSync(directory, { recursive: true, force: true });
+  else console.error('Test instance retained:', directory);
 });
-test('帮助首页、目录、深链接和返回；更新日志只有图标', async ({ page }) => {
+test('帮助首页、目录、深链接和返回；更新日志只有图标', async ({ page }, testInfo) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await expect(page.locator('.help-topic-card')).toHaveCount(7);
-  await page.screenshot({ animations: 'disabled', path: '.scratch/help-test/desktop.png' });
+  await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('desktop.png') });
   await page.locator('.help-topic-card').filter({ hasText: '备课' }).click();
   await expect(page).toHaveURL(/\/help\/lessons$/);
   await expect(page.getByRole('heading', { name: '本章内容' })).toBeVisible();
@@ -32,7 +34,7 @@ test('帮助首页、目录、深链接和返回；更新日志只有图标', as
   await page.reload();
   await expect(page.getByRole('heading', { name: '生成与下载文稿', exact: true })).toBeVisible();
   await expect(page.locator('.help-article')).toContainText('DOCX');
-  await page.screenshot({ animations: 'disabled', path: '.scratch/help-test/article.png' });
+  await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('article.png') });
   await page.getByRole('link', { name: '帮助', exact: true }).click();
   await expect(page.getByRole('heading', { name: '热门主题' })).toBeVisible();
   await page.goBack();
@@ -45,10 +47,10 @@ test('帮助首页、目录、深链接和返回；更新日志只有图标', as
   const releases = page.locator('[data-region="releases"]');
   await expect(releases).toHaveText('');
   await expect(releases.locator('svg')).toBeVisible();
-  await page.screenshot({ animations: 'disabled', path: '.scratch/help-test/releases.png' });
+  await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('releases.png') });
   expect(errors).toEqual([]);
 });
-test('搜索支持关键词、键盘、空结果和退出动效', async ({ page }) => {
+test('搜索支持关键词、键盘、空结果和退出动效', async ({ page }, testInfo) => {
   await page.getByRole('textbox', { name: '搜索文章', exact: true }).fill('DOCX');
   await page.getByRole('button', { name: '搜索', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '搜索帮助文档' });
@@ -66,7 +68,7 @@ test('搜索支持关键词、键盘、空结果和退出动效', async ({ page 
   await expect(page.getByRole('option').first()).toBeVisible();
   await page.keyboard.press('ArrowDown');
   await expect(input).toHaveAttribute('aria-activedescendant', 'help-result-1');
-  await page.screenshot({ animations: 'disabled', path: '.scratch/help-test/search.png' });
+  await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('search.png') });
   await page.evaluate(() => {
     window.helpFrames = [];
     const sample = () => { const node = document.querySelector('.help-search-dialog'); helpFrames.push(node ? Number(getComputedStyle(node).opacity) : -1); if (helpFrames.length < 60) requestAnimationFrame(sample); };
@@ -81,10 +83,10 @@ test('搜索支持关键词、键盘、空结果和退出动效', async ({ page 
   await page.keyboard.press('Enter');
   await expect(dialog).toHaveCount(0);
 });
-test('窄屏目录连续展开收起，正文无溢出', async ({ page }) => {
+test('窄屏目录连续展开收起，正文无溢出', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const help = page.locator('[data-region="help"]');
-  await page.screenshot({ animations: 'disabled', path: '.scratch/help-test/mobile.png' });
+  await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('mobile.png') });
   const toggle = page.getByRole('button', { name: '帮助目录', exact: true });
   await toggle.click();
   const topic = page.getByRole('button', { name: '题库', exact: true });

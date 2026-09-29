@@ -15,7 +15,6 @@ export default defineConfig({
   ),
   use: {
     browserName: "chromium",
-    launchOptions: { executablePath: "/opt/google/chrome/chrome" },
     ignoreHTTPSErrors: true,
     viewport: { width: 1440, height: 900 },
     trace: "retain-on-failure",

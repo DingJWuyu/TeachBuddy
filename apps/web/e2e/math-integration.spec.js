@@ -143,7 +143,7 @@ test('real-auth: dynamic and exact external HTML final downloads cold start with
  const source=await downloadWork(page,'source','external-source.html');
  expect(fs.readFileSync(source,'utf8')).toContain('M43 课堂探究');
  const origin=world.origin;await world.close();world=null;
- const coldBrowser=await chromium.launch({executablePath:'/opt/google/chrome/chrome'});
+ const coldBrowser=await chromium.launch();
  const cold=await coldBrowser.newContext({offline:true});
  const viewer=await cold.newPage();const requests=[];viewer.on('request',r=>{if(/^https?:/.test(r.url()))requests.push(r.url());});
  try {

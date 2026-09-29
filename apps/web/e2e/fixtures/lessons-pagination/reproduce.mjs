@@ -6,7 +6,7 @@ import { convertFile } from '../../../../api/src/workbench/files/converter.js';
 import { execFileSync } from 'node:child_process';
 const destination = path.resolve(process.env.PAGINATION_EVIDENCE);
 fs.mkdirSync(destination, { recursive: true });
-const browser = await chromium.launch({ headless: true, executablePath: '/opt/google/chrome/chrome' });
+const browser = await chromium.launch({ headless: true });
 try {
   const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();

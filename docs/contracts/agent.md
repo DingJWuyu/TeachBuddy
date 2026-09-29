@@ -87,7 +87,9 @@ reconcile 是受当前身份保护的零模型操作：读取原 operation 及�
 
 ## 六模块扩展契约
 
-本节是已独立冻结的 F60 设计，完整实现暂停。精确扩展 schema 使用 `git show 31575c5c9d386c03a1f9fcde38b9a216f87a5b08:docs/contracts/reliability.schema.json` 获取；其外部引用按 `x-sources` 中 SHA:path 递归读取，不能用当前首批 schema 替代。新增 HTTP 继续使用认证 transport、账户幂等与共享 Problem。所有业务操作只调用各模块公共端口。
+本节是已独立冻结的 F60 设计，完整实现暂停。精确扩展 schema 与完整相对引用保存在[待实现契约](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)，原始版本与逐文件摘要见同目录 `provenance.json`。这些文件不参与当前 API 契约装配，不能用当前首批 schema 替代；读取时直接使用仓库内文件，不需要本机历史 Git 引用。新增 HTTP 继续使用认证 transport、账户幂等与共享 Problem。所有业务操作只调用各模块公共端口。
+
+冻结文件内的 `x-sources` 和旧验收引用保留采集来源，不作为接手前置。`x-auth-recovery` 记录冻结时的 `auth-recovery/1`；恢复开发时按[当前认证恢复契约](auth.md#部署恢复的认证撤销)的 `auth-recovery/2`、现有实现及恢复测试处理账户删除与清理计数，不能沿用旧版本假定。
 
 ### 版本与调用
 

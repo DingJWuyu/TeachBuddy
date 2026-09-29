@@ -174,7 +174,7 @@ test('real server waits for all migrations and refuses missing TLS configuration
 
 test('SPA deep links serve the fixed index from a hidden build directory without exposing hidden assets', async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'settings-hidden-web-'));
-  const webDist = path.join(root, '.scratch', 'dist');
+  const webDist = path.join(root, '.hidden-build', 'dist');
   fs.mkdirSync(webDist, { recursive: true });
   fs.writeFileSync(path.join(webDist, 'index.html'), '<!doctype html><title>Workspace shell</title>');
   fs.writeFileSync(path.join(webDist, '.private'), 'PRIVATE BUILD FILE');

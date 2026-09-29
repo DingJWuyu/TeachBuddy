@@ -2,12 +2,12 @@
 
 个人资料包是可阅读、可带走的资料；模块内的误删恢复保留原对象；部署备份用于停服后恢复整个实例。三者目的和格式不同，个人 ZIP 不能直接覆盖账户。
 
-手动导出、误删恢复、维护还原及旧身份撤销已有本地独立切片。设置不提供最近删除聚合、设备草稿、恢复隔离或备份说明 UI，见[设置边界](settings.md)；下文的底层保护继续有效。主题、背景和头像的账户持久化由[账户外观](settings.md#账户外观与共享呈现)定义，语言与周起点不在偏好接口内。
+手动导出、误删恢复、维护还原及旧身份撤销已有本地独立切片。设置不提供最近删除聚合、设备草稿、恢复隔离或备份说明 UI，见[设置边界](settings.md)；下文的底层保护继续有效。主题、背景、头像和语言的账户持久化由[账户外观](settings.md#账户外观与共享呈现)定义，周起点不在偏好接口内。
 
 ## 实现入口与格式
 
 - API：`apps/api/src/workbench/reliability/`，偏好 `apps/api/src/reliability/preferences.js`；Web `apps/web/src/features/reliability/`。
-- 当前手动制品格式：`apps/api/src/workbench/reliability/archive.schema.json`；schema 装配 `schema.js`。完整未来可靠性设计源为 `31575c5c9d386c03a1f9fcde38b9a216f87a5b08:docs/contracts/reliability.schema.json`，Agent 部分的接续仅在[Agent 规格](agent.md)。
+- 当前手动制品格式：`apps/api/src/workbench/reliability/archive.schema.json`；schema 装配 `schema.js`。未来可靠性设计源及固定引用保存在[待实现契约](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)，来源摘要见同目录 `provenance.json`；Agent 部分的接续仅在[Agent 规格](agent.md)。
 - 维护命令：`node apps/api/src/scripts/reliability.js --help`，提供 backup / restore / activate；实际运行参数以 CLI 为准。维护前固定停服、独占目录和原数据保全范围。
 - 认证离线操作：`apps/api/src/features/auth/recovery.js` 的 `prepareRestoredAuth`，外层不得自行拼认证表清理 SQL。
 
@@ -36,7 +36,7 @@
 <a id="scene"></a>
 ### 逐模块设备现场
 
-设备层设计字段在 `31575c5c9d386c03a1f9fcde38b9a216f87a5b08:docs/contracts/reliability.schema.json` 的 Scene 中定义；当前实现和 UI 范围须分开核对。内容草稿用原请求 schema，尚不合法的输入以原始表单字符串保存，不尝试作为有效业务请求发送。
+设备层设计字段在上述待实现契约的 `Scene` 中定义；当前实现和 UI 范围须分开核对。内容草稿用原请求 schema，尚不合法的输入以原始表单字符串保存，不尝试作为有效业务请求发送。
 
 | 页面 | 必须保留的现场与返回上下文 |
 | --- | --- |

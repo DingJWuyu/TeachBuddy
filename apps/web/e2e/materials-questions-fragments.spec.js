@@ -1,3 +1,4 @@
+import os from 'node:os';
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
@@ -6,7 +7,7 @@ const out = "test-results/evidence/R33/v1/attempt4";
 test("synthetic page fragments use real upload, review, independent answer navigation and reload", async ({
   page,
 }) => {
-  const dir = fs.mkdtempSync("test-results/r33-attempt4/browser-");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'questions-fragments-'));
   const runtime = await startQuestionsFixture({
     dataDir: dir,
     port: 48459,
@@ -38,6 +39,7 @@ test("synthetic page fragments use real upload, review, independent answer navig
       }),
     },
   });
+  let passed = false;
   try {
     await page.goto(runtime.origin + "/fixture/session");
     await page.getByRole("button", { name: "收录", exact: true }).click();
@@ -109,9 +111,12 @@ test("synthetic page fragments use real upload, review, independent answer navig
         2,
       ),
     );
+    passed = true;
   } finally {
     await page.goto("about:blank");
     runtime.server.closeAllConnections();
     await runtime.close();
+    if (passed) fs.rmSync(dir, { recursive: true, force: true });
+    else console.error("Retained fragments fixture:", dir);
   }
 });

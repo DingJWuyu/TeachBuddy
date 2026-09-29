@@ -7,7 +7,6 @@ export default defineConfig({
   expect: { timeout: 10000 },
   outputDir: "../../../../../test-results/mta",
   use: {
-    launchOptions: { executablePath: "/opt/google/chrome/chrome" },
     ignoreHTTPSErrors: true,
     viewport: { width: 1440, height: 900 },
     trace: "retain-on-failure",

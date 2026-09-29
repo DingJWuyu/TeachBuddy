@@ -1,3 +1,4 @@
+import os from 'node:os';
 // Supply an in-worktree archive of the fixed R31 product, never an active tree.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,7 +15,7 @@ const load = (file) => import(pathToFileURL(path.join(source, file)).href);
 const { createApp } = await load('apps/api/src/app.js');
 const { createDataStore } = await load('apps/api/src/core/dataStore.js');
 const { hashPassword } = await load('apps/api/src/core/auth.js');
-const directory = fs.mkdtempSync(path.resolve('test-results/r31-math-support/upgrade-'));
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'r31-math-upgrade-'));
 const sqlitePath = path.join(directory, 'workspace.sqlite');
 const store = createDataStore({ sqlitePath });
 const user = store.createUser({ name: '旧版数学教师', email: 'upgrade@example.test', passwordHash: hashPassword('upgrade-password'), role: 'teacher' });

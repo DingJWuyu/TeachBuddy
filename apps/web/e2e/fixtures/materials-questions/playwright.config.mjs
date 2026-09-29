@@ -7,7 +7,6 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:48339",
     launchOptions: {
-      executablePath: "/opt/google/chrome/chrome",
       args: ["--no-sandbox"],
     },
     viewport: { width: 1440, height: 900 },
