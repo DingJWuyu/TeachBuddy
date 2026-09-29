@@ -104,6 +104,6 @@ Word 输出保留原生文字、OMML 公式、配图及可编辑表格；PDF 保
 
 Web `apps/web/src/features/lessons/`；API `apps/api/src/modules/lessons/`，DOCX 生成在 `pandoc.js`，PDF/预览共用文件转换器。验证入口 `apps/web/e2e/manual-lessons.config.mjs`、`apps/api/test/materials-lessons.test.js`、`materials-pandoc.test.js`。个人资料包通过模块只读 `readHistoryForExport(principal, id)` 取得公开历史投影，复用历史列表/详情及其归属校验，读取不生成版本；导出、离线取回与真实文件输出见 `apps/web/e2e/lessons-portable.config.mjs`，快照与备份边界见 `apps/api/test/reliability-material-snapshots.test.js`。
 
-相关修改走“组织环节 → 取题/资源/作品 → 保存刷新 → 查看来源 → 对照并采用单处更新”。输出修改必须下载并打开真实文件，检查三类成果、答案和注记四种组合、公式可编辑、配图/分页及旧成功输出保留。Linux 结构检查不代替目标 Office 编辑。场景见[材料 BDD](../acceptance/materials.feature)，本地证明见[能力证据](../plans/run-state.md#证据边界)。
+相关修改走“组织环节 → 取题/资源/作品 → 保存刷新 → 查看来源 → 对照并采用单处更新”。输出修改必须下载并打开真实文件，检查三类成果、答案和注记四种组合、公式可编辑、配图/分页及旧成功输出保留。Linux 结构检查不代替目标 Office 编辑。场景见[材料 BDD](../acceptance/materials.feature)，本地证明见[能力证据](../plans/run-state.md#核查入口)。
 
-页识别与采用用 `apps/web/e2e/lessons-page.config.mjs`，获准的真实模型验证显式设置 `LESSONS_REAL_OCR=1`。配图回放用 `lessons-image.spec.js`、`lessons-image-adoption.test.js`，`LESSONS_REGION_REPLAY_ROOT` 指向[固定原始证据](../acceptance/samples.md#固定输入与回放)。整页/配图草稿、两层来源、空白格与表格网格分别核对，覆盖预览、识别、停止和采用的未知结果。回放不等于新增真实推理；具名执行记录统一从项目状态读取。
+页识别与采用用 `apps/web/e2e/lessons-page.config.mjs`，获准的真实模型验证显式设置 `LESSONS_REAL_OCR=1`。配图回放用 `lessons-image.spec.js`、`lessons-image-adoption.test.js`，默认使用仓库内[固定回放输入](../acceptance/samples.md#固定输入与回放)，`LESSONS_REGION_REPLAY_ROOT` 仅用于替换同布局 fixture。整页/配图草稿、两层来源、空白格与表格网格分别核对，覆盖预览、识别、停止和采用的未知结果。回放不等于新增真实推理；具名执行记录统一从项目状态读取。

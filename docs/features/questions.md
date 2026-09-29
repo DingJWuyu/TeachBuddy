@@ -107,10 +107,10 @@ DOCX 保留段内换行和制表符，换行后的题号与答案标记可分别
 - API `apps/api/src/modules/questions/materials-service.js`、`materials-router.js`、`extraction*.js`、`recognized-page.js`、`native-word.js`、`native-pdf.js`；共享编辑器 `apps/web/src/features/workbench/materials/DocumentEditor.jsx`。
 - 当前交互浏览器验证 `apps/web/e2e/questions-ux.config.mjs`，用 `WORKBENCH_WEB_DIST` 指定隔离生产构建，覆盖录题、草稿、改编、分类、文字校对、结构编辑、搜索范围、拆分答案归属、未知保存恢复、归档与彻底删除、来源缺失/读取失败、详情返回及深浅色布局。文件上传另验 DOCX 段内换行、PDF 明示续题与缺页/倒序、双栏题干/选项/答案及入库来源页码、未分配片段处理后的保存重开；历史保存场景见 `manual-questions.config.mjs`。HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；保存基例 [WB-003/004/011-018](../acceptance/first-flow.feature)，材料基例 [WB-M001-012/025-028](../acceptance/materials.feature)。
 
-保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前具名证明范围在[能力证据](../plans/run-state.md#证据边界)。
+保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前具名证明范围在[能力证据](../plans/run-state.md#核查入口)。
 
 识别消费者使用 `apps/web/e2e/questions-recognition.config.mjs`；结构边界在 `questions-tables.spec.js` 和 API `materials-questions*.test.js`。固定输入及真实产物位置见[样本索引](../acceptance/samples.md#固定输入与回放)。回归核对原题、原有答案、公式、题图、来源页码、未分配范围、跨页阻断与人工状态；重试、取消和迟到结果不得覆盖已校对内容。表格列角色、同格多题配图、隐式续题等详细用例由相应测试维护。
 
-从界面上传、校对入库并刷新读回，实际阅读公式与配图并查看深浅主题和窄屏截图。固定产物回放只证明消费与保存；修改识别配置后须按[共用路线与验证](../contracts/recognition.md#路线与验证)重新验证真实原稿，不能复用旧缓存冒充新结果。私有 PDF 回放需 `M33_PRIVATE_PDF` 与 `QUESTIONS_OCR_EVIDENCE_DIR`，扩展原页用 `QUESTIONS_OCR_EXPANDED_DIR`，输入页字节须匹配；缺失时明确跳过，不用受控转录代替真实输入通过。
+从界面上传、校对入库并刷新读回，实际阅读公式与配图并查看深浅主题和窄屏截图。固定产物回放只证明消费与保存；修改识别配置后须按[共用路线与验证](../contracts/recognition.md#路线与验证)重新验证真实原稿，不能复用旧缓存冒充新结果。外部 PDF 回放只需按样本索引下载原件并设置 `M33_PRIVATE_PDF`；固定 E7/E8/E9 机器结果随 `recognition-document-4/` 入库，测试核对完整原件与实际渲染页摘要。`QUESTIONS_OCR_EVIDENCE_DIR`、`QUESTIONS_OCR_EXPANDED_DIR` 仅用于替换同布局的回放目录；默认自编材料消费回归不需要这些变量。缺外部原件只跳过对应专项，不用受控转录代替真实输入通过。
 
 开发模式的列表读取、手动保存和刷新还须通过[开发服务回归](../acceptance/README.md#开发服务回归)。组件重新初始化后恢复读取，过期请求的成功或失败都不能覆盖当前列表状态。

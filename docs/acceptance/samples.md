@@ -4,18 +4,16 @@
 
 ## 固定输入与回放
 
-只在复现或补验时读取；先核对输入摘要、识别修订及受测版本，不为阅读文档重跑模型。`.scratch` 是本机证据位置，新环境缺少时按[恢复索引](../plans/worktree-archive.md)查找，缺输入明确未验。
+复现或补验时核对固定输入、识别修订及受测版本。默认消费回归使用仓库内固定样本，创建本次隔离账户与数据库；回放不调用模型，不需要旧实例数据。真实模型准确率另按原稿重新识别评估。
 
 | 用途 | 输入位置与使用方式 |
 | --- | --- |
-| 通用材料、题库与 Office | `apps/web/e2e/fixtures/materials/`、`materials-questions/`、`office/`；原始提取实验输入可从 `ecd1ed6d8f974fba20ac92d40d5b6b943a3b0170:experiments/C21/next-1/` 的 Git 树追溯 |
-| 完整外部 PDF E | preview `.scratch/ocr-mainline/fixed-inputs/E.pdf`，原件摘要及页定义见下节 |
-| 扩展 E9/E10 原页 | preview `.scratch/ocr-quality/expanded-inputs/`；预期内容对照真实原页，不能从输出反推 |
-| 真实原始识别与备课配图回放 | preview `.scratch/ocr-quality/real-http/`，其中 `data/` 含备课配图回放所需数据库与文件，属于保留证据；`LESSONS_REGION_REPLAY_ROOT` 指向此目录 |
-| 最终整页转换与题库扩展回放 | preview `.scratch/ocr-quality/final-http-r2/pages/`；题库回放参数及私有 PDF 要求见[题库验证](../features/questions.md#接口代码与判断结果) |
-| 仓库内消费回放 | `apps/web/e2e/fixtures/materials-questions/recognition/` 与 `resources-recognition/`，使用真实机器产物；可重放不等于当前模型新识别 |
+| 通用材料、题库与 Office | `apps/web/e2e/fixtures/materials/`、`materials-questions/`、`office/`；自编源材料和实际文件随仓库提供 |
+| 题库与资源识别消费 | `apps/web/e2e/fixtures/materials-questions/recognition/`、`recognition-document-4/` 与 `resources-recognition/`；固定机器结果仅证明消费与保存 |
+| 备课配图校对、采用与恢复 | `apps/api/test/fixtures/lessons-region/`，包含自编父材料及真实表格裁图的机器结果，来源与校验见目录内 `provenance.json`；默认加载，`LESSONS_REGION_REPLAY_ROOT` 仅用于显式替换同布局的 fixture 目录 |
+| 外部 PDF E 与扩展页 | 完整 PDF 按下节下载和校验，用 `M33_PRIVATE_PDF` 显式指定；E7/E8/E9 的固定机器结果在 `recognition-document-4/`，完整原件与渲染页均核对摘要；可选覆盖参数见[题库验证](../features/questions.md#接口代码与判断结果) |
 
-`SHA:路径` 用 `git show` 读取文件或 `git ls-tree` 查目录；已执行结果和版本只从[证据入口](../plans/run-state.md#证据边界)核对。固定输入与机器证据不能因测试业务数据可丢弃而删除。
+缺少外部 PDF、模型或目标设备时，只将对应专项标为未验证，不影响仓库固定样本的必要消费回归。测试生成结果放在输出目录，固定输入保持只读；当前验证安排见[项目状态](../plans/run-state.md#核查入口)。
 
 ## 提取与 Office 共用样本
 
@@ -42,7 +40,18 @@
 
 固定 F 实际仅遮住条件数字右部，并损坏“求”字。它可检验局部破损与校对继续，不能证明完整缺失数字的检测能力；机器补出的文字与人工补标必须分别记录，不能把人工标记计为模型识别通过。
 
-E 是已有真实教学材料，不依赖用户再找样本：[原件 URL](https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf)。2026-09-21 本机下载核对：1,115,735 bytes，13页 A4，SHA-256 `b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a`。默认 Python 请求曾返回403，带普通浏览器 User-Agent 与 `Referer: https://maths.scnu.edu.cn/` 成功；这是公开文件请求，不涉及登录或密钥。下载若字节变化先记录差异，不能默默用更简单材料替代。受版权保护原件不提交仓库，实验目录保留原文件及校验值供复核。
+E 是已有真实教学材料，不依赖用户再找样本：[原件 URL](https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf)。固定输入校验：1,115,735 bytes，13页 A4，SHA-256 `b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a`。完整原件不提交仓库。新机器可直接下载到自己的外部样本目录，无需向旧 session 索取：
+
+```bash
+materialInputs="$HOME/.local/share/teacherworkspace-test-inputs"
+mkdir -p "$materialInputs"
+curl --fail --location --user-agent 'Mozilla/5.0' --referer https://maths.scnu.edu.cn/ \
+  https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf -o "$materialInputs/E.pdf"
+printf '%s  %s\n' b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a "$materialInputs/E.pdf" | sha256sum -c -
+export M33_PRIVATE_PDF="$materialInputs/E.pdf"
+```
+
+下载失败或校验不符时保留对应专项未验证状态，不静默换成更简单的材料。
 
 E 的期望结构仅由原页核对：例6与续页合并、练习三小问保持一组、思考三小问与图保持一组；原件无明确答案的地方留空。先人工确定范围后再看机器结果，避免按结果改评分单位。
 
@@ -76,7 +85,7 @@ Office 输入 `materials/samples/w.doc` 与题库 W 原件不同：旧 DOC 有 Q
 4. 其余五份分别逐页预览。中文/公式/配图无缺失、裁切、重叠或无内容空页；学生版无教师注记和答案解析。练习 Q5 的三角形、Q6 的立体图及教师版“原材料未提供答案”说明保持。
 5. 记录软件版本、两轮编辑结果和各文件实际页数，保留修改制品。允许软件合理重排；Q2 的“原图待校对”是源材料疑点，不当成转换失败。失败保留现场，Linux PDF 不能代替目标软件打印预览。
 
-这六份字节固定的输入用于兼容性比较，实际产品输出需另行生成并验证。原样本来源及对应具名反馈可在 `412cbf2b0a0a54ea642a1b723fba7db2a4659148:docs/acceptance/evidence/HUMAN-ACCEPTANCE/20260922/` 追溯，不用旧检查结果代签新输出。
+这六份字节固定的输入用于兼容性比较，实际产品输出需另行生成并验证。当前输出按所测版本重新记录编辑、保存、重开和打印结果。
 
 ## 数学作品
 

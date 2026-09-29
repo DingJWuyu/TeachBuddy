@@ -169,4 +169,4 @@ T53 对同一静态输入先校验再投影。以下变体都通过 `ModuleCatal
 
 `catalog-combined-target` 逐字值取自固定 M40 样本：version=3，六模块顺序和 requires 相同。生产投影实际模块子集；数学与教学时间真实装配时 classes 必须含 math.readForTeachingLinkV1。静态 duplicate-id/path、缺 math 提供方、依赖环变体按旧 TT-C7 的 field/reason 拒绝，不能用 shape valid 代替语义校验。
 
-原 79 个 T50 样本、schema、时间/提醒/班级操作仍保留；新 schema 的原 60 个 schema 与所有 schedule 操作逐项相等。记录作品更新/删源不重置 armedAt、不结算或生成通知、不写日程。已有日程关联 R1 时仍使用原 RecordReference，math 故障不影响该摘要。实现变更须验证这些不变量，当前已测范围见[能力证据](../plans/run-state.md#证据边界)。
+原 79 个 T50 样本、schema、时间/提醒/班级操作仍保留；新 schema 的原 60 个 schema 与所有 schedule 操作逐项相等。记录作品更新/删源不重置 armedAt、不结算或生成通知、不写日程。已有日程关联 R1 时仍使用原 RecordReference，math 故障不影响该摘要。实现变更须验证这些不变量，当前已测范围见[能力证据](../plans/run-state.md#核查入口)。

@@ -1,0 +1,56 @@
+{
+  "revision": "paddleocr-vl-1.6/document-4",
+  "inputHash": "e6f7b11f37dbc70e8312b92cb648395af311e7153598c295c925f45637565d1c",
+  "derivations": [
+    {
+      "name": "imgs/img_in_image_box_485_1202_1156_1658.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 11,
+      "originalBbox": [
+        485,
+        1202,
+        1156,
+        1658
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        464,
+        1188,
+        1177,
+        1672
+      ],
+      "mediaType": "image/png",
+      "issues": []
+    },
+    {
+      "name": "imgs/img_in_image_box_499_328_1107_801.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 4,
+      "originalBbox": [
+        499,
+        328,
+        1107,
+        801
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        480,
+        313,
+        1126,
+        816
+      ],
+      "mediaType": "image/png",
+      "issues": []
+    }
+  ],
+  "assetFileIds": [
+    "a4bd0fbe-06d5-4078-881d-22824146f260",
+    "08253ced-28d4-4348-af84-35afe61e4243",
+    "82ce8ddf-9f12-4036-b2aa-028c155479f0",
+    "4ec33101-2547-4d74-bd11-f47993db7817"
+  ],
+  "originalAssetFileIds": [
+    "82ce8ddf-9f12-4036-b2aa-028c155479f0",
+    "4ec33101-2547-4d74-bd11-f47993db7817"
+  ]
+}

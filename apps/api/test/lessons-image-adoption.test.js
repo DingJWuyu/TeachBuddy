@@ -23,16 +23,14 @@ async function complete(call, job) {
   assert.fail('Job did not complete');
 }
 
-test('image adoption HTTP/SQLite: genuine E7 replay, provenance guards, copy/history and personal ZIP', {
-  skip: !process.env.LESSONS_REGION_REPLAY_ROOT && 'Requires recorded E7 and crop evidence; never invokes a model',
-}, async () => {
+test('image adoption HTTP/SQLite: controlled parent and genuine crop replay, provenance guards, copy/history and personal ZIP', async () => {
   const replay = loadRegionReplay();
   const world = await createIntegration({ workbench: { recognition: { home: null, recognizer: replay.recognizer } } });
   let passed = false;
   try {
     const { client, session } = await registerMath(world, 'lesson-image-api@example.test'), call = http(client);
     const accountKey = session.account.accountKey, { parent, preview } = replay.seed(world, accountKey);
-    let resource = await call('POST', '/api/modules/resources/items', { title: 'E7 原资料', fileId: replay.binding.fileId, folderId: null, tagIds: [], note: '' }, 201);
+    let resource = await call('POST', '/api/modules/resources/items', { title: '受控配图资料', fileId: replay.binding.fileId, folderId: null, tagIds: [], note: '' }, 201);
     let lesson = await call('POST', base, { title: '配图独立校对', intro: doc('保留整课'), sections: [], materials: [] }, 201);
     const url = `${base}/${lesson.id}`, adoptUrl = `${url}/sections/adopt-page`;
     const parentRead = await call('GET', `/api/workbench/files/${replay.binding.fileId}/recognition/pages/7?renditionFileId=${replay.binding.renditionFileId}`);

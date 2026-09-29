@@ -1,0 +1,499 @@
+{
+  "revision": "paddleocr-vl-1.6/document-4",
+  "inputHash": "c59beeab6845dbe74ee9b9b8b7ddaf4792b67d0abced9e54b3b42b28d2b432fe",
+  "derivations": [
+    {
+      "name": "imgs/img_in_image_box_250_1615_550_1915.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 10,
+      "originalBbox": [
+        250,
+        1615,
+        550,
+        1915
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        241,
+        1606,
+        559,
+        1924
+      ],
+      "mediaType": "image/png",
+      "issues": [
+        {
+          "code": "crop-cell-boundary-unknown",
+          "detail": "表格内配图已保守扩边，可能包含单元格边线，请对照原页核查。"
+        }
+      ]
+    }
+  ],
+  "assetFileIds": [
+    "d78c7805-7880-4a40-9fed-363f8be798d7",
+    "cab42e8d-b4a1-49b5-a592-8ca2bd56daa8"
+  ],
+  "originalAssetFileIds": [
+    "cab42e8d-b4a1-49b5-a592-8ca2bd56daa8"
+  ],
+  "blocks": [
+    {
+      "block_label": "table",
+      "block_content": "<table><tr><td>(1)  $ f(x) = x^{4} $ (2)  $ f(x) = x^{5} $ (3)  $ f(x) = x + \\frac{1}{x} $ (4)  $ f(x) = \\frac{1}{x^{2}} $\\n【问题6】\\n除了定义法，还有其它判断奇偶性的方法吗？\\n教师：通过信息技术画出函数图象.</td><td></td><td>质，所以判断函数的奇偶性应先明确它的定义域。\\n从几何和代数两个方面，通过例题总结出函数奇偶性的两种判定方式.</td></tr><tr><td>【练习】判断下列函数的奇偶性（该环节视学生水平选做）\\n(1)  $ f(x) = |x-1| + |x+1| $\\n(2)  $ f(x) = \\sqrt{x^{2}-1} + \\sqrt{1-x^{2}} $\\n(3)  $ f(x) = \\begin{cases} x(1-x), &amp; x &lt; 0 \\\\ x(1+x), &amp; x &gt; 0 \\end{cases} $</td><td>教师在PPT上展示三个习题，让学生独立完成，而后及时把正确的结论反馈给学生，加深对所学概念的理解.</td><td>设置三个题目作为选做题，让不同层次的学生能深刻地掌握奇偶函数的概念及判定方法以及符号的运用.</td></tr><tr><td>【思考】完成教材上的思考题.\\n(1) 判断函数  $ f(x) = x^{3} + x $ 的奇偶性.\\n(2) 如图是函数  $ f(x) = x^{3} + x $ 图象的一部分，你能根据  $ f(x) $ 的奇偶性画出它在 y 轴左边的图象吗？\\n(3) 一般地，如果知道  $ y = f(x) $ 为偶(奇)函数，那么我们可以怎样简化对它的研究？\\n<img src=\"imgs/img_in_image_box_250_1615_550_1915.jpg\" alt=\"Image\"\" /></td><td>学生在教师的引导下思考教材上的三个思考题，并积极发表自己的想法.</td><td>引导学生既要重视由函数图象获得函数性质，也应重视由函数性质帮助画出函数图象. 对于一个偶函数或奇函数，根据它的对称性，就可由自变量取正值时的图象和性质，开推断它在整个定义域内的图象和性质，这也是研究函数奇偶性的好处所在——简化对函数的认识和研究过程.</td></tr><tr><td colspan=\"3\">教学环节：回顾小结，提高认识</td></tr></table>",
+      "block_bbox": [
+        200,
+        144,
+        1663,
+        2004
+      ],
+      "block_id": 0,
+      "block_order": null,
+      "group_id": 0,
+      "rawIndex": 0,
+      "box": {
+        "x": 0.11778563015312132,
+        "y": 0.06,
+        "width": 0.8616018845700825,
+        "height": 0.775
+      },
+      "document": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "table",
+            "rows": [
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "(1)  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) = x^{4} "
+                        },
+                        {
+                          "type": "text",
+                          "text": " (2)  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) = x^{5} "
+                        },
+                        {
+                          "type": "text",
+                          "text": " (3)  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) = x + \\frac{1}{x} "
+                        },
+                        {
+                          "type": "text",
+                          "text": " (4)  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) = \\frac{1}{x^{2}} "
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "【问题6】"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "除了定义法，还有其它判断奇偶性的方法吗？"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "教师：通过信息技术画出函数图象."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": []
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "质，所以判断函数的奇偶性应先明确它的定义域。"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "从几何和代数两个方面，通过例题总结出函数奇偶性的两种判定方式."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "【练习】判断下列函数的奇偶性（该环节视学生水平选做）"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "(1)  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) = |x-1| + |x+1| "
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "(2)  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) = \\sqrt{x^{2}-1} + \\sqrt{1-x^{2}} "
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "(3)  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) = \\begin{cases} x(1-x), & x < 0 \\\\ x(1+x), & x > 0 \\end{cases} "
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "教师在PPT上展示三个习题，让学生独立完成，而后及时把正确的结论反馈给学生，加深对所学概念的理解."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "设置三个题目作为选做题，让不同层次的学生能深刻地掌握奇偶函数的概念及判定方法以及符号的运用."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "【思考】完成教材上的思考题."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "(1) 判断函数  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) = x^{3} + x "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 的奇偶性."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "(2) 如图是函数  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) = x^{3} + x "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 图象的一部分，你能根据  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 的奇偶性画出它在 y 轴左边的图象吗？"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "(3) 一般地，如果知道  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " y = f(x) "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 为偶(奇)函数，那么我们可以怎样简化对它的研究？"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "image",
+                      "fileId": "d78c7805-7880-4a40-9fed-363f8be798d7",
+                      "alt": "Image",
+                      "widthMm": 30.035335689045937
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "学生在教师的引导下思考教材上的三个思考题，并积极发表自己的想法."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "引导学生既要重视由函数图象获得函数性质，也应重视由函数性质帮助画出函数图象. 对于一个偶函数或奇函数，根据它的对称性，就可由自变量取正值时的图象和性质，开推断它在整个定义域内的图象和性质，这也是研究函数奇偶性的好处所在——简化对函数的认识和研究过程."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "教学环节：回顾小结，提高认识"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": []
+                },
+                {
+                  "blocks": []
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "text": "(1)   f(x) = x^{4}  (2)   f(x) = x^{5}  (3)   f(x) = x + \\frac{1}{x}  (4)   f(x) = \\frac{1}{x^{2}} \n【问题6】\n除了定义法，还有其它判断奇偶性的方法吗？\n教师：通过信息技术画出函数图象.\t\t质，所以判断函数的奇偶性应先明确它的定义域。\n从几何和代数两个方面，通过例题总结出函数奇偶性的两种判定方式.\n【练习】判断下列函数的奇偶性（该环节视学生水平选做）\n(1)   f(x) = |x-1| + |x+1| \n(2)   f(x) = \\sqrt{x^{2}-1} + \\sqrt{1-x^{2}} \n(3)   f(x) = \\begin{cases} x(1-x), & x < 0 \\\\ x(1+x), & x > 0 \\end{cases} \t教师在PPT上展示三个习题，让学生独立完成，而后及时把正确的结论反馈给学生，加深对所学概念的理解.\t设置三个题目作为选做题，让不同层次的学生能深刻地掌握奇偶函数的概念及判定方法以及符号的运用.\n【思考】完成教材上的思考题.\n(1) 判断函数   f(x) = x^{3} + x  的奇偶性.\n(2) 如图是函数   f(x) = x^{3} + x  图象的一部分，你能根据   f(x)  的奇偶性画出它在 y 轴左边的图象吗？\n(3) 一般地，如果知道   y = f(x)  为偶(奇)函数，那么我们可以怎样简化对它的研究？\n\t学生在教师的引导下思考教材上的三个思考题，并积极发表自己的想法.\t引导学生既要重视由函数图象获得函数性质，也应重视由函数性质帮助画出函数图象. 对于一个偶函数或奇函数，根据它的对称性，就可由自变量取正值时的图象和性质，开推断它在整个定义域内的图象和性质，这也是研究函数奇偶性的好处所在——简化对函数的认识和研究过程.\n教学环节：回顾小结，提高认识\t\t",
+      "assetFileIds": [
+        "d78c7805-7880-4a40-9fed-363f8be798d7"
+      ]
+    },
+    {
+      "block_label": "table",
+      "block_content": "<table><tr><td>教学内容</td><td>师生活动</td><td>设计点评</td></tr><tr><td>1. 请同学们一起回忆函数奇偶性概念和特征；</td><td>教师带领学生对本即可的知识点进行归纳总结，学生通过积</td><td>让学生在描述和分享过程中，再次体会函数</td></tr></table>",
+      "block_bbox": [
+        197,
+        1989,
+        1658,
+        2185
+      ],
+      "block_id": 1,
+      "block_order": null,
+      "group_id": 1,
+      "rawIndex": 1,
+      "box": {
+        "x": 0.1160188457008245,
+        "y": 0.82875,
+        "width": 0.8604240282685512,
+        "height": 0.08166666666666667
+      },
+      "document": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "table",
+            "rows": [
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "教学内容"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "师生活动"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "设计点评"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "1."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "请同学们一起回忆函数奇偶性概念和特征；"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "教师带领学生对本即可的知识点进行归纳总结，学生通过积"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "让学生在描述和分享过程中，再次体会函数"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "text": "教学内容\t师生活动\t设计点评\n1.\n请同学们一起回忆函数奇偶性概念和特征；\t教师带领学生对本即可的知识点进行归纳总结，学生通过积\t让学生在描述和分享过程中，再次体会函数",
+      "assetFileIds": []
+    }
+  ]
+}

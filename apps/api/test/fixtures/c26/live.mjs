@@ -1,15 +1,14 @@
 // Explicit runner: never imported by normal tests. Credentials remain in memory.
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseEnv } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { createIntegration } from './harness.js';
 import { manualQuestionSample, lessonSample, sectionInput } from '../../first-flow-harness.js';
 const model = process.argv[2];
 if (!['deepseek/deepseek-v4.1-flash','z-ai/glm-5.3-flash'].includes(model)) throw Error('Specify an authorized exact model');
-const settings = parseEnv(fs.readFileSync('/home/liam_t/项目/TeacherWorkspace-mvp/.env','utf8'));
-if (!settings.COMMANDCODE_API_KEY || settings.COMMANDCODE_BASE_URL !== 'https://api.commandcode.ai/provider/v1') throw Error('Authorized configuration unavailable');
+const settings = process.env;
+if (!settings.COMMANDCODE_API_KEY || settings.COMMANDCODE_BASE_URL !== 'https://api.commandcode.ai/provider/v1') throw Error('Set COMMANDCODE_API_KEY and COMMANDCODE_BASE_URL=https://api.commandcode.ai/provider/v1 explicitly');
 const tag = model.startsWith('deepseek') ? 'deepseek' : 'glm';
 const directory = path.resolve(`test-results/c26-live-${tag}-${Date.now()}`);fs.mkdirSync(directory,{recursive:true});
 const evidence = path.resolve(process.env.AGENT_EVIDENCE_DIR ?? 'test-results/evidence/C26/v1', `live-${tag}.json`);

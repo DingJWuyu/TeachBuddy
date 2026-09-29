@@ -4,7 +4,7 @@
 
 - 核对实际能力或运行状态时读 `README.md`；`prototype/` 是交互参考，`apps/` 才是真实产品实现位置，旧演示 API 不约束新契约。
 - 查找文档时从 `docs/README.md` 按任务进入；总体进度、剩余事项、依赖顺序与当前授权统一读取 `docs/plans/run-state.md`。
-- 用户体验与集成使用当前 `TeacherWorkspace-preview`；模块工作树和暂停状态以项目状态为准。恢复旧任务现场时读取 `docs/plans/worktree-archive.md`。
+- 用户体验与集成使用当前 `TeacherWorkspace-preview`；模块工作树和暂停状态以项目状态为准。
 - 设计或核查范围时读取 `docs/PRODUCT_SCOPE.md` 的相关段落；页面和跨模块行为读取 `docs/features/workbench.md` 的相关段落。范围不能由旧代码或原型反推。
 - 登录注册由独立 session 负责；涉及身份交接或退出时读取 `docs/contracts/auth.md`，核对其源版本与未完成项，不把讨论中的契约当成已实现能力。
 
@@ -40,6 +40,7 @@
 
 - 文档归属：产品范围在 `docs/PRODUCT_SCOPE.md`，模块行为在 `docs/features/`，交换语义在 `docs/contracts/`，验证条件在 `docs/acceptance/`，当前进度、缺陷和下一步在 `docs/plans/run-state.md`，运行方法在 `README.md` / `docs/SETUP.md`。完成状态附可核查的证据入口；模块输入限制属于行为约定，不自动成为开发待办。
 - `docs/` 只供人和 agent 阅读，产品构建、运行和业务测试不读取其中的文件作为数据输入。机器 API 契约放在 `apps/api/src/contracts/`，交换样本放在 `apps/api/test/fixtures/contracts/`；其他运行配置和测试输入归属各自代码或测试目录。固定 Git 版本的兼容测试保留该版本自己的路径。
+- 启动、环境准备和必要回归须能从全新检出重建：必需脚本与可分发固定输入入库，私有配置提供模板，外部输入提供获取方法与校验值。临时会话产物不作为这些流程的前置。
 - 文档不收录截图或其他图片；界面以当前运行页面和用户指定参考为准。验收截图留在任务产物中，通过证据入口按需读取。
 - 完成过程、模型次数、临时端口和派工回执留任务产物，历史从固定 Git 版本读取。
 - 整理文档倾向合并、删除，结合用途衡量文件数量、入口清晰和信息完整；移动、合并或删除前核对入链、锚点、程序加载、测试 fixture 和固定版本引用，更新引用并验证受影响的链路。

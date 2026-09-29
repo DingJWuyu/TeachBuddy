@@ -1,0 +1,600 @@
+{
+  "revision": "paddleocr-vl-1.6/document-4",
+  "inputHash": "d68a4d4e8419eb2f4a2c21517b24bf543b29164eae1c0f17340c52f2475a6b15",
+  "derivations": [
+    {
+      "name": "imgs/img_in_image_box_262_1164_499_1302.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 3,
+      "originalBbox": [
+        262,
+        1164,
+        499,
+        1302
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        254,
+        1159,
+        507,
+        1307
+      ],
+      "mediaType": "image/png",
+      "issues": [
+        {
+          "code": "crop-cell-boundary-unknown",
+          "detail": "表格内配图已保守扩边，可能包含单元格边线，请对照原页核查。"
+        }
+      ]
+    },
+    {
+      "name": "imgs/img_in_image_box_263_1340_499_1480.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 4,
+      "originalBbox": [
+        263,
+        1340,
+        499,
+        1480
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        255,
+        1335,
+        507,
+        1485
+      ],
+      "mediaType": "image/png",
+      "issues": [
+        {
+          "code": "crop-cell-boundary-unknown",
+          "detail": "表格内配图已保守扩边，可能包含单元格边线，请对照原页核查。"
+        }
+      ]
+    }
+  ],
+  "assetFileIds": [
+    "52d3eed2-7ac9-449e-bf64-5c1985766fea",
+    "906d7afc-e96f-4daf-aa25-7b87a19b423c",
+    "fc7480dd-221d-4ecc-9eea-8ab9f2bc4432",
+    "5cab57b7-fdf2-489a-8c25-c863dff4bc54"
+  ],
+  "originalAssetFileIds": [
+    "fc7480dd-221d-4ecc-9eea-8ab9f2bc4432",
+    "5cab57b7-fdf2-489a-8c25-c863dff4bc54"
+  ],
+  "blocks": [
+    {
+      "block_label": "table",
+      "block_content": "<table><tr><td>2. 辨析偶函数和奇函数的共同点和不同点\\n共同点：\\n（1）定义域关于原点对称；\\n（2）都是函数的整体性质\\n不同点：\\n（1）当自变量取一对相反数时，偶函数的函数值相等，奇函数的函数值是一对相反数；\\n（2）偶函数的图象关于y轴对称，奇函数的图象关于原点对称。\\n3. 尝试分享你对函数性质的研究内容和方法的体会.</td><td>极发言加深理解，并在教师的帮助下建构本堂课的知识体系.</td><td>奇偶性的研究过程：具体函数→图象特征（对称性）→数量刻画→符号语言→抽象定义→奇偶性判断，体会从“定性到定量”的研究思路和严谨的数学表达.</td></tr></table>",
+      "block_bbox": [
+        198,
+        184,
+        1658,
+        882
+      ],
+      "block_id": 0,
+      "block_order": null,
+      "group_id": 0,
+      "rawIndex": 0,
+      "box": {
+        "x": 0.1166077738515901,
+        "y": 0.07666666666666666,
+        "width": 0.8598351001177856,
+        "height": 0.29083333333333333
+      },
+      "document": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "table",
+            "rows": [
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "2."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "辨析偶函数和奇函数的共同点和不同点"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "共同点："
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "（1）定义域关于原点对称；"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "（2）都是函数的整体性质"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "不同点："
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "（1）当自变量取一对相反数时，偶函数的函数值相等，奇函数的函数值是一对相反数；"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "（2）偶函数的图象关于y轴对称，奇函数的图象关于原点对称。"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "3. 尝试分享你对函数性质的研究内容和方法的体会."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "极发言加深理解，并在教师的帮助下建构本堂课的知识体系."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "奇偶性的研究过程：具体函数→图象特征（对称性）→数量刻画→符号语言→抽象定义→奇偶性判断，体会从“定性到定量”的研究思路和严谨的数学表达."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "text": "2.\n辨析偶函数和奇函数的共同点和不同点\n共同点：\n（1）定义域关于原点对称；\n（2）都是函数的整体性质\n不同点：\n（1）当自变量取一对相反数时，偶函数的函数值相等，奇函数的函数值是一对相反数；\n（2）偶函数的图象关于y轴对称，奇函数的图象关于原点对称。\n3. 尝试分享你对函数性质的研究内容和方法的体会.\t极发言加深理解，并在教师的帮助下建构本堂课的知识体系.\t奇偶性的研究过程：具体函数→图象特征（对称性）→数量刻画→符号语言→抽象定义→奇偶性判断，体会从“定性到定量”的研究思路和严谨的数学表达.",
+      "assetFileIds": []
+    },
+    {
+      "block_label": "paragraph_title",
+      "block_content": "教学环节：目标检测",
+      "block_bbox": [
+        252,
+        875,
+        534,
+        917
+      ],
+      "block_id": 1,
+      "block_order": 1,
+      "group_id": 1,
+      "rawIndex": 1,
+      "box": {
+        "x": 0.14840989399293286,
+        "y": 0.3645833333333333,
+        "width": 0.16607773851590105,
+        "height": 0.0175
+      },
+      "document": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "heading",
+            "runs": [
+              {
+                "type": "text",
+                "text": "教学环节：目标检测"
+              }
+            ],
+            "level": 2
+          }
+        ]
+      },
+      "text": "教学环节：目标检测",
+      "assetFileIds": []
+    },
+    {
+      "block_label": "table",
+      "block_content": "<table><tr><td>教学内容</td><td>师生活动</td><td>设计点评</td></tr><tr><td>1. 已知  $ f(x) $ 是偶函数， $ g(x) $ 是奇函数，试将下图补充完整.\\n<img src=\"imgs/img_in_image_box_262_1164_499_1302.jpg\" alt=\"Image\"\" />\\n<img src=\"imgs/img_in_image_box_263_1340_499_1480.jpg\" alt=\"Image\"\" />\\n2. 判断下列函数的奇偶性.\\n(1)  $ f(x)=2x^{4}+3x^{2} $\\n(2)  $ f(x)=x^{3}-2x $\\n3. 已知函数  $ f(x) $ 是偶函数，而且在  $ (0,+\\infty) $ 上单调递减，判断  $ f(x) $ 在  $ (-\\infty,0) $ 上单调递增还是单调递减，并证明你的判断.</td><td>教师在 PPT 上展示课后作业.</td><td>这是函数单调性和奇偶性结合的题目，是学生学习的难点，提高学生运用符号的能力和对函数性质的理解.</td></tr></table>",
+      "block_bbox": [
+        198,
+        892,
+        1663,
+        2006
+      ],
+      "block_id": 2,
+      "block_order": null,
+      "group_id": 2,
+      "rawIndex": 2,
+      "box": {
+        "x": 0.1166077738515901,
+        "y": 0.37166666666666665,
+        "width": 0.8627797408716137,
+        "height": 0.46416666666666667
+      },
+      "document": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "table",
+            "rows": [
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "教学内容"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "师生活动"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "设计点评"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "1."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "已知  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 是偶函数， "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " g(x) "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 是奇函数，试将下图补充完整."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "image",
+                      "fileId": "52d3eed2-7ac9-449e-bf64-5c1985766fea",
+                      "alt": "Image",
+                      "widthMm": 23.727915194346288
+                    },
+                    {
+                      "type": "image",
+                      "fileId": "906d7afc-e96f-4daf-aa25-7b87a19b423c",
+                      "alt": "Image",
+                      "widthMm": 23.627797408716134
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "2. 判断下列函数的奇偶性."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "(1)  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x)=2x^{4}+3x^{2} "
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "(2)  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x)=x^{3}-2x "
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "3. 已知函数  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 是偶函数，而且在  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " (0,+\\infty) "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 上单调递减，判断  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " f(x) "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 在  "
+                        },
+                        {
+                          "type": "math",
+                          "latex": " (-\\infty,0) "
+                        },
+                        {
+                          "type": "text",
+                          "text": " 上单调递增还是单调递减，并证明你的判断."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "教师在 PPT 上展示课后作业."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "这是函数单调性和奇偶性结合的题目，是学生学习的难点，提高学生运用符号的能力和对函数性质的理解."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "text": "教学内容\t师生活动\t设计点评\n1.\n已知   f(x)  是偶函数，  g(x)  是奇函数，试将下图补充完整.\n\n\n2. 判断下列函数的奇偶性.\n(1)   f(x)=2x^{4}+3x^{2} \n(2)   f(x)=x^{3}-2x \n3. 已知函数   f(x)  是偶函数，而且在   (0,+\\infty)  上单调递减，判断   f(x)  在   (-\\infty,0)  上单调递增还是单调递减，并证明你的判断.\t教师在 PPT 上展示课后作业.\t这是函数单调性和奇偶性结合的题目，是学生学习的难点，提高学生运用符号的能力和对函数性质的理解.",
+      "assetFileIds": [
+        "52d3eed2-7ac9-449e-bf64-5c1985766fea",
+        "906d7afc-e96f-4daf-aa25-7b87a19b423c"
+      ]
+    },
+    {
+      "block_label": "paragraph_title",
+      "block_content": "（九）教学成效与分析",
+      "block_bbox": [
+        266,
+        2022,
+        609,
+        2066
+      ],
+      "block_id": 3,
+      "block_order": 2,
+      "group_id": 5,
+      "rawIndex": 3,
+      "box": {
+        "x": 0.15665488810365136,
+        "y": 0.8425,
+        "width": 0.20200235571260305,
+        "height": 0.018333333333333333
+      },
+      "document": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "heading",
+            "runs": [
+              {
+                "type": "text",
+                "text": "（九）教学成效与分析"
+              }
+            ],
+            "level": 2
+          }
+        ]
+      },
+      "text": "（九）教学成效与分析",
+      "assetFileIds": []
+    },
+    {
+      "block_label": "paragraph_title",
+      "block_content": "1. 调查过程",
+      "block_bbox": [
+        250,
+        2081,
+        417,
+        2119
+      ],
+      "block_id": 4,
+      "block_order": 3,
+      "group_id": 6,
+      "rawIndex": 4,
+      "box": {
+        "x": 0.14723203769140164,
+        "y": 0.8670833333333333,
+        "width": 0.0983510011778563,
+        "height": 0.015833333333333335
+      },
+      "document": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "list",
+            "role": "plain",
+            "items": [
+              {
+                "label": "1.",
+                "blocks": [
+                  {
+                    "type": "paragraph",
+                    "runs": [
+                      {
+                        "type": "text",
+                        "text": "调查过程"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "text": "1. 调查过程",
+      "assetFileIds": []
+    },
+    {
+      "block_label": "text",
+      "block_content": "调查目的：了解本节课《函数的奇偶性》的教学成效，主要从教学目标的达成情况，学生对",
+      "block_bbox": [
+        248,
+        2135,
+        1449,
+        2177
+      ],
+      "block_id": 5,
+      "block_order": 4,
+      "group_id": 7,
+      "rawIndex": 5,
+      "box": {
+        "x": 0.14605418138987045,
+        "y": 0.8895833333333333,
+        "width": 0.7073027090694936,
+        "height": 0.0175
+      },
+      "document": {
+        "version": 2,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "runs": [
+              {
+                "type": "text",
+                "text": "调查目的：了解本节课《函数的奇偶性》的教学成效，主要从教学目标的达成情况，学生对"
+              }
+            ]
+          }
+        ]
+      },
+      "text": "调查目的：了解本节课《函数的奇偶性》的教学成效，主要从教学目标的达成情况，学生对",
+      "assetFileIds": []
+    }
+  ]
+}

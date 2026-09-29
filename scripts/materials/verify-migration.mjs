@@ -9,7 +9,8 @@ import { pathToFileURL } from 'node:url';
 import { startFirstFlowRunner } from '../first-flow/lib/runner.mjs';
 import { pastedQuestionSample } from '../../apps/api/test/first-flow-harness.js';
 const fixed = '612f0a9868743a1d5eea7e6f236d3ff903752439';
-const source = process.env.B16_SOURCE ?? '/home/liam_t/项目/TeacherWorkspace-b16-candidate2';
+const source = process.env.B16_SOURCE;
+assert.ok(source, `Set B16_SOURCE to a checkout of ${fixed} for this optional historical migration check`);
 assert.equal(
   execFileSync('git', ['-C', source, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   fixed,

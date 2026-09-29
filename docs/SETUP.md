@@ -4,42 +4,62 @@
 
 ## 已有本机实例
 
-- 开发树：`/home/liam_t/项目/TeacherWorkspace-preview`；当前开发分支以 `git branch --show-current` 为准。
-- 地址：`https://localhost:50880`。
-- 用户级服务：`teacherworkspace-preview.service`。
-- 启动入口：开发树 `.scratch/preview/start.sh`；私有运行配置：`.scratch/preview/runtime.env`。
-- 运行方式：直接读取开发树，Node `--watch` 启动 `apps/api/src/server.js --dev`，Vite 在同一 HTTPS 服务内提供前端与热更新。`.scratch/preview/deployed-source/` 和 `apps/web/dist/` 不参与此服务。
-- 启动入口还加载 `.env` 及用户私有邮件配置。只读键名和路径进行诊断，不打印秘密。
-- 前端源码保存后自动更新；API 及其加载的 JS 模块保存后自动重启，短暂中断请求。未提交的源码也立即生效，提交不是生效条件。文档修改无需重启。
-- 更换依赖后准备本地数学资产并重启；改变环境变量、证书或 `apps/api/src/contracts/` 等通过文件系统读取的运行定义后手动重启：`systemctl --user restart teacherworkspace-preview.service`。Node 的模块监听不涵盖所有外部文件。
+用户体验使用 `TeacherWorkspace-preview` 的当前源码，地址为 `https://localhost:50880`。维护使用用户级持久服务 `teacherworkspace-preview.service`，实际工作目录与入口用 `systemctl --user cat teacherworkspace-preview.service` 核对；服务执行仓库内的 `npm run dev`。
 
-当前服务是用户级临时单元，完整停止后会被 systemd 回收。若 `start` 提示单元不存在，用原入口重新创建：
+配置由开发树根目录私有 `.env` 提供；当前数据库、附件、日志和临时转换目录位于 `~/.local/share/teacherworkspace/preview/`，与源码分开。准确位置以 `.env` 的 `SQLITE_PATH`、`WORKBENCH_FILES_DIR`、`WORKBENCH_LOG_DIR` 和 `TMPDIR` 为准，诊断只读取所需键名和路径，不打印秘密。证书、工具和模型也使用配置指定的持久目录。
 
-```bash
-systemd-run --user --unit=teacherworkspace-preview --collect \
-  --property=WorkingDirectory=/home/liam_t/项目/TeacherWorkspace-preview \
-  --property=Restart=on-failure \
-  /home/liam_t/项目/TeacherWorkspace-preview/.scratch/preview/start.sh
-```
+前端源码保存后热更新，API 加载的 JS 模块保存后自动重启；提交不是生效条件。环境变量、证书、依赖和通过文件系统读取的契约改变后，执行 `systemctl --user restart teacherworkspace-preview.service`。文档修改无需重启。
 
-preview 是用户体验的集成现场，由总控协调修改和合并；获准进入 preview 的源码会自动进入该服务。业务 session 在各自 worktree 的独立端口、数据库和文件目录完成实现及自测，合回 preview 后才进入用户体验入口，不占用 50880 或操作其私有配置。
-
-维护前核对代码、依赖及工具路径，完成后实际打开页面并验证受影响功能。当前测试数据可丢弃，具体范围见[运行台账](plans/run-state.md#工作现场与授权)。一次服务状态查询只证明进程存活，不证明业务能力。
+preview 由总控协调集成；模块 session 在独立端口、数据库和文件目录自测。维护后核对实际页面和受影响功能，进程存活不等于业务验证通过。
 
 ## 新的隔离环境
 
-已验证的开发基线使用 Node.js 22.23.2 和 npm workspaces；依赖版本由锁文件固定。新环境从仓库根 `npm ci`，不在运行着的用户实例中做依赖重装。
+服务端已验证基线是 Linux、Node.js 22.23.2、npm workspaces 与 OpenSSL；使用锁文件安装依赖。Office、PDF、OCR 的额外依赖按下节准备，未配置这些工具不影响手动模块及账户入口启动。新机器使用以下步骤，不需要任何旧实例数据库。
 
-1. 准备独立端口、数据库、文件目录与 HTTPS 证书。优先使用相应模块已有测试 harness，它们有隔离数据和邮件替身。
-2. 独立真实认证实例按 [.env.example](../.env.example)准备私有 `.env`，补充独立文件目录，开发时设置 `NODE_ENV=development`；密钥、SMTP 和证书内容不写进提交。已有测试 harness 继续使用其隔离配置。
-3. 从该 worktree 根目录运行 `npm run dev`。它先准备数学静态资产，再启动同源 HTTPS、前端热更新和 API 自动重启；开发模式忽略 `WORKBENCH_WEB_DIST`。缺少证书或认证配置会拒绝启动，不自动降级为测试身份。
-4. 验证固定构建时，运行 `npm run build:shared` 和 `npm run build:api`；后者使用系统临时目录验证装配和迁移。Web 隔离构建用 `npm --workspace @refatos/web run build -- --outDir /absolute/test/web-dist`，设置 `WORKBENCH_WEB_DIST` 后启动：
+1. 在检出根目录执行 `npm ci`，再 `cp .env.example .env`、`chmod 600 .env`。为本实例准备独立的持久数据目录和 TLS 证书，例如：
 
-```bash
-node --env-file=/absolute/private/runtime.env apps/api/src/server.js
+   ```bash
+   umask 077
+   mkdir -p "$HOME/.local/share/teacherworkspace/preview" "$HOME/.config/teacherworkspace/tls"
+   openssl req -x509 -newkey rsa:2048 -sha256 -nodes -days 365 \
+     -keyout "$HOME/.config/teacherworkspace/tls/key.pem" \
+     -out "$HOME/.config/teacherworkspace/tls/cert.pem" \
+     -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1'
+   openssl rand -hex 32
+   ```
+
+   最后一条命令生成 `AUTH_CODE_SECRET`，填入私有配置并持久保留；证书仅用于本机开发，浏览器首次访问需信任它。正式环境使用对应域名的受信任证书。
+
+2. 填写 `.env`：开发模式 `NODE_ENV=development`，独立 `PORT` 与一致的 `WORKBENCH_PUBLIC_ORIGIN=https://localhost:<端口>`；数据库、附件、日志及证书使用刚准备的绝对路径。`.env` 不展开 `$HOME`，需填写展开后的值。真实账户服务要求配置 `SMTP_HOST`、`SMTP_FROM` 及邮件服务所需认证参数，缺必需配置会拒绝启动；注册与找回还要求邮件服务器实际可达。密钥与 SMTP 凭证不提交。
+3. 执行 `npm run dev`。该入口准备数学静态资产，然后运行同源 HTTPS、Vite 热更新与 API 自动重启。首次启动创建空库并迁移；缺少认证密钥、有效 origin 或证书会明确失败。
+4. 访问配置的地址，检查 `/api/health` 和实际登录页面；完成注册、保存与刷新读回后再判断相应业务可用。自动验证优先使用[已有隔离 harness](acceptance/README.md)，无需真实邮件账户。
+
+### 持久用户服务
+
+Linux 本机需登录后自动启动时，在 `~/.config/systemd/user/teacherworkspace-preview.service` 写入以下内容，将仓库位置和 `node` / `npm` 所在目录替换为本机绝对路径，可用 `command -v node`、`command -v npm` 查找：
+
+```ini
+[Unit]
+Description=TeacherWorkspace preview development server
+
+[Service]
+WorkingDirectory=/absolute/path/to/TeacherWorkspace-preview
+Environment="PATH=/absolute/node-bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/absolute/node-bin/npm run dev
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
 ```
 
-Web 与 `/api` 由同一个 HTTPS origin 提供。固定构建不热更新；真实认证测试 harness 也可通过 `WORKBENCH_WEB_DIST` 选择该产物。构建路径避免隐藏目录（如 `.scratch/`），否则 Express 的 `sendFile` 默认拒绝 SPA 回退请求。
+执行 `systemctl --user daemon-reload` 和 `systemctl --user enable --now teacherworkspace-preview.service`。日常用 `status`、`restart`、`stop` 管理，日志用 `journalctl --user -u teacherworkspace-preview.service`。这里的私有 `.env` 与手动启动使用同一份，不需要额外本机启动脚本。
+
+### 固定构建
+
+运行 `npm run build`，配置 `NODE_ENV=production` 和 `WORKBENCH_WEB_DIST` 指向 `apps/web/dist`，再执行 `node --env-file=.env apps/api/src/server.js`。Web 与 `/api` 由同一个 HTTPS origin 提供，固定构建不热更新。
+
+隔离 Web 构建使用 `npm --workspace @refatos/web run build -- --outDir /absolute/test/web-dist` 并设置对应 `WORKBENCH_WEB_DIST`；不要覆盖在线实例的构建产物。API 构建使用系统临时目录检查装配与迁移。
 
 ## 必需配置的来源
 
@@ -54,7 +74,7 @@ Web 与 `/api` 由同一个 HTTPS origin 提供。固定构建不热更新；真
 - `MATERIALS_OFFICE_ROOT` 指向包含 `program/soffice` 的 LibreOffice 根目录，使用者为 `apps/api/src/workbench/files/converter.js`。
 - `QUESTIONS_XPDF_PDFTOHTML` 指向 Xpdf 的 `pdftohtml`，用于题库文字 PDF 的阅读顺序与双栏识别；使用者为 `apps/api/src/modules/questions/native-pdf.js`。Poppler 继续负责页图、裁图和资源正文检索。
 - 转换还调用 `bwrap` 和相应格式工具；准确命令从同目录的 `conversion-worker.mjs` 核对。
-- 工具路径应稳定独立于短期 worktree。归档中的工具包存在不代表运行配置已经指向它。
+- 工具安装在源码之外的持久目录，配置指向实际可执行文件；新环境独立安装，不从旧任务现场复制。
 
 当前实例的工具可用性与待处理项由[台账](plans/run-state.md)维护；修改运行配置后必须实际转换并打开文件验证。
 
@@ -62,14 +82,15 @@ Web 与 `/api` 由同一个 HTTPS origin 提供。固定构建不热更新；真
 
 题库使用独立的 Xpdf 4.06 `pdftohtml` 可执行文件读取文字层；页面预览与配图定位继续使用已有 Poppler。Xpdf 的 HTML 保留按阅读顺序排列的逐行文字，适配层只取文字节点，不向浏览器提供生成的 HTML，也不自建分栏算法。`pdftotext -layout` 会跨栏拼横行，Xpdf 默认纯文本又会合并段落内的题号行，因此二者不能替代此入口。
 
-Linux x86-64 的官方包为 [xpdf-tools-linux-4.06.tar.gz](https://dl.xpdfreader.com/xpdf-tools-linux-4.06.tar.gz)，SHA-256 为 `940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3`。解压并保留完整包后，将运行环境的 `QUESTIONS_XPDF_PDFTOHTML` 指向 `bin64/pdftohtml` 的绝对路径；未配置时查找 `/usr/local/bin/xpdf-pdftohtml`，不要指向 Poppler 的同名命令。开发测试可以装在当前 worktree 的 `.scratch/questions-tools/`，部署时放在独立持久工具目录。安装步骤：
+Linux x86-64 的官方包为 [xpdf-tools-linux-4.06.tar.gz](https://dl.xpdfreader.com/xpdf-tools-linux-4.06.tar.gz)，SHA-256 为 `940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3`。解压并保留完整包后，将运行环境的 `QUESTIONS_XPDF_PDFTOHTML` 指向 `bin64/pdftohtml` 的绝对路径；未配置时查找 `/usr/local/bin/xpdf-pdftohtml`，不要指向 Poppler 的同名命令。安装在用户持久工具目录，按实际路径配置到 `.env`。Linux x86-64 示例：
 
 ```bash
-mkdir -p .scratch/questions-tools
-curl --fail --location https://dl.xpdfreader.com/xpdf-tools-linux-4.06.tar.gz -o .scratch/questions-tools/xpdf-tools-linux-4.06.tar.gz
-printf '%s\n' '940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3  .scratch/questions-tools/xpdf-tools-linux-4.06.tar.gz' | sha256sum -c -
-tar -xzf .scratch/questions-tools/xpdf-tools-linux-4.06.tar.gz -C .scratch/questions-tools
-export QUESTIONS_XPDF_PDFTOHTML="$PWD/.scratch/questions-tools/xpdf-tools-linux-4.06/bin64/pdftohtml"
+xpdfHome="$HOME/.local/share/teacherworkspace-tools"
+mkdir -p "$xpdfHome"
+curl --fail --location https://dl.xpdfreader.com/xpdf-tools-linux-4.06.tar.gz -o "$xpdfHome/xpdf-tools-linux-4.06.tar.gz"
+printf '%s  %s\n' '940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3' "$xpdfHome/xpdf-tools-linux-4.06.tar.gz" | sha256sum -c -
+tar -xzf "$xpdfHome/xpdf-tools-linux-4.06.tar.gz" -C "$xpdfHome"
+export QUESTIONS_XPDF_PDFTOHTML="$xpdfHome/xpdf-tools-linux-4.06/bin64/pdftohtml"
 ```
 
 启动 API、HTTP 测试和上述浏览器验证时使用同一配置。读取在已有 Bubblewrap 禁网沙箱内逐页执行，输入只读，输出写入独立临时目录并在结束后清理，沿用时间与内存限制。工具缺失或失败时原稿保留、整理任务失败，修复配置后可重试；不静默退回会串栏的路径。Xpdf 包声明 GPL v2 或 v3，重分发二进制需保留包内 README、手册、COPYING 和 COPYING3；本仓库只调用外部工具，不收录其二进制或源码。
@@ -82,57 +103,133 @@ export QUESTIONS_XPDF_PDFTOHTML="$PWD/.scratch/questions-tools/xpdf-tools-linux-
 
 VLM 通过官方 `max_pixels` 参数限制每块内部识别分辨率，避免大表格的视觉 attention 超出显存；原页保持不变。版面采用官方矩形裁切模式，表格范围保守扩边，避免边缘文字被旧多边形遮掉；原始结果记录实际范围，配图仍从原页像素裁取。小字和复杂表格仍须对照原稿校对。改变识别参数时同时递增结果修订和工具清单修订，不能把旧缓存当作新配置的验证结果。参数入口见[官方说明](https://www.paddleocr.ai/main/en/version3.x/pipeline_usage/PaddleOCR-VL.html)。
 
-内容复核 profile 为 `/home/liam_t/.local/share/teacherworkspace-tools/paddleocr-vl-1.6-content-check`，修订 `paddleocr-vl-1.6/document-5`，布局为 `python/`、`venv/`、`models/`、`requirements.freeze.txt` 与 `manifest.json`。主模型固定到 PaddleOCR-VL-1.6 `c5630abae1d940eafe0697512a0325494b02ab42` 和 PP-DocLayoutV3 `7b48a7566925fa464281f930c58eee04fe2c862a`；新增 PP-OCRv5 mobile det/rec 使用 CPU 串行复核。四个模型、许可及依赖清单共 36 个文件逐项记录 SHA-256；依赖和权重不进入 Git。运行配置显式选择 profile，准备新目录不会自动切换已有服务。
+内容复核 profile 使用用户持久工具目录（例如 `~/.local/share/teacherworkspace-tools/paddleocr-vl-1.6-content-check`），修订 `paddleocr-vl-1.6/document-5`，布局为 `python/`、`venv/`、`models/`、`requirements.freeze.txt` 与 `manifest.json`。主模型固定到 PaddleOCR-VL-1.6 `c5630abae1d940eafe0697512a0325494b02ab42` 和 PP-DocLayoutV3 `7b48a7566925fa464281f930c58eee04fe2c862a`；新增 PP-OCRv5 mobile det/rec 使用 CPU 串行复核。固定依赖和模型清单随仓库保存在 `scripts/recognition/`，四个模型、许可及依赖清单共 36 个文件逐项记录 SHA-256；已安装依赖和权重不进入 Git。运行配置显式选择 profile，准备新目录不会自动切换已有服务。
 
 单页 scope 限制内存 6 GiB、禁止 swap，启动前要求实际可用 RAM 至少 6.5 GiB、GPU 0 空闲显存至少 7 GiB、工作盘空闲至少 25 GiB。准入不足不启动模型；运行中达到上限会失败并允许重试，原件保留。此限制来自固定本机实测，不保证任意复杂页面都能完成。
 
 <details>
-<summary>从既有固定环境准备独立内容复核 profile</summary>
+<summary>从零准备固定 OCR 环境</summary>
 
-在仓库根目录执行。旧目录必须是上面列明版本的完整本机环境；目标目录应为新目录，不能覆盖在线 profile。复制使用可用的文件系统 reflink，新 venv 的解释器必须属于目标目录。
+在仓库根目录的同一个 Bash 会话执行以下命令。安装到新目录，从官方固定版本准备 Python、依赖和模型，不复制已有实例。已有目标目录时停止，另选新路径；安装完成并验证后再切换运行配置。
+
+### 1. 准备 Python 3.12.14 和独立 venv
+
+Python 3.12.14 只有官方源码包。主机须先具备 C 编译器、`make`、`curl`、`xz`，以及构建 Python 常用扩展的 OpenSSL、zlib、bz2、lzma、SQLite、ffi 开发库。下面的目录放在当前用户的持久数据位置；新目录必须不存在。下载与编译目录只用于安装期间。
 
 ```bash
-ocrSource=/home/liam_t/.local/share/teacherworkspace-tools/paddleocr-vl-1.6
-ocrTarget=/home/liam_t/.local/share/teacherworkspace-tools/paddleocr-vl-1.6-content-check
-mkdir "$ocrTarget"
-cp --reflink=auto -a "$ocrSource/python" "$ocrTarget/python"
-"$ocrTarget/python/bin/python3.12" -m venv --without-pip "$ocrTarget/venv"
-cp --reflink=auto -a "$ocrSource/venv/lib/python3.12/site-packages" "$ocrTarget/venv/lib/python3.12/"
-cp --reflink=auto -a "$ocrSource/models" "$ocrTarget/models"
-cp "$ocrSource/requirements.freeze.txt" "$ocrTarget/requirements.freeze.txt"
-ocrDownload=$(mktemp -d)
+set -euo pipefail
+projectRoot="$(pwd -P)"
+ocrHome="${XDG_DATA_HOME:-$HOME/.local/share}/teacherworkspace-tools/paddleocr-vl-1.6-content-check"
+test ! -e "$ocrHome"
+ocrBuild="$(mktemp -d)"
+mkdir -p "$ocrHome"
+curl -fL 'https://www.python.org/ftp/python/3.12.14/Python-3.12.14.tar.xz' -o "$ocrBuild/Python-3.12.14.tar.xz"
+printf '%s  %s\n' '5c8462af5790baf43a321a1559dbe0db06d1be4300fb85fb53c40060668e548a' "$ocrBuild/Python-3.12.14.tar.xz" | sha256sum -c -
+tar -xf "$ocrBuild/Python-3.12.14.tar.xz" -C "$ocrBuild"
+cd "$ocrBuild/Python-3.12.14"
+./configure --prefix="$ocrHome/python" --with-ensurepip=install
+make -j"$(nproc)"
+make altinstall
+cd "$projectRoot"
+"$ocrHome/python/bin/python3.12" --version
+"$ocrHome/python/bin/python3.12" -m venv "$ocrHome/venv"
+"$ocrHome/venv/bin/python" -m pip --version
+```
+
+版本输出必须是 `Python 3.12.14`。Python 官方给出源码包 SHA-256，并建议自建安装使用 `make altinstall`；`venv` 默认附带 pip。若构建缺某个系统开发库，补该库后重新编译，确认 `_ssl`、`_sqlite3`、`_lzma` 等扩展可导入，再继续。
+
+### 2. 安装固定依赖
+
+先从 Paddle 官方 cu129 索引取得精确 GPU wheel，再从 PyPI 安装仓库中的完整冻结清单。`--no-deps` 使安装严格按冻结文件执行；完成后用 `pip check` 和逐包版本比较发现缺漏或元数据冲突。不能改用 CPU wheel、其他 CUDA 索引或较新 Paddle 版本，因为 worker 会拒绝环境。
+
+```bash
+cp scripts/recognition/requirements.freeze.txt "$ocrHome/requirements.freeze.txt"
+cp scripts/recognition/manifest.json "$ocrHome/manifest.json"
+"$ocrHome/venv/bin/python" -m pip install --no-deps --only-binary=:all: \
+  --index-url https://www.paddlepaddle.org.cn/packages/stable/cu129/ \
+  'paddlepaddle-gpu==3.2.1'
+"$ocrHome/venv/bin/python" -m pip install --no-deps --only-binary=:all: \
+  --index-url https://pypi.org/simple -r "$ocrHome/requirements.freeze.txt"
+"$ocrHome/venv/bin/python" -m pip check
+"$ocrHome/venv/bin/python" - <<'PY'
+from importlib.metadata import version
+from pathlib import Path
+import sys
+home = Path(sys.executable).resolve().parents[2]
+for line in (home / 'requirements.freeze.txt').read_text().splitlines():
+    name, expected = line.split('==', 1)
+    actual = version(name)
+    assert actual == expected, (name, expected, actual)
+import paddle
+assert paddle.version.cuda() == '12.9', paddle.version.cuda()
+print('fixed Python packages and Paddle CUDA 12.9: OK')
+PY
+```
+
+若 `sys.executable` 通过 venv 符号链接指向 `python/`，上段 `parents[2]` 应为 profile 根；可同时用 `readlink -f "$ocrHome/venv/bin/python"` 核对解释器位置。运行实例在 bubblewrap 中只读绑定该 profile，安装后不依赖网络。
+
+### 3. 下载四个固定模型
+
+两个主模型从 PaddlePaddle 的 Hugging Face 官方仓库按完整 commit 下载。`hf download --local-dir` 会在模型目录留下 `.cache/huggingface/` 元数据，模型下载完成后移除该缓存，避免运行时清单库存校验失败。PP-OCRv5 两个 mobile 包使用既有官方推理模型 tar 地址，先校验下载 tar 的 SHA-256 再解包；README 固定到已核实的 PaddlePaddle 模型修订，许可证全文与主模型相同。
+
+```bash
+mkdir -p "$ocrHome/models"
+HF_HOME="$ocrBuild/hf" "$ocrHome/venv/bin/hf" download \
+  PaddlePaddle/PP-DocLayoutV3 \
+  --revision 7b48a7566925fa464281f930c58eee04fe2c862a \
+  --local-dir "$ocrHome/models/PP-DocLayoutV3"
+HF_HOME="$ocrBuild/hf" "$ocrHome/venv/bin/hf" download \
+  PaddlePaddle/PaddleOCR-VL-1.6 \
+  --revision c5630abae1d940eafe0697512a0325494b02ab42 \
+  --local-dir "$ocrHome/models/PaddleOCR-VL-1.6"
+rm -rf "$ocrHome/models/PP-DocLayoutV3/.cache" "$ocrHome/models/PaddleOCR-VL-1.6/.cache"
+
 for ocrModel in PP-OCRv5_mobile_det PP-OCRv5_mobile_rec; do
-  curl -fL "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/${ocrModel}_infer.tar" -o "$ocrDownload/$ocrModel.tar"
+  curl -fL "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/${ocrModel}_infer.tar" \
+    -o "$ocrBuild/$ocrModel.tar"
 done
 printf '%s  %s\n' \
-  50446e5d01ac2a73d5319c89513281f6578414c888c602f9af13f93feefffc58 "$ocrDownload/PP-OCRv5_mobile_det.tar" \
-  566b9512b34e34a9f0db54d87b51fa5a0b9ed2cf1ab7e49728cc0b8b5a64f414 "$ocrDownload/PP-OCRv5_mobile_rec.tar" | sha256sum -c -
+  50446e5d01ac2a73d5319c89513281f6578414c888c602f9af13f93feefffc58 "$ocrBuild/PP-OCRv5_mobile_det.tar" \
+  566b9512b34e34a9f0db54d87b51fa5a0b9ed2cf1ab7e49728cc0b8b5a64f414 "$ocrBuild/PP-OCRv5_mobile_rec.tar" | sha256sum -c -
+for ocrModel in PP-OCRv5_mobile_det PP-OCRv5_mobile_rec; do
+  tar -xf "$ocrBuild/$ocrModel.tar" -C "$ocrBuild"
+  mv "$ocrBuild/${ocrModel}_infer" "$ocrHome/models/$ocrModel"
+  cp "$ocrHome/models/PaddleOCR-VL-1.6/LICENSE" "$ocrHome/models/$ocrModel/LICENSE"
+done
+curl -fL 'https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det/resolve/0d63e78e2b680928f6b1747d76a08db6e645efb7/README.md' \
+  -o "$ocrHome/models/PP-OCRv5_mobile_det/README.md"
+curl -fL 'https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec/resolve/682f20538d8c086cb2128e5cfac775e6c4904e85/README.md' \
+  -o "$ocrHome/models/PP-OCRv5_mobile_rec/README.md"
 ```
 
-两个校验均成功后再解包。官方 [det](https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det/blob/main/README.md) 和 [rec](https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec/blob/main/README.md) model card 声明 Apache-2.0；同时保留声明和许可证全文。
+### 4. 完整性与运行验证
+
+这一步逐个比对仓库固定清单，包括额外文件和缺失文件，并调用 worker 自身的环境验证。只在全部通过后将私有运行配置的 `MATERIALS_OCR_HOME` 指向 `ocrHome`，由实例维护者重启 API；再用真实上传的一页检查文字、公式、配图及取消路径。不能用原始结果回放替代 GPU 推理。
 
 ```bash
-for ocrModel in PP-OCRv5_mobile_det PP-OCRv5_mobile_rec; do
-  tar -xf "$ocrDownload/$ocrModel.tar" -C "$ocrDownload"
-  mv "$ocrDownload/${ocrModel}_infer" "$ocrTarget/models/$ocrModel"
-  curl -fL "https://huggingface.co/PaddlePaddle/$ocrModel/raw/main/README.md" -o "$ocrTarget/models/$ocrModel/README.md"
-  cp "$ocrTarget/models/PaddleOCR-VL-1.6/LICENSE" "$ocrTarget/models/$ocrModel/LICENSE"
-done
-"$ocrTarget/venv/bin/python" - "$ocrTarget" <<'PY'
+"$ocrHome/venv/bin/python" - "$ocrHome" "$projectRoot" <<'PY'
 import hashlib, json, pathlib, runpy, sys
 home = pathlib.Path(sys.argv[1]).resolve()
-worker = runpy.run_path('apps/api/src/workbench/recognition/worker.py')
-files = [home / 'requirements.freeze.txt', *sorted(p for p in (home / 'models').rglob('*') if p.is_file())]
-manifest = {'revision': worker['REVISION'], 'models': worker['MODELS'], 'files': {
-    str(p.relative_to(home)): hashlib.file_digest(p.open('rb'), 'sha256').hexdigest() for p in files}}
-(home / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+repo = pathlib.Path(sys.argv[2]).resolve()
+manifest = json.loads((home / 'manifest.json').read_text())
+actual = {'requirements.freeze.txt'} | {
+    str(p.relative_to(home)) for p in (home / 'models').rglob('*') if p.is_file()
+}
+assert actual == set(manifest['files']), (sorted(actual - set(manifest['files'])), sorted(set(manifest['files']) - actual))
+for name, expected in manifest['files'].items():
+    with (home / name).open('rb') as stream:
+        assert hashlib.file_digest(stream, 'sha256').hexdigest() == expected, name
+worker = runpy.run_path(str(repo / 'apps/api/src/workbench/recognition/worker.py'))
 worker['verify_environment'](home)
 assert pathlib.Path(sys.executable).resolve().is_relative_to(home)
+print('fixed OCR profile: OK')
 PY
-"$ocrTarget/venv/bin/python" apps/api/test/recognition-content-check.test.py
+"$ocrHome/venv/bin/python" apps/api/test/recognition-content-check.test.py
 ```
 
-确认许可、清单校验和实际单页识别成功后清理下载临时目录。将私有运行配置的 `MATERIALS_OCR_HOME` 改为新 profile，再由实例维护者重启 API；保留旧 profile 可供明确回退。不要把模型放进仓库任务产物目录，也不要复制旧 `work/` 原页。
+全部通过且本次下载产物不再需要后，删除 `ocrBuild` 临时目录。下载或验证失败时保留 `ocrBuild`、profile 和日志以继续诊断，不切换在线服务。
+
+官方依据：[Python 3.12.14 源码与摘要](https://www.python.org/downloads/release/python-31214/)、[Python Unix 源码构建](https://docs.python.org/3.12/using/unix.html)、[Paddle Linux GPU 安装](https://www.paddlepaddle.org.cn/documentation/docs/en/install/pip/linux-pip_en.html)、[PaddleOCR-VL 安装](https://www.paddleocr.ai/main/en/version3.x/pipeline_usage/PaddleOCR-VL.html)、[Hugging Face 固定修订下载](https://huggingface.co/docs/huggingface_hub/guides/cli)。
 
 </details>
 

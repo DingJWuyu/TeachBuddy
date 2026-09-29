@@ -2,6 +2,7 @@ import {test, expect} from '@playwright/test';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {randomUUID, createHash} from 'node:crypto';
 import {createIntegration} from '../../api/test/fixtures/auth-integration/harness.js';
 import {registerMath} from './fixtures/math-static/real.mjs';
@@ -9,6 +10,12 @@ import {sourceImage} from './fixtures/materials-questions/recognition/replay.mjs
 import {documentText, images, walkBlocks} from '../../api/src/modules/questions/materials-content.js';
 
 const base='/api/modules/questions/v2';
+const recordedPages=fileURLToPath(new URL('./fixtures/materials-questions/recognition-document-4/',import.meta.url));
+const externalPdf=()=>{
+  const bytes=fs.readFileSync(process.env.M33_PRIVATE_PDF);
+  expect(createHash('sha256').update(bytes).digest('hex')).toBe('b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a');
+  return bytes;
+};
 const pdf=path.resolve('apps/web/e2e/fixtures/materials-questions/P.pdf');
 const email='questions-tables@example.test';
 let world, client, recognizer;
@@ -66,14 +73,14 @@ const startTable=body=>table([header,[body,'教学活动','点评']]);
 const endTable=body=>table([[body,'','点评']]);
 
 test('HTTP：真实 E9 的数字题号拆成三题，两张原图只属于首题，小结不造题',async()=>{
-  test.skip(!process.env.M33_PRIVATE_PDF||!process.env.QUESTIONS_OCR_EXPANDED_DIR,'需要固定私有E及document-4的E9真实证据');
-  const at=name=>path.join(process.env.QUESTIONS_OCR_EXPANDED_DIR,'E-9',name);
+  test.skip(!process.env.M33_PRIVATE_PDF,'需要下载并指定完整外部E原稿；真实回放随仓库提供');
+  const at=name=>path.join(process.env.QUESTIONS_OCR_EXPANDED_DIR??recordedPages,'E-9',name);
   const saved=JSON.parse(fs.readFileSync(at('result.json'))),raw=JSON.parse(fs.readFileSync(at('raw.json')));
   recognizer.revision=saved.revision;
-  const file=await upload(fs.readFileSync(process.env.M33_PRIVATE_PDF),'E.pdf');
+  const file=await upload(externalPdf(),'E.pdf');
   await recognize(file,[9],[input=>{
     const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
-    expect(hash(input.bytes)).toBe(hash(fs.readFileSync(at('page.png'))));
+    expect(hash(input.bytes)).toBe(saved.inputHash);
     return {raw,width:raw.width,height:raw.height,derivations:saved.derivations,
       assets:saved.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(saved.assetFileIds[i]+'.bin'))})),
       originalAssets:saved.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(saved.originalAssetFileIds[i]+'.bin'))}))};
@@ -94,15 +101,15 @@ test('HTTP：真实 E9 的数字题号拆成三题，两张原图只属于首题
 });
 
 test('HTTP：最终 document-4 四图保留六题五答案三图，几何下标不经手工重录入库',async()=>{
-  test.skip(!process.env.QUESTIONS_OCR_EXPANDED_DIR,'需要最终真实document-4产物');
+  const directory=process.env.QUESTIONS_OCR_EXPANDED_DIR??recordedPages;
   const files=[];
   for(const name of ['I-1','I-2','I-3','PS-4']){
-    const at=filename=>path.join(process.env.QUESTIONS_OCR_EXPANDED_DIR,name,filename);
+    const at=filename=>path.join(directory,name,filename);
     const saved=JSON.parse(fs.readFileSync(at('result.json'))),raw=JSON.parse(fs.readFileSync(at('raw.json')));
     expect(saved.revision).toBe('paddleocr-vl-1.6/document-4');
     const file=await upload(fs.readFileSync(at('page.png')),name+'.png');files.push(file);
     await recognize(file,[1],[input=>{
-      const hash=bytes=>createHash('sha256').update(bytes).digest('hex');expect(hash(input.bytes)).toBe(hash(fs.readFileSync(at('page.png'))));
+      const hash=bytes=>createHash('sha256').update(bytes).digest('hex');expect(hash(input.bytes)).toBe(saved.inputHash);
       return {raw,width:raw.width,height:raw.height,derivations:saved.derivations,
         assets:saved.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(saved.assetFileIds[i]+'.bin'))})),
         originalAssets:saved.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(saved.originalAssetFileIds[i]+'.bin'))}))};
@@ -358,22 +365,22 @@ test('HTTP：同识别块的表后标题清除跨页范围，新表头仍可重�
   expect(recognizer.calls).toHaveLength(3);
 });
 
-// Both inputs and raw output are external private evidence, not generated here.
+// Recorded document-4 raw and figure excerpts are bundled; the full external PDF is supplied explicitly.
 test('HTTP：真实 E.pdf 提取三题，例题续页保留四个原式与两页来源',async()=>{
-  test.skip(!process.env.M33_PRIVATE_PDF||!process.env.QUESTIONS_OCR_EVIDENCE_DIR,'需要固定私有E及已有doc3页证据');
-  const directory=process.env.QUESTIONS_OCR_EVIDENCE_DIR;
+  test.skip(!process.env.M33_PRIVATE_PDF,'需要下载并指定完整外部E原稿；真实回放随仓库提供');
+  const directory=process.env.QUESTIONS_OCR_EVIDENCE_DIR??recordedPages;
   const responses=[7,8].map(number=>{
     const at=file=>path.join(directory,`E-${number}`,file);
     const result=JSON.parse(fs.readFileSync(at('result.json'))),raw=JSON.parse(fs.readFileSync(at('raw.json')));
     const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
     return input=>{
-      expect(hash(input.bytes)).toBe(hash(fs.readFileSync(at('page.png'))));
+      expect(hash(input.bytes)).toBe(result.inputHash);
       return {raw,width:raw.width,height:raw.height,derivations:result.derivations,
         assets:result.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(result.assetFileIds[i]+'.bin'))})),
         originalAssets:result.derivations.map((d,i)=>({name:d.name,bytes:fs.readFileSync(at(result.originalAssetFileIds[i]+'.bin'))}))};
     };
   });
-  const file=await upload(fs.readFileSync(process.env.M33_PRIVATE_PDF),'E.pdf');
+  const file=await upload(externalPdf(),'E.pdf');
   await recognize(file,[7,8],responses);
   const {job,material}=await collect(file,[7,8]);
   expect(job.state).toBe('partial');expect(recognizer.calls).toHaveLength(2);

@@ -1,0 +1,33 @@
+{
+  "revision": "paddleocr-vl-1.6/document-4",
+  "inputHash": "99bcbc3ed10436644dd666e37c6ac44c8e428f0db5cc2de7947bf8260345b715",
+  "derivations": [
+    {
+      "name": "imgs/img_in_image_box_323_511_1330_984.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 10,
+      "originalBbox": [
+        323,
+        511,
+        1330,
+        984
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        292,
+        496,
+        1361,
+        999
+      ],
+      "mediaType": "image/png",
+      "issues": []
+    }
+  ],
+  "assetFileIds": [
+    "5ec02d99-131b-4eb5-b694-2ce87015b939",
+    "cddc6b06-4097-4c33-84da-e96256c0e0c7"
+  ],
+  "originalAssetFileIds": [
+    "cddc6b06-4097-4c33-84da-e96256c0e0c7"
+  ]
+}

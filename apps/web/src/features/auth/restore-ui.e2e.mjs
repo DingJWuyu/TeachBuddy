@@ -7,7 +7,7 @@ import { chromium, expect } from '@playwright/test';
 import { createServer } from 'vite';
 import { createIntegration } from '../../../../api/test/fixtures/auth-integration/harness.js';
 
-const evidence = path.resolve(process.env.AUTH_RESTORE_EVIDENCE || '.scratch/restore-auth');
+const evidence = path.resolve(process.env.AUTH_RESTORE_EVIDENCE || 'test-results/restore-auth');
 fs.mkdirSync(evidence, { recursive: true });
 const prototype = await createServer({ root: path.resolve('prototype'), server: { host: '127.0.0.1', port: 0 } });
 await prototype.listen();

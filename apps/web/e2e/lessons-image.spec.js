@@ -9,10 +9,9 @@ import { loadRegionReplay, blankCells } from '../../api/test/fixtures/lessons-re
 import { images } from '../../api/src/modules/questions/materials-content.js';
 
 // Public UI and HTTP against an isolated account. Parent machine result is
-// seeded from genuine E7 evidence; child recognizer replays a digest-bound raw
+// seeded from a controlled fixture; child recognizer replays a digest-bound raw
 // response through actual Jobs. This proves adoption/recovery, not a model run.
 test.beforeEach(() => {
-  test.skip(!process.env.LESSONS_REGION_REPLAY_ROOT, 'Requires genuine E7 replay evidence');
   expect(process.env.WORKBENCH_WEB_DIST).toBeTruthy();
 });
 let world;
@@ -27,7 +26,7 @@ async function setup(page, info) {
   const email = 'lesson-image-ui@example.test';
   const { client, session } = await registerMath(world, email), call = http(client);
   const { parent } = replay.seed(world, session.account.accountKey);
-  const resource = await call('POST', '/api/modules/resources/items', { title: 'E7 教学资料', fileId: replay.binding.fileId, folderId: null, tagIds: [], note: '' }, 201);
+  const resource = await call('POST', '/api/modules/resources/items', { title: '受控配图资料', fileId: replay.binding.fileId, folderId: null, tagIds: [], note: '' }, 201);
   const lesson = await call('POST', '/api/modules/lessons/v3', { title: '配图表格课稿', intro: doc('保留原课稿'), sections: [], materials: [] }, 201);
   await page.goto(`${world.origin}/lessons/${lesson.id}`);
   await page.getByLabel('邮箱', { exact: true }).fill(email);
@@ -65,7 +64,7 @@ async function loseFirstResponse(page, pattern) {
   return requests;
 }
 
-test('配图：E7 真实结果回放，预览/识别/采用丢失回执，独立表格与父稿保存，Word/PDF', async ({ page }, info) => {
+test('配图：受控父稿与真实表格配图回放，预览/识别/采用丢失回执，独立表格与父稿保存，Word/PDF', async ({ page }, info) => {
   test.setTimeout(180000);
   const { replay, call, lesson, parent, imageNumber } = await setup(page, info);
   await page.getByLabel('提取后的环节名称', { exact: true }).fill('整页校对稿保留');

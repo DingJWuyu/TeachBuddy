@@ -120,7 +120,7 @@ entry 引用快照同时保存 Entry 和选定 Occurrence：有 originDate 时�
 
 `AgentSnapshot.toolCalls`、`AgentEvent(type=toolCall).value` 和 `PortableData(kind=conversation).value.toolCalls` 均递归消费同一个 `AgentToolCall`，保留名称、参数、顺序、结果及 null operationId。消费者不得按旧名称重新猜测分类、伪造 Operation、丢卡或跳过校验。v2 ToolOutcome 沿既定四字段投影，终态须与对应卡一致。正常重启或部署恢复的只读 executing 标 interrupted、未开始调用标 cancelled；只有执行中的写操作进入 unconfirmed 及原有核实/恢复隔离路径。
 
-设计静态检查的固定结果见[能力证据](../plans/run-state.md#证据边界)；产品运行仍需覆盖六模块业务一致性，静态检查不代替运行证据。
+设计静态检查的固定结果见[能力证据](../plans/run-state.md#核查入口)；产品运行仍需覆盖六模块业务一致性，静态检查不代替运行证据。
 
 ### 手工能力对应表
 

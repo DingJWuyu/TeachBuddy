@@ -1,0 +1,41 @@
+{
+  "kind": "recorded-model-consumer-fixture",
+  "revision": "paddleocr-vl-1.6/document-4",
+  "source": "Self-authored Q1-Q6 source materials in sibling materials-questions fixtures; recorded final-http-r2 outputs, no new model calls.",
+  "scope": "Consumer replay and persistence only; not current model quality evidence.",
+  "pages": {
+    "I-1": {
+      "imageSha256": "99bcbc3ed10436644dd666e37c6ac44c8e428f0db5cc2de7947bf8260345b715",
+      "rawSha256": "f7e840b0994751848773f0850ed966823b42a28e1773cd7dcebe5df977aee50f"
+    },
+    "I-2": {
+      "imageSha256": "3c570d2b67c6a2a1538c3f69445fef9cf47dea63184310a092d6ecb791510059",
+      "rawSha256": "4829d30309dc261938e0decbcaa347990a59de791cb21b0b363e1294aebcb866"
+    },
+    "I-3": {
+      "imageSha256": "e6f7b11f37dbc70e8312b92cb648395af311e7153598c295c925f45637565d1c",
+      "rawSha256": "04451c2bd4b54d87d95fded24c57d68b208bdcad54e2b7cb29a54d5dc2cf74d6"
+    },
+    "PS-4": {
+      "imageSha256": "655014ceb9d66f2006f881afac95f077de02844c9251fb95c68c9e8a0e9f0b62",
+      "rawSha256": "f546264768a1d09fb4115b0f4a6ebb672e456e0a2fdefc98dfac20f43c1b50ef"
+    },
+    "E-7": {
+      "imageSha256": "934c2731ee57be52daabe03572f57389747866f45c79e8fde3bc3c08bab8f774",
+      "rawSha256": "946a9d0c9260f85f1d3df00d3306fdc3b7e95e41ac740b32cc4a7ba477de132b"
+    },
+    "E-8": {
+      "imageSha256": "c59beeab6845dbe74ee9b9b8b7ddaf4792b67d0abced9e54b3b42b28d2b432fe",
+      "rawSha256": "30c5976354bc94b446698f87e49f15954857d7f469f9e19afcd30bced012334c"
+    },
+    "E-9": {
+      "imageSha256": "d68a4d4e8419eb2f4a2c21517b24bf543b29164eae1c0f17340c52f2475a6b15",
+      "rawSha256": "2c155f4881084d22f214b9c918768b29473fad7f515a902e4e0ec807d457ae2f"
+    }
+  },
+  "external": {
+    "source": "https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf",
+    "sha256": "b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a",
+    "scope": "Only recorded OCR JSON and necessary figure excerpts for pages 7, 8, 9. Full PDF and full-page images excluded. Set M33_PRIVATE_PDF to the downloaded, hash-matching original; the test renders its pages and checks recorded input hashes."
+  }
+}

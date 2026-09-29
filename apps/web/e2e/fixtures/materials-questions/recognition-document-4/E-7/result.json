@@ -1,0 +1,150 @@
+{
+  "revision": "paddleocr-vl-1.6/document-4",
+  "inputHash": "934c2731ee57be52daabe03572f57389747866f45c79e8fde3bc3c08bab8f774",
+  "derivations": [
+    {
+      "name": "imgs/img_in_image_box_818_1712_1261_1899.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 13,
+      "originalBbox": [
+        818,
+        1712,
+        1261,
+        1899
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        804,
+        1706,
+        1275,
+        1905
+      ],
+      "mediaType": "image/png",
+      "issues": [
+        {
+          "code": "crop-cell-boundary-unknown",
+          "detail": "表格内配图已保守扩边，可能包含单元格边线，请对照原页核查。"
+        }
+      ]
+    },
+    {
+      "name": "imgs/img_in_image_box_823_1445_1062_1681.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 12,
+      "originalBbox": [
+        823,
+        1445,
+        1062,
+        1681
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        815,
+        1437,
+        1070,
+        1689
+      ],
+      "mediaType": "image/png",
+      "issues": [
+        {
+          "code": "crop-cell-boundary-unknown",
+          "detail": "表格内配图已保守扩边，可能包含单元格边线，请对照原页核查。"
+        }
+      ]
+    },
+    {
+      "name": "imgs/img_in_image_box_833_462_1120_679.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 6,
+      "originalBbox": [
+        833,
+        462,
+        1120,
+        679
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        824,
+        455,
+        1129,
+        686
+      ],
+      "mediaType": "image/png",
+      "issues": [
+        {
+          "code": "crop-cell-boundary-unknown",
+          "detail": "表格内配图已保守扩边，可能包含单元格边线，请对照原页核查。"
+        }
+      ]
+    },
+    {
+      "name": "imgs/img_in_image_box_837_731_1072_942.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 8,
+      "originalBbox": [
+        837,
+        731,
+        1072,
+        942
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        829,
+        724,
+        1080,
+        949
+      ],
+      "mediaType": "image/png",
+      "issues": [
+        {
+          "code": "crop-cell-boundary-unknown",
+          "detail": "表格内配图已保守扩边，可能包含单元格边线，请对照原页核查。"
+        }
+      ]
+    },
+    {
+      "name": "imgs/img_in_image_box_856_1179_1093_1414.jpg",
+      "method": "source-rectangle-1.06",
+      "layoutIndex": 10,
+      "originalBbox": [
+        856,
+        1179,
+        1093,
+        1414
+      ],
+      "originalPolygon": null,
+      "derivedBbox": [
+        848,
+        1171,
+        1101,
+        1422
+      ],
+      "mediaType": "image/png",
+      "issues": [
+        {
+          "code": "crop-cell-boundary-unknown",
+          "detail": "表格内配图已保守扩边，可能包含单元格边线，请对照原页核查。"
+        }
+      ]
+    }
+  ],
+  "assetFileIds": [
+    "e20251f6-02fc-48e1-a07f-755c1769a112",
+    "b3cd345b-770b-4801-beb9-6cb042c83135",
+    "ff6f2963-f183-4bdd-8bde-075ab841139a",
+    "62131ca1-40b0-47bb-88a7-18bdbad9c03b",
+    "4c806adc-9c3a-4f75-b161-10b0124f260a",
+    "8c1877f7-b27b-4089-9143-e6999822f644",
+    "f4e856ea-f161-4f77-99ac-036b41371d74",
+    "907b272b-1ac9-4ae3-bbfb-61088d8608a8",
+    "38ea7e01-857e-4f47-b198-d9f820d301a4",
+    "4cf6742b-7cf7-4a63-be28-3dd548697c36"
+  ],
+  "originalAssetFileIds": [
+    "8c1877f7-b27b-4089-9143-e6999822f644",
+    "f4e856ea-f161-4f77-99ac-036b41371d74",
+    "907b272b-1ac9-4ae3-bbfb-61088d8608a8",
+    "38ea7e01-857e-4f47-b198-d9f820d301a4",
+    "4cf6742b-7cf7-4a63-be28-3dd548697c36"
+  ]
+}

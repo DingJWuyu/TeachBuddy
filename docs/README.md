@@ -11,7 +11,6 @@
 | 修改界面 | 对应功能页和[设计与验证规则](rules/design-and-verification.md) | 调整外观时核对当前运行页面及用户指定参考 |
 | 修改存储、接口或跨模块交换 | 功能页指向的文字契约 | 精确字段继续读 `apps/api/src/contracts/` 中的 schema；验证时再读测试 fixtures |
 | 验证改动或准备交付 | [验证指南](acceptance/README.md) | 本次功能选择对应场景；完整交付才展开[验收矩阵](acceptance/mvp-matrix.md) |
-| 核查旧成果或恢复现场 | 项目状态中的[证据入口](plans/run-state.md#证据边界) | 文件已归档时再读[恢复索引](plans/worktree-archive.md) |
 
 ## 功能规格
 
