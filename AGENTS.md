@@ -76,4 +76,4 @@
 
 ### Domain docs
 
-使用 single-context 布局：根目录 `CONTEXT.md` 和 `docs/adr/`。参见 `docs/agents/domain.md`。
+使用 single-context 布局：根目录 `GLOSSARY.md` 和 `docs/adr/`。参见 `docs/agents/domain.md`。
