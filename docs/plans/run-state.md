@@ -6,7 +6,9 @@
 
 本机用户体验直接运行 `TeacherWorkspace-preview` 源码，入口与维护方式见[SETUP](../SETUP.md#已有本机实例)。新环境按[隔离环境](../SETUP.md#新的隔离环境)启动；当前分支、HEAD 及未提交文件以 Git 为准。原 `TeacherWorkspace` 的 main 不在本轮开发范围。
 
-总控负责专属 session 的收发消息、公共文件唯一写者、集成与冲突。以后开发模块时从当前 preview 基线创建新 session、新分支和新 worktree，按[开发约定](../agents/module-development.md#git-与运行现场)执行。本机旧 session 仅供查阅，不作为新环境前置。AI/Agent 扩展开发仍暂停；已接入的首批能力与后续设计边界见下表。
+总控负责专属 session 的收发消息、公共文件唯一写者、集成与冲突。新任务按本节阶段授权及[开发约定](../agents/module-development.md#git-与运行现场)确认分支起点和工作现场。本机旧 session 仅供查阅，不作为新环境前置。AI/Agent 扩展开发仍暂停；已接入的首批能力与后续设计边界见下表。
+
+当前处于已授权的 preview 集成过渡阶段：新任务以 `TeacherWorkspace-preview` 工作树中经总控核对的集成提交为基线，创建短期分支。这是根 AGENTS 中“从 main 创建分支”的阶段例外；合并 main 仍须用户明确批准。已验收成果合入 main 并完成集成验证后，结束此例外并更新本节，后续任务从 main 创建分支。preview 目录和体验服务可以继续保留。
 
 当前源码集成了日程、导航、材料修复、OCR 内容疑点处理、全站中英切换与账户删除；这些范围曾在本机完成独立验收，新环境须按[核查入口](#核查入口)对所需结论重新验证。数据处理协议继续占位。用户授权总控自主安排专属 session、工作树及技术决策；已集成代码以当前 Git 为准。
 

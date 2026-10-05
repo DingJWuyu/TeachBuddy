@@ -7,6 +7,7 @@
 - 用户体验与集成使用当前 `TeacherWorkspace-preview`；模块工作树和暂停状态以项目状态为准。
 - 设计或核查范围时读取 `docs/PRODUCT_SCOPE.md` 的相关段落；页面和跨模块行为读取 `docs/features/workbench.md` 的相关段落。范围不能由旧代码或原型反推。
 - 登录注册由独立 session 负责；涉及身份交接或退出时读取 `docs/contracts/auth.md`，核对其源版本与未完成项，不把讨论中的契约当成已实现能力。
+- 修改模块装配、跨模块数据访问或公共职责前，必须先读[代码结构](docs/SETUP.md#代码结构)和[模块边界决议](docs/adr/0001-use-a-single-static-module-catalog.md)，确认所属模块与允许使用的公共端口。
 
 ## 模块 session 接手
 
@@ -25,6 +26,7 @@
 ## Git 规则
 
 - Branch：一条 main 主干；开发时必须从 main 创建短生命周期 branch → 持续合回 main，不允许在 main 上直接开发，必须经过用户准许才合并进 main；branch 命名优先使用常见前缀，但不严格限制。正式版本通过 `Release PR` 汇总后再打 Tag / 发布。
+- 阶段基线：分支起点的已授权例外及结束条件统一记录在[项目状态](docs/plans/run-state.md#工作现场与授权)；没有有效例外时执行上述 main 规则。`TeacherWorkspace-preview` 是工作树目录与体验入口，实际分支和提交须从 Git 核对。
 - Commit：遵循 Conventional Commits。
 - Pull Request：如果用户让你生成 PR，Title 遵循 Conventional Commits；如有 PR Template，则务必遵循，否则默认为 Summarize-Why-What changed-Testing 四段式；如有关联 issue，则在 Body 中关联。
 
