@@ -218,9 +218,25 @@ export function renderGraphic(
   }
   if (source.kind === "space") {
     const surfaces = spatialSurfaces(source);
+    const edgeKey = (a, b) => [a, b].sort().join("\u0000");
+    const explicitEdges = new Set(source.edges.map(edge => edgeKey(edge.from, edge.to)));
     for (const [kind, items] of [['face', surfaces.faces], ['section', surfaces.sections]]) for (const [index, surface] of items.entries()) {
       const coords = surface.points.map(p => map(projectSpace(p, source.azimuth, source.elevation)));
-      elements.push(`<g data-surface="${escapeXml(surface.id)}"${selection(kind, index, surface.id)}><polygon points="${coords.map(p => p.map(number).join(',')).join(' ')}" ${style(surface.style)} fill-opacity="0.22"/></g>`);
+      elements.push(`<g data-surface="${escapeXml(surface.id)}"${selection(kind, index, surface.id)}>`);
+      // Explicit edges own their stroke, including dash, colour and width.
+      // Keep the face fill and independently draw only its remaining boundary;
+      // a solid polygon outline would otherwise fill every dashed edge gap.
+      const hasExplicitBoundary = kind === 'face' && surface.vertices.some((id, i) => explicitEdges.has(edgeKey(id, surface.vertices[(i + 1) % surface.vertices.length])));
+      if (hasExplicitBoundary) {
+        elements.push(`<polygon points="${coords.map(p => p.map(number).join(',')).join(' ')}" ${style({ ...surface.style, stroke: 'none' })} fill-opacity="0.22"/>`);
+        for (let i = 0; i < coords.length; i++) {
+          const next = (i + 1) % coords.length;
+          if (!explicitEdges.has(edgeKey(surface.vertices[i], surface.vertices[next]))) line(coords[i], coords[next], surface.style);
+        }
+      } else {
+        elements.push(`<polygon points="${coords.map(p => p.map(number).join(',')).join(' ')}" ${style(surface.style)} fill-opacity="0.22"/>`);
+      }
+      elements.push('</g>');
     }
     const points = new Map(
       source.points.map((p) => [

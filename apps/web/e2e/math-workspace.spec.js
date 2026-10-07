@@ -32,7 +32,8 @@ async function save(page) {
   return response.json();
 }
 async function download(page, format, target) {
-  await page.getByRole('button', { name: /^下载(图片|演示)$/ }).click();
+  const exportToggle = page.getByRole('button', { name: /^下载(图片|演示)$/ });
+  if (await exportToggle.getAttribute('aria-expanded') !== 'true') await exportToggle.click();
   await page.getByLabel('导出格式', { exact: true }).selectOption(format);
   const event = page.waitForEvent('download');
   await page.getByRole('button', { name: '下载作品', exact: true }).click();
@@ -664,9 +665,35 @@ test('空间面和截面保存重开及真实 SVG 下载，错误平面可修正
   await page.reload(); await page.getByRole('button', { name: '图形与标注', exact: true }).click();
   await expect(page.getByLabel('section-d', { exact: true })).toHaveValue('0.5');
   await page.getByLabel('section-c', { exact: true }).fill('0');
-  await expect(page.getByRole('alert')).toContainText('法向量不能为零');
+  const sectionError = page.getByRole('alert');
+  await expect(sectionError).toHaveText('截平面的法向量不能为零，请将 a、b、c 中至少一个系数设为非零。');
+  await page.screenshot({ path: info.outputPath('section-error-zh.png'), animations: 'disabled' });
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await expect(sectionError).toHaveText('The section plane normal cannot be zero. Set at least one of a, b, or c to a nonzero value.');
+  await expect(sectionError).not.toHaveAttribute('title', /[\u4e00-\u9fff]/);
+  await page.screenshot({ path: info.outputPath('section-error-en.png'), animations: 'disabled' });
   await page.getByLabel('section-c', { exact: true }).fill('1');
+  await expect(sectionError).toHaveCount(0);
   await expect(page.locator('.math-graphic-preview [data-surface="S1"]')).toBeVisible();
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: '简体中文 Chinese (Simplified)', exact: true }).click();
+  const repaired = await save(page);
+  expect(repaired.version).toBe(saved.version + 1);
+  expect(repaired.render.state).toBe('ready');
+  const repairedTarget = info.outputPath('section-repaired.svg');
+  await download(page, 'svg', repairedTarget);
+  expect(fs.readFileSync(repairedTarget, 'utf8')).toContain('data-surface="S1"');
+  const exported = await page.context().newPage();
+  try {
+    await exported.goto(pathToFileURL(repairedTarget).href);
+    await expect(exported.locator('[data-surface="S1"] polygon')).toBeVisible();
+    await exported.screenshot({ path: info.outputPath('section-repaired-export.png') });
+  } finally { await exported.close(); }
+  await page.reload();
+  await page.getByRole('button', { name: '图形与标注', exact: true }).click();
+  await expect(page.getByLabel('section-c', { exact: true })).toHaveValue('1');
+  await expect(page.getByRole('alert')).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('section-desktop.png') });
   await page.getByRole('link', { name: /账户：/ }).click();
   await page.getByRole('button', { name: '深色', exact: true }).click();

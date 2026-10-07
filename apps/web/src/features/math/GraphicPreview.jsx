@@ -30,7 +30,7 @@ export default function GraphicPreview({ source, font, selection, onSelect }) {
       }
     }
   }, [preview, selection]);
-  if (preview.error) return <p className="math-message" role="alert" title={preview.error}>{preview.reason === 'invalid-geometry' ? t('sourceError.geometry')
+  if (preview.error) return <p className="math-message" role="alert">{preview.reason === 'invalid-geometry' ? t(preview.error, { defaultValue: t('sourceError.geometry') })
     : preview.reason === 'invalid-expression' ? t('sourceError.expression') : preview.error}</p>;
   if (!preview.html) return <p role="status">{t("正在准备画布…")}</p>;
   const select = event => {

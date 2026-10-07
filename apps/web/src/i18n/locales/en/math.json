@@ -433,5 +433,15 @@
   "sourceError.geometry": "The geometric construction is undefined. Check its referenced objects, coordinates, and intersection conditions.",
   "sourceError.expression": "Invalid expression. Check parentheses, operators, variables, and piecewise conditions.",
   "选择 {{name}}": "Select {{name}}",
-  "sourceError.analysisRange": "Cannot list a finite set of candidate points. Check the function domains, narrow the search range, and retry."
+  "sourceError.analysisRange": "Cannot list a finite set of candidate points. Check the function domains, narrow the search range, and retry.",
+  "面的顶点不能共线": "Face vertices cannot be collinear. Adjust their coordinates.",
+  "面的顶点必须共面": "Face vertices must lie in the same plane. Adjust their coordinates.",
+  "面的顶点须沿边界顺序排列，不能自交": "List face vertices in boundary order without self-intersections. Reorder the vertices.",
+  "面引用了不存在的顶点": "A face references a missing vertex. Select its vertices again.",
+  "生成截面需要封闭凸多面体的面": "A section requires the faces of a closed convex polyhedron. Add the missing faces.",
+  "截面需要封闭的多面体，每条边应连接两个面": "A section requires a closed polyhedron with two faces meeting at each edge. Check the face vertices.",
+  "多面体不能退化为平面": "The polyhedron cannot be flat. Adjust the vertex coordinates to form a solid.",
+  "当前截面支持凸多面体": "Sections currently support convex polyhedra. Adjust the vertices and faces to make the solid convex.",
+  "截平面的法向量不能为零": "The section plane normal cannot be zero. Set at least one of a, b, or c to a nonzero value.",
+  "截平面未切出有面积的截面": "The plane does not produce a section with positive area. Adjust a, b, c, and d so it passes through the solid interior."
 }

@@ -1,6 +1,186 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import sharp from "sharp";
+import { createIntegration } from "../../api/test/fixtures/auth-integration/harness.js";
+import { register } from "./fixtures/math-dynamic/helpers.mjs";
+import { pathToFileURL } from "node:url";
+
+// Sample the rendered stroke, including its gaps. Attributes alone cannot catch
+// a solid face boundary drawn underneath the dashed edge.
+async function strokePixels(image, edge) {
+  const { data, info } = await sharp(image).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const scale = Math.min(info.width / 960, info.height / 720);
+  const offsetX = (info.width - 960 * scale) / 2;
+  const offsetY = (info.height - 720 * scale) / 2;
+  const [x1, y1, x2, y2] = edge;
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  let gaps = 0, ink = 0;
+  for (let d = 26; d < length - 26; d += 0.5) {
+    const x = offsetX + (x1 + (x2 - x1) * d / length) * scale;
+    const y = offsetY + (y1 + (y2 - y1) * d / length) * scale;
+    // Include neighbouring pixels so raster antialiasing cannot turn a
+    // continuous thin diagonal into false gaps.
+    let redOnWhite = 255;
+    for (const pixelY of [Math.floor(y), Math.ceil(y)]) for (const pixelX of [Math.floor(x), Math.ceil(x)]) {
+      const i = (pixelY * info.width + pixelX) * 4;
+      const alpha = data[i + 3] / 255;
+      redOnWhite = Math.min(redOnWhite, data[i] * alpha + 255 * (1 - alpha));
+    }
+    if (redOnWhite > 180) gaps++;
+    if (redOnWhite < 100) ink++;
+  }
+  return { gaps, ink };
+}
+
+test("real space edge dash has visible gaps after reopening and PNG SVG export", async ({ page, context }, info) => {
+  const world = await createIntegration();
+  let passed = false;
+  try {
+    await register(page, world, "space-edge-regression@example.test");
+    await page.getByRole("button", { name: "知道了", exact: true }).click();
+    await page.getByRole("navigation", { name: "功能模块", exact: true }).getByRole("link", { name: /^数学工坊/ }).click();
+    await page.getByRole("button", { name: "新建空间图形", exact: true }).click();
+    await page.getByRole("button", { name: "正方体示例", exact: true }).click();
+    await page.getByLabel("作品名称").fill("遮挡棱真实虚线");
+    async function saveAndReopen() {
+      const response = page.waitForResponse(r => r.url().includes("/api/modules/math/v1/works") && ["POST", "PUT"].includes(r.request().method()));
+      await page.getByRole("button", { name: "保存", exact: true }).click();
+      const result = await response;
+      expect(result.ok(), await result.text()).toBe(true);
+      await expect(page.locator(".math-workspace-status")).toHaveText("已保存");
+      await page.reload();
+      await page.getByRole("button", { name: "图形与标注", exact: true }).click();
+    }
+    await saveAndReopen();
+    await page.getByLabel("图形列表").getByRole("button", { name: "D → A", exact: true }).click();
+    await page.getByLabel("style-dash", { exact: true }).selectOption("dashed");
+    await saveAndReopen();
+    await expect(page.getByLabel("style-dash", { exact: true })).toHaveValue("dashed");
+    // Move selection away so an editing highlight cannot mask the real line.
+    await page.getByLabel("图形列表").getByRole("button", { name: "A", exact: true }).click();
+    const svg = page.locator(".math-graphic-preview svg");
+    const path = svg.locator('path[stroke-dasharray="8 5"]').first();
+    const edge = (await path.getAttribute("d")).match(/-?\d+(?:\.\d+)?/g).map(Number);
+    const canvasFile = info.outputPath("cube-canvas.png");
+    await svg.screenshot({ path: canvasFile });
+    const samples = { canvas: await strokePixels(canvasFile, edge) };
+    const viewer = await context.newPage();
+    try {
+      for (const format of ["png", "svg", "source"]) {
+        if (!await page.locator("#math-export-options").isVisible()) await page.getByRole("button", { name: "下载图片", exact: true }).click();
+        await page.getByLabel("导出格式", { exact: true }).selectOption(format);
+        const event = page.waitForEvent("download");
+        await page.getByRole("button", { name: "下载作品", exact: true }).click();
+        const file = info.outputPath(`cube.${format === "source" ? "json" : format}`);
+        await (await event).saveAs(file);
+        if (format === "source") {
+          expect(JSON.parse(fs.readFileSync(file, "utf8")).edges.find(e => e.from === "D" && e.to === "A").style.dash).toBe("dashed");
+        } else {
+          await viewer.setViewportSize({ width: 1600, height: 1200 });
+          await viewer.goto(pathToFileURL(file).href);
+          const opened = info.outputPath(`cube-${format}-opened.png`);
+          if (format === "svg") await viewer.locator("svg").screenshot({ path: opened });
+          else await viewer.locator("img").screenshot({ path: opened });
+          samples[format] = await strokePixels(format === "png" ? file : opened, edge);
+        }
+      }
+    } finally { await viewer.close(); }
+    fs.writeFileSync(info.outputPath("stroke-pixels.json"), JSON.stringify(samples, null, 2));
+    for (const [format, sample] of Object.entries(samples)) {
+      expect(sample.ink, `${format} has visible ink`).toBeGreaterThan(20);
+      expect(sample.gaps, `${format} has actual gaps, not a solid face outline`).toBeGreaterThan(10);
+    }
+    // A section owns its boundary even though the solid has explicit edges.
+    await page.getByRole("button", { name: "添加图形", exact: true }).click();
+    await page.getByRole("menuitem", { name: "添加截面", exact: true }).click();
+    await page.getByLabel("section-d", { exact: true }).fill("0.5");
+    const styles = page.getByRole("button", { name: "颜色与样式", exact: true });
+    if (await styles.getAttribute("aria-expanded") !== "true") await styles.click();
+    await page.getByLabel("style-stroke", { exact: true }).fill("#166534");
+    await page.getByLabel("style-width", { exact: true }).fill("4");
+    await saveAndReopen();
+    await expect(page.getByLabel("section-d", { exact: true })).toHaveValue("0.5");
+    const section = svg.locator('[data-surface="S1"] polygon:not(.math-graphic-hit)');
+    await expect(section).toHaveAttribute("stroke", "#166534");
+    await expect(section).toHaveAttribute("stroke-width", "4");
+    await svg.screenshot({ path: info.outputPath("cube-section-canvas.png") });
+    for (const format of ["png", "svg"]) {
+      if (!await page.locator("#math-export-options").isVisible()) await page.getByRole("button", { name: "下载图片", exact: true }).click();
+      await page.getByLabel("导出格式", { exact: true }).selectOption(format);
+      const event = page.waitForEvent("download");
+      await page.getByRole("button", { name: "下载作品", exact: true }).click();
+      await (await event).saveAs(info.outputPath(`cube-section.${format}`));
+    }
+    passed = true;
+  } finally {
+    await world.close();
+    if (passed) fs.rmSync(world.directory, { recursive: true, force: true });
+  }
+});
+
+test("real standalone face and partial explicit edge keep selectable styled boundaries", async ({ page }, info) => {
+  const world = await createIntegration();
+  let passed = false;
+  try {
+    await register(page, world, "space-face-regression@example.test");
+    await page.getByRole("button", { name: "知道了", exact: true }).click();
+    await page.getByRole("navigation", { name: "功能模块", exact: true }).getByRole("link", { name: /^数学工坊/ }).click();
+    await page.getByRole("button", { name: "新建空间图形", exact: true }).click();
+    await page.getByLabel("作品名称").fill("独立面和部分棱");
+    async function add(name) {
+      await page.getByRole("button", { name: "添加图形", exact: true }).click();
+      await page.getByRole("menuitem", { name, exact: true }).click();
+    }
+    async function save() {
+      const response = page.waitForResponse(r => r.url().includes("/api/modules/math/v1/works") && ["POST", "PUT"].includes(r.request().method()));
+      await page.getByRole("button", { name: "保存", exact: true }).click();
+      const result = await response;
+      expect(result.ok(), await result.text()).toBe(true);
+      await expect(page.locator(".math-workspace-status")).toHaveText("已保存");
+      return result.json();
+    }
+    await add("添加点");
+    await add("添加点"); await page.getByLabel("x", { exact: true }).fill("2");
+    await add("添加点"); await page.getByLabel("y", { exact: true }).fill("2");
+    await add("添加面");
+    await page.getByRole("button", { name: "颜色与样式", exact: true }).click();
+    await page.getByLabel("style-stroke", { exact: true }).fill("#166534");
+    await page.getByLabel("style-width", { exact: true }).fill("4");
+    const work = await save();
+    expect(work.source.edges).toEqual([]);
+    await page.reload();
+    const surface = page.locator('.math-graphic-preview [data-surface="F1"]');
+    const polygon = surface.locator("polygon:not(.math-graphic-hit)");
+    await expect(polygon).toHaveAttribute("stroke", "#166534");
+    await expect(polygon).toHaveAttribute("stroke-width", "4");
+    await surface.click();
+    await expect(page.getByLabel("面顶点 1", { exact: true })).toHaveValue("P1");
+    await page.locator(".math-graphic-preview svg").screenshot({ path: info.outputPath("face-only-canvas.png") });
+    await add("添加棱");
+    await page.getByLabel("棱起点", { exact: true }).selectOption("P1");
+    await page.getByLabel("棱终点", { exact: true }).selectOption("P2");
+    await page.getByLabel("style-dash", { exact: true }).selectOption("dashed");
+    await save(); await page.reload();
+    await expect(polygon).toHaveAttribute("stroke", "none");
+    await expect(surface.locator('path:not(.math-graphic-hit)')).toHaveCount(2);
+    for (const boundary of await surface.locator('path:not(.math-graphic-hit)').all()) {
+      await expect(boundary).toHaveAttribute("stroke", "#166534");
+      await expect(boundary).toHaveAttribute("stroke-width", "4");
+    }
+    await page.locator(".math-graphic-preview svg").screenshot({ path: info.outputPath("partial-face-canvas.png") });
+    for (const format of ["png", "svg"]) {
+      if (!await page.locator("#math-export-options").isVisible()) await page.getByRole("button", { name: "下载图片", exact: true }).click();
+      await page.getByLabel("导出格式", { exact: true }).selectOption(format);
+      const event = page.waitForEvent("download");
+      await page.getByRole("button", { name: "下载作品", exact: true }).click();
+      await (await event).saveAs(info.outputPath(`partial-face.${format}`));
+    }
+    passed = true;
+  } finally {
+    await world.close();
+    if (passed) fs.rmSync(world.directory, { recursive: true, force: true });
+  }
+});
 test("blank canvas to saved graph, reopen edit and real transparent downloads", async ({
   page,
 }) => {
