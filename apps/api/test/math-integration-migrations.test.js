@@ -3,55 +3,199 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {createHash,randomUUID} from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+import { createHash, randomUUID } from 'node:crypto';
 import Database from 'better-sqlite3';
 import request from 'supertest';
-import {createApp} from '../src/app.js';
-const evidence=new URL('../../../test-results/evidence/M43/v1/',import.meta.url);
-fs.mkdirSync(evidence,{recursive:true});
-const digest=value=>createHash('sha256').update(value).digest('hex');
-function businessState(file){
- const db=new Database(file,{readonly:true});
- try{return Object.fromEntries(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE 'lesson_%' OR name LIKE 'question_%' OR name LIKE 'resource_%' OR name LIKE 'math_%' OR name='materials_files' OR name='workbench_mutation_keys') ORDER BY name").all().map(({name})=>[name,digest(JSON.stringify(db.prepare(`SELECT * FROM "${name}" ORDER BY rowid`).all()))]));}finally{db.close();}
+import { createApp } from '../src/app.js';
+import { manualQuestionSample } from './first-flow-harness.js';
+import { extractLegacySource } from './fixtures/legacy-source/extract.mjs';
+
+const account = 'legacy-library-a';
+const otherAccount = 'legacy-library-b';
+const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+const quote = name => `"${name.replaceAll('"', '""')}"`;
+
+function businessState(sqlitePath, columns) {
+  const db = new Database(sqlitePath, { readonly: true });
+  try {
+    columns ??= Object.fromEntries(db.prepare(`SELECT name FROM sqlite_master
+      WHERE type='table' AND (name LIKE 'lesson_%' OR name LIKE 'question_%'
+        OR name LIKE 'resource_%' OR name LIKE 'math_%'
+        OR name='materials_files' OR name='workbench_mutation_keys') ORDER BY name`).all()
+      .map(({ name }) => [name, db.prepare(`PRAGMA table_info(${quote(name)})`).all().map(c => c.name)]));
+    // Additive migrations may add columns; all original columns and rows must survive.
+    const rows = Object.fromEntries(Object.entries(columns).map(([table, names]) => [table,
+      db.prepare(`SELECT ${names.map(quote).join(',')} FROM ${quote(table)} ORDER BY rowid`).all(),
+    ]));
+    return { columns, rows };
+  } finally { db.close(); }
 }
-for(const [name,source,file,account] of [
- ['P',process.env.M43_P_LIBRARY,'workspace.sqlite',null],
- ['M',process.env.M43_M_LIBRARY,'workbench.sqlite','m41-a']
-])test(`MC11: fixed ${name} library copy preserves rows, files and receipts across two restarts`,
- {skip: !source && `Set M43_${name}_LIBRARY to the retained acceptance library to run this external-fixture check`},async()=>{
- assert.ok(fs.existsSync(path.join(source,file)),`Required retained source: ${source}`);
- const directory=fs.mkdtempSync(path.join(os.tmpdir(), `m43-migration-${name}-`));fs.cpSync(source,directory,{recursive:true});
- const sqlitePath=path.join(directory,file);const before=businessState(sqlitePath);const original=businessState(path.join(source,file));
- const inspect=new Database(sqlitePath,{readonly:true});
- const owner=account??inspect.prepare('SELECT accountKey FROM lesson_items LIMIT 1').get().accountKey;inspect.close();
- const fileHashes={};
- function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,e.name);if(e.isDirectory())walk(f);else fileHashes[path.relative(directory,f)]=digest(fs.readFileSync(f));}}
- if(fs.existsSync(path.join(directory,'files')))walk(path.join(directory,'files'));
- const results=[];
- for(let i=0;i<2;i++){
-  const runtime=createApp({env:{nodeEnv:'test',sqlitePath,workbench:{mode:'test-principal',testPrincipals:[owner],sessionSecret:'m43-migration',trustedOrigins:['http://localhost'],filesDir:path.join(directory,'files'),logDir:path.join(directory,'logs')}}});
-  try{
-   await runtime.workbench.initialize();
-   const cookie=runtime.workbench.identity.testPrincipalCookie(owner).header.split(';')[0];
-   const get=url=>request(runtime.app).get(url).set('Cookie',cookie);
-   assert.equal((await get('/api/modules')).body.version,3);
-   if(name==='P'){
-    const lessons=await get('/api/modules/lessons/v3');assert.equal(lessons.status,200);assert.ok(lessons.body.items.length>0);results.push({lessons:lessons.body.items.map(({id,version})=>({id,version}))});
-   }else{
-    const seed=JSON.parse(fs.readFileSync(path.join(directory,'seed.json')));
-    for(const {input,key,body} of seed){
-     assert.deepEqual((await get(`/api/modules/math/v1/works/${body.id}`)).body,body);
-     const replay=await request(runtime.app).post('/api/modules/math/v1/works').set('Cookie',cookie).set('Origin','http://localhost').set('X-TeachBuddy-Request','1').set('Idempotency-Key',key).send(input);
-     assert.equal(replay.status,201);assert.deepEqual(replay.body,body);
-     for(const id of [body.render.posterFileId,body.render.presentationFileId].filter(Boolean))assert.equal((await get(`/api/workbench/files/${id}/content`)).status,200);
+
+function fileHashes(directory) {
+  const hashes = {};
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const file = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(file);
+      else hashes[path.relative(directory, file)] = digest(fs.readFileSync(file));
     }
-    results.push({works:seed.map(({body})=>({id:body.id,version:body.version,render:body.render}))});
-   }
-  }finally{runtime.dataStore.close();}
-  const after=businessState(sqlitePath);
-  for(const [table,hash] of Object.entries(before))assert.equal(after[table],hash,table);
- }
- for(const [name,hash] of Object.entries(fileHashes))assert.equal(digest(fs.readFileSync(path.join(directory,name))),hash);
- assert.deepEqual(businessState(path.join(source,file)),original);
- fs.writeFileSync(new URL(`migration-${name}.json`,evidence),JSON.stringify({source,directory,identity:'test-principal',account:owner,before,results,fileHashes,sourceUnchanged:true},null,2));
-});
+  }
+  walk(directory);
+  return hashes;
+}
+
+function closeLibrary(runtime) {
+  if (!runtime) return;
+  try { runtime.workbench.close(); }
+  finally { runtime.dataStore.close(); }
+}
+
+async function openLibrary(factory, directory, composition = {}) {
+  const runtime = factory({ env: {
+    nodeEnv: 'test', sqlitePath: path.join(directory, 'workspace.sqlite'),
+    workbench: {
+      mode: 'test-principal', testPrincipals: [account, otherAccount],
+      sessionSecret: 'isolated-legacy-library', trustedOrigins: ['http://localhost'],
+      filesDir: path.join(directory, 'files'), logDir: path.join(directory, 'logs'),
+      ...composition,
+    },
+  } });
+  try { await runtime.workbench.initialize(); }
+  catch (error) { closeLibrary(runtime); throw error; }
+  return runtime;
+}
+
+function send(runtime, method, route, owner = account) {
+  return request(runtime.app)[method](route)
+    .set('Cookie', runtime.workbench.identity.testPrincipalCookie(owner).header.split(';')[0])
+    .set('Origin', 'http://localhost').set('X-TeachBuddy-Request', '1');
+}
+
+async function downloadHash(runtime, id) {
+  const result = await send(runtime, 'get', `/api/workbench/files/${id}/content`).buffer(true)
+    .parse((response, done) => {
+      const chunks = [];
+      response.on('data', chunk => chunks.push(chunk));
+      response.on('end', () => done(null, Buffer.concat(chunks)));
+      response.on('error', done);
+    });
+  assert.equal(result.status, 200);
+  return digest(result.body);
+}
+
+for (const kind of ['lessons', 'math']) {
+  test(`MC11: fixed R31 ${kind} library preserves rows, files and receipts across upgrade and two restarts`, async t => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), `legacy-${kind}-library-`));
+    const original = path.join(root, 'original');
+    const upgraded = path.join(root, 'upgraded');
+    let runtime, passed = false;
+    try {
+      const source = extractLegacySource('r31-questions', path.join(root, 'source'));
+      const load = file => import(pathToFileURL(path.join(source, file)));
+      const { createApp: createOldApp } = await load('apps/api/src/app.js');
+      // Use the archived M41 composition as declared by that version itself.
+      const { mathSupportCatalog } = await load('packages/shared/src/moduleCatalog.js');
+      const { mathSupportImplementations } = await load('apps/api/src/workbench/moduleImplementations.js');
+      runtime = await openLibrary(createOldApp, original, kind === 'math' ? {
+        catalogOverride: mathSupportCatalog, extraImplementations: mathSupportImplementations,
+      } : {});
+      const receipts = [];
+      async function save(method, route, input, status) {
+        const key = randomUUID();
+        const result = await send(runtime, method, route).set('Idempotency-Key', key).send(input);
+        assert.equal(result.status, status, JSON.stringify(result.body));
+        receipts.push({ method, route, input, key, status, body: result.body });
+        return result.body;
+      }
+      const uploaded = await send(runtime, 'post', '/api/workbench/files')
+        .set('Idempotency-Key', randomUUID()).attach('file', Buffer.from('固定旧版原件：公式与备课资料'), '原件.txt');
+      assert.equal(uploaded.status, 201, JSON.stringify(uploaded.body));
+      let readRoute, expected;
+      if (kind === 'lessons') {
+        const question = await save('post', '/api/modules/questions/items', manualQuestionSample(), 201);
+        const doc = { version: 1, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text: '旧版讲课思路' }] }] };
+        expected = await save('post', '/api/modules/lessons/items', {
+          title: '旧版备课', intro: doc, materials: [],
+          sections: [{ id: randomUUID(), title: '讲解', content: doc, references: [{
+            id: randomUUID(), questionId: question.id, questionVersion: question.version, note: '保留引用备注',
+          }] }],
+        }, 201);
+        readRoute = `/api/modules/lessons/items/${expected.id}`;
+      } else {
+        const samples = JSON.parse(fs.readFileSync(new URL('./fixtures/contracts/math-samples.json', import.meta.url)));
+        const input = samples.find(s => s.id === 'create-formula').value;
+        const created = await save('post', '/api/modules/math/v1/works', input, 201);
+        assert.equal(created.render.state, 'ready');
+        assert.ok(created.render.posterFileId);
+        readRoute = `/api/modules/math/v1/works/${created.id}`;
+        expected = await save('put', readRoute, {
+          baseVersion: 1, title: '旧版公式第二稿', source: { ...input.source, latex: 'x^2+2x+1' },
+        }, 200);
+        assert.equal(expected.render.state, 'ready');
+      }
+      const files = runtime.workbench.db.prepare('SELECT id FROM materials_files ORDER BY id').all();
+      const downloads = new Map();
+      for (const { id } of files) downloads.set(id, await downloadHash(runtime, id));
+      const oldLedger = runtime.workbench.db.prepare('SELECT * FROM workbench_migrations ORDER BY rowid').all();
+      closeLibrary(runtime); runtime = null;
+      const before = businessState(path.join(original, 'workspace.sqlite'));
+      const originalFiles = fileHashes(path.join(original, 'files'));
+      assert.ok(Object.keys(originalFiles).length > 0);
+      const originalDbHash = digest(fs.readFileSync(path.join(original, 'workspace.sqlite')));
+      fs.cpSync(original, upgraded, { recursive: true });
+      let upgradedLedger;
+      for (let restart = 0; restart < 2; restart++) {
+        runtime = await openLibrary(createApp, upgraded);
+        const catalog = await send(runtime, 'get', '/api/modules');
+        assert.equal(catalog.status, 200);
+        assert.equal(catalog.body.version, 3);
+        const current = await send(runtime, 'get', readRoute);
+        assert.equal(current.status, 200, JSON.stringify(current.body));
+        assert.deepEqual(current.body, expected);
+        assert.equal((await send(runtime, 'get', readRoute, otherAccount)).status, 404);
+        if (kind === 'lessons') {
+          const list = await send(runtime, 'get', '/api/modules/lessons/v3');
+          assert.equal(list.status, 200);
+          assert.ok(list.body.items.some(item => item.id === expected.id));
+          const lesson = await send(runtime, 'get', `/api/modules/lessons/v3/${expected.id}`);
+          assert.equal(lesson.status, 200);
+          for (const field of ['id', 'version', 'title', 'createdAt', 'updatedAt', 'deletedAt', 'materials'])
+            assert.deepEqual(lesson.body[field], expected[field], field);
+          assert.deepEqual(lesson.body.intro, expected.intro);
+          // New reads project the v1 reference to v3 without rewriting its stored snapshot.
+          // This seed has no solution, so its contract-defined answerStatus is absent.
+          assert.deepEqual(lesson.body.sections, expected.sections.map(section => ({
+            ...section,
+            references: section.references.map(reference => ({
+              ...reference, kind: 'question', afterBlock: null,
+              snapshot: { ...reference.snapshot, answerStatus: 'absent' },
+            })),
+          })));
+        }
+        for (const receipt of receipts) {
+          const replay = await send(runtime, receipt.method, receipt.route)
+            .set('Idempotency-Key', receipt.key).send(receipt.input);
+          assert.equal(replay.status, receipt.status, JSON.stringify(replay.body));
+          assert.deepEqual(replay.body, receipt.body);
+        }
+        for (const [id, hash] of downloads) assert.equal(await downloadHash(runtime, id), hash);
+        assert.deepEqual(oldLedger.map(({ id }) => runtime.workbench.db.prepare('SELECT * FROM workbench_migrations WHERE id=?').get(id)), oldLedger);
+        const ledger = runtime.workbench.db.prepare('SELECT * FROM workbench_migrations ORDER BY rowid').all();
+        assert.ok(ledger.length > oldLedger.length, 'the current product must actually upgrade the old schema');
+        if (restart === 0) upgradedLedger = ledger;
+        else assert.deepEqual(ledger, upgradedLedger);
+        closeLibrary(runtime); runtime = null;
+        assert.deepEqual(businessState(path.join(upgraded, 'workspace.sqlite'), before.columns), before);
+        assert.deepEqual(fileHashes(path.join(upgraded, 'files')), originalFiles);
+      }
+      assert.equal(digest(fs.readFileSync(path.join(original, 'workspace.sqlite'))), originalDbHash);
+      assert.deepEqual(fileHashes(path.join(original, 'files')), originalFiles);
+      passed = true;
+    } finally {
+      closeLibrary(runtime);
+      if (passed) fs.rmSync(root, { recursive: true, force: true });
+      else t.diagnostic(`Retained legacy library: ${root}`);
+    }
+  });
+}
