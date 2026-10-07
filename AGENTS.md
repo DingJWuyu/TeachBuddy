@@ -27,6 +27,7 @@
 
 - Branch：一条 main 主干；开发时必须从 main 创建短生命周期 branch → 持续合回 main，不允许在 main 上直接开发，必须经过用户准许才合并进 main；branch 命名优先使用常见前缀，但不严格限制。正式版本通过 `Release PR` 汇总后再打 Tag / 发布。
 - 阶段基线：分支起点的已授权例外及结束条件统一记录在[项目状态](docs/plans/run-state.md#工作现场与授权)；没有有效例外时执行上述 main 规则。`TeacherWorkspace-preview` 是工作树目录与体验入口，实际分支和提交须从 Git 核对。
+- 集成收尾：总控交付前必须按[集成后的清理](docs/agents/module-development.md#集成后的清理)处理任务分支与临时 worktree，并核对实际剩余现场。
 - Commit：遵循 Conventional Commits。
 - Pull Request：如果用户让你生成 PR，Title 遵循 Conventional Commits；如有 PR Template，则务必遵循，否则默认为 Summarize-Why-What changed-Testing 四段式；如有关联 issue，则在 Body 中关联。
 
