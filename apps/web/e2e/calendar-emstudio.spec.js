@@ -216,7 +216,7 @@ test('自定义重复次数、标签改名删除和跨月日期段', async ({ pa
   await page.getByRole('menuitem', { name: '自定义…', exact: true }).click();
   const rule = page.getByRole('dialog', { name: '重复', exact: true });
   await rule.getByLabel('重复间隔', { exact: true }).fill('2');
-  await rule.getByRole('button', { name: '星期二', exact: true }).click();
+  await rule.getByRole('button', { name: '周二', exact: true }).click();
   await rule.getByRole('radio', { name: /次数/ }).check();
   await rule.getByLabel('重复次数', { exact: true }).fill('3');
   await rule.getByRole('button', { name: '完成', exact: true }).click();
