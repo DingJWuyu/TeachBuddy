@@ -237,3 +237,61 @@ test('typed table eq keeps source LaTeX through HTTP persistence and reopen',asy
     else console.error(`Retained MinerU table eq regression: ${directory}`);
   }
 });
+
+test('typed list fragments select original children once, retain long text, math and images, and respect question boundaries',async()=>{
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'mineru-list-fragments-'));
+  const figure=fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png',import.meta.url));
+  const latex=String.raw`f(x)=\begin{cases}x,&x>0\\`+'\n'+String.raw`x^2,&x\leq0\end{cases}`;
+  const raw={pages:[{blocks:[
+    {type:'list',bbox:[.1,.1,.9,.3],content:[
+      {type:'text',content:[{type:'text',content:'教师活动：观察图形 '},{type:'equation_inline',content:latex},{type:'text',content:'。'}]},
+      {type:'text',content:[{type:'text',content:'教学点评：'},{type:'text',content:'甲'.repeat(25000)}]},
+      {type:'image',content:[{type:'image_body',image_path:'imgs/figure.png'}]},
+    ]},
+    {type:'list',bbox:[.1,.4,.9,.8],content:[
+      {type:'text',content:'Q1. 求第一个值。'},
+      {type:'text',content:'Q2. 求第二个值。'},
+    ]},
+  ]}]};
+  const recognizer={revision:'mineru-pro-2605/document-6',async run({width,height}){
+    return {raw,pageBlocks:raw.pages[0].blocks,width,height,assets:[{name:'imgs/figure.png',bytes:figure}],originalAssets:[],derivations:[]};
+  }};
+  let world,passed=false;
+  try {
+    world=await createIntegration({directory,workbench:{recognition:{recognizer}}});
+    let {client}=await registerMath(world,'list-fragments@example.test');
+    const file=await upload(client,sources[1]);
+    const imported=await write(client,'/api/modules/questions/v2/imports',{title:'列表范围',origin:'',input:{kind:'files',fileIds:[file.id],pages:[]}});
+    assert.equal(imported.status,201,imported.text);assert.equal((await waitJob(client,imported.json.jobId)).state,'succeeded');
+    const route=`/api/modules/questions/v2/imports/${imported.json.id}`;
+    const material=(await client.request('GET',route)).json;
+    const machine=(await client.request('GET',`${base}/${file.id}/recognition/pages/1?renditionFileId=${file.id}`)).json;
+    assert.deepEqual(material.drafts.map(draft=>draft.title),['Q1.','Q2.']);
+    assert.deepEqual(material.drafts.map(draft=>draft.body.blocks[0].items[0].blocks[0].runs[0].text),['求第一个值。','求第二个值。']);
+    assert(material.drafts.every(draft=>draft.body.blocks[0].items.length===1));
+    assert.equal(material.fragments.length,3);
+    assert(material.fragments.every(fragment=>fragment.document.blocks[0].type==='list'&&fragment.document.blocks[0].items.length===1));
+    assert.deepEqual(material.fragments.flatMap(fragment=>fragment.document.blocks[0].items),machine.document.blocks[0].items);
+    assert.equal(material.fragments[0].document.blocks[0].items[0].blocks[0].runs[1].latex,latex);
+    assert.equal(material.fragments[1].text.length,20000);
+    assert.equal(material.fragments[1].document.blocks[0].items[0].blocks[0].runs.map(run=>run.text).join('').length,25005);
+    const image=material.fragments[2].document.blocks[0].items[0].blocks[0];
+    assert.equal(image.type,'image');assert.equal((await client.request('GET',`${base}/${image.fileId}/content`)).status,200);
+    const drafts=structuredClone(material.drafts);
+    for(const fragment of material.fragments) {
+      drafts[0].body.blocks.push(...structuredClone(fragment.document.blocks));
+      drafts[0].parts.push({role:'body',locations:fragment.locations});
+    }
+    const saved=await client.request('PUT',route,{body:{baseVersion:material.version,drafts,fragments:material.fragments.map(fragment=>({...fragment,disposition:'assigned'}))},headers:{'Idempotency-Key':randomUUID()}});
+    assert.equal(saved.status,200,saved.text);
+    const jar=client.jar;await world.close();world=await createIntegration({directory});client=world.client();client.jar=jar;
+    const reopened=(await client.request('GET',route)).json;
+    assert.deepEqual(reopened.drafts,drafts);assert.deepEqual(reopened.fragments,saved.json.fragments);
+    assert.equal((await client.request('GET',`${base}/${image.fileId}/content`)).status,200);
+    passed=true;
+  } finally {
+    await world?.close();
+    if(passed)fs.rmSync(directory,{recursive:true,force:true});
+    else console.error(`Retained list fragment regression: ${directory}`);
+  }
+});

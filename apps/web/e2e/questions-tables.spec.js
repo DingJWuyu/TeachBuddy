@@ -643,3 +643,55 @@ for(const withFigure of [false,true])test(withFigure
     }
   }
 });
+
+test('浏览器：列表中的活动与点评分别归入题干，保存重开不夹带其他项或重复整份列表',async({page},info)=>{
+  const raw={pages:[{blocks:[
+    {type:'list',bbox:[.1,.1,.9,.3],content:[
+      {type:'text',content:'教师活动：观察图形。'},
+      {type:'text',content:'教学点评：讨论结论。'},
+    ]},
+    {type:'text',bbox:[.1,.4,.9,.5],content:[{type:'text',content:'Q1. 求解。'}]},
+  ]}]};
+  recognizer.revision='mineru-pro-2605/document-6';
+  recognizer.run=async({width,height})=>{
+    recognizer.calls.push({width,height});
+    return {raw,pageBlocks:raw.pages[0].blocks,width,height,assets:[],originalAssets:[],derivations:[]};
+  };
+  await page.goto(world.origin+'/questions');
+  await page.getByLabel('邮箱',{exact:true}).fill(email);
+  await page.getByLabel('密码',{exact:true}).fill('math-password');
+  await page.getByRole('button',{name:'登录',exact:true}).click();
+  await expect(page.locator('.wb-shell')).toBeVisible();
+  const welcome=page.getByRole('button',{name:'知道了',exact:true});
+  if(await welcome.isVisible())await welcome.click();
+  await page.getByRole('button',{name:'从资料收录',exact:true}).first().click();
+  await page.getByRole('button',{name:/^上传图片/}).click();
+  await page.getByLabel('选择原稿').setInputFiles(path.resolve('apps/api/test/fixtures/ocr-selection/pages/D8.png'));
+  const accepted=page.waitForResponse(r=>r.url().endsWith('/questions/v2/imports')&&r.request().method()==='POST');
+  await page.getByRole('button',{name:'开始整理',exact:true}).click();
+  const created=await(await accepted).json();await waitJob(created.jobId);
+  const before=await request('GET',`${base}/imports/${created.id}`);
+  expect(before.drafts).toHaveLength(1);expect(before.fragments).toHaveLength(2);
+  await expect(page.getByRole('button',{name:'修改题目',exact:true})).toBeEnabled();
+  await page.locator('summary').filter({hasText:'未分配片段'}).click();
+  await page.screenshot({path:info.outputPath('list-before.png'),fullPage:true,animations:'disabled'});
+  await page.getByRole('button',{name:'归入题干',exact:true}).first().click();
+  await page.getByRole('button',{name:'保存检查进度',exact:true}).click();await page.reload();
+  await expect(page.getByRole('button',{name:'修改题目',exact:true})).toBeEnabled();
+  const first=await request('GET',`${base}/imports/${created.id}`);
+  fs.writeFileSync(info.outputPath('list-first-readback.json'),JSON.stringify({before,first},null,2));
+  await page.screenshot({path:info.outputPath('list-first-reopened.png'),fullPage:true,animations:'disabled'});
+  expect(documentText(first.drafts[0].body)).toContain('教师活动：观察图形。');
+  expect(documentText(first.drafts[0].body)).not.toContain('教学点评：讨论结论。');
+  expect(first.drafts[0].body.blocks.at(-1).items).toHaveLength(1);
+  await page.locator('summary').filter({hasText:'未分配片段'}).click();
+  await page.getByRole('button',{name:'归入题干',exact:true}).nth(1).click();
+  await page.getByRole('button',{name:'保存检查进度',exact:true}).click();await page.reload();
+  await expect(page.getByRole('button',{name:'修改题目',exact:true})).toBeEnabled();
+  const both=await request('GET',`${base}/imports/${created.id}`);
+  fs.writeFileSync(info.outputPath('list-both-readback.json'),JSON.stringify(both,null,2));
+  expect(documentText(both.drafts[0].body).match(/教师活动：观察图形。/g)).toHaveLength(1);
+  expect(documentText(both.drafts[0].body).match(/教学点评：讨论结论。/g)).toHaveLength(1);
+  expect(both.drafts[0].body.blocks.filter(block=>block.type==='list').map(block=>block.items.length)).toEqual([1,1]);
+  expect(recognizer.calls).toHaveLength(1);
+});

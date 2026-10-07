@@ -28,6 +28,69 @@ function numberedBlocks(block) {
   });
 }
 
+function blockText(block) {
+  if (block.runs) return paragraphText(block);
+  if (block.type === "math") return block.latex.replace(/[\r\n]/g, " ");
+  if (block.type === "image") return "[配图]";
+  if (block.type === "list") return block.items.map(item => blocksText(item.blocks)).join("\n");
+  if (block.blocks) return blocksText(block.blocks);
+  return documentText({ version: 2, blocks: [block] });
+}
+const blocksText = blocks => blocks.map(blockText).join("\n");
+
+// Use the same projection for boundaries and selection. A range inside a list
+// selects only its original children; math and images remain original nodes.
+function sliceBlocks(blocks, start, end) {
+  let offset = 0;
+  return blocks.flatMap(block => {
+    const size = length(blockText(block));
+    const from = Math.max(0, start - offset), to = Math.min(size, end - offset);
+    offset += size + 1;
+    if (to <= from) return [];
+    const selected = sliceBlock(block, from, to);
+    return selected ? [selected] : [];
+  });
+}
+function sliceBlock(original, start, end) {
+  const block = structuredClone(original);
+  if (block.runs) {
+    let offset = 0;
+    block.runs = block.runs.flatMap(run => {
+      const value = run.type === "math" ? run.latex.replace(/[\r\n]/g, " ") : run.text;
+      const size = length(value), from = Math.max(0, start - offset), to = Math.min(size, end - offset);
+      offset += size;
+      if (to <= from) return [];
+      if (run.type === "math") {
+        if (slice(value, 0, from).trim() || slice(value, to).trim())
+          throw new Error("Question boundary cuts a math run");
+        return [run];
+      }
+      return [{ ...run, text: slice(value, from, to) }];
+    });
+    return block.runs.length ? block : null;
+  }
+  if (block.type === "list") {
+    let offset = 0;
+    block.items = block.items.flatMap(item => {
+      const size = length(blocksText(item.blocks));
+      const blocks = sliceBlocks(item.blocks, Math.max(0, start - offset), Math.min(size, end - offset));
+      offset += size + 1;
+      return blocks.length ? [{ ...item, blocks }] : [];
+    });
+    return block.items.length ? block : null;
+  }
+  if (block.blocks) {
+    block.blocks = sliceBlocks(block.blocks, start, end);
+    return block.blocks.length ? block : null;
+  }
+  if (block.type === "math") {
+    const value = blockText(block);
+    if (slice(value, 0, start).trim() || slice(value, end).trim())
+      throw new Error("Question boundary cuts a math block");
+  }
+  return block;
+}
+
 // Split only the text projection. Adopt the original Document blocks and math
 // runs afterwards; OCR text is never reparsed as a provider's question JSON.
 export function readRecognizedPage(page, { section, previous }) {
@@ -72,10 +135,7 @@ export function readRecognizedPage(page, { section, previous }) {
         unresolvedTable = true;
         continue;
       }
-      let text = block.runs ? paragraphText(block)
-        : block.type === "math" ? block.latex.replace(/[\r\n]/g, " ")
-        : block.type === "image" ? "[配图]"
-        : documentText({ version: 2, blocks: [block] });
+      let text = blockText(block);
       // Only an explicit summary/report heading excludes surrounding prose.
       // Clear question labels, answers and new sections resume native parsing.
       if (tables.recognized) {
@@ -143,23 +203,8 @@ export function readRecognizedPage(page, { section, previous }) {
           const match = slice(entry.text, start, end).match(questionStart);
           if (match) start += length(match[0]) - length(match[2]);
         }
-        const block = structuredClone(entry.block);
-        if (block.runs) {
-          let offset = 0;
-          block.runs = block.runs.flatMap(run => {
-            const value = run.text ?? run.latex, size = length(value);
-            const from = Math.max(0, start - offset), to = Math.min(size, end - offset);
-            offset += size;
-            if (to <= from) return [];
-            if (run.type === "math") {
-              if (slice(value, 0, from).trim() || slice(value, to).trim())
-                throw new Error("Question boundary cuts a math run");
-              return [run];
-            }
-            return [{ ...run, text: slice(value, from, to) }];
-          });
-          if (!block.runs.length) continue;
-        }
+        const block = sliceBlock(entry.block, start, end);
+        if (!block) continue;
         blocks.push(block);
         accepted.push({ ...entry, sourceHanStart: entry.sourceHanStart === null ? null
           : entry.sourceHanStart + han(slice(entry.text, 0, start)).length,
