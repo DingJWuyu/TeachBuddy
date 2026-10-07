@@ -28,7 +28,7 @@ export async function startMaterialsHttp(directory) {
     origin: `http://127.0.0.1:${server.address().port}`,
     async close() {
       await new Promise((resolve) => server.close(resolve));
-      context.workbench.close();
+      await context.workbench.close();
     },
   };
 }
@@ -90,7 +90,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const closed = new Promise((resolve) => server.close(resolve));
     for (const socket of sockets) socket.destroy();
     await closed;
-    context.workbench.close();
+    await context.workbench.close();
     process.exit(0);
   };
   process.on("SIGTERM", close);

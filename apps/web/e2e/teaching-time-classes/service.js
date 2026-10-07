@@ -121,15 +121,12 @@ export function createTeachingTimeClassesService({ webDist = T51_WEB_DIST, clock
       ...context,
       origin: T51_ORIGIN,
       dataDir: T51_DATA_DIR,
-      close() {
-        return new Promise((resolve) => {
-          const closed = context.server.close(() => {
-            context.dataStore.close();
-            resolve();
-          });
+      async close() {
+        await new Promise(resolve => {
+          context.server.close(resolve);
           context.server.closeAllConnections();
-          return closed;
         });
+        await context.dataStore.close();
       }
     };
     return runner;

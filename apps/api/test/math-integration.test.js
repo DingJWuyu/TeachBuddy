@@ -15,7 +15,7 @@ async function harness() {
  let runtime;
  const start = async () => {runtime=createApp({env:{nodeEnv:'test',sqlitePath:path.join(dir,'workspace.sqlite'),workbench:{mode:'test-principal',testPrincipals:['m43-a','m43-b'],sessionSecret:'m43-isolated',trustedOrigins:['http://localhost'],logDir:path.join(dir,'logs')}}});await runtime.workbench.initialize();};
  await start();
- return {dir, upload(bytes) { return request(runtime.app).post("/api/workbench/files").set("Cookie",runtime.workbench.identity.testPrincipalCookie("m43-a").header.split(";")[0]).set("Origin","http://localhost").set("X-TeachBuddy-Request","1").set("Idempotency-Key",randomUUID()).attach("file",bytes,"demo.html"); }, send(method,url,body,key=randomUUID(),account='m43-a') { let r=request(runtime.app)[method](url).set('Cookie',runtime.workbench.identity.testPrincipalCookie(account).header.split(';')[0]).set('Origin','http://localhost').set('X-TeachBuddy-Request','1').set('Idempotency-Key',key);return body===undefined?r:r.send(body);},async restart(){runtime.dataStore.close();await start();},close(){runtime.dataStore.close();}};
+ return {dir, upload(bytes) { return request(runtime.app).post("/api/workbench/files").set("Cookie",runtime.workbench.identity.testPrincipalCookie("m43-a").header.split(";")[0]).set("Origin","http://localhost").set("X-TeachBuddy-Request","1").set("Idempotency-Key",randomUUID()).attach("file",bytes,"demo.html"); }, send(method,url,body,key=randomUUID(),account='m43-a') { let r=request(runtime.app)[method](url).set('Cookie',runtime.workbench.identity.testPrincipalCookie(account).header.split(';')[0]).set('Origin','http://localhost').set('X-TeachBuddy-Request','1').set('Idempotency-Key',key);return body===undefined?r:r.send(body);},async restart(){await runtime.dataStore.close();await start();},async close(){await runtime.dataStore.close();}};
 }
 test('MC05/06/11: real composition preserves math snapshots, v2 replay and restart',async()=>{
  const h=await harness();
@@ -45,7 +45,7 @@ test('MC05/06/11: real composition preserves math snapshots, v2 replay and resta
  const adopted=await h.send('put',`${lessons}/${old.body.id}`,{...body,baseVersion:2,sections:body.sections.map(s=>({...s,references:s.references.map(r=>({...r,workVersion:2}))}))});assert.equal(adopted.status,200,JSON.stringify(adopted.body));assert.equal(adopted.body.sections[0].references[0].snapshot.workVersion,2);
  assert.deepEqual((await h.send('get',`${lessons}/${second.body.id}`)).body.sections[0].references[0].snapshot,snapshot);
 
- } finally {h.close();}
+ } finally {await h.close();}
 });
 
 test('MC06/10: adopted snapshots survive deletion; real classes reverse links preserve linked labels',async()=>{
@@ -65,7 +65,7 @@ test('MC06/10: adopted snapshots survive deletion; real classes reverse links pr
  assert.equal((await h.send('post',lessons,{...input,materials:[{...ref,id:randomUUID()}]})).status,409);
  const reverse=await h.send('get',`/api/modules/classes/v2/source-records/math/${work.id}`);assert.equal(reverse.status,200);assert.equal(reverse.body.items[0].id,record.body.id);
  await h.restart();assert.equal((await h.send('get',`/api/modules/classes/v2/records/${record.body.id}`)).body.sources[0].deleted,true);
- }finally{h.close();}
+ }finally{await h.close();}
 });
 
 
@@ -116,5 +116,5 @@ test('MC07: all five math kinds produce real DOCX and PDF without private notes'
   }
   const practice=await h.send('post',`${lessons}/${lesson.body.id}/exports`,{baseVersion:1,kind:'practice',format:'docx',includeAnswers:false,includeTeacherNotes:false,sectionIds:[],materialReferenceIds:references.map(r=>r.id),answerSpaceLines:4});assert.equal(practice.status,422);
   fs.writeFileSync(new URL('outputs.json',out),JSON.stringify({directory:h.dir,lesson:lesson.body,outputs},null,2));
- }finally{h.close();}
+ }finally{await h.close();}
 });

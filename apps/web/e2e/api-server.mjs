@@ -25,12 +25,11 @@ let closing = false;
 function cleanup() {
   if (closing) return;
   closing = true;
-  context.server.close(() => {
-    context.dataStore.close();
+  context.close().then(() => {
     fs.rmSync(rootDir, { recursive: true, force: true });
     fs.rmSync(captureFile, { force: true });
     process.exit(0);
-  });
+  }).catch(error => { console.error(error); process.exitCode = 1; });
 }
 
 process.on('SIGINT', cleanup);

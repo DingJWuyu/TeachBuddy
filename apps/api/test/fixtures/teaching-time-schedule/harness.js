@@ -146,12 +146,12 @@ export async function createScheduleHarness(options = {}) {
     },
 
     async restart() {
-      runtime.dataStore.close();
+      await runtime.dataStore.close();
       await openRuntime();
     },
 
-    close() {
-      runtime.dataStore.close();
+    async close() {
+      await runtime.dataStore.close();
       if (!externalDatabase) fs.rmSync(rootDir, { recursive: true, force: true });
     }
   };

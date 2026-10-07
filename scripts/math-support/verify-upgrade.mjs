@@ -54,7 +54,7 @@ try {
     oldLedger = old.workbench.db.prepare('SELECT * FROM workbench_migrations ORDER BY rowid').all();
   } finally {
     await new Promise(resolve => server.close(resolve));
-    old.workbench.close();
+    await old.workbench.close();
   }
   let upgradedLedger;
   for (let run = 0; run < 2; run++) {

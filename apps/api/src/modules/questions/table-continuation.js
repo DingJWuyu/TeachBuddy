@@ -12,7 +12,7 @@ export function unmergedTableRows(raw, tables) {
     if (node.tagName === 'table') nodes.push(node);
     for (const child of node.childNodes ?? []) visit(child);
   };
-  visit(parseFragment(raw.block_content ?? ''));
+  visit(parseFragment(raw.sourceContent ?? raw.block_content ?? ''));
   const result = new Map();
   if (nodes.length !== tables.length) return result;
   const span = (cell, name) => cell.attrs?.find(attr => attr.name === name)?.value ?? '1';

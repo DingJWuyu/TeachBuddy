@@ -1,0 +1,133 @@
+{
+  "metadata": {
+    "file_suffix": "pdf",
+    "producer": {
+      "name": "mineru",
+      "version": "4.0.10"
+    },
+    "document": {}
+  },
+  "extensions": {
+    "mineru": {
+      "tier": "standard",
+      "parse_mode": "ocr"
+    },
+    "docvortex_layout": {
+      "version": 1,
+      "pages": [
+        {
+          "page_idx": 0,
+          "width_pt": 639.0,
+          "height_pt": 873.0
+        }
+      ]
+    }
+  },
+  "pages": [
+    {
+      "page_idx": 0,
+      "blocks": [
+        {
+          "type": "paragraph_title",
+          "index": 0,
+          "bbox": [
+            0.127,
+            0.05,
+            0.292,
+            0.076
+          ],
+          "content": [
+            {
+              "type": "text",
+              "content": "第2页·原题"
+            }
+          ],
+          "level": 2
+        },
+        {
+          "type": "text",
+          "index": 1,
+          "bbox": [
+            0.123,
+            0.09,
+            0.575,
+            0.132
+          ],
+          "content": [
+            {
+              "type": "text",
+              "content": "Q3. "
+            },
+            {
+              "type": "equation_inline",
+              "content": "f(x) = \\left\\{ \\begin{array}{ll}a x + 1, & x <   0\\\\ x^{2} - 1, & x\\geqslant 0 \\end{array} \\right."
+            },
+            {
+              "type": "text",
+              "content": " 若 "
+            },
+            {
+              "type": "equation_inline",
+              "content": "f(-2) = 3"
+            },
+            {
+              "type": "text",
+              "content": " ，求a和 "
+            },
+            {
+              "type": "equation_inline",
+              "content": "f(1)"
+            },
+            {
+              "type": "text",
+              "content": " 。"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "index": 2,
+          "bbox": [
+            0.121,
+            0.144,
+            0.358,
+            0.166
+          ],
+          "content": [
+            {
+              "type": "text",
+              "content": "Q4. 解不等式 "
+            },
+            {
+              "type": "equation_inline",
+              "content": "\\log_2(x - 1) \\leq 1"
+            },
+            {
+              "type": "text",
+              "content": "。"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "index": 3,
+          "bbox": [
+            0.118,
+            0.174,
+            0.513,
+            0.202
+          ],
+          "content": [
+            {
+              "type": "text",
+              "content": "本页保留两行分段结构与不等号，供文字层和公式源提取。"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "is_full_document": true,
+  "schema": "docvortex.middle",
+  "schema_version": "2.0"
+}

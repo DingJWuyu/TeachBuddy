@@ -118,7 +118,7 @@ export async function startResourcesFixture({
     resources,
     close: async () => {
       await new Promise((resolve) => server.close(resolve));
-      workbench.close();
+      await workbench.close();
     },
   };
 }

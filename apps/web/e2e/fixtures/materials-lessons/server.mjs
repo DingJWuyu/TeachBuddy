@@ -186,13 +186,10 @@ export async function start({ dataDir, port = 48434, webDist } = {}) {
     context,
     adapters,
     server,
-    close: () =>
-      new Promise((r) =>
-        server.close(() => {
-          context.dataStore.close();
-          r();
-        }),
-      ),
+    close: async () => {
+      await new Promise(resolve => server.close(resolve));
+      await context.dataStore.close();
+    },
   };
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

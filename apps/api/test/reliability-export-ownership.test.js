@@ -241,3 +241,62 @@ test('personal export retains persisted lesson output and its accepted snapshot 
     if (passed) fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('timed-out extraction stops later OCR pages while retaining earlier drafts and late task evidence', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'extraction-timeout-evidence-'));
+  const replay = await replayRecognizer();
+  let calls = 0, world, passed = false;
+  const recognizer = { revision: replay.revision, async run(input) {
+    const result = await replay.run(input);
+    return ++calls === 2 ? { ...result, termination: { code: 'recognition-timeout' } } : result;
+  } };
+  try {
+    world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
+    const { client, session } = await registerMath(world, 'extraction-timeout@example.test');
+    const call = http(client), principal = { accountKey: session.account.accountKey };
+    const files = [];
+    for (const name of ['I-2', 'I-1', 'I-3'])
+      files.push(await world.workbench.files.store(principal, { name: `${name}.png`, bytes: sourceImage(name) },
+        { key: randomUUID(), method: 'POST', path: '/api/workbench/files' }));
+    const imported = await call('POST', '/api/modules/questions/v2/imports', {
+      title: 'Timeout after the first page', origin: '', input: { kind: 'files', fileIds: files.map(file => file.id), pages: [] },
+    }, 201);
+    const finish = async id => {
+      for (let n = 0; n < 300; n++) {
+        const job = await call('GET', `/api/workbench/jobs/${id}`);
+        if (!['queued', 'running', 'cancelling'].includes(job.state)) return job;
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.fail('Extraction did not finish');
+    };
+    const job = await finish(imported.jobId);
+    assert.equal(job.state, 'partial', 'earlier retained drafts determine the existing terminal state');
+    assert.deepEqual(replay.calls, ['I-2', 'I-1'], 'timeout does not start the remaining page');
+    const material = await call('GET', `/api/modules/questions/v2/imports/${imported.id}`);
+    assert(material.drafts.length > 0, 'the completed first page remains usable');
+    const readTask = id => JSON.parse(world.workbench.db.prepare('SELECT value FROM questions_materials_tasks WHERE id=?').get(id).value);
+    const old = readTask(imported.jobId);
+    assert.equal(old.completed.length, 1);
+    const late = Object.values(old.lateResults);
+    assert.equal(late.length, 1);
+    assert.equal(late[0].source.fileId, files[1].id);
+    assert(late[0].assetFileIds.length > 0);
+    const thirdPreview = world.workbench.files.preview(principal, files[2].id);
+    assert.equal(world.workbench.recognition.readPage(principal, { fileId: files[2].id, renditionFileId: thirdPreview.renditionFileId, page: 1 }).state, 'unprocessed');
+    const retried = await call('POST', `/api/workbench/jobs/${imported.jobId}/retry`, { unitIds: [] }, 202);
+    assert.equal((await finish(retried.id)).state, 'succeeded');
+    assert.deepEqual(replay.calls, ['I-2', 'I-1', 'I-1', 'I-3']);
+    assert.deepEqual(readTask(imported.jobId).lateResults, old.lateResults);
+    for (const id of [late[0].rawFileId, ...late[0].assetFileIds])
+      assert.equal((await client.request('GET', `/api/workbench/files/${id}/content`)).status, 200);
+    const accepted = await call('POST', '/api/reliability/v1/exports', {}, 202);
+    const { zip } = await download(world, client, call, accepted.id);
+    const supplemental = JSON.parse(await zip.file('data/supplemental.json').async('string'));
+    assert.deepEqual(supplemental.questionRecognitionEvidence.find(item => item.jobId === imported.jobId).lateResults, old.lateResults);
+    passed = true;
+  } finally {
+    await world?.close();
+    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+    else console.error(`Retained extraction timeout integration: ${directory}`);
+  }
+});

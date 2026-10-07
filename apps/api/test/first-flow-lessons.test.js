@@ -20,7 +20,7 @@ async function withHarness(run) {
   try {
     return await run(harness);
   } finally {
-    harness.close();
+    await harness.close();
   }
 }
 
@@ -804,7 +804,7 @@ test('WB-005: section order is server-side and reordering keeps stable ids', asy
       'the stored position column carries the submitted order'
     );
 
-    harness.restart();
+    await harness.restart();
     const reread = await api.get(`${LESSONS}/${lesson.id}`).expect(200);
     assert.equal(reread.body.version, 2);
     assert.deepEqual(

@@ -389,7 +389,7 @@ test("production composes real handlers and rejects missing or fixture overrides
       if (name !== "fixture") throw error;
       assert.match(error.message, /fixture handlers are forbidden/);
     } finally {
-      workbench?.close();
+      await workbench?.close();
     }
   }
 });

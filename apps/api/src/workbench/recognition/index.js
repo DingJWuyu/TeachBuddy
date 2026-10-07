@@ -5,13 +5,14 @@ import { materialsError } from '../jobs/index.js';
 import { normalizeRecognition } from './document.js';
 
 const active = new Set(['queued', 'running', 'cancelling']);
-const defaultRevision = 'paddleocr-vl-1.6/document-5';
+const defaultRevision = 'mineru-pro-2605/document-6';
 
 /** Owns immutable machine results. Consumers own every subsequent human edit. */
 export function createRecognition({ db, files, readBytes, mutations, jobs, content, recognizer }) {
   const revision = recognizer?.revision ?? defaultRevision;
   const available = recognizer?.available ?? Boolean(recognizer);
   const inFlight = new Map();
+  let closed = false, closing;
 
   function source(principal, { fileId, renditionFileId }) {
     files.read(principal, fileId);
@@ -107,6 +108,7 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
   // extraction must not enqueue a child Job and wait on the same serial pump.
   async function ensurePage(principal, input, { signal, retry = false } = {}) {
     signal?.throwIfAborted();
+    if (closed) throw Object.assign(new Error('Recognition is closing'), { code: 'recognition-cancelled' });
     const page = pageSource(principal, input);
     const current = result(principal, page.inputHash);
     if (current?.state === 'ready') return readPage(principal, input);
@@ -117,6 +119,15 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
     const work = (async () => {
       const value = save(principal, { resultId: current?.resultId ?? randomUUID(), revision,
         inputHash: page.inputHash, state: 'running', issues: [] });
+      let abortStop;
+      const stopAfterAbort = () => {
+        abortStop ??= Promise.resolve().then(() => recognizer?.stopAccountAndWait?.(principal.accountKey));
+        abortStop.catch(() => {});
+      };
+      // Runtime's page listener ends when it hands back the complete bytes.
+      // Keep ownership cancellation connected while those bytes are persisted.
+      signal?.addEventListener('abort', stopAfterAbort, { once: true });
+      if (signal?.aborted) stopAfterAbort();
       try {
         const output = await recognizer.run({ accountKey: principal.accountKey, bytes: readBytes(principal, page.imageFileId), signal,
           width: page.width, height: page.height });
@@ -140,6 +151,7 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
           value.originalAssetFileIds.push((await storeAsset(asset.name, asset.bytes)).id);
         value.assetFileIds.push(...value.originalAssetFileIds);
         value.derivations = output.derivations ?? [];
+        if (output.termination) throw Object.assign(new Error('Recognition terminated after complete output'), { code: output.termination.code });
         signal?.throwIfAborted();
         const normalized = await normalizeRecognition({ result: output, storeAsset: async name => savedAssets.get(name) });
         if (!normalized.text.trim() && !normalized.assetFileIds.length)
@@ -153,13 +165,17 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
           derivations: output.derivations ?? [] });
         return readPage(principal, input);
       } catch (error) {
+        try { await abortStop; } catch (stopError) { error = stopError; }
         const cleanupFailed = error?.code === 'recognition-cleanup';
-        if (db.open) save(principal, { ...value, state: signal?.aborted && !cleanupFailed ? 'interrupted' : 'failed',
-          issues: [{ code: cleanupFailed ? error.code : signal?.aborted ? 'interrupted' : error.code ?? 'recognition-failed',
+        const timedOut = error?.code === 'recognition-timeout';
+        if (db.open) save(principal, { ...value, state: (signal?.aborted || error?.code === 'recognition-cancelled') && !cleanupFailed && !timedOut ? 'interrupted' : 'failed',
+          issues: [{ code: cleanupFailed || timedOut ? error.code : signal?.aborted ? 'interrupted' : error.code ?? 'recognition-failed',
             detail: cleanupFailed ? '尚未确认识别进程停止，请稍后重试。' : '本页未完成识别，原稿仍保留。' }] });
         if (cleanupFailed) throw error;
         if (signal?.aborted) throw signal.reason;
         return readPage(principal, input);
+      } finally {
+        signal?.removeEventListener('abort', stopAfterAbort);
       }
     })();
     inFlight.set(key, work);
@@ -182,7 +198,15 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
       const input = JSON.parse(row.value);
       if (input.revision !== revision) return { state: 'failed', outputFileIds: [], issues: [{ code: 'provider-unavailable', unitId: null, field: null, detail: '识别环境已变更，请重新发起识别。' }] };
       const issues = [], outputFileIds = [];
-      let completed = 0;
+      const bindLate = (page, late) => {
+        if (!late.rawFileId) return;
+        input.lateResult = { page, rawFileId: late.rawFileId, assetFileIds: late.assetFileIds ?? [],
+          originalAssetFileIds: late.originalAssetFileIds ?? [], derivations: late.derivations ?? [] };
+        db.prepare('UPDATE materials_recognition_requests SET value=? WHERE jobId=? AND accountKey=?')
+          .run(JSON.stringify(input), job.id, principal.accountKey);
+        outputFileIds.push(late.rawFileId);
+      };
+      let completed = 0, readyPages = 0;
       for (const page of input.pages) {
         let value;
         try {
@@ -193,21 +217,20 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
           if (error?.code === 'recognition-cleanup') throw error;
           if (!signal.aborted || !db.open) throw error;
           const late = readPage(principal, { ...input, page });
-          if (late.rawFileId) {
-            input.lateResult = { page, rawFileId: late.rawFileId, assetFileIds: late.assetFileIds ?? [],
-              originalAssetFileIds: late.originalAssetFileIds ?? [], derivations: late.derivations ?? [] };
-            db.prepare('UPDATE materials_recognition_requests SET value=? WHERE jobId=? AND accountKey=?')
-              .run(JSON.stringify(input), job.id, principal.accountKey);
-            outputFileIds.push(late.rawFileId);
-          }
+          bindLate(page, late);
           issues.push({ code: 'cancelled', unitId: `page:${page}`, field: null, detail: '识别已停止，返回的原始结果仅保留为任务证据。' });
           return { state: outputFileIds.length ? 'partial' : 'failed', outputFileIds, issues };
         }
-        if (value.state === 'ready') outputFileIds.push(value.rawFileId);
-        else issues.push({ code: 'conversion-failed', unitId: `page:${page}`, field: null, detail: '本页未完成识别，可重试。' });
+        const terminated = value.issues?.some(issue => ['recognition-timeout', 'recognition-cancelled'].includes(issue.code));
+        if (value.state === 'ready') { outputFileIds.push(value.rawFileId); readyPages++; }
+        else {
+          if (terminated) bindLate(page, value);
+          issues.push({ code: 'conversion-failed', unitId: `page:${page}`, field: null, detail: '本页未完成识别，可重试。' });
+        }
         reportProgress({ completed: ++completed, total: input.pages.length, unit: 'pages' });
+        if (terminated) return { state: readyPages ? 'partial' : 'failed', outputFileIds, issues };
       }
-      return { state: !issues.length ? 'succeeded' : outputFileIds.length ? 'partial' : 'failed', outputFileIds, issues };
+      return { state: !issues.length ? 'succeeded' : readyPages ? 'partial' : 'failed', outputFileIds, issues };
     },
     retry({ principal, job, unitIds, mutation }) {
       const row = db.prepare('SELECT value FROM materials_recognition_requests WHERE jobId=? AND accountKey=?').get(job.id, principal.accountKey);
@@ -227,6 +250,20 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
       await Promise.allSettled([...inFlight.entries()]
         .filter(([key]) => key.startsWith(`${accountKey}/`)).map(([, work]) => work));
       await recognizer?.cleanupAccount?.(accountKey);
+    },
+    close() {
+      if (closing) return closing;
+      closed = true;
+      closing = (async () => {
+        let stopError;
+        try { await recognizer?.close?.(); } catch (error) { stopError = error; }
+        const settled = await Promise.allSettled([...inFlight.values()]);
+        const failedCleanup = settled.find(value => value.status === 'rejected' && value.reason?.code === 'recognition-cleanup');
+        if (stopError) throw stopError;
+        if (failedCleanup) throw failedCleanup.reason;
+      })();
+      closing.catch(() => { closing = undefined; });
+      return closing;
     },
     initialize() {
       for (const row of db.prepare("SELECT accountKey,value FROM materials_recognition_results WHERE json_extract(value,'$.state')='running'").all()) {

@@ -296,6 +296,7 @@ export function createReliability({
     close() {
       closed = true;
       controller.abort();
+      return Promise.all([...running.values()].map(handle => handle.done));
     },
   };
 }

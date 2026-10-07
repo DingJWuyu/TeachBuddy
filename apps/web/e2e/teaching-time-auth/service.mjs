@@ -23,9 +23,9 @@ export async function startTeachingAuth({ directory, port = 0, now = () => Date.
       }, workbenchLogger: { info() {}, request() {}, error() {} } });
     await context.workbench.initialize();
     server.on('request', context.app);
-  } catch (error) { server.close(); context?.workbench.close(); throw error; }
+  } catch (error) { server.close(); await context?.workbench.close(); throw error; }
   return { ...context, origin, directory, mailer,
-    async close() { await new Promise(resolve => { server.close(resolve); server.closeAllConnections(); }); context.workbench.close(); } };
+    async close() { await new Promise(resolve => { server.close(resolve); server.closeAllConnections(); }); await context.workbench.close(); } };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (!process.env.T53_AUTH_DATA || !process.env.T53_AUTH_PORT) throw new Error('Set T53_AUTH_DATA and T53_AUTH_PORT; existing data is preserved.');

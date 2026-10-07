@@ -4,7 +4,7 @@
 
 ## 工作现场与授权
 
-当前总控推进 OCR 识别方案优化，工作树 `TeacherWorkspace-ocr`、分支 `perf/ocr-recognition`，从 `16579877` 开始。按[选型规则](../acceptance/ocr-selection.md)先冻结判据和输入，再测 A+B、A 单路及替代路线；用户偏好移除额外 CPU 复核，以识别效果和实际等待选择方案。授权免费公开模型下载、本机串行 GPU 实验、实现、独立验证及集成回 preview；不包含付费调用、私人材料外传、main、远端或公开部署。当前尚未形成新方案实测结论。
+当前总控推进 OCR 识别方案优化，工作树 `TeacherWorkspace-ocr`、分支 `perf/ocr-recognition`，从 `16579877` 开始。按[选型规则](../acceptance/ocr-selection.md)先冻结判据和输入，再测 A+B、A 单路及替代路线；用户偏好移除额外 CPU 复核，以识别效果和实际等待选择方案。授权免费公开模型下载、本机串行 GPU 实验、实现、独立验证及集成回 preview；不包含付费调用、私人材料外传、main、远端或公开部署。已完成多路线实测，MinerU Standard Pro-2605 Q8 的固定表格提示配置通过开发集及一次留出质量门槛；开发集三轮热八页中位 25.380 秒，原完整 A+B 为 232.089 秒。正在接入产品、验证进程停止与三个消费者，并准备独立检出重建；尚未集成到 preview，不能把实验评分当作产品验收。完整对比与边界归选型验收维护。
 
 本机用户体验直接运行 `TeacherWorkspace-preview` 源码，入口与维护方式见[SETUP](../SETUP.md#已有本机实例)。新环境按[隔离环境](../SETUP.md#新的隔离环境)启动；当前分支、HEAD 及未提交文件以 Git 为准。原 `TeacherWorkspace` 的 main 不在本轮开发范围。
 

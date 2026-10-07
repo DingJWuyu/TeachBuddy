@@ -12,6 +12,45 @@ import { replayRecognizer, sourceImage } from '../../web/e2e/fixtures/materials-
 
 const base = "/api/workbench/files";
 const image = fs.readFileSync(new URL("../../web/e2e/fixtures/materials-questions/figure.png", import.meta.url));
+
+test('HTTP cancellation during raw storage waits for owned model stop and retains complete evidence', async () => {
+  const gate = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
+  const storing = gate(), releaseStorage = gate(), stopping = gate(), releaseStop = gate();
+  let stoppedAccount, world;
+  try {
+    world = await createIntegration({ workbench: { recognition: { recognizer: {
+      revision: 'storage-boundary-1', async run() { return machinePage(); },
+      async stopAccountAndWait(accountKey) { stoppedAccount = accountKey; stopping.resolve(); await releaseStop.promise; },
+    } } } });
+    const { client, session } = await registerMath(world, 'storage-boundary@example.test');
+    const file = await upload(client), source = await preview(client, file);
+    const endpoint = `${base}/${file.id}/recognition`;
+    const original = world.workbench.files.store;
+    world.workbench.files.store = async (principal, input, ...args) => {
+      if (input.name === 'recognition.json') { storing.resolve(); await releaseStorage.promise; }
+      return original(principal, input, ...args);
+    };
+    const accepted = await write(client, endpoint, { renditionFileId: source.renditionFileId, pages: [1] });
+    await storing.promise;
+    assert.equal((await write(client, `/api/workbench/jobs/${accepted.json.id}/cancel`, {})).status, 200);
+    await stopping.promise;
+    assert.equal(stoppedAccount, session.account.accountKey);
+    releaseStorage.resolve();
+    await new Promise(resolve => setTimeout(resolve, 20));
+    assert.equal((await client.request('GET', `/api/workbench/jobs/${accepted.json.id}`)).json.state, 'cancelling');
+    releaseStop.resolve();
+    const job = await waitJob(client, accepted.json.id);
+    assert.equal(job.state, 'cancelled');
+    const page = (await client.request('GET', `${endpoint}/pages/1?renditionFileId=${source.renditionFileId}`)).json;
+    assert.equal(page.state, 'interrupted');
+    const request = JSON.parse(world.workbench.db.prepare('SELECT value FROM materials_recognition_requests WHERE jobId=?').get(job.id).value);
+    assert.equal(request.lateResult.rawFileId, page.rawFileId);
+    assert.equal((await client.request('GET', `${base}/${page.rawFileId}/content`)).status, 200);
+  } finally {
+    releaseStorage.resolve(); releaseStop.resolve();
+    await world?.close();
+  }
+});
 async function upload(client, name = "scan.png", bytes = image) {
   const boundary = `ocr-${randomUUID()}`;
   const response = await client.request("POST", base, {
@@ -630,5 +669,85 @@ test('localized content issues survive HTTP save and restart without blocking an
     await world?.close();
     if(passed)fs.rmSync(directory,{recursive:true,force:true});
     else console.error(`Retained content issue integration: ${directory}`);
+  }
+});
+
+// This exercises the real HTTP/SQLite/file shutdown boundary. The provider
+// output is injected here; real MinerU process teardown is checked separately.
+test('complete timed-out output stays failed, binds task evidence, and survives a successful retry', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'recognition-timeout-evidence-'));
+  let timedOut = true, calls = 0, world, passed = false;
+  const recognizer = { revision: 'timeout-evidence', async run() {
+    calls++;
+    return { ...machinePage(), assets: [{ name: 'late.png', bytes: image }], originalAssets: [],
+      ...(timedOut ? { termination: { code: 'recognition-timeout' } } : {}) };
+  } };
+  try {
+    world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
+    const { client } = await registerMath(world, 'timeout-evidence@example.test');
+    const pdf = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/P.pdf', import.meta.url));
+    const file = await upload(client, 'timeout-pages.pdf', pdf), source = await preview(client, file);
+    const endpoint = `${base}/${file.id}/recognition`;
+    const pageUrl = `${endpoint}/pages/1?renditionFileId=${source.renditionFileId}`;
+    const accepted = await write(client, endpoint, { renditionFileId: source.renditionFileId, pages: [1, 2] });
+    const job = await waitJob(client, accepted.json.id);
+    assert.equal(job.state, 'failed', 'complete raw evidence does not count as a successful page');
+    assert.equal(calls, 1, 'timeout stops subsequent pages of the same request');
+    assert.equal((await client.request('GET', `${endpoint}/pages/2?renditionFileId=${source.renditionFileId}`)).json.state, 'unprocessed');
+    const page = (await client.request('GET', pageUrl)).json;
+    assert.equal(page.state, 'failed');
+    assert.equal(page.issues[0].code, 'recognition-timeout');
+    const requestValue = () => JSON.parse(world.workbench.db.prepare('SELECT value FROM materials_recognition_requests WHERE jobId=?').get(job.id).value);
+    const evidence = requestValue().lateResult;
+    assert.equal(evidence.rawFileId, page.rawFileId);
+    assert.equal(evidence.assetFileIds.length, 1);
+    assert.deepEqual(job.outputFileIds, [evidence.rawFileId]);
+    assert.equal((await client.request('GET', `${base}/${evidence.assetFileIds[0]}/content`)).status, 200);
+    timedOut = false;
+    const retry = await write(client, `/api/workbench/jobs/${job.id}/retry`, { unitIds: ['page:1'] });
+    assert.equal((await waitJob(client, retry.json.id)).state, 'succeeded');
+    assert.equal((await client.request('GET', pageUrl)).json.state, 'ready');
+    assert.deepEqual(requestValue().lateResult, evidence, 'retry keeps the original timeout evidence binding');
+    assert.equal((await client.request('GET', `${base}/${evidence.rawFileId}/content`)).status, 200);
+    passed = true;
+  } finally {
+    await world?.close();
+    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+    else console.error(`Retained timeout evidence integration: ${directory}`);
+  }
+});
+
+test('normal API close waits for late evidence and handler persistence before closing SQLite', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'recognition-close-evidence-'));
+  let enter, world, passed = false;
+  const entered = new Promise(resolve => { enter = resolve; });
+  const recognizer = { revision: 'close-evidence', async run({ signal }) {
+    enter();
+    await new Promise(resolve => signal.addEventListener('abort', resolve, { once: true }));
+    // Real files.store persistence below must run while SQLite is still open.
+    return { ...machinePage(), assets: [{ name: 'late-close.png', bytes: image }], originalAssets: [] };
+  } };
+  try {
+    world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
+    const { client } = await registerMath(world, 'close-evidence@example.test');
+    const file = await upload(client), source = await preview(client, file);
+    const accepted = await write(client, `${base}/${file.id}/recognition`, { renditionFileId: source.renditionFileId, pages: [1] });
+    await entered;
+    const jar = client.jar;
+    await world.close(); world = null;
+    world = await createIntegration({ directory });
+    const reopened = world.client(); reopened.jar = jar;
+    const job = (await reopened.request('GET', `/api/workbench/jobs/${accepted.json.id}`)).json;
+    assert.equal(job.state, 'interrupted');
+    const evidence = JSON.parse(world.workbench.db.prepare('SELECT value FROM materials_recognition_requests WHERE jobId=?').get(job.id).value).lateResult;
+    assert.deepEqual(job.outputFileIds, [evidence.rawFileId]);
+    for (const id of [evidence.rawFileId, ...evidence.assetFileIds])
+      assert.equal((await reopened.request('GET', `${base}/${id}/content`)).status, 200);
+    assert.equal((await reopened.request('GET', `${base}/${file.id}/recognition/pages/1?renditionFileId=${source.renditionFileId}`)).json.state, 'interrupted');
+    passed = true;
+  } finally {
+    await world?.close();
+    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+    else console.error(`Retained close evidence integration: ${directory}`);
   }
 });

@@ -14,7 +14,7 @@ const activity = /^\s*(?:教学环节|教师|师|学生)\s*[:：]/;
 const exerciseScope = value => sectionHeading.test(value) && /检测|练习|作业/.test(value) && !/小结|总结|回顾|点评|反思/.test(value);
 const numericHeading = /^\s*([0-9０-９]+[.．、])(?:\s+|$)/;
 const intervalData = latex => /^\s*(?:\\left\s*)?[[(]\s*[^,]+,\s*[^,]+[\])]\s*$/.test(latex);
-const furniture = new Set(['header', 'footer', 'number', 'header_image', 'footer_image']);
+const furniture = new Set(['header', 'footer', 'number', 'page_number', 'header_image', 'footer_image']);
 
 // The shared HTML parser already owns table structure, math and asset IDs.
 // Split text boundaries only; never flatten a math run into another parser.
@@ -80,7 +80,7 @@ export function readTeachingTables(page, {section, previous} = {}) {
         text: value.slice(start, start + 20000), locations: [location], disposition: 'unassigned'});
   };
   for (const [order, raw] of page.blocks.entries()) {
-    if (furniture.has(raw.block_label) || ['paragraph_title', 'doc_title'].includes(raw.block_label) && /^\s*第\s*\d+\s*页/.test(raw.text)) continue;
+    if (furniture.has((raw.sourceLabel ?? raw.block_label)) || ['paragraph_title', 'doc_title'].includes((raw.sourceLabel ?? raw.block_label)) && /^\s*第\s*\d+\s*页/.test(raw.text)) continue;
     const plainRows = unmergedTableRows(raw, raw.document.blocks.filter(block => block.type === 'table'));
     for (const table of raw.document.blocks) {
       // Captions and surrounding paragraphs share the raw OCR block with a
@@ -110,7 +110,7 @@ export function readTeachingTables(page, {section, previous} = {}) {
       if (!context && !table.rows.some(header)) continue;
       handled.add(table);
       recognized = true;
-      const localIssues = page.issues.filter(issue => issue.blockId == null || issue.blockId === (raw.block_id ?? raw.rawIndex));
+      const localIssues = page.issues.filter(issue => issue.blockId == null || issue.blockId === (raw.id ?? raw.block_id ?? raw.rawIndex));
       const malformed = localIssues.some(issue => issue.code === 'uneven-table');
       for (const [rowIndex, row] of table.rows.entries()) {
         const roles = header(row);

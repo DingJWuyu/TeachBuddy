@@ -568,6 +568,8 @@ export function createExtractionHandler({
           const page = await recognition?.ensurePage(p, source, { signal, retry: Boolean(job.attemptOf) });
           signal.throwIfAborted();
           if (page?.state !== "ready") {
+            const terminated = page?.issues?.find(issue => ["recognition-timeout", "recognition-cancelled"].includes(issue.code));
+            if (terminated) throw Object.assign(new Error("Recognition stopped"), { code: terminated.code });
             issues.push(issue(page?.state === "unavailable" || !page ? "provider-unavailable" : "provider-result-unknown", unit.id,
               page?.issues?.[0]?.detail ?? "本地识别暂不可用，原稿已保存；配置恢复后可重试本页。"));
             continue;
@@ -643,7 +645,8 @@ export function createExtractionHandler({
         reportProgress({ completed, total: units.length, unit: "pages" });
       } catch (e) {
         if (e?.code === "recognition-cleanup") throw e;
-        if (signal.aborted) {
+        const recognitionTerminated = ["recognition-timeout", "recognition-cancelled"].includes(e?.code);
+        if (signal.aborted || recognitionTerminated) {
           // A late complete page is evidence of this attempt, never a draft.
           // Freeze its files before a retry replaces the shared page record.
           if (recognitionSource && recognition && s.db.open) {
@@ -660,7 +663,8 @@ export function createExtractionHandler({
               outputFileIds.push(late.rawFileId, ...(late.assetFileIds ?? []));
             }
           }
-          issues.push(issue("cancelled", unit.id, "整理已停止，迟到的识别结果仅保留为本次任务证据。"));
+          issues.push(issue(signal.aborted || e?.code === "recognition-cancelled" ? "cancelled" : "provider-result-unknown", unit.id,
+            e?.code === "recognition-timeout" ? "本页识别超时，未自动识别后续页；完整原始结果仅保留为本次任务证据。" : "整理已停止，迟到的识别结果仅保留为本次任务证据。"));
           break;
         }
         issues.push(

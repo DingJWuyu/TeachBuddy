@@ -44,7 +44,7 @@ test('replaying the same key and request returns the original result exactly onc
       .expect(200);
     assert.equal(list.body.items.length, 1);
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -72,7 +72,7 @@ test('object key order does not change the request fingerprint but the body does
     assert.deepEqual(reused.body, { type: '/problems/workbench/idempotency-key-reused' });
     assert.equal(context.workbench.mutations.count(ACCOUNT_A), 1);
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -97,7 +97,7 @@ test('a failed write rolls back the business row and the confirmed-request recor
     assert.equal(retry.body.value, 'stored now');
     assert.equal(context.workbench.mutations.count(ACCOUNT_A), 1);
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -115,7 +115,7 @@ test('the same key in another account is an independent request', async () => {
     assert.equal(context.workbench.mutations.count(ACCOUNT_A), 1);
     assert.equal(context.workbench.mutations.count(ACCOUNT_B), 1);
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -132,7 +132,7 @@ test('concurrent identical requests commit only once and both see the confirmed 
     const rows = context.workbench.db.prepare('SELECT COUNT(*) AS count FROM workbench_probe_items').get();
     assert.equal(rows.count, 1);
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -142,7 +142,7 @@ test('a confirmed request replays after the API process restarts on the same dat
   try {
     original = await postItem(first, { key: KEY_1, body: { value: 'survives restart' } }).expect(201);
   } finally {
-    first.dataStore.close();
+    await first.dataStore.close();
   }
 
   const restarted = await createWorkbenchContext({
@@ -161,7 +161,7 @@ test('a confirmed request replays after the API process restarts on the same dat
       ['materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'workbench_navigation_001', 'questions_0001_question_items', 'questions_materials_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'math_001', 'lessons_0001_lesson_tables', 'lessons_materials_001', 'lessons_0003_order', 'lessons_0004_history_and_placement', 'lessons_0005_page_source', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications', 'workbench_probe_init', 'agent_001_conversations']
     );
   } finally {
-    restarted.dataStore.close();
+    await restarted.dataStore.close();
     fs.rmSync(restarted.rootDir, { recursive: true, force: true });
   }
 });

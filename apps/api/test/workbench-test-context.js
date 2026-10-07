@@ -60,8 +60,8 @@ export async function createWorkbenchContext(options = {}) {
     rootDir,
     ownsRootDir: providedRootDir === null,
     sqlitePath: databasePath,
-    cleanup() {
-      app.dataStore.close();
+    async cleanup() {
+      await app.dataStore.close();
       if (providedRootDir === null) fs.rmSync(rootDir, { recursive: true, force: true });
     }
   };

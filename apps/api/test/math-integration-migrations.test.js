@@ -45,10 +45,10 @@ function fileHashes(directory) {
   return hashes;
 }
 
-function closeLibrary(runtime) {
+async function closeLibrary(runtime) {
   if (!runtime) return;
-  try { runtime.workbench.close(); }
-  finally { runtime.dataStore.close(); }
+  try { await runtime.workbench.close(); }
+  finally { await runtime.dataStore.close(); }
 }
 
 async function openLibrary(factory, directory, composition = {}) {
@@ -62,7 +62,7 @@ async function openLibrary(factory, directory, composition = {}) {
     },
   } });
   try { await runtime.workbench.initialize(); }
-  catch (error) { closeLibrary(runtime); throw error; }
+  catch (error) { await closeLibrary(runtime); throw error; }
   return runtime;
 }
 
@@ -138,7 +138,7 @@ for (const kind of ['lessons', 'math']) {
       const downloads = new Map();
       for (const { id } of files) downloads.set(id, await downloadHash(runtime, id));
       const oldLedger = runtime.workbench.db.prepare('SELECT * FROM workbench_migrations ORDER BY rowid').all();
-      closeLibrary(runtime); runtime = null;
+      await closeLibrary(runtime); runtime = null;
       const before = businessState(path.join(original, 'workspace.sqlite'));
       const originalFiles = fileHashes(path.join(original, 'files'));
       assert.ok(Object.keys(originalFiles).length > 0);
@@ -185,7 +185,7 @@ for (const kind of ['lessons', 'math']) {
         assert.ok(ledger.length > oldLedger.length, 'the current product must actually upgrade the old schema');
         if (restart === 0) upgradedLedger = ledger;
         else assert.deepEqual(ledger, upgradedLedger);
-        closeLibrary(runtime); runtime = null;
+        await closeLibrary(runtime); runtime = null;
         assert.deepEqual(businessState(path.join(upgraded, 'workspace.sqlite'), before.columns), before);
         assert.deepEqual(fileHashes(path.join(upgraded, 'files')), originalFiles);
       }
@@ -193,7 +193,7 @@ for (const kind of ['lessons', 'math']) {
       assert.deepEqual(fileHashes(path.join(original, 'files')), originalFiles);
       passed = true;
     } finally {
-      closeLibrary(runtime);
+      await closeLibrary(runtime);
       if (passed) fs.rmSync(root, { recursive: true, force: true });
       else t.diagnostic(`Retained legacy library: ${root}`);
     }

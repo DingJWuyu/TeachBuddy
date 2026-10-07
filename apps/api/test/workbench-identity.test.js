@@ -43,7 +43,7 @@ test('an anonymous workbench request is unauthenticated and never cached', async
       .expect(401);
     assert.deepEqual(moduleResponse.body, { type: '/problems/workbench/unauthenticated' });
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -112,7 +112,7 @@ test('write source protection rejects a wrong, null or missing origin before ide
     const rows = context.workbench.db.prepare('SELECT COUNT(*) AS count FROM workbench_probe_items').get();
     assert.equal(rows.count, 2, 'only the two trusted-source writes commit');
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -127,7 +127,7 @@ test('reads carry no source requirement in the frozen contract', async () => {
       .expect(200);
     assert.deepEqual(read.body, { accountKey: ACCOUNT_A });
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -181,7 +181,7 @@ test('the test runner binds two independent identities and rejects forged identi
       .expect(200);
     assert.deepEqual(aList.body, { items: [] });
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -214,7 +214,7 @@ test('another account cannot read or list an account object and never sees its c
     assert.equal(aList.body.items.length, 1);
     assert.equal(aList.body.items[0].value, 'A private value');
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 

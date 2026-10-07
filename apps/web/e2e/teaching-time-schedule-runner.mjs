@@ -116,7 +116,7 @@ export async function startScheduleRunner({ dataDir, port = 47113, reset = true 
         server.close(resolve);
         server.closeAllConnections();
       });
-      app.dataStore.close();
+      await app.dataStore.close();
     }
   };
 }

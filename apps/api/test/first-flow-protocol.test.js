@@ -23,7 +23,7 @@ async function withHarness(run) {
   try {
     return await run(harness);
   } finally {
-    harness.close();
+    await harness.close();
   }
 }
 
@@ -126,7 +126,7 @@ test('WB-012: committed writes survive restart and replay without duplicating ob
     const referenced = (await api.put(`${LESSONS}/${lesson.id}`, referenceBody, { key: lessonKey }).expect(200)).body;
     assert.equal(referenced.version, 2);
 
-    harness.restart();
+    await harness.restart();
 
     const afterRestart = await api.get(`${QUESTIONS}/${created.id}`).expect(200);
     assert.deepEqual(afterRestart.body, created);
@@ -511,7 +511,7 @@ test('WB-012: a real HTTP listener keeps the same persisted result across restar
 
     await closeServer(server);
     server = null;
-    harness.restart();
+    await harness.restart();
     server = await listenPreferred(harness.app(), PREFERRED_PORT);
     const restartedUrl = `http://127.0.0.1:${server.address().port}`;
 
@@ -541,6 +541,6 @@ test('WB-012: a real HTTP listener keeps the same persisted result across restar
     assert.equal(noIdentity.body.type, '/problems/workbench/unauthenticated');
   } finally {
     if (server) await closeServer(server);
-    harness.close();
+    await harness.close();
   }
 });

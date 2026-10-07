@@ -48,7 +48,7 @@ try {
     + `migrations applied: ${migrationResult.applied.length})`
   );
 } finally {
-  dataStore?.close();
-  if (workbench?.db.open) workbench.close();
+  await dataStore?.close();
+  if (workbench?.db.open) await workbench.close();
   fs.rmSync(tempDir, { recursive: true, force: true });
 }

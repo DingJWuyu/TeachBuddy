@@ -324,6 +324,11 @@ export function createPreviews({
     requestPreview,
     ensurePreview,
     crop,
+    close() {
+      const handles = [...textConversions.values()];
+      for (const handle of handles) handle.abort.abort();
+      return Promise.all(handles.map(handle => handle.done));
+    },
     async cancelAccountConversionsAndWait(accountKey) {
       const active = [...textConversions.values()].filter(handle => handle.accountKey === accountKey);
       for (const handle of active) handle.abort.abort();

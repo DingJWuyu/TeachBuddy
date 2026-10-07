@@ -159,7 +159,7 @@ test('R31 composition: injected workbench binds real auth; production refuses fi
     assert.equal(await context.workbench.identity.resolvePrincipal({ headers: {} }), null);
     assert.throws(() => createApp({ env: { ...env, nodeEnv: 'production', workbench: { ...env.workbench, jobHandlers: { extraction: { fixture: true } } } }, workbench }), /preview, extraction, export and question-asset/);
   } finally {
-    workbench.close();
+    await workbench.close();
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });

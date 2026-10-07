@@ -548,7 +548,7 @@ test("R31旧库追加resources迁移后原文件与数据仍可读取", async ()
     { name: "旧文件.txt", bytes: Buffer.from("R31保存的原稿") },
     { key: randomUUID(), method: "POST", path: "/api/workbench/files" },
   );
-  old.close();
+  await old.close();
   fixture = await startResourcesFixture({ dataDir: directory });
   try {
     assert.deepEqual(

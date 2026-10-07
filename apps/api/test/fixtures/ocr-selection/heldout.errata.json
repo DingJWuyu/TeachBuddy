@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "frozenTruthSha256": "f825d824d3266211a5981579724b766fc2262f2dd48d490829ac039bee948440",
+  "items": [
+    {
+      "gtId": "H2-f5",
+      "frozenLatex": "\\sin\\alpha=\\frac yr=\\frac{-3}{\\sqrt{13}}=-\\frac{3\\sqrt{13}}{13}",
+      "sourceFaithfulLatex": "\\sin\\alpha=\\frac yr=\\frac{-3}{\\sqrt{13}}=-\\frac{3\\sqrt3}{13}",
+      "entryError": "The original printed last sine numerator is 3*sqrt(3); frozen transcription incorrectly records 3*sqrt(13).",
+      "sourceImage": {
+        "path": "apps/api/test/fixtures/ocr-selection/pages/H2-LZ22.png",
+        "sha256": "95152c3dfc85c16100c5b1c5784e5d9b7361839d2185ab5ef68fb8825bfe4ca5"
+      },
+      "sourceFormulaBBox": [
+        378,
+        888,
+        668,
+        960
+      ]
+    }
+  ],
+  "policy": "Frozen truth is retained unchanged for audit. This one source-image transcription correction applies equally to both routes; quality thresholds and recognition outputs remain unchanged. Report frozen and corrected scores separately."
+}

@@ -167,7 +167,7 @@ test('real server waits for all migrations and refuses missing TLS configuration
     assert.equal(running.workbench.db.prepare("SELECT COUNT(*) n FROM workbench_migrations WHERE moduleId='auth'").get().n, 8);
     assert.ok(running.workbench.loader.enabledIds().includes('questions'));
     assert.notEqual(running.server.address().port, 0);
-  } finally { await new Promise(resolve => running.server.close(resolve)); running.workbench.close(); }
+  } finally { await new Promise(resolve => running.server.close(resolve)); await running.workbench.close(); }
   await assert.rejects(startServer({ env: { ...env, workbench: { ...env.workbench, tls: null } }, sendCode: async () => {} }), /TLS_CERT/);
 });
 

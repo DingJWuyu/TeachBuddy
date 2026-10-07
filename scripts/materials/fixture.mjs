@@ -109,7 +109,7 @@ export async function startFixture({ dataDir, port = 47331, webDist, reset = fal
       origin,
       close: async () => {
         await new Promise((resolve) => server.close(resolve));
-        context.dataStore.close();
+        await context.dataStore.close();
       }
     };
   }

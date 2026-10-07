@@ -99,135 +99,26 @@ export QUESTIONS_XPDF_PDFTOHTML="$xpdfHome/xpdf-tools-linux-4.06/bin64/pdftohtml
 
 ## 本地页识别工具
 
-`MATERIALS_OCR_HOME` 指向独立、持久的 PaddleOCR 工具目录。未配置时不运行新识别，已经保存的机器结果仍可读取。识别结果与人工采用的边界见[共用页识别](contracts/recognition.md)，不把文字搜索命中等同于题目整理或人工校对完成。
+`MATERIALS_OCR_HOME` 指向独立、持久的 MinerU 工具目录。未配置时不运行新识别，已保存的机器结果仍可读取。题库、备课和资源共用这一套识别服务；识别与人工采用的边界见[共用页识别](contracts/recognition.md)。
 
-本机固定环境为 Linux、NVIDIA RTX 5060 Laptop 8 GiB、Python 3.12.14、PaddlePaddle GPU 3.2.1/cu129、PaddleOCR/PaddleX 3.7.0。需要 `bwrap`、用户级 systemd 和 `nvidia-smi`。运行单页子进程，禁止联网和自动下载，复用既有串行 Job；公开 Paddle API 的微型预热用于本机首次 kernel 加载问题，不修改第三方依赖或模型函数。
+固定方案为 MinerU Standard、Pro-2605 Q8、CPU 版面分析和 CUDA llama.cpp 内容识别，只运行单路内容识别，不追加全页 CPU 复核。表格使用固定 LaTeX 提示，保留公式的原始识别文本；配图按模型定位从请求原页裁取，不重画图形。模型、提示、依赖、字体和下载摘要在 `scripts/recognition/manifest.json` 与 `requirements.freeze.txt`，适配入口为 `apps/api/src/workbench/recognition/worker.py` 和 `mineru_adapter.py`。改变识别配置时递增引擎修订，不能用旧缓存代替新配置验证。
 
-VLM 通过官方 `max_pixels` 参数限制每块内部识别分辨率，避免大表格的视觉 attention 超出显存；原页保持不变。版面采用官方矩形裁切模式，表格范围保守扩边，避免边缘文字被旧多边形遮掉；原始结果记录实际范围，配图仍从原页像素裁取。小字和复杂表格仍须对照原稿校对。改变识别参数时同时递增结果修订和工具清单修订，不能把旧缓存当作新配置的验证结果。参数入口见[官方说明](https://www.paddleocr.ai/main/en/version3.x/pipeline_usage/PaddleOCR-VL.html)。
+服务端要求 Linux x86-64、可运行随包 CUDA runtime 的 NVIDIA 驱动、`nvidia-smi`、Bubblewrap 和用户级 systemd。安装另需 Python 3.12 或更新版本、[uv](https://docs.astral.sh/uv/getting-started/installation/) 和提供 `bsdtar` 的 libarchive；这些宿主工具由系统包管理器准备。驱动不由安装脚本安装或替换。实际验证硬件和能力边界见[选型验收](acceptance/ocr-selection.md)，不据此宣称其他服务器已经验证。
 
-内容复核 profile 使用用户持久工具目录（例如 `~/.local/share/teacherworkspace-tools/paddleocr-vl-1.6-content-check`），修订 `paddleocr-vl-1.6/document-5`，布局为 `python/`、`venv/`、`models/`、`requirements.freeze.txt` 与 `manifest.json`。主模型固定到 PaddleOCR-VL-1.6 `c5630abae1d940eafe0697512a0325494b02ab42` 和 PP-DocLayoutV3 `7b48a7566925fa464281f930c58eee04fe2c862a`；新增 PP-OCRv5 mobile det/rec 使用 CPU 串行复核。固定依赖和模型清单随仓库保存在 `scripts/recognition/`，四个模型、许可及依赖清单共 36 个文件逐项记录 SHA-256；已安装依赖和权重不进入 Git。运行配置显式选择 profile，准备新目录不会自动切换已有服务。
-
-单页 scope 限制内存 6 GiB、禁止 swap，启动前要求实际可用 RAM 至少 6.5 GiB、GPU 0 空闲显存至少 7 GiB、工作盘空闲至少 25 GiB。准入不足不启动模型；运行中达到上限会失败并允许重试，原件保留。此限制来自固定本机实测，不保证任意复杂页面都能完成。
-
-<details>
-<summary>从零准备固定 OCR 环境</summary>
-
-在仓库根目录的同一个 Bash 会话执行以下命令。安装到新目录，从官方固定版本准备 Python、依赖和模型，不复制已有实例。已有目标目录时停止，另选新路径；安装完成并验证后再切换运行配置。
-
-### 1. 准备 Python 3.12.14 和独立 venv
-
-Python 3.12.14 只有官方源码包。主机须先具备 C 编译器、`make`、`curl`、`xz`，以及构建 Python 常用扩展的 OpenSSL、zlib、bz2、lzma、SQLite、ffi 开发库。下面的目录放在当前用户的持久数据位置；新目录必须不存在。下载与编译目录只用于安装期间。
+在仓库根目录执行：
 
 ```bash
-set -euo pipefail
-projectRoot="$(pwd -P)"
-ocrHome="${XDG_DATA_HOME:-$HOME/.local/share}/teacherworkspace-tools/paddleocr-vl-1.6-content-check"
-test ! -e "$ocrHome"
-ocrBuild="$(mktemp -d)"
-mkdir -p "$ocrHome"
-curl -fL 'https://www.python.org/ftp/python/3.12.14/Python-3.12.14.tar.xz' -o "$ocrBuild/Python-3.12.14.tar.xz"
-printf '%s  %s\n' '5c8462af5790baf43a321a1559dbe0db06d1be4300fb85fb53c40060668e548a' "$ocrBuild/Python-3.12.14.tar.xz" | sha256sum -c -
-tar -xf "$ocrBuild/Python-3.12.14.tar.xz" -C "$ocrBuild"
-cd "$ocrBuild/Python-3.12.14"
-./configure --prefix="$ocrHome/python" --with-ensurepip=install
-make -j"$(nproc)"
-make altinstall
-cd "$projectRoot"
-"$ocrHome/python/bin/python3.12" --version
-"$ocrHome/python/bin/python3.12" -m venv "$ocrHome/venv"
-"$ocrHome/venv/bin/python" -m pip --version
+ocrHome="${XDG_DATA_HOME:-$HOME/.local/share}/teacherworkspace-tools/mineru-pro-2605"
+python3 scripts/recognition/install.py "$ocrHome"
 ```
 
-版本输出必须是 `Python 3.12.14`。Python 官方给出源码包 SHA-256，并建议自建安装使用 `make altinstall`；`venv` 默认附带 pip。若构建缺某个系统开发库，补该库后重新编译，确认 `_ssl`、`_sqlite3`、`_lzma` 等扩展可导入，再继续。
+目标必须为空目录。安装器取得独立 Python、按哈希冻结的依赖、模型、CUDA llama.cpp 及固定字体，校验文件摘要和依赖关系。已有环境保留，另选新目录准备；失败时保留日志和现场，不能切换服务。安装完成后，在本实例私有 `.env` 中将 `MATERIALS_OCR_HOME` 设为实际绝对路径，重启 API，再上传一页真实材料，核对文字、公式、配图、原页定位与取消。已保存结果回放不能代替这一步。
 
-### 2. 安装固定依赖
+识别运行时禁止外网和自动下载。首次请求启动归属本实例及该账户的模型进程，连续页复用；空闲 60 秒后释放。取消、超时、下一次识别改用另一账户、账户删除或服务关闭时，先确认整个进程范围停止，再清理归属明确的临时输入。模型内部通信仅在隔离网络中可见。原始结果及迟到证据的处理见识别契约。
 
-先从 Paddle 官方 cu129 索引取得精确 GPU wheel，再从 PyPI 安装仓库中的完整冻结清单。`--no-deps` 使安装严格按冻结文件执行；完成后用 `pip check` 和逐包版本比较发现缺漏或元数据冲突。不能改用 CPU wheel、其他 CUDA 索引或较新 Paddle 版本，因为 worker 会拒绝环境。
+模型 scope 限制内存 6 GiB，禁止 swap；冷启动要求可用 RAM 至少 6.5 GiB、空闲 GPU 显存至少 3 GiB、工作盘空闲至少 25 GiB。热页不会再次要求空出已驻留模型占用的显存。准入不足不启动，运行失败保留原件并允许明确重试。这是当前配置的资源边界，不保证任意复杂页都能完成。
 
-```bash
-cp scripts/recognition/requirements.freeze.txt "$ocrHome/requirements.freeze.txt"
-cp scripts/recognition/manifest.json "$ocrHome/manifest.json"
-"$ocrHome/venv/bin/python" -m pip install --no-deps --only-binary=:all: \
-  --index-url https://www.paddlepaddle.org.cn/packages/stable/cu129/ \
-  'paddlepaddle-gpu==3.2.1'
-"$ocrHome/venv/bin/python" -m pip install --no-deps --only-binary=:all: \
-  --index-url https://pypi.org/simple -r "$ocrHome/requirements.freeze.txt"
-"$ocrHome/venv/bin/python" -m pip check
-"$ocrHome/venv/bin/python" - <<'PY'
-from importlib.metadata import version
-from pathlib import Path
-import sys
-home = Path(sys.executable).resolve().parents[2]
-for line in (home / 'requirements.freeze.txt').read_text().splitlines():
-    name, expected = line.split('==', 1)
-    actual = version(name)
-    assert actual == expected, (name, expected, actual)
-import paddle
-assert paddle.version.cuda() == '12.9', paddle.version.cuda()
-print('fixed Python packages and Paddle CUDA 12.9: OK')
-PY
-```
-
-若 `sys.executable` 通过 venv 符号链接指向 `python/`，上段 `parents[2]` 应为 profile 根；可同时用 `readlink -f "$ocrHome/venv/bin/python"` 核对解释器位置。运行实例在 bubblewrap 中只读绑定该 profile，安装后不依赖网络。
-
-### 3. 下载四个固定模型
-
-两个主模型从 PaddlePaddle 的 Hugging Face 官方仓库按完整 commit 下载。`hf download --local-dir` 会在模型目录留下 `.cache/huggingface/` 元数据，模型下载完成后移除该缓存，避免运行时清单库存校验失败。PP-OCRv5 两个 mobile 包使用既有官方推理模型 tar 地址，先校验下载 tar 的 SHA-256 再解包；README 固定到已核实的 PaddlePaddle 模型修订，许可证全文与主模型相同。
-
-```bash
-mkdir -p "$ocrHome/models"
-HF_HOME="$ocrBuild/hf" "$ocrHome/venv/bin/hf" download \
-  PaddlePaddle/PP-DocLayoutV3 \
-  --revision 7b48a7566925fa464281f930c58eee04fe2c862a \
-  --local-dir "$ocrHome/models/PP-DocLayoutV3"
-HF_HOME="$ocrBuild/hf" "$ocrHome/venv/bin/hf" download \
-  PaddlePaddle/PaddleOCR-VL-1.6 \
-  --revision c5630abae1d940eafe0697512a0325494b02ab42 \
-  --local-dir "$ocrHome/models/PaddleOCR-VL-1.6"
-rm -rf "$ocrHome/models/PP-DocLayoutV3/.cache" "$ocrHome/models/PaddleOCR-VL-1.6/.cache"
-
-for ocrModel in PP-OCRv5_mobile_det PP-OCRv5_mobile_rec; do
-  curl -fL "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/${ocrModel}_infer.tar" \
-    -o "$ocrBuild/$ocrModel.tar"
-done
-printf '%s  %s\n' \
-  50446e5d01ac2a73d5319c89513281f6578414c888c602f9af13f93feefffc58 "$ocrBuild/PP-OCRv5_mobile_det.tar" \
-  566b9512b34e34a9f0db54d87b51fa5a0b9ed2cf1ab7e49728cc0b8b5a64f414 "$ocrBuild/PP-OCRv5_mobile_rec.tar" | sha256sum -c -
-for ocrModel in PP-OCRv5_mobile_det PP-OCRv5_mobile_rec; do
-  tar -xf "$ocrBuild/$ocrModel.tar" -C "$ocrBuild"
-  mv "$ocrBuild/${ocrModel}_infer" "$ocrHome/models/$ocrModel"
-  cp "$ocrHome/models/PaddleOCR-VL-1.6/LICENSE" "$ocrHome/models/$ocrModel/LICENSE"
-done
-curl -fL 'https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det/resolve/0d63e78e2b680928f6b1747d76a08db6e645efb7/README.md' \
-  -o "$ocrHome/models/PP-OCRv5_mobile_det/README.md"
-curl -fL 'https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec/resolve/682f20538d8c086cb2128e5cfac775e6c4904e85/README.md' \
-  -o "$ocrHome/models/PP-OCRv5_mobile_rec/README.md"
-```
-
-### 4. 完整性与运行验证
-
-调用 worker 自身的环境验证，核对固定版本、文件库存和摘要。只在全部通过后将私有运行配置的 `MATERIALS_OCR_HOME` 指向 `ocrHome`，由实例维护者重启 API；再用真实上传的一页检查文字、公式、配图及取消路径。不能用原始结果回放替代 GPU 推理。
-
-```bash
-"$ocrHome/venv/bin/python" - "$ocrHome" "$projectRoot" <<'PY'
-import pathlib, runpy, sys
-home = pathlib.Path(sys.argv[1]).resolve()
-repo = pathlib.Path(sys.argv[2]).resolve()
-worker = runpy.run_path(str(repo / 'apps/api/src/workbench/recognition/worker.py'))
-worker['verify_environment'](home)
-assert pathlib.Path(sys.executable).resolve().is_relative_to(home)
-print('fixed OCR profile: OK')
-PY
-"$ocrHome/venv/bin/python" apps/api/test/recognition-content-check.test.py
-```
-
-全部通过且本次下载产物不再需要后，删除 `ocrBuild` 临时目录。下载或验证失败时保留 `ocrBuild`、profile 和日志以继续诊断，不切换在线服务。
-
-官方依据：[Python 3.12.14 源码与摘要](https://www.python.org/downloads/release/python-31214/)、[Python Unix 源码构建](https://docs.python.org/3.12/using/unix.html)、[Paddle Linux GPU 安装](https://www.paddlepaddle.org.cn/documentation/docs/en/install/pip/linux-pip_en.html)、[PaddleOCR-VL 安装](https://www.paddleocr.ai/main/en/version3.x/pipeline_usage/PaddleOCR-VL.html)、[Hugging Face 固定修订下载](https://huggingface.co/docs/huggingface_hub/guides/cli)。
-
-</details>
-
-移到另一目录时用目标 Python 重新创建 venv，再安装固定依赖；不能复制指向实验 worktree 的绝对解释器链接。模型目录保持完整，配置指向新目录后重启 API，再从真实上传验证文字、公式、裁图与取消。运行适配与准确参数由 `apps/api/src/workbench/recognition/runtime.js`、`worker.py` 维护，逐页资源准入失败会留在可重试状态，不停其他进程或改驱动/swap。此配置只证明当前主机路径，不代表其他设备已验证。
+工具目录含有指向安装位置的解释器链接，迁移时应在目标位置重新执行安装器。仓库不携带权重或私有配置，也不依赖本机实验目录。MinerU 采用 Apache-2.0 加附加条款，提供第三方在线服务须在界面或公开文档中明确标识使用 MinerU；模型与第三方依赖各自保留许可。依据见 [MinerU 许可](https://github.com/opendatalab/MinerU/blob/ed50cc15bc2c9bfb00520dadfe61979866e62236/LICENSE.md)及安装清单中的固定来源。
 
 ## 验证与原型
 

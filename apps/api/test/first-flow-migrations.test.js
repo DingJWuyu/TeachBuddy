@@ -43,11 +43,11 @@ test('WB-019: a fresh database applies both module migrations once and survives 
       await api.post(QUESTIONS, manualQuestionSample(), { key: harness.nextUuid() }).expect(201)
     ).body;
 
-    harness.restart();
+    await harness.restart();
     assert.deepEqual(appliedMigrations(harness), MIGRATION_IDS, 'applied IDs are not run twice');
     assert.equal((await api.get(`${QUESTIONS}/${question.id}`).expect(200)).body.version, 1);
   } finally {
-    harness.close();
+    await harness.close();
   }
 });
 
@@ -108,14 +108,14 @@ test('WB-019: a previous-stage account and layout database upgrades without losi
       }).expect(201)
     ).body;
 
-    harness.restart();
+    await harness.restart();
     assert.deepEqual(appliedMigrations(harness), MIGRATION_IDS, 'the upgraded database is not re-migrated');
     assert.equal((await api.get(`${QUESTIONS}/${question.id}`).expect(200)).body.version, 1);
     assert.equal((await api.get(`${LESSONS}/${lesson.id}`).expect(200)).body.version, 1);
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM users'), 1, 'the old account row is untouched');
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM workspaceLayouts'), 1);
   } finally {
-    harness?.close();
+    await harness?.close();
     fs.rmSync(rootDir, { recursive: true, force: true });
   }
 });

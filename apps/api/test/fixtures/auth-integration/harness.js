@@ -23,9 +23,9 @@ export async function createIntegration(options = {}) {
     });
     await context.workbench.initialize();
     server.on('request', context.app);
-  } catch (error) { server.close(); throw error; }
+  } catch (error) { server.close(); await context?.workbench.close(); await error.cleanup; throw error; }
   return { ...context, origin, directory, mailer, clock,
     client: () => createClient(origin, { transport: https }),
-    async close() { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); context.workbench.close(); }
+    async close() { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await context.workbench.close(); }
   };
 }

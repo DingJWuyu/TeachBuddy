@@ -74,11 +74,11 @@ export async function harness() {
     dir,
     runtime: () => runtime,
     restart: async () => {
-      runtime.dataStore.close();
+      await runtime.dataStore.close();
       await start();
     },
-    close: () => {
-      runtime.dataStore.close();
+    close: async () => {
+      await runtime.dataStore.close();
       fs.rmSync(dir, { recursive: true, force: true });
     },
   };
@@ -154,7 +154,7 @@ test("MC14/16: save adopted resource, move it and retain its snapshot across sou
     const read = await h.send("get", `${base}/${lesson.id}`);
     assert.deepEqual(read.body, updated.body);
   } finally {
-    h.close();
+    await h.close();
   }
 });
 test("MC17/18: accepted export creates a real DOCX with editable formulas and no student answer or note leakage", async () => {
@@ -273,7 +273,7 @@ test("MC17/18: accepted export creates a real DOCX with editable formulas and no
     assert.match(xml, /求定义域/);
     assert.doesNotMatch(xml, /ANSWER-ONLY|TEACHER-ONLY|LESSON-NOTE/);
   } finally {
-    h.close();
+    await h.close();
   }
 });
 test("MC11: B11 refuses a v2 lesson without lossy projection or overwrite", async () => {
@@ -309,7 +309,7 @@ test("MC11: B11 refuses a v2 lesson without lossy projection or overwrite", asyn
       1,
     );
   } finally {
-    h.close();
+    await h.close();
   }
 });
 test("MC19/21/22: unsupported formula rejects before acceptance, failed conversion preserves old output, export retry is rejected", async () => {
@@ -419,7 +419,7 @@ test("MC19/21/22: unsupported formula rejects before acceptance, failed conversi
     );
     assert.equal(foreignFile.status, 404);
   } finally {
-    h.close();
+    await h.close();
   }
 });
 test("MC17/21: accepted snapshot is fixed; storage failure and missing output recover without losing prior successes", async () => {
@@ -491,7 +491,7 @@ test("MC17/21: accepted snapshot is fixed; storage failure and missing output re
     const outputs = (await h.send("get", url)).body.items;
     assert.equal(outputs.filter((r) => r.fileId).length, 2);
   } finally {
-    h.close();
+    await h.close();
   }
 });
 test("MC11/15/16: old lesson keeps v1 content, explicit repeated references and deleted sources retain snapshots and usages", async () => {
@@ -581,7 +581,7 @@ test("MC11/15/16: old lesson keeps v1 content, explicit repeated references and 
       old.body,
     );
   } finally {
-    h.close();
+    await h.close();
   }
 });
 test('MC17/19: interrupted and cancelled export tasks recover only through a fresh explicit export',async()=>{
@@ -594,5 +594,5 @@ test('MC17/19: interrupted and cancelled export tasks recover only through a fre
   const second=await h.send('post',url,options);await waitFor(second.body.jobId,['running']);const cancel=await h.send('post',`/api/workbench/jobs/${second.body.jobId}/cancel`,{});assert.equal(cancel.status,200);await waitFor(second.body.jobId,['cancelled']);
   const third=await h.send('post',url,options);const success=await waitFor(third.body.jobId,['succeeded','failed']);assert.equal(success.state,'succeeded');
   assert.equal((await h.send('get',url)).body.items.filter(r=>r.fileId).length,1);
- }finally{h.close();}
+ }finally{await h.close();}
 });

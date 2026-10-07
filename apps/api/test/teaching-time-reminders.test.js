@@ -20,7 +20,7 @@ test('real composition exposes scheduled notifications with no implicit reminder
     const result = await a.get(notices);
     assert.equal(result.status, 200);
     assert.deepEqual(result.body, { items: [], unreadCount: 0 });
-  } finally { h.close(); }
+  } finally { await h.close(); }
 });
 
 async function fixture(run) {
@@ -40,7 +40,7 @@ async function fixture(run) {
     return result.body;
   };
   try { await run({ h, a, b, post, create, getNotices, at: value => { now = value; } }); }
-  finally { h.close(); }
+  finally { await h.close(); }
 }
 
 test('WB-T012/014: before, after, original due time and stable identities survive repeated restarts', async () => fixture(async f => {
@@ -221,7 +221,7 @@ test('B16 database upgrades into the real four-module composition without losing
   try {
     let a = h.agent(h.createAccount('teacher-a'));
     const lesson = (await a.post('/api/modules/lessons/items', lessonSample(), { key: h.nextUuid() })).body;
-    h.close();
+    await h.close();
     h = await createFirstFlowHarness({ databasePath });
     a = h.agent(h.createAccount('teacher-a'));
     assert.equal((await a.get(`/api/modules/lessons/items/${lesson.id}`)).body.title, lesson.title);
@@ -234,6 +234,6 @@ test('B16 database upgrades into the real four-module composition without losing
     await h.restart();
     assert.equal((await a.get(`/api/modules/classes/records/${record.body.id}`)).body.sources[0].currentLabel, lesson.title);
     assert.deepEqual((await a.get(notices)).body, { items: [], unreadCount: 0 });
-  } finally { h.close(); fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally { await h.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 });
 function randomKey() { return crypto.randomUUID(); }

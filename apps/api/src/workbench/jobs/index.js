@@ -49,6 +49,7 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
     };
   }
   function enqueue({ principal, kind, target }, mutation) {
+    if (closed) throw materialsError('job-running', 409);
     if (!db.inTransaction)
       throw new Error("jobs.enqueue requires the accepting transaction");
     const job = save(principal, {
@@ -180,7 +181,15 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
             ],
           };
         }
-        if (closed) { controller.settle(); break; }
+        if (closed) {
+          // Persist the handler's evidence before releasing close's waiter.
+          // A shutdown interrupts this attempt; it never turns it successful.
+          const current = get(principal, job.id);
+          save(principal, { ...current, ...result, state: cleanupFailed ? 'failed' : 'interrupted', updatedAt: stamp(),
+            issues: [...result.issues, { code: 'interrupted', unitId: null, field: null, detail: '服务关闭，未自动重发。' }].slice(-500) });
+          controller.settle(); controller = undefined;
+          break;
+        }
         const current = get(principal, job.id);
         save(principal, {
           ...current,
@@ -255,7 +264,9 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
     start,
     close() {
       closed = true;
-      controller?.abort.abort();
+      const current = controller;
+      current?.abort.abort();
+      return current?.done ?? Promise.resolve();
     },
   };
 }

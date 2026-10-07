@@ -42,13 +42,13 @@ export function readRecognizedPage(page, { section, previous }) {
   for (const [order, raw] of page.blocks.entries()) {
     const location = { ...page.location, box: raw.box };
     let sourceHanOffset = 0;
-    const alignedSource = han(raw.block_content ?? "") === han(raw.text);
+    const alignedSource = han(raw.sourceContent ?? raw.block_content ?? "") === han(raw.text);
     if (answerHeading.test(pageHeading(raw.text))) {
       reportScope = false;
       if (!sawQuestion) answerPage = true;
     }
-    if (["header", "footer", "number", "header_image", "footer_image"].includes(raw.block_label) ||
-        /^\s*第\s*\d+\s*页/.test(raw.text) && ["paragraph_title", "doc_title"].includes(raw.block_label) ||
+    if (["header", "footer", "number", "page_number", "header_image", "footer_image"].includes((raw.sourceLabel ?? raw.block_label)) ||
+        /^\s*第\s*\d+\s*页/.test(raw.text) && ["paragraph_title", "doc_title"].includes((raw.sourceLabel ?? raw.block_label)) ||
         answerPage && answerHeading.test(pageHeading(raw.text))) continue;
     if (raw.document.blocks.length === 1 && ["heading", "paragraph"].includes(raw.document.blocks[0].type) &&
         teachingHeading.test(raw.text)) {
@@ -92,7 +92,7 @@ export function readRecognizedPage(page, { section, previous }) {
       }
       sawQuestion ||= questionStart.test(text);
       entries.push({ block, text, start: cursor, end: cursor + length(text), location,
-        rawId: raw.block_id ?? raw.rawIndex, continues, order,
+        rawId: raw.id ?? raw.block_id ?? raw.rawIndex, continues, order,
         sourceHanStart: alignedSource ? sourceHanOffset : null });
       sourceHanOffset += han(text).length;
       cursor += length(text) + 1;

@@ -27,7 +27,7 @@ async function withHarness(run) {
   try {
     return await run(harness);
   } finally {
-    harness.close();
+    await harness.close();
   }
 }
 

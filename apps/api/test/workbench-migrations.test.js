@@ -46,7 +46,7 @@ test('an empty database applies migrations once and records them in the ledger',
     assert.deepEqual(migrationResult.applied, []);
     assert.deepEqual(migrationResult.skipped, [...PRODUCT_MIGRATIONS, 'workbench_probe_init', 'agent_001_conversations']);
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -83,7 +83,7 @@ test('an existing account and layout database is upgraded without losing its dat
     const stored = upgraded.dataStore.forAccount(user.id).list('workspaceLayouts')[0];
     for (const key of Object.keys(layout)) assert.deepEqual(stored[key], layout[key]);
   } finally {
-    upgraded.dataStore.close();
+    await upgraded.dataStore.close();
     fs.rmSync(rootDir, { recursive: true, force: true });
   }
 });
@@ -138,7 +138,7 @@ test('a failing migration leaves no ledger row and no partial table', async () =
       .get();
     assert.equal(table, undefined, 'the failed migration DDL must be rolled back');
   } finally {
-    workbench.close();
+    await workbench.close();
     fs.rmSync(rootDir, { recursive: true, force: true });
   }
 });

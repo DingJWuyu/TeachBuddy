@@ -185,7 +185,11 @@ export function createPiRuntime({ store, executor, identity, config = {} }) {
       await Promise.all(handles.map(handle => handle.done));
     },
     stop(turnId) { void running.get(turnId)?.session?.abort(); },
-    close() { for (const h of running.values()) void h.session?.abort(); },
+    close() {
+      const handles = [...running.values()];
+      for (const handle of handles) void handle.session?.abort();
+      return Promise.all(handles.map(handle => handle.done));
+    },
     recover() {
       for (const account of store.accounts()) for (const doc of store.list(account)) {
         if (!doc.snapshot.turns.some(t => t.state === 'running')) continue;

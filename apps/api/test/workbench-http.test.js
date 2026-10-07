@@ -38,7 +38,7 @@ test('the context response is JSON and never cached', async () => {
     assert.match(response.headers['content-type'], /application\/json/);
     assert.equal(response.headers['cache-control'], 'no-store');
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -65,7 +65,7 @@ test('a write without the fixed browser protection header is refused before any 
     const rows = context.workbench.db.prepare('SELECT COUNT(*) AS count FROM workbench_probe_items').get();
     assert.equal(rows.count, 0);
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -97,7 +97,7 @@ test('media type, malformed JSON and payload size map to their contract statuses
       .expect(413);
     assert.deepEqual(oversized.body, { type: '/problems/workbench/payload-too-large' });
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -118,7 +118,7 @@ test('the idempotency key header is required and must be a UUID', async () => {
       reason: 'invalid-type'
     });
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -144,7 +144,7 @@ test('invalid input returns exactly one located error in the frozen order', asyn
     assert.equal(tooLong.body.field, '/value');
     assert.equal(tooLong.body.reason, 'out-of-range');
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -161,7 +161,7 @@ test('unknown fields are reported before field content, ordered by key ascending
       reason: 'unknown-field'
     });
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -180,7 +180,7 @@ test('an unknown storage failure rolls back and maps to temporarily-unavailable'
     assert.equal(rows.count, 0);
     assert.equal(context.workbench.mutations.count(ACCOUNT_A), 0);
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -231,7 +231,7 @@ test('workbench module paths are owned only for catalog module IDs', async () =>
       .expect(404);
     assert.deepEqual(undeclared.body, { type: '/problems/workbench/not-found' });
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });
 
@@ -274,9 +274,9 @@ test('the composed app mounts the catalog handler on the exact contract path', a
       assert.equal(empty.body.version, 3);
       assert.deepEqual(empty.body.items.map((entry) => entry.id), ['questions', 'lessons', 'math', 'resources', 'classes', 'schedule']);
     } finally {
-      bare.cleanup();
+      await bare.cleanup();
     }
   } finally {
-    context.cleanup();
+    await context.cleanup();
   }
 });

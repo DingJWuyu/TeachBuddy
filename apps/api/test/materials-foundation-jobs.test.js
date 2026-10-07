@@ -135,8 +135,11 @@ test("persistent handlers retain partial units, cancellation, unknown provider a
   mode = "wait";
   const interrupted = accept();
   await wait(interrupted.id, "running");
-  await runtime.close();
+  const closing = runtime.close();
+  await delay();
+  assert.equal(runtime.workbench.db.open, true, "close waits for the active handler before closing storage");
   release();
+  await closing;
   runtime = await startFixture({
     dataDir: directory,
     port: 0,

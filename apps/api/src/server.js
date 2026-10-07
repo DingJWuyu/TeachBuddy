@@ -29,10 +29,16 @@ export function createHttpServer(context) {
 
 export async function startServer(options = {}) {
   let vite;
-  const context = createApp({
-    ...options,
-    ...(options.dev ? { webMiddleware: (req, res, next) => vite.middlewares(req, res, next) } : {})
-  });
+  let context;
+  try {
+    context = createApp({
+      ...options,
+      ...(options.dev ? { webMiddleware: (req, res, next) => vite.middlewares(req, res, next) } : {})
+    });
+  } catch (error) {
+    await error.cleanup;
+    throw error;
+  }
 
   let server;
   try {
@@ -54,7 +60,7 @@ export async function startServer(options = {}) {
   } catch (error) {
     await vite?.close();
     server?.close();
-    context.workbench.close();
+    await context.dataStore.close();
     throw error;
   }
 
@@ -62,14 +68,19 @@ export async function startServer(options = {}) {
   const origin = `${scheme}://localhost:${server.address().port}`;
   console.log(`${context.env.appName} running on ${origin}`);
 
-  async function close() {
-    // Close HMR sockets before waiting for HTTPS to drain during watch restarts.
-    await vite?.close();
-    await new Promise(resolve => {
-      server.close(resolve);
-      server.closeAllConnections();
-    });
-    context.workbench.close();
+  let closing;
+  function close() {
+    closing ??= (async () => {
+      // Close HMR sockets before waiting for HTTPS to drain during watch restarts.
+      await vite?.close();
+      await new Promise(resolve => {
+        server.close(resolve);
+        server.closeAllConnections();
+      });
+      await context.dataStore.close();
+    })();
+    closing.catch(() => { closing = undefined; });
+    return closing;
   }
 
   return { ...context, server, origin, close };

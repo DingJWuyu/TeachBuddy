@@ -66,11 +66,19 @@ export function createApp(options = {}) {
       });
     }
   } catch (error) {
-    workbench.close();
+    // Composition is synchronous, before HTTP can accept work. Preserve the
+    // cleanup promise for the async startup owner without hiding a failure.
+    error.cleanup = workbench.close();
+    error.cleanup.catch(() => {});
     throw error;
   }
   const closeStore = dataStore.close.bind(dataStore);
-  dataStore.close = () => { workbench.close(); closeStore(); };
+  let closing;
+  dataStore.close = () => {
+    closing ??= (async () => { await workbench.close(); await closeStore(); })();
+    closing.catch(() => { closing = undefined; });
+    return closing;
+  };
   const app = express();
   if (authModule) app.use('/api/auth', authModule.router);
   if (workbench.agentRecoveryGuard) app.use('/api/agent', workbench.agentRecoveryGuard);

@@ -39,7 +39,7 @@ test('an empty database receives every schedule table and ledger row', async () 
       'reliability-preferences:reliability_preferences_001'
     ]);
   } finally {
-    harness.close();
+    await harness.close();
   }
 });
 
@@ -95,7 +95,7 @@ test('a B16 database upgrades in place and keeps its previous rows', async () =>
     assert.equal(reloaded.status, 200);
     assert.equal(reloaded.body.time.startTime, '15:00');
   } finally {
-    upgraded.close();
+    await upgraded.close();
     fs.rmSync(rootDir, { recursive: true, force: true });
   }
 });

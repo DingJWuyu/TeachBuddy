@@ -70,7 +70,7 @@ test('classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数
   }).expect(201);
   const baseMigrations = base.workbench.migrations.appliedIds().filter((id) => id.startsWith('classes_'));
   assert.deepEqual(baseMigrations, [], 'the B16-only composition has no classes migration');
-  base.dataStore.close();
+  await base.dataStore.close();
 
   // 2. Reopen the same file with the classes module enabled (T51 fixture).
   const harness = await createTeachingTimeClassesHarness({ databasePath: sqlitePath, trustedOrigin: TRUSTED_ORIGIN });
@@ -107,7 +107,7 @@ test('classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数
     assert.equal(afterRestart.body.note, '迁移后新增的记录');
     assert.equal((await reopened.get(`/api/modules/questions/items/${question.body.id}`).expect(200)).body.title, '迁移前就存在的题');
   } finally {
-    harness.close();
+    await harness.close();
     fs.rmSync(rootDir, { recursive: true, force: true });
   }
 });

@@ -11,7 +11,7 @@ async function world(run) {
   const a = h.agent(h.account('teacher-a'));
   const post = async (url, body) => { const r = await a.post(url, body, { key: h.key() }); assert.equal(r.status, 201, JSON.stringify(r.body)); return r.body; };
   const put = async (url, body) => { const r = await a.put(url, body, { key: h.key() }); assert.equal(r.status, 200, JSON.stringify(r.body)); return r.body; };
-  try { await run({ h, a, post, put }); } finally { h.close(); }
+  try { await run({ h, a, post, put }); } finally { await h.close(); }
 }
 
 test('calendar metadata and labels persist, legacy updates preserve metadata, accounts remain isolated', () => world(async ({ h, a, post, put }) => {

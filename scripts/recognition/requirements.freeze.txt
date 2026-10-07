@@ -1,114 +1,109 @@
-Jinja2==3.1.6
-MarkupSafe==3.0.3
-PyYAML==6.0.2
-aiohappyeyeballs==2.7.1
-aiohttp==3.14.3
-aiosignal==1.4.0
-aistudio_sdk==0.3.9
-annotated-types==0.8.0
-anyio==4.15.1
-attrs==26.1.0
-bce-python-sdk==0.9.79
-beautifulsoup4==4.15.0
-cachetools==7.2.0
-certifi==2026.7.22
-cffi==2.1.1
-chardet==7.6.0
-charset-normalizer==3.5.1
-click==8.5.0
-cloudpickle==3.1.2
-colorlog==6.12.0
-crc32c==2.9.post0
-cryptography==50.0.1
-cssselect==1.5.0
-cssutils==2.15.0
-einops==0.8.2
-encutils==1.0.0
-et_xmlfile==2.0.0
-filelock==4.0.3
-frozenlist==1.8.0
-fsspec==2026.9.0
-ftfy==6.3.1
-future==1.0.0
-h11==0.16.0
-hf-xet==1.6.0
-httpcore2==2.13.1
-httpcore==1.0.9
-httpx2==2.13.1
-httpx==0.28.1
-huggingface_hub==1.33.0
-idna==3.20
-imagesize==2.0.1
-jiter==0.17.0
-joblib==1.6.0
-latex2mathml==3.81.1
-lxml==6.1.3
-modelscope-hub==0.4.5
-modelscope==1.40.1
-more-itertools==11.1.0
-multidict==6.9.1
-narwhals==2.26.0
-networkx==3.6.1
-numpy==2.3.5
-nvidia-cublas-cu12==12.9.0.13
-nvidia-cuda-cccl-cu12==12.9.27
-nvidia-cuda-cupti-cu12==12.9.19
-nvidia-cuda-nvrtc-cu12==12.9.41
-nvidia-cuda-runtime-cu12==12.9.37
-nvidia-cudnn-cu12==9.9.0.52
-nvidia-cufft-cu12==11.4.0.6
-nvidia-cufile-cu12==1.14.0.30
-nvidia-curand-cu12==10.3.10.19
-nvidia-cusolver-cu12==11.7.4.40
-nvidia-cusparse-cu12==12.5.9.5
-nvidia-cusparselt-cu12==0.7.1
-nvidia-nccl-cu12==2.27.3
-nvidia-nvjitlink-cu12==12.9.41
-nvidia-nvtx-cu12==12.9.19
-openai==3.19.2
-opencv-contrib-python==4.10.0.84
-openpyxl==3.1.5
-opt-einsum==3.3.0
-packaging==26.3
-paddleocr==3.7.0
-paddlepaddle-gpu==3.2.1
-paddlex==3.7.0
-pandas==3.0.6
-pillow==12.3.0
-premailer==3.10.0
-prettytable==3.18.0
-propcache==0.5.4
-protobuf==6.33.4
-psutil==7.2.2
-py-cpuinfo==9.0.0
-pyclipper==1.4.0
-pycparser==3.0
-pycryptodome==3.23.0
-pydantic==2.13.5
-pydantic_core==2.46.5
-pypdfium2==5.13.0
-python-bidi==0.6.11
-python-dateutil==2.9.0.post0
-regex==2026.9.10
-requests==2.34.2
-ruamel.yaml==0.19.1
-safetensors==0.8.0
-scikit-learn==1.9.1
-scipy==1.18.1
-sentencepiece==0.2.2
-setuptools==84.0.0
-shapely==2.1.2
-six==1.17.0
-sniffio==1.3.1
-soupsieve==2.10
-threadpoolctl==3.7.0
-tiktoken==0.14.0
-tokenizers==0.23.2
-tqdm==4.70.1
-truststore==0.10.4
-typing-inspection==0.4.4
-typing_extensions==4.16.0
-ujson==6.0.0
-urllib3==2.8.0
-wcwidth==0.9.1
-yarl==1.25.1
+aiofiles==25.1.0 --hash=sha256:abe311e527c862958650f9438e859c1fa7568a141b22abcd015e120e86a85695
+aiosqlite==0.22.1 --hash=sha256:21c002eb13823fad740196c5a2e9d8e62f6243bd9e7e4a1f87fb5e44ecb4fceb
+annotated-doc==0.0.5 --hash=sha256:117bac03a25ede5df5440e855b32d556049ca169ead221505badf432fed4b101
+annotated-types==0.8.0 --hash=sha256:f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0
+anyio==4.15.1 --hash=sha256:6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101
+beautifulsoup4==4.15.0 --hash=sha256:d6f88de62e1d4e38ecb1077eb9724cd0eff29d2a08ca16a401e9b9e93f117cf9
+brotli==1.2.0 --hash=sha256:072e7624b1fc4d601036ab3f4f27942ef772887e876beff0301d261210bca97f
+certifi==2026.7.22 --hash=sha256:62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775
+cffi==2.1.1 --hash=sha256:c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf
+charset-normalizer==3.5.2 --hash=sha256:3d31298449090ab8d47b7b1b2a555ff73cac7ed438a08b7ac160980c7ebed649
+click==8.5.0 --hash=sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360
+cobble==0.1.4 --hash=sha256:36c91b1655e599fd428e2b95fdd5f0da1ca2e9f1abb0bc871dec21a0e78a2b44
+cryptography==50.0.2 --hash=sha256:9dab55f57c74c3cad24c323bacbbd04be4705ba6eb0d92e920b1fc4837ed5079
+distro==1.9.0 --hash=sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2
+docvortex==0.5.10 --hash=sha256:6c9a4956b52347a262977e8e761b1dd64d89fa18dd8af79c5193ed151ac57ce8
+et-xmlfile==2.0.0 --hash=sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa
+fastapi==0.142.2 --hash=sha256:bd5f4d81f1e93a88bcd77caf4dfe3c2dbffc3805407a0007e9a114c18b3a670b
+filelock==4.0.12 --hash=sha256:5f17ee83ecee8a6f3e389c75822fb70a1c2f0506b99438a6dffa1d56793588c8
+flatbuffers==25.12.19 --hash=sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4
+fonttools==4.66.1 --hash=sha256:7b8ff9e0edbcee2fbf7dff0c41b9041c1901c26acf64e23adb67495012df11de
+fsspec==2026.9.0 --hash=sha256:8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f
+ftfy==6.3.1 --hash=sha256:7c70eb532015cd2f9adb53f101fb6c7945988d023a085d127d1573dc49dd0083
+gradio==6.29.1 --hash=sha256:6b4b5ae67ade38697bb40c28c68f143ddb897ebb13e262108a67b388c4868397
+gradio-client==2.7.2 --hash=sha256:12c9d2d940df28eb8dce58eef61f5e808265ad87bbbca53704d1330aa701e5e2
+groovy==0.1.2 --hash=sha256:7f7975bab18c729a257a8b1ae9dcd70b7cafb1720481beae47719af57c35fa64
+h11==0.16.0 --hash=sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86
+hf-gradio==0.4.1 --hash=sha256:76b8cb8be6abe62d74c1ad2d35b42f0629db89aa9e1a8d033cecfe7c856eeab3
+hf-xet==1.7.0 --hash=sha256:2814a6e999d13464c4d679b788cc5d784eb5a4edfc638a31f10e9a11ab531ef8
+httpcore==1.0.9 --hash=sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55
+httpx==0.28.1 --hash=sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad
+httpx-retries==0.6.0 --hash=sha256:d1e52a8f68a5df42de75ab89049d5020b2d0ab2f5f8bceacda008d12aa1257a3
+huggingface-hub==1.33.0 --hash=sha256:04e434b06e100eddbce9a6e817d72693a7884b10a79bd67ab48080d5c07eb899
+idna==3.20 --hash=sha256:ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c
+jieba==0.42.1 --hash=sha256:055ca12f62674fafed09427f176506079bc135638a14e23e25be909131928db2
+jinja2==3.1.6 --hash=sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67
+jiter==0.17.0 --hash=sha256:8c21265b251d99bbb40080d178a8953e35601d3a1564e05c4de4c0d2ca616797
+json-repair==0.63.5 --hash=sha256:0e39b3066f7829b4bd7fc614e463cfd4ff7a4c46f82f5b65431fc11e29a74c81
+latex2mathml==3.81.1 --hash=sha256:c337668441b71c819b6733905a8058ba9a9d767bae11a0c5fdacb3aff31361bd
+loguru==0.7.3 --hash=sha256:31a33c10c8e1e10422bfd431aeb5d351c7cf7fa671e3c4df004162264b28220c
+lxml==6.1.3 --hash=sha256:909f4e927bb051f7740d6367285fc60cdcfdaf0258c2dba4ff5ba7eadadc250c
+magika==1.0.3 --hash=sha256:3e9b49134e8116ee40b431664dcbed9e199413efddcce1a173c734b4e0521529
+mammoth==1.13.0 --hash=sha256:dd7629fa9d0a5e82207b3f481a9dcb8308fb43f6206258e062f11121efba9991
+markdown-it-py==4.2.0 --hash=sha256:9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a
+markupsafe==3.0.4 --hash=sha256:8e124f974786f831d6043728e38296969d3579db8896fe004682f5758e613581
+mathml2omml==0.0.2 --hash=sha256:6a2a1a10e90d7d8a672a1b37b6b49a6187e6720439aeb922949d254bb4656f25
+mdurl==0.1.2 --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8
+metafile-render==0.3.0 --hash=sha256:94144d7e6195711dc5c1a717e18a5328feaf7566479f159c732620cd48da6e87
+mineru==4.0.10 --hash=sha256:9731eb8afb9756bb2e3a8e3e6a69252786434602eeb4ff36f7e7a5f2aa8ac107
+mineru-llama-cpp==0.1.2 --hash=sha256:f668ddc691bc49c8bba3fc296df6857427e19be794358de31e0d92ced518dce5
+mineru-vl-utils==2.0.5 --hash=sha256:d2dc6234066af8ca8c7cf91a0d13c1677ce61d64da0f7215a75f37261c11491c
+modelscope==1.40.1 --hash=sha256:6f135fe80903e7bfcd6ccc707f4f6f85c8e445cf497b624bd07299582486e2c1
+modelscope-hub==0.4.5 --hash=sha256:9157bbc34d93a70d099c8ab87a113fc9a4149e31ab79e8eb8f7563884043f082
+nh3==0.3.7 --hash=sha256:70f5ac8626e899a4bab0ef74ca2f5bd602f49c7b739e6e5026b4afc6d63dac42
+numpy==2.5.3 --hash=sha256:b7e18c623bb5c95acb3b3328861272816ba199fb531921c5d6d0b675f1fde9e3
+olefile==0.47 --hash=sha256:543c7da2a7adadf21214938bb79c83ea12b473a4b6ee4ad4bf854e7715e13d1f
+onnxruntime==1.30.0 --hash=sha256:fa688e7891a6aa206636fe7372e27ee75fd17713289f6b4fc7b190e0a7de9328
+openai==2.54.0 --hash=sha256:89089789197ccdb87f173a03145ed1598d00795220c93e96cf712b1cbf5e5f2b
+opencv-python==5.0.0.93 --hash=sha256:c8de2dec111122a02e8beb28e16c31904992dfd6186560b142a92c71403c1039
+openpyxl==3.1.5 --hash=sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2
+opentelemetry-api==1.45.1 --hash=sha256:b31553efa588ae44bc306f863c785c5333a9ecc091248c6ee68b4b6c87fdedfb
+orjson==3.13.0 --hash=sha256:bceadfd314bd238f584fc229a4bbaf0e573597e7a026dec5429fbf29fd66c641
+packaging==26.3 --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c
+pandas==3.0.6 --hash=sha256:0704044b676496b8350e023b09f174a26772456c974a2b11c36bebb558c9490d
+pillow==12.3.0 --hash=sha256:78cb2c6865a35ab8ff8b75fd122f6033b92a62c82801110e48ddd6c936a45d91
+protobuf==7.36.2 --hash=sha256:89f23aa53c24553a2416fd4fd1ec06f74fa42b14b546d8883128813f775bbfd2
+pyclipper==1.4.0 --hash=sha256:d1f807e2b4760a8e5c6d6b4e8c1d71ef52b7fe1946ff088f4fa41e16a881a5ca
+pycparser==3.0 --hash=sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992
+pydantic==2.13.5 --hash=sha256:346a034f080da3755d8e9cb5e00e8b07de1d39e4f6e2c87d8ab7cafa0b269a73
+pydantic-core==2.46.5 --hash=sha256:0fc5be0abd4a407e200d844b404e33639a554e7bd0d448e7b9ae181be4789ac2
+pydub==0.25.1 --hash=sha256:65617e33033874b59d87db603aa1ed450633288aefead953b30bded59cb599a6
+pygments==2.21.0 --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9
+pylatexenc==2.11 --hash=sha256:e78e7391d6c104f1ed150e21cfaa58016cdb50aa54406a2eecb793649ffdfdd0
+pypdf==6.19.0 --hash=sha256:7e5d6e730e7dae87d560a2cee218b852f6498c8be61966f3cd02ead971e48d14
+pypdfium2==5.14.0 --hash=sha256:11f281613fa22313d9c7ab89947665e84eccf8ebe40e1198a84a88352305648d
+pypptx-with-oxml==1.0.3 --hash=sha256:4b3ccf51185e0f9e60ebf2884e74153d7fcb00e7e4f0461404e96e0260d7bba1
+python-dateutil==2.9.0.post0 --hash=sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427
+python-docx==1.2.0 --hash=sha256:3fd478f3250fbbbfd3b94fe1e985955737c145627498896a8a6bf81f4baf66c7
+python-multipart==0.0.32 --hash=sha256:ff6d3f776f16878c894e52e107296ffc890e913c611b1a4ec6c44e2821fe2e23
+pytz==2026.5 --hash=sha256:e658af3757f9e26a9d25dd2aff38335acd92bc9104f890a894b2c1ba28311b03
+pyyaml==6.0.3 --hash=sha256:ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc
+reportlab==5.0.1 --hash=sha256:1c36e6bb0e71780c72331eba60da7f602e8d4389a8723825af71342e49d791e8
+requests==2.34.2 --hash=sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0
+resvg-py==0.5.0 --hash=sha256:84f2378ecc7a8e38b03429efaefc816daec1b1970114909a6f973393b297c91b
+rich==15.0.0 --hash=sha256:33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb
+rl-accel==0.9.1 --hash=sha256:ce947b8473a075763fe66f53ec91a441a0c5d38cf4dfad952a8ce276e563b8f6
+safehttpx==0.1.7 --hash=sha256:c4f4a162db6993464d7ca3d7cc4af0ffc6515a606dfd220b9f82c6945d869cde
+semantic-version==2.10.0 --hash=sha256:de78a3b8e0feda74cabc54aab2da702113e33ac9d9eb9d2389bcf1f58b7d9177
+setuptools==84.0.0 --hash=sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670
+shapely==2.2.0 --hash=sha256:650a5f4d8a8e3c96982079d8c99b6ddbe6602bbd1e34c75c2b95dbc0d28ac997
+shellingham==1.5.4 --hash=sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686
+six==1.17.0 --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274
+sniffio==1.3.1 --hash=sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2
+soupsieve==2.10 --hash=sha256:8596eb8967d744174820280fa62b4542a2e955bfaccca73ed8a13c6eb8e9b502
+starlette==1.7.0 --hash=sha256:67f8e99895493dd2911a03f11314af6ceebeae4e704bb9f43dfc6a9db151c93e
+tinycss2==1.5.1 --hash=sha256:3415ba0f5839c062696996998176c4a3751d18b7edaaeeb658c9ce21ec150661
+tokenizers==0.23.2 --hash=sha256:41c2f84d172449b4dadb9cdc508e3e364076613c35b16e76ecfe47a60d1e3305
+tomlkit==0.14.0 --hash=sha256:592064ed85b40fa213469f81ac584f67a4f2992509a7c3ea2d632208623a3680
+tqdm==4.70.1 --hash=sha256:c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73
+typer==0.27.3 --hash=sha256:e50022f28b82a86313e54501317a1db64bf8f8d036ff8cfe5ca7e47675454aff
+typing-extensions==4.16.0 --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8
+typing-inspection==0.4.4 --hash=sha256:65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147
+urllib3==2.8.0 --hash=sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3
+uvicorn==0.54.0 --hash=sha256:505bdb0f318731d45f1f712071fc781a8981f6847a31c902c9f5e652d4f67faf
+watchfiles==1.3.0 --hash=sha256:b5768b49e426fd5b550b012c866db347cdf15c398ef98dc557b6e6b72fa74cd1
+wcwidth==0.9.2 --hash=sha256:751bef0ab404b6a1dc028b56b4b85d46486be1c55833f80da533e42dc691f389
+webencodings==0.6.1 --hash=sha256:7fab6269c8bf237c657876b52058ccb182e861518d1c695c1a9aaa8c1c105d5b
+xlsxwriter==3.2.9 --hash=sha256:9a5db42bc5dff014806c58a20b9eae7322a134abb6fce3c92c181bfb275ec5b3
+ziafont==0.11 --hash=sha256:b62132be3da9667a80d048ab5498f107e49761722b69965788c2c747a38e7373
+ziamath==0.13 --hash=sha256:67a9b9714101fc90c2d6d0328e578f3ac311fb007644f2bbb9314ba2bc1c1459

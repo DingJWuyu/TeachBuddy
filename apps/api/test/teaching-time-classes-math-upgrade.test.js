@@ -54,7 +54,7 @@ test('TM-C1/C5 fixed T53 SQLite upgrade preserves old links and successful recei
     assert.equal(h.countRows('classes_records'),1);
     passed=true;
   } finally {
-    h?.close();
+    await h?.close();
     if(passed) fs.rmSync(dir,{recursive:true,force:true});
     else console.error('Retained failed upgrade fixture:',dir);
   }

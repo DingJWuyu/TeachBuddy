@@ -174,9 +174,10 @@ export function createWorkbench({
     trustedOrigins: workbenchEnv.trustedOrigins ?? [], ready: () => initialize(), logger, clock });
   let initialization = null;
   let agent;
-  let closed = false;
+  let closed = false, closing;
 
   function initialize() {
+    if (closed) return Promise.reject(new Error('Workbench is closing'));
     initialization ??= (async () => {
       await loader.discover();
       const migrationResult = migrations.run(
@@ -266,14 +267,22 @@ export function createWorkbench({
     },
 
     close() {
-      if (closed) return;
+      if (closing) return closing;
       closed = true;
-      reliability.close();
-      agent?.close();
-      jobs.close();
-      if (db.open) db.close();
-      releaseFiles();
-      releaseLock();
+      const reliabilityClosed = reliability.close();
+      const agentClosed = agent?.close();
+      closing = (async () => {
+        // Discovery may still be creating handlers. Do not release its storage
+        // until it has settled, and stop any Jobs it registered in that time.
+        await initialization?.catch(() => {});
+        await Promise.all([jobs.close(), reliabilityClosed, agentClosed, agent?.close(), files.close()]);
+        await recognition.close();
+        if (db.open) db.close();
+        releaseFiles();
+        releaseLock();
+      })();
+      closing.catch(() => { closing = undefined; });
+      return closing;
     },
   };
 }

@@ -1,0 +1,14 @@
+{
+  "scope": "Official exported middle replay for conversion/consumer regression only; not evidence of worker hooks, source crops or lifecycle",
+  "candidate": "MinerU 4.0.10 Standard Pro-2605 Q8 Table-only prompt-2",
+  "inputCommit": "07795adf",
+  "files": {
+    "D2/middle_json.json": "c1a7dadd95f3d25d86002b9ac650df2b4825f2b9f7e964f45cb2f4991b902371",
+    "D8/images/page_0_equation_10.jpg": "2ead9bb928dbacb647a86f4b2c5599beb174cdb43121cf2672cf757cc11980eb",
+    "D8/images/page_0_equation_11.jpg": "b373563edd6d711faa4a7781ef982e1395e64042e08b3889afacc39327f8d76e",
+    "D8/images/page_0_equation_15.jpg": "a608f7cbf16e27bebfb7bcdbf0a31e87339a832adac3ae5c45e0f35af32d4125",
+    "D8/images/page_0_equation_9.jpg": "5af9f11abce2a6b4078cdd5e09fff6ccb3b5c11ed9d83d1e6da1f7e8dd540ba0",
+    "D8/images/page_0_table_6.jpg": "e0981c2f068993a957dae5c8cbd5a0dec1a1ea38ed299834f8e22c741a628c5c",
+    "D8/middle_json.json": "2391b50d7d34e8a7e4d5738ea1bfdbec399e09e7f4ccd0f54cc504b3ec28ae75"
+  }
+}

@@ -13,7 +13,7 @@ for (const kind of ['question', 'lesson']) {
       h.db().prepare(`DELETE FROM ${kind}_items WHERE id = ?`).run(source.id);
       const result = await api.get(`/api/modules/classes/records/${r.id}`);
       assert.equal(result.status, 404, JSON.stringify(result.body));
-    } finally { h.close(); }
+    } finally { await h.close(); }
   });
 }
 
@@ -30,7 +30,7 @@ async function fixture(run) {
     const input = recordSample(c.id, {sources:[{kind:'math',id:WORK}]});
     const write = (url, body, status = 200, key = h.nextUuid()) => api.post(url, body, {key}).expect(status);
     await run({h,api,c,input,write});
-  } finally {h.close();}
+  } finally {await h.close();}
 }
 
 test('TM-C1/C2: v2 current titles, tombstones, retained links, remove/relink and restart', async () => fixture(async ({h,api,input,write}) => {

@@ -110,7 +110,7 @@ test("page adoption HTTP/SQLite: fixed supplement, snapshots, replay, conflicts 
     resource = await send("POST", `/api/modules/resources/items/${resource.id}/deletion`, { baseVersion: resource.version, deleted: true });
     await send("POST", `/api/modules/resources/items/${resource.id}/purge`, { baseVersion: resource.version });
     results.clear();
-    runtime.workbench.close(); await start();
+    await runtime.workbench.close(); await start();
     assert.deepEqual(await send("GET", url), lesson);
     assert.deepEqual((await send("GET", `${url}/history/2`)).sections[0].pageSource, source);
     assert.deepEqual(await send("POST", adoptUrl, input, 200, key), { ...lesson, version: 2,
@@ -118,5 +118,5 @@ test("page adoption HTTP/SQLite: fixed supplement, snapshots, replay, conflicts 
     for (const id of [source.fileId, source.imageFileId, source.rawFileId, ...source.assetFileIds])
       assert.ok(runtime.workbench.files.read(principal, id));
     passed = true;
-  } finally { runtime.workbench.close(); if (passed) fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally { await runtime.workbench.close(); if (passed) fs.rmSync(dir, { recursive: true, force: true }); }
 });

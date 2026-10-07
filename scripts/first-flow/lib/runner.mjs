@@ -246,18 +246,13 @@ export async function startFirstFlowRunner(options = {}) {
     sha,
     startedAt,
     webDist,
-    close() {
-      return new Promise((resolve) => {
-        // A browser keeps its keep-alive sockets open, so `close()` alone would
-        // wait for the client to go away first. A real stop must not depend on
-        // that: drop the remaining connections, then close the store.
-        const closed = context.server.close(() => {
-          context.dataStore.close();
-          resolve();
-        });
+    async close() {
+      // Drop keep-alive connections before waiting for producers and storage.
+      await new Promise(resolve => {
+        context.server.close(resolve);
         context.server.closeAllConnections();
-        return closed;
       });
+      await context.dataStore.close();
     }
   };
 }
