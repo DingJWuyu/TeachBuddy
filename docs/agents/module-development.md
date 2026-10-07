@@ -61,8 +61,8 @@ preview 直接运行集成源码，获准改动会进入用户体验；模块在
 | 常规独立核验、阶段验收 | gpt-6-astra | medium |
 | 前后端实现与修复 | gpt-6-astra | low |
 | 实现反复失败后的困难接手 | gpt-6-astra | high |
-| 调研、文档、实验调查 | gpt-6-sol | medium |
-| 当前分支集成维护 | gpt-6-sol | high |
+| 调研、文档、实验调查 | gpt-6.1-sol | medium |
+| 当前分支集成维护 | gpt-6.1-sol | high |
 
 按当前会话 skill 描述选择并读取实际 SKILL.md；任务点名时完整读取及直接引用，不可用时如实说明。文档使用 writing-for-agents。业务 session 之间不互聊；skill 明确要求的有界内部助手由调用 session 管理和聚合。技能不扩大范围、费用或外部操作权限。
 
