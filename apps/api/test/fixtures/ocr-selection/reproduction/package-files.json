@@ -1,0 +1,50 @@
+{
+  "verification": "static checks and runner-consumption dryrun only; no installation or inference",
+  "files": {
+    "README.md": {
+      "bytes": 4468,
+      "sha256": "b7602e7064591ee5541d4631516a8d93756c8fda176384a70a4f7609cbb6cd37"
+    },
+    "baseline/INSTALL.md": {
+      "bytes": 7133,
+      "sha256": "ee687c1b5fd7d4acf2821c47a8d3925284cfefac702d12a13fcf520a0aa3f4b7"
+    },
+    "baseline/content_check.py": {
+      "bytes": 7594,
+      "sha256": "151d13b6ac67bbfc447765b5425c3057327cc0e2f4f0e3620d4a7a09cbc3d569"
+    },
+    "baseline/manifest.json": {
+      "bytes": 4929,
+      "sha256": "3f32a2fa8f3f96992206d69b09c0a5f4579df65a85d05c9758de8ddc8be6b4a4"
+    },
+    "baseline/requirements.freeze.txt": {
+      "bytes": 2184,
+      "sha256": "a9e5290fe095f6c03bf4578fbc7b151a7ed920b9ebff9d58a452e63ffc2ed62b"
+    },
+    "baseline/worker.py": {
+      "bytes": 14125,
+      "sha256": "bb913178f52a816b1866019072a8e3c75852696bbb73b0f9c91a4d05983549be"
+    },
+    "baseline-resources.mjs": {
+      "bytes": 3489,
+      "sha256": "2140a14a10268d5b7e967634bd504d91566d15a7668304c4400f0a86a9e21ad7"
+    },
+    "candidate-source-hashes.json": {
+      "bytes": 694,
+      "sha256": "525fac0aceab7126cd954f2e2384321a4112496635ea5c22fcaa2afb196a1559"
+    },
+    "development-inputs.json": {
+      "bytes": 2148,
+      "sha256": "5e1e729091ad007ac623f5f7e17a72d7251c4744cf205e6261bd107bd6930911"
+    },
+    "run-baseline.mjs": {
+      "bytes": 7841,
+      "sha256": "5a88e1cea800bd0173138b8e45a9cab8e674b032d5cf122bdd5e572ecbe4ca31"
+    },
+    "run-candidate.mjs": {
+      "bytes": 5114,
+      "sha256": "736a197839e8b9122b14d786de19a02e0115ae8837a68ced5bb399284530ddb5"
+    }
+  },
+  "payloadBytes": 59719
+}

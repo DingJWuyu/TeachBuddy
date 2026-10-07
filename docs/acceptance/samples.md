@@ -9,6 +9,7 @@
 | 用途 | 输入位置与使用方式 |
 | --- | --- |
 | 通用材料、题库与 Office | `apps/web/e2e/fixtures/materials/`、`materials-questions/`、`office/`；自编源材料和实际文件随仓库提供 |
+| OCR 方案比较 | `apps/api/test/fixtures/ocr-selection/` 的输入、分组、真值及勘误；比较方法和当前结果见[选型验收](ocr-selection.md)，原始识别成绩与人工采用分开 |
 | 题库与资源识别消费 | `apps/web/e2e/fixtures/materials-questions/recognition/`、`recognition-document-4/` 与 `resources-recognition/`；固定机器结果仅证明消费与保存 |
 | 备课配图校对、采用与恢复 | `apps/api/test/fixtures/lessons-region/`，包含自编父材料及真实表格裁图的机器结果，来源与校验见目录内 `provenance.json`；默认加载，`LESSONS_REGION_REPLAY_ROOT` 仅用于显式替换同布局的 fixture 目录 |
 | 外部 PDF E 与扩展页 | 完整 PDF 按下节下载和校验，用 `M33_PRIVATE_PDF` 显式指定；E7/E8/E9 的固定机器结果在 `recognition-document-4/`，完整原件与渲染页均核对摘要；可选覆盖参数见[题库验证](../features/questions.md#接口代码与判断结果) |

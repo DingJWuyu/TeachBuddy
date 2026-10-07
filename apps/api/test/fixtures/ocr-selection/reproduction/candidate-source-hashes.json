@@ -1,0 +1,8 @@
+{
+  "apps/api/src/workbench/recognition/runtime.js": "4c60bca9d219ee2bdd3070997239e88b856a92491b39c7d948615ba0968abfe8",
+  "apps/api/src/workbench/recognition/worker.py": "3c6cbabdf870811519922ee2fa579ad86fba355b43d15c299a5ef2d6ee6db527",
+  "apps/api/src/workbench/recognition/mineru_adapter.py": "dafe8dcfb4fb3df878926747379de67e39df93d102f13e6193d44f734cd825a4",
+  "scripts/recognition/install.py": "10d4776e5f5cc7ed2667419a5eff7bc4cb1549aec84351eb74044592efb0d7df",
+  "scripts/recognition/manifest.json": "0fd020ba6e96d663af71d3d870336a2b355c2c6aab235d3eafba92173d59a232",
+  "scripts/recognition/requirements.freeze.txt": "3dce02c8285f68a6b9bd6d85f2ecebbe1a889a4e4a0637ed2c5a0e0fb68feaeb"
+}

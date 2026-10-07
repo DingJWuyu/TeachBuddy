@@ -1,0 +1,86 @@
+{
+  "order": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8"
+  ],
+  "pages": [
+    {
+      "id": "D1",
+      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-1/page.png",
+      "sha256": "99bcbc3ed10436644dd666e37c6ac44c8e428f0db5cc2de7947bf8260345b715",
+      "imageSize": [
+        1653,
+        2339
+      ]
+    },
+    {
+      "id": "D2",
+      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-2/page.png",
+      "sha256": "3c570d2b67c6a2a1538c3f69445fef9cf47dea63184310a092d6ecb791510059",
+      "imageSize": [
+        1775,
+        2425
+      ]
+    },
+    {
+      "id": "D3",
+      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-3/page.png",
+      "sha256": "e6f7b11f37dbc70e8312b92cb648395af311e7153598c295c925f45637565d1c",
+      "imageSize": [
+        1653,
+        2339
+      ]
+    },
+    {
+      "id": "D4",
+      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/PS-4/page.png",
+      "sha256": "655014ceb9d66f2006f881afac95f077de02844c9251fb95c68c9e8a0e9f0b62",
+      "imageSize": [
+        1697,
+        2400
+      ]
+    },
+    {
+      "id": "D5",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/D5-E7.png",
+      "sha256": "74f1a497e11705578c4364b08fdc2bfbd3249dc8038f8df65964209d70756256",
+      "imageSize": [
+        1654,
+        2339
+      ]
+    },
+    {
+      "id": "D6",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/D6-E8.png",
+      "sha256": "5155a03e30e5dbc0f3b3d8bea3cba33780d9044b681f78a01d7408d97102223c",
+      "imageSize": [
+        1654,
+        2339
+      ]
+    },
+    {
+      "id": "D7",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/D7.png",
+      "sha256": "4f8a93bdb7bd8538dad7266ab9a717970b66c4a8c10c2ed7a607efb9d206ddd4",
+      "imageSize": [
+        1654,
+        2339
+      ]
+    },
+    {
+      "id": "D8",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/D8.png",
+      "sha256": "2004ec1d5a301c53ec9e8bb1e52a292d4ffed93ea34739a3f90abb515395faaf",
+      "imageSize": [
+        1654,
+        2339
+      ]
+    }
+  ]
+}
