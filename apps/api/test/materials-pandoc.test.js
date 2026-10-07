@@ -29,6 +29,14 @@ test("Pandoc v3 real-auth pagination: all options and required figures stay with
   }
   await runNativePagination({ destination: path.join(evidence, "native-long-question"), kind: "practice", lines: 20, longQuestion: true });
   await runNativePagination({ destination: path.join(evidence, "native-long-narrative"), kind: "practice", lines: 20, longQuestion: "narrative" });
+  const mixed = await runNativePagination({ destination: path.join(evidence, "native-short-mixed"),
+    sourceName: "short-mixed-lesson.json", check: false });
+  for (const layout of Object.values(mixed.layouts)) {
+    assert.equal(layout.q6Stem, layout.q6, "短题题干不能与题号拆开");
+    assert.equal(layout.q6Formula, layout.q6, "必要独立公式不能与短题拆开");
+    assert.equal(layout.q6LastPart, layout.q6, "短题小问不能与题干/独立公式拆开");
+    assert.deepEqual(layout.imagePages, [layout.q6], "短题必需图与全部题面同页");
+  }
 });
 
 test("Pandoc real HTTP: six rich questions, 24 outputs, editable math readback, isolation and retained sources", { timeout: 240000 }, async (t) => {

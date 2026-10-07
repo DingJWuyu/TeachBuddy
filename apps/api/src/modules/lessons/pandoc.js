@@ -123,16 +123,10 @@ export async function generateDocx(blocks, { files, principal, signal }) {
       const keepNext = block.keepNext || (keepLastNext && index === items.length - 1) ||
         (keepTogether && index < items.length - 1);
       if (block.type === "question") {
-        // A list starts a reading group with its immediately preceding stem.
-        // Earlier narrative paragraphs can flow independently. An oversized
-        // keep chain makes Word discard even the link to a required tail image.
-        const listIndex = block.blocks.findIndex(item => item.type === "list");
-        const coreStart = listIndex > 2 && block.blocks[listIndex - 1].type === "paragraph" ? listIndex - 1 : 0;
-        if (coreStart) {
-          const [title, ...narrative] = block.blocks.slice(0, coreStart);
-          result.push(...await render([{ ...title, keepNext: true }, ...narrative]));
-        }
-        result.push(...await render(block.blocks.slice(coreStart), keepNext, true));
+        // Keep a question that fits on a page together, including standalone
+        // formulas before its lists. Word naturally paginates an oversized
+        // group; block position cannot identify dispensable narrative content.
+        result.push(...await render(block.blocks, keepNext, true));
       } else if (block.type === "paragraph" || block.type === "heading") {
         const content = inline(block.runs);
         result.push(block.type === "heading"

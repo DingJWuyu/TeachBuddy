@@ -19,7 +19,7 @@ export function inspectPagination(target) {
   const imagePages = execFileSync('pdfimages', ['-list', target], { encoding: 'utf8' }).split('\n')
     .map(line => line.trim().split(/\s+/)).filter(parts => parts[2] === 'image').map(parts => Number(parts[0]));
   return { pages: pages.length, q1: pageFor('固定六题Q1'), q1LastOption: pageFor('D(−∞'),
-    q6: pageFor('固定六题Q6'), q6LastPart: pageFor('2求体积。'), imagePages };
+    q6: pageFor('固定六题Q6'), q6LastPart: pageFor('2求体积。'), q6Stem: pageFor('正方体'), q6Formula: pageFor('AD='), imagePages };
 }
 export function assertPagination(layout) {
   assert.equal(layout.q1LastOption, layout.q1, 'Q1 题干与全部选项须同页');
@@ -29,7 +29,7 @@ export function assertPagination(layout) {
 }
 
 export async function runNativePagination({ destination, kind = 'handout', lines = 10,
-  includeAnswers = false, includeTeacherNotes = false, longQuestion = false, check = true } = {}) {
+  includeAnswers = false, includeTeacherNotes = false, longQuestion = false, check = true, sourceName = 'native-lesson.json' } = {}) {
   fs.mkdirSync(destination, { recursive: true });
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'pagination-native-'));
   const world = await createIntegration({ directory, workbench: { recognition: { home: null } } });
@@ -61,7 +61,11 @@ export async function runNativePagination({ destination, kind = 'handout', lines
   });
   let result, completed = false;
   try {
-    const source = JSON.parse(fs.readFileSync(path.join(fixtures, 'native-lesson.json')));
+    const source = JSON.parse(fs.readFileSync(path.join(fixtures, sourceName)));
+    const questionCount = source.sections[0].references.length;
+    const countImages = value => !value || typeof value !== 'object' ? 0 :
+      Number(value.type === 'image') + Object.values(value).reduce((total, child) => total + countImages(child), 0);
+    const imageCount = countImages(source);
     const imageMap = new Map();
     for (const name of fs.readdirSync(fixtures).filter(n => n.endsWith('.png'))) {
       const boundary = `pagination-${randomUUID()}`;
@@ -105,13 +109,13 @@ export async function runNativePagination({ destination, kind = 'handout', lines
       if (format === 'docx') {
         const zip = await JSZip.loadAsync(bytes), xml = await zip.file('word/document.xml').async('string');
         assert.match(xml, /<m:f>/); assert.match(xml, /<m:rad>/); assert.match(xml, /<w:drawing>/);
-        assert.equal((xml.match(/<w:drawing>/g) ?? []).length, 3);
+        assert.equal((xml.match(/<w:drawing>/g) ?? []).length, imageCount);
         const document = new DOMParser().parseFromString(xml, 'application/xml');
         const blankLines = Array.from(document.getElementsByTagName('w:p')).filter(p => p.textContent === ' ');
-        assert.equal(blankLines.length, kind === 'lesson-plan' ? 0 : lines * 6);
+        assert.equal(blankLines.length, kind === 'lesson-plan' ? 0 : lines * questionCount);
         const attachedBlankLines = blankLines.filter(p => Array.from(p.getElementsByTagName('w:pStyle'))
           .some(style => style.getAttribute('w:val') === 'KeepNext'));
-        writingSpaceFlows = attachedBlankLines.length === (kind === 'lesson-plan' ? 0 : Math.max(0, Math.min(lines, 4) - 1) * 6) &&
+        writingSpaceFlows = attachedBlankLines.length === (kind === 'lesson-plan' ? 0 : Math.max(0, Math.min(lines, 4) - 1) * questionCount) &&
           !Array.from(document.getElementsByTagName('w:br')).some(b => b.getAttribute('w:type') === 'page');
         const previewJob = await call('POST', `/api/workbench/files/${job.outputFileIds[0]}/preview`, {}); await wait(previewJob.id);
         const preview = await call('GET', `/api/workbench/files/${job.outputFileIds[0]}/preview`);
@@ -149,7 +153,6 @@ export async function runNativePagination({ destination, kind = 'handout', lines
     if (check && !longQuestion) Object.values(layouts).forEach(assertPagination);
     if (check && longQuestion) for (const layout of Object.values(layouts)) {
       assert.ok(layout.q6LastPart > layout.q6, '超过一页的题目可自然分页');
-      if (longQuestion !== 'narrative') assert.equal(layout.imagePages[2], layout.q6LastPart, '长题尾部小问与必需图仍相邻同页');
     }
     completed = true;
     return result;

@@ -66,7 +66,7 @@ export function exportTree(lesson, options) {
     if (ref.kind === "math") {
       if (options.kind !== "practice") {
         const source = ref.snapshot.source;
-        blocks.push(para(ref.snapshot.title));
+        blocks.push({ ...para(ref.snapshot.title), keepNext: true });
         if (source.kind === "formula") {
           blocks.push({ type: "math", latex: source.latex, field: `${field}/snapshot/source/latex` });
           if (source.includeCaption && source.caption) blocks.push(para(source.caption));

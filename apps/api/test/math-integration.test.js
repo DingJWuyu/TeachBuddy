@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
@@ -70,7 +70,9 @@ test('MC06/10: adopted snapshots survive deletion; real classes reverse links pr
 
 
 test('MC07: all five math kinds produce real DOCX and PDF without private notes', {timeout:90000}, async()=>{
- const h=await harness();const out=new URL('../../../test-results/evidence/M43/v1/output/',import.meta.url);fs.mkdirSync(out,{recursive:true});
+ const h=await harness();const out=process.env.MATH_INTEGRATION_EVIDENCE
+  ? pathToFileURL(path.resolve(process.env.MATH_INTEGRATION_EVIDENCE)+path.sep)
+  : new URL('../../../test-results/evidence/M43/v1/output/',import.meta.url);fs.mkdirSync(out,{recursive:true});
  try {
   const samples=JSON.parse(fs.readFileSync(new URL('./fixtures/contracts/math-samples.json',import.meta.url)));
   const references=[];
@@ -97,6 +99,18 @@ test('MC07: all five math kinds produce real DOCX and PDF without private notes'
    if(format==='pdf') {
     const {execFileSync}=await import('node:child_process');const text=execFileSync('pdftotext',[fileURLToPath(destination),'-'],{encoding:'utf8'});
     assert.ok(text.includes('交互演示见单独文件'));assert.ok(!text.includes('禁止泄漏'));fs.writeFileSync(new URL(`${kind}.txt`,out),text);
+    const pages=text.split('\f').slice(0,-1);
+    const imagePages=execFileSync('pdfimages',['-list',fileURLToPath(destination)],{encoding:'utf8'}).split('\n')
+     .map(line=>line.trim().split(/\s+/)).filter(parts=>parts[2]==='image').map(parts=>Number(parts[0]));
+    const titlePages=['plane','space','dynamic'].map(mathKind=>pages.findIndex(page=>
+     page.replace(/\s/g,'').includes(`${mathKind}课堂数学`))+1);
+    fs.writeFileSync(new URL(`${kind}-pagination.json`,out),JSON.stringify({pages:pages.length,titlePages,imagePages},null,2));
+    execFileSync('pdftoppm',['-scale-to','1400','-png',fileURLToPath(destination),fileURLToPath(new URL(`${kind}-page`,out))]);
+    assert.equal(imagePages.length,3,'三类数学作品的海报完整保留');
+    for(const [index,mathKind] of ['plane','space','dynamic'].entries()) {
+     assert.ok(titlePages[index]>0,`${mathKind}作品标题完整保留`);
+     assert.equal(titlePages[index],imagePages[index],`${mathKind}作品标题必须与海报同页`);
+    }
    }
    outputs.push({kind,format,fileId:job.outputFileIds[0],bytes:result.body.length});
   }
