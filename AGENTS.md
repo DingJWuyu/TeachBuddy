@@ -4,6 +4,7 @@
 
 - 核对实际能力或运行状态时读 `README.md`；`prototype/` 是交互参考，`apps/` 才是真实产品实现位置，旧演示 API 不约束新契约。
 - 查找文档时从 `docs/README.md` 按任务进入；总体进度、剩余事项、依赖顺序与当前授权统一读取 `docs/plans/run-state.md`。
+- 汇报整体项目进度时，必须按[项目进度汇报](docs/agents/module-development.md#项目进度汇报)的固定格式执行。
 - 用户体验与集成使用当前 `TeacherWorkspace-preview`；模块工作树和暂停状态以项目状态为准。
 - 设计或核查范围时读取 `docs/PRODUCT_SCOPE.md` 的相关段落；页面和跨模块行为读取 `docs/features/workbench.md` 的相关段落。范围不能由旧代码或原型反推。
 - 登录注册由独立 session 负责；涉及身份交接或退出时读取 `docs/contracts/auth.md`，核对其源版本与未完成项，不把讨论中的契约当成已实现能力。
