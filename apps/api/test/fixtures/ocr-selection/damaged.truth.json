@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "ordinaryQualityDenominator": false,
+  "ordinaryLatencyDenominator": false,
+  "inputs": [
+    {
+      "id": "F-obscured",
+      "image": "apps/web/e2e/fixtures/materials-questions/F-obscured.jpg",
+      "referenceOrigin": "Visual inspection of the damaged source image and the tracked I-clear.jpg original",
+      "imageSize": [1775, 2425],
+      "approximateDamageBounds": [795, 242, 862, 303],
+      "damage": "The right part of the condition digit and part of the following Chinese character are covered by a white patch. A visible fragment of the digit remains.",
+      "visibleContent": [
+        {"id": "F-title", "text": "第2页 · 原题", "bbox": [210, 110, 590, 185]},
+        {"id": "F-Q3-function", "latex": "f(x)=\\begin{cases}ax+1,&x<0,\\\\x^2-1,&x\\ge0.\\end{cases}", "bbox": [280, 210, 607, 318]},
+        {"id": "F-Q3-condition-fragment", "latex": "f(-2)=", "bbox": [644, 233, 797, 285]},
+        {"id": "F-Q3-request-fragment", "text": "a 和", "latex": "f(1)", "bbox": [855, 247, 1002, 302]},
+        {"id": "F-Q4", "text": "Q4. 解不等式。", "latex": "\\log_2(x-1)\\le1", "bbox": [210, 340, 650, 415]},
+        {"id": "F-note", "text": "本页保留两行分段结构与不等号，供文字层和公式源提取。", "bbox": [210, 410, 945, 490]}
+      ],
+      "auditOnlyOriginalCondition": "f(-2)=3",
+      "evaluation": "Record visible content retention and whether damaged content is exposed for checking. Separate model reconstruction from later human correction. A returned digit 3 may follow from the surviving fragment and is not evidence of recovering a fully missing digit. Do not require the model to reconstruct covered pixels or count a human marker as model accuracy.",
+      "coverageLimit": "This fixture does not test detection of a completely missing numeral."
+    },
+    {
+      "id": "F-truncated",
+      "image": "apps/web/e2e/fixtures/materials-questions/F-truncated.pdf",
+      "evaluation": "Opening/parsing the damaged PDF must report a clear failure when no readable page can be obtained. Do not return invented page content. If a decoder retains a readable page, evaluate only that visible page and record the partial recovery explicitly."
+    }
+  ]
+}

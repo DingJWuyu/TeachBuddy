@@ -1,0 +1,316 @@
+{
+  "schemaVersion": 1,
+  "rulesCommit": "ed721ea9ca3576b6ed18302effadaeaf2141ca64",
+  "inputState": "frozen",
+  "developmentReference": "development.truth.json",
+  "heldoutReference": "heldout.truth.json",
+  "damagedReference": "damaged.truth.json",
+  "developmentOrder": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8"
+  ],
+  "heldoutOrder": [
+    "H1",
+    "H2",
+    "H3",
+    "H4"
+  ],
+  "pages": [
+    {
+      "id": "D1",
+      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-1/page.png",
+      "sha256": "99bcbc3ed10436644dd666e37c6ac44c8e428f0db5cc2de7947bf8260345b715",
+      "imageSize": [
+        1653,
+        2339
+      ],
+      "split": "development",
+      "contentGroup": "original-Q1-Q6",
+      "sourceId": "existing-I1",
+      "features": [
+        "Chinese",
+        "formulas",
+        "figure"
+      ]
+    },
+    {
+      "id": "D2",
+      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-2/page.png",
+      "sha256": "3c570d2b67c6a2a1538c3f69445fef9cf47dea63184310a092d6ecb791510059",
+      "imageSize": [
+        1775,
+        2425
+      ],
+      "split": "development",
+      "contentGroup": "original-Q1-Q6",
+      "sourceId": "existing-I2",
+      "features": [
+        "Chinese",
+        "cases",
+        "skew"
+      ]
+    },
+    {
+      "id": "D3",
+      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-3/page.png",
+      "sha256": "e6f7b11f37dbc70e8312b92cb648395af311e7153598c295c925f45637565d1c",
+      "imageSize": [
+        1653,
+        2339
+      ],
+      "split": "development",
+      "contentGroup": "original-Q1-Q6",
+      "sourceId": "existing-I3",
+      "features": [
+        "Chinese",
+        "geometry",
+        "figure-labels"
+      ]
+    },
+    {
+      "id": "D4",
+      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/PS-4/page.png",
+      "sha256": "655014ceb9d66f2006f881afac95f077de02844c9251fb95c68c9e8a0e9f0b62",
+      "imageSize": [
+        1697,
+        2400
+      ],
+      "split": "development",
+      "contentGroup": "original-Q1-Q6",
+      "sourceId": "existing-PS4",
+      "features": [
+        "Chinese",
+        "solutions",
+        "formulas"
+      ]
+    },
+    {
+      "id": "D5",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/D5-E7.png",
+      "sha256": "74f1a497e11705578c4364b08fdc2bfbd3249dc8038f8df65964209d70756256",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "split": "development",
+      "contentGroup": "E-function-properties",
+      "sourceId": "E-pdf",
+      "features": [
+        "Chinese",
+        "real-three-column-table",
+        "figures"
+      ],
+      "sourcePage": 7
+    },
+    {
+      "id": "D6",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/D6-E8.png",
+      "sha256": "5155a03e30e5dbc0f3b3d8bea3cba33780d9044b681f78a01d7408d97102223c",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "split": "development",
+      "contentGroup": "E-function-properties",
+      "sourceId": "E-pdf",
+      "features": [
+        "Chinese",
+        "real-three-column-table",
+        "dense-formulas",
+        "figure"
+      ],
+      "sourcePage": 8
+    },
+    {
+      "id": "D7",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/D7.png",
+      "sha256": "4f8a93bdb7bd8538dad7266ab9a717970b66c4a8c10c2ed7a607efb9d206ddd4",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "split": "development",
+      "contentGroup": "author-algebra",
+      "sourceId": "authored-development",
+      "features": [
+        "Chinese",
+        "dense-formulas",
+        "conditions"
+      ]
+    },
+    {
+      "id": "D8",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/D8.png",
+      "sha256": "2004ec1d5a301c53ec9e8bb1e52a292d4ffed93ea34739a3f90abb515395faaf",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "split": "development",
+      "contentGroup": "author-sequence",
+      "sourceId": "authored-development",
+      "features": [
+        "Chinese",
+        "teaching-table",
+        "formulas"
+      ]
+    },
+    {
+      "id": "H1",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/H1-LZ21.png",
+      "sha256": "ca8aef08fd5576e611e389f431fa8479e62b92a6dafa6288de0d36573217ec3f",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "split": "heldout",
+      "contentGroup": "LZ-trigonometry",
+      "sourceId": "LZ-pdf",
+      "features": [
+        "Chinese",
+        "real-table",
+        "figure-labels",
+        "raster-source"
+      ],
+      "sourcePage": 21
+    },
+    {
+      "id": "H2",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/H2-LZ22.png",
+      "sha256": "95152c3dfc85c16100c5b1c5784e5d9b7361839d2185ab5ef68fb8825bfe4ca5",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "split": "heldout",
+      "contentGroup": "LZ-trigonometry",
+      "sourceId": "LZ-pdf",
+      "features": [
+        "Chinese",
+        "dense-formulas",
+        "raster-source"
+      ],
+      "sourcePage": 22
+    },
+    {
+      "id": "H3",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/H3.png",
+      "sha256": "dd4132aa8fbffe8c58bfbc4b23069cac123a24a42e3f87dbef5a71821351df9c",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "split": "heldout",
+      "contentGroup": "author-circle",
+      "sourceId": "authored-heldout",
+      "features": [
+        "Chinese",
+        "geometry",
+        "figure-labels"
+      ]
+    },
+    {
+      "id": "H4",
+      "image": "apps/api/test/fixtures/ocr-selection/pages/H4.png",
+      "sha256": "98271fca49a94d727cb14fed95a58d4299eac26b4c22cf976db0ae3dce911ba6",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "split": "heldout",
+      "contentGroup": "author-exponential",
+      "sourceId": "authored-heldout",
+      "features": [
+        "Chinese",
+        "two-columns",
+        "skew",
+        "formulas"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "E-pdf",
+      "url": "https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf",
+      "sha256": "b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a",
+      "bytes": 1115735,
+      "title": "函数的基本性质单元教学设计",
+      "publisher": "华南师范大学数学科学学院",
+      "pages": 13,
+      "renderDpi": 200
+    },
+    {
+      "id": "LZ-pdf",
+      "url": "https://csxy.lzmvc.edu.cn/_upload/article/files/49/3f/e2c90bc24c7ca2d3c7d0555ea9fd/94fc682a-b37b-429f-a9a2-63b0a697fbbd.pdf",
+      "sha256": "f0add9ee082604132f73782520c81a85211b85def8322c5317765992ecfa10b5",
+      "bytes": 5881035,
+      "title": "中高职一体化培养模式下数学课程与初中数学柔性衔接改革探索与实践",
+      "publisher": "柳州职业技术大学计算机学院",
+      "pages": 50,
+      "renderDpi": 200
+    },
+    {
+      "id": "existing-I1",
+      "path": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-1/page.png",
+      "sha256": "99bcbc3ed10436644dd666e37c6ac44c8e428f0db5cc2de7947bf8260345b715",
+      "origin": "Tracked original-page fixture; source image only, not its adjacent OCR outputs"
+    },
+    {
+      "id": "existing-I2",
+      "path": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-2/page.png",
+      "sha256": "3c570d2b67c6a2a1538c3f69445fef9cf47dea63184310a092d6ecb791510059",
+      "origin": "Tracked original-page fixture; source image only, not its adjacent OCR outputs"
+    },
+    {
+      "id": "existing-I3",
+      "path": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-3/page.png",
+      "sha256": "e6f7b11f37dbc70e8312b92cb648395af311e7153598c295c925f45637565d1c",
+      "origin": "Tracked original-page fixture; source image only, not its adjacent OCR outputs"
+    },
+    {
+      "id": "existing-PS4",
+      "path": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/PS-4/page.png",
+      "sha256": "655014ceb9d66f2006f881afac95f077de02844c9251fb95c68c9e8a0e9f0b62",
+      "origin": "Tracked original-page fixture; source image only, not its adjacent OCR outputs"
+    },
+    {
+      "id": "authored-development",
+      "path": "authoring-development.json",
+      "generator": "rebuild-authored.mjs",
+      "origin": "New independent author source"
+    },
+    {
+      "id": "authored-heldout",
+      "path": "authoring-heldout.json",
+      "generator": "rebuild-authored.mjs",
+      "origin": "New independent author source; do not read during development tuning"
+    }
+  ],
+  "excludedInputs": [
+    {
+      "id": "F-obscured",
+      "image": "apps/web/e2e/fixtures/materials-questions/F-obscured.jpg",
+      "sha256": "22f041265b8ee52d4f4e57eecd3b25933618fcff62742bdc9906759c91514c38",
+      "contentGroup": "original-Q1-Q6",
+      "reason": "Damaged input; excluded from ordinary quality and latency denominators"
+    },
+    {
+      "id": "F-truncated",
+      "image": "apps/web/e2e/fixtures/materials-questions/F-truncated.pdf",
+      "sha256": "52aa55a6e166571568789dba42927361def9c89e4e67e72763cf43cb24759c9f",
+      "contentGroup": "original-Q1-Q6",
+      "reason": "Damaged input; excluded from ordinary quality and latency denominators"
+    }
+  ],
+  "limitations": [
+    "12 readable pages from 7 content groups; small purposive selection, not representative of all teacher materials.",
+    "The four existing exercise/answer pages share one content group, and both public page pairs remain grouped. No identical-content variants are added as independent samples.",
+    "Authored pages supplement controlled symbol and layout cases; they do not replace the two public real-document sources."
+  ]
+}

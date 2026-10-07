@@ -1,0 +1,6901 @@
+{
+  "schemaVersion": 1,
+  "rules": "scoring.json",
+  "split": "development",
+  "pages": [
+    {
+      "id": "D1",
+      "contentGroup": "original-Q1-Q6",
+      "imageSize": [
+        1653,
+        2339
+      ],
+      "body": [
+        {
+          "id": "D1-b1",
+          "text": "第1页 · 原题",
+          "bbox": [
+            107,
+            105,
+            661,
+            175
+          ]
+        },
+        {
+          "id": "D1-b2",
+          "text": "Q1. 求函数的定义域。",
+          "bbox": [
+            107,
+            199,
+            777,
+            246
+          ]
+        },
+        {
+          "id": "D1-b3",
+          "text": "A. B. C. D.",
+          "bbox": [
+            149,
+            262,
+            1240,
+            323
+          ]
+        },
+        {
+          "id": "D1-b4",
+          "text": "Q2. 已知，配坐标轴与抛物线图，标出顶点和两个横轴交点。\n（1）求零点；（2）写出单调递增区间。",
+          "bbox": [
+            107,
+            339,
+            1322,
+            444
+          ]
+        },
+        {
+          "id": "D1-b5",
+          "text": "图中红点为。",
+          "bbox": [
+            107,
+            1053,
+            645,
+            1106
+          ]
+        }
+      ],
+      "formulas": [
+        {
+          "id": "D1-f1",
+          "latex": "f(x)=\\frac{\\sqrt{2x-1}}{x-2}",
+          "bbox": [
+            271,
+            203,
+            603,
+            243
+          ]
+        },
+        {
+          "id": "D1-f2",
+          "latex": "[\\frac12,+\\infty)",
+          "bbox": [
+            180,
+            271,
+            314,
+            311
+          ]
+        },
+        {
+          "id": "D1-f3",
+          "latex": "[\\frac12,2)\\cup(2,+\\infty)",
+          "bbox": [
+            364,
+            271,
+            608,
+            311
+          ]
+        },
+        {
+          "id": "D1-f4",
+          "latex": "(\\frac12,2)\\cup(2,+\\infty)",
+          "bbox": [
+            665,
+            271,
+            909,
+            311
+          ]
+        },
+        {
+          "id": "D1-f5",
+          "latex": "(-\\infty,2)\\cup(2,+\\infty)",
+          "bbox": [
+            959,
+            271,
+            1198,
+            311
+          ]
+        },
+        {
+          "id": "D1-f6",
+          "latex": "f(x)=x^2-2x-3",
+          "bbox": [
+            246,
+            351,
+            486,
+            391
+          ]
+        },
+        {
+          "id": "D1-f7",
+          "latex": "(-1,0),\\ (1,-4),\\ (3,0)",
+          "bbox": [
+            255,
+            1055,
+            522,
+            1095
+          ]
+        }
+      ],
+      "tables": [],
+      "figures": [
+        {
+          "id": "D1-g1",
+          "bbox": [
+            298,
+            479,
+            1355,
+            1006
+          ],
+          "labels": [
+            "x",
+            "y",
+            "(-1,0)",
+            "(1,-4)",
+            "(3,0)"
+          ],
+          "criticalLabels": [
+            "(-1,0)",
+            "(1,-4)",
+            "(3,0)"
+          ]
+        }
+      ],
+      "blocks": [
+        {
+          "id": "D1-b1",
+          "type": "body",
+          "bbox": [
+            107,
+            105,
+            661,
+            175
+          ]
+        },
+        {
+          "id": "D1-b2",
+          "type": "body",
+          "bbox": [
+            107,
+            199,
+            777,
+            246
+          ]
+        },
+        {
+          "id": "D1-b3",
+          "type": "body",
+          "bbox": [
+            149,
+            262,
+            1240,
+            323
+          ]
+        },
+        {
+          "id": "D1-b4",
+          "type": "body",
+          "bbox": [
+            107,
+            339,
+            1322,
+            444
+          ]
+        },
+        {
+          "id": "D1-b5",
+          "type": "body",
+          "bbox": [
+            107,
+            1053,
+            645,
+            1106
+          ]
+        },
+        {
+          "id": "D1-f1",
+          "type": "formula",
+          "bbox": [
+            271,
+            203,
+            603,
+            243
+          ]
+        },
+        {
+          "id": "D1-f2",
+          "type": "formula",
+          "bbox": [
+            180,
+            271,
+            314,
+            311
+          ]
+        },
+        {
+          "id": "D1-f3",
+          "type": "formula",
+          "bbox": [
+            364,
+            271,
+            608,
+            311
+          ]
+        },
+        {
+          "id": "D1-f4",
+          "type": "formula",
+          "bbox": [
+            665,
+            271,
+            909,
+            311
+          ]
+        },
+        {
+          "id": "D1-f5",
+          "type": "formula",
+          "bbox": [
+            959,
+            271,
+            1198,
+            311
+          ]
+        },
+        {
+          "id": "D1-f6",
+          "type": "formula",
+          "bbox": [
+            246,
+            351,
+            486,
+            391
+          ]
+        },
+        {
+          "id": "D1-f7",
+          "type": "formula",
+          "bbox": [
+            255,
+            1055,
+            522,
+            1095
+          ]
+        },
+        {
+          "id": "D1-g1",
+          "type": "figure",
+          "bbox": [
+            298,
+            479,
+            1355,
+            1006
+          ]
+        }
+      ],
+      "notes": [
+        "原图蓝色曲线与红色交点并非严格一致。评分保留原始示意图及其可见标注，不以数学重绘替换原图。"
+      ],
+      "denominators": {
+        "bodyCharacters": 78,
+        "formulas": 7,
+        "tableCells": 0,
+        "importantBlocks": 13
+      },
+      "referenceOrigin": "Manual transcription from frozen source page image; no recognition output consulted"
+    },
+    {
+      "id": "D2",
+      "contentGroup": "original-Q1-Q6",
+      "imageSize": [
+        1775,
+        2425
+      ],
+      "body": [
+        {
+          "id": "D2-b1",
+          "text": "第2页 · 原题",
+          "bbox": [
+            227,
+            112,
+            559,
+            179
+          ]
+        },
+        {
+          "id": "D2-b2",
+          "text": "Q3.。若，求 a 和。",
+          "bbox": [
+            213,
+            211,
+            994,
+            325
+          ]
+        },
+        {
+          "id": "D2-b3",
+          "text": "Q4. 解不等式。",
+          "bbox": [
+            213,
+            340,
+            635,
+            410
+          ]
+        },
+        {
+          "id": "D2-b4",
+          "text": "本页保留两行分段结构与不等号，供文字层和公式源提取。",
+          "bbox": [
+            213,
+            412,
+            941,
+            485
+          ]
+        }
+      ],
+      "formulas": [
+        {
+          "id": "D2-f1",
+          "latex": "f(x)=\\begin{cases}ax+1,&x<0,\\\\x^2-1,&x\\ge0.\\end{cases}",
+          "bbox": [
+            280,
+            211,
+            605,
+            318
+          ]
+        },
+        {
+          "id": "D2-f2",
+          "latex": "f(-2)=3",
+          "bbox": [
+            644,
+            233,
+            816,
+            284
+          ]
+        },
+        {
+          "id": "D2-f3",
+          "latex": "f(1)",
+          "bbox": [
+            903,
+            250,
+            1003,
+            291
+          ]
+        },
+        {
+          "id": "D2-f4",
+          "latex": "\\log_2(x-1)\\le1",
+          "bbox": [
+            408,
+            352,
+            619,
+            398
+          ]
+        }
+      ],
+      "tables": [],
+      "figures": [],
+      "blocks": [
+        {
+          "id": "D2-b1",
+          "type": "body",
+          "bbox": [
+            227,
+            112,
+            559,
+            179
+          ]
+        },
+        {
+          "id": "D2-b2",
+          "type": "body",
+          "bbox": [
+            213,
+            211,
+            994,
+            325
+          ]
+        },
+        {
+          "id": "D2-b3",
+          "type": "body",
+          "bbox": [
+            213,
+            340,
+            635,
+            410
+          ]
+        },
+        {
+          "id": "D2-b4",
+          "type": "body",
+          "bbox": [
+            213,
+            412,
+            941,
+            485
+          ]
+        },
+        {
+          "id": "D2-f1",
+          "type": "formula",
+          "bbox": [
+            280,
+            211,
+            605,
+            318
+          ]
+        },
+        {
+          "id": "D2-f2",
+          "type": "formula",
+          "bbox": [
+            644,
+            233,
+            816,
+            284
+          ]
+        },
+        {
+          "id": "D2-f3",
+          "type": "formula",
+          "bbox": [
+            903,
+            250,
+            1003,
+            291
+          ]
+        },
+        {
+          "id": "D2-f4",
+          "type": "formula",
+          "bbox": [
+            408,
+            352,
+            619,
+            398
+          ]
+        }
+      ],
+      "notes": [],
+      "denominators": {
+        "bodyCharacters": 50,
+        "formulas": 4,
+        "tableCells": 0,
+        "importantBlocks": 8
+      },
+      "referenceOrigin": "Manual transcription from frozen source page image; no recognition output consulted"
+    },
+    {
+      "id": "D3",
+      "contentGroup": "original-Q1-Q6",
+      "imageSize": [
+        1653,
+        2339
+      ],
+      "body": [
+        {
+          "id": "D3-b1",
+          "text": "第3页 · 原题",
+          "bbox": [
+            107,
+            105,
+            661,
+            175
+          ]
+        },
+        {
+          "id": "D3-b2",
+          "text": "Q5. 如图，直角三角形 ABC，。求 BC 的长及。",
+          "bbox": [
+            107,
+            201,
+            959,
+            246
+          ]
+        },
+        {
+          "id": "D3-b3",
+          "text": "图示 A 在左下、B 在右下、C 在左上；AB 边标 4，AC 边标 3。",
+          "bbox": [
+            107,
+            889,
+            909,
+            929
+          ]
+        },
+        {
+          "id": "D3-b4",
+          "text": "Q6. 正方体 ABCD-A₁B₁C₁D₁ 的棱长为2。\n（1）求体对角线 AC₁ 的长；（2）求体积。",
+          "bbox": [
+            107,
+            959,
+            777,
+            1060
+          ]
+        }
+      ],
+      "formulas": [
+        {
+          "id": "D3-f1",
+          "latex": "\\angle A=90^\\circ",
+          "bbox": [
+            517,
+            208,
+            650,
+            241
+          ]
+        },
+        {
+          "id": "D3-f2",
+          "latex": "\\tan B",
+          "bbox": [
+            815,
+            208,
+            916,
+            243
+          ]
+        }
+      ],
+      "tables": [],
+      "figures": [
+        {
+          "id": "D3-g1",
+          "bbox": [
+            479,
+            320,
+            1141,
+            819
+          ],
+          "labels": [
+            "A",
+            "B",
+            "C",
+            "AC=3",
+            "AB=4",
+            "∠A=90°"
+          ],
+          "criticalLabels": [
+            "A",
+            "B",
+            "C",
+            "AC=3",
+            "AB=4",
+            "∠A=90°"
+          ]
+        },
+        {
+          "id": "D3-g2",
+          "bbox": [
+            483,
+            1170,
+            1174,
+            1665
+          ],
+          "labels": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "A₁",
+            "B₁",
+            "C₁",
+            "D₁"
+          ],
+          "criticalLabels": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "A₁",
+            "B₁",
+            "C₁",
+            "D₁"
+          ]
+        }
+      ],
+      "blocks": [
+        {
+          "id": "D3-b1",
+          "type": "body",
+          "bbox": [
+            107,
+            105,
+            661,
+            175
+          ]
+        },
+        {
+          "id": "D3-b2",
+          "type": "body",
+          "bbox": [
+            107,
+            201,
+            959,
+            246
+          ]
+        },
+        {
+          "id": "D3-b3",
+          "type": "body",
+          "bbox": [
+            107,
+            889,
+            909,
+            929
+          ]
+        },
+        {
+          "id": "D3-b4",
+          "type": "body",
+          "bbox": [
+            107,
+            959,
+            777,
+            1060
+          ]
+        },
+        {
+          "id": "D3-f1",
+          "type": "formula",
+          "bbox": [
+            517,
+            208,
+            650,
+            241
+          ]
+        },
+        {
+          "id": "D3-f2",
+          "type": "formula",
+          "bbox": [
+            815,
+            208,
+            916,
+            243
+          ]
+        },
+        {
+          "id": "D3-g1",
+          "type": "figure",
+          "bbox": [
+            479,
+            320,
+            1141,
+            819
+          ]
+        },
+        {
+          "id": "D3-g2",
+          "type": "figure",
+          "bbox": [
+            483,
+            1170,
+            1174,
+            1665
+          ]
+        }
+      ],
+      "notes": [],
+      "denominators": {
+        "bodyCharacters": 104,
+        "formulas": 2,
+        "tableCells": 0,
+        "importantBlocks": 8
+      },
+      "referenceOrigin": "Manual transcription from frozen source page image; no recognition output consulted"
+    },
+    {
+      "id": "D4",
+      "contentGroup": "original-Q1-Q6",
+      "imageSize": [
+        1697,
+        2400
+      ],
+      "body": [
+        {
+          "id": "D4-b1",
+          "text": "第4页 · 原有答案解析",
+          "bbox": [
+            110,
+            108,
+            730,
+            175
+          ]
+        },
+        {
+          "id": "D4-b2",
+          "text": "Q1. 答案 B。根号内非负且分母不为零。",
+          "bbox": [
+            132,
+            209,
+            713,
+            262
+          ]
+        },
+        {
+          "id": "D4-b3",
+          "text": "Q2. 解析；零点为；单调递增区间为。",
+          "bbox": [
+            132,
+            295,
+            1137,
+            348
+          ]
+        },
+        {
+          "id": "D4-b4",
+          "text": "Q3. 答案。代入负数分支求 a，再代入非负分支。",
+          "bbox": [
+            132,
+            379,
+            1086,
+            434
+          ]
+        },
+        {
+          "id": "D4-b5",
+          "text": "Q4. 先有，底数 2 大于1，故，答案。",
+          "bbox": [
+            132,
+            468,
+            984,
+            518
+          ]
+        },
+        {
+          "id": "D4-b6",
+          "text": "Q5. 答案；由勾股定理和正切定义得到。",
+          "bbox": [
+            132,
+            552,
+            1018,
+            602
+          ]
+        },
+        {
+          "id": "D4-b7",
+          "text": "Q6. 原稿未提供答案解析。",
+          "bbox": [
+            132,
+            636,
+            560,
+            686
+          ]
+        }
+      ],
+      "formulas": [
+        {
+          "id": "D4-f1",
+          "latex": "f(x)=(x-1)^2-4",
+          "bbox": [
+            275,
+            300,
+            526,
+            341
+          ]
+        },
+        {
+          "id": "D4-f2",
+          "latex": "-1,\\ 3",
+          "bbox": [
+            657,
+            300,
+            755,
+            341
+          ]
+        },
+        {
+          "id": "D4-f3",
+          "latex": "[1,+\\infty)",
+          "bbox": [
+            1001,
+            300,
+            1106,
+            341
+          ]
+        },
+        {
+          "id": "D4-f4",
+          "latex": "a=-1,\\quad f(1)=0",
+          "bbox": [
+            277,
+            389,
+            543,
+            430
+          ]
+        },
+        {
+          "id": "D4-f5",
+          "latex": "x>1",
+          "bbox": [
+            277,
+            475,
+            358,
+            516
+          ]
+        },
+        {
+          "id": "D4-f6",
+          "latex": "x-1\\le2",
+          "bbox": [
+            606,
+            475,
+            745,
+            516
+          ]
+        },
+        {
+          "id": "D4-f7",
+          "latex": "1<x\\le3",
+          "bbox": [
+            828,
+            475,
+            979,
+            516
+          ]
+        },
+        {
+          "id": "D4-f8",
+          "latex": "BC=5,\\quad \\tan B=\\frac34",
+          "bbox": [
+            273,
+            557,
+            597,
+            600
+          ]
+        }
+      ],
+      "tables": [],
+      "figures": [],
+      "blocks": [
+        {
+          "id": "D4-b1",
+          "type": "body",
+          "bbox": [
+            110,
+            108,
+            730,
+            175
+          ]
+        },
+        {
+          "id": "D4-b2",
+          "type": "body",
+          "bbox": [
+            132,
+            209,
+            713,
+            262
+          ]
+        },
+        {
+          "id": "D4-b3",
+          "type": "body",
+          "bbox": [
+            132,
+            295,
+            1137,
+            348
+          ]
+        },
+        {
+          "id": "D4-b4",
+          "type": "body",
+          "bbox": [
+            132,
+            379,
+            1086,
+            434
+          ]
+        },
+        {
+          "id": "D4-b5",
+          "type": "body",
+          "bbox": [
+            132,
+            468,
+            984,
+            518
+          ]
+        },
+        {
+          "id": "D4-b6",
+          "type": "body",
+          "bbox": [
+            132,
+            552,
+            1018,
+            602
+          ]
+        },
+        {
+          "id": "D4-b7",
+          "type": "body",
+          "bbox": [
+            132,
+            636,
+            560,
+            686
+          ]
+        },
+        {
+          "id": "D4-f1",
+          "type": "formula",
+          "bbox": [
+            275,
+            300,
+            526,
+            341
+          ]
+        },
+        {
+          "id": "D4-f2",
+          "type": "formula",
+          "bbox": [
+            657,
+            300,
+            755,
+            341
+          ]
+        },
+        {
+          "id": "D4-f3",
+          "type": "formula",
+          "bbox": [
+            1001,
+            300,
+            1106,
+            341
+          ]
+        },
+        {
+          "id": "D4-f4",
+          "type": "formula",
+          "bbox": [
+            277,
+            389,
+            543,
+            430
+          ]
+        },
+        {
+          "id": "D4-f5",
+          "type": "formula",
+          "bbox": [
+            277,
+            475,
+            358,
+            516
+          ]
+        },
+        {
+          "id": "D4-f6",
+          "type": "formula",
+          "bbox": [
+            606,
+            475,
+            745,
+            516
+          ]
+        },
+        {
+          "id": "D4-f7",
+          "type": "formula",
+          "bbox": [
+            828,
+            475,
+            979,
+            516
+          ]
+        },
+        {
+          "id": "D4-f8",
+          "type": "formula",
+          "bbox": [
+            273,
+            557,
+            597,
+            600
+          ]
+        }
+      ],
+      "notes": [],
+      "denominators": {
+        "bodyCharacters": 120,
+        "formulas": 8,
+        "tableCells": 0,
+        "importantBlocks": 15
+      },
+      "referenceOrigin": "Manual transcription from frozen source page image; no recognition output consulted"
+    },
+    {
+      "id": "D5",
+      "contentGroup": "E-function-properties",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "body": [
+        {
+          "id": "D5-T1-r0c0-body",
+          "text": "，都有，且.",
+          "bbox": [
+            251,
+            212,
+            775,
+            250
+          ],
+          "tableCellId": "D5-T1-r0c0"
+        },
+        {
+          "id": "D5-T1-r1c0-body",
+          "text": "从图象或定义判断以下两个函数是否为偶函数：\n（1），（2）",
+          "bbox": [
+            250,
+            583,
+            780,
+            787
+          ],
+          "tableCellId": "D5-T1-r1c0"
+        },
+        {
+          "id": "D5-T1-r2c0-body",
+          "text": "【问题5】\n函数图象关于原点对称，它的自变量与函数值之间的数值规律是什么呢？\n【追问1】\n上述结论是否具有一般性？\n【追问2】\n你能用符号语言精确的描述这一规律特征吗？\n师：利用信息技术演示.\n学生：一般地，设函数的定义域为，如果，都有，且，那么函数就叫做奇函数.",
+          "bbox": [
+            250,
+            1025,
+            780,
+            1773
+          ],
+          "tableCellId": "D5-T1-r2c0"
+        },
+        {
+          "id": "D5-T1-r0c1-body",
+          "text": "，如果，都有，且，那么函数就叫做偶函数.",
+          "bbox": [
+            810,
+            212,
+            1210,
+            401
+          ],
+          "tableCellId": "D5-T1-r0c1"
+        },
+        {
+          "id": "D5-T1-r2c1-body",
+          "text": "观察函数和的图象特征，完成以下表格.",
+          "bbox": [
+            810,
+            979,
+            1219,
+            1123
+          ],
+          "tableCellId": "D5-T1-r2c1"
+        },
+        {
+          "id": "D5-T1-r0c2-body",
+          "text": "生使用数学语言的能力，发展学生的语言概括能力.",
+          "bbox": [
+            1250,
+            212,
+            1564,
+            352
+          ],
+          "tableCellId": "D5-T1-r0c2"
+        },
+        {
+          "id": "D5-T1-r1c2-body",
+          "text": "巩固偶函数定义，及时对定义进行强化，引导学生从图象和定义两个角度去判定偶函数.",
+          "bbox": [
+            1250,
+            596,
+            1565,
+            785
+          ],
+          "tableCellId": "D5-T1-r1c2"
+        },
+        {
+          "id": "D5-T1-r2c2-body",
+          "text": "让学生仿照、类比偶函数概念建立的过程，独立的去经历、发现、猜想、证明的全过程，探究并建立奇函数的概念，参与知识发生发展的过程. 提升学生观察分析，类比归纳的能力.",
+          "bbox": [
+            1250,
+            1194,
+            1565,
+            1605
+          ],
+          "tableCellId": "D5-T1-r2c2"
+        },
+        {
+          "id": "D5-BANNER1",
+          "text": "教学环节：初步应用，巩固所学",
+          "bbox": [
+            234,
+            1848,
+            707,
+            1916
+          ]
+        },
+        {
+          "id": "D5-T2-r0c0-body",
+          "text": "教学内容",
+          "bbox": [
+            454,
+            1935,
+            580,
+            1968
+          ],
+          "tableCellId": "D5-T2-r0c0"
+        },
+        {
+          "id": "D5-T2-r1c0-body",
+          "text": "【例6】\n判断下列函数的奇偶性",
+          "bbox": [
+            250,
+            2005,
+            620,
+            2090
+          ],
+          "tableCellId": "D5-T2-r1c0"
+        },
+        {
+          "id": "D5-T2-r0c1-body",
+          "text": "师生活动",
+          "bbox": [
+            982,
+            1935,
+            1110,
+            1968
+          ],
+          "tableCellId": "D5-T2-r0c1"
+        },
+        {
+          "id": "D5-T2-r1c1-body",
+          "text": "总结函数奇偶性判断的步骤",
+          "bbox": [
+            810,
+            2030,
+            1200,
+            2064
+          ],
+          "tableCellId": "D5-T2-r1c1"
+        },
+        {
+          "id": "D5-T2-r0c2-body",
+          "text": "设计点评",
+          "bbox": [
+            1344,
+            1935,
+            1474,
+            1968
+          ],
+          "tableCellId": "D5-T2-r0c2"
+        },
+        {
+          "id": "D5-T2-r1c2-body",
+          "text": "强调奇偶性是函数在它定义域上的整体性",
+          "bbox": [
+            1250,
+            2004,
+            1565,
+            2090
+          ],
+          "tableCellId": "D5-T2-r1c2"
+        }
+      ],
+      "formulas": [
+        {
+          "id": "D5-F09",
+          "latex": "f(x)=x^2+1",
+          "bbox": [
+            330,
+            727,
+            500,
+            763
+          ],
+          "scope": "body",
+          "owner": "D5-T1-r1c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F10",
+          "latex": "g(x)=\\frac{2}{x^2+11}",
+          "bbox": [
+            589,
+            706,
+            777,
+            785
+          ],
+          "scope": "body",
+          "owner": "D5-T1-r1c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F11",
+          "latex": "g(x)=\\frac{2}{x^2+11}",
+          "bbox": [
+            991,
+            527,
+            1089,
+            566
+          ],
+          "scope": "figure",
+          "owner": "D5-G1",
+          "kind": "diagram_equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F12",
+          "latex": "f(x)=x^2+1",
+          "bbox": [
+            946,
+            842,
+            1028,
+            865
+          ],
+          "scope": "figure",
+          "owner": "D5-G2",
+          "kind": "diagram_equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F19",
+          "latex": "f(x)=x",
+          "bbox": [
+            943,
+            1003,
+            1056,
+            1038
+          ],
+          "scope": "body",
+          "owner": "D5-T1-r2c1",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F20",
+          "latex": "g(x)=\\frac{1}{x}",
+          "bbox": [
+            1094,
+            979,
+            1218,
+            1057
+          ],
+          "scope": "body",
+          "owner": "D5-T1-r2c1",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F21",
+          "latex": "f(x)=x",
+          "bbox": [
+            986,
+            1230,
+            1038,
+            1250
+          ],
+          "scope": "figure",
+          "owner": "D5-G3",
+          "kind": "diagram_equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F22",
+          "latex": "g(x)=\\frac{1}{x}",
+          "bbox": [
+            952,
+            1464,
+            1007,
+            1500
+          ],
+          "scope": "figure",
+          "owner": "D5-G4",
+          "kind": "diagram_equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F24",
+          "latex": "f(x)=x",
+          "bbox": [
+            814,
+            1746,
+            875,
+            1775
+          ],
+          "scope": "nested_table",
+          "owner": "D5-N1-r1c0",
+          "kind": "table_equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F25",
+          "latex": "g(x)=\\frac{1}{x}",
+          "bbox": [
+            814,
+            1793,
+            876,
+            1841
+          ],
+          "scope": "nested_table",
+          "owner": "D5-N1-r2c0",
+          "kind": "table_equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-condition1",
+          "latex": "\\forall x\\in I,\\quad -x\\in I,\\quad f(-x)=f(x)",
+          "bbox": [
+            255,
+            214,
+            765,
+            247
+          ],
+          "sourceIds": [
+            "D5-F01",
+            "D5-F02",
+            "D5-F03"
+          ],
+          "kind": "complete_quantified_condition",
+          "owner": "D5-T1-r0c0"
+        },
+        {
+          "id": "D5-condition2",
+          "latex": "\\forall x\\in I,\\quad -x\\in I,\\quad f(-x)=f(x)",
+          "bbox": [
+            849,
+            214,
+            1198,
+            315
+          ],
+          "sourceIds": [
+            "D5-F05",
+            "D5-F06",
+            "D5-F07"
+          ],
+          "kind": "complete_quantified_condition",
+          "owner": "D5-T1-r0c1"
+        },
+        {
+          "id": "D5-condition3",
+          "latex": "\\forall x\\in I,\\quad -x\\in I,\\quad f(-x)=-f(x)",
+          "bbox": [
+            259,
+            1601,
+            591,
+            1703
+          ],
+          "sourceIds": [
+            "D5-F15",
+            "D5-F16",
+            "D5-F17"
+          ],
+          "kind": "complete_quantified_condition",
+          "owner": "D5-T1-r2c0"
+        }
+      ],
+      "mathFragments": [
+        {
+          "id": "D5-F04",
+          "latex": "I",
+          "bbox": [
+            811,
+            216,
+            827,
+            245
+          ],
+          "scope": "body",
+          "owner": "D5-T1-r0c1",
+          "kind": "inline_symbol",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F08",
+          "latex": "f(x)",
+          "bbox": [
+            819,
+            368,
+            880,
+            399
+          ],
+          "scope": "body",
+          "owner": "D5-T1-r0c1",
+          "kind": "inline_expression",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F13",
+          "latex": "f(x)",
+          "bbox": [
+            535,
+            1526,
+            595,
+            1564
+          ],
+          "scope": "body",
+          "owner": "D5-T1-r2c0",
+          "kind": "inline_expression",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F14",
+          "latex": "I",
+          "bbox": [
+            751,
+            1530,
+            766,
+            1557
+          ],
+          "scope": "body",
+          "owner": "D5-T1-r2c0",
+          "kind": "inline_symbol",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F18",
+          "latex": "f(x)",
+          "bbox": [
+            619,
+            1667,
+            681,
+            1703
+          ],
+          "scope": "body",
+          "owner": "D5-T1-r2c0",
+          "kind": "inline_expression",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D5-F23",
+          "latex": "x",
+          "bbox": [
+            837,
+            1692,
+            853,
+            1713
+          ],
+          "scope": "nested_table",
+          "owner": "D5-N1-r0c0",
+          "kind": "table_symbol",
+          "source": "original_page_image",
+          "confidence": "high"
+        }
+      ],
+      "tables": [
+        {
+          "id": "D5-T1",
+          "bbox": [
+            234,
+            200,
+            1578,
+            1848
+          ],
+          "cells": [
+            {
+              "id": "D5-T1-r0c0",
+              "row": 0,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                200,
+                795,
+                429
+              ],
+              "text": "，都有，且.",
+              "formulaIds": [
+                "D5-condition1"
+              ],
+              "content": [
+                {
+                  "type": "formula",
+                  "formulaId": "D5-condition1",
+                  "latex": "\\forall x\\in I"
+                },
+                {
+                  "type": "text",
+                  "text": "，都有"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-condition1",
+                  "latex": "-x\\in I"
+                },
+                {
+                  "type": "text",
+                  "text": "，且"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-condition1",
+                  "latex": "f(-x)=f(x)"
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ],
+              "fragment": {
+                "continuesFromPreviousPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                251,
+                212,
+                775,
+                250
+              ],
+              "inlineFormulaIds": [
+                "D5-condition1"
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "\\forall x\\in I，都有-x\\in I，且f(-x)=f(x)."
+            },
+            {
+              "id": "D5-T1-r0c1",
+              "row": 0,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                200,
+                1234,
+                429
+              ],
+              "text": "，如果，都有，且，那么函数就叫做偶函数.",
+              "formulaIds": [
+                "D5-condition2"
+              ],
+              "content": [
+                {
+                  "type": "mathFragment",
+                  "formulaId": "D5-F04",
+                  "latex": "I"
+                },
+                {
+                  "type": "text",
+                  "text": "，如果"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-condition2",
+                  "latex": "\\forall x\\in I"
+                },
+                {
+                  "type": "text",
+                  "text": "，都有"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-condition2",
+                  "latex": "-x\\in I"
+                },
+                {
+                  "type": "text",
+                  "text": "，且"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-condition2",
+                  "latex": "f(-x)=f(x)"
+                },
+                {
+                  "type": "text",
+                  "text": "，那么函数"
+                },
+                {
+                  "type": "mathFragment",
+                  "formulaId": "D5-F08",
+                  "latex": "f(x)"
+                },
+                {
+                  "type": "text",
+                  "text": "就叫做偶函数."
+                }
+              ],
+              "fragment": {
+                "continuesFromPreviousPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                810,
+                212,
+                1210,
+                401
+              ],
+              "inlineFormulaIds": [
+                "D5-condition2"
+              ],
+              "mathFragmentIds": [
+                "D5-F04",
+                "D5-F08"
+              ],
+              "sourceText": "I，如果\\forall x\\in I，都有-x\\in I，且f(-x)=f(x)，那么函数f(x)就叫做偶函数."
+            },
+            {
+              "id": "D5-T1-r0c2",
+              "row": 0,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                200,
+                1578,
+                429
+              ],
+              "text": "生使用数学语言的能力，发展学生的语言概括能力.",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "生使用数学语言的能力，发展学生的语言概括能力."
+                }
+              ],
+              "fragment": {
+                "continuesFromPreviousPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                1250,
+                212,
+                1564,
+                352
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "生使用数学语言的能力，发展学生的语言概括能力."
+            },
+            {
+              "id": "D5-T1-r1c0",
+              "row": 1,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                429,
+                795,
+                951
+              ],
+              "text": "从图象或定义判断以下两个函数是否为偶函数：\n（1），（2）",
+              "formulaIds": [
+                "D5-F09",
+                "D5-F10"
+              ],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "从图象或定义判断以下两个函数是否为偶函数：\n（1）"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-F09",
+                  "latex": "f(x)=x^2+1"
+                },
+                {
+                  "type": "text",
+                  "text": "，（2）"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-F10",
+                  "latex": "g(x)=\\frac{2}{x^2+11}"
+                }
+              ],
+              "textBbox": [
+                250,
+                583,
+                780,
+                787
+              ],
+              "inlineFormulaIds": [
+                "D5-F09",
+                "D5-F10"
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "从图象或定义判断以下两个函数是否为偶函数：\n（1）f(x)=x^2+1，（2）g(x)=\\frac{2}{x^2+11}"
+            },
+            {
+              "id": "D5-T1-r1c1",
+              "row": 1,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                429,
+                1234,
+                951
+              ],
+              "text": "",
+              "formulaIds": [
+                "D5-F11",
+                "D5-F12"
+              ],
+              "content": [],
+              "figureIds": [
+                "D5-G1",
+                "D5-G2"
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-T1-r1c2",
+              "row": 1,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                429,
+                1578,
+                951
+              ],
+              "text": "巩固偶函数定义，及时对定义进行强化，引导学生从图象和定义两个角度去判定偶函数.",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "巩固偶函数定义，及时对定义进行强化，引导学生从图象和定义两个角度去判定偶函数."
+                }
+              ],
+              "textBbox": [
+                1250,
+                596,
+                1565,
+                785
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "巩固偶函数定义，及时对定义进行强化，引导学生从图象和定义两个角度去判定偶函数."
+            },
+            {
+              "id": "D5-T1-r2c0",
+              "row": 2,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                951,
+                795,
+                1848
+              ],
+              "text": "【问题5】\n函数图象关于原点对称，它的自变量与函数值之间的数值规律是什么呢？\n【追问1】\n上述结论是否具有一般性？\n【追问2】\n你能用符号语言精确的描述这一规律特征吗？\n师：利用信息技术演示.\n学生：一般地，设函数的定义域为，如果，都有，且，那么函数就叫做奇函数.",
+              "formulaIds": [
+                "D5-condition3"
+              ],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "【问题5】\n函数图象关于原点对称，它的自变量与函数值之间的数值规律是什么呢？\n【追问1】\n上述结论是否具有一般性？\n【追问2】\n你能用符号语言精确的描述这一规律特征吗？\n师：利用信息技术演示.\n学生：一般地，设函数"
+                },
+                {
+                  "type": "mathFragment",
+                  "formulaId": "D5-F13",
+                  "latex": "f(x)"
+                },
+                {
+                  "type": "text",
+                  "text": "的定义域为"
+                },
+                {
+                  "type": "mathFragment",
+                  "formulaId": "D5-F14",
+                  "latex": "I"
+                },
+                {
+                  "type": "text",
+                  "text": "，如果"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-condition3",
+                  "latex": "\\forall x\\in I"
+                },
+                {
+                  "type": "text",
+                  "text": "，都有"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-condition3",
+                  "latex": "-x\\in I"
+                },
+                {
+                  "type": "text",
+                  "text": "，且"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-condition3",
+                  "latex": "f(-x)=-f(x)"
+                },
+                {
+                  "type": "text",
+                  "text": "，那么函数"
+                },
+                {
+                  "type": "mathFragment",
+                  "formulaId": "D5-F18",
+                  "latex": "f(x)"
+                },
+                {
+                  "type": "text",
+                  "text": "就叫做奇函数."
+                }
+              ],
+              "textBbox": [
+                250,
+                1025,
+                780,
+                1773
+              ],
+              "inlineFormulaIds": [
+                "D5-condition3"
+              ],
+              "mathFragmentIds": [
+                "D5-F13",
+                "D5-F14",
+                "D5-F18"
+              ],
+              "sourceText": "【问题5】\n函数图象关于原点对称，它的自变量与函数值之间的数值规律是什么呢？\n【追问1】\n上述结论是否具有一般性？\n【追问2】\n你能用符号语言精确的描述这一规律特征吗？\n师：利用信息技术演示.\n学生：一般地，设函数f(x)的定义域为I，如果\\forall x\\in I，都有-x\\in I，且f(-x)=-f(x)，那么函数f(x)就叫做奇函数."
+            },
+            {
+              "id": "D5-T1-r2c1",
+              "row": 2,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                951,
+                1234,
+                1848
+              ],
+              "text": "观察函数和的图象特征，完成以下表格.",
+              "formulaIds": [
+                "D5-F19",
+                "D5-F20",
+                "D5-F21",
+                "D5-F22",
+                "D5-F24",
+                "D5-F25"
+              ],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "观察函数"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-F19",
+                  "latex": "f(x)=x"
+                },
+                {
+                  "type": "text",
+                  "text": "和"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D5-F20",
+                  "latex": "g(x)=\\frac{1}{x}"
+                },
+                {
+                  "type": "text",
+                  "text": "的图象特征，完成以下表格."
+                }
+              ],
+              "figureIds": [
+                "D5-G3",
+                "D5-G4"
+              ],
+              "nestedTableIds": [
+                "D5-N1"
+              ],
+              "textBbox": [
+                810,
+                979,
+                1219,
+                1123
+              ],
+              "inlineFormulaIds": [
+                "D5-F19",
+                "D5-F20"
+              ],
+              "mathFragmentIds": [
+                "D5-F23"
+              ],
+              "sourceText": "观察函数f(x)=x和g(x)=\\frac{1}{x}的图象特征，完成以下表格."
+            },
+            {
+              "id": "D5-T1-r2c2",
+              "row": 2,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                951,
+                1578,
+                1848
+              ],
+              "text": "让学生仿照、类比偶函数概念建立的过程，独立的去经历、发现、猜想、证明的全过程，探究并建立奇函数的概念，参与知识发生发展的过程. 提升学生观察分析，类比归纳的能力.",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "让学生仿照、类比偶函数概念建立的过程，独立的去经历、发现、猜想、证明的全过程，探究并建立奇函数的概念，参与知识发生发展的过程. 提升学生观察分析，类比归纳的能力."
+                }
+              ],
+              "textBbox": [
+                1250,
+                1194,
+                1565,
+                1605
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "让学生仿照、类比偶函数概念建立的过程，独立的去经历、发现、猜想、证明的全过程，探究并建立奇函数的概念，参与知识发生发展的过程. 提升学生观察分析，类比归纳的能力."
+            }
+          ],
+          "hasVisibleHeader": false,
+          "continuationGroup": "E-concept-table",
+          "rows": 3,
+          "columns": 3
+        },
+        {
+          "id": "D5-T2",
+          "bbox": [
+            234,
+            1916,
+            1578,
+            2107
+          ],
+          "cells": [
+            {
+              "id": "D5-T2-r0c0",
+              "row": 0,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                1916,
+                795,
+                1986
+              ],
+              "text": "教学内容",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "教学内容"
+                }
+              ],
+              "textBbox": [
+                454,
+                1935,
+                580,
+                1968
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "教学内容"
+            },
+            {
+              "id": "D5-T2-r0c1",
+              "row": 0,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                1916,
+                1234,
+                1986
+              ],
+              "text": "师生活动",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "师生活动"
+                }
+              ],
+              "textBbox": [
+                982,
+                1935,
+                1110,
+                1968
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "师生活动"
+            },
+            {
+              "id": "D5-T2-r0c2",
+              "row": 0,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                1916,
+                1578,
+                1986
+              ],
+              "text": "设计点评",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "设计点评"
+                }
+              ],
+              "textBbox": [
+                1344,
+                1935,
+                1474,
+                1968
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "设计点评"
+            },
+            {
+              "id": "D5-T2-r1c0",
+              "row": 1,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                1986,
+                795,
+                2107
+              ],
+              "text": "【例6】\n判断下列函数的奇偶性",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "【例6】\n判断下列函数的奇偶性"
+                }
+              ],
+              "fragment": {
+                "continuesToNextPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                250,
+                2005,
+                620,
+                2090
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "【例6】\n判断下列函数的奇偶性"
+            },
+            {
+              "id": "D5-T2-r1c1",
+              "row": 1,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                1986,
+                1234,
+                2107
+              ],
+              "text": "总结函数奇偶性判断的步骤",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "总结函数奇偶性判断的步骤"
+                }
+              ],
+              "fragment": {
+                "continuesToNextPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                810,
+                2030,
+                1200,
+                2064
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "总结函数奇偶性判断的步骤"
+            },
+            {
+              "id": "D5-T2-r1c2",
+              "row": 1,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                1986,
+                1578,
+                2107
+              ],
+              "text": "强调奇偶性是函数在它定义域上的整体性",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "强调奇偶性是函数在它定义域上的整体性"
+                }
+              ],
+              "fragment": {
+                "continuesToNextPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                1250,
+                2004,
+                1565,
+                2090
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "强调奇偶性是函数在它定义域上的整体性"
+            }
+          ],
+          "hasVisibleHeader": true,
+          "continuationGroup": "E-application-table",
+          "rows": 2,
+          "columns": 3
+        },
+        {
+          "id": "D5-N1",
+          "parentCellId": "D5-T1-r2c1",
+          "bbox": [
+            805,
+            1674,
+            1222,
+            1845
+          ],
+          "cells": [
+            {
+              "id": "D5-N1-r0c0",
+              "row": 0,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                805,
+                1674,
+                882,
+                1731
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "mathFragment",
+                  "formulaId": "D5-F23",
+                  "latex": "x"
+                }
+              ],
+              "mathFragmentIds": [
+                "D5-F23"
+              ],
+              "sourceText": "x"
+            },
+            {
+              "id": "D5-N1-r0c1",
+              "row": 0,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                882,
+                1674,
+                918,
+                1731
+              ],
+              "text": "⋯",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "⋯"
+                }
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "⋯"
+            },
+            {
+              "id": "D5-N1-r0c2",
+              "row": 0,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                918,
+                1674,
+                957,
+                1731
+              ],
+              "text": "-3",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "-3"
+                }
+              ],
+              "mathToken": "-3",
+              "mathFragmentIds": [],
+              "sourceText": "-3"
+            },
+            {
+              "id": "D5-N1-r0c3",
+              "row": 0,
+              "column": 3,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                957,
+                1674,
+                995,
+                1731
+              ],
+              "text": "-2",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "-2"
+                }
+              ],
+              "mathToken": "-2",
+              "mathFragmentIds": [],
+              "sourceText": "-2"
+            },
+            {
+              "id": "D5-N1-r0c4",
+              "row": 0,
+              "column": 4,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                995,
+                1674,
+                1034,
+                1731
+              ],
+              "text": "-1",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "-1"
+                }
+              ],
+              "mathToken": "-1",
+              "mathFragmentIds": [],
+              "sourceText": "-1"
+            },
+            {
+              "id": "D5-N1-r0c5",
+              "row": 0,
+              "column": 5,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1034,
+                1674,
+                1072,
+                1731
+              ],
+              "text": "0",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "0"
+                }
+              ],
+              "mathToken": "0",
+              "mathFragmentIds": [],
+              "sourceText": "0"
+            },
+            {
+              "id": "D5-N1-r0c6",
+              "row": 0,
+              "column": 6,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1072,
+                1674,
+                1111,
+                1731
+              ],
+              "text": "1",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "1"
+                }
+              ],
+              "mathToken": "1",
+              "mathFragmentIds": [],
+              "sourceText": "1"
+            },
+            {
+              "id": "D5-N1-r0c7",
+              "row": 0,
+              "column": 7,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1111,
+                1674,
+                1150,
+                1731
+              ],
+              "text": "2",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "2"
+                }
+              ],
+              "mathToken": "2",
+              "mathFragmentIds": [],
+              "sourceText": "2"
+            },
+            {
+              "id": "D5-N1-r0c8",
+              "row": 0,
+              "column": 8,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1150,
+                1674,
+                1188,
+                1731
+              ],
+              "text": "3",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "3"
+                }
+              ],
+              "mathToken": "3",
+              "mathFragmentIds": [],
+              "sourceText": "3"
+            },
+            {
+              "id": "D5-N1-r0c9",
+              "row": 0,
+              "column": 9,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1188,
+                1674,
+                1222,
+                1731
+              ],
+              "text": "⋯",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "⋯"
+                }
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "⋯"
+            },
+            {
+              "id": "D5-N1-r1c0",
+              "row": 1,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                805,
+                1731,
+                882,
+                1788
+              ],
+              "text": "",
+              "formulaIds": [
+                "D5-F24"
+              ],
+              "content": [
+                {
+                  "type": "formula",
+                  "formulaId": "D5-F24",
+                  "latex": "f(x)=x"
+                }
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "f(x)=x"
+            },
+            {
+              "id": "D5-N1-r1c1",
+              "row": 1,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                882,
+                1731,
+                918,
+                1788
+              ],
+              "text": "⋯",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "⋯"
+                }
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "⋯"
+            },
+            {
+              "id": "D5-N1-r1c2",
+              "row": 1,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                918,
+                1731,
+                957,
+                1788
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r1c3",
+              "row": 1,
+              "column": 3,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                957,
+                1731,
+                995,
+                1788
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r1c4",
+              "row": 1,
+              "column": 4,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                995,
+                1731,
+                1034,
+                1788
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r1c5",
+              "row": 1,
+              "column": 5,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1034,
+                1731,
+                1072,
+                1788
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r1c6",
+              "row": 1,
+              "column": 6,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1072,
+                1731,
+                1111,
+                1788
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r1c7",
+              "row": 1,
+              "column": 7,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1111,
+                1731,
+                1150,
+                1788
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r1c8",
+              "row": 1,
+              "column": 8,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1150,
+                1731,
+                1188,
+                1788
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r1c9",
+              "row": 1,
+              "column": 9,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1188,
+                1731,
+                1222,
+                1788
+              ],
+              "text": "⋯",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "⋯"
+                }
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "⋯"
+            },
+            {
+              "id": "D5-N1-r2c0",
+              "row": 2,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                805,
+                1788,
+                882,
+                1845
+              ],
+              "text": "",
+              "formulaIds": [
+                "D5-F25"
+              ],
+              "content": [
+                {
+                  "type": "formula",
+                  "formulaId": "D5-F25",
+                  "latex": "g(x)=\\frac{1}{x}"
+                }
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "g(x)=\\frac{1}{x}"
+            },
+            {
+              "id": "D5-N1-r2c1",
+              "row": 2,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                882,
+                1788,
+                918,
+                1845
+              ],
+              "text": "⋯",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "⋯"
+                }
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "⋯"
+            },
+            {
+              "id": "D5-N1-r2c2",
+              "row": 2,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                918,
+                1788,
+                957,
+                1845
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r2c3",
+              "row": 2,
+              "column": 3,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                957,
+                1788,
+                995,
+                1845
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r2c4",
+              "row": 2,
+              "column": 4,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                995,
+                1788,
+                1034,
+                1845
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r2c5",
+              "row": 2,
+              "column": 5,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1034,
+                1788,
+                1072,
+                1845
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r2c6",
+              "row": 2,
+              "column": 6,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1072,
+                1788,
+                1111,
+                1845
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r2c7",
+              "row": 2,
+              "column": 7,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1111,
+                1788,
+                1150,
+                1845
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r2c8",
+              "row": 2,
+              "column": 8,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1150,
+                1788,
+                1188,
+                1845
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "isBlank": true,
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D5-N1-r2c9",
+              "row": 2,
+              "column": 9,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1188,
+                1788,
+                1222,
+                1845
+              ],
+              "text": "⋯",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "⋯"
+                }
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "⋯"
+            }
+          ],
+          "rule": "数值表按本页可见内容记录；中间七列的两个函数值行均为空白，禁止依据函数计算补值。横向省略点记为 ⋯，不是三个句点。",
+          "rows": 3,
+          "columns": 10
+        }
+      ],
+      "figures": [
+        {
+          "id": "D5-G1",
+          "bbox": [
+            816,
+            451,
+            1092,
+            663
+          ],
+          "formulaIds": [
+            "D5-F11"
+          ],
+          "labels": [
+            {
+              "text": "y",
+              "bbox": [
+                923,
+                453,
+                936,
+                471
+              ]
+            },
+            {
+              "text": "x",
+              "bbox": [
+                1055,
+                639,
+                1072,
+                655
+              ]
+            },
+            {
+              "text": "0.20",
+              "bbox": [
+                898,
+                477,
+                934,
+                500
+              ]
+            },
+            {
+              "text": "0.10",
+              "bbox": [
+                898,
+                551,
+                934,
+                572
+              ]
+            },
+            {
+              "text": "-5",
+              "bbox": [
+                825,
+                638,
+                848,
+                657
+              ]
+            },
+            {
+              "text": "-4",
+              "bbox": [
+                848,
+                638,
+                869,
+                657
+              ]
+            },
+            {
+              "text": "-3",
+              "bbox": [
+                869,
+                638,
+                889,
+                657
+              ]
+            },
+            {
+              "text": "-2",
+              "bbox": [
+                889,
+                638,
+                910,
+                657
+              ]
+            },
+            {
+              "text": "-1",
+              "bbox": [
+                911,
+                638,
+                928,
+                657
+              ]
+            },
+            {
+              "text": "O",
+              "bbox": [
+                927,
+                638,
+                940,
+                657
+              ]
+            },
+            {
+              "text": "1",
+              "bbox": [
+                953,
+                638,
+                965,
+                657
+              ]
+            },
+            {
+              "text": "2",
+              "bbox": [
+                974,
+                638,
+                986,
+                657
+              ]
+            },
+            {
+              "text": "3",
+              "bbox": [
+                993,
+                638,
+                1005,
+                657
+              ]
+            },
+            {
+              "text": "4",
+              "bbox": [
+                1014,
+                638,
+                1026,
+                657
+              ]
+            },
+            {
+              "text": "5",
+              "bbox": [
+                1033,
+                638,
+                1045,
+                657
+              ]
+            }
+          ],
+          "description": "粉色曲线关于 y 轴对称；函数式在图内。",
+          "criticalLabels": [
+            "y",
+            "x",
+            "0.20",
+            "0.10",
+            "-5",
+            "-4",
+            "-3",
+            "-2",
+            "-1",
+            "O",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "id": "D5-G2",
+          "bbox": [
+            817,
+            714,
+            1049,
+            921
+          ],
+          "formulaIds": [
+            "D5-F12"
+          ],
+          "labels": [
+            {
+              "text": "y",
+              "bbox": [
+                914,
+                715,
+                928,
+                734
+              ]
+            },
+            {
+              "text": "x",
+              "bbox": [
+                1032,
+                892,
+                1047,
+                909
+              ]
+            },
+            {
+              "text": "O",
+              "bbox": [
+                910,
+                890,
+                925,
+                909
+              ]
+            },
+            {
+              "text": "-3",
+              "bbox": [
+                833,
+                891,
+                855,
+                911
+              ]
+            },
+            {
+              "text": "-2",
+              "bbox": [
+                859,
+                891,
+                880,
+                911
+              ]
+            },
+            {
+              "text": "-1",
+              "bbox": [
+                884,
+                891,
+                904,
+                911
+              ]
+            },
+            {
+              "text": "1",
+              "bbox": [
+                950,
+                891,
+                963,
+                911
+              ]
+            },
+            {
+              "text": "2",
+              "bbox": [
+                977,
+                891,
+                990,
+                911
+              ]
+            },
+            {
+              "text": "3",
+              "bbox": [
+                1003,
+                891,
+                1016,
+                911
+              ]
+            },
+            {
+              "text": "1",
+              "bbox": [
+                914,
+                852,
+                925,
+                872
+              ]
+            },
+            {
+              "text": "2",
+              "bbox": [
+                914,
+                824,
+                925,
+                844
+              ]
+            },
+            {
+              "text": "3",
+              "bbox": [
+                914,
+                796,
+                925,
+                816
+              ]
+            },
+            {
+              "text": "4",
+              "bbox": [
+                914,
+                769,
+                925,
+                789
+              ]
+            },
+            {
+              "text": "5",
+              "bbox": [
+                914,
+                741,
+                925,
+                761
+              ]
+            }
+          ],
+          "description": "粉色抛物线，最低点为可见 y=1 刻度附近；函数式在图内。",
+          "criticalLabels": [
+            "y",
+            "x",
+            "O",
+            "-3",
+            "-2",
+            "-1",
+            "1",
+            "2",
+            "3",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "id": "D5-G3",
+          "bbox": [
+            836,
+            1151,
+            1065,
+            1379
+          ],
+          "formulaIds": [
+            "D5-F21"
+          ],
+          "labels": [
+            {
+              "text": "y",
+              "bbox": [
+                927,
+                1154,
+                940,
+                1171
+              ]
+            },
+            {
+              "text": "x",
+              "bbox": [
+                1043,
+                1278,
+                1057,
+                1295
+              ]
+            },
+            {
+              "text": "-3",
+              "bbox": [
+                844,
+                1275,
+                860,
+                1292
+              ]
+            },
+            {
+              "text": "-2",
+              "bbox": [
+                873,
+                1275,
+                889,
+                1292
+              ]
+            },
+            {
+              "text": "-1",
+              "bbox": [
+                904,
+                1275,
+                920,
+                1292
+              ]
+            },
+            {
+              "text": "1",
+              "bbox": [
+                970,
+                1275,
+                980,
+                1292
+              ]
+            },
+            {
+              "text": "2",
+              "bbox": [
+                999,
+                1275,
+                1009,
+                1292
+              ]
+            },
+            {
+              "text": "3",
+              "bbox": [
+                1029,
+                1275,
+                1039,
+                1292
+              ]
+            },
+            {
+              "text": "3",
+              "bbox": [
+                930,
+                1177,
+                941,
+                1193
+              ]
+            },
+            {
+              "text": "2",
+              "bbox": [
+                930,
+                1207,
+                941,
+                1223
+              ]
+            },
+            {
+              "text": "1",
+              "bbox": [
+                930,
+                1237,
+                941,
+                1253
+              ]
+            },
+            {
+              "text": "-1",
+              "bbox": [
+                928,
+                1300,
+                942,
+                1317
+              ]
+            },
+            {
+              "text": "-2",
+              "bbox": [
+                928,
+                1331,
+                942,
+                1348
+              ]
+            },
+            {
+              "text": "-3",
+              "bbox": [
+                928,
+                1360,
+                942,
+                1378
+              ]
+            }
+          ],
+          "description": "紫色直线穿过坐标原点，函数式在图内。",
+          "criticalLabels": [
+            "y",
+            "x",
+            "-3",
+            "-2",
+            "-1",
+            "1",
+            "2",
+            "3",
+            "3",
+            "2",
+            "1",
+            "-1",
+            "-2",
+            "-3"
+          ]
+        },
+        {
+          "id": "D5-G4",
+          "bbox": [
+            808,
+            1410,
+            1036,
+            1635
+          ],
+          "formulaIds": [
+            "D5-F22"
+          ],
+          "labels": [
+            {
+              "text": "y",
+              "bbox": [
+                894,
+                1413,
+                906,
+                1430
+              ]
+            },
+            {
+              "text": "x",
+              "bbox": [
+                1012,
+                1537,
+                1026,
+                1554
+              ]
+            },
+            {
+              "text": "-3",
+              "bbox": [
+                815,
+                1535,
+                830,
+                1552
+              ]
+            },
+            {
+              "text": "-2",
+              "bbox": [
+                845,
+                1535,
+                861,
+                1552
+              ]
+            },
+            {
+              "text": "-1",
+              "bbox": [
+                875,
+                1535,
+                891,
+                1552
+              ]
+            },
+            {
+              "text": "1",
+              "bbox": [
+                940,
+                1535,
+                950,
+                1552
+              ]
+            },
+            {
+              "text": "2",
+              "bbox": [
+                970,
+                1535,
+                980,
+                1552
+              ]
+            },
+            {
+              "text": "3",
+              "bbox": [
+                1000,
+                1535,
+                1010,
+                1552
+              ]
+            },
+            {
+              "text": "3",
+              "bbox": [
+                896,
+                1436,
+                906,
+                1453
+              ]
+            },
+            {
+              "text": "2",
+              "bbox": [
+                896,
+                1467,
+                906,
+                1484
+              ]
+            },
+            {
+              "text": "1",
+              "bbox": [
+                896,
+                1498,
+                906,
+                1515
+              ]
+            },
+            {
+              "text": "-1",
+              "bbox": [
+                893,
+                1560,
+                908,
+                1577
+              ]
+            },
+            {
+              "text": "-2",
+              "bbox": [
+                893,
+                1591,
+                908,
+                1608
+              ]
+            },
+            {
+              "text": "-3",
+              "bbox": [
+                893,
+                1621,
+                908,
+                1635
+              ]
+            }
+          ],
+          "description": "紫色双曲线位于第一、第三象限，函数式在图内。",
+          "criticalLabels": [
+            "y",
+            "x",
+            "-3",
+            "-2",
+            "-1",
+            "1",
+            "2",
+            "3",
+            "3",
+            "2",
+            "1",
+            "-1",
+            "-2",
+            "-3"
+          ]
+        }
+      ],
+      "blocks": [
+        {
+          "id": "D5-T1-r0c0-body",
+          "type": "body",
+          "bbox": [
+            251,
+            212,
+            775,
+            250
+          ]
+        },
+        {
+          "id": "D5-T1-r1c0-body",
+          "type": "body",
+          "bbox": [
+            250,
+            583,
+            780,
+            787
+          ]
+        },
+        {
+          "id": "D5-T1-r2c0-body",
+          "type": "body",
+          "bbox": [
+            250,
+            1025,
+            780,
+            1773
+          ]
+        },
+        {
+          "id": "D5-T1-r0c1-body",
+          "type": "body",
+          "bbox": [
+            810,
+            212,
+            1210,
+            401
+          ]
+        },
+        {
+          "id": "D5-T1-r2c1-body",
+          "type": "body",
+          "bbox": [
+            810,
+            979,
+            1219,
+            1123
+          ]
+        },
+        {
+          "id": "D5-T1-r0c2-body",
+          "type": "body",
+          "bbox": [
+            1250,
+            212,
+            1564,
+            352
+          ]
+        },
+        {
+          "id": "D5-T1-r1c2-body",
+          "type": "body",
+          "bbox": [
+            1250,
+            596,
+            1565,
+            785
+          ]
+        },
+        {
+          "id": "D5-T1-r2c2-body",
+          "type": "body",
+          "bbox": [
+            1250,
+            1194,
+            1565,
+            1605
+          ]
+        },
+        {
+          "id": "D5-BANNER1",
+          "type": "body",
+          "bbox": [
+            234,
+            1848,
+            707,
+            1916
+          ]
+        },
+        {
+          "id": "D5-T2-r0c0-body",
+          "type": "body",
+          "bbox": [
+            454,
+            1935,
+            580,
+            1968
+          ]
+        },
+        {
+          "id": "D5-T2-r1c0-body",
+          "type": "body",
+          "bbox": [
+            250,
+            2005,
+            620,
+            2090
+          ]
+        },
+        {
+          "id": "D5-T2-r0c1-body",
+          "type": "body",
+          "bbox": [
+            982,
+            1935,
+            1110,
+            1968
+          ]
+        },
+        {
+          "id": "D5-T2-r1c1-body",
+          "type": "body",
+          "bbox": [
+            810,
+            2030,
+            1200,
+            2064
+          ]
+        },
+        {
+          "id": "D5-T2-r0c2-body",
+          "type": "body",
+          "bbox": [
+            1344,
+            1935,
+            1474,
+            1968
+          ]
+        },
+        {
+          "id": "D5-T2-r1c2-body",
+          "type": "body",
+          "bbox": [
+            1250,
+            2004,
+            1565,
+            2090
+          ]
+        },
+        {
+          "id": "D5-F09",
+          "type": "formula",
+          "bbox": [
+            330,
+            727,
+            500,
+            763
+          ]
+        },
+        {
+          "id": "D5-F10",
+          "type": "formula",
+          "bbox": [
+            589,
+            706,
+            777,
+            785
+          ]
+        },
+        {
+          "id": "D5-F11",
+          "type": "formula",
+          "bbox": [
+            991,
+            527,
+            1089,
+            566
+          ]
+        },
+        {
+          "id": "D5-F12",
+          "type": "formula",
+          "bbox": [
+            946,
+            842,
+            1028,
+            865
+          ]
+        },
+        {
+          "id": "D5-F19",
+          "type": "formula",
+          "bbox": [
+            943,
+            1003,
+            1056,
+            1038
+          ]
+        },
+        {
+          "id": "D5-F20",
+          "type": "formula",
+          "bbox": [
+            1094,
+            979,
+            1218,
+            1057
+          ]
+        },
+        {
+          "id": "D5-F21",
+          "type": "formula",
+          "bbox": [
+            986,
+            1230,
+            1038,
+            1250
+          ]
+        },
+        {
+          "id": "D5-F22",
+          "type": "formula",
+          "bbox": [
+            952,
+            1464,
+            1007,
+            1500
+          ]
+        },
+        {
+          "id": "D5-F24",
+          "type": "formula",
+          "bbox": [
+            814,
+            1746,
+            875,
+            1775
+          ]
+        },
+        {
+          "id": "D5-F25",
+          "type": "formula",
+          "bbox": [
+            814,
+            1793,
+            876,
+            1841
+          ]
+        },
+        {
+          "id": "D5-condition1",
+          "type": "formula",
+          "bbox": [
+            255,
+            214,
+            765,
+            247
+          ]
+        },
+        {
+          "id": "D5-condition2",
+          "type": "formula",
+          "bbox": [
+            849,
+            214,
+            1198,
+            315
+          ]
+        },
+        {
+          "id": "D5-condition3",
+          "type": "formula",
+          "bbox": [
+            259,
+            1601,
+            591,
+            1703
+          ]
+        },
+        {
+          "id": "D5-T1",
+          "type": "table",
+          "bbox": [
+            234,
+            200,
+            1578,
+            1848
+          ]
+        },
+        {
+          "id": "D5-T2",
+          "type": "table",
+          "bbox": [
+            234,
+            1916,
+            1578,
+            2107
+          ]
+        },
+        {
+          "id": "D5-N1",
+          "type": "table",
+          "bbox": [
+            805,
+            1674,
+            1222,
+            1845
+          ]
+        },
+        {
+          "id": "D5-G1",
+          "type": "figure",
+          "bbox": [
+            816,
+            451,
+            1092,
+            663
+          ]
+        },
+        {
+          "id": "D5-G2",
+          "type": "figure",
+          "bbox": [
+            817,
+            714,
+            1049,
+            921
+          ]
+        },
+        {
+          "id": "D5-G3",
+          "type": "figure",
+          "bbox": [
+            836,
+            1151,
+            1065,
+            1379
+          ]
+        },
+        {
+          "id": "D5-G4",
+          "type": "figure",
+          "bbox": [
+            808,
+            1410,
+            1036,
+            1635
+          ]
+        }
+      ],
+      "notes": [
+        "第一张表首行是跨页单元片段，左列直接从全称量词起，中列直接从 I 起，右列直接从“生”起，不补页外文字。",
+        "末行三列为下一页继续的【例6】单元，本页右列末字为“性”，不补下一页的“质”。",
+        "正文原稿多处使用“图象”、以及“精确的”“独立的”，按图保留，不统一为“图像”或“地”。",
+        "第一个图的分母清楚为 x^2+11，不是 x^2+1；上界刻度为 0.20。",
+        "所有公式及图中函数标签逐个实例记录，不合并重复出现的同一公式。",
+        "图中原点标记按斜体大写 O 转写。"
+      ],
+      "referenceOrigin": "Independent original-page transcription and aggregate source-image review; no recognition outputs",
+      "denominators": {
+        "bodyCharacters": 409,
+        "formulas": 13,
+        "tableCells": 45,
+        "importantBlocks": 35
+      }
+    },
+    {
+      "id": "D6",
+      "contentGroup": "E-function-properties",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "body": [
+        {
+          "id": "D6-T1-r0c0-body",
+          "text": "（1）（2）\n（3）（4）\n【问题6】\n除了定义法，还有其它判断奇偶性的方法吗？\n教师：通过信息技术画出函数图象.",
+          "bbox": [
+            250,
+            230,
+            780,
+            585
+          ],
+          "tableCellId": "D6-T1-r0c0"
+        },
+        {
+          "id": "D6-T1-r1c0-body",
+          "text": "【练习】判断下列函数的奇偶性（该环节视学生水平选做）\n（1）\n（2）\n（3）",
+          "bbox": [
+            250,
+            610,
+            780,
+            993
+          ],
+          "tableCellId": "D6-T1-r1c0"
+        },
+        {
+          "id": "D6-T1-r2c0-body",
+          "text": "【思考】完成教材上的思考题.\n（1）判断函数的奇偶性.\n（2）如图是函数图象的一部分，你能根据的奇偶性画出它在轴左边的图象吗？\n（3）一般地，如果知道为偶（奇）函数，那么我们可以怎样简化对它的研究？",
+          "bbox": [
+            250,
+            1021,
+            781,
+            1560
+          ],
+          "tableCellId": "D6-T1-r2c0"
+        },
+        {
+          "id": "D6-T1-r1c1-body",
+          "text": "教师在 PPT 上展示三个习题，让学生独立完成，而后及时把正确的结论反馈给学生，加深对所学概念的理解.",
+          "bbox": [
+            810,
+            708,
+            1218,
+            900
+          ],
+          "tableCellId": "D6-T1-r1c1"
+        },
+        {
+          "id": "D6-T1-r2c1-body",
+          "text": "学生在教师的引导下思考教材上的三个思考题，并积极发表自己的想法.",
+          "bbox": [
+            810,
+            1375,
+            1219,
+            1515
+          ],
+          "tableCellId": "D6-T1-r2c1"
+        },
+        {
+          "id": "D6-T1-r0c2-body",
+          "text": "质，所以判断函数的奇偶性应先明确它的定义域.\n从几何和代数两个方面，通过例题总结出函数奇偶性的两种判定方式.",
+          "bbox": [
+            1250,
+            212,
+            1566,
+            461
+          ],
+          "tableCellId": "D6-T1-r0c2"
+        },
+        {
+          "id": "D6-T1-r1c2-body",
+          "text": "设置三个题目作为选做题，让不同层次的学生能深刻地掌握奇偶函数的概念及判定方法以及符号的运用.",
+          "bbox": [
+            1250,
+            652,
+            1566,
+            901
+          ],
+          "tableCellId": "D6-T1-r1c2"
+        },
+        {
+          "id": "D6-T1-r2c2-body",
+          "text": "引导学生既要重视由函数图象获得函数性质，也应重视由函数性质帮助画出函数图象. 对于一个偶函数或奇函数，根据它的对称性，就可由自变量取正值时的图象和性质，开推断它在整个定义域内的图象和性质，这也是研究函数奇偶性的好处所在\u2014\u2014简化对函数的认识和研究过程.",
+          "bbox": [
+            1249,
+            1131,
+            1568,
+            1757
+          ],
+          "tableCellId": "D6-T1-r2c2"
+        },
+        {
+          "id": "D6-BANNER1",
+          "text": "教学环节：回顾小结，提高认识",
+          "bbox": [
+            234,
+            1879,
+            707,
+            1948
+          ]
+        },
+        {
+          "id": "D6-T2-r0c0-body",
+          "text": "教学内容",
+          "bbox": [
+            454,
+            1968,
+            580,
+            1999
+          ],
+          "tableCellId": "D6-T2-r0c0"
+        },
+        {
+          "id": "D6-T2-r1c0-body",
+          "text": "1. 请同学们一起回忆函数奇偶性概念和特征；",
+          "bbox": [
+            250,
+            2030,
+            780,
+            2113
+          ],
+          "tableCellId": "D6-T2-r1c0"
+        },
+        {
+          "id": "D6-T2-r0c1-body",
+          "text": "师生活动",
+          "bbox": [
+            982,
+            1968,
+            1111,
+            1999
+          ],
+          "tableCellId": "D6-T2-r0c1"
+        },
+        {
+          "id": "D6-T2-r1c1-body",
+          "text": "教师带领学生对本即可的知识点进行归纳总结，学生通过积",
+          "bbox": [
+            810,
+            2030,
+            1218,
+            2113
+          ],
+          "tableCellId": "D6-T2-r1c1"
+        },
+        {
+          "id": "D6-T2-r0c2-body",
+          "text": "设计点评",
+          "bbox": [
+            1344,
+            1968,
+            1474,
+            1999
+          ],
+          "tableCellId": "D6-T2-r0c2"
+        },
+        {
+          "id": "D6-T2-r1c2-body",
+          "text": "让学生在描述和分享过程中，再次体会函数",
+          "bbox": [
+            1250,
+            2030,
+            1568,
+            2113
+          ],
+          "tableCellId": "D6-T2-r1c2"
+        }
+      ],
+      "formulas": [
+        {
+          "id": "D6-F01",
+          "latex": "f(x)=x^4",
+          "bbox": [
+            333,
+            229,
+            458,
+            265
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r0c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F02",
+          "latex": "f(x)=x^5",
+          "bbox": [
+            631,
+            229,
+            754,
+            265
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r0c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F03",
+          "latex": "f(x)=x+\\frac{1}{x}",
+          "bbox": [
+            333,
+            296,
+            498,
+            372
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r0c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F04",
+          "latex": "f(x)=\\frac{1}{x^2}",
+          "bbox": [
+            630,
+            296,
+            760,
+            373
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r0c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F05",
+          "latex": "f(x)=\\left|x-1\\right|+\\left|x+1\\right|",
+          "bbox": [
+            333,
+            729,
+            595,
+            774
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r1c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F06",
+          "latex": "f(x)=\\sqrt{x^2-1}+\\sqrt{1-x^2}",
+          "bbox": [
+            332,
+            813,
+            652,
+            861
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r1c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F07",
+          "latex": "f(x)=\\begin{cases}x(1-x),&x<0\\\\x(1+x),&x>0\\end{cases}",
+          "bbox": [
+            331,
+            900,
+            624,
+            992
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r1c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F08",
+          "latex": "f(x)=x^3+x",
+          "bbox": [
+            450,
+            1088,
+            620,
+            1129
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r2c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F09",
+          "latex": "f(x)=x^3+x",
+          "bbox": [
+            484,
+            1177,
+            655,
+            1219
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r2c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F12",
+          "latex": "y=f(x)",
+          "bbox": [
+            538,
+            1404,
+            661,
+            1443
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r2c0",
+          "kind": "equation",
+          "source": "original_page_image",
+          "confidence": "high"
+        }
+      ],
+      "mathFragments": [
+        {
+          "id": "D6-F10",
+          "latex": "f(x)",
+          "bbox": [
+            471,
+            1262,
+            536,
+            1297
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r2c0",
+          "kind": "inline_expression",
+          "source": "original_page_image",
+          "confidence": "high"
+        },
+        {
+          "id": "D6-F11",
+          "latex": "y",
+          "bbox": [
+            252,
+            1339,
+            276,
+            1367
+          ],
+          "scope": "body",
+          "owner": "D6-T1-r2c0",
+          "kind": "inline_symbol",
+          "source": "original_page_image",
+          "confidence": "high"
+        }
+      ],
+      "tables": [
+        {
+          "id": "D6-T1",
+          "bbox": [
+            234,
+            200,
+            1578,
+            1879
+          ],
+          "cells": [
+            {
+              "id": "D6-T1-r0c0",
+              "row": 0,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                200,
+                795,
+                598
+              ],
+              "text": "（1）（2）\n（3）（4）\n【问题6】\n除了定义法，还有其它判断奇偶性的方法吗？\n教师：通过信息技术画出函数图象.",
+              "formulaIds": [
+                "D6-F01",
+                "D6-F02",
+                "D6-F03",
+                "D6-F04"
+              ],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "（1）"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F01",
+                  "latex": "f(x)=x^4"
+                },
+                {
+                  "type": "text",
+                  "text": "（2）"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F02",
+                  "latex": "f(x)=x^5"
+                },
+                {
+                  "type": "text",
+                  "text": "\n（3）"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F03",
+                  "latex": "f(x)=x+\\frac{1}{x}"
+                },
+                {
+                  "type": "text",
+                  "text": "（4）"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F04",
+                  "latex": "f(x)=\\frac{1}{x^2}"
+                },
+                {
+                  "type": "text",
+                  "text": "\n【问题6】\n除了定义法，还有其它判断奇偶性的方法吗？\n教师：通过信息技术画出函数图象."
+                }
+              ],
+              "fragment": {
+                "continuesFromPreviousPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                250,
+                230,
+                780,
+                585
+              ],
+              "inlineFormulaIds": [
+                "D6-F01",
+                "D6-F02",
+                "D6-F03",
+                "D6-F04"
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "（1）f(x)=x^4（2）f(x)=x^5\n（3）f(x)=x+\\frac{1}{x}（4）f(x)=\\frac{1}{x^2}\n【问题6】\n除了定义法，还有其它判断奇偶性的方法吗？\n教师：通过信息技术画出函数图象."
+            },
+            {
+              "id": "D6-T1-r0c1",
+              "row": 0,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                200,
+                1234,
+                598
+              ],
+              "text": "",
+              "formulaIds": [],
+              "content": [],
+              "fragment": {
+                "continuesFromPreviousPage": true,
+                "visibleOnly": true
+              },
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": ""
+            },
+            {
+              "id": "D6-T1-r0c2",
+              "row": 0,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                200,
+                1578,
+                598
+              ],
+              "text": "质，所以判断函数的奇偶性应先明确它的定义域.\n从几何和代数两个方面，通过例题总结出函数奇偶性的两种判定方式.",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "质，所以判断函数的奇偶性应先明确它的定义域.\n从几何和代数两个方面，通过例题总结出函数奇偶性的两种判定方式."
+                }
+              ],
+              "fragment": {
+                "continuesFromPreviousPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                1250,
+                212,
+                1566,
+                461
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "质，所以判断函数的奇偶性应先明确它的定义域.\n从几何和代数两个方面，通过例题总结出函数奇偶性的两种判定方式."
+            },
+            {
+              "id": "D6-T1-r1c0",
+              "row": 1,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                598,
+                795,
+                1010
+              ],
+              "text": "【练习】判断下列函数的奇偶性（该环节视学生水平选做）\n（1）\n（2）\n（3）",
+              "formulaIds": [
+                "D6-F05",
+                "D6-F06",
+                "D6-F07"
+              ],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "【练习】判断下列函数的奇偶性（该环节视学生水平选做）\n（1）"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F05",
+                  "latex": "f(x)=\\left|x-1\\right|+\\left|x+1\\right|"
+                },
+                {
+                  "type": "text",
+                  "text": "\n（2）"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F06",
+                  "latex": "f(x)=\\sqrt{x^2-1}+\\sqrt{1-x^2}"
+                },
+                {
+                  "type": "text",
+                  "text": "\n（3）"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F07",
+                  "latex": "f(x)=\\begin{cases}x(1-x),&x<0\\\\x(1+x),&x>0\\end{cases}"
+                }
+              ],
+              "textBbox": [
+                250,
+                610,
+                780,
+                993
+              ],
+              "inlineFormulaIds": [
+                "D6-F05",
+                "D6-F06",
+                "D6-F07"
+              ],
+              "mathFragmentIds": [],
+              "sourceText": "【练习】判断下列函数的奇偶性（该环节视学生水平选做）\n（1）f(x)=\\left|x-1\\right|+\\left|x+1\\right|\n（2）f(x)=\\sqrt{x^2-1}+\\sqrt{1-x^2}\n（3）f(x)=\\begin{cases}x(1-x),&x<0\\\\x(1+x),&x>0\\end{cases}"
+            },
+            {
+              "id": "D6-T1-r1c1",
+              "row": 1,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                598,
+                1234,
+                1010
+              ],
+              "text": "教师在 PPT 上展示三个习题，让学生独立完成，而后及时把正确的结论反馈给学生，加深对所学概念的理解.",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "教师在 PPT 上展示三个习题，让学生独立完成，而后及时把正确的结论反馈给学生，加深对所学概念的理解."
+                }
+              ],
+              "textBbox": [
+                810,
+                708,
+                1218,
+                900
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "教师在 PPT 上展示三个习题，让学生独立完成，而后及时把正确的结论反馈给学生，加深对所学概念的理解."
+            },
+            {
+              "id": "D6-T1-r1c2",
+              "row": 1,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                598,
+                1578,
+                1010
+              ],
+              "text": "设置三个题目作为选做题，让不同层次的学生能深刻地掌握奇偶函数的概念及判定方法以及符号的运用.",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "设置三个题目作为选做题，让不同层次的学生能深刻地掌握奇偶函数的概念及判定方法以及符号的运用."
+                }
+              ],
+              "textBbox": [
+                1250,
+                652,
+                1566,
+                901
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "设置三个题目作为选做题，让不同层次的学生能深刻地掌握奇偶函数的概念及判定方法以及符号的运用."
+            },
+            {
+              "id": "D6-T1-r2c0",
+              "row": 2,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                1010,
+                795,
+                1879
+              ],
+              "text": "【思考】完成教材上的思考题.\n（1）判断函数的奇偶性.\n（2）如图是函数图象的一部分，你能根据的奇偶性画出它在轴左边的图象吗？\n（3）一般地，如果知道为偶（奇）函数，那么我们可以怎样简化对它的研究？",
+              "formulaIds": [
+                "D6-F08",
+                "D6-F09",
+                "D6-F12"
+              ],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "【思考】完成教材上的思考题.\n（1）判断函数"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F08",
+                  "latex": "f(x)=x^3+x"
+                },
+                {
+                  "type": "text",
+                  "text": "的奇偶性.\n（2）如图是函数"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F09",
+                  "latex": "f(x)=x^3+x"
+                },
+                {
+                  "type": "text",
+                  "text": "图象的一部分，你能根据"
+                },
+                {
+                  "type": "mathFragment",
+                  "formulaId": "D6-F10",
+                  "latex": "f(x)"
+                },
+                {
+                  "type": "text",
+                  "text": "的奇偶性画出它在"
+                },
+                {
+                  "type": "mathFragment",
+                  "formulaId": "D6-F11",
+                  "latex": "y"
+                },
+                {
+                  "type": "text",
+                  "text": "轴左边的图象吗？\n（3）一般地，如果知道"
+                },
+                {
+                  "type": "formula",
+                  "formulaId": "D6-F12",
+                  "latex": "y=f(x)"
+                },
+                {
+                  "type": "text",
+                  "text": "为偶（奇）函数，那么我们可以怎样简化对它的研究？"
+                }
+              ],
+              "figureIds": [
+                "D6-G1"
+              ],
+              "textBbox": [
+                250,
+                1021,
+                781,
+                1560
+              ],
+              "inlineFormulaIds": [
+                "D6-F08",
+                "D6-F09",
+                "D6-F12"
+              ],
+              "mathFragmentIds": [
+                "D6-F10",
+                "D6-F11"
+              ],
+              "sourceText": "【思考】完成教材上的思考题.\n（1）判断函数f(x)=x^3+x的奇偶性.\n（2）如图是函数f(x)=x^3+x图象的一部分，你能根据f(x)的奇偶性画出它在y轴左边的图象吗？\n（3）一般地，如果知道y=f(x)为偶（奇）函数，那么我们可以怎样简化对它的研究？"
+            },
+            {
+              "id": "D6-T1-r2c1",
+              "row": 2,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                1010,
+                1234,
+                1879
+              ],
+              "text": "学生在教师的引导下思考教材上的三个思考题，并积极发表自己的想法.",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "学生在教师的引导下思考教材上的三个思考题，并积极发表自己的想法."
+                }
+              ],
+              "textBbox": [
+                810,
+                1375,
+                1219,
+                1515
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "学生在教师的引导下思考教材上的三个思考题，并积极发表自己的想法."
+            },
+            {
+              "id": "D6-T1-r2c2",
+              "row": 2,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                1010,
+                1578,
+                1879
+              ],
+              "text": "引导学生既要重视由函数图象获得函数性质，也应重视由函数性质帮助画出函数图象. 对于一个偶函数或奇函数，根据它的对称性，就可由自变量取正值时的图象和性质，开推断它在整个定义域内的图象和性质，这也是研究函数奇偶性的好处所在\u2014\u2014简化对函数的认识和研究过程.",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "引导学生既要重视由函数图象获得函数性质，也应重视由函数性质帮助画出函数图象. 对于一个偶函数或奇函数，根据它的对称性，就可由自变量取正值时的图象和性质，开推断它在整个定义域内的图象和性质，这也是研究函数奇偶性的好处所在\u2014\u2014简化对函数的认识和研究过程."
+                }
+              ],
+              "textBbox": [
+                1249,
+                1131,
+                1568,
+                1757
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "引导学生既要重视由函数图象获得函数性质，也应重视由函数性质帮助画出函数图象. 对于一个偶函数或奇函数，根据它的对称性，就可由自变量取正值时的图象和性质，开推断它在整个定义域内的图象和性质，这也是研究函数奇偶性的好处所在\u2014\u2014简化对函数的认识和研究过程."
+            }
+          ],
+          "hasVisibleHeader": false,
+          "continuationGroup": "E-application-table",
+          "rows": 3,
+          "columns": 3
+        },
+        {
+          "id": "D6-T2",
+          "bbox": [
+            234,
+            1948,
+            1578,
+            2127
+          ],
+          "cells": [
+            {
+              "id": "D6-T2-r0c0",
+              "row": 0,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                1948,
+                795,
+                2018
+              ],
+              "text": "教学内容",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "教学内容"
+                }
+              ],
+              "textBbox": [
+                454,
+                1968,
+                580,
+                1999
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "教学内容"
+            },
+            {
+              "id": "D6-T2-r0c1",
+              "row": 0,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                1948,
+                1234,
+                2018
+              ],
+              "text": "师生活动",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "师生活动"
+                }
+              ],
+              "textBbox": [
+                982,
+                1968,
+                1111,
+                1999
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "师生活动"
+            },
+            {
+              "id": "D6-T2-r0c2",
+              "row": 0,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                1948,
+                1578,
+                2018
+              ],
+              "text": "设计点评",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "设计点评"
+                }
+              ],
+              "textBbox": [
+                1344,
+                1968,
+                1474,
+                1999
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "设计点评"
+            },
+            {
+              "id": "D6-T2-r1c0",
+              "row": 1,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                234,
+                2018,
+                795,
+                2127
+              ],
+              "text": "1. 请同学们一起回忆函数奇偶性概念和特征；",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "1. 请同学们一起回忆函数奇偶性概念和特征；"
+                }
+              ],
+              "fragment": {
+                "continuesToNextPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                250,
+                2030,
+                780,
+                2113
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "1. 请同学们一起回忆函数奇偶性概念和特征；"
+            },
+            {
+              "id": "D6-T2-r1c1",
+              "row": 1,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                795,
+                2018,
+                1234,
+                2127
+              ],
+              "text": "教师带领学生对本即可的知识点进行归纳总结，学生通过积",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "教师带领学生对本即可的知识点进行归纳总结，学生通过积"
+                }
+              ],
+              "fragment": {
+                "continuesToNextPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                810,
+                2030,
+                1218,
+                2113
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "教师带领学生对本即可的知识点进行归纳总结，学生通过积"
+            },
+            {
+              "id": "D6-T2-r1c2",
+              "row": 1,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "bbox": [
+                1234,
+                2018,
+                1578,
+                2127
+              ],
+              "text": "让学生在描述和分享过程中，再次体会函数",
+              "formulaIds": [],
+              "content": [
+                {
+                  "type": "text",
+                  "text": "让学生在描述和分享过程中，再次体会函数"
+                }
+              ],
+              "fragment": {
+                "continuesToNextPage": true,
+                "visibleOnly": true
+              },
+              "textBbox": [
+                1250,
+                2030,
+                1568,
+                2113
+              ],
+              "inlineFormulaIds": [],
+              "mathFragmentIds": [],
+              "sourceText": "让学生在描述和分享过程中，再次体会函数"
+            }
+          ],
+          "hasVisibleHeader": true,
+          "continuationGroup": "E-summary-table",
+          "rows": 2,
+          "columns": 3
+        }
+      ],
+      "figures": [
+        {
+          "id": "D6-G1",
+          "bbox": [
+            249,
+            1578,
+            531,
+            1872
+          ],
+          "formulaIds": [],
+          "labels": [
+            {
+              "text": "y",
+              "bbox": [
+                358,
+                1581,
+                374,
+                1601
+              ]
+            },
+            {
+              "text": "x",
+              "bbox": [
+                507,
+                1738,
+                524,
+                1757
+              ]
+            },
+            {
+              "text": "-3",
+              "bbox": [
+                254,
+                1736,
+                271,
+                1754
+              ]
+            },
+            {
+              "text": "-2",
+              "bbox": [
+                293,
+                1736,
+                310,
+                1754
+              ]
+            },
+            {
+              "text": "-1",
+              "bbox": [
+                332,
+                1736,
+                349,
+                1754
+              ]
+            },
+            {
+              "text": "1",
+              "bbox": [
+                411,
+                1736,
+                423,
+                1754
+              ]
+            },
+            {
+              "text": "2",
+              "bbox": [
+                450,
+                1736,
+                462,
+                1754
+              ]
+            },
+            {
+              "text": "3",
+              "bbox": [
+                489,
+                1736,
+                501,
+                1754
+              ]
+            },
+            {
+              "text": "3",
+              "bbox": [
+                361,
+                1605,
+                375,
+                1623
+              ]
+            },
+            {
+              "text": "2",
+              "bbox": [
+                361,
+                1644,
+                375,
+                1662
+              ]
+            },
+            {
+              "text": "1",
+              "bbox": [
+                361,
+                1683,
+                375,
+                1701
+              ]
+            },
+            {
+              "text": "-1",
+              "bbox": [
+                358,
+                1761,
+                375,
+                1779
+              ]
+            },
+            {
+              "text": "-2",
+              "bbox": [
+                358,
+                1799,
+                375,
+                1817
+              ]
+            },
+            {
+              "text": "-3",
+              "bbox": [
+                358,
+                1838,
+                375,
+                1856
+              ]
+            }
+          ],
+          "description": "仅绘出坐标原点右上的紫色曲线片段；题干指定 f(x)=x^3+x，图内没有重复公式标签。",
+          "criticalLabels": [
+            "y",
+            "x",
+            "-3",
+            "-2",
+            "-1",
+            "1",
+            "2",
+            "3",
+            "3",
+            "2",
+            "1",
+            "-1",
+            "-2",
+            "-3"
+          ]
+        }
+      ],
+      "blocks": [
+        {
+          "id": "D6-T1-r0c0-body",
+          "type": "body",
+          "bbox": [
+            250,
+            230,
+            780,
+            585
+          ]
+        },
+        {
+          "id": "D6-T1-r1c0-body",
+          "type": "body",
+          "bbox": [
+            250,
+            610,
+            780,
+            993
+          ]
+        },
+        {
+          "id": "D6-T1-r2c0-body",
+          "type": "body",
+          "bbox": [
+            250,
+            1021,
+            781,
+            1560
+          ]
+        },
+        {
+          "id": "D6-T1-r1c1-body",
+          "type": "body",
+          "bbox": [
+            810,
+            708,
+            1218,
+            900
+          ]
+        },
+        {
+          "id": "D6-T1-r2c1-body",
+          "type": "body",
+          "bbox": [
+            810,
+            1375,
+            1219,
+            1515
+          ]
+        },
+        {
+          "id": "D6-T1-r0c2-body",
+          "type": "body",
+          "bbox": [
+            1250,
+            212,
+            1566,
+            461
+          ]
+        },
+        {
+          "id": "D6-T1-r1c2-body",
+          "type": "body",
+          "bbox": [
+            1250,
+            652,
+            1566,
+            901
+          ]
+        },
+        {
+          "id": "D6-T1-r2c2-body",
+          "type": "body",
+          "bbox": [
+            1249,
+            1131,
+            1568,
+            1757
+          ]
+        },
+        {
+          "id": "D6-BANNER1",
+          "type": "body",
+          "bbox": [
+            234,
+            1879,
+            707,
+            1948
+          ]
+        },
+        {
+          "id": "D6-T2-r0c0-body",
+          "type": "body",
+          "bbox": [
+            454,
+            1968,
+            580,
+            1999
+          ]
+        },
+        {
+          "id": "D6-T2-r1c0-body",
+          "type": "body",
+          "bbox": [
+            250,
+            2030,
+            780,
+            2113
+          ]
+        },
+        {
+          "id": "D6-T2-r0c1-body",
+          "type": "body",
+          "bbox": [
+            982,
+            1968,
+            1111,
+            1999
+          ]
+        },
+        {
+          "id": "D6-T2-r1c1-body",
+          "type": "body",
+          "bbox": [
+            810,
+            2030,
+            1218,
+            2113
+          ]
+        },
+        {
+          "id": "D6-T2-r0c2-body",
+          "type": "body",
+          "bbox": [
+            1344,
+            1968,
+            1474,
+            1999
+          ]
+        },
+        {
+          "id": "D6-T2-r1c2-body",
+          "type": "body",
+          "bbox": [
+            1250,
+            2030,
+            1568,
+            2113
+          ]
+        },
+        {
+          "id": "D6-F01",
+          "type": "formula",
+          "bbox": [
+            333,
+            229,
+            458,
+            265
+          ]
+        },
+        {
+          "id": "D6-F02",
+          "type": "formula",
+          "bbox": [
+            631,
+            229,
+            754,
+            265
+          ]
+        },
+        {
+          "id": "D6-F03",
+          "type": "formula",
+          "bbox": [
+            333,
+            296,
+            498,
+            372
+          ]
+        },
+        {
+          "id": "D6-F04",
+          "type": "formula",
+          "bbox": [
+            630,
+            296,
+            760,
+            373
+          ]
+        },
+        {
+          "id": "D6-F05",
+          "type": "formula",
+          "bbox": [
+            333,
+            729,
+            595,
+            774
+          ]
+        },
+        {
+          "id": "D6-F06",
+          "type": "formula",
+          "bbox": [
+            332,
+            813,
+            652,
+            861
+          ]
+        },
+        {
+          "id": "D6-F07",
+          "type": "formula",
+          "bbox": [
+            331,
+            900,
+            624,
+            992
+          ]
+        },
+        {
+          "id": "D6-F08",
+          "type": "formula",
+          "bbox": [
+            450,
+            1088,
+            620,
+            1129
+          ]
+        },
+        {
+          "id": "D6-F09",
+          "type": "formula",
+          "bbox": [
+            484,
+            1177,
+            655,
+            1219
+          ]
+        },
+        {
+          "id": "D6-F12",
+          "type": "formula",
+          "bbox": [
+            538,
+            1404,
+            661,
+            1443
+          ]
+        },
+        {
+          "id": "D6-T1",
+          "type": "table",
+          "bbox": [
+            234,
+            200,
+            1578,
+            1879
+          ]
+        },
+        {
+          "id": "D6-T2",
+          "type": "table",
+          "bbox": [
+            234,
+            1948,
+            1578,
+            2127
+          ]
+        },
+        {
+          "id": "D6-G1",
+          "type": "figure",
+          "bbox": [
+            249,
+            1578,
+            531,
+            1872
+          ]
+        }
+      ],
+      "notes": [
+        "第一行三列是上页【例6】单元的继续；中列本页可见区域完全空白；右列从“质”起，不补上页的“性”。",
+        "设计点评原稿清楚写作“开推断它在整个定义域内”，其中“开”疑似笔误，按可见字保留。",
+        "页尾师生活动原稿清楚写作“本即可的知识点”，其中“本即可”疑似笔误，按可见字保留，不改成“本节课”。",
+        "页尾只记录可见的“学生通过积”和“再次体会函数”，没有接写页外后文。",
+        "右列思考点评中长横线在 JSON 采用两个 U+2014 的转义表示；仅凭字形无法确认原 PDF 的字符编码。",
+        "【练习】第三式只含 x<0 和 x>0 两支，没有 x=0 的定义，未补零点分支。",
+        "图中没有原点 O 标签，未凭习惯添加。"
+      ],
+      "referenceOrigin": "Independent original-page transcription and aggregate source-image review; no recognition outputs",
+      "denominators": {
+        "bodyCharacters": 580,
+        "formulas": 10,
+        "tableCells": 15,
+        "importantBlocks": 28
+      }
+    },
+    {
+      "id": "D7",
+      "contentGroup": "author-algebra",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "body": [
+        {
+          "id": "D7-b1",
+          "text": "代数变形与条件检查",
+          "bbox": [
+            115,
+            100,
+            1539,
+            179
+          ]
+        },
+        {
+          "id": "D7-b2",
+          "text": "课堂讲义 · 公式和等价条件",
+          "bbox": [
+            115,
+            190,
+            1539,
+            258
+          ]
+        },
+        {
+          "id": "D7-b3",
+          "text": "一、把条件与结论一起写完整",
+          "bbox": [
+            115,
+            292,
+            1539,
+            337
+          ]
+        },
+        {
+          "id": "D7-b4",
+          "text": "分式约分前必须说明分母不为零。下式只在原式有意义时成立：",
+          "bbox": [
+            115,
+            350,
+            1539,
+            397
+          ]
+        },
+        {
+          "id": "D7-b6",
+          "text": "平方根的算术值非负，绝对值不能凭观察删去：",
+          "bbox": [
+            115,
+            471,
+            1539,
+            517
+          ]
+        },
+        {
+          "id": "D7-b8",
+          "text": "两个等号同时成立，才可以把这条推导链视为完整的结果。",
+          "bbox": [
+            115,
+            639,
+            1539,
+            686
+          ]
+        },
+        {
+          "id": "D7-b9",
+          "text": "二、分式不等式",
+          "bbox": [
+            115,
+            713,
+            1539,
+            758
+          ]
+        },
+        {
+          "id": "D7-b10",
+          "text": "例 1　解下列不等式，注意临界点是否包含在答案中：",
+          "bbox": [
+            115,
+            771,
+            1539,
+            818
+          ]
+        },
+        {
+          "id": "D7-b12",
+          "text": "先确定原式的定义条件，再利用数轴判断两因子的符号：",
+          "bbox": [
+            115,
+            891,
+            1539,
+            938
+          ]
+        },
+        {
+          "id": "D7-b15",
+          "text": "因此解集为 。端点处的零值与分母为零是两种不同情况。",
+          "bbox": [
+            115,
+            1072,
+            1539,
+            1119
+          ]
+        },
+        {
+          "id": "D7-b16",
+          "text": "三、根式与对数",
+          "bbox": [
+            115,
+            1146,
+            1539,
+            1190
+          ]
+        },
+        {
+          "id": "D7-b17",
+          "text": "例 2　写出函数的定义域，并把限制条件与最终区间同时保留：",
+          "bbox": [
+            115,
+            1203,
+            1539,
+            1250
+          ]
+        },
+        {
+          "id": "D7-b22",
+          "text": "检查：根号内允许等于零；对数的真数必须大于零，且整个分母不能为零。",
+          "bbox": [
+            115,
+            1508,
+            1539,
+            1554
+          ]
+        },
+        {
+          "id": "D7-b23",
+          "text": "四、课后自查",
+          "bbox": [
+            115,
+            1581,
+            1539,
+            1626
+          ]
+        },
+        {
+          "id": "D7-b24",
+          "text": "请逐项检查负号、指数、分母与区间括号。一个字符的变化也可能改变题目的条件。",
+          "bbox": [
+            115,
+            1639,
+            1539,
+            1686
+          ]
+        }
+      ],
+      "formulas": [
+        {
+          "id": "D7-f1",
+          "latex": "\\frac{x^2-9}{x-3}=x+3,\\qquad x\\ne3",
+          "bbox": [
+            120,
+            410,
+            448,
+            458
+          ]
+        },
+        {
+          "id": "D7-f2",
+          "latex": "\\sqrt{(2t-1)^2}=|2t-1|=\\begin{cases}2t-1,&t\\ge\\frac12,\\\\1-2t,&t<\\frac12.\\end{cases}",
+          "bbox": [
+            120,
+            531,
+            693,
+            626
+          ]
+        },
+        {
+          "id": "D7-f3",
+          "latex": "\\frac{x+2}{x-4}\\le0",
+          "bbox": [
+            120,
+            831,
+            228,
+            878
+          ]
+        },
+        {
+          "id": "D7-f4",
+          "latex": "x\\ne4,\\qquad x+2=0\\Longleftrightarrow x=-2",
+          "bbox": [
+            120,
+            951,
+            584,
+            998
+          ]
+        },
+        {
+          "id": "D7-f5",
+          "latex": "\\frac{x+2}{x-4}\\le0\\Longleftrightarrow -2\\le x<4",
+          "bbox": [
+            120,
+            1011,
+            464,
+            1059
+          ]
+        },
+        {
+          "id": "D7-f6",
+          "latex": "[-2,4)",
+          "bbox": [
+            261,
+            1072,
+            354,
+            1119
+          ]
+        },
+        {
+          "id": "D7-f7",
+          "latex": "g(u)=\\frac{\\sqrt{5-2u}}{\\log_3(u+1)}",
+          "bbox": [
+            120,
+            1263,
+            326,
+            1315
+          ]
+        },
+        {
+          "id": "D7-f8",
+          "latex": "5-2u\\ge0,\\quad u+1>0,\\quad \\log_3(u+1)\\ne0",
+          "bbox": [
+            120,
+            1328,
+            701,
+            1375
+          ]
+        },
+        {
+          "id": "D7-f9",
+          "latex": "-1<u\\le\\frac52,\\quad u\\ne0",
+          "bbox": [
+            120,
+            1388,
+            405,
+            1435
+          ]
+        },
+        {
+          "id": "D7-f10",
+          "latex": "D_g=(-1,0)\\cup\\left(0,\\frac52\\right]",
+          "bbox": [
+            120,
+            1448,
+            411,
+            1495
+          ]
+        },
+        {
+          "id": "D7-f11",
+          "latex": "a^2-b^2=(a-b)(a+b),\\qquad (a-b)^2=a^2-2ab+b^2",
+          "bbox": [
+            120,
+            1699,
+            854,
+            1746
+          ]
+        },
+        {
+          "id": "D7-f12",
+          "latex": "\\log_a(MN)=\\log_aM+\\log_aN,\\quad a>0,\\ a\\ne1,\\ M>0,\\ N>0",
+          "bbox": [
+            120,
+            1759,
+            974,
+            1806
+          ]
+        }
+      ],
+      "tables": [],
+      "figures": [],
+      "blocks": [
+        {
+          "id": "D7-b1",
+          "type": "body",
+          "bbox": [
+            115,
+            100,
+            1539,
+            179
+          ]
+        },
+        {
+          "id": "D7-b2",
+          "type": "body",
+          "bbox": [
+            115,
+            190,
+            1539,
+            258
+          ]
+        },
+        {
+          "id": "D7-b3",
+          "type": "body",
+          "bbox": [
+            115,
+            292,
+            1539,
+            337
+          ]
+        },
+        {
+          "id": "D7-b4",
+          "type": "body",
+          "bbox": [
+            115,
+            350,
+            1539,
+            397
+          ]
+        },
+        {
+          "id": "D7-b6",
+          "type": "body",
+          "bbox": [
+            115,
+            471,
+            1539,
+            517
+          ]
+        },
+        {
+          "id": "D7-b8",
+          "type": "body",
+          "bbox": [
+            115,
+            639,
+            1539,
+            686
+          ]
+        },
+        {
+          "id": "D7-b9",
+          "type": "body",
+          "bbox": [
+            115,
+            713,
+            1539,
+            758
+          ]
+        },
+        {
+          "id": "D7-b10",
+          "type": "body",
+          "bbox": [
+            115,
+            771,
+            1539,
+            818
+          ]
+        },
+        {
+          "id": "D7-b12",
+          "type": "body",
+          "bbox": [
+            115,
+            891,
+            1539,
+            938
+          ]
+        },
+        {
+          "id": "D7-b15",
+          "type": "body",
+          "bbox": [
+            115,
+            1072,
+            1539,
+            1119
+          ]
+        },
+        {
+          "id": "D7-b16",
+          "type": "body",
+          "bbox": [
+            115,
+            1146,
+            1539,
+            1190
+          ]
+        },
+        {
+          "id": "D7-b17",
+          "type": "body",
+          "bbox": [
+            115,
+            1203,
+            1539,
+            1250
+          ]
+        },
+        {
+          "id": "D7-b22",
+          "type": "body",
+          "bbox": [
+            115,
+            1508,
+            1539,
+            1554
+          ]
+        },
+        {
+          "id": "D7-b23",
+          "type": "body",
+          "bbox": [
+            115,
+            1581,
+            1539,
+            1626
+          ]
+        },
+        {
+          "id": "D7-b24",
+          "type": "body",
+          "bbox": [
+            115,
+            1639,
+            1539,
+            1686
+          ]
+        },
+        {
+          "id": "D7-f1",
+          "type": "formula",
+          "bbox": [
+            120,
+            410,
+            448,
+            458
+          ]
+        },
+        {
+          "id": "D7-f2",
+          "type": "formula",
+          "bbox": [
+            120,
+            531,
+            693,
+            626
+          ]
+        },
+        {
+          "id": "D7-f3",
+          "type": "formula",
+          "bbox": [
+            120,
+            831,
+            228,
+            878
+          ]
+        },
+        {
+          "id": "D7-f4",
+          "type": "formula",
+          "bbox": [
+            120,
+            951,
+            584,
+            998
+          ]
+        },
+        {
+          "id": "D7-f5",
+          "type": "formula",
+          "bbox": [
+            120,
+            1011,
+            464,
+            1059
+          ]
+        },
+        {
+          "id": "D7-f6",
+          "type": "formula",
+          "bbox": [
+            261,
+            1072,
+            354,
+            1119
+          ]
+        },
+        {
+          "id": "D7-f7",
+          "type": "formula",
+          "bbox": [
+            120,
+            1263,
+            326,
+            1315
+          ]
+        },
+        {
+          "id": "D7-f8",
+          "type": "formula",
+          "bbox": [
+            120,
+            1328,
+            701,
+            1375
+          ]
+        },
+        {
+          "id": "D7-f9",
+          "type": "formula",
+          "bbox": [
+            120,
+            1388,
+            405,
+            1435
+          ]
+        },
+        {
+          "id": "D7-f10",
+          "type": "formula",
+          "bbox": [
+            120,
+            1448,
+            411,
+            1495
+          ]
+        },
+        {
+          "id": "D7-f11",
+          "type": "formula",
+          "bbox": [
+            120,
+            1699,
+            854,
+            1746
+          ]
+        },
+        {
+          "id": "D7-f12",
+          "type": "formula",
+          "bbox": [
+            120,
+            1759,
+            974,
+            1806
+          ]
+        }
+      ],
+      "denominators": {
+        "bodyCharacters": 299,
+        "formulas": 12,
+        "tableCells": 0,
+        "importantBlocks": 27
+      },
+      "referenceOrigin": "authoring-development.json and visual page inspection"
+    },
+    {
+      "id": "D8",
+      "contentGroup": "author-sequence",
+      "imageSize": [
+        1654,
+        2339
+      ],
+      "body": [
+        {
+          "id": "D8-b1",
+          "text": "等差数列的观察与验证",
+          "bbox": [
+            115,
+            100,
+            1539,
+            179
+          ]
+        },
+        {
+          "id": "D8-b2",
+          "text": "课堂活动单 · 记录、猜想、说明",
+          "bbox": [
+            115,
+            190,
+            1539,
+            258
+          ]
+        },
+        {
+          "id": "D8-b3",
+          "text": "活动目标",
+          "bbox": [
+            115,
+            292,
+            1539,
+            337
+          ]
+        },
+        {
+          "id": "D8-b4",
+          "text": "观察相邻两项的变化，用统一的符号表达规律，再用具体项核对猜想。所有结论必须说明适用的项数。",
+          "bbox": [
+            115,
+            350,
+            1539,
+            397
+          ]
+        },
+        {
+          "id": "D8-b5",
+          "text": "任务：某剧场第一排有 18 个座位，此后每排比前一排多 3 个座位。只讨论前 12 排。",
+          "bbox": [
+            115,
+            410,
+            1539,
+            457
+          ]
+        },
+        {
+          "id": "D8-b6",
+          "text": "活动记录",
+          "bbox": [
+            115,
+            484,
+            1539,
+            528
+          ]
+        },
+        {
+          "id": "D8-t2-r0-c0-body",
+          "text": "环节",
+          "bbox": [
+            116,
+            553,
+            387,
+            634
+          ]
+        },
+        {
+          "id": "D8-t2-r0-c1-body",
+          "text": "学生记录",
+          "bbox": [
+            386,
+            553,
+            1027,
+            634
+          ]
+        },
+        {
+          "id": "D8-t2-r0-c2-body",
+          "text": "教师追问",
+          "bbox": [
+            1026,
+            553,
+            1538,
+            634
+          ]
+        },
+        {
+          "id": "D8-t2-r1-c0-body",
+          "text": "观察",
+          "bbox": [
+            116,
+            633,
+            387,
+            713
+          ]
+        },
+        {
+          "id": "D8-t2-r1-c1-body",
+          "text": "写出前四排座位数：18，21，24，27。",
+          "bbox": [
+            386,
+            633,
+            1027,
+            713
+          ]
+        },
+        {
+          "id": "D8-t2-r1-c2-body",
+          "text": "每相邻两项的差是否相等？",
+          "bbox": [
+            1026,
+            633,
+            1538,
+            713
+          ]
+        },
+        {
+          "id": "D8-t2-r2-c0-body",
+          "text": "猜想",
+          "bbox": [
+            116,
+            712,
+            387,
+            792
+          ]
+        },
+        {
+          "id": "D8-t2-r2-c2-body",
+          "text": "为什么减去 1？这里的项数有哪些限制？",
+          "bbox": [
+            1026,
+            712,
+            1538,
+            792
+          ]
+        },
+        {
+          "id": "D8-t2-r3-c0-body",
+          "text": "验证",
+          "bbox": [
+            116,
+            791,
+            387,
+            871
+          ]
+        },
+        {
+          "id": "D8-t2-r3-c2-body",
+          "text": "把首项和末项代回原描述。",
+          "bbox": [
+            1026,
+            791,
+            1538,
+            871
+          ]
+        },
+        {
+          "id": "D8-t2-r4-c0-body",
+          "text": "求和",
+          "bbox": [
+            116,
+            870,
+            387,
+            951
+          ]
+        },
+        {
+          "id": "D8-t2-r4-c2-body",
+          "text": "首尾配对时每对的和为什么相同？",
+          "bbox": [
+            1026,
+            870,
+            1538,
+            951
+          ]
+        },
+        {
+          "id": "D8-t2-r5-c0-body",
+          "text": "推广",
+          "bbox": [
+            116,
+            950,
+            387,
+            1030
+          ]
+        },
+        {
+          "id": "D8-t2-r5-c2-body",
+          "text": "给出首项与公差，能否确定整个数列？",
+          "bbox": [
+            1026,
+            950,
+            1538,
+            1030
+          ]
+        },
+        {
+          "id": "D8-b7",
+          "text": "推导说明",
+          "bbox": [
+            115,
+            1058,
+            1539,
+            1102
+          ]
+        },
+        {
+          "id": "D8-b8",
+          "text": "把同一个和倒过来写，两行相加后共有相同的配对和：",
+          "bbox": [
+            115,
+            1115,
+            1539,
+            1162
+          ]
+        },
+        {
+          "id": "D8-b12",
+          "text": "上述公式中的除以 2 来自两份相同的总和；不能把项数只当作一个可省略的标签。",
+          "bbox": [
+            115,
+            1355,
+            1539,
+            1402
+          ]
+        },
+        {
+          "id": "D8-b13",
+          "text": "辨析与练习",
+          "bbox": [
+            115,
+            1429,
+            1539,
+            1473
+          ]
+        },
+        {
+          "id": "D8-b14",
+          "text": "判断并说明：若第二项与第五项已知，是否能唯一确定一个等差数列？",
+          "bbox": [
+            115,
+            1486,
+            1539,
+            1533
+          ]
+        },
+        {
+          "id": "D8-b16",
+          "text": "另一数列的通项为 ，请比较前两次相邻差，说明它为什么不是等差数列。",
+          "bbox": [
+            115,
+            1606,
+            1539,
+            1653
+          ]
+        }
+      ],
+      "formulas": [
+        {
+          "id": "D8-f1",
+          "latex": "a_n=18+3(n-1)",
+          "bbox": [
+            410,
+            731,
+            616,
+            773
+          ]
+        },
+        {
+          "id": "D8-f2",
+          "latex": "a_1=18,\\quad a_4=27,\\quad a_{12}=51",
+          "bbox": [
+            410,
+            810,
+            738,
+            852
+          ]
+        },
+        {
+          "id": "D8-f3",
+          "latex": "S_{12}=\\frac{12(18+51)}2=414",
+          "bbox": [
+            410,
+            889,
+            638,
+            932
+          ]
+        },
+        {
+          "id": "D8-f4",
+          "latex": "a_n=a_1+(n-1)d,\\quad n\\in\\mathbb{N}^{*}",
+          "bbox": [
+            410,
+            969,
+            724,
+            1011
+          ]
+        },
+        {
+          "id": "D8-f5",
+          "latex": "S_n=a_1+a_2+\\cdots+a_n",
+          "bbox": [
+            120,
+            1175,
+            443,
+            1222
+          ]
+        },
+        {
+          "id": "D8-f6",
+          "latex": "S_n=a_n+a_{n-1}+\\cdots+a_1",
+          "bbox": [
+            120,
+            1235,
+            473,
+            1282
+          ]
+        },
+        {
+          "id": "D8-f7",
+          "latex": "2S_n=n(a_1+a_n),\\qquad S_n=\\frac{n(a_1+a_n)}2",
+          "bbox": [
+            120,
+            1295,
+            612,
+            1342
+          ]
+        },
+        {
+          "id": "D8-f8",
+          "latex": "a_2=7,\\quad a_5=19\\Longrightarrow d=4,\\quad a_1=3",
+          "bbox": [
+            120,
+            1546,
+            638,
+            1593
+          ]
+        },
+        {
+          "id": "D8-f9",
+          "latex": "b_n=2n^2+1",
+          "bbox": [
+            342,
+            1606,
+            516,
+            1653
+          ]
+        }
+      ],
+      "tables": [
+        {
+          "id": "D8-t2",
+          "rows": 6,
+          "columns": 3,
+          "cells": [
+            {
+              "id": "D8-t2-r0-c0",
+              "row": 0,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "环节",
+              "formulaIds": [],
+              "bbox": [
+                116,
+                553,
+                387,
+                634
+              ]
+            },
+            {
+              "id": "D8-t2-r0-c1",
+              "row": 0,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "学生记录",
+              "formulaIds": [],
+              "bbox": [
+                386,
+                553,
+                1027,
+                634
+              ]
+            },
+            {
+              "id": "D8-t2-r0-c2",
+              "row": 0,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "教师追问",
+              "formulaIds": [],
+              "bbox": [
+                1026,
+                553,
+                1538,
+                634
+              ]
+            },
+            {
+              "id": "D8-t2-r1-c0",
+              "row": 1,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "观察",
+              "formulaIds": [],
+              "bbox": [
+                116,
+                633,
+                387,
+                713
+              ]
+            },
+            {
+              "id": "D8-t2-r1-c1",
+              "row": 1,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "写出前四排座位数：18，21，24，27。",
+              "formulaIds": [],
+              "bbox": [
+                386,
+                633,
+                1027,
+                713
+              ]
+            },
+            {
+              "id": "D8-t2-r1-c2",
+              "row": 1,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "每相邻两项的差是否相等？",
+              "formulaIds": [],
+              "bbox": [
+                1026,
+                633,
+                1538,
+                713
+              ]
+            },
+            {
+              "id": "D8-t2-r2-c0",
+              "row": 2,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "猜想",
+              "formulaIds": [],
+              "bbox": [
+                116,
+                712,
+                387,
+                792
+              ]
+            },
+            {
+              "id": "D8-t2-r2-c1",
+              "row": 2,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "",
+              "formulaIds": [
+                "D8-f1"
+              ],
+              "bbox": [
+                386,
+                712,
+                1027,
+                792
+              ]
+            },
+            {
+              "id": "D8-t2-r2-c2",
+              "row": 2,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "为什么减去 1？这里的项数有哪些限制？",
+              "formulaIds": [],
+              "bbox": [
+                1026,
+                712,
+                1538,
+                792
+              ]
+            },
+            {
+              "id": "D8-t2-r3-c0",
+              "row": 3,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "验证",
+              "formulaIds": [],
+              "bbox": [
+                116,
+                791,
+                387,
+                871
+              ]
+            },
+            {
+              "id": "D8-t2-r3-c1",
+              "row": 3,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "",
+              "formulaIds": [
+                "D8-f2"
+              ],
+              "bbox": [
+                386,
+                791,
+                1027,
+                871
+              ]
+            },
+            {
+              "id": "D8-t2-r3-c2",
+              "row": 3,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "把首项和末项代回原描述。",
+              "formulaIds": [],
+              "bbox": [
+                1026,
+                791,
+                1538,
+                871
+              ]
+            },
+            {
+              "id": "D8-t2-r4-c0",
+              "row": 4,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "求和",
+              "formulaIds": [],
+              "bbox": [
+                116,
+                870,
+                387,
+                951
+              ]
+            },
+            {
+              "id": "D8-t2-r4-c1",
+              "row": 4,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "",
+              "formulaIds": [
+                "D8-f3"
+              ],
+              "bbox": [
+                386,
+                870,
+                1027,
+                951
+              ]
+            },
+            {
+              "id": "D8-t2-r4-c2",
+              "row": 4,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "首尾配对时每对的和为什么相同？",
+              "formulaIds": [],
+              "bbox": [
+                1026,
+                870,
+                1538,
+                951
+              ]
+            },
+            {
+              "id": "D8-t2-r5-c0",
+              "row": 5,
+              "column": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "推广",
+              "formulaIds": [],
+              "bbox": [
+                116,
+                950,
+                387,
+                1030
+              ]
+            },
+            {
+              "id": "D8-t2-r5-c1",
+              "row": 5,
+              "column": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "",
+              "formulaIds": [
+                "D8-f4"
+              ],
+              "bbox": [
+                386,
+                950,
+                1027,
+                1030
+              ]
+            },
+            {
+              "id": "D8-t2-r5-c2",
+              "row": 5,
+              "column": 2,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "给出首项与公差，能否确定整个数列？",
+              "formulaIds": [],
+              "bbox": [
+                1026,
+                950,
+                1538,
+                1030
+              ]
+            }
+          ],
+          "bbox": [
+            115,
+            552,
+            1539,
+            1031
+          ]
+        }
+      ],
+      "figures": [],
+      "blocks": [
+        {
+          "id": "D8-b1",
+          "type": "body",
+          "bbox": [
+            115,
+            100,
+            1539,
+            179
+          ]
+        },
+        {
+          "id": "D8-b2",
+          "type": "body",
+          "bbox": [
+            115,
+            190,
+            1539,
+            258
+          ]
+        },
+        {
+          "id": "D8-b3",
+          "type": "body",
+          "bbox": [
+            115,
+            292,
+            1539,
+            337
+          ]
+        },
+        {
+          "id": "D8-b4",
+          "type": "body",
+          "bbox": [
+            115,
+            350,
+            1539,
+            397
+          ]
+        },
+        {
+          "id": "D8-b5",
+          "type": "body",
+          "bbox": [
+            115,
+            410,
+            1539,
+            457
+          ]
+        },
+        {
+          "id": "D8-b6",
+          "type": "body",
+          "bbox": [
+            115,
+            484,
+            1539,
+            528
+          ]
+        },
+        {
+          "id": "D8-t2-r0-c0-body",
+          "type": "body",
+          "bbox": [
+            116,
+            553,
+            387,
+            634
+          ]
+        },
+        {
+          "id": "D8-t2-r0-c1-body",
+          "type": "body",
+          "bbox": [
+            386,
+            553,
+            1027,
+            634
+          ]
+        },
+        {
+          "id": "D8-t2-r0-c2-body",
+          "type": "body",
+          "bbox": [
+            1026,
+            553,
+            1538,
+            634
+          ]
+        },
+        {
+          "id": "D8-t2-r1-c0-body",
+          "type": "body",
+          "bbox": [
+            116,
+            633,
+            387,
+            713
+          ]
+        },
+        {
+          "id": "D8-t2-r1-c1-body",
+          "type": "body",
+          "bbox": [
+            386,
+            633,
+            1027,
+            713
+          ]
+        },
+        {
+          "id": "D8-t2-r1-c2-body",
+          "type": "body",
+          "bbox": [
+            1026,
+            633,
+            1538,
+            713
+          ]
+        },
+        {
+          "id": "D8-t2-r2-c0-body",
+          "type": "body",
+          "bbox": [
+            116,
+            712,
+            387,
+            792
+          ]
+        },
+        {
+          "id": "D8-t2-r2-c2-body",
+          "type": "body",
+          "bbox": [
+            1026,
+            712,
+            1538,
+            792
+          ]
+        },
+        {
+          "id": "D8-t2-r3-c0-body",
+          "type": "body",
+          "bbox": [
+            116,
+            791,
+            387,
+            871
+          ]
+        },
+        {
+          "id": "D8-t2-r3-c2-body",
+          "type": "body",
+          "bbox": [
+            1026,
+            791,
+            1538,
+            871
+          ]
+        },
+        {
+          "id": "D8-t2-r4-c0-body",
+          "type": "body",
+          "bbox": [
+            116,
+            870,
+            387,
+            951
+          ]
+        },
+        {
+          "id": "D8-t2-r4-c2-body",
+          "type": "body",
+          "bbox": [
+            1026,
+            870,
+            1538,
+            951
+          ]
+        },
+        {
+          "id": "D8-t2-r5-c0-body",
+          "type": "body",
+          "bbox": [
+            116,
+            950,
+            387,
+            1030
+          ]
+        },
+        {
+          "id": "D8-t2-r5-c2-body",
+          "type": "body",
+          "bbox": [
+            1026,
+            950,
+            1538,
+            1030
+          ]
+        },
+        {
+          "id": "D8-b7",
+          "type": "body",
+          "bbox": [
+            115,
+            1058,
+            1539,
+            1102
+          ]
+        },
+        {
+          "id": "D8-b8",
+          "type": "body",
+          "bbox": [
+            115,
+            1115,
+            1539,
+            1162
+          ]
+        },
+        {
+          "id": "D8-b12",
+          "type": "body",
+          "bbox": [
+            115,
+            1355,
+            1539,
+            1402
+          ]
+        },
+        {
+          "id": "D8-b13",
+          "type": "body",
+          "bbox": [
+            115,
+            1429,
+            1539,
+            1473
+          ]
+        },
+        {
+          "id": "D8-b14",
+          "type": "body",
+          "bbox": [
+            115,
+            1486,
+            1539,
+            1533
+          ]
+        },
+        {
+          "id": "D8-b16",
+          "type": "body",
+          "bbox": [
+            115,
+            1606,
+            1539,
+            1653
+          ]
+        },
+        {
+          "id": "D8-f1",
+          "type": "formula",
+          "bbox": [
+            410,
+            731,
+            616,
+            773
+          ]
+        },
+        {
+          "id": "D8-f2",
+          "type": "formula",
+          "bbox": [
+            410,
+            810,
+            738,
+            852
+          ]
+        },
+        {
+          "id": "D8-f3",
+          "type": "formula",
+          "bbox": [
+            410,
+            889,
+            638,
+            932
+          ]
+        },
+        {
+          "id": "D8-f4",
+          "type": "formula",
+          "bbox": [
+            410,
+            969,
+            724,
+            1011
+          ]
+        },
+        {
+          "id": "D8-f5",
+          "type": "formula",
+          "bbox": [
+            120,
+            1175,
+            443,
+            1222
+          ]
+        },
+        {
+          "id": "D8-f6",
+          "type": "formula",
+          "bbox": [
+            120,
+            1235,
+            473,
+            1282
+          ]
+        },
+        {
+          "id": "D8-f7",
+          "type": "formula",
+          "bbox": [
+            120,
+            1295,
+            612,
+            1342
+          ]
+        },
+        {
+          "id": "D8-f8",
+          "type": "formula",
+          "bbox": [
+            120,
+            1546,
+            638,
+            1593
+          ]
+        },
+        {
+          "id": "D8-f9",
+          "type": "formula",
+          "bbox": [
+            342,
+            1606,
+            516,
+            1653
+          ]
+        },
+        {
+          "id": "D8-t2",
+          "type": "table",
+          "bbox": [
+            115,
+            552,
+            1539,
+            1031
+          ]
+        }
+      ],
+      "denominators": {
+        "bodyCharacters": 362,
+        "formulas": 9,
+        "tableCells": 18,
+        "importantBlocks": 36
+      },
+      "referenceOrigin": "authoring-development.json and visual page inspection"
+    }
+  ]
+}

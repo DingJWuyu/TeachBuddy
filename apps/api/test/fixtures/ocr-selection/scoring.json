@@ -1,0 +1,15 @@
+{
+  "rulesCommit": "ed721ea9ca3576b6ed18302effadaeaf2141ca64",
+  "rulesPath": "docs/acceptance/ocr-selection.md",
+  "freezeOrder": ["rules", "source images and reference units", "model runs"],
+  "thresholds": {"bodyCERMax": 0.02, "formulaCorrectMin": 0.95, "tableCellCorrectMin": 0.95, "importantBlockRecallMin": 0.98},
+  "bodyNormalization": "Unicode NFKC followed by removal of Unicode whitespace; preserve punctuation and digits. Concatenate body items in reference order. Include narrative prose inside teaching-table cells; table row/column correctness is scored separately. Exclude formula spans, purely numeric data-table cells, figure labels and page furniture. Compare the corresponding body projection of model output, not the full mixed page string.",
+  "formulaUnit": "One complete expression or relation with its visible conditions. Mathematically equivalent LaTeX is accepted. Do not split a fraction, cases expression or equality chain into sub-tokens. Table formulas are also present in formulas and referenced by their cell.",
+  "tableUnit": "One visible logical cell, including header or blank cell, at its original row/column and spans. Cross-page cells contain only visible text; continuation IDs link the pieces. Cell text plus referenced formulas form the cell reference.",
+  "blockUnit": "Each frozen body paragraph, complete formula, table region and figure region. Bounding boxes are page pixels [left,top,right,bottom]. Overlap between an inline formula and its paragraph is intentional.",
+  "figurePolicy": "Preserve the source figure and a locatable region. The listed source labels must remain visible in the retained source image or equivalent output. Vector reconstruction is not required. Systematic loss of critical labels eliminates the route.",
+  "hardFailures": ["whole-page or whole-column omission", "systematic formula corruption", "systematic loss of critical figure labels"],
+  "reporting": "Report numerator and denominator per page and per category; no mixed total score. Aggregate repeated-source content by contentGroup as well as page, so source variants never create extra independent evidence.",
+  "damagedInput": "F is excluded from all ordinary quality and latency denominators. Report visible-content retention, invented content and failure behavior separately.",
+  "referenceOrigin": "Original page images or the new author source only. No old OCR raw, result or markdown outputs were consulted."
+}
