@@ -4,6 +4,8 @@
 
 ## 工作现场与授权
 
+当前总控推进 OCR 识别方案优化，工作树 `TeacherWorkspace-ocr`、分支 `perf/ocr-recognition`，从 `16579877` 开始。按[选型规则](../acceptance/ocr-selection.md)先冻结判据和输入，再测 A+B、A 单路及替代路线；用户偏好移除额外 CPU 复核，以识别效果和实际等待选择方案。授权免费公开模型下载、本机串行 GPU 实验、实现、独立验证及集成回 preview；不包含付费调用、私人材料外传、main、远端或公开部署。当前尚未形成新方案实测结论。
+
 本机用户体验直接运行 `TeacherWorkspace-preview` 源码，入口与维护方式见[SETUP](../SETUP.md#已有本机实例)。新环境按[隔离环境](../SETUP.md#新的隔离环境)启动；当前分支、HEAD 及未提交文件以 Git 为准。原 `TeacherWorkspace` 的 main 不在本轮开发范围。
 
 总控负责专属 session 的收发消息、公共文件唯一写者、集成与冲突。新任务按本节阶段授权及[开发约定](../agents/module-development.md#git-与运行现场)确认分支起点和工作现场。本机旧 session 仅供查阅，不作为新环境前置。AI/Agent 扩展开发仍暂停；已接入的首批能力与后续设计边界见下表。
