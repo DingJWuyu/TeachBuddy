@@ -8,6 +8,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import Database from "better-sqlite3";
 import { createIntegration } from "./fixtures/auth-integration/harness.js";
+import { extractLegacySource } from "./fixtures/legacy-source/extract.mjs";
 import {
   Q,
   R,
@@ -70,42 +71,22 @@ function files(directory) {
       }),
   );
 }
-test("WB-MTA002: immutable old candidate database, normal rich upgrade and two retained restarts", async () => {
+test("WB-MTA002: immutable old candidate database, normal rich upgrade and two retained restarts", async t => {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), "mta-retained-")),
     old = path.join(folder, "fixed"),
     original = path.join(folder, "original"),
     candidate = path.join(folder, "candidate");
-  fs.mkdirSync(old, { recursive: true });
-  fs.mkdirSync(original);
-  execFileSync("tar", ["-x", "-C", old], {
-    input: execFileSync(
-      "git",
-      [
-        "archive",
-        fixed,
-        "apps/api",
-        "apps/web/e2e/fixtures/math-static/real.mjs",
-        "packages/shared",
-        "docs/contracts",
-        "package.json",
-      ],
-      { cwd: root, maxBuffer: 40 * 1024 * 1024 },
-    ),
+  let passed = false;
+  t.after(() => {
+    if (passed) fs.rmSync(folder, { recursive: true, force: true });
+    else t.diagnostic(`Retained teaching library: ${folder}`);
   });
-  fs.mkdirSync(path.join(old, "node_modules/@refatos"), { recursive: true });
-  for (const name of fs.readdirSync(path.join(root, "node_modules")))
-    if (name !== "@refatos")
-      fs.symlinkSync(
-        path.join(root, "node_modules", name),
-        path.join(old, "node_modules", name),
-      );
+  fs.mkdirSync(original);
+  extractLegacySource('teaching-materials', old);
   fs.symlinkSync(
-    path.join(old, "packages/shared"),
-    path.join(old, "node_modules/@refatos/shared"),
-  );
-  fs.symlinkSync(
-    path.join(root, "apps/api/node_modules"),
-    path.join(old, "apps/api/node_modules"),
+    path.join(root, 'apps/api/node_modules'),
+    path.join(old, 'apps/api/node_modules'),
+    'dir',
   );
   const fixture = new URL(
     "./teaching-time-classes-materials-fixture.js",
@@ -244,4 +225,5 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
   } finally {
     await world?.close();
   }
+  passed = true;
 });

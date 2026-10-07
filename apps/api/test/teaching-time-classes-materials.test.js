@@ -4,7 +4,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
-import { execFileSync } from "node:child_process";
 import { createIntegration } from "./fixtures/auth-integration/harness.js";
 import { registerMath } from "../../web/e2e/fixtures/math-static/real.mjs";
 import { ContractError } from "../src/workbench/problems.js";
@@ -128,14 +127,7 @@ test("WB-MTA001/006/007: rich, imported, copied and mixed sources through public
   );
   assert.deepEqual((await call("GET", `${Q}/${rich.id}`)).body, rich.body);
   const baseline = JSON.parse(
-    execFileSync(
-      "git",
-      [
-        "show",
-        "2682475041aa187e3cd50ad743dc5e5bc243feda:docs/contracts/teaching-time/math-samples.json",
-      ],
-      { encoding: "utf8" },
-    ),
+    fs.readFileSync(new URL('./fixtures/contracts/teaching-time-v2-samples.json', import.meta.url), 'utf8'),
   );
   const oldCatalog = baseline.samples.find(
     (x) => x.id === "catalog-combined-target",

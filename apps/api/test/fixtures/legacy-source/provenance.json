@@ -75,7 +75,21 @@
       "gzipMtime": 0,
       "gzipSha256": "7d752b0ed8b988df3905c3817101be669d2aa141ba20ba7d75d951576ff28a5a",
       "tarSha256": "6ad46394a848769d17a4e6e6bdcf0530c2b706c37b2a38627196a85dc7178946"
+    },
+    "teaching-materials": {
+      "commit": "2682475041aa187e3cd50ad743dc5e5bc243feda",
+      "paths": [
+        "apps/api",
+        "apps/web/e2e/fixtures/math-static/real.mjs",
+        "packages/shared",
+        "docs/contracts",
+        "package.json"
+      ],
+      "archive": "teaching-materials.tar.gz",
+      "gzipMtime": 0,
+      "gzipSha256": "33fbd41d09a2225abda233ffcee343f7a66c161951f8daa2365f7d316a6e812d",
+      "tarSha256": "905ea7b1a66d9688206f6c14ddcae5be619575c43640e0669f32118487d93e79"
     }
   },
-  "scope": "Only the existing fixed-version upgrade entrypoints are executed. The R31 archives include their original machine contracts at historical docs paths because those products load them at runtime. Current code never reads repository docs as runtime inputs. Other unused archived fixture references remain unchanged; these are not standalone legacy full-suite checkouts."
+  "scope": "Only the existing fixed-version upgrade entrypoints are executed. The R31 and teaching-materials archives include their original machine contracts at historical docs paths because those products load them at runtime. Current code never reads repository docs as runtime inputs. Other unused archived fixture references remain unchanged; these are not standalone legacy full-suite checkouts."
 }
