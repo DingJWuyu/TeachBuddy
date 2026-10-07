@@ -1298,7 +1298,7 @@ export default function MaterialsQuestionsPage({
                     <summary>{t("未分配片段 ·")} {value.fragments.length}</summary>
                     {value.fragments.map((f) => (
                       <div key={f.id}>
-                        <pre>{["未确定题目归属的识别疑点：这行有不一致的识别结果，请对照原稿核对。", "未确定题目归属的识别疑点：这行有较大留白，请对照原稿核对。"].includes(f.text) ? t(f.text) : f.text}</pre>
+                        {f.document ? <DocumentView value={f.document} /> : <pre>{["未确定题目归属的识别疑点：这行有不一致的识别结果，请对照原稿核对。", "未确定题目归属的识别疑点：这行有较大留白，请对照原稿核对。"].includes(f.text) ? t(f.text) : f.text}</pre>}
                         <select
                           aria-label={t("片段处理")}
                           value={f.disposition}
@@ -1314,15 +1314,16 @@ export default function MaterialsQuestionsPage({
                           }
                         >
                           <option value="unassigned">{t("待处理")}</option>
+                          <option value="assigned" disabled>{t("已归入题干")}</option>
                           <option value="ignored">{t("忽略")}</option>
                         </select>
                         <button
-                          disabled={!draft || locked}
+                          disabled={!draft || locked || f.disposition !== "unassigned" || Boolean(f.document && !supportedDocument(f.document))}
                           onClick={() => {
-                            const block = {
+                            const blocks = f.document?.blocks ?? [{
                               type: "paragraph",
                               runs: [{ type: "text", text: f.text }],
-                            };
+                            }];
                             change({
                               ...value,
                               drafts: value.drafts.map((x) =>
@@ -1331,8 +1332,9 @@ export default function MaterialsQuestionsPage({
                                       ...x,
                                       body: {
                                         version: 2,
-                                        blocks: [...x.body.blocks, block],
+                                        blocks: [...x.body.blocks, ...structuredClone(blocks)],
                                       },
+                                      parts: [...x.parts, { role: "body", locations: structuredClone(f.locations) }],
                                     }
                                   : x,
                               ),

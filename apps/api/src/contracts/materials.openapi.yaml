@@ -4363,6 +4363,9 @@ components:
           type: string
           minLength: 0
           maxLength: 20000
+        document:
+          description: 可选的原片段文稿，保留机器结果中的表格、公式与受管图片；text 仅作摘要，旧纯文本片段保持兼容。
+          $ref: '#/components/schemas/Document'
         locations:
           type: array
           items:

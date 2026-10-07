@@ -309,6 +309,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
           throw invalidInput("/fragments", "out-of-range");
         fragmentIds.add(f.id);
         locations(p, m, [f]);
+        if (f.document) content.validate(p, f.document);
       }
       return s.save("imports", p, {
         ...s.bump(m),

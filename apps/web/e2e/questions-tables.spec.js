@@ -146,6 +146,8 @@ test('HTTP：练习范围的变号题目按原顺序拆分，下一题之前的�
   expect(material.drafts.map(d=>math(d.body))).toEqual([['u(t)=1.25t+8'],['v(t)','(2,5]']]);
   expect(material.drafts.every(d=>d.issues.some(i=>i.code==='split-boundary'&&i.resolution==='open'))).toBe(true);
   expect(material.drafts.every(d=>!documentText(d.body).includes('教师')&&!documentText(d.body).includes('点评'))).toBe(true);
+  const teacher=material.fragments.find(fragment=>fragment.text.includes('教师：1. 示范'));
+  expect(math(teacher.document)).toEqual(['u(t)=0']);
 });
 
 for(const scope of ['教学环节：课堂小结','教学环节：回顾练习',''])test(`HTTP：数字列表在${scope||'未明确练习范围'}不生成题目`,async()=>{
@@ -537,4 +539,107 @@ test('HTTP：不同原件不继承教学表头',async()=>{
   expect((await waitJob(created.jobId)).state).toBe('partial');
   const material=await request('GET',`${base}/imports/${created.id}`);expect(material.drafts).toEqual([]);
   expect(recognizer.calls).toHaveLength(2);
+});
+
+for(const withFigure of [false,true])test(withFigure
+  ? '浏览器：受控图文表片段归入题干后保存、刷新和入库保留图片引用与来源'
+  : '浏览器：D8 未分配活动表归入题干后保存、刷新和入库保留原结构与来源',async({page},info)=>{
+  // Replay the checked-in official MinerU output. This does not run OCR inference.
+  // The separate controlled image case tests assignment, not OCR quality.
+  const fixtures=path.resolve('apps/api/test/fixtures/mineru-recognition/D8');
+  const raw=withFigure?{pages:[{blocks:[
+    {type:'text',bbox:[.1,.1,.9,.2],content:[{type:'text',content:'Q1. 请观察下表。'}]},
+    {type:'table',bbox:[.1,.3,.9,.9],content:[{type:'table_body',content:'<table><tr><td>记录</td><td><eq>x<y</eq><img src="imgs/figure.png"/></td></tr></table>'}]},
+  ]}]}:JSON.parse(fs.readFileSync(path.join(fixtures,'middle_json.json')));
+  recognizer.revision='mineru-pro-2605/document-6';
+  recognizer.run=async({width,height})=>{
+    recognizer.calls.push({width,height});
+    return {raw,pageBlocks:raw.pages[0].blocks,width,height,assets:withFigure?[{
+      name:'imgs/figure.png',bytes:fs.readFileSync(path.resolve('apps/web/e2e/fixtures/materials-questions/figure.png')),
+    }]:[],derivations:[],
+      originalAssets:fs.readdirSync(path.join(fixtures,'images')).map(name=>({name:`images/${name}`,bytes:fs.readFileSync(path.join(fixtures,'images',name))}))};
+  };
+  await page.goto(world.origin+'/questions');
+  await page.getByLabel('邮箱',{exact:true}).fill(email);
+  await page.getByLabel('密码',{exact:true}).fill('math-password');
+  await page.getByRole('button',{name:'登录',exact:true}).click();
+  await expect(page.locator('.wb-shell')).toBeVisible();
+  const welcome=page.getByRole('button',{name:'知道了',exact:true});
+  if(await welcome.isVisible())await welcome.click();
+  await page.getByRole('button',{name:'从资料收录',exact:true}).first().click();
+  await page.getByRole('button',{name:/^上传图片/}).click();
+  await page.getByLabel('选择原稿').setInputFiles(path.resolve('apps/api/test/fixtures/ocr-selection/pages/D8.png'));
+  const accepted=page.waitForResponse(r=>r.url().endsWith('/questions/v2/imports')&&r.request().method()==='POST');
+  await page.getByRole('button',{name:'开始整理',exact:true}).click();
+  const created=await(await accepted).json();
+  expect((await waitJob(created.jobId)).state).toBe('partial');
+  const before=await request('GET',`${base}/imports/${created.id}`);
+  expect(before.drafts).toHaveLength(1);expect(before.fragments).toHaveLength(1);
+  const fileId=created.input.fileIds[0];
+  const machine=await request('GET',`/api/workbench/files/${fileId}/recognition/pages/1?renditionFileId=${fileId}`);
+  const originalTable=machine.document.blocks.find(block=>block.type==='table');
+  expect(originalTable).toBeTruthy();expect(math({blocks:[originalTable]})).toHaveLength(withFigure?1:4);
+  const originalBody=before.drafts[0].body;
+  await expect(page.getByRole('button',{name:'修改题目',exact:true})).toBeEnabled();
+  await page.locator('summary').filter({hasText:'未分配片段'}).click();
+  await page.screenshot({path:info.outputPath('D8-before.png'),fullPage:true,animations:'disabled'});
+  await page.getByRole('button',{name:'归入题干',exact:true}).click();
+  await page.getByRole('button',{name:'保存检查进度',exact:true}).click();
+  await page.reload();
+  await expect(page.getByRole('button',{name:'修改题目',exact:true})).toBeEnabled();
+  const reopened=await request('GET',`${base}/imports/${created.id}`);
+  fs.writeFileSync(info.outputPath('D8-saved-reopened.json'),JSON.stringify({before,machine,reopened},null,2));
+  await page.screenshot({path:info.outputPath('D8-reopened.png'),fullPage:true,animations:'disabled'});
+  expect(reopened.drafts[0].body.blocks).toEqual([...originalBody.blocks,originalTable]);
+  expect(reopened.fragments[0].document.blocks).toEqual([originalTable]);
+  expect(reopened.drafts[0].parts.at(-1)).toEqual({role:'body',locations:before.fragments[0].locations});
+  await expect(page.getByRole('article',{name:'待检查题干',exact:true}).locator('table')).toBeVisible();
+  await page.locator('summary').filter({hasText:'未分配片段'}).click();
+  await expect(page.getByLabel('片段处理')).toHaveValue('assigned');
+  await expect(page.getByRole('button',{name:'归入题干',exact:true})).toBeDisabled();
+  await page.getByLabel('片段处理').selectOption('unassigned');
+  await expect(page.getByRole('button',{name:'归入题干',exact:true})).toBeEnabled();
+  await page.getByLabel('片段处理').selectOption('ignored');
+  await page.locator('summary').filter({hasText:'未分配片段'}).click();
+  await page.getByRole('button',{name:'修改题目',exact:true}).click();
+  await page.getByLabel('答案状态',{exact:true}).selectOption('absent');
+  await page.getByRole('button',{name:'完成修改',exact:true}).click();
+  for(const select of await page.locator('.q-review-checks select').all())await select.selectOption('corrected');
+  await page.getByRole('button',{name:'确认这道题',exact:true}).click();
+  await expect(page.getByText('这道题已入库',{exact:true})).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('这道题已入库',{exact:true})).toBeVisible();
+  const confirmed=await request('GET',`${base}/imports/${created.id}`);
+  const question=await request('GET',`${base}/items/${confirmed.drafts[0].questionId}`);
+  fs.writeFileSync(info.outputPath('confirmed-readback.json'),JSON.stringify({withFigure,confirmed,question},null,2));
+  expect(question.body).toEqual(confirmed.drafts[0].body);
+  expect(question.body.blocks.at(-1)).toEqual(originalTable);
+  expect(question.source.parts.at(-1)).toEqual({role:'body',locations:before.fragments[0].locations});
+  expect(recognizer.calls).toHaveLength(1);
+  await page.getByRole('button',{name:'查看题目',exact:true}).click();
+  await expect(page.getByRole('article',{name:'题干',exact:true}).locator('table')).toBeVisible();
+  if(withFigure) {
+    const imageIds=images(question.body);
+    expect(imageIds).toEqual(images({blocks:[originalTable]}));expect(imageIds).toHaveLength(1);
+    const image=page.getByRole('article',{name:'题干',exact:true}).locator('img');
+    await expect(image).toBeVisible();expect(await image.evaluate(node=>node.naturalWidth)).toBeGreaterThan(0);
+    expect((await client.request('GET',`/api/workbench/files/${imageIds[0]}/content`)).status).toBe(200);
+  }
+  for(const theme of ['light','dark']) {
+    if(theme==='dark') {
+      await page.setViewportSize({width:1440,height:900});
+      await page.getByRole('link',{name:'账户：数学教师',exact:true}).click();
+      await page.getByRole('button',{name:'深色',exact:true}).click();
+      await page.getByRole('navigation',{name:'功能模块'}).getByRole('link',{name:/^题库/}).click();
+      await expect(page.locator('html')).toHaveAttribute('data-workbench-theme','dark');
+    }
+    for(const width of [1440,600]) {
+      await page.setViewportSize({width,height:900});
+      const table=page.getByRole('article',{name:'题干',exact:true}).locator('table');
+      await table.scrollIntoViewIfNeeded();
+      await expect(table.locator('tr')).toHaveCount(withFigure?1:6);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+      await page.screenshot({path:info.outputPath(`D8-${theme}-${width}.png`),fullPage:true,animations:'disabled'});
+    }
+  }
 });

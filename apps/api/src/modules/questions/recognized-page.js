@@ -1,6 +1,6 @@
 import { nativeText, questionStart, answerHeading, continuationHeading } from "./extraction.js";
 import { extractionId, questionLabel } from "./extraction-fragments.js";
-import { documentText, images } from "./materials-content.js";
+import { documentText, images, walkBlocks } from "./materials-content.js";
 import { readTeachingTables } from "./recognized-tables.js";
 
 const length = text => [...text].length;
@@ -33,7 +33,13 @@ function numberedBlocks(block) {
 export function readRecognizedPage(page, { section, previous }) {
   const tables = readTeachingTables(page, {section, previous});
   const entries = [], fragments = [];
-  const fragment = (text, locations) => {
+  const fragment = (text, locations, blocks) => {
+    if (blocks?.length) {
+      fragments.push({ id: extractionId(page.resultId, "unassigned", fragments.length),
+        text: text.slice(0, 20000), document: { version: 2, blocks: structuredClone(blocks) },
+        locations, disposition: "unassigned" });
+      return;
+    }
     for (let i = 0; i < text.length; i += 20000)
       fragments.push({ id: extractionId(page.resultId, "unassigned", fragments.length),
         text: text.slice(i, i + 20000), locations, disposition: "unassigned" });
@@ -53,15 +59,16 @@ export function readRecognizedPage(page, { section, previous }) {
     if (raw.document.blocks.length === 1 && ["heading", "paragraph"].includes(raw.document.blocks[0].type) &&
         teachingHeading.test(raw.text)) {
       reportScope = reportHeading(raw.text);
-      fragment(raw.text, [location]);
+      fragment(raw.text, [location], raw.document.blocks);
       continue;
     }
     for (let block of raw.document.blocks.flatMap(numberedBlocks)) {
       if (block.type === "table") {
         if (tables.handled.has(block)) continue;
         // No cell geometry proves a question/teacher-activity boundary here.
-        // Keep the original structured table in the immutable machine result.
-        fragment(documentText({ version: 2, blocks: [block] }), [location]);
+        // Preserve the machine table for explicit assignment, without guessing
+        // which question, activity or note owns it.
+        fragment(documentText({ version: 2, blocks: [block] }), [location], [block]);
         unresolvedTable = true;
         continue;
       }
@@ -76,7 +83,7 @@ export function readRecognizedPage(page, { section, previous }) {
         else if (teachingHeading.test(text) || block.type === "heading" || answerHeading.test(pageHeading(text)) ||
             /^\s*(?:Q\s*[0-9０-９]+|例\s*[0-9０-９]+|练习\s*[0-9０-９]+)/i.test(text)) reportScope = false;
         if (teachingHeading.test(text) || reportScope) {
-          fragment(text, [location]);
+          fragment(text, [location], [block]);
           if (reportScope) unresolvedTable = true;
           continue;
         }
@@ -123,8 +130,8 @@ export function readRecognizedPage(page, { section, previous }) {
     const selected = within(ranges), blocks = [], accepted = [], figures = [];
     let unassignedFigure = false;
     for (const entry of selected) {
-      if (entry.block.type === "image" && !canBindFigure(entry, draft)) {
-        fragment("未确定归属的配图，请对照原稿选区。", [entry.location]);
+      if (role !== "unassigned" && entry.block.type === "image" && !canBindFigure(entry, draft)) {
+        fragment("未确定归属的配图，请对照原稿选区。", [entry.location], [entry.block]);
         unassignedFigure = true;
         continue;
       }
@@ -186,7 +193,10 @@ export function readRecognizedPage(page, { section, previous }) {
     record(draft, answerPage ? "answer" : "question", adopt(draft, "body"));
     if (draft.parts.some(part => part.role === "solution")) record(draft, "answer", adopt(draft, "solution"));
   }
-  for (const item of parsed.fragments) fragment(item.text, uniqueLocations(within(item.locations)));
+  for (const item of parsed.fragments) {
+    const adopted = adopt({ parts: [{ role: "unassigned", locations: item.locations }] }, "unassigned");
+    fragment(item.text, uniqueLocations(adopted.entries), adopted.document.blocks);
+  }
   records.push(...tables.records);
   for (const issue of page.issues.filter(issue => issue.box)) {
     const owners = records.filter(record => record.sourceRanges?.some(range =>
@@ -203,8 +213,12 @@ export function readRecognizedPage(page, { section, previous }) {
   // Images not represented by a raw text block remain visible through their
   // source page instead of being attached to an arbitrary last question.
   const represented = new Set(page.blocks.flatMap(block => images(block.document)));
-  if (images(page.document).some(id => !represented.has(id)))
-    fragment("页面中另有未确定归属的配图，请对照原稿。", [page.location]);
+  const unrepresented = [];
+  walkBlocks(page.document.blocks, block => {
+    if (block.type === "image" && !represented.has(block.fileId)) unrepresented.push(block);
+  });
+  if (unrepresented.length)
+    fragment("页面中另有未确定归属的配图，请对照原稿。", [page.location], unrepresented);
   return { drafts: [], fragments, records, teachingTables: tables.recognized, tableContext: tables.context,
     ...(unresolvedTable ? {code: "invalid-output", issueDetail: `第 ${page.location.page} 页：表格中的题目、活动或点评尚未可靠区分，已保留在未分配内容中，请对照原稿校对。`} : {}),
     recognition: { resultId: page.resultId, revision: page.revision, rawFileId: page.rawFileId } };

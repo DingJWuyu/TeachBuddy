@@ -74,10 +74,10 @@ export function readTeachingTables(page, {section, previous} = {}) {
   let context = null, recognized = false, partial = false, first = true, numberedScope = false;
   const fragment = (blocks, location) => {
     const value = text(blocks);
-    if (!value.trim()) return;
-    for (let start = 0; start < value.length; start += 20000)
-      fragments.push({id: extractionId(page.resultId, 'table-fragment', fragments.length),
-        text: value.slice(start, start + 20000), locations: [location], disposition: 'unassigned'});
+    if (!value.trim() && !images({blocks}).length) return;
+    fragments.push({id: extractionId(page.resultId, 'table-fragment', fragments.length),
+      text: value.slice(0, 20000), document: {version: 2, blocks: structuredClone(blocks)},
+      locations: [location], disposition: 'unassigned'});
   };
   for (const [order, raw] of page.blocks.entries()) {
     if (furniture.has((raw.sourceLabel ?? raw.block_label)) || ['paragraph_title', 'doc_title'].includes((raw.sourceLabel ?? raw.block_label)) && /^\s*第\s*\d+\s*页/.test(raw.text)) continue;

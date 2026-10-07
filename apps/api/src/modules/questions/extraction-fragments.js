@@ -42,7 +42,8 @@ const continuesQuestion = (q, f) =>
   Boolean(f.continues) && matches(q, f, f.continues) && followsQuestion(q, f);
 const unassigned = (f) => ({
   id: f.id,
-  text: f.text,
+  text: f.document ? f.text.slice(0, 20000) : f.text,
+  ...(f.document ? { document: structuredClone(f.document) } : {}),
   locations: f.locations,
   disposition: "unassigned",
 });

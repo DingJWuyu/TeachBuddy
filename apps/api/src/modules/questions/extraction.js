@@ -617,6 +617,7 @@ export function createExtractionHandler({
         for (const fragment of result.fragments) {
           validateSchema("Fragment", fragment);
           validateLocations(p, m, [fragment]);
+          if (fragment.document) content.validate(p, fragment.document);
         }
         s.db.transaction(() => {
           m = s.get("imports", p, m.id);

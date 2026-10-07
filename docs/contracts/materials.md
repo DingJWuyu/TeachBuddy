@@ -104,6 +104,8 @@ createImport 先原子持久保存原稿绑定和 extraction Job，然后后台�
 
 任务输出必须验证 schema、输入覆盖、题边界、公式、实际配图绑定、原有答案角色和原稿定位，不能照抄 Provider 的 needs_review=false。草稿处置由老师控制；机器必须保留未分配片段与疑点。截断响应只采纳前缀中完整、独立可验证对象，记录 truncated-response，禁止补括号后声称整批成功。已有答案和未提供答案严格区分；识别不生成解答。
 
+未分配 Fragment 可带 `document`（沿用 Document 版本契约，机器稿为 v2），保留表格、数学与图片；`text` 是最多 20000 字符的阅读摘要，完整内容以该 Document 为准。旧纯文字片段继续按 `text` 读取。结构片段不按摘要长度拆成多个重复文稿，保存时沿用 Document 校验及当前账户的附件归属检查；个人资料包和部署备份保留其文稿与文件关系。教师明确归入题干时追加原块及该片段的真实来源，不自动推断其所属题目，也不改原始机器结果。
+
 saveImportReview 全量原子保存当前草稿/片段数组，baseVersion 与 import 比较；running/queued/cancelling 时返回 import-not-editable，先停止或等终态。新草稿 ID 由客户端创建（拆分/手工补充），移除草稿即丢弃该候选，原件保留。已 confirmed 草稿及其 questionId 只读且不可遗漏；客户端不能把 pending 自改为 confirmed，也不能自填 questionId。commitImportDrafts 是唯一入库动作，验证选中草稿无 open 疑点、answerStatus 非 unresolved、正文与图片/公式齐全，在同一事务建立 Questions 并写映射/新 import version。acknowledged 仅用于非阻断的文字/边界复核；missing-figure、uncertain-formula、incomplete-answer、unverified-location 必须 corrected。忽略草稿不能提交。
 
 相同 draftId 永远最多关联一个 Question，重复用新键提交已 confirmed 项也返回既有题映射，不增加题目/材料版本；混合提交时只为未确认项创建对象。这是业务去重，幂等仍遵循原键重放。失败整个选中批次不变。一次确认部分题后，其他草稿继续等待，材料不会因“部分入库”消失。
