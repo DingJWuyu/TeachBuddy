@@ -66,12 +66,19 @@ test('UI：普通预览名称保持，固定疑点可展开并在刷新后保留
   page.on('request', req => { if (req.method() === 'POST' && /\/recognition$/.test(req.url())) recognitionWrites++; });
   await page.route(`**/files/${fileId}/recognition/pages/1?*`, route => route.fulfill({ json: {
     state: 'ready', resultId: randomUUID(), document: { ...doc('校对显示用的固定文本'), version: 2 },
-    issues: [{ code: 'unparsed-math', detail: '第一个公式的分母请对照原页核对。' }, { code: 'layout' }],
+    issues: [
+      { code: 'unparsed-math', detail: '文字中含未加数学定界符的 LaTeX，已保留原文字，请核对公式。' },
+      { code: 'ocr-text-conflict', blockId: 0, box: { x: 0.1, y: 0.2, width: 0.5, height: 0.1 },
+        detail: '这行有不一致的识别结果，请对照原稿核对。' },
+      { code: 'layout' },
+    ],
   } }));
   await selectPage(page);
   const disclosure = page.getByRole('button', { name: '这一页有识别疑点，请对照原页核对', exact: true });
   await expect(disclosure).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.getByText('第一个公式的分母请对照原页核对。', { exact: true })).toBeVisible();
+  await expect(page.getByText('部分公式无法确定格式，原文字已保留，请核对公式。', { exact: true })).toBeVisible();
+  await expect(page.getByRole('listitem').filter({ has: page.getByRole('button', { name: '查看疑点位置', exact: true }) }))
+    .toHaveText('这行有不一致的识别结果，请对照原稿核对。查看疑点位置');
   await expect(page.getByText('请检查原页与识别正文是否一致。', { exact: true })).toBeVisible();
   await disclosure.click();
   await expect(disclosure).toHaveAttribute('aria-expanded', 'false');
@@ -79,6 +86,15 @@ test('UI：普通预览名称保持，固定疑点可展开并在刷新后保留
   await expect(collapsed).toHaveAttribute('aria-hidden', 'true');
   await expect.poll(() => collapsed.evaluate(node => node.getBoundingClientRect().height)).toBe(0);
   await disclosure.click();
+  const originalPage = page.getByRole('button', { name: '原资料 · 第 1 页', exact: true });
+  await originalPage.click();
+  await expect(originalPage).toHaveAttribute('aria-expanded', 'false');
+  await page.getByRole('button', { name: '查看疑点位置', exact: true }).click();
+  await expect(originalPage).toHaveAttribute('aria-expanded', 'true');
+  const issueMark = page.getByLabel('原稿疑点位置', { exact: true });
+  await expect(issueMark).toBeVisible();
+  expect(await issueMark.evaluate(node => ({ left: node.style.left, top: node.style.top,
+    width: node.style.width, height: node.style.height }))).toEqual({ left: '10%', top: '20%', width: '50%', height: '10%' });
   await page.getByLabel('识别正文段落 1', { exact: true }).fill('保留我校对后的文本');
   await page.reload();
   await expect(page.getByLabel('识别正文段落 1', { exact: true })).toHaveValue('保留我校对后的文本');

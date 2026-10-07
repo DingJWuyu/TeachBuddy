@@ -207,7 +207,7 @@ test('公式与图片按需加入，保存重开可编辑，原文字中的美�
   await createClass(page);
   await page.getByRole('button', { name: '公式与图片', exact: true }).click();
   await page.getByRole('button', { name: '公式', exact: true }).click();
-  const formula = page.getByRole('textbox', { name: '课堂补充公式 1源', exact: true });
+  const formula = page.getByRole('textbox', { name: '课堂补充 公式 1源', exact: true });
   await formula.click();
   await formula.pressSequentially('x^2 + 1');
   await expect(formula).toHaveValue('x^2 + 1');
@@ -246,8 +246,8 @@ test('公式与图片按需加入，保存重开可编辑，原文字中的美�
   await expect(rows(page)).toHaveCount(1);
   await page.getByRole('button', { name: '关闭查找记录' }).click();
   await rows(page).getByRole('button', { name: '编辑记录', exact: true }).click();
-  await page.getByRole('button', { name: '删除课堂补充图片 1', exact: true }).click();
-  await page.getByRole('button', { name: '删除课堂补充公式 1', exact: true }).click();
+  await page.getByRole('button', { name: '删除课堂补充 图片 1', exact: true }).click();
+  await page.getByRole('button', { name: '删除课堂补充 公式 1', exact: true }).click();
   await page.getByRole('button', { name: '保存修改', exact: true }).click();
   await expect(page.locator('[data-region=record-editor] [data-save-status]')).toHaveAttribute('data-save-status', 'saved');
   await page.reload();

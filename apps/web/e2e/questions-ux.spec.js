@@ -237,16 +237,19 @@ test('公式、选项与表格可插入和修改，保存重开保留结构', as
   await page.getByLabel('题目标题').fill('结构化题面');
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('选择正确答案。');
   await page.getByRole('button', { name: '插入公式', exact: true }).click();
-  await page.getByRole('textbox', { name: '题干公式 1源', exact: true }).pressSequentially('x^2+1');
+  const formula = page.getByRole('textbox', { name: '题干 公式 1源', exact: true });
+  await formula.click();
+  await formula.pressSequentially('x^2+1');
+  await expect(formula).toHaveValue('x^2+1');
   await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
   await page.getByRole('menuitem', { name: '添加选项或列表', exact: true }).click();
-  await page.getByLabel('题干列表 1用途').selectOption('options');
-  await page.getByLabel('题干列表 1项目 1标号').fill('A');
-  await page.getByLabel('题干列表 1项目 1段落 1', { exact: true }).fill('结果是 1');
+  await page.getByLabel('题干 列表 1用途', { exact: true }).selectOption('options');
+  await page.getByLabel('题干 列表 1项目 1标号', { exact: true }).fill('A');
+  await page.getByLabel('题干 列表 1项目 1 段落 1', { exact: true }).fill('结果是 1');
   await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
   await page.getByRole('menuitem', { name: '添加表格', exact: true }).click();
   await page.locator('.material-table-scroll td').first().getByRole('button', { name: '段落', exact: true }).click();
-  await page.getByLabel('题干表格 1第 1 行第 1 列段落 1', { exact: true }).fill('表格内容');
+  await page.getByLabel('题干 表格 1第 1 行第 1 列 段落 1', { exact: true }).fill('表格内容');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
   await expect(page.getByRole('heading', { name: '结构化题面', exact: true })).toBeVisible();
   await page.reload();
@@ -254,8 +257,10 @@ test('公式、选项与表格可插入和修改，保存重开保留结构', as
   await expect(page.locator('.q-reading-body table')).toContainText('表格内容');
   const [saved] = await records();
   expect(saved.body.blocks.map(block => block.type)).toEqual(['paragraph', 'math', 'list', 'table']);
+  expect(saved.body.blocks[1].latex).toBe('x^2+1');
   await page.getByRole('button', { name: '编辑题目', exact: true }).click();
-  await expect(page.getByLabel('题干列表 1项目 1段落 1', { exact: true })).toHaveValue('结果是 1');
+  await expect(formula).toHaveValue('x^2+1');
+  await expect(page.getByLabel('题干 列表 1项目 1 段落 1', { exact: true })).toHaveValue('结果是 1');
 });
 
 test('新题保存响应丢失后确认原请求，保留后续输入且不重复建题', async ({ page }) => {
