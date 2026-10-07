@@ -1,9 +1,9 @@
 {
-  "verification": "static checks and runner-consumption dryrun only; no installation or inference",
+  "verification": "Candidate installed and ran eight development inputs from an independent clone and fresh model home; baseline new-home installation remains unverified. Static and runner-consumption checks are separate.",
   "files": {
     "README.md": {
-      "bytes": 4468,
-      "sha256": "b7602e7064591ee5541d4631516a8d93756c8fda176384a70a4f7609cbb6cd37"
+      "bytes": 4608,
+      "sha256": "3186da6db9306a0f752c9df6956504fcca0fa8ca1c5fac06092ed8772e00f858"
     },
     "baseline/INSTALL.md": {
       "bytes": 7133,
