@@ -652,6 +652,62 @@ test('关联构造随点变化，改名保持引用，删除依赖可取消并�
   await page.screenshot({ path: info.outputPath('construction-desktop.png') });
 });
 
+test('平面渲染错误显示双语具体原因，修正后可保存重开', async ({ page }, info) => {
+  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+  await addGraph(page, '添加圆 / 椭圆');
+  await page.getByLabel('rx', { exact: true }).fill('0');
+  const error = page.getByRole('alert');
+  await expect(error).toHaveText('半径必须大于零，请将水平半径和垂直半径都设为正数。');
+  await expect(error).toHaveAttribute('title', '半径必须大于零，请将水平半径和垂直半径都设为正数。');
+  await page.screenshot({ path: info.outputPath('radius-error-zh.png'), animations: 'disabled' });
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await expect(error).toHaveText('Radii must be greater than zero. Set both the horizontal and vertical radii to positive values.');
+  await expect(error).toHaveAttribute('title', 'Radii must be greater than zero. Set both the horizontal and vertical radii to positive values.');
+  await page.screenshot({ path: info.outputPath('radius-error-en.png'), animations: 'disabled' });
+  await page.getByLabel('rx', { exact: true }).fill('1');
+  await expect(error).toHaveCount(0);
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: '简体中文 Chinese (Simplified)', exact: true }).click();
+  const radiusSaved = await save(page);
+  expect(radiusSaved.render.state).toBe('ready');
+  await page.reload();
+  await page.getByRole('button', { name: '图形与标注', exact: true }).click();
+  await expect(page.getByLabel('rx', { exact: true })).toHaveValue('1');
+  await expect(error).toHaveCount(0);
+
+  await addGraph(page, '添加函数');
+  await page.getByLabel('expression', { exact: true }).fill('sqrt(-1)');
+  await expect(error).toHaveText('当前窗口内函数无有效值，请调整表达式、定义域或画布范围。');
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await expect(error).toHaveText('The function has no valid values in the current window. Adjust its expression, domain, or canvas range.');
+  await expect(error).toHaveAttribute('title', 'The function has no valid values in the current window. Adjust its expression, domain, or canvas range.');
+  await page.getByLabel('expression', { exact: true }).fill('sin(');
+  await expect(error).toContainText('Invalid expression.');
+  await expect(error).toHaveAttribute('title', '请检查表达式的括号、运算符和分段条件');
+  await page.getByLabel('expression', { exact: true }).fill('x^2');
+  await expect(error).toHaveCount(0);
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: '简体中文 Chinese (Simplified)', exact: true }).click();
+  expect((await save(page)).render.state).toBe('ready');
+
+  await addGraph(page, '添加文字');
+  await page.getByLabel('text', { exact: true }).fill('说明'.repeat(300));
+  await page.getByRole('button', { name: '颜色与样式', exact: true }).click();
+  await page.getByLabel('style-fontSize', { exact: true }).fill('64');
+  await expect(error).toHaveText('文字超出画布，请缩小字号或精简标注。');
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await expect(error).toHaveText('The text exceeds the canvas. Reduce its font size or shorten the label.');
+  await expect(error).toHaveAttribute('title', 'The text exceeds the canvas. Reduce its font size or shorten the label.');
+  await page.getByLabel('text', { exact: true }).fill('说明');
+  await expect(error).toHaveCount(0);
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: '简体中文 Chinese (Simplified)', exact: true }).click();
+  expect((await save(page)).render.state).toBe('ready');
+});
+
 test('空间面和截面保存重开及真实 SVG 下载，错误平面可修正', async ({ page }, info) => {
   await page.getByRole('button', { name: '新建空间图形', exact: true }).click();
   await page.getByRole('button', { name: '正方体示例', exact: true }).click();

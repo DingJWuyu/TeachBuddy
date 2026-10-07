@@ -443,5 +443,8 @@
   "多面体不能退化为平面": "The polyhedron cannot be flat. Adjust the vertex coordinates to form a solid.",
   "当前截面支持凸多面体": "Sections currently support convex polyhedra. Adjust the vertices and faces to make the solid convex.",
   "截平面的法向量不能为零": "The section plane normal cannot be zero. Set at least one of a, b, or c to a nonzero value.",
-  "截平面未切出有面积的截面": "The plane does not produce a section with positive area. Adjust a, b, c, and d so it passes through the solid interior."
+  "截平面未切出有面积的截面": "The plane does not produce a section with positive area. Adjust a, b, c, and d so it passes through the solid interior.",
+  "半径必须大于零": "Radii must be greater than zero. Set both the horizontal and vertical radii to positive values.",
+  "文字超出画布，请缩小字号或精简标注": "The text exceeds the canvas. Reduce its font size or shorten the label.",
+  "当前窗口内函数无有效值": "The function has no valid values in the current window. Adjust its expression, domain, or canvas range."
 }
