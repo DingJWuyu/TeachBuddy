@@ -10,6 +10,7 @@ import JSZip from "jszip";
 import sharp from "sharp";
 import { DOMParser } from "@xmldom/xmldom";
 import { startMaterialsHttp } from "../../web/e2e/fixtures/materials-integration/server.mjs";
+import { runNativePagination } from "../../web/e2e/fixtures/lessons-pagination/native.mjs";
 
 const fixtures = fileURLToPath(new URL("../../web/e2e/fixtures/lessons-pagination/", import.meta.url));
 const binary = process.env.MATERIALS_PANDOC_PATH || "/usr/bin/pandoc";
@@ -18,6 +19,17 @@ const walk = (value, type) => {
   if (!value || typeof value !== "object") return [];
   return [...(value.t === type ? [value] : []), ...Object.values(value).flatMap(v => walk(v, type))];
 };
+
+test("Pandoc v3 real-auth pagination: all options and required figures stay with a normal-size question", { timeout: 240000 }, async () => {
+  const evidence = process.env.R34_PANDOC_EVIDENCE || fs.mkdtempSync(path.join(os.tmpdir(), "lesson-pagination-evidence-"));
+  for (const kind of ["lesson-plan", "handout", "practice"]) {
+    await runNativePagination({ destination: path.join(evidence, `native-${kind}`), kind });
+    await runNativePagination({ destination: path.join(evidence, `native-${kind}-teacher`), kind,
+      includeAnswers: true, includeTeacherNotes: true });
+  }
+  await runNativePagination({ destination: path.join(evidence, "native-long-question"), kind: "practice", lines: 20, longQuestion: true });
+  await runNativePagination({ destination: path.join(evidence, "native-long-narrative"), kind: "practice", lines: 20, longQuestion: "narrative" });
+});
 
 test("Pandoc real HTTP: six rich questions, 24 outputs, editable math readback, isolation and retained sources", { timeout: 240000 }, async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "r34-pandoc-http-"));

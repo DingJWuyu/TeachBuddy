@@ -80,21 +80,18 @@ export function exportTree(lesson, options) {
       }
     } else {
       number++;
-      blocks.push(
-        { ...para(`${number}. ${ref.snapshot.title}`), keepNext: true },
+      const question = { type: "question", blocks: [
+        para(`${number}. ${ref.snapshot.title}`),
         ...filter(ref.snapshot.body.blocks, `${field}/snapshot/body/blocks`),
-      );
+      ] };
+      blocks.push(question);
       if (options.kind !== "lesson-plan" && answerSpaceLines > 0) {
-        // Keep the initial writing area with the question ending. Four lines
-        // fit below even our tallest image on A4; longer spaces must be free
-        // to continue across pages instead of forming an oversized keep chain.
+        // Retain the initial writing area below the required question content.
+        // The rest can flow across pages without enlarging its reading group.
         const attachedLines = Math.min(answerSpaceLines, 4);
-        blocks.at(-1).keepNext = true;
-        for (let i = 0; i < answerSpaceLines; i++)
-          blocks.push({
-            ...para(" "),
-            keepNext: i < attachedLines - 1,
-          });
+        for (let i = 0; i < attachedLines; i++) question.blocks.push(para(" "));
+        for (let i = attachedLines; i < answerSpaceLines; i++)
+          blocks.push(para(" "));
       }
       if (options.includeAnswers && ref.snapshot.solution.blocks.length)
         answers.push(
@@ -148,6 +145,7 @@ export function exportTree(lesson, options) {
       });
       b.items?.forEach((i) => validate(i.blocks));
       b.rows?.forEach((row) => row.forEach((c) => validate(c.blocks)));
+      if (b.blocks) validate(b.blocks);
     });
   validate(blocks);
   validateFormulas(formulas);

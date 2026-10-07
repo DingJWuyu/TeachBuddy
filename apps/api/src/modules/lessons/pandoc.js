@@ -117,11 +117,23 @@ export async function generateDocx(blocks, { files, principal, signal }) {
   const inline = (runs) => runs.flatMap((run) => run.type === "math" ? [math(run.latex)] : text(run.text));
   const styled = (block, keepNext, together = false) => keepNext || together
     ? { t: "Div", c: [attr([["custom-style", keepNext ? "Keep Next" : "Keep Together"]]), [block]] } : block;
-  async function render(items, keepLastNext = false) {
+  async function render(items, keepLastNext = false, keepTogether = false) {
     const result = [];
     for (const [index, block] of items.entries()) {
-      const keepNext = block.keepNext || (keepLastNext && index === items.length - 1);
-      if (block.type === "paragraph" || block.type === "heading") {
+      const keepNext = block.keepNext || (keepLastNext && index === items.length - 1) ||
+        (keepTogether && index < items.length - 1);
+      if (block.type === "question") {
+        // A list starts a reading group with its immediately preceding stem.
+        // Earlier narrative paragraphs can flow independently. An oversized
+        // keep chain makes Word discard even the link to a required tail image.
+        const listIndex = block.blocks.findIndex(item => item.type === "list");
+        const coreStart = listIndex > 2 && block.blocks[listIndex - 1].type === "paragraph" ? listIndex - 1 : 0;
+        if (coreStart) {
+          const [title, ...narrative] = block.blocks.slice(0, coreStart);
+          result.push(...await render([{ ...title, keepNext: true }, ...narrative]));
+        }
+        result.push(...await render(block.blocks.slice(coreStart), keepNext, true));
+      } else if (block.type === "paragraph" || block.type === "heading") {
         const content = inline(block.runs);
         result.push(block.type === "heading"
           ? { t: "Header", c: [block.level, attr(), content] }
@@ -145,14 +157,15 @@ export async function generateDocx(blocks, { files, principal, signal }) {
           const children = first?.type === "paragraph"
             ? [{ ...first, runs: [{ type: "text", text: item.label + " " }, ...first.runs] }, ...rest]
             : [{ type: "paragraph", runs: [{ type: "text", text: item.label }], keepNext: true }, ...item.blocks];
-          result.push(...await render(children, keepNext && i === block.items.length - 1));
+          result.push(...await render(children,
+            (keepNext && i === block.items.length - 1) || (keepTogether && i < block.items.length - 1), keepTogether));
         }
       } else if (block.type === "table") {
         const rows = [];
         for (const [i, row] of block.rows.entries()) {
           const cells = [];
           for (const cell of row) cells.push([attr(), { t: "AlignDefault" }, 1, 1,
-            await render(cell.blocks, keepNext && i === block.rows.length - 1)]);
+            await render(cell.blocks, keepNext && i === block.rows.length - 1, keepTogether)]);
           rows.push([attr(), cells]);
         }
         result.push({ t: "Table", c: [attr(), [null, []],
