@@ -348,9 +348,10 @@ export async function normalizeRecognition({ result, storeAsset }) {
       if (node.tagName === 'br') { append('\n'); return; }
       if (node.tagName === 'eq') {
         const latex = literal(node);
-        if (!latex.trim() || !node.sourceCodeLocation?.endTag || children(node).some(child => child.tagName)) {
+        if (!latex.trim() || node.equationSource?.complete === false ||
+            !node.sourceCodeLocation?.endTag || children(node).some(child => child.tagName)) {
           issue('unparsed-math', '数学节点为空或不完整，已保留原文，请核对公式。');
-          append(`<eq>${latex}${node.sourceCodeLocation?.endTag ? '</eq>' : ''}`);
+          append(node.equationSource?.source ?? `<eq>${latex}${node.sourceCodeLocation?.endTag ? '</eq>' : ''}`);
         } else runs.push({type: 'math', latex});
         return;
       }
@@ -370,8 +371,27 @@ export async function normalizeRecognition({ result, storeAsset }) {
     return output;
   }
   async function typedHtml(value) {
-    return htmlTypedChildren(children(parseFragment(value, {sourceCodeLocationInfo: true,
-      onParseError() { issue('html-recovered', '识别 HTML 存在格式错误，请核对表格与图片。'); }})));
+    // Official eq content is LaTeX, not nested HTML. Protect literal '<' before
+    // parse5 tokenizes it, while leaving character references to decode once.
+    // An unclosed eq ends at its cell/caption boundary, the next eq, or EOF;
+    // retain that complete source fragment as text instead of inventing math.
+    const equations = new Map();
+    let cursor = 0, html = '';
+    for (const match of value.matchAll(/<eq>([\s\S]*?)(<\/eq>|(?=<\/(?:td|th|caption)\s*>|<eq>|$))/gi)) {
+      html += value.slice(cursor, match.index);
+      equations.set(html.length, {source: match[0], complete: !!match[2]});
+      html += `<eq>${match[1].replaceAll('<', '&lt;')}</eq>`;
+      cursor = match.index + match[0].length;
+    }
+    html += value.slice(cursor);
+    const fragment = parseFragment(html, {sourceCodeLocationInfo: true,
+      onParseError() { issue('html-recovered', '识别 HTML 存在格式错误，请核对表格与图片。'); }});
+    const attachSources = node => {
+      if (node.tagName === 'eq') node.equationSource = equations.get(node.sourceCodeLocation?.startOffset);
+      for (const child of children(node)) attachSources(child);
+    };
+    attachSources(fragment);
+    return htmlTypedChildren(children(fragment));
   }
   function sourceContent(raw) {
     if (!raw || typeof raw !== 'object') return '';

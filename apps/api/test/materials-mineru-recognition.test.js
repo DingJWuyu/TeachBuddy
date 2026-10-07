@@ -96,3 +96,52 @@ test('official MinerU typed mathematics and table eq survive HTTP persistence, a
     else console.error(`Retained MinerU HTTP regression: ${directory}`);
   }
 });
+
+test('typed table eq keeps source LaTeX through HTTP persistence and reopen',async()=> {
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'mineru-table-eq-'));
+  const cells=[
+    {source:'<eq>x<y</eq>',runs:[{type:'math',latex:'x<y'}]},
+    {source:'<eq>x<=y</eq>',runs:[{type:'math',latex:'x<=y'}]},
+    {source:'<eq>x&lt;y</eq>',runs:[{type:'math',latex:'x<y'}]},
+    {source:'<eq>x&y</eq>',runs:[{type:'math',latex:'x&y'}]},
+    {source:'<eq>x&amp;lt;y</eq>',runs:[{type:'math',latex:'x&lt;y'}]},
+    {source:'前<eq>x<y</eq><eq>a<=b</eq>后',runs:[{type:'text',text:'前'},
+      {type:'math',latex:'x<y'},{type:'math',latex:'a<=b'},{type:'text',text:'后'}]},
+    {source:'<eq>x<y &amp; z',runs:[{type:'text',text:'<eq>x<y &amp; z'}]},
+  ];
+  const html=`<table>${cells.map(cell=>`<tr><td>${cell.source}</td></tr>`).join('')}</table>`;
+  // Replay the official direct-HTML table branch, without constructing a model.
+  const raw={pages:[{blocks:[{type:'table',bbox:[0,0,1,1],content:[{type:'table_body',content:html}]}]}]};
+  const recognizer={revision:'mineru-pro-2605/document-6',async run({width,height}) {
+    return {raw,pageBlocks:raw.pages[0].blocks,width,height,assets:[],originalAssets:[],derivations:[]};
+  }};
+  let world,passed=false;
+  try {
+    world=await createIntegration({directory,workbench:{recognition:{recognizer}}});
+    let {client}=await registerMath(world,'mineru-table-eq@example.test');
+    const file=await upload(client,sources[0]);
+    const accepted=await write(client,`${base}/${file.id}/preview`,{});
+    assert.equal((await waitJob(client,accepted.json.id)).state,'succeeded');
+    const preview=(await client.request('GET',`${base}/${file.id}/preview`)).json;
+    const endpoint=`${base}/${file.id}/recognition`,query=`?renditionFileId=${preview.renditionFileId}`;
+    const job=await write(client,endpoint,{renditionFileId:preview.renditionFileId,pages:[1]});
+    assert.equal((await waitJob(client,job.json.id)).state,'succeeded');
+    const page=(await client.request('GET',`${endpoint}/pages/1${query}`)).json;
+    assert.equal(page.state,'ready');
+    const jar=client.jar;
+    await world.close();world=await createIntegration({directory});client=world.client();client.jar=jar;
+    const reopened=(await client.request('GET',`${endpoint}/pages/1${query}`)).json;
+    assert.deepEqual(reopened.document,page.document);
+    assert.equal(reopened.blocks[0].sourceContent,html);
+    assert.deepEqual(JSON.parse((await client.request('GET',`${base}/${reopened.rawFileId}/content`)).text),raw);
+    assert.deepEqual(reopened.document.blocks[0].rows.map(row=>row[0].blocks),
+      cells.map(cell=>[{type:'paragraph',runs:cell.runs}]),
+      JSON.stringify({sourceContent:html,before:page.document,reopened:reopened.document,issues:reopened.issues}));
+    assert.deepEqual(reopened.issues.map(issue=>issue.code),['unparsed-math']);
+    passed=true;
+  } finally {
+    await world?.close();
+    if(passed)fs.rmSync(directory,{recursive:true,force:true});
+    else console.error(`Retained MinerU table eq regression: ${directory}`);
+  }
+});
