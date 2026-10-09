@@ -96,7 +96,7 @@ export async function mountGeoGebra(container, { base64 = '', appName = 'graphin
       applet.inject(host.id);
     } catch (error) { finish(error); }
   });
-  let revision = 0; let busy = false; let disposed = false;
+  let revision = 0; let busy = false; let disposed = false; let beforeSnapshot = null;
   let fingerprint = api.getXML(); let notifyTimer;
   const listeners = [];
   function assertLive() { if (disposed || lifetime.signal.aborted) throw new GeoGebraError('disposed', '编辑器已关闭。'); }
@@ -154,46 +154,84 @@ export async function mountGeoGebra(container, { base64 = '', appName = 'graphin
     if (typeof content !== 'string' || !content) throw new GeoGebraError('file', 'GeoGebra 未返回完整作品。');
     return { revision, base64: content };
   }
+  // Leaving the work must not wait for an asynchronous callback. During a batch,
+  // only the complete construction captured before its first operation is safe.
+  function serializeNow() {
+    assertLive();
+    if (busy) {
+      if (!beforeSnapshot) throw new GeoGebraError('busy', '正在修改作品，请稍后保存。');
+      return { ...beforeSnapshot };
+    }
+    sync(); const expected = revision;
+    const base64 = api.getBase64();
+    assertLive(); sync();
+    if (revision !== expected) throw new GeoGebraError('conflict', '读取作品时画布发生修改，请重新保存。', { revision });
+    if (typeof base64 !== 'string' || !base64) throw new GeoGebraError('file', 'GeoGebra 未返回完整作品。');
+    return { revision, base64 };
+  }
   async function load(content) {
     await fileCallback(callback => api.setBase64(content, callback), '作品恢复未完成，请保留原稿后重试。', lifetime.signal);
     assertLive(); registerListeners(); api.setUndoPoint();
   }
-  async function apply({ revision: expected, operations }) {
+  async function apply({ revision: expected, operations, signal: operationSignal }) {
+    const abortError = () => new DOMException('修改已取消。', 'AbortError');
+    const checkCanceled = () => { if (operationSignal?.aborted || lifetime.signal.aborted) throw abortError(); };
+    checkCanceled();
     check(expected);
     try { validateOperations(operations, api.getAllObjectNames()); }
     catch (error) { throw new GeoGebraError('operation', error.message); }
-    const before = await serialize();
+    const before = serializeNow();
+    checkCanceled();
     check(expected);
-    busy = true; const previousInert = container.inert; container.inert = true;
+    beforeSnapshot = before; busy = true; const previousInert = container.inert; container.inert = true;
     api.stopAnimation(); api.setErrorDialogsActive(false); api.setRepaintingActive(false);
     let failure;
     try {
       for (let index = 0; index < operations.length; index += 1) {
         let timer;
+        const cancelSignals = [operationSignal, lifetime.signal].filter(Boolean);
+        let abort;
         try {
+          checkCanceled();
+          const canceled = new Promise((_, reject) => {
+            abort = () => reject(abortError());
+            for (const signal of cancelSignals) signal.addEventListener('abort', abort, { once: true });
+            if (cancelSignals.some(signal => signal.aborted)) abort();
+          });
           await Promise.race([
             executeOperation(api, operations[index]),
             new Promise((_, reject) => { timer = setTimeout(() => reject(new GeoGebraError('command-timeout', 'GeoGebra 构造未完成，请重新加载画布后继续。')), 30000); }),
+            canceled,
           ]);
+          checkCanceled();
           assertLive();
         } catch (error) {
+          if (error.name === 'AbortError') { error.operationIndex = index; throw error; }
           throw new GeoGebraError(error.code === 'command-timeout' ? 'command-timeout' : 'operation', error.message || String(error), { operationIndex: index });
-        } finally { clearTimeout(timer); }
+        } finally {
+          clearTimeout(timer);
+          for (const signal of cancelSignals) signal.removeEventListener('abort', abort);
+        }
       }
+      checkCanceled();
       api.setUndoPoint();
     } catch (error) {
       failure = error;
-      if (error.code === 'command-timeout') {
+      if (error.code === 'command-timeout' || error.name === 'AbortError') {
         // An official lazy command may still complete later. Remove this instance
         // rather than let that late command alter a recovered construction.
-        failure.recoveryBase64 = before.base64; destroy(); onError?.(failure);
+        failure.recoveryBase64 = before.base64;
+        const wasDisposed = disposed;
+        destroy();
+        if (!wasDisposed) onError?.(failure);
       } else {
+        if (disposed) throw abortError();
         try { await load(before.base64); }
         catch (rollbackError) { failure = new GeoGebraError('rollback', '修改失败，恢复也未完成。请保留原稿并重新打开。', { cause: error, rollbackError, recoveryBase64: before.base64 }); destroy(); onError?.(failure); }
       }
     } finally {
       if (!disposed) { api.setRepaintingActive(true); api.setErrorDialogsActive(true); }
-      busy = false; container.inert = previousInert;
+      busy = false; beforeSnapshot = null; container.inert = previousInert;
       if (!disposed) { sync(); notify(failure ? 'rollback' : 'assistant'); }
     }
     if (failure) throw failure;
@@ -203,10 +241,10 @@ export async function mountGeoGebra(container, { base64 = '', appName = 'graphin
     check(expected);
     if (typeof content !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(content)) throw new GeoGebraError('file', '作品内容不是有效的 GGB 文件。');
     const before = await serialize(); check(expected);
-    busy = true; const previousInert = container.inert; container.inert = true;
+    beforeSnapshot = before; busy = true; const previousInert = container.inert; container.inert = true;
     try { await load(content); }
-    catch (error) { await load(before.base64); throw error; }
-    finally { busy = false; container.inert = previousInert; sync(); notify('restore'); }
+    catch (error) { if (!disposed) await load(before.base64); throw error; }
+    finally { busy = false; beforeSnapshot = null; container.inert = previousInert; if (!disposed) { sync(); notify('restore'); } }
     return read();
   }
   function history(action) {
@@ -225,5 +263,5 @@ export async function mountGeoGebra(container, { base64 = '', appName = 'graphin
     if (next !== currentLanguage) { api.setLanguage(next); currentLanguage = next; }
   }
   lifetime.signal.addEventListener('abort', destroy, { once: true });
-  return { read, serialize, apply, restore, undo: () => history('undo'), redo: () => history('redo'), setLanguage, destroy };
+  return { read, serialize, serializeNow, apply, restore, undo: () => history('undo'), redo: () => history('redo'), setLanguage, destroy };
 }

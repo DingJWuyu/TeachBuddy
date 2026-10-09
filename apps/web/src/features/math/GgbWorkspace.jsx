@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GeoGebraEditor } from './geogebra/index.js';
 import { MathWebAssistant } from './web-ai/MathWebAssistant.jsx';
@@ -7,8 +7,8 @@ import { Icon } from '../workbench/icons.jsx';
 import { mathStatusLabel } from './WorkspaceHome.jsx';
 import './ggb-workspace.css';
 
-export default function GgbWorkspace({ draft, accountKey, busy, pending, status, message, conflict, flushRef,
-  onChangeSource, onDirty, onUnchanged, onTitle, onHome, onSave, onError, onHistory, onRestore, onOpenServer, children }) {
+export default function GgbWorkspace({ draft, accountKey, busy, pending, status, message, conflictNotice, flushRef,
+  onChangeSource, onDirty, onUnchanged, onTitle, onHome, onSave, onError, onHistory, onRestore, children }) {
   const { t } = useTranslation('math');
   const [controller, setController] = useState(null);
   const [reading, setReading] = useState(false);
@@ -23,9 +23,49 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
   const serializedBase64 = useRef(initialBase64.current);
   const initializing = useRef(true);
   const interacted = useRef(false);
+  const interactionSequence = useRef(0);
+  const serializedInteraction = useRef(0);
+  const serializedObjects = useRef('');
   const initializedController = useRef(null);
   const assistant = useCallback(() => <MathWebAssistant controller={draft.deletedAt ? null : controller} title={draft.title} accountKey={accountKey}/>, [controller, draft.title, draft.deletedAt, accountKey]);
   useAuxiliaryAssistant(assistant);
+
+  const captureNow = useCallback(() => {
+    if (!controller || current.current.draft.deletedAt) return;
+    const snapshot = controller.serializeNow();
+    let objects;
+    try { objects = JSON.stringify(controller.read().objects); }
+    catch (error) { if (error.code !== 'busy') throw error; }
+    if (!interacted.current && objects === serializedObjects.current) return;
+    if (snapshot.revision === serializedRevision.current) return;
+    const latest = current.current.draft;
+    if (snapshot.base64 !== serializedBase64.current) {
+      current.current.onChangeSource({ ...latest.source, base64: snapshot.base64 }, true);
+    } else if (dirtyMarker.current) current.current.onUnchanged(...dirtyMarker.current);
+    serializedBase64.current = snapshot.base64;
+    serializedRevision.current = snapshot.revision;
+    if (objects) serializedObjects.current = objects;
+    serializedInteraction.current = interactionSequence.current;
+    dirtyMarker.current = null;
+  }, [controller]);
+
+  // Capture before the editor's passive cleanup destroys the official API.
+  useLayoutEffect(() => {
+    if (!controller) return;
+    const preserve = () => {
+      try { captureNow(); } catch (error) { if (error.code !== 'disposed') current.current.onError(error); }
+    };
+    const onVisibility = () => { if (document.visibilityState === 'hidden') preserve(); };
+    window.addEventListener('beforeunload', preserve);
+    window.addEventListener('pagehide', preserve);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      preserve();
+      window.removeEventListener('beforeunload', preserve);
+      window.removeEventListener('pagehide', preserve);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [controller, captureNow]);
 
   const flush = useCallback(() => {
     clearTimeout(timer.current);
@@ -43,6 +83,8 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
             serializedBase64.current = snapshot.base64;
             serializedRevision.current = snapshot.revision;
           }
+          serializedObjects.current = JSON.stringify(controller.read().objects);
+          serializedInteraction.current = interactionSequence.current;
           dirtyMarker.current = null;
           return snapshot;
         } catch (error) {
@@ -69,15 +111,29 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
     initializing.current = true;
     const initialize = initialBase64.current ? controller.serialize().then(snapshot => {
       serializedRevision.current = snapshot.revision; serializedBase64.current = snapshot.base64;
+      serializedObjects.current = JSON.stringify(controller.read().objects);
+      serializedInteraction.current = interactionSequence.current;
     }) : flush();
     if (initialBase64.current) readTask.current = initialize;
     initialize.catch(error => { if (live.current) current.current.onError(error); }).finally(() => { initializing.current = false; });
   }, [controller, flush]);
 
+  useEffect(() => {
+    // Saving settles prior gestures; gestures made during the request stay dirty.
+    if (status === '已保存' && interactionSequence.current === serializedInteraction.current) interacted.current = false;
+  }, [status]);
+  function interactedWithCanvas() {
+    interacted.current = true;
+    interactionSequence.current += 1;
+  }
   function changed(snapshot) {
     if (snapshot.origin !== 'manual') interacted.current = true;
     // Imported files emit layout notifications before the user starts editing.
-    if (snapshot.origin === 'manual' && !interacted.current) { serializedRevision.current = snapshot.revision; return; }
+    if (snapshot.origin === 'manual' && !interacted.current) {
+      if (JSON.stringify(snapshot.objects) === serializedObjects.current) { serializedRevision.current = snapshot.revision; return; }
+      // Native animations change object values without another pointer gesture.
+      interacted.current = true;
+    }
     if (initializing.current || current.current.draft.deletedAt || snapshot.revision === serializedRevision.current) return;
     if (!dirtyMarker.current) dirtyMarker.current = [current.current.draft, current.current.status];
     current.current.onDirty();
@@ -120,8 +176,8 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
         </div>
       </header>
       {message && <div className="math-message" role="alert">{message}</div>}
-      {conflict && <div className="math-message" role="alert">{t('服务器已有新版本，当前画布已保留。可以读取服务器作品重新核对。')}<button disabled={busy || !!pending} onClick={onOpenServer}>{t('读取服务器作品')}</button></div>}
-      {draft.deletedAt ? <div className="math-ggb-archived">{t('已归档，恢复后可继续编辑。')}</div> : <div className="math-ggb-canvas" onPointerDownCapture={() => { interacted.current = true; }} onKeyDownCapture={() => { interacted.current = true; }}>
+      {conflictNotice}
+      {draft.deletedAt ? <div className="math-ggb-archived">{t('已归档，恢复后可继续编辑。')}</div> : <div className="math-ggb-canvas" onPointerDownCapture={interactedWithCanvas} onKeyDownCapture={interactedWithCanvas} onWheelCapture={interactedWithCanvas}>
         <GeoGebraEditor initialBase64={initialBase64.current} appName={draft.source.appName} onReady={setController} onChange={changed} onError={onError}/>
       </div>}
     </section>

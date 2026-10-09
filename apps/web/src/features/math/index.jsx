@@ -305,6 +305,8 @@ function MathSession({ transport, route }) {
   const history = useDraftHistory();
   const ggbFlush = useRef(null);
   const [editorSession, setEditorSession] = useState(0);
+  const editorSessionRef = useRef(editorSession);
+  editorSessionRef.current = editorSession;
   const [historyOpen, setHistoryOpen] = useState(false);
   useEffect(() => {
     const kind = draft?.source?.kind;
@@ -969,7 +971,7 @@ function MathSession({ transport, route }) {
     if (draftRef.current?.source.kind === "geogebra") {
       try { await ggbFlush.current?.(); } catch (error) { handleError(error); return; }
     }
-    if (!hasContent(draft) && !pending && !busy) { setDraft(null); draftRef.current = null; }
+    if (!hasContent(draftRef.current) && !pending && !busy) { setDraft(null); draftRef.current = null; }
     patchView({ screen: 'home', exportOpen: false, usageOpen: false });
     if (route?.workId) shell?.navigate('/math');
     setMessage('');
@@ -1075,11 +1077,18 @@ function MathSession({ transport, route }) {
         <button onClick={identify}>{t("重新验证")}</button>
       </main>
     );
-  if (!home && !readOnly && draft?.source.kind === 'geogebra') return <GgbWorkspace key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflict={conflict} flushRef={ggbFlush}
-    onChangeSource={(next, touched) => { const current = draftRef.current; if (current?.source.kind === 'geogebra' && current.source.base64 !== next.base64) edit({ ...current, source: next, ggbTouched: current.ggbTouched || touched }, false); }}
-    onUnchanged={(previous, previousStatus) => { if (previousStatus === '已保存' && draftRef.current === previous && !inFlight.current && !pending) setStatus('已保存'); }}
+  const serverVersion = typeof conflict === 'object' ? conflict?.version : conflict;
+  const conflictNotice = conflict && draft ? <div className="math-message" role="alert">
+    {t('服务器版本')} {serverVersion}{t('，本地版本')} {draft.version}
+    <button disabled={busy || !!pending} onClick={() => { edit({ ...draftRef.current, version: serverVersion }, false); setConflict(null); setMessage(t('请核对本地修改后保存')); }}>{t('以服务器版本为基线保留本地稿')}</button>
+    <button disabled={busy || !!pending} onClick={() => save(true)}>{t('另存作品')}</button>
+    <button disabled={busy || !!pending} onClick={() => open({ id: draftRef.current.id })}>{t('读取服务器作品')}</button>
+  </div> : null;
+  if (!home && !readOnly && draft?.source.kind === 'geogebra') return <GgbWorkspace key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflictNotice={conflictNotice} flushRef={ggbFlush}
+    onChangeSource={(next, touched) => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'geogebra') return; if (current.source.base64 !== next.base64 || (!current.id && touched && !current.ggbTouched)) edit({ ...current, source: next, ggbTouched: current.ggbTouched || touched }, false); }}
+    onUnchanged={(previous, previousStatus) => { if (editorSessionRef.current === editorSession && previousStatus === '已保存' && draftRef.current === previous && !inFlight.current && !pending) setStatus('已保存'); }}
     onDirty={() => setStatus('未保存')} onTitle={title => edit({ ...draftRef.current, title }, false)} onHome={goHome} onSave={() => save()} onError={handleError}
-    onHistory={() => setHistoryOpen(true)} onRestore={() => deletion(false)} onOpenServer={() => open({ id: draft.id })}>
+    onHistory={() => setHistoryOpen(true)} onRestore={() => deletion(false)}>
     {confirmationDialog}
     <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
   </GgbWorkspace>;
@@ -1132,20 +1141,7 @@ function MathSession({ transport, route }) {
             {message}
           </div>
         )}
-        {conflict && (
-          <div className="math-message">
-            {t("服务器版本")} {conflict}{t("，本地版本")} {draft.version}
-            <button
-              onClick={() => {
-                setDraft({ ...draft, version: conflict });
-                setConflict(null);
-                setMessage(t("请核对本地修改后保存"));
-              }}
-            >
-              {t("以服务器版本为基线保留本地稿")}
-            </button>
-          </div>
-        )}
+        {conflictNotice}
         {!home && draft && <ModulePresence present={!!viewScene.exportOpen} mode="collapse">
           <section id="math-export-options" className="math-export-options" aria-label={t("导出作品")}>
             <label>{t("文件格式")}<select

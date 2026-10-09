@@ -16,7 +16,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 模块 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | GeoGebra 与 DeepSeek 网页 AI 真实闭环自验完成，独立核验中；未集成 preview |
+| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | GeoGebra 与 DeepSeek 网页 AI 真实闭环自验完成；独立核验发现即时离开丢稿、执行中取消及保存冲突处理问题，修复复验中；未集成 preview |
 | 日程 | `TeacherWorkspace-schedule` | `work/schedule` | 接手日程，不包含班级教学；等待用户指定任务 |
 
 两处现场保留供用户持续讨论和后续开发，任务完成并集成验证后按收尾规则清理；接续实现前由总控核对基线。模块自测使用隔离实例，公共文件和 preview 体验入口仍由总控协调。

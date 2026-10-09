@@ -14,6 +14,7 @@ export default function GeoGebraEditor({ initialBase64 = '', appName = 'graphing
   const callbacks = useRef({ onReady, onChange, onError });
   callbacks.current = { onReady, onChange, onError };
   const initial = useRef(initialBase64);
+  const recovering = useRef(false);
   const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
@@ -29,7 +30,13 @@ export default function GeoGebraEditor({ initialBase64 = '', appName = 'graphing
         if (failure.recoveryBase64) {
           initial.current = failure.recoveryBase64;
           controllerRef.current = null;
-          setStatus('error'); setError(failure.message); callbacks.current.onReady?.(null);
+          callbacks.current.onReady?.(null);
+          if (failure.name === 'AbortError') {
+            recovering.current = true;
+            setStatus('loading'); setError(''); setAttempt(value => value + 1);
+            return;
+          }
+          setStatus('error'); setError(failure.message);
         }
         callbacks.current.onError?.(failure);
       },
@@ -38,6 +45,10 @@ export default function GeoGebraEditor({ initialBase64 = '', appName = 'graphing
       editor = controller; controllerRef.current = controller;
       controller.setLanguage(languageRef.current);
       setStatus('ready'); callbacks.current.onReady?.(controller);
+      if (recovering.current) {
+        recovering.current = false;
+        callbacks.current.onChange?.({ ...controller.read(), origin: 'restore' });
+      }
     }).catch(failure => {
       if (lifetime.signal.aborted) return;
       setStatus('error'); setError(failure.message); callbacks.current.onError?.(failure);

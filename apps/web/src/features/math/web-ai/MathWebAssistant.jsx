@@ -63,7 +63,7 @@ export function MathWebAssistant({ controller, title, accountKey }) {
         if (!proposal.operations.length) { append({ role: 'assistant', text: proposal.message }); setStage(''); return; }
         setStage(t('正在修改画布'));
         try {
-          const after = await captured.apply({ revision: current.revision, operations: proposal.operations });
+          const after = await captured.apply({ revision: current.revision, operations: proposal.operations, signal: lifetime.signal });
           execution = { ok: true, operations: proposal.operations, revision: after.revision, saved: false };
           append({ role: 'tool', state: 'applied', text: t('已更新画布'), operations: proposal.operations });
           lifetime.signal.throwIfAborted();
