@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { workbenchPaths } from '@refatos/shared';
 import { createEnv, env as defaultEnv } from './config/env.js';
 import { createDataStore } from './core/dataStore.js';
@@ -36,7 +37,11 @@ export function createApp(options = {}) {
       }
     };
   }
-  const workbench = options.workbench ?? createWorkbench({ env: runtimeEnv, logger: options.workbenchLogger, clock: options.workbenchClock });
+  const webAssetDirectory = options.webMiddleware || !runtimeEnv.workbench.webDist
+    ? fileURLToPath(new URL('../../web/public/', import.meta.url))
+    : path.resolve(runtimeEnv.workbench.webDist);
+  const workbench = options.workbench ?? createWorkbench({ env: runtimeEnv, logger: options.workbenchLogger,
+    clock: options.workbenchClock, mathRuntimeDirectory: path.join(webAssetDirectory, 'vendor/math/geogebra') });
   let dataStore;
   try {
     // A preconstructed fixture must use the same real page/session verification

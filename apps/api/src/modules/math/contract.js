@@ -3,6 +3,7 @@ import { parameterOnGrid } from "../../../../../packages/shared/src/math/dynamic
 import { ContractError } from "../../workbench/problems.js";
 import yauzl from "yauzl";
 import { crc32 } from "node:zlib";
+import { validateWorkshopSourceShape } from "../../../../../packages/shared/src/math/workshop.js";
 export { contract, validate } from "../../workbench/content/mathSchema.js";
 export function mathError(type, field = "", reason = type, status = 422) {
   return new ContractError(status, {
@@ -17,8 +18,12 @@ export function validateSourceRelations(source) {
   };
   if (source.schemaVersion !== 1)
     throw mathError("unsupported-work-version", "/source/schemaVersion");
-  if (!["formula", "plane", "space", "dynamic", "html", "geogebra"].includes(source.kind))
+  if (!["formula", "plane", "space", "dynamic", "html", "geogebra", "workshop"].includes(source.kind))
     throw mathError("unsupported-work-version", "/source/kind");
+  if (source.kind === "workshop") {
+    try { validateWorkshopSourceShape(source); }
+    catch (error) { throw workshopContractError(error); }
+  }
   validateDynamic(source);
   const view = source.scene?.viewport ?? source.viewport;
   if (view && (view.xMin >= view.xMax || view.yMin >= view.yMax))
@@ -55,10 +60,11 @@ export function validateSourceRelations(source) {
 // Native GGB files are ZIP archives. Bound both their stored and expanded sizes,
 // and read every entry so corrupt compression, lengths and CRCs cannot be saved.
 export async function validateGeoGebraSource(source) {
-  if (source.kind !== "geogebra") return;
-  const bad = () => mathError("invalid-math-source", "/source/base64", "invalid-geogebra-file");
-  const bytes = Buffer.from(source.base64, "base64");
-  if (bytes.toString("base64") !== source.base64 || !bytes.length) throw bad();
+  if (source.kind !== "geogebra" && !(source.kind === "workshop" && source.graph)) return;
+  const base64 = source.kind === "workshop" ? source.graph.base64 : source.base64;
+  const bad = () => mathError("invalid-math-source", source.kind === "workshop" ? "/source/graph/base64" : "/source/base64", "invalid-geogebra-file");
+  const bytes = Buffer.from(base64, "base64");
+  if (bytes.toString("base64") !== base64 || !bytes.length) throw bad();
   const expandedLimit = 16 * 1024 * 1024;
   try {
     await new Promise((resolve, reject) => {
@@ -97,6 +103,11 @@ export async function validateGeoGebraSource(source) {
   } catch {
     throw bad();
   }
+}
+
+export function workshopContractError(error) {
+  if (error?.code !== "invalid-workshop") return error;
+  return mathError("invalid-math-source", error.field, error.reason);
 }
 
 export function validateDynamic(source) {

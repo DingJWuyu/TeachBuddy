@@ -18,7 +18,7 @@ import { fileMigrations } from "../files/migrations.js";
 import { jobMigrations } from "../jobs/migrations.js";
 import { recognitionMigrations } from '../recognition/migrations.js';
 import { validateSchema } from "../content/schema.js";
-import { rendererVersion } from "../../modules/math/render.js";
+import { supportedRendererVersions } from "../../modules/math/render.js";
 import { createMutations } from "../mutations.js";
 import { createMigrationRunner } from "../migrations.js";
 import {
@@ -92,7 +92,7 @@ function contentSchemas(db) {
     }
     if (
       value.schemaVersion !== undefined &&
-      ["formula", "plane", "space", "dynamic", "html", "geogebra"].includes(value.kind)
+      ["formula", "plane", "space", "dynamic", "html", "geogebra", "workshop"].includes(value.kind)
     ) {
       if (value.schemaVersion !== 1)
         throw new Error("Unsupported mathematical source version");
@@ -112,7 +112,7 @@ function contentSchemas(db) {
       )
         throw new Error("Missing or foreign file references");
       if (key === "rendererVersion" && typeof item === "string") {
-        if (item !== rendererVersion)
+        if (!supportedRendererVersions.has(item))
           throw new Error("Unsupported renderer version");
         found.set("math-renderer", item);
       }

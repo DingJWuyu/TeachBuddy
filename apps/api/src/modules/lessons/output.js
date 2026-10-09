@@ -1,5 +1,6 @@
 import { validateFormulas } from "./formula.js";
 import { materialsError } from "../../workbench/jobs/index.js";
+import { visibleWorkshopFormulas } from "../../../../../packages/shared/src/math/workshop.js";
 export { generateDocx } from "./pandoc.js";
 const para = (text) => ({ type: "paragraph", runs: [{ type: "text", text }] });
 const heading = (text) => ({
@@ -67,7 +68,14 @@ export function exportTree(lesson, options) {
       if (options.kind !== "practice") {
         const source = ref.snapshot.source;
         blocks.push({ ...para(ref.snapshot.title), keepNext: true });
-        if (source.kind === "formula") {
+        if (source.kind === "workshop") {
+          for (const formula of visibleWorkshopFormulas(source)) {
+            const index = source.formulas.findIndex(item => item.id === formula.id);
+            blocks.push({ type: "math", latex: formula.latex, field: `${field}/snapshot/source/formulas/${index}/latex` });
+            if (formula.includeCaption && formula.caption) blocks.push(para(formula.caption));
+          }
+          if (ref.snapshot.graphPosterFileId) blocks.push({ type: "image", fileId: ref.snapshot.graphPosterFileId, alt: ref.snapshot.title, widthMm: 150, field });
+        } else if (source.kind === "formula") {
           blocks.push({ type: "math", latex: source.latex, field: `${field}/snapshot/source/latex` });
           if (source.includeCaption && source.caption) blocks.push(para(source.caption));
         } else if (source.kind === "html") blocks.push(para("交互演示见单独文件"));
