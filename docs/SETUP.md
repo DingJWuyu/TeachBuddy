@@ -14,7 +14,7 @@ preview 由总控协调集成；模块 session 在独立端口、数据库和文
 
 ## 新的隔离环境
 
-服务端已验证基线是 Linux、Node.js 22.23.2、npm workspaces 与 OpenSSL；使用锁文件安装依赖。Office、PDF、OCR 的额外依赖按下节准备，未配置这些工具不影响手动模块及账户入口启动。新机器使用以下步骤，不需要任何旧实例数据库。
+服务端已验证基线是 Linux、Node.js 22.23.2、npm workspaces 与 OpenSSL；使用锁文件安装依赖。Office、PDF、OCR 和数学运行时的额外依赖按对应章节准备；数学资产必须先构建，再启动 Web。新机器使用以下步骤，不需要任何旧实例数据库。
 
 1. 在检出根目录执行 `npm ci`，再 `cp .env.example .env`、`chmod 600 .env`。为本实例准备独立的持久数据目录和 TLS 证书，例如：
 
@@ -31,7 +31,7 @@ preview 由总控协调集成；模块 session 在独立端口、数据库和文
    最后一条命令生成 `AUTH_CODE_SECRET`，填入私有配置并持久保留；证书仅用于本机开发，浏览器首次访问需信任它。正式环境使用对应域名的受信任证书。
 
 2. 填写 `.env`：开发模式 `NODE_ENV=development`，独立 `PORT` 与一致的 `WORKBENCH_PUBLIC_ORIGIN=https://localhost:<端口>`；数据库、附件、日志及证书使用刚准备的绝对路径。`.env` 不展开 `$HOME`，需填写展开后的值。真实账户服务要求配置 `SMTP_HOST`、`SMTP_FROM` 及邮件服务所需认证参数，缺必需配置会拒绝启动；注册与找回还要求邮件服务器实际可达。密钥与 SMTP 凭证不提交。
-3. 执行 `npm run dev`。该入口准备数学静态资产，然后运行同源 HTTPS、Vite 热更新与 API 自动重启。首次启动创建空库并迁移；缺少认证密钥、有效 origin 或证书会明确失败。
+3. 按[数学运行依赖](#数学运行依赖)构建本地引擎并安装 Chromium，再执行 `npm run dev`。该入口校验已构建的数学运行时、准备公式资源与扩展下载包，然后运行同源 HTTPS、Vite 热更新与 API 自动重启。首次启动创建空库并迁移；缺少认证密钥、有效 origin 或证书会明确失败。
 4. 访问配置的地址，检查 `/api/health` 和实际登录页面；完成注册、保存与刷新读回后再判断相应业务可用。自动验证优先使用[已有隔离 harness](acceptance/README.md)，无需真实邮件账户。
 
 ### 持久用户服务
@@ -96,6 +96,25 @@ export QUESTIONS_XPDF_PDFTOHTML="$xpdfHome/xpdf-tools-linux-4.06/bin64/pdftohtml
 ```
 
 启动 API、HTTP 测试和上述浏览器验证时使用同一配置。读取在已有 Bubblewrap 禁网沙箱内逐页执行，输入只读，输出写入独立临时目录并在结束后清理，沿用时间与内存限制。工具缺失或失败时原稿保留、整理任务失败，修复配置后可重试；不静默退回会串栏的路径。Xpdf 包声明 GPL v2 或 v3，重分发二进制需保留包内 README、手册、COPYING 和 COPYING3；本仓库只调用外部工具，不收录其二进制或源码。
+
+## 数学运行依赖
+
+首次检出安装 npm 依赖后，在仓库根目录执行：
+
+```bash
+npm run math:geogebra:build
+npx playwright install chromium
+```
+
+构建需要 Linux x86-64、Python 3.12 或更新版本、`curl`，以及可访问清单中公开源码和依赖仓库的网络。构建器自动获取固定 GeoGebra 源码、JDK 和 Gradle 依赖，核对摘要并应用仓库内补丁。来源、版本和摘要在 `tools/geogebra/manifest.json`，依赖校验在其 `verification/`，入口为 `scripts/math-support/geogebra-build.py`；默认缓存位于 `tools/geogebra/.cache`，产物位于 `apps/web/public/vendor/math/geogebra`。忽略的缓存和产物可从这些入库输入重建，不从旧工作树或测试产物复制。
+
+`npm run dev`、Web 的 dev/build 前置步骤只执行运行时 `--check`；缺失或输入已改变时明确失败，重新执行上述构建命令。公式字体、MathJax 和扩展 ZIP 由同一资产准备入口生成。正式固定构建将这些资源带入 Web dist，API 按实际 Web 资产根目录读取 `vendor/math/geogebra`：开发使用 public，固定构建使用 `WORKBENCH_WEB_DIST`。API 与浏览器必须使用同一候选资产；缺失运行时是服务错误。
+
+数学图形保存与输出在服务端使用生产依赖 Playwright 和单独安装的 Chromium；只运行 `npm ci` 不保证浏览器可执行文件存在。若宿主缺少浏览器系统库，按 Playwright 安装提示补齐，Linux 可使用 `npx playwright install --with-deps chromium`。纯公式渲染不启动 GeoGebra。部署账户与安装账户不同或移动浏览器缓存时，需重新核对 Chromium 可执行路径和实际图形保存；不能只检查服务进程。
+
+制作和下载物使用本地数学运行时，不请求 GeoGebra 官方服务；DeepSeek 网页 AI 仍需网络、正常登录账号及[浏览器扩展](../extensions/math-web-ai/README.md)。扩展 ZIP 随 Web 资产准备生成，安装从产品连接面板进入。全站离线不属于这一能力。
+
+GeoGebra 源码按 EUPL-1.2 使用，Giac、GMP、MPFR、字体及其他依赖保留各自许可。`tools/geogebra/NOTICE.txt`、`manifest.json` 与 `licenses/` 是重分发核对入口，课堂 ZIP 同样携带运行时、许可和源码重建材料。构建排除官方 UI 图片、样式、语言包、部署加载器和在线服务，自有页面保留 GeoGebra 署名。Giac 已提供固定源码与版本对应依据；上游第三方 WASM、静态库的位级复现及整体商用许可审定没有完成，不将本地构建称为全部第三方从源码完全重建或统一 MIT 授权。
 
 ## 本地页识别工具
 

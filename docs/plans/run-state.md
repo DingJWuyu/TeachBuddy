@@ -16,14 +16,16 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 模块 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 统一制作 UI/UX、本地 GGB 与教学成果承接实施中；基线网页 AI 闭环证据仅覆盖旧界面，不等于本轮完成；最终不合 preview |
+| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 统一制作、本地 GGB、自动保存与课堂成果已接入；真实网页 AI 两轮已完成，最终交互、独立审查与干净检出验证进行中；最终不合 preview |
 | 日程 | `TeacherWorkspace-schedule` | `work/schedule` | 接手日程，不包含班级教学；等待用户指定任务 |
 
 两处现场保留供用户持续讨论和后续开发，任务完成并集成验证后按收尾规则清理；接续实现前由总控核对基线。模块自测使用隔离实例，公共文件和 preview 体验入口仍由总控协调。
 
-数学产品候选 `aa404f63` 已完成真实 DeepSeek 网页闭环与具名独立核验。真实账号覆盖侧栏创建参数抛物线、鼠标拖点后读取最新坐标并继续修改、保存刷新读回、取消生成及临时隐藏侧栏。独立浏览器使用官方 GGB 和固定 AI 回复，覆盖即时离开保稿、版本冲突、执行中取消及旧实例迟到命令隔离；取消前尚未自动写入草稿的手动修改，在取消即时、切模块、保存和刷新后均保留。故障注入另验命令超时后恢复修改前作品。
+数学当前候选以统一作品承接公式、同一二维/三维构造、参数与教学步骤，复用现有 SQLite 作品和版本。固定源码构建的本地 GGB 已完成禁网 HTTP / file:// 作者验证；固定运行时的独立重建成功。公式与图形图片、可编辑公式带回备课、课堂 ZIP 及备份恢复已有具名作者证据。完整源码与运行资源仍须按当前候选进行独立核验，不以旧界面结果替代。
 
-HTTP/SQLite、网页桥及 GGB 浏览器回归入口分别为 `apps/api/test/math-geogebra.test.js`、`extensions/math-web-ai/test/offline.mjs` 和 `apps/web/e2e/math-geogebra.config.mjs`；真实账号复验见[数学判据](../acceptance/mvp-matrix.md#math)。本机具名证据在 `test-results/math-web-ai/` 的 `final-real-loop.json`、`final-delivery-readback.json`、`review-final/receipt.json` 及其引用，截图与证据按用途保留；研究检出、重复构建与无用探测现场已清理。当前隔离体验服务和私有登录浏览器保留供用户使用，体验结束后关闭；新环境按入库运行与验证入口重建，不依赖这些本地产物。当前限制：扩展只接本机 origin 和 DeepSeek；官方 GGB 资源偶有连接失败，需要重试；GGB 作品尚无海报、备课采用及离线 HTML。此结果不覆盖全站 Agent 或完整 M-D 的制作验收。
+真实 DeepSeek 已创建包含参数、公式、图形和两个步骤的作品；手动把点 A 改为 (4,3) 后，AI 读取当前内容继续移至 (5,3)，保留公式与步骤，自动保存并刷新读回。证据为 `test-results/math-unified/live/real-deepseek.json` 及对应截图。整体任务仍在最终交互、独立审查与干净检出验证阶段，当前发现的界面问题由总控收束。
+
+统一 API 和浏览器入口为 `apps/api/test/math-workshop.test.js`、`apps/web/e2e/math-unified.config.mjs`；保存保护继续使用 `math-geogebra.config.mjs`，网页桥按 `extensions/math-web-ai/test/offline.mjs` 验证。固定输入在 `apps/api/test/fixtures/math-workshop/`，真实账号条件见[数学判据](../acceptance/mvp-matrix.md#math)。本机当前证据留在 `test-results/math-unified/`；隔离体验服务及私有登录浏览器保留到用户体验结束，新环境不依赖它们。网页桥目前只接本机 origin 和 DeepSeek；目标 Windows、课堂设备及真实 Office 操作仍按既有暂缓安排处理。本轮不改变全站 Agent 定位。
 
 本轮验收执行现有范围与矩阵中可在本机完成的非 Agent 项，包含真实本地 OCR、文件输出检查、测试收件器与隔离浏览器、数据备份恢复及手工跨模块流程。用户明确暂缓实际 Word/WPS 修改、保存、重开与打印，真实邮件送达，以及实际平板、课堂设备和学校网络；这些项目记为暂缓未验，不计通过，也不阻塞本轮收尾。真实产品模型调用及 Agent 组合验收随 Agent 线另行安排，可选增强不纳入本轮，MVP 范围和验收门槛保持不变。
 

@@ -121,9 +121,42 @@
 .wb-shell .settings-segment button[aria-pressed="true"] { background: var(--app-primary); color: var(--app-on-primary); }
 .settings-save-status { color: var(--app-muted); font-size: 12px; min-height: 20px; }
 
+/* The unified math editor shares the shell's single tools / assistant column. */
+.wb-shell.tb-prototype[data-route="math"]:has(.math-workshop) .wb-workspace {
+  --math-workspace-inset: 20px;
+  padding: var(--math-workspace-inset);
+  gap: 12px;
+  container: math-workspace / inline-size;
+}
+.wb-shell.tb-prototype[data-route="math"]:has(.math-workshop) .wb-main {
+  padding: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.wb-shell.tb-prototype[data-route="math"] .math-workshop { padding: 0; }
+.wb-shell.tb-prototype[data-route="math"]:has(.math-workshop) .wb-aux {
+  position: relative;
+  inset: auto;
+  width: var(--wb-aux-width, 320px);
+  margin: var(--math-tools-offset, 110px) 0 0;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--app-line), var(--wb-shadow);
+}
+@container math-workspace (max-width: 852px) {
+  .wb-shell.tb-prototype[data-route="math"]:has(.math-workshop) .wb-aux {
+    position: absolute;
+    inset: var(--math-workspace-inset) var(--math-workspace-inset) var(--math-workspace-inset) auto;
+    width: min(360px, calc(100% - 2 * var(--math-workspace-inset)));
+    margin: 0;
+    z-index: 35;
+  }
+}
+
 @media (max-width: 1180px) {
   .wb-shell.tb-prototype { --app-workspace-padding: 24px; }
 }
 @media (max-width: 700px) {
   .wb-shell.tb-prototype { --app-workspace-padding: 16px 12px; }
+  .wb-shell.tb-prototype[data-route="math"]:has(.math-workshop) .wb-workspace { --math-workspace-inset: 12px; }
 }

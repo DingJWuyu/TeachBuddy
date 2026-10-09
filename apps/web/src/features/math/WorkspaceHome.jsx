@@ -36,42 +36,16 @@ export function WorkIllustration({ kind }) {
   </svg>;
 }
 
-export default function WorkspaceHome({ draft, status, items, search, deleted, busy, onSearch, onDeleted, onNew, onOpen, onResume, onDiscard, onImport, onImportSource, onRestore, onPurge }) {
+export default function WorkspaceHome({ items, search, deleted, busy, onSearch, onDeleted, onNew, onOpen, onImport, onImportSource, onRestore, onPurge }) {
   const { t } = useTranslation('math');
-  return <div className="math-home">
-    <section aria-labelledby="math-start-heading">
-      <h2 id="math-start-heading" tabIndex={-1}>{t("这节课，需要什么数学素材？")}</h2>
-      <div className="math-start-options">
-        {workshopKinds.map(({ kind, title, purpose }) => <button key={kind} className={`math-start-option${kind === 'geogebra' ? ' math-ggb-entry' : ''}`} aria-label={t("新建{{title}}", { title: title })} disabled={busy} onClick={() => onNew(kind)}>
-          <WorkIllustration kind={kind}/><span><strong>{title}</strong><small>{purpose}</small></span>
-          <Icon name="chevron"/>
-        </button>)}
-      </div>
-      <div className="math-import-actions"><button className="math-import-link" disabled={busy} onClick={onImport}><Icon name="folder"/>{t("导入已有 HTML 演示")}</button>
-      <button className="math-import-link" disabled={busy} onClick={onImportSource}><Icon name="folder"/>{t("导入制作源 JSON")}</button></div>
-    </section>
-    {draft && status !== "已保存" && <section className="math-resume" aria-label={t("本设备草稿")}>
-      <div><strong>{draft.title}</strong><span>{status === "未保存" ? t("草稿保留在本设备，可继续制作") : mathStatusLabel(status)}</span></div>
-      <button onClick={onResume}>{t("继续制作")}</button><button className="math-icon-button" title={t("丢弃草稿")} aria-label={t("丢弃草稿")} disabled={busy} onClick={onDiscard}><Icon name="trash"/></button>
-    </section>}
-    <section className="math-library" aria-labelledby="math-library-heading">
-      <div className="math-library-heading"><h2 id="math-library-heading">{t("我的作品")}</h2>
-        <label className="math-library-search"><Icon name="search"/><input aria-label={t("搜索作品")} placeholder={t("搜索作品")} value={search} onChange={e => onSearch(e.target.value)}/></label>
-        <label className="math-deleted-filter"><input type="checkbox" checked={deleted} onChange={e => onDeleted(e.target.checked)}/>{t("已归档")}</label>
-      </div>
-      <div className="math-work-list">
-        {items.map(item => <div key={item.id} className="math-work-entry">
-          <button className="math-work-row" disabled={busy} onClick={() => onOpen(item)}>
-          <span className="math-work-symbol"><Icon name="math" size={20}/></span>
-          <span><strong>{item.title}</strong><small>{workshopKinds.find(k => k.kind === (item.kind ?? item.source?.kind))?.title ?? t("HTML 演示")}</small></span><Icon name="chevron"/>
-          </button>
-          {deleted && <div className="math-archive-actions" role="group" aria-label={t("{{title}}的归档操作", { title: item.title })}>
-            <button disabled={busy} onClick={() => onRestore(item)}>{t("恢复")}</button>
-            <button className="math-danger-button" disabled={busy} onClick={() => onPurge(item)}>{t("彻底删除")}</button>
-          </div>}
-        </div>)}
-      </div>
-      {!items.length && <p className="math-library-empty">{search ? t("没有找到匹配的作品") : deleted ? t("没有已归档的作品") : t("制作并保存后，你的作品会留在这里。")}</p>}
+  return <div className="mw-home">
+    <header className="mw-home-heading"><div><h1 id="math-start-heading" tabIndex={-1}>{t('数学工坊')}</h1><p>{t('公式、图形与讲解，做成一份课堂作品。')}</p></div><button className="mw-button is-primary" disabled={busy} onClick={onNew}><Icon name="plus" size={18}/>{t('新建作品')}</button></header>
+    <div className="mw-library-toolbar"><label className="mw-search"><Icon name="search" size={18}/><input aria-label={t('搜索作品')} placeholder={t('搜索作品')} value={search} onChange={event => onSearch(event.target.value)}/></label>
+      <details className="mw-home-menu"><summary>{t(deleted ? '已归档' : '作品操作')} <Icon name="chevron" size={14}/></summary><div><button disabled={busy} onClick={onImportSource}>{t('导入可编辑源')}</button><button disabled={busy} onClick={onImport}>{t('导入 HTML 演示')}</button><button onClick={() => onDeleted(!deleted)}>{t(deleted ? '查看当前作品' : '查看已归档作品')}</button></div></details>
+    </div>
+    <section className="mw-library" aria-label={t('我的作品')}>
+      {items.map(item => <article className="mw-library-row" key={item.id}><button disabled={busy} onClick={() => onOpen(item)}><span className="mw-library-symbol"><Icon name="math" size={23}/></span><span><strong>{item.title}</strong><small>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : t('数学作品')}</small></span><Icon name="chevron" size={16}/></button>{deleted && <div><button className="mw-button" disabled={busy} onClick={() => onRestore(item)}>{t('恢复')}</button><button className="mw-button" disabled={busy} onClick={() => onPurge(item)}>{t('彻底删除')}</button></div>}</article>)}
+      {!items.length && <div className="mw-library-empty"><WorkIllustration kind="dynamic"/><h2>{t(search ? '没有找到匹配的作品' : deleted ? '没有已归档的作品' : '从一个数学想法开始')}</h2>{!search && !deleted && <p>{t('新建作品，直接写公式、画图，或与 AI 一起制作。')}</p>}</div>}
     </section>
   </div>;
 }

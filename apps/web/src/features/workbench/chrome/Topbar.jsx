@@ -45,8 +45,8 @@ export default function Topbar({ route, collapsed, toggleSidebar, surface, setSu
    {entry('privacy','shield',t("隐私与数据保护"),<PrivacyPanel/>)}{children}
    <span className="tb-entry-wrap">
     {onToggleAssistant
-     ? <button type="button" className="tb-entry" aria-label={t("AI 助理")} aria-expanded={assistantOpen} onClick={onToggleAssistant}><Icon name="sparkles" size={22}/></button>
-     : <a className="tb-entry" aria-label={t("AI 助理")} href="/" onClick={e=>followAnchor(e,'/')}><Icon name="sparkles" size={22}/></a>}
+     ? <button type="button" className="tb-entry" aria-label={t("AI 助理")} aria-expanded={assistantOpen} onClick={onToggleAssistant}><Icon name="assistant" size={22}/></button>
+     : <a className="tb-entry" aria-label={t("AI 助理")} href="/" onClick={e=>followAnchor(e,'/')}><Icon name="assistant" size={22}/></a>}
     <span className="tb-tooltip" aria-hidden="true">{t("AI 助理")}</span>
    </span>
   </div>
