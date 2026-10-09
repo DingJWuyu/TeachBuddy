@@ -664,3 +664,65 @@ test('按需展开：参数、连接与算式连续开合，快速反向和末�
   await expect(page.getByLabel('图形表达式', { exact: true })).toBeFocused();
   await page.screenshot({ path: info.outputPath('展开终态.png') });
 });
+
+test('数学助理按钮：深浅主题开始、发送和停止可见，真实停止挂起请求', async ({ page }, info) => {
+  await page.evaluate(() => {
+    window.mathButtonEvents = [];
+    window.addEventListener('message', event => {
+      const request = event.data;
+      if (event.source !== window || request?.source !== 'teachbuddy-workbench') return;
+      window.mathButtonEvents.push(request);
+      if (request.type === 'SEND') { window.mathButtonPending = request; return; }
+      const type = { STATUS: 'STATUS', CONNECT: 'CONNECTED' }[request.type];
+      if (type) window.postMessage({ source: 'teachbuddy-web-ai', type, connectionState: 'ready', requestId: request.requestId, sessionId: request.sessionId }, location.origin);
+    });
+  });
+  const records = [];
+  async function record(button, theme, state) {
+    await expect(button).toBeEnabled();
+    const value = await button.evaluate(el => {
+      const style = getComputedStyle(el);
+      const luminance = color => {
+        const channels = color.match(/[\d.]+/g).slice(0, 3).map(value => { const c = Number(value) / 255; return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; });
+        return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+      };
+      const a = luminance(style.color), b = luminance(style.backgroundColor);
+      return { color: style.color, background: style.backgroundColor, contrast: (Math.max(a, b) + .05) / (Math.min(a, b) + .05), svg: el.querySelector('svg') ? getComputedStyle(el.querySelector('svg')).color : null, width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height };
+    });
+    records.push({ theme, state, ...value });
+    await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath(`${theme}-${state}.png`) });
+  }
+  for (const [theme, name] of [['light', '浅色'], ['dark', '深色']]) {
+    await page.getByRole('link', { name: '账户：数学教师', exact: true }).click();
+    await page.getByRole('button', { name, exact: true }).click();
+    await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', theme);
+    await page.getByRole('navigation', { name: '功能模块', exact: true }).getByRole('link', { name: /^数学工坊/ }).click();
+    if (!await page.locator('.math-web-assistant').isVisible()) await page.getByRole('banner').getByRole('button', { name: 'AI 助理', exact: true }).click();
+    await expect(page.locator('.math-ai-setup')).toHaveCount(0);
+    const input = page.getByLabel('向数学助理提问', { exact: true });
+    await input.fill('制作一个可调节的函数');
+    await record(page.getByRole('button', { name: '开始制作', exact: true }), theme, 'start');
+    await page.getByRole('button', { name: '新建作品', exact: true }).click();
+    await input.fill('制作一个可调节的函数');
+    const send = page.getByRole('button', { name: '发送消息', exact: true });
+    await expect(send).toBeEnabled();
+    await record(send, theme, 'send');
+    await input.press('Enter');
+    await expect.poll(() => page.evaluate(() => Boolean(window.mathButtonPending))).toBe(true);
+    const stop = page.getByRole('button', { name: '停止生成', exact: true });
+    await record(stop, theme, 'stop');
+    await stop.click();
+    await expect.poll(() => page.evaluate(() => window.mathButtonEvents.some(item => item.type === 'CANCEL' && item.requestId === window.mathButtonPending.requestId))).toBe(true);
+    await expect(stop).toHaveCount(0);
+    await expect(page.locator('.math-ai-stage')).toHaveText('已停止');
+    await page.evaluate(() => { window.mathButtonPending = null; });
+    await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  }
+  fs.writeFileSync(info.outputPath('button-colors.json'), JSON.stringify(records, null, 2));
+  for (const record of records) {
+    expect(record.contrast, `${record.theme} ${record.state}`).toBeGreaterThanOrEqual(4.5);
+    if (record.svg) expect(record.svg).toBe(record.color);
+    expect(record.height).toBe(32);
+    if (record.state !== 'start') expect(record.width).toBe(32);
+  }
+});

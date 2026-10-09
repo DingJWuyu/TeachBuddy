@@ -194,7 +194,7 @@
   background: #5b947b;
 }
 
-.math-ai-send {
+.math-web-assistant .math-ai-send {
   display: grid;
   place-items: center;
   border: 0;
