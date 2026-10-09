@@ -28,11 +28,12 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
   }, [accountKey, conversation]);
   useEffect(() => {
     const lifetime = new AbortController(); connectionLifetime.current = lifetime;
+    setRunning(false); setStage(''); setError('');
     void checkConnection(lifetime.signal);
     const focus = () => { if (!active.current) void checkConnection(lifetime.signal); };
     window.addEventListener('focus', focus);
-    return () => { lifetime.abort(); active.current?.abort(); window.removeEventListener('focus', focus); };
-  }, [accountKey, conversation.sessionId]);
+    return () => { lifetime.abort(); active.current?.abort(); active.current = null; window.removeEventListener('focus', focus); };
+  }, [accountKey, conversation.sessionId, controller]);
   async function checkConnection(signal = connectionLifetime.current?.signal) {
     if (signal?.aborted) return;
     const sequence = ++connectionSequence.current; setChecking(true);
@@ -66,7 +67,7 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
       if (!onStart) { active.current = null; return; }
       setRunning(true); setError('');
       try { await connect(lifetime.signal); lifetime.signal.throwIfAborted(); await onStart(request); }
-      catch (failure) { if (failure.name !== 'AbortError') setError(failure.message); }
+      catch (failure) { if (active.current === lifetime && failure.name !== 'AbortError') setError(failure.message); }
       finally { if (active.current === lifetime) { active.current = null; setRunning(false); } }
       return;
     }
@@ -95,9 +96,9 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
         setStage(t('正在修改画布'));
         try {
           const after = await captured.apply({ baseEditRevision: current.editRevision, changes: proposal.changes }, lifetime.signal);
+          lifetime.signal.throwIfAborted();
           execution = { ok: true, operations: proposal.operations, editRevision: after.editRevision, saved: false };
           append({ role: 'tool', state: 'applied', text: t('已更新作品'), operations: proposal.operations });
-          lifetime.signal.throwIfAborted();
         } catch (failure) {
           if (failure.name === 'AbortError') throw failure;
           execution = { ok: false, code: failure.code, message: failure.message };
@@ -107,6 +108,7 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
       }
       throw new Error(t('本轮已停止继续尝试。画布保留已完成的修改，可以继续提出具体要求。'));
     } catch (failure) {
+      if (active.current !== lifetime) return;
       if (failure.name === 'AbortError') setStage(t('已停止'));
       else { setError(failure.message); setStage(''); if (['login-required', 'provider-disconnected', 'connection-lost'].includes(failure.code)) setConnection(failure.code === 'login-required' ? 'login' : 'disconnected'); }
     } finally { if (active.current === lifetime) { active.current = null; setRunning(false); } }

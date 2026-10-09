@@ -311,12 +311,37 @@ test('界面路径：一键编辑、未连接输入保护、菜单键盘与下�
   const dialog = page.getByRole('dialog', { name: '下载作品', exact: true });
   await expect(dialog.getByRole('combobox', { name: '内容', exact: true })).toBeFocused();
   await shot('final-download.png');
+  const downloadedFiles = [];
+  page.on('download', file => downloadedFiles.push(file));
+  for (const name of ['下载文件', '关闭下载']) {
+    await dialog.getByRole('button', { name, exact: true }).focus();
+    for (const key of ['Shift+Enter', 'Control+Enter', 'Meta+Enter', 'Alt+Enter']) {
+      const unintendedDownload = page.waitForEvent('download', { timeout: 600 }).then(() => true, () => false);
+      await page.keyboard.press(key);
+      expect(await unintendedDownload, `${name}: ${key}`).toBe(false);
+      await expect(dialog).toBeVisible();
+    }
+  }
+  expect(downloadedFiles).toHaveLength(0);
   await dialog.getByRole('button', { name: '关闭下载', exact: true }).focus();
   const downloaded = page.waitForEvent('download');
-  await page.keyboard.press('Enter');
+  await page.keyboard.down('Enter');
   const file = await downloaded;
   expect(file.suggestedFilename()).toMatch(/\.png$/);
   expect(await file.failure()).toBeNull();
+  await file.saveAs(info.outputPath('keyboard-confirm.png'));
+  await dialog.getByRole('button', { name: '关闭下载', exact: true }).focus();
+  const repeatedDownload = page.waitForEvent('download', { timeout: 600 }).then(() => true, () => false);
+  await page.keyboard.down('Enter'); await page.keyboard.up('Enter');
+  expect(await repeatedDownload).toBe(false); await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: '下载文件', exact: true }).focus();
+  const spaceDownload = page.waitForEvent('download'); await page.keyboard.press('Space');
+  expect(await (await spaceDownload).failure()).toBeNull();
+  await dialog.getByRole('button', { name: '关闭下载', exact: true }).focus();
+  await page.keyboard.press('Space');
+  await expect(dialog).toHaveCount(0);
+  fs.writeFileSync(info.outputPath('dialog-keyboard.json'), JSON.stringify({ modifierDownloads: 0, repeatedDownloads: 0, plainEnter: file.suggestedFilename(), spaceDownloads: 1, closeSpace: true }, null, 2));
+  await page.getByRole('button', { name: '下载', exact: true }).click();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('button', { name: '下载', exact: true })).toBeFocused();
   await page.setViewportSize({ width: 1024, height: 768 }); await shot('final-work-1024.png');
@@ -391,10 +416,11 @@ test('首页数学对话：缺连接保留输入，一次开始只执行一轮�
   await expect(page.locator('.mw-library-row')).toHaveCount(0);
   await expect(page.getByRole('link', { name: '下载扩展', exact: true })).toBeVisible();
   await page.evaluate(() => {
-    window.mathUiRequests = [];
+    window.mathUiRequests = []; window.mathUiEvents = [];
     window.addEventListener('message', event => {
       const request = event.data;
       if (event.source !== window || request?.source !== 'teachbuddy-workbench') return;
+      window.mathUiEvents.push(request);
       const type = { STATUS: 'STATUS', CONNECT: 'CONNECTED', SEND: 'DONE' }[request.type];
       if (!type) return;
       if (request.type === 'SEND') {
@@ -429,10 +455,24 @@ test('首页数学对话：缺连接保留输入，一次开始只执行一轮�
   await page.keyboard.up('Enter');
   await expect.poll(() => page.evaluate(() => Boolean(window.pendingMathReply))).toBe(true);
   expect(await page.evaluate(() => window.mathUiRequests.length)).toBe(3);
+  const previousWork = (await deviceMath(page)).draft;
+  await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
+  await page.getByRole('banner').getByRole('button', { name: 'AI 助理', exact: true }).click();
+  await expect(page.locator('.math-ai-message.is-user').last()).toContainText('把公式改成 y=x^3');
+  await expect(page.getByRole('button', { name: '停止生成', exact: true })).toBeEnabled();
+  expect(await page.evaluate(() => window.mathUiEvents.some(item => item.type === 'CANCEL'))).toBe(false);
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
   await expect(page.locator('.math-web-assistant')).toBeVisible();
   await expect(page.getByText('一起准备下一堂课', { exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  fs.writeFileSync(info.outputPath('leave-active-state.json'), JSON.stringify(await page.evaluate(() => ({ events: window.mathUiEvents, text: document.querySelector('.math-web-assistant').textContent })), null, 2));
+  await expect.poll(() => page.evaluate(() => window.mathUiEvents.some(item => item.type === 'CANCEL' && item.requestId === window.pendingMathReply.requestId))).toBe(true);
+  await expect(page.locator('.math-ai-stage')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '新对话', exact: true })).toBeEnabled();
+  await page.evaluate(() => { window.holdMathReply = false; });
+  await input.fill('开始一个新的数学作品'); await input.press('Enter');
+  await expect(page.getByRole('button', { name: '返回工坊', exact: true })).toBeVisible();
+  await expect(page.locator('.math-ai-message.is-user').last()).toContainText('开始一个新的数学作品');
+  await expect(page.getByRole('button', { name: '新对话', exact: true })).toBeEnabled();
   await page.evaluate(() => {
     const request = window.pendingMathReply;
     window.postMessage({ source: 'teachbuddy-web-ai', type: 'DONE', requestId: request.requestId, sessionId: request.sessionId,
@@ -441,6 +481,12 @@ test('首页数学对话：缺连接保留输入，一次开始只执行一轮�
   await page.waitForTimeout(1000);
   await expect(page.locator('.mw-formula-row')).toHaveCount(0);
   expect((await deviceMath(page)).draft.source.formulas).toEqual([]);
+  await expect(page.locator('.math-ai-thread')).not.toContainText('迟到回复');
+  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  await page.locator('.mw-library-row > button').first().click();
+  await expect(page.locator('.mw-formula-row')).toHaveCount(1);
+  expect((await savedMath(page)).source.formulas).toEqual(previousWork.source.formulas);
+  await page.screenshot({ path: info.outputPath('leave-active-recovered.png') });
 });
 
 test('参数取值：数值和滑杆同步，算式按需编辑，保存刷新保留', async ({ page }, info) => {
@@ -501,6 +547,10 @@ test('参数转算式：取消保留滑杆与引用，确认清理取值和播�
   await tools.getByRole('button', { name: '改为算式', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('相关步骤、播放或轨迹会随之调整。是否继续？');
+  await dialog.getByRole('button', { name: '取消', exact: true }).focus();
+  for (const key of ['Shift+Enter', 'Control+Enter', 'Meta+Enter', 'Alt+Enter']) {
+    await page.keyboard.press(key); await expect(dialog).toBeVisible();
+  }
   await dialog.getByRole('button', { name: '取消', exact: true }).click();
   await expect(page.locator('.mw-notice')).toHaveCount(0);
   await expect(tools.getByRole('slider', { name: '参数 a', exact: true })).toBeVisible();
