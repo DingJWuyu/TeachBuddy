@@ -182,7 +182,7 @@ export function SearchModal({ onClose, onAnnounce }) {
 // Schedule reminders come from WorkspaceProvider. Reading one opens its event;
 // read status never means a teaching task is completed.
 
-export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem }) {
+export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem, feedback }) {
   const { t } = useTranslation("workbench");
   /*
    * Which notification is in flight, and whether it is over the trash. A drag
@@ -242,6 +242,7 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem }) {
           > {t("全部已读")} </button>
         )}
       </div>
+      {feedback}
       {items.length === 0 ? (
         <div className="tb-popover-empty">
           <Icon name="bell" size={20} />
@@ -260,10 +261,10 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem }) {
               className={`tb-row tb-notification${item.eventId ? ' is-reminder' : ''}${item.read ? ' is-read' : ''}${draggingId === item.id ? ' is-dragging' : ''}`}
               key={item.id}
               draggable={item.read}
-              aria-pressed={item.eventId ? undefined : item.read}
-              title={item.eventId ? t("查看对应时间段") : item.read ? t("点击标为未读，或拖到垃圾桶删除") : t("点击标为已读")}
+              aria-pressed={item.read}
+              title={item.eventId && !item.read ? t("查看对应时间段") : item.read ? t("点击标为未读，或拖到垃圾桶删除") : t("点击标为已读")}
               onClick={() => {
-                if (item.eventId) { onOpenItem?.(item); return; }
+                if (item.eventId && !item.read) { onOpenItem?.(item); return; }
                 setRead(item.id, !item.read);
                 onAnnounce(item.read ? t("「{{text}}」已标为未读", { text: item.text }) : t("「{{text}}」已标为已读", { text: item.text }));
               }}

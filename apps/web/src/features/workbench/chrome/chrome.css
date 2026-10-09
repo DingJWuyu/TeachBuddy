@@ -3417,7 +3417,8 @@ body.is-dragging-item * {
   .restored-welcome p { max-width:270px; font-size:12px; }
   .restored-home.is-new .restored-composer-area { padding:10px; }
 }
-.tb-prototype .tb-notification-problem { position:absolute; right:0; top:52px; z-index:2; width:300px; padding:12px; background: light-dark(#fff5f5, var(--app-soft)); color: #9b3030; border-radius:10px; }
+.tb-prototype .tb-notification-problem { display:flex; flex-direction:column; align-items:flex-start; gap:8px; margin:8px 12px; padding:12px; background: light-dark(#fff5f5, var(--app-soft)); color: light-dark(#9b3030, #ff7b83); border-radius:10px; font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+.tb-prototype .tb-notification-problem > button { padding:5px 10px; border:1px solid var(--app-line); border-radius:6px; background:var(--app-surface); color:var(--app-ink); font:inherit; cursor:pointer; }
 .restored-home.is-new .agent-workspace { position:static; }
 .restored-home.is-new .agent-head .wb-button { font-size:11px; }
 .restored-home.is-new .agent-head .wb-popover { z-index:5; }
@@ -3459,3 +3460,6 @@ body.is-dragging-item * {
 .tb-navigation-columns dt { font-weight: 500; }
 .tb-navigation-columns dd { color: var(--wb-muted); margin: 4px 0 0; line-height: 1.6; }
 @media (max-width: 500px) { .tb-navigation-columns { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
+
+.tb-popover-notifications .tb-popover-list { grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.tb-popover-notifications .tb-notification { min-width: 0; max-width: 100%; }

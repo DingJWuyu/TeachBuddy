@@ -323,3 +323,40 @@ test('deleted source or target rejects the move before any change', async () => 
     assert.equal((await a.get(`${ENTRIES}/${source.body.id}`)).body.version, 1);
   });
 });
+
+test('repeat destinations require an explicit scope, series moves preserve identity and single-date moves detach atomically', async () => {
+  await withHarness(async h => {
+    const a = h.agent(h.account('teacher-a'));
+    const source = (await a.post(ENTRIES, unscheduledEntry({ title: '来源', items: twoItems }), { key: h.key() })).body;
+    const target = (await a.post(ENTRIES, weeklyEntry({ items: [], calendar: { allDay: false, notes: '保留备注', tags: [] } }), { key: h.key() })).body;
+    const move = { itemId: twoItems[0].id, fromEntryId: source.id, fromVersion: source.version, toEntryId: target.id, toVersion: target.version, toIndex: 0, toScope: 'series', toOriginDate: null };
+    const key = h.key();
+    const all = await a.post(MOVES, move, { key });
+    assert.equal(all.status, 200, JSON.stringify(all.body));
+    assert.equal(all.body.to.id, target.id);
+    assert.deepEqual(all.body.to.repeat, target.repeat);
+    assert.deepEqual(all.body.to.items, [twoItems[0]]);
+    assert.deepEqual((await a.post(MOVES, move, { key })).body, all.body);
+    assert.equal(h.count('SELECT COUNT(*) AS count FROM schedule_entries'), 2);
+    const single = { ...move, itemId: twoItems[1].id, fromVersion: 2, toVersion: 2, toScope: 'instance', toOriginDate: '2026-09-28', toIndex: 1 };
+    const rejected = await a.post(MOVES, { ...single, toVersion: 1 }, { key: h.key() });
+    assert.equal(rejected.status, 409);
+    assert.deepEqual((await a.get(`${ENTRIES}/${source.id}`)).body.items, [twoItems[1]]);
+    assert.equal(h.count('SELECT COUNT(*) AS count FROM schedule_entries'), 2);
+    const invalidDate = await a.post(MOVES, { ...single, toOriginDate: '2026-09-29' }, { key: h.key() });
+    assert.equal(invalidDate.status, 409);
+    const singleKey = h.key();
+    const one = await a.post(MOVES, single, { key: singleKey });
+    assert.equal(one.status, 200, JSON.stringify(one.body));
+    assert.notEqual(one.body.to.id, target.id);
+    assert.equal(one.body.to.repeat, null);
+    assert.deepEqual(one.body.to.items, twoItems);
+    assert.equal(one.body.to.calendar.notes, '保留备注');
+    assert.equal(one.body.to.time.date, '2026-09-28');
+    assert.deepEqual((await a.post(MOVES, single, { key: singleKey })).body, one.body);
+    assert.equal(h.count('SELECT COUNT(*) AS count FROM schedule_entries'), 3);
+    assert.equal((await a.get(`${ENTRIES}/${target.id}/occurrence`, { originDate: '2026-09-28' })).body.state, 'cancelled');
+    assert.deepEqual((await a.get(`${ENTRIES}/${target.id}/occurrence`, { originDate: '2026-10-05' })).body.items, [twoItems[0]]);
+    assert.deepEqual((await a.get(`${ENTRIES}/${source.id}`)).body.items, []);
+  });
+});

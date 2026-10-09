@@ -16,7 +16,7 @@ export const migrations = [{
   }
 }];
 
-const action = schema.string({ enum: ['read', 'dismiss'] });
+const action = schema.string({ enum: ['read', 'unread', 'dismiss'] });
 const single = schema.object({ action });
 const batch = schema.object({ ids: schema.array(contractSchemas.id), action });
 function validateBatch(body) {
@@ -47,6 +47,7 @@ export function createReminders({ db, mutations, schedule, clock }) {
   const list = db.prepare(`SELECT * FROM schedule_notifications
     WHERE accountKey = ? AND dismissedAt IS NULL ORDER BY dueAt DESC, id ASC`);
   const markRead = db.prepare('UPDATE schedule_notifications SET readAt = COALESCE(readAt, ?) WHERE accountKey = ? AND id = ?');
+  const markUnread = db.prepare('UPDATE schedule_notifications SET readAt = NULL WHERE accountKey = ? AND id = ?');
   const dismiss = db.prepare('UPDATE schedule_notifications SET dismissedAt = COALESCE(dismissedAt, ?) WHERE accountKey = ? AND id = ?');
   function captureDue(principal, now) {
     for (const candidate of schedule.listReminderCandidates(principal, now)) {
@@ -65,7 +66,10 @@ export function createReminders({ db, mutations, schedule, clock }) {
     for (const id of ids) {
       if (!find.get(principal.accountKey, id)) throw contractError(problems.notFound());
     }
-    for (const id of ids) (action === 'read' ? markRead : dismiss).run(now, principal.accountKey, id);
+    for (const id of ids) {
+      if (action === 'unread') markUnread.run(principal.accountKey, id);
+      else (action === 'read' ? markRead : dismiss).run(now, principal.accountKey, id);
+    }
     return ids.map(id => project(find.get(principal.accountKey, id)));
   }
   const router = Router();

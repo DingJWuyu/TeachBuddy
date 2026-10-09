@@ -73,6 +73,11 @@ export async function updateEntry({ key, id, payload }) {
   return assertObject(body, t("安排"));
 }
 
+export async function deleteEntry({ key, id, payload }) {
+  const { body } = await workbenchPost(`/api/modules/schedule/entries/${id}/delete`, payload, key);
+  return assertObject(body, t("安排"));
+}
+
 export async function setEntryDeletion({ key, id, payload }) {
   const { body } = await workbenchPost(`/api/modules/schedule/entries/${id}/deletion`, payload, key);
   return assertObject(body, t("安排"));
@@ -138,4 +143,9 @@ export async function createLabel({ key, payload }) {
 export async function updateLabel({ key, id, payload }) {
   const { body } = await workbenchPut(`/api/modules/schedule/labels/${id}`, payload, key);
   return assertObject(body, t("标签"));
+}
+
+export async function detachOccurrence({ key, id, originDate, payload }) {
+  const { body } = await scheduleWrite(workbenchPost(`/api/modules/schedule/entries/${id}/occurrences/${originDate}/detach`, payload, key));
+  return assertObject(body, t("安排"));
 }

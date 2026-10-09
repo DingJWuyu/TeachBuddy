@@ -1,24 +1,11 @@
 import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
 /**
- * Pure schedule helpers: draft conversion, labels, day layout and the global
- * priority view. No React and no I/O, so the grid and the panels stay thin.
+ * Pure schedule helpers: draft conversion, labels and day layout.
+ * No React and no I/O, so the grid and the panels stay thin.
  */
 import { diffDays, instantAt, localParts, parseDateParts } from './zoned.js';
 
-export const PRIORITY_ORDER = { high: 0, normal: 1, low: 2 };
-export const PRIORITY_LABEL = { high: '高', normal: '普通', low: '低' };
-export const PRIORITY_VALUES = ['high', 'normal', 'low'];
-export const TIME_ZONES = [
-  'Asia/Shanghai',
-  'Asia/Tokyo',
-  'Asia/Singapore',
-  'Europe/London',
-  'Europe/Paris',
-  'America/New_York',
-  'America/Los_Angeles',
-  'UTC'
-];
 export const SNAP_MINUTES = 15;
 export const HOUR_HEIGHT = 44;
 export const MIN_COLUMN_WIDTH = 160;
@@ -90,7 +77,8 @@ export function reminderInstant(draft, zone) {
   const start = instantAt(draft.time.timeZone || zone, draft.time.date, parseClock(draft.time.startTime) ?? 0);
   const end = start + (Number(draft.time.durationMinutes) || 0) * 60_000;
   const offset = Number(draft.reminder.minutes) * 60_000;
-  const due = draft.reminder.side === 'before' ? end - offset : end + offset;
+  const anchor = draft.reminder.anchor === 'start' ? start : end;
+  const due = draft.reminder.side === 'before' ? anchor - offset : anchor + offset;
   return new Date(due).toISOString().replace(/\.\d{3}Z$/, 'Z');
 }
 
@@ -139,61 +127,6 @@ export function layoutDay(segments) {
   return { segments: placed, columns: Math.max(1, columns.length) };
 }
 
-/**
- * The global priority view: every unscheduled item plus every instance in the
- * returned range, grouped high/normal/low. Inside a group unscheduled items come
- * first, then start instant, then entryId, originDate and array position.
- */
-export function buildPriorityRows(occurrences, unscheduledEntries) {
-  const rows = [];
-  for (const entry of unscheduledEntries) {
-    entry.items.forEach((item, index) => {
-      rows.push({
-        kind: 'unscheduled',
-        entryId: entry.id,
-        originDate: null,
-        itemId: item.id,
-        item,
-        index,
-        sortStart: Number.NEGATIVE_INFINITY,
-        label: titleOf(entry)
-      });
-    });
-  }
-  for (const occurrence of occurrences) {
-    occurrence.items.forEach((item, index) => {
-      rows.push({
-        kind: 'scheduled',
-        entryId: occurrence.key.entryId,
-        originDate: occurrence.key.originDate,
-        itemId: item.id,
-        item,
-        index,
-        sortStart: Date.parse(occurrence.startsAt),
-        label: titleOf(occurrence)
-      });
-    });
-  }
-  return rows.sort((a, b) => {
-    const priority = (PRIORITY_ORDER[a.item.priority] ?? 3) - (PRIORITY_ORDER[b.item.priority] ?? 3);
-    if (priority !== 0) return priority;
-    if (a.sortStart !== b.sortStart) return a.sortStart < b.sortStart ? -1 : 1;
-    if (a.entryId !== b.entryId) return a.entryId < b.entryId ? -1 : 1;
-    const left = a.originDate ?? '';
-    const right = b.originDate ?? '';
-    if (left !== right) return left < right ? -1 : 1;
-    return a.index - b.index;
-  });
-}
-
-export function groupPriorityRows(rows) {
-  return {
-    high: rows.filter((row) => row.item.priority === 'high'),
-    normal: rows.filter((row) => row.item.priority === 'normal'),
-    low: rows.filter((row) => row.item.priority === 'low')
-  };
-}
-
 function emptyCourse() {
   return { classId: null, lessonId: null, recordIds: [] };
 }
@@ -238,7 +171,8 @@ export function draftFromContent({ entry, content = null, unscheduled = false, w
 
 function cleanItems(items) {
   return items
-    .map((item) => ({ id: item.id, text: item.text, priority: item.priority }))
+    .map((item) => ({ id: item.id, text: item.text, priority: item.priority,
+      ...(Object.hasOwn(item, 'completed') ? { completed: item.completed } : {}) }))
     .filter((item) => item.text.trim() !== '');
 }
 
@@ -262,7 +196,7 @@ export function entryInputFromDraft(draft) {
       lessonId: draft.course.lessonId,
       recordIds: time === null || draft.weekly ? [] : [...draft.course.recordIds]
     },
-    reminder: time !== null && draft.reminder ? { side: draft.reminder.side, minutes: Number(draft.reminder.minutes) } : null
+    reminder: time !== null && draft.reminder ? { side: draft.reminder.side, minutes: Number(draft.reminder.minutes), ...(draft.reminder.anchor ? { anchor: draft.reminder.anchor } : {}) } : null
   };
 }
 
