@@ -105,7 +105,7 @@ test('自有图形工具真实点击建点线圆和多边形，参数与三维�
   await page.getByRole('button',{name:'添加参数',exact:true}).click(); await page.getByRole('button',{name:'加入作品',exact:true}).click(); await expect(page.getByLabel('参数 a',{exact:true})).toBeVisible();
   await page.getByLabel('参数 a',{exact:true}).focus(); await page.keyboard.press('ArrowRight');
   await expect.poll(async()=> (await currentApi(page,'a'))?.value).toBeGreaterThan(1);
-  await page.getByRole('button',{name:'并排',exact:true}).click(); await enterMath(page,'cube=Cube((0,0,0),(2,0,0))','cube'); const saved=await savedMath(page);
+  await page.getByRole('button',{name:'双视图',exact:true}).click(); await enterMath(page,'cube=Cube((0,0,0),(2,0,0))','cube'); const saved=await savedMath(page);
   expect(saved.source.view).toBe('split'); await page.screenshot({path:info.outputPath('native-split.png')});
 });
 

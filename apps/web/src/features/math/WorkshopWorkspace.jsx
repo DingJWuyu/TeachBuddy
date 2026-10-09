@@ -13,7 +13,7 @@ import { useMathConfirm } from './useMathConfirm.jsx';
 import './workshop.css';
 
 const formulaDefaults = { caption: '', includeCaption: true, color: '#1e293b', fontSize: 32 };
-const views = [['plane', '平面'], ['space', '三维'], ['split', '并排']];
+const views = [['plane', '平面'], ['space', '三维'], ['split', '双视图']];
 const templates = [
   ['函数', [['抛物线', 'f(x)=x^2'], ['正弦函数', 'f(x)=sin(x)'], ['反比例函数', 'f(x)=1/x']]],
   ['点线圆', [['点', 'A=(1,2)'], ['线段', 's=Segment((0,0),(3,2))'], ['圆', 'c=Circle((0,0),2)'], ['三角形', 'p=Polygon((0,0),(3,0),(1,2))']]],

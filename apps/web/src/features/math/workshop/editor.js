@@ -1,6 +1,6 @@
 import { mountWorkshopGraph } from '../geogebra/workshop-runtime.js';
 import { validateOperations } from '../geogebra/operations.js';
-import { workshopToolMode } from '../../../../../../packages/shared/src/math/workshop-runtime.js';
+import { workshopToolMode, workshopPlaybackValue } from '../../../../../../packages/shared/src/math/workshop-runtime.js';
 import { GeoGebraError } from '../geogebra/controller.js';
 import { createWorkshopSource, cloneWorkshopSource, validateWorkshopSourceShape, validateWorkshopReferences, reconcileWorkshopReferences } from '../../../../../../packages/shared/src/math/workshop.js';
 
@@ -75,7 +75,9 @@ export async function mountWorkshopEditor(container, { source = createWorkshopSo
     const instance = await mountWorkshopGraph(container, { base64, view, language, signal: mountSignal,
       onChange: graphChanged,
       onSelect: name => { if (!busy) { selection = name ? { type: 'object', id: name } : null; notify('selection'); } },
+      onBeforeLayout: syncManual,
       onLayout: () => { if (graph && !busy) graphFingerprint = graph.fingerprint(); },
+      onError,
     });
     if (disposed || epoch !== graphEpoch || mountSignal.aborted) { instance.destroy(); throw aborted(); }
     graph = instance; graphFingerprint = graph.fingerprint();
@@ -178,12 +180,14 @@ export async function mountWorkshopEditor(container, { source = createWorkshopSo
       if (wasPreview && !changes.setAsOpening) await restoreSource(before.source);
       if (own(changes, 'graph') || changes.setAsOpening) await restoreSource(next, operationSignal);
       if (operations.length && !graph) await cancellable(mountGraph('', next.view, operationSignal), operationSignal);
+      if (graph) { await graph.settleLayout(); graphFingerprint = graph.fingerprint(); }
       mutedGraph = graph; mutedGraph?.mute(true); mutedGraph?.setRepainting(false);
       await execute(operations, operationSignal);
       if (operationSignal?.aborted || lifetime.signal.aborted) throw aborted();
       if (graph) {
-        graph.setView(next.view);
-        if (graph.fingerprint() !== graphFingerprint || (!next.graph && graph.objects().length)) next.graph = { base64: graph.captureNow() };
+        graph.setRepainting(true);
+        await graph.setView(next.view);
+        if (graph.fingerprint() !== graphFingerprint || (next.graph && next.view !== before.source.view) || (!next.graph && graph.objects().length)) next.graph = { base64: graph.captureNow() };
         const renames = {};
         for (const operation of operations.filter(op => op.type === 'rename')) {
           for (const [name, value] of Object.entries(renames)) if (value === operation.name) renames[name] = operation.newName;
@@ -247,7 +251,7 @@ export async function mountWorkshopEditor(container, { source = createWorkshopSo
           if (Object.keys(values).some(name => !parameters.some(object => object.name === name))) throw new GeoGebraError('preview', '试演取值引用了不存在的滑杆。');
           for (const [name, value] of Object.entries(allValues)) await graph.execute({ type: 'setValue', name, value });
           if (step) for (const object of graph.objects()) await graph.execute({ type: 'style', name: object.name, visible: step.visibleObjects.includes(object.name) });
-          graph.setView(previewView); graph.setTraces(current.traceObjects);
+          await graph.setView(previewView); graph.setTraces(current.traceObjects);
         } finally { graph.mute(false); }
       } else if (Object.keys(values).length) throw new GeoGebraError('preview', '当前作品没有图形参数。');
     } catch (error) { mode = 'edit'; previewStepId = null; visibleFormulaIds = current.formulas.map(formula => formula.id); await recover(before, error); throw error; }
@@ -257,7 +261,7 @@ export async function mountWorkshopEditor(container, { source = createWorkshopSo
   }
   function startPlayback() {
     const animation = current.animation, object = graph.objects().find(value => value.name === animation.parameter), token = ++playbackToken;
-    const low = Number(object.slider.min), high = Number(object.slider.max), start = performance.now();
+    const start = performance.now();
     function tick(now) {
       if (disposed || mode !== 'preview' || token !== playbackToken || busy) return;
       let progress = Math.max(0, (now - start) / (animation.seconds * 1000));
@@ -265,7 +269,7 @@ export async function mountWorkshopEditor(container, { source = createWorkshopSo
       else if (animation.mode === 'loop') progress %= 1;
       else { progress %= 2; if (progress > 1) progress = 2 - progress; }
       const runtime = graph; runtime.mute(true);
-      Promise.resolve(runtime.execute({ type: 'setValue', name: object.name, value: low + (high - low) * progress })).finally(() => runtime.mute(false)).then(() => {
+      Promise.resolve(runtime.execute({ type: 'setValue', name: object.name, value: workshopPlaybackValue(object.slider, progress) })).finally(() => runtime.mute(false)).then(() => {
         if (token !== playbackToken || disposed) return;
         notify('preview');
         if (animation.mode !== 'once' || progress < 1) playbackFrame = requestAnimationFrame(tick);
