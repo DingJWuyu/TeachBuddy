@@ -19,7 +19,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 | 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 已同步最新 preview 日程基线并保留原有成果，继续本轮 UI/UX 重构，未合 preview |
 | 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；原独立体验服务停止，体验数据与有效证据已保全 |
 
-日程旧 session 已冻结，由总控标记为旧现场。数学工作树继续使用，任务完成并获准集成、验证后按收尾规则清理。日程旧实例的库及文件与作者有效证据已保留在数学任务产物 `test-results/math-ux-redesign/integration/schedule-evidence/`，其中 `schedule-preview/data/` 为停服后的完整数据副本；这些是本轮本机产物，不作为新检出运行或验证前置。当前仅本地开发，不合 main，不 push。模块自测使用隔离实例，preview 用户体验入口仍由总控协调。
+日程旧 session 已冻结并标记为 `old - 日程`。数学工作树继续使用，任务完成并获准集成、验证后按收尾规则清理。日程旧实例的库及文件与作者有效证据已保留在数学任务产物 `test-results/math-ux-redesign/integration/schedule-evidence/`，其中 `schedule-preview/data/` 为停服后的完整数据副本；这些是本轮本机产物，不作为新检出运行或验证前置。当前仅本地开发，不合 main，不 push。模块自测使用隔离实例，preview 用户体验入口仍由总控协调。
 
 数学工作树以统一作品承接公式、同一二维/三维构造、参数与教学步骤，复用现有 SQLite 作品和版本。固定源码构建的本地 GGB 已完成空缓存独立重建与禁网制作验证；纯公式及图形输出、备课往返、可编辑 Word 和离线课堂 ZIP 已按具名范围实际打开核对。独立审查发现的输入保护、步骤竞态、布局与保存、输出构图及原生三维缩放时序问题已修复复验，当前没有已登记的本轮实现阻塞。范围及验证边界见[数学任务](math-workshop.md)。
 
