@@ -8,18 +8,20 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 本机用户体验直接运行 `TeacherWorkspace-preview` 源码，入口与维护方式见[SETUP](../SETUP.md#已有本机实例)。新环境按[隔离环境](../SETUP.md#新的隔离环境)启动；当前分支、HEAD 及未提交文件以 Git 为准。原 `TeacherWorkspace` 的 main 不在本轮开发范围。
 
-总控负责专属 session 的收发消息、公共文件唯一写者、集成与冲突。新任务按本节阶段授权及[开发约定](../agents/module-development.md#git-与运行现场)确认分支起点和工作现场。本机旧 session 仅供查阅，不作为新环境前置。AI/Agent 扩展开发仍暂停；已接入的首批能力与后续设计边界见下表。
+总控负责专属 session 的收发消息、公共文件唯一写者、集成与冲突。新任务按本节阶段授权及[开发约定](../agents/module-development.md#git-与运行现场)确认分支起点和工作现场。本机旧 session 仅供查阅，不作为新环境前置。跨模块 Agent 扩展开发仍暂停；数学网页 AI 的有界授权见下文。
 
 非 Agent 的本机 MVP 验收与发现的范围内缺陷修复已完成；成果集成到 preview，验收任务现场按收尾规则清理。用户在 `TeacherWorkspace-agent`（`agent/mvp-supervised`）的专属 session 中讨论 Agent，先核对已实现工具、冻结设计与实际缺口，未经用户后续指令不推进实现。该现场保留供用户继续讨论，任务完成并集成后清理；接续实现前由总控核对并同步最新集成基线。总控负责公共文件、稳定修复同步和集成，普通验收回执不转发给 Agent session。
 
-数学工坊和日程各有新的独立 session 与工作树，均从当前 preview 集成基线接手。当前授权仅为熟悉模块并等待用户指定任务，不自动实施可选增强或追加 MVP 要求；具体开发、验证和集成沿后续指令执行。
+数学工坊和日程各有独立 session 与工作树。数学工坊已获授权在其工作树实现 GeoGebra 与免费网页 AI 的闭环，用户接受浏览器扩展并已配合登录 DeepSeek；总控负责接线与真实验收。此授权不扩展到全站 Agent 重定位。其他任务仍沿各自后续指令执行。
 
 | 模块 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 接手数学工坊，等待用户指定任务 |
+| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | GeoGebra 与 DeepSeek 网页 AI 真实闭环自验完成，独立核验中；未集成 preview |
 | 日程 | `TeacherWorkspace-schedule` | `work/schedule` | 接手日程，不包含班级教学；等待用户指定任务 |
 
 两处现场保留供用户持续讨论和后续开发，任务完成并集成验证后按收尾规则清理；接续实现前由总控核对基线。模块自测使用隔离实例，公共文件和 preview 体验入口仍由总控协调。
+
+数学候选已在真实登录的 DeepSeek 网页完成：侧栏创建参数抛物线、鼠标拖点后读取最新坐标并继续修改、保存刷新读回、取消后不应用迟到结果。故障注入验证 GGB 命令超时后销毁旧实例、重试恢复修改前作品，迟到命令不能改新画布。HTTP/SQLite 作品回归和扩展 Chromium 离线回归入口分别为 `apps/api/test/math-geogebra.test.js`、`extensions/math-web-ai/test/offline.mjs`；真实复验步骤见[数学判据](../acceptance/mvp-matrix.md#math)。本机具名证据在 `test-results/math-web-ai/`，新环境按入库入口重建验证，不依赖该目录。当前限制：扩展只接本机 origin 和 DeepSeek；官方 GGB 资源偶有连接失败，需要重试；GGB 作品尚无海报、备课采用及离线 HTML。此结果不覆盖全站 Agent 或完整 M-D 的制作验收。
 
 本轮验收执行现有范围与矩阵中可在本机完成的非 Agent 项，包含真实本地 OCR、文件输出检查、测试收件器与隔离浏览器、数据备份恢复及手工跨模块流程。用户明确暂缓实际 Word/WPS 修改、保存、重开与打印，真实邮件送达，以及实际平板、课堂设备和学校网络；这些项目记为暂缓未验，不计通过，也不阻塞本轮收尾。真实产品模型调用及 Agent 组合验收随 Agent 线另行安排，可选增强不纳入本轮，MVP 范围和验收门槛保持不变。
 

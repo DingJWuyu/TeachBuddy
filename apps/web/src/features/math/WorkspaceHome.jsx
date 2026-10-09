@@ -12,6 +12,7 @@ export function mathStatusLabel(status) {
 }
 
 export const workshopKinds = [
+  { kind: 'geogebra', get title() { return t("GeoGebra 数学画布"); }, get purpose() { return t("自由作图，与 AI 一起修改同一份作品"); } },
   { kind: 'formula', get title() { return t("公式"); }, get purpose() { return t("排出清晰公式，放进讲义或课件"); } },
   { kind: 'plane', get title() { return t("平面图形"); }, get purpose() { return t("画函数图像、几何图形与标注"); } },
   { kind: 'space', get title() { return t("空间图形"); }, get purpose() { return t("制作立体几何示意图"); } },
@@ -41,7 +42,7 @@ export default function WorkspaceHome({ draft, status, items, search, deleted, b
     <section aria-labelledby="math-start-heading">
       <h2 id="math-start-heading" tabIndex={-1}>{t("这节课，需要什么数学素材？")}</h2>
       <div className="math-start-options">
-        {workshopKinds.map(({ kind, title, purpose }) => <button key={kind} className="math-start-option" aria-label={t("新建{{title}}", { title: title })} disabled={busy} onClick={() => onNew(kind)}>
+        {workshopKinds.map(({ kind, title, purpose }) => <button key={kind} className={`math-start-option${kind === 'geogebra' ? ' math-ggb-entry' : ''}`} aria-label={t("新建{{title}}", { title: title })} disabled={busy} onClick={() => onNew(kind)}>
           <WorkIllustration kind={kind}/><span><strong>{title}</strong><small>{purpose}</small></span>
           <Icon name="chevron"/>
         </button>)}

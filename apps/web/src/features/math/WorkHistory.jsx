@@ -37,6 +37,7 @@ export default function WorkHistory({ work, client, font, hasChanges, onClose, o
           <div className="math-history-preview">
             {selected.source.kind === 'formula' ? <FormulaPreview source={selected.source}/>
               : selected.source.kind === 'html' ? <p>{t("HTML 历史版本不会自动运行。恢复为草稿后，可查看源码并运行预览。")}</p>
+              : selected.source.kind === 'geogebra' ? <p>{t('GeoGebra 保存记录。恢复为草稿后可在数学画布中继续编辑。')}</p>
               : <GraphicPreview source={selected.source} font={font}/>}
           </div>
           <div className="wb-dialog-actions"><button className="wb-button" onClick={onClose}>{t("取消")}</button>

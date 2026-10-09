@@ -8,6 +8,7 @@ import {
 import {
   validate,
   validateSourceRelations,
+  validateGeoGebraSource,
   mathError,
   contract,
 } from "./contract.js";
@@ -135,9 +136,9 @@ export function createMathService({ db, mutations, files }) {
           input.source.schemaVersion !== 1
         )
           throw mathError("unsupported-work-version", "/source/schemaVersion");
-        if (input?.source?.kind === "dynamic") {
+        if (["dynamic", "geogebra"].includes(input?.source?.kind)) {
           try {
-            validate("DynamicSource", input.source);
+            validate(input.source.kind === "geogebra" ? "GeoGebraSource" : "DynamicSource", input.source);
           } catch (error) {
             if (!error.problem) throw error;
             throw mathError(
@@ -173,7 +174,7 @@ export function createMathService({ db, mutations, files }) {
               throw invalidInput("/query/state", "out-of-range");
             if (
               query.kind !== undefined &&
-              !["formula", "plane", "space", "dynamic", "html"].includes(
+              !["formula", "plane", "space", "dynamic", "html", "geogebra"].includes(
                 query.kind,
               )
             )
@@ -251,6 +252,7 @@ export function createMathService({ db, mutations, files }) {
           (format === "html" && !saved.render.presentationFileId) ||
           (saved.source.kind === "html" &&
             !["html", "source"].includes(format)) ||
+          (saved.source.kind === "geogebra" && format !== "source") ||
           (saved.render.state === "invalid" && format !== "source") ||
           (saved.source.kind === "formula" && background !== "transparent") ||
           (["source", "html"].includes(format) &&
@@ -330,10 +332,18 @@ export function createMathService({ db, mutations, files }) {
       if (prior && input.source && source.kind !== prior.source.kind)
         throw mathError("invalid-math-source", "/source/kind", "kind-changed");
       validateSourceRelations(source);
+      if (input.source) await validateGeoGebraSource(source);
       let render = prior?.render;
       if (["createWork", "updateWork"].includes(definition.name)) {
         try {
-          if (source.kind === "html") {
+          if (source.kind === "geogebra") {
+            render = {
+              state: "source-only",
+              posterFileId: null,
+              presentationFileId: null,
+              reason: null,
+            };
+          } else if (source.kind === "html") {
             const html = await readHtml(files, principal, source.fileId);
             const presentation =
               html.text === null

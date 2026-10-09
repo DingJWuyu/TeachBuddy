@@ -56,7 +56,8 @@
                 "plane",
                 "space",
                 "dynamic",
-                "html"
+                "html",
+                "geogebra"
               ]
             }
           }
@@ -2579,6 +2580,9 @@
           },
           {
             "$ref": "#/components/schemas/HtmlSource"
+          },
+          {
+            "$ref": "#/components/schemas/GeoGebraSource"
           }
         ]
       },
@@ -3993,6 +3997,38 @@
           "parameter",
           "seconds",
           "mode"
+        ],
+        "additionalProperties": false
+      },
+      "GeoGebraSource": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          },
+          "kind": {
+            "const": "geogebra"
+          },
+          "appName": {
+            "enum": [
+              "classic",
+              "graphing",
+              "geometry",
+              "3d"
+            ]
+          },
+          "base64": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 1048576,
+            "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "kind",
+          "appName",
+          "base64"
         ],
         "additionalProperties": false
       }

@@ -1,0 +1,8 @@
+.math-geogebra { position: relative; width: 100%; height: 100%; min-height: 400px; min-width: 0; overflow: hidden; background: #fff; border-radius: 16px; color: #253047; }
+.math-geogebra-host { width: 100%; height: calc(100% - 20px); min-height: 380px; }
+.math-geogebra-host > div { width: 100%; height: 100%; }
+.math-geogebra-credit { position: absolute; right: 12px; bottom: 3px; color: #657083; font-size: 10px; text-decoration: none; }
+.math-geogebra-status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; padding: 24px; text-align: center; background: #fff; }
+.math-geogebra-status p { margin: 0; }
+.math-geogebra-status button { border: 1px solid #d8deea; border-radius: 9px; background: #f7f9fc; color: #253047; padding: 8px 16px; cursor: pointer; }
+@media (max-width: 600px) { .math-geogebra { min-height: 360px; border-radius: 12px; } .math-geogebra-host { min-height: 340px; } }

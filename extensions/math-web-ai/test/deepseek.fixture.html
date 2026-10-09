@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<body>
+  <main id="messages"></main>
+  <textarea placeholder="Message DeepSeek" name="search"></textarea>
+  <button aria-label="Send Message" id="send">Send</button>
+  <script>
+    let generation = 0;
+    document.querySelector('#send').onclick = () => {
+      const input = document.querySelector('textarea');
+      const prompt = input.value;
+      input.value = '';
+      if (!location.pathname.includes('/chat/s/')) {
+        history.pushState({}, '', '/a/chat/s/fixture-conversation');
+      }
+      const root = document.querySelector('#messages');
+      const user = document.createElement('div');
+      user.className = 'ds-message';
+      user.dataset.messageAuthorRole = 'user';
+      user.textContent = prompt;
+      root.append(user);
+      const answer = document.createElement('div');
+      answer.className = 'ds-message _streaming';
+      answer.dataset.messageAuthorRole = 'assistant';
+      answer.innerHTML = '<div class="ds-markdown"></div>';
+      const wrapper = document.createElement('div');
+      wrapper.className = '_4f9bf79 d7dc56a8 _43c05b5';
+      wrapper.append(answer);
+      root.append(wrapper);
+      const stop = document.createElement('button');
+      stop.setAttribute('aria-label', 'Stop generating');
+      stop.className = 'ds-icon-stop';
+      stop.onclick = () => {
+        stop.remove();
+        answer.classList.remove('_streaming');
+      };
+      document.body.append(stop);
+      const number = ++generation;
+      setTimeout(() => {
+        const pre = document.createElement('pre');
+        pre.innerHTML = '<span>json</span><code></code>';
+        pre.querySelector('code').textContent = JSON.stringify({
+          commands: ['f(x)=a*x^2', `A=(${number},0)`], round: number,
+        });
+        answer.querySelector('.ds-markdown').append(pre);
+        answer.classList.remove('_streaming');
+        stop.remove();
+        // Real DeepSeek footer is beside .ds-message, not inside it.
+        setTimeout(() => {
+          const footer = document.createElement('div');
+          footer.className = 'ds-flex _0a3d93b';
+          for (let i = 0; i < 6; i++) {
+            const action = document.createElement('div');
+            action.setAttribute('role', 'button');
+            action.innerHTML = '<svg><path d="M0 0"></path></svg>';
+            footer.append(action);
+          }
+          wrapper.append(footer);
+        }, prompt.includes('footer-delay') ? 4000 : 0);
+      }, prompt.includes('slow') ? 6000 : 350);
+    };
+  </script>
+</body>
+</html>

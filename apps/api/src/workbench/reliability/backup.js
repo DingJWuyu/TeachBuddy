@@ -92,7 +92,7 @@ function contentSchemas(db) {
     }
     if (
       value.schemaVersion !== undefined &&
-      ["formula", "plane", "space", "dynamic", "html"].includes(value.kind)
+      ["formula", "plane", "space", "dynamic", "html", "geogebra"].includes(value.kind)
     ) {
       if (value.schemaVersion !== 1)
         throw new Error("Unsupported mathematical source version");

@@ -40,6 +40,7 @@ import "./workspace.css";
 import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { WorkspaceToolbar } from './WorkspaceControls.jsx';
 import { useDraftHistory } from './useDraftHistory.js';
+import GgbWorkspace from './GgbWorkspace.jsx';
 import WorkHistory from './WorkHistory.jsx';
 const base = "/api/modules/math/v1/works";
 const names = {
@@ -101,6 +102,7 @@ function hasContent(draft) {
   if (!draft) return false;
   if (draft.id || draft.source.kind === 'html' || Object.keys(draft.parameterEdits ?? {}).length) return true;
   const kind = draft.source.kind;
+  if (kind === 'geogebra') return (draft.ggbTouched ?? !!draft.source.base64) || draft.title !== '未命名数学作品';
   const empty = kind === 'dynamic' ? emptyDynamicSource() : emptySource(kind);
   return draft.title !== `未命名${({ dynamic: "演示", html: "HTML", formula: "公式", plane: "平面图形", space: "空间图形" })[kind]}` || JSON.stringify(draft.source) !== JSON.stringify(empty);
 }
@@ -301,6 +303,8 @@ function MathSession({ transport, route }) {
     [conflict, setConflict] = useState(null);
   const [confirm, confirmationDialog] = useMathConfirm();
   const history = useDraftHistory();
+  const ggbFlush = useRef(null);
+  const [editorSession, setEditorSession] = useState(0);
   const [historyOpen, setHistoryOpen] = useState(false);
   useEffect(() => {
     const kind = draft?.source?.kind;
@@ -553,7 +557,10 @@ function MathSession({ transport, route }) {
     const saved = await mathRequest(`${base}/${started.id}`);
     if (epoch !== generation.current || draftRef.current !== started || inFlight.current || liveSave.current.pending) return;
     if (saved.version === started.version) return;
-    if (liveSave.current.status === "已保存") setDraft(saved);
+    if (liveSave.current.status === "已保存") {
+      if (saved.source.kind === "geogebra") setEditorSession(value => value + 1);
+      setDraft(saved);
+    }
     else { setConflict(saved); setMessage(t("服务器内容已变化，本地稿保留，请对照当前版本")); }
   });
   useEffect(() => {
@@ -602,10 +609,12 @@ function MathSession({ transport, route }) {
     )
       return;
     history.reset(null);
+    setEditorSession(value => value + 1);
     edit({
-      title: `未命名${({ dynamic: "演示", html: "HTML", formula: "公式", plane: "平面图形", space: "空间图形" })[kind]}`,
-      source: kind === "dynamic" ? emptyDynamicSource() : emptySource(kind),
+      title: `未命名${({ dynamic: "演示", html: "HTML", formula: "公式", plane: "平面图形", space: "空间图形", geogebra: "数学作品" })[kind]}`,
+      source: kind === "geogebra" ? { schemaVersion: 1, kind, appName: "classic", base64: "" } : kind === "dynamic" ? emptyDynamicSource() : emptySource(kind),
       originalFileId: null,
+      ...(kind === "geogebra" ? { ggbTouched: false } : {}),
     }, false);
     setSelected(0);
     setConflict(null);
@@ -628,6 +637,7 @@ function MathSession({ transport, route }) {
     try {
       const saved = await mathRequest(`${base}/${item.id}`);
       if (epoch !== generation.current) return;
+      setEditorSession(value => value + 1);
       setDraft(saved);
       draftRef.current = saved;
       history.reset(saved);
@@ -642,6 +652,10 @@ function MathSession({ transport, route }) {
   }
   async function save(copy = false) {
     if (inFlight.current) return;
+    if (!pending && draftRef.current?.source.kind === "geogebra") {
+      try { await ggbFlush.current?.(); } catch (error) { handleError(error); return; }
+      if (inFlight.current) return;
+    }
     if (pending?.kind === 'import-source') return importSource();
     if (!pending && Object.keys(draft.parameterEdits ?? {}).length) {
       setMessage(t("请先应用参数设置，再保存作品"));
@@ -887,7 +901,7 @@ function MathSession({ transport, route }) {
   const readOnly =
     draft &&
     (draft.source.schemaVersion !== 1 ||
-      !["formula", "plane", "space", "dynamic", "html"].includes(
+      !["formula", "plane", "space", "dynamic", "html", "geogebra"].includes(
         draft.source.kind,
       ));
   const objects =
@@ -951,7 +965,10 @@ function MathSession({ transport, route }) {
     patchView({ selectionKind: kind });
     showTools('objects');
   }
-  function goHome() {
+  async function goHome() {
+    if (draftRef.current?.source.kind === "geogebra") {
+      try { await ggbFlush.current?.(); } catch (error) { handleError(error); return; }
+    }
     if (!hasContent(draft) && !pending && !busy) { setDraft(null); draftRef.current = null; }
     patchView({ screen: 'home', exportOpen: false, usageOpen: false });
     if (route?.workId) shell?.navigate('/math');
@@ -1014,7 +1031,7 @@ function MathSession({ transport, route }) {
     setSelected(0); patchView({ selectionKind: 'object' });
   }
   useEffect(() => {
-    if (!canChangeHistory) return;
+    if (!canChangeHistory || draft?.source.kind === "geogebra") return;
     const keydown = event => {
       if (!(event.ctrlKey || event.metaKey) || event.altKey || event.isComposing || event.defaultPrevented) return;
       if (!event.target.closest?.('.math-workbench, .math-tools-panel') || event.target.closest('input, textarea, select, math-field, [contenteditable="true"], [role="dialog"], [role="menu"]')) return;
@@ -1030,6 +1047,7 @@ function MathSession({ transport, route }) {
     if (!canChangeHistory) return;
     if (status !== "已保存" && !await confirm(t("恢复历史版本会替换当前未保存修改，是否继续？"))) return;
     edit({ ...draftRef.current, title: version.title, source: version.source, htmlText: undefined, htmlUploadKey: undefined, parameterEdits: {} });
+    setEditorSession(value => value + 1);
     setHistoryOpen(false); setSelected(0);
     patchView({ formulaMode: null, formulaBuilder: null, selectionKind: 'object' });
     setMessage(t("已恢复版本 {{version}} 为草稿，保存后生成新版本。", { version: version.version }));
@@ -1057,6 +1075,14 @@ function MathSession({ transport, route }) {
         <button onClick={identify}>{t("重新验证")}</button>
       </main>
     );
+  if (!home && !readOnly && draft?.source.kind === 'geogebra') return <GgbWorkspace key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflict={conflict} flushRef={ggbFlush}
+    onChangeSource={(next, touched) => { const current = draftRef.current; if (current?.source.kind === 'geogebra' && current.source.base64 !== next.base64) edit({ ...current, source: next, ggbTouched: current.ggbTouched || touched }, false); }}
+    onUnchanged={(previous, previousStatus) => { if (previousStatus === '已保存' && draftRef.current === previous && !inFlight.current && !pending) setStatus('已保存'); }}
+    onDirty={() => setStatus('未保存')} onTitle={title => edit({ ...draftRef.current, title }, false)} onHome={goHome} onSave={() => save()} onError={handleError}
+    onHistory={() => setHistoryOpen(true)} onRestore={() => deletion(false)} onOpenServer={() => open({ id: draft.id })}>
+    {confirmationDialog}
+    <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
+  </GgbWorkspace>;
   return (
     <div className="math-workbench wb-module">
       <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== "已保存"} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>

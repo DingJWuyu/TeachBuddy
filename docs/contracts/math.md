@@ -26,6 +26,8 @@ rendererVersion 是服务端实际的渲染器发行标识，覆盖表达式求�
 
 ## 结构化数学源语义
 
+GeoGebra 使用 `kind=geogebra`，保存 `appName` 与完整 `.ggb` 的 base64；不展开成自建几何模型。服务端检查 ZIP 完整性、大小与 `geogebra.xml`，保存为 `source-only`，不执行其中内容、不生成海报或课堂文件。浏览器初始化禁用文件内嵌 JavaScript。API 的 `source` 导出为包含该源的 JSON，编辑器的 `.ggb` 下载为原生文件，两者不混称。此类型目前不能新增备课引用。字段和限制由上述 schema 与 `math-geogebra.test.js` 维护。
+
 唯一字段见 schema，下面是字段间的约束与数学定义。
 
 - 二维坐标为数学坐标，x向右、y向上；viewport 的 min<max。显示按同一单位等比缩放并居中留白，SVG viewBox/PNG 使用保存的 width/height，不把圆拉成椭圆。对象数组顺序是绘制顺序，id 在整 scene 唯一。标签 dx/dy 为输出逻辑像素（右/下为正），缩放一同变换。text 为普通文字；允许 `{参数名}` 的数值插值，其他花括号文字原样显示，绝不解释 HTML。
