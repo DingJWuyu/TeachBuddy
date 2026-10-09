@@ -466,3 +466,85 @@ function unstableEntry() {
     reminder: null
   };
 }
+
+test('permanent deletion guards ownership/version, removes child rows and replays after restart', async () => {
+  await withHarness(async harness => {
+    const a = harness.agent(harness.account('teacher-a'));
+    const b = harness.agent(harness.account('teacher-b'));
+    const created = await a.post(ENTRIES, weeklyEntry(), { key: harness.key() });
+    const id = created.body.id;
+    const exception = await a.put(`${ENTRIES}/${id}/exceptions/2026-09-28`, { expectedVersion: 1, mode: 'cancelled' }, { key: harness.key() });
+    assert.equal(exception.status, 200);
+    const entry = await a.get(`${ENTRIES}/${id}`);
+    const version = entry.body.version;
+    harness.workbench().db.prepare('INSERT INTO schedule_instance_arms (entryId, originDate, armedAt) VALUES (?, ?, ?)').run(id, '2026-10-05', '2026-09-21T00:00:00Z');
+    assert.equal((await b.post(`${ENTRIES}/${id}/delete`, { expectedVersion: version }, { key: harness.key() })).status, 404);
+    assert.equal((await a.post(`${ENTRIES}/${id}/delete`, { expectedVersion: 1 }, { key: harness.key() })).status, 409);
+    assert.equal(harness.count('SELECT COUNT(*) AS count FROM schedule_exceptions WHERE entryId = ?', id), 1);
+    const key = harness.key();
+    const deleted = await a.post(`${ENTRIES}/${id}/delete`, { expectedVersion: version }, { key });
+    assert.equal(deleted.status, 200);
+    for (const table of ['schedule_entries', 'schedule_exceptions', 'schedule_instance_arms']) {
+      const column = table === 'schedule_entries' ? 'id' : 'entryId';
+      assert.equal(harness.count(`SELECT COUNT(*) AS count FROM ${table} WHERE ${column} = ?`, id), 0);
+    }
+    assert.equal((await a.get(`${ENTRIES}/${id}`)).status, 404);
+    assert.equal((await a.post(`${ENTRIES}/${id}/deletion`, { expectedVersion: version, deleted: false }, { key: harness.key() })).status, 404);
+    await harness.restart();
+    const replay = await harness.agent(harness.account('teacher-a')).post(`${ENTRIES}/${id}/delete`, { expectedVersion: version }, { key });
+    assert.equal(replay.status, 200);
+    assert.deepEqual(replay.body, deleted.body);
+  });
+});
+
+test('detaching an occurrence is atomic, idempotent and survives deletion of its repeat rule', async () => {
+  await withHarness(async harness => {
+    const a = harness.agent(harness.account('teacher-a'));
+    const calendar = { allDay: false, notes: '课堂笔记', tags: [] };
+    const created = await a.post(ENTRIES, weeklyEntry({ calendar }), { key: harness.key() });
+    const id = created.body.id;
+    const url = `${ENTRIES}/${id}/occurrences/2026-09-21/detach`;
+    const content = timedEntry({ calendar, title: '本次调整', expectedVersion: 1 });
+    const bad = await a.post(url, { ...content, expectedVersion: 99 }, { key: harness.key() });
+    assert.equal(bad.status, 409);
+    assert.equal((await a.get(`${ENTRIES}/${id}/occurrence`, { originDate: '2026-09-21' })).body.state, 'active');
+    assert.equal((await a.get(ENTRIES)).body.items.length, 1);
+    const key = harness.key();
+    const detached = await a.post(url, content, { key });
+    assert.equal(detached.status, 201);
+    assert.notEqual(detached.body.id, id);
+    assert.equal(detached.body.repeat, null);
+    assert.deepEqual(detached.body.items, content.items);
+    assert.deepEqual(detached.body.calendar, calendar);
+    assert.deepEqual((await a.post(url, content, { key })).body, detached.body);
+    assert.equal((await a.get(ENTRIES)).body.items.length, 2);
+    assert.equal((await a.get(`${ENTRIES}/${id}/occurrence`, { originDate: '2026-09-21' })).body.state, 'cancelled');
+    assert.equal((await a.get(`${ENTRIES}/${id}/occurrence`, { originDate: '2026-09-28' })).body.state, 'active');
+    const removed = await a.post(`${ENTRIES}/${id}/delete`, { expectedVersion: 2 }, { key: harness.key() });
+    assert.equal(removed.status, 200);
+    assert.equal((await a.get(`${ENTRIES}/${detached.body.id}`)).body.deletedAt, null);
+  });
+});
+
+test('item completion is optional for old entries, validated and persisted with item moves', async () => {
+  await withHarness(async (harness) => {
+    const a = harness.agent(harness.account('teacher-a'));
+    const original = unscheduledEntry();
+    original.items[0].completed = true;
+    const created = await a.post(ENTRIES, original, { key: harness.key() });
+    assert.equal(created.status, 201);
+    const entry = created.body;
+    assert.equal((await a.get(`${ENTRIES}/${entry.id}`)).body.items[0].completed, true);
+    const invalid = await a.put(`${ENTRIES}/${entry.id}`, { ...original, items: [{ ...original.items[0], completed: 'true' }], expectedVersion: entry.version }, { key: harness.key() });
+    assert.equal(invalid.status, 422);
+    assert.equal(invalid.body.field, '/items/0/completed');
+    const target = await a.post(ENTRIES, unscheduledEntry({ title: '目标', items: [] }), { key: harness.key() });
+    const moved = await a.post('/api/modules/schedule/item-moves', { itemId: original.items[0].id, fromEntryId: entry.id, fromVersion: entry.version, toEntryId: target.body.id, toVersion: target.body.version, toIndex: 0 }, { key: harness.key() });
+    assert.equal(moved.status, 200);
+    const stored = (await a.get(`${ENTRIES}/${target.body.id}`)).body;
+    assert.equal(stored.items[0].completed, true);
+    const updated = await a.put(`${ENTRIES}/${stored.id}`, { title: stored.title, items: [{ ...stored.items[0], completed: false }], time: stored.time, repeat: stored.repeat, reminder: stored.reminder, course: stored.course, expectedVersion: stored.version }, { key: harness.key() });
+    assert.equal(updated.status, 200);
+    assert.equal((await a.get(`${ENTRIES}/${stored.id}`)).body.items[0].completed, false);
+  });
+});

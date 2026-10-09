@@ -23,7 +23,7 @@ export default function Topbar({ route, collapsed, toggleSidebar, surface, setSu
    if (e.type === 'keydown' && e.key === 'Escape') { celebrate(false); if (!scene.coachDismissed) dismissCoach(); }
    if (e.type === 'keydown' && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSurface('search'); return; }
    if (!['support','search','feedback','tutorial','privacy','notifications'].includes(surface)) return;
-   if (e.type === 'keydown' ? e.key === 'Escape' : !ref.current?.contains(e.target)) setSurface(null);
+   if (e.type === 'keydown' ? e.key === 'Escape' : surface === 'notifications' ? !e.target.closest('[data-topbar-surface=notifications]') : !ref.current?.contains(e.target)) setSurface(null);
   };
   document.addEventListener('pointerdown', close); document.addEventListener('keydown', close);
   return () => { document.removeEventListener('pointerdown',close); document.removeEventListener('keydown',close); };

@@ -18,6 +18,7 @@ import {
   validateExceptionInput,
   validateMoveItem,
   validateSetDeletion,
+  validateDeleteEntry,
   validateSettingsUpdate,
   validateUpdateEntry
 } from './schema.js';
@@ -112,6 +113,16 @@ export function createScheduleRouter({ service, mutations }) {
     })
   }));
 
+  router.post('/entries/:id/delete', createMutationHandler({
+    mutations,
+    method: 'POST',
+    validate: withPathId(validateDeleteEntry),
+    write: ({ principal, body, request }) => ({
+      status: 200,
+      body: service.deleteEntry(principal, request.params.id, body)
+    })
+  }));
+
   router.post('/entries/:id/deletion', createMutationHandler({
     mutations,
     method: 'POST',
@@ -138,6 +149,16 @@ export function createScheduleRouter({ service, mutations }) {
     write: ({ principal, body, request }) => ({
       status: 200,
       body: service.setException(principal, request.params.id, request.params.originDate, body)
+    })
+  }));
+
+  router.post('/entries/:id/occurrences/:originDate/detach', createMutationHandler({
+    mutations,
+    method: 'POST',
+    validate: withPathId(validateUpdateEntry),
+    write: ({ principal, body, request }) => ({
+      status: 201,
+      body: service.detachOccurrence(principal, request.params.id, request.params.originDate, body)
     })
   }));
 

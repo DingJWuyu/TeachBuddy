@@ -69,15 +69,15 @@ export default function Notifications({ open: isOpen, onToggle, onClose, onAnnou
   function change(next) {
     if (submit.pending || submit.isRunning) return;
     const removed = items.filter(item => !next.some(n => n.id === item.id));
-    const read = next.filter(item => item.read && !items.find(n => n.id === item.id)?.read);
-    const ids = (removed.length ? removed : read).map(item => item.id);
-    if (ids.length) submit.submit(run, { path:'/api/modules/schedule/notification-actions', body:{ ids, action:removed.length ? 'dismiss' : 'read' } });
+    const changed = next.filter(item => item.read !== items.find(n => n.id === item.id)?.read);
+    const ids = (removed.length ? removed : changed).map(item => item.id);
+    if (ids.length) submit.submit(run, { path:'/api/modules/schedule/notification-actions', body:{ ids, action:removed.length ? 'dismiss' : changed[0].read ? 'read' : 'unread' } });
   }
-  return <span className="tb-entry-wrap">
+  return <span className="tb-entry-wrap" data-topbar-surface="notifications">
     <button className="tb-entry" aria-label={t("通知")} aria-haspopup="dialog" aria-expanded={isOpen} onClick={onToggle}><Icon name="bell" size={22}/>{state.unreadCount>0 && <span className="tb-badge is-red">!</span>}</button>
     {!isOpen && <span className="tb-tooltip" aria-hidden="true">{t("通知")}</span>}
-    {isOpen && <><NotificationPanel items={items} onChange={change} onAnnounce={onAnnounce} onOpenItem={item=>open(state.items.find(n=>n.id===item.id),onClose)}/>
-      {(error || submit.problem) && <div className="tb-notification-problem" role="alert">{error || submit.problem.message}<button disabled={submit.isRunning} onClick={()=>submit.pending?submit.retry(run):refresh()}>{t("重试")}</button></div>}
-    </>}
+    {isOpen && <NotificationPanel items={items} onChange={change} onAnnounce={onAnnounce} onOpenItem={item=>open(state.items.find(n=>n.id===item.id),onClose)}
+      feedback={(error || submit.problem) && <div className="tb-notification-problem" role="alert">{error || submit.problem.message}<button disabled={submit.isRunning} onClick={()=>submit.pending?submit.retry(run):refresh()}>{t("重试")}</button></div>}/>
+    }
   </span>;
 }

@@ -1,0 +1,2 @@
+import { defineConfig } from '@playwright/test';
+export default defineConfig({testDir:'.',testMatch:'calendar-dialog-keyboard.spec.js',workers:2,fullyParallel:true,retries:0,timeout:30000,expect:{timeout:3000},outputDir:'../../../test-results/schedule-dialog-keyboard/results',reporter:[['list']],use:{ignoreHTTPSErrors:true,viewport:{width:1675,height:950},trace:'retain-on-failure',screenshot:'only-on-failure'}});

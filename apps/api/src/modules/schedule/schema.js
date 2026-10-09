@@ -63,15 +63,23 @@ function calendarFields(fields, value) {
   }).concat(extended ? [['calendar', calendarSchema]] : []);
 }
 
-const reminderSchema = schema.object([
+const reminderFields = [
   ['side', schema.string({ enum: ['before', 'after'] })],
   ['minutes', schema.integer({ min: 0, max: 10080 })]
+];
+const reminderSchema = schema.oneOf([
+  schema.object([...reminderFields, ['anchor', schema.string({ enum: ['start', 'end'] })]]),
+  schema.object(reminderFields)
 ]);
 
-const itemSchema = schema.object([
+const itemFields = [
   ['id', id],
   ['text', schema.string({ minLength: 1, maxLength: 4000 })],
   ['priority', schema.string({ enum: ['low', 'normal', 'high'] })]
+];
+const itemSchema = schema.oneOf([
+  schema.object([...itemFields, ['completed', schema.boolean()]]),
+  schema.object(itemFields)
 ]);
 
 const courseSchema = schema.object([
@@ -118,14 +126,15 @@ const exceptionInputSchema = schema.oneOf([
   ])
 ]);
 
-const moveItemSchema = schema.object([
+const moveItemFields = [
   ['itemId', id],
   ['fromEntryId', id],
   ['fromVersion', version],
   ['toEntryId', id],
   ['toVersion', version],
   ['toIndex', schema.integer({ min: 0 })]
-]);
+];
+const moveItemSchema = schema.object(moveItemFields);
 
 const settingsUpdateSchema = schema.object([
   ['timeZone', schema.string({ minLength: 1, maxLength: 100 })],
@@ -156,7 +165,8 @@ const overrideNullables = [
 
 const moveNullables = [
   { path: ['toEntryId'], sentinel: placeholderId },
-  { path: ['toVersion'], sentinel: 1 }
+  { path: ['toVersion'], sentinel: 1 },
+  { path: ['toOriginDate'], sentinel: '2000-01-01' }
 ];
 
 function atPath(object, path) {
@@ -244,6 +254,10 @@ export function validateUpdateEntry(body) {
   return validateEntryShape(value);
 }
 
+export function validateDeleteEntry(body) {
+  return validateBody(schema.object([['expectedVersion', version]]), body);
+}
+
 export function validateSetDeletion(body) {
   return validateBody(deletionSchema, body);
 }
@@ -268,7 +282,9 @@ export function validateExceptionInput(body) {
 
 export function validateMoveItem(body) {
   const { prepared, pending } = prepare(body, moveNullables);
-  const value = validateBody(moveItemSchema, prepared);
+  const fields = body && typeof body === 'object' && ('toScope' in body || 'toOriginDate' in body) ? schema.object([...moveItemFields,
+    ['toScope', schema.string({ enum: ['series', 'instance'] })], ['toOriginDate', date]]) : moveItemSchema;
+  const value = validateBody(fields, prepared);
   restoreNulls(pending);
   return value;
 }

@@ -21,9 +21,14 @@ export function contentOf(entry) {
     course: structuredClone(entry.course ?? { classId: null, lessonId: null, recordIds: [] }),
     reminder: entry.reminder ? { ...entry.reminder } : null, calendar: structuredClone(entry.calendar ?? blankCalendar()) };
 }
+export function defaultTime(zone) {
+  const current = localParts(zone, Date.now());
+  return { date: current.date, startTime: formatClock(Math.floor(current.minutes / 5) * 5), durationMinutes: 60, timeZone: zone };
+}
 export function newContent(zone, start, end, allDay = false) {
-  const date = start?.slice(0, 10) ?? todayInZone(zone);
-  const startTime = allDay ? '00:00' : start?.slice(11, 16) || '09:00';
+  const defaults = defaultTime(zone);
+  const date = start?.slice(0, 10) ?? defaults.date;
+  const startTime = allDay ? '00:00' : start?.slice(11, 16) || defaults.startTime;
   const duration = end ? allDay ? diffDays(date, end.slice(0, 10)) * 1440
     : Math.round((instantAt(zone, end.slice(0, 10), parseClock(end.slice(11, 16))) - instantAt(zone, date, parseClock(startTime))) / 60000) : allDay ? 1440 : 60;
   return { title: '', items: [], time: { date, startTime, timeZone: zone, durationMinutes: Math.max(5, duration) },
@@ -46,27 +51,48 @@ export function changeEnd(content, date, clock) {
   const end = instantAt(content.time.timeZone, date, endMinutes);
   return { ...content.time, durationMinutes: Math.round((end - start) / 60000) };
 }
-export function contentProblem(content) {
-  if (!content.title.trim() && !content.items.some(item => item.text.trim())) return t("请输入任务标题");
-  if (content.items.some(item => !item.text.trim())) return t("请填写空白事项，或将它移除");
+export function timeRangeLabel(content) {
+  if (!content?.time) return '';
+  const end = endOf(content);
+  const start = content.time;
+  if (content.calendar.allDay) return `${start.date}${end.date !== start.date ? ` - ${end.date}` : ''} · ${t("全天")}`;
+  return `${start.date} ${start.startTime} - ${end.date !== start.date ? `${end.date} ` : ''}${end.time}`;
+}
+export function endTimeProblem(content) {
+  if (!content.time) return null;
+  if (!Number.isInteger(content.time.durationMinutes) || content.time.durationMinutes <= 0) return t("结束时间需要晚于开始时间");
+  if (content.time.durationMinutes > 527040) return t("单次任务最多跨越 366 天");
+  if (endOf(content).date > '2100-12-31') return t("结束日期超出可用范围");
+  return null;
+}
+export function timeProblem(content) {
   if (content.time) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(content.time.date) || content.time.date < '1900-01-01' || content.time.date > '2100-12-31') return t("请选择有效日期");
     if (parseClock(content.time.startTime) === null) return t("请选择开始时间");
-    if (!Number.isInteger(content.time.durationMinutes) || content.time.durationMinutes <= 0) return t("结束时间需要晚于开始时间");
-    if (content.time.durationMinutes > 527040) return t("单次任务最多跨越 366 天");
-    if (endOf(content).date > '2100-12-31') return t("结束日期超出可用范围");
-    if (content.repeat?.until < content.time.date) return t("重复结束日期不能早于开始日期");
+    const endIssue = endTimeProblem(content);
+    if (endIssue) return endIssue;
+
   }
+  return null;
+}
+export function contentProblem(content) {
+  if (!content.title.trim() && !content.items.some(item => item.text.trim())) return t("请输入任务标题");
+  const issue = timeProblem(content);
+  if (issue) return issue;
+  if (content.time && content.repeat?.until < content.time.date) return t("重复结束日期不能早于开始日期");
   return null;
 }
 export function eventOf(occurrence, zone, labels) {
   const start = localParts(zone, Date.parse(occurrence.startsAt));
   const end = localParts(zone, Date.parse(occurrence.endsAt));
   const color = labels.find(label => occurrence.calendar?.tags.includes(label.id))?.color ?? '#9ba0aa';
+  const [red, green, blue] = color.slice(1).match(/../g).map(channel => parseInt(channel, 16));
+  const selectedTextColor = red * .299 + green * .587 + blue * .114 > 160 ? '#2e3137' : '#fff';
+  const displayDays = Math.max(1, diffDays(start.date, end.date) + (!occurrence.calendar?.allDay && end.minutes > 0 ? 1 : 0));
   return { id: `${occurrence.key.entryId}:${occurrence.key.originDate ?? ''}`, title: titleOf(occurrence),
     start: `${start.date}T${formatClock(start.minutes)}:00`, end: `${end.date}T${formatClock(end.minutes)}:00`,
-    allDay: occurrence.calendar?.allDay ?? false, backgroundColor: `${color}24`, borderColor: 'transparent', textColor: 'var(--app-text)',
-    extendedProps: { occurrence, color } };
+    allDay: occurrence.calendar?.allDay ?? false, backgroundColor: `color-mix(in srgb, ${color} 14%, var(--app-surface))`, borderColor: 'transparent', textColor: 'var(--app-text)',
+    extendedProps: { occurrence, color, selectedTextColor, displayDays } };
 }
 export function timeFromEvent(event, zone) {
   const start = event.startStr.slice(0, 10);
@@ -83,12 +109,12 @@ export function timeFromEvent(event, zone) {
       return { ...occurrence.time, date: addDays(occurrence.time.date, diffDays(previousStart, start)),
         durationMinutes: occurrence.time.durationMinutes + (days - diffDays(previousStart, previousEnd)) * 1440 };
     }
-    return { date: start, startTime: '00:00', durationMinutes: days * 1440, timeZone: zone };
+    return { date: start, startTime: '00:00', durationMinutes: 1440, timeZone: zone };
   }
   const startMs = instantAt(zone, start, parseClock(startTime));
   const endMs = instantAt(zone, end.slice(0, 10), parseClock(end.slice(11, 16) || '00:00'));
   const local = localParts(schedulingZone, startMs);
-  return { date: local.date, startTime: formatClock(local.minutes), durationMinutes: Math.round((endMs - startMs) / 60000), timeZone: schedulingZone };
+  return { date: local.date, startTime: formatClock(local.minutes), durationMinutes: occurrence?.calendar?.allDay ? 60 : Math.round((endMs - startMs) / 60000), timeZone: schedulingZone };
 }
 export function presetRepeat(kind, date) {
   if (kind === 'none') return null;
@@ -96,8 +122,50 @@ export function presetRepeat(kind, date) {
     interval: kind === 'biweekly' ? 2 : 1, weekdays: kind === 'weekdays' ? [1, 2, 3, 4, 5] : [weekday(date)],
     monthly: kind === 'monthly-weekday' ? 'weekday' : 'date', count: 0 };
 }
-export function repeatLabel(repeat) {
+export function repeatAnchor(date, rule, { day, month, ordinal, dayOfWeek }, anchor = date) {
+  const interval = rule.interval ?? 1;
+  if (!Number.isInteger(interval) || interval < 1) return null;
+  if (rule.frequency === 'daily') return addDays(anchor, Math.max(0, Math.ceil(diffDays(anchor, date) / interval)) * interval);
+  if (rule.frequency === 'weekly') {
+    const firstWeek = monday(anchor);
+    let start = addDays(firstWeek, Math.max(0, Math.ceil(diffDays(firstWeek, monday(date)) / (7 * interval))) * 7 * interval);
+    const candidates = rule.weekdays.map(value => addDays(start, (value + 6) % 7)).sort();
+    return candidates.find(value => value >= date && value >= anchor) ?? (candidates[0] && addDays(candidates[0], 7 * interval));
+  }
+  if (rule.frequency === 'yearly') {
+    let started = false;
+    for (let year = Number(anchor.slice(0, 4)); year <= 2100; year += started ? interval : 1) {
+      const prefix = `${year}-${String(month).padStart(2, '0')}`;
+      const candidate = `${prefix}-${String(day).padStart(2, '0')}`;
+      if (day > monthDays(prefix) || candidate < anchor) continue;
+      started = true;
+      if (candidate >= date) return candidate;
+    }
+    return null;
+  }
+  let prefix = anchor.slice(0, 7);
+  let started = false;
+  while (prefix <= '2100-12') {
+    const first = `${prefix}-01`;
+    const value = rule.monthly === 'weekday' ? 1 + (dayOfWeek - weekday(first) + 7) % 7 + (ordinal - 1) * 7 : day;
+    const candidate = `${prefix}-${String(value).padStart(2, '0')}`;
+    if (value <= monthDays(prefix) && candidate >= anchor) {
+      started = true;
+      if (candidate >= date) return candidate;
+    }
+    prefix = shiftMonth(prefix, started ? interval : 1);
+  }
+  return null;
+}
+
+export function repeatLabel(repeat, date) {
   if (!repeat) return t("不重复");
   const frequency = repeat.frequency ?? 'weekly';
-  return (repeat.interval ?? 1) === 1 ? t(`repeat.${frequency}.single`) : t(`repeat.${frequency}`, { count: repeat.interval });
+  const parts = [(repeat.interval ?? 1) === 1 ? t(`repeat.${frequency}.single`) : t(`repeat.${frequency}`, { count: repeat.interval })];
+  if (frequency === 'weekly') parts.push((repeat.weekdays ?? (date ? [weekday(date)] : [])).slice().sort((a, b) => (a + 6) % 7 - (b + 6) % 7).map(value => new Intl.DateTimeFormat(i18n.resolvedLanguage, { weekday: 'short', timeZone: 'UTC' }).format(new Date(`2024-01-${String(value === 0 ? 7 : value).padStart(2, '0')}T00:00:00Z`))).join('、'));
+  if (frequency === 'monthly' && date) parts.push(repeat.monthly === 'weekday' ? t('第{{ordinal}}个{{weekday}}', { ordinal: t(`ordinal.${Math.ceil(Number(date.slice(8)) / 7)}`), weekday: new Intl.DateTimeFormat(i18n.resolvedLanguage, { weekday: 'short', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`)) }) : t('{{day}} 日', { day: Number(date.slice(8)) }));
+  if (frequency === 'yearly' && date) parts.push(t('{{month}} 月 {{day}} 日', { month: Number(date.slice(5, 7)), day: Number(date.slice(8)) }));
+  if (repeat.count) parts.push(t('共 {{count}} 次', { count: repeat.count }));
+  else if (repeat.until && repeat.until !== '2100-12-31') parts.push(t('至 {{date}}', { date: repeat.until }));
+  return parts.filter(Boolean).join(' · ');
 }
