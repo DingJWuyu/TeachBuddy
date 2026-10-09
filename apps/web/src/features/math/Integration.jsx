@@ -68,7 +68,7 @@ export function MathUsageDetails({ work }) {
     return()=>{live=false;};
   },[work?.id,work?.version,reload]);
   return <div className="math-usage-details">
-    {work?.id && <details open><summary>{t("使用位置与教学反馈")}</summary>
+    {work?.id && <details><summary>{t("使用位置与教学反馈")}</summary>
       {error && <p role="alert">{error}<button onClick={()=>setReload(n=>n+1)}>{t("重试使用位置")}</button></p>}
       {usages.map(u=><button className="wb-text-button" key={u.referenceId} onClick={()=>shell.openQuestionUsage(u.lessonId,u.referenceId,`/math?workId=${work.id}`)}>{u.lessonTitle} · {u.sectionTitle||t("本课材料")} {t("· 版本")} {u.adoptedVersion}</button>)}
       <SourceRecordsPanel kind="math" id={work.id}/>
