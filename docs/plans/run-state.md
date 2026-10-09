@@ -16,12 +16,14 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 模块 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | GeoGebra 与 DeepSeek 网页 AI 真实闭环自验完成；独立核验发现即时离开丢稿、执行中取消及保存冲突处理问题，修复复验中；未集成 preview |
+| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | GeoGebra 与 DeepSeek 网页 AI 真实账号闭环完成，保存与取消保护通过独立核验；保留本工作树供用户体验，未集成 preview |
 | 日程 | `TeacherWorkspace-schedule` | `work/schedule` | 接手日程，不包含班级教学；等待用户指定任务 |
 
 两处现场保留供用户持续讨论和后续开发，任务完成并集成验证后按收尾规则清理；接续实现前由总控核对基线。模块自测使用隔离实例，公共文件和 preview 体验入口仍由总控协调。
 
-数学候选已在真实登录的 DeepSeek 网页完成：侧栏创建参数抛物线、鼠标拖点后读取最新坐标并继续修改、保存刷新读回、取消后不应用迟到结果。故障注入验证 GGB 命令超时后销毁旧实例、重试恢复修改前作品，迟到命令不能改新画布。HTTP/SQLite 作品回归和扩展 Chromium 离线回归入口分别为 `apps/api/test/math-geogebra.test.js`、`extensions/math-web-ai/test/offline.mjs`；真实复验步骤见[数学判据](../acceptance/mvp-matrix.md#math)。本机具名证据在 `test-results/math-web-ai/`，新环境按入库入口重建验证，不依赖该目录。当前限制：扩展只接本机 origin 和 DeepSeek；官方 GGB 资源偶有连接失败，需要重试；GGB 作品尚无海报、备课采用及离线 HTML。此结果不覆盖全站 Agent 或完整 M-D 的制作验收。
+数学产品候选 `aa404f63` 已完成真实 DeepSeek 网页闭环与具名独立核验。真实账号覆盖侧栏创建参数抛物线、鼠标拖点后读取最新坐标并继续修改、保存刷新读回、取消生成及临时隐藏侧栏。独立浏览器使用官方 GGB 和固定 AI 回复，覆盖即时离开保稿、版本冲突、执行中取消及旧实例迟到命令隔离；取消前尚未自动写入草稿的手动修改，在取消即时、切模块、保存和刷新后均保留。故障注入另验命令超时后恢复修改前作品。
+
+HTTP/SQLite、网页桥及 GGB 浏览器回归入口分别为 `apps/api/test/math-geogebra.test.js`、`extensions/math-web-ai/test/offline.mjs` 和 `apps/web/e2e/math-geogebra.config.mjs`；真实账号复验见[数学判据](../acceptance/mvp-matrix.md#math)。本机具名证据在 `test-results/math-web-ai/` 的 `final-real-loop.json`、`final-delivery-readback.json`、`review-final/receipt.json` 及其引用，截图与证据按用途保留；研究检出、重复构建与无用探测现场已清理。当前隔离体验服务和私有登录浏览器保留供用户使用，体验结束后关闭；新环境按入库运行与验证入口重建，不依赖这些本地产物。当前限制：扩展只接本机 origin 和 DeepSeek；官方 GGB 资源偶有连接失败，需要重试；GGB 作品尚无海报、备课采用及离线 HTML。此结果不覆盖全站 Agent 或完整 M-D 的制作验收。
 
 本轮验收执行现有范围与矩阵中可在本机完成的非 Agent 项，包含真实本地 OCR、文件输出检查、测试收件器与隔离浏览器、数据备份恢复及手工跨模块流程。用户明确暂缓实际 Word/WPS 修改、保存、重开与打印，真实邮件送达，以及实际平板、课堂设备和学校网络；这些项目记为暂缓未验，不计通过，也不阻塞本轮收尾。真实产品模型调用及 Agent 组合验收随 Agent 线另行安排，可选增强不纳入本轮，MVP 范围和验收门槛保持不变。
 
