@@ -3,15 +3,24 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
+import JSZip from 'jszip';
+import { DOMParser } from '@xmldom/xmldom';
 import { renderSource, renderWorkshopFormulaAssets } from './render.js';
 import { mathFontStyle } from '../../../../../packages/shared/src/math/formula.js';
 import { registerAndReadFont } from './font.js';
 import { MathSourceError } from '../../../../../packages/shared/src/math/expression.js';
 import { mathError, workshopContractError } from './contract.js';
 import { validateWorkshopReferences, visibleWorkshopFormulas } from '../../../../../packages/shared/src/math/workshop.js';
+import { savedWorkshopPlaneViewport, captureWorkshopPlaneViewport, fitWorkshopPlaneViewport } from '../../../../../packages/shared/src/math/workshop-runtime.js';
 
 export const geogebraDirectory = fileURLToPath(new URL('../../../../web/public/vendor/math/geogebra/', import.meta.url));
 const safe = value => JSON.stringify(value).replaceAll('<', '\\u003c');
+
+export async function readSavedWorkshopPlaneViewport(base64) {
+  const zip = await JSZip.loadAsync(Buffer.from(base64, 'base64'));
+  const xml = await zip.file('geogebra.xml').async('string');
+  return savedWorkshopPlaneViewport(new DOMParser().parseFromString(xml, 'application/xml'));
+}
 
 // A fresh browser has no account, cookies or external resource access. Only the
 // pinned local runtime is served; imported construction JavaScript is disabled.
@@ -25,6 +34,7 @@ export async function renderWorkshopGraph(source, options = {}) {
   let deadline;
   const started = Date.now();
   try {
+    const savedPlaneViewport = await readSavedWorkshopPlaneViewport(source.graph.base64);
     await fs.access(path.join(runtimeDirectory, 'loader.js'));
     browser = await chromium.launch({ headless: true, timeout: 10000, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
     deadline = setTimeout(() => browser.close().catch(() => {}), Math.max(1, 28000 - (Date.now() - started)));
@@ -48,6 +58,8 @@ export async function renderWorkshopGraph(source, options = {}) {
     await page.goto('http://math-render.invalid/render');
     await page.waitForFunction(() => Boolean(window.graphApi), null, { timeout: 20000 });
     await page.evaluate(() => window.graphReady);
+    await page.addScriptTag({ content: `window.captureWorkshopPlaneViewport = ${captureWorkshopPlaneViewport}; window.fitWorkshopPlaneViewport = ${fitWorkshopPlaneViewport};` });
+    const planeViewport = savedPlaneViewport ?? await page.evaluate(() => window.captureWorkshopPlaneViewport(window.graphApi));
     const objects = await page.evaluate(() => {
       const api = window.graphApi;
       return Array.from(api.getAllObjectNames()).map(name => {
@@ -87,6 +99,10 @@ export async function renderWorkshopGraph(source, options = {}) {
     const perspective = viewModule.workshopPerspective(view);
     await page.evaluate(perspective => window.graphApi.setPerspective(perspective), perspective);
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    if (view !== 'space') {
+      await page.evaluate(saved => window.fitWorkshopPlaneViewport(window.graphApi, saved), planeViewport);
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+    }
     if (options.format === 'svg') {
       if (view !== 'plane') throw mathError('unsupported-export', '/format', 'three-dimensional-svg');
       const svg = await page.evaluate(() => new Promise((resolve, reject) => {

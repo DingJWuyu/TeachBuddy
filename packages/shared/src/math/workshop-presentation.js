@@ -1,21 +1,24 @@
 import { visibleWorkshopFormulas } from './workshop.js';
+import { captureWorkshopPlaneViewport, fitWorkshopPlaneViewport, workshopPlaybackValue } from './workshop-runtime.js';
 
 export const workshopPresentationCss = `*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:'Noto Sans SC',system-ui,sans-serif;color:#18243a;background:#f4f6fa}main{max-width:1500px;margin:auto;padding:24px}h1{font-size:22px;margin:0 0 20px}.math-content{background:white;border-radius:12px;padding:20px}.formula-row{text-align:center;margin:8px 0}.formula-row svg{max-width:100%;height:auto}.graph{position:relative;overflow:hidden;width:100%;max-width:100%;height:min(65vh,760px);max-height:min(65vh,760px);min-height:360px}.classroom-graph-host{position:relative;overflow:hidden;width:100%;height:100%}.controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px}button,select{font:inherit;border:1px solid #d5dce8;background:white;border-radius:7px;padding:8px 14px;color:inherit;cursor:pointer}button:disabled{opacity:.5;cursor:wait}button[aria-pressed=true]{background:#e5edff;border-color:#7498e8}.parameter{display:flex;align-items:center;gap:8px}.parameter input{width:170px}.step-description{white-space:pre-wrap;line-height:1.6;margin-top:12px}.credit{font-size:13px;color:#657184;margin-top:18px}.status{line-height:1.6;white-space:pre-wrap} @media(max-width:700px){main{padding:12px}.math-content{padding:12px}.graph{min-height:320px}.parameter input{width:140px}}`;
 
 /** Standalone classroom controls. The source and trusted SVGs contain no account data. */
-export async function mountWorkshopPresentation(root, source, { formulas, title, applyView }) {
+export async function mountWorkshopPresentation(root, source, { formulas, title, applyView, planeViewport }) {
   let api;
   let objects = [];
   let stepId = source.initialStepId;
   let running = false;
   let frame;
   let changing = false;
+  let viewRevision = 0;
   const el = (tag, className, text) => { const node = document.createElement(tag); if (className) node.className = className; if (text) node.textContent = text; return node; };
   const heading = el('h1', '', title || '数学作品');
   const content = el('div', 'math-content');
   const formulaBand = el('div', 'formulas');
   const graph = el('div', 'graph');
   const graphHost = el('div', 'classroom-graph-host');
+  const graphMount = el('div', 'classroom-graph-host');
   const status = el('p', 'status');
   const controls = el('div', 'controls');
   const parameters = el('div', 'controls');
@@ -41,7 +44,7 @@ export async function mountWorkshopPresentation(root, source, { formulas, title,
   });
   const applyStep = async nextId => {
     pause(); if (changing) return;
-    changing = true; controls.inert = parameters.inert = true;
+    changing = true; viewRevision++; controls.inert = parameters.inert = true;
     try {
       if (api) {
         await loadBase();
@@ -51,6 +54,8 @@ export async function mountWorkshopPresentation(root, source, { formulas, title,
           for (const name of api.getAllObjectNames()) api.setVisible(name, step.visibleObjects.includes(name));
         }
         await applyView(api, step?.view ?? source.view);
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        if ((step?.view ?? source.view) !== 'space') planeViewport = fitWorkshopPlaneViewport(api, planeViewport);
         for (const name of source.traceObjects) api.setTrace?.(name, true);
       }
       stepId = nextId; renderFormulas(); if (select) select.value = stepId; if (api) syncSliders();
@@ -65,15 +70,15 @@ export async function mountWorkshopPresentation(root, source, { formulas, title,
   }
   const reset = el('button', '', '重置'); reset.addEventListener('click', () => applyStep(stepId)); controls.append(reset);
   if (!source.graph) return;
-  content.append(graph); graph.append(graphHost); graphHost.id = 'workshop-graph';
+  content.append(graph); graph.append(graphHost); graphHost.append(graphMount); graphMount.id = 'workshop-graph';
   status.textContent = '正在打开数学作品…';
   try {
     api = await new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('数学引擎未能启动，请保留解压后的完整文件夹。')), 30000);
       const applet = new window.GGBApplet({ width: Math.max(320, graph.clientWidth), height: Math.max(360, graph.clientHeight), appName: 'classic',
-        ggbBase64: source.graph.base64, disableJavaScript: true, useBrowserForJS: false, enableFileFeatures: false, randomize: false,
+        ggbBase64: source.graph.base64, disableJavaScript: true, useBrowserForJS: false, enableFileFeatures: false, randomize: false, disableAutoScale: true,
         appletOnLoad: value => { clearTimeout(timer); value.stopAnimation(); resolve(value); } });
-      Promise.resolve(applet.inject(graphHost.id)).catch(error => { clearTimeout(timer); reject(error); });
+      Promise.resolve(applet.inject(graphMount.id)).catch(error => { clearTimeout(timer); reject(error); });
     });
     objects = Array.from(api.getAllObjectNames()).map(name => {
       const xml = new DOMParser().parseFromString(api.getXML(name), 'application/xml'); const slider = xml.querySelector('slider');
@@ -89,23 +94,34 @@ export async function mountWorkshopPresentation(root, source, { formulas, title,
       play.addEventListener('click', () => {
         if (running) { pause(); return; }
         const duration = (source.animation?.seconds ?? 8) * 1000;
-        const mode = source.animation?.mode ?? 'bounce'; const start = performance.now(); const low = animated.slider.min; const high = animated.slider.max;
+        const mode = source.animation?.mode ?? 'bounce'; const start = performance.now();
         running = true; play.textContent = '暂停'; play.setAttribute('aria-pressed', 'true');
         const tick = now => {
           if (!running) return;
           const elapsed = Math.max(0, (now - start) / duration);
           const progress = Math.max(0, Math.min(1, mode === 'bounce' ? 1 - Math.abs((elapsed % 2) - 1) : mode === 'loop' ? elapsed % 1 : elapsed));
-          const value = Math.max(low, Math.min(high, low + Math.round(progress * (high - low) / animated.slider.step) * animated.slider.step));
+          const value = workshopPlaybackValue(animated.slider, progress);
           api.setValue(animated.name, value); syncSliders();
           if (mode === 'once' && elapsed >= 1) pause(); else frame = requestAnimationFrame(tick);
         }; frame = requestAnimationFrame(tick);
       }); controls.append(play);
     }
     await applyStep(stepId); status.textContent = '';
-    const resize = new ResizeObserver(() => api.setSize(Math.max(320, graph.clientWidth), Math.max(320, graph.clientHeight)));
+    let size = { width: graph.clientWidth, height: graph.clientHeight };
+    let disposed = false;
+    const resize = new ResizeObserver(async () => {
+      const next = { width: graph.clientWidth, height: graph.clientHeight };
+      if (size.width === next.width && size.height === next.height) return;
+      size = next;
+      if (changing || disposed) return;
+      const current = captureWorkshopPlaneViewport(api), revision = viewRevision;
+      api.setSize(Math.max(320, next.width), Math.max(320, next.height));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      if (!disposed && !changing && revision === viewRevision) fitWorkshopPlaneViewport(api, current);
+    });
     resize.observe(graph);
     root.append(el('div', 'credit', '图形由 GeoGebra 提供。第三方许可见包内 LICENSES 和 runtime/licenses，说明见 runtime/NOTICE.txt。'));
     window.addEventListener('blur', pause); document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
-    window.addEventListener('pagehide', () => { pause(); resize.disconnect(); api.stopAnimation(); api.remove(); }, { once: true });
+    window.addEventListener('pagehide', () => { disposed = true; pause(); resize.disconnect(); api.stopAnimation(); api.remove(); }, { once: true });
   } catch (error) { status.textContent = error.message; }
 }

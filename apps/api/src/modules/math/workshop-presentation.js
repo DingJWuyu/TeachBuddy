@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import JSZip from 'jszip';
-import { geogebraDirectory } from './workshop-render.js';
+import { geogebraDirectory, readSavedWorkshopPlaneViewport } from './workshop-render.js';
 import { workshopPresentationCss } from '../../../../../packages/shared/src/math/workshop-presentation.js';
 import { mathFontStyle } from '../../../../../packages/shared/src/math/formula.js';
 import { registerAndReadFont } from './font.js';
@@ -21,8 +21,9 @@ async function presentationRuntime(hasGraph) {
 export async function workshopPresentation(source, { title, formulaAssets, runtimeDirectory = geogebraDirectory }) {
   try {
     const zip = new JSZip();
+    const planeViewport = source.graph ? await readSavedWorkshopPlaneViewport(source.graph.base64) : null;
     const css = `${workshopPresentationCss}${mathFontStyle(await registerAndReadFont()).replace(/^<style>|<\/style>$/g, '')}`;
-    const html = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"><title>${String(title).replace(/[<>&"]/g, '')}</title><style>${css}</style><main id="classroom"></main>${source.graph ? '<script src="runtime/loader.js"></script>' : ''}<script>${await presentationRuntime(Boolean(source.graph))}\nWorkshopClassroom.mountWorkshopPresentation(document.getElementById('classroom'),${safe(source)},{title:${safe(title)},formulas:${safe(formulaAssets)},applyView:WorkshopClassroom.applyWorkshopView});</script></html>`;
+    const html = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"><title>${String(title).replace(/[<>&"]/g, '')}</title><style>${css}</style><main id="classroom"></main>${source.graph ? '<script src="runtime/loader.js"></script>' : ''}<script>${await presentationRuntime(Boolean(source.graph))}\nWorkshopClassroom.mountWorkshopPresentation(document.getElementById('classroom'),${safe(source)},{title:${safe(title)},formulas:${safe(formulaAssets)},planeViewport:${safe(planeViewport)},applyView:WorkshopClassroom.applyWorkshopView});</script></html>`;
     zip.file('index.html', html);
     zip.file('workshop.json', JSON.stringify(source, null, 2));
     zip.file('打开说明.txt', '解压整个 ZIP 文件，保留文件夹内全部文件，再打开 index.html。课堂修改仅影响当前展示，重新打开回到保存初态。\n');
