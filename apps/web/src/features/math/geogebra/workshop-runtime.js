@@ -85,11 +85,12 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
     const height = alone ? Number(windowSize?.getAttribute('height')) - 2 : vertical ? Number(space?.getAttribute('size')) : planeViewport?.height;
     if (width > 0 && height > 0 && scale > 0) spaceViewport = { width, height, scale };
   }
-  async function waitForLayout(nextView, vertical) {
+  async function waitForLayout(nextView, vertical, epoch) {
     const deadline = performance.now() + 3000;
     let previous = '', stable = 0;
     while (true) {
       await new Promise(resolve => requestAnimationFrame(resolve)); assertLive();
+      if (epoch !== layoutEpoch) return;
       const bounds = host.getBoundingClientRect();
       const boxes = Array.from(host.querySelectorAll('canvas'), canvas => canvas.getBoundingClientRect()).filter(box => box.width > 1 && box.height > 1);
       const inside = boxes.every(box => box.left >= bounds.left - 2 && box.top >= bounds.top - 2 && box.right <= bounds.right + 2 && box.bottom <= bounds.bottom + 2);
@@ -100,7 +101,7 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
       if (performance.now() > deadline) throw new GeoGebraError('layout', '数学视图未完成布局，请重新打开作品。');
     }
   }
-  async function fitSpaceViewport() {
+  async function fitSpaceViewport(epoch) {
     const actual = captureSpaceViewport();
     if (!spaceViewport) { spaceViewport = actual; return; }
     if (!actual) return;
@@ -112,6 +113,7 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
     const deadline = performance.now() + 3000;
     while (true) {
       await new Promise(resolve => requestAnimationFrame(resolve)); assertLive();
+      if (epoch !== layoutEpoch) return;
       const scale = Number(documentXML().querySelector('euclidianView3D > coordSystem')?.getAttribute('scale'));
       if (Math.abs(scale - target) < 1e-7) break;
       if (performance.now() > deadline) throw new GeoGebraError('layout', '三维视图未完成缩放，请重新打开作品。');
@@ -132,10 +134,10 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
       api.setSize(width, height);
       api.setPerspective(vertical ? 'G/T' : workshopPerspective(nextView));
       api.showToolBar(false); api.showMenuBar(false); api.showAlgebraInput(false);
-      await waitForLayout(nextView, vertical);
+      await waitForLayout(nextView, vertical, epoch);
       if (epoch !== layoutEpoch) return;
       if (nextView !== 'space') planeViewport = fitWorkshopPlaneViewport(api, planeViewport);
-      if (nextView !== 'plane') await fitSpaceViewport();
+      if (nextView !== 'plane') await fitSpaceViewport(epoch);
       // Repaint emits view-change events after native coordinates reach their
       // target. Keep those layout events out of manual edit synchronization.
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -205,8 +207,6 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
     }, '数学画布加载超时，请重试。', 90000);
     assertLive(); api.stopAnimation(); api.setMode(0); savedViewports(base64);
     if (!base64) api.setGridVisible(false);
-    await layout(view, Math.max(200, container.clientWidth || 800), Math.max(200, container.clientHeight || 500));
-    register();
     observer = new ResizeObserver(entries => {
       if (disposed) return;
       const rect = entries[0].contentRect;
@@ -216,12 +216,16 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
       layout(view, width, height).catch(error => { if (!disposed) onError?.(error); });
     });
     observer.observe(container);
+    await layout(view, Math.max(200, container.clientWidth || 800), Math.max(200, container.clientHeight || 500));
+    await settleLayout();
+    register();
   } catch (error) { destroy(); throw error; }
   async function setView(next) {
     await settleLayout();
     if (next === view) return;
     view = next;
     await layout(view, Math.max(200, container.clientWidth), Math.max(200, container.clientHeight));
+    await settleLayout();
   }
   function select(name) {
     assertLive(); muted++;
@@ -242,7 +246,7 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
   }
   async function load(content, nextView) {
     await settleLayout(); muted++;
-    try { await callback(done => api.setBase64(content, done), '作品恢复未完成，请保留内容后重试。'); assertLive(); api.stopAnimation(); api.setMode(0); savedViewports(content); view = nextView; await layout(view, Math.max(200, container.clientWidth), Math.max(200, container.clientHeight)); register(); }
+    try { await callback(done => api.setBase64(content, done), '作品恢复未完成，请保留内容后重试。'); assertLive(); api.stopAnimation(); api.setMode(0); savedViewports(content); view = nextView; await layout(view, Math.max(200, container.clientWidth), Math.max(200, container.clientHeight)); await settleLayout(); register(); }
     finally { muted--; }
   }
   async function exportImage({ format = 'png', view: targetView = view, scale = 2, transparent = false } = {}) {

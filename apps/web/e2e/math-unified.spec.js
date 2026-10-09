@@ -40,7 +40,9 @@ test('统一作品：空白退出、公式自动保存、刷新、手动图形�
   await expect(page.locator('.mw-formula-row')).toHaveCount(1);
   await expect(page.locator('.mw-formula-row img')).toBeVisible();
   await page.getByLabel('图形表达式', { exact: true }).click(); await page.keyboard.type('f(x)=x^2'); await page.keyboard.press('Enter');
-  await expect(page.locator('.mw-graph-host')).toHaveClass(/has-graph/, { timeout: 90000 });
+  const { deviceMath } = await import('./math-unified-helpers.mjs');
+  await expect.poll(async () => Boolean((await deviceMath(page))?.draft?.source.graph), { timeout: 90000 }).toBe(true);
+  await expect(page.getByRole('button', { name: '教学步骤', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: '教学步骤', exact: true }).click();
   await expect(page.locator('.mw-step-rail nav button')).toHaveCount(1);
   await page.getByLabel('步骤标题', { exact: true }).click(); await page.keyboard.press('ControlOrMeta+A'); await page.keyboard.type('观察抛物线'); await page.keyboard.press('Tab');
@@ -92,7 +94,18 @@ test('自有图形工具真实点击建点线圆和多边形，参数与三维�
   // The page already loaded; install the read-only observation hook for the next engine load.
   await page.evaluate(() => { let Constructor; Object.defineProperty(window,'GGBApplet',{configurable:true,get:()=>Constructor,set:Value=>{Constructor=class extends Value{constructor(parameters,...rest){super({...parameters,appletOnLoad:api=>{(window.mathTestApis??={})[parameters.id]=api;window.mathTestApi=api;parameters.appletOnLoad?.(api);}},...rest);}};}}); });
   await page.getByRole('button',{name:'新建作品',exact:true}).click();
-  async function choose(name) { await page.getByRole('button',{name:'添加图形',exact:true}).click(); await page.getByRole('button',{name,exact:true}).click(); await expect(page.locator('.mw-drawing-hint')).toBeVisible(); await expect.poll(async()=>Boolean(await currentApi(page)),{timeout:90000}).toBe(true); }
+  async function choose(name) {
+    await page.getByRole('button', { name: '添加图形', exact: true }).click();
+    await page.getByRole('button', { name, exact: true }).click();
+    await expect(page.locator('.mw-drawing-hint')).toBeVisible();
+    await expect(page.getByRole('complementary', { name: '辅助栏', exact: true })).toBeHidden();
+    await expect.poll(() => page.evaluate(expectedMode => {
+      const host = document.querySelector('.mw-graph-host');
+      const native = host?.firstElementChild;
+      const api = window.mathTestApis?.[native?.id];
+      return !!api && !host.inert && !native.inert && api.getMode() === expectedMode;
+    }, { 点: 1, 线段: 15, 圆: 10, 多边形: 16 }[name]), { timeout: 90000 }).toBe(true);
+  }
   await choose('点'); let box=await page.locator('.mw-graph-host').boundingBox(); await page.mouse.click(box.x+box.width/2-120,box.y+box.height/2-80);
   await expect.poll(async()=> (await currentApi(page))?.types.some(([,type])=>type==='point')).toBe(true); await page.getByRole('button',{name:'完成',exact:true}).click();
   await choose('线段'); box=await page.locator('.mw-graph-host').boundingBox(); await page.mouse.click(box.x+box.width/2-80,box.y+box.height/2+40); await page.mouse.click(box.x+box.width/2+50,box.y+box.height/2+40);
@@ -130,6 +143,69 @@ test('自由点修改和AI续改刷新后坐标可读，关联点保留构造与
   await page.reload();await page.getByRole('button',{name:'打开辅助栏',exact:true}).click().catch(()=>{});await page.getByRole('tab',{name:'工具',exact:true}).click();await tools.locator('.mw-object-list button').filter({has:page.locator('strong',{hasText:/^A$/})}).click();await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/\(5,\s*3\)/);await expect(tools.locator('.mw-object-list')).toContainText(/\(5,\s*3\)/);
   await tools.getByText('样式',{exact:true}).click();await expect(tools.getByRole('spinbutton',{name:'点大小',exact:true})).toBeVisible();await expect(tools.getByRole('spinbutton',{name:'线宽',exact:true})).toHaveCount(0);
   await field.fill('B=(7,5)');await field.press('Enter');await expect(tools.locator('.mw-object-list')).toContainText('B');await field.fill('M=Midpoint(A,B)');await field.press('Enter');await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/Midpoint[\[(]/);await tools.getByRole('textbox',{name:'定义',exact:true}).fill('Midpoint(A,B)');await tools.getByRole('button',{name:'应用修改',exact:true}).click();await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/Midpoint[\[(]/);await page.screenshot({path:info.outputPath('point-coordinate-and-dependent.png')});
+});
+
+test('拖点后立即关闭辅助栏仍保存新坐标，纯尺寸变化不保存新版本', async ({ page }, info) => {
+  const { installMathProbe, enterMath, currentApi, deviceMath, savedMath } = await import('./math-unified-helpers.mjs');
+  let pageContext;
+  page.on('request', request => {
+    if (request.url().startsWith(`${world.origin}/api/modules/math/`) && request.headers()['x-teachbuddy-page']) pageContext = request.headers()['x-teachbuddy-page'];
+  });
+  await installMathProbe(page);
+  await page.reload();
+  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  await page.getByRole('button', { name: '添加图形', exact: true }).click();
+  await page.getByRole('button', { name: '点', exact: true }).click();
+  await expect(page.getByRole('button', { name: '完成', exact: true })).toBeEnabled({ timeout: 90000 });
+  await page.getByRole('button', { name: '取消绘图工具', exact: true }).click();
+  await page.getByRole('button', { name: '三维', exact: true }).click();
+  await expect.poll(async () => (await deviceMath(page))?.draft?.source.view).toBe('space');
+  expect((await deviceMath(page)).draft.source.graph).toBeNull();
+  expect((await deviceMath(page)).draft.id ?? null).toBeNull();
+  await page.getByRole('button', { name: '平面', exact: true }).click();
+  await expect.poll(async () => (await deviceMath(page))?.draft?.source.view).toBe('plane');
+  await enterMath(page, 'A=(1,2)', 'A');
+  const first = await savedMath(page);
+  const canvas = await page.locator('.mw-graph-host canvas').first().boundingBox();
+  const close = await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().boundingBox();
+  const view = await page.evaluate(() => {
+    const host = document.querySelector('.mw-graph-host > div');
+    const raw = window.mathTestApis[host.id].getViewProperties(1);
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+  });
+  const point = (x, y) => ({ x: canvas.x + (x - view.xMin) / view.invXscale, y: canvas.y + view.height - (y - view.yMin) / view.invYscale });
+  const from = point(1, 2), to = point(3, 3);
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 25 });
+  await page.mouse.up();
+  // Real mouse events, with no assertion wait before the layout changes.
+  await page.mouse.click(close.x + close.width / 2, close.y + close.height / 2);
+  const dragged = (await currentApi(page, 'A')).coords;
+  expect(dragged[0]).toBeCloseTo(3, 2);
+  expect(dragged[1]).toBeCloseTo(3, 2);
+  await expect.poll(async () => (await deviceMath(page))?.draft?.version, { timeout: 60000 }).toBeGreaterThan(first.version);
+  const saved = await savedMath(page);
+  expect(pageContext).toBeTruthy();
+  const response = await page.request.get(`${world.origin}/api/modules/math/v1/works/${saved.id}`, { headers: { 'X-TeachBuddy-Page': pageContext } });
+  expect(response.status()).toBe(200);
+  const persisted = await response.json();
+  expect(persisted.source).toEqual(saved.source);
+  await page.reload();
+  await expect.poll(async () => (await currentApi(page, 'A'))?.coords, { timeout: 90000 }).toEqual(dragged);
+  await savedMath(page);
+
+  const puts = [];
+  page.on('request', request => { if (request.method() === 'PUT' && request.url().endsWith(`/works/${saved.id}`)) puts.push(request.url()); });
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  // Observe beyond the 1400 ms autosave delay, including manual edit debounce.
+  await page.waitForTimeout(2000);
+  expect(puts).toEqual([]);
+  expect((await deviceMath(page)).draft.source).toEqual(saved.source);
+  expect((await (await page.request.get(`${world.origin}/api/modules/math/v1/works/${saved.id}`, { headers: { 'X-TeachBuddy-Page': pageContext } })).json()).version).toBe(saved.version);
+  await expect(page.getByText('数学视图未完成布局，请重新打开作品。', { exact: true })).toHaveCount(0);
+  await page.screenshot({ path: info.outputPath('drag-resize-reopened.png') });
 });
 
 test('英文切换覆盖制作工具与删除确认',async({page},info)=>{

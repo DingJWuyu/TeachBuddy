@@ -14,7 +14,7 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 export async function mountWorkshopEditor(container, { source = createWorkshopSource(), language = 'zh-CN', onChange, onError, onRecovery, signal } = {}) {
   validateWorkshopSourceShape(source);
   let current = copy(source), editRevision = 0, graph = null, graphEpoch = 0, graphFingerprint = '', selection = null;
-  let disposed = false, busy = false, beforeBatch = null, beforeBatchObjects = [], beforeBatchViews = null, mode = 'edit', previewStepId = null;
+  let disposed = false, busy = false, graphMounting = false, beforeBatch = null, beforeBatchObjects = [], beforeBatchViews = null, mode = 'edit', previewStepId = null;
   let visibleFormulaIds = current.formulas.map(formula => formula.id);
   let previewSelection = null, activeTool = 'select', previewTool = 'select';
   let timer, manualGroup = false, previewView = current.view, playbackFrame, playbackToken = 0;
@@ -72,16 +72,19 @@ export async function mountWorkshopEditor(container, { source = createWorkshopSo
   async function mountGraph(base64, view, operationSignal) {
     const epoch = ++graphEpoch;
     const mountSignal = operationSignal ? AbortSignal.any([lifetime.signal, operationSignal]) : lifetime.signal;
-    const instance = await mountWorkshopGraph(container, { base64, view, language, signal: mountSignal,
-      onChange: graphChanged,
-      onSelect: name => { if (!busy) { selection = name ? { type: 'object', id: name } : null; notify('selection'); } },
-      onBeforeLayout: syncManual,
-      onLayout: () => { if (graph && !busy) graphFingerprint = graph.fingerprint(); },
-      onError,
-    });
-    if (disposed || epoch !== graphEpoch || mountSignal.aborted) { instance.destroy(); throw aborted(); }
-    graph = instance; graphFingerprint = graph.fingerprint();
-    return instance;
+    graphMounting = true; notify('graph-mount');
+    try {
+      const instance = await mountWorkshopGraph(container, { base64, view, language, signal: mountSignal,
+        onChange: graphChanged,
+        onSelect: name => { if (!busy) { selection = name ? { type: 'object', id: name } : null; notify('selection'); } },
+        onBeforeLayout: syncManual,
+        onLayout: () => { if (graph && !busy) graphFingerprint = graph.fingerprint(); },
+        onError,
+      });
+      if (disposed || epoch !== graphEpoch || mountSignal.aborted) { instance.destroy(); throw aborted(); }
+      graph = instance; graphFingerprint = graph.fingerprint();
+      return instance;
+    } finally { graphMounting = false; }
   }
   function objects() { return busy ? copy(beforeBatchObjects) : graph ? graph.objects() : []; }
   function read() {
@@ -89,7 +92,7 @@ export async function mountWorkshopEditor(container, { source = createWorkshopSo
     const stable = busy && beforeBatch ? beforeBatch : { editRevision, source: current };
     return { editRevision: stable.editRevision, source: copy(stable.source), objects: objects(), views: busy ? copy(beforeBatchViews) : graph?.views() || null, selection: copy(selection),
       mode, activeTool, previewStepId, visibleFormulaIds: [...visibleFormulaIds], view: mode === 'preview' ? previewView : current.view,
-      canUndo: !busy && mode === 'edit' && undoStack.length > 0, canRedo: !busy && mode === 'edit' && redoStack.length > 0, busy };
+      canUndo: !busy && mode === 'edit' && undoStack.length > 0, canRedo: !busy && mode === 'edit' && redoStack.length > 0, busy, graphMounting };
   }
   function captureNow() {
     assertLive();
@@ -305,9 +308,12 @@ export async function mountWorkshopEditor(container, { source = createWorkshopSo
       const before = captureNow(); beforeBatch = before; beforeBatchObjects = []; beforeBatchViews = null; busy = true; notify('busy');
       try { await cancellable(mountGraph('', current.view, operationSignal), operationSignal); }
       catch (error) { await recover(before, error); throw error; }
-      finally { busy = false; beforeBatch = null; beforeBatchObjects = []; }
+      finally { busy = false; beforeBatch = null; beforeBatchObjects = []; notify('tool'); }
     }
-    activeTool = nextTool; graph?.setTool(activeTool); if (graph) graphFingerprint = graph.fingerprint();
+    activeTool = nextTool;
+    if (graph && nextTool === 'select' && !current.graph && !graph.objects().length) {
+      graph.destroy(); graph = null; graphFingerprint = '';
+    } else { graph?.setTool(activeTool); if (graph) graphFingerprint = graph.fingerprint(); }
     notify('tool'); return read();
   }
   async function exportGraph(options = {}) {
