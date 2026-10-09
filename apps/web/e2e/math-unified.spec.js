@@ -120,6 +120,30 @@ test('自有图形工具真实点击建点线圆和多边形，参数与三维�
   await expect.poll(async()=> (await currentApi(page,'a'))?.value).toBeGreaterThan(1);
   await page.getByRole('button',{name:'双视图',exact:true}).click(); await enterMath(page,'cube=Cube((0,0,0),(2,0,0))','cube'); const saved=await savedMath(page);
   expect(saved.source.view).toBe('split'); await page.screenshot({path:info.outputPath('native-split.png')});
+  const resizePuts = [];
+  page.on('request', request => { if (request.method() === 'PUT' && request.url().endsWith(`/works/${saved.id}`)) resizePuts.push(request.url()); });
+  async function settledSplit() {
+    await expect.poll(() => page.evaluate(() => {
+      const host = document.querySelector('.mw-graph-host>div'), bounds = host?.getBoundingClientRect();
+      const canvases = [...(host?.querySelectorAll('canvas') ?? [])].map(canvas => canvas.getBoundingClientRect()).filter(box => box.width > 1 && box.height > 1);
+      return !!host && !host.inert && canvases.length === 2 && canvases.every(box => box.left >= bounds.left - 2 && box.top >= bounds.top - 2 && box.right <= bounds.right + 2 && box.bottom <= bounds.bottom + 2);
+    }), { timeout: 15000 }).toBe(true);
+    await expect(page.locator('.mw-notice[role=alert]').filter({ hasText: /未完成|失败|错误|超时|重新打开/ })).toHaveCount(0);
+    expect((await currentApi(page, 'cube')).exists).toBe(true);
+  }
+  await settledSplit();
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
+  await settledSplit();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: '打开辅助栏', exact: true }).click();
+  await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
+  await settledSplit();
+  await page.waitForTimeout(2000); // Observe beyond autosave and manual edit debounce.
+  expect(resizePuts).toEqual([]);
+  const resized = await savedMath(page);
+  expect(resized.source).toEqual(saved.source); expect(resized.version).toBe(saved.version);
+  await page.screenshot({ path: info.outputPath('native-split-resized.png') });
 });
 
 test('下载入口交付整份PNG、公式SVG、可编辑源与离线课堂包', async ({page},info)=>{

@@ -101,7 +101,7 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
       if (performance.now() > deadline) throw new GeoGebraError('layout', '数学视图未完成布局，请重新打开作品。');
     }
   }
-  async function fitSpaceViewport(epoch) {
+  async function fitSpaceViewport() {
     const actual = captureSpaceViewport();
     if (!spaceViewport) { spaceViewport = actual; return; }
     if (!actual) return;
@@ -109,11 +109,12 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
     if (Math.abs(target - actual.scale) < 1e-7) return;
     api.evalCommand('SetActiveView(-1)');
     api.evalCommand(`ZoomIn(${target / actual.scale})`);
-    // Native 3D ZoomIn animates. Finish against the actual scale, never a sleep.
+    // Native 3D ZoomIn queues animations and reads its starting scale only when
+    // it starts. Drain an issued zoom even when its layout becomes obsolete,
+    // so the next layout never computes a factor from an intermediate scale.
     const deadline = performance.now() + 3000;
     while (true) {
       await new Promise(resolve => requestAnimationFrame(resolve)); assertLive();
-      if (epoch !== layoutEpoch) return;
       const scale = Number(documentXML().querySelector('euclidianView3D > coordSystem')?.getAttribute('scale'));
       if (Math.abs(scale - target) < 1e-7) break;
       if (performance.now() > deadline) throw new GeoGebraError('layout', '三维视图未完成缩放，请重新打开作品。');
@@ -137,7 +138,7 @@ export async function mountWorkshopGraph(container, { base64 = '', view = 'plane
       await waitForLayout(nextView, vertical, epoch);
       if (epoch !== layoutEpoch) return;
       if (nextView !== 'space') planeViewport = fitWorkshopPlaneViewport(api, planeViewport);
-      if (nextView !== 'plane') await fitSpaceViewport(epoch);
+      if (nextView !== 'plane') await fitSpaceViewport();
       // Repaint emits view-change events after native coordinates reach their
       // target. Keep those layout events out of manual edit synchronization.
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
