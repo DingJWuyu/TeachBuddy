@@ -20,7 +20,7 @@ export async function currentApi(page, expression) {
   }, expression);
 }
 export async function enterMath(page, definition, object) {
-  const field = page.getByLabel('图形表达式', { exact: true }); await field.click(); await field.fill(definition); await field.press('Enter');
+  const field = page.getByLabel('图形表达式', { exact: true }); if (!await field.isVisible()) await page.getByRole('button', { name: '添加图形', exact: true }).click(); await field.click(); await field.fill(definition); await field.press('Enter');
   await expect.poll(async () => (await currentApi(page, object))?.exists, { timeout: 90000 }).toBe(true);
 }
 export async function savedMath(page) {
@@ -29,5 +29,5 @@ export async function savedMath(page) {
 }
 export async function forceMathSave(page) {
   await page.getByLabel('更多作品操作', { exact: true }).click();
-  await page.getByRole('button', { name: '立即保存', exact: true }).click();
+  await page.getByRole('menuitem', { name: '立即保存', exact: true }).click();
 }

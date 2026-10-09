@@ -1,4 +1,8 @@
 import i18n from '../../i18n/index.js';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAuxiliaryAssistant } from '../workbench/shellContext.js';
+import { MathWebAssistant } from './web-ai/MathWebAssistant.jsx';
+import { MathMenu, MenuItem } from './MathMenu.jsx';
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
 import { Icon } from '../workbench/icons.jsx';
@@ -36,16 +40,32 @@ export function WorkIllustration({ kind }) {
   </svg>;
 }
 
-export default function WorkspaceHome({ items, search, deleted, busy, onSearch, onDeleted, onNew, onOpen, onImport, onImportSource, onRestore, onPurge }) {
-  const { t } = useTranslation('math');
+export default function WorkspaceHome({ items, search, deleted, busy, client, accountKey, onSearch, onDeleted, onNew, onOpen, onImport, onImportSource, onRestore, onPurge }) {
+  const { t, i18n } = useTranslation('math');
+  const actions = useRef({ onNew, busy });
+  actions.current = { onNew, busy };
+  useAuxiliaryAssistant(useCallback(() => <MathWebAssistant key={accountKey} accountKey={accountKey} onStart={request => { if (!actions.current.busy) return actions.current.onNew(request); }}/>, [accountKey]));
   return <div className="mw-home">
-    <header className="mw-home-heading"><div><h1 id="math-start-heading" tabIndex={-1}>{t('数学工坊')}</h1><p>{t('公式、图形与讲解，做成一份课堂作品。')}</p></div><button className="mw-button is-primary" disabled={busy} onClick={onNew}><Icon name="plus" size={18}/>{t('新建作品')}</button></header>
-    <div className="mw-library-toolbar"><label className="mw-search"><Icon name="search" size={18}/><input aria-label={t('搜索作品')} placeholder={t('搜索作品')} value={search} onChange={event => onSearch(event.target.value)}/></label>
-      <details className="mw-home-menu"><summary>{t(deleted ? '已归档' : '作品操作')} <Icon name="chevron" size={14}/></summary><div><button disabled={busy} onClick={onImportSource}>{t('导入可编辑源')}</button><button disabled={busy} onClick={onImport}>{t('导入 HTML 演示')}</button><button onClick={() => onDeleted(!deleted)}>{t(deleted ? '查看当前作品' : '查看已归档作品')}</button></div></details>
-    </div>
+    <header className="mw-home-heading"><div className="mw-home-title"><Icon name="math" size={26}/><h1 id="math-start-heading" tabIndex={-1}>{t('数学工坊')}</h1></div><button className="mw-button is-primary" disabled={busy} onClick={onNew}><Icon name="plus" size={18}/>{t('新建作品')}</button></header>
+    <div className="mw-library-toolbar"><h2>{t(deleted ? '已归档' : '我的作品')}<span>{items.length}</span></h2><div className="mw-library-actions"><label className="mw-search"><Icon name="search" size={17}/><input aria-label={t('搜索作品')} placeholder={t('搜索作品')} value={search} onChange={event => onSearch(event.target.value)}/></label>
+      <MathMenu label={t('作品操作')} className="mw-home-actions">{({ close }) => <><MenuItem onClick={() => { close(); onImportSource(); }} disabled={busy}>{t('导入作品')}</MenuItem><MenuItem onClick={() => { close(); onImport(); }} disabled={busy}>{t('导入网页')}</MenuItem><MenuItem onClick={() => { close(); onDeleted(!deleted); }}>{t(deleted ? '我的作品' : '已归档')}</MenuItem></>}</MathMenu>
+    </div></div>
     <section className="mw-library" aria-label={t('我的作品')}>
-      {items.map(item => <article className="mw-library-row" key={item.id}><button disabled={busy} onClick={() => onOpen(item)}><span className="mw-library-symbol"><Icon name="math" size={23}/></span><span><strong>{item.title}</strong><small>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : t('数学作品')}</small></span><Icon name="chevron" size={16}/></button>{deleted && <div><button className="mw-button" disabled={busy} onClick={() => onRestore(item)}>{t('恢复')}</button><button className="mw-button" disabled={busy} onClick={() => onPurge(item)}>{t('彻底删除')}</button></div>}</article>)}
-      {!items.length && <div className="mw-library-empty"><WorkIllustration kind="dynamic"/><h2>{t(search ? '没有找到匹配的作品' : deleted ? '没有已归档的作品' : '从一个数学想法开始')}</h2>{!search && !deleted && <p>{t('新建作品，直接写公式、画图，或与 AI 一起制作。')}</p>}</div>}
+      {items.map(item => <article className="mw-library-row" key={item.id}><button disabled={busy} onClick={() => onOpen(item)}><WorkThumbnail item={item} client={client}/><span className="mw-library-caption"><strong>{item.title}</strong><small>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString(i18n.resolvedLanguage, { month: 'long', day: 'numeric' }) : t('数学作品')}</small></span></button>{deleted && <div className="mw-archive-actions"><button className="mw-button" disabled={busy} onClick={() => onRestore(item)}>{t('恢复')}</button><button className="mw-button" disabled={busy} onClick={() => onPurge(item)}>{t('彻底删除')}</button></div>}</article>)}
+      {!items.length && <div className="mw-library-empty"><Icon name="math" size={32}/><h2>{t(search ? '没有找到作品' : deleted ? '没有归档作品' : '还没有作品')}</h2><p>{t(search ? '试试其他名称。' : deleted ? '归档的作品会放在这里。' : '新建作品，写公式、画图或制作演示。')}</p></div>}
     </section>
   </div>;
+}
+
+function WorkThumbnail({ item, client }) {
+  const { t } = useTranslation('math');
+  const [url, setUrl] = useState(null);
+  const id = item.render?.posterFileId;
+  useEffect(() => {
+    let live = true, objectUrl;
+    setUrl(null);
+    if (id && client) client.blob(`/api/workbench/files/${id}/content`).then(blob => { if (live) { objectUrl = URL.createObjectURL(blob); setUrl(objectUrl); } }).catch(() => {});
+    return () => { live = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [id, client]);
+  return <span className="mw-library-thumbnail">{url ? <img src={url} alt="" onError={() => setUrl(null)}/> : <span><Icon name={item.source?.kind === 'html' ? 'prep' : 'math'} size={30}/><span>{t(item.source?.kind === 'html' ? '网页演示' : '数学作品')}</span></span>}</span>;
 }

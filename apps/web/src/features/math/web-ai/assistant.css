@@ -1,13 +1,422 @@
-.math-web-assistant{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;color:var(--wb-text,#27272a);font-size:13px}
-.math-ai-header{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;gap:8px}.math-ai-header>div{display:flex;align-items:center;gap:8px}.math-ai-header strong{font-size:13px;font-weight:550}.math-ai-mark{color:#687ba2;font-size:20px}
-.math-ai-context{display:flex;align-items:center;gap:7px;margin:0 14px 10px;padding:7px 9px;background:color-mix(in srgb,currentColor 4%,transparent);border-radius:7px;min-width:0}.math-ai-context>span:nth-child(2){flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.math-ai-context small{opacity:.52;font-size:10px;white-space:nowrap}.math-ai-context-dot{width:5px;height:5px;border-radius:50%;background:#8092b5;flex:none}
-.math-ai-thread{flex:1;min-height:0;overflow:auto;padding:6px 16px 18px;scrollbar-width:thin}.math-ai-welcome{padding:38px 0 18px}.math-ai-spark{font-size:32px;color:#9aa9c8}.math-ai-welcome h2{font-size:19px;font-weight:550;letter-spacing:-.5px;margin:15px 0 10px;line-height:1.5}.math-ai-welcome p{line-height:1.8;opacity:.62;font-size:12px}.math-ai-welcome button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;background:transparent;color:inherit;border:1px solid color-mix(in srgb,currentColor 10%,transparent);border-radius:9px;padding:12px;margin-top:24px;cursor:pointer;font:inherit;font-size:12px}.math-ai-welcome button:hover{background:color-mix(in srgb,currentColor 4%,transparent)}
-.math-ai-message{margin:14px 0;line-height:1.75;overflow-wrap:anywhere}.math-ai-message p{margin:0 0 8px}.math-ai-message p:last-child{margin-bottom:0}.math-ai-message pre{max-width:100%;overflow:auto}.math-ai-message.is-user{background:color-mix(in srgb,currentColor 5%,transparent);padding:10px 12px;border-radius:12px 12px 3px 12px;margin-left:20px}.math-ai-message.is-tool{display:flex;gap:8px;align-items:start;font-size:12px;color:#537768}.math-ai-message.is-tool[data-state=failed]{color:#a16a44}.math-ai-message.is-tool small{display:block;opacity:.65;font-size:11px}.math-ai-stage{font-size:11px;opacity:.65;display:flex;align-items:center;gap:7px}.math-ai-pulse{width:5px;height:5px;border-radius:50%;background:currentColor;animation:math-ai-pulse 1.4s ease-in-out infinite}
-.math-ai-composer{margin:8px 12px 0;border-radius:12px;box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 13%,transparent);background:var(--wb-surface,#fff);padding:10px}.math-ai-composer:focus-within{box-shadow:inset 0 0 0 1.5px #7b91b5}.math-ai-composer textarea{width:100%;resize:none;background:transparent;border:0;outline:none;box-shadow:none;color:inherit;font:inherit;line-height:1.7;min-height:65px;padding:0}.math-ai-composer textarea::placeholder{color:#93979d}.math-ai-compose-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}.math-ai-provider{display:flex;align-items:center;gap:7px;font:inherit;font-size:11px;border:0;background:transparent;padding:4px 0;color:inherit;cursor:pointer}.math-ai-provider small{opacity:.5;margin-left:4px}.math-ai-connection{width:5px;height:5px;border-radius:50%;background:#b5b5b5}.math-ai-connection.is-ready{background:#5b947b}.math-ai-send{display:grid;place-items:center;background:#414f68;color:#fff;border:0;width:29px;height:29px;border-radius:8px;font-size:20px;cursor:pointer}.math-ai-send:disabled{opacity:.3;cursor:default}.math-ai-caption{text-align:center;font-size:10px;opacity:.5;margin:8px 10px 12px}.math-ai-error{margin:5px 12px;padding:9px 10px;font-size:12px;line-height:1.6;background:#fff3e8;color:#985829;border-radius:8px}
-@keyframes math-ai-pulse{50%{opacity:.25}}@media(prefers-reduced-motion:reduce){.math-ai-pulse{animation:none}}
+.math-web-assistant {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  color: var(--wb-text,#27272a);
+  font-size: 14px;
+  --wb-text: var(--app-text,#27272a);
+  --wb-surface: var(--app-surface,#fff);
+  --wb-muted: var(--app-muted,#777d87);
+}
 
-.math-web-assistant{font-size:14px}.math-ai-header strong{font-size:14px}.math-ai-context small{font-size:12px}.math-ai-welcome{padding-top:24px}.math-ai-welcome h2{font-size:18px}.math-ai-welcome p,.math-ai-welcome button{font-size:14px}.math-ai-stage,.math-ai-message.is-tool,.math-ai-provider{font-size:13px}.math-ai-caption{font-size:12px;line-height:18px}.math-ai-error{font-size:13px}.math-ai-send{width:36px;height:36px}.math-ai-setup{margin:0 14px 8px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,currentColor 10%,transparent);font-size:13px;line-height:21px;flex:none}.math-ai-setup strong{font-weight:550;font-size:14px}.math-ai-setup p{color:var(--wb-muted,#777d87);margin:8px 0}.math-ai-setup ol{padding-left:20px;margin:10px 0}.math-ai-setup li{margin-bottom:5px}.math-ai-install{display:inline-flex;text-decoration:none;background:#4c647f;color:#fff;padding:8px 12px;border-radius:7px;margin-top:12px}.math-ai-setup>div{display:flex;gap:7px;flex-wrap:wrap}.math-ai-setup button{border:0;border-radius:6px;background:color-mix(in srgb,currentColor 6%,transparent);color:inherit;font:inherit;padding:7px 9px;cursor:pointer}.math-ai-setup button:disabled{opacity:.5}.math-ai-mark,.math-ai-spark{display:inline-flex}.math-ai-welcome .math-ai-spark svg{width:30px;height:30px}.math-ai-connection.is-login{background:#c18e44}.math-ai-connection.is-connecting{background:#7894ba}.math-ai-connection.is-disconnected{background:#bb755d}.math-ai-thread{scrollbar-gutter:stable}.math-ai-composer{flex:none}@media(max-height:700px){.math-ai-setup{max-height:240px;overflow:auto}.math-ai-welcome{padding-top:10px}.math-ai-welcome button{margin-top:14px}}
+.math-ai-thread {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  padding: 0 20px 20px;
+}
 
-.math-web-assistant{--wb-text:var(--app-text,#27272a);--wb-surface:var(--app-surface,#fff);--wb-muted:var(--app-muted,#777d87)}
+.math-ai-welcome {
+  padding-top: 24px;
+  padding: 0 0 60px;
+}
 
-.math-ai-setup{display:block;min-width:0;overflow-wrap:anywhere}.math-ai-setup>strong{display:block;width:100%;line-height:22px}.math-ai-setup>.math-ai-install{display:flex;width:fit-content;max-width:100%;margin-top:10px;line-height:20px;white-space:normal}.math-ai-setup ol{display:block;max-width:100%;padding-inline-start:18px;margin:12px 0;white-space:normal}.math-ai-setup li{white-space:normal;max-width:100%;overflow-wrap:anywhere}.math-ai-thread:has(.math-ai-welcome){padding-top:6px}.math-ai-composer{margin-bottom:12px}.math-ai-header{flex:none}.math-ai-setup>div{margin-top:12px}
+.math-ai-welcome h2 {
+  font-size: 18px;
+  line-height: 28px;
+  letter-spacing: 0;
+  margin: 0 0 8px;
+  font-weight: 500;
+}
+
+.math-ai-welcome p {
+  font-size: 14px;
+  line-height: 22px;
+  margin: 0;
+  color: var(--app-muted);
+  opacity: 1;
+}
+
+.math-ai-welcome button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: inherit;
+  border: 1px solid color-mix(in srgb,currentColor 10%,transparent);
+  cursor: pointer;
+  font: inherit;
+  margin-top: 22px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  border-color: var(--app-line);
+  font-size: 13px;
+}
+
+.math-ai-welcome button:hover {
+  background: color-mix(in srgb,currentColor 4%,transparent);
+}
+
+.math-ai-message {
+  margin: 14px 0;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.math-ai-message p {
+  margin: 0 0 8px;
+}
+
+.math-ai-message p:last-child {
+  margin-bottom: 0;
+}
+
+.math-ai-message pre {
+  max-width: 100%;
+  overflow: auto;
+}
+
+.math-ai-message.is-user {
+  padding: 10px 12px;
+  margin-left: 20px;
+  background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface));
+  border-radius: 12px;
+}
+
+.math-ai-message.is-tool {
+  display: flex;
+  gap: 8px;
+  align-items: start;
+  font-size: 12px;
+  color: #537768;
+}
+
+.math-ai-message.is-tool[data-state=failed] {
+  color: #a16a44;
+}
+
+.math-ai-message.is-tool small {
+  display: block;
+  opacity: .65;
+  font-size: 11px;
+}
+
+.math-ai-stage {
+  font-size: 11px;
+  opacity: .65;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.math-ai-pulse {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: math-ai-pulse 1.4s ease-in-out infinite;
+}
+
+.math-ai-composer {
+  flex: none;
+  margin-bottom: 12px;
+  margin: 12px 16px 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--app-text) 2%, var(--app-surface));
+  box-shadow: inset 0 0 0 1px var(--app-line);
+}
+
+.math-ai-composer:focus-within {
+  box-shadow: inset 0 0 0 1px var(--app-muted);
+}
+
+.math-ai-composer textarea {
+  width: 100%;
+  resize: none;
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1.7;
+  padding: 0;
+  min-height: 78px;
+  font-size: 14px;
+}
+
+.math-ai-composer textarea::placeholder {
+  color: #93979d;
+}
+
+.math-ai-compose-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.math-ai-provider {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  border: 0;
+  background: transparent;
+  padding: 4px 0;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--app-muted);
+}
+
+.math-ai-provider small {
+  opacity: .5;
+  margin-left: 4px;
+}
+
+.math-ai-connection {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #b5b5b5;
+}
+
+.math-ai-connection.is-ready {
+  background: #5b947b;
+}
+
+.math-ai-send {
+  display: grid;
+  place-items: center;
+  border: 0;
+  font-size: 20px;
+  cursor: pointer;
+  background: var(--app-primary);
+  color: var(--app-on-primary);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  flex: none;
+}
+
+.math-ai-send.is-start {
+  width: auto;
+  padding: 0 12px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.math-ai-send:disabled {
+  cursor: default;
+  opacity: 1;
+  background: color-mix(in srgb,var(--app-text) 10%,var(--app-surface));
+  color: var(--app-muted);
+}
+
+.math-ai-error {
+  margin: 5px 12px;
+  padding: 9px 10px;
+  line-height: 1.6;
+  background: #fff3e8;
+  color: #985829;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+@keyframes math-ai-pulse {
+  50% {
+    opacity: .25;
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .math-ai-pulse {
+    animation: none;
+  }
+}
+
+.math-ai-welcome p, .math-ai-welcome button {
+  font-size: 14px;
+}
+
+.math-ai-stage, .math-ai-message.is-tool, .math-ai-provider {
+  font-size: 13px;
+}
+
+.math-ai-setup {
+  border-bottom: 1px solid color-mix(in srgb,currentColor 10%,transparent);
+  font-size: 13px;
+  line-height: 21px;
+  flex: none;
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 0;
+  border: 0;
+  margin: 14px 20px 0;
+}
+
+.math-ai-setup strong {
+  font-weight: 550;
+  font-size: 14px;
+}
+
+.math-ai-setup p {
+  color: var(--wb-muted,#777d87);
+  margin: 8px 0;
+}
+
+.math-ai-setup ol {
+  padding-left: 20px;
+  display: block;
+  max-width: 100%;
+  padding-inline-start: 18px;
+  margin: 12px 0;
+  white-space: normal;
+}
+
+.math-ai-setup li {
+  margin-bottom: 5px;
+  white-space: normal;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.math-ai-install {
+  display: inline-flex;
+  text-decoration: none;
+  background: #4c647f;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 7px;
+  margin-top: 12px;
+}
+
+.math-ai-setup>div {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.math-ai-setup button {
+  border: 0;
+  border-radius: 6px;
+  background: color-mix(in srgb,currentColor 6%,transparent);
+  color: inherit;
+  font: inherit;
+  padding: 7px 9px;
+  cursor: pointer;
+}
+
+.math-ai-setup button:disabled {
+  opacity: .5;
+}
+
+.math-ai-connection.is-login {
+  background: #c18e44;
+}
+
+.math-ai-connection.is-connecting {
+  background: #7894ba;
+}
+
+.math-ai-connection.is-disconnected {
+  background: #bb755d;
+}
+
+@media (max-height:700px) {
+  .math-ai-setup {
+    max-height: 240px;
+    overflow: auto;
+  }
+  .math-ai-welcome {
+    padding-top: 10px;
+  }
+  .math-ai-welcome button {
+    margin-top: 14px;
+  }
+}
+
+.math-ai-setup>strong {
+  display: block;
+  width: 100%;
+  line-height: 22px;
+}
+
+.math-ai-setup>.math-ai-install {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 10px;
+  line-height: 20px;
+  white-space: normal;
+}
+
+.math-ai-thread:has(.math-ai-welcome) {
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.math-ai-setup>summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  cursor: pointer;
+  color: var(--app-muted);
+  font-size: 13px;
+  list-style: none;
+}
+
+.math-ai-setup>summary>svg {
+  margin-left: auto;
+}
+
+.math-ai-setup[open] {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--app-line);
+}
+
+.math-ai-setup .math-ai-install {
+  background: var(--app-primary);
+  color: var(--app-on-primary);
+  padding: 7px 12px;
+}
+
+.math-ai-new {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: var(--app-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.math-ai-new:hover {
+  background: color-mix(in srgb, var(--app-text) 6%, transparent);
+}
+
+.math-ai-send>svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}

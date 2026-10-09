@@ -10,6 +10,8 @@ import { createPortal, flushSync } from 'react-dom';
 import { useAuxiliaryTools, ShellContext, useAuxiliaryAssistant } from '../workbench/shellContext.js';
 import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
 import { useMathConfirm } from './useMathConfirm.jsx';
+import { MathMenu, MenuItem } from './MathMenu.jsx';
+import { useMathDialogKeys } from './useMathDialogKeys.js';
 import './workshop.css';
 
 const formulaDefaults = { caption: '', includeCaption: true, color: '#1e293b', fontSize: 32 };
@@ -35,7 +37,7 @@ function objectExpression(object) {
 }
 function parameters(objects) { return objects.filter(object => object.slider); }
 
-export default function WorkshopWorkspace({ draft, accountKey, busy, pending, status, message, conflictNotice, flushRef,
+export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequest, busy, pending, status, message, conflictNotice, flushRef,
   onChangeSource, onChangeInput, onTitle, onHome, onSave, onError, onHistory, onCopy, onArchive, onDownload, client, children }) {
   const { t, i18n } = useTranslation('math');
   const graphHost = useRef(null);
@@ -61,6 +63,9 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   const changeExpression = value => changeInput('expression', value);
   useEffect(() => { const next = { formula: draft.workshopInput?.formula ?? '', expression: draft.workshopInput?.expression ?? '' }; if (next.formula !== inputRef.current.formula || next.expression !== inputRef.current.expression) { inputRef.current = next; setFormulaInput(next.formula); setExpression(next.expression); setAddingFormula(!!next.formula); } }, [draft.workshopInput]);
   const [tool, setTool] = useState(null);
+  const [showExpression, setShowExpression] = useState(!!draft.workshopInput?.expression);
+  const expressionField = useRef(null);
+  useEffect(() => { if (showExpression) expressionField.current?.focus(); }, [showExpression]);
   const [drawingTool, setDrawingTool] = useState(null);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [download, setDownload] = useState({ format: 'png', selection: 'work', background: 'white', width: 1600 });
@@ -79,7 +84,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   const frozen = !!draft.deletedAt || state.mode === 'preview';
   const editingBlocked = frozen || state.busy;
 
-  const assistant = useCallback(() => <MathWebAssistant controller={editor.current} title={draft.title} accountKey={accountKey}/>, [ready, draft.title, accountKey]);
+  const assistant = useCallback(() => <MathWebAssistant key={accountKey} controller={editor.current} title={draft.title} accountKey={accountKey} takeRequest={takeAssistantRequest}/>, [ready, draft.title, accountKey, takeAssistantRequest]);
   // The global assistant button opens this same task column.
   useAuxiliaryAssistant(assistant);
   const capture = useCallback(async () => {
@@ -105,7 +110,10 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
         if (JSON.stringify(next.source) !== JSON.stringify(current.current.draft.source)) current.current.onChangeSource(next.source);
       },
       onRecovery: snapshot => { if (!lifetime.signal.aborted) current.current.onChangeSource(snapshot.source); },
-      onError: error => { if (!lifetime.signal.aborted) current.current.onError(error); },
+      onError: error => {
+        // Reference changes are presented by the caller's confirmation, not as a failure notice.
+        if (!lifetime.signal.aborted && error.reason !== 'confirmation-required') current.current.onError(error);
+      },
     }).then(value => {
       if (lifetime.signal.aborted) { value.destroy(); return; }
       mounted = value; editor.current = value; setState(value.read()); setReady(true);
@@ -135,13 +143,6 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
     return () => clearTimeout(autoTimer.current);
   }, [ready, busy, pending, status, source, frozen, draft.title]);
   useEffect(() => { setLocalFormula(null); setLocalStep(null); }, [state.selection?.id]);
-  useLayoutEffect(() => {
-    const host = moduleHost.current; const workspace = host?.closest('.wb-workspace'); const main = host?.closest('.wb-main');
-    if (!workspace || !main) return;
-    const measure = () => { const surface = host.querySelector('.mw-surface'); if (surface) workspace.style.setProperty('--math-tools-offset', `${Math.max(0, surface.getBoundingClientRect().top - main.getBoundingClientRect().top)}px`); };
-    const observer = new ResizeObserver(measure); observer.observe(host); observer.observe(host.querySelector('.mw-heading')); observer.observe(host.querySelector('.mw-toolbar')); measure();
-    return () => { observer.disconnect(); workspace.style.removeProperty('--math-tools-offset'); };
-  }, [message, conflictNotice]);
   useEffect(() => {
     const keys = event => {
       const dialogOpen = [...document.querySelectorAll('[role="dialog"]')].some(node => node.getClientRects().length && !node.closest('[inert]'));
@@ -154,7 +155,12 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   async function apply(changes) {
     if (!editor.current || frozen) return;
     try { return await editor.current.apply({ baseEditRevision: editor.current.read().editRevision, changes }); }
-    catch (error) { if (error.affectedStepIds?.length && await confirmation(t('这次修改会调整 {{count}} 个步骤的显示内容或参数值，是否继续？', { count: error.affectedStepIds.length }))) { try { return await editor.current.apply({ baseEditRevision: editor.current.read().editRevision, changes: { ...changes, confirmReferences: true } }); } catch (failure) { onError(failure); } } else onError(error); }
+    catch (error) {
+      if (!error.affectedStepIds?.length) { onError(error); return; }
+      if (!await confirmation(t('相关步骤、播放或轨迹会随之调整。是否继续？'))) return;
+      try { return await editor.current.apply({ baseEditRevision: editor.current.read().editRevision, changes: { ...changes, confirmReferences: true } }); }
+      catch (failure) { onError(failure); }
+    }
   }
   async function select(selection) {
     try {
@@ -166,7 +172,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   async function moveHistory(direction) {
     try { await capture(); await editor.current[direction](); setLocalFormula(null); setLocalStep(null); } catch (error) { onError(error); }
   }
-  function beginTool(next) { setTool(next); shell?.openPanel('math-workshop-tools'); }
+  function beginTool(next) { setTool(next); if (next === 'graph') setShowExpression(true); shell?.openPanel('math-workshop-tools'); }
   async function chooseDrawingTool(next) {
     try { flushSync(() => setDrawingTool(next === 'select' ? null : next)); if (next !== 'select') shell?.closePanel(); await editor.current.setTool(next); setTool(null); } catch (error) { setDrawingTool(null); onError(error); }
   }
@@ -177,7 +183,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   }
   async function addExpression(event) {
     event?.preventDefault(); if (!expression.trim()) return;
-    try { const operation = parseDefinition(expression, state.objects.map(objectId)); if (await apply({ operations: [operation] })) { changeExpression(''); setTool(null); select({ type: 'object', id: operation.name }); } }
+    try { const operation = parseDefinition(expression, state.objects.map(objectId)); if (await apply({ operations: [operation] })) { changeExpression(''); setTool(null); select({ type: 'object', id: operation.name }); requestAnimationFrame(() => expressionField.current?.focus()); } }
     catch (error) { onError(error); }
   }
   async function addStep() {
@@ -222,71 +228,74 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   }
   const editFormula = localFormula ?? selectedFormula;
   const visibleFormulas = state.mode === 'preview' ? source.formulas.filter(formula => state.visibleFormulaIds?.includes(formula.id)) : source.formulas;
-  return <section ref={moduleHost} className={`math-workshop${presenting ? ' is-presenting' : ''}`} aria-label={t('数学作品编辑器')}>
+  return <section ref={moduleHost} className={`math-workshop${presenting ? ' is-presenting' : ''}${state.mode === 'preview' ? ' is-preview' : ''}`} aria-label={t('数学作品编辑器')}>
     {children}{confirmationDialog}
     <header className="mw-heading">
       <button className="mw-icon" aria-label={t('返回工坊')} title={t('返回工坊')} onClick={onHome}><Icon name="back" size={18}/></button>
-      <input className="mw-title" aria-label={t('作品名')} value={draft.title} maxLength={200} disabled={editingBlocked} onChange={event => onTitle(event.target.value)}/>
-      {(source.formulas.length > 0 || source.graph || pending || status === '保存失败') && <span className={`mw-save-state${status === '保存失败' || pending ? ' has-error' : ''}`} role="status">{t(pending && !busy ? '保存结果待确认' : status === '未保存' ? '等待保存' : status)}</span>}
+      <div className="mw-title-group"><span className="mw-module-name">{t('数学工坊')}</span><input className="mw-title" aria-label={t('作品名')} value={draft.title} maxLength={200} disabled={editingBlocked} onChange={event => onTitle(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.nativeEvent.isComposing && !event.repeat) { event.preventDefault(); event.currentTarget.blur(); } }}/></div>
+      {state.mode === 'preview' && <span className="mw-mode-label">{t('试演中')}</span>}
+      {state.mode !== 'preview' && (source.formulas.length > 0 || source.graph || pending || status === '保存失败') && <span className={`mw-save-state${status === '保存失败' || pending ? ' has-error' : ''}`} role="status">{t(pending && !busy ? '保存结果待确认' : status === '未保存' ? '等待保存' : status)}</span>}
       <div className="mw-heading-actions">
         {state.mode === 'preview' ? <button className="mw-button is-primary" onClick={endPreview}>{t('返回编辑')}</button> : <>
           <button className="mw-button" disabled={!ready || busy || state.busy} onClick={() => preview()}>{t('试演')}</button>
 
         </>}
         <button className="mw-button" disabled={busy || state.busy || !draft.id} onClick={() => setDownloadOpen(value => !value)}>{t('下载')}</button>
-        <details className="mw-more"><summary aria-label={t('更多作品操作')}>···</summary><div className="mw-menu">
-          <button onClick={onSave} disabled={busy || state.busy}>{t(pending ? '确认操作结果' : '立即保存')}</button>
-          <button onClick={() => preview(true)} disabled={!ready || busy || state.busy}>{t('课堂展示')}</button>
-          <button onClick={onHistory} disabled={!draft.id || busy || state.busy}>{t('历史版本')}</button>
-          <button onClick={onCopy} disabled={busy || state.busy}>{t('另存作品')}</button>
-          <button onClick={onArchive} disabled={!draft.id || busy || state.busy}>{t('归档作品')}</button>
-        </div></details>
+        <MathMenu label={t('更多作品操作')} className="mw-work-actions">{({ close }) => <>
+          <MenuItem disabled={busy || state.busy} onClick={() => { close(); onSave(); }}>{t(pending ? '确认结果' : '立即保存')}</MenuItem>
+          <MenuItem disabled={!ready || busy || state.busy} onClick={() => { close(); void preview(true); }}>{t('课堂展示')}</MenuItem>
+          <MenuItem disabled={!draft.id || busy || state.busy} onClick={() => { close(); onHistory(); }}>{t('历史版本')}</MenuItem>
+          <MenuItem disabled={busy || state.busy} onClick={() => { close(); onCopy(); }}>{t('另存作品')}</MenuItem>
+          <MenuItem disabled={!draft.id || busy || state.busy} onClick={() => { close(); onArchive(); }}>{t('归档作品')}</MenuItem>
+        </>}</MathMenu>
       </div>
     </header>
+    {client && <MathIntegration work={draft} saved={status === '已保存'} busy={busy} onError={onError} client={client}/>}
     {(message || pending && !busy) && <div className="mw-notice" role="alert">{message || t('保存结果待确认')}{pending && <button onClick={onSave} disabled={busy || state.busy}>{t('确认操作结果')}</button>}</div>}{conflictNotice}
     <div className="mw-toolbar">
       <div className="mw-create-tools">
-        <button className="mw-button" disabled={editingBlocked || !ready} onClick={() => { setAddingFormula(true); setTool(null); }}><span className="mw-formula-icon" aria-hidden="true">ƒ</span>{t('添加公式')}</button>
-        <button className="mw-button" disabled={editingBlocked || !ready} onClick={() => beginTool(tool === 'graph' ? null : 'graph')}><Icon name="math" size={18}/>{t('添加图形')}</button>
-        <button className="mw-button" disabled={editingBlocked || !ready} onClick={() => beginTool('parameter')}><Icon name="settings" size={18}/>{t('添加参数')}</button>
-        <button className="mw-button" disabled={editingBlocked || !ready} onClick={addStep}><Icon name="prep" size={18}/>{t('教学步骤')}</button>
+        <button className="mw-button" aria-label={t('添加公式')} disabled={editingBlocked || !ready} onClick={() => { setAddingFormula(true); setTool(null); }}><span className="mw-formula-icon" aria-hidden="true">ƒ</span>{t('公式')}</button>
+        <button className="mw-button" aria-label={t('添加图形')} disabled={editingBlocked || !ready} onClick={() => beginTool(tool === 'graph' ? null : 'graph')}><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true"><path d="M3 3v14h14M5 6c3 12 6 12 10 0"/></svg>{t('图形')}</button>
+        <button className="mw-button" aria-label={t('添加参数')} disabled={editingBlocked || !ready} onClick={() => beginTool('parameter')}><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true"><path d="M3 6h4m4 0h6M3 14h8m4 0h2"/><circle cx="9" cy="6" r="2"/><circle cx="13" cy="14" r="2"/></svg>{t('参数')}</button>
+        <button className="mw-button" aria-label={t('教学步骤')} disabled={editingBlocked || !ready} onClick={addStep}><Icon name="prep" size={18}/>{t('步骤')}</button>
       </div>
       <div className="mw-view-tools">
         <button className="mw-icon" aria-label={t('撤销')} title={t('撤销')} disabled={editingBlocked || !state.canUndo} onClick={() => moveHistory('undo')}>↶</button>
         <button className="mw-icon" aria-label={t('重做')} title={t('重做')} disabled={editingBlocked || !state.canRedo} onClick={() => moveHistory('redo')}>↷</button>
-        <div className="mw-view-switch" aria-label={t('数学视图')}>{views.map(([view, label]) => <button key={view} aria-pressed={source.view === view} disabled={editingBlocked || !ready} onClick={() => apply({ view })}>{t(label)}</button>)}</div>
-        <button className="mw-icon mw-panel-toggle" aria-label={t(shell?.isPanelOpen ? '关闭辅助栏' : '打开辅助栏')} onClick={() => shell?.isPanelOpen ? shell.closePanel() : shell?.openPanel('ai')}><Icon name="menu" size={18}/></button>
+
+        <button className="mw-icon mw-panel-toggle" aria-label={t('内容列表')} title={t('内容列表')} onClick={() => { setTool(null); editor.current?.select(null); shell?.openPanel('math-workshop-tools'); }}><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 6 7-3 7 3-7 3-7-3Zm0 4 7 3 7-3M3 14l7 3 7-3"/></svg></button>
       </div>
     </div>
     <div className="mw-layout">
       <main className="mw-surface">
         {!source.formulas.length && !graphVisible && !addingFormula && <div className="mw-empty">
-          <div className="mw-empty-symbol"><Icon name="math" size={32}/></div><h2>{t('把数学想法变成课堂素材')}</h2>
-          <p>{t('直接输入公式或图形，也可以让 AI 帮你起稿。')}</p>
-          <button className="mw-button" onClick={() => setAddingFormula(true)} disabled={!ready || state.busy}>{t('添加公式')}</button>
+          <Icon name="math" size={30}/><h2>{t('还没有内容')}</h2><p>{t('在右侧说说想法，或用上方工具制作。')}</p>
         </div>}
         {(visibleFormulas.length > 0 || addingFormula) && <div className="mw-formula-band" inert={state.busy || undefined}>
           {visibleFormulas.map(formula => <div key={formula.id} className={`mw-formula-row${selectedFormula?.id === formula.id ? ' is-selected' : ''}`}>
-            {selectedFormula?.id === formula.id && !frozen ? <div className="mw-formula-edit"><VisualFormulaInput value={(localFormula ?? formula).latex} onChange={latex => updateFormula({ latex })}/></div> : <button className="mw-formula-select" aria-label={t('编辑公式 {{number}}', { number: source.formulas.indexOf(formula) + 1 })} onClick={() => select({ type: 'formula', id: formula.id })}>
-              <FormulaPreview source={{ schemaVersion: 1, kind: 'formula', ...formula, color: shell?.appearance.theme === 'dark' && formula.color === '#1e293b' ? '#eef2f6' : formula.color }}/>
+            {selectedFormula?.id === formula.id && !frozen ? <div className="mw-formula-edit"><VisualFormulaInput autoFocus value={(localFormula ?? formula).latex} onChange={latex => updateFormula({ latex })} onConfirm={async () => { await capture(); editor.current?.select(null); }}/></div> : <button className="mw-formula-select" disabled={frozen || state.busy} aria-label={t('编辑公式 {{number}}', { number: source.formulas.indexOf(formula) + 1 })} onClick={() => select({ type: 'formula', id: formula.id })}>
+              <FormulaPreview source={{ schemaVersion: 1, kind: 'formula', ...formula, color: formula.color }}/>
             </button>}
             {!frozen && <button className="mw-icon" aria-label={t('移除公式')} onClick={() => removeFormula(formula)}>×</button>}
           </div>)}
-          {addingFormula && <div className="mw-new-formula"><VisualFormulaInput value={formulaInput} onChange={changeFormulaInput}/><div className="mw-inline-actions"><button className="mw-button" onClick={() => { setAddingFormula(false); changeFormulaInput(''); }}>{t('取消')}</button><button className="mw-button is-primary" disabled={state.busy || !formulaInput.trim()} onClick={addFormula}>{t('加入作品')}</button></div></div>}
+          {addingFormula && <div className="mw-new-formula"><VisualFormulaInput autoFocus value={formulaInput} onChange={changeFormulaInput} onConfirm={addFormula}/><div className="mw-inline-actions"><button className="mw-button" onClick={() => { setAddingFormula(false); changeFormulaInput(''); }}>{t('取消')}</button><button className="mw-button is-primary" disabled={state.busy || !formulaInput.trim()} onClick={addFormula}>{t('加入作品')}</button></div></div>}
         </div>}
         {drawingTool && <div className="mw-drawing-hint"><span>{t(({ point: '点击画布放置点', segment: '依次点击两个端点', circle: '点击圆心，再点击圆上一点', polygon: '依次点击顶点，最后点击第一个点闭合', midpoint: '选择两个点或一条线段', perpendicular: '选择一个点和一条直线', intersect: '选择两个相交的图形' })[drawingTool])}</span><button className="mw-button" disabled={state.busy} onClick={() => chooseDrawingTool('select')}>{t('完成')}</button><button className="mw-icon" aria-label={t('取消绘图工具')} disabled={state.busy} onClick={() => chooseDrawingTool('select')}>×</button></div>}
         {state.graphMounting && <div className="mw-notice" role="status">{t('正在准备画布…')}</div>}
-        <div className={`mw-graph-area${graphVisible ? ' has-graph' : ''}`}><div className={`mw-graph-host${graphVisible ? ' has-graph' : ''}`} ref={graphHost} inert={draft.deletedAt || undefined}/>{graphVisible && <a className="mw-engine-credit" href="/vendor/math/geogebra/NOTICE.txt" target="_blank" rel="noreferrer">GeoGebra</a>}</div>
-        {!frozen && <form className="mw-expression" onSubmit={addExpression}>
-          <span aria-hidden="true">ƒ</span><input aria-label={t('图形表达式')} placeholder={t('输入图形，例如 f(x)=x^2 或 A=(1,2)')} disabled={state.busy} value={expression} onChange={event => changeExpression(event.target.value)}/>
-          <button type="submit" className="mw-icon" aria-label={t('建立图形')} disabled={state.busy || !expression.trim() || !ready}>↵</button>
+        <div className={`mw-graph-area${graphVisible ? ' has-graph' : ''}`}>{graphVisible && !frozen && <div className="mw-graph-controls"><button className="mw-button" onClick={() => { setShowExpression(value => !value); }}>{t('输入算式')}</button><select aria-label={t('数学视图')} value={source.view} disabled={editingBlocked || !ready} onChange={event => apply({ view: event.target.value })}>{views.map(([view, label]) => <option key={view} value={view}>{t(label)}</option>)}</select></div>}<div className={`mw-graph-host${graphVisible ? ' has-graph' : ''}`} ref={graphHost} inert={draft.deletedAt || undefined}/>{graphVisible && <a className="mw-engine-credit" href="/vendor/math/geogebra/NOTICE.txt" target="_blank" rel="noreferrer">GeoGebra</a>}</div>
+        {!frozen && showExpression && <form className="mw-expression" onSubmit={addExpression}>
+          <span aria-hidden="true">ƒ</span><input ref={expressionField} aria-label={t('图形表达式')} placeholder={t('输入算式，如 f(x)=x²')} disabled={state.busy} value={expression} onChange={event => changeExpression(event.target.value)}/>
+          <button type="submit" className="mw-icon" aria-label={t('建立图形')} disabled={state.busy || !expression.trim() || !ready}>↵</button><button type="button" className="mw-icon" aria-label={t('收起算式')} onClick={() => setShowExpression(false)}><Icon name="close" size={16}/></button>
         </form>}
         {source.steps.length > 0 ? <div className="mw-step-rail"><span>{t('步骤')}</span><nav aria-label={t('教学步骤')}>{source.steps.map((step, index) => <button key={step.id} disabled={state.busy} className={selectedStep?.id === step.id || state.previewStepId === step.id ? 'is-selected' : ''} onClick={() => state.mode === 'preview' ? editor.current.preview({ stepId: step.id }).then(() => setState(editor.current.read())).catch(onError) : select({ type: 'step', id: step.id })}><span>{index + 1}</span>{step.title}</button>)}</nav>{!frozen && <button className="mw-icon" aria-label={t('添加步骤')} disabled={state.busy} onClick={addStep}>+</button>}</div>
-          : !frozen && <div className="mw-step-empty"><button className="mw-text-button" disabled={!ready || state.busy} onClick={addStep}>+ {t('添加教学步骤')}</button></div>}
+          : null}
         {state.mode === 'preview' && <PreviewControls state={state} editor={editor.current} onError={onError} onState={setState} readOnly={!!draft.deletedAt}/>}
       </main>
-      {shell && <WorkshopToolsPortal>        <div className="mw-side-content" inert={editingBlocked || undefined}>
-          {tool === 'graph' && <div className="mw-tool-section"><h3>{t('添加图形')}</h3>{templates.map(([group, choices]) => <div className="mw-template-group" key={group}><h4>{t(group)}</h4><div>{choices.map(([label, input]) => <button key={label} className="mw-button" onClick={() => { const draw = ({ '点': 'point', '线段': 'segment', '圆': 'circle', '三角形': 'polygon', '中点': 'midpoint', '垂线': 'perpendicular', '交点': 'intersect' })[label]; if (draw) void chooseDrawingTool(draw); else { const operation = parseDefinition(input, []); if (state.objects.some(object => objectId(object) === operation.name)) { let suffix = 2; while (state.objects.some(object => objectId(object) === `${operation.name}${suffix}`)) suffix++; input = input.replace(new RegExp(`^${operation.name}`), `${operation.name}${suffix}`); } changeExpression(input); graphHost.current?.parentElement.querySelector('.mw-expression input')?.focus(); } }}>{t(label === '三角形' ? '多边形' : label)}</button>)}</div></div>)}</div>}
+      {shell && <WorkshopToolsPortal>        <div className="mw-side-content" inert={editingBlocked || undefined} onKeyDown={event => {
+          if (event.key !== 'Enter' || event.nativeEvent.isComposing || event.repeat || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey || event.target.closest('form')) return;
+          if (event.target.matches('textarea, input:not([type=checkbox]):not([type=range]):not([type=color])')) { event.preventDefault(); event.target.blur(); }
+        }}>
+          {tool === 'graph' && <div className="mw-tool-section"><h3>{t('添加图形')}</h3>{!graphVisible && <label>{t('数学视图')}<select aria-label={t('数学视图')} value={source.view} onChange={event => apply({ view: event.target.value })}>{views.map(([view, label]) => <option key={view} value={view}>{t(label)}</option>)}</select></label>}{templates.map(([group, choices]) => <div className="mw-template-group" key={group}><h4>{t(group)}</h4><div>{choices.map(([label, input]) => <button key={label} className="mw-button" onClick={() => { const draw = ({ '点': 'point', '线段': 'segment', '圆': 'circle', '三角形': 'polygon', '中点': 'midpoint', '垂线': 'perpendicular', '交点': 'intersect' })[label]; if (draw) void chooseDrawingTool(draw); else { const operation = parseDefinition(input, []); if (state.objects.some(object => objectId(object) === operation.name)) { let suffix = 2; while (state.objects.some(object => objectId(object) === `${operation.name}${suffix}`)) suffix++; input = input.replace(new RegExp(`^${operation.name}`), `${operation.name}${suffix}`); } changeExpression(input); setShowExpression(true); requestAnimationFrame(() => expressionField.current?.focus()); } }}>{t(label === '三角形' ? '多边形' : label)}</button>)}</div></div>)}</div>}
           {tool === 'parameter' && <ParameterCreator defaultName={(() => { let name = 'a'; let number = 2; while (state.objects.some(object => objectId(object) === name)) name = `a${number++}`; return name; })()} onCreate={operation => apply({ operations: [operation] }).then(result => { if (result) { setTool(null); select({ type: 'object', id: operation.name }); } })}/>}
           {!tool && editFormula && <div className="mw-tool-section"><h3>{t('公式')}</h3>
             <details><summary>{t('LaTeX 源码')}</summary><textarea aria-label={t('LaTeX 源码')} value={editFormula.latex} onChange={event => updateFormula({ latex: event.target.value })}/><button className="mw-button" onClick={() => navigator.clipboard.writeText(editFormula.latex).catch(onError)}>{t('复制 LaTeX')}</button></details>
@@ -297,8 +306,8 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
           {!tool && selectedObject && <ObjectTools object={selectedObject} apply={apply} onDelete={() => removeObject(selectedObject)} frozen={frozen} source={source}/>}
           {!tool && selectedStep && <StepTools step={localStep?.id === selectedStep.id ? { ...selectedStep, ...localStep } : selectedStep} onTextChange={updateStepText} onPatch={patch => updateStep(selectedStep.id, patch)} source={source} objects={state.objects} frozen={frozen} apply={apply}/>}
           {!tool && !editFormula && !selectedObject && !selectedStep && <div className="mw-selection-empty"><Icon name="math" size={24}/><p>{t('选择公式、图形或步骤，调整它的属性。')}</p></div>}
-          {state.objects.length > 0 && <div className="mw-object-list"><h3>{t('图形与参数')}</h3>{state.objects.map(object => <button key={objectId(object)} className={selectedObject === object ? 'is-selected' : ''} onClick={() => { setTool(null); select({ type: 'object', id: objectId(object) }); }}><span style={{ color: object.color ?? '#64748b' }}>●</span><strong>{objectId(object)}</strong><span>{objectExpression(object) || object.type}</span></button>)}</div>}
-          {client && <MathIntegration work={draft} saved={status === '已保存'} busy={busy} onError={onError} client={client}/>}
+          {state.objects.length > 0 && <div className="mw-object-list"><h3>{t('图形与参数')}</h3>{state.objects.map(object => <button key={objectId(object)} className={selectedObject === object ? 'is-selected' : ''} onClick={() => { setTool(null); select({ type: 'object', id: objectId(object) }); }}><span style={{ color: object.color ?? '#64748b' }}>●</span><strong>{objectId(object)}</strong><span>{objectExpression(object) || t(object.slider ? '参数' : '图形')}</span></button>)}</div>}
+
           {client && draft.id && <MathUsageDetails work={draft}/>}
         </div>
       </WorkshopToolsPortal>}
@@ -313,7 +322,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
       {['png','svg'].includes(download.format) && opaqueGraph && download.selection !== 'formula' && <p>{t('三维图片使用白色背景')}</p>}
       {download.format === 'source' && source.graph && <label className="mw-check"><input type="checkbox" checked={download.selection === 'graph'} onChange={event => setDownload({ ...download, selection: event.target.checked ? 'graph' : 'work' })}/>{t('只取出图形构造（.ggb）')}</label>}
       {download.format === 'bundle' && <p>{t('下载 ZIP 后解压，打开 index.html 进入课堂演示。')}</p>}
-      <button className="mw-button is-primary" disabled={busy || state.busy || status !== '已保存'} onClick={() => onDownload({ ...download, ...(opaqueGraph && download.selection !== 'formula' && download.format === 'png' ? { background: 'white' } : {}), ...(download.format === 'source' && download.selection === 'graph' ? { format: 'ggb' } : {}), ...(['source', 'bundle'].includes(download.format) || download.selection === 'formula' ? { background: 'transparent', width: 1600 } : {}), ...(download.selection === 'formula' ? { formulaId: download.formulaId ?? source.formulas[0]?.id } : { formulaId: undefined }) })}>{t(status !== '已保存' ? '保存后下载' : '下载文件')}</button>
+      <button name="dialog-confirm" className="mw-button is-primary" disabled={busy || state.busy || status !== '已保存'} onClick={() => onDownload({ ...download, ...(opaqueGraph && download.selection !== 'formula' && download.format === 'png' ? { background: 'white' } : {}), ...(download.format === 'source' && download.selection === 'graph' ? { format: 'ggb' } : {}), ...(['source', 'bundle'].includes(download.format) || download.selection === 'formula' ? { background: 'transparent', width: 1600 } : {}), ...(download.selection === 'formula' ? { formulaId: download.formulaId ?? source.formulas[0]?.id } : { formulaId: undefined }) })}>{t(status !== '已保存' ? '保存后下载' : '下载文件')}</button>
     </WorkshopDownloadDialog>}</ModulePresence>
   </section>;
 }
@@ -328,8 +337,21 @@ function ObjectTools({ object, apply, onDelete, frozen, source }) {
   const [range, setRange] = useState(object.slider);
   useEffect(() => { setParameterValue(object.numericValue ?? 0); setName(id); setRange(object.slider); }, [id, object.numericValue, object.slider?.min, object.slider?.max, object.slider?.step]);
   useEffect(() => setDefinition(actualDefinition), [id, actualDefinition]);
-  return <div className="mw-tool-section"><h3>{id}</h3><label>{t('名称')}<input value={name} disabled={frozen} onChange={event => setName(event.target.value)} onBlur={() => { if (name !== id) void apply({ operations: [{ type: 'rename', name: id, newName: name }] }); }}/></label><form onSubmit={event => { event.preventDefault(); void apply({ operations: [parseDefinition(`${id}${object.type === 'function' ? '(x)' : ''}=${definition}`, [])] }); }}><label>{t('定义')}<input value={definition} disabled={frozen} onChange={event => setDefinition(event.target.value)}/></label><button className="mw-button" disabled={frozen || definition === actualDefinition}>{t('应用修改')}</button></form>
-    {object.slider && <label>{t('取值')}<input type="range" aria-label={t('参数 {{name}}', { name: id })} min={object.slider.min} max={object.slider.max} step={object.slider.step} value={parameterValue} disabled={frozen} onChange={event => setParameterValue(Number(event.target.value))} onPointerUp={() => apply({ operations: [{ type: 'setValue', name: id, value: parameterValue }] })} onKeyUp={() => apply({ operations: [{ type: 'setValue', name: id, value: parameterValue }] })}/><output>{parameterValue}</output></label>}
+  const simpleParameter = Boolean(object.slider && object.independent !== false);
+  const definitionForm = <form onSubmit={event => { event.preventDefault(); void apply({ operations: [parseDefinition(`${id}${object.type === 'function' ? '(x)' : ''}=${definition}`, [])] }); }}>
+    <label>{t('定义')}<input value={definition} disabled={frozen} onChange={event => setDefinition(event.target.value)}/></label>
+    <button className="mw-button" disabled={frozen || definition === actualDefinition}>{t(simpleParameter ? '改为算式' : '应用修改')}</button>
+  </form>;
+  return <div className="mw-tool-section"><h3>{id}</h3>
+    <label>{t('名称')}<input value={name} disabled={frozen} onChange={event => setName(event.target.value)} onBlur={() => { if (name !== id) void apply({ operations: [{ type: 'rename', name: id, newName: name }] }); }}/></label>
+    {!simpleParameter && definitionForm}
+    {object.slider && <div className="mw-parameter-value">
+      <label>{t('取值')}<input type="number" required min={object.slider.min} max={object.slider.max} step={object.slider.step} value={parameterValue} disabled={frozen}
+        onChange={event => setParameterValue(event.target.value)} onBlur={event => { if (event.currentTarget.reportValidity() && Number(event.target.value) !== object.numericValue) void apply({ operations: [{ type: 'setValue', name: id, value: Number(event.target.value) }] }); }}/></label>
+      <input type="range" aria-label={t('参数 {{name}}', { name: id })} min={object.slider.min} max={object.slider.max} step={object.slider.step} value={parameterValue === '' ? object.numericValue : parameterValue} disabled={frozen}
+        onChange={event => setParameterValue(Number(event.target.value))} onPointerUp={() => apply({ operations: [{ type: 'setValue', name: id, value: Number(parameterValue) }] })} onKeyUp={() => apply({ operations: [{ type: 'setValue', name: id, value: Number(parameterValue) }] })}/>
+    </div>}
+    {simpleParameter && <details><summary>{t('改为算式')}</summary><p>{t('改为算式后，不再使用滑杆。')}</p>{definitionForm}</details>}
     {object.slider && range && <details><summary>{t('参数范围')}</summary><form onSubmit={event => { event.preventDefault(); void apply({ operations: [{ type: 'slider', name: id, min: Number(range.min), max: Number(range.max), step: Number(range.step), value: parameterValue }] }); }}>{[['min','最小值'],['max','最大值'],['step','步长']].map(([field,label]) => <label key={field}>{t(label)}<input type="number" step="any" value={range[field] ?? ''} disabled={frozen} onChange={event => setRange({ ...range, [field]: event.target.value })}/></label>)}<button className="mw-button" disabled={frozen}>{t('应用范围')}</button></form></details>}
     <details><summary>{t('样式')}</summary><label>{t('颜色')}<input type="color" disabled={frozen} value={object.color ?? '#2563eb'} onChange={event => apply({ operations: [{ type: 'style', name: id, color: event.target.value }] })}/></label>{isPoint ? <label>{t('点大小')}<input type="number" min="1" max="9" disabled={frozen} value={object.pointSize ?? 5} onChange={event => apply({ operations: [{ type: 'style', name: id, pointSize: Number(event.target.value) }] })}/></label> : <><label>{t('线宽')}<input type="number" min="1" max="13" disabled={frozen} value={object.lineThickness ?? 2} onChange={event => apply({ operations: [{ type: 'style', name: id, lineThickness: Number(event.target.value) }] })}/></label><label>{t('线型')}<select disabled={frozen} value={object.lineStyle ?? 0} onChange={event => apply({ operations: [{ type: 'style', name: id, lineStyle: Number(event.target.value) }] })}><option value="0">{t('实线')}</option><option value="1">{t('虚线')}</option><option value="3">{t('点线')}</option></select></label></>}<label className="mw-check"><input type="checkbox" disabled={frozen} checked={object.visible !== false} onChange={event => apply({ operations: [{ type: 'style', name: id, visible: event.target.checked }] })}/>{t('显示图形')}</label><label className="mw-check"><input type="checkbox" disabled={frozen} checked={!!object.labelVisible} onChange={event => apply({ operations: [{ type: 'style', name: id, labelVisible: event.target.checked }] })}/>{t('显示标注')}</label></details>{object.slider && <details><summary>{t('参数播放')}</summary><label className="mw-check"><input type="checkbox" disabled={frozen} checked={source.animation?.parameter === id} onChange={event => apply({ animation: event.target.checked ? { parameter: id, seconds: 8, mode: 'bounce' } : null })}/>{t('试演时播放此参数')}</label>{source.animation?.parameter === id && <><label>{t('单程秒数')}<input type="number" min="1" max="120" value={source.animation.seconds} disabled={frozen} onChange={event => apply({ animation: { ...source.animation, seconds: Number(event.target.value) } })}/></label><label>{t('播放方式')}<select disabled={frozen} value={source.animation.mode} onChange={event => apply({ animation: { ...source.animation, mode: event.target.value } })}><option value="once">{t('单次')}</option><option value="loop">{t('循环')}</option><option value="bounce">{t('往返')}</option></select></label></>}</details>}{object.type === 'point' && <label className="mw-check"><input type="checkbox" checked={source.traceObjects.includes(id)} disabled={frozen} onChange={event => apply({ traceObjects: event.target.checked ? [...source.traceObjects, id] : source.traceObjects.filter(name => name !== id) })}/>{t('试演时显示轨迹')}</label>}<button className="mw-text-button is-danger" disabled={frozen} onClick={onDelete}>{t('删除对象')}</button>
   </div>;
@@ -361,13 +383,14 @@ function PreviewControls({ state, editor, onError, onState, readOnly }) {
 
 function WorkshopToolsPortal({ children }) {
   const { t } = useTranslation('math'); const [host, setHost] = useState(null);
-  useAuxiliaryTools([{ id: 'math-workshop-tools', label: t('工具'), render: () => <div className="mw-tool-host" ref={setHost}/> }]);
+  useAuxiliaryTools([{ id: 'math-workshop-tools', label: t('编辑'), render: () => <div className="mw-tool-host" ref={setHost}/> }]);
   return host ? createPortal(children, host) : null;
 }
 
 function WorkshopDownloadDialog({ children, onClose, label }) {
   const ref = useRef(null);
   useModuleDialogFocus(ref, onClose);
+  useMathDialogKeys(ref);
   useEffect(() => { const outside = event => { if (ref.current && !ref.current.contains(event.target)) onClose(); }; document.addEventListener('pointerdown', outside); return () => document.removeEventListener('pointerdown', outside); }, [onClose]);
   return <div ref={ref} className="mw-download" role="dialog" aria-modal="true" aria-label={label}>{children}</div>;
 }

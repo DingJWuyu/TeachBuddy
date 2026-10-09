@@ -5,11 +5,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
 import FormulaPreview from './FormulaPreview.jsx';
 import GraphicPreview from './GraphicPreview.jsx';
+import { useMathDialogKeys } from './useMathDialogKeys.js';
 
 export default function WorkHistory({ work, client, font, hasChanges, onClose, onRestore }) {
   const { t } = useTranslation('math');
   const ref = useRef(null);
   useModuleDialogFocus(ref, onClose);
+  useMathDialogKeys(ref);
   const [items, setItems] = useState(null);
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState('');
@@ -41,7 +43,7 @@ export default function WorkHistory({ work, client, font, hasChanges, onClose, o
               : <GraphicPreview source={selected.source} font={font}/>}
           </div>
           <div className="wb-dialog-actions"><button className="wb-button" onClick={onClose}>{t("取消")}</button>
-            <button className="wb-button is-primary" disabled={!hasChanges && selected.version === work.version} onClick={() => onRestore(selected)}>{t("恢复此版本")}</button></div>
+            <button name="dialog-confirm" className="wb-button is-primary" disabled={!hasChanges && selected.version === work.version} onClick={() => onRestore(selected)}>{t("恢复此版本")}</button></div>
         </>}
       </>}
     </div>

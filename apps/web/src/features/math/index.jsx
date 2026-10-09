@@ -23,7 +23,7 @@ import { Popover, MenuItem } from "../workbench/ModuleOverlays.jsx";
 import HtmlEditor from "./HtmlEditor.jsx";
 import { dynamicSource, emptyDynamicSource } from "./model.js";
 import { updateObjects } from "./editing.js";
-import React, { useEffect, useLayoutEffect, useMemo, useState, useRef, useContext } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState, useRef, useContext, useCallback } from "react";
 import { projectSpace } from "../../../../../packages/shared/src/math/graphics.js";
 import {
   emptySource,
@@ -308,6 +308,8 @@ function MathSession({ transport, route }) {
   const [confirm, confirmationDialog] = useMathConfirm();
   const history = useDraftHistory();
   const ggbFlush = useRef(null);
+  const assistantRequest = useRef(null);
+  const takeAssistantRequest = useCallback(() => { const request = assistantRequest.current; assistantRequest.current = null; return request; }, []);
   const [editorSession, setEditorSession] = useState(0);
   const editorSessionRef = useRef(editorSession);
   editorSessionRef.current = editorSession;
@@ -319,6 +321,7 @@ function MathSession({ transport, route }) {
   }, [draft?.source?.kind, format]);
   const [viewScene, patchView] = useScene(account, 'math-view', { canvasTop: 0, canvasLeft: 0 });
   const home = !draft || viewScene.screen === 'home';
+  useEffect(() => { if (home) assistantRequest.current = null; }, [home, account]);
   const canvasScroll = useScrollRestore(home ? viewScene.homeTop ?? 0 : viewScene.canvasTop,
     top => patchView(home ? { homeTop: top } : { canvasTop: top }), `${home}:${draft?.id}:${draft?.source.kind}:${Boolean(font)}`);
   useLayoutEffect(() => { if (canvasScroll.ref.current) canvasScroll.ref.current.scrollTop = home ? viewScene.homeTop ?? 0 : viewScene.canvasTop; }, [home]);
@@ -603,7 +606,7 @@ function MathSession({ transport, route }) {
   function source(next) {
     edit({ ...draft, source: next });
   }
-  async function newDraft(kind = 'workshop') {
+  async function newDraft(kind = 'workshop', request = null) {
     if (pending) {
       setMessage(t("请先确认上次保存结果"));
       return;
@@ -614,6 +617,7 @@ function MathSession({ transport, route }) {
       !await confirm(t("新建作品会替换当前未保存内容，是否继续？"))
     )
       return;
+    assistantRequest.current = request ? { text: request } : null;
     history.reset(null);
     setEditorSession(value => value + 1);
     edit({
@@ -1101,9 +1105,10 @@ function MathSession({ transport, route }) {
     <input ref={importFile} type="file" accept=".html,.htm,text/html" hidden onChange={event => { const file = event.target.files[0]; event.target.value = ''; if (file) void importHtml(file); }}/>
     <input ref={sourceFile} type="file" accept=".json,application/json" hidden onChange={event => { const file = event.target.files[0]; event.target.value = ''; if (file) void importSource(file); }}/>
     {message && <div className="mw-notice" role="alert">{message}{pending && <button disabled={busy} onClick={() => save()}>{t('确认操作结果')}</button>}</div>}
-    <WorkspaceHome items={items} search={search} deleted={deleted} busy={busy || !!pending} onSearch={setSearch} onDeleted={setDeleted} onNew={() => newDraft('workshop')} onOpen={open} onImport={() => importFile.current.click()} onImportSource={() => sourceFile.current.click()} onRestore={item => deletion(false, item)} onPurge={item => deletion(true, item)}/>
+    {shell && <MathIntegration work={draft} saved={status === '已保存'} busy={busy} onError={handleError} client={client}/>}
+    <WorkspaceHome accountKey={account} client={client} items={items} search={search} deleted={deleted} busy={busy || !!pending} onSearch={setSearch} onDeleted={setDeleted} onNew={request => newDraft('workshop', typeof request === 'string' ? request : null)} onOpen={open} onImport={() => importFile.current.click()} onImportSource={() => sourceFile.current.click()} onRestore={item => deletion(false, item)} onPurge={item => deletion(true, item)}/>
   </div>;
-  if (!home && draft?.source.kind === 'workshop') return <WorkshopWorkspace key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflictNotice={conflictNotice} flushRef={ggbFlush} client={shell ? client : null}
+  if (!home && draft?.source.kind === 'workshop') return <WorkshopWorkspace takeAssistantRequest={takeAssistantRequest} key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflictNotice={conflictNotice} flushRef={ggbFlush} client={shell ? client : null}
     onChangeSource={next => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'workshop') return; if (JSON.stringify(current.source) !== JSON.stringify(next)) edit({ ...current, source: next }, false); }}
     onChangeInput={workshopInput => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'workshop') return; const next = { ...current, workshopInput }; draftRef.current = next; setDraft(next); writeLocal(account, 'math-workspace', { draft: next, pending: liveSave.current.pending, status: liveSave.current.status, selected, search, deleted, format, background, exportWidth }); }}
     onTitle={title => edit({ ...draftRef.current, title }, false)} onHome={goHome} onSave={() => save()} onError={handleError} onHistory={() => setHistoryOpen(true)} onCopy={() => save(true)} onArchive={() => deletion(false)} onDownload={exportFile}>

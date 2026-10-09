@@ -21,7 +21,8 @@ test('统一作品：空白退出、公式自动保存、刷新、手动图形�
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
   await expect(page.locator('.mw-library-row')).toHaveCount(0);
   await page.getByRole('button', { name: '新建作品', exact: true }).click();
-  await expect(page.getByRole('link', { name: '下载连接扩展' })).toBeVisible();
+  await page.locator('.math-ai-setup summary').click();
+  await expect(page.getByRole('link', { name: '下载扩展', exact: true })).toBeVisible();
   await expect(page.locator('.mw-save-state')).toHaveCount(0);
   await page.screenshot({path:info.outputPath('empty-install-1440.png')});
   await page.setViewportSize({width:1024,height:768}); await page.screenshot({path:info.outputPath('empty-install-1024.png')});
@@ -39,6 +40,7 @@ test('统一作品：空白退出、公式自动保存、刷新、手动图形�
   await page.reload(); await page.locator('.mw-library-row>button').click();
   await expect(page.locator('.mw-formula-row')).toHaveCount(1);
   await expect(page.locator('.mw-formula-row img')).toBeVisible();
+  await page.getByRole('button', { name: '添加图形', exact: true }).click();
   await page.getByLabel('图形表达式', { exact: true }).click(); await page.keyboard.type('f(x)=x^2'); await page.keyboard.press('Enter');
   const { deviceMath } = await import('./math-unified-helpers.mjs');
   await expect.poll(async () => Boolean((await deviceMath(page))?.draft?.source.graph), { timeout: 90000 }).toBe(true);
@@ -87,6 +89,15 @@ test('公式编辑深浅主题与1024和窄屏布局', async ({ page }, info) =>
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
   await page.screenshot({ path: info.outputPath('formula-dark-narrow.png') });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  const workName = await page.locator('.mw-library-row strong').innerText();
+  const search = page.getByRole('textbox', { name: '搜索作品', exact: true });
+  await search.fill(workName);
+  await expect(page.locator('.mw-library-row')).toHaveCount(1);
+  await expect(search).toBeFocused();
+  await page.mouse.move(280, 75);
+  await page.screenshot({ path: info.outputPath('final-home-search-dark.png') });
 });
 
 test('自有图形工具真实点击建点线圆和多边形，参数与三维同作品', async ({ page }, info) => {
@@ -118,7 +129,7 @@ test('自有图形工具真实点击建点线圆和多边形，参数与三维�
   await page.getByRole('button',{name:'添加参数',exact:true}).click(); await page.getByRole('button',{name:'加入作品',exact:true}).click(); await expect(page.getByLabel('参数 a',{exact:true})).toBeVisible();
   await page.getByLabel('参数 a',{exact:true}).focus(); await page.keyboard.press('ArrowRight');
   await expect.poll(async()=> (await currentApi(page,'a'))?.value).toBeGreaterThan(1);
-  await page.getByRole('button',{name:'双视图',exact:true}).click(); await enterMath(page,'cube=Cube((0,0,0),(2,0,0))','cube'); const saved=await savedMath(page);
+  await page.getByRole('combobox',{name:'数学视图',exact:true}).selectOption('split'); await enterMath(page,'cube=Cube((0,0,0),(2,0,0))','cube'); const saved=await savedMath(page);
   expect(saved.source.view).toBe('split'); await page.screenshot({path:info.outputPath('native-split.png')});
   const resizePuts = [];
   page.on('request', request => { if (request.method() === 'PUT' && request.url().endsWith(`/works/${saved.id}`)) resizePuts.push(request.url()); });
@@ -136,7 +147,7 @@ test('自有图形工具真实点击建点线圆和多边形，参数与三维�
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
   await settledSplit();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: '打开辅助栏', exact: true }).click();
+  await page.getByRole('button', { name: '内容列表', exact: true }).click();
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
   await settledSplit();
   await page.waitForTimeout(2000); // Observe beyond autosave and manual edit debounce.
@@ -149,24 +160,24 @@ test('自有图形工具真实点击建点线圆和多边形，参数与三维�
 test('下载入口交付整份PNG、公式SVG、可编辑源与离线课堂包', async ({page},info)=>{
   await page.getByRole('button',{name:'新建作品',exact:true}).click();
   await page.getByRole('button',{name:'添加公式',exact:true}).first().click();await page.locator('math-field').click();await page.keyboard.type('x^2+1',{delay:60});await page.getByRole('button',{name:'加入作品',exact:true}).click();
-  await page.getByLabel('图形表达式',{exact:true}).fill('f(x)=x^2');await page.getByLabel('图形表达式',{exact:true}).press('Enter');await expect(page.locator('.mw-graph-host')).toHaveClass(/has-graph/,{timeout:90000});await expect(page.locator('.mw-save-state')).toHaveText('已保存',{timeout:60000});
+  await page.getByRole('button',{name:'添加图形',exact:true}).click();await page.getByLabel('图形表达式',{exact:true}).fill('f(x)=x^2');await page.getByLabel('图形表达式',{exact:true}).press('Enter');await expect(page.locator('.mw-graph-host')).toHaveClass(/has-graph/,{timeout:90000});await expect(page.locator('.mw-save-state')).toHaveText('已保存',{timeout:60000});
   await page.getByRole('button',{name:'下载',exact:true}).click();const dialog=page.getByRole('dialog',{name:'下载作品',exact:true});
   async function download(extension){const pending=page.waitForEvent('download',{timeout:90000});await dialog.getByRole('button',{name:'下载文件',exact:true}).click();const artifact=await pending;expect(await artifact.failure()).toBeNull();expect(artifact.suggestedFilename()).toMatch(new RegExp(`\\.${extension}$`));const file=info.outputPath(`work.${extension}`);await artifact.saveAs(file);return fs.readFileSync(file);}
   const png=await download('png');expect(png.subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');
   await dialog.getByRole('combobox',{name:'内容',exact:true}).selectOption('formula');await dialog.getByRole('combobox',{name:'格式',exact:true}).selectOption('svg');expect((await download('svg')).toString()).toContain('<svg');
-  await dialog.getByRole('button',{name:'可编辑源',exact:true}).click();const source=JSON.parse((await download('json')).toString());expect(source.source?.kind??source.kind).toBe('workshop');
+  await dialog.getByRole('button',{name:'编辑文件',exact:true}).click();const source=JSON.parse((await download('json')).toString());expect(source.source?.kind??source.kind).toBe('workshop');
   await dialog.getByRole('button',{name:'课堂演示',exact:true}).click();const zip=await download('zip');const JSZip=(await import('jszip')).default;const bundle=await JSZip.loadAsync(zip);expect(bundle.file('index.html')).not.toBeNull();await page.screenshot({path:info.outputPath('download-classroom.png')});
 });
 
 test('自由点修改和AI续改刷新后坐标可读，关联点保留构造与点样式',async({page},info)=>{
   // Fixed local AI reply only verifies the UI/apply seam; real DeepSeek is verified separately.
   await page.evaluate(()=>{let rounds=0;window.addEventListener('message',event=>{const request=event.data;if(event.source!==window||request?.source!=='teachbuddy-workbench')return;const type={STATUS:'STATUS',CONNECT:'CONNECTED',SEND:'DONE'}[request.type];if(!type)return;window.postMessage({source:'teachbuddy-web-ai',type,connectionState:'ready',requestId:request.requestId,sessionId:request.sessionId,text:JSON.stringify(request.type==='SEND'&&rounds++===0?{message:'移动A',changes:{operations:[{type:'setCoords',name:'A',coords:[5,3]}]}}:{message:'已完成',changes:{}})},location.origin);});});
-  await page.getByRole('button',{name:'新建作品',exact:true}).click();const field=page.getByLabel('图形表达式',{exact:true});await field.fill('A=(1,2)');await field.press('Enter');const tools=page.locator('.mw-tool-host');await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/\(1,\s*2\)/,{timeout:90000});
+  await page.getByRole('button',{name:'新建作品',exact:true}).click();await page.getByRole('button',{name:'添加图形',exact:true}).click();const field=page.getByLabel('图形表达式',{exact:true});await field.fill('A=(1,2)');await field.press('Enter');const tools=page.locator('.mw-tool-host');await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/\(1,\s*2\)/,{timeout:90000});
   await tools.getByRole('textbox',{name:'定义',exact:true}).fill('(4,3)');await tools.getByRole('button',{name:'应用修改',exact:true}).click();await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/\(4,\s*3\)/);
   await page.getByRole('tab',{name:'AI 助理',exact:true}).click();await page.getByLabel('向数学助理提问').fill('把A右移一个单位');await page.getByRole('button',{name:'发送消息',exact:true}).click();await expect(page.locator('.math-ai-message.is-assistant')).toContainText('已完成',{timeout:90000});await expect(page.locator('.mw-save-state')).toHaveText('已保存',{timeout:60000});
-  await page.reload();await page.getByRole('button',{name:'打开辅助栏',exact:true}).click().catch(()=>{});await page.getByRole('tab',{name:'工具',exact:true}).click();await tools.locator('.mw-object-list button').filter({has:page.locator('strong',{hasText:/^A$/})}).click();await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/\(5,\s*3\)/);await expect(tools.locator('.mw-object-list')).toContainText(/\(5,\s*3\)/);
+  await page.reload();await page.getByRole('button',{name:'内容列表',exact:true}).click().catch(()=>{});await page.getByRole('tab',{name:'编辑',exact:true}).click();await tools.locator('.mw-object-list button').filter({has:page.locator('strong',{hasText:/^A$/})}).click();await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/\(5,\s*3\)/);await expect(tools.locator('.mw-object-list')).toContainText(/\(5,\s*3\)/);
   await tools.getByText('样式',{exact:true}).click();await expect(tools.getByRole('spinbutton',{name:'点大小',exact:true})).toBeVisible();await expect(tools.getByRole('spinbutton',{name:'线宽',exact:true})).toHaveCount(0);
-  await field.fill('B=(7,5)');await field.press('Enter');await expect(tools.locator('.mw-object-list')).toContainText('B');await field.fill('M=Midpoint(A,B)');await field.press('Enter');await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/Midpoint[\[(]/);await tools.getByRole('textbox',{name:'定义',exact:true}).fill('Midpoint(A,B)');await tools.getByRole('button',{name:'应用修改',exact:true}).click();await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/Midpoint[\[(]/);await page.screenshot({path:info.outputPath('point-coordinate-and-dependent.png')});
+  if(!await field.isVisible())await page.getByRole('button',{name:'输入算式',exact:true}).click();await field.fill('B=(7,5)');await field.press('Enter');await expect(tools.locator('.mw-object-list')).toContainText('B');await field.fill('M=Midpoint(A,B)');await field.press('Enter');await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/Midpoint[\[(]/);await tools.getByRole('textbox',{name:'定义',exact:true}).fill('Midpoint(A,B)');await tools.getByRole('button',{name:'应用修改',exact:true}).click();await expect(tools.getByRole('textbox',{name:'定义',exact:true})).toHaveValue(/Midpoint[\[(]/);await page.screenshot({path:info.outputPath('point-coordinate-and-dependent.png')});
 });
 
 test('拖点后立即关闭辅助栏仍保存新坐标，纯尺寸变化不保存新版本', async ({ page }, info) => {
@@ -182,11 +193,12 @@ test('拖点后立即关闭辅助栏仍保存新坐标，纯尺寸变化不保�
   await page.getByRole('button', { name: '点', exact: true }).click();
   await expect(page.getByRole('button', { name: '完成', exact: true })).toBeEnabled({ timeout: 90000 });
   await page.getByRole('button', { name: '取消绘图工具', exact: true }).click();
-  await page.getByRole('button', { name: '三维', exact: true }).click();
+  await page.getByRole('button', { name: '添加图形', exact: true }).click();
+  await page.getByRole('combobox', { name: '数学视图', exact: true }).selectOption('space');
   await expect.poll(async () => (await deviceMath(page))?.draft?.source.view).toBe('space');
   expect((await deviceMath(page)).draft.source.graph).toBeNull();
   expect((await deviceMath(page)).draft.id ?? null).toBeNull();
-  await page.getByRole('button', { name: '平面', exact: true }).click();
+  await page.getByRole('combobox', { name: '数学视图', exact: true }).selectOption('plane');
   await expect.poll(async () => (await deviceMath(page))?.draft?.source.view).toBe('plane');
   await enterMath(page, 'A=(1,2)', 'A');
   const first = await savedMath(page);
@@ -235,7 +247,7 @@ test('拖点后立即关闭辅助栏仍保存新坐标，纯尺寸变化不保�
 test('英文切换覆盖制作工具与删除确认',async({page},info)=>{
   await page.getByRole('button',{name:'简体中文',exact:true}).click();await page.getByRole('menuitemradio',{name:/English/}).click();
   await page.getByRole('button',{name:'New work',exact:true}).click();await expect(page.getByRole('button',{name:'Add formula',exact:true}).first()).toBeVisible();
-  await page.getByLabel('Graph expression',{exact:true}).fill('A=(1,2)');await page.getByLabel('Graph expression',{exact:true}).press('Enter');
+  await page.getByRole('button',{name:'Add graph',exact:true}).click();await page.getByLabel('Graph expression',{exact:true}).fill('A=(1,2)');await page.getByLabel('Graph expression',{exact:true}).press('Enter');
   const tools=page.locator('.mw-tool-host');await expect(tools.getByRole('textbox',{name:'Definition',exact:true})).toHaveValue(/\(1,\s*2\)/,{timeout:90000});
   await tools.getByRole('button',{name:'Delete object',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog).toContainText('Delete A?');await expect(dialog.getByRole('button',{name:'Continue',exact:true})).toBeVisible();await dialog.getByRole('button',{name:'Cancel',exact:true}).click();await page.screenshot({path:info.outputPath('english-workshop.png')});
 });
@@ -244,7 +256,266 @@ test('历史海报失败重试、切版查看和恢复生成新版本',async({pa
   await page.evaluate(()=>{let Constructor;Object.defineProperty(window,'GGBApplet',{configurable:true,get:()=>Constructor,set:Value=>{Constructor=class extends Value{constructor(parameters,...rest){super({...parameters,appletOnLoad:api=>{(window.mathTestApis??={})[parameters.id]=api;window.mathTestApi=api;parameters.appletOnLoad?.(api);}},...rest);}};}});});
   const {enterMath,savedMath,currentApi,installMathProbe}=await import('./math-unified-helpers.mjs');await installMathProbe(page);await page.getByRole('button',{name:'新建作品',exact:true}).click();await enterMath(page,'A=(1,2)','A');const first=await savedMath(page);await enterMath(page,'A=(5,3)','A');const second=await savedMath(page);expect(second.version).toBe(first.version+1);
   let intercepted=false;await page.route('**/api/workbench/files/*/content',route=>{if(!intercepted){intercepted=true;return route.abort('failed');}return route.continue();});
-  await page.getByLabel('更多作品操作',{exact:true}).click();await page.getByRole('button',{name:'历史版本',exact:true}).click();const history=page.getByRole('dialog',{name:'历史版本',exact:true});await expect(history.getByRole('alert')).toContainText('此版本预览暂时无法读取');expect((await currentApi(page,'A')).coords).toEqual([5,3]);await history.getByRole('button',{name:'重试',exact:true}).click();await expect(history.getByRole('img',{name:`版本 ${first.version} 预览`,exact:true})).toBeVisible();
+  await page.getByLabel('更多作品操作',{exact:true}).click();await page.getByRole('menuitem',{name:'历史版本',exact:true}).click();const history=page.getByRole('dialog',{name:'历史版本',exact:true});await expect(history.getByRole('alert')).toContainText('此版本预览暂时无法读取');expect((await currentApi(page,'A')).coords).toEqual([5,3]);await history.getByRole('button',{name:'重试',exact:true}).click();await expect(history.getByRole('img',{name:`版本 ${first.version} 预览`,exact:true})).toBeVisible();
   await history.getByRole('combobox',{name:'保存记录',exact:true}).selectOption(String(second.version));await expect(history.getByRole('img',{name:`版本 ${second.version} 预览`,exact:true})).toBeVisible();await history.getByRole('combobox',{name:'保存记录',exact:true}).selectOption(String(first.version));await expect(history.getByRole('img',{name:`版本 ${first.version} 预览`,exact:true})).toBeVisible();await page.screenshot({path:info.outputPath('history-preview.png')});
-  await history.getByRole('button',{name:'恢复此版本',exact:true}).click();await expect.poll(async()=>(await currentApi(page,'A'))?.coords,{timeout:90000}).toEqual([1,2]);const restored=await savedMath(page);expect(restored.id).toBe(first.id);expect(restored.version).toBe(second.version+1);await page.reload();await expect.poll(async()=>(await currentApi(page,'A'))?.coords,{timeout:90000}).toEqual([1,2]);
+  await history.getByRole('button',{name:'恢复版本',exact:true}).click();await expect.poll(async()=>(await currentApi(page,'A'))?.coords,{timeout:90000}).toEqual([1,2]);const restored=await savedMath(page);expect(restored.id).toBe(first.id);expect(restored.version).toBe(second.version+1);await page.reload();await expect.poll(async()=>(await currentApi(page,'A'))?.coords,{timeout:90000}).toEqual([1,2]);
+});
+
+test('界面路径：一键编辑、未连接输入保护、菜单键盘与下载确认', async ({ page }, info) => {
+  const { savedMath } = await import('./math-unified-helpers.mjs');
+  const shot = async name => { await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath(name) }); };
+  await shot('final-home-empty-light.png');
+  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  await expect(page.locator('.math-ai-connection').first()).toHaveClass(/is-missing/);
+  await shot('final-empty-light.png');
+  const input = page.getByRole('textbox', { name: '向数学助理提问', exact: true });
+  await input.fill('画一条抛物线');
+  await page.getByRole('button', { name: '发送消息', exact: true }).click();
+  await expect(input).toHaveValue('画一条抛物线');
+  await expect(page.getByRole('link', { name: '下载扩展', exact: true })).toBeVisible();
+  await expect(page.locator('.math-ai-error')).toContainText('内容已保留');
+  await shot('final-connection-guide-light.png');
+  await page.getByRole('button', { name: '添加公式', exact: true }).click();
+  const field = page.locator('.mw-new-formula math-field');
+  await expect(field).toBeFocused();
+  await page.keyboard.type('y=x^2', { delay: 60 });
+  await page.keyboard.press('Enter');
+  await savedMath(page);
+  await page.getByRole('button', { name: '内容列表', exact: true }).click();
+  await page.getByRole('button', { name: '编辑公式 1', exact: true }).click();
+  await expect(page.locator('.mw-formula-row math-field')).toBeFocused();
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.type('y=x^2+1', { delay: 60 });
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.mw-formula-row math-field')).toHaveCount(0);
+  await savedMath(page);
+  await page.getByRole('button', { name: '添加图形', exact: true }).click();
+  await page.getByLabel('图形表达式', { exact: true }).fill('f(x)=x^2+1');
+  await page.getByLabel('图形表达式', { exact: true }).press('Enter');
+  await expect(page.getByLabel('图形表达式', { exact: true })).toHaveValue('');
+  await savedMath(page);
+  await page.getByRole('button', { name: '收起算式', exact: true }).click();
+  await page.getByRole('tab', { name: 'AI 助理', exact: true }).click();
+  await page.getByRole('button', { name: '新对话', exact: true }).click();
+  await expect(page.locator('.math-ai-connection').first()).toHaveClass(/is-missing/);
+  await shot('final-work-light.png');
+  await expect(page.getByRole('button', { name: '试演', exact: true })).toBeEnabled();
+  const more = page.getByRole('button', { name: '更多作品操作', exact: true });
+  await more.focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('menuitem', { name: '立即保存', exact: true })).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByRole('menuitem', { name: '课堂展示', exact: true })).toBeFocused();
+  await shot('final-work-menu.png');
+  await page.keyboard.press('Escape'); await expect(more).toBeFocused();
+  await page.getByRole('button', { name: '下载', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '下载作品', exact: true });
+  await expect(dialog.getByRole('combobox', { name: '内容', exact: true })).toBeFocused();
+  await shot('final-download.png');
+  await dialog.getByRole('button', { name: '关闭下载', exact: true }).focus();
+  const downloaded = page.waitForEvent('download');
+  await page.keyboard.press('Enter');
+  const file = await downloaded;
+  expect(file.suggestedFilename()).toMatch(/\.png$/);
+  expect(await file.failure()).toBeNull();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: '下载', exact: true })).toBeFocused();
+  await page.setViewportSize({ width: 1024, height: 768 }); await shot('final-work-1024.png');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
+  await shot('final-work-narrow.png');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole('button', { name: '输入算式', exact: true }).click();
+  await expect(page.getByLabel('图形表达式', { exact: true })).toBeFocused();
+  await page.getByRole('button', { name: '收起算式', exact: true }).click();
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  await expect(page.locator('.mw-library-thumbnail img')).toBeVisible();
+  await shot('final-home-light.png');
+  const workName = await page.locator('.mw-library-row strong').innerText();
+  const search = page.getByRole('textbox', { name: '搜索作品', exact: true });
+  await search.fill('不存在的数学作品');
+  await expect(page.getByRole('heading', { name: '没有找到作品', exact: true })).toBeVisible();
+  await search.fill(workName);
+  await expect(page.locator('.mw-library-row')).toHaveCount(1);
+  await expect(search).toBeFocused();
+  await shot('final-home-search-light.png');
+  await search.clear();
+  await page.getByRole('button', { name: '作品操作', exact: true }).click();
+  await shot('final-home-menu.png');
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await page.locator('.mw-library-row>button').click();
+  await page.getByRole('button', { name: '编辑公式 1', exact: true }).click();
+  await expect(page.locator('.mw-formula-row math-field')).toBeFocused();
+  expect(await page.locator('math-field').evaluate(el => el.getValue('latex'))).toBe('y=x^2+1');
+});
+
+test('备课往返：目标始终可见，保存作品带回原环节', async ({ page }, info) => {
+  await page.getByRole('navigation', { name: '功能模块', exact: true }).getByRole('link', { name: /^备课/ }).click();
+  await page.getByRole('button', { name: '新建备课', exact: true }).click();
+  await page.getByLabel('课题', { exact: true }).fill('二次函数');
+  await page.getByRole('button', { name: '添加教学环节', exact: true }).click();
+  await page.getByLabel('环节名称 1').fill('观察图像');
+  await page.getByRole('button', { name: /^保存(备课)?$/ }).click();
+  await expect(page.locator('[data-save-status]')).toContainText('已保存');
+  await page.locator('[data-section-id]').getByRole('button', { name: '加入材料', exact: true }).click();
+  await page.getByRole('menuitem', { name: '制作数学作品', exact: true }).click();
+  await expect(page.locator('.mw-home-wrapper>.math-integration')).toContainText('观察图像');
+  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  await expect(page.locator('.math-workshop>.math-integration')).toContainText('观察图像');
+  await page.getByRole('button', { name: '添加公式', exact: true }).click();
+  await expect(page.locator('math-field')).toBeFocused();
+  await page.keyboard.type('y=x^2', { delay: 60 }); await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: '带回备课', exact: true })).toBeEnabled({ timeout: 60000 });
+  await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath('lesson-target.png') });
+  await page.getByRole('button', { name: '带回备课', exact: true }).click();
+  await expect(page.getByLabel('课题', { exact: true })).toHaveValue('二次函数');
+  await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+  await expect(page.locator('[data-save-status]')).toContainText('已保存');
+  await page.reload(); await expect(page.locator('[data-reference-id]')).toHaveCount(1);
+});
+
+test('首页数学对话：缺连接保留输入，一次开始只执行一轮，离开后迟到回复失效', async ({ page }, info) => {
+  const { savedMath, deviceMath } = await import('./math-unified-helpers.mjs');
+  await page.getByRole('banner').getByRole('button', { name: 'AI 助理', exact: true }).click();
+  await expect(page.locator('.math-web-assistant')).toBeVisible();
+  await expect(page.locator('.math-ai-connection').first()).toHaveClass(/is-missing/);
+  const input = page.getByRole('textbox', { name: '向数学助理提问', exact: true });
+  const request = '写出 y=x^2，并保留这个完整描述';
+  await input.fill(request);
+  await input.press('Shift+Enter');
+  await expect(input).toHaveValue(request + '\n');
+  await input.press('Backspace');
+  await input.press('Enter');
+  await expect(input).toHaveValue(request);
+  await expect(page.locator('.mw-library-row')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: '下载扩展', exact: true })).toBeVisible();
+  await page.evaluate(() => {
+    window.mathUiRequests = [];
+    window.addEventListener('message', event => {
+      const request = event.data;
+      if (event.source !== window || request?.source !== 'teachbuddy-workbench') return;
+      const type = { STATUS: 'STATUS', CONNECT: 'CONNECTED', SEND: 'DONE' }[request.type];
+      if (!type) return;
+      if (request.type === 'SEND') {
+        window.mathUiRequests.push(request);
+        if (window.holdMathReply) { window.pendingMathReply = request; return; }
+      }
+      const first = request.type === 'SEND' && window.mathUiRequests.length === 1;
+      setTimeout(() => window.postMessage({ source: 'teachbuddy-web-ai', type, connectionState: 'ready', requestId: request.requestId, sessionId: request.sessionId,
+        text: JSON.stringify(first ? { message: '已加入公式', changes: { formulas: [{ id: 'home-formula', latex: 'y=x^2', caption: '', includeCaption: true, color: '#1e293b', fontSize: 32 }] } } : { message: '公式已加入，可以继续调整。', changes: {} }) }, location.origin), 50);
+    });
+  });
+  await page.getByRole('button', { name: '检查连接', exact: true }).click();
+  await expect(page.locator('.math-ai-setup')).toHaveCount(0);
+  await page.getByRole('button', { name: '开始制作', exact: true }).click({ clickCount: 2 });
+  await expect(page.locator('.mw-formula-row')).toHaveCount(1);
+  await expect(page.locator('.math-ai-message.is-assistant')).toContainText('公式已加入');
+  await savedMath(page);
+  expect(await page.evaluate(() => window.mathUiRequests.length)).toBe(2);
+  expect(await page.evaluate(() => JSON.parse(window.mathUiRequests[0].prompt.split('\n\n').at(-1)).request)).toBe(request);
+  await expect(page.locator('.math-ai-message.is-user')).toHaveCount(1);
+  await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath('final-connected-simulated.png') });
+  await page.evaluate(() => { window.holdMathReply = true; });
+  await input.fill('把公式改成 y=x^3');
+  await input.press('Control+Enter');
+  await input.press('Meta+Enter');
+  await input.press('Alt+Enter');
+  // This checks the composition guard only; native operating-system IME remains a manual boundary.
+  await input.dispatchEvent('keydown', { key: 'Enter', code: 'Enter', isComposing: true });
+  expect(await page.evaluate(() => Boolean(window.pendingMathReply))).toBe(false);
+  await page.keyboard.down('Enter');
+  await page.keyboard.down('Enter');
+  await page.keyboard.up('Enter');
+  await expect.poll(() => page.evaluate(() => Boolean(window.pendingMathReply))).toBe(true);
+  expect(await page.evaluate(() => window.mathUiRequests.length)).toBe(3);
+  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  await expect(page.locator('.math-web-assistant')).toBeVisible();
+  await expect(page.getByText('一起准备下一堂课', { exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  await page.evaluate(() => {
+    const request = window.pendingMathReply;
+    window.postMessage({ source: 'teachbuddy-web-ai', type: 'DONE', requestId: request.requestId, sessionId: request.sessionId,
+      text: JSON.stringify({ message: '迟到回复', changes: { formulas: [{ id: 'late-formula', latex: 'y=x^3', caption: '', includeCaption: true, color: '#1e293b', fontSize: 32 }] } }) }, location.origin);
+  });
+  await page.waitForTimeout(1000);
+  await expect(page.locator('.mw-formula-row')).toHaveCount(0);
+  expect((await deviceMath(page)).draft.source.formulas).toEqual([]);
+});
+
+test('参数取值：数值和滑杆同步，算式按需编辑，保存刷新保留', async ({ page }, info) => {
+  const { installMathProbe, currentApi, savedMath } = await import('./math-unified-helpers.mjs');
+  await installMathProbe(page); await page.reload();
+  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  await page.getByRole('button', { name: '添加参数', exact: true }).click();
+  await page.getByRole('button', { name: '加入作品', exact: true }).click();
+  const tools = page.locator('.mw-tool-host');
+  const value = tools.getByRole('spinbutton', { name: '取值', exact: true });
+  await expect(value).toHaveValue('1');
+  await expect(tools.getByRole('textbox', { name: '定义', exact: true })).toBeHidden();
+  await value.fill('3'); await value.press('Enter');
+  await expect(value).not.toBeFocused();
+  await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBe(3);
+  await savedMath(page);
+  const slider = tools.getByRole('slider', { name: '参数 a', exact: true });
+  await slider.focus(); await page.keyboard.press('ArrowLeft');
+  await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBeCloseTo(2.9, 8);
+  await expect(value).toHaveValue('2.9'); await savedMath(page);
+  await page.reload();
+  await page.getByRole('button', { name: '内容列表', exact: true }).click();
+  await tools.locator('.mw-object-list button').filter({ has: page.locator('strong', { hasText: /^a$/ }) }).click();
+  await expect(value).toHaveValue('2.9');
+  await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBeCloseTo(2.9, 8);
+  fs.writeFileSync(info.outputPath('parameter-value-refresh.json'), JSON.stringify({ value: (await currentApi(page, 'a')).value, saved: await savedMath(page) }, null, 2));
+  await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath('parameter-value.png') });
+  await tools.locator('summary').filter({ hasText: /^改为算式$/ }).click();
+  await tools.getByRole('textbox', { name: '定义', exact: true }).fill('2+2');
+  await tools.getByRole('button', { name: '改为算式', exact: true }).click();
+  await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBe(4);
+  await savedMath(page); await page.reload();
+  await page.getByRole('button', { name: '内容列表', exact: true }).click();
+  await tools.locator('.mw-object-list button').filter({ has: page.locator('strong', { hasText: /^a$/ }) }).click();
+  await expect(value).toHaveCount(0);
+  await expect(slider).toHaveCount(0);
+  await expect(tools.getByRole('textbox', { name: '定义', exact: true })).toHaveValue(/2\s*\+\s*2/);
+  await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBe(4);
+});
+
+test('参数转算式：取消保留滑杆与引用，确认清理取值和播放，刷新保留结果', async ({ page }, info) => {
+  const { installMathProbe, currentApi, savedMath, deviceMath } = await import('./math-unified-helpers.mjs');
+  await installMathProbe(page); await page.reload();
+  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  await page.getByRole('button', { name: '添加参数', exact: true }).click();
+  await page.getByRole('button', { name: '加入作品', exact: true }).click();
+  const tools = page.locator('.mw-tool-host');
+  await tools.getByText('参数播放', { exact: true }).click();
+  await tools.getByLabel('自动播放', { exact: true }).check();
+  await page.getByRole('button', { name: '教学步骤', exact: true }).click();
+  const before = (await savedMath(page)).source;
+  expect(before.animation.parameter).toBe('a'); expect(before.steps[0].values.a).toBe(1);
+  await page.getByRole('button', { name: '内容列表', exact: true }).click();
+  await tools.locator('.mw-object-list button').filter({ has: page.locator('strong', { hasText: /^a$/ }) }).click();
+  await tools.locator('summary').filter({ hasText: /^改为算式$/ }).click();
+  await expect(tools).toContainText('改为算式后，不再使用滑杆。');
+  await tools.getByRole('textbox', { name: '定义', exact: true }).fill('2+2');
+  await tools.getByRole('button', { name: '改为算式', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toContainText('相关步骤、播放或轨迹会随之调整。是否继续？');
+  await dialog.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(page.locator('.mw-notice')).toHaveCount(0);
+  await expect(tools.getByRole('slider', { name: '参数 a', exact: true })).toBeVisible();
+  await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBe(1);
+  const cancelled = (await deviceMath(page)).draft.source;
+  expect(cancelled.animation).toEqual(before.animation); expect(cancelled.steps).toEqual(before.steps);
+  await tools.getByRole('button', { name: '改为算式', exact: true }).click();
+  await dialog.getByRole('button', { name: '继续', exact: true }).click();
+  await expect(tools.getByRole('slider', { name: '参数 a', exact: true })).toHaveCount(0);
+  const converted = (await savedMath(page)).source;
+  expect(converted.animation).toBeNull(); expect(converted.steps[0].values).not.toHaveProperty('a');
+  expect(converted.steps[0].visibleObjects).toContain('a');
+  await page.reload(); await savedMath(page);
+  await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBe(4);
+  const refreshed = (await deviceMath(page)).draft.source;
+  expect(refreshed.animation).toBeNull(); expect(refreshed.steps).toEqual(converted.steps);
+  fs.writeFileSync(info.outputPath('parameter-conversion.json'), JSON.stringify({ before, cancelled, converted, refreshed }, null, 2));
 });

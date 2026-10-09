@@ -2,13 +2,13 @@ import { useTranslation } from 'react-i18next';
 
 import { useEffect, useRef, useState } from 'react';
 
-export default function VisualFormulaInput({ value, onChange }) {
+export default function VisualFormulaInput({ value, onChange, autoFocus = false, onConfirm }) {
   const { t, i18n } = useTranslation('math');
   const host = useRef(null);
   const field = useRef(null);
   const allowFocus = useRef(() => {});
-  const current = useRef({ value, onChange });
-  current.current = { value, onChange };
+  const current = useRef({ value, onChange, onConfirm });
+  current.current = { value, onChange, onConfirm };
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [attempt, retry] = useState(0);
@@ -26,6 +26,11 @@ export default function VisualFormulaInput({ value, onChange }) {
       input.setAttribute('aria-label', t("可视化公式输入"));
       input.value = current.current.value;
       input.addEventListener('input', () => current.current.onChange(input.value));
+      input.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.isComposing && event.keyCode !== 229 && !event.repeat && !event.altKey && !event.shiftKey && !event.ctrlKey && !event.metaKey && current.current.onConfirm) {
+          event.preventDefault(); event.stopPropagation(); void current.current.onConfirm();
+        }
+      });
       host.current.replaceChildren(input);
       input.menuItems = [];
       field.current = input;
@@ -48,6 +53,7 @@ export default function VisualFormulaInput({ value, onChange }) {
         });
       }, { capture: true, signal: lifecycle.signal });
       setReady(true);
+      if (autoFocus) input.focus();
     }).catch(() => { if (live) setError(true); });
     return () => { live = false; lifecycle.abort(); allowFocus.current = () => {}; field.current = null; host.current?.replaceChildren(); };
   }, [attempt]);
