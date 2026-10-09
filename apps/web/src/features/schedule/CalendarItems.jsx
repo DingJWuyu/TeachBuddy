@@ -1,73 +1,136 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from 'react';
-import { CalendarDialog, CalendarIcon, CalendarMenu } from './CalendarControls.jsx';
-import { buildPriorityRows, formatInstantLabel, moveItemInArray, PRIORITY_LABEL, PRIORITY_VALUES, TIME_ZONES } from './model.js';
-import { titleOf } from './calendarModel.js';
+import { CalendarDialog, CalendarIcon, CalendarMenu, isConfirmKey } from './CalendarControls.jsx';
+import { moveItemInArray } from './model.js';
+import { repeatLabel, titleOf, todayInZone } from './calendarModel.js';
+import { listOccurrences } from './api.js';
 
 export function EntryItems({ items, repeating, onChange, onMove, onRemoveLast }) {
   const { t } = useTranslation("schedule");
   const root = useRef(null);
-  const count = useRef(items.length);
+  const focusItem = useRef(null);
+  const gesture = useRef(null);
+  const suppressClick = useRef(false);
+  const [drag, setDrag] = useState(null);
   useEffect(() => {
-    if (items.length > count.current) root.current?.querySelector('.cal-item-row:last-of-type input')?.focus();
-    count.current = items.length;
-  }, [items.length]);
+    const cancel = event => {
+      if (event.key !== 'Escape' || !gesture.current) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      suppressClick.current = true;
+      gesture.current = null; setDrag(null);
+    };
+    document.addEventListener('keydown', cancel, true);
+    return () => document.removeEventListener('keydown', cancel, true);
+  }, []);
+  const add = () => {
+    const id = crypto.randomUUID();
+    focusItem.current = id;
+    onChange([...items.filter(item => item.text.trim()), { id, text: '', priority: 'normal' }]);
+  };
+  const drop = event => {
+    const current = gesture.current;
+    gesture.current = null; setDrag(null);
+    if (!current) return;
+    suppressClick.current = current.moved || performance.now() - current.started > 250;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    if (current.target === null) return;
+    const next = items.filter(item => item.id !== current.id);
+    const moved = items.find(item => item.id === current.id);
+    if (moved) { next.splice(current.target, 0, moved); onChange(next); }
+  };
+  useEffect(() => {
+    if (!focusItem.current) return;
+    const input = root.current?.querySelector(`[data-item-id="${focusItem.current}"] input`);
+    if (input) { input.focus(); focusItem.current = null; }
+  }, [items]);
   const patch = (id, value) => onChange(items.map(x => x.id === id ? { ...x, ...value } : x));
   return <div className="cal-entry-items" ref={root}>
-    {items.length > 0 && <h3>{t("事项")} <span>{items.length}</span></h3>}
-    {items.map((item, index) => <div className="cal-item-row" key={item.id} data-item-id={item.id}>
-      <span className={`cal-priority-mark is-${item.priority}`} title={t("{{value}}优先级", { value: t(PRIORITY_LABEL[item.priority]) })}/>
-      <input aria-label={t("事项 {{value}}", { value: index + 1 })} placeholder={t("写一件要做的事")} maxLength="4000" value={item.text} onChange={e => patch(item.id, { text: e.target.value })}/>
+    <header className="cal-items-heading"><h3>{t("事项")}{items.length > 0 && <span>({items.length})</span>}</h3>{items.length > 0 && <button className="cal-add-item" data-add-item="" aria-label={t("添加事项")} title={t("添加事项")} disabled={items.length >= 200} onClick={add}><CalendarIcon name="plus" size={18}/></button>}</header>
+    {items.map((item, index) => <div className={`cal-item-row${item.completed ? ' is-completed' : ''}${drag?.id === item.id ? ' is-dragging' : ''}${drag?.before === item.id ? ' is-drop-before' : ''}${drag?.after === item.id ? ' is-drop-after' : ''}`} key={item.id} data-item-id={item.id}>
+      <button type="button" className="cal-item-bullet" aria-label={t("拖动事项 {{value}}", { value: index + 1 })} aria-pressed={Boolean(item.completed)} title={item.completed ? t("标为未完成") : t("完成事项")} onClick={() => {
+        if (!suppressClick.current) patch(item.id, { completed: !item.completed });
+        suppressClick.current = false;
+      }} onPointerDown={event => {
+        if (event.button !== 0) return;
+        event.preventDefault(); event.currentTarget.focus();
+        suppressClick.current = false;
+        gesture.current = { id: item.id, x: event.clientX, y: event.clientY, target: null, started: performance.now(), moved: false };
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }} onPointerMove={event => {
+        const current = gesture.current;
+        if (!current || Math.hypot(event.clientX - current.x, event.clientY - current.y) < 4) return;
+        current.moved = true;
+        const rows = [...root.current.querySelectorAll('.cal-item-row')].filter(row => row.dataset.itemId !== current.id);
+        let target = rows.findIndex(row => { const rect = row.getBoundingClientRect(); return event.clientY < rect.top + rect.height / 2; });
+        if (target === -1) target = rows.length;
+        current.target = target;
+        setDrag({ id: current.id, before: rows[target]?.dataset.itemId, after: target === rows.length ? rows.at(-1)?.dataset.itemId : null });
+      }} onPointerUp={drop} onPointerCancel={() => { suppressClick.current = true; gesture.current = null; setDrag(null); }} onKeyDown={event => {
+        if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+        event.preventDefault(); onChange(moveItemInArray(items, index, event.key === 'ArrowUp' ? -1 : 1));
+      }}>•</button>
+      <input aria-label={t("事项 {{value}}", { value: index + 1 })} placeholder={t("写一件要做的事")} maxLength="4000" value={item.text} onChange={e => patch(item.id, { text: e.target.value })} onKeyDown={e => {
+        if (!isConfirmKey(e)) return;
+        e.preventDefault();
+        if (e.currentTarget.value.trim() && items.length < 200) add(); else e.currentTarget.blur();
+      }} onBlur={e => {
+        if (!e.currentTarget.value.trim() && !e.relatedTarget?.closest('[data-add-item]')) onChange(items.filter(x => x.id !== item.id));
+      }}/>
       <CalendarMenu label={t("事项 {{value}} 操作", { value: index + 1 })} trigger={<CalendarIcon name="more" size={16}/>}>
-        {close => <>{PRIORITY_VALUES.map(value => <button key={value} role="menuitemradio" aria-checked={item.priority === value} onClick={() => { patch(item.id, { priority: value }); close(); }}>{t(PRIORITY_LABEL[value])}{t("优先级")}{item.priority === value && <CalendarIcon name="check" size={14}/>}</button>)}
-          <div className="cal-menu-divider"/>
-          <button role="menuitem" disabled={index === 0} onClick={() => { onChange(moveItemInArray(items, index, -1)); close(); }}>{t("上移")}</button>
-          <button role="menuitem" disabled={index === items.length - 1} onClick={() => { onChange(moveItemInArray(items, index, 1)); close(); }}>{t("下移")}</button>
-          {!repeating && <button role="menuitem" disabled={!item.text.trim()} onClick={() => { onMove(item.id); close(); }}>{t("移到其他安排…")}</button>}
+        {close => <>
+          {!repeating && onMove && <button role="menuitem" disabled={!item.text.trim()} onClick={() => { onMove(item.id); close(); }}>{t("移到其他安排…")}</button>}
           <div className="cal-menu-divider"/><button role="menuitem" className="is-danger" onClick={() => { if (items.length === 1 && onRemoveLast) onRemoveLast(); else onChange(items.filter(x => x.id !== item.id)); close(); }}>{t("删除事项")}</button>
         </>}
       </CalendarMenu>
     </div>)}
-    <button className="cal-add-item" disabled={items.length >= 200} onClick={() => onChange([...items, { id: crypto.randomUUID(), text: '', priority: 'normal' }])}><CalendarIcon name="plus" size={14}/>{t("添加事项")}</button>
+    {!items.length && <button className="cal-add-first-item" data-add-item="" onClick={add}><CalendarIcon name="plus" size={18}/>{t("添加事项")}</button>}
   </div>;
 }
 
 export function MoveItemDialog({ item, sourceId, entries, onMove, onClose, onReload, busy, error, pending }) {
   const { t } = useTranslation("schedule");
   const [targetId, setTargetId] = useState('');
-  const targets = entries.filter(x => x.id !== sourceId && !x.repeat);
+  const [scope, setScope] = useState('');
+  const [origin, setOrigin] = useState('');
+  const [dates, setDates] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const targets = entries.filter(x => x.id !== sourceId);
   const target = targets.find(x => x.id === targetId);
+  useEffect(() => {
+    let active = true;
+    setDates([]); setOrigin(''); setLoadError('');
+    if (!target?.repeat) { setLoading(false); return; }
+    setLoading(true);
+    listOccurrences({ from: target.time.date, to: target.repeat.until }).then(result => {
+      if (!active) return;
+      const options = result.items.filter(x => x.key.entryId === target.id && x.state === 'active');
+      setDates(options);
+      const today = todayInZone(target.time.timeZone);
+      setOrigin((options.find(x => x.time.date >= today) ?? options[0])?.key.originDate ?? '');
+    }).catch(() => { if (active) setLoadError(t("未能加载任务日期，请重新选择目标")); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [target?.id, target?.version, t]);
+  const selected = dates.find(x => x.key.originDate === origin);
+  const full = (target?.repeat && scope === 'instance' ? selected?.items.length : target?.items.length) >= 200;
+  const unavailable = full || Boolean(target?.repeat && (!scope || scope === 'instance' && (!selected || loading || loadError)));
   return <CalendarDialog title={t("移动事项")} onClose={onClose}>
-    <p className="cal-move-item-text">{item.text}</p><p className="cal-help">{t("只移动这条事项，保留它的优先级。目标安排的时间和教学关联保持原样。")}</p>
-    <label className="cal-field">{t("移到")}<select aria-label={t("移到")} value={targetId} disabled={busy || pending} onChange={e => setTargetId(e.target.value)}><option value="">{t("新建未排期任务")}</option>{targets.map(x => <option key={x.id} value={x.id}>{titleOf(x)} · {x.time ? `${x.time.date} ${x.time.startTime}` : t("未排期")}</option>)}</select></label>
+    <p className="cal-move-item-text">{item.text}</p>
+    <label className="cal-field">{t("移到")}<select aria-label={t("移到")} value={targetId} disabled={busy || pending} onChange={e => { setTargetId(e.target.value); setScope(''); }}><option value="">{t("新建未排期任务")}</option>{targets.map(x => <option key={x.id} value={x.id}>{titleOf(x)} · {x.repeat ? repeatLabel(x.repeat, x.time.date) : x.time ? `${x.time.date} ${x.time.startTime}` : t("未排期")}</option>)}</select></label>
+    {target?.repeat && <>
+      <fieldset className="cal-move-scope"><legend>{t("这条事项需要在哪些任务中？")}</legend>
+        <label><input type="radio" name="move-repeat-scope" value="series" checked={scope === 'series'} disabled={busy || pending} onChange={() => setScope('series')}/><span>{t("每次重复都需要")}</span></label>
+        <label><input type="radio" name="move-repeat-scope" value="instance" checked={scope === 'instance'} disabled={busy || pending} onChange={() => setScope('instance')}/><span>{t("只在某一次需要")}</span></label>
+      </fieldset>
+      {scope === 'instance' && <label className="cal-field">{t("任务日期")}<select aria-label={t("任务日期")} value={origin} disabled={loading || busy || pending} onChange={e => setOrigin(e.target.value)}>
+        {!dates.length && <option value="">{loading ? t("正在加载…") : t("没有可选择的任务日期")}</option>}
+        {dates.map(x => <option key={x.key.originDate} value={x.key.originDate}>{x.time.date} · {x.calendar.allDay ? t("全天") : x.time.startTime}</option>)}
+      </select></label>}
+      {scope === 'instance' && loadError && <p className="cal-error" role="alert">{loadError}</p>}
+    </>}
+    {full && !pending && <p className="cal-error" role="alert">{t("目标已有200条事项，请选择其他安排")}</p>}
     {error && <p className="cal-error" role="alert">{error}{onReload && <button onClick={onReload}>{t("读取最新安排")}</button>}</p>}
-    <footer><button onClick={onClose}>{t("取消")}</button><button className="is-primary" disabled={busy} onClick={() => onMove(item.id, target ?? null)}>{pending ? t("重试确认") : t("移动事项")}</button></footer>
-  </CalendarDialog>;
-}
-
-export function PriorityDialog({ occurrences, entries, zone, onPriority, onOpen, onClose }) {
-  const { t } = useTranslation("schedule");
-  const rows = buildPriorityRows(occurrences, entries.filter(x => !x.time));
-  return <CalendarDialog title={t("优先事项")} onClose={onClose}>
-    <p className="cal-help">{t("当前日历范围内的事项，以及全部未排期事项。")}</p>
-    {!rows.length && <p className="cal-help">{t("还没有事项。打开任务，用“添加事项”写下要做的事。")}</p>}
-    {PRIORITY_VALUES.map(priority => {
-      const group = rows.filter(row => row.item.priority === priority);
-      return group.length > 0 && <section className="cal-priority-group" key={priority}><h3><span className={`cal-priority-mark is-${priority}`}/>{t(PRIORITY_LABEL[priority])}{t("优先级")} <small>{group.length}</small></h3>
-        {group.map(row => <div className="cal-priority-row" key={`${row.entryId}:${row.originDate}:${row.itemId}`}><button onClick={() => onOpen(row.entryId, row.originDate)}><span>{row.item.text}</span><small>{row.kind === 'unscheduled' ? t("未排期") : formatInstantLabel(new Date(row.sortStart).toISOString(), zone)} · {row.label}</small></button><select aria-label={t("优先级 {{text}}", { text: row.item.text })} value={row.item.priority} onChange={e => onPriority(row, e.target.value)}>{PRIORITY_VALUES.map(value => <option key={value} value={value}>{t(PRIORITY_LABEL[value])}</option>)}</select></div>)}
-      </section>;
-    })}
-  </CalendarDialog>;
-}
-
-export function TimeZoneDialog({ zone, onSave, onClose, busy, error, pending }) {
-  const { t } = useTranslation("schedule");
-  const [value, setValue] = useState(zone);
-  const zones = [...new Set([...TIME_ZONES, zone, ...(Intl.supportedValuesOf?.('timeZone') ?? [])])];
-  return <CalendarDialog title={t("显示时区")} onClose={onClose}>
-    <p className="cal-help">{t("用于日历显示和新建任务。已有课程保留原排课时区与实际时刻，教学记录日期保持原样。")}</p>
-    <label className="cal-field">{t("账户显示时区")}<select value={value} disabled={busy || pending} onChange={e => setValue(e.target.value)}>{zones.map(x => <option key={x} value={x}>{x}</option>)}</select></label>
-    {error && <p className="cal-error" role="alert">{error}</p>}
-    <footer><button onClick={onClose}>{t("取消")}</button><button className="is-primary" disabled={busy} onClick={() => onSave(value)}>{pending ? t("重试确认") : t("保存时区")}</button></footer>
+    <footer><button onClick={onClose}>{t("取消")}</button><button className="is-primary" data-dialog-confirm="" disabled={busy || !pending && unavailable} onClick={() => onMove(item.id, target ?? null, target?.repeat ? { toScope: scope, toOriginDate: scope === 'instance' ? origin : null, toIndex: scope === 'instance' ? selected.items.length : target.items.length } : null)}>{pending ? t("重试确认") : t("移动事项")}</button></footer>
   </CalendarDialog>;
 }

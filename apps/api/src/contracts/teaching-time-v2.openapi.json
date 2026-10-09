@@ -1502,7 +1502,7 @@
     "/api/modules/schedule/notifications/{id}": {
       "post": {
         "operationId": "changeNotification",
-        "description": "T53：单条 read/dismiss；重复已读保留第一次 readAt。dismiss 不删除唯一痕迹。",
+        "description": "单条 read/unread/dismiss；重复已读保留第一次 readAt，unread 清空 readAt，dismiss 保留唯一痕迹。",
         "parameters": [
           {
             "$ref": "#/components/parameters/id"
@@ -2345,6 +2345,169 @@
           }
         }
       }
+    },
+    "/api/modules/schedule/entries/{id}/delete": {
+      "post": {
+        "operationId": "deleteEntry",
+        "description": "永久删除本账户任务及其系列例外、提醒生效点，保留历史通知与幂等回执；按期望版本同事务提交。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDeleted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryDelete"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/entries/{id}/occurrences/{originDate}/detach": {
+      "post": {
+        "operationId": "detachOccurrence",
+        "description": "取消有效原日期并创建独立非重复任务，内容、系列版本与幂等回执原子提交；失败整体回滚。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/originDate"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "201": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryDetach"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2798,6 +2961,14 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 10080
+          },
+          "anchor": {
+            "type": "string",
+            "enum": [
+              "start",
+              "end"
+            ],
+            "description": "Reminder anchor; omitted means end."
           }
         },
         "required": [
@@ -2836,6 +3007,10 @@
               "normal",
               "high"
             ]
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "事项完成状态；缺省或 false 为未完成，true 为完成。随排序、移动与实例独立保留。"
           }
         },
         "required": [
@@ -3870,6 +4045,24 @@
           "toIndex": {
             "type": "integer",
             "minimum": 0
+          },
+          "toScope": {
+            "type": "string",
+            "enum": [
+              "series",
+              "instance"
+            ]
+          },
+          "toOriginDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -3881,7 +4074,15 @@
           "toIndex"
         ],
         "additionalProperties": false,
-        "description": "不同的两个非重复 Entry；toEntryId=null 时 toVersion=null、toIndex=0，否则 toVersion 必填非空且 toIndex<=目标长度。"
+        "description": "源为活动非重复 Entry；普通或新待安排目标保持原字段。重复目标要求 toScope/toOriginDate：series/null 插入原系列模板；instance/活动原日期 独立该次并插入事项。源、目标与实例独立同事务，保留事项 ID，版本冲突完全回滚，幂等重放不复制系列。toIndex<=有效目标长度且目标最多 200 项。",
+        "dependentRequired": {
+          "toScope": [
+            "toOriginDate"
+          ],
+          "toOriginDate": [
+            "toScope"
+          ]
+        }
       },
       "MoveResult": {
         "type": "object",
@@ -3891,6 +4092,18 @@
           },
           "to": {
             "$ref": "#/components/schemas/Entry"
+          },
+          "toOriginDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "重复目标请求返回的打开日期，独立后的目标为 null；普通移动不返回此字段。"
           }
         },
         "required": [
@@ -3971,6 +4184,7 @@
             "type": "string",
             "enum": [
               "read",
+              "unread",
               "dismiss"
             ]
           }
@@ -3995,6 +4209,7 @@
             "type": "string",
             "enum": [
               "read",
+              "unread",
               "dismiss"
             ]
           }
@@ -4668,6 +4883,10 @@
               "normal",
               "high"
             ]
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "事项完成状态；缺省或 false 为未完成，true 为完成。随排序、移动与实例独立保留。"
           }
         },
         "required": [
@@ -5105,6 +5324,141 @@
           "originalClassId",
           "record"
         ]
+      },
+      "EntryDelete": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ]
+      },
+      "EntryDeleted": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ]
+      },
+      "CalendarTime": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "startTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "timeZone": {
+            "$ref": "#/components/schemas/Zone"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 527040
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "timeZone",
+          "durationMinutes"
+        ],
+        "additionalProperties": false
+      },
+      "EntryDetach": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "maxItems": 200
+          },
+          "time": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CalendarTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repeat": {
+            "type": "null"
+          },
+          "course": {
+            "$ref": "#/components/schemas/Course"
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reminder"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calendar": {
+            "type": "object",
+            "properties": {
+              "allDay": {
+                "type": "boolean"
+              },
+              "notes": {
+                "type": "string",
+                "maxLength": 50000
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "maxItems": 30,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "allDay",
+              "notes",
+              "tags"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "title",
+          "items",
+          "time",
+          "repeat",
+          "course",
+          "reminder"
+        ],
+        "additionalProperties": false
       }
     }
   },

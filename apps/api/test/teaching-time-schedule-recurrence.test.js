@@ -368,7 +368,7 @@ test('DST gaps and overlaps resolve to the exact UTC instants the contract fixes
   });
 });
 
-test('changing the account timezone moves range display boundaries but not instants', async () => {
+test('changing the account timezone preserves local task clock and moves actual instants', async () => {
   await withHarness(async (harness) => {
     const { a, entry } = await createWeekly(harness);
     const before = await a.get(OCCURRENCES, { from: '2026-09-21', to: '2026-09-21' });
@@ -380,13 +380,12 @@ test('changing the account timezone moves range display boundaries but not insta
 
     const after = await a.get(OCCURRENCES, { from: '2026-09-20', to: '2026-09-20' });
     assert.equal(after.body.timeZone, 'America/New_York');
-    // The same calendar day in New York now ends before the 15:00 Shanghai
-    // instance starts, so the boundary moved without the instant changing.
+    // The task retains 15:00 local clock after switching regions.
     assert.deepEqual(after.body.items, []);
 
     const nextDay = await a.get(OCCURRENCES, { from: '2026-09-21', to: '2026-09-21' });
     assert.equal(nextDay.body.timeZone, 'America/New_York');
     assert.deepEqual(nextDay.body.items.map((item) => item.key.entryId), [entry.id]);
-    assert.equal(nextDay.body.items[0].startsAt, '2026-09-21T07:00:00Z');
+    assert.equal(nextDay.body.items[0].startsAt, '2026-09-21T19:00:00Z');
   });
 });

@@ -15,6 +15,7 @@ import {
   compareDates,
   formatIsoZ,
   instantAt,
+  localPartsAt,
   isDate,
   isTimeOfDay,
   isTimeZone,
@@ -54,7 +55,7 @@ function randomUuid() {
 
 function sameReminder(left, right) {
   if (!left || !right) return left === right;
-  return left.side === right.side && left.minutes === right.minutes;
+  return left.side === right.side && left.minutes === right.minutes && (left.anchor ?? 'end') === (right.anchor ?? 'end');
 }
 
 function sameTime(left, right) {
@@ -74,7 +75,8 @@ function normalizeContent(value) {
   const repeat = value.repeat ?? null;
   return {
     title: value.title,
-    items: value.items.map((item) => ({ id: item.id, text: item.text, priority: item.priority })),
+    items: value.items.map((item) => ({ id: item.id, text: item.text, priority: item.priority,
+      ...(Object.hasOwn(item, 'completed') ? { completed: item.completed } : {}) })),
     time: value.time === null ? null : { ...value.time },
     repeat: repeat === null ? null : { ...repeat },
     ...(value.calendar ? { calendar: structuredClone(value.calendar) } : {}),
@@ -83,7 +85,7 @@ function normalizeContent(value) {
       lessonId: value.course.lessonId,
       recordIds: [...value.course.recordIds]
     },
-    reminder: value.reminder === null ? null : { side: value.reminder.side, minutes: value.reminder.minutes }
+    reminder: value.reminder === null ? null : { side: value.reminder.side, minutes: value.reminder.minutes, ...(value.reminder.anchor ? { anchor: value.reminder.anchor } : {}) }
   };
 }
 
@@ -344,6 +346,28 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
     }
   }
 
+  function insertEntry(principal, content, links, now) {
+    const entry = {
+      id: randomUuid(),
+      accountKey: principal.accountKey,
+      version: 1,
+      title: content.title,
+      items: content.items,
+      time: content.time,
+      repeat: content.repeat,
+      calendar: content.calendar ?? { allDay: false, notes: '', tags: [] },
+      course: content.course,
+      courseLinks: links,
+      reminder: content.reminder,
+      reminderArmedAt: now.iso,
+      createdAt: now.iso,
+      updatedAt: now.iso,
+      deletedAt: null
+    };
+    repository.insertEntry(entry);
+    return entry;
+  }
+
   return {
     readForExport(principal) {
       const settings = repository.readSettings(principal.accountKey);
@@ -380,7 +404,21 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       if (!isTimeZone(body.timeZone)) throw scheduleProblems.invalidTimeZone('/timeZone');
       const row = readSettings(principal.accountKey);
       if (row.version !== body.expectedVersion) throw contractError(problems.versionConflict(row.version));
+      const entries = repository.listEntries(principal.accountKey);
+      const needsUpdate = entries.some(entry => entry.time && (entry.time.timeZone !== body.timeZone || repository.listExceptions(entry.id).some(exception => exception.content?.time && exception.content.time.timeZone !== body.timeZone)));
+      if (row.timeZone === body.timeZone && !needsUpdate) return { timeZone: row.timeZone, version: row.version };
       const now = nowStamp();
+      beforeChange(principal, now);
+      for (const entry of entries) {
+        if (!entry.time) continue;
+        const exceptions = repository.listExceptions(entry.id);
+        if (entry.time.timeZone === body.timeZone && !exceptions.some(exception => exception.content?.time && exception.content.time.timeZone !== body.timeZone)) continue;
+        repository.writeEntry({ ...entry, time: { ...entry.time, timeZone: body.timeZone }, version: entry.version + 1, reminderArmedAt: now, updatedAt: now });
+        for (const exception of exceptions) {
+          if (exception.content?.time) repository.writeException({ ...exception, content: { ...exception.content, time: { ...exception.content.time, timeZone: body.timeZone } }, now });
+        }
+        for (const arm of repository.listArms(entry.id)) repository.writeArm({ ...arm, armedAt: now });
+      }
       repository.writeSettings({
         accountKey: principal.accountKey,
         timeZone: body.timeZone,
@@ -415,24 +453,7 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       const links = resolveCourse(principal, content.course, EMPTY_LINKS);
       assertReminderFuture(content, null, now.ms, { repeatingTemplate });
       beforeChange(principal, now.iso);
-      const entry = {
-        id: randomUuid(),
-        accountKey: principal.accountKey,
-        version: 1,
-        title: content.title,
-        items: content.items,
-        time: content.time,
-        repeat: content.repeat,
-        calendar: content.calendar ?? { allDay: false, notes: '', tags: [] },
-        course: content.course,
-        courseLinks: links,
-        reminder: content.reminder,
-        reminderArmedAt: now.iso,
-        createdAt: now.iso,
-        updatedAt: now.iso,
-        deletedAt: null
-      };
-      repository.insertEntry(entry);
+      const entry = insertEntry(principal, content, links, now);
       return entryView(principal, entry);
     },
 
@@ -464,6 +485,9 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
 
       beforeChange(principal, now.iso);
 
+      // Moving a series back to an unscheduled task abandons its old instances.
+      if (isRepeating(entry) && content.time === null) repository.clearSeries(entry.id);
+
       if (isRepeating(entry) && content.repeat && entry.repeat.until !== content.repeat.until) {
         writeArmsForNewlyVisible({ ...entry, time: content.time, repeat: content.repeat }, entry.repeat.until, now.iso);
       }
@@ -485,6 +509,14 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       };
       repository.writeEntry(updated);
       return entryView(principal, updated);
+    },
+
+    deleteEntry(principal, id, body) {
+      const entry = readEntryOrThrow(principal, id);
+      assertVersion(entry, body.expectedVersion);
+      beforeChange(principal, parseNow(clock).iso);
+      repository.deleteEntry(principal.accountKey, entry.id);
+      return { id: entry.id, version: entry.version + 1 };
     },
 
     setEntryDeletion(principal, id, body) {
@@ -519,6 +551,27 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
         content: exception.mode === 'override' && exception.content ? overrideView(exception.content) : null
       }));
       return { entryId: entry.id, version: entry.version, items };
+    },
+
+    detachOccurrence(principal, id, originDate, body) {
+      if (!isDate(originDate)) throw invalidInput('/originDate', 'out-of-range');
+      const entry = readActiveEntry(principal, id);
+      if (!isRepeating(entry) || !fitsSeries(entry, originDate) || compareDates(originDate, entry.repeat.until) > 0) throw contractError(problems.notFound());
+      assertVersion(entry, body.expectedVersion);
+      const existing = repository.findException(id, originDate);
+      if (existing?.mode === 'cancelled') throw contractError(problems.notFound());
+      const previous = existing?.mode === 'override' && existing.content ? existing.content : effectiveContent(entry, null, originDate);
+      const content = normalizeContent(body);
+      if (content.repeat !== null) throw invalidInput('/repeat', 'out-of-range');
+      assertContentRules(content, { repeatingTemplate: false });
+      const links = resolveCourse(principal, content.course, existing?.content?.courseLinks ?? entry.courseLinks);
+      const now = parseNow(clock);
+      assertReminderFuture(content, previous, now.ms, { repeatingTemplate: false });
+      beforeChange(principal, now.iso);
+      repository.writeException({ entryId: id, originDate, mode: 'cancelled', content: null, now: now.iso });
+      repository.writeArm({ entryId: id, originDate, armedAt: now.iso });
+      repository.writeEntry({ ...entry, version: entry.version + 1, updatedAt: now.iso });
+      return entryView(principal, insertEntry(principal, content, links, now));
     },
 
     setException(principal, id, originDate, body) {
@@ -637,7 +690,10 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       const item = from.items[itemIndex];
 
       let target;
+      let detached = false;
+      let targetOriginDate = null;
       if (body.toEntryId === null) {
+        if (body.toScope !== undefined) throw scheduleProblems.invalidMove();
         if (body.toVersion !== null) throw invalidInput('/toVersion', 'out-of-range');
         if (body.toIndex !== 0) throw invalidInput('/toIndex', 'out-of-range');
         target = {
@@ -659,24 +715,49 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       } else {
         if (body.toEntryId === body.fromEntryId) throw scheduleProblems.invalidMove();
         const existing = readActiveEntry(principal, body.toEntryId);
-        if (isRepeating(existing)) throw scheduleProblems.invalidMove();
+        const repeating = isRepeating(existing);
+        if ((repeating && !body.toScope) || (!repeating && body.toScope !== undefined)) throw scheduleProblems.invalidMove();
+        if (body.toScope === 'series' && body.toOriginDate !== null) throw invalidInput('/toOriginDate', 'out-of-range');
         if (body.toVersion === null) throw invalidInput('/toVersion', 'required');
         if (existing.version !== body.toVersion) {
           throw scheduleProblems.versionConflict(existing.id, existing.version);
         }
-        if (existing.items.some((candidate) => candidate.id === item.id)) {
-          throw invalidInput('/itemId', 'duplicate-id');
+        let content = normalizeContent(existing);
+        if (body.toScope === 'instance') {
+          const origin = body.toOriginDate;
+          if (!isDate(origin)) throw invalidInput('/toOriginDate', 'out-of-range');
+          if (!fitsSeries(existing, origin)) throw scheduleProblems.invalidMove();
+          const occurrence = occurrenceFor(principal, existing, origin);
+          if (occurrence.state !== 'active') throw scheduleProblems.invalidMove();
+          content = normalizeContent(effectiveContent(existing, repository.findException(existing.id, origin), origin));
         }
-        if (body.toIndex > existing.items.length) throw invalidInput('/toIndex', 'out-of-range');
-        const items = [...existing.items];
+        if (content.items.length >= 200) throw invalidInput('/toIndex', 'out-of-range');
+        if (content.items.some(candidate => candidate.id === item.id)) throw invalidInput('/itemId', 'duplicate-id');
+        if (body.toIndex > content.items.length) throw invalidInput('/toIndex', 'out-of-range');
+        const items = [...content.items];
         items.splice(body.toIndex, 0, item);
-        target = { ...existing, version: existing.version + 1, items, updatedAt: now.iso };
+        if (body.toScope === 'instance') {
+          const result = this.detachOccurrence(principal, existing.id, body.toOriginDate, {
+            ...content, items, repeat: null, expectedVersion: existing.version
+          });
+          target = readActiveEntry(principal, result.id);
+          detached = true;
+        } else {
+          target = { ...existing, version: existing.version + 1, items, updatedAt: now.iso };
+          assertContentRules(normalizeContent(target), { repeatingTemplate: repeating });
+          if (repeating) {
+            const dates = seriesOriginDates(target).filter(date => !repository.findException(target.id, date));
+            const today = localPartsAt(target.time.timeZone, now.ms).date;
+            targetOriginDate = dates.find(date => date >= today) ?? dates[0] ?? null;
+          }
+        }
       }
 
-      beforeChange(principal, now.iso);
-
-      if (body.toEntryId === null) repository.insertEntry(target);
-      else repository.writeEntry(target);
+      if (!detached) {
+        beforeChange(principal, now.iso);
+        if (body.toEntryId === null) repository.insertEntry(target);
+        else repository.writeEntry(target);
+      }
 
       const remaining = from.items.filter((candidate) => candidate.id !== item.id);
       const keepSource = from.title.trim() !== '' || remaining.length > 0;
@@ -689,7 +770,7 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       };
       repository.writeEntry(source);
 
-      return { from: entryView(principal, source), to: entryView(principal, target) };
+      return { from: entryView(principal, source), to: entryView(principal, target), ...(body.toScope ? { toOriginDate: targetOriginDate } : {}) };
     },
 
     /** Public port: `schedule.readOccurrence(principal, {entryId, originDate})`. */

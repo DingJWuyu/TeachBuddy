@@ -43,6 +43,22 @@ async function fixture(run) {
   finally { await h.close(); }
 }
 
+test('notification read state can return to unread and survive restart without duplicating notices', async () => fixture(async f => {
+  await f.create(); f.at('2026-09-21T09:00:00.000Z');
+  const notice = (await f.getNotices()).items[0];
+  await f.post(`${notices}/${notice.id}`, { action: 'read' });
+  assert.equal((await f.getNotices()).unreadCount, 0);
+  const key = f.h.nextUuid();
+  const body = { ids: [notice.id], action: 'unread' };
+  assert.equal((await f.post('/api/modules/schedule/notification-actions', body, key)).status, 200);
+  assert.equal((await f.post('/api/modules/schedule/notification-actions', body, key)).status, 200);
+  await f.h.restart();
+  const result = await f.getNotices();
+  assert.equal(result.unreadCount, 1);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].readAt, null);
+}));
+
 test('WB-T012/014: before, after, original due time and stable identities survive repeated restarts', async () => fixture(async f => {
   const before = await f.create();
   await f.create({ ...input, reminder: { side: 'after', minutes: 20 } });
@@ -237,3 +253,80 @@ test('B16 database upgrades into the real four-module composition without losing
   } finally { await h.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 });
 function randomKey() { return crypto.randomUUID(); }
+
+test('detaching keeps an unchanged overdue reminder without duplicating delivery, and preserves later repeats', async () => fixture(async f => {
+  const calendar = { allDay: false, notes: '', tags: [] };
+  const series = await f.create({ ...input, repeat: { until: '2026-10-05' }, calendar });
+  f.at('2026-09-21T09:00:00.000Z');
+  const result = await f.post(`${entries}/${series.id}/occurrences/2026-09-21/detach`, {
+    ...input, calendar: { ...calendar, notes: '已结束课堂的笔记' }, expectedVersion: series.version
+  });
+  assert.equal(result.status, 201, JSON.stringify(result.body));
+  assert.equal(result.body.repeat, null);
+  const first = await f.getNotices();
+  assert.equal(first.items.length, 1);
+  assert.equal(first.items[0].key.entryId, series.id);
+  await f.h.restart();
+  assert.equal((await f.getNotices()).items.length, 1);
+  f.at('2026-09-28T09:00:00.000Z');
+  assert.equal((await f.getNotices()).items.length, 2);
+}));
+
+test('start-relative reminders fire around start and preserve legacy end-relative reminders', async () => fixture(async f => {
+  for (const reminder of [{ anchor: 'start', side: 'before', minutes: 10 }, { anchor: 'start', side: 'after', minutes: 10 }, { side: 'before', minutes: 10 }, { side: 'after', minutes: 10 }]) {
+    const created = await f.create({ ...input, reminder });
+    assert.deepEqual(created.reminder, reminder);
+  }
+  f.at('2026-09-21T06:49:59Z'); assert.equal((await f.getNotices()).items.length, 0);
+  f.at('2026-09-21T06:50:00Z'); assert.deepEqual((await f.getNotices()).items.map(n => n.dueAt), ['2026-09-21T06:50:00Z']);
+  f.at('2026-09-21T07:10:00Z'); assert.equal((await f.getNotices()).items.length, 2);
+  f.at('2026-09-21T08:40:00Z');
+  const expected = ['2026-09-21T08:40:00Z', '2026-09-21T08:20:00Z', '2026-09-21T07:10:00Z', '2026-09-21T06:50:00Z'];
+  assert.deepEqual((await f.getNotices()).items.map(n => n.dueAt), expected);
+  await f.h.restart(); assert.deepEqual((await f.getNotices()).items.map(n => n.dueAt), expected);
+}));
+
+test('changing a reminder anchor validates the new due time and retains unsaved time on rejection', async () => fixture(async f => {
+  const created = await f.create(); f.at('2026-09-21T07:05:00Z');
+  const rejected = await f.a.put(`${entries}/${created.id}`, { ...input, expectedVersion: created.version, reminder: { anchor: 'start', side: 'before', minutes: 10 } }, { key: f.h.nextUuid() });
+  assert.equal(rejected.status, 422); assert.match(rejected.body.type, /reminder-not-future/);
+  const unchanged = await f.a.get(`${entries}/${created.id}`); assert.deepEqual(unchanged.body.reminder, input.reminder); assert.equal(unchanged.body.version, created.version);
+  const accepted = await f.a.put(`${entries}/${created.id}`, { ...input, expectedVersion: created.version, reminder: { anchor: 'start', side: 'after', minutes: 10 } }, { key: f.h.nextUuid() });
+  assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
+  f.at('2026-09-21T07:10:00Z'); assert.equal((await f.getNotices()).items[0].dueAt, '2026-09-21T07:10:00Z');
+}));
+
+test('start-relative reminders work for recurring and all-day tasks including zero minutes', async () => fixture(async f => {
+  await f.create({ ...input, repeat: { until: '2026-09-28' }, reminder: { anchor: 'start', side: 'before', minutes: 0 } });
+  await f.create({ ...input, time: { ...input.time, date: '2026-09-22', startTime: '00:00', durationMinutes: 1440 }, calendar: { allDay: true, tags: [], notes: '' }, reminder: { anchor: 'start', side: 'after', minutes: 0 } });
+  f.at('2026-09-28T07:00:00Z');
+  assert.deepEqual((await f.getNotices()).items.map(n => n.dueAt), ['2026-09-28T07:00:00Z', '2026-09-21T16:00:00Z', '2026-09-21T07:00:00Z']);
+}));
+
+test('system timezone changes keep wall clock and recompute reminder delivery without old future notices', async () => fixture(async f => {
+  const task=await f.create();const settings=await f.a.get('/api/modules/schedule/settings');
+  const changed=await f.a.put('/api/modules/schedule/settings',{timeZone:'America/New_York',expectedVersion:settings.body.version},{key:f.h.nextUuid()});assert.equal(changed.status,200,JSON.stringify(changed.body));
+  const saved=await f.a.get(`${entries}/${task.id}`);assert.deepEqual(saved.body.time,{...input.time,timeZone:'America/New_York'});assert.equal(saved.body.version,task.version+1);
+  f.at('2026-09-21T06:50:00Z');assert.equal((await f.getNotices()).items.length,0);
+  f.at('2026-09-21T20:20:00Z');assert.deepEqual((await f.getNotices()).items.map(n=>n.dueAt),['2026-09-21T20:20:00Z']);
+  await f.h.restart();assert.equal((await f.getNotices()).items.length,1);
+}));
+
+test('automatic timezone change accepts reminders that become past and stays silent for them', async () => fixture(async f => {
+  const settings=await f.a.get('/api/modules/schedule/settings');await f.a.put('/api/modules/schedule/settings',{timeZone:'America/New_York',expectedVersion:settings.body.version},{key:f.h.nextUuid()});
+  const task=await f.create({...input,time:{...input.time,timeZone:'America/New_York'}});f.at('2026-09-21T10:00:00Z');
+  const changed=await f.a.put('/api/modules/schedule/settings',{timeZone:'Asia/Shanghai',expectedVersion:2},{key:f.h.nextUuid()});assert.equal(changed.status,200,JSON.stringify(changed.body));
+  assert.equal((await f.a.get(`${entries}/${task.id}`)).body.time.startTime,'15:00');assert.equal((await f.getNotices()).items.length,0);
+}));
+
+test('timezone change updates recurring overrides and deleted tasks, preserves pending tasks and isolates accounts', async () => fixture(async f => {
+  const series=await f.create({...input,repeat:{until:'2026-10-05'}});
+  const {repeat,...content}=input;
+  const override=await f.a.put(`${entries}/${series.id}/exceptions/2026-09-28`,{expectedVersion:series.version,mode:'override',content:{...content,time:{...input.time,date:'2026-09-29',startTime:'17:00'}}},{key:f.h.nextUuid()});assert.equal(override.status,200,JSON.stringify(override.body));
+  const pending=await f.create({...input,time:null,reminder:null});const deleted=await f.create();await f.a.post(`${entries}/${deleted.id}/deletion`,{expectedVersion:deleted.version,deleted:true},{key:f.h.nextUuid()});
+  const foreign=await f.b.post(entries,input,{key:f.h.nextUuid()});assert.equal(foreign.status,201);
+  await f.a.get('/api/modules/schedule/settings');const change=await f.a.put('/api/modules/schedule/settings',{timeZone:'America/New_York',expectedVersion:1},{key:f.h.nextUuid()});assert.equal(change.status,200,JSON.stringify(change.body));
+  const occurrence=await f.a.get(`${entries}/${series.id}/occurrence?originDate=2026-09-28`);assert.equal(occurrence.body.time.startTime,'17:00');assert.equal(occurrence.body.time.date,'2026-09-29');assert.equal(occurrence.body.time.timeZone,'America/New_York');assert.equal(occurrence.body.exception,true);
+  assert.equal((await f.a.get(`${entries}/${pending.id}`)).body.version,pending.version);assert.equal((await f.a.get(`${entries}/${deleted.id}`)).body.time.timeZone,'America/New_York');assert.equal((await f.b.get(`${entries}/${foreign.body.id}`)).body.time.timeZone,'Asia/Shanghai');
+  const again=await f.a.put('/api/modules/schedule/settings',{timeZone:'America/New_York',expectedVersion:2},{key:f.h.nextUuid()});assert.equal(again.body.version,2);assert.equal((await f.a.get(`${entries}/${series.id}`)).body.version,series.version+2);
+}));

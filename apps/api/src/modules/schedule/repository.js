@@ -105,6 +105,8 @@ export function createScheduleRepository(db) {
     deleteException: db.prepare(
       'DELETE FROM schedule_exceptions WHERE entryId = ? AND originDate = ?'
     ),
+    clearExceptions: db.prepare('DELETE FROM schedule_exceptions WHERE entryId = ?'),
+    clearArms: db.prepare('DELETE FROM schedule_instance_arms WHERE entryId = ?'),
 
     selectArms: db.prepare('SELECT * FROM schedule_instance_arms WHERE entryId = ?'),
     selectArm: db.prepare(
@@ -142,6 +144,11 @@ export function createScheduleRepository(db) {
   }
 
   return {
+    deleteEntry(accountKey, id) {
+      db.prepare('DELETE FROM schedule_exceptions WHERE entryId = ?').run(id);
+      db.prepare('DELETE FROM schedule_instance_arms WHERE entryId = ?').run(id);
+      db.prepare('DELETE FROM schedule_entries WHERE accountKey = ? AND id = ?').run(accountKey, id);
+    },
     listLabels(accountKey) {
       return db.prepare('SELECT id, name, color, version FROM schedule_labels WHERE accountKey = ? AND deleted = 0 ORDER BY name, id').all(accountKey);
     },
@@ -196,6 +203,10 @@ export function createScheduleRepository(db) {
     },
     removeException(entryId, originDate) {
       statements.deleteException.run(entryId, originDate);
+    },
+    clearSeries(entryId) {
+      statements.clearExceptions.run(entryId);
+      statements.clearArms.run(entryId);
     },
 
     listArms(entryId) {

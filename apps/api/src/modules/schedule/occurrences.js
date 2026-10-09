@@ -104,7 +104,8 @@ export function dueInstantMs(content) {
     ? instantAt(content.time.timeZone, addDays(content.time.date, content.time.durationMinutes / 1440), 0).utcMs
     : start.utcMs + content.time.durationMinutes * 60_000;
   const offset = content.reminder.minutes * 60_000;
-  return content.reminder.side === 'before' ? end - offset : end + offset;
+  const anchor = content.reminder.anchor === 'start' ? start.utcMs : end;
+  return content.reminder.side === 'before' ? anchor - offset : anchor + offset;
 }
 
 /**
