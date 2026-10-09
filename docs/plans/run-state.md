@@ -12,11 +12,11 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 非 Agent 的本机 MVP 验收与发现的范围内缺陷修复已完成；成果集成到 preview，验收任务现场按收尾规则清理。用户在 `TeacherWorkspace-agent`（`agent/mvp-supervised`）的专属 session 中讨论 Agent，先核对已实现工具、冻结设计与实际缺口，未经用户后续指令不推进实现。该现场保留供用户继续讨论，任务完成并集成后清理；接续实现前由总控核对并同步最新集成基线。总控负责公共文件、稳定修复同步和集成，普通验收回执不转发给 Agent session。
 
-数学工坊和日程各有独立 session 与工作树。数学工坊已获授权在其工作树实现 GeoGebra 与免费网页 AI 的闭环，用户接受浏览器扩展并已配合登录 DeepSeek；总控负责接线与真实验收。此授权不扩展到全站 Agent 重定位。其他任务仍沿各自后续指令执行。
+数学工坊和日程各有独立 session 与工作树。数学工坊当前授权为[统一制作任务](math-workshop.md)：重做统一 UI/UX、从项目本地加载 GGB，并完善免费网页 AI 与教学成果流程。日程设计规则已同步到 math，后续读取本地规则；不集成日程代码，不修改 preview。最终数学成果留在其工作树供用户体验。用户接受一次安装浏览器扩展，已配合登录 DeepSeek；该授权不扩展到全站 Agent 重定位。
 
 | 模块 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | GeoGebra 与 DeepSeek 网页 AI 真实账号闭环完成，保存与取消保护通过独立核验；保留本工作树供用户体验，未集成 preview |
+| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 统一制作 UI/UX、本地 GGB 与教学成果承接实施中；基线网页 AI 闭环证据仅覆盖旧界面，不等于本轮完成；最终不合 preview |
 | 日程 | `TeacherWorkspace-schedule` | `work/schedule` | 接手日程，不包含班级教学；等待用户指定任务 |
 
 两处现场保留供用户持续讨论和后续开发，任务完成并集成验证后按收尾规则清理；接续实现前由总控核对基线。模块自测使用隔离实例，公共文件和 preview 体验入口仍由总控协调。
