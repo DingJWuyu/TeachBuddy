@@ -56,12 +56,27 @@ async function connect(message, workbenchTabId) {
     state = await chrome.tabs.sendMessage(connection.providerTabId, { type: 'PROBE' });
   }
   if (!state.ready && !state.loginRequired) return error(message, 'INPUT_NOT_FOUND', '未找到 DeepSeek 消息输入框，请确认页面加载完成。');
+  connection.providerSessionUrl = state.providerSessionUrl || connection.providerSessionUrl;
+  await save();
   if (state.loginRequired) await chrome.tabs.update(connection.providerTabId, { active: true });
   return { type: 'CONNECTED', requestId: message.requestId, sessionId: message.sessionId,
     providerSessionUrl: connection.providerSessionUrl, loginRequired: !!state.loginRequired };
 }
 async function handleWorkbench(message, sender) {
-  if (message.type === 'STATUS') return { type: 'STATUS', requestId: message.requestId, sessionId: message.sessionId };
+  if (message.type === 'STATUS') {
+    const connection = connections.get(keyOf(sender.tab.id, message.sessionId));
+    const status = { type: 'STATUS', requestId: message.requestId, sessionId: message.sessionId,
+      extensionVersion: chrome.runtime.getManifest().version, connectionState: 'available' };
+    if (connecting.has(keyOf(sender.tab.id, message.sessionId))) return { ...status, connectionState: 'connecting' };
+    if (!connection) return status;
+    if (connection.invalid) return { ...status, connectionState: 'disconnected', reason: connection.reason };
+    try {
+      const state = await chrome.tabs.sendMessage(connection.providerTabId, { type: 'PROBE' });
+      return { ...status, connectionState: state.loginRequired ? 'login' : state.ready ? 'ready' : 'disconnected',
+        loginRequired: !!state.loginRequired, providerSessionUrl: state.providerSessionUrl,
+        ...(!state.ready && !state.loginRequired ? { reason: 'INPUT_NOT_FOUND' } : {}) };
+    } catch { return { ...status, connectionState: 'disconnected', reason: 'PROVIDER_DISCONNECTED' }; }
+  }
   const key = keyOf(sender.tab.id, message.sessionId);
   if (message.type === 'CONNECT') {
     if (!connecting.has(key)) connecting.set(key, connect(message, sender.tab.id).finally(() => connecting.delete(key)));
@@ -124,7 +139,8 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     for (const [key, connection] of connections) {
       if (connection.providerTabId === tabId) {
         await failPending(connection, 'PROVIDER_CLOSED', 'DeepSeek 标签页已关闭，请重新连接。');
-        connections.delete(key);
+        connection.invalid = true;
+        connection.reason = 'PROVIDER_CLOSED';
       } else if (connection.workbenchTabId === tabId) {
         if (connection.pending) {
           try { await chrome.tabs.sendMessage(connection.providerTabId, { type: 'CANCEL', requestId: connection.pending.requestId }); } catch { /* Closed provider. */ }
@@ -146,6 +162,7 @@ chrome.tabs.onUpdated.addListener((tabId, change) => {
         if (!change.url.startsWith(`${providerOrigin}/`) || (oldSession && oldSession !== newSession)) {
           await failPending(connection, 'SESSION_CHANGED', 'DeepSeek 页面切换了会话，请重新连接。');
           connection.invalid = true;
+          connection.reason = 'SESSION_CHANGED';
           await save();
         } else if (newSession) {
           connection.providerSessionUrl = change.url;

@@ -19,3 +19,8 @@ test-results
 
 # Generated from pinned npm assets by the web prebuild/predev scripts.
 apps/web/public/vendor/math/
+# Built from the tracked extension sources by prepare-assets.
+apps/web/public/downloads/teachbuddy-math-web-ai.zip
+# Rebuildable source/JDK/Gradle cache; inputs are pinned in tools/geogebra.
+tools/geogebra/.cache/
+scripts/math-support/__pycache__/

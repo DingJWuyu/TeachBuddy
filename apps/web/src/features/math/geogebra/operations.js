@@ -54,12 +54,18 @@ export function validateOperations(operations, existingNames) {
         if (op.labelStyle !== undefined) integer(op.labelStyle, 0, 3, '标注样式');
         if (op.caption !== undefined && (typeof op.caption !== 'string' || op.caption.length > 1000)) fail('标注须为 1000 字以内的文本。');
         break;
+      case 'rename':
+        name(op.newName);
+        if (known.has(op.newName)) fail(`对象 ${op.newName} 已存在。`);
+        if (!known.has(op.name)) fail(`对象 ${op.name} 不存在。`);
+        known.delete(op.name); known.add(op.newName);
+        break;
       case 'delete':
         if (op.allowDependents !== undefined && typeof op.allowDependents !== 'boolean') fail('连带删除确认格式不正确。');
         break;
       default: fail(`不支持操作 ${op.type}。`);
     }
-    if (!['define', 'slider'].includes(op.type) && !known.has(op.name)) fail(`对象 ${op.name} 不存在。`);
+    if (!['define', 'slider', 'rename'].includes(op.type) && !known.has(op.name)) fail(`对象 ${op.name} 不存在。`);
     if (op.type === 'delete') known.delete(op.name);
   }
 }
@@ -117,6 +123,9 @@ export async function executeOperation(api, op) {
         api.setCaption(target, op.caption);
         if (String(api.getCaption(target, false)) !== op.caption) fail(`${target} 的标注未生效。`);
       }
+      break;
+    case 'rename':
+      if (api.exists(op.newName) || !api.renameObject(target, op.newName) || !api.exists(op.newName) || api.exists(target)) fail(`无法把 ${target} 重命名为 ${op.newName}。`);
       break;
     case 'delete': {
       if (!op.allowDependents) {

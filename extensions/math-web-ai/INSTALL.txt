@@ -1,0 +1,13 @@
+TeachBuddy 数学 AI 连接 - 安装一次即可
+
+1. 将下载的 ZIP 解压到一个会保留的文件夹。
+2. Chrome 打开 chrome://extensions，Edge 打开 edge://extensions。
+3. 开启右上角“开发者模式”，点击“加载已解压的扩展程序”。
+4. 选择解压后包含 manifest.json 的 teachbuddy-math-web-ai 文件夹。
+5. 刷新 TeachBuddy 数学工坊，点击“连接 DeepSeek”。
+6. 若打开登录页，请正常登录 DeepSeek，然后回到数学工坊。
+
+保留扩展文件夹与专用 DeepSeek 标签页。标签页关闭后点击“重新连接”即可。
+升级时用新文件覆盖原文件夹，在扩展管理页点击重新加载，然后刷新工作台和 DeepSeek。
+浏览器不允许网站静默安装扩展，首次安装需要以上手动操作。
+此扩展只使用正常网页，不读取 cookie 或 token，不使用付费模型 API。

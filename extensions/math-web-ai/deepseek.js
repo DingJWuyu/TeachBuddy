@@ -4,8 +4,10 @@
   let active = null;
   const normalize = (text) => String(text || '').replace(/\s+/g, ' ').trim();
   const sessionId = (url = location.href) => new URL(url).pathname.match(/\/chat\/s\/([^/]+)/)?.[1] || null;
-  const editor = () => document.querySelector('textarea#chat-input, .ds-textarea textarea, textarea[placeholder="Message DeepSeek"], textarea[placeholder="给 DeepSeek 发送消息"], textarea[placeholder="给DeepSeek发送消息"], [role="textbox"][contenteditable]');
-  const loginRequired = () => /\/sign_in(?:\/|$)/.test(location.pathname);
+  const editor = () => [...document.querySelectorAll('textarea#chat-input, .ds-textarea textarea, textarea[placeholder="Message DeepSeek"], textarea[placeholder="给 DeepSeek 发送消息"], textarea[placeholder="给DeepSeek发送消息"], [role="textbox"][contenteditable]')].find((node) => !!node.getClientRects().length) || null;
+  const loginRequired = () => /\/(?:sign_in|login)(?:\/|$)/.test(location.pathname) ||
+    (!editor() && [...document.querySelectorAll('a, button, [role="button"]')].some((node) =>
+      !!node.getClientRects().length && /^(?:log in|sign in|登录|登入)$/i.test(normalize(node.textContent))));
   const visible = (node) => !!node && !!node.getClientRects().length;
   const label = (node) => normalize([node.getAttribute('aria-label'), node.title, node.textContent].join(' ')).toLowerCase();
   function stopButton() {

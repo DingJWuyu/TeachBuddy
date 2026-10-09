@@ -4,10 +4,19 @@
 
 ## 安装与连接
 
-1. Chrome / Edge 打开 `chrome://extensions` / `edge://extensions`，开启开发者模式。
-2. 选择“加载已解压的扩展程序”，选本目录 `extensions/math-web-ai`，无需构建。
-3. 刷新工作台页面，点击工作台的连接操作。扩展创建专用 DeepSeek 后台标签页；需要登录时自动切到该标签页。用户正常完成登录及验证码后，回工作台再次连接。
-4. 保留专用 DeepSeek 标签页。在工作台发送数学请求，完整回复自动回到工作台。不要在专用标签页切换其他会话或同时编辑草稿。
+首次使用从数学工坊下载扩展 ZIP，解压后按包内 `INSTALL.txt` 安装。安装需要浏览器扩展管理页的一次手动操作，网站不能静默安装。安装后刷新工作台，点击连接；登录完成后回到工作台，状态探测会识别输入框就绪。关闭专用网页后点击重新连接会创建新标签页。
+
+开发时可在 Chrome / Edge 扩展管理页开启开发者模式，加载本目录，无需构建。
+
+### 可分发安装包
+
+从仓库根执行：
+
+```bash
+node scripts/math-web-ai/package.mjs
+```
+
+产物为 `apps/web/public/downloads/teachbuddy-math-web-ai.zip`，产品下载地址固定为 `/downloads/teachbuddy-math-web-ai.zip`。在 web 构建复制 public 前执行；隔离构建可传入自己的 public 目录作为第一个参数。脚本使用仓库已有 JSZip，以固定时间和明确文件清单生成 ZIP，不包含测试夹具、任务产物或本机路径。安装后保留解压目录，Chrome 会从该目录加载扩展。资源准备脚本可导入 `packageMathWebAiExtension(publicDir)`，产物路径由返回值提供。
 
 扩展文件修改后，在扩展管理页点击重新加载，再刷新工作台和专用 DeepSeek 标签页。扩展由隔离脚本读写网页 DOM，不更改浏览器安全策略。页面改版导致选择器失效时显示错误，超时不会自动重发。
 
@@ -27,7 +36,9 @@
   requestId, sessionId, text?, providerSessionUrl?, loginRequired?, code?, message? }
 ```
 
-`STATUS` 用于发现扩展；`CONNECT` 重复调用复用该工作台会话已创建的专用 tab；`SEND` 只允许一个活跃请求，`PROGRESS` 的 text 是累计正文，只有 `DONE` 可用于完整指令解析；`CANCEL` 使用原 SEND 的 requestId。取消产生 `ERROR/CANCELLED`，后续迟到结果被后台丢弃。工作台也应按 requestId/sessionId 丢弃失效结果。新数学会话必须使用新 sessionId。
+`STATUS` 用于发现扩展并探测既有专用网页，不创建标签页，不发送消息。响应包含 `extensionVersion`、`connectionState`，连接状态为 `available`（已安装但当前会话尚未连接）、`connecting`、`login`、`ready` 或 `disconnected`，另有 `loginRequired`、`providerSessionUrl` 和断连 `reason`。无扩展时没有响应；工作台请求超时后显示安装引导。UI 在展开、页面恢复焦点和等待登录时重新请求 STATUS，以识别登录完成、网页刷新或关闭。状态仅说明 DOM 桥可用，不证明模型请求已成功。
+
+`CONNECT` 重复调用复用该工作台会话已创建的专用 tab；`SEND` 只允许一个活跃请求，`PROGRESS` 的 text 是累计正文，只有 `DONE` 可用于完整指令解析；`CANCEL` 使用原 SEND 的 requestId。取消产生 `ERROR/CANCELLED`，后续迟到结果被后台丢弃。工作台也应按 requestId/sessionId 丢弃失效结果。新数学会话必须使用新 sessionId。
 
 收到 `CONNECTED.loginRequired` 仍需登录，不代表模型请求已通过。发送前有草稿或网页正在生成时明确报错。发送成功由新增匹配 user 消息及输入清空确认，完成还要求新增 assistant、流式标志消失、回复动作按钮出现和正文稳定。真实 DeepSeek DOM 及后台标签页行为须由登录后的端到端验证确认。
 
@@ -43,9 +54,11 @@ npx playwright install chromium
 node extensions/math-web-ai/test/offline.mjs
 ```
 
+验证解压安装包时，可将包含 `manifest.json` 的目录作为测试脚本第一个参数。
+
 Linux 新环境缺浏览器系统依赖时，按仓库运行指南安装，或使用 `npx playwright install --with-deps chromium`。测试使用仓库 Playwright 和系统临时目录中的全新隔离 profile，不读取个人浏览器配置，也不依赖 `test-results` 中的旧证据。成功自动删除 profile，失败保留 profile 并打印现场位置。
 
-脚本实际加载 MV3 扩展，覆盖发现与连接、连续两轮、当前回复兄弟 footer、代码块中乘号与语言标题、取消后迟到结果、独立标签页和关闭错误。DeepSeek URL 由入库 HTML 夹具响应，其他请求中止，并禁用测试浏览器 DNS 解析，防止扩展新建标签页在 Playwright 挂载拦截前访问真实站点。此回归不登录账户、不调用真实模型，不证明线上网页、登录状态或生成流程仍兼容。
+脚本实际加载 MV3 扩展，覆盖发现与连接、登录及隐藏输入框、完成登录后状态探测、关闭后重连、刷新后复用、连续两轮、当前回复兄弟 footer、代码块中乘号与语言标题、取消后迟到结果、独立标签页和关闭错误。DeepSeek URL 由入库 HTML 夹具响应，其他请求中止，并禁用测试浏览器 DNS 解析，防止扩展新建标签页在 Playwright 挂载拦截前访问真实站点。此回归不登录账户、不调用真实模型，不证明线上网页、登录状态或生成流程仍兼容。
 
 无需账号的桥测试：在本机工作台打开控制台，安装本扩展后监听响应，再只发送 STATUS。
 
