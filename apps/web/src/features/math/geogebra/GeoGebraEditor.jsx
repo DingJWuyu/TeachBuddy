@@ -4,15 +4,15 @@ import { mountGeoGebra } from './controller.js';
 import './geogebra.css';
 
 /** initialBase64 is used only when this instance mounts; switch works with React key. */
-export default function GeoGebraEditor({ initialBase64 = '', appName = 'graphing', onReady, onChange, onError, className = '' }) {
+export default function GeoGebraEditor({ initialBase64 = '', appName = 'graphing', onReady, onChange, onRecovery, onError, className = '' }) {
   const { t, i18n } = useTranslation('math');
   const language = i18n.resolvedLanguage || i18n.language || 'zh-CN';
   const languageRef = useRef(language);
   languageRef.current = language;
   const controllerRef = useRef(null);
   const host = useRef(null);
-  const callbacks = useRef({ onReady, onChange, onError });
-  callbacks.current = { onReady, onChange, onError };
+  const callbacks = useRef({ onReady, onChange, onRecovery, onError });
+  callbacks.current = { onReady, onChange, onRecovery, onError };
   const initial = useRef(initialBase64);
   const recovering = useRef(false);
   const [attempt, setAttempt] = useState(0);
@@ -29,6 +29,7 @@ export default function GeoGebraEditor({ initialBase64 = '', appName = 'graphing
         if (lifetime.signal.aborted) return;
         if (failure.recoveryBase64) {
           initial.current = failure.recoveryBase64;
+          callbacks.current.onRecovery?.(failure.recoveryBase64);
           controllerRef.current = null;
           callbacks.current.onReady?.(null);
           if (failure.name === 'AbortError') {

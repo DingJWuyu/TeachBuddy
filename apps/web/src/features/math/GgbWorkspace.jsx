@@ -110,18 +110,30 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
     initializedController.current = controller;
     initializing.current = true;
     const initialize = initialBase64.current ? controller.serialize().then(snapshot => {
+      if (!live.current || initializedController.current !== controller) return;
       serializedRevision.current = snapshot.revision; serializedBase64.current = snapshot.base64;
       serializedObjects.current = JSON.stringify(controller.read().objects);
       serializedInteraction.current = interactionSequence.current;
+      dirtyMarker.current = null;
     }) : flush();
     if (initialBase64.current) readTask.current = initialize;
-    initialize.catch(error => { if (live.current) current.current.onError(error); }).finally(() => { initializing.current = false; });
+    initialize.catch(error => { if (live.current && initializedController.current === controller) current.current.onError(error); }).finally(() => {
+      if (initializedController.current === controller) initializing.current = false;
+    });
   }, [controller, flush]);
 
   useEffect(() => {
     // Saving settles prior gestures; gestures made during the request stay dirty.
     if (status === '已保存' && interactionSequence.current === serializedInteraction.current) interacted.current = false;
   }, [status]);
+  function recovered(base64) {
+    if (!live.current || current.current.draft.deletedAt) return;
+    // Preserve the complete pre-batch source before rebuilding the official
+    // applet, including edits whose debounce has not reached the device draft.
+    if (base64 !== serializedBase64.current) {
+      current.current.onChangeSource({ ...current.current.draft.source, base64 }, true);
+    }
+  }
   function interactedWithCanvas() {
     interacted.current = true;
     interactionSequence.current += 1;
@@ -178,7 +190,7 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
       {message && <div className="math-message" role="alert">{message}</div>}
       {conflictNotice}
       {draft.deletedAt ? <div className="math-ggb-archived">{t('已归档，恢复后可继续编辑。')}</div> : <div className="math-ggb-canvas" onPointerDownCapture={interactedWithCanvas} onKeyDownCapture={interactedWithCanvas} onWheelCapture={interactedWithCanvas}>
-        <GeoGebraEditor initialBase64={initialBase64.current} appName={draft.source.appName} onReady={setController} onChange={changed} onError={onError}/>
+        <GeoGebraEditor initialBase64={initialBase64.current} appName={draft.source.appName} onReady={setController} onChange={changed} onRecovery={recovered} onError={onError}/>
       </div>}
     </section>
   </div>;
