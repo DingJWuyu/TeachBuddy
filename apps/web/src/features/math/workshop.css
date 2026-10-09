@@ -372,6 +372,10 @@
   background: color-mix(in srgb,currentColor 5%,transparent);
 }
 
+.mw-expression-disclosure {
+  flex: none;
+}
+
 .mw-expression {
   display: flex;
   gap: 8px;
@@ -491,14 +495,14 @@
   font-size: 14px;
 }
 
-.mw-tool-section details {
+.mw-tool-section > .wb-module-disclosure {
   border-top: 1px solid var(--mw-line);
   padding-top: 12px;
   margin-top: 16px;
   margin-block: 16px;
 }
 
-.mw-tool-section summary {
+.mw-tool-section > .wb-module-disclosure > .wb-module-disclosure-trigger {
   font-size: 14px;
   padding-bottom: 8px;
   cursor: pointer;

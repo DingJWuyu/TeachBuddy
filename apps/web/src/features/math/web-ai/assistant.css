@@ -267,11 +267,6 @@
   margin: 14px 20px 0;
 }
 
-.math-ai-setup strong {
-  font-weight: 550;
-  font-size: 14px;
-}
-
 .math-ai-setup p {
   color: var(--wb-muted,#777d87);
   margin: 8px 0;
@@ -303,14 +298,14 @@
   margin-top: 12px;
 }
 
-.math-ai-setup>div {
+.math-ai-setup-actions {
   display: flex;
   gap: 7px;
   flex-wrap: wrap;
   margin-top: 12px;
 }
 
-.math-ai-setup button {
+.math-ai-setup-actions button {
   border: 0;
   border-radius: 6px;
   background: color-mix(in srgb,currentColor 6%,transparent);
@@ -349,13 +344,7 @@
   }
 }
 
-.math-ai-setup>strong {
-  display: block;
-  width: 100%;
-  line-height: 22px;
-}
-
-.math-ai-setup>.math-ai-install {
+.math-ai-setup-body > .math-ai-install {
   display: flex;
   width: fit-content;
   max-width: 100%;
@@ -371,7 +360,7 @@
   justify-content: center;
 }
 
-.math-ai-setup>summary {
+.math-ai-setup > .wb-module-disclosure-trigger {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -382,11 +371,12 @@
   list-style: none;
 }
 
-.math-ai-setup>summary>svg {
+.math-ai-setup > .wb-module-disclosure-trigger > svg {
+  order: 1;
   margin-left: auto;
 }
 
-.math-ai-setup[open] {
+.math-ai-setup-body {
   padding-bottom: 14px;
   border-bottom: 1px solid var(--app-line);
 }
@@ -420,3 +410,6 @@
   width: 18px;
   height: 18px;
 }
+
+.math-ai-setup-presence { flex: none; }
+.math-ai-setup > .wb-module-disclosure-trigger > span { display: flex; align-items: center; gap: 8px; }

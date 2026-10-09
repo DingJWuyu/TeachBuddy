@@ -21,7 +21,7 @@ test('统一作品：空白退出、公式自动保存、刷新、手动图形�
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
   await expect(page.locator('.mw-library-row')).toHaveCount(0);
   await page.getByRole('button', { name: '新建作品', exact: true }).click();
-  await page.locator('.math-ai-setup summary').click();
+  await page.locator('.math-ai-setup .wb-module-disclosure-trigger').click();
   await expect(page.getByRole('link', { name: '下载扩展', exact: true })).toBeVisible();
   await expect(page.locator('.mw-save-state')).toHaveCount(0);
   await page.screenshot({path:info.outputPath('empty-install-1440.png')});
@@ -514,9 +514,9 @@ test('参数取值：数值和滑杆同步，算式按需编辑，保存刷新�
   await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBeCloseTo(2.9, 8);
   fs.writeFileSync(info.outputPath('parameter-value-refresh.json'), JSON.stringify({ value: (await currentApi(page, 'a')).value, saved: await savedMath(page) }, null, 2));
   await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath('parameter-value.png') });
-  await tools.locator('summary').filter({ hasText: /^改为算式$/ }).click();
+  await tools.locator('.wb-module-disclosure-trigger').filter({ hasText: /^改为算式$/ }).click();
   await tools.getByRole('textbox', { name: '定义', exact: true }).fill('2+2');
-  await tools.getByRole('button', { name: '改为算式', exact: true }).click();
+  await tools.locator('form').getByRole('button', { name: '改为算式', exact: true }).click();
   await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBe(4);
   await savedMath(page); await page.reload();
   await page.getByRole('button', { name: '内容列表', exact: true }).click();
@@ -541,10 +541,10 @@ test('参数转算式：取消保留滑杆与引用，确认清理取值和播�
   expect(before.animation.parameter).toBe('a'); expect(before.steps[0].values.a).toBe(1);
   await page.getByRole('button', { name: '内容列表', exact: true }).click();
   await tools.locator('.mw-object-list button').filter({ has: page.locator('strong', { hasText: /^a$/ }) }).click();
-  await tools.locator('summary').filter({ hasText: /^改为算式$/ }).click();
+  await tools.locator('.wb-module-disclosure-trigger').filter({ hasText: /^改为算式$/ }).click();
   await expect(tools).toContainText('改为算式后，不再使用滑杆。');
   await tools.getByRole('textbox', { name: '定义', exact: true }).fill('2+2');
-  await tools.getByRole('button', { name: '改为算式', exact: true }).click();
+  await tools.locator('form').getByRole('button', { name: '改为算式', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('相关步骤、播放或轨迹会随之调整。是否继续？');
   await dialog.getByRole('button', { name: '取消', exact: true }).focus();
@@ -557,7 +557,7 @@ test('参数转算式：取消保留滑杆与引用，确认清理取值和播�
   await expect.poll(async () => (await currentApi(page, 'a'))?.value).toBe(1);
   const cancelled = (await deviceMath(page)).draft.source;
   expect(cancelled.animation).toEqual(before.animation); expect(cancelled.steps).toEqual(before.steps);
-  await tools.getByRole('button', { name: '改为算式', exact: true }).click();
+  await tools.locator('form').getByRole('button', { name: '改为算式', exact: true }).click();
   await dialog.getByRole('button', { name: '继续', exact: true }).click();
   await expect(tools.getByRole('slider', { name: '参数 a', exact: true })).toHaveCount(0);
   const converted = (await savedMath(page)).source;
@@ -568,4 +568,99 @@ test('参数转算式：取消保留滑杆与引用，确认清理取值和播�
   const refreshed = (await deviceMath(page)).draft.source;
   expect(refreshed.animation).toBeNull(); expect(refreshed.steps).toEqual(converted.steps);
   fs.writeFileSync(info.outputPath('parameter-conversion.json'), JSON.stringify({ before, cancelled, converted, refreshed }, null, 2));
+});
+
+test('按需展开：参数、连接与算式连续开合，快速反向和末项可达', async ({ page }, info) => {
+  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  await page.getByRole('button', { name: '添加参数', exact: true }).click();
+  await page.getByRole('button', { name: '加入作品', exact: true }).click();
+  async function sample(root, trigger, name, opening) {
+    await root.evaluate(el => {
+      window.mathFoldFrames = [];
+      const frame = time => {
+        const grid = el.querySelector('.wb-module-disclosure-grid');
+        window.mathFoldFrames.push({ time, height: el.getBoundingClientRect().height, opacity: Number(grid ? getComputedStyle(grid).opacity : getComputedStyle(el, el.classList.contains('wb-module-presence') ? null : '::details-content').opacity) });
+        if (window.mathFoldFrames.length < 26) requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    });
+    await trigger.click();
+    await expect.poll(() => page.evaluate(() => window.mathFoldFrames.length)).toBe(26);
+    const frames = await page.evaluate(() => window.mathFoldFrames);
+    fs.writeFileSync(info.outputPath(`${name}-${opening ? 'open' : 'close'}.json`), JSON.stringify(frames, null, 2));
+    const heights = [...new Set(frames.map(f => Math.round(f.height * 10) / 10))];
+    expect(heights.length, `${name} continuous height`).toBeGreaterThan(3);
+    expect(frames.some(f => f.opacity > 0 && f.opacity < 1), `${name} continuous opacity`).toBe(true);
+    if (opening) {
+      await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath(`${name}-open.png`) });
+      const last = root.locator('input:not(:disabled), textarea:not(:disabled), select:not(:disabled), button:not(:disabled), a').last();
+      await last.focus(); await expect(last).toBeFocused();
+      expect(await last.evaluate(el => { const section = el.closest('.wb-module-disclosure'); return !section || el.getBoundingClientRect().bottom <= section.getBoundingClientRect().bottom + 1; })).toBe(true);
+    }
+  }
+  const tools = page.locator('.mw-tool-host');
+  for (const name of ['改为算式', '参数范围', '样式', '参数播放']) {
+    const trigger = tools.locator('summary, button.wb-module-disclosure-trigger').filter({ hasText: new RegExp(`^${name}$`) });
+    const root = trigger.locator('..');
+    await sample(root, trigger, name, true); await sample(root, trigger, name, false);
+  }
+  const conversion = tools.getByRole('button', { name: '改为算式', exact: true }).first();
+  const box = await conversion.boundingBox();
+  await conversion.locator('..').evaluate(el => {
+    window.mathReverseFrames = [];
+    const frame = time => { const grid = el.querySelector('.wb-module-disclosure-grid'); window.mathReverseFrames.push({ time, height: el.getBoundingClientRect().height, opacity: Number(getComputedStyle(grid).opacity) }); if (window.mathReverseFrames.length < 30) requestAnimationFrame(frame); };
+    requestAnimationFrame(frame);
+  });
+  await page.mouse.click(box.x + 20, box.y + box.height / 2);
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await page.mouse.click(box.x + 20, box.y + box.height / 2);
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await page.mouse.click(box.x + 20, box.y + box.height / 2);
+  await expect.poll(() => page.evaluate(() => window.mathReverseFrames.length)).toBe(30);
+  const reverse = await page.evaluate(() => window.mathReverseFrames);
+  fs.writeFileSync(info.outputPath('改为算式-reverse.json'), JSON.stringify(reverse, null, 2));
+  expect(new Set(reverse.map(f => Math.round(f.height))).size).toBeGreaterThan(3);
+  expect(reverse.some(f => f.opacity > 0 && f.opacity < 1)).toBe(true);
+  await expect(conversion).toHaveAttribute('aria-expanded', 'true');
+  await expect(tools.getByRole('textbox', { name: '定义', exact: true })).toBeVisible();
+  await tools.getByRole('textbox', { name: '定义', exact: true }).fill('2+2');
+  await page.getByRole('tab', { name: 'AI 助理', exact: true }).click();
+  const setup = page.locator('.math-ai-setup');
+  await expect(page.locator('.math-ai-connection').first()).toHaveClass(/is-missing/);
+  const setupTrigger = setup.locator('summary, button.wb-module-disclosure-trigger');
+  await sample(setup, setupTrigger, '连接', true); await sample(setup, setupTrigger, '连接', false);
+  await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
+  const expression = page.locator('.mw-expression-disclosure');
+  const toggle = page.getByRole('button', { name: '输入算式', exact: true });
+  await page.evaluate(() => {
+    window.mathExpressionFrames = [];
+    const frame = time => { const el = document.querySelector('.mw-expression-disclosure'); window.mathExpressionFrames.push({ time, height: el?.getBoundingClientRect().height ?? 0, opacity: el ? Number(getComputedStyle(el).opacity) : 0 }); if (window.mathExpressionFrames.length < 26) requestAnimationFrame(frame); };
+    requestAnimationFrame(frame);
+  });
+  await toggle.click();
+  await expect(page.getByLabel('图形表达式', { exact: true })).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.mathExpressionFrames.length)).toBe(26);
+  const frames = await page.evaluate(() => window.mathExpressionFrames);
+  fs.writeFileSync(info.outputPath('输入算式-open.json'), JSON.stringify(frames, null, 2));
+  expect(new Set(frames.map(f => Math.round(f.height))).size).toBeGreaterThan(3);
+  expect(frames.some(f => f.opacity > 0 && f.opacity < 1)).toBe(true);
+  await sample(expression, page.getByRole('button', { name: '收起算式', exact: true }), '输入算式', false);
+  await expect(expression).toHaveCount(0);
+  await page.evaluate(() => {
+    window.mathExpressionReverse = [];
+    const frame = time => { const el = document.querySelector('.mw-expression-disclosure'); window.mathExpressionReverse.push({ time, height: el?.getBoundingClientRect().height ?? 0, opacity: el ? Number(getComputedStyle(el).opacity) : 0 }); if (window.mathExpressionReverse.length < 30) requestAnimationFrame(frame); };
+    requestAnimationFrame(frame);
+  });
+  const toggleBox = await toggle.boundingBox();
+  for (let index = 0; index < 3; index += 1) {
+    await page.mouse.click(toggleBox.x + 20, toggleBox.y + toggleBox.height / 2);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  }
+  await expect.poll(() => page.evaluate(() => window.mathExpressionReverse.length)).toBe(30);
+  const expressionReverse = await page.evaluate(() => window.mathExpressionReverse);
+  fs.writeFileSync(info.outputPath('输入算式-reverse.json'), JSON.stringify(expressionReverse, null, 2));
+  expect(new Set(expressionReverse.map(f => Math.round(f.height))).size).toBeGreaterThan(3);
+  expect(expressionReverse.some(f => f.opacity > 0 && f.opacity < 1)).toBe(true);
+  await expect(page.getByLabel('图形表达式', { exact: true })).toBeFocused();
+  await page.screenshot({ path: info.outputPath('展开终态.png') });
 });

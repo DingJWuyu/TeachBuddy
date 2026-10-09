@@ -5,6 +5,7 @@ import { readLocal, writeLocal } from '../../workbench/storage.js';
 import { Icon } from '../../workbench/icons.jsx';
 import { webAiRequest } from './bridge.js';
 import { mathPrompt, readProposal } from './protocol.js';
+import { ModuleDisclosure, ModulePresence } from '../../workbench/ModuleMotion.jsx';
 import './assistant.css';
 
 export function MathWebAssistant({ controller, title, accountKey, onStart, takeRequest }) {
@@ -22,7 +23,7 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
   const latest = useRef({ controller, title, conversation });
   latest.current = { controller, title, conversation };
   const thread = useRef(null);
-  const setup = useRef(null);
+  const [setupOpen, setSetupOpen] = useState(false);
   useEffect(() => {
     setStorageError(!writeLocal(accountKey, 'math-web-assistant', conversation));
   }, [accountKey, conversation]);
@@ -61,7 +62,7 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
     event?.preventDefault();
     const request = (initialInput ?? conversation.input).trim();
     if (active.current || !request) return;
-    if (connection === 'missing') { if (setup.current) setup.current.open = true; setError(t('先连接助理，内容已保留。')); return; }
+    if (connection === 'missing') { setSetupOpen(true); setError(t('先连接助理，内容已保留。')); return; }
     const lifetime = new AbortController(); active.current = lifetime;
     if (!controller) {
       if (!onStart) { active.current = null; return; }
@@ -114,11 +115,12 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
     } finally { if (active.current === lifetime) { active.current = null; setRunning(false); } }
   }
   return <section className="math-web-assistant" aria-label={t('数学工坊 AI 助理')}>
-    {connection !== 'ready' && <details ref={setup} className="math-ai-setup">
-      <summary><span className={`math-ai-connection is-${connection}`}/><span>{t(connection === 'missing' ? '连接助理' : connection === 'login' ? '登录助理' : connection === 'disconnected' ? '重新连接' : connection === 'checking' ? '检查连接' : connection === 'connecting' ? '正在连接' : '连接助理')}</span><Icon name="chevron" size={14}/></summary>
+    <ModulePresence present={connection !== 'ready'} mode="collapse" className="math-ai-setup-presence"><ModuleDisclosure className="math-ai-setup" open={setupOpen} onOpenChange={setSetupOpen} title={<><span className={`math-ai-connection is-${connection}`}/><span>{t(connection === 'missing' ? '连接助理' : connection === 'login' ? '登录助理' : connection === 'disconnected' ? '重新连接' : connection === 'checking' ? '检查连接' : connection === 'connecting' ? '正在连接' : '连接助理')}</span></>}>
+      <div className="math-ai-setup-body">
       {connection === 'missing' ? <><p>{t('安装扩展后，在这里直接对话。')}</p><a className="math-ai-install" href="/downloads/teachbuddy-math-web-ai.zip" download>{t('下载扩展')}</a><ol><li>{t('解压下载文件')}</li><li>{t('在扩展页开启开发者模式')}</li><li>{t('加载扩展目录，刷新工作台')}</li></ol></> : <p>{t(connection === 'login' ? '登录 DeepSeek 后，返回这里。' : connection === 'disconnected' ? '重新连接后可继续制作。' : '使用 DeepSeek 网页账号。')}</p>}
-      <div>{connection !== 'missing' && <button disabled={checking || running} onClick={async () => { setError(''); try { await connect(connectionLifetime.current?.signal); } catch (failure) { if (failure.name !== 'AbortError') setError(failure.message); } }}>{t(connection === 'login' ? '打开登录' : '连接助理')}</button>}<button disabled={checking || running} onClick={() => checkConnection()}>{t(checking ? '检查中…' : '检查连接')}</button></div>
-    </details>}
+      <div className="math-ai-setup-actions">{connection !== 'missing' && <button disabled={checking || running} onClick={async () => { setError(''); try { await connect(connectionLifetime.current?.signal); } catch (failure) { if (failure.name !== 'AbortError') setError(failure.message); } }}>{t(connection === 'login' ? '打开登录' : '连接助理')}</button>}<button disabled={checking || running} onClick={() => checkConnection()}>{t(checking ? '检查中…' : '检查连接')}</button></div>
+      </div>
+    </ModuleDisclosure></ModulePresence>
     <div className="math-ai-thread" ref={thread} aria-live="polite">
       {(onStart || !conversation.messages.length) && <div className="math-ai-welcome"><h2>{t('想做什么数学作品？')}</h2>
         <button onClick={() => setConversation(value => ({ ...value, input: t('画出 f(x)=a*x^2，为 a 添加 -3 到 3 的滑杆，初始值为 1。') }))}>{t('画一条可调节的抛物线')}<Icon name="plus" size={16}/></button>
@@ -137,7 +139,7 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
           event.preventDefault();
           if (!event.repeat && !event.ctrlKey && !event.metaKey && !event.altKey) void send(); }}/>
       <div className="math-ai-compose-actions">{!onStart && <button type="button" className="math-ai-provider" disabled={running}
-        onClick={async () => { setError(''); if (connection === 'missing') { if (setup.current) setup.current.open = true; return; } try { await connect(connectionLifetime.current?.signal); } catch (failure) { setError(failure.message); } }}>
+        onClick={async () => { setError(''); if (connection === 'missing') { setSetupOpen(true); return; } try { await connect(connectionLifetime.current?.signal); } catch (failure) { setError(failure.message); } }}>
         <span className={`math-ai-connection is-${connection}`}/><span>DeepSeek <small>{t('网页版')}</small></span></button>}
         <button type="button" className="math-ai-new" aria-label={t('新对话')} title={t('新对话')} disabled={running} onClick={() => { setConversation({ sessionId: crypto.randomUUID(), messages: [], input: '' }); setError(''); }}><Icon name="plus" size={17}/></button>
         {running && onStart ? <button type="button" className="math-ai-send is-start" disabled>{t('正在开始')}</button> : running ? <button type="button" className="math-ai-send" aria-label={t('停止生成')} onClick={() => active.current?.abort()}>■</button>
