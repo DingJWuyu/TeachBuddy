@@ -627,5 +627,7 @@
   "正在读取版本预览…": "Loading version preview…",
   "恢复此版本": "Restore this version",
   "HTML 历史版本不会自动运行。恢复此版本后，可查看源码并运行预览。": "HTML versions do not run automatically. Restore this version to inspect its source and run a preview.",
-  "选一版查看。恢复后成为当前编辑内容，保存时生成新版本，已有备课引用保持原样。": "Select a version to view. Restoring updates your editor; saving creates a new version. Existing lesson references keep their original version."
+  "选一版查看。恢复后成为当前编辑内容，保存时生成新版本，已有备课引用保持原样。": "Select a version to view. Restoring updates your editor; saving creates a new version. Existing lesson references keep their original version.",
+  "还有内容未加入作品，是否放弃这些输入并返回？": "Some input has not been added to this work. Discard it and return?",
+  "请先将输入加入作品，再保存。": "Add your input to the work before saving."
 }

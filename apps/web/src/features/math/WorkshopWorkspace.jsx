@@ -8,6 +8,7 @@ import { Icon } from '../workbench/icons.jsx';
 import { MathIntegration, MathUsageDetails } from './Integration.jsx';
 import { createPortal } from 'react-dom';
 import { useAuxiliaryTools, ShellContext, useAuxiliaryAssistant } from '../workbench/shellContext.js';
+import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
 import { useMathConfirm } from './useMathConfirm.jsx';
 import './workshop.css';
 
@@ -35,7 +36,7 @@ function objectExpression(object) {
 function parameters(objects) { return objects.filter(object => object.slider); }
 
 export default function WorkshopWorkspace({ draft, accountKey, busy, pending, status, message, conflictNotice, flushRef,
-  onChangeSource, onTitle, onHome, onSave, onError, onHistory, onCopy, onArchive, onDownload, client, children }) {
+  onChangeSource, onChangeInput, onTitle, onHome, onSave, onError, onHistory, onCopy, onArchive, onDownload, client, children }) {
   const { t, i18n } = useTranslation('math');
   const graphHost = useRef(null);
   const moduleHost = useRef(null);
@@ -51,9 +52,14 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   const [state, setState] = useState({ source: draft.source, objects: [], selection: null, editRevision: 0, mode: 'edit' });
   const [ready, setReady] = useState(false);
   const shell = useContext(ShellContext);
-  const [addingFormula, setAddingFormula] = useState(false);
-  const [formulaInput, setFormulaInput] = useState('');
-  const [expression, setExpression] = useState('');
+  const [addingFormula, setAddingFormula] = useState(!!draft.workshopInput?.formula);
+  const [formulaInput, setFormulaInput] = useState(draft.workshopInput?.formula ?? '');
+  const [expression, setExpression] = useState(draft.workshopInput?.expression ?? '');
+  const inputRef = useRef({ formula: draft.workshopInput?.formula ?? '', expression: draft.workshopInput?.expression ?? '' });
+  function changeInput(field, value) { inputRef.current = { ...inputRef.current, [field]: value }; if (field === 'formula') setFormulaInput(value); else setExpression(value); onChangeInput(inputRef.current); }
+  const changeFormulaInput = value => changeInput('formula', value);
+  const changeExpression = value => changeInput('expression', value);
+  useEffect(() => { const next = { formula: draft.workshopInput?.formula ?? '', expression: draft.workshopInput?.expression ?? '' }; if (next.formula !== inputRef.current.formula || next.expression !== inputRef.current.expression) { inputRef.current = next; setFormulaInput(next.formula); setExpression(next.expression); setAddingFormula(!!next.formula); } }, [draft.workshopInput]);
   const [tool, setTool] = useState(null);
   const [drawingTool, setDrawingTool] = useState(null);
   const [downloadOpen, setDownloadOpen] = useState(false);
@@ -111,7 +117,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
     const preserve = () => {
       try {
         const snapshot = editor.current?.captureNow();
-        if (snapshot) { const input = localFormulaRef.current; if (localStepRef.current) snapshot.source.steps = snapshot.source.steps.map(step => step.id === localStepRef.current.id ? localStepRef.current : step); if (input?.latex.trim()) snapshot.source.formulas = snapshot.source.formulas.map(formula => formula.id === input.id ? input : formula);
+        if (snapshot) { const input = localFormulaRef.current; if (localStepRef.current) snapshot.source.steps = snapshot.source.steps.map(step => step.id === localStepRef.current.id ? { ...step, ...localStepRef.current } : step); if (input?.latex.trim()) snapshot.source.formulas = snapshot.source.formulas.map(formula => formula.id === input.id ? input : formula);
           if (JSON.stringify(snapshot.source) !== JSON.stringify(current.current.draft.source)) current.current.onChangeSource(snapshot.source); }
       } catch (error) { current.current.onError(error); }
     };
@@ -135,6 +141,8 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   }, [message, conflictNotice]);
   useEffect(() => {
     const keys = event => {
+      const dialogOpen = [...document.querySelectorAll('[role="dialog"]')].some(node => node.getClientRects().length && !node.closest('[inert]'));
+      if (dialogOpen) { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') event.preventDefault(); return; }
       if (event.key === 'Escape') { if (presenting) void endPreview(); else if (tool) setTool(null); else shell?.closePanel(); }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); void onSave(); }
     };
@@ -162,11 +170,11 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   async function addFormula() {
     if (!formulaInput.trim()) return;
     const formula = { id: crypto.randomUUID(), ...formulaDefaults, latex: formulaInput.trim() };
-    if (await apply({ formulas: [...source.formulas, formula] })) { setFormulaInput(''); setAddingFormula(false); select({ type: 'formula', id: formula.id }); }
+    if (await apply({ formulas: [...source.formulas, formula] })) { changeFormulaInput(''); setAddingFormula(false); select({ type: 'formula', id: formula.id }); }
   }
   async function addExpression(event) {
     event?.preventDefault(); if (!expression.trim()) return;
-    try { const operation = parseDefinition(expression, state.objects.map(objectId)); if (await apply({ operations: [operation] })) { setExpression(''); setTool(null); select({ type: 'object', id: operation.name }); } }
+    try { const operation = parseDefinition(expression, state.objects.map(objectId)); if (await apply({ operations: [operation] })) { changeExpression(''); setTool(null); select({ type: 'object', id: operation.name }); } }
     catch (error) { onError(error); }
   }
   async function addStep() {
@@ -195,9 +203,14 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
     localTimer.current = setTimeout(() => { localTimer.current = null; void commit(); }, 650);
   }
   function updateStepText(patch) {
-    const next = { ...(localStep ?? selectedStep), ...patch }; setLocalStep(next); clearTimeout(stepTimer.current);
-    const commit = async () => { if (!next.title.trim()) return; await apply({ steps: editor.current.read().source.steps.map(step => step.id === next.id ? next : step) }); }; commitStepRef.current = commit;
+    const next = { ...(localStep?.id === selectedStep.id ? localStep : { id: selectedStep.id }), ...patch };
+    setLocalStep(next); clearTimeout(stepTimer.current);
+    const commit = async () => { const steps = editor.current.read().source.steps; const latest = steps.find(step => step.id === next.id); if (!latest || !(next.title ?? latest.title).trim()) return; const result = await apply({ steps: steps.map(step => step.id === next.id ? { ...step, ...next } : step) }); if (result && localStepRef.current === next) { localStepRef.current = null; setLocalStep(null); } }; commitStepRef.current = commit;
     stepTimer.current = setTimeout(() => { stepTimer.current = null; void commit(); }, 650);
+  }
+  function updateStep(id, patch) {
+    const steps = editor.current.read().source.steps;
+    return apply({ steps: steps.map(step => { if (step.id !== id) return step; const next = typeof patch === 'function' ? patch(step) : patch; return { ...step, ...next, ...(next.values ? { values: { ...step.values, ...next.values } } : {}) }; }) });
   }
   async function removeObject(object) {
     const id = objectId(object); const affected = source.steps.filter(step => step.visibleObjects.includes(id));
@@ -209,7 +222,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
   return <section ref={moduleHost} className={`math-workshop${presenting ? ' is-presenting' : ''}`} aria-label={t('数学作品编辑器')}>
     {children}{confirmationDialog}
     <header className="mw-heading">
-      <button className="mw-icon" aria-label={t('返回工坊')} onClick={onHome}><Icon name="back" size={18}/></button>
+      <button className="mw-icon" aria-label={t('返回工坊')} title={t('返回工坊')} onClick={onHome}><Icon name="back" size={18}/></button>
       <input className="mw-title" aria-label={t('作品名')} value={draft.title} maxLength={200} disabled={frozen} onChange={event => onTitle(event.target.value)}/>
       {(source.formulas.length > 0 || source.graph || pending || status === '保存失败') && <span className={`mw-save-state${status === '保存失败' || pending ? ' has-error' : ''}`} role="status">{t(pending && !busy ? '保存结果待确认' : status === '未保存' ? '等待保存' : status)}</span>}
       <div className="mw-heading-actions">
@@ -236,8 +249,8 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
         <button className="mw-button" disabled={frozen || !ready} onClick={addStep}><Icon name="prep" size={18}/>{t('教学步骤')}</button>
       </div>
       <div className="mw-view-tools">
-        <button className="mw-icon" aria-label={t('撤销')} disabled={frozen || !state.canUndo} onClick={() => moveHistory('undo')}>↶</button>
-        <button className="mw-icon" aria-label={t('重做')} disabled={frozen || !state.canRedo} onClick={() => moveHistory('redo')}>↷</button>
+        <button className="mw-icon" aria-label={t('撤销')} title={t('撤销')} disabled={frozen || !state.canUndo} onClick={() => moveHistory('undo')}>↶</button>
+        <button className="mw-icon" aria-label={t('重做')} title={t('重做')} disabled={frozen || !state.canRedo} onClick={() => moveHistory('redo')}>↷</button>
         <div className="mw-view-switch" aria-label={t('数学视图')}>{views.map(([view, label]) => <button key={view} aria-pressed={source.view === view} disabled={frozen || !ready} onClick={() => apply({ view })}>{t(label)}</button>)}</div>
         <button className="mw-icon mw-panel-toggle" aria-label={t(shell?.isPanelOpen ? '关闭辅助栏' : '打开辅助栏')} onClick={() => shell?.isPanelOpen ? shell.closePanel() : shell?.openPanel('ai')}><Icon name="menu" size={18}/></button>
       </div>
@@ -256,12 +269,12 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
             </button>}
             {!frozen && <button className="mw-icon" aria-label={t('移除公式')} onClick={() => removeFormula(formula)}>×</button>}
           </div>)}
-          {addingFormula && <div className="mw-new-formula"><VisualFormulaInput value={formulaInput} onChange={setFormulaInput}/><div className="mw-inline-actions"><button className="mw-button" onClick={() => { setAddingFormula(false); setFormulaInput(''); }}>{t('取消')}</button><button className="mw-button is-primary" disabled={!formulaInput.trim()} onClick={addFormula}>{t('加入作品')}</button></div></div>}
+          {addingFormula && <div className="mw-new-formula"><VisualFormulaInput value={formulaInput} onChange={changeFormulaInput}/><div className="mw-inline-actions"><button className="mw-button" onClick={() => { setAddingFormula(false); changeFormulaInput(''); }}>{t('取消')}</button><button className="mw-button is-primary" disabled={!formulaInput.trim()} onClick={addFormula}>{t('加入作品')}</button></div></div>}
         </div>}
         {drawingTool && <div className="mw-drawing-hint"><span>{t(({ point: '点击画布放置点', segment: '依次点击两个端点', circle: '点击圆心，再点击圆上一点', polygon: '依次点击顶点，最后点击第一个点闭合', midpoint: '选择两个点或一条线段', perpendicular: '选择一个点和一条直线', intersect: '选择两个相交的图形' })[drawingTool])}</span><button className="mw-button" onClick={() => chooseDrawingTool('select')}>{t('完成')}</button><button className="mw-icon" aria-label={t('取消绘图工具')} onClick={() => chooseDrawingTool('select')}>×</button></div>}
         <div className={`mw-graph-area${source.graph || drawingTool ? ' has-graph' : ''}`}><div className={`mw-graph-host${source.graph || drawingTool ? ' has-graph' : ''}`} ref={graphHost} inert={draft.deletedAt || undefined}/>{(source.graph || drawingTool) && <a className="mw-engine-credit" href="/vendor/math/geogebra/NOTICE.txt" target="_blank" rel="noreferrer">GeoGebra</a>}</div>
         {!frozen && <form className="mw-expression" onSubmit={addExpression}>
-          <span aria-hidden="true">ƒ</span><input aria-label={t('图形表达式')} placeholder={t('输入图形，例如 f(x)=x^2 或 A=(1,2)')} value={expression} onChange={event => setExpression(event.target.value)}/>
+          <span aria-hidden="true">ƒ</span><input aria-label={t('图形表达式')} placeholder={t('输入图形，例如 f(x)=x^2 或 A=(1,2)')} value={expression} onChange={event => changeExpression(event.target.value)}/>
           <button type="submit" className="mw-icon" aria-label={t('建立图形')} disabled={!expression.trim() || !ready}>↵</button>
         </form>}
         {source.steps.length > 0 ? <div className="mw-step-rail"><span>{t('步骤')}</span><nav aria-label={t('教学步骤')}>{source.steps.map((step, index) => <button key={step.id} className={selectedStep?.id === step.id || state.previewStepId === step.id ? 'is-selected' : ''} onClick={() => state.mode === 'preview' ? editor.current.preview({ stepId: step.id }).then(() => setState(editor.current.read())).catch(onError) : select({ type: 'step', id: step.id })}><span>{index + 1}</span>{step.title}</button>)}</nav>{!frozen && <button className="mw-icon" aria-label={t('添加步骤')} onClick={addStep}>+</button>}</div>
@@ -269,7 +282,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
         {state.mode === 'preview' && <PreviewControls state={state} editor={editor.current} onError={onError} onState={setState} readOnly={!!draft.deletedAt}/>}
       </main>
       {shell && <WorkshopToolsPortal>        <div className="mw-side-content" inert={frozen || undefined}>
-          {tool === 'graph' && <div className="mw-tool-section"><h3>{t('添加图形')}</h3>{templates.map(([group, choices]) => <div className="mw-template-group" key={group}><h4>{t(group)}</h4><div>{choices.map(([label, input]) => <button key={label} className="mw-button" onClick={() => { const draw = ({ '点': 'point', '线段': 'segment', '圆': 'circle', '三角形': 'polygon', '中点': 'midpoint', '垂线': 'perpendicular', '交点': 'intersect' })[label]; if (draw) void chooseDrawingTool(draw); else { const operation = parseDefinition(input, []); if (state.objects.some(object => objectId(object) === operation.name)) { let suffix = 2; while (state.objects.some(object => objectId(object) === `${operation.name}${suffix}`)) suffix++; input = input.replace(new RegExp(`^${operation.name}`), `${operation.name}${suffix}`); } setExpression(input); graphHost.current?.parentElement.querySelector('.mw-expression input')?.focus(); } }}>{t(label === '三角形' ? '多边形' : label)}</button>)}</div></div>)}</div>}
+          {tool === 'graph' && <div className="mw-tool-section"><h3>{t('添加图形')}</h3>{templates.map(([group, choices]) => <div className="mw-template-group" key={group}><h4>{t(group)}</h4><div>{choices.map(([label, input]) => <button key={label} className="mw-button" onClick={() => { const draw = ({ '点': 'point', '线段': 'segment', '圆': 'circle', '三角形': 'polygon', '中点': 'midpoint', '垂线': 'perpendicular', '交点': 'intersect' })[label]; if (draw) void chooseDrawingTool(draw); else { const operation = parseDefinition(input, []); if (state.objects.some(object => objectId(object) === operation.name)) { let suffix = 2; while (state.objects.some(object => objectId(object) === `${operation.name}${suffix}`)) suffix++; input = input.replace(new RegExp(`^${operation.name}`), `${operation.name}${suffix}`); } changeExpression(input); graphHost.current?.parentElement.querySelector('.mw-expression input')?.focus(); } }}>{t(label === '三角形' ? '多边形' : label)}</button>)}</div></div>)}</div>}
           {tool === 'parameter' && <ParameterCreator defaultName={(() => { let name = 'a'; let number = 2; while (state.objects.some(object => objectId(object) === name)) name = `a${number++}`; return name; })()} onCreate={operation => apply({ operations: [operation] }).then(result => { if (result) { setTool(null); select({ type: 'object', id: operation.name }); } })}/>}
           {!tool && editFormula && <div className="mw-tool-section"><h3>{t('公式')}</h3>
             <details><summary>{t('LaTeX 源码')}</summary><textarea aria-label={t('LaTeX 源码')} value={editFormula.latex} onChange={event => updateFormula({ latex: event.target.value })}/><button className="mw-button" onClick={() => navigator.clipboard.writeText(editFormula.latex).catch(onError)}>{t('复制 LaTeX')}</button></details>
@@ -278,7 +291,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
             <details><summary>{t('样式')}</summary><label>{t('颜色')}<input type="color" value={editFormula.color} onChange={event => updateFormula({ color: event.target.value })}/></label><label>{t('字号')}<input type="number" min="12" max="96" value={editFormula.fontSize} onChange={event => updateFormula({ fontSize: Number(event.target.value) })}/></label></details>
           </div>}
           {!tool && selectedObject && <ObjectTools object={selectedObject} apply={apply} onDelete={() => removeObject(selectedObject)} frozen={frozen} source={source}/>}
-          {!tool && selectedStep && <StepTools step={localStep ?? selectedStep} onTextChange={updateStepText} source={source} objects={state.objects} frozen={frozen} apply={apply}/>}
+          {!tool && selectedStep && <StepTools step={localStep?.id === selectedStep.id ? { ...selectedStep, ...localStep } : selectedStep} onTextChange={updateStepText} onPatch={patch => updateStep(selectedStep.id, patch)} source={source} objects={state.objects} frozen={frozen} apply={apply}/>}
           {!tool && !editFormula && !selectedObject && !selectedStep && <div className="mw-selection-empty"><Icon name="math" size={24}/><p>{t('选择公式、图形或步骤，调整它的属性。')}</p></div>}
           {state.objects.length > 0 && <div className="mw-object-list"><h3>{t('图形与参数')}</h3>{state.objects.map(object => <button key={objectId(object)} className={selectedObject === object ? 'is-selected' : ''} onClick={() => { setTool(null); select({ type: 'object', id: objectId(object) }); }}><span style={{ color: object.color ?? '#64748b' }}>●</span><strong>{objectId(object)}</strong><span>{objectExpression(object) || object.type}</span></button>)}</div>}
           {client && <MathIntegration work={draft} saved={status === '已保存'} busy={busy} onError={onError} client={client}/>}
@@ -286,7 +299,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
         </div>
       </WorkshopToolsPortal>}
     </div>
-    {downloadOpen && <div className="mw-download" role="dialog" aria-label={t('下载作品')}><header><h3>{t('下载作品')}</h3><button className="mw-icon" onClick={() => setDownloadOpen(false)} aria-label={t('关闭下载')}>×</button></header>
+    <ModulePresence present={downloadOpen}>{downloadOpen && <WorkshopDownloadDialog label={t('下载作品')} onClose={() => setDownloadOpen(false)}><header><h3>{t('下载作品')}</h3><button className="mw-icon" onClick={() => setDownloadOpen(false)} aria-label={t('关闭下载')}>×</button></header>
       <div className="mw-download-types">{[['png', '图片'], ['source', '可编辑源'], ['bundle', '课堂演示']].map(([format, label]) => <button className={download.format === format ? 'is-selected' : ''} key={format} onClick={() => setDownload({ ...download, format, selection: 'work' })}>{t(label)}</button>)}</div>
       {['png', 'svg'].includes(download.format) && <><label>{t('内容')}<select value={download.selection} onChange={event => setDownload({ ...download, format: 'png', selection: event.target.value, formulaId: source.formulas[0]?.id })}><option value="work">{t('整份作品')}</option>{source.graph && <option value="graph">{t('数学视图')}</option>}{source.formulas.length > 0 && <option value="formula">{t('公式')}</option>}</select></label>
         {download.selection === 'formula' && <label>{t('公式')}<select value={download.formulaId ?? source.formulas[0]?.id} onChange={event => setDownload({ ...download, formulaId: event.target.value })}>{source.formulas.map((formula, index) => <option value={formula.id} key={formula.id}>{index + 1}. {formula.latex}</option>)}</select></label>}
@@ -297,7 +310,7 @@ export default function WorkshopWorkspace({ draft, accountKey, busy, pending, st
       {download.format === 'source' && source.graph && <label className="mw-check"><input type="checkbox" checked={download.selection === 'graph'} onChange={event => setDownload({ ...download, selection: event.target.checked ? 'graph' : 'work' })}/>{t('只取出图形构造（.ggb）')}</label>}
       {download.format === 'bundle' && <p>{t('下载 ZIP 后解压，打开 index.html 进入课堂演示。')}</p>}
       <button className="mw-button is-primary" disabled={busy || status !== '已保存'} onClick={() => onDownload({ ...download, ...(opaqueGraph && download.selection !== 'formula' && download.format === 'png' ? { background: 'white' } : {}), ...(download.format === 'source' && download.selection === 'graph' ? { format: 'ggb' } : {}), ...(['source', 'bundle'].includes(download.format) || download.selection === 'formula' ? { background: 'transparent', width: 1600 } : {}), ...(download.selection === 'formula' ? { formulaId: download.formulaId ?? source.formulas[0]?.id } : { formulaId: undefined }) })}>{t(status !== '已保存' ? '保存后下载' : '下载文件')}</button>
-    </div>}
+    </WorkshopDownloadDialog>}</ModulePresence>
   </section>;
 }
 function ParameterCreator({ onCreate, defaultName }) {
@@ -317,13 +330,13 @@ function ObjectTools({ object, apply, onDelete, frozen, source }) {
     <details><summary>{t('样式')}</summary><label>{t('颜色')}<input type="color" disabled={frozen} value={object.color ?? '#2563eb'} onChange={event => apply({ operations: [{ type: 'style', name: id, color: event.target.value }] })}/></label>{isPoint ? <label>{t('点大小')}<input type="number" min="1" max="9" disabled={frozen} value={object.pointSize ?? 5} onChange={event => apply({ operations: [{ type: 'style', name: id, pointSize: Number(event.target.value) }] })}/></label> : <><label>{t('线宽')}<input type="number" min="1" max="13" disabled={frozen} value={object.lineThickness ?? 2} onChange={event => apply({ operations: [{ type: 'style', name: id, lineThickness: Number(event.target.value) }] })}/></label><label>{t('线型')}<select disabled={frozen} value={object.lineStyle ?? 0} onChange={event => apply({ operations: [{ type: 'style', name: id, lineStyle: Number(event.target.value) }] })}><option value="0">{t('实线')}</option><option value="1">{t('虚线')}</option><option value="3">{t('点线')}</option></select></label></>}<label className="mw-check"><input type="checkbox" disabled={frozen} checked={object.visible !== false} onChange={event => apply({ operations: [{ type: 'style', name: id, visible: event.target.checked }] })}/>{t('显示图形')}</label><label className="mw-check"><input type="checkbox" disabled={frozen} checked={!!object.labelVisible} onChange={event => apply({ operations: [{ type: 'style', name: id, labelVisible: event.target.checked }] })}/>{t('显示标注')}</label></details>{object.slider && <details><summary>{t('参数播放')}</summary><label className="mw-check"><input type="checkbox" disabled={frozen} checked={source.animation?.parameter === id} onChange={event => apply({ animation: event.target.checked ? { parameter: id, seconds: 8, mode: 'bounce' } : null })}/>{t('试演时播放此参数')}</label>{source.animation?.parameter === id && <><label>{t('单程秒数')}<input type="number" min="1" max="120" value={source.animation.seconds} disabled={frozen} onChange={event => apply({ animation: { ...source.animation, seconds: Number(event.target.value) } })}/></label><label>{t('播放方式')}<select disabled={frozen} value={source.animation.mode} onChange={event => apply({ animation: { ...source.animation, mode: event.target.value } })}><option value="once">{t('单次')}</option><option value="loop">{t('循环')}</option><option value="bounce">{t('往返')}</option></select></label></>}</details>}{object.type === 'point' && <label className="mw-check"><input type="checkbox" checked={source.traceObjects.includes(id)} disabled={frozen} onChange={event => apply({ traceObjects: event.target.checked ? [...source.traceObjects, id] : source.traceObjects.filter(name => name !== id) })}/>{t('试演时显示轨迹')}</label>}<button className="mw-text-button is-danger" disabled={frozen} onClick={onDelete}>{t('删除对象')}</button>
   </div>;
 }
-function StepTools({ step, onTextChange, source, objects, apply, frozen }) {
+function StepTools({ step, onTextChange, onPatch, source, objects, apply, frozen }) {
   const { t } = useTranslation('math');
-  const update = patch => apply({ steps: source.steps.map(item => item.id === step.id ? { ...step, ...patch } : item) });
+  const update = onPatch;
   return <div className="mw-tool-section"><h3>{t('教学步骤')}</h3><label>{t('步骤标题')}<input key={`${step.id}-title`} value={step.title} disabled={frozen} onChange={event => onTextChange({ title: event.target.value })}/></label><label>{t('讲解说明')}<textarea key={`${step.id}-description`} value={step.description} disabled={frozen} onChange={event => onTextChange({ description: event.target.value })}/></label>
     <label>{t('展示视图')}<select disabled={frozen} value={step.view} onChange={event => update({ view: event.target.value })}>{views.map(([value, title]) => <option value={value} key={value}>{t(title)}</option>)}</select></label>
-    <details open><summary>{t('显示内容')}</summary>{objects.map(object => <label className="mw-check" key={objectId(object)}><input disabled={frozen} type="checkbox" checked={step.visibleObjects.includes(objectId(object))} onChange={event => update({ visibleObjects: event.target.checked ? [...step.visibleObjects, objectId(object)] : step.visibleObjects.filter(id => id !== objectId(object)) })}/>{objectId(object)}</label>)}{source.formulas.map((formula, index) => <label className="mw-check" key={formula.id}><input disabled={frozen} type="checkbox" checked={step.visibleFormulas.includes(formula.id)} onChange={event => update({ visibleFormulas: event.target.checked ? [...step.visibleFormulas, formula.id] : step.visibleFormulas.filter(id => id !== formula.id) })}/>{t('公式 {{number}}', { number: index + 1 })}</label>)}</details>
-    <details><summary>{t('参数值')}</summary>{parameters(objects).map(object => <label key={objectId(object)}>{objectId(object)}<input type="number" step={object.slider.step} disabled={frozen} value={step.values[objectId(object)]} onChange={event => update({ values: { ...step.values, [objectId(object)]: Number(event.target.value) } })}/></label>)}</details>
+    <details open><summary>{t('显示内容')}</summary>{objects.map(object => <label className="mw-check" key={objectId(object)}><input disabled={frozen} type="checkbox" checked={step.visibleObjects.includes(objectId(object))} onChange={event => update(latest => ({ visibleObjects: event.target.checked ? [...latest.visibleObjects, objectId(object)] : latest.visibleObjects.filter(id => id !== objectId(object)) }))}/>{objectId(object)}</label>)}{source.formulas.map((formula, index) => <label className="mw-check" key={formula.id}><input disabled={frozen} type="checkbox" checked={step.visibleFormulas.includes(formula.id)} onChange={event => update(latest => ({ visibleFormulas: event.target.checked ? [...latest.visibleFormulas, formula.id] : latest.visibleFormulas.filter(id => id !== formula.id) }))}/>{t('公式 {{number}}', { number: index + 1 })}</label>)}</details>
+    <details><summary>{t('参数值')}</summary>{parameters(objects).map(object => <label key={objectId(object)}>{objectId(object)}<input type="number" step={object.slider.step} disabled={frozen} value={step.values[objectId(object)]} onChange={event => update({ values: { [objectId(object)]: Number(event.target.value) } })}/></label>)}</details>
     <div className="mw-step-order">{['up', 'down'].map(direction => <button key={direction} className="mw-button" disabled={frozen || (direction === 'up' ? source.steps[0].id === step.id : source.steps.at(-1).id === step.id)} onClick={() => { const steps = [...source.steps]; const index = steps.findIndex(item => item.id === step.id); const next = index + (direction === 'up' ? -1 : 1); [steps[index], steps[next]] = [steps[next], steps[index]]; void apply({ steps }); }}>{t(direction === 'up' ? '前移' : '后移')}</button>)}</div><button className="mw-button" disabled={frozen || source.initialStepId === step.id} onClick={() => apply({ initialStepId: step.id })}>{t(source.initialStepId === step.id ? '开场步骤' : '设为开场')}</button><button className="mw-text-button is-danger" disabled={frozen} onClick={() => { const steps = source.steps.filter(item => item.id !== step.id); apply({ steps, initialStepId: source.initialStepId === step.id ? steps[0]?.id ?? null : source.initialStepId }); }}>{t('删除步骤')}</button>
   </div>;
 }
@@ -346,4 +359,11 @@ function WorkshopToolsPortal({ children }) {
   const { t } = useTranslation('math'); const [host, setHost] = useState(null);
   useAuxiliaryTools([{ id: 'math-workshop-tools', label: t('工具'), render: () => <div className="mw-tool-host" ref={setHost}/> }]);
   return host ? createPortal(children, host) : null;
+}
+
+function WorkshopDownloadDialog({ children, onClose, label }) {
+  const ref = useRef(null);
+  useModuleDialogFocus(ref, onClose);
+  useEffect(() => { const outside = event => { if (ref.current && !ref.current.contains(event.target)) onClose(); }; document.addEventListener('pointerdown', outside); return () => document.removeEventListener('pointerdown', outside); }, [onClose]);
+  return <div ref={ref} className="mw-download" role="dialog" aria-modal="true" aria-label={label}>{children}</div>;
 }

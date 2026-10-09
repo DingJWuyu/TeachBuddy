@@ -100,11 +100,12 @@ const names = {
   get azimuth() { return t("方位角"); },
   get elevation() { return t("仰角"); },
 };
+function hasWorkshopInput(draft) { return draft?.source.kind === 'workshop' && Object.values(draft.workshopInput ?? {}).some(value => typeof value === 'string' && value.trim()); }
 function hasContent(draft) {
   if (!draft) return false;
   if (draft.id || draft.source.kind === 'html' || Object.keys(draft.parameterEdits ?? {}).length) return true;
   const kind = draft.source.kind;
-  if (kind === 'workshop') return !!(draft.source.formulas.length || draft.source.graph);
+  if (kind === 'workshop') return !!(draft.source.formulas.length || draft.source.graph || hasWorkshopInput(draft));
   if (kind === 'geogebra') return (draft.ggbTouched ?? !!draft.source.base64) || draft.title !== '未命名数学作品';
   const empty = kind === 'dynamic' ? emptyDynamicSource() : emptySource(kind);
   return draft.title !== `未命名${({ dynamic: "演示", html: "HTML", formula: "公式", plane: "平面图形", space: "空间图形" })[kind]}` || JSON.stringify(draft.source) !== JSON.stringify(empty);
@@ -564,7 +565,7 @@ function MathSession({ transport, route }) {
     if (saved.version === started.version) return;
     if (liveSave.current.status === "已保存") {
       if (['geogebra', 'workshop'].includes(saved.source.kind)) setEditorSession(value => value + 1);
-      setDraft(saved);
+      setDraft({ ...saved, ...(started.workshopInput ? { workshopInput: started.workshopInput } : {}) });
     }
     else { setConflict(saved); setMessage(t("服务器内容已变化，本地内容保留，请对照当前版本")); }
   });
@@ -609,7 +610,7 @@ function MathSession({ transport, route }) {
     }
     if (
       hasContent(draft) &&
-      status !== "已保存" &&
+      (status !== "已保存" || hasWorkshopInput(draft)) &&
       !await confirm(t("新建作品会替换当前未保存内容，是否继续？"))
     )
       return;
@@ -628,12 +629,13 @@ function MathSession({ transport, route }) {
     if (shell?.panelMode === 'math-tools') shell.closePanel();
   }
   async function open(item) {
+    if (item.id === draftRef.current?.id && hasWorkshopInput(draftRef.current)) { patchView({ screen: 'editor' }); return; }
     if (pending) {
       setMessage(t("请先确认上次保存结果"));
       return;
     }
     if (
-      status !== "已保存" &&
+      (status !== "已保存" || hasWorkshopInput(draft)) &&
       hasContent(draft) &&
       !await confirm(t("打开作品会替换当前未保存内容，是否继续？"))
     )
@@ -657,6 +659,8 @@ function MathSession({ transport, route }) {
   }
   async function save(copy = false) {
     if (inFlight.current) return;
+    const currentWork = draftRef.current;
+    if (!pending && currentWork?.source.kind === 'workshop' && !currentWork.source.formulas.length && !currentWork.source.graph) { if (hasWorkshopInput(currentWork)) setMessage(t('请先将输入加入作品，再保存。')); return; }
     if (!pending && ['geogebra', 'workshop'].includes(draftRef.current?.source.kind)) {
       try { await ggbFlush.current?.(); } catch (error) { handleError(error); return; }
       if (inFlight.current) return;
@@ -762,11 +766,11 @@ function MathSession({ transport, route }) {
             });
       setDraft((current) =>
         unchanged && current === started
-          ? saved
+          ? { ...saved, ...(current.workshopInput ? { workshopInput: current.workshopInput } : {}) }
           : { ...current, id: saved.id, version: saved.version },
       );
       setStatus(
-        unchanged && draftRef.current === started ? "已保存" : "未保存",
+        unchanged ? "已保存" : "未保存",
       );
       setConflict(null);
       if (copy) history.reset(saved);
@@ -970,10 +974,16 @@ function MathSession({ transport, route }) {
     showTools('objects');
   }
   async function goHome() {
+    if (hasWorkshopInput(draftRef.current)) {
+      if (!await confirm(t('还有内容未加入作品，是否放弃这些输入并返回？'))) return;
+      const next = { ...draftRef.current, workshopInput: { formula: '', expression: '' } };
+      draftRef.current = next; setDraft(next);
+      writeLocal(account, 'math-workspace', { draft: next, pending: liveSave.current.pending, status: liveSave.current.status, selected, search, deleted, format, background, exportWidth });
+    }
     if (['geogebra', 'workshop'].includes(draftRef.current?.source.kind)) {
       try { await ggbFlush.current?.(); } catch (error) { handleError(error); return; }
     }
-    if (draftRef.current?.source.kind === 'workshop' && hasContent(draftRef.current) && liveSave.current.status !== '已保存') { if (!await save()) return; }
+    if (draftRef.current?.source.kind === 'workshop' && (draftRef.current.source.formulas.length || draftRef.current.source.graph) && liveSave.current.status !== '已保存') { if (!await save()) return; }
     if (!hasContent(draftRef.current) && !pending && !busy) { setDraft(null); draftRef.current = null; }
     patchView({ screen: 'home', exportOpen: false, usageOpen: false });
     if (route?.workId) shell?.navigate('/math');
@@ -1095,6 +1105,7 @@ function MathSession({ transport, route }) {
   </div>;
   if (!home && draft?.source.kind === 'workshop') return <WorkshopWorkspace key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflictNotice={conflictNotice} flushRef={ggbFlush} client={shell ? client : null}
     onChangeSource={next => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'workshop') return; if (JSON.stringify(current.source) !== JSON.stringify(next)) edit({ ...current, source: next }, false); }}
+    onChangeInput={workshopInput => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'workshop') return; const next = { ...current, workshopInput }; draftRef.current = next; setDraft(next); writeLocal(account, 'math-workspace', { draft: next, pending: liveSave.current.pending, status: liveSave.current.status, selected, search, deleted, format, background, exportWidth }); }}
     onTitle={title => edit({ ...draftRef.current, title }, false)} onHome={goHome} onSave={() => save()} onError={handleError} onHistory={() => setHistoryOpen(true)} onCopy={() => save(true)} onArchive={() => deletion(false)} onDownload={exportFile}>
     {confirmationDialog}<ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
   </WorkshopWorkspace>;

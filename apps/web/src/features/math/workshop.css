@@ -17,3 +17,5 @@
 :is(.math-workshop,.mw-tool-host) input[type=color]{height:36px;padding:4px;cursor:pointer}
 
 .math-history-poster{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
+
+.math-workshop .mw-expression>input:focus-visible{outline:none;outline-offset:0}
