@@ -12,18 +12,18 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 非 Agent 的本机 MVP 验收与发现的范围内缺陷修复已完成；成果集成到 preview，验收任务现场按收尾规则清理。用户在 `TeacherWorkspace-agent`（`agent/mvp-supervised`）的专属 session 中讨论 Agent，先核对已实现工具、冻结设计与实际缺口，未经用户后续指令不推进实现。该现场保留供用户继续讨论，任务完成并集成后清理；接续实现前由总控核对并同步最新集成基线。总控负责公共文件、稳定修复同步和集成，普通验收回执不转发给 Agent session。
 
-最新日程已集成到 preview，并从更新后的 preview 同步到 `TeacherWorkspace-math`。数学工作树根据用户实际体验继续修整 UI/UX，保留已认可的布局和渐进式披露；本轮禁止改变功能，保留制作、保存、教学成果能力和全局顶栏原 sparkles 图标。数学代码仍只在数学工作树，未反向集成到 preview。具体反馈、执行边界与完成条件见[数学任务](math-workshop.md)，公共文件仍由总控指定唯一写者。既有浏览器扩展安装及 DeepSeek 接续授权保留，本轮不扩展到全站 Agent 重定位。
+最新日程已集成到 preview，并从更新后的 preview 同步到 `TeacherWorkspace-math`。数学工作树已按体验反馈完成本轮 UI/UX 修整，等待用户体验；保留已认可的布局、渐进式披露、制作与保存能力和全局顶栏原 sparkles 图标。数学代码仍只在数学工作树，未反向集成到 preview。执行边界与验证覆盖见[数学任务](math-workshop.md)，公共文件仍由总控指定唯一写者。既有浏览器扩展安装及 DeepSeek 接续授权保留，本轮不扩展到全站 Agent 重定位。
 
 | 模块 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 按用户体验反馈修整 UI/UX，功能保持不变，未合 preview |
+| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | UI 修整及受影响功能复验完成，待用户体验，未合 preview |
 | 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；原独立体验服务停止，体验数据与有效证据已保全 |
 
 日程旧 session 已冻结并标记为 `old - 日程`。数学工作树继续使用，任务完成并获准集成、验证后按收尾规则清理。日程旧实例的库及文件与作者有效证据已保留在数学任务产物 `test-results/math-ux-redesign/integration/schedule-evidence/`，其中 `schedule-preview/data/` 为停服后的完整数据副本；这些是本轮本机产物，不作为新检出运行或验证前置。当前仅本地开发，不合 main，不 push。模块自测使用隔离实例，preview 用户体验入口仍由总控协调。
 
-数学工作树以统一作品承接公式、同一二维/三维构造、参数与教学步骤，复用现有 SQLite 作品和版本。固定源码构建的本地 GGB 已完成空缓存独立重建与禁网制作验证；纯公式及图形输出、备课往返、可编辑 Word 和离线课堂 ZIP 已按具名范围实际打开核对。独立审查发现的输入保护、步骤竞态、布局与保存、输出构图及原生三维缩放时序问题已修复复验，当前没有已登记的本轮实现阻塞。范围及验证边界见[数学任务](math-workshop.md)。
+数学工作树以统一作品承接公式、同一二维/三维构造、参数与教学步骤，复用现有 SQLite 作品和版本。固定源码构建的本地 GGB 已完成空缓存独立重建与禁网制作验证；纯公式及图形输出、备课往返、可编辑 Word 和离线课堂 ZIP 已按具名范围实际打开核对。当前没有未关闭的确认实现缺陷。本轮搜索焦点、复杂公式阅读/编辑和底部连接弹层已完成受影响回归；首页与编辑器入口、开关及连接成功焦点、已连接状态、英文和窄屏由独立核对确认，范围及验证边界见[数学任务](math-workshop.md)。
 
-真实 DeepSeek 已从新版首页创建圆与公式；手动移动圆心后，AI 读取当前坐标并修改公式和颜色，SQLite 与刷新后的页面读回一致。修复候选上又核实了真实模型读取当前圆心与半径。总控回执为 `test-results/math-ux-redesign/final/receipt.json`，独立审查及分版本复验见同任务的 `verification/receipt.md`；此前未改核心的冷构建与输出证据见 `test-results/math-unified/final/receipt.json`。这些产物不作为新机器运行和接手前置。体验服务使用最终候选 `3ee0f05f` 的生产资产，原作品与已登录浏览器保留，成果尚未集成 preview。
+真实 DeepSeek 已从统一制作首页创建圆与公式；手动移动圆心后，AI 读取当前坐标并修改公式和颜色，SQLite 与刷新后的页面读回一致，证据为 `test-results/math-ux-redesign/final/receipt.json`。本轮只使用受控桥验证连接界面，未重跑真实模型；冷构建与未改输出证据见 `test-results/math-unified/final/receipt.json`。当前总控回执为 `test-results/math-ui-gemini/receipt.json`，独立核对见同任务的 `verification/receipt.md`：候选 `841177d1` 作者受影响回归 6 项、独立核对 9 项通过，修复复核无确认阻断项。体验服务使用该独立构建，HTML/JS/CSS 摘要核对一致；原作品与私有登录配置保留，成果尚未集成 preview。这些产物不作为新机器运行和接手前置。
 
 统一 API 和浏览器入口为 `apps/api/test/math-workshop.test.js`、`apps/web/e2e/math-unified.config.mjs`，界面保护与竞态另见 `math-unified-repair.config.mjs`；保存保护继续使用 `math-geogebra.config.mjs`，网页桥按 `extensions/math-web-ai/test/offline.mjs` 验证。固定输入在 `apps/api/test/fixtures/math-workshop/`，真实账号条件见[数学判据](../acceptance/mvp-matrix.md#math)。独立 Standards/Spec 审查与受影响行为复验没有未关闭的确认缺陷；本机深浅主题、1440/1024/390 布局、实际键盘、展开连续帧与输出文件已检查。合成输入法事件仅证明 guard，原生系统输入法仍未验。隔离体验服务及私有登录浏览器保留到用户体验结束，新环境不依赖它们。网页桥目前只接本机 origin 和 DeepSeek；目标 Windows、课堂设备及真实 Office 操作仍按既有暂缓安排处理。本轮不改变全站 Agent 定位。
 
