@@ -12,11 +12,11 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 非 Agent 的本机 MVP 验收与发现的范围内缺陷修复已完成；成果集成到 preview，验收任务现场按收尾规则清理。用户在 `TeacherWorkspace-agent`（`agent/mvp-supervised`）的专属 session 中讨论 Agent，先核对已实现工具、冻结设计与实际缺口，未经用户后续指令不推进实现。该现场保留供用户继续讨论，任务完成并集成后清理；接续实现前由总控核对并同步最新集成基线。总控负责公共文件、稳定修复同步和集成，普通验收回执不转发给 Agent session。
 
-最新日程已集成到 preview，并从更新后的 preview 同步到 `TeacherWorkspace-math`。数学工作树已完成统一 UI/UX 重构及本机独立验收，等待用户体验；保留制作、保存、教学成果能力和全局顶栏原 sparkles 图标。数学代码仍只在数学工作树，未反向集成到 preview。具体规格与体验边界见[数学任务](math-workshop.md)，公共文件仍由总控指定唯一写者。既有浏览器扩展安装及 DeepSeek 接续授权保留，本轮不扩展到全站 Agent 重定位。
+最新日程已集成到 preview，并从更新后的 preview 同步到 `TeacherWorkspace-math`。数学工作树根据用户实际体验继续修整 UI/UX，保留已认可的布局和渐进式披露；本轮禁止改变功能，保留制作、保存、教学成果能力和全局顶栏原 sparkles 图标。数学代码仍只在数学工作树，未反向集成到 preview。具体反馈、执行边界与完成条件见[数学任务](math-workshop.md)，公共文件仍由总控指定唯一写者。既有浏览器扩展安装及 DeepSeek 接续授权保留，本轮不扩展到全站 Agent 重定位。
 
 | 模块 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 新界面及本机独立验收完成，保留现场供用户体验，未合 preview |
+| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 按用户体验反馈修整 UI/UX，功能保持不变，未合 preview |
 | 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；原独立体验服务停止，体验数据与有效证据已保全 |
 
 日程旧 session 已冻结并标记为 `old - 日程`。数学工作树继续使用，任务完成并获准集成、验证后按收尾规则清理。日程旧实例的库及文件与作者有效证据已保留在数学任务产物 `test-results/math-ux-redesign/integration/schedule-evidence/`，其中 `schedule-preview/data/` 为停服后的完整数据副本；这些是本轮本机产物，不作为新检出运行或验证前置。当前仅本地开发，不合 main，不 push。模块自测使用隔离实例，preview 用户体验入口仍由总控协调。
