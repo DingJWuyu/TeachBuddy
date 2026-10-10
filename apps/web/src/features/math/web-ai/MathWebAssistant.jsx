@@ -52,6 +52,8 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
 
     if (result.loginRequired) { setConnection('login'); throw new Error(t('请在已打开的 DeepSeek 页面登录，然后返回这里连接。')); }
     setConnection('ready');
+    setSetupOpen(false);
+    providerRef.current?.focus();
   }
   useEffect(() => {
     if (!controller || !takeRequest) return;
@@ -117,20 +119,30 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
 
   const popoverRef = useRef(null);
   const providerRef = useRef(null);
-  const wasSetupOpen = useRef(false);
+  const prevConnection = useRef(connection);
 
   useLayoutEffect(() => {
-    if (wasSetupOpen.current && !setupOpen) {
+    if (setupOpen && popoverRef.current) {
+      const closeBtn = popoverRef.current.querySelector('.math-ai-popover-close') || popoverRef.current.querySelector('button, a, input');
+      closeBtn?.focus();
+    }
+  }, [setupOpen]);
+
+  useEffect(() => {
+    if (prevConnection.current !== 'ready' && connection === 'ready' && setupOpen) {
+      setSetupOpen(false);
       providerRef.current?.focus();
     }
-    wasSetupOpen.current = setupOpen;
-  }, [setupOpen]);
+    prevConnection.current = connection;
+  }, [connection, setupOpen]);
 
   useEffect(() => {
     if (!setupOpen) return;
     function handlePointerDown(e) {
-      if (popoverRef.current && !popoverRef.current.contains(e.target) && providerRef.current && !providerRef.current.contains(e.target)) {
-        setSetupOpen(false);
+      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+        if (!e.target.closest('.math-ai-provider')) {
+          setSetupOpen(false);
+        }
       }
     }
     function handleKeyDown(e) {
@@ -138,6 +150,20 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
         e.preventDefault();
         e.stopPropagation();
         setSetupOpen(false);
+        providerRef.current?.focus();
+      } else if (e.key === 'Tab' && popoverRef.current) {
+        const focusables = popoverRef.current.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled)');
+        if (focusables.length > 0) {
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     }
     document.addEventListener('pointerdown', handlePointerDown);
@@ -167,37 +193,29 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
           event.preventDefault();
           if (!event.repeat && !event.ctrlKey && !event.metaKey && !event.altKey) void send(); }}/>
       <div className={`math-ai-compose-actions${connection !== 'ready' ? ' math-ai-setup' : ''}`}>
-        {!onStart && (
-          <button
-            ref={providerRef}
-            type="button"
-            className="math-ai-provider"
-            aria-expanded={connection !== 'ready' ? setupOpen : undefined}
-            aria-haspopup={connection !== 'ready' ? 'dialog' : undefined}
-            aria-label={t('模型与连接设置')}
-            disabled={running}
-            onClick={async () => {
-              setError('');
-              if (connection === 'ready') {
-                try { await connect(connectionLifetime.current?.signal); } catch (failure) { setError(failure.message); }
-              } else {
-                setSetupOpen(v => !v);
-              }
-            }}
-          >
-            <span className={`math-ai-connection is-${connection}`}/>
-            <span>DeepSeek <small>{t('网页版')}</small></span>
-            {connection !== 'ready' && (
-              <svg className={`math-ai-chevron${setupOpen ? ' is-open' : ''}`} width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 4 4 4-4"/></svg>
-            )}
-          </button>
-        )}
+        <button
+          ref={providerRef}
+          type="button"
+          className="math-ai-provider"
+          aria-expanded={setupOpen}
+          aria-haspopup="dialog"
+          aria-label={t('模型与连接设置')}
+          disabled={running}
+          onClick={() => {
+            setError('');
+            setSetupOpen(v => !v);
+          }}
+        >
+          <span className={`math-ai-connection is-${connection}`}/>
+          <span>DeepSeek <small>{t('网页版')}</small></span>
+          <svg className={`math-ai-chevron${setupOpen ? ' is-open' : ''}`} width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 4 4 4-4"/></svg>
+        </button>
         <div className="math-ai-compose-tools">
           <button type="button" className="math-ai-new" aria-label={t('新对话')} title={t('新对话')} disabled={running} onClick={() => { setConversation({ sessionId: crypto.randomUUID(), messages: [], input: '' }); setError(''); }}><Icon name="plus" size={17}/></button>
           {running && onStart ? <button type="button" className="math-ai-send is-start" disabled>{t('正在开始')}</button> : running ? <button type="button" className="math-ai-send" aria-label={t('停止生成')} onClick={() => active.current?.abort()}>■</button>
             : <button type="submit" className={`math-ai-send${onStart ? ' is-start' : ''}`} aria-label={t(onStart ? '开始制作' : '发送消息')} disabled={(!controller && !onStart) || !conversation.input.trim() || !!onStart && ['checking', 'connecting'].includes(connection)}>{onStart ? t('开始制作') : <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 16V4M5 9l5-5 5 5"/></svg>}</button>}
         </div>
-        {connection !== 'ready' && setupOpen && (
+        {setupOpen && (
           <div
             ref={popoverRef}
             className="math-ai-setup-popover"
@@ -222,18 +240,47 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
               </button>
             </div>
             <div className="math-ai-setup-body">
-              {connection === 'missing' ? <>
-                <p>{t('安装扩展后，在这里直接对话。')}</p>
-                <a className="math-ai-install" href="/downloads/teachbuddy-math-web-ai.zip" download>{t('下载扩展')}</a>
-                <ol>
-                  <li>{t('解压下载文件')}</li>
-                  <li>{t('在扩展页开启开发者模式')}</li>
-                  <li>{t('加载扩展目录，刷新工作台')}</li>
-                </ol>
-              </> : <p>{t(connection === 'login' ? '登录 DeepSeek 后，返回这里。' : connection === 'disconnected' ? '重新连接后可继续制作。' : '使用 DeepSeek 网页账号。')}</p>}
+              {connection === 'ready' ? (
+                <p>{t('使用 DeepSeek 网页账号。')}</p>
+              ) : connection === 'missing' ? (
+                <>
+                  <p>{t('安装扩展后，在这里直接对话。')}</p>
+                  <a className="math-ai-install" href="/downloads/teachbuddy-math-web-ai.zip" download>{t('下载扩展')}</a>
+                  <ol>
+                    <li>{t('解压下载文件')}</li>
+                    <li>{t('在扩展页开启开发者模式')}</li>
+                    <li>{t('加载扩展目录，刷新工作台')}</li>
+                  </ol>
+                </>
+              ) : (
+                <p>{t(connection === 'login' ? '登录 DeepSeek 后，返回这里。' : connection === 'disconnected' ? '重新连接后可继续制作。' : '使用 DeepSeek 网页账号。')}</p>
+              )}
               <div className="math-ai-setup-actions">
-                {connection !== 'missing' && <button type="button" disabled={checking || running} onClick={async () => { setError(''); try { await connect(connectionLifetime.current?.signal); } catch (failure) { if (failure.name !== 'AbortError') setError(failure.message); } }}>{t(connection === 'login' ? '打开登录' : '连接助理')}</button>}
-                <button type="button" disabled={checking || running} onClick={() => checkConnection()}>{t(checking ? '检查中…' : '检查连接')}</button>
+                {connection !== 'missing' && connection !== 'ready' && (
+                  <button
+                    type="button"
+                    disabled={checking || running}
+                    onClick={async () => {
+                      setError('');
+                      try {
+                        await connect(connectionLifetime.current?.signal);
+                        setSetupOpen(false);
+                        providerRef.current?.focus();
+                      } catch (failure) {
+                        if (failure.name !== 'AbortError') setError(failure.message);
+                      }
+                    }}
+                  >
+                    {t(connection === 'login' ? '打开登录' : '连接助理')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  disabled={checking || running}
+                  onClick={() => checkConnection()}
+                >
+                  {t(checking ? '检查中…' : '检查连接')}
+                </button>
               </div>
             </div>
           </div>

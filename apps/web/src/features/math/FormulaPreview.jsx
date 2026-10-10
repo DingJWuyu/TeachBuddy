@@ -47,7 +47,9 @@ export default function FormulaPreview({ source, retry, onLocate }) {
         mathjax.texReset();
         const node = mathjax.tex2svg(renderSource.latex, { display: true });
         const svg = formulaSvg(renderSource, node.querySelector('svg').outerHTML, font);
-        if (live) setPreview({ source: renderSource, url: URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })) });
+        const heightMatch = svg.match(/\bheight="(\d+)"/);
+        const naturalHeight = heightMatch ? Number(heightMatch[1]) : null;
+        if (live) setPreview({ source: renderSource, url: URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })), naturalHeight });
       } catch (error) {
         if (live) setPreview({ source: renderSource, error: error.message, reason: error.reason, position: error.position });
       }
@@ -62,5 +64,5 @@ export default function FormulaPreview({ source, retry, onLocate }) {
     {before && onLocate ? <button onClick={() => onLocate(preview.position)}>{t("定位到第 {{line}} 行第 {{column}} 列", { line: before.length, column: Array.from(before.at(-1)).length + 1 })}</button>
       : <p>{t("无法精确定位，请检查 LaTeX 源码。")}</p>}
   </div>
-    : <div className="math-formula-preview" style={{ background: previewBackground(source.color) }}><img alt={t("当前公式预览")} src={preview.url} /></div>;
+    : <div className="math-formula-preview" style={{ background: previewBackground(source.color) }}><img alt={t("当前公式预览")} src={preview.url} style={preview.naturalHeight ? { height: `${Math.round(preview.naturalHeight * 0.5)}px` } : undefined} onLoad={event => { const el = event.currentTarget; if (el.naturalHeight && !preview.naturalHeight) { el.style.height = `${Math.round(el.naturalHeight * 0.5)}px`; } }} /></div>;
 }
