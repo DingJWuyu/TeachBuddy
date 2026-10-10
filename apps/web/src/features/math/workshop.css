@@ -101,28 +101,59 @@
 
 .math-workshop .mw-title {
   line-height: 24px;
-  border: 0;
+  border: 0 !important;
   background: transparent;
   width: 100%;
-  max-width: 300px;
-  font-size: 18px;
+  max-width: 320px;
+  font-size: 17px;
   font-weight: 600;
-  padding: 6px 0;
+  padding: 4px 8px !important;
+  border-radius: 6px;
+  color: var(--wb-text, #27272a);
+  outline: none !important;
+  box-shadow: none !important;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
 }
 
-.mw-title:focus {
-  background: var(--wb-surface,#fff);
+.math-workshop .mw-title:hover:not(:focus):not(:disabled) {
+  background: color-mix(in srgb, var(--app-text) 4%, transparent);
+}
+
+.math-workshop .mw-title:focus {
+  background: var(--wb-surface, #fff);
+  box-shadow: inset 0 0 0 1.5px var(--app-primary, #6366f1) !important;
 }
 
 .mw-save-state {
-  color: var(--mw-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--app-muted);
   white-space: nowrap;
   font-size: 12px;
-  margin-left: 2px;
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--app-text) 3%, transparent);
+  font-weight: 500;
+}
+
+.mw-save-state::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  flex: none;
 }
 
 .mw-save-state.has-error {
-  color: #b46f30;
+  color: #c2410c;
+  background: color-mix(in srgb, #c2410c 8%, transparent);
+}
+
+.mw-save-state.has-error::before {
+  background: #f97316;
 }
 
 .math-workshop>.math-integration:empty {
@@ -278,15 +309,21 @@
   display: flex;
   align-items: center;
   border-radius: 8px;
-  margin-bottom: 6px;
-  min-height: 64px;
-  margin: 0;
+  margin-bottom: 8px;
+  min-height: 48px;
   padding: 0;
+  background: var(--wb-surface, #fff);
+  box-shadow: inset 0 0 0 1px var(--app-line, #e3e3e3);
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+
+.mw-formula-row:hover:not(.is-selected) {
+  box-shadow: inset 0 0 0 1px var(--app-line-strong, #c4c4c7);
 }
 
 .mw-formula-row.is-selected {
-  box-shadow: inset 0 0 0 1px #92a4bc;
-  background: color-mix(in srgb,#7288a5 4%,transparent);
+  box-shadow: inset 0 0 0 1.5px var(--app-primary, #6366f1);
+  background: color-mix(in srgb, var(--app-primary, #6366f1) 3%, var(--wb-surface, #fff));
 }
 
 .mw-formula-select {
@@ -294,8 +331,9 @@
   min-width: 0;
   background: none;
   border: 0;
-  cursor: text;
+  cursor: pointer;
   padding: 0;
+  text-align: left;
 }
 
 .math-workshop .mw-formula-select:disabled {
@@ -307,26 +345,47 @@
   background: transparent !important;
   border: 0;
   box-shadow: none;
-  min-height: 0;
-  padding: 8px 0;
+  min-height: 44px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
 }
 
 .mw-formula-select img {
   max-width: 100%;
-  max-height: 180px;
+  height: 28px;
+  max-height: 36px;
   width: auto;
+  object-fit: contain;
+  vertical-align: middle;
 }
 
 .mw-formula-row>.mw-icon {
   position: absolute;
-  right: 4px;
-  top: 4px;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  border-radius: 6px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  color: var(--app-muted);
   opacity: 0;
-  font-size: 19px;
+  transition: opacity 140ms ease, background-color 140ms ease, color 140ms ease;
 }
 
-.mw-formula-row:hover>.mw-icon, .mw-formula-row:focus-within>.mw-icon {
+.mw-formula-row:hover>.mw-icon,
+.mw-formula-row:focus-within>.mw-icon {
   opacity: 1;
+}
+
+.mw-formula-row>.mw-icon:hover {
+  background: color-mix(in srgb, var(--app-text) 8%, transparent);
+  color: var(--app-text);
 }
 
 .mw-new-formula {
@@ -381,30 +440,63 @@
   gap: 8px;
   align-items: center;
   min-height: 40px;
-  padding: 0 6px 0 12px;
-  border: 1px solid var(--mw-line);
+  padding: 0 6px 0 14px;
   border-radius: 8px;
   flex: none;
   margin: 10px 18px;
+  background: var(--wb-surface, #fff);
+  box-shadow: inset 0 0 0 1px var(--app-line, #e3e3e3), 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 150ms ease, background-color 150ms ease;
 }
 
-.mw-expression>span {
-  font-family: serif;
-  color: var(--mw-muted);
-  font-size: 23px;
-}
-
-.math-workshop .mw-expression>input {
-  border: 0;
-  box-shadow: none;
-  padding: 8px 4px;
-  background: none;
-  font-size: 14px;
+.mw-expression:hover:not(:focus-within) {
+  box-shadow: inset 0 0 0 1px var(--app-line-strong, #c4c4c7), 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
 .mw-expression:focus-within {
-  border-color: var(--mw-muted);
-  box-shadow: inset 0 0 0 1px var(--mw-muted);
+  box-shadow: inset 0 0 0 1.5px var(--app-primary, #6366f1), 0 0 0 3px color-mix(in srgb, var(--app-primary, #6366f1) 12%, transparent) !important;
+}
+
+.mw-expression>span {
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--app-primary, #6366f1);
+  font-size: 18px;
+  line-height: 1;
+  flex: none;
+  user-select: none;
+}
+
+.wb-module .mw-expression>input,
+.math-workshop .mw-expression>input,
+.math-workshop .mw-expression>input:focus,
+.math-workshop .mw-expression>input:focus-visible {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 8px 4px !important;
+  background: transparent !important;
+  font-size: 14px;
+  color: var(--wb-text, #27272a);
+  flex: 1;
+  min-width: 0;
+}
+
+.mw-expression button.mw-icon {
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 15px;
+  color: var(--app-muted);
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.mw-expression button.mw-icon:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--app-text) 8%, transparent);
+  color: var(--app-text);
 }
 
 .mw-step-rail {
@@ -412,15 +504,16 @@
   align-items: center;
   gap: 10px;
   border-top: 1px solid var(--mw-line);
-  padding: 8px 16px;
+  padding: 8px 18px;
   flex: none;
   min-height: 52px;
-  padding-inline: 18px;
+  background: var(--wb-surface, #fff);
 }
 
 .mw-step-rail>span {
   font-size: 13px;
-  color: var(--mw-muted);
+  font-weight: 500;
+  color: var(--app-muted);
   flex: none;
 }
 
@@ -434,23 +527,42 @@
 }
 
 .mw-step-rail nav button {
-  display: flex;
-  gap: 7px;
+  display: inline-flex;
+  gap: 6px;
   align-items: center;
   white-space: nowrap;
-  border: 0;
-  background: none;
-  border-radius: 6px;
-  padding: 7px 10px;
+  border: 1px solid var(--app-line, #e3e3e3);
+  background: var(--wb-surface, #fff);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 13px;
+  color: var(--app-text);
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.mw-step-rail nav button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface));
+  border-color: var(--app-line-strong, #c4c4c7);
 }
 
 .mw-step-rail nav button.is-selected {
-  background: color-mix(in srgb, var(--app-text) 7%, transparent);
+  background: color-mix(in srgb, var(--app-primary, #6366f1) 8%, var(--app-surface));
+  border-color: var(--app-primary, #6366f1);
+  color: var(--app-primary, #6366f1);
+  font-weight: 500;
 }
 
 .mw-step-rail nav button>span {
-  font-size: 12px;
-  opacity: .6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .mw-text-button {
@@ -867,24 +979,44 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  color: var(--wb-muted,#777d87);
-  background: var(--wb-surface,#fff);
+  color: var(--wb-muted, #777d87);
+  background: var(--wb-surface, #fff);
   border-radius: 8px;
   padding: 0 12px;
   width: 240px;
   height: 36px;
-  box-shadow: inset 0 0 0 1px var(--app-line);
+  box-shadow: inset 0 0 0 1px var(--app-line, #e3e3e3);
+  transition: box-shadow 150ms ease, background-color 150ms ease;
 }
 
-.mw-search input {
+.mw-search:hover:not(:focus-within) {
+  box-shadow: inset 0 0 0 1px var(--app-line-strong, #c4c4c7);
+}
+
+.mw-search:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--app-primary, #6366f1), 0 0 0 3px color-mix(in srgb, var(--app-primary, #6366f1) 14%, transparent) !important;
+}
+
+.wb-module .mw-search input,
+.mw-search input,
+.mw-search input:focus,
+.mw-search input:focus-visible {
   border: 0 !important;
-  background: none !important;
-  padding: 8px 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
   width: 100%;
   min-width: 0;
+  height: 100%;
   font: inherit;
-  outline: none;
-  color: var(--wb-text,#27272a);
+  font-size: 14px;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--wb-text, #27272a);
+}
+
+.mw-search svg {
+  color: var(--app-muted, #71717a);
+  flex: none;
 }
 
 .mw-library {
@@ -1023,22 +1155,76 @@
 .mw-formula-edit {
   flex: 1;
   min-width: 0;
-  padding: 6px 34px 6px 6px;
+  padding: 3px 36px 3px 6px;
 }
 
 .mw-formula-edit .math-insert {
   display: none;
 }
 
-:is(.math-workshop,.mw-tool-host) input[type=range] {
-  padding: 0;
-  border: 0;
-  accent-color: #597392;
+.mw-formula-band .math-visual-field math-field {
+  background: transparent !important;
+  border: 0 !important;
+  font-size: 20px !important;
+  min-height: 42px !important;
+  padding: 4px 8px !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-.mw-formula-band .math-visual-field math-field {
+.mw-new-formula .math-visual-field math-field {
+  background: var(--wb-surface, #fff) !important;
+  border: 1px solid var(--app-line, #e3e3e3) !important;
+  border-radius: 8px !important;
+  font-size: 20px !important;
+  min-height: 44px !important;
+  padding: 6px 12px !important;
+  box-shadow: none !important;
+}
+
+.mw-new-formula .math-visual-field math-field:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--app-primary, #6366f1), 0 0 0 3px color-mix(in srgb, var(--app-primary, #6366f1) 12%, transparent) !important;
+}
+
+:is(.math-workshop, .mw-tool-host) input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
   background: transparent;
-  border: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+:is(.math-workshop, .mw-tool-host) input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 5px;
+  background: color-mix(in srgb, var(--app-text) 14%, var(--app-surface));
+  border-radius: 999px;
+  transition: background-color 140ms ease;
+}
+
+:is(.math-workshop, .mw-tool-host) input[type=range]:hover::-webkit-slider-runnable-track {
+  background: color-mix(in srgb, var(--app-text) 20%, var(--app-surface));
+}
+
+:is(.math-workshop, .mw-tool-host) input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--app-surface, #fff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 0 0 1.5px var(--app-primary, #6366f1);
+  margin-top: -5px;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+:is(.math-workshop, .mw-tool-host) input[type=range]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 0 0 1.5px var(--app-primary, #6366f1);
 }
 
 .math-workbench.mw-home-wrapper {
@@ -1441,10 +1627,6 @@
   display: flex;
   gap: 8px;
   align-items: center;
-}
-
-.mw-search:focus-within {
-  box-shadow: inset 0 0 0 1px var(--app-muted);
 }
 
 .mw-home .mw-library {

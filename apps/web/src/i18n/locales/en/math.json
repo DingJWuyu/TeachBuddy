@@ -673,5 +673,7 @@
   "算式": "Expression",
   "改为算式": "Use expression",
   "改为算式后，不再使用滑杆。": "Using an expression removes the slider.",
-  "相关步骤、播放或轨迹会随之调整。是否继续？": "Related steps, playback or traces will change. Continue?"
+  "相关步骤、播放或轨迹会随之调整。是否继续？": "Related steps, playback or traces will change. Continue?",
+  "模型与连接设置": "Model and connection settings",
+  "连接设置": "Connection settings"
 }
