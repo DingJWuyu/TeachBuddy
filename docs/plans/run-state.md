@@ -58,7 +58,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 ### GitHub 交付与首发准备
 
-- GitHub 协作基础设施已接入开发主线：默认 `preview/integration`、稳定 `main`、长期分支及版本 Tag 的 Rulesets、PR 规范和 CI。实现与独立审查见 [PR #27](https://github.com/DingJWuyu/TeacherWorkspace/pull/27)、[PR #28](https://github.com/DingJWuyu/TeacherWorkspace/pull/28)，真实 [CI 验证](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38126598762)通过；日常 CI 不运行浏览器 E2E。
+- GitHub 协作基础设施已接入开发主线：默认 `preview/integration`、稳定 `main`、长期分支及版本 Tag 的 Rulesets、PR 规范和 CI。发布单向从 trunk 进入 main，版本工具直接读取正式 Tag，trunk 持续开发；单向配置及两轮隔离发布演练见 [PR #32](https://github.com/DingJWuyu/TeacherWorkspace/pull/32)。基础实现见 [PR #27](https://github.com/DingJWuyu/TeacherWorkspace/pull/27)、[PR #28](https://github.com/DingJWuyu/TeacherWorkspace/pull/28)；日常 CI 不运行浏览器 E2E。
 - [版本准备演练](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38127542384)已自动生成 [0.4.0 元数据 PR #29](https://github.com/DingJWuyu/TeacherWorkspace/pull/29)。演练 PR 不进入 trunk；首发范围完成后重新准备正式版本。机器人 PR 的检查按 GitHub 规则批准运行，操作见[发布指南](../agents/github-workflow.md#准备与发布)。
 - [发布打包演练](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38127024596)通过，固定提交 `c5b934b8c6b8e38674a9f3c6efb36c7eaa2d361c` 的产物已实际下载、校验，并在独立目录完成生产依赖安装、HTTPS 启动及停服备份/恢复准备。证据汇入 PR #27；未创建正式 Tag、GitHub Release 或部署。
 - 首个用户版本仅开放日程，其他模块占位；发布配置、日程跨模块入口处理和首发验收尚未完成，当前完整开发界面不能直接视为日程先行版。
