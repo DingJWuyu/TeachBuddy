@@ -40,9 +40,10 @@ jobs:
         # Browser E2E and Office/PDF/OCR output are verified locally for
         # affected changes and recorded in the PR. This group uses fake mail
         # and local model providers, without private configuration or GPUs.
-        # test:ci excludes two named cases: auth-contract-https's browser
-        # cookie test, and reliability-export-ownership's lesson-output test
-        # (which validates DOCX through LibreOffice/PDF conversion).
+        # test:ci excludes four named cases: auth-contract-https's browser
+        # cookie test, reliability-export-ownership's lesson-output test
+        # (LibreOffice/PDF conversion), and its two OCR replay tests
+        # (which require the external Bubblewrap image preparation sandbox).
         # The real HTTPS test and all remaining export-ownership cases run.
         run: npm run test:ci
       - name: Package the verified application

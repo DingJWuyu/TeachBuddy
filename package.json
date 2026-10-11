@@ -25,7 +25,7 @@
     "test:agent": "node --test apps/api/test/agent.test.js",
     "test:agent:e2e": "playwright test -c apps/web/e2e/c26/agent.config.mjs",
     "review:agent": "node apps/api/test/fixtures/c26/serve.mjs",
-    "test:ci": "node --test --test-concurrency=4 --test-skip-pattern=\"真实浏览器在同源 HTTPS|personal export retains persisted lesson output and its accepted snapshot independently of job display state\" apps/api/test/api.test.js apps/api/test/account-deletion.test.js apps/api/test/auth-*.test.js apps/api/test/workbench-*.test.js apps/api/test/first-flow-*.test.js apps/api/test/teaching-time-*.test.js apps/api/test/reliability*.test.js apps/api/test/agent.test.js apps/api/test/navigation.test.js apps/api/test/math-archive.test.js apps/api/test/math-contract.test.js apps/api/test/math-isolation.test.js apps/api/test/math-static-migration.test.js apps/api/test/math-integration-migrations.test.js",
+    "test:ci": "node --test --test-concurrency=4 --test-skip-pattern=\"真实浏览器在同源 HTTPS|personal export retains persisted lesson output and its accepted snapshot independently of job display state|cancelled extraction keeps each attempt|timed-out extraction stops later OCR pages\" apps/api/test/api.test.js apps/api/test/account-deletion.test.js apps/api/test/auth-*.test.js apps/api/test/workbench-*.test.js apps/api/test/first-flow-*.test.js apps/api/test/teaching-time-*.test.js apps/api/test/reliability*.test.js apps/api/test/agent.test.js apps/api/test/navigation.test.js apps/api/test/math-archive.test.js apps/api/test/math-contract.test.js apps/api/test/math-isolation.test.js apps/api/test/math-static-migration.test.js apps/api/test/math-integration-migrations.test.js",
     "release:prepare": "release-it --config .release-it.json"
   },
   "devDependencies": {

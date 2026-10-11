@@ -38,7 +38,7 @@ Issue / Spec / Ticket
 
 `test:ci` 使用仓库现有 HTTP/SQLite 测试，覆盖认证、工作台、日程/班级、备课基础、数据恢复、Agent 替身及部分数学契约/迁移。测试收件器和模型替身不等于真实邮件送达或产品模型验证。
 
-两个混入所选文件的重型子例按具名模式排除：`auth-contract-https` 中的真实浏览器 Cookie 场景，以及 `reliability-export-ownership` 中的已生成课稿文件导出场景。后者实际调用 Office/PDF 转换。Node 在发现阶段筛掉它们，测试输出的 `skipped: 0` 不代表运行过这两项；完整 API 与材料专项仍沿原入口执行。
+四个混入所选文件的子例按具名模式排除：`auth-contract-https` 中的真实浏览器 Cookie 场景；`reliability-export-ownership` 中的已生成课稿文件导出，以及取消和超时后的 OCR 证据场景。它们分别依赖 Office/PDF 转换和 Bubblewrap 图像预处理沙箱。Node 在发现阶段筛掉它们，测试输出的 `skipped: 0` 不代表运行过这四项；完整 API 与材料专项仍沿原入口执行。
 
 仓库尚未配置通用源码 linter，现有构建与集成验证继续作为反馈；CI 不把它们标成已经执行 lint。工作流变更用标准 `actionlint` 核查。新增静态规则仍须符合[验证工具准入](../acceptance/README.md#选择验证)。
 
