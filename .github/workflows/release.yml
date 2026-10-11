@@ -44,6 +44,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+      pull-requests: read
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
@@ -70,12 +71,26 @@ jobs:
               "$tag" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
           else
             cd "$GITHUB_WORKSPACE"
+            gh api --paginate --slurp "repos/$GH_REPO/commits/$GITHUB_SHA/pulls" \
+              | jq --arg sha "$GITHUB_SHA" --arg repo "$GH_REPO" '
+                  [.[][] | select(.merged_at != null and .merge_commit_sha == $sha
+                    and .base.ref == "main" and .head.ref == "preview/integration"
+                    and .head.repo.full_name == $repo)]
+                  | if length == 1 then .[0].body // ""
+                    else error("Expected one merged Release PR for the fixed commit") end
+                ' > "$RUNNER_TEMP/release-pr-body.json"
+            jq -er '
+              capture("(?s)<!-- user-release-notes:start -->\\s*(?<notes>.*?)\\s*<!-- user-release-notes:end -->")
+              | .notes
+            ' "$RUNNER_TEMP/release-pr-body.json" > "$RUNNER_TEMP/release-notes.md"
+            printf '\n[技术变更](https://github.com/%s/blob/%s/CHANGELOG.md)\n' \
+              "$GH_REPO" "$GITHUB_SHA" >> "$RUNNER_TEMP/release-notes.md"
             gh auth setup-git
             git tag "$tag" "$GITHUB_SHA"
             git push origin "refs/tags/$tag"
             cd "$RUNNER_TEMP/release"
             gh release create "$tag" ./*.tar.gz ./*.sha256 \
-              --verify-tag --title "$tag" --generate-notes --fail-on-no-commits
+              --verify-tag --title "$tag" --notes-file "$RUNNER_TEMP/release-notes.md" --fail-on-no-commits
             printf 'Published %s at %s.\n' "$tag" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
           fi
           printf '\nCD is pending: deployment host, domain, production configuration and backup destination are not configured.\n' \

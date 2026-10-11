@@ -23,7 +23,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 本轮验收执行现有范围与矩阵中可在本机完成的非 Agent 项，包含真实本地 OCR、文件输出检查、测试收件器与隔离浏览器、数据备份恢复及手工跨模块流程。用户明确暂缓实际 Word/WPS 修改、保存、重开与打印，真实邮件送达，以及实际平板、课堂设备和学校网络；这些项目记为暂缓未验，不计通过，也不阻塞本轮收尾。真实产品模型调用及 Agent 组合验收随 Agent 线另行安排，可选增强不纳入本轮，MVP 范围和验收门槛保持不变。
 
-当前采用[GitHub 协作与发布](../agents/github-workflow.md)：`preview/integration` 为长期开发主线及 GitHub 默认分支，`main` 保存稳定发布版本。用户已授权搭建并验证仓库配置、CI 和标准发布自动化。开发集成按[两条路径](../agents/github-workflow.md#任务与-pr)执行：小改在临时分支验证后直接合回本地 trunk，不开 PR、不单独 push；每个 worktree 准备集成时由总控分别创建 PR 并合入 trunk，开发期间不开 PR。本地积累的小改在后续集成或发布时一并同步。main 合并、实际产品发布、公开部署及新增费用继续按对应批准执行。短期任务从总控核对的 trunk 提交创建，完成集成验证后按[收尾规则](../agents/module-development.md#集成后的清理)清理；体验目录及服务仍为 `TeacherWorkspace-preview`。
+当前采用[GitHub 协作与发布](../agents/github-workflow.md)：`preview/integration` 为长期开发主线及 GitHub 默认分支，`main` 保存稳定发布版本。用户已授权搭建、调整并验证仓库配置、CI 和标准发布自动化，包括此次协作流程调整的开发 PR、trunk 集成及同步。小改直合、按完整目的组织 worktree 集成 PR、审查与推送统一执行[任务与 PR](../agents/github-workflow.md#任务与-pr)。此项配置授权不包含实际版本准备、合 main、产品发布、公开部署或新增费用。短期任务从核对的 trunk 提交创建，集成后按[收尾规则](../agents/module-development.md#集成后的清理)清理；体验目录及服务仍为 `TeacherWorkspace-preview`。
 
 当前源码集成了日程、导航、材料整理与局部校对、全站中英切换与账户删除；这些范围曾在本机完成独立验收，新环境须按[核查入口](#核查入口)对所需结论重新验证。数据处理协议继续占位。用户授权总控自主安排专属 session、工作树及技术决策；已集成代码以当前 Git 为准。
 
@@ -59,11 +59,11 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 ### GitHub 交付与首发准备
 
 - GitHub 协作基础设施已接入开发主线：默认 `preview/integration`、稳定 `main`、长期分支及版本 Tag 的 Rulesets、PR 规范和 CI。发布单向从 trunk 进入 main，版本工具直接读取正式 Tag，trunk 持续开发；单向配置及两轮隔离发布演练见 [PR #32](https://github.com/DingJWuyu/TeacherWorkspace/pull/32)。基础实现见 [PR #27](https://github.com/DingJWuyu/TeacherWorkspace/pull/27)、[PR #28](https://github.com/DingJWuyu/TeacherWorkspace/pull/28)；日常 CI 不运行浏览器 E2E。
-- 版本准备由用户决定时机，总控手动触发；生成的版本号和 CHANGELOG 直接提交 trunk，再创建 trunk 到 main 的 Release PR 统一审阅和验证。首次正式准备将由工具创建新的 CHANGELOG；根产品版本仍为 `0.3.0`。准备授权不等于正式发布批准，操作见[发布指南](../agents/github-workflow.md#准备与发布)。
+- 版本准备由用户决定时机，总控手动触发；生成的版本号和 CHANGELOG 直接提交 trunk，再创建 trunk 到 main 的 Release PR 统一审阅和验证。首次正式准备将由工具创建新的 CHANGELOG；根产品版本仍为 `0.3.0`。仅准备授权不包含正式发布；明确的完整发布授权无需重复批准，操作见[发布指南](../agents/github-workflow.md#准备与发布)。
 - [发布打包演练](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38127024596)通过，固定提交 `c5b934b8c6b8e38674a9f3c6efb36c7eaa2d361c` 的产物已实际下载、校验，并在独立目录完成生产依赖安装、HTTPS 启动及停服备份/恢复准备。证据汇入 PR #27；未创建正式 Tag、GitHub Release 或部署。
 - 首个用户版本仅开放日程，其他模块占位；发布配置、日程跨模块入口处理和首发验收尚未完成，当前完整开发界面不能直接视为日程先行版。
 - 部署主机、域名/访问地址、真实邮件、生产配置与备份目的地待确定；CD 尚未接入。配置修改可做本地隔离验证；云端版本准备、发布演练及正式发布须有用户对应指令，不以演练成功声称正式发布或上线。
-- 协作待议：用户将后续重新讨论 Review 机制，现阶段按[开发约定](../agents/module-development.md#编排)复用覆盖最终候选的双轴审查。CI 触发策略已确定，见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)；现有测试范围保留，扩展覆盖另议。
+- 开发 PR 的专门 `pr review` skill 待用户后续设计；fresh-context 独立审查的方向已定，人数、边界与 code-review 结论复用方式未定稿。现阶段由总控直接派独立 agent，规则见[审查分工](../agents/github-workflow.md#审查分工)。CI 触发及测试范围见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。
 
 ### 核心实现与已知质量缺口
 
@@ -88,7 +88,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 | 真实邮件送达 | 注册、登录和找回流程已使用真实认证与测试收件器验证 | 真实邮箱与投递环境由用户明确暂缓，不能以 fake-mail 的通过代替 |
 | 课堂设备、平板与学校网络 | 准备实际下载的离线作品和可访问入口；定位有证据的产品/网络问题 | 在实际环境操作反馈。个人 Windows 曾有本机切片；iPad/学校网络尚未确诊，不写产品已失败 |
 | 真实产品模型调用 | 手工数学制作、源码修改、下载和离线底层已验证；固定结果不冒充真实模型生成 | MA-04 及 Agent 的真实调用随 Agent 工作线安排；MA-04 本身不依赖全模块工具完成，本轮未执行 |
-| 正式部署与发布 | 依[SETUP](../SETUP.md#正式部署)形成可检查候选和验证结果；远端同步与 PR 按[当前协作授权](#工作现场与授权)执行 | 选择主机/域名，确认对应费用及合 main、公开部署/发布动作；最终版本仍需用户明确接受 |
+| 正式部署与发布 | 依[SETUP](../SETUP.md#正式部署)形成可检查候选和验证结果；远端同步与 PR 按[当前协作授权](#工作现场与授权)执行 | 选择主机/域名，确认对应费用及合 main、公开部署/发布动作；已约定范围的完整发布授权不重复索取 |
 
 ### 可选增强与明确暂缓
 
