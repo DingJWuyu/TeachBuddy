@@ -184,7 +184,7 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
         setStage('');
         if (code === 'EXTENSION_UPDATED') {
           setError(t('扩展已更新，请求已停止。请先查看网页。'));
-          setSetupOpen(true);
+          setSetupOpen(false);
         } else {
           setError(failure.message);
         }
