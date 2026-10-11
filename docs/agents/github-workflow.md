@@ -17,7 +17,7 @@ Issue / Spec / Ticket
   -> 固定提交验证与打包 -> Tag / GitHub Release
 ```
 
-普通任务 PR 可 squash；Release PR 和 `main -> preview/integration` 的历史同步 PR 使用 merge commit。保持两条长期分支的祖先关系，发布后先完成自动提出的历史同步 PR，再准备下一版。短期分支合并后删除；长期分支由默认分支和 Rulesets 保护。
+普通任务 PR 可 squash；Release PR 和发布历史同步 PR 使用 merge commit。历史同步从最新 trunk 创建短期分支并合入已发布的 main 提交，再向 trunk 提 PR。保持两条长期分支的祖先关系，发布后先完成同步 PR，再准备下一版。短期分支合并后删除；长期分支由默认分支和 Rulesets 保护。
 
 ## 任务与 PR
 
@@ -50,7 +50,7 @@ Issue / Spec / Ticket
 2. **审查元数据。** 核对版本 PR 的版本号、CHANGELOG 与 CI，再合入 trunk。首版开放范围和已知限制要在正式 Release PR 中明确。版本准备合入后、正式发布前，不重复执行版本递增。
 3. **创建 Release PR。** 以 trunk 为源、main 为目标，标题使用 `chore(release): ...`。记录发布范围、业务验收、未验边界和用户批准。trunk 新提交会改变候选，检查和批准须对应最终候选。main 只能以 merge commit 接收发布。
 4. **发布固定版本。** main 合并触发 `Release`，复用 CI 构建和测试，通过后打包本次 SHA 的服务源码、Web 构建、共享源码、依赖清单及配置模板，附 SHA-256。GitHub CLI 从该 SHA 创建 `v<version>` Tag、GitHub Release 和发布说明，并上传同一次验证的产物。
-5. **同步发布历史。** 发布工作流提出 `main -> trunk` 同步 PR。核对差异、通过检查后以 merge commit 合入，使最新正式 Tag 对下一次 CHANGELOG 生成可见。
+5. **同步发布历史。** 发布工作流从最新 trunk 创建短期同步分支，合入本次发布的固定 main 提交并提出 PR。核对差异、通过检查后以 merge commit 合入，使最新正式 Tag 对下一次 CHANGELOG 生成可见。若 trunk 继续前进，在短期分支更新或解决冲突，不向 main 写入未发布改动。
 
 `Release` 也可手动运行；默认 `dry_run=true` 走实际构建、测试、打包和摘要校验，产物保存在 Actions，明确不创建 Tag/Release。正式发布只允许 main。已有同名 Tag/Release 会阻止覆盖；发布中断时先核对现有 Tag 指向的提交和已有资产，再使用 GitHub 原生命令补充缺失部分，不移动已发布 Tag。
 
@@ -70,7 +70,22 @@ Issue / Spec / Ticket
 
 当前自动化的交付终点是经过检查的 GitHub Release 及可校验产物。CD 的服务器、域名、生产配置、备份目标尚待确定，未设置假部署步骤；具名待办以[运行台账](../plans/run-state.md)为准。
 
-产物解压后需在目标 Linux/Node 22 环境按锁文件安装生产依赖，再按[固定构建](../SETUP.md#固定构建)启动。数据库、附件、密钥和外部工具独立准备，产物不包含任何用户数据或私有配置。目标主机的安装、重启持久化、备份还原及上线检查属于接通 CD 时的完成条件。
+发布包包含已经构建的 Web，在目标 Linux/Node 22.23.2 环境解压并校验 SHA-256 后，从解压根目录执行：
+
+```bash
+npm ci --omit=dev
+cp .env.example .env
+chmod 600 .env
+cat REVISION
+```
+
+按[生产配置](../SETUP.md#正式部署)填写 `.env` 中的持久路径、HTTPS 证书、认证密钥和邮件配置，设置 `NODE_ENV=production`，把 `REVISION` 的完整 SHA 填入 `PRODUCT_REVISION`，然后启动预构建产物：
+
+```bash
+node --env-file=.env apps/api/src/server.js
+```
+
+维护备份或恢复时也用 `node --env-file=.env apps/api/src/scripts/reliability.js ...`，确保读取相同版本标识。数据库、附件、密钥和外部工具独立准备，产物不包含任何用户数据或私有配置。目标主机的安装、重启持久化、备份还原及上线检查属于接通 CD 时的完成条件。
 
 ## 标准依据
 

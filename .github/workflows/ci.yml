@@ -16,8 +16,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ !inputs.release_artifact }}
 
 jobs:
   build-and-api:
@@ -51,7 +51,9 @@ jobs:
           version=$(node -p 'require("./package.json").version')
           archive="teacherworkspace-$version-$GITHUB_SHA.tar.gz"
           mkdir -p "$RUNNER_TEMP/release"
+          printf '%s\n' "$GITHUB_SHA" > "$RUNNER_TEMP/REVISION"
           tar -czf "$RUNNER_TEMP/release/$archive" \
+            -C "$RUNNER_TEMP" REVISION -C "$GITHUB_WORKSPACE" \
             LICENSE package.json package-lock.json .env.example \
             apps/api/package.json apps/api/src \
             apps/web/package.json apps/web/dist \

@@ -88,7 +88,7 @@ jobs:
             ## Summary
 
             ```text
-            main -> preview/integration
+            released main -> short sync branch -> preview/integration
             ```
 
             将已发布版本的合并历史同步回开发主线，供下一轮标准 CHANGELOG 生成识别发布边界。
@@ -106,10 +106,19 @@ jobs:
 
             **Blast Radius:** history
         run: |
-          existing=$(gh pr list --base preview/integration --head main --state open --json number --jq 'length')
-          if [[ "$existing" == "0" ]]; then
-            printf '%s\n' "$SYNC_BODY" > "$RUNNER_TEMP/sync-pr.md"
-            gh pr create --base preview/integration --head main \
-              --title 'chore: synchronize released history into development' \
-              --body-file "$RUNNER_TEMP/sync-pr.md"
+          gh auth setup-git
+          git fetch origin preview/integration
+          branch="chore/sync-release-$GITHUB_RUN_ID"
+          git switch -c "$branch" FETCH_HEAD
+          if git merge-base --is-ancestor "$GITHUB_SHA" HEAD; then
+            echo 'Released history is already present in the development trunk.'
+            exit 0
           fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git merge --no-ff --no-edit "$GITHUB_SHA"
+          git push origin "$branch"
+          printf '%s\n' "$SYNC_BODY" > "$RUNNER_TEMP/sync-pr.md"
+          gh pr create --base preview/integration --head "$branch" \
+            --title 'chore: synchronize released history into development' \
+            --body-file "$RUNNER_TEMP/sync-pr.md"
