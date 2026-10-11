@@ -60,6 +60,7 @@ jobs:
           name: release-${{ github.sha }}
           path: ${{ runner.temp }}/release
       - name: Verify archive and publish the fixed commit
+        shell: bash
         run: |
           version=$(jq -r .version package.json)
           tag="v$version"
