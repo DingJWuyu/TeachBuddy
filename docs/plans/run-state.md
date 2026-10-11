@@ -56,10 +56,11 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 ## 剩余事项
 
-### GitHub 交付准备
+### GitHub 交付与首发准备
 
-- GitHub 默认分支已设为 `preview/integration`，两条长期分支和版本 Tag 的 Rulesets 已配置。CI 不运行浏览器 E2E；实际工作流验证与 PR 证据待本轮完成后补齐。
-- 本轮工作树 `TeacherWorkspace-delivery`、分支 `chore/github-delivery` 负责 CI、标准版本准备、发布产物及相关文档；候选通过独立审查并合入 trunk 后清理。
+- GitHub 协作基础设施已接入开发主线：默认 `preview/integration`、稳定 `main`、长期分支及版本 Tag 的 Rulesets、PR 规范和 CI。实现与独立审查见 [PR #27](https://github.com/DingJWuyu/TeacherWorkspace/pull/27)、[PR #28](https://github.com/DingJWuyu/TeacherWorkspace/pull/28)，真实 [CI 验证](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38126598762)通过；日常 CI 不运行浏览器 E2E。
+- [版本准备演练](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38127542384)已自动生成 [0.4.0 元数据 PR #29](https://github.com/DingJWuyu/TeacherWorkspace/pull/29)。演练 PR 不进入 trunk；首发范围完成后重新准备正式版本。机器人 PR 的检查按 GitHub 规则批准运行，操作见[发布指南](../agents/github-workflow.md#准备与发布)。
+- [发布打包演练](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38127024596)通过，固定提交 `c5b934b8c6b8e38674a9f3c6efb36c7eaa2d361c` 的产物已实际下载、校验，并在独立目录完成生产依赖安装、HTTPS 启动及停服备份/恢复准备。证据汇入 PR #27；未创建正式 Tag、GitHub Release 或部署。
 - 首个用户版本仅开放日程，其他模块占位；发布配置、日程跨模块入口处理和首发验收尚未完成，当前完整开发界面不能直接视为日程先行版。
 - 部署主机、域名/访问地址、真实邮件、生产配置与备份目的地待确定；CD 尚未接入。允许先验证版本准备和打包，不以演练成功声称正式发布或上线。
 
@@ -86,7 +87,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 | 真实邮件送达 | 注册、登录和找回流程已使用真实认证与测试收件器验证 | 真实邮箱与投递环境由用户明确暂缓，不能以 fake-mail 的通过代替 |
 | 课堂设备、平板与学校网络 | 准备实际下载的离线作品和可访问入口；定位有证据的产品/网络问题 | 在实际环境操作反馈。个人 Windows 曾有本机切片；iPad/学校网络尚未确诊，不写产品已失败 |
 | 真实产品模型调用 | 手工数学制作、源码修改、下载和离线底层已验证；固定结果不冒充真实模型生成 | MA-04 及 Agent 的真实调用随 Agent 工作线安排；MA-04 本身不依赖全模块工具完成，本轮未执行 |
-| 正式部署与发布 | 依[SETUP](../SETUP.md#正式部署)形成可检查候选和验证结果 | 选择主机/域名，确认对应费用及合 main、push、公开部署/发布动作；最终版本仍需用户明确接受 |
+| 正式部署与发布 | 依[SETUP](../SETUP.md#正式部署)形成可检查候选和验证结果；开发分支推送与 PR 已授权 | 选择主机/域名，确认对应费用及合 main、公开部署/发布动作；最终版本仍需用户明确接受 |
 
 ### 可选增强与明确暂缓
 
@@ -100,7 +101,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 1. 跨模块 Agent 保持暂停；用户重新授权后创建新会话与工作树，核对实际工具和冻结设计，实现核心工具与恢复衔接，并验证真实模型及跨模块组合。
 2. 新出现的可复现核心问题由 agent 按真实路径处理；当前资料足够时自行验证，不把技术回归全部交给用户。
-3. 用户解除暂缓或选定目标环境后，再完成真实邮件、Office 编辑打印与课堂设备验收。正式部署及 main/远端操作仍按授权执行。
+3. 用户解除暂缓或选定目标环境后，再完成真实邮件、Office 编辑打印与课堂设备验收。正式部署及 main 发布仍按授权执行。
 
 每个事项只有满足其具名结果才改变状态；保留问题归属、证据及下一动作。缺材料/环境标待验证，用户选择标待决定，代码已合入但未验证不写验收完成。
 
