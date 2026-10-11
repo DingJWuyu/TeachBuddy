@@ -40,9 +40,11 @@ jobs:
       - run: npm ci
       - name: Generate version and changelog with release-it
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INCREMENT: ${{ inputs.increment }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
+          gh auth setup-git
           release_args=(--ci)
           if [[ "$INCREMENT" != "auto" ]]; then
             release_args+=("$INCREMENT" --plugins.@release-it/conventional-changelog.ignoreRecommendedBump)

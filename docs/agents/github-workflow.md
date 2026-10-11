@@ -60,7 +60,7 @@ Issue / Spec / Ticket
 
 工作流、PR/Issue 模板和 Rulesets 请求体在 `.github/`，可随仓库重建。Actions 固定到上游发布提交，npm 安装使用锁文件。
 
-新仓库准备默认开发分支后，在 GitHub 设置中启用 Issues 和 Actions，允许 Actions 创建 PR；默认 workflow token 保持只读，写权限由具体 job 声明。允许 merge 与 squash，关闭 rebase merge，开启合并后删除短期分支，squash 提交标题取 PR 标题。
+新仓库准备默认开发分支后，在 GitHub 设置中启用 Issues 和 Actions，允许 Actions 创建 PR；默认 workflow token 保持只读，写权限由具体 job 声明。允许 merge 与 squash，关闭 rebase merge，开启合并后删除短期分支；两种合并提交的标题均取 Conventional Commit 格式的 PR 标题，正文取 PR 描述。
 
 在 Settings / Rules / Rulesets 导入 `.github/rulesets/` 的三份 JSON，或使用 GitHub CLI 的 `gh api POST repos/{owner}/{repo}/rulesets --input <文件>`。已有仓库按名称更新规则，避免重复创建。需要当前仓库类型和套餐支持 Rulesets。
 
