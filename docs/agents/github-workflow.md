@@ -56,6 +56,8 @@ Issue / Spec / Ticket
 
 自动化使用仓库 `GITHUB_TOKEN`，只在版本准备和发布 job 授予写权限；日常 CI 只读。由该 token 创建的 PR 检查可能需要在 GitHub 批准运行，不能把未运行当通过。它创建的 Tag/Release 也不能被假定会继续触发另一条自动化，未来 CD 应复用本次发布产物并接在发布流程内。
 
+机器人 PR 的 Actions 显示 `action_required` 时，维护者核对来源和候选后使用 GitHub 的 **Approve and run**，或对每个待批 run 执行 `gh api --method POST repos/{owner}/{repo}/actions/runs/<run-id>/approve`。批准后仍需等待实际检查通过，不需要为此添加个人 PAT。
+
 ## GitHub 配置与重建
 
 工作流、PR/Issue 模板和 Rulesets 请求体在 `.github/`，可随仓库重建。Actions 固定到上游发布提交，npm 安装使用锁文件。
