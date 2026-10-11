@@ -7,6 +7,7 @@
 | 了解产品、体验或启动 | 根[README](../README.md) | 配置、隔离实例或维护操作读[SETUP](SETUP.md) |
 | 查看进度、选下一项工作 | [项目状态](plans/run-state.md) | 核查某项结论才读其证据；实施时进入对应功能页 |
 | 接手模块、派发或执行任务 | [开发约定](agents/module-development.md) | 先确认本次目标、工作树和权限，再读下表对应模块 |
+| 创建 PR、配置 GitHub/CI 或发布 | [GitHub 协作与发布](agents/github-workflow.md) | 当前授权和未完成条件读项目状态；部署运行条件读 SETUP |
 | 执行仓库维护、阶段整理或集成后的整体核查 | [仓库维护流程](agents/repository-maintenance.md) | 按检查面展开现行规则，处理实际发现并完成验证与收尾 |
 | 判断是否属于既定目标 | [产品范围](PRODUCT_SCOPE.md) | 页面和跨模块往返读[共同交互](features/workbench.md) |
 | 修改界面 | 对应功能页和[设计与验证规则](rules/design-and-verification.md) | 调整外观时核对当前运行页面及用户指定参考 |
