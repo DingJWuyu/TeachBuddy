@@ -116,7 +116,7 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git merge --no-ff --no-edit "$GITHUB_SHA"
+          git merge --no-ff -m 'chore: synchronize released history' "$GITHUB_SHA"
           git push origin "$branch"
           printf '%s\n' "$SYNC_BODY" > "$RUNNER_TEMP/sync-pr.md"
           gh pr create --base preview/integration --head "$branch" \
