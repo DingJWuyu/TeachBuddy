@@ -69,7 +69,7 @@ Issue / Spec / Ticket
 
 开发和稳定分支要求 PR、讨论解决及两项必需检查通过，并阻止删除、强推；稳定分支仅允许 merge commit。版本 Tag 禁止改写和删除。检查名与 `.github/workflows/` 一同维护。Rulesets 不替代用户对 main 发布的批准。
 
-trunk 要求任务分支在合并前更新到最新基线；main 的必需检查使用 loose 模式，允许源分支未包含 main 的发布合并提交。Release PR 的 CI 验证 GitHub 生成的候选合并结果，合入后 `Release` 再验证和构建实际 main 提交。main 有新的发布合并时，其他待发布 PR 需重新核对候选和运行检查；不要用回合 main 历史作为更新手段。
+trunk 要求任务分支在合并前更新到最新基线；main 的必需检查使用 loose 模式，允许源分支未包含 main 的发布合并提交。Release PR 的 CI 验证 GitHub 生成的候选合并结果，合入后 `Release` 再验证和构建实际 main 提交。
 
 ## 部署交接
 
