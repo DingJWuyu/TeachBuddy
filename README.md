@@ -40,5 +40,6 @@ npm run dev
 - [文档目录](docs/README.md)：按功能查行为、接口和验证方法。
 - [代码结构](docs/SETUP.md#代码结构)：模块、请求路径和数据归属。
 - [当前进度](docs/plans/run-state.md)：已知缺口、授权和下一步。
+- [GitHub 协作与发布](docs/agents/github-workflow.md)：开发主线、PR、CI、版本准备和发布产物；公开部署仍待目标环境确定。
 
 项目采用 MIT 许可，见 [LICENSE](LICENSE)。

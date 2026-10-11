@@ -1,0 +1,25 @@
+name: 开发任务或规格
+description: 明确使用结果、范围和验收条件
+labels: [needs-triage]
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: 使用结果
+      description: 谁从什么入口完成什么操作，最后得到什么成果？
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 范围与依据
+      description: 相关规格、固定输入、依赖任务，以及本轮明确不包含的内容。
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 完成条件
+      description: 可观察的行为与必要验证，包括保存、刷新或成果文件等受影响路径。
+    validations:
+      required: true

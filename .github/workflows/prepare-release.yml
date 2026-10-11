@@ -1,0 +1,89 @@
+name: Prepare release
+
+on:
+  workflow_dispatch:
+    inputs:
+      increment:
+        description: SemVer increment (auto follows Conventional Commits)
+        type: choice
+        options: [auto, patch, minor, major]
+        default: auto
+      dry_run:
+        description: Preview changes without creating a version PR
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Prepare version PR
+    if: github.ref == 'refs/heads/preview/integration'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: preview/integration
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '22.23.2'
+          cache: npm
+      - run: npm ci
+      - name: Generate version and changelog with release-it
+        env:
+          INCREMENT: ${{ inputs.increment }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          release_args=(--ci)
+          if [[ "$INCREMENT" != "auto" ]]; then
+            release_args+=("$INCREMENT" --plugins.@release-it/conventional-changelog.ignoreRecommendedBump)
+          fi
+          if [[ "$DRY_RUN" == "true" ]]; then
+            release_args+=(--dry-run)
+          fi
+          npm run release:prepare -- "${release_args[@]}"
+      - name: Open version preparation PR
+        if: '!inputs.dry_run'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          base: preview/integration
+          branch: chore/prepare-version
+          delete-branch: true
+          add-paths: |
+            package.json
+            package-lock.json
+            CHANGELOG.md
+          commit-message: 'chore(release): prepare version and changelog'
+          title: 'chore(release): prepare version and changelog'
+          body: |
+            ## Summary
+
+            ```text
+            Conventional Commits -> release-it -> version + CHANGELOG
+            ```
+
+            根产品版本与 CHANGELOG 由 release-it 自动生成。合入开发主线后，另开 `preview/integration -> main` Release PR。
+
+            ## Evidence
+
+            - **Before:** 开发主线尚未准备下一版元数据。
+            - **After:** 本 PR 展示标准工具生成的版本、锁文件和 CHANGELOG 差异。
+            - **验证：** 以本 PR 的 CI 与审查结果为准。必要时批准 GitHub Actions 运行后再合并。
+            - **E2E：** 仅版本元数据，无业务改动；产品发布验收在 Release PR 中记录。
+
+            ## Merge Danger
+
+            **Door:** two-way
+
+            **Blast Radius:** release
+
+            此 PR 准备版本，不执行上线。发布前按当前源码核对开放范围。

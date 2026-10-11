@@ -22,6 +22,8 @@
 
 引入 lint、hooks 或新验证工具前，先指出已有检查漏掉的具体问题，确认该工具确实能检出，并评估误报、重复覆盖及持续维护负担。现有构建、集成测试或人工浏览足以提供反馈时沿用；不因缺少某类工具而补齐工具清单。
 
+日常 GitHub CI 使用 `npm run test:ci` 的 HTTP/SQLite 范围和现有构建；浏览器、Office/PDF、真实 OCR/模型仍按本页选择本地验证。具体覆盖、具名浏览器和外部工具子例的排除及 PR 证据要求见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。CI 通过不代替发布范围的真实使用验收。
+
 ## 浏览器准备
 
 新环境在仓库根目录完成 `npm ci` 后，执行 `npx playwright install chromium`，安装锁定 Playwright 版本对应的浏览器。支持的 Linux 发行版若缺系统库，使用 `npx playwright install --with-deps chromium` 同时安装依赖，该步骤可能需要系统管理员权限；具体支持范围见 [Playwright 官方安装说明](https://playwright.dev/docs/browsers#install-system-dependencies)。更新 Playwright 后重新执行安装。

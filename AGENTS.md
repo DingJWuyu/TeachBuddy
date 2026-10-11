@@ -31,6 +31,7 @@
 - 集成收尾：总控交付前必须按[集成后的清理](docs/agents/module-development.md#集成后的清理)处理任务分支与临时 worktree，并核对实际剩余现场。
 - Commit：遵循 Conventional Commits。
 - Pull Request：如果用户让你生成 PR，Title 遵循 Conventional Commits；如有 PR Template，则务必遵循，否则默认为 Summarize-Why-What changed-Testing 四段式；如有关联 issue，则在 Body 中关联。
+- 当前 GitHub 协作采用[单一开发主线与稳定发布](docs/agents/github-workflow.md)：`preview/integration` 为长期 trunk，`main` 为稳定发布分支；本条替代上文 Branch 与阶段基线中的分支起点及结束条件。接手开发、创建 PR、配置 CI 或发布时必须读该页；main 合并仍需用户批准。
 
 ## 文档维护边界
 
