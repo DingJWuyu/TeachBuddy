@@ -9,13 +9,12 @@ on:
         options: [auto, patch, minor, major]
         default: auto
       dry_run:
-        description: Preview changes without creating a version PR
+        description: Preview the version and changelog without committing or pushing
         type: boolean
         default: true
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
   group: prepare-release
@@ -23,7 +22,7 @@ concurrency:
 
 jobs:
   prepare:
-    name: Prepare version PR
+    name: Prepare version on trunk
     if: github.ref == 'refs/heads/preview/integration'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -53,39 +52,23 @@ jobs:
             release_args+=(--dry-run)
           fi
           npm run release:prepare -- "${release_args[@]}"
-      - name: Open version preparation PR
+      - name: Commit the prepared version to trunk
         if: '!inputs.dry_run'
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          base: preview/integration
-          branch: chore/prepare-version
-          delete-branch: true
-          add-paths: |
-            package.json
-            package-lock.json
-            CHANGELOG.md
-          commit-message: 'chore(release): prepare version and changelog'
-          title: 'chore(release): prepare version and changelog'
-          body: |
-            ## Summary
-
-            ```text
-            Conventional Commits -> release-it -> version + CHANGELOG
-            ```
-
-            根产品版本与 CHANGELOG 由 release-it 自动生成。合入开发主线后，另开 `preview/integration -> main` Release PR。
-
-            ## Evidence
-
-            - **Before:** 开发主线尚未准备下一版元数据。
-            - **After:** 本 PR 展示标准工具生成的版本、锁文件和 CHANGELOG 差异。
-            - **验证：** 以本 PR 的 CI 与审查结果为准。必要时批准 GitHub Actions 运行后再合并。
-            - **E2E：** 仅版本元数据，无业务改动；产品发布验收在 Release PR 中记录。
-
-            ## Merge Danger
-
-            **Door:** two-way
-
-            **Blast Radius:** release
-
-            此 PR 准备版本，不执行上线。发布前按当前源码核对开放范围。
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json
+          if [[ -f CHANGELOG.md ]]; then
+            git add -- CHANGELOG.md
+          fi
+          if git diff --cached --quiet; then
+            printf 'No version changes were generated.\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          version=$(node -p 'require("./package.json").version')
+          git commit -m "chore(release): prepare $version"
+          git push origin HEAD:refs/heads/preview/integration
+          printf 'Prepared %s at %s on preview/integration.\n\nCreate a Release PR from preview/integration to main; publication requires user approval.\n' \
+            "$version" "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"

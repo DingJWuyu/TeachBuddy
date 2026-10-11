@@ -11,24 +11,68 @@
   本地 trunk -> 临时 branch -> 修改与本地验证 -> 直接合回本地 trunk
   不创建 worktree，不开开发 PR，不单独 push
 
-worktree 任务：
-  trunk -> 短期分支 + worktree -> 开发、自验、独立 Standards / Spec 审查
-  -> 总控准备集成 -> 每个 worktree 各开一个开发 PR -> CI -> trunk
-  开发期间不开 PR；多个 worktree 分别集成
+worktree 并行开发：
+  trunk
+    +-> branch A + worktree A -> 开发、自测、双轴审查
+    +-> branch B + worktree B -> 开发、自测、双轴审查
+          |
+          | 开发期间不开 PR，每条任务允许多次 commit
+          v
+        总控准备集成，同步本地 trunk 积累的小改
+          |
+          +-> A 的集成 PR -> 复用审查 + CI -> trunk -> 清理 A
+          +-> B 对齐最新 trunk -> B 的集成 PR -> 复用或补审 + CI
+                                                        |
+                                                        v
+                                                  trunk -> 清理 B
 
-发布：
-  同步本地 trunk 成果到远端
-  -> 自动版本准备 PR -> preview/integration
-  -> Release PR: preview/integration -> main
-  -> 发布验收、CI、用户批准 -> merge commit
-  -> 固定提交验证与打包 -> Tag / GitHub Release
+准备与发布：
+  用户决定准备版本
+    |
+    v
+  总控同步本地 trunk，手动触发 Prepare release
+    |
+    v
+  GitHub Actions 运行机检出 trunk 的工作副本
+    |
+    +-> dry_run=true（默认）
+    |     release-it 只预览版本号和更新日志 -> 结束
+    |
+    +-> dry_run=false（正式准备）
+          release-it 读取提交历史与发布 Tag
+          生成 package.json / package-lock.json / CHANGELOG.md
+          直接 commit + push 到 trunk，不创建版本准备 PR
+    v
+  总控创建 Release PR：trunk -> main
+    |
+    +-> 核对发布范围、版本号、CHANGELOG 和验证证据
+    +-> 发布候选 CI：构建 + 固定回归集
+    v
+  用户批准正式发布
+    |
+    v
+  合入 main，产生固定提交 M
+    |
+    v
+  自动触发 Release，检出 M
+    |
+    +-> 构建 + 固定回归集
+    +-> 打包 M 的应用产物，生成 SHA-256 校验文件
+    v
+  创建 v<版本号> Tag -> 指向 M
+    |
+    v
+  创建 GitHub Release，附发布说明、应用包和校验文件
+    |
+    v
+  部署 + 上线检查（CD 待接通）
 ```
 
 worktree 集成 PR 可 squash；Release PR 使用 merge commit。代码单向从 trunk 晋升到 main，发布后 trunk 继续开发，无需同步 main 的发布历史。功能、修复、版本号和 CHANGELOG 先进入 trunk；main 仅接收发布合并。短期分支合并后删除；长期分支由默认分支和 Rulesets 保护。
 
 ## 任务与 PR
 
-已授权任务按[当前授权](../plans/run-state.md#工作现场与授权)执行。开发 PR 只在总控准备集成 worktree 时创建；其他本地 commit、merge 均不触发开发 PR。版本准备 PR 和 Release PR 属于发布流程，继续保留。
+已授权任务按[当前授权](../plans/run-state.md#工作现场与授权)执行。开发 PR 只在总控准备集成 worktree 时创建；其他本地 commit、merge 均不触发开发 PR。发布流程只创建 trunk 到 main 的 Release PR，版本准备直接提交 trunk。
 
 | 路径 | 开发与验证 | 集成与远端操作 |
 | --- | --- | --- |
@@ -70,24 +114,24 @@ main 合并后仍由 `Release` 复用同一 CI，验证实际发布提交并构�
 
 版本采用 SemVer；根 `package.json` 是产品发布版本，workspace 包版本是内部依赖版本，不发布 npm 包。Conventional Commits 驱动 `release-it` 与官方 Conventional Changelog 插件，版本和根 CHANGELOG 由工具生成。固定工具版本在锁文件中。
 
+准备版本与正式发布的时机均由用户决定，agent 不得根据开发完成、commit、push 或时间自行触发。`Prepare release` 仅支持手动触发；授权准备版本不等于批准正式发布。main 合并前须取得针对最终候选的发布批准，获准合并后由 `Release` 自动完成验证、打包、Tag 和 GitHub Release。
+
 正式版本使用 `v<version>` Tag，仅由 main 发布。版本准备完整获取仓库历史和 Tag，使用 release-it 的 `git.getLatestTagFromAllRefs` 按版本排序读取最高的 `v*` Tag，再计算该 Tag 到 trunk 的新增提交；Tag 指向的发布提交不必是 trunk 的祖先。当前只维护这一条正式版本序列，下一版准备在上一版发布完成后进行。
 
-1. **准备版本。** 总控先同步已验证的本地 trunk 成果，再在 GitHub Actions 运行 `Prepare release`，分支选 trunk。默认 `dry_run=true` 只预览；确认准备范围后使用 `false` 创建普通版本 PR。`auto` 按提交推荐，显式 patch/minor/major 按本次发布决定。无历史 Tag 的首版会读取已有提交历史，不创建虚假的基准 Tag。
-2. **审查元数据。** 核对版本 PR 的版本号、CHANGELOG 与 CI，再合入 trunk。首版开放范围和已知限制要在正式 Release PR 中明确。版本准备合入后、正式发布前，不重复执行版本递增。
-3. **创建 Release PR。** 以 trunk 为源、main 为目标，标题使用 `chore(release): ...`。记录发布范围、业务验收、未验边界和用户批准。trunk 新提交会改变候选，检查和批准须对应最终候选。main 只能以 merge commit 接收发布。
+1. **准备版本。** 用户指定准备时机后，总控先同步已验证的本地 trunk 成果，再手动运行 GitHub Actions 的 `Prepare release`，分支选 trunk。默认 `dry_run=true` 只预览；正式准备使用 `false`，在运行机工作副本生成 `package.json`、`package-lock.json`、`CHANGELOG.md`，直接提交并推送到 trunk。`auto` 按提交推荐，显式 patch/minor/major 按本次发布决定；日常代码提交只影响下次计算结果，不启动工具。无历史 Tag 的首版会读取已有提交历史并创建 CHANGELOG，使用 Conventional Changelog 的 `conventionalcommits` 模板，不创建虚假的基准 Tag。
+2. **核对准备结果。** 总控同步远端新增的版本提交，核对工作流摘要、版本号、锁文件和 CHANGELOG；没有生成变更时不创建空提交。准备过程若遇到 trunk 已前进，普通 push 会拒绝覆盖；先核对现场和发布范围，不强推。版本已准备、正式发布前，不重复执行版本递增。
+3. **创建 Release PR。** 总控通过 GitHub CLI 以 trunk 为源、main 为目标创建 PR，标题使用 `chore(release): ...`，Body 按 `pr` skill 与仓库模板。版本信息和业务发布范围在同一 PR 审阅，记录业务验收、未验边界及用户批准，等待 CI 通过。trunk 新提交会改变候选，检查和批准须对应最终候选。main 只能以 merge commit 接收发布。
 4. **发布固定版本。** main 合并触发 `Release`，复用 CI 构建和测试，通过后打包本次 SHA 的服务源码、Web 构建、共享源码、依赖清单及配置模板，附 SHA-256。GitHub CLI 从该 SHA 创建 `v<version>` Tag、GitHub Release 和发布说明，并上传同一次验证的产物。
 
-`Release` 也可手动运行；默认 `dry_run=true` 走实际构建、测试、打包和摘要校验，产物保存在 Actions，明确不创建 Tag/Release。正式发布只允许 main。已有同名 Tag/Release 会阻止覆盖；发布中断时先核对现有 Tag 指向的提交和已有资产，再使用 GitHub 原生命令补充缺失部分，不移动已发布 Tag。
+`Release` 也支持获准后的手动演练或恢复；默认 `dry_run=true` 走实际构建、测试、打包和摘要校验，产物保存在 Actions，明确不创建 Tag/Release。正式发布只允许 main。已有同名 Tag/Release 会阻止覆盖；发布中断时先核对现有 Tag 指向的提交和已有资产，再使用 GitHub 原生命令补充缺失部分，不移动已发布 Tag。
 
-自动化使用仓库 `GITHUB_TOKEN`，只在版本准备和发布 job 授予写权限；日常 CI 只读。由该 token 创建的 PR 检查可能需要在 GitHub 批准运行，不能把未运行当通过。它创建的 Tag/Release 也不能被假定会继续触发另一条自动化，未来 CD 应复用本次发布产物并接在发布流程内。
-
-机器人 PR 的 Actions 显示 `action_required` 时，维护者核对来源和候选后使用 GitHub 的 **Approve and run**，或对每个待批 run 执行 `gh api --method POST repos/{owner}/{repo}/actions/runs/<run-id>/approve`。批准后仍需等待实际检查通过，不需要为此添加个人 PAT。
+自动化使用仓库 `GITHUB_TOKEN`，只在版本准备和发布 job 授予内容写权限；日常 CI 只读。版本准备不创建 PR，Release PR 由总控使用已有 GitHub CLI 身份创建并触发检查。该 token 创建的 Tag/Release 不能被假定会继续触发另一条自动化，未来 CD 应复用本次发布产物并接在发布流程内。
 
 ## GitHub 配置与重建
 
 工作流、PR/Issue 模板和 Rulesets 请求体在 `.github/`，可随仓库重建。Actions 固定到上游发布提交，npm 安装使用锁文件。
 
-新仓库准备默认开发分支后，在 GitHub 设置中启用 Issues 和 Actions，允许 Actions 创建 PR；默认 workflow token 保持只读，写权限由具体 job 声明。允许 merge 与 squash，关闭 rebase merge，开启合并后删除短期分支；两种合并提交的标题均取 Conventional Commit 格式的 PR 标题，正文取 PR 描述。
+新仓库准备默认开发分支后，在 GitHub 设置中启用 Issues 和 Actions；默认 workflow token 保持只读，写权限由具体 job 声明。允许 merge 与 squash，关闭 rebase merge，开启合并后删除短期分支；两种合并提交的标题均取 Conventional Commit 格式的 PR 标题，正文取 PR 描述。
 
 在 Settings / Rules / Rulesets 导入 `.github/rulesets/` 的三份 JSON，或使用 GitHub CLI 的 `gh api POST repos/{owner}/{repo}/rulesets --input <文件>`。已有仓库按名称更新规则，避免重复创建。需要当前仓库类型和套餐支持 Rulesets。
 
@@ -120,6 +164,6 @@ node --env-file=.env apps/api/src/server.js
 
 - [Trunk Based Development](https://trunkbaseddevelopment.com/)：单一日常集成主线与短期任务分支。
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 与 [SemVer](https://semver.org/)：提交语义与版本递增。
-- [release-it](https://github.com/release-it/release-it)、[Conventional Changelog 插件](https://github.com/release-it/conventional-changelog)、[create-pull-request](https://github.com/peter-evans/create-pull-request)：标准版本准备与 PR 自动化。
+- [release-it](https://github.com/release-it/release-it)、[Conventional Changelog 插件](https://github.com/release-it/conventional-changelog)：版本计算与更新日志生成；生成后使用原生 Git 提交和推送。
 - [release-it 跨分支 Tag 查找](https://github.com/release-it/release-it/blob/main/docs/git.md#use-all-refs-to-determine-latest-tag)、[GitHub 必需状态检查](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches#require-status-checks-before-merging)：单向发布的版本基线与合并条件。
 - [GitHub CLI release create](https://cli.github.com/manual/gh_release_create)、[Rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)、[workflow 触发规则](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)：发布、合并门槛与 token 行为。
