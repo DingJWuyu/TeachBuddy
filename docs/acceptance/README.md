@@ -22,7 +22,7 @@
 
 引入 lint、hooks 或新验证工具前，先指出已有检查漏掉的具体问题，确认该工具确实能检出，并评估误报、重复覆盖及持续维护负担。现有构建、集成测试或人工浏览足以提供反馈时沿用；不因缺少某类工具而补齐工具清单。
 
-日常 GitHub CI 使用 `npm run test:ci` 的 HTTP/SQLite 范围和现有构建；浏览器、Office/PDF、真实 OCR/模型仍按本页选择本地验证。具体覆盖、两个具名重型子例的排除及 PR 证据要求见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。CI 通过不代替发布范围的真实使用验收。
+日常 GitHub CI 使用 `npm run test:ci` 的 HTTP/SQLite 范围和现有构建；浏览器、Office/PDF、真实 OCR/模型仍按本页选择本地验证。具体覆盖、具名浏览器和外部工具子例的排除及 PR 证据要求见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。CI 通过不代替发布范围的真实使用验收。
 
 ## 浏览器准备
 
