@@ -1,7 +1,7 @@
 {
   "name": "refatos-v1",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A teacher workspace shell with account access, persistent layout, and a neutral module registration contract.",
   "license": "MIT",
   "author": "Robiul Islam Refat",
