@@ -52,7 +52,9 @@ worktree 集成时：
 
 ## CI 与本地验证
 
-现有 `CI` 对两条长期分支的 PR 创建、更新和重新打开，以及远端 trunk 的 push 运行；main 合并后的验证由 `Release` 复用同一 CI。小改仅在本地提交与合并，不触发云端 CI。任务分支的普通 push 不单独启动 CI；已有 PR 的分支 push 会更新 PR 并触发检查。旧的同一候选验证可取消，正式发布运行不自动取消。触发策略仍待确认，当前工作流配置继续生效。
+日常 `CI` 仅由目标为 trunk 或 main 的 PR 创建、候选提交更新和重新打开触发。已有 PR 的源分支 push 会改变候选并重跑检查，包括 trunk 作为 Release PR 源分支时；修改标题或描述只运行轻量的 `PR conventions`，不重跑构建和测试。本地提交与合并不触发云端 CI；各分支的 push 事件不单独启动 CI，trunk 合并后不再额外跑一轮。
+
+main 合并后仍由 `Release` 复用同一 CI，验证实际发布提交并构建产物；手动验证入口继续保留。总控逐个集成 worktree，核对各 PR 基于最新 trunk，候选或基线更新后重新检查。过时的日常运行自动取消，正式发布运行不自动取消。测试范围不因减少触发而裁剪。
 
 - `Build and API`：锁定依赖安装、现有三 workspace 构建和 `npm run test:ci`。
 - `PR conventions`：使用成熟 action 校验 Conventional Commit 标题；main 的 PR 源必须是本仓库 trunk。
