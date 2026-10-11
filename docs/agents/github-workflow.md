@@ -21,9 +21,15 @@ Issue / Spec / Ticket
 
 ## 任务与 PR
 
+已授权的开发任务由 agent 主动创建 PR，普通任务按[当前授权](../plans/run-state.md#工作现场与授权)合回 trunk。PR 按完整的改动目的划分，默认一个明确问题或可独立验收的目标对应一个 PR；实现、必要测试与相关文档一并提交。
+
+- 拆分须能降低审查复杂度、隔离不同风险，或让其他工作提前使用已完成的基础能力；各部分合入后保持系统可用。拆分时在任务计划或 PR 说明中写清各自结果和拆分理由。
+- 同一目标的零碎步骤和连续修补通常留在同一 PR，agent 分工本身不构成拆分理由；任务、agent、worktree 和 commit 的数量不决定 PR 数量。
+- 无关改动分别处理，新增功能仍须属于已授权范围。频次不按天数或 commit 数量设限。
+
 1. 沿[Issue 约定](issue-tracker.md)记录使用结果、范围、固定输入与完成条件。小任务直接使用 GitHub Issue；需要拆分时使用 sub-issues。模板位于 `.github/ISSUE_TEMPLATE/`，triage 标签沿[既有映射](triage-labels.md)。
 2. 从 trunk 创建短期分支。提交和 PR 标题遵循 Conventional Commits，PR 描述按 `pr` skill 及仓库模板说明结果、证据和合并影响。
-3. 按[验证指南](../acceptance/README.md)执行受影响的真实路径，按[开发约定](module-development.md#编排)做独立双轴审查。在 PR 中记录候选 SHA、验证范围、实际通过/未验及审查结果。新的业务改动或冲突处理需要更新受影响证据。
+3. 按[验证指南](../acceptance/README.md)执行受影响的真实路径，按[开发约定](module-development.md#编排)完成或复用覆盖最终候选的独立双轴审查。在 PR 中记录候选 SHA、验证范围、实际通过/未验及审查结果。新的业务改动或冲突处理需要更新受影响证据。
 4. CI 和审查通过后，任务 PR 合入 trunk。`Closes #...` 可在默认分支合并时关闭 Issue；任务完成与已发布分别记录，Release 关联本次发布的 PR。总控完成集成验证与[现场清理](module-development.md#集成后的清理)。
 
 双轴审查是独立 agent 的判断，PR 中保留结果；它不是 GitHub 原生的另一个用户批准。当前单人仓库不要求无法满足的第二账户 approval，main 合并仍需用户明确批准。
