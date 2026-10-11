@@ -17,7 +17,7 @@ Issue / Spec / Ticket
   -> 固定提交验证与打包 -> Tag / GitHub Release
 ```
 
-普通任务 PR 可 squash；Release PR 和发布历史同步 PR 使用 merge commit。历史同步从最新 trunk 创建短期分支并合入已发布的 main 提交，再向 trunk 提 PR。保持两条长期分支的祖先关系，发布后先完成同步 PR，再准备下一版。短期分支合并后删除；长期分支由默认分支和 Rulesets 保护。
+普通任务 PR 可 squash；Release PR 使用 merge commit。代码单向从 trunk 晋升到 main，发布后 trunk 继续开发，无需同步 main 的发布历史。功能、修复、版本号和 CHANGELOG 先进入 trunk；main 仅接收发布合并。短期分支合并后删除；长期分支由默认分支和 Rulesets 保护。
 
 ## 任务与 PR
 
@@ -46,11 +46,12 @@ Issue / Spec / Ticket
 
 版本采用 SemVer；根 `package.json` 是产品发布版本，workspace 包版本是内部依赖版本，不发布 npm 包。Conventional Commits 驱动 `release-it` 与官方 Conventional Changelog 插件，版本和根 CHANGELOG 由工具生成。固定工具版本在锁文件中。
 
+正式版本使用 `v<version>` Tag，仅由 main 发布。版本准备完整获取仓库历史和 Tag，使用 release-it 的 `git.getLatestTagFromAllRefs` 按版本排序读取最高的 `v*` Tag，再计算该 Tag 到 trunk 的新增提交；Tag 指向的发布提交不必是 trunk 的祖先。当前只维护这一条正式版本序列，下一版准备在上一版发布完成后进行。
+
 1. **准备版本。** 在 GitHub Actions 运行 `Prepare release`，分支选 trunk。默认 `dry_run=true` 只预览；确认准备范围后使用 `false` 创建普通版本 PR。`auto` 按提交推荐，显式 patch/minor/major 按本次发布决定。无历史 Tag 的首版会读取已有提交历史，不创建虚假的基准 Tag。
 2. **审查元数据。** 核对版本 PR 的版本号、CHANGELOG 与 CI，再合入 trunk。首版开放范围和已知限制要在正式 Release PR 中明确。版本准备合入后、正式发布前，不重复执行版本递增。
 3. **创建 Release PR。** 以 trunk 为源、main 为目标，标题使用 `chore(release): ...`。记录发布范围、业务验收、未验边界和用户批准。trunk 新提交会改变候选，检查和批准须对应最终候选。main 只能以 merge commit 接收发布。
 4. **发布固定版本。** main 合并触发 `Release`，复用 CI 构建和测试，通过后打包本次 SHA 的服务源码、Web 构建、共享源码、依赖清单及配置模板，附 SHA-256。GitHub CLI 从该 SHA 创建 `v<version>` Tag、GitHub Release 和发布说明，并上传同一次验证的产物。
-5. **同步发布历史。** 发布工作流从最新 trunk 创建短期同步分支，合入本次发布的固定 main 提交并提出 PR。核对差异、通过检查后以 merge commit 合入，使最新正式 Tag 对下一次 CHANGELOG 生成可见。若 trunk 继续前进，在短期分支更新或解决冲突，不向 main 写入未发布改动。
 
 `Release` 也可手动运行；默认 `dry_run=true` 走实际构建、测试、打包和摘要校验，产物保存在 Actions，明确不创建 Tag/Release。正式发布只允许 main。已有同名 Tag/Release 会阻止覆盖；发布中断时先核对现有 Tag 指向的提交和已有资产，再使用 GitHub 原生命令补充缺失部分，不移动已发布 Tag。
 
@@ -67,6 +68,8 @@ Issue / Spec / Ticket
 在 Settings / Rules / Rulesets 导入 `.github/rulesets/` 的三份 JSON，或使用 GitHub CLI 的 `gh api POST repos/{owner}/{repo}/rulesets --input <文件>`。已有仓库按名称更新规则，避免重复创建。需要当前仓库类型和套餐支持 Rulesets。
 
 开发和稳定分支要求 PR、讨论解决及两项必需检查通过，并阻止删除、强推；稳定分支仅允许 merge commit。版本 Tag 禁止改写和删除。检查名与 `.github/workflows/` 一同维护。Rulesets 不替代用户对 main 发布的批准。
+
+trunk 要求任务分支在合并前更新到最新基线；main 的必需检查使用 loose 模式，允许源分支未包含 main 的发布合并提交。Release PR 的 CI 验证 GitHub 生成的候选合并结果，合入后 `Release` 再验证和构建实际 main 提交。main 有新的发布合并时，其他待发布 PR 需重新核对候选和运行检查；不要用回合 main 历史作为更新手段。
 
 ## 部署交接
 
@@ -94,4 +97,5 @@ node --env-file=.env apps/api/src/server.js
 - [Trunk Based Development](https://trunkbaseddevelopment.com/)：单一日常集成主线与短期任务分支。
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 与 [SemVer](https://semver.org/)：提交语义与版本递增。
 - [release-it](https://github.com/release-it/release-it)、[Conventional Changelog 插件](https://github.com/release-it/conventional-changelog)、[create-pull-request](https://github.com/peter-evans/create-pull-request)：标准版本准备与 PR 自动化。
+- [release-it 跨分支 Tag 查找](https://github.com/release-it/release-it/blob/main/docs/git.md#use-all-refs-to-determine-latest-tag)、[GitHub 必需状态检查](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches#require-status-checks-before-merging)：单向发布的版本基线与合并条件。
 - [GitHub CLI release create](https://cli.github.com/manual/gh_release_create)、[Rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)、[workflow 触发规则](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)：发布、合并门槛与 token 行为。

@@ -3,6 +3,8 @@
   "git": {
     "requireBranch": "preview/integration",
     "requireUpstream": false,
+    "getLatestTagFromAllRefs": true,
+    "tagName": "v${version}",
     "commit": false,
     "tag": false,
     "push": false

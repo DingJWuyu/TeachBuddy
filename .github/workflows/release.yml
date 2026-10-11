@@ -44,7 +44,6 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
-      pull-requests: write
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
@@ -81,44 +80,3 @@ jobs:
           fi
           printf '\nCD is pending: deployment host, domain, production configuration and backup destination are not configured.\n' \
             >> "$GITHUB_STEP_SUMMARY"
-      - name: Propose release history synchronization
-        if: env.DRY_RUN != 'true'
-        env:
-          SYNC_BODY: |
-            ## Summary
-
-            ```text
-            released main -> short sync branch -> preview/integration
-            ```
-
-            将已发布版本的合并历史同步回开发主线，供下一轮标准 CHANGELOG 生成识别发布边界。
-
-            ## Evidence
-
-            - **Before:** 开发主线尚未包含本次发布的 main 合并提交。
-            - **After:** 此 PR 保留发布提交与 Tag 的祖先关系。
-            - **验证：** 合并前核对差异和 CI。使用 merge commit 保留历史。
-            - **E2E：** 仅同步已经验收的版本；如有冲突修复，按影响范围补验。
-
-            ## Merge Danger
-
-            **Door:** two-way
-
-            **Blast Radius:** history
-        run: |
-          gh auth setup-git
-          git fetch origin preview/integration
-          branch="chore/sync-release-$GITHUB_RUN_ID"
-          git switch -c "$branch" FETCH_HEAD
-          if git merge-base --is-ancestor "$GITHUB_SHA" HEAD; then
-            echo 'Released history is already present in the development trunk.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git merge --no-ff -m 'chore: synchronize released history' "$GITHUB_SHA"
-          git push origin "$branch"
-          printf '%s\n' "$SYNC_BODY" > "$RUNNER_TEMP/sync-pr.md"
-          gh pr create --base preview/integration --head "$branch" \
-            --title 'chore: synchronize released history into development' \
-            --body-file "$RUNNER_TEMP/sync-pr.md"
