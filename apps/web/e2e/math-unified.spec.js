@@ -22,8 +22,9 @@ test('统一作品：空白退出、公式自动保存、刷新、手动图形�
   await expect(page.locator('.mw-library-row')).toHaveCount(0);
   await page.getByRole('button', { name: '新建作品', exact: true }).click();
     await page.locator('.math-ai-provider').click();
-    await expect(page.locator('.math-ai-setup-popover')).toBeVisible();
-    await expect(page.getByRole('link', { name: '下载扩展', exact: true })).toBeVisible();
+    const popover = page.locator('.math-ai-setup-popover');
+    await expect(popover).toBeVisible();
+    await expect(popover.getByRole('button', { name: '检查连接', exact: true })).toBeVisible();
     await expect(page.locator('.mw-save-state')).toHaveCount(0);
     await page.screenshot({ path: info.outputPath('empty-install-1440.png') });
     await page.setViewportSize({ width: 1024, height: 768 }); await page.screenshot({ path: info.outputPath('empty-install-1024.png') });
@@ -275,8 +276,9 @@ test('界面路径：一键编辑、未连接输入保护、菜单键盘与下�
   await input.fill('画一条抛物线');
   await page.getByRole('button', { name: '发送消息', exact: true }).click();
   await expect(input).toHaveValue('画一条抛物线');
-  await expect(page.getByRole('link', { name: '下载扩展', exact: true })).toBeVisible();
-  await expect(page.locator('.math-ai-error')).toContainText('内容已保留');
+  const popover = page.locator('.math-ai-setup-popover');
+  await expect(popover).toBeVisible();
+  await expect(popover.getByRole('button', { name: '检查连接', exact: true })).toBeVisible();
   await shot('final-connection-guide-light.png');
   await page.getByRole('button', { name: '添加公式', exact: true }).click();
   const field = page.locator('.mw-new-formula math-field');
@@ -416,7 +418,9 @@ test('首页数学对话：缺连接保留输入，一次开始只执行一轮�
   await input.press('Backspace');
   await input.press('Enter');
   await expect(input).toHaveValue(request);
-  await expect(page.getByRole('link', { name: '下载扩展', exact: true })).toBeVisible();
+  const homePopover = page.locator('.math-ai-setup-popover');
+  await expect(homePopover).toBeVisible();
+  await expect(homePopover.getByRole('button', { name: '检查连接', exact: true })).toBeVisible();
   await page.getByRole('heading', { name: '想做什么数学作品？', exact: true }).click();
   await expect(page.locator('.math-ai-setup-popover')).toHaveCount(0);
   await page.locator('.math-ai-provider').click();

@@ -3,16 +3,20 @@ import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import { readLocal, writeLocal } from '../../workbench/storage.js';
 import { Icon } from '../../workbench/icons.jsx';
-import { webAiRequest } from './bridge.js';
+import { getInstallation, isExtensionCompatible } from './installation.js';
+import { subscribeWebAiAvailability, webAiRequest } from './bridge.js';
 import { mathPrompt, readProposal } from './protocol.js';
 import { ModuleDisclosure, ModulePresence } from '../../workbench/ModuleMotion.jsx';
 import './assistant.css';
 
 export function MathWebAssistant({ controller, title, accountKey, onStart, takeRequest }) {
   const { t } = useTranslation('math');
+  const installation = getInstallation();
   const [conversation, setConversation] = useState(() => readLocal(accountKey, 'math-web-assistant') ?? { sessionId: crypto.randomUUID(), messages: [], input: '' });
   const [connection, setConnection] = useState('checking');
   const [checking, setChecking] = useState(false);
+  const isConnecting = useRef(false);
+  const connectPromise = useRef(null);
   const connectionLifetime = useRef(null);
   const connectionSequence = useRef(0);
   const [running, setRunning] = useState(false);
@@ -31,29 +35,70 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
     const lifetime = new AbortController(); connectionLifetime.current = lifetime;
     setRunning(false); setStage(''); setError('');
     void checkConnection(lifetime.signal);
+    const unsubscribeAvailability = subscribeWebAiAvailability(() => {
+      if (!active.current) void checkConnection(lifetime.signal);
+    });
     const focus = () => { if (!active.current) void checkConnection(lifetime.signal); };
     window.addEventListener('focus', focus);
-    return () => { lifetime.abort(); active.current?.abort(); active.current = null; window.removeEventListener('focus', focus); };
+    return () => {
+      lifetime.abort();
+      active.current?.abort();
+      active.current = null;
+      unsubscribeAvailability();
+      window.removeEventListener('focus', focus);
+    };
   }, [accountKey, conversation.sessionId, controller]);
   async function checkConnection(signal = connectionLifetime.current?.signal) {
-    if (signal?.aborted) return;
+    if (signal?.aborted || isConnecting.current) return;
     const sequence = ++connectionSequence.current; setChecking(true);
-    try { const result = await webAiRequest('STATUS', conversation.sessionId, { signal });
-      if (signal?.aborted || sequence !== connectionSequence.current) return; setConnection(result.connectionState ?? (result.loginRequired ? 'login' : 'available'));
-    } catch (failure) { if (!signal?.aborted && sequence === connectionSequence.current) { setConnection('missing'); } }
-    finally { if (!signal?.aborted && sequence === connectionSequence.current) setChecking(false); }
+    try {
+      const result = await webAiRequest('STATUS', conversation.sessionId, { signal });
+      if (signal?.aborted || sequence !== connectionSequence.current) return;
+      if (result.extensionVersion && !isExtensionCompatible(result.extensionVersion)) {
+        setConnection('incompatible');
+      } else {
+        setConnection(result.connectionState ?? (result.loginRequired ? 'login' : 'available'));
+      }
+    } catch {
+      if (!signal?.aborted && sequence === connectionSequence.current) {
+        setConnection('missing');
+      }
+    } finally {
+      if (!signal?.aborted && sequence === connectionSequence.current) setChecking(false);
+    }
   }
   useEffect(() => { if (thread.current) thread.current.scrollTop = thread.current.scrollHeight; }, [conversation.messages.length, stage]);
   function append(message) { setConversation(value => ({ ...value, messages: [...value.messages, { id: crypto.randomUUID(), ...message }] })); }
   async function connect(signal) {
-    const sequence = ++connectionSequence.current; setChecking(false); setConnection('connecting');
-    const result = await webAiRequest('CONNECT', conversation.sessionId, { signal });
-    if (signal?.aborted || sequence !== connectionSequence.current) return;
+    if (connectPromise.current) return connectPromise.current;
+    const promise = (async () => {
+      isConnecting.current = true;
+      const sequence = ++connectionSequence.current; setChecking(false); setConnection('connecting');
+      try {
+        const result = await webAiRequest('CONNECT', conversation.sessionId, { signal });
+        if (signal?.aborted || sequence !== connectionSequence.current) return false;
 
-    if (result.loginRequired) { setConnection('login'); throw new Error(t('请在已打开的 DeepSeek 页面登录，然后返回这里连接。')); }
-    setConnection('ready');
-    setSetupOpen(false);
-    providerRef.current?.focus();
+        if (result.loginRequired) {
+          setConnection('login');
+          setSetupOpen(true);
+          return false;
+        }
+        setConnection('ready');
+        setSetupOpen(false);
+        providerRef.current?.focus();
+        return true;
+      } catch (failure) {
+        if (signal?.aborted || sequence !== connectionSequence.current) return false;
+        setConnection('disconnected');
+        if (failure.name !== 'AbortError') setError(failure.message);
+        return false;
+      } finally {
+        isConnecting.current = false;
+        connectPromise.current = null;
+      }
+    })();
+    connectPromise.current = promise;
+    return promise;
   }
   useEffect(() => {
     if (!controller || !takeRequest) return;
@@ -64,22 +109,43 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
     event?.preventDefault();
     const request = (initialInput ?? conversation.input).trim();
     if (active.current || !request) return;
-    if (connection === 'missing') { setSetupOpen(true); setError(t('先连接助理，内容已保留。')); return; }
-    const lifetime = new AbortController(); active.current = lifetime;
-    if (!controller) {
-      if (!onStart) { active.current = null; return; }
-      setRunning(true); setError('');
-      try { await connect(lifetime.signal); lifetime.signal.throwIfAborted(); await onStart(request); }
-      catch (failure) { if (active.current === lifetime && failure.name !== 'AbortError') setError(failure.message); }
-      finally { if (active.current === lifetime) { active.current = null; setRunning(false); } }
+
+    if (['incompatible', 'missing'].includes(connection)) {
+      setSetupOpen(true);
       return;
     }
+
+    const lifetime = new AbortController(); active.current = lifetime;
+    setRunning(true); setError('');
+
+    const connected = await connect(lifetime.signal);
+    if (!connected || lifetime.signal.aborted) {
+      if (active.current === lifetime) {
+        active.current = null;
+        setRunning(false);
+        setSetupOpen(true);
+      }
+      return;
+    }
+
+    if (!controller) {
+      if (!onStart) { active.current = null; setRunning(false); return; }
+      try {
+        lifetime.signal.throwIfAborted();
+        await onStart(request);
+      } catch (failure) {
+        if (active.current === lifetime && failure.name !== 'AbortError') setError(failure.message);
+      } finally {
+        if (active.current === lifetime) { active.current = null; setRunning(false); }
+      }
+      return;
+    }
+
     const captured = controller;
-    setRunning(true); setError(''); setStage(t('正在连接 DeepSeek'));
+    setStage(t('正在连接 DeepSeek'));
     append({ role: 'user', text: request });
     setConversation(value => ({ ...value, input: '' }));
     try {
-      await connect(lifetime.signal);
       let execution;
       for (let round = 0; round < 4; round += 1) {
         lifetime.signal.throwIfAborted();
@@ -113,7 +179,14 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
     } catch (failure) {
       if (active.current !== lifetime) return;
       if (failure.name === 'AbortError') setStage(t('已停止'));
-      else { setError(failure.message); setStage(''); if (['login-required', 'provider-disconnected', 'connection-lost'].includes(failure.code)) setConnection(failure.code === 'login-required' ? 'login' : 'disconnected'); }
+      else {
+        setError(failure.message);
+        setStage('');
+        if (['login-required', 'provider-disconnected', 'connection-lost'].includes(failure.code)) {
+          setConnection(failure.code === 'login-required' ? 'login' : 'disconnected');
+          setSetupOpen(true);
+        }
+      }
     } finally { if (active.current === lifetime) { active.current = null; setRunning(false); } }
   }
 
@@ -225,7 +298,15 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
             <div className="math-ai-setup-popover-head">
               <span className="math-ai-popover-title">
                 <span className={`math-ai-connection is-${connection}`}/>
-                <span>{t(connection === 'missing' ? '连接助理' : connection === 'login' ? '登录助理' : connection === 'disconnected' ? '重新连接' : connection === 'checking' ? '检查连接' : connection === 'connecting' ? '正在连接' : 'DeepSeek 网页版')}</span>
+                <span>{t(
+                  connection === 'incompatible' ? '更新扩展'
+                  : connection === 'login' ? '登录账号'
+                  : connection === 'missing' ? '安装扩展'
+                  : connection === 'disconnected' ? '重新连接'
+                  : connection === 'checking' ? '检查连接'
+                  : connection === 'connecting' ? '正在连接'
+                  : 'DeepSeek'
+                )}</span>
               </span>
               <button
                 type="button"
@@ -241,47 +322,106 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
             </div>
             <div className="math-ai-setup-body">
               {connection === 'ready' ? (
-                <p>{t('使用 DeepSeek 网页账号。')}</p>
+                <>
+                  <p>{t('已连接 DeepSeek，可直接生成数学作品。')}</p>
+                  <div className="math-ai-setup-actions">
+                    <a className="math-ai-action-secondary" href="https://chat.deepseek.com" target="_blank" rel="noreferrer">
+                      {t('打开网页')}
+                    </a>
+                    <button type="button" disabled={checking || running} onClick={() => checkConnection()}>
+                      {t(checking ? '检查中…' : '检查连接')}
+                    </button>
+                  </div>
+                </>
+              ) : connection === 'incompatible' ? (
+                <>
+                  <p>{t('扩展版本过旧，请更新后继续使用。')}</p>
+                  {installation.storeUrl ? (
+                    <div className="math-ai-setup-actions">
+                      <a className="math-ai-install" href={installation.storeUrl} target="_blank" rel="noreferrer">
+                        {t('前往商店')}
+                      </a>
+                      <button type="button" disabled={checking || running} onClick={() => checkConnection()}>
+                        {t(checking ? '检查中…' : '检查更新')}
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="math-ai-setup-note">{t('扩展暂未在应用商店上架。')}</p>
+                      <div className="math-ai-setup-actions">
+                        <button type="button" disabled={checking || running} onClick={() => checkConnection()}>
+                          {t(checking ? '检查中…' : '检查更新')}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </>
               ) : connection === 'missing' ? (
                 <>
-                  <p>{t('安装扩展后，在这里直接对话。')}</p>
-                  <a className="math-ai-install" href="/downloads/teachbuddy-math-web-ai.zip" download>{t('下载扩展')}</a>
-                  <ol>
-                    <li>{t('解压下载文件')}</li>
-                    <li>{t('在扩展页开启开发者模式')}</li>
-                    <li>{t('加载扩展目录，刷新工作台')}</li>
-                  </ol>
+                  {installation.browser === 'unsupported' ? (
+                    <>
+                      <p>{t('仅支持 Chrome 与 Edge 桌面浏览器。')}</p>
+                      <p className="math-ai-setup-note">{t('请更换支持的浏览器后访问。')}</p>
+                      <div className="math-ai-setup-actions">
+                        <button type="button" disabled={checking || running} onClick={() => checkConnection()}>
+                          {t(checking ? '检查中…' : '检查连接')}
+                        </button>
+                      </div>
+                    </>
+                  ) : installation.storeUrl ? (
+                    <>
+                      <p>{t('安装浏览器扩展后，即可连接使用。')}</p>
+                      <p className="math-ai-setup-note">{t('安装后切回此页将自动连接。')}</p>
+                      <div className="math-ai-setup-actions">
+                        <a className="math-ai-install" href={installation.storeUrl} target="_blank" rel="noreferrer">
+                          {t('前往商店')}
+                        </a>
+                        <button type="button" disabled={checking || running} onClick={() => checkConnection()}>
+                          {t(checking ? '检查中…' : '检查连接')}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p>{t('浏览器扩展暂未在应用商店上架。')}</p>
+                      <p className="math-ai-setup-note">{t('上架后可前往商店安装使用。')}</p>
+                      <div className="math-ai-setup-actions">
+                        <button type="button" disabled={checking || running} onClick={() => checkConnection()}>
+                          {t(checking ? '检查中…' : '检查连接')}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </>
               ) : (
-                <p>{t(connection === 'login' ? '登录 DeepSeek 后，返回这里。' : connection === 'disconnected' ? '重新连接后可继续制作。' : '使用 DeepSeek 网页账号。')}</p>
-              )}
-              <div className="math-ai-setup-actions">
-                {connection !== 'missing' && connection !== 'ready' && (
-                  <button
-                    type="button"
-                    disabled={checking || running}
-                    onClick={async () => {
-                      setError('');
-                      try {
+                <>
+                  <p>{t(
+                    connection === 'login' ? '请先登录 DeepSeek，返回此页自动连接。'
+                    : connection === 'disconnected' ? '连接已断开，重新连接后可继续制作。'
+                    : '连接助理后，即可在此直接制作数学作品。'
+                  )}</p>
+                  <div className="math-ai-setup-actions">
+                    <button
+                      type="button"
+                      className="math-ai-action-primary"
+                      disabled={checking || running}
+                      onClick={async () => {
+                        setError('');
                         await connect(connectionLifetime.current?.signal);
-                        setSetupOpen(false);
-                        providerRef.current?.focus();
-                      } catch (failure) {
-                        if (failure.name !== 'AbortError') setError(failure.message);
-                      }
-                    }}
-                  >
-                    {t(connection === 'login' ? '打开登录' : '连接助理')}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  disabled={checking || running}
-                  onClick={() => checkConnection()}
-                >
-                  {t(checking ? '检查中…' : '检查连接')}
-                </button>
-              </div>
+                      }}
+                    >
+                      {t(connection === 'login' ? '打开登录' : connection === 'disconnected' ? '重新连接' : '连接助理')}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={checking || running}
+                      onClick={() => checkConnection()}
+                    >
+                      {t(checking ? '检查中…' : '检查连接')}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

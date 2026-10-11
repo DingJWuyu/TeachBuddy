@@ -112,7 +112,7 @@ npx playwright install chromium
 
 数学图形保存与输出在服务端使用生产依赖 Playwright 和单独安装的 Chromium；只运行 `npm ci` 不保证浏览器可执行文件存在。若宿主缺少浏览器系统库，按 Playwright 安装提示补齐，Linux 可使用 `npx playwright install --with-deps chromium`。纯公式渲染不启动 GeoGebra。部署账户与安装账户不同或移动浏览器缓存时，需重新核对 Chromium 可执行路径和实际图形保存；不能只检查服务进程。
 
-制作和下载物使用本地数学运行时，不请求 GeoGebra 官方服务；DeepSeek 网页 AI 仍需网络、正常登录账号及[浏览器扩展](../extensions/math-web-ai/README.md)。扩展 ZIP 随 Web 资产准备生成，安装从产品连接面板进入。全站离线不属于这一能力。
+制作和下载物使用本地数学运行时，不请求 GeoGebra 官方服务；DeepSeek 网页 AI 仍需网络、正常登录账号及[浏览器扩展](../extensions/math-web-ai/README.md)。桌面 Chrome/Edge 的正式安装入口由 Web 构建环境变量 `VITE_MATH_AI_CHROME_STORE_URL`、`VITE_MATH_AI_EDGE_STORE_URL` 配置，必须使用对应商店已发布的真实条目地址。默认留空，产品如实显示尚未上架；开发服务从根 `.env` 读取，固定构建须向构建命令传入这些环境变量，修改后重启开发服务或重新构建。开发 ZIP 仍随资产准备生成，商店上传包、发布材料及本机测试方式见扩展说明。全站离线不属于这一能力。
 
 GeoGebra 源码按 EUPL-1.2 使用，Giac、GMP、MPFR、字体及其他依赖保留各自许可。`tools/geogebra/NOTICE.txt`、`manifest.json` 与 `licenses/` 是重分发核对入口，课堂 ZIP 同样携带运行时、许可和源码重建材料。构建排除官方 UI 图片、样式、语言包、部署加载器和在线服务，自有页面保留 GeoGebra 署名。Giac 已提供固定源码与版本对应依据；上游第三方 WASM、静态库的位级复现及整体商用许可审定没有完成，不将本地构建称为全部第三方从源码完全重建或统一 MIT 授权。
 

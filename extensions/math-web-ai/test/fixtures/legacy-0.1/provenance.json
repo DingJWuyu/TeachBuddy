@@ -1,0 +1,6 @@
+{
+  "sourceCommit": "5ce82d8ea7feedebd3959c1b02abaced61b70050",
+  "sourcePath": "extensions/math-web-ai/",
+  "version": "0.1.0",
+  "purpose": "固定旧扩展升级回归；仅测试夹具，不包含在分发安装包"
+}

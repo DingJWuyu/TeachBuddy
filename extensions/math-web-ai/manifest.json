@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
   "name": "TeachBuddy 数学网页 AI 连接",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" },
   "description": "将本机数学工作台连接到专属 DeepSeek 网页会话。",
-  "permissions": ["storage"],
+  "permissions": ["storage", "scripting"],
   "host_permissions": [
     "http://localhost/*", "https://localhost/*", "http://127.0.0.1/*", "https://127.0.0.1/*",
     "https://chat.deepseek.com/*"

@@ -1,9 +1,9 @@
 const connections = new Map();
 const connecting = new Map();
-const ready = chrome.storage.session.get('connections').then(({ connections: saved = [] }) => {
+let ready = chrome.storage.local.get('connections').then(({ connections: saved = [] }) => {
   for (const entry of saved) connections.set(entry.key, entry);
 });
-const save = () => chrome.storage.session.set({ connections: [...connections.values()] });
+const save = () => chrome.storage.local.set({ connections: [...connections.values()] });
 const keyOf = (tabId, sessionId) => `${tabId}:${sessionId}`;
 const providerOrigin = 'https://chat.deepseek.com';
 const sessionFrom = (url) => {
@@ -173,4 +173,28 @@ chrome.tabs.onUpdated.addListener((tabId, change) => {
       }
     }
   });
+});
+
+// Store installation/update must attach to pages that were already open.
+chrome.runtime.onInstalled.addListener(() => {
+  ready.then(async () => {
+    const tabs = await chrome.tabs.query({ url: [
+      'http://localhost/*', 'https://localhost/*', 'http://127.0.0.1/*', 'https://127.0.0.1/*',
+      `${providerOrigin}/*`,
+    ] });
+    await Promise.all(tabs.map(async (tab) => {
+      const file = tab.url?.startsWith(`${providerOrigin}/`) ? 'deepseek.js' : 'workbench.js';
+      try { await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: [file] }); }
+      catch { /* A tab may close or navigate while the extension is installing. */ }
+    }));
+    for (const connection of connections.values()) {
+      await failPending(connection, 'EXTENSION_UPDATED', '扩展已更新，当前请求已中止。请检查网页回复后再决定是否重新发送。');
+    }
+  }).catch(() => {});
+});
+
+// Tab IDs are only meaningful within the current browser run.
+chrome.runtime.onStartup.addListener(() => {
+  ready = ready.then(async () => { connections.clear(); await save(); });
+  ready.catch(() => {});
 });

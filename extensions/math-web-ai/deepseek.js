@@ -1,4 +1,6 @@
 (() => {
+  if (globalThis.__teachbuddyDeepseekBridge === chrome.runtime.id) return;
+  globalThis.__teachbuddyDeepseekBridge = chrome.runtime.id;
   const TIMEOUT_MS = 180000;
   const STABLE_MS = 2500;
   let active = null;

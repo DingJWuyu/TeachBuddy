@@ -383,18 +383,25 @@
   margin-bottom: 3px;
 }
 
+.math-ai-setup-note {
+  color: var(--app-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 4px 0 8px;
+}
+
 .math-ai-install {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
   background: var(--app-primary);
-  color: var(--app-on-primary);
+  color: var(--app-on-primary, #fff);
   font-weight: 500;
   font-size: 12px;
   padding: 5px 12px;
   border-radius: 6px;
-  margin: 4px 0 8px;
+  margin: 0;
   transition: opacity 140ms ease;
 }
 
@@ -404,11 +411,18 @@
 
 .math-ai-setup-actions {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
 }
 
-.math-ai-setup-actions button {
+.math-ai-setup-actions button,
+.math-ai-setup-actions .math-ai-action-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
   border: 1px solid var(--app-line);
   border-radius: 6px;
   background: var(--app-surface);
@@ -417,11 +431,24 @@
   font-size: 12px;
   padding: 5px 11px;
   cursor: pointer;
-  transition: background-color 140ms ease;
+  transition: background-color 140ms ease, opacity 140ms ease;
 }
 
-.math-ai-setup-actions button:hover:not(:disabled) {
+.math-ai-setup-actions button:hover:not(:disabled),
+.math-ai-setup-actions .math-ai-action-secondary:hover {
   background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface));
+}
+
+.math-ai-setup-actions button.math-ai-action-primary {
+  background: var(--app-primary);
+  color: var(--app-on-primary, #fff);
+  border-color: var(--app-primary);
+  font-weight: 500;
+}
+
+.math-ai-setup-actions button.math-ai-action-primary:hover:not(:disabled) {
+  opacity: .92;
+  background: var(--app-primary);
 }
 
 .math-ai-setup button:disabled {

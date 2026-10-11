@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "TeachBuddy 数学网页 AI 连接",
+  "version": "0.1.0",
+  "description": "将本机数学工作台连接到专属 DeepSeek 网页会话。",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "http://localhost/*", "https://localhost/*", "http://127.0.0.1/*", "https://127.0.0.1/*",
+    "https://chat.deepseek.com/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["http://localhost/*", "https://localhost/*", "http://127.0.0.1/*", "https://127.0.0.1/*"],
+      "js": ["workbench.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://chat.deepseek.com/*"],
+      "js": ["deepseek.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
