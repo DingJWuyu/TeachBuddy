@@ -86,7 +86,7 @@ npx playwright install chromium
 node extensions/math-web-ai/test/offline.mjs
 ```
 
-安装与更新接续使用已安装的桌面浏览器，在仓库根执行并传入实际可执行文件路径：
+安装与更新接续需要真实桌面 Chrome/Edge，Playwright 下载的 Chromium 不能替代这两项核验。新环境按 [Chrome 官方安装说明](https://support.google.com/chrome/answer/95346?hl=zh-Hans)和 [Edge 官方下载入口](https://www.microsoft.com/en-us/edge/download)准备适合当前系统的浏览器；Linux 使用相应发行版的软件包安装方式。安装后核对实际可执行文件及 `--version` 输出，在仓库根执行并传入其路径：
 
 ```bash
 node extensions/math-web-ai/test/onboarding.mjs /path/to/google-chrome

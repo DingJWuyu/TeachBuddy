@@ -23,6 +23,7 @@ const test = base.extend({
     world.createRequests = [];
     await use(world);
     await world.close();
+    if (info.status === info.expectedStatus) await fs.rm(directory, { recursive: true, force: true });
   },
   context: async ({ world }, use, info) => {
     const browserConfig = info.outputPath('browser-config'); await fs.mkdir(browserConfig, { recursive: true });
@@ -56,6 +57,11 @@ const test = base.extend({
     }
     await fs.writeFile(info.outputPath('environment.json'), JSON.stringify({ browser: info.project.name, version: context.browser().version(), origin: world.origin, directory: world.directory, createRequests: world.createRequests, focus: await page?.evaluate(() => window.onboardingFocus).catch(() => []) }, null, 2));
     await context.close();
+    if (info.status === info.expectedStatus) {
+      for (const directory of ['profile', 'browser-config', 'extension']) {
+        await fs.rm(info.outputPath(directory), { recursive: true, force: true });
+      }
+    }
   },
 });
 
@@ -90,6 +96,29 @@ async function openSetup(page) {
 }
 async function screenshot(page, info, name) {
   await page.evaluate(() => document.fonts.ready); await page.screenshot({ path: info.outputPath(name), animations: 'disabled' });
+}
+async function expectUpdateNoticeReadable(page, english = false) {
+  const notice = page.getByText(english
+    ? 'Extension updated; request stopped. Check web response first.'
+    : '扩展已更新，请求已停止。请先查看网页。', { exact: true });
+  await expect(notice).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  // Visibility alone passes even when the connection popover covers the text.
+  await expect.poll(() => notice.evaluate(element => {
+    const range = document.createRange(); range.selectNodeContents(element);
+    const lines = [...range.getClientRects()];
+    return lines.length > 0 && lines.every(rect => rect.width > 0 && rect.height > 0
+      && rect.left >= 0 && rect.top >= 0 && rect.right <= innerWidth && rect.bottom <= innerHeight
+      && [rect.left + 1, (rect.left + rect.right) / 2, rect.right - 1].every(x => {
+        const hit = document.elementFromPoint(x, (rect.top + rect.bottom) / 2);
+        return hit === element || element.contains(hit);
+      }));
+  })).toBe(true);
+}
+async function waitForFixtureReply(page, provider, count) {
+  await expect(provider.locator('.ds-flex._0a3d93b')).toHaveCount(count);
+  // After the actual footer arrives, cover MV3's 2.5s stability plus polling.
+  await page.waitForTimeout(3500);
 }
 async function returnTo(page) {
   // Headless Playwright keeps all tabs focused. CDP generates trusted native
@@ -206,7 +235,7 @@ test('真实 CONNECT 的焦点竞态、ready 后登录过期及错误均保留�
   });
   await expect(page.locator('.math-ai-error')).toContainText('请在 DeepSeek 标签页完成登录');
   await expect(page.locator('.math-ai-message.is-user').last()).toContainText('slow 发送中登录过期');
-  await page.waitForTimeout(6500);
+  await waitForFixtureReply(page, provider, 1);
   await expect(provider.locator('[data-message-author-role=user]')).toHaveCount(1);
   await expect(page.locator('.mw-formula-row')).toHaveCount(0);
   await expect(page.locator('.math-ai-message.is-assistant')).toHaveCount(0);
@@ -223,14 +252,22 @@ test('真实 SEND CANCEL、发送中扩展更新、绑定与草稿保持及断�
   await page.getByRole('button', { name: '新建作品', exact: true }).click();
   const input = page.getByLabel('向数学助理提问', { exact: true }); await input.fill('slow 请制作抛物线'); await input.press('Enter');
   await expect(provider.locator('[data-message-author-role=user]')).toHaveCount(1); await page.getByRole('button', { name: '停止生成', exact: true }).click();
-  await expect(page.locator('.math-ai-stage')).toHaveText('已停止'); await page.waitForTimeout(6500); await expect(page.locator('.mw-formula-row')).toHaveCount(0);
+  await expect(page.locator('.math-ai-stage')).toHaveText('已停止'); await waitForFixtureReply(page, provider, 1); await expect(page.locator('.mw-formula-row')).toHaveCount(0);
   await input.fill('slow 更新期间的请求'); await input.press('Enter'); await expect(provider.locator('[data-message-author-role=user]')).toHaveCount(2);
   await input.fill('更新期间保留草稿'); const marker = await page.evaluate(() => window.onboardingDocument);
   const manifestPath = path.join(installed.extension, 'manifest.json'); const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8')); manifest.version = '0.2.1'; await fs.writeFile(manifestPath, JSON.stringify(manifest));
   await installed.management.evaluate(id => new Promise((resolve, reject) => chrome.developerPrivate.reload(id, { failQuietly: true }, () => chrome.runtime.lastError ? reject(Error(chrome.runtime.lastError.message)) : resolve())), installed.id);
   await expect(page.locator('.math-ai-error')).toContainText('扩展已更新'); await expect(page.getByRole('button', { name: '停止生成', exact: true })).toHaveCount(0);
   await expect(input).toHaveValue('更新期间保留草稿'); expect(await page.evaluate(() => window.onboardingDocument)).toBe(marker);
-  await page.waitForTimeout(6500); await expect(provider.locator('[data-message-author-role=user]')).toHaveCount(2); await expect(page.locator('.mw-formula-row')).toHaveCount(0);
+  await expect(page.locator('.math-ai-provider .math-ai-connection')).toHaveClass(/is-ready/);
+  await expectUpdateNoticeReadable(page); await screenshot(page, info, 'updated-zh-desktop.png');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expectUpdateNoticeReadable(page); await screenshot(page, info, 'updated-zh-narrow.png');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const readySetup = await openSetup(page); await expect(readySetup).toContainText('已连接 DeepSeek');
+  await readySetup.getByRole('button', { name: '检查连接', exact: true }).click({ trial: true });
+  await screenshot(page, info, 'ready-settings-zh.png'); await page.keyboard.press('Escape');
+  await waitForFixtureReply(page, provider, 2); await expect(provider.locator('[data-message-author-role=user]')).toHaveCount(2); await expect(page.locator('.mw-formula-row')).toHaveCount(0);
   await returnTo(page); await expect(page.locator('.math-ai-provider .math-ai-connection')).toHaveClass(/is-ready/); expect(providers(context)).toHaveLength(1);
   await input.fill('升级后再次发送'); await input.press('Enter'); await expect(page.locator('.math-ai-message.is-assistant').last()).toContainText('离线完成');
   await provider.close(); await installed.management.bringToFront(); await returnTo(page); await expect(page.locator('.math-ai-provider .math-ai-connection')).toHaveClass(/is-disconnected/);
@@ -243,9 +280,17 @@ test('真实 SEND CANCEL、发送中扩展更新、绑定与草稿保持及断�
   manifest.version = '0.2.2'; await fs.writeFile(manifestPath, JSON.stringify(manifest));
   await installed.management.evaluate(id => new Promise((resolve, reject) => chrome.developerPrivate.reload(id, { failQuietly: true }, () => chrome.runtime.lastError ? reject(Error(chrome.runtime.lastError.message)) : resolve())), installed.id);
   await expect(page.locator('.math-ai-error')).toBeVisible();
+  await expect(page.locator('.math-ai-provider .math-ai-connection')).toHaveClass(/is-ready/);
+  await expectUpdateNoticeReadable(page, true); await screenshot(page, info, 'updated-en-desktop.png');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expectUpdateNoticeReadable(page, true); await screenshot(page, info, 'updated-en-narrow.png');
+  await page.setViewportSize({ width: 1440, height: 900 });
   await fs.writeFile(info.outputPath('english-update-observation.json'), JSON.stringify({ error: await page.locator('.math-ai-error').innerText() }, null, 2));
   await screenshot(page, info, 'updated-reconnected.png');
   await expect(page.locator('.math-ai-error')).toContainText(/updated/i);
+  const englishSetup = await openSetup(page); await expect(englishSetup).toContainText('Connected to DeepSeek');
+  await englishSetup.getByRole('button', { name: 'Check connection', exact: true }).click({ trial: true });
+  await screenshot(page, info, 'ready-settings-en.png'); await page.keyboard.press('Escape');
 });
 
 test('旧0.1兼容与活跃请求升级后无需焦点事件即可显示需要重新连接', async ({ page, context }, info) => {
@@ -262,8 +307,13 @@ test('旧0.1兼容与活跃请求升级后无需焦点事件即可显示需要�
   await fs.cp(extensionRoot, installed.extension, { recursive: true });
   await installed.management.evaluate(id => new Promise((resolve, reject) => chrome.developerPrivate.reload(id, { failQuietly: true }, () => chrome.runtime.lastError ? reject(Error(chrome.runtime.lastError.message)) : resolve())), installed.id);
   await expect(page.locator('.math-ai-error')).toContainText('扩展已更新'); await expect(input).toHaveValue('升级前保留草稿');
-  await fs.writeFile(info.outputPath('legacy-upgrade-observation.json'), JSON.stringify({ connection: await page.locator('.math-ai-provider .math-ai-connection').getAttribute('class'), error: await page.locator('.math-ai-error').innerText(), providerCount: providers(context).length }, null, 2));
   await expect(page.locator('.math-ai-provider .math-ai-connection')).toHaveClass(/is-available/, { timeout: 5000 });
+  await expectUpdateNoticeReadable(page); await screenshot(page, info, 'legacy-updated-notice.png');
+  await fs.writeFile(info.outputPath('legacy-upgrade-observation.json'), JSON.stringify({ connection: await page.locator('.math-ai-provider .math-ai-connection').getAttribute('class'), error: await page.locator('.math-ai-error').innerText(), providerCount: providers(context).length }, null, 2));
+  const reconnect = await openSetup(page);
+  await reconnect.getByRole('button', { name: '连接助理', exact: true }).click({ trial: true });
+  await screenshot(page, info, 'legacy-connect-reachable.png');
+  await page.keyboard.press('Escape');
 });
 
 test('商店配置按实际浏览器分流，安装后的界面承诺与实际下一步一致', async ({ page, context }, info) => {
