@@ -95,6 +95,10 @@ node extensions/math-web-ai/test/onboarding.mjs /path/to/microsoft-edge
 
 脚本只在自建临时配置中开启开发者模式，以 CDP 本地加载和管理页重载验证原页面接续、输入保持、重复注入、更新中止及重连。当前 Chrome/Edge 启动须取消 Playwright 默认的 `--disable-extensions`，并启用测试所需的扩展调试能力；这些参数由脚本管理，不改变用户浏览器。此项不是商店签名、分发或浏览器自动下载更新的验收，正式流程在条目发布后另验。
 
+页面与桥的快速接缝回归使用 `npx playwright test -c apps/web/e2e/extension-onboarding.config.mjs`，先按运行指南构建 Web，或用 `WORKBENCH_WEB_DIST` 指定独立构建。该套件使用真实 HTTP/SQLite 与受控消息边界，不代替真实扩展验证。
+
+完整工作台与真实扩展回归使用 `apps/web/e2e/math-ai-onboarding.config.mjs`：`MATH_ONBOARDING_WEB_DIST` 指向未配置商店地址的独立生产构建，`MATH_ONBOARDING_STORE_DIST` 指向设置了两个商店变量的另一份构建。测试专用 URL 使用 Chrome 的 `https://chromewebstore.google.com/detail/teachbuddy-local-test/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` 与 Edge 的 `https://microsoftedge.microsoft.com/addons/detail/teachbuddy-local-test/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`，只作本地分流断言，不访问也不作为真实发布条目。浏览器路径由 `MATH_AI_CHROME_PATH` / `MATH_AI_EDGE_PATH` 指定，扩展及旧版输入默认读取入库目录；不要求本机旧任务产物。
+
 验证 0.1 到当前版本的更新时，执行 `node extensions/math-web-ai/test/legacy-update.mjs /path/to/google-chrome`。旧扩展固定快照位于 `test/fixtures/legacy-0.1/`，来源见同目录 `provenance.json`；测试不依赖本机 Git 历史。
 
 验证解压开发安装包时，可将包含 `manifest.json` 的目录作为 `test/offline.mjs` 的第一个参数。

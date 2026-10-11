@@ -180,14 +180,29 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
       if (active.current !== lifetime) return;
       if (failure.name === 'AbortError') setStage(t('已停止'));
       else {
-        setError(failure.message);
+        const code = failure.code ? String(failure.code).toUpperCase().replace(/-/g, '_') : '';
         setStage('');
-        if (['login-required', 'provider-disconnected', 'connection-lost'].includes(failure.code)) {
-          setConnection(failure.code === 'login-required' ? 'login' : 'disconnected');
+        if (code === 'EXTENSION_UPDATED') {
+          setError(t('扩展已更新，请求已停止。请先查看网页。'));
+          setSetupOpen(true);
+        } else {
+          setError(failure.message);
+        }
+        if (code === 'LOGIN_REQUIRED') {
+          setConnection('login');
+          setSetupOpen(true);
+        } else if (['PROVIDER_DISCONNECTED', 'PROVIDER_CLOSED', 'CONNECTION_LOST', 'EXTENSION_DISCONNECTED'].includes(code)) {
+          setConnection('disconnected');
           setSetupOpen(true);
         }
       }
-    } finally { if (active.current === lifetime) { active.current = null; setRunning(false); } }
+    } finally {
+      if (active.current === lifetime) {
+        active.current = null;
+        setRunning(false);
+        void checkConnection(connectionLifetime.current?.signal);
+      }
+    }
   }
 
   const popoverRef = useRef(null);
@@ -371,7 +386,7 @@ export function MathWebAssistant({ controller, title, accountKey, onStart, takeR
                   ) : installation.storeUrl ? (
                     <>
                       <p>{t('安装浏览器扩展后，即可连接使用。')}</p>
-                      <p className="math-ai-setup-note">{t('安装后切回此页将自动连接。')}</p>
+                      <p className="math-ai-setup-note">{t('安装后切回此页，点击连接。')}</p>
                       <div className="math-ai-setup-actions">
                         <a className="math-ai-install" href={installation.storeUrl} target="_blank" rel="noreferrer">
                           {t('前往商店')}
