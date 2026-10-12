@@ -323,6 +323,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
           setActive(data.session, data.registrationOpen);
         } else if (!profileSavingRef.current && profileRevision === profileRevisionRef.current && profileRead === profileReadRef.current) {
           publishProfile(data.session.account, data.session.id);
+          return data.session.account;
         }
         return;
       }
@@ -684,6 +685,8 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
       && stateRef.current.session?.id === current.session?.id;
     if (!isCurrent()) throw new Error(t('登录状态已变化，请重新登录。'));
     if (profileSavingRef.current) throw new Error(t('昵称正在保存，请稍候。'));
+    const profileRead = profileReadRef.current;
+    let saved = false;
     profileSavingRef.current = true;
     profileRevisionRef.current += 1;
     try {
@@ -698,7 +701,10 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
           && checked.data.session.state === 'active') account = checked.data.session.account;
       }
       if (account?.accountKey === current.account.accountKey && account.nickname === value) {
-        publishProfile(account, current.session.id);
+        saved = true;
+        // A peer may have renamed the account while this write's receipt was
+        // delayed. Re-read after saving instead of publishing that old receipt.
+        if (profileRead === profileReadRef.current) publishProfile(account, current.session.id);
         notifyPeers();
         return;
       }
@@ -710,6 +716,11 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     } finally {
       profileSavingRef.current = false;
       profileRevisionRef.current += 1;
+      if (profileRead !== profileReadRef.current && isCurrent()) {
+        const refreshed = await recheckRef.current?.();
+        if (saved && !isCurrent()) throw new Error(t('登录状态已变化，请重新登录。'));
+        if (saved && !refreshed) throw new Error(t('昵称保存结果未确认，请重试。'));
+      }
     }
   }, [client, notifyPeers, publishProfile]);
 

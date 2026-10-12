@@ -125,6 +125,33 @@ test('昵称在同一会话的另一标签页同步，保留工作台挂载', as
   expect(await mounted.evaluate(element => element.isConnected)).toBe(true);
 });
 
+test('昵称较早写入的迟到回执不覆盖另一标签页的后续改名', async ({ page, context }) => {
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  let committed = false;
+  await page.route('**/api/auth/profile', async route => {
+    const response = await route.fetch(); committed = true;
+    await held; await route.fulfill({ response });
+  });
+  const second = await context.newPage();
+  await second.goto(world.origin + '/settings');
+  await page.getByRole('button', { name: '修改昵称', exact: true }).click();
+  await page.getByRole('textbox', { name: '昵称', exact: true }).fill('较早写入的昵称');
+  await page.getByRole('textbox', { name: '昵称', exact: true }).press('Enter');
+  await expect.poll(() => committed).toBe(true);
+  const rechecked = page.waitForResponse(response => response.url().endsWith('/api/auth/session') && response.request().method() === 'GET');
+  await second.getByRole('button', { name: '修改昵称', exact: true }).click();
+  await second.getByRole('textbox', { name: '昵称', exact: true }).fill('后来写入的昵称');
+  await second.getByRole('textbox', { name: '昵称', exact: true }).press('Enter');
+  await expect(second.getByRole('button', { name: '修改昵称', exact: true })).toHaveText('后来写入的昵称');
+  expect((await (await rechecked).json()).session.account.nickname).toBe('后来写入的昵称');
+  release();
+  for (const target of [page, second]) {
+    await expect(target.getByRole('button', { name: '修改昵称', exact: true })).toHaveText('后来写入的昵称');
+    await expect(target.locator('.tb-account-row')).toContainText('后来写入的昵称');
+  }
+});
+
 test('昵称迟到回执不恢复已退出的身份或覆盖另一账户', async ({ page }) => {
   let release;
   const held = new Promise(resolve => { release = resolve; });
