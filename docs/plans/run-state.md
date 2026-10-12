@@ -10,16 +10,16 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 总控负责专属 session 的收发消息、公共文件唯一写者、集成与冲突。新任务按本节阶段授权及[开发约定](../agents/module-development.md#git-与运行现场)确认分支起点和工作现场。本机旧 session 仅供查阅，不作为新环境前置。跨模块 Agent 扩展开发仍暂停；数学网页 AI 的有界授权见下文。
 
-非 Agent 的本机 MVP 验收与发现的范围内缺陷修复已完成；成果集成到 preview，验收任务现场按收尾规则清理。跨模块 Agent 开发保持暂停，当前无专属工作树或任务分支；恢复时先核对已实现工具、冻结设计与实际缺口，再按当前集成基线创建新现场。原 Agent 与数学工坊专属 session 均已归档。数学工坊由专属总控负责模块内讨论、派发与验收，跨模块变更、公共文件与集成由项目总控协调。
+非 Agent 的本机 MVP 验收与发现的范围内缺陷修复已完成；成果集成到 preview，验收任务现场按收尾规则清理。跨模块 Agent 开发保持暂停，当前无专属工作树或任务分支；恢复时先核对已实现工具、冻结设计与实际缺口，再按当前集成基线创建新现场。原 Agent 与数学工坊专属 session 均已归档，当前无模块专属工作树或任务分支；下一轮按最新 trunk 建立新现场。
 
-数学统一作品、本地 GeoGebra、界面修整及桌面 Chrome/Edge 网页 AI 接入已在数学分支实现并完成既有独立验收。本次由项目总控同步最新 trunk、补做集成验证，通过一个 PR squash 合入 `preview/integration`，再清理数学工作树及分支；用户明确本次跳过 PR review。此前仅本地、不推送和保留数学工作树的限制由本次授权替代，main 与正式发布仍按下文授权执行。
+数学统一作品、本地 GeoGebra、界面修整及桌面 Chrome/Edge 网页 AI 接入已通过 [PR #36](https://github.com/DingJWuyu/TeacherWorkspace/pull/36) squash 集成到 `preview/integration`。本机集成验证与云端 CI 通过，preview 体验服务已更新；数学工作树和任务分支已清理。当前 GitHub workflow 改动已同步远端，下一轮从最新 trunk 接续。main 与正式发布仍按下文授权执行。
 
 | 模块 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 最新 trunk 已同步，集成验证进行中；合入后清理现场 |
+| 数学工坊 | 已清理 | 已清理 | 统一制作与网页 AI 已集成并验证；体验使用 preview，商店分发仍待准备 |
 | 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；体验数据与有效证据已保全 |
 
-数学与日程的旧验收证据及体验数据保存在 preview 的 `test-results/math-handoff/`，数学入口为 `math-ai-onboarding/receipt.json`、`math-ux-redesign/final/receipt.json` 和 `math-unified/final/receipt.json`；日程数据在其中 `math-ux-redesign/integration/schedule-evidence/`。私有登录浏览器配置独立保留。这些本机产物不作为新检出运行、必要回归或接手前置；重建入口见[数学规格](../features/math.md#验证入口)和[运行指南](../SETUP.md#数学运行依赖)。
+数学与日程的旧验收证据及体验数据保存在 preview 的 `test-results/math-handoff/`，数学入口为 `math-ai-onboarding/receipt.json`、`math-ux-redesign/final/receipt.json` 和 `math-unified/final/receipt.json`；日程数据在其中 `math-ux-redesign/integration/schedule-evidence/`。私有登录浏览器配置独立保留；旧数学体验浏览器采用临时扩展加载，后续从 preview 的 `extensions/math-web-ai/` 按[扩展说明](../../extensions/math-web-ai/README.md)加载，不依赖已删工作树。这些本机产物不作为新检出运行、必要回归或接手前置；重建入口见[数学规格](../features/math.md#验证入口)和[运行指南](../SETUP.md#数学运行依赖)。
 
 既有数学验证覆盖统一公式/二维/三维构造/参数/步骤保存、本地引擎冷构建与禁网制作、图片与课堂 ZIP、可编辑 Word 和备课往返、深浅主题及桌面/窄屏。真实 DeepSeek 曾完成起稿、读取手动改图与续改；Chrome/Edge 安装识别、登录返回及更新接续使用真实扩展与受控网页验证，不冒称重新调用真实模型。正式商店安装与自动更新、原生系统输入法、Windows/触屏和教师实际 Office 操作仍未验。数学后续制作范围见[模块边界](math-workshop.md)，跨模块 Agent 保持暂停。
 
@@ -27,7 +27,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 当前采用[GitHub 协作与发布](../agents/github-workflow.md)：`preview/integration` 为长期开发主线及 GitHub 默认分支，`main` 保存稳定发布版本。用户已授权搭建、调整并验证仓库配置、CI 和标准发布自动化，包括 trunk 集成及同步。直接合入或 worktree PR 集成的分流、禁用 PR 的范围、审查与推送统一执行[任务与 PR](../agents/github-workflow.md#任务与-pr)。此项配置授权不包含实际版本准备、合 main、产品发布、公开部署或新增费用。短期任务从核对的 trunk 提交创建，集成后按[收尾规则](../agents/module-development.md#集成后的清理)清理；体验目录及服务仍为 `TeacherWorkspace-preview`。
 
-当前源码集成了日程、导航、材料整理与局部校对、全站中英切换与账户删除；这些范围曾在本机完成独立验收，新环境须按[核查入口](#核查入口)对所需结论重新验证。数据处理协议继续占位。用户授权总控自主安排专属 session、工作树及技术决策；已集成代码以当前 Git 为准。
+当前源码集成了统一数学工坊与网页 AI、日程、导航、材料整理与局部校对、全站中英切换与账户删除；这些范围曾在本机完成独立验收，新环境须按[核查入口](#核查入口)对所需结论重新验证。数据处理协议继续占位。用户授权总控自主安排专属 session、工作树及技术决策；已集成代码以当前 Git 为准。
 
 合 main、公开部署、费用和模型窗口按对应授权执行；开发分支与 PR 的 GitHub 操作按上面的协作授权执行。测试业务数据可丢弃，不以旧库、草稿保留或历史迁移作为开发前置；代码、未提交成果、固定输入、有效证据和私有配置须保留。
 
@@ -48,7 +48,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 | 题库 | 手工与原生材料整理、校对入库、分类/笔记/改编；旧 DOC 经固定转换稿读取现存公式和配图，PDF 图边公式保留可编辑并核对配图归属；OCR 原图/公式/原答案/来源保留，局部校对保存，已核对题可先入库；未分配表格可保留原结构明确归入题干 | [规格](../features/questions.md)、[材料核查](#核查入口) |
 | 备课 | 环节和混排、跨课复用、历史、资料包、三类 Word/PDF 输出；普通题面/选项/必要配图连续，数学标题接续作品；扫描页与配图独立校对采用，内容疑点可回原页定位，可编辑数值表及打印网格 | [规格](../features/lessons.md)、[材料核查](#核查入口) |
 | 资源库 | 收录/分类/检索、常用格式预览与下载、文件替换/历史、页内查找；OCR 正文/公式/配图阅读、复制和搜索定位，内容疑点可高亮原页区域 | [规格](../features/resources.md)、[材料核查](#核查入口) |
-| 数学 | 可编辑公式、函数/平面/空间图、动态参数与步骤、源码/透明素材/离线导出、备课往返与版本；显式棱样式在画布及下载物中保留，常见几何错误直接显示具体原因 | [规格](../features/math.md)、[模块核查](#核查入口) |
+| 数学 | 同一作品的可编辑公式、二维/三维构造、参数和步骤；本地 GeoGebra、自动保存与历史、图片/源码/课堂 ZIP、备课往返与快照；Chrome/Edge 网页 AI 接入和更新接续，旧类型保持可读 | [规格](../features/math.md)、[模块核查](#核查入口) |
 | 班级 | 班级记录、搜索回顾、公式配图、跨班移动及题/课/作品关联，归档、恢复与彻底删除 | [规格](../features/teaching-time.md)、[模块核查](#核查入口) |
 | 日程 | 日期视图、拖选/拖动/拉伸、标签、全天、自定义重复与单次独立任务；开始/结束前后提醒、通知已读/未读、待安排、事项完成/排序/原子移动、跟随系统时区以及键盘确认已集成。界面任务永久删除，兼容软删除 API 保留；教学关联完整链与真实输入法另验 | [规格](../features/teaching-time.md)、[模块核查](#核查入口) |
 | 工作台 | 导航分组、模块位置和隐藏状态按账户跨设备恢复；设备开合独立。未解决冲突与编辑基线跨刷新保留，折叠侧栏可恢复失败操作；备课归档/恢复保留本机草稿及真实内容冲突 | [共同交互](../features/workbench.md)、[模块核查](#核查入口) |
@@ -104,7 +104,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 ## 接续顺序与完成条件
 
-本轮非 Agent 的本机验收完成，发现的数学显示、输出分页及过时验证入口已修复。后续按影响范围复验，不因固定样本通过而扩大质量承诺，也不把通用能力边界变为无限扩展待办。
+非 Agent 的既有本机验收和本次数学集成均已完成，当前没有待集成模块现场。下一轮先确定完整改动目的，从最新 `preview/integration` 创建任务分支；数学按[后续开发边界](math-workshop.md)推进。后续按影响范围复验，不因固定样本通过而扩大质量承诺，也不把通用能力边界变为无限扩展待办。
 
 1. 跨模块 Agent 保持暂停；用户重新授权后创建新会话与工作树，核对实际工具和冻结设计，实现核心工具与恢复衔接，并验证真实模型及跨模块组合。
 2. 新出现的可复现核心问题由 agent 按真实路径处理；当前资料足够时自行验证，不把技术回归全部交给用户。
@@ -115,6 +115,8 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 ## 核查入口
 
 本页的集成状态来自当前源码和已记录的验证范围。选择受影响功能，先按[验证指南](../acceptance/README.md)建立隔离候选，再从仓库内的测试与固定样本重建结果。记录 Git 版本、输入、实际环境、通过和未验项；外部原件、真实模型、目标 Office 或设备缺失时保留未验证边界。
+
+数学集成候选 `e4c61f5a` 与 squash 提交 `1c36e798` 的文件内容一致。[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38219664891) 在干净 Runner 完成锁定依赖安装、本地引擎冷构建、三 workspace 构建和 294 项 HTTP/SQLite 检查。本机另验数学 API/输出/离线与备份 14 项、数学制作 15 项及内容保护 5 项、Chrome/Edge 扩展 4 项、日程 39 项和开发服务 2 项；日程计数包含受影响项的定点复验，不重复累加。preview 引擎校验、健康检查与实际登录页面通过；本机回执和证据在 `test-results/math-integration/receipt.json`。扩展检查使用受控网页，本次未重新调用真实模型，也未执行正式发布或目标设备验收。
 
 日程产品候选 `22baf397` 集成到 preview `da025690`，同步到数学 `34f01352`。本轮隔离生产构建通过；preview 的日程 HTTP/SQLite 检查 **70 通过、0 失败、0 跳过**，浏览器 **90 通过**，包含主交互 23、弹窗与读取竞态 52、提醒/通知/单次独立/事项移动 12、系统时区/DST 3。数学固定候选的统一作品保存、刷新、公式、图形与步骤 1 场景及日程组合 3 场景通过，数学/日程/资源库基础加载与全局原 sparkles 图标的实际 SVG 检查通过。检查了浅深主题、390/1675 日程弹窗和数学主页截图。入口为 `calendar-emstudio`、`calendar-dialog-keyboard`、`calendar-capabilities`、`calendar-time-zone` 与 `math-unified` 的仓库内 E2E 配置；本机证据在 preview 的 `test-results/math-handoff/math-ux-redesign/integration/receipt.md`。作者最新 124 场景属于自验，未合并冒充本轮数量；真实中文输入法、完整教学关联、其他浏览器与目标设备未验，数学后续 UI 改动另行验证。
 
