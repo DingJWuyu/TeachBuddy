@@ -82,7 +82,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libreoffice-writer poppler-utils bubblewrap fonts-noto-cjk
+          sudo apt-get install -y --no-install-recommends libreoffice-writer libreoffice-math poppler-utils bubblewrap fonts-noto-cjk
           curl --fail --location --retry 2 \
             https://github.com/jgm/pandoc/releases/download/3.11/pandoc-3.11-1-amd64.deb \
             -o "$RUNNER_TEMP/pandoc.deb"

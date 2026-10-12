@@ -99,6 +99,7 @@ test('MC07: all five math kinds produce real DOCX and PDF without private notes'
    if(format==='pdf') {
     const {execFileSync}=await import('node:child_process');const text=execFileSync('pdftotext',[fileURLToPath(destination),'-'],{encoding:'utf8'});
     assert.ok(text.includes('交互演示见单独文件'));assert.ok(!text.includes('禁止泄漏'));fs.writeFileSync(new URL(`${kind}.txt`,out),text);
+    assert.ok(text.includes('±'), '求根公式必须实际显示在 PDF 中，不能只有标题和说明');
     const pages=text.split('\f').slice(0,-1);
     const imagePages=execFileSync('pdfimages',['-list',fileURLToPath(destination)],{encoding:'utf8'}).split('\n')
      .map(line=>line.trim().split(/\s+/)).filter(parts=>parts[2]==='image').map(parts=>Number(parts[0]));
