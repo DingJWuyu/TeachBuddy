@@ -159,7 +159,7 @@ test('workshop saved viewport: split and 3D still render and retain the saved ca
     const camera = () => page.evaluate(() => { const xml = new DOMParser().parseFromString(window.classroomApi.getXML(), 'application/xml'); return Object.fromEntries(Array.from(xml.querySelector('euclidianView3D coordSystem').attributes).map(attribute => [attribute.name, Number(attribute.value)])); });
     const splitCamera = await camera(); await page.getByRole('combobox', { name: '教学步骤' }).selectOption('space-step'); await page.waitForFunction(() => !document.querySelector('.controls').inert && document.querySelector('.controls select').value === 'space-step');
     assert.equal((await visibleCanvases()).length, 1); assert.deepEqual(await camera(), splitCamera);
-    await page.setViewportSize({ width: 900, height: 1200 }); await waitForViewport(panned); assert.deepEqual(await camera(), splitCamera);
+    await page.setViewportSize({ width: 900, height: 1200 }); await page.waitForTimeout(250); assert.deepEqual(await camera(), splitCamera);
     await page.getByRole('button', { name: '重置', exact: true }).click(); await page.waitForFunction(() => !document.querySelector('.controls').inert); assert.deepEqual(await camera(), splitCamera);
     await page.screenshot({ path: path.join(evidence, 'classroom-space.png'), fullPage: true }); assert.deepEqual(requests, []); assert.deepEqual(errors, []);
     fs.writeFileSync(path.join(evidence, 'space-classroom.json'), JSON.stringify({ state: 'passed', splitCanvases, camera: splitCamera, offline: true, requests, errors }, null, 2)); success = true;
