@@ -91,6 +91,17 @@ jobs:
           npx playwright install --with-deps chromium
           pandoc --version
           libreoffice --version
+          # Ubuntu's default AppArmor userns policy blocks Bubblewrap's loopback setup.
+          # Allow only this executable on the disposable runner; product sandbox
+          # mounts, network isolation and capability dropping still apply.
+          cat > "$RUNNER_TEMP/bwrap.apparmor" <<'PROFILE'
+          abi <abi/4.0>,
+          include <tunables/global>
+          profile bwrap /usr/bin/bwrap flags=(unconfined) {
+            userns,
+          }
+          PROFILE
+          sudo apparmor_parser -r "$RUNNER_TEMP/bwrap.apparmor"
           bwrap --unshare-all --ro-bind / / /usr/bin/true
       - name: Build all workspaces
         run: npm run build
