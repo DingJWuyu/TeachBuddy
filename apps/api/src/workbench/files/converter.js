@@ -93,8 +93,12 @@ export async function convertFile({
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   ].includes(mediaType);
-  if (needsOffice && officeRoot)
+  if (needsOffice && officeRoot) {
     args.push("--ro-bind", path.resolve(officeRoot), "/office");
+    // Debian/Ubuntu packages keep the registry outside the installation root.
+    if (fs.existsSync("/etc/libreoffice"))
+      args.push("--ro-bind", "/etc/libreoffice", "/etc/libreoffice");
+  }
   args.push(
     "/usr/bin/prlimit",
     "--as=4294967296",
