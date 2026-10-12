@@ -1,0 +1,28 @@
+Made with GeoGebra®
+Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
+https://www.geogebra.org
+
+This browser runtime is compiled from the GeoGebra source revision identified in
+manifest.json and modified by the included source/rebuild/scripts/math-support/geogebra-patch.py. GeoGebra's
+source is licensed under EUPL-1.2; the full text is included as EUPL-1.2.txt.
+The original language files, UI artwork, UI stylesheets, application pages,
+GeoGebra deploy loader and online services are excluded. TeacherWorkspace owns
+loader.js and canvas.css. This is not the official GeoGebra application bundle.
+
+Corresponding source can be obtained without login from the fixed source URL in
+manifest.json. Verify the archive SHA-256 in that manifest, extract it, and apply
+source/rebuild/scripts/math-support/geogebra-patch.py to the extracted directory. The complete rebuild entry, manifest, dependency checksums and notices are
+included under source/rebuild/. From that directory run:
+python3 scripts/math-support/geogebra-build.py
+Build dependencies are downloaded from public sources without login. Third-party runtime code and mathematical
+fonts retain their own licenses; see licenses/ for the notices from their fixed
+source/distributions. Their use does not become EUPL by bundling them here.
+
+Giac CAS is the fixed public fr.ujf-grenoble:giac-gwt:70501 dependency. Its
+official SVN 70501 source corresponds to Git revision
+81d221d00bff4fff0f5f6d2298aa83042bf11559; source URL and checksum are in
+manifest.json. Giac is GPL-3.0-or-later. It links GMP/MPFR and Emscripten runtime
+components, whose source entries, licenses and upstream prebuilt-archive
+provenance limits are documented in that manifest. This package does not claim
+byte reproduction of that upstream third-party WASM or blanket commercial
+license approval. Redistribution must follow each applicable license.

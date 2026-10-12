@@ -16,7 +16,7 @@ Work 是工坊唯一可写聚合，包含标题、Source、原始导入文件关
 
 `POST /api/modules/math/v1/works/{id}/purge` 接收 `baseVersion`，仅允许本账户已归档作品；活动作品返回422 invalid-input，旧版本409，外账户或不存在404。在同一幂等事务中移除 Work、全部 WorkRevision 和作品导出记录，返回 `{id, permanentlyDeleted:true}`。成功后读取、恢复和新的导出请求均404；原成功请求仍可按原键确认，不重新建立作品。既有备课快照、教学关联与共享不可变 File 保留，彻底删除不是账户文件的物理清理；引用方将不存在的源视为 deleted，仍可保存本课备注与下载采用版本的文件。
 
-Source.schemaVersion=1 是编辑格式版本，与 Work.version 分开。kind 创建后不可变，另存可建立新 ID。未知格式必须保留原字节，客户端只读并提示升级；旧客户端不得损坏它。Formula/Plane/Space/Dynamic 是受控结构化源；HtmlSource.fileId 指不可变 HTML 字节。原始导入允许File检测为text/html，或以.html/.htm命名的text/plain/application/octet-stream；明确检测为PDF/Office/图片等格式则415。扩展名只表达导入意图，不授权执行；运行/编辑另验UTF-8和大小，损坏或不支持编码仍可保存取回。用 files.store 保存，createWork.originalFileId 必须与初始 source.fileId 相同；非 HTML 为 null。updateWork 不可改 originalFileId。HTML 修改先保存新 File，再提交其 ID；失败只留下可复用文件，不覆盖原件。copyWork 读取 baseVersion 对应的当前活动作品，复制源与原件指针，新 ID/version=1，随后两者独立编辑；复制版本不符为409。
+Source.schemaVersion=1 是编辑格式版本，与 Work.version 分开。kind 创建后不可变，另存可建立新 ID。未知格式必须保留原字节，客户端只读并提示升级；旧客户端不得损坏它。Workshop 是统一制作源；Formula/Plane/Space/Dynamic 是既有受控结构化源；HtmlSource.fileId 指不可变 HTML 字节。原始导入允许File检测为text/html，或以.html/.htm命名的text/plain/application/octet-stream；明确检测为PDF/Office/图片等格式则415。扩展名只表达导入意图，不授权执行；运行/编辑另验UTF-8和大小，损坏或不支持编码仍可保存取回。用 files.store 保存，createWork.originalFileId 必须与初始 source.fileId 相同；非 HTML 为 null。updateWork 不可改 originalFileId。HTML 修改先保存新 File，再提交其 ID；失败只留下可复用文件，不覆盖原件。copyWork 读取 baseVersion 对应的当前活动作品，复制源与原件指针，新 ID/version=1，随后两者独立编辑；复制版本不符为409。
 
 保存 Source 先验结构、账户及引用关系，确定性渲染在 SQL 事务外完成。结构/引用无效拒绝422；公式或表达式语法错误、无效几何可保存原文，render.state=invalid 并给 reason，posterFileId及presentationFileId均为null；修正后重新保存。基础存储/渲染服务不可用则503，不能把基础故障记成用户源错误。有效原生源保存时生成初态 PNG poster，render=ready；服务端生成或复核，不接受客户端传海报/成功标志。Dynamic同时持久保存初态自包含隔离HTML为presentationFileId；公式/静态该字段为null。HTML为source-only、poster=null、reason=null，保存不运行其脚本；可运行大小/编码范围内只生成隔离包装字节为presentationFileId，超出范围则null并保留原件。标题为非空白，按原文保存。
 
@@ -25,6 +25,20 @@ rendererVersion 是服务端实际的渲染器发行标识，覆盖表达式求�
 列表按 updatedAt 降序、id 升序；q 为 trim 后标题不区分大小写子串，kind 可选，state 默认 active。不搜索或执行 HTML/脚本。目录选择使用相同 list/get，不另建作品名字符串目录。
 
 ## 结构化数学源语义
+
+### 统一制作源
+
+新制作使用 `WorkshopSource`：`schemaVersion=1, kind=workshop`，保存有序公式、一个完整 GGB 构造、视图、教学步骤、初始步骤、播放设置与轨迹对象。完整字段和输入限额以机器 schema 与共享 `packages/shared/src/math/workshop.js` 为准。公式沿既有 FormulaSource 的 LaTeX、说明、颜色和字号限制；数组顺序就是排版顺序。`graph=null` 允许纯公式作品，不启动 GGB；无公式且无构造的新作品拒绝 `empty-workshop`。
+
+公式及步骤 ID 唯一。初步须指向现有步骤，无步骤时为 null。服务端从固定本地 GGB 恢复完整构造，读取真实对象与滑杆，再复核每步对象/公式引用、每个滑杆恰好一次的取值、播放参数及轨迹点。结构关系错误为422 `invalid-math-source`，field 为 `/source/...` JSON pointer。公式语法或可见构造未定义允许保存源，render 为 invalid，三个资产字段均为 null。缺失运行代码、浏览器故障或超时为503 `render-unavailable`，不提交作品版本。
+
+有效保存固定三个可信资产：`render.posterFileId` 是初步的整份作品 PNG；`render.graphPosterFileId` 是独立数学视图 PNG，有图必备、纯公式为 null；`render.presentationFileId` 是课堂 ZIP。海报及图形由服务端生成，客户端不能提交这些字段。纯公式使用本地 MathJax 的现有受限数学包与字体；公式批次沿现有限时 Worker 执行。图形使用新建、无账户的浏览器任务，只允许所选本地运行代码与资源，禁用构造文件脚本，结束即关闭。开发实例取 Web public 资产，固定实例取其配置的 Web 构建资产；两侧运行代码来自同一实例候选，不因资源缺失退回另一份目录。
+
+`math.readForReferenceV1` 的 workshop snapshot 同时保存 `graphPosterFileId`。备课仅采用相关资产齐全的版本，按初步显隐依次把 `snapshot.source.formulas` 转为既有 Document 数学节点及选入说明，再插独立图形 PNG。整份海报只用于作品预览，不重复进入教案或讲义。采用版本、更新、归档、彻底删除后保留快照的规则不变。资料包与物理备份沿既有 File 引用收集，包含独立图形、课堂文件和历史版本；旧 renderer 与 workshop renderer 均可还原，不重画固定快照。
+
+### 既有制作源
+
+GeoGebra 使用 `kind=geogebra`，保存 `appName` 与完整 `.ggb` 的 base64；不展开成自建几何模型。服务端检查 ZIP 完整性、大小与 `geogebra.xml`，保存为 `source-only`，不执行其中内容、不生成海报或课堂文件。浏览器初始化禁用文件内嵌 JavaScript。API 的 `source` 导出为包含该源的 JSON，编辑器的 `.ggb` 下载为原生文件，两者不混称。此类型目前不能新增备课引用。字段和限制由上述 schema 与 `math-geogebra.test.js` 维护。
 
 唯一字段见 schema，下面是字段间的约束与数学定义。
 
@@ -47,6 +61,7 @@ exportWork 固定明确 version，可导出本账户历史或归档作品版本�
 
 | 源类型 | 支持 format | 约束 |
 | --- | --- | --- |
+| workshop | png、svg、source、bundle、ggb | selection 默认 work；formula 配 formulaId，支持透明 PNG/SVG；graph 支持 PNG，plane 支持真实矢量 SVG；含三维的 PNG 只支持白底；纯公式 work 支持 SVG，含图 work 支持 PNG；source 是完整 JSON，ggb 只含图形构造，bundle 为课堂 ZIP |
 | formula | png、svg、source | PNG/SVG背景必须 transparent；source 为 UTF-8 JSON，含完整制作源/说明 |
 | plane、space | png、svg、source | PNG/SVG可透明/白底；width 决定宽，按视窗比例给高；源码 JSON |
 | dynamic | html、png、svg、source | PNG/SVG为保存初态；html 为全部源、可信渲染代码和依赖内联的隔离包装器 |
@@ -54,9 +69,11 @@ exportWork 固定明确 version，可导出本账户历史或归档作品版本�
 
 source/html 的 background 固定 transparent、width 固定1600，避免无意义选项出现不同指纹；SVG的width影响视窗尺寸、不损失矢量。render=invalid 的版本只允许 source；HTML本就source-only，可导出html。原生html的 offline=self-contained 表示依赖均内联的构造属性，不表示全部数学结果/所有浏览器已验；外部HTML永远unverified，静态/source为not-applicable。包装器不得注入 Cookie、页面头、账户键、API地址、服务器fileId或本地路径；外部原源自己含有的URL或文字只作为用户原件保留，不替用户认证也不据此抓取；用于重建的 Source 仅包含作品数据（外部HTML直接内嵌字节，不嵌 fileId）。
 
+workshop 的 `selection=work|graph|formula` 只用于内容选择，`formulaId` 仅 formula 必填；`source` 和 `bundle` 只用 work，`ggb` 只用 graph，三者 background 固定 transparent、width 固定1600。课堂 ZIP 从该 revision 已保存的 `presentationFileId` 下载，包含 index.html、完整作品 JSON、固定本地运行代码和许可文件，解压整个文件夹后直接打开 index.html；无需账户、制作服务或本地 HTTP 服务。`offline=self-contained` 表示依赖随包提供；仓库回归实际用新建 Chromium 配置、禁网及 file:// 检查纯公式、二维/三维、参数、步骤、播放与重置，未声明 Windows 或其他浏览器已验。课堂修改仅影响本次展示，重开回保存初态。相关回归入口为 `apps/api/test/math-workshop.test.js`。GGB 运行代码按需使用 eval 类能力，课堂 CSP 允许固定本地脚本及其执行要求；作品文件内脚本保持禁用，此包装器不用于外部 HTML。
+
 外部原件及编辑文件是不可变源码资产，原文件下载必须 attachment + nosniff，通用材料预览仍仅转义文本。主动运行由 math 专用预览负责，禁止把 HTML/SVG 源塞进主应用 DOM。内嵌框只用 `sandbox="allow-scripts"`，不加 allow-same-origin/forms/popups/downloads/top-navigation；不传身份、工作台对象或公共写端口，不接收作品发来的业务 postMessage。源码编辑在父层纯文本控件。展示全屏由可信外层控制，不授予作品导航权限。
 
-受控包装器把不可篡改的 CSP 放在任何作品内容之前；允许内联脚本/样式、data 图片/字体，default-src/connect-src/frame-src/object-src/worker-src/base-uri/form-action 均收紧为 none（img-src/font-src 仅 data，script-src/style-src 仅 unsafe-inline）。不允 eval、远程模块或外部资源。结构化解析后去掉 base、刷新跳转 meta、外链导航属性，仅改变运行副本；原始源不变。包装数据序列化必须防 `</script>` 提前闭合，文件名/标签也转义。
+外部HTML的受控包装器把不可篡改的 CSP 放在任何作品内容之前；允许内联脚本/样式、data 图片/字体，default-src/connect-src/frame-src/object-src/worker-src/base-uri/form-action 均收紧为 none（img-src/font-src 仅 data，script-src/style-src 仅 unsafe-inline）。不允 eval、远程模块或外部资源。结构化解析后去掉 base、刷新跳转 meta、外链导航属性，仅改变运行副本；原始源不变。包装数据序列化必须防 `</script>` 提前闭合，文件名/标签也转义。
 
 sandbox 隔离读取，CSP限制资源，不是完整恶意代码沙箱或可证明的全网络封锁：任意脚本仍可能自导航、耗尽CPU，字符串扫描不能证明无依赖。主应用不能依赖 sandbox 防全部出网；本版不授予网络能力，发生意外导航立即停止预览，保留源码。即使自导航也保留 sandbox，不能读取账户Cookie、父DOM/存储或持有 PageContext；不靠网络不可达保证身份安全。M42 必须用恶意fixture验证这些读取/写入边界，M43真实禁网冷启动才证明下载物可离线。不能为让某HTML运行而放开同源/凭据或联网白名单。需要服务端/CDN/模块的HTML继续保留取回与源码编辑，显示预览受限。
 
@@ -64,7 +81,7 @@ UTF-8且≤1 MiB的HTML支持源码编辑/运行副本；更大或无法UTF-8解
 
 ## 材料引用新版与备课返回
 
-math provider 是业务模块提供方，非 LLM Provider。`readForReferenceV1` 返回当前活动或tombstone作品与服务器快照；新增或采用更新仍必须是当前活动版且 render!=invalid。快照保存 title、workVersion、Source、posterFileId、presentationFileId、rendererVersion，外部HTML固定该版fileId，文件一直保留。用户不得提交 snapshot。相同 referenceId/kind/workId/workVersion 保留旧快照；不允许既有引用改指对象，采用新版须显式改 workVersion。SourceState/latestVersion 只读派生，不改备课 version。
+math provider 是业务模块提供方，非 LLM Provider。`readForReferenceV1` 返回当前活动或tombstone作品与服务器快照；新增或采用更新仍必须是当前活动版且 render!=invalid。快照保存 title、workVersion、Source、posterFileId、presentationFileId、rendererVersion；workshop 还保存 graphPosterFileId，外部HTML固定该版fileId，文件一直保留。用户不得提交 snapshot。相同 referenceId/kind/workId/workVersion 保留旧快照；不允许既有引用改指对象，采用新版须显式改 workVersion。SourceState/latestVersion 只读派生，不改备课 version。
 
 本包将 lesson 的封闭 Reference 联合扩为 v3；Question/Resource分支及File/Document/Location/Usage直接外引冻结schema，不改语义。全部v3备课读写、删除、导出和使用位置在 `/api/modules/lessons/v3`，同一ID、DB、版本和幂等账本。v3在事务中同步读三个提供方，快照与备课原子提交。全课引用≤1000、环节/引用ID唯一，顺序和材料未安排规则继承材料。使用位置查询先验证本账户源（含tombstone），仅活动备课，沿旧排序；旧查询kind仍只有question/resource。
 

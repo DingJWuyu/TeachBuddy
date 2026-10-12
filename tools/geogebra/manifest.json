@@ -1,0 +1,120 @@
+{
+  "source": {
+    "revision": "325faee17884c7ced41d360d0f08ae919a38a955",
+    "url": "https://codeload.github.com/geogebra/geogebra/tar.gz/325faee17884c7ced41d360d0f08ae919a38a955",
+    "sha256": "3611196d64c63381b7bc7801d0b404b4b562ba47f4aa72e9f841d94b8eab12b5",
+    "license": "EUPL-1.2",
+    "licensePolicy": "https://www.geogebra.org/license"
+  },
+  "jdk": {
+    "version": "21.0.12.1+1",
+    "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_linux_hotspot_21.0.12.1_1.tar.gz",
+    "sha256": "ce79869e1307ed8ee1e2baa86a412b1eb5b75d10a01006d788a6f968bcfaee94",
+    "license": "GPL-2.0-with-classpath-exception",
+    "platform": "linux-x64"
+  },
+  "module": "org.geogebra.web.Web3D",
+  "excluded": [
+    "official language files",
+    "official UI images",
+    "official UI stylesheets",
+    "official app HTML",
+    "official deployggb.js",
+    "official online services",
+    "native multiplayer/editor JavaScript bundles",
+    "embedded JavaScript sandbox (QuickJS)"
+  ],
+  "compileJdk": {
+    "version": "17.0.20.1+1",
+    "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_x64_linux_hotspot_17.0.20.1_1.tar.gz",
+    "sha256": "3808d1d15e3ec6bd5b84057fb5d84c33d8a1536a258146bcea2e603fc726e08e",
+    "license": "GPL-2.0-with-classpath-exception",
+    "platform": "linux-x64"
+  },
+  "runtimeDependencies": [
+    {
+      "name": "Giac CAS",
+      "artifact": "fr.ujf-grenoble:giac-gwt:70501",
+      "url": "https://repo.geogebra.net/releases/fr/ujf-grenoble/giac-gwt/70501/giac-gwt-70501.jar",
+      "sha256": "c28c676d3b863f6b415bf9fc226a1ce02b538dc71e9a85c4569249319e1aada3",
+      "sourceArtifactSha256": "07e3302dcd61440ff9727a5b4f7310d77114347ca1821c83fb39302e575f536a",
+      "license": "GPL-3.0-or-later",
+      "sourceRepository": "https://github.com/geogebra/giac",
+      "source": {
+        "revision": "81d221d00bff4fff0f5f6d2298aa83042bf11559",
+        "svnRevision": 70501,
+        "url": "https://codeload.github.com/geogebra/giac/tar.gz/81d221d00bff4fff0f5f6d2298aa83042bf11559",
+        "sha256": "759138a7b950339c7b7e471d559688493aae8823897182d0886804b3de3e4eab"
+      },
+      "provenance": "Official fixed SVN commit, Jenkins publication recipe, Maven publication time and embedded WASM version 1.2.4-70501 agree. This is a source/version mapping, not a claim of bit-for-bit rebuilding the upstream third-party WASM.",
+      "buildToolchain": {
+        "emscripten": "4.0.7",
+        "source": "https://github.com/emscripten-core/emscripten/tree/4.0.7",
+        "notices": [
+          "licenses/emscripten-LICENSE.txt",
+          "licenses/emscripten-musl-COPYRIGHT.txt",
+          "licenses/emscripten-libcxx-LICENSE.txt"
+        ]
+      },
+      "linkedDependencies": [
+        {
+          "name": "GMP",
+          "declaredVersion": "6.3.0",
+          "source": "https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz",
+          "license": "LGPL-3.0-or-later OR GPL-2.0-or-later",
+          "sha256": "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"
+        },
+        {
+          "name": "MPFR",
+          "declaredVersion": "4.2.1",
+          "source": "https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.xz",
+          "sha256": "277807353a6726978996945af13e52829e3abd7a9a5b7fb2793894e18f1fcbb2",
+          "license": "LGPL-3.0-or-later"
+        }
+      ],
+      "linkedDependencyProvenance": "Upstream uses checked-in Web static archives; build scripts/headers declare GMP 6.3.0 and MPFR 4.2.1. Exact archive source patches and byte reproduction were not verified; libmpfr.la retains an older GMP path. The original pinned Giac repository and official library source releases are provided."
+    },
+    {
+      "name": "GWT compiler and browser library",
+      "license": "Apache-2.0",
+      "source": "https://github.com/gwtproject/gwt"
+    },
+    {
+      "name": "Apache Commons Math cross-platform fork",
+      "license": "Apache-2.0",
+      "source": "https://github.com/apache/commons-math",
+      "artifact": "org.apache:math-cross-platform:3.6.3",
+      "sourceArtifact": "https://repo.geogebra.net/releases/org/apache/math-cross-platform/3.6.3/math-cross-platform-3.6.3-sources.jar"
+    },
+    {
+      "name": "JLaTeXMath renderer",
+      "license": "GPL-2.0-or-later WITH linking exception",
+      "source": "GeoGebra pinned source/shared/renderer-base",
+      "notice": "licenses/JLaTeXMath.txt"
+    },
+    {
+      "name": "Mathematical outline fonts",
+      "license": "See original font licenses: OFL-1.1, Knuth permission, dsrom permission, GPL-2.0 and public-domain subsets",
+      "source": "GeoGebra pinned source/web/renderer-web fonts",
+      "notice": "licenses/math-fonts-*"
+    },
+    {
+      "name": "fflate",
+      "version": "0.8.2",
+      "license": "MIT",
+      "notice": "licenses/fflate-0.8.2.txt"
+    },
+    {
+      "name": "canvas-to-svg exporter",
+      "revision": "07fb00c823599320ae8629815254f017d3fa2962",
+      "source": "https://github.com/geogebra/canvas-to-svg/tree/07fb00c823599320ae8629815254f017d3fa2962",
+      "license": "MIT",
+      "notice": "licenses/canvas-to-svg.txt"
+    },
+    {
+      "name": "base64-js",
+      "license": "MIT",
+      "notice": "licenses/base64-js.txt"
+    }
+  ]
+}

@@ -170,6 +170,7 @@ export function createMaterialsLessons({
         if (kind === "math") {
           validateMath("ReferenceReadWork", s);
           if (s.snapshot.render?.state === "invalid" || (!s.snapshot.posterFileId && s.snapshot.source.kind !== "html")) throw fail(422, "math/work-not-ready");
+          if (s.snapshot.source.kind === "workshop" && (!s.snapshot.presentationFileId || (s.snapshot.source.graph && !s.snapshot.graphPosterFileId))) throw fail(422, "math/work-not-ready");
           snapshot = structuredClone(s.snapshot);
         } else {
         validateSchema(

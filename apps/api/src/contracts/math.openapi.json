@@ -56,7 +56,9 @@
                 "plane",
                 "space",
                 "dynamic",
-                "html"
+                "html",
+                "geogebra",
+                "workshop"
               ]
             }
           }
@@ -1358,7 +1360,8 @@
               "enum": [
                 "question",
                 "resource",
-                "math"
+                "math",
+                "workshop"
               ]
             }
           },
@@ -2579,6 +2582,12 @@
           },
           {
             "$ref": "#/components/schemas/HtmlSource"
+          },
+          {
+            "$ref": "#/components/schemas/GeoGebraSource"
+          },
+          {
+            "$ref": "#/components/schemas/WorkshopSource"
           }
         ]
       },
@@ -2605,6 +2614,16 @@
               },
               "reason": {
                 "type": "null"
+              },
+              "graphPosterFileId": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
@@ -2632,6 +2651,16 @@
                   "invalid-expression",
                   "invalid-geometry",
                   "render-failed"
+                ]
+              },
+              "graphPosterFileId": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Id"
+                  },
+                  {
+                    "type": "null"
+                  }
                 ]
               }
             },
@@ -2663,6 +2692,16 @@
               },
               "reason": {
                 "type": "null"
+              },
+              "graphPosterFileId": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
@@ -2799,6 +2838,36 @@
           "render",
           "rendererVersion",
           "createdAt"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "source": {
+                  "properties": {
+                    "kind": {
+                      "const": "workshop"
+                    }
+                  },
+                  "required": [
+                    "kind"
+                  ]
+                }
+              },
+              "required": [
+                "source"
+              ]
+            },
+            "then": {
+              "properties": {
+                "render": {
+                  "required": [
+                    "graphPosterFileId"
+                  ]
+                }
+              }
+            }
+          }
         ]
       },
       "Work": {
@@ -2862,6 +2931,36 @@
           "createdAt",
           "updatedAt",
           "deletedAt"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "source": {
+                  "properties": {
+                    "kind": {
+                      "const": "workshop"
+                    }
+                  },
+                  "required": [
+                    "kind"
+                  ]
+                }
+              },
+              "required": [
+                "source"
+              ]
+            },
+            "then": {
+              "properties": {
+                "render": {
+                  "required": [
+                    "graphPosterFileId"
+                  ]
+                }
+              }
+            }
+          }
         ]
       },
       "WorkList": {
@@ -2907,7 +3006,9 @@
               "png",
               "svg",
               "source",
-              "html"
+              "html",
+              "bundle",
+              "ggb"
             ]
           },
           "background": {
@@ -2920,6 +3021,17 @@
             "type": "integer",
             "minimum": 200,
             "maximum": 4800
+          },
+          "selection": {
+            "enum": [
+              "work",
+              "graph",
+              "formula"
+            ]
+          },
+          "formulaId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
           }
         },
         "required": [
@@ -2947,7 +3059,9 @@
               "png",
               "svg",
               "source",
-              "html"
+              "html",
+              "bundle",
+              "ggb"
             ]
           },
           "file": {
@@ -3010,6 +3124,16 @@
                 "type": "null"
               }
             ]
+          },
+          "graphPosterFileId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -3019,6 +3143,32 @@
           "posterFileId",
           "rendererVersion",
           "presentationFileId"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "source": {
+                  "properties": {
+                    "kind": {
+                      "const": "workshop"
+                    }
+                  },
+                  "required": [
+                    "kind"
+                  ]
+                }
+              },
+              "required": [
+                "source"
+              ]
+            },
+            "then": {
+              "required": [
+                "graphPosterFileId"
+              ]
+            }
+          }
         ]
       },
       "ReferenceReadWork": {
@@ -3993,6 +4143,262 @@
           "parameter",
           "seconds",
           "mode"
+        ],
+        "additionalProperties": false
+      },
+      "GeoGebraSource": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          },
+          "kind": {
+            "const": "geogebra"
+          },
+          "appName": {
+            "enum": [
+              "classic",
+              "graphing",
+              "geometry",
+              "3d"
+            ]
+          },
+          "base64": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 1048576,
+            "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "kind",
+          "appName",
+          "base64"
+        ],
+        "additionalProperties": false
+      },
+      "WorkshopFormula": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+          },
+          "latex": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "caption": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000
+          },
+          "includeCaption": {
+            "type": "boolean"
+          },
+          "color": {
+            "$ref": "#/components/schemas/Color"
+          },
+          "fontSize": {
+            "type": "number",
+            "minimum": 8,
+            "maximum": 96
+          }
+        },
+        "required": [
+          "id",
+          "latex",
+          "caption",
+          "includeCaption",
+          "color",
+          "fontSize"
+        ],
+        "additionalProperties": false
+      },
+      "WorkshopStep": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "values": {
+            "type": "object",
+            "maxProperties": 300,
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+            },
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "visibleObjects": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+            },
+            "maxItems": 300,
+            "uniqueItems": true
+          },
+          "visibleFormulas": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+            },
+            "maxItems": 300,
+            "uniqueItems": true
+          },
+          "view": {
+            "enum": [
+              "plane",
+              "space",
+              "split"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "values",
+          "visibleObjects",
+          "visibleFormulas",
+          "view"
+        ],
+        "additionalProperties": false
+      },
+      "WorkshopSource": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          },
+          "kind": {
+            "const": "workshop"
+          },
+          "formulas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkshopFormula"
+            },
+            "maxItems": 100
+          },
+          "graph": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "base64": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 1048576,
+                    "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+                  }
+                },
+                "required": [
+                  "base64"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "view": {
+            "enum": [
+              "plane",
+              "space",
+              "split"
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkshopStep"
+            },
+            "maxItems": 100
+          },
+          "initialStepId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "animation": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "parameter": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                  },
+                  "seconds": {
+                    "type": "number",
+                    "minimum": 0.1,
+                    "maximum": 3600
+                  },
+                  "mode": {
+                    "enum": [
+                      "once",
+                      "loop",
+                      "bounce"
+                    ]
+                  }
+                },
+                "required": [
+                  "parameter",
+                  "seconds",
+                  "mode"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "traceObjects": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+            },
+            "uniqueItems": true,
+            "maxItems": 10
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "kind",
+          "formulas",
+          "graph",
+          "view",
+          "steps",
+          "initialStepId",
+          "animation",
+          "traceObjects"
         ],
         "additionalProperties": false
       }

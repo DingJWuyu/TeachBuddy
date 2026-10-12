@@ -94,6 +94,7 @@ function WorkbenchContent({ boot }) {
   });
   const [materialNavigation, setMaterialNavigation] = useScene(accountKey, 'material-navigation', {});
   const [tools, setTools] = useState([]);
+  const [assistant, setAssistant] = useState(null);
   const [timeZone, setTimeZone] = useState(null);
   const [timeZoneError, setTimeZoneError] = useState(null);
   const [timeZoneReload, setTimeZoneReload] = useState(0);
@@ -107,6 +108,7 @@ function WorkbenchContent({ boot }) {
   }, [route.path, generation, timeZoneReload]);
   const activeModule = workbenchModules.find(module => module.id === route.moduleId);
 
+  const registerAssistant = useCallback(render => setAssistant(() => render), []);
   const registerTools = useCallback((next) => setTools(next), []);
   const openPanel = useCallback((mode = 'ai') => {
     patchScene({ panelOpen: true, panelMode: mode });
@@ -129,6 +131,7 @@ function WorkbenchContent({ boot }) {
     panelWidth: scene.panelWidth || 300,
     tools,
     registerTools,
+    assistant, registerAssistant,
     openPanel,
     closePanel: () => patchScene({ panelOpen: false }),
     setPanelMode: (mode) => patchScene({ panelMode: mode }),
@@ -143,7 +146,7 @@ function WorkbenchContent({ boot }) {
     },
     openMaterialSource: (path, lessonPath) => { setMaterialNavigation({ sourcePath: path, lessonPath }); navigate(path); }
   }), [logout, accountKey, nickname, generation, agent.businessRevision, storageFailed, narrow, scene.panelMode, scene.panelOpen, scene.panelWidth,
-    tools, registerTools, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, timeZoneError, preferences, appearance, setAppearance, locale, setLocale]);
+    tools, registerTools, assistant, registerAssistant, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, timeZoneError, preferences, appearance, setAppearance, locale, setLocale]);
 
   const collapsed = narrow ? !scene.drawerOpen : Boolean(scene.sidebarCollapsed);
   const hasPanel = Boolean(activeModule?.auxiliaryPanel);
@@ -219,7 +222,7 @@ function WorkbenchContent({ boot }) {
               {page}
             </main>
 
-            {panelOpen && <AuxiliaryPanel />}
+            {(panelOpen || assistant) && <AuxiliaryPanel hidden={!panelOpen} />}
           </div>
         </div>
       </div>

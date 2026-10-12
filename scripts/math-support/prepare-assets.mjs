@@ -3,6 +3,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+import { packageMathWebAiExtension } from '../math-web-ai/package.mjs';
 
 const require = createRequire(import.meta.url);
 export const mathAssetsDirectory = fileURLToPath(new URL('../../apps/web/public/vendor/math/', import.meta.url));
@@ -33,5 +35,7 @@ export async function prepareMathAssets(destination = mathAssetsDirectory) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  execFileSync('python3', [fileURLToPath(new URL('./geogebra-build.py', import.meta.url)), '--check'], { stdio: 'inherit' });
   await prepareMathAssets();
+  await packageMathWebAiExtension();
 }

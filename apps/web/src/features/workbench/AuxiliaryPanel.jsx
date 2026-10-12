@@ -20,7 +20,7 @@ export function AiWorkspace({ variant = 'panel' }) {
 const MIN_WIDTH = 260;
 const MAX_WIDTH = 520;
 
-export function AuxiliaryPanel() {
+export function AuxiliaryPanel({ hidden = false }) {
   const { t } = useTranslation("workbench");
   const shell = useWorkbenchShell();
   const { tools } = shell;
@@ -52,10 +52,11 @@ export function AuxiliaryPanel() {
 
   return (
     <aside
+      hidden={hidden}
+      style={hidden ? { display: 'none' } : { '--wb-aux-width': `${shell.panelWidth}px` }}
       className="wb-aux"
       data-region="auxiliary"
       aria-label={t("辅助栏")}
-      style={{ '--wb-aux-width': `${shell.panelWidth}px` }}
     >
       <div
         className="wb-aux-resizer"
@@ -100,7 +101,8 @@ export function AuxiliaryPanel() {
         </button>
       </header>
       <div className="wb-aux-body">
-        {mode === 'ai' ? <AiWorkspace /> : activeTool.render()}
+        <div hidden={mode !== 'ai'} style={mode !== 'ai' ? { display: 'none' } : { height: '100%' }}>{shell.assistant ? shell.assistant() : <AiWorkspace />}</div>
+        {mode !== 'ai' && activeTool.render()}
       </div>
     </aside>
   );

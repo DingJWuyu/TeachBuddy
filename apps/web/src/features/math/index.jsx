@@ -23,7 +23,7 @@ import { Popover, MenuItem } from "../workbench/ModuleOverlays.jsx";
 import HtmlEditor from "./HtmlEditor.jsx";
 import { dynamicSource, emptyDynamicSource } from "./model.js";
 import { updateObjects } from "./editing.js";
-import React, { useEffect, useLayoutEffect, useMemo, useState, useRef, useContext } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState, useRef, useContext, useCallback } from "react";
 import { projectSpace } from "../../../../../packages/shared/src/math/graphics.js";
 import {
   emptySource,
@@ -40,6 +40,9 @@ import "./workspace.css";
 import { ModulePresence } from '../workbench/ModuleMotion.jsx';
 import { WorkspaceToolbar } from './WorkspaceControls.jsx';
 import { useDraftHistory } from './useDraftHistory.js';
+import GgbWorkspace from './GgbWorkspace.jsx';
+import WorkshopWorkspace from './WorkshopWorkspace.jsx';
+import { createWorkshopSource } from '../../../../../packages/shared/src/math/workshop.js';
 import WorkHistory from './WorkHistory.jsx';
 const base = "/api/modules/math/v1/works";
 const names = {
@@ -97,10 +100,13 @@ const names = {
   get azimuth() { return t("方位角"); },
   get elevation() { return t("仰角"); },
 };
+function hasWorkshopInput(draft) { return draft?.source.kind === 'workshop' && Object.values(draft.workshopInput ?? {}).some(value => typeof value === 'string' && value.trim()); }
 function hasContent(draft) {
   if (!draft) return false;
   if (draft.id || draft.source.kind === 'html' || Object.keys(draft.parameterEdits ?? {}).length) return true;
   const kind = draft.source.kind;
+  if (kind === 'workshop') return !!(draft.source.formulas.length || draft.source.graph || hasWorkshopInput(draft));
+  if (kind === 'geogebra') return (draft.ggbTouched ?? !!draft.source.base64) || draft.title !== '未命名数学作品';
   const empty = kind === 'dynamic' ? emptyDynamicSource() : emptySource(kind);
   return draft.title !== `未命名${({ dynamic: "演示", html: "HTML", formula: "公式", plane: "平面图形", space: "空间图形" })[kind]}` || JSON.stringify(draft.source) !== JSON.stringify(empty);
 }
@@ -301,6 +307,12 @@ function MathSession({ transport, route }) {
     [conflict, setConflict] = useState(null);
   const [confirm, confirmationDialog] = useMathConfirm();
   const history = useDraftHistory();
+  const ggbFlush = useRef(null);
+  const assistantRequest = useRef(null);
+  const takeAssistantRequest = useCallback(() => { const request = assistantRequest.current; assistantRequest.current = null; return request; }, []);
+  const [editorSession, setEditorSession] = useState(0);
+  const editorSessionRef = useRef(editorSession);
+  editorSessionRef.current = editorSession;
   const [historyOpen, setHistoryOpen] = useState(false);
   useEffect(() => {
     const kind = draft?.source?.kind;
@@ -309,6 +321,7 @@ function MathSession({ transport, route }) {
   }, [draft?.source?.kind, format]);
   const [viewScene, patchView] = useScene(account, 'math-view', { canvasTop: 0, canvasLeft: 0 });
   const home = !draft || viewScene.screen === 'home';
+  useEffect(() => { if (home) assistantRequest.current = null; }, [home, account]);
   const canvasScroll = useScrollRestore(home ? viewScene.homeTop ?? 0 : viewScene.canvasTop,
     top => patchView(home ? { homeTop: top } : { canvasTop: top }), `${home}:${draft?.id}:${draft?.source.kind}:${Boolean(font)}`);
   useLayoutEffect(() => { if (canvasScroll.ref.current) canvasScroll.ref.current.scrollTop = home ? viewScene.homeTop ?? 0 : viewScene.canvasTop; }, [home]);
@@ -352,7 +365,7 @@ function MathSession({ transport, route }) {
       file && !importPending &&
       hasContent(draft) &&
       status !== "已保存" &&
-      !await confirm(t("导入会替换当前未保存稿，是否继续？"))
+      !await confirm(t("导入会替换当前未保存内容，是否继续？"))
     )
       return;
     const epoch = generation.current;
@@ -391,17 +404,17 @@ function MathSession({ transport, route }) {
         if (!file) return;
         if (file.size > 1024 * 1024) throw new Error(t("制作源超过 1 MiB，请选择工坊下载的 JSON 文件。"));
         let source;
-        try { source = JSON.parse(await file.text()); } catch { throw new Error(t("文件不是有效的制作源 JSON，当前草稿已保留。")); }
-        if (!source || source.schemaVersion !== 1 || !['formula', 'plane', 'space', 'dynamic'].includes(source.kind))
-          throw new Error(t("请选择工坊下载的公式或图形制作源 JSON；HTML 演示请使用 HTML 导入入口。"));
+        try { source = JSON.parse(await file.text()); } catch { throw new Error(t("文件不是有效的制作源 JSON，当前内容已保留。")); }
+        if (!source || source.schemaVersion !== 1 || !['workshop', 'formula', 'plane', 'space', 'dynamic'].includes(source.kind))
+          throw new Error(t("请选择工坊下载的可编辑源 JSON；HTML 演示请使用 HTML 导入入口。"));
         if (epoch !== generation.current) return;
-        if (hasContent(draftRef.current) && status !== "已保存" && !await confirm(t("导入作品会替换当前未保存稿，是否继续？"))) return;
+        if (hasContent(draftRef.current) && status !== "已保存" && !await confirm(t("导入作品会替换当前未保存内容，是否继续？"))) return;
         request = { kind: 'import-source', path: base, method: 'POST', key: crypto.randomUUID(),
           input: { title: file.name.replace(/\.json$/i, '').slice(0, 200) || t("导入作品"), source, originalFileId: null } };
       }
       if (epoch !== generation.current) return;
       if (!writeLocal(account, 'math-workspace', { draft: draftRef.current, pending: request, status, selected, search, deleted, format, background, exportWidth }))
-        throw new Error(t("设备存储空间不足，请先整理设备草稿，再重试导入。"));
+        throw new Error(t("设备存储空间不足，请先整理本地内容，再重试导入。"));
       setPending(request);
       // The existing creation endpoint validates the complete source before it
       // reaches an editor. An invalid import never replaces the current draft.
@@ -514,9 +527,9 @@ function MathSession({ transport, route }) {
     if (storage && loadedStorage === storage && !locked) {
       try {
         if (!writeLocal(account, 'math-workspace', { draft, pending, status, selected, search, deleted, format, background, exportWidth }))
-          setMessage(t("设备草稿无法保留，请先保存到服务端"));
+          setMessage(t("本地内容无法保留，请先保存到服务端"));
       } catch {
-        setMessage(t("设备草稿空间不足，请保存到服务端"));
+        setMessage(t("本地内容空间不足，请保存到服务端"));
       }
     }
   }, [draft, pending, status, storage, loadedStorage, locked, selected, search, deleted, format, background, exportWidth]);
@@ -553,8 +566,11 @@ function MathSession({ transport, route }) {
     const saved = await mathRequest(`${base}/${started.id}`);
     if (epoch !== generation.current || draftRef.current !== started || inFlight.current || liveSave.current.pending) return;
     if (saved.version === started.version) return;
-    if (liveSave.current.status === "已保存") setDraft(saved);
-    else { setConflict(saved); setMessage(t("服务器内容已变化，本地稿保留，请对照当前版本")); }
+    if (liveSave.current.status === "已保存") {
+      if (['geogebra', 'workshop'].includes(saved.source.kind)) setEditorSession(value => value + 1);
+      setDraft({ ...saved, ...(started.workshopInput ? { workshopInput: started.workshopInput } : {}) });
+    }
+    else { setConflict(saved); setMessage(t("服务器内容已变化，本地内容保留，请对照当前版本")); }
   });
   useEffect(() => {
     if (account) refresh();
@@ -566,7 +582,7 @@ function MathSession({ transport, route }) {
     }
     setMessage(
       e.status === 409
-        ? t("版本冲突，本地稿已保留")
+        ? t("版本冲突，本地内容已保留")
         : e.status === 503
           ? t("暂时无法保存或读取，请稍后确认")
           : e.problem?.field
@@ -590,22 +606,25 @@ function MathSession({ transport, route }) {
   function source(next) {
     edit({ ...draft, source: next });
   }
-  async function newDraft(kind) {
+  async function newDraft(kind = 'workshop', request = null) {
     if (pending) {
       setMessage(t("请先确认上次保存结果"));
       return;
     }
     if (
       hasContent(draft) &&
-      status !== "已保存" &&
-      !await confirm(t("新建作品会替换当前未保存稿，是否继续？"))
+      (status !== "已保存" || hasWorkshopInput(draft)) &&
+      !await confirm(t("新建作品会替换当前未保存内容，是否继续？"))
     )
       return;
+    assistantRequest.current = request ? { text: request } : null;
     history.reset(null);
+    setEditorSession(value => value + 1);
     edit({
-      title: `未命名${({ dynamic: "演示", html: "HTML", formula: "公式", plane: "平面图形", space: "空间图形" })[kind]}`,
-      source: kind === "dynamic" ? emptyDynamicSource() : emptySource(kind),
+      title: kind === 'workshop' ? t('未命名数学作品') : `未命名${({ dynamic: "演示", html: "HTML", formula: "公式", plane: "平面图形", space: "空间图形", geogebra: "数学作品" })[kind]}`,
+      source: kind === "workshop" ? createWorkshopSource() : kind === "geogebra" ? { schemaVersion: 1, kind, appName: "classic", base64: "" } : kind === "dynamic" ? emptyDynamicSource() : emptySource(kind),
       originalFileId: null,
+      ...(kind === "geogebra" ? { ggbTouched: false } : {}),
     }, false);
     setSelected(0);
     setConflict(null);
@@ -614,20 +633,22 @@ function MathSession({ transport, route }) {
     if (shell?.panelMode === 'math-tools') shell.closePanel();
   }
   async function open(item) {
+    if (item.id === draftRef.current?.id && hasWorkshopInput(draftRef.current)) { patchView({ screen: 'editor' }); return; }
     if (pending) {
       setMessage(t("请先确认上次保存结果"));
       return;
     }
     if (
-      status !== "已保存" &&
+      (status !== "已保存" || hasWorkshopInput(draft)) &&
       hasContent(draft) &&
-      !await confirm(t("打开作品会替换当前未保存稿，是否继续？"))
+      !await confirm(t("打开作品会替换当前未保存内容，是否继续？"))
     )
       return;
     const epoch = generation.current;
     try {
       const saved = await mathRequest(`${base}/${item.id}`);
       if (epoch !== generation.current) return;
+      setEditorSession(value => value + 1);
       setDraft(saved);
       draftRef.current = saved;
       history.reset(saved);
@@ -642,6 +663,12 @@ function MathSession({ transport, route }) {
   }
   async function save(copy = false) {
     if (inFlight.current) return;
+    const currentWork = draftRef.current;
+    if (!pending && currentWork?.source.kind === 'workshop' && !currentWork.source.formulas.length && !currentWork.source.graph) { if (hasWorkshopInput(currentWork)) setMessage(t('请先将输入加入作品，再保存。')); return; }
+    if (!pending && ['geogebra', 'workshop'].includes(draftRef.current?.source.kind)) {
+      try { await ggbFlush.current?.(); } catch (error) { handleError(error); return; }
+      if (inFlight.current) return;
+    }
     if (pending?.kind === 'import-source') return importSource();
     if (!pending && Object.keys(draft.parameterEdits ?? {}).length) {
       setMessage(t("请先应用参数设置，再保存作品"));
@@ -743,15 +770,16 @@ function MathSession({ transport, route }) {
             });
       setDraft((current) =>
         unchanged && current === started
-          ? saved
+          ? { ...saved, ...(current.workshopInput ? { workshopInput: current.workshopInput } : {}) }
           : { ...current, id: saved.id, version: saved.version },
       );
       setStatus(
-        unchanged && draftRef.current === started ? "已保存" : "未保存",
+        unchanged ? "已保存" : "未保存",
       );
       setConflict(null);
       if (copy) history.reset(saved);
       await refresh();
+      return true;
     } catch (e) {
       if (epoch !== generation.current || inFlight.current !== operation)
         return;
@@ -768,7 +796,7 @@ function MathSession({ transport, route }) {
       }
     }
   }
-  async function exportFile() {
+  async function exportFile(workshopOptions) {
     if (inFlight.current) return;
     if (pending && pending.kind !== "export") {
       setMessage(t("请先确认当前操作结果"));
@@ -786,12 +814,10 @@ function MathSession({ transport, route }) {
       key: crypto.randomUUID(),
       input: {
         version: draft.version,
-        format,
-        background:
-          ["source", "html"].includes(format) || draft.source.kind === "formula"
-            ? "transparent"
-            : background,
-        width: ["source", "html"].includes(format) ? 1600 : exportWidth,
+        ...(workshopOptions ?? {}),
+        format: workshopOptions?.format ?? format,
+        background: workshopOptions?.background ?? (["source", "html"].includes(format) || draft.source.kind === "formula" ? "transparent" : background),
+        width: workshopOptions?.width ?? (["source", "html"].includes(format) ? 1600 : exportWidth),
       },
     };
     const operation = Symbol("math-request");
@@ -887,7 +913,7 @@ function MathSession({ transport, route }) {
   const readOnly =
     draft &&
     (draft.source.schemaVersion !== 1 ||
-      !["formula", "plane", "space", "dynamic", "html"].includes(
+      !["formula", "plane", "space", "dynamic", "html", "geogebra", "workshop"].includes(
         draft.source.kind,
       ));
   const objects =
@@ -951,8 +977,18 @@ function MathSession({ transport, route }) {
     patchView({ selectionKind: kind });
     showTools('objects');
   }
-  function goHome() {
-    if (!hasContent(draft) && !pending && !busy) { setDraft(null); draftRef.current = null; }
+  async function goHome() {
+    if (hasWorkshopInput(draftRef.current)) {
+      if (!await confirm(t('还有内容未加入作品，是否放弃这些输入并返回？'))) return;
+      const next = { ...draftRef.current, workshopInput: { formula: '', expression: '' } };
+      draftRef.current = next; setDraft(next);
+      writeLocal(account, 'math-workspace', { draft: next, pending: liveSave.current.pending, status: liveSave.current.status, selected, search, deleted, format, background, exportWidth });
+    }
+    if (['geogebra', 'workshop'].includes(draftRef.current?.source.kind)) {
+      try { await ggbFlush.current?.(); } catch (error) { handleError(error); return; }
+    }
+    if (draftRef.current?.source.kind === 'workshop' && (draftRef.current.source.formulas.length || draftRef.current.source.graph) && liveSave.current.status !== '已保存') { if (!await save()) return; }
+    if (!hasContent(draftRef.current) && !pending && !busy) { setDraft(null); draftRef.current = null; }
     patchView({ screen: 'home', exportOpen: false, usageOpen: false });
     if (route?.workId) shell?.navigate('/math');
     setMessage('');
@@ -1014,7 +1050,7 @@ function MathSession({ transport, route }) {
     setSelected(0); patchView({ selectionKind: 'object' });
   }
   useEffect(() => {
-    if (!canChangeHistory) return;
+    if (!canChangeHistory || ['geogebra', 'workshop'].includes(draft?.source.kind)) return;
     const keydown = event => {
       if (!(event.ctrlKey || event.metaKey) || event.altKey || event.isComposing || event.defaultPrevented) return;
       if (!event.target.closest?.('.math-workbench, .math-tools-panel') || event.target.closest('input, textarea, select, math-field, [contenteditable="true"], [role="dialog"], [role="menu"]')) return;
@@ -1030,9 +1066,10 @@ function MathSession({ transport, route }) {
     if (!canChangeHistory) return;
     if (status !== "已保存" && !await confirm(t("恢复历史版本会替换当前未保存修改，是否继续？"))) return;
     edit({ ...draftRef.current, title: version.title, source: version.source, htmlText: undefined, htmlUploadKey: undefined, parameterEdits: {} });
+    setEditorSession(value => value + 1);
     setHistoryOpen(false); setSelected(0);
     patchView({ formulaMode: null, formulaBuilder: null, selectionKind: 'object' });
-    setMessage(t("已恢复版本 {{version}} 为草稿，保存后生成新版本。", { version: version.version }));
+    setMessage(t("已恢复版本 {{version}}，保存后生成新版本。", { version: version.version }));
   }
   async function makeDynamicCopy() {
     if (!canChangeHistory || draft.source.kind !== 'plane') return;
@@ -1053,10 +1090,38 @@ function MathSession({ transport, route }) {
     return (
       <main className="math-lock">
         <h1>{t("请重新验证身份")}</h1>
-        <p>{t("原账户草稿已保留")}</p>
+        <p>{t("原账户内容已保留")}</p>
         <button onClick={identify}>{t("重新验证")}</button>
       </main>
     );
+  const serverVersion = typeof conflict === 'object' ? conflict?.version : conflict;
+  const conflictNotice = conflict && draft ? <div className="math-message" role="alert">
+    {t('服务器版本')} {serverVersion}{t('，本地版本')} {draft.version}
+    <button disabled={busy || !!pending} onClick={() => { edit({ ...draftRef.current, version: serverVersion }, false); setConflict(null); setMessage(t('请核对本地修改后保存')); }}>{t('以服务器版本为基线保留本地内容')}</button>
+    <button disabled={busy || !!pending} onClick={() => save(true)}>{t('另存作品')}</button>
+    <button disabled={busy || !!pending} onClick={() => open({ id: draftRef.current.id })}>{t('读取服务器作品')}</button>
+  </div> : null;
+  if (home) return <div className="math-workbench wb-module mw-home-wrapper">{confirmationDialog}
+    <input ref={importFile} type="file" accept=".html,.htm,text/html" hidden onChange={event => { const file = event.target.files[0]; event.target.value = ''; if (file) void importHtml(file); }}/>
+    <input ref={sourceFile} type="file" accept=".json,application/json" hidden onChange={event => { const file = event.target.files[0]; event.target.value = ''; if (file) void importSource(file); }}/>
+    {message && <div className="mw-notice" role="alert">{message}{pending && <button disabled={busy} onClick={() => save()}>{t('确认操作结果')}</button>}</div>}
+    {shell && <MathIntegration work={draft} saved={status === '已保存'} busy={busy} onError={handleError} client={client}/>}
+    <WorkspaceHome accountKey={account} client={client} items={items} search={search} deleted={deleted} busy={busy || !!pending} onSearch={setSearch} onDeleted={setDeleted} onNew={request => newDraft('workshop', typeof request === 'string' ? request : null)} onOpen={open} onImport={() => importFile.current.click()} onImportSource={() => sourceFile.current.click()} onRestore={item => deletion(false, item)} onPurge={item => deletion(true, item)}/>
+  </div>;
+  if (!home && draft?.source.kind === 'workshop') return <WorkshopWorkspace takeAssistantRequest={takeAssistantRequest} key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflictNotice={conflictNotice} flushRef={ggbFlush} client={shell ? client : null}
+    onChangeSource={next => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'workshop') return; if (JSON.stringify(current.source) !== JSON.stringify(next)) edit({ ...current, source: next }, false); }}
+    onChangeInput={workshopInput => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'workshop') return; const next = { ...current, workshopInput }; draftRef.current = next; setDraft(next); writeLocal(account, 'math-workspace', { draft: next, pending: liveSave.current.pending, status: liveSave.current.status, selected, search, deleted, format, background, exportWidth }); }}
+    onTitle={title => edit({ ...draftRef.current, title }, false)} onHome={goHome} onSave={() => save()} onError={handleError} onHistory={() => setHistoryOpen(true)} onCopy={() => save(true)} onArchive={() => deletion(false)} onDownload={exportFile}>
+    {confirmationDialog}<ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
+  </WorkshopWorkspace>;
+  if (!home && !readOnly && draft?.source.kind === 'geogebra') return <GgbWorkspace key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflictNotice={conflictNotice} flushRef={ggbFlush}
+    onChangeSource={(next, touched) => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'geogebra') return; if (current.source.base64 !== next.base64 || (!current.id && touched && !current.ggbTouched)) edit({ ...current, source: next, ggbTouched: current.ggbTouched || touched }, false); }}
+    onUnchanged={(previous, previousStatus) => { if (editorSessionRef.current === editorSession && previousStatus === '已保存' && draftRef.current === previous && !inFlight.current && !pending) setStatus('已保存'); }}
+    onDirty={() => setStatus('未保存')} onTitle={title => edit({ ...draftRef.current, title }, false)} onHome={goHome} onSave={() => save()} onError={handleError}
+    onHistory={() => setHistoryOpen(true)} onRestore={() => deletion(false)}>
+    {confirmationDialog}
+    <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
+  </GgbWorkspace>;
   return (
     <div className="math-workbench wb-module">
       <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== "已保存"} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
@@ -1106,20 +1171,7 @@ function MathSession({ transport, route }) {
             {message}
           </div>
         )}
-        {conflict && (
-          <div className="math-message">
-            {t("服务器版本")} {conflict}{t("，本地版本")} {draft.version}
-            <button
-              onClick={() => {
-                setDraft({ ...draft, version: conflict });
-                setConflict(null);
-                setMessage(t("请核对本地修改后保存"));
-              }}
-            >
-              {t("以服务器版本为基线保留本地稿")}
-            </button>
-          </div>
-        )}
+        {conflictNotice}
         {!home && draft && <ModulePresence present={!!viewScene.exportOpen} mode="collapse">
           <section id="math-export-options" className="math-export-options" aria-label={t("导出作品")}>
             <label>{t("文件格式")}<select

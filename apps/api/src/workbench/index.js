@@ -54,6 +54,7 @@ export function createWorkbench({
   identity: identityOverride,
   logger: loggerOverride,
   clock,
+  mathRuntimeDirectory,
   implementations = moduleImplementations,
 } = {}) {
   if (!env)
@@ -127,7 +128,8 @@ export function createWorkbench({
       ...implementations,
       ...(workbenchEnv.extraImplementations ?? {}),
     },
-    dependencies: { db, mutations, files, content, jobs, recognition, clock: { now: () => (clock ? clock() : new Date()).toISOString() } },
+    dependencies: { db, mutations, files, content, jobs, recognition, mathRuntimeDirectory,
+      clock: { now: () => (clock ? clock() : new Date()).toISOString() } },
     logger,
   });
 

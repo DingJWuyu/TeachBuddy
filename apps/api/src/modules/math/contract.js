@@ -1,6 +1,9 @@
 import { constructionIssue } from "../../../../../packages/shared/src/math/geometry.js";
 import { parameterOnGrid } from "../../../../../packages/shared/src/math/dynamic.js";
 import { ContractError } from "../../workbench/problems.js";
+import yauzl from "yauzl";
+import { crc32 } from "node:zlib";
+import { validateWorkshopSourceShape } from "../../../../../packages/shared/src/math/workshop.js";
 export { contract, validate } from "../../workbench/content/mathSchema.js";
 export function mathError(type, field = "", reason = type, status = 422) {
   return new ContractError(status, {
@@ -15,8 +18,12 @@ export function validateSourceRelations(source) {
   };
   if (source.schemaVersion !== 1)
     throw mathError("unsupported-work-version", "/source/schemaVersion");
-  if (!["formula", "plane", "space", "dynamic", "html"].includes(source.kind))
+  if (!["formula", "plane", "space", "dynamic", "html", "geogebra", "workshop"].includes(source.kind))
     throw mathError("unsupported-work-version", "/source/kind");
+  if (source.kind === "workshop") {
+    try { validateWorkshopSourceShape(source); }
+    catch (error) { throw workshopContractError(error); }
+  }
   validateDynamic(source);
   const view = source.scene?.viewport ?? source.viewport;
   if (view && (view.xMin >= view.xMax || view.yMin >= view.yMax))
@@ -48,6 +55,59 @@ export function validateSourceRelations(source) {
         bad(`/edges/${i}`, "invalid-reference");
     });
   }
+}
+
+// Native GGB files are ZIP archives. Bound both their stored and expanded sizes,
+// and read every entry so corrupt compression, lengths and CRCs cannot be saved.
+export async function validateGeoGebraSource(source) {
+  if (source.kind !== "geogebra" && !(source.kind === "workshop" && source.graph)) return;
+  const base64 = source.kind === "workshop" ? source.graph.base64 : source.base64;
+  const bad = () => mathError("invalid-math-source", source.kind === "workshop" ? "/source/graph/base64" : "/source/base64", "invalid-geogebra-file");
+  const bytes = Buffer.from(base64, "base64");
+  if (bytes.toString("base64") !== base64 || !bytes.length) throw bad();
+  const expandedLimit = 16 * 1024 * 1024;
+  try {
+    await new Promise((resolve, reject) => {
+      yauzl.fromBuffer(bytes, { lazyEntries: true, validateEntrySizes: true }, (error, zip) => {
+        if (error) return reject(error);
+        let expanded = 0, count = 0, hasConstruction = false;
+        const fail = (issue) => { zip.close(); reject(issue); };
+        zip.on("error", fail);
+        zip.on("end", () => hasConstruction ? resolve() : reject(bad()));
+        zip.on("entry", (entry) => {
+          expanded += entry.uncompressedSize;
+          if (++count > 1024 || expanded > expandedLimit) return fail(bad());
+          if (entry.fileName.endsWith("/")) return zip.readEntry();
+          zip.openReadStream(entry, (issue, stream) => {
+            if (issue) return fail(issue);
+            let size = 0, checksum = 0;
+            stream.on("error", fail);
+            stream.on("data", (chunk) => {
+              size += chunk.length;
+              if (size > entry.uncompressedSize || size > expandedLimit) {
+                stream.destroy(bad());
+                return;
+              }
+              checksum = crc32(chunk, checksum);
+            });
+            stream.on("end", () => {
+              if (size !== entry.uncompressedSize || checksum !== entry.crc32) return fail(bad());
+              if (entry.fileName === "geogebra.xml" && size > 0) hasConstruction = true;
+              zip.readEntry();
+            });
+          });
+        });
+        zip.readEntry();
+      });
+    });
+  } catch {
+    throw bad();
+  }
+}
+
+export function workshopContractError(error) {
+  if (error?.code !== "invalid-workshop") return error;
+  return mathError("invalid-math-source", error.field, error.reason);
 }
 
 export function validateDynamic(source) {

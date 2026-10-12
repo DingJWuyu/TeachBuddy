@@ -29,6 +29,7 @@
     "nodemailer": "^10.0.10",
     "parse5": "7.3.0",
     "pdfjs-dist": "6.3.289",
+    "playwright": "1.63.0",
     "remark-math": "6.0.0",
     "remark-parse": "11.0.0",
     "rrule": "2.8.1",

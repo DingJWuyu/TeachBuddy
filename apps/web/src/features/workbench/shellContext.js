@@ -32,3 +32,14 @@ export function useAuxiliaryTools(defs) {
     return () => register([]);
   }, [register, signature]);
 }
+
+/** Override the assistant only while the owning page is mounted. */
+export function useAuxiliaryAssistant(render) {
+  const shell = useContext(ShellContext);
+  const register = shell?.registerAssistant;
+  useEffect(() => {
+    if (!register) return;
+    register(render);
+    return () => register(null);
+  }, [register, render]);
+}

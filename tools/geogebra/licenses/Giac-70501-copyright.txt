@@ -1,0 +1,35 @@
+// -*- mode:C++ ; compile-command: "g++ -I.. -I../include -DHAVE_CONFIG_H -DIN_GIAC -DGIAC_GENERIC_CONSTANTS -fno-strict-aliasing -g -c gen.cc -Wall" -*-
+#include "giacPCH.h"
+#if defined KHICAS || defined SDL_KHICAS
+#include "kdisplay.h"
+#if defined DEVICE && !defined NUMWORKS_SLOTAB && !defined NUMWORKS_SLOTB && !defined NSPIRE_NEWLIB 
+size_t stackptr=0x20036000;
+#else
+#if defined x86_64
+size_t stackptr=0xffffffffffffffff;
+#else
+size_t stackptr=0xffffffff;
+#endif
+#endif
+#endif
+
+#ifdef NSPIRE_NEWLIB
+#include <os.h>
+#endif
+
+/*
+ *  Copyright (C) 2001,14 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */

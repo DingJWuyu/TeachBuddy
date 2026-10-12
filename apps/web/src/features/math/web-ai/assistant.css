@@ -1,0 +1,499 @@
+.math-web-assistant {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  color: var(--wb-text,#27272a);
+  font-size: 14px;
+  --wb-text: var(--app-text,#27272a);
+  --wb-surface: var(--app-surface,#fff);
+  --wb-muted: var(--app-muted,#777d87);
+}
+
+.math-ai-thread {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  padding: 0 20px 20px;
+}
+
+.math-ai-welcome {
+  padding-top: 24px;
+  padding: 0 0 60px;
+}
+
+.math-ai-welcome h2 {
+  font-size: 18px;
+  line-height: 28px;
+  letter-spacing: 0;
+  margin: 0 0 8px;
+  font-weight: 500;
+}
+
+.math-ai-welcome p {
+  font-size: 14px;
+  line-height: 22px;
+  margin: 0;
+  color: var(--app-muted);
+  opacity: 1;
+}
+
+.math-ai-welcome button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: inherit;
+  border: 1px solid color-mix(in srgb,currentColor 10%,transparent);
+  cursor: pointer;
+  font: inherit;
+  margin-top: 22px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  border-color: var(--app-line);
+  font-size: 13px;
+}
+
+.math-ai-welcome button:hover {
+  background: color-mix(in srgb,currentColor 4%,transparent);
+}
+
+.math-ai-message {
+  margin: 14px 0;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.math-ai-message p {
+  margin: 0 0 8px;
+}
+
+.math-ai-message p:last-child {
+  margin-bottom: 0;
+}
+
+.math-ai-message pre {
+  max-width: 100%;
+  overflow: auto;
+}
+
+.math-ai-message.is-user {
+  padding: 10px 12px;
+  margin-left: 20px;
+  background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface));
+  border-radius: 12px;
+}
+
+.math-ai-message.is-tool {
+  display: flex;
+  gap: 8px;
+  align-items: start;
+  font-size: 12px;
+  color: #537768;
+}
+
+.math-ai-message.is-tool[data-state=failed] {
+  color: #a16a44;
+}
+
+.math-ai-message.is-tool small {
+  display: block;
+  opacity: .65;
+  font-size: 11px;
+}
+
+.math-ai-stage {
+  font-size: 11px;
+  opacity: .65;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.math-ai-pulse {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: math-ai-pulse 1.4s ease-in-out infinite;
+}
+
+.math-ai-composer {
+  position: relative;
+  flex: none;
+  margin-bottom: 12px;
+  margin: 12px 16px 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--app-text) 2%, var(--app-surface));
+  box-shadow: inset 0 0 0 1px var(--app-line);
+}
+
+.math-ai-composer:focus-within {
+  box-shadow: inset 0 0 0 1px var(--app-muted);
+}
+
+.math-ai-composer textarea {
+  width: 100%;
+  resize: none;
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1.7;
+  padding: 0;
+  min-height: 78px;
+  font-size: 14px;
+}
+
+.math-ai-composer textarea::placeholder {
+  color: #93979d;
+}
+
+.math-ai-compose-actions {
+  position: relative;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.math-ai-compose-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.math-ai-provider {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  border: 0;
+  background: transparent;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--app-muted);
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.math-ai-provider:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--app-text) 5%, transparent);
+  color: var(--app-text);
+}
+
+.math-ai-provider small {
+  opacity: .5;
+  margin-left: 4px;
+}
+
+.math-ai-chevron {
+  transition: transform 160ms ease;
+  opacity: .6;
+  margin-left: 2px;
+}
+
+.math-ai-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.math-ai-connection {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a1a1aa;
+  flex: none;
+}
+
+.math-ai-connection.is-ready {
+  background: #10b981;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #10b981 20%, transparent);
+}
+
+.math-ai-connection.is-missing {
+  background: #94a3b8;
+}
+
+.math-ai-connection.is-login {
+  background: #f59e0b;
+}
+
+.math-ai-connection.is-connecting,
+.math-ai-connection.is-checking {
+  background: #3b82f6;
+}
+
+.math-ai-connection.is-disconnected {
+  background: #ef4444;
+}
+
+.math-web-assistant .math-ai-send {
+  display: grid;
+  place-items: center;
+  border: 0;
+  font-size: 20px;
+  cursor: pointer;
+  background: var(--app-primary);
+  color: var(--app-on-primary);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  flex: none;
+}
+
+.math-ai-send.is-start {
+  width: auto;
+  padding: 0 12px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13px;
+  height: 32px;
+}
+
+.math-ai-send:disabled {
+  cursor: default;
+  opacity: 1;
+  background: color-mix(in srgb, var(--app-text) 10%, var(--app-surface));
+  color: var(--app-muted);
+}
+
+.math-ai-error {
+  margin: 5px 12px;
+  padding: 9px 10px;
+  line-height: 1.6;
+  background: #fff3e8;
+  color: #985829;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+@keyframes math-ai-pulse {
+  50% {
+    opacity: .25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .math-ai-pulse {
+    animation: none;
+  }
+}
+
+.math-ai-setup-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--app-surface, #fff);
+  border: 1px solid var(--app-line, #e3e3e3);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  padding: 12px 14px;
+  z-index: 50;
+  animation: math-popover-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes math-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .math-ai-setup-popover {
+    animation: none;
+  }
+}
+
+.math-ai-setup-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--app-line, #e3e3e3);
+  margin-bottom: 8px;
+}
+
+.math-ai-popover-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--app-text);
+}
+
+.math-ai-popover-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: var(--app-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.math-ai-popover-close:hover {
+  background: color-mix(in srgb, var(--app-text) 8%, transparent);
+  color: var(--app-text);
+}
+
+.math-ai-setup-body p {
+  color: var(--app-muted);
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.math-ai-setup-body ol {
+  padding-left: 18px;
+  margin: 8px 0;
+  color: var(--app-text);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.math-ai-setup-body li {
+  margin-bottom: 3px;
+}
+
+.math-ai-setup-note {
+  color: var(--app-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 4px 0 8px;
+}
+
+.math-ai-install {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: var(--app-primary);
+  color: var(--app-on-primary, #fff);
+  font-weight: 500;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  margin: 0;
+  transition: opacity 140ms ease;
+}
+
+.math-ai-install:hover {
+  opacity: .92;
+}
+
+.math-ai-setup-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.math-ai-setup-actions button,
+.math-ai-setup-actions .math-ai-action-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: 1px solid var(--app-line);
+  border-radius: 6px;
+  background: var(--app-surface);
+  color: var(--app-text);
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition: background-color 140ms ease, opacity 140ms ease;
+}
+
+.math-ai-setup-actions button:hover:not(:disabled),
+.math-ai-setup-actions .math-ai-action-secondary:hover {
+  background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface));
+}
+
+.math-ai-setup-actions button.math-ai-action-primary {
+  background: var(--app-primary);
+  color: var(--app-on-primary, #fff);
+  border-color: var(--app-primary);
+  font-weight: 500;
+}
+
+.math-ai-setup-actions button.math-ai-action-primary:hover:not(:disabled) {
+  opacity: .92;
+  background: var(--app-primary);
+}
+
+.math-ai-setup button:disabled {
+  opacity: .5;
+}
+
+@media (max-height:700px) {
+  .math-ai-welcome {
+    padding-top: 10px;
+  }
+  .math-ai-welcome button {
+    margin-top: 14px;
+  }
+}
+
+.math-ai-thread:has(.math-ai-welcome) {
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.math-ai-new {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: var(--app-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.math-ai-new:hover {
+  background: color-mix(in srgb, var(--app-text) 6%, transparent);
+}
+
+.math-ai-send>svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.math-ai-setup-presence { flex: none; }
+.math-ai-setup > .wb-module-disclosure-trigger > span { display: flex; align-items: center; gap: 8px; }

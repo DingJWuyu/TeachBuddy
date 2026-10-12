@@ -7,8 +7,8 @@ import {
 } from "../../workbench/problems.js";
 import { operationDefinitions, createMathService } from "./service.js";
 import { migrations } from "./migrations.js";
-export function createMathModule({ db, mutations, files, content }) {
-  const port = createMathService({ db, mutations, files, content });
+export function createMathModule({ db, mutations, files, content, mathRuntimeDirectory }) {
+  const port = createMathService({ db, mutations, files, content, mathRuntimeDirectory });
   const router = Router();
   for (const definition of operationDefinitions)
     router[definition.method.toLowerCase()](
