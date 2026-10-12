@@ -705,7 +705,7 @@ test('放弃过期提醒修改后恢复原任务，可关闭编辑器并拖动�
   expect((await call('GET', `${E}/${entry.id}`)).reminder).toEqual(entry.reminder);
 });
 
-test('提醒冲突必须明确二选一，没有关闭或调整提醒入口', async ({ page }) => {
+test('提醒冲突只提供两种选择，遮罩不关闭，Escape 放弃修改', async ({ page }) => {
   const entry = await call('POST', E, input('提醒抉择测试', { reminder: { side: 'before', minutes: 10 } }));
   await page.reload(); await open(page, entry.title);
   now = '2026-09-25T07:47:00Z'; await page.clock.setFixedTime(new Date(now));
@@ -716,11 +716,13 @@ test('提醒冲突必须明确二选一，没有关闭或调整提醒入口', as
   await expect(prompt.getByRole('button', { name: '关闭', exact: true })).toHaveCount(0);
   await expect(prompt.getByRole('button', { name: '调整提醒', exact: true })).toHaveCount(0);
   await shot(page, 'reminder-two-choices');
-  await page.keyboard.press('Escape'); await expect(prompt).toBeVisible();
   await page.mouse.click(5, 5); await expect(prompt).toBeVisible();
-  await prompt.getByRole('button', { name: '放弃本次修改', exact: true }).click();
+  await page.keyboard.press('Escape');
   await expect(prompt).toHaveCount(0);
   await expect(page.locator('[name=entry-end]')).toHaveValue('16:00');
+  const stored = await call('GET', `${E}/${entry.id}`);
+  expect(stored.time).toEqual(entry.time);
+  expect(stored.reminder).toEqual(entry.reminder);
 });
 
 for (const mode of ['未选中拖动', '选中拖动', '编辑后拖动', '重复任务拖动']) test(`放弃提醒冲突恢复原时段和提醒，不偷偷保存，${mode}`, async ({ page }) => {
