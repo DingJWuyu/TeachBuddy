@@ -12,7 +12,8 @@ trunk：preview/integration
   +--> 小修小改
   |      临时 branch，无 worktree
   |      开发 + 必要本地验证
-  |      直接合回本地 trunk，删除临时 branch
+  |      直接合回本地 trunk
+  |      验证合并后的 trunk，删除临时 branch
   |      不提开发 PR；验证后允许 push trunk
   |
   +--> worktree 开发
@@ -46,9 +47,9 @@ trunk：preview/integration
 
 ## 任务与 PR
 
-已授权任务按[当前授权](../plans/run-state.md#工作现场与授权)持续执行。用户指定工作方式时照做；总控按任务大小、敏感程度、并行和隔离需要选择路径。寻常文档和非敏感代码的小改用临时 branch，不机械创建 worktree。敏感改动走 worktree 集成路径，不按改动行数伪装成小改。GitHub 不判断改动大小或 worktree 的使用情况，这个边界由 agent 遵守、总控把关。
+已授权任务按[当前授权](../plans/run-state.md#工作现场与授权)持续执行。用户指定工作方式时照做；总控按任务大小、敏感程度、并行和隔离需要选择路径。寻常文档和非敏感代码的小改用临时 branch，不机械创建 worktree。敏感改动走 worktree 集成路径，不按改动行数伪装成小改。worktree 是组织集成和控制 PR 频次的边界，不是判断风险高低的依据。GitHub 不判断改动大小或 worktree 的使用情况，这个边界由 agent 遵守、总控把关。
 
-- **开发 PR 只用于 worktree 集成。** 小改及其他没有 worktree 集成的 commit、merge 禁止开发 PR，不为开 PR 刻意创建 worktree。小改完成本地验证并合回 trunk 后允许同步远端；有未提交的小改先完成或留在其临时分支，不带入集成或版本准备。
+- **开发 PR 只用于 worktree 集成。** 小改及其他没有 worktree 集成的 commit、merge 禁止开发 PR，不为开 PR 刻意创建 worktree。小改须验证合并后的本地 trunk，再删除临时分支、同步远端；验证范围按改动影响确定。若必要验证依赖远端环境，退出纯本地小改通道，由总控通过 worktree 集成路径安排相应验证。有未提交的小改先完成或留在其临时分支，不带入集成或版本准备。
 - **一个完整改动目的对应一个 PR。** 默认每个完整改动目的一条 worktree；同一目的需要多个 worktree 时由总控汇总为一个集成候选。独立目的分别开 PR，谁先完成谁先集成。同一目的的连续修补、多次 commit、测试及文档不另拆 PR，不按次数或天数定频率。
 - **大功能可以分批集成。** 每批有清楚、可验证的改动目的，既有能力继续可用；尚未开放的能力已有开关或占位，不能先暴露半成品再补隐藏。
 - **Issue / Spec / Tickets 按需使用。** 已有则沿用；没有时以用户确认的任务目标和对话为规格，不为流程补造 Issue。需要时沿[Issue 约定](issue-tracker.md)及既有 skills 执行。
@@ -57,7 +58,7 @@ trunk：preview/integration
 
 1. 总控汇总完整目的，按[验证指南](../acceptance/README.md)完成受影响范围的集成验证，保留开发审查证据。
 2. 总控使用 GitHub CLI 创建 PR。Commit / PR Title 遵循 Conventional Commits；Body 必须使用 `pr` skill 并遵循仓库模板，有关联 Issue 时链接。
-3. 按[审查分工](#审查分工)安排独立 PR review。总控确认最终候选、最新 trunk、已处理的审查发现及通过的 CI 后，默认 squash 合回 trunk。候选、基线或冲突处理改变时补验受影响部分。
+3. 按[审查分工](#审查分工)安排独立 PR review。总控在实际合入前再次核对已验候选 SHA、trunk 基线、已处理的审查发现及 CI。验证后 trunk 若又前进，重新确认与最新 trunk 的集成结果，补验受影响范围并更新证据，再默认 squash 合回 trunk；不能仅凭旧基线上的 CI 通过状态合入。候选或冲突处理改变时同样补验受影响部分。
 4. 同步本地与远端成果，完成集成验证与[现场清理](module-development.md#集成后的清理)。`Closes #...` 可在默认分支合并时关闭 Issue；已集成与已发布分别记录。
 
 总控获准执行任务后可主动完成符合上述条件的 PR、审查和 trunk 合并，无需逐次问用户；需求不明、实质争议或重大取舍才交用户。发布仍受[独立授权边界](#准备与发布)约束。
@@ -121,35 +122,49 @@ trunk：preview/integration                  main：稳定发布分支
   |                                      仅获准备授权：等待批准
   |                                            |
   |                                      Merge commit -> M
-  |                                            |
-  |                                      Release workflow
-  |                                      检出固定提交 M
-  |                                      测试 + 构建 + 打包
-  |                                      记录 M + SHA-256
-  |                                            |
-  |                                      Tag 指向 M
-  |                                      创建 GitHub Release
-  |                                      用户说明 + 技术日志链接
-  |                                      附同一次构建的产物
-  |                                            |
-  |                                      部署 + 上线检查
-  |                                      （CD 尚未接通）
-  |                                            |
-  |<........发布完成后恢复无关集成...............|
-  v
-继续开发；main 历史不合回 trunk
+  |<........M 已固定，恢复无关集成...............|
+  v                                            v
+继续下一轮开发                           Release workflow
+                                         检出固定提交 M
+                                         测试 + 构建 + 打包
+                                         记录 M + SHA-256
+                                               |
+                                         Tag 指向 M
+                                         创建 GitHub Release
+                                         用户说明 + 技术日志链接
+                                         附同一次构建的产物
+                                               |
+                                         部署 + 上线检查
+                                         （CD 尚未接通）
+
+main 历史不合回 trunk；下一次版本准备仍等待上一版发布完成
 ```
 
 **授权与范围。** 时机由用户决定，agent 不根据任务完成、commit、push 或时间自行准备版本。用户明确要求“发布这些改动”即授权完成整个已约定发布过程，无需合 main 前再问一次；仅要求“准备版本”不授权正式发布。新增发布内容、重大取舍或超出原授权的操作须重新确认。当前是否已有发布授权以运行台账为准。
 
-每次发布包含所有已集成的 trunk 改动，紧急修复也沿 `fix/* -> trunk -> Release PR -> main`，不另建 main 热修通道。发布准备开始前完成约定范围的集成并确保工作区干净；准备至发布完成期间暂停无关 trunk 集成，包括小改直合及推送。独立 worktree 可继续开发；候选修复允许进入 trunk，但须更新范围检查、审查与受影响验证。仅预览结束即可恢复集成；已写入版本但暂停或取消发布时，先核对并处理准备状态，不能留下待发布版本同时无关集成。正式发布完成后恢复正常集成，不将 main 的合并历史回灌 trunk。
+每次发布包含 Release PR 合并时 trunk 的全部已集成改动，紧急修复也沿 `fix/* -> trunk -> Release PR -> main`。这意味着热修复也可能携带其他已集成变化，是当前接受的取舍；不另设 release 分支或 main 热修通道。
+
+发布准备开始前完成约定范围的集成并确保工作区干净；准备开始至 Release PR 合入 main、固定提交 M 确定期间，暂停无关 trunk 集成，包括小改直合及推送。独立 worktree 可继续开发；候选修复允许进入 trunk，但须更新范围检查、审查与受影响验证。M 确定后即恢复 trunk 集成，后续构建、打包、Tag、Release 和部署继续使用 M 及其产物，不纳入新集成的 trunk 改动。发布失败需要代码修复时，重新确认新候选的范围、授权与验证，不能用移动中的 trunk 替换原 M。
+
+仅预览结束即可恢复集成；M 尚未确定而版本已准备、发布暂停或取消时，先核对并处理准备状态再恢复集成。恢复开发集成不等于开始下一轮发布：版本准备与正式发布仍按下面的单一版本序列串行进行，main 的合并历史不回灌 trunk。
 
 **版本与两类说明。** 根 `package.json` 是 SemVer 产品版本；workspace 包版本是内部依赖版本，不发布 npm 包。Conventional Commits 驱动锁定版本的 `release-it` 与官方 Conventional Changelog 插件：
 
 - 技术 `CHANGELOG.md` 使用官方 `conventionalcommits` 模板与 `types` 配置，包含功能、修复及 refactor/build/ci/docs 等工程变更，供开发者和 agent 阅读。工程类型仅列入日志，不因此提高版本；Breaking Change 仍按标准处理。该文件由工具生成，禁止手改。
 - 用户 Release Notes 说明用户能感知的变化，不展示工程细节或尚未开放的功能。草稿只放 Release PR Body，定稿随 GitHub Release 发布，不另建仓库文件；没有用户可感知变化就省略用户说明。GitHub Release 同时链接该固定版本的技术 CHANGELOG。
 
-正式版本使用 `v<version>` Tag，仅由 main 发布。准备时获取完整历史和 Tag，以 release-it 的 `git.getLatestTagFromAllRefs` 按版本排序读取最高 `v*` Tag，再计算它到 trunk 的新增提交；该发布提交不必是 trunk 祖先。当前只维护一条正式版本序列，下一次准备在上一版发布完成后进行。
+正式版本使用 `v<version>` Tag，仅由 main 发布。当前只维护一条正式版本序列，下一次准备在上一版发布完成后进行。
+
+### 单向发布的兼容性约束
+
+main 只接收 trunk 的发布合并，不独立修改内容。以下配置是单向发布成立的必要条件，迁移仓库或更换发布工具时须一并核对，不能直接套用默认设置：
+
+| 兼容点 | 当前配置及原因 |
+| --- | --- |
+| 上次发布的 Tag | Tag 指向 main 的合并提交 M，M 不属于 trunk 的祖先；只查当前分支可达 Tag（如默认 `git describe`）可能漏掉上次发布。[.release-it.json](../../.release-it.json) 已开启 `git.getLatestTagFromAllRefs`，配合准备工作流获取完整历史和 Tag，按版本排序读取最高 `v*` Tag，再计算它到 trunk 的新增提交 |
+| main 的合并保护 | [stable.json](../../.github/rulesets/stable.json) 已将 `strict_required_status_checks_policy` 设为 `false`，使用 loose 检查；若强制来源分支追平 main，会要求 trunk 带回 main 的发布合并历史。main 只允许 merge commit，也不启用 `required_linear_history`，因为线性历史规则与发布 merge commit 冲突。必需检查仍须通过 |
+
+### 发布步骤
 
 1. **准备版本。** 总控手动运行 `Prepare release`，分支选 trunk。默认 `dry_run=true` 只预览；正式准备设 `false`，由运行机生成版本文件和日志并直接提交 trunk。`auto` 按提交推荐，显式 patch/minor/major 按本次发布决定；日常提交只影响下次计算，不触发工具。首版没有历史 Tag 时读取已有历史并由工具创建 CHANGELOG，不伪造基准 Tag。
 2. **同步结果。** 核对摘要、版本、锁文件和 CHANGELOG；没有生成变更则不创建空提交。push 遇到 trunk 前进会拒绝覆盖，先核对范围，不强推。版本已准备、发布前不重复递增。
@@ -170,7 +185,7 @@ trunk：preview/integration                  main：稳定发布分支
 
 trunk 的 Ruleset 保留禁止删除和强推，允许总控推送已验证的本地成果；不对每次推送强制 PR 或必需检查。worktree PR 的最新基线、审查和 CI 由总控按[集成步骤](#任务与-pr)核对，GitHub 不判断本地 worktree 的使用情况。
 
-main 继续要求 PR、讨论解决及 `Build and API`、`PR conventions` 两项必需检查通过，只允许 merge commit，并阻止删除、强推；版本 Tag 禁止改写和删除。main 的必需检查使用 loose 模式，允许源分支未包含 main 的发布合并提交。Release PR 的 CI 验证 GitHub 生成的候选合并结果，合入后 `Release` 再验证和构建实际 main 提交。必需账户 approval 数为 0；独立 agent 审查不冒充另一个 GitHub 用户。Rulesets 不替代用户的发布授权。
+main 继续要求 PR、讨论解决及 `Build and API`、`PR conventions` 两项必需检查通过，只允许 merge commit，并阻止删除、强推；版本 Tag 禁止改写和删除。合并保护同时遵循[单向发布的兼容性约束](#单向发布的兼容性约束)。Release PR 的 CI 验证 GitHub 生成的候选合并结果，合入后 `Release` 再验证和构建实际 main 提交。必需账户 approval 数为 0；独立 agent 审查不冒充另一个 GitHub 用户。Rulesets 不替代用户的发布授权。
 
 ## 部署交接
 
