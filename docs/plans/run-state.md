@@ -16,11 +16,12 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 产品分区 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 账户与身份 | `TeacherWorkspace-identity` | `fix/identity-completeness` | 候选 `f275bc34` 已完成账户线修复与独立核验，尚未集成或推送；按账户线当前安排保留源码、有效证据与工作树 |
+| 账户与身份 | `TeacherWorkspace-identity` | `fix/identity-completeness` | 候选 `5b97c0c7` 保留账户线修复、独立核验与后续定点回归，尚未集成或推送；按账户线当前安排保留源码、有效证据与工作树 |
+| 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；模块负责人继续按用户确认的目标接手，本轮公共文件临时停写安排已解除 |
 | 数学工坊 | 已清理 | 已清理 | 统一制作与网页 AI 已集成并验证；体验使用 preview，商店分发仍待准备 |
 | 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；体验数据与有效证据已保全 |
 
-账户候选将浏览器设备清理交给各存储拥有者，由 `apps/web/src/accountDeviceData.js` 组合并通过 `App.jsx` 注入认证；preview 当前尚未包含该修复。候选还修复关页后的删除核实、注册竞态、未决退出与恢复接续、响应超时及状态反馈。候选的可重建入口为 `apps/web/e2e/auth-completeness.config.mjs` 与 `apps/api/test/account-deletion.test.js`，验证结论与未验边界见账户线回执；该工作树的 `test-results/identity-fixes/independent/followup-report.md` 是本机证据，不是新检出的运行前置。此现场保留到获准集成并完成必要验证后清理，文档整理不代为集成账户候选。
+账户候选将浏览器设备清理交给各存储拥有者，由 `apps/web/src/accountDeviceData.js` 组合并通过 `App.jsx` 注入认证；preview 当前尚未包含该修复。候选还修复关页后的删除核实、注册竞态、未决退出与恢复接续、响应超时及状态反馈。候选的可重建入口为 `apps/web/e2e/auth-completeness.config.mjs` 与 `apps/api/test/account-deletion.test.js`，验证结论与未验边界见账户线回执；该工作树的 `test-results/identity-fixes/independent/followup-report.md` 是本机证据，不是新检出的运行前置。此现场保留到获准集成并完成必要验证后清理；后续须对齐最新 trunk，保留已集成的昵称公开能力、资料同步及工作台身份绑定加载，不以旧候选覆盖公共文件。
 
 数学与日程的旧验收证据及体验数据保存在 preview 的 `test-results/math-handoff/`，数学入口为 `math-ai-onboarding/receipt.json`、`math-ux-redesign/final/receipt.json` 和 `math-unified/final/receipt.json`；日程数据在其中 `math-ux-redesign/integration/schedule-evidence/`。私有登录浏览器配置独立保留；旧数学体验浏览器采用临时扩展加载，后续从 preview 的 `extensions/math-web-ai/` 按[扩展说明](../../extensions/math-web-ai/README.md)加载，不依赖已删工作树。这些本机产物不作为新检出运行、必要回归或接手前置；重建入口见[数学规格](../features/math.md#验证入口)和[运行指南](../SETUP.md#数学运行依赖)。
 
@@ -48,8 +49,8 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 产品分区 | 已集成结果 | 核查入口 |
 | --- | --- | --- |
-| 账户与身份 | 注册、登录、找回、退出、会话恢复及永久删除账户的既有流程；目标邮件与设备仍有未验范围 | [规格](../features/identity.md)、[认证契约](../contracts/auth.md)、[核查入口](#核查入口) |
-| 工作台与设置 | 导航分组、顺序和隐藏状态按账户保存；设备开合独立，冲突和待确认布局可继续处理；主题、背景、头像、语言及中英帮助和更新页已接入，退出、删号、资料导出消费相应能力 | [规格](../features/workbench.md)、[核查入口](#核查入口) |
+| 账户与身份 | 注册、登录、找回、退出、会话恢复及永久删除账户的既有流程；昵称修改公开能力与同会话资料同步已接入；目标邮件与设备仍有未验范围 | [规格](../features/identity.md)、[认证契约](../contracts/auth.md)、[核查入口](#核查入口) |
+| 工作台与设置 | 导航分组、顺序和隐藏状态按账户保存；设备开合独立，冲突和待确认布局可继续处理；主题、背景、头像、语言及中英帮助和更新页已接入；昵称可原位编辑并同步侧栏，保存保持工作台现场，邮箱只读；退出、删号、资料导出消费相应能力 | [规格](../features/workbench.md)、[核查入口](#核查入口) |
 | 题库 | 手工与原生材料整理、校对入库、分类/笔记/改编；旧 DOC 经固定转换稿读取现存公式和配图，PDF 图边公式保留可编辑并核对配图归属；OCR 原图/公式/原答案/来源保留，局部校对保存，已核对题可先入库；未分配表格可保留原结构明确归入题干 | [规格](../features/questions.md)、[材料核查](#核查入口) |
 | 备课 | 环节和混排、跨课复用、历史、资料包、三类 Word/PDF 输出；普通题面/选项/必要配图连续，数学标题接续作品；扫描页与配图独立校对采用，内容疑点可回原页定位，可编辑数值表及打印网格；归档与恢复保留本机草稿及内容冲突 | [规格](../features/lessons.md)、[材料核查](#核查入口) |
 | 资源库 | 收录/分类/检索、常用格式预览与下载、文件替换/历史、页内查找；OCR 正文/公式/配图阅读、复制和搜索定位，内容疑点可高亮原页区域 | [规格](../features/resources.md)、[材料核查](#核查入口) |
@@ -121,6 +122,8 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 每个事项只有满足其具名结果才改变状态；保留问题归属、证据及下一动作。缺材料/环境标待验证，用户选择标待决定，代码已合入但未验证不写验收完成。
 
 ## 核查入口
+
+昵称能力的已集成版本为 `1b107651`，已完成隔离生产构建、真实认证 HTTP/数据库、昵称与语言浏览器定点回归及独立核验，包含跨页旧回执、读取乱序、退出/删除锁和未确认输入保留。可重建入口为 `apps/api/test/auth-profile.test.js`、`apps/api/test/auth-integration.test.js` 与 `apps/web/e2e/settings-implementation.config.mjs`；语义见[昵称修改交换](../contracts/auth.md#昵称修改交换-i09)。本机证据为 `test-results/settings-nickname/receipt.json` 与 `independent.md`，不作为新检出前置；真实操作系统输入法、实际触屏、云端 CI 与全仓回归未验。
 
 本页的集成状态来自当前源码和已记录的验证范围。选择受影响功能，先按[验证指南](../acceptance/README.md)建立隔离候选，再从仓库内的测试与固定样本重建结果。记录 Git 版本、输入、实际环境、通过和未验项；外部原件、真实模型、目标 Office 或设备缺失时保留未验证边界。
 
