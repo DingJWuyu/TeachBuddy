@@ -396,5 +396,9 @@
   "modules.lessons": "Lesson plans",
   "modules.math": "Math workshop",
   "navigationGroups.teaching": "Teaching",
-  "navigationGroups.ungrouped": "Ungrouped"
+  "navigationGroups.ungrouped": "Ungrouped",
+  "修改昵称": "Edit nickname",
+  "昵称": "Nickname",
+  "昵称需为 1-40 个字符。": "Use 1-40 characters for your nickname.",
+  "昵称未能保存，请重试。": "Could not save your nickname. Please retry."
 }

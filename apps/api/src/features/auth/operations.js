@@ -655,6 +655,26 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
     return { status: 204, cookies: outcome.clearCookie ? [clearedSessionCookie()] : [] };
   }
 
+  function updateProfile(request, body) {
+    const input = readClosedObject(body, REQUEST_SCHEMAS.profile);
+    const nickname = readNicknameField(input.nickname);
+    const pageId = readPageContext(request);
+    const account = storage('accountStoreUnavailable', () => commit(() => {
+      const container = requireBrowserContainer(request, 'sessionStoreUnavailable');
+      const session = storage('sessionStoreUnavailable', () => {
+        const binding = store.getPageBinding(container.id, pageId);
+        return binding ? store.getSession(binding.sessionId) : null;
+      });
+      if (!session || session.containerId !== container.id || session.state !== 'active') throw authProblem('sessionInvalid');
+      const current = store.getAccountById(session.accountId);
+      const authorization = sessionAuthorization(session, current, clock());
+      if (authorization === 'missing-account') throw authProblem('accountStoreUnavailable');
+      if (authorization !== 'live') throw authProblem('sessionInvalid');
+      return accountView(store.updateNickname(current.id, nickname, iso(clock())));
+    }));
+    return { status: 200, body: account };
+  }
+
   async function resolvePrincipal(request) {
     const headers = request?.headers ?? {};
     const token = readSessionCookie(request ?? { headers: {} });
@@ -717,6 +737,7 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
     getSessionStatus,
     changeSession,
     logout,
+    updateProfile,
     resolvePrincipal
   };
 }

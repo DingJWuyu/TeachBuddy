@@ -20,6 +20,71 @@ function Row({ title, description, children, className = '' }) {
 }
 const backgrounds = [['grid', '网格'], ['parchment', '羊皮纸'], ['circles', '圆形'], ['stripes', '条纹']];
 
+function EditableNickname({ nickname, onSave }) {
+  const { t } = useTranslation('workbench');
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(nickname);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const input = useRef(null);
+  const trigger = useRef(null);
+  const submitting = useRef(false);
+  const cancelled = useRef(false);
+  const restoreFocus = useRef(false);
+  useEffect(() => {
+    if (editing) { input.current?.focus(); input.current?.select(); }
+    else if (restoreFocus.current) { restoreFocus.current = false; trigger.current?.focus(); }
+  }, [editing]);
+
+  async function save(fromKeyboard = false) {
+    if (cancelled.current || submitting.current) return;
+    const value = draft.trim();
+    if (!value || Array.from(value).length > 40) {
+      setError(t('昵称需为 1-40 个字符。'));
+      return;
+    }
+    restoreFocus.current = fromKeyboard;
+    if (value === nickname) { setEditing(false); return; }
+    submitting.current = true;
+    setSaving(true); setError('');
+    try {
+      await onSave(value);
+      setEditing(false);
+    } catch (problem) {
+      setError(problem.message || t('昵称未能保存，请重试。'));
+    } finally {
+      submitting.current = false;
+      setSaving(false);
+    }
+  }
+
+  return <div className="settings-nickname">
+    <h1 data-field="account-key">
+      {editing ? <span className="settings-nickname-editor">
+        <span className="settings-nickname-measure" aria-hidden="true">{draft || ' '}</span>
+        <input ref={input} id="settings-nickname" name="nickname" aria-label={t('昵称')} aria-invalid={Boolean(error)} aria-describedby={error ? 'settings-nickname-error' : undefined}
+          value={draft} readOnly={saving} autoComplete="nickname" spellCheck={false}
+          onChange={event => { setDraft(event.target.value); setError(''); }}
+          onBlur={() => { if (!error) void save(); }}
+          onKeyDown={event => {
+            if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+            if (event.key === 'Enter') { event.preventDefault(); if (!event.repeat) void save(true); }
+            if (event.key === 'Escape') {
+              event.preventDefault(); event.stopPropagation();
+              if (submitting.current) return;
+              cancelled.current = true; restoreFocus.current = true; setError(''); setEditing(false);
+            }
+          }} />
+      </span> : <button ref={trigger} type="button" className="settings-nickname-trigger" aria-label={t('修改昵称')} title={nickname}
+        onClick={() => { cancelled.current = false; setDraft(nickname); setError(''); setEditing(true); }}>
+        <span>{nickname}</span><Icon name="pencil" size={20} />
+      </button>}
+    </h1>
+    {saving && <span className="settings-nickname-status" role="status">{t('正在保存…')}</span>}
+    {error && <span className="settings-nickname-status" id="settings-nickname-error" role="alert">{error}</span>}
+  </div>;
+}
+
 function LanguageMenu({ value, onChange, disabled }) {
   const { t } = useTranslation("workbench");
   const [open, setOpen] = useState(false);
@@ -58,7 +123,7 @@ function LanguageMenu({ value, onChange, disabled }) {
 export function WorkbenchSettings() {
   const { t } = useTranslation("workbench");
   const shell = useWorkbenchShell();
-  const { account, deleteAccount } = useAuth();
+  const { account, deleteAccount, updateNickname } = useAuth();
   const running = useRef(false);
   const avatarInput = useRef(null);
   const [logoutState, setLogoutState] = useState('idle');
@@ -113,7 +178,7 @@ export function WorkbenchSettings() {
           <div className="settings-avatar-tools"><button type="button" aria-label={t("选择头像")} disabled={avatarLoading || appearanceDisabled} onClick={() => avatarInput.current?.click()}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M8 5 9.5 3h5L16 5h4v15H4V5Z"/><circle cx="12" cy="12" r="4"/></svg></button><button type="button" aria-label={t("删除头像")} disabled={!avatar || avatarLoading || appearanceDisabled} onClick={() => { setAvatarError(''); shell.setAppearance({ avatar: '' }); }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></svg></button></div>
           <input ref={avatarInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={chooseAvatar} />
         </div>
-        <div className="settings-profile-copy"><h1 data-field="account-key">{nickname}</h1>{account?.email && <p>{account.email}</p>}<span className="settings-account-badge">{t("TeachBuddy 账户")}</span>{avatarLoading && <p role="status" className="settings-preview-note">{t("正在读取头像…")}</p>}</div>
+        <div className="settings-profile-copy"><EditableNickname nickname={nickname} onSave={updateNickname} />{account?.email && <p>{account.email}</p>}<span className="settings-account-badge">{t("TeachBuddy 账户")}</span>{avatarLoading && <p role="status" className="settings-preview-note">{t("正在读取头像…")}</p>}</div>
       </header>
       {avatarError && <p role="alert">{avatarError}</p>}
       <Row title={t("外观")} description={t("切换浅色和深色模式")}><Segment appearance label={t("外观")} disabled={appearanceDisabled} value={theme} onChange={theme => shell.setAppearance({ theme })} options={[[ 'light', t("浅色") ], [ 'dark', t("深色") ]]} /></Row>

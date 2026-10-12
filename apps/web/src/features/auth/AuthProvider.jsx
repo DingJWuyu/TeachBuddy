@@ -86,6 +86,9 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   const bootStartedRef = useRef(false);
   const lockedRef = useRef(false);
   const logoutTargetRef = useRef(undefined);
+  const profileSavingRef = useRef(false);
+  const profileRevisionRef = useRef(0);
+  const profileReadRef = useRef(0);
   const deletionRunningRef = useRef(false);
   const channelRef = useRef(null);
   const recheckRef = useRef(null);
@@ -294,9 +297,20 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     setState((current) => ({ ...current, status: 'error', errorKind: 'boot', notice: null }));
   }, [adoptStatus, bootstrap, client]);
 
+  const publishProfile = useCallback((account, sessionId) => {
+    setState(current => {
+      if (lockedRef.current || logoutTargetRef.current !== undefined || current.deletion || current.status !== 'active'
+        || current.account?.accountKey !== account.accountKey || current.session?.id !== sessionId) return current;
+      if (current.account.nickname === account.nickname && current.account.email === account.email) return current;
+      return { ...current, account, session: { ...current.session, account } };
+    });
+  }, []);
+
   const recheck = useCallback(async () => {
     const generation = generationRef.current;
     const epoch = identityEpochRef.current;
+    const profileRevision = profileRevisionRef.current;
+    const profileRead = ++profileReadRef.current;
     const current = stateRef.current;
     if (current.status === 'booting' || current.status === 'recovering' || current.deletion) return;
     const outcome = await client.getSession();
@@ -307,6 +321,8 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
       if (data.session?.state === 'active') {
         if (now.status !== 'active' || now.session?.id !== data.session.id) {
           setActive(data.session, data.registrationOpen);
+        } else if (!profileSavingRef.current && profileRevision === profileRevisionRef.current && profileRead === profileReadRef.current) {
+          publishProfile(data.session.account, data.session.id);
         }
         return;
       }
@@ -346,7 +362,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
      * Store/transport failures keep the current identity: the server still
      * owns authorization and a read failure is not proof of revocation.
      */
-  }, [client, expireSession, setActive]);
+  }, [client, expireSession, setActive, publishProfile]);
   recheckRef.current = recheck;
 
   useEffect(() => {
@@ -656,6 +672,47 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     setState((current) => (current.notice ? { ...current, notice: null } : current));
   }, []);
 
+  const updateNickname = useCallback(async nickname => {
+    const value = nickname.trim();
+    if (!value || Array.from(value).length > 40) throw new Error(t('昵称需为 1-40 个字符。'));
+    const current = stateRef.current;
+    const generation = generationRef.current;
+    const epoch = identityEpochRef.current;
+    const isCurrent = () => generationRef.current === generation && identityEpochRef.current === epoch
+      && stateRef.current.status === 'active' && !stateRef.current.deletion && !lockedRef.current
+      && logoutTargetRef.current === undefined && stateRef.current.account?.accountKey === current.account?.accountKey
+      && stateRef.current.session?.id === current.session?.id;
+    if (!isCurrent()) throw new Error(t('登录状态已变化，请重新登录。'));
+    if (profileSavingRef.current) throw new Error(t('昵称正在保存，请稍候。'));
+    profileSavingRef.current = true;
+    profileRevisionRef.current += 1;
+    try {
+      const outcome = await client.updateNickname(value);
+      if (!isCurrent()) throw new Error(t('登录状态已变化，请重新登录。'));
+      let account = outcome.kind === 'result' ? outcome.data : null;
+      if (outcome.kind !== 'result' && outcome.kind !== 'problem') {
+        // A lost response is checked with a read, never an automatic second write.
+        const checked = await client.getSession();
+        if (!isCurrent()) throw new Error(t('登录状态已变化，请重新登录。'));
+        if (checked.kind === 'result' && checked.data.session?.id === current.session.id
+          && checked.data.session.state === 'active') account = checked.data.session.account;
+      }
+      if (account?.accountKey === current.account.accountKey && account.nickname === value) {
+        publishProfile(account, current.session.id);
+        notifyPeers();
+        return;
+      }
+      if (outcome.kind === 'problem') {
+        if ([PROBLEM.SESSION_INVALID, PROBLEM.BROWSER_CONTEXT_REQUIRED].includes(outcome.type)) void recheckRef.current?.();
+        throw new Error(t('昵称未能保存，请重试。'));
+      }
+      throw new Error(t('昵称保存结果未确认，请重试。'));
+    } finally {
+      profileSavingRef.current = false;
+      profileRevisionRef.current += 1;
+    }
+  }, [client, notifyPeers, publishProfile]);
+
   const logout = useCallback(async () => {
     if (stateRef.current.deletion) throw new Error('Account deletion is awaiting confirmation');
     const target = logoutTargetRef.current !== undefined
@@ -748,10 +805,12 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   const publicValue = useMemo(() => ({
     status: state.status,
     account: state.status === 'active' ? state.account : null,
+    sessionId: state.status === 'active' ? state.session.id : null,
     request,
     logout,
     deleteAccount,
-  }), [state.status, state.account, request, logout, deleteAccount]);
+    updateNickname,
+  }), [state.status, state.account, state.session?.id, request, logout, deleteAccount, updateNickname]);
 
   const internalValue = useMemo(() => ({
     ...state,

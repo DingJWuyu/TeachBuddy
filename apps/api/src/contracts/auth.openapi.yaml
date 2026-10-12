@@ -1,8 +1,8 @@
 openapi: 3.2.1
 info:
   title: TeachBuddy 账户入口契约
-  version: 1.1.0-candidate.1
-  description: I01-I07 沿用 AUTH-CONTRACT-CORRECTION@1 冻结契约；I08 为账户删除扩展候选，独立验收状态以运行台账为准。docs/contracts/auth.md 拥有跨操作语义与首错顺序，docs/contracts/auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
+  version: 1.2.0-candidate.1
+  description: I01-I07 沿用 AUTH-CONTRACT-CORRECTION@1 冻结契约；I08 为账户删除、I09 为昵称修改扩展候选，独立验收状态以运行台账为准。docs/contracts/auth.md 拥有跨操作语义与首错顺序，docs/contracts/auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
     no-store。
 x-contract-status: candidate
 x-accepted-source:
@@ -771,6 +771,79 @@ paths:
                       - /problems/auth/deletion-incomplete
                       - /problems/auth/account-store-unavailable
                       - /problems/auth/service-unavailable
+  /api/auth/profile:
+    post:
+      operationId: updateProfile
+      summary: 修改当前已登录账户的昵称
+      x-interaction-id: I09
+      x-contract-status: candidate
+      description: Cookie 与 PageContext 必须绑定有效 active 会话。只更新该账户昵称，不改变邮箱、会话或记住我。后完成的显式修改生效；响应丢失先通过 I06 读取核实，不自动重放写入。
+      parameters:
+      - $ref: '#/components/parameters/PageContext'
+      - $ref: '#/components/parameters/BrowserRequestProtection'
+      - $ref: '#/components/parameters/RequestOrigin'
+      - $ref: '#/components/parameters/RequestReferer'
+      security:
+      - SessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [nickname]
+              properties:
+                nickname:
+                  $ref: '#/components/schemas/NicknameInput'
+      responses:
+        '200':
+          description: 已保存的账户资料；不设置 Cookie。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/MalformedJson'
+        '403':
+          $ref: '#/components/responses/RequestNotAllowed'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '401':
+          $ref: '#/components/responses/SessionInvalid'
+        '409':
+          $ref: '#/components/responses/BrowserContextRequired'
+        '422':
+          description: 封闭请求形状或昵称校验失败，未修改账户。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/InvalidRequestBodyProblem'
+                - $ref: '#/components/schemas/UnknownFieldProblem'
+                - $ref: '#/components/schemas/RequiredFieldProblem'
+                - $ref: '#/components/schemas/InvalidFieldTypeProblem'
+                - $ref: '#/components/schemas/InvalidFieldValueProblem'
+                - $ref: '#/components/schemas/NicknameEmptyProblem'
+                - $ref: '#/components/schemas/NicknameTooLongProblem'
+        '503':
+          description: 存储或服务不可用，修改事务回滚。
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/AuthCacheControl'
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AccountStoreUnavailableProblem'
+                - $ref: '#/components/schemas/SessionStoreUnavailableProblem'
+                - $ref: '#/components/schemas/ServiceUnavailableProblem'
 components:
   securitySchemes:
     SessionCookie:

@@ -268,6 +268,9 @@ export function createAuthClient({ getPageContext, timeoutMs = 10_000 }) {
   }
 
   return {
+    updateNickname(nickname) {
+      return call({ path: '/api/auth/profile', body: { nickname }, validate: readAccount });
+    },
     deleteAccount(body) {
       return call({ path: '/api/auth/account-deletion', body, allowNoContent: true });
     },
