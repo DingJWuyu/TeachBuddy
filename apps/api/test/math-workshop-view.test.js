@@ -85,6 +85,14 @@ test('workshop saved viewport: actual offline classroom contains the opening ran
     page.on('pageerror', error => errors.push(error.message)); page.on('request', req => { if (/^https?:/.test(req.url())) requests.push(req.url()); });
     await page.goto(pathToFileURL(path.join(directory, 'index.html')).href); await page.waitForFunction(() => document.querySelector('.status')?.textContent === '');
     const view = async name => { const properties = await page.evaluate(() => JSON.parse(window.classroomApi.getViewProperties(1))); const result = { name, ...properties, centerX: properties.xMin + properties.width * properties.invXscale / 2, centerY: properties.yMin + properties.height * properties.invYscale / 2 }; views.push(result); return result; };
+    const waitForViewport = async ({ centerX, centerY }) => page.waitForFunction(({ centerX, centerY }) => {
+      const properties = JSON.parse(window.classroomApi.getViewProperties(1));
+      const graph = document.querySelector('.graph');
+      return Math.abs(properties.width - Math.max(320, graph.clientWidth)) <= 2 &&
+        Math.abs(properties.height - Math.max(320, graph.clientHeight)) <= 2 &&
+        Math.abs(properties.xMin + properties.width * properties.invXscale / 2 - centerX) <= 2 * properties.invXscale &&
+        Math.abs(properties.yMin + properties.height * properties.invYscale / 2 - centerY) <= 2 * properties.invYscale;
+    }, { centerX, centerY }, { timeout: 10000 });
     const assertSaved = properties => {
       // Native canvas borders can change reported dimensions by two pixels.
       const toleranceX = 2 * properties.invXscale, toleranceY = 2 * properties.invYscale;
@@ -95,14 +103,14 @@ test('workshop saved viewport: actual offline classroom contains the opening ran
     };
     assertSaved(await view('initial')); await page.screenshot({ path: path.join(evidence, 'classroom-initial.png'), fullPage: true });
     const initial = views[0]; await page.evaluate(properties => window.classroomApi.setCoordSystem(properties.xMin + 2, properties.xMin + properties.width * properties.invXscale + 2, properties.yMin + 0.5, properties.yMin + properties.height * properties.invYscale + 0.5), initial);
-    const panned = await view('panned'); await page.setViewportSize({ width: 900, height: 1200 }); await page.waitForTimeout(250); const resized = await view('resized');
+    const panned = await view('panned'); await page.setViewportSize({ width: 900, height: 1200 }); await waitForViewport(panned); const resized = await view('resized');
     assert.ok(Math.abs(resized.centerX - panned.centerX) <= 2 * resized.invXscale, JSON.stringify({ panned, resized })); assert.ok(Math.abs(resized.centerY - panned.centerY) <= 2 * resized.invYscale, JSON.stringify({ panned, resized }));
     const slider = page.getByRole('slider', { name: 'a' }); await slider.fill('2'); await slider.dispatchEvent('input');
     const changed = await view('parameter'); assert.equal(changed.xMin, resized.xMin); assert.equal(changed.yMin, resized.yMin);
     await page.getByRole('button', { name: '重置', exact: true }).click(); await page.waitForFunction(() => !document.querySelector('.controls').inert && document.querySelector('.parameter input[type=range]')?.value === '1');
     assertSaved(await view('reset'));
     await page.getByRole('combobox', { name: '教学步骤' }).selectOption(source.steps[1].id); await page.waitForFunction(() => !document.querySelector('.controls').inert && document.querySelector('.parameter input[type=range]')?.value === '3'); assertSaved(await view('second-step'));
-    await page.setViewportSize({ width: 1400, height: 1000 }); await page.waitForTimeout(250); assertSaved(await view('wider'));
+    await page.setViewportSize({ width: 1400, height: 1000 }); await waitForViewport({ centerX: 0, centerY: 0.14 }); assertSaved(await view('wider'));
     assert.deepEqual(requests, []); assert.deepEqual(errors, []); await page.screenshot({ path: path.join(evidence, 'classroom-resized.png'), fullPage: true });
     fs.writeFileSync(path.join(evidence, 'classroom.zip'), bytes); fs.writeFileSync(path.join(evidence, 'classroom-views.json'), JSON.stringify({ state: 'passed', transport: 'file://', offline: true, requests, errors, views }, null, 2)); success = true;
   } finally { await browser?.close(); if (success) fs.rmSync(directory, { recursive: true, force: true }); }
@@ -151,7 +159,7 @@ test('workshop saved viewport: split and 3D still render and retain the saved ca
     const camera = () => page.evaluate(() => { const xml = new DOMParser().parseFromString(window.classroomApi.getXML(), 'application/xml'); return Object.fromEntries(Array.from(xml.querySelector('euclidianView3D coordSystem').attributes).map(attribute => [attribute.name, Number(attribute.value)])); });
     const splitCamera = await camera(); await page.getByRole('combobox', { name: '教学步骤' }).selectOption('space-step'); await page.waitForFunction(() => !document.querySelector('.controls').inert && document.querySelector('.controls select').value === 'space-step');
     assert.equal((await visibleCanvases()).length, 1); assert.deepEqual(await camera(), splitCamera);
-    await page.setViewportSize({ width: 900, height: 1200 }); await page.waitForTimeout(250); assert.deepEqual(await camera(), splitCamera);
+    await page.setViewportSize({ width: 900, height: 1200 }); await waitForViewport(panned); assert.deepEqual(await camera(), splitCamera);
     await page.getByRole('button', { name: '重置', exact: true }).click(); await page.waitForFunction(() => !document.querySelector('.controls').inert); assert.deepEqual(await camera(), splitCamera);
     await page.screenshot({ path: path.join(evidence, 'classroom-space.png'), fullPage: true }); assert.deepEqual(requests, []); assert.deepEqual(errors, []);
     fs.writeFileSync(path.join(evidence, 'space-classroom.json'), JSON.stringify({ state: 'passed', splitCanvases, camera: splitCamera, offline: true, requests, errors }, null, 2)); success = true;

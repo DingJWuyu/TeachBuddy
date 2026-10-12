@@ -104,6 +104,7 @@ jobs:
           sudo apparmor_parser -r "$RUNNER_TEMP/bwrap.apparmor"
           bwrap --unshare-all --ro-bind / / /usr/bin/true
       - name: Build all workspaces
+        id: build
         run: npm run build
       - name: Verify real files, offline math and browser cookies
         shell: bash
@@ -111,8 +112,11 @@ jobs:
           mkdir -p test-results/ci
           npm run test:ci:outputs 2>&1 | tee test-results/ci/outputs.log
       - name: Verify browser workflows
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: bash
-        run: npm run test:ci:browser 2>&1 | tee test-results/ci/browser.log
+        run: |
+          mkdir -p test-results/ci
+          npm run test:ci:browser 2>&1 | tee test-results/ci/browser.log
       - name: Retain failure evidence
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
