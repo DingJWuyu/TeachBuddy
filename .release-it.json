@@ -5,9 +5,11 @@
     "requireUpstream": false,
     "getLatestTagFromAllRefs": true,
     "tagName": "v${version}",
-    "commit": false,
+    "commit": true,
+    "commitMessage": "chore(release): prepare ${version}",
     "tag": false,
-    "push": false
+    "push": true,
+    "pushArgs": []
   },
   "npm": { "publish": false },
   "github": { "release": false },
