@@ -10,7 +10,7 @@
 trunk：preview/integration
   |
   +--> 小修小改 / 纯文档 / GitHub workflow 改动
-  |      临时 branch，按隔离需要选择 worktree
+  |      创建临时 branch，无 worktree
   |      开发 + 必要本地验证
   |      直接合回本地 trunk
   |      验证合并后的 trunk，删除临时 branch
@@ -47,10 +47,10 @@ trunk：preview/integration
 
 ## 任务与 PR
 
-已授权任务按[当前授权](../plans/run-state.md#工作现场与授权)持续执行。用户指定工作方式时照做；总控先按下列禁止 PR 的规则分流，再按任务大小、敏感程度、并行和隔离需要选择是否使用 worktree。寻常文档和非敏感代码的小改用临时 branch，不机械创建 worktree。其他敏感改动走 worktree 集成路径，不按改动行数伪装成小改。GitHub 不判断改动大小或 worktree 的使用情况，这个边界由 agent 遵守、总控把关。
+已授权任务按[当前授权](../plans/run-state.md#工作现场与授权)持续执行。用户指定工作方式时照做；总控先按下列规则分流，小修小改、纯文档和 GitHub workflow 改动统一使用临时分支，其余任务按敏感程度、并行和隔离需要安排 worktree。其他敏感改动不按改动行数伪装成小改。GitHub 不判断改动大小或 worktree 的使用情况，这个边界由 agent 遵守、总控把关。
 
-- **纯文档、GitHub workflow 改动禁止开发 PR。** 此类任务及其配套配置、文档在临时分支完成，按影响范围验证后直接合回本地 trunk；核对合并结果后清理任务现场、同步远端。即使因隔离需要使用 worktree，也不提开发 PR，不因改动敏感或需要云端验证而绕过此规则。必要云端验证按现有授权使用手动工作流入口。正式发布仍沿 Release PR 流程。
-- **其余开发 PR 只用于 worktree 集成。** 小改及其他没有 worktree 集成的 commit、merge 禁止开发 PR，不为开 PR 刻意创建 worktree。小改须验证合并后的本地 trunk，再删除临时分支、同步远端；验证范围按改动影响确定。若必要验证依赖远端环境，退出纯本地小改通道，由总控通过 worktree 集成路径安排相应验证；上条明确禁止 PR 的任务仍执行上条。有未提交的小改先完成或留在其临时分支，不带入集成或版本准备。
+- **小修小改、纯文档、GitHub workflow 改动走同一路径。** 从最新 trunk 创建临时 branch，无 worktree，不直接在 trunk 修改，也不提开发 PR。完成改动及必要验证后直接合回本地 trunk，验证合并结果，再删除临时 branch；允许同步远端。GitHub workflow 任务的配套配置与文档随同处理。正式发布仍沿 Release PR 流程。
+- **开发 PR 只用于其余 worktree 任务的集成。** 没有 worktree 集成的 commit、merge 禁止开发 PR，不为开 PR 刻意创建 worktree。普通代码的小改若依赖远端环境才能完成必要验证，由总控重新归入 worktree 任务；纯文档和 GitHub workflow 改动需要云端验证时按现有授权使用手动工作流入口，不因此创建 worktree 或 PR。有未提交的改动先完成或留在其临时分支，不带入其他集成或版本准备。
 - **允许 PR 的任务，一个完整改动目的对应一个 PR。** 默认每个完整改动目的一条 worktree；同一目的需要多个 worktree 时由总控汇总为一个集成候选。独立目的分别开 PR，谁先完成谁先集成。同一目的的连续修补、多次 commit、测试及文档不另拆 PR，不按次数或天数定频率。
 - **大功能可以分批集成。** 每批有清楚、可验证的改动目的，既有能力继续可用；尚未开放的能力已有开关或占位，不能先暴露半成品再补隐藏。
 - **Issue / Spec / Tickets 按需使用。** 已有则沿用；没有时以用户确认的任务目标和对话为规格，不为流程补造 Issue。需要时沿[Issue 约定](issue-tracker.md)及既有 skills 执行，正文使用对应 skill 自带的格式。
