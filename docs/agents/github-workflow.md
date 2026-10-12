@@ -82,7 +82,7 @@ agent 共用仓库所有者身份。fresh context 提供独立判断，不构成
 
 main 合并后仍由 `Release` 复用同一 CI，验证实际发布提交并构建产物；手动验证入口继续保留。总控按完整改动目的逐个集成，核对各 PR 基于最新 trunk，候选或基线更新后重新检查。过时的日常运行自动取消，正式发布运行不自动取消。测试范围不因减少触发而裁剪。
 
-- `Build and API`：锁定依赖安装、现有三 workspace 构建和 `npm run test:ci`。
+- `Build and API`：锁定依赖安装；候选包含本地 GeoGebra 清单时先从固定源码构建数学运行时，再执行现有三 workspace 构建和 `npm run test:ci`。冷构建使用 job 的 45 分钟上限；不依赖本机产物。
 - `PR conventions`：使用成熟 action 校验 Conventional Commit 标题；main 的 PR 源必须是本仓库 trunk。
 - 浏览器 E2E、真实 OCR/模型、Office/PDF 与目标设备由 agent 按影响范围在隔离环境验证，相关验证说明按 `pr` skill 表达。CI 不重复这些流程。
 

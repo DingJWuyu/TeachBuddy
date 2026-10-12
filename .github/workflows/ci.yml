@@ -21,7 +21,7 @@ jobs:
   build-and-api:
     name: Build and API
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -32,6 +32,9 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
+      - name: Build local math runtime
+        if: hashFiles('tools/geogebra/manifest.json') != ''
+        run: npm run math:geogebra:build
       - name: Build all workspaces
         run: npm run build
       - name: Verify HTTP and SQLite integration
