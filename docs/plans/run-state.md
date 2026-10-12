@@ -12,20 +12,16 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 非 Agent 的本机 MVP 验收与发现的范围内缺陷修复已完成；成果集成到 preview，验收任务现场按收尾规则清理。跨模块 Agent 开发保持暂停，当前无专属工作树或任务分支；恢复时先核对已实现工具、冻结设计与实际缺口，再按当前集成基线创建新现场。原 Agent 与数学工坊专属 session 均已归档。数学工坊由专属总控负责模块内讨论、派发与验收，跨模块变更、公共文件与集成由项目总控协调。
 
-最新日程已集成到 preview，并从更新后的 preview 同步到 `TeacherWorkspace-math`。数学工作树已完成 UI/UX 修整及桌面 Chrome/Edge 首次连接与更新接续，等待用户体验和后续商店发布；保留已认可的布局、渐进式披露、制作与保存能力和全局顶栏原 sparkles 图标。数学代码仍只在数学工作树，未反向集成到 preview。执行边界与验证覆盖见[数学任务](math-workshop.md)，公共文件仍由总控指定唯一写者。既有浏览器扩展安装及 DeepSeek 接续授权保留，本轮不扩展到全站 Agent 重定位。
+数学统一作品、本地 GeoGebra、界面修整及桌面 Chrome/Edge 网页 AI 接入已在数学分支实现并完成既有独立验收。本次由项目总控同步最新 trunk、补做集成验证，通过一个 PR squash 合入 `preview/integration`，再清理数学工作树及分支；用户明确本次跳过 PR review。此前仅本地、不推送和保留数学工作树的限制由本次授权替代，main 与正式发布仍按下文授权执行。
 
 | 模块 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | UI 及 Chrome/Edge 本机连接复验完成，待用户体验与商店发布，未合 preview |
-| 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；原独立体验服务停止，体验数据与有效证据已保全 |
+| 数学工坊 | `TeacherWorkspace-math` | `work/math-workshop` | 最新 trunk 已同步，集成验证进行中；合入后清理现场 |
+| 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；体验数据与有效证据已保全 |
 
-日程旧 session 已冻结并标记为 `old - 日程`。数学工作树继续使用，任务完成并获准集成、验证后按收尾规则清理。日程旧实例的库及文件与作者有效证据已保留在数学任务产物 `test-results/math-ux-redesign/integration/schedule-evidence/`，其中 `schedule-preview/data/` 为停服后的完整数据副本；这些是本轮本机产物，不作为新检出运行或验证前置。本次数学集成和推送已获授权；main 合并与公开部署仍须对应批准。模块自测使用隔离实例，preview 用户体验入口仍由总控协调。
+数学与日程的旧验收证据及体验数据保存在 preview 的 `test-results/math-handoff/`，数学入口为 `math-ai-onboarding/receipt.json`、`math-ux-redesign/final/receipt.json` 和 `math-unified/final/receipt.json`；日程数据在其中 `math-ux-redesign/integration/schedule-evidence/`。私有登录浏览器配置独立保留。这些本机产物不作为新检出运行、必要回归或接手前置；重建入口见[数学规格](../features/math.md#验证入口)和[运行指南](../SETUP.md#数学运行依赖)。
 
-数学工作树以统一作品承接公式、同一二维/三维构造、参数与教学步骤，复用现有 SQLite 作品和版本。固定源码构建的本地 GGB 已完成空缓存独立重建与禁网制作验证；纯公式及图形输出、备课往返、可编辑 Word 和离线课堂 ZIP 已按具名范围实际打开核对。当前没有未关闭的确认实现缺陷。本轮搜索焦点、复杂公式阅读/编辑和底部连接弹层已完成受影响回归；首页与编辑器入口、开关及连接成功焦点、已连接状态、英文和窄屏由独立核对确认，范围及验证边界见[数学任务](math-workshop.md)。
-
-真实 DeepSeek 已从统一制作首页创建圆与公式；手动移动圆心后，AI 读取当前坐标并修改公式和颜色，SQLite 与刷新后的页面读回一致，证据为 `test-results/math-ux-redesign/final/receipt.json`。当前连接复验使用真实 Chrome/Edge 扩展和受控 DeepSeek 网页，未重跑真实模型；冷构建与未改输出证据见 `test-results/math-unified/final/receipt.json`。本轮总控回执为 `test-results/math-ai-onboarding/receipt.json`，独立修复核对见同任务的 `verification/repair-receipt.md`：产品候选 `84c5b330` 的安装识别、登录返回、发送/取消、更新中断及重连已按具名范围验证，无未关闭的确认产品缺陷。体验服务使用该独立构建，HTML/JS/CSS 摘要核对一致；原作品与私有登录配置保留，成果尚未集成 preview。真实商店安装与自动更新待发布后另验。这些产物不作为新机器运行和接手前置。
-
-统一 API 和浏览器入口为 `apps/api/test/math-workshop.test.js`、`apps/web/e2e/math-unified.config.mjs`，界面保护与竞态另见 `math-unified-repair.config.mjs`；保存保护继续使用 `math-geogebra.config.mjs`，网页桥按 `extensions/math-web-ai/test/offline.mjs` 验证。固定输入在 `apps/api/test/fixtures/math-workshop/`，真实账号条件见[数学判据](../acceptance/mvp-matrix.md#math)。独立 Standards/Spec 审查与受影响行为复验没有未关闭的确认缺陷；本机深浅主题、1440/1024/390 布局、实际键盘、展开连续帧与输出文件已检查。合成输入法事件仅证明 guard，原生系统输入法仍未验。隔离体验服务及私有登录浏览器保留到用户体验结束，新环境不依赖它们。网页桥目前只接本机 origin 和 DeepSeek；目标 Windows、课堂设备及真实 Office 操作仍按既有暂缓安排处理。本轮不改变全站 Agent 定位。
+既有数学验证覆盖统一公式/二维/三维构造/参数/步骤保存、本地引擎冷构建与禁网制作、图片与课堂 ZIP、可编辑 Word 和备课往返、深浅主题及桌面/窄屏。真实 DeepSeek 曾完成起稿、读取手动改图与续改；Chrome/Edge 安装识别、登录返回及更新接续使用真实扩展与受控网页验证，不冒称重新调用真实模型。正式商店安装与自动更新、原生系统输入法、Windows/触屏和教师实际 Office 操作仍未验。数学后续制作范围见[模块边界](math-workshop.md)，跨模块 Agent 保持暂停。
 
 本轮验收执行现有范围与矩阵中可在本机完成的非 Agent 项，包含真实本地 OCR、文件输出检查、测试收件器与隔离浏览器、数据备份恢复及手工跨模块流程。用户明确暂缓实际 Word/WPS 修改、保存、重开与打印，真实邮件送达，以及实际平板、课堂设备和学校网络；这些项目记为暂缓未验，不计通过，也不阻塞本轮收尾。真实产品模型调用及 Agent 组合验收随 Agent 线另行安排，可选增强不纳入本轮，MVP 范围和验收门槛保持不变。
 
@@ -125,7 +121,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 本页的集成状态来自当前源码和已记录的验证范围。选择受影响功能，先按[验证指南](../acceptance/README.md)建立隔离候选，再从仓库内的测试与固定样本重建结果。记录 Git 版本、输入、实际环境、通过和未验项；外部原件、真实模型、目标 Office 或设备缺失时保留未验证边界。
 
-日程产品候选 `22baf397` 集成到 preview `da025690`，同步到数学 `34f01352`。本轮隔离生产构建通过；preview 的日程 HTTP/SQLite 检查 **70 通过、0 失败、0 跳过**，浏览器 **90 通过**，包含主交互 23、弹窗与读取竞态 52、提醒/通知/单次独立/事项移动 12、系统时区/DST 3。数学固定候选的统一作品保存、刷新、公式、图形与步骤 1 场景及日程组合 3 场景通过，数学/日程/资源库基础加载与全局原 sparkles 图标的实际 SVG 检查通过。检查了浅深主题、390/1675 日程弹窗和数学主页截图。入口为 `calendar-emstudio`、`calendar-dialog-keyboard`、`calendar-capabilities`、`calendar-time-zone` 与 `math-unified` 的仓库内 E2E 配置；本机证据在数学任务产物 `test-results/math-ux-redesign/integration/receipt.md`。作者最新 124 场景属于自验，未合并冒充本轮数量；真实中文输入法、完整教学关联、其他浏览器与目标设备未验，数学后续 UI 改动另行验证。
+日程产品候选 `22baf397` 集成到 preview `da025690`，同步到数学 `34f01352`。本轮隔离生产构建通过；preview 的日程 HTTP/SQLite 检查 **70 通过、0 失败、0 跳过**，浏览器 **90 通过**，包含主交互 23、弹窗与读取竞态 52、提醒/通知/单次独立/事项移动 12、系统时区/DST 3。数学固定候选的统一作品保存、刷新、公式、图形与步骤 1 场景及日程组合 3 场景通过，数学/日程/资源库基础加载与全局原 sparkles 图标的实际 SVG 检查通过。检查了浅深主题、390/1675 日程弹窗和数学主页截图。入口为 `calendar-emstudio`、`calendar-dialog-keyboard`、`calendar-capabilities`、`calendar-time-zone` 与 `math-unified` 的仓库内 E2E 配置；本机证据在 preview 的 `test-results/math-handoff/math-ux-redesign/integration/receipt.md`。作者最新 124 场景属于自验，未合并冒充本轮数量；真实中文输入法、完整教学关联、其他浏览器与目标设备未验，数学后续 UI 改动另行验证。
 
 当前 OCR 业务候选为 `472eaf6a`。其前一批 `1b01b7e5` 完整 API 为 **412 通过、0 失败、0 跳过**；最后的列表片段边界修复按影响范围补验，题库和识别 HTTP **52 通过、0 失败、0 跳过**。配置了真实 Office/Pandoc/Xpdf 工具与公开 E 原稿。E 按[质量样本](../acceptance/samples.md#固定输入与回放)获取并核对 SHA-256；缺少输入或工具的新环境须记录本次跳过项。旧版升级库由入库源码重建，不需要旧 Git 对象或私人验收库。
 

@@ -1,6 +1,6 @@
 # 数学工坊：统一制作与课堂使用
 
-制作行为读本页，交换字段读[数学契约](../contracts/math.md)，安装运行读[数学运行依赖](../SETUP.md#数学运行依赖)。本轮授权与验证边界见[数学任务](../plans/math-workshop.md)，整体状态见[项目状态](../plans/run-state.md)。下文描述数学工作树的当前源码行为，不表示已集成到 preview。
+制作行为读本页，交换字段读[数学契约](../contracts/math.md)，安装运行读[数学运行依赖](../SETUP.md#数学运行依赖)。本轮授权与验证边界见[数学任务](../plans/math-workshop.md)，整体状态见[项目状态](../plans/run-state.md)。集成状态以项目状态及 Git 为准。
 
 ## 一个作品、一处制作
 
@@ -95,4 +95,4 @@ math 拥有制作源、历史、渲染和导出；files 拥有不可变字节，
 
 统一制作浏览器回归使用 `apps/web/e2e/math-unified.config.mjs`，连续输入、弹窗与播放使用 `math-unified-repair.config.mjs`；保存保护和取消分别使用 `math-geogebra.config.mjs` 中的具名场景。API 核验入口为 `apps/api/test/math-workshop.test.js`、`math-workshop-view.test.js` 和既有 `math-*.test.js`，固定输入在 `apps/api/test/fixtures/math-workshop/`。网页桥回归按[扩展说明](../../extensions/math-web-ai/README.md)执行。
 
-验收须操作真实界面、刷新读回并打开实际文件，区分作者自验、独立核验和用户目标环境。运行与必要回归只依赖仓库内源码、固定输入及按运行指南准备的工具；本轮 `test-results/math-unified/` 只提供执行证据，不是安装或接手前置。整体完成条件与剩余验证在[数学任务](../plans/math-workshop.md)维护。
+验收须操作真实界面、刷新读回并打开实际文件，区分作者自验、独立核验和用户目标环境。运行与必要回归只依赖仓库内源码、固定输入及按运行指南准备的工具；preview 的 `test-results/math-handoff/math-unified/` 只提供既有执行证据，不是安装或接手前置。整体完成条件与剩余验证在[数学任务](../plans/math-workshop.md)维护。
