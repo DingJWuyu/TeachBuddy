@@ -160,3 +160,8 @@ export function AgentProvider({ accountKey, children }) {
     conflict, busy, model, setModel, configuration,
     edit, save, create, send, stop, reconcile, chooseDraft, addReference, retry: refreshList, prefix }}>{children}</Context.Provider>;
 }
+
+export function clearAgentDeviceData(account) {
+  const prefix = `teachbuddy:agent:${account}:`;
+  for (const key of Object.keys(localStorage)) if (key.startsWith(prefix)) localStorage.removeItem(key);
+}

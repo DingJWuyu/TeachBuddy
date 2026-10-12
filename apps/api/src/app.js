@@ -122,5 +122,5 @@ export function createApp(options = {}) {
   app.use(notFound);
   app.use(errorHandler);
 
-  return { app, dataStore, env: runtimeEnv, workbench };
+  return { app, dataStore, env: runtimeEnv, workbench, authModule };
 }

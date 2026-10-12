@@ -43,6 +43,7 @@ export async function startServer(options = {}) {
   let server;
   try {
     await context.workbench.initialize();
+    await context.authModule?.resumePendingDeletions();
     server = createHttpServer(context);
     if (options.dev) {
       const { createServer } = await import('vite');

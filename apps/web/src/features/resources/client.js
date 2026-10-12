@@ -1,6 +1,6 @@
 import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "resources", ...options });
-import { deviceRequestStore } from "../workbench/deviceRequestStore.js";
+import { deviceRequestStore, clearDeviceRequestAccount } from "../workbench/deviceRequestStore.js";
 // Localize known contract identities only. The original problem remains attached
 // to the error for conflict handling and diagnostics.
 function resourceProblemMessage(problem) {
@@ -157,4 +157,8 @@ export function pendingStore(accountKey, value) {
     action: value === undefined ? "get" : value === null ? "delete" : "put",
     value,
   });
+}
+
+export async function clearResourceDeviceData(account) {
+  await clearDeviceRequestAccount({ database: 'teachbuddy-resources-pending', storeName: 'requests', account });
 }

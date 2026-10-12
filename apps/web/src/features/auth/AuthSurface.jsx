@@ -89,6 +89,7 @@ export default function AuthSurface() {
   const isRecoveryRequest = mode === 'recovery-request';
   const isRecoveryConfirm = mode === 'recovery-confirm';
   const isPendingSave = auth.status === 'pending' && auth.persistenceFailed;
+  const revocation = auth.revocation;
   const copy = MODE_COPY[mode];
 
   const serverNow = () => Date.now() + clockSkewRef.current;
@@ -255,6 +256,7 @@ export default function AuthSurface() {
   }
 
   async function sendCode(purpose) {
+    if (revocation) return;
     const target = isRecoveryConfirm ? codeEmail : email;
     if (!checkEmail(target)) return;
     if (purpose === 'registration' && auth.registrationOpen === false) {
@@ -302,36 +304,40 @@ export default function AuthSurface() {
 
   async function submitRegistration() {
     if (!checkEmail(email)) return;
-    const open = await auth.refreshRegistrationOpen();
-    if (open === false) {
-      setClosed(true);
-      return;
-    }
-    if (!checkNickname(name)) return;
-    if (!checkPassword(password, t("密码"))) return;
-    if (password !== passwordConfirmation) {
-      fail('confirmation', COPY.confirmationMismatch);
-      return;
-    }
-    if (!codeSent || !challenge.challengeId) {
-      fail('code', COPY.codeNotSent);
-      return;
-    }
-    if (!isVerificationCodeShape(verificationCode)) {
-      fail('code', COPY.codeShape);
-      return;
-    }
-    if (!agreed) {
-      fail('agreed', COPY.termsRequired);
-      return;
-    }
-    if (codeExpired) {
-      fail('code', COPY.codeExpired);
-      return;
-    }
-    clearMessages();
-    const id = begin('submit');
+    // The availability read belongs to this submission too. Editing or leaving
+    // the form must invalidate it before it can start an account operation.
+    const id = begin('preflight');
     try {
+      const open = await auth.refreshRegistrationOpen();
+      if (!isCurrent(id)) return;
+      if (open === false) {
+        setClosed(true);
+        return;
+      }
+      if (!checkNickname(name)) return;
+      if (!checkPassword(password, t("密码"))) return;
+      if (password !== passwordConfirmation) {
+        fail('confirmation', COPY.confirmationMismatch);
+        return;
+      }
+      if (!codeSent || !challenge.challengeId) {
+        fail('code', COPY.codeNotSent);
+        return;
+      }
+      if (!isVerificationCodeShape(verificationCode)) {
+        fail('code', COPY.codeShape);
+        return;
+      }
+      if (!agreed) {
+        fail('agreed', COPY.termsRequired);
+        return;
+      }
+      if (codeExpired) {
+        fail('code', COPY.codeExpired);
+        return;
+      }
+      clearMessages();
+      setBusy('submit');
       const result = await auth.register({
         email,
         nickname: name,
@@ -401,7 +407,7 @@ export default function AuthSurface() {
 
   function submit(event) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || revocation) return;
     if (isRecoveryConfirm) {
       void submitReset();
       return;
@@ -467,7 +473,7 @@ export default function AuthSurface() {
             className="ae-send"
             type="button"
             onClick={() => sendCode(isRegistration ? 'registration' : 'password-reset')}
-            disabled={secondsLeft > 0 || busy === 'code'}
+            disabled={secondsLeft > 0 || busy === 'code' || Boolean(revocation)}
           >
             {busy === 'code' ? t("发送中") : secondsLeft > 0 ? t("{{count}}s 后重发", { count: secondsLeft }) : t("重新发送")}
           </button>
@@ -531,7 +537,19 @@ export default function AuthSurface() {
             <h1>{closed ? MODE_COPY.register.title : copy.title}</h1>
           </div>
 
-          {activeNotice && (
+          {revocation ? (
+            <div className={`ae-notice is-${revocation.phase === 'failed' ? 'error' : 'neutral'}`} role={revocation.phase === 'failed' ? 'alert' : 'status'}>
+              <span>
+                {revocation.phase === 'running' ? t("正在确认退出…") : revocation.phase === 'unknown' ? t("退出结果暂未确认，请重试确认。") : t("退出失败，请重试。")}
+                {revocation.phase !== 'running' && (
+                  <>
+                    {' '}
+                    <button className="ae-inline-action" type="button" onClick={() => auth.retryRevocation()}>{t("重试确认退出")}</button>
+                  </>
+                )}
+              </span>
+            </div>
+          ) : activeNotice && (
             <div
               className={`ae-notice is-${activeNotice.tone || 'error'}`}
               role={activeNotice.tone === 'error' ? 'alert' : 'status'}
@@ -550,6 +568,16 @@ export default function AuthSurface() {
             </div>
           ) : (
             <form className="ae-form" noValidate onSubmit={submit} aria-label={copy.title}>
+              {auth.pendingDeletions?.map((deletion) => (
+                <div className="ae-field" role="group" aria-label={deletion.email} key={deletion.requestId}>
+                  <small className="ae-field-note is-long-address" title={`${deletion.nickname} (${deletion.email})`}>
+                    <span className="ae-code-note-address">{deletion.nickname} ({deletion.email})</span>
+                  </small>
+                  <button className="ae-send is-block" type="button" onClick={() => auth.resumeDeletion(deletion.requestId)} disabled={Boolean(revocation)}>
+                    {t("继续核实账户删除")}
+                  </button>
+                </div>
+              ))}
               {isRegistration && (
                 <div className={`ae-field${fieldError.field === 'name' ? ' has-error' : ''}`}>
                   <div className="ae-field-head">
@@ -610,7 +638,7 @@ export default function AuthSurface() {
                     className="ae-send is-block"
                     type="button"
                     onClick={() => sendCode('registration')}
-                    disabled={secondsLeft > 0 || busy === 'code'}
+                    disabled={secondsLeft > 0 || busy === 'code' || Boolean(revocation)}
                   >
                     {busy === 'code' ? t("发送中") : secondsLeft > 0 ? t("{{count}}s 后重发", { count: secondsLeft }) : t("发送验证码")}
                   </button>
@@ -688,10 +716,10 @@ export default function AuthSurface() {
               <button
                 className="ae-primary"
                 type="submit"
-                disabled={busy !== '' || (isRecoveryRequest && secondsLeft > 0)}
+                disabled={busy !== '' || Boolean(revocation) || (isRecoveryRequest && secondsLeft > 0)}
                 aria-busy={busy !== ''}
               >
-                {busy ? copy.pending : isRecoveryRequest && secondsLeft > 0 ? t("{{count}}s 后重发", { count: secondsLeft }) : copy.submit}
+                {busy === 'submit' || (busy === 'code' && isRecoveryRequest) ? copy.pending : isRecoveryRequest && secondsLeft > 0 ? t("{{count}}s 后重发", { count: secondsLeft }) : copy.submit}
               </button>
             </form>
           )}

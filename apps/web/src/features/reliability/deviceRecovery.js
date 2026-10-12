@@ -148,3 +148,8 @@ export function prepareDeviceRecovery(account, context) {
       )
     : prepare(account, context);
 }
+
+export function clearRecoveryDeviceData(account) {
+  localStorage.removeItem(tracker(account));
+  for (const key of Object.keys(localStorage)) if (key.startsWith(prefix(account))) localStorage.removeItem(key);
+}

@@ -28,5 +28,9 @@ export default function AccountDeletion() {
       setRetryFailed(false);
       try { await auth.returnFromDeletionVerification(); } catch { setRetryFailed(true); }
     }}>{t('重新准备登录')}</button>}
+    {!auth.deletionRunning && <button className="wb-button" onClick={async () => {
+      setRetryFailed(false);
+      try { await auth.deferDeletion(); } catch { setRetryFailed(true); }
+    }}>{t('稍后核实，登录其他账户')}</button>}
   </section></div>;
 }

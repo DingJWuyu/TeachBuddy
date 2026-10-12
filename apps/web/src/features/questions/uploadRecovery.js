@@ -1,6 +1,6 @@
 import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "questions", ...options });
-import { deviceRequestStore } from '../workbench/deviceRequestStore.js';
+import { deviceRequestStore, clearDeviceRequestAccount } from '../workbench/deviceRequestStore.js';
 import { readLocal, writeLocal } from '../workbench/storage.js';
 import { upload } from './materials-api.js';
 const store = (account, action = 'get', value) => deviceRequestStore({
@@ -28,4 +28,8 @@ export async function uploadQuestionFile(account, transport, file) {
     if (error.status >= 400 && error.status < 500 && error.status !== 401) await store(account, 'delete');
     throw error;
   }
+}
+
+export async function clearQuestionDeviceData(account) {
+  await clearDeviceRequestAccount({ database: 'teachbuddy.questions.uploads', storeName: 'pending', account });
 }

@@ -58,10 +58,9 @@ function LanguageMenu({ value, onChange, disabled }) {
 export function WorkbenchSettings() {
   const { t } = useTranslation("workbench");
   const shell = useWorkbenchShell();
-  const { account, deleteAccount } = useAuth();
+  const { account, deleteAccount, logoutState, pendingDeletions, resumeDeletion } = useAuth();
   const running = useRef(false);
   const avatarInput = useRef(null);
-  const [logoutState, setLogoutState] = useState('idle');
   const { theme, background, avatar } = shell.appearance;
   const preferences = shell.preferences;
   const appearanceDisabled = !preferences.baseline || preferences.status === 'identity';
@@ -76,9 +75,9 @@ export function WorkbenchSettings() {
   useEffect(() => () => { avatarRequest.current += 1; }, []);
   async function exitAccount() {
     if (running.current) return;
-    running.current = true; setLogoutState('running');
+    running.current = true;
     try { await shell.logout(); }
-    catch (error) { setLogoutState(error.kind === 'logout-unconfirmed' ? 'unknown' : 'failed'); }
+    catch { /* AuthProvider owns the persistent result and retry target. */ }
     finally { running.current = false; }
   }
   async function chooseAvatar(event) {
@@ -129,6 +128,10 @@ export function WorkbenchSettings() {
       <Row title={t("退出登录")} description={t("结束当前会话")}><button className="wb-button" disabled={logoutState === 'running'} onClick={exitAccount}>{logoutState === 'running' ? t("正在退出…") : logoutState === 'unknown' ? t("重试确认退出") : t("退出登录")}</button></Row>
       {logoutState === 'failed' && <p role="alert">{t("退出失败，请重试。")}</p>}
       {logoutState === 'unknown' && <p role="alert">{t("退出结果暂未确认，业务操作已锁定。请重试确认。")}</p>}
+      {pendingDeletions.length > 0 && <Row title={t("继续核实账户删除", { ns: 'auth' })}>
+        {pendingDeletions.map(item => <button key={item.requestId} className="wb-button" style={{ maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere' }}
+          onClick={() => resumeDeletion(item.requestId)}>{t("继续核实账户删除", { ns: 'auth' })}{pendingDeletions.length > 1 && <span> - {item.nickname || item.email}</span>}</button>)}
+      </Row>}
     </>} dangerActions={<section className="settings-sheet settings-danger-section"><h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/></svg>{t("危险操作")}</h2>
       <Row title={t("删除您的账户")} description={t("永久删除您的账户和所有数据。此操作无法撤销。")} className="settings-danger-row"><button className="wb-button settings-danger-text" onClick={() => setModal('delete')}><Icon name="trash" size={20}/>{t("删除账户")}</button></Row>
     </section>} />
