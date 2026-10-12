@@ -95,7 +95,7 @@ main 合并后仍由 `Release` 复用同一 CI，验证实际发布提交并构�
 
 `HTTP and SQLite` 与 `Build, browser and outputs` 并行执行。前者运行 `test:ci`；后者构建三 workspace，运行 `test:ci:outputs` 和 `test:ci:browser`，覆盖认证、统一数学作品与内容保护、日程和开发服务。输出回归包括数学 DOCX/PDF、课堂离线 ZIP、备份恢复，以及原 HTTP 组排除的浏览器 Cookie、课稿资料包和两项 OCR 取消/超时回放。回放不证明真实模型的识别质量。测试名称在两组间互斥，`test:ci` 的四项具名排除全部由输出组执行。
 
-`Build and API` 保留为必需检查，只有两个执行 job 都成功才通过；失败、取消或跳过均不放行。`PR conventions` 校验 Conventional Commit 标题及 main 的 PR 来源。发布复用同一套验证，全部通过后才允许发布产物。
+构建成功后，独立的输出与浏览器回归会继续收集结果，不因前一组测试失败而跳过后续组；任一组失败仍使整个检查失败。`Build and API` 保留为必需检查，只有两个执行 job 都成功才通过；失败、取消或跳过均不放行。`PR conventions` 校验 Conventional Commit 标题及 main 的 PR 来源。发布复用同一套验证，全部通过后才允许发布产物。
 
 GeoGebra 缓存仅保存固定源码构建的运行时，按平台、清单、资源、许可证、依赖校验文件和构建脚本失效。恢复缓存后仍用现有构建器核对输入指纹及产物摘要；缓存缺失或无效时从源码构建，不依赖开发机产物。需要核查冷构建时可删除对应 Actions 缓存后手动运行 CI。
 
