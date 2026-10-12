@@ -97,13 +97,13 @@ main 合并后仍由 `Release` 复用同一 CI，验证实际发布提交并构�
 ```text
 trunk：preview/integration                  main：稳定发布分支
   |                                            |
-  |  用户决定准备或发布的时机                     |
+  |  用户决定准备或发布的时机，指定目标版本       |
   |  总控确认范围，完成已约定集成并同步 trunk      |
   |  暂停无关 trunk 集成；worktree 可继续开发     |
   |                                            |
   |  手动触发 Prepare release                   |
   |    Runner 检出 trunk                        |
-  |    release-it 计算版本与技术 CHANGELOG       |
+  |    release-it 写入指定版本，生成技术日志      |
   |       +--> dry_run：只预览，结束本次操作       |
   |       |                                    |
   |       v                                    |
@@ -151,9 +151,9 @@ main 历史不合回 trunk；下一次版本准备仍等待上一版发布完成
 
 仅预览结束即可恢复集成；M 尚未确定而版本已准备、发布暂停或取消时，先核对并处理准备状态再恢复集成。恢复开发集成不等于开始下一轮发布：版本准备与正式发布仍按下面的单一版本序列串行进行，main 的合并历史不回灌 trunk。
 
-**版本与两类说明。** 根 `package.json` 是 SemVer 产品版本；workspace 包版本是内部依赖版本，不发布 npm 包。Conventional Commits 驱动锁定版本的 `release-it` 与官方 Conventional Changelog 插件：
+**版本与两类说明。** 根 `package.json` 是 SemVer 产品版本；workspace 包版本是内部依赖版本，不发布 npm 包。目标版本由用户明确指定，例如 `1.0.0`；agent 将该版本交给 release-it 执行，不按提交类型自行递增。未收到目标版本时先向用户确认，不触发版本准备。入口通过标准 SemVer 库校验完整版本及递增关系；Conventional Changelog 插件使用官方 `ignoreRecommendedBump` 配置，保留日志生成：
 
-- 技术 `CHANGELOG.md` 使用官方 `conventionalcommits` 模板与 `types` 配置，包含功能、修复及 refactor/build/ci/docs 等工程变更，供开发者和 agent 阅读。工程类型仅列入日志，不因此提高版本；Breaking Change 仍按标准处理。该文件由工具生成，禁止手改。
+- 技术 `CHANGELOG.md` 使用官方 `conventionalcommits` 模板与 `types` 配置，包含功能、修复及 refactor/build/ci/docs 等工程变更，供开发者和 agent 阅读；Breaking Change 保留在日志中，所有提交类型都不裁决目标版本。该文件由工具生成，禁止手改。
 - 用户 Release Notes 说明用户能感知的变化，不展示工程细节或尚未开放的功能。发布变化在 Release PR 中按 `pr` skill 表达，不增加专用字段或机器标记。工作流创建 Release 后，总控根据已审阅的变化用 `gh release edit --notes-file <临时文件>` 写入面向用户的说明，并保留固定版本的技术 CHANGELOG 链接；没有用户可感知变化时仅保留该链接。定稿写入即完成说明交付，临时文件用后清理，不另建仓库文件。
 
 正式版本使用 `v<version>` Tag，仅由 main 发布。当前只维护一条正式版本序列，下一次准备在上一版发布完成后进行。
@@ -169,7 +169,7 @@ main 只接收 trunk 的发布合并，不独立修改内容。以下配置是�
 
 ### 发布步骤
 
-1. **准备版本。** 总控手动运行 `Prepare release`，分支选 trunk。默认 `dry_run=true` 只预览；正式准备设 `false`，由运行机调用 release-it 的原生生成、commit 和 push 能力直接提交 trunk。`auto` 按提交推荐，显式 patch/minor/major 按本次发布决定；日常提交只影响下次计算，不触发工具。首版没有历史 Tag 时读取已有历史并由工具创建 CHANGELOG，不伪造基准 Tag。
+1. **准备版本。** 总控手动运行 `Prepare release`，分支选 trunk，必填 `version` 使用用户指定的完整目标版本，不接受 auto/patch/minor/major 作为版本号。默认 `dry_run=true` 只预览；正式准备设 `false`，由运行机调用 release-it 更新版本及日志、commit 和 push，直接提交 trunk。日常提交只影响待生成的日志，不触发工具，也不决定版本。首版没有历史 Tag 时读取已有历史并由工具创建 CHANGELOG，不伪造基准 Tag。
 2. **同步结果。** 核对工具输出、版本、锁文件和 CHANGELOG；没有生成变更则不创建空提交。push 遇到 trunk 前进会拒绝覆盖，先核对范围，不强推。版本已准备、发布前不重复递增。
 3. **创建并审查 Release PR。** 使用 GitHub CLI，源为 trunk、目标 main，标题 `chore(release): ...`，Body 只使用 `pr` skill。总控核对发布范围、已有授权及验收边界，工作流不解析 PR 正文。总控审查并确认 CI 通过，在授权覆盖范围内以 merge commit 合并；只有准备授权则等待用户授权正式发布。
 4. **发布固定版本。** `Release` 检出实际 main 合并提交 M，复用 CI 构建、测试，打包同一提交的服务源码、Web 构建、共享源码、依赖清单及配置模板，生成 SHA-256。工作流创建指向 M 的 Tag 和 GitHub Release，上传同一次验证的产物，附该提交的技术日志链接；总控随后按上述两类说明约定完成用户说明。
@@ -215,6 +215,6 @@ node --env-file=.env apps/api/src/server.js
 
 - [Trunk Based Development](https://trunkbaseddevelopment.com/)：单一日常集成主线与短期任务分支。
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 与 [SemVer](https://semver.org/)：提交语义与版本递增。
-- [release-it](https://github.com/release-it/release-it)、[Conventional Changelog 插件](https://github.com/release-it/conventional-changelog)：版本计算、更新日志生成及准备提交、推送。
+- [release-it](https://github.com/release-it/release-it)、[Conventional Changelog 插件](https://github.com/release-it/conventional-changelog)：写入用户指定版本、更新日志生成及准备提交、推送。
 - [release-it 跨分支 Tag 查找](https://github.com/release-it/release-it/blob/main/docs/git.md#use-all-refs-to-determine-latest-tag)、[GitHub 必需状态检查](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches#require-status-checks-before-merging)：单向发布的版本基线与合并条件。
 - [GitHub CLI release create](https://cli.github.com/manual/gh_release_create)、[release edit](https://cli.github.com/manual/gh_release_edit)、[Rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)、[workflow 触发规则](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)：发布、合并门槛与 token 行为。

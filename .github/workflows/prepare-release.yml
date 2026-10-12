@@ -3,11 +3,10 @@ name: Prepare release
 on:
   workflow_dispatch:
     inputs:
-      increment:
-        description: SemVer increment (auto follows Conventional Commits)
-        type: choice
-        options: [auto, patch, minor, major]
-        default: auto
+      version:
+        description: Exact target version specified by the user (for example, 1.0.0)
+        type: string
+        required: true
       dry_run:
         description: Preview the version and changelog without committing or pushing
         type: boolean
@@ -40,16 +39,20 @@ jobs:
       - name: Prepare and push the version with release-it
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INCREMENT: ${{ inputs.increment }}
+          RELEASE_VERSION: ${{ inputs.version }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
+          node <<'NODE'
+          const semver = require('semver');
+          const version = process.env.RELEASE_VERSION;
+          if (!semver.valid(version) || !semver.gt(version, require('./package.json').version)) {
+            throw new Error('Provide a complete target SemVer newer than the current version.');
+          }
+          NODE
           gh auth setup-git
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          release_args=(--ci)
-          if [[ "$INCREMENT" != "auto" ]]; then
-            release_args+=("$INCREMENT" --plugins.@release-it/conventional-changelog.ignoreRecommendedBump)
-          fi
+          release_args=("$RELEASE_VERSION" --ci)
           if [[ "$DRY_RUN" == "true" ]]; then
             release_args+=(--dry-run)
           fi
