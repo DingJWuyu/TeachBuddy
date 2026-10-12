@@ -32,7 +32,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 账户完整性修复由 `b40e2fbced822e8894f8f315bf1e06f099b5bdb2` 创建独立候选，覆盖设备删除残留、关页接续、注册预读竞态、未决撤销与登录准备、完整响应超时、发码未知提示和退出反馈保留。改动限账户行为及必要的存储清理接线，UI 仅增加核实与重试入口。此候选尚未进入 preview，真实邮件及目标设备仍按既有安排暂缓。可重建验证入口为 `apps/web/e2e/auth-completeness.config.mjs`、`apps/web/e2e/auth-integration.config.mjs` 和 `apps/api/test/account-deletion.test.js`；本机证据留候选工作树的 `test-results/identity-fixes/`，不作为新检出的前置条件。
 
-账户代码候选 `ffc0a7389ac3891c1a7b25ac7dcef0f76057e444` 已完成作者自验、独立浏览器补验及 Standards / Spec 审查，没有剩余阻断；一项重复摘要投影的可维护性建议保留为非阻断。共享/API 检查和隔离 Web 生产构建通过，删除 API 9 项通过；账户正常路径、未决操作、跨页竞态及新增入口的中英、三视口、真实深浅主题按影响范围验证。独立结论在 `test-results/identity-fixes/independent/followup-report.md`；完整云端 CI、真实邮件、目标设备、跨浏览器进程 Cookie 生命周期与掉电未验。临时运行库、证书及重复构建已清理，修复工作树、最终构建和有效证据按未集成用途保留。
+账户修复已完成作者自验、基于 `ffc0a7389ac3891c1a7b25ac7dcef0f76057e444` 的独立浏览器补验及 Standards / Spec 审查，没有剩余阻断。当前删除摘要由同一记录快照派生一次，供内外接口共享；该维护增量的 Web 构建及 4 项既有浏览器回归通过，证据在 `test-results/identity-maintenance/`。共享/API 检查和隔离 Web 生产构建通过，删除 API 9 项通过；账户正常路径、未决操作、跨页竞态及新增入口的中英、三视口、真实深浅主题按影响范围验证。独立结论在 `test-results/identity-fixes/independent/followup-report.md`；完整云端 CI、真实邮件、目标设备、跨浏览器进程 Cookie 生命周期与掉电未验。临时运行库、证书及重复构建已清理，修复工作树、最终构建和有效证据按未集成用途保留；当前继续不集成，后续 UI 调整按用户下一步指令进行。
 
 合 main、公开部署、费用和模型窗口按对应授权执行；开发分支与 PR 的 GitHub 操作按上面的协作授权执行。测试业务数据可丢弃，不以旧库、草稿保留或历史迁移作为开发前置；代码、未提交成果、固定输入、有效证据和私有配置须保留。
 

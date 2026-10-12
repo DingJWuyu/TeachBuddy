@@ -320,7 +320,6 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
       deletionsRef.current = listDeletions();
       readSelectedDeletionId();
       revocationsRef.current = listRevocations();
-      setState(current => ({ ...current, pendingDeletions: deletionsRef.current.map(value => ({ requestId: value.body.requestId, nickname: value.account.nickname, email: value.account.email })) }));
     } catch {
       setState(current => ({ ...current, status: 'error', errorKind: 'boot' }));
       return;
@@ -891,7 +890,10 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
     await bootstrap({ generation: generationRef.current, anonymousOnly: true });
   }, [bootstrap, rotatePageContext]);
   const logoutState = state.revocation?.phase ?? 'idle';
-  const pendingDeletions = deletionsRef.current.map(value => ({ requestId: value.body.requestId, nickname: value.account.nickname, email: value.account.email }));
+  const deletions = deletionsRef.current;
+  const pendingDeletions = useMemo(() => deletions.map(value => ({
+    requestId: value.body.requestId, nickname: value.account.nickname, email: value.account.email,
+  })), [deletions]);
 
   const publicValue = useMemo(() => ({
     status: state.status,
@@ -902,7 +904,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
     deleteAccount,
     pendingDeletions,
     resumeDeletion,
-  }), [state.status, state.account, request, logout, logoutState, deleteAccount, state.pendingDeletions, state.deletion, resumeDeletion]);
+  }), [state.status, state.account, request, logout, logoutState, deleteAccount, pendingDeletions, resumeDeletion]);
 
   const internalValue = useMemo(() => ({
     ...state,
@@ -931,6 +933,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
     request,
   }), [
     state,
+    pendingDeletions,
     resumeDeletion,
     deferDeletion,
     retryRevocation,
