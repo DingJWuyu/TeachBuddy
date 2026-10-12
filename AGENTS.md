@@ -34,6 +34,7 @@
 - 当前 GitHub 协作采用[单一开发主线与稳定发布](docs/agents/github-workflow.md)：`preview/integration` 为长期 trunk，`main` 为稳定发布分支；本条替代上文 Branch 与阶段基线中的分支起点及结束条件。接手开发、创建 PR、配置 CI 或发布时必须读该页；main 合并仍需用户批准。
 - 本地提交、集成或推送前，按[任务与 PR](docs/agents/github-workflow.md#任务与-pr)执行小改本地直合或 worktree 集成 PR 路径。
 - PR 正文按 `pr` skill 执行，替代上文 Pull Request 的模板与四段式兜底约定；项目不另定义正文格式或必填字段。
+- 纯文档、GitHub workflow 改动禁止开发 PR，即使使用 worktree；验证与直接集成按[任务与 PR](docs/agents/github-workflow.md#任务与-pr)执行。
 
 ## 文档维护边界
 

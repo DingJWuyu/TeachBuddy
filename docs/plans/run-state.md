@@ -23,7 +23,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 本轮验收执行现有范围与矩阵中可在本机完成的非 Agent 项，包含真实本地 OCR、文件输出检查、测试收件器与隔离浏览器、数据备份恢复及手工跨模块流程。用户明确暂缓实际 Word/WPS 修改、保存、重开与打印，真实邮件送达，以及实际平板、课堂设备和学校网络；这些项目记为暂缓未验，不计通过，也不阻塞本轮收尾。真实产品模型调用及 Agent 组合验收随 Agent 线另行安排，可选增强不纳入本轮，MVP 范围和验收门槛保持不变。
 
-当前采用[GitHub 协作与发布](../agents/github-workflow.md)：`preview/integration` 为长期开发主线及 GitHub 默认分支，`main` 保存稳定发布版本。用户已授权搭建、调整并验证仓库配置、CI 和标准发布自动化，包括此次协作流程调整的开发 PR、trunk 集成及同步。小改直合、按完整目的组织 worktree 集成 PR、审查与推送统一执行[任务与 PR](../agents/github-workflow.md#任务与-pr)。此项配置授权不包含实际版本准备、合 main、产品发布、公开部署或新增费用。短期任务从核对的 trunk 提交创建，集成后按[收尾规则](../agents/module-development.md#集成后的清理)清理；体验目录及服务仍为 `TeacherWorkspace-preview`。
+当前采用[GitHub 协作与发布](../agents/github-workflow.md)：`preview/integration` 为长期开发主线及 GitHub 默认分支，`main` 保存稳定发布版本。用户已授权搭建、调整并验证仓库配置、CI 和标准发布自动化，包括 trunk 集成及同步。直接合入或 worktree PR 集成的分流、禁用 PR 的范围、审查与推送统一执行[任务与 PR](../agents/github-workflow.md#任务与-pr)。此项配置授权不包含实际版本准备、合 main、产品发布、公开部署或新增费用。短期任务从核对的 trunk 提交创建，集成后按[收尾规则](../agents/module-development.md#集成后的清理)清理；体验目录及服务仍为 `TeacherWorkspace-preview`。
 
 当前源码集成了日程、导航、材料整理与局部校对、全站中英切换与账户删除；这些范围曾在本机完成独立验收，新环境须按[核查入口](#核查入口)对所需结论重新验证。数据处理协议继续占位。用户授权总控自主安排专属 session、工作树及技术决策；已集成代码以当前 Git 为准。
 
