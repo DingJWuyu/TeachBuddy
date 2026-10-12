@@ -103,6 +103,21 @@ jobs:
           PROFILE
           sudo apparmor_parser -r "$RUNNER_TEMP/bwrap.apparmor"
           bwrap --unshare-all --ro-bind / / /usr/bin/true
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import os from 'node:os';
+          import path from 'node:path';
+          import { generateDocx } from './apps/api/src/modules/lessons/pandoc.js';
+          import { convertFile } from './apps/api/src/workbench/files/converter.js';
+          const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-document-tools-'));
+          const bytes = await generateDocx([{ type: 'math', latex: 'x^2+1' }], {
+            files: { temporaryDirectory: () => fs.mkdtempSync(path.join(directory, 'pandoc-')) }, principal: {},
+          });
+          const result = await convertFile({ bytes, directory,
+            mediaType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+          if (!result.pdf || !result.pages.length) throw new Error('Document toolchain produced no PDF pages');
+          fs.rmSync(directory, { recursive: true });
+          JS
       - name: Build all workspaces
         run: npm run build
       - name: Verify real files, offline math and browser cookies
