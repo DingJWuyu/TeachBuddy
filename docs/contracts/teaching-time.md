@@ -1,6 +1,6 @@
-# 教学与时间契约
+# 班级教学与日程契约
 
-[OpenAPI](../../apps/api/src/contracts/teaching-time-v1.openapi.yaml)拥有基础字段与操作，日历界面另消费[日历扩展](#日历扩展)，[cases](teaching-time-cases.md)拥有交换与失败恢复；[教学实现](../features/teaching-time.md#教学实现)定义进程内接缝。当前记录 v2 另消费[数学关联](#数学作品关联)，题目提供方明确采用[丰富题目读取](#丰富题目关联)。用户行为见[班级与日程](../features/teaching-time.md)。
+[OpenAPI](../../apps/api/src/contracts/teaching-time-v1.openapi.yaml)拥有基础字段与操作，日历界面另消费[日历扩展](#日历扩展)，[cases](teaching-time-cases.md)拥有交换与失败恢复；[班级实现](../features/classes.md#接口与实现)与[日程实现](../features/schedule.md#接口与实现)定义各自进程内接缝。当前记录 v2 另消费[数学关联](#数学作品关联)，题目提供方明确采用[丰富题目读取](#丰富题目关联)。用户行为分别见[班级教学](../features/classes.md)与[日程](../features/schedule.md)。本页共用字段、版本与交换场景，不将两个产品分区合并；只按本次涉及的边界读取对应小节。
 
 ## 共同协议
 

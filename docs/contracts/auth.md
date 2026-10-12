@@ -1,4 +1,4 @@
-# 账户入口契约
+# 账户与身份契约
 
 I01-I07 采用认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 的 PageContext 约定。源版本 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，协议已冻结且真实接入；接线状态与目标环境缺口见[账户规格](../features/identity.md)和[能力证据](../plans/run-state.md#核查入口)。
 

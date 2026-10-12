@@ -4,16 +4,24 @@
 
 ## 行为覆盖
 
-| 能力 | 可执行规格与场景 | 完整核查要点 |
+| 产品分区 | 行为与验证入口 | 完整核查要点 |
 | --- | --- | --- |
-| 题库基本保存和复用 | [first-flow.feature](first-flow.feature)、[materials.feature](materials.feature) | 自建/修改/复制、独立笔记/标记/分类、原稿联系、保存刷新、幂等/冲突/未知恢复 |
-| 文件与输出 | [materials.feature](materials.feature) | 四入口原稿、预览、分类/替换、混合取材、六输出、角色过滤、删除来源与旧请求 |
-| 数学 | [math.feature](math.feature) | 可改源码、公式/函数/平面/空间/动态、HTML隔离、往返、离线 |
-| 教学与时间 | [teaching-time.feature](teaching-time.feature)、[丰富题目接缝](../contracts/teaching-time.md#丰富题目关联) | 两班反馈、当前对象链接、时间/DST/重复例外、提醒补呈现、旧协议保护 |
-| 身份 | [auth.feature](auth.feature)、[auth-cases](../contracts/auth-cases.md) | 真实登录/恢复/退出、邮件与页面绑定、第二设备/账户隔离及恢复后旧身份失效 |
-| Agent | [agent.feature](agent.feature)、[完整工具设计](../features/agent.md#实现与接续边界) | 真模型真实业务操作、新题而非固定示例、手工冲突/停止/恢复、六模块全部覆盖 |
-| 数据 | [数据管理](../features/data.md) | 可阅读个人包、软删除关系保持、停服一致备份、干净目标还原、旧请求隔离与认证撤销 |
-| 现场与支持页 | [共同交互](../features/workbench.md)、[设置](../features/settings.md)、[界面规则](../rules/design-and-verification.md) | 各模块草稿/选择/滚动、失效身份、设置真实生效与当前删减、帮助可达、渐进交互 |
+| 账户与身份 | [行为与验证](../features/identity.md)、[auth.feature](auth.feature)、[认证案例](../contracts/auth-cases.md) | 真实登录/恢复/退出、账户删除、邮件与页面绑定、第二设备/账户隔离及恢复后旧身份失效 |
+| 工作台与设置 | [行为与验证](../features/workbench.md)、[界面规则](../rules/design-and-verification.md) | 各分区草稿/选择/滚动、失效身份接入、导航和偏好真实生效、当前删减、帮助可达、渐进交互 |
+| 题库 | [行为与验证](../features/questions.md)、[first-flow.feature](first-flow.feature)、[materials.feature](materials.feature) | 四入口原稿、提取校对、自建/修改/复制、笔记/标记/分类、检索、保存刷新、幂等/冲突/未知恢复 |
+| 备课 | [行为与验证](../features/lessons.md)、[materials.feature](materials.feature) | 混合取材、环节编排、引用快照、六输出与角色过滤、版本恢复、删除来源与旧请求 |
+| 资源库 | [行为与验证](../features/resources.md)、[materials.feature](materials.feature) | 文件收录、分类/检索、实际预览、替换与历史版本、删除来源后的既有引用 |
+| 数学工坊 | [行为与验证](../features/math.md)、[math.feature](math.feature) | 可改源码、公式/函数/平面/空间/动态、HTML 隔离、往返、离线 |
+| 班级教学 | [行为与验证](../features/classes.md)、[teaching-time.feature](teaching-time.feature)、[丰富题目接缝](../contracts/teaching-time.md#丰富题目关联) | 两班反馈、当前对象链接、检索回顾、公式图片、移动/删除恢复、旧协议保护 |
+| 日程 | [行为与验证](../features/schedule.md)、[teaching-time.feature](teaching-time.feature) | 日期/时区/DST、重复与单次独立任务、事项、提醒补呈现、通知定位及返回、计划不改实际记录 |
+| AI 助理 | [行为与验证](../features/agent.md)、[agent.feature](agent.feature) | 真模型真实业务操作、新题而非固定示例、手工冲突/停止/恢复、六模块全部覆盖 |
+
+共享文件、材料交换和班级/日程场景可以覆盖多个分区；场景文件名不定义新的产品分区。
+
+| 共享技术底座与交付 | 验证入口 | 完整核查要点 |
+| --- | --- | --- |
+| 数据管理与恢复 | [数据管理与恢复](../features/data.md) | 可阅读个人包、误删关系保持、停服一致备份、干净目标还原、旧请求隔离与认证撤销 |
+| 文件、识别、预览与输出 | [materials.feature](materials.feature)、下文质量与 Office 判据 | 原文件/配图保留、机器与人工结果分开、实际预览和可编辑输出、附件完整性 |
 | 交付环境 | [SETUP](../SETUP.md) | 桌面/平板、目标课堂离线、同源 HTTPS、持久数据/文件、干净启动/恢复和实际交付 SHA |
 
 <a id="extraction"></a>
