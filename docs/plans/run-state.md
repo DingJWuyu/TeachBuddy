@@ -66,7 +66,6 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 - 首个用户版本仅开放日程，其他模块占位；发布配置、日程跨模块入口处理和首发验收尚未完成，当前完整开发界面不能直接视为日程先行版。
 - 部署主机、域名/访问地址、真实邮件、生产配置与备份目的地待确定；CD 尚未接入。配置修改可做本地隔离验证；云端版本准备、发布演练及正式发布须有用户对应指令，不以演练成功声称正式发布或上线。
 - 开发 PR 的专门 `pr review` skill 待用户后续设计；fresh-context 独立审查的方向已定，人数、边界与 code-review 结论复用方式未定稿。现阶段由总控直接派独立 agent，规则见[审查分工](../agents/github-workflow.md#审查分工)。
-- 已授权将可重建的浏览器与文件输出回归迁入 CI，并复用固定数学运行时缓存；总控集成不重复执行 CI 覆盖的回归。当前配置与职责见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)，云端验证证据待本轮运行完成后补齐。
 
 ### 核心实现与已知质量缺口
 
@@ -115,6 +114,8 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 ## 核查入口
 
 本页的集成状态来自当前源码和已记录的验证范围。选择受影响功能，先按[验证指南](../acceptance/README.md)建立隔离候选，再从仓库内的测试与固定样本重建结果。记录 Git 版本、输入、实际环境、通过和未验项；外部原件、真实模型、目标 Office 或设备缺失时保留未验证边界。
+
+当前 CI 在 `03f32f44` 的[云端运行](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38232281895)完成干净 Ubuntu Runner 构建，294 项 HTTP/SQLite、14 项数学输出与离线、4 项浏览器 Cookie/文件/OCR 回放、71 项浏览器 E2E 全部通过，必需汇总检查通过。固定数学运行时的缓存恢复约 2 秒，恢复后仍校验输入与产物；本轮完整 CI 约 18 分钟。总控复用已有验证，不在集成前重跑 CI 覆盖的完整回归，职责及命令见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。本机仅做失败的定点复现与修复确认，证据在 `test-results/ci-cloud-ownership/receipt.json`；真实模型与目标设备仍按各专项验收。
 
 数学集成候选 `e4c61f5a` 与 squash 提交 `1c36e798` 的文件内容一致。[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38219664891) 在干净 Runner 完成锁定依赖安装、本地引擎冷构建、三 workspace 构建和 294 项 HTTP/SQLite 检查。本机另验数学 API/输出/离线与备份 14 项、数学制作 15 项及内容保护 5 项、Chrome/Edge 扩展 4 项、日程 39 项和开发服务 2 项；日程计数包含受影响项的定点复验，不重复累加。preview 引擎校验、健康检查与实际登录页面通过；本机回执和证据在 `test-results/math-integration/receipt.json`。扩展检查使用受控网页，本次未重新调用真实模型，也未执行正式发布或目标设备验收。
 
