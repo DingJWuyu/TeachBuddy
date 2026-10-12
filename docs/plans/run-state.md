@@ -63,7 +63,8 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 - [发布打包演练](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38127024596)通过，固定提交 `c5b934b8c6b8e38674a9f3c6efb36c7eaa2d361c` 的产物已实际下载、校验，并在独立目录完成生产依赖安装、HTTPS 启动及停服备份/恢复准备。证据汇入 PR #27；未创建正式 Tag、GitHub Release 或部署。
 - 首个用户版本仅开放日程，其他模块占位；发布配置、日程跨模块入口处理和首发验收尚未完成，当前完整开发界面不能直接视为日程先行版。
 - 部署主机、域名/访问地址、真实邮件、生产配置与备份目的地待确定；CD 尚未接入。配置修改可做本地隔离验证；云端版本准备、发布演练及正式发布须有用户对应指令，不以演练成功声称正式发布或上线。
-- 开发 PR 的专门 `pr review` skill 待用户后续设计；fresh-context 独立审查的方向已定，人数、边界与 code-review 结论复用方式未定稿。现阶段由总控直接派独立 agent，规则见[审查分工](../agents/github-workflow.md#审查分工)。CI 触发及测试范围见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。
+- 开发 PR 的专门 `pr review` skill 待用户后续设计；fresh-context 独立审查的方向已定，人数、边界与 code-review 结论复用方式未定稿。现阶段由总控直接派独立 agent，规则见[审查分工](../agents/github-workflow.md#审查分工)。
+- CI 暂按现有配置使用，保留 Web/API/Shared 三项构建检查及当前测试范围；测试分类、覆盖范围与策略调整留待用户后续重新讨论。其他协作与发布配置先沿用，按实际问题修正。CI 配置入口见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。
 
 ### 核心实现与已知质量缺口
 
