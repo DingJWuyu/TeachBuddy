@@ -18,10 +18,41 @@ concurrency:
   cancel-in-progress: ${{ !inputs.release_artifact }}
 
 jobs:
-  build-and-api:
-    name: Build and API
+  api:
+    name: HTTP and SQLite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '22.23.2'
+          cache: npm
+      - run: npm ci
+      - name: Verify HTTP and SQLite integration
+        shell: bash
+        run: |
+          mkdir -p test-results/ci
+          npm run test:ci 2>&1 | tee test-results/ci/api.log
+      - name: Retain failure evidence
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-api-failure-${{ github.run_attempt }}
+          path: test-results/
+          retention-days: 7
+
+  browser-and-outputs:
+    name: Build, browser and outputs
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    env:
+      WORKBENCH_WEB_DIST: apps/web/dist
+      MATERIALS_PANDOC_PATH: /usr/bin/pandoc
+      MATERIALS_OFFICE_ROOT: /usr/lib/libreoffice
+      MATH_INTEGRATION_EVIDENCE: test-results/math-integration/outputs
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -32,21 +63,52 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
-      - name: Build local math runtime
-        if: hashFiles('tools/geogebra/manifest.json') != ''
+      - name: Restore the pinned math runtime
+        id: math-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: apps/web/public/vendor/math/geogebra
+          key: ${{ runner.os }}-${{ runner.arch }}-geogebra-v1-${{ hashFiles('tools/geogebra/**', '!tools/geogebra/.cache/**', 'scripts/math-support/geogebra-*.py') }}
+      - name: Validate or build the local math runtime
+        # Always check the input fingerprint and every output digest, even on a cache hit.
         run: npm run math:geogebra:build
+      - name: Cache the validated math runtime
+        if: steps.math-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: apps/web/public/vendor/math/geogebra
+          key: ${{ steps.math-cache.outputs.cache-primary-key }}
+      - name: Install browser and document tools
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libreoffice-writer poppler-utils bubblewrap fonts-noto-cjk
+          curl --fail --location --retry 2 \
+            https://github.com/jgm/pandoc/releases/download/3.11/pandoc-3.11-1-amd64.deb \
+            -o "$RUNNER_TEMP/pandoc.deb"
+          printf '%s  %s\n' '89d4c9d97818c62a97157f0072844e4602c6cee795bf84abd1aee7273abcda99' "$RUNNER_TEMP/pandoc.deb" | sha256sum --check
+          sudo dpkg -i "$RUNNER_TEMP/pandoc.deb"
+          npx playwright install --with-deps chromium
+          pandoc --version
+          libreoffice --version
+          bwrap --unshare-all --ro-bind / / /usr/bin/true
       - name: Build all workspaces
         run: npm run build
-      - name: Verify HTTP and SQLite integration
-        # Browser E2E and Office/PDF/OCR output are verified locally for
-        # affected changes and recorded in the PR. This group uses fake mail
-        # and local model providers, without private configuration or GPUs.
-        # test:ci excludes four named cases: auth-contract-https's browser
-        # cookie test, reliability-export-ownership's lesson-output test
-        # (LibreOffice/PDF conversion), and its two OCR replay tests
-        # (which require the external Bubblewrap image preparation sandbox).
-        # The real HTTPS test and all remaining export-ownership cases run.
-        run: npm run test:ci
+      - name: Verify real files, offline math and browser cookies
+        shell: bash
+        run: |
+          mkdir -p test-results/ci
+          npm run test:ci:outputs 2>&1 | tee test-results/ci/outputs.log
+      - name: Verify browser workflows
+        shell: bash
+        run: npm run test:ci:browser 2>&1 | tee test-results/ci/browser.log
+      - name: Retain failure evidence
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-browser-failure-${{ github.run_attempt }}
+          path: test-results/
+          retention-days: 7
       - name: Package the verified application
         if: inputs.release_artifact
         run: |
@@ -70,3 +132,16 @@ jobs:
           path: ${{ runner.temp }}/release/*
           if-no-files-found: error
           retention-days: 14
+
+  build-and-api:
+    # Keep the existing required check; neither job may fail or be skipped.
+    name: Build and API
+    needs: [api, browser-and-outputs]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    env:
+      API_RESULT: ${{ needs.api.result }}
+      BROWSER_RESULT: ${{ needs.browser-and-outputs.result }}
+    steps:
+      - run: test "$API_RESULT" = success && test "$BROWSER_RESULT" = success

@@ -25,7 +25,7 @@ trunk：preview/integration
          v
        总控接收已完成的改动目的，不等整批任务结束
          |
-         同步 trunk，对齐最新基线，完成必要集成验证
+         同步 trunk，对齐最新基线，核对已有验证与待补缺口
          |
          +--> 目的 A 的集成 PR --> 独立 PR review + PR CI
          |                            |
@@ -57,7 +57,7 @@ trunk：preview/integration
 
 准备远端集成时先 fetch、核对两端增量，保留本地成果、处理远端新增提交，再同步已验证的本地 trunk。允许 PR 的任务按以下步骤集成，以同步后的 trunk 为基线，避免把相同小改夹入多个 PR。
 
-1. 总控汇总完整目的，按[验证指南](../acceptance/README.md)完成受影响范围的集成验证，保留开发审查证据。
+1. 总控汇总完整目的，按[CI 与本地验证](#ci-与本地验证)核对已有证据与本次集成新增的验证缺口，保留开发审查证据。候选就绪即创建 PR，让 CI 承担其覆盖的回归。
 2. 总控使用 GitHub CLI 创建 PR。Commit / PR Title 遵循 Conventional Commits；Body 只遵循 `pr` skill，不另设仓库模板或附加必填字段；有关联 Issue 时链接。
 3. 按[审查分工](#审查分工)安排独立 PR review。总控在实际合入前再次核对已验候选 SHA、trunk 基线、已处理的审查发现及 CI。验证后 trunk 若又前进，重新确认与最新 trunk 的集成结果，补验受影响范围并更新证据，再默认 squash 合回 trunk；不能仅凭旧基线上的 CI 通过状态合入。候选或冲突处理改变时同样补验受影响部分。
 4. 同步本地与远端成果，完成集成验证与[现场清理](module-development.md#集成后的清理)。`Closes #...` 可在默认分支合并时关闭 Issue；已集成与已发布分别记录。
@@ -82,13 +82,24 @@ agent 共用仓库所有者身份。fresh context 提供独立判断，不构成
 
 main 合并后仍由 `Release` 复用同一 CI，验证实际发布提交并构建产物；手动验证入口继续保留。总控按完整改动目的逐个集成，核对各 PR 基于最新 trunk，候选或基线更新后重新检查。过时的日常运行自动取消，正式发布运行不自动取消。测试范围不因减少触发而裁剪。
 
-- `Build and API`：锁定依赖安装；候选包含本地 GeoGebra 清单时先从固定源码构建数学运行时，再执行现有三 workspace 构建和 `npm run test:ci`。冷构建使用 job 的 45 分钟上限；不依赖本机产物。
-- `PR conventions`：使用成熟 action 校验 Conventional Commit 标题；main 的 PR 源必须是本仓库 trunk。
-- 浏览器 E2E、真实 OCR/模型、Office/PDF 与目标设备由 agent 按影响范围在隔离环境验证，相关验证说明按 `pr` skill 表达。CI 不重复这些流程。
+验证按环境与用途分工，具体命令以根 `package.json` 和 `.github/workflows/ci.yml` 为准：
 
-`test:ci` 使用仓库现有 HTTP/SQLite 测试，覆盖认证、工作台、日程/班级、备课基础、数据恢复、Agent 替身及部分数学契约/迁移。测试收件器和模型替身不等于真实邮件送达或产品模型验证。
+| 承担方 | 验证职责 |
+| --- | --- |
+| 开发者本地 | 复现、调试和确认本次改动；UI 改动检查实际界面、交互与观感。定点自测与随后 CI 的回归用途不同 |
+| CI | 在干净 Runner 安装锁定依赖，执行构建、HTTP/SQLite、已纳入的浏览器 E2E 与真实文件输出回归；使用隔离数据、测试邮件和受控模型，不读取私人配置 |
+| 总控集成 | 复用开发证据与 CI 结果，只补验冲突处理或新组合引入、已有检查未覆盖的问题。CI 覆盖的检查直接交 CI，不先完整本地重跑；没有额外缺口时本地测试可以为零 |
+| 目标环境 | 按影响范围验证真实邮件/模型、GPU OCR、私人浏览器连接、Word/WPS 人工编辑打印及实际设备；更新体验服务后核对启动与受影响入口 |
 
-四个混入所选文件的子例按具名模式排除：`auth-contract-https` 中的真实浏览器 Cookie 场景；`reliability-export-ownership` 中的已生成课稿文件导出，以及取消和超时后的 OCR 证据场景。它们分别依赖 Office/PDF 转换和 Bubblewrap 图像预处理沙箱。Node 在发现阶段筛掉它们，测试输出的 `skipped: 0` 不代表运行过这四项；完整 API 与材料专项仍沿原入口执行。
+小改直合路径没有自动 PR CI，由作者完成必要定点验证；需要云端环境时使用手动 CI。总控接收已验证且未变化的提交后核对 Git 状态即可推送，不因 push 重新验收。CI 失败时依据日志与产物定点复现、修复；仅在新改动、失败或未解疑点出现时扩大或重复验证。
+
+`HTTP and SQLite` 与 `Build, browser and outputs` 并行执行。前者运行 `test:ci`；后者构建三 workspace，运行 `test:ci:outputs` 和 `test:ci:browser`，覆盖认证、统一数学作品与内容保护、日程和开发服务。输出回归包括数学 DOCX/PDF、课堂离线 ZIP、备份恢复，以及原 HTTP 组排除的浏览器 Cookie、课稿资料包和两项 OCR 取消/超时回放。回放不证明真实模型的识别质量。测试名称在两组间互斥，`test:ci` 的四项具名排除全部由输出组执行。
+
+`Build and API` 保留为必需检查，只有两个执行 job 都成功才通过；失败、取消或跳过均不放行。`PR conventions` 校验 Conventional Commit 标题及 main 的 PR 来源。发布复用同一套验证，全部通过后才允许发布产物。
+
+GeoGebra 缓存仅保存固定源码构建的运行时，按平台、清单、资源、许可证、依赖校验文件和构建脚本失效。恢复缓存后仍用现有构建器核对输入指纹及产物摘要；缓存缺失或无效时从源码构建，不依赖开发机产物。需要核查冷构建时可删除对应 Actions 缓存后手动运行 CI。
+
+失败的测试日志、截图、Playwright trace 与生成文件作为 Actions artifact 保留 7 天；常规执行日志由 Actions 保存。其他尚未纳入 CI 的专项仍按[验证指南](../acceptance/README.md)选取，CI 通过不代表所有模块、真实模型或目标设备已验收。
 
 仓库尚未配置通用源码 linter，现有构建与集成验证继续作为反馈；CI 不把它们标成已经执行 lint。工作流变更用标准 `actionlint` 核查。新增静态规则仍须符合[验证工具准入](../acceptance/README.md#选择验证)。
 
