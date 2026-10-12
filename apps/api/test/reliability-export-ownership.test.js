@@ -135,15 +135,14 @@ test('six-module export keeps stored values, account boundaries and a read-only 
 test('cancelled extraction keeps each attempt’s late OCR evidence and managed attachments after retry', async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'export-late-'));
   const replay = await replayRecognizer();
-  let entered, release, calls = 0;
-  const started = new Promise(resolve => { entered = resolve; });
+  let recognizerStarted = false, release, calls = 0;
   // Replay validates captured input pixels. The first completed response waits
   // across cancellation to reproduce a provider returning after abort.
   const recognizer = { revision: replay.revision, async run(input) {
     const result = await replay.run(input);
     if (++calls === 1) {
       const gate = new Promise(resolve => { release = resolve; });
-      entered();
+      recognizerStarted = true;
       await gate;
     }
     return result;
@@ -157,7 +156,14 @@ test('cancelled extraction keeps each attempt’s late OCR evidence and managed 
     const imported = await call('POST', '/api/modules/questions/v2/imports', {
       title: 'Cancelled captured scan', origin: '', input: { kind: 'files', fileIds: [file.id], pages: [] },
     }, 201);
-    await started;
+    const startupDeadline = Date.now() + 10000;
+    while (!recognizerStarted && Date.now() < startupDeadline) {
+      const job = await call('GET', `/api/workbench/jobs/${imported.jobId}`);
+      assert(['queued', 'running'].includes(job.state),
+        `Extraction ended before the recognizer started: ${JSON.stringify(job)}`);
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    assert(recognizerStarted, 'Recognizer did not start within 10 seconds');
     await call('POST', `/api/workbench/jobs/${imported.jobId}/cancel`, {});
     release();
     async function finish(id) {
