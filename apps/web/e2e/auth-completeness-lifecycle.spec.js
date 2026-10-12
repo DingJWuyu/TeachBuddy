@@ -113,6 +113,10 @@ test('退出未知反馈与同目标核实跨普通导航保留', async ({ page,
   });
   await page.locator('a[href^="/resources"]').first().click();
   await expect(page).toHaveURL(/\/resources/);
+  await expect(page.getByRole('alert').filter({ hasText: '退出结果暂未确认' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '重试确认退出', exact: true })).toBeVisible();
+  await expect(page.getByText('结果未确认，请用原请求重试确认', { exact: true })).toBeHidden();
+  await page.screenshot({ path: testInfo.outputPath('logout-resource.png') });
   await openSettings(page);
   await expect(page.getByRole('alert').filter({ hasText: '退出结果暂未确认' })).toBeVisible();
   await expect(page.getByRole('button', { name: '重试确认退出', exact: true })).toBeVisible();
@@ -124,6 +128,71 @@ test('退出未知反馈与同目标核实跨普通导航保留', async ({ page,
   await page.getByRole('button', { name: '重试确认退出', exact: true }).click();
   expect((await retry).postDataJSON().sessionId).toBe(target);
   await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+});
+
+test('资源页直接核实仍沿原退出目标，等待时保留账户提示', async ({ page, world }, testInfo) => {
+  await register(page, world, 'resource-confirm@example.test');
+  await openSettings(page);
+  let target;
+  await page.route('**/api/auth/logout', async route => { target = route.request().postDataJSON().sessionId; await route.abort('failed'); });
+  await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('退出结果暂未确认');
+  await page.locator('a[href^="/resources"]').first().click();
+  const confirmation = page.locator('[data-region="logout-confirmation"]');
+  await expect(confirmation).toContainText('退出结果暂未确认');
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await expect(confirmation.getByRole('button', { name: '重试确认退出', exact: true })).toBeVisible();
+    expect(await confirmation.evaluate(element => { const box = element.getBoundingClientRect(); return element.scrollWidth <= box.width + 1; })).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath(`resource-confirm-${viewport.width}.png`) });
+  }
+  await page.unroute('**/api/auth/logout');
+  const held = deferred();
+  await page.route('**/api/auth/logout', async route => {
+    expect(route.request().postDataJSON().sessionId).toBe(target);
+    const response = await route.fetch(); await held.promise; await route.fulfill({ response });
+  });
+  await confirmation.getByRole('button', { name: '重试确认退出', exact: true }).click();
+  await expect(confirmation.getByRole('button', { name: '正在退出…', exact: true })).toBeDisabled();
+  await expect(page.getByText('结果未确认，请用原请求重试确认', { exact: true })).toBeHidden();
+  held.resolve();
+  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+});
+
+test('设置的多条删除核实入口在三视口中完整可见', async ({ page, world }, testInfo) => {
+  await register(page, world, 'deletion-list-layout@example.test');
+  // Presentation-only persisted intents. Their unrelated targets must never
+  // authorize an API request or replace this page's real active identity.
+  await page.evaluate(() => {
+    for (const digit of ['a', 'b']) {
+      const requestId = digit.repeat(64);
+      localStorage.setItem('teachbuddy:account-deletion:v1:' + requestId, JSON.stringify({
+        formatVersion: 1, account: { accountKey: digit + '-layout', nickname: 'VeryLongTeacherNicknameWithoutWhitespace', email: digit + '-layout@example.test' },
+        locale: 'en', body: { requestId, sessionId: digit + '-layout-session', email: digit + '-layout@example.test' },
+      }));
+    }
+  });
+  await page.reload();
+  await expect(page.locator('.wb-shell')).toBeVisible();
+  await openSettings(page);
+  await page.getByRole('button', { name: '语言', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'English' }).click();
+  await page.getByRole('button', { name: 'Dark', exact: true }).click();
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    const buttons = page.getByRole('button', { name: /^Continue verifying account deletion/ });
+    await expect(buttons).toHaveCount(2);
+    await buttons.last().scrollIntoViewIfNeeded();
+    for (const button of await buttons.all()) {
+      expect(await button.evaluate(element => {
+        const box = element.getBoundingClientRect(), row = element.closest('.settings-row').getBoundingClientRect();
+        return element.scrollWidth <= box.width + 1 && element.scrollHeight <= box.height + 1
+          && box.left >= row.left && box.right <= row.right + 1;
+      })).toBe(true);
+    }
+    await page.screenshot({ path: testInfo.outputPath(`deletion-list-${viewport.width}.png`) });
+  }
 });
 
 test('另一 remembered 账户不受原账户未决撤销影响', async ({ page, context, world }) => {

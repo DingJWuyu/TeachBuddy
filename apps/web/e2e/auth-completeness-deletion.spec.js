@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { test, expect, register, removeAccount, signIn, openSettings } from './fixtures/auth-completeness.js';
+import { test, expect, register, removeAccount, signIn, openSettings, password } from './fixtures/auth-completeness.js';
 
 async function uploadKeys(page, database, storeName = 'pending') {
   return page.evaluate(async ({ database, storeName }) => {
@@ -173,4 +173,143 @@ test('另一标签页已开始读取的题库原稿不能在删除后重新写�
   await expect.poll(() => other.evaluate(() => window.deletedAccountWriteChecked)).toBe(true);
   await expect.poll(() => uploadKeys(page, 'teachbuddy.questions.uploads')).toEqual([]);
   expect(world.workbench.db.prepare('SELECT count(*) n FROM materials_files').get().n).toBe(0);
+});
+
+test('首次删除未送达服务器，关页重开后恢复原会话并核实同一请求', async ({ page, context, world }) => {
+  const email = 'delete-unsent-reopen@example.test';
+  await register(page, world, email);
+  let original;
+  await page.route('**/api/auth/account-deletion', async route => {
+    original = route.request().postDataJSON();
+    await route.abort('failed');
+  });
+  await removeAccount(page, email);
+  await expect(page.getByRole('button', { name: '重试核实删除', exact: true })).toBeVisible();
+  expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_account_deletions').get().n).toBe(0);
+  await page.close();
+  const reopened = await context.newPage();
+  await reopened.addInitScript(() => {
+    window.workspaceMounts = 0;
+    new MutationObserver(() => { if (document.querySelector('.wb-shell')) window.workspaceMounts++; })
+      .observe(document, { childList: true, subtree: true });
+  });
+  const repeated = [];
+  reopened.on('request', request => {
+    if (request.url().endsWith('/api/auth/account-deletion')) repeated.push(request.postDataJSON());
+  });
+  await reopened.goto(world.origin);
+  await expect(reopened.getByRole('button', { name: '重试核实删除', exact: true })).toBeVisible();
+  await reopened.getByRole('button', { name: '重试核实删除', exact: true }).click();
+  await expect.poll(() => repeated.length).toBeGreaterThan(0);
+  expect(repeated[0]).toEqual(original);
+  await expect(reopened.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  expect(await reopened.evaluate(() => window.workspaceMounts)).toBe(0);
+  for (const body of repeated) expect(body).toEqual(original);
+  expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n).toBe(0);
+  expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_account_deletions WHERE completedAt IS NULL').get().n).toBe(0);
+});
+
+test('首次删除未送达后新会话可重新确认删除，并收敛同账户旧意图保留B', async ({ page, browser, world }) => {
+  const email = 'delete-unsent-relogin@example.test';
+  await register(page, world, email);
+  const otherContext = await browser.newContext({ ignoreHTTPSErrors: true });
+  let otherIntent;
+  try {
+    const other = await otherContext.newPage();
+    await register(other, world, 'delete-unsent-b@example.test');
+    await other.route('**/api/auth/account-deletion', route => route.abort('failed'));
+    await removeAccount(other, 'delete-unsent-b@example.test');
+    await expect(other.getByRole('button', { name: '重试核实删除', exact: true })).toBeVisible();
+    otherIntent = await other.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith('teachbuddy:account-deletion:v1:'))
+      .map(key => [key, localStorage.getItem(key)])[0]);
+  } finally { await otherContext.close(); }
+  await page.evaluate(([key, raw]) => localStorage.setItem(key, raw), otherIntent);
+  let original;
+  await page.route('**/api/auth/account-deletion', async route => {
+    original = route.request().postDataJSON();
+    await route.abort('failed');
+  });
+  await removeAccount(page, email);
+  await expect(page.getByRole('button', { name: '重试核实删除', exact: true })).toBeVisible();
+  expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_account_deletions').get().n).toBe(0);
+  await page.getByRole('button', { name: '稍后核实，登录其他账户', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  const loggedIn = page.waitForResponse(response => response.url().endsWith('/api/auth/login'));
+  await page.getByLabel('邮箱', { exact: true }).fill(email);
+  await page.getByLabel('密码', { exact: true }).fill(password);
+  await page.getByRole('button', { name: '登录', exact: true }).click();
+  const response = await loggedIn;
+  expect(response.status()).toBe(200);
+  expect((await response.json()).id).not.toBe(original.sessionId);
+  await expect(page.locator('.wb-shell')).toBeVisible();
+  expect(await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith('teachbuddy:account-deletion:v1:')).length)).toBe(2);
+  const tutorial = page.getByRole('button', { name: '知道了', exact: true });
+  if (await tutorial.isVisible()) await tutorial.click();
+  await page.reload();
+  await expect(page.locator('.wb-shell')).toBeVisible();
+  expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_account_deletions').get().n).toBe(0);
+  const retained = await page.evaluate(requestId => JSON.parse(localStorage.getItem(`teachbuddy:account-deletion:v1:${requestId}`)).body, original.requestId);
+  expect(retained).toEqual(original);
+  await page.unroute('**/api/auth/account-deletion');
+  const newDeletion = page.waitForRequest(request => request.url().endsWith('/api/auth/account-deletion'));
+  await removeAccount(page, email);
+  const newBody = (await newDeletion).postDataJSON();
+  expect(newBody.requestId).not.toBe(original.requestId);
+  expect(newBody.sessionId).not.toBe(original.sessionId);
+  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => Object.keys(localStorage).filter(name => name.startsWith('teachbuddy:account-deletion:v1:'))
+    .map(name => [name, localStorage.getItem(name)]))).toEqual([otherIntent]);
+  await page.reload();
+  await expect(page.getByText('delete-unsent-b@example.test', { exact: true })).toBeVisible();
+  await expect(page.locator('.wb-shell')).toHaveCount(0);
+  await expect(page.getByText(email, { exact: true })).toHaveCount(0);
+  expect(await page.evaluate(([key]) => localStorage.getItem(key), otherIntent)).toBe(otherIntent[1]);
+});
+
+
+test('390px删除核实卡长邮箱完整换行且不溢出', async ({ page, world }, testInfo) => {
+  const email = `teacher${'a'.repeat(50)}@${'b'.repeat(50)}.example.test`;
+  await register(page, world, email);
+  await page.route('**/api/auth/account-deletion', route => route.abort('failed'));
+  await removeAccount(page, email);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('button', { name: '重试核实删除', exact: true })).toBeVisible();
+  const card = page.locator('.wb-gate-card');
+  const address = card.getByText(email, { exact: true });
+  expect(await address.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  const bounds = await card.boundingBox();
+  expect(bounds.x).toBeGreaterThanOrEqual(0);
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
+  await page.screenshot({ path: testInfo.outputPath('deletion-long-email-390.png') });
+});
+
+test('删除后释放另一标签页排队的设备恢复，不会重建账户恢复标记', async ({ page, context, world }) => {
+  const email = 'delete-queued-recovery@example.test';
+  await register(page, world, email);
+  const account = world.workbench.db.prepare('SELECT accountKey FROM auth_accounts').get().accountKey;
+  await page.evaluate(account => {
+    localStorage.setItem('teachbuddy:data-recovery:other-account', 'other-recovery');
+    void navigator.locks.request(`teachbuddy-recovery:${account}`, async () => {
+      window.recoveryLockHeld = true;
+      await new Promise(resolve => { window.releaseRecoveryLock = resolve; });
+    });
+  }, account);
+  await expect.poll(() => page.evaluate(() => window.recoveryLockHeld)).toBe(true);
+  const other = await context.newPage();
+  await other.goto(world.origin);
+  await expect.poll(() => page.evaluate(async account => {
+    const locks = await navigator.locks.query();
+    return locks.pending.filter(lock => lock.name === `teachbuddy-recovery:${account}`).length;
+  }, account)).toBeGreaterThan(0);
+  await removeAccount(page, email);
+  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  expect(await page.evaluate(account => localStorage.getItem(`teachbuddy:data-recovery:${account}`), account)).toBeNull();
+  await page.evaluate(async account => {
+    window.releaseRecoveryLock();
+    // Taking the same lock after the other page proves its queued prepare
+    // completed before checking whether it recreated an account record.
+    await navigator.locks.request(`teachbuddy-recovery:${account}`, () => {});
+  }, account);
+  expect(await page.evaluate(account => localStorage.getItem(`teachbuddy:data-recovery:${account}`), account)).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('teachbuddy:data-recovery:other-account'))).toBe('other-recovery');
 });

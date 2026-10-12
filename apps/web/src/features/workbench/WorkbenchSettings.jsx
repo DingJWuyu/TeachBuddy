@@ -129,8 +129,14 @@ export function WorkbenchSettings() {
       {logoutState === 'failed' && <p role="alert">{t("退出失败，请重试。")}</p>}
       {logoutState === 'unknown' && <p role="alert">{t("退出结果暂未确认，业务操作已锁定。请重试确认。")}</p>}
       {pendingDeletions.length > 0 && <Row title={t("继续核实账户删除", { ns: 'auth' })}>
-        {pendingDeletions.map(item => <button key={item.requestId} className="wb-button" style={{ maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere' }}
-          onClick={() => resumeDeletion(item.requestId)}>{t("继续核实账户删除", { ns: 'auth' })}{pendingDeletions.length > 1 && <span> - {item.nickname || item.email}</span>}</button>)}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 8, width: 'min(200px, 55vw)', minWidth: 0 }}>
+        {pendingDeletions.map(item => <button key={item.requestId} className="wb-button"
+          aria-label={pendingDeletions.length > 1 ? `${t("继续核实账户删除", { ns: 'auth' })} - ${item.nickname || item.email} ${item.email}` : undefined}
+          style={{ display: 'block', height: 'auto', minWidth: 0, width: '100%', lineHeight: 1.5, whiteSpace: 'normal', overflowWrap: 'anywhere' }}
+          onClick={() => resumeDeletion(item.requestId)}>{pendingDeletions.length > 1
+            ? <><span style={{ display: 'block' }}>{item.nickname || item.email}</span>{item.nickname && <small style={{ display: 'block' }}>{item.email}</small>}</>
+            : t("继续核实账户删除", { ns: 'auth' })}</button>)}
+        </div>
       </Row>}
     </>} dangerActions={<section className="settings-sheet settings-danger-section"><h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/></svg>{t("危险操作")}</h2>
       <Row title={t("删除您的账户")} description={t("永久删除您的账户和所有数据。此操作无法撤销。")} className="settings-danger-row"><button className="wb-button settings-danger-text" onClick={() => setModal('delete')}><Icon name="trash" size={20}/>{t("删除账户")}</button></Row>

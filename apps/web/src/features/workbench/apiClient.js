@@ -7,6 +7,7 @@
  */
 
 import { problemFromResponse, unconfirmedProblem } from './problems.js';
+import i18n from '../../i18n/index.js';
 
 const WRITE_TIMEOUT_MS = 20_000;
 const READ_TIMEOUT_MS = 15_000;
@@ -75,6 +76,8 @@ async function request(method, path, { body, idempotencyKey, write = false } = {
     });
   } catch (error) {
     if (binding !== current || current.controller.signal.aborted) throw new WorkbenchError({ kind: 'identity', message: '身份已变更' });
+    if (error.kind === 'auth-locked') throw new WorkbenchError({ kind: 'identity', cause: 'auth-locked',
+      get message() { return i18n.t('退出结果暂未确认，业务操作已锁定。请重试确认。', { ns: 'workbench' }); } });
     throw new WorkbenchError(unconfirmedProblem('无法连接服务，暂不能确认是否保存'));
   }
 

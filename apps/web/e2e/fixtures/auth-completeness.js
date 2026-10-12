@@ -5,7 +5,8 @@ import { createIntegration } from '../../../api/test/fixtures/auth-integration/h
 export { expect };
 export const password = 'auth-regression-password';
 export const test = base.extend({
-  world: async ({}, use, testInfo) => {
+  // Set up before browser fixtures so their pages and contexts close first.
+  world: [async ({}, use, testInfo) => {
     const directory = testInfo.outputPath('runtime');
     fs.mkdirSync(directory, { recursive: true });
     const world = await createIntegration({ directory });
@@ -14,7 +15,7 @@ export const test = base.extend({
       await world.close();
       if (testInfo.status === testInfo.expectedStatus) fs.rmSync(directory, { recursive: true, force: true });
     }
-  },
+  }, { auto: true }],
 });
 
 export function deferred() {

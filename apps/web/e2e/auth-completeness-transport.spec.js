@@ -1,3 +1,4 @@
+import net from 'node:net';
 import { test, expect, registrationForm, register, signIn, openSettings, password } from './fixtures/auth-completeness.js';
 
 // Hold the real HTTPS response after the real operation has run. Unlike a
@@ -137,3 +138,27 @@ for (const outcome of ['success', 'disconnect', 'timeout']) {
     await expect(page.locator('.wb-shell')).toHaveCount(0);
   });
 }
+
+// Browsers can open speculative TCP connections before a TLS handshake or HTTP
+// request exists. The isolated server must release those during fixture cleanup.
+test('隔离 HTTPS 清理不等待尚未完成 TLS 握手的连接', async ({ world }) => {
+  const origin = new URL(world.origin);
+  const socket = net.connect({ host: origin.hostname, port: Number(origin.port) });
+  await new Promise((resolve, reject) => {
+    socket.once('connect', resolve);
+    socket.once('error', reject);
+  });
+  const closing = world.close();
+  let timer;
+  try {
+    const closedBeforeRelease = await Promise.race([
+      closing.then(() => true),
+      new Promise(resolve => { timer = setTimeout(() => resolve(false), 1000); }),
+    ]);
+    expect(closedBeforeRelease).toBe(true);
+  } finally {
+    clearTimeout(timer);
+    socket.destroy();
+    await closing;
+  }
+});

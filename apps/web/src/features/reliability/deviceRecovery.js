@@ -1,3 +1,4 @@
+import { isDeletedAccount } from '../workbench/storage.js';
 // Move existing device state out of the active namespaces before mounting any
 // editor after a time-point restore. Values remain byte-for-byte inspectable.
 const tracker = (account) => `teachbuddy:data-recovery:${account}`;
@@ -39,6 +40,7 @@ async function moveUploads(account, recoveryId) {
   }
 }
 async function prepare(account, context) {
+  if (isDeletedAccount(account)) return false;
   let previous;
   try {
     previous = localStorage.getItem(tracker(account));
@@ -70,6 +72,7 @@ async function prepare(account, context) {
     if (localStorage.getItem(key) !== bytes)
       throw new Error("恢复前草稿未能完整保留");
     await moveUploads(account, context.recoveryId);
+    if (isDeletedAccount(account)) return false;
     for (const name of names)
       if (localStorage.getItem(name) === archive.records[name])
         localStorage.removeItem(name);

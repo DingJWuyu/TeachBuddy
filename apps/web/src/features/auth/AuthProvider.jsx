@@ -164,7 +164,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
   }, [bumpIdentity]);
 
   const setActive = useCallback((session, registrationOpen) => {
-    const deletion = deletionsRef.current.find(value => value.account.accountKey === session.account.accountKey);
+    const deletion = deletionsRef.current.find(value => value.body.sessionId === session.id);
     if (deletion) { enterDeletion(deletion); return; }
     lockedRef.current = false; setLocked(false);
 
@@ -359,13 +359,18 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
     const epoch = identityEpochRef.current;
     const current = stateRef.current;
     if (current.status === 'booting' || current.status === 'recovering' || current.deletion
-      || (current.revocation && current.revocation.phase !== 'failed')) return;
+      || current.revocation?.phase === 'running') return;
     const outcome = await client.getSession();
     if (generation !== generationRef.current || epoch !== identityEpochRef.current) return;
     const now = stateRef.current;
     if (outcome.kind === 'result') {
       const data = outcome.data;
-      if (now.revocation && data.session?.id === now.revocation.sessionId) return;
+      if (now.revocation) {
+        const target = now.revocation.sessionId;
+        if (data.session?.id === target || data.rememberedSession?.id === target) return;
+        if (now.status === 'active' && now.session?.id === target) expireSession(null);
+        return;
+      }
       if (data.session?.state === 'active') {
         if (now.status !== 'active' || now.session?.id !== data.session.id) {
           setActive(data.session, data.registrationOpen);
@@ -796,8 +801,34 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
     const currentDeletion = () => generation === generationRef.current && epoch === identityEpochRef.current;
     setState(value => ({ ...value, status: 'deleting', deletion, deletionRunning: true, deletionError: null }));
     try {
-      const outcome = await client.deleteAccount(deletion.body);
+      let outcome = await client.deleteAccount(deletion.body);
       if (!currentDeletion()) return;
+      let contextLost = false;
+      let sessionUnavailable = false;
+      if (outcome.kind === 'problem' && [PROBLEM.BROWSER_CONTEXT_REQUIRED, PROBLEM.SESSION_INVALID].includes(outcome.type)) {
+        const check = await client.getSession();
+        if (!currentDeletion()) return;
+        contextLost = (check.kind === 'result' && !check.data.browserReady)
+          || (check.kind === 'problem' && check.type === PROBLEM.SESSION_INVALID);
+        if (check.kind === 'result' && check.data.browserReady) {
+          const originalTarget = deletion.body.sessionId;
+          if (check.data.rememberedSession?.id === originalTarget
+            && !revocationsRef.current.some(value => value.sessionId === originalTarget)) {
+            // The original request might never have reached I08. Restore only
+            // its exact remembered target, without publishing a business identity.
+            const restored = await client.restoreSession({ sessionId: originalTarget });
+            if (!currentDeletion()) return;
+            if (restored.kind === 'result' && restored.data.session?.state === 'active'
+              && restored.data.session.id === originalTarget) {
+              outcome = await client.deleteAccount(deletion.body);
+              if (!currentDeletion()) return;
+              sessionUnavailable = outcome.kind === 'problem' && outcome.type === PROBLEM.SESSION_INVALID;
+            } else {
+              sessionUnavailable = restored.kind === 'problem' && restored.type === PROBLEM.SESSION_INVALID;
+            }
+          } else sessionUnavailable = true;
+        }
+      }
       if (outcome.kind !== 'no-content') {
         const rejected = outcome.kind === 'problem' && [400, 403, 415, 422].includes(outcome.status);
         if (rejected && !current.deletion) {
@@ -805,23 +836,21 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
           setState(value => ({ ...value, ...current, deletion: null }));
           throw new Error('deletion-rejected');
         }
-        let contextLost = false;
-        if (outcome.kind === 'problem' && [PROBLEM.BROWSER_CONTEXT_REQUIRED, PROBLEM.SESSION_INVALID].includes(outcome.type)) {
-          // A restore removes authentication containers and completed receipts.
-          // A read can establish that the browser context is gone, never that
-          // the original account deletion succeeded in the current database.
-          const check = await client.getSession();
-          if (!currentDeletion()) return;
-          contextLost = (check.kind === 'result' && !check.data.browserReady)
-            || (check.kind === 'problem' && check.type === PROBLEM.SESSION_INVALID);
-        }
         setState(value => ({ ...value, deletionRunning: false,
-          deletionError: contextLost ? 'context-lost' : outcome.type === PROBLEM.DELETION_INCOMPLETE ? 'incomplete' : 'unknown' }));
+          deletionError: contextLost ? 'context-lost' : sessionUnavailable ? 'session-unavailable'
+            : outcome.type === PROBLEM.DELETION_INCOMPLETE ? 'incomplete' : 'unknown' }));
         return;
       }
       // A 401 or anonymous session is never a substitute for this 204 receipt.
       try { if (typeof onAccountDeleted !== 'function') throw new Error('deletion-device-cleaner-required');
-        await onAccountDeleted(deletion.account.accountKey); forgetDeletion(deletion.body.requestId);
+        await onAccountDeleted(deletion.account.accountKey);
+        // A confirmed new deletion also makes older commands for this exact
+        // account redundant. Keep the current receipt until all removals succeed.
+        for (const old of listDeletions()) {
+          if (old.account.accountKey === deletion.account.accountKey && old.body.requestId !== deletion.body.requestId)
+            forgetDeletion(old.body.requestId);
+        }
+        forgetDeletion(deletion.body.requestId);
         deletionsRef.current = listDeletions(); }
       catch {
         if (currentDeletion()) setState(value => ({ ...value, deletionRunning: false, deletionError: 'device' }));
@@ -850,9 +879,9 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
   const resumeDeletion = useCallback(requestId => {
     try {
       const deletion = readDeletion(requestId);
-      if (deletion) { rotatePageContext(); enterDeletion(deletion); }
+      if (deletion) { generationRef.current += 1; invalidateOperation(); enterDeletion(deletion); }
     } catch { setState(current => ({ ...current, status: 'error', errorKind: 'boot' })); }
-  }, [enterDeletion, rotatePageContext]);
+  }, [enterDeletion, invalidateOperation]);
   const deferDeletion = useCallback(async () => {
     if (deletionRunningRef.current) return;
     selectDeletion(null); deletionDeferredRef.current = true;
