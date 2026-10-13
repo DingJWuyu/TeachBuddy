@@ -158,7 +158,14 @@
             "schedule-settings",
             "file",
             "job",
-            "math-revision"
+            "math-revision",
+            "classroom-class",
+            "classroom-student",
+            "classroom-record",
+            "classroom-exam",
+            "classroom-result",
+            "classroom-import",
+            "classroom-tag"
           ]
         },
         "id": {
@@ -199,7 +206,18 @@
             "reference-snapshot",
             "current-link",
             "conversation-reference",
-            "exception"
+            "exception",
+            "class-student",
+            "record-subject",
+            "exam-source",
+            "exam-tag",
+            "result-exam",
+            "result-class",
+            "result-student",
+            "import-file",
+            "import-exam",
+            "import-class",
+            "import-result"
           ]
         },
         "adoptedVersion": {

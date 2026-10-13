@@ -16,7 +16,7 @@ async function harness() {
 }
 test('real composition preserves math versions, account isolation and replay after restart',async()=>{
  const h=await harness();try {
- const catalog=await h.send('get','/api/modules');assert.equal(catalog.body.version,3);
+ const catalog=await h.send('get','/api/modules');assert.equal(catalog.body.version,4);
  const sample=JSON.parse(fs.readFileSync(new URL('./fixtures/contracts/math-samples.json',import.meta.url))).find(c=>c.id==='create-formula').value;
  const key=randomUUID();const work=await h.send('post',works,sample,key);assert.equal(work.status,201,JSON.stringify(work.body));
  const edited=await h.send('put',`${works}/${work.body.id}`,{baseVersion:1,title:'新版本',source:work.body.source});assert.equal(edited.status,200);

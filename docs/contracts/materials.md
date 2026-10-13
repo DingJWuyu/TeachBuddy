@@ -153,7 +153,7 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 
 沿用 React/Vite、Express、better-sqlite3 单一后端及[静态模块目录](../adr/0001-use-a-single-static-module-catalog.md)。一个教师规模下顺序执行重转换即可；文件目录和 SQLite 一起备份。不建立上传服务、对象存储网关、通用内容平台、分类平台或队列平台。
 
-材料历史协议使用 ModuleCatalog version=2；当前四模块组合使用数学 schema 的 version=3；questions/resources 无业务模块必需依赖。File/Document/Job 是启动底座，不注册为额外业务模块。只在实际实现集成后注册，Web/API从同一目录投影；旧目录版本客户端按契约升级保护，不另维护一份业务目录。
+材料历史协议使用 ModuleCatalog version=2；当前五模块组合使用数学 schema 的 version=4，`webEnabled` 区分后端与页面开放；questions/resources 无业务模块必需依赖。File/Document/Job 是启动底座，不注册为额外业务模块。只在实际实现集成后注册，Web/API从同一目录投影；旧目录版本客户端按契约升级保护，不另维护一份业务目录。
 
 | Module | 独占数据与 Implementation | 消费者 |
 | --- | --- | --- |

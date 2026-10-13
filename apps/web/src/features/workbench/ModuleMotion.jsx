@@ -98,6 +98,13 @@ export function useModuleDialogFocus(ref, onCancel) {
     document.addEventListener('keydown', keydown);
     return () => {
       document.removeEventListener('keydown', keydown);
+      // An outgoing dialog can finish its transition after another one opens.
+      // Restore only within the current dialog, so the old layer cannot steal
+      // focus from the new layer. Closing a nested dialog still returns to its
+      // original control in the remaining dialog.
+      const activeDialog = [...document.querySelectorAll('[role="dialog"]')]
+        .filter(element => !element.closest('[inert]') && element.getClientRects().length).at(-1);
+      if (activeDialog && !node?.contains(activeDialog) && !activeDialog.contains(previous)) return;
       if (previous?.isConnected) previous.focus();
     };
   }, [ref]);

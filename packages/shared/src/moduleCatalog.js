@@ -1,5 +1,5 @@
-/** Static catalog using registration contract v3, projected into real implementations. */
-export const moduleCatalogVersion = 3;
+/** Static catalog using registration contract v4, projected into real implementations. */
+export const moduleCatalogVersion = 4;
 export const moduleCatalog = Object.freeze([
   {
     "id": "questions",
@@ -7,6 +7,7 @@ export const moduleCatalog = Object.freeze([
     "path": "/questions",
     "navigation": "sidebar",
     "auxiliaryPanel": true,
+    "webEnabled": true,
     "requires": []
   },
   {
@@ -15,6 +16,7 @@ export const moduleCatalog = Object.freeze([
     "path": "/math",
     "navigation": "sidebar",
     "auxiliaryPanel": true,
+    "webEnabled": true,
     "requires": []
   },
   {
@@ -23,6 +25,7 @@ export const moduleCatalog = Object.freeze([
     "path": "/resources",
     "navigation": "sidebar",
     "auxiliaryPanel": true,
+    "webEnabled": true,
     "requires": []
   },
   {
@@ -31,6 +34,16 @@ export const moduleCatalog = Object.freeze([
     "path": "/calendar",
     "navigation": "top",
     "auxiliaryPanel": true,
+    "webEnabled": true,
+    "requires": []
+  },
+  {
+    "id": "classroom",
+    "name": "班级",
+    "path": "/classroom",
+    "navigation": "sidebar",
+    "auxiliaryPanel": true,
+    "webEnabled": false,
     "requires": []
   }
 ].map(entry => Object.freeze({...entry, requires: Object.freeze(entry.requires)})));

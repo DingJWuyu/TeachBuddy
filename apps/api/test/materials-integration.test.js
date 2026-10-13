@@ -7,7 +7,7 @@ import { validate as validateSchema } from "../src/modules/math/contract.js";
 
 const root = path.resolve("test-results/r34-integration/api");
 fs.mkdirSync(root, { recursive: true });
-test("material composition serves the frozen v3 catalog through real page-bound identity", async (t) => {
+test("material composition serves the current v4 catalog through real page-bound identity", async (t) => {
   const world = await createIntegration({
     directory: fs.mkdtempSync(path.join(root, "catalog-")),
   });
@@ -42,10 +42,10 @@ test("material composition serves the frozen v3 catalog through real page-bound 
   });
   const catalog = await client.get("/api/modules");
   assert.equal(catalog.status, 200);
-  validateSchema("ModuleCatalogV3", catalog.json);
+  validateSchema("ModuleCatalogV4", catalog.json);
   assert.deepEqual(
     catalog.json.items.map((x) => x.id),
-    ["questions", "math", "resources", "schedule"],
+    ["questions", "math", "resources", "schedule", "classroom"],
   );
 });
 

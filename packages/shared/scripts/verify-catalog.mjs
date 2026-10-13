@@ -76,7 +76,11 @@ for (const featureName of listDirectories(webFeaturesDir)) {
     problems.push(`apps/web/src/features/${featureName} is missing index.jsx`);
     continue;
   }
-  webImplemented.push(featureName);
+  if (moduleCatalog.find(entry => entry.id === featureName).webEnabled) webImplemented.push(featureName);
+}
+
+for (const entry of moduleCatalog.filter(entry => entry.webEnabled)) {
+  if (!webImplemented.includes(entry.id)) problems.push(`Web-enabled module ${entry.id} has no page entry`);
 }
 
 for (const [side, implemented] of [['API', apiImplemented], ['Web', webImplemented]]) {

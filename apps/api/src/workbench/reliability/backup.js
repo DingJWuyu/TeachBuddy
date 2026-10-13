@@ -11,6 +11,9 @@ import { migrations as auth } from "../../features/auth/migrations/index.js";
 import { migrations as questions } from "../../modules/questions/migrations/index.js";
 import { migrations as resources } from "../../modules/resources/migrations/index.js";
 import { migrations as math } from "../../modules/math/migrations.js";
+import { migrations as classroom } from "../../modules/classroom/migrations/index.js";
+import { validateStoredData } from "../../modules/classroom/index.js";
+import { createPreviews } from "../files/preview.js";
 import { migrations as schedule } from "../teachingTime.js";
 import { migrations as agent } from "../../agent/store.js";
 import { navigationMigrations } from "../navigation.js";
@@ -40,6 +43,7 @@ const supported = [
     resources,
     math,
     schedule,
+    classroom,
     agent,
   }).map(([moduleId, migrations]) => ({ moduleId, migrations })),
   ...fileMigrations,
@@ -140,6 +144,21 @@ function contentSchemas(db) {
     resource_items: ["value"],
     math_works: ["value"],
   };
+  if (db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='classroom_classes'").get()) {
+    const readFile = (principal, id) => {
+      const row = db.prepare("SELECT metadata FROM materials_files WHERE id=? AND accountKey=?").get(id, principal.accountKey);
+      if (!row) throw new Error("Missing or foreign classroom file reference");
+      const metadata = JSON.parse(row.metadata);
+      validateSchema("File", metadata);
+      if (metadata.id !== id) throw new Error("Inconsistent classroom file identity");
+      return metadata;
+    };
+    const previews = createPreviews({ db, files: { read: readFile } });
+    validateStoredData(db, { readFile, readRendition: previews.readRendition });
+    for (const collection of ["classes", "students", "records", "exams", "results", "imports", "tags"])
+      jsonColumns[`classroom_${collection}`] = ["value"];
+    found.set("classroom-data", "1");
+  }
   // These former tables exist only while inspecting a pre-retirement backup.
   // Validate its declared content versions before removing it in the restored copy.
   for (const [table, columns] of Object.entries({
@@ -191,7 +210,7 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name GLOB 'classes_*'").get()
   )) throw new Error('Retired classes storage remains in a current database');
   const optional = new Set(
-    [...migrations, ...navigationMigrations].flatMap((s) => s.migrations.map((m) => m.id)).concat('auth_0008_account_deletions', retirementMigrationId, classRetirementMigrationId, 'schedule_0003_remove_teaching_links'),
+    [...migrations, ...navigationMigrations].flatMap((s) => s.migrations.map((m) => m.id)).concat('auth_0008_account_deletions', retirementMigrationId, classRetirementMigrationId, 'schedule_0003_remove_teaching_links', ...classroom.map(migration => migration.id)),
   );
   if (
     actual.some((a) => !expected.some((e) => equal(e, a)) && !(allowOlder && ((a.moduleId === 'lessons' && retiredLessonMigrationIds.includes(a.id)) || (a.moduleId === 'classes' && retiredClassMigrationIds.includes(a.id))))) ||

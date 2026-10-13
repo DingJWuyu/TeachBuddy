@@ -142,7 +142,7 @@ for (const kind of ['questions', 'math']) {
         runtime = await openLibrary(createApp, upgraded);
         const catalog = await send(runtime, 'get', '/api/modules');
         assert.equal(catalog.status, 200);
-        assert.equal(catalog.body.version, 3);
+        assert.equal(catalog.body.version, 4);
         const current = await send(runtime, 'get', readRoute);
         assert.equal(current.status, 200, JSON.stringify(current.body));
         assert.deepEqual(current.body, expected);

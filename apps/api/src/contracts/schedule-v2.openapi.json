@@ -983,7 +983,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ModuleCatalogV3"
+                  "$ref": "#/components/schemas/ModuleCatalogV4"
                 }
               }
             }
@@ -2928,8 +2928,8 @@
           "priority"
         ]
       },
-      "ModuleCatalogV3": {
-        "$ref": "math.openapi.json#/components/schemas/ModuleCatalogV3"
+      "ModuleCatalogV4": {
+        "$ref": "math.openapi.json#/components/schemas/ModuleCatalogV4"
       },
       "EntryDelete": {
         "type": "object",

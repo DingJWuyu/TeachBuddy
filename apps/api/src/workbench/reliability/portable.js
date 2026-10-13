@@ -24,6 +24,13 @@ const filePath = (row) =>
   }`;
 const json = (value) => JSON.stringify(value, null, 2);
 const kindLabels = {
+  "classroom-class": "班级",
+  "classroom-student": "学生",
+  "classroom-record": "自由记录",
+  "classroom-exam": "考试",
+  "classroom-result": "班级成绩",
+  "classroom-import": "成绩导入校对",
+  "classroom-tag": "考试标签",
   question: "题目",
   "question-taxonomy": "题目分类",
   import: "收录",
@@ -42,7 +49,7 @@ const kindLabels = {
   job: "处理记录",
 };
 const readableStyle =
-  "<style>body{max-width:960px;margin:32px auto;padding:0 20px;font:15px/1.7 system-ui,sans-serif;color:#242424}a{color:#4f46a5}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}h1{font-size:24px}h2{font-size:18px}details{margin:20px 0;border-top:1px solid #ddd;padding-top:12px}li{margin:6px 0}</style>";
+  "<style>body{max-width:960px;margin:32px auto;padding:0 20px;font:15px/1.7 system-ui,sans-serif;color:#242424}a{color:#4f46a5}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}h1{font-size:24px}h2{font-size:18px}details{margin:20px 0;border-top:1px solid #ddd;padding-top:12px}li{margin:6px 0}.classroom-table{border-collapse:collapse;width:100%;margin:16px 0}.classroom-table th,.classroom-table td{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}</style>";
 const labels = {
   body: "题干",
   solution: "答案解析",
@@ -85,6 +92,48 @@ function readableContent(value) {
     .join("");
 }
 
+const classroomRelationLabels = {
+  "class-student": "班级与学生", "record-subject": "记录对象", "exam-source": "原卷", "exam-tag": "考查标签",
+  "result-exam": "考试", "result-class": "班级", "result-student": "学生", "import-file": "成绩表原件",
+  "import-exam": "考试", "import-class": "班级", "import-result": "已确认成绩", origin: "来源", "current-link": "关联资料",
+};
+function readableClassroom(object, lookup) {
+  const value = object.value;
+  const name = (kind, id) => lookup(`classroom-${kind}`, id)?.value.name ?? id;
+  const field = (label, content) => `<p><strong>${escape(label)}：</strong>${escape(content ?? "未填写")}</p>`;
+  const table = (headers, rows) => `<table class="classroom-table"><thead><tr>${headers.map(header => `<th>${escape(header)}</th>`).join("")}</tr></thead><tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${escape(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  const score = value => value === null || value === undefined ? "缺分" : String(value);
+  if (object.kind === "classroom-class")
+    return field("班级", value.name) + field("学期", value.term) + field("座位尺寸", `${value.seating.rows} 行 × ${value.seating.columns} 列`) +
+      table(["行", "列", "学生"], value.seating.seats.map(seat => [seat.row, seat.column, name("student", seat.studentId)]));
+  if (object.kind === "classroom-student")
+    return field("姓名", value.name) + field("班级", name("class", value.classId)) + field("学号", value.studentNumber) +
+      field("生日", value.birthday) + field("兴趣", value.interests) + `<h3>自写描述</h3><pre>${escape(value.description)}</pre>`;
+  if (object.kind === "classroom-record")
+    return field(value.scope === "class" ? "班级" : "学生", name(value.scope, value.subjectId)) + field("日期", value.occurredOn) + `<h3>自由记录</h3><pre>${escape(value.text)}</pre>`;
+  if (object.kind === "classroom-exam")
+    return field("考试", value.name) + field("学科", value.subject) + field("日期", value.occurredOn) + field("满分", value.totalMax) +
+      table(["题号", "大题", "满分", "标签", "原卷定位"], value.questions.map(question => [
+        question.label, question.groupLabel ?? "", question.maxScore, question.tagIds.map(id => name("tag", id)).join("、"),
+        question.locations.length ? question.locations.map(location => `第 ${location.page} 页${location.box ? "，局部范围" : "，整页"}`).join("；") : "未定位",
+      ]));
+  if (object.kind === "classroom-result" || object.kind === "classroom-import") {
+    const exam = lookup("classroom-exam", value.examId)?.value;
+    const questions = exam?.questions ?? [];
+    const status = { present: "参考", absent: "缺考", unrecorded: "未录入" };
+    return field("考试", exam?.name ?? value.examId) + field("班级", name("class", value.classId)) +
+      (object.kind === "classroom-import" ? field("校对状态", value.state === "confirmed" ? "已确认" : "草稿") : "") +
+      table(["学生", "学号", "状态", "总分", ...questions.map(question => `${question.label}（满分 ${question.maxScore}）`)], value.rows.map(row => {
+        const student = row.studentSnapshot ?? lookup("classroom-student", row.studentId)?.value;
+        return [student?.name ?? (row.studentId ? row.studentId : "未匹配学生"), student?.studentNumber ?? "", row.ignored ? "已忽略" : status[row.status],
+          row.totalScore === null ? "未录入" : score(row.totalScore), ...questions.map(question => score(row.scores[question.id]))];
+      }));
+  }
+  if (object.kind === "classroom-tag")
+    return field("标签", value.name) + (value.mergedIntoId ? field("已合并至", name("tag", value.mergedIntoId)) : "");
+  return "";
+}
+
 // One synchronous SQLite snapshot. Runtime entries, auth, mutation journals and
 // provider configuration are deliberately absent; teacher text is never redacted.
 export function takeSnapshot(db, principal, loader) {
@@ -93,6 +142,7 @@ export function takeSnapshot(db, principal, loader) {
   const resources = loader.get("resources").port.readForExport(principal);
   const math = loader.get("math").port.readForExport(principal);
   const schedule = loader.get("schedule").port.readForExport(principal);
+  const classroom = loader.get("classroom").port.readForExport(principal);
   const rows = (table) =>
     db.prepare(`SELECT * FROM ${table} WHERE accountKey=?`).all(account);
   const objects = [];
@@ -106,6 +156,8 @@ export function takeSnapshot(db, principal, loader) {
     rows(table).forEach((row) =>
       add(kind, JSON.parse(row[column]), row.id ?? kind),
     );
+  for (const [collection, kind] of Object.entries({ classes: "class", students: "student", records: "record", exams: "exam", results: "result", imports: "import", tags: "tag" }))
+    classroom[collection].forEach(value => add(`classroom-${kind}`, value));
   questions.questions.forEach(value => add("question", value));
   add("question-taxonomy", questions.taxonomy);
   questions.imports.forEach(value => add("import", value));
@@ -241,6 +293,7 @@ export async function writeArchive(snapshot, directory, destination, signal) {
       current = value.entry ?? value;
     const title =
       current.title ||
+      (object.kind === "classroom-record" ? `${current.occurredOn} 自由记录` : "") ||
       current.name ||
       value.conversation?.title ||
       current.note ||
@@ -278,7 +331,9 @@ export async function writeArchive(snapshot, directory, destination, signal) {
         adoptedVersion,
         location,
       });
-      related.push(`<li><a href="../${target.readablePath}">${escape(target.value.title || target.value.name || kind)} (${escape(type)})</a></li>`);
+      const display = target.value.title || target.value.name || (target.kind.startsWith("classroom-") ? kindLabels[target.kind] : kind);
+      const relationLabel = object.kind.startsWith("classroom-") ? classroomRelationLabels[type] ?? type : type;
+      related.push(`<li><a href="../${target.readablePath}">${escape(display)} (${escape(relationLabel)})</a></li>`);
     }
     if (object.kind === "question" && value.source?.kind === "copy")
       relation(
@@ -292,6 +347,31 @@ export async function writeArchive(snapshot, directory, destination, signal) {
     // Adopted question content is independent of an import that was permanently deleted.
     if (object.kind === "question" && value.source?.kind === "import" && lookup("import", value.source.importId))
       relation("import", value.source.importId, "origin", "source/importId");
+    if (object.kind === "classroom-student")
+      relation("classroom-class", value.classId, "class-student", "classId");
+    if (object.kind === "classroom-class")
+      value.seating.seats.forEach((seat, index) => relation("classroom-student", seat.studentId, "class-student", `seating/seats/${index}/studentId`));
+    if (object.kind === "classroom-record")
+      relation(`classroom-${value.scope}`, value.subjectId, "record-subject", "subjectId");
+    if (object.kind === "classroom-exam") {
+      value.source.forEach((part, index) => relation("file", part.fileId, "exam-source", `source/${index}/fileId`));
+      value.questions.forEach((question, index) => question.tagIds.forEach((id, tagIndex) =>
+        relation("classroom-tag", id, "exam-tag", `questions/${index}/tagIds/${tagIndex}`)));
+    }
+    if (object.kind === "classroom-result") {
+      relation("classroom-exam", value.examId, "result-exam", "examId");
+      relation("classroom-class", value.classId, "result-class", "classId");
+      value.rows.forEach((row, index) => relation("classroom-student", row.studentId, "result-student", `rows/${index}/studentId`));
+      if (value.provenance.importId) relation("classroom-import", value.provenance.importId, "origin", "provenance/importId");
+    }
+    if (object.kind === "classroom-import") {
+      relation("file", value.sourceFileId, "import-file", "sourceFileId");
+      relation("classroom-exam", value.examId, "import-exam", "examId");
+      relation("classroom-class", value.classId, "import-class", "classId");
+      if (value.confirmedResultId) relation("classroom-result", value.confirmedResultId, "import-result", "confirmedResultId");
+    }
+    if (object.kind === "classroom-tag" && value.mergedIntoId)
+      relation("classroom-tag", value.mergedIntoId, "current-link", "mergedIntoId");
     // Any file reference, including deeply nested source/revision snapshots.
     function walk(v, location = "") {
       if (!v || typeof v !== "object") return;
@@ -322,6 +402,13 @@ export async function writeArchive(snapshot, directory, destination, signal) {
       }
     }
     walk(value);
+    if (object.kind === "file") {
+      for (const rendition of snapshot.supplemental.renditions ?? []) {
+        if (rendition.renditionFileId !== object.id) continue;
+        relation("file", rendition.fileId, "origin", "rendition/fileId");
+        rendition.pages.forEach((page, index) => relation("file", page.imageFileId, "origin", `rendition/pages/${index}/imageFileId`));
+      }
+    }
     if (object.kind === "math-revision")
       relation("math", object.id, "current-link", "work");
     if (object.kind === "resource-file-revision")
@@ -336,7 +423,7 @@ export async function writeArchive(snapshot, directory, destination, signal) {
     const status = state === "deleted" ? "已删除，可在工作台恢复" : "已保存";
     put(
       object.readablePath,
-      `<!doctype html><html lang="zh-CN"><meta charset="utf-8">${readableStyle}<meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><body><a href="../index.html">资料目录</a><h1>${escape(title)}</h1><p>${status}${object.version === null ? "" : ` · 版本 ${object.version}`}</p>${attachment}<ul>${related.join("")}</ul><p>下方保留完整内容、公式源码及已采用的历史快照。当前关联内容可从上方链接查看。</p>${readableContent(value)}<details><summary>完整记录与版式数据</summary><pre>${escape(json(value))}</pre></details><a href="../${object.dataPath}">机器可读 JSON</a></body></html>`,
+      `<!doctype html><html lang="zh-CN"><meta charset="utf-8">${readableStyle}<meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><body><a href="../index.html">资料目录</a><h1>${escape(title)}</h1><p>${status}${object.version === null ? "" : ` · 版本 ${object.version}`}</p>${attachment}<ul>${related.join("")}</ul><p>下方保留完整内容、公式源码及已采用的历史快照。当前关联内容可从上方链接查看。</p>${object.kind.startsWith("classroom-") ? readableClassroom(object, lookup) : readableContent(value)}<details><summary>完整记录与版式数据</summary><pre>${escape(json(value))}</pre></details><a href="../${object.dataPath}">机器可读 JSON</a></body></html>`,
       "text/html",
     );
     links.push(

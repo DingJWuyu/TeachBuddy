@@ -26,6 +26,13 @@ async function route(page, path, name) {
 }
 
 test('四模块真实外壳、辅助栏、前进后退、未知及非法深链接', async ({ page }, info) => {
+  const catalogResponse = await page.request.get(world.origin + '/api/modules', { headers: headers(page) });
+  expect(catalogResponse.status()).toBe(200);
+  const catalog = await catalogResponse.json();
+  expect(catalog.version).toBe(4);
+  expect(catalog.items.find(item => item.id === 'classroom')).toMatchObject({ webEnabled: false });
+  await expect(row(page, 'classroom')).toHaveCount(0);
+  await expect(page.locator('a[href^="/classroom"]')).toHaveCount(0);
   for (const [id, path] of [['questions', '/questions'], ['math', '/math'], ['resources', '/resources'], ['schedule', '/calendar']]) {
     await route(page, path, id);
     if (id !== 'schedule') await expect(row(page, id)).toHaveAttribute('aria-current', 'page');
@@ -46,7 +53,7 @@ test('四模块真实外壳、辅助栏、前进后退、未知及非法深链�
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'questions');
   await page.goForward();
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'resources');
-  for (const path of ['/missing', '/resources/%E0%A4%A', '/questions/%ZZ', '/lessons/%FF', '/classes/%E0%A4%A/records/x', '/math/unknown']) {
+  for (const path of ['/classroom', '/classroom/items', '/missing', '/resources/%E0%A4%A', '/questions/%ZZ', '/lessons/%FF', '/classes/%E0%A4%A/records/x', '/math/unknown']) {
     await route(page, path, 'unknown');
     await expect(page.getByText('未找到内容', { exact: true })).toBeVisible();
   }

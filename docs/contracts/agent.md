@@ -87,7 +87,7 @@ reconcile 是受当前身份保护的零模型操作：读取原 operation 及�
 
 ## 四模块扩展契约
 
-本节保留 F60 设计中当前四业务模块的扩展范围；旧班级工具和 class/record 引用已退役，新班级工具另行设计，完整实现暂停。[固定设计输入](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)及其完整相对引用保留采集时的原始字节，来源与哈希见同目录 `provenance.json`。它们不参与当前 API 契约装配，仅供存续能力的未实现设计参考；其中旧班级工具、引用和教学关联片段不再适用，也不是当前四模块扩展的精确 schema。恢复开发时须按当前模块公开操作重新核对并形成现行契约，读取固定输入无需本机历史 Git 引用。新增 HTTP 继续使用认证 transport、账户幂等与共享 Problem。所有业务操作只调用各模块公共端口。
+本节保留 F60 设计中题库、资源、数学和日程的扩展范围；旧班级工具和 class/record 引用已退役，新班级工具另行设计，完整实现暂停。[固定设计输入](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)及其完整相对引用保留采集时的原始字节，来源与哈希见同目录 `provenance.json`。它们不参与当前 API 契约装配，仅供存续能力的未实现设计参考；其中旧班级工具、引用和教学关联片段不再适用，也不是当前四模块扩展的精确 schema。恢复开发时须按当前模块公开操作重新核对并形成现行契约，读取固定输入无需本机历史 Git 引用。新增 HTTP 继续使用认证 transport、账户幂等与共享 Problem。所有业务操作只调用各模块公共端口。
 
 冻结文件内的 `x-sources` 和旧验收引用保留采集来源，不作为接手前置。`x-auth-recovery` 记录冻结时的 `auth-recovery/1`；恢复开发时按[当前认证恢复契约](auth.md#部署恢复的认证撤销)的 `auth-recovery/2`、现有实现及恢复测试处理账户删除与清理计数，不能沿用旧版本假定。
 

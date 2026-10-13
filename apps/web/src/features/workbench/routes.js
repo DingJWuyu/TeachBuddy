@@ -15,7 +15,7 @@ function parseRoute(pathname) {
   const path = pathname || '/';
   const segments = path.split('/').filter(Boolean);
   if (segments.length === 0) return { name: 'home', path: '/' };
-  const descriptor = moduleCatalog.find(module => module.path === `/${segments[0]}`);
+  const descriptor = moduleCatalog.find(module => module.webEnabled && module.path === `/${segments[0]}`);
   if (descriptor) {
     const modulePath = ['questions', 'resources'].includes(descriptor.id)
       ? descriptor.path + (segments[1] ? `/${segments[1]}` : '') : path;

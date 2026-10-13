@@ -64,15 +64,15 @@
 
 ### 模块与接缝
 
-遵守 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。权威静态目录位于 `packages/shared/src/`，基础格式见 OpenAPI 的 ModuleCatalog 与同名样本，扩展目录由材料及数学契约定义。当前四模块目录及接缝在 `packages/shared/src/`，日程为 top 类型。questions 无业务依赖。目录纯数据，Web/API 从同一目录投影到各自本地代码映射；构建检查缺映射、重复 ID/路径、缺依赖与环路，启动前检查迁移。停用或隐藏导航不代表拒绝模块 API。
+遵守 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。权威静态目录位于 `packages/shared/src/`，基础格式见 OpenAPI 的 ModuleCatalog 与同名样本，扩展目录由材料及数学契约定义。当前目录为 ModuleCatalogV4，五个业务模块及接缝在 `packages/shared/src/`；日程为 top 类型，班级 `webEnabled=false`。questions 无业务依赖。目录纯数据，Web/API 从同一目录投影到各自本地代码映射；构建检查缺映射、重复 ID/路径、缺依赖与环路，启动前检查迁移。`webEnabled` 只决定 Web 页面、导航、搜索和教程的投影，不决定 API 是否注册；隐藏导航也不代表拒绝模块 API。
 
-下表描述公共实现接缝。当前四个业务模块均无目录声明的跨业务模块依赖，`modulePorts` 为空；应用装配继续注入文件、文稿、任务等公共底座，接口见[材料公共端口](materials.md#公共端口)。模块内部文件、组件和 SQL 由所属模块维护。
+下表描述公共实现接缝。当前五个业务模块均无目录声明的跨业务模块依赖，`modulePorts` 为空；应用装配继续注入文件、文稿、任务等公共底座，接口见[材料公共端口](materials.md#公共端口)。模块内部文件、组件和 SQL 由所属模块维护。
 
 | 接缝 | 约定 | 写者/消费者 |
 | --- | --- | --- |
 | 身份 | 服务端 `resolvePrincipal(request)` 返回 Promise 或值 `{accountKey}` / null；异步中间件等待完成，写入时携带已验证 principal。Web 用 OpenAPI 的 context 分区。 | B12 seam；A11 真实 adapter；B13 使用 |
 | 存储 | B12 在组合入口提供同一隔离库的 `better-sqlite3` Database 实例 `db`；模块拥有自己的表，不暴露仓储给别的模块。 | B12 提供；B13 模块使用 |
-| 幂等事务 | `mutations.execute({principal, key, method, path, body}, write)`；同步 write 在该 db 事务内返回 `{status, body}`，execute 返回同形结果或契约错误。来源/身份/schema 校验先于调用；模块在 write 内做归属、版本和业务校验。 | B12 提供；B13 使用 |
+| 幂等事务 | `mutations.execute({principal, key, method, path, body}, write)`；同步 write 在该 db 事务内返回 `{status, body}`，execute 返回同形结果或契约错误。来源/身份/schema 校验先于调用；模块在 write 内做归属、版本和业务校验。异步输入准备前可用同参 `mutations.peek` 读取已确认结果，无回执返回 null；它不占键，最终 execute 仍复核。 | B12 提供；B13 使用 |
 | 模块工厂 | `apps/api/src/modules/questions/index.js` 导出 `createQuestionsModule({db, mutations})`，返回 `{router, port}`。router 为 Express Router，挂载 `/api/modules/<id>`，请求 `req.workbenchPrincipal` 已验证。 | B13 导出；B12 组合入口挂载 |
 | 业务工具调用 | 题库对外行为即 OpenAPI 中的操作集合；现有首批 Agent adapter 携带可信 principal 调用同一业务操作及 mutations，不另写 SQL。pi adapter 形式已在[Agent 接缝](../features/agent.md#助理实现)定义；全四模块扩展仍暂停。 | B13；C25/C26 消费 |
 | 模块迁移 | 各模块 `migrations/index.js` 导出有序 `migrations` 数组，项 `{id, up(db)}`；ID 使用模块专属前缀，成功 ledger 与迁移同事务，已执行 ID 不重跑。 | B13 提供；B12 runner 汇总 |

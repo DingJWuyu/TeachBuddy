@@ -16,7 +16,7 @@ import {
   modulePorts
 } from './moduleCatalog.js';
 
-const descriptorFields = ['id', 'name', 'path', 'navigation', 'auxiliaryPanel', 'requires'];
+const descriptorFields = ['id', 'name', 'path', 'navigation', 'auxiliaryPanel', 'webEnabled', 'requires'];
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -82,6 +82,10 @@ export function validateModuleCatalog(entries = moduleCatalog) {
 
     if (!moduleCatalogNavigationValues.includes(entry.navigation)) {
       problems.push(`${at}.navigation must be one of ${moduleCatalogNavigationValues.join(', ')}`);
+    }
+
+    if (typeof entry.webEnabled !== 'boolean') {
+      problems.push(`${at}.webEnabled must be a boolean`);
     }
 
     if (typeof entry.auxiliaryPanel !== 'boolean') {
@@ -211,6 +215,7 @@ export function projectModuleCatalog(enabledIds, entries = moduleCatalog) {
       path: entry.path,
       navigation: entry.navigation,
       auxiliaryPanel: entry.auxiliaryPanel,
+      webEnabled: entry.webEnabled,
       requires: [...entry.requires]
     }))
   };

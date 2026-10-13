@@ -20,6 +20,7 @@ export const fixtureSets = Object.freeze({
         path: '/workbench-probe',
         navigation: 'sidebar',
         auxiliaryPanel: false,
+        webEnabled: true,
         requires: []
       }
     ]
@@ -41,6 +42,7 @@ export const fixtureSets = Object.freeze({
         path: '/workbench-broken',
         navigation: 'sidebar',
         auxiliaryPanel: false,
+        webEnabled: true,
         requires: []
       }
     ]

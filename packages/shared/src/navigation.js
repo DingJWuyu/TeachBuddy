@@ -3,7 +3,7 @@ import { moduleCatalog } from './moduleCatalog.js';
 // Account data keeps absent module IDs. Filtering belongs only to the view.
 export function defaultNavigation(catalog = moduleCatalog) {
   return { structureVersion: 1, defaultLayoutVersion: 1, groups: [
-    { id: 'teaching-group', name: '教学', nameKey: 'teaching', moduleIds: catalog.filter(m => m.navigation === 'sidebar').map(m => m.id) },
+    { id: 'teaching-group', name: '教学', nameKey: 'teaching', moduleIds: catalog.filter(m => m.webEnabled && m.navigation === 'sidebar').map(m => m.id) },
     { id: 'ungrouped', name: '未分组', nameKey: 'ungrouped', moduleIds: [] }
   ], hiddenModuleIds: [] };
 }
@@ -56,7 +56,7 @@ export function validNavigation(layout) {
 
 export function includeNewNavigationModules(layout, catalog = moduleCatalog) {
   const known = new Set([...layout.groups.flatMap(g => g.moduleIds), ...layout.hiddenModuleIds]);
-  const additions = catalog.filter(m => m.navigation === 'sidebar' && !known.has(m.id)).map(m => m.id);
+  const additions = catalog.filter(m => m.webEnabled && m.navigation === 'sidebar' && !known.has(m.id)).map(m => m.id);
   if (!additions.length) return layout;
   return { ...layout, groups: layout.groups.map(g => g.id === 'ungrouped' ? { ...g, moduleIds: [...g.moduleIds, ...additions] } : g) };
 }

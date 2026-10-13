@@ -15,6 +15,8 @@ import {
   moduleCatalog,
   projectModuleCatalog,
   validateModuleCatalog,
+  defaultNavigation,
+  includeNewNavigationModules,
   workbenchHeaders,
   workbenchLimits,
   workbenchPaths,
@@ -30,15 +32,20 @@ const catalogEntry = (overrides = {}) => ({
   path: '/a',
   navigation: 'sidebar',
   auxiliaryPanel: false,
+  webEnabled: true,
   requires: [],
   ...overrides
 });
 
-test('the shared catalog matches the current four-module contract', () => {
+test('the shared catalog matches the current five-module contract', () => {
   const sample = JSON.parse(fs.readFileSync(path.join(repoRoot,'apps/api/test/fixtures/contracts/math-samples.json'))).find(s=>s.id==='catalog-combined-target');
   const expected = structuredClone(sample.value.items);
   assert.deepEqual(moduleCatalog, expected);
   assert.equal(validateModuleCatalog(moduleCatalog).length, 0);
+  assert.equal(moduleCatalog.find(entry => entry.id === 'classroom').webEnabled, false);
+  assert.equal(defaultNavigation().groups.flatMap(group => group.moduleIds).includes('classroom'), false);
+  const empty = defaultNavigation([]);
+  assert.equal(includeNewNavigationModules(empty).groups.flatMap(group => group.moduleIds).includes('classroom'), false);
 });
 
 test('catalog validation reports duplicates, missing dependencies and cycles', () => {
@@ -57,6 +64,11 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
   const unknownPort = validateModuleCatalog([catalogEntry({ requires: ['a.missing'] })]);
   assert.ok(unknownPort.some((problem) => problem.includes('unknown port')));
 
+  const missingWebAvailability = catalogEntry();
+  delete missingWebAvailability.webEnabled;
+  assert.ok(validateModuleCatalog([missingWebAvailability]).some(problem => problem.includes('missing required field webEnabled')));
+  assert.ok(validateModuleCatalog([catalogEntry({ webEnabled: 'false' })]).some(problem => problem.includes('webEnabled must be a boolean')));
+
   const unknownField = validateModuleCatalog([catalogEntry({ extra: true })]);
   assert.ok(unknownField.some((problem) => problem.includes('unknown field extra')));
 
@@ -64,18 +76,19 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
 });
 
 test('catalog projection enables only implemented modules and rejects orphans', () => {
-  assert.deepEqual(projectModuleCatalog([]), { version: 3, items: [] });
+  assert.deepEqual(projectModuleCatalog([]), { version: 4, items: [] });
 
   const scheduleOnly = projectModuleCatalog(['schedule']);
   assert.deepEqual(scheduleOnly.items.map(entry => entry.id), ['schedule']);
   assert.deepEqual(scheduleOnly.items[0].requires, []);
+  assert.equal(projectModuleCatalog(['classroom']).items[0].webEnabled, false);
 
   assert.throws(
     () => projectModuleCatalog(['questions', 'unknown-module']),
     /without a catalog mapping: unknown-module/
   );
 
-  assert.doesNotThrow(() => assertModuleDependencies(['questions', 'math', 'resources', 'schedule']));
+  assert.doesNotThrow(() => assertModuleDependencies(['questions', 'math', 'resources', 'schedule', 'classroom']));
 
 });
 

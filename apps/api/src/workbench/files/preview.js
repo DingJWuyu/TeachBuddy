@@ -43,7 +43,13 @@ export function createPreviews({
       "SELECT value FROM materials_renditions WHERE fileId=? AND renditionId=? AND accountKey=?",
     ).get(fileId, renditionFileId, principal.accountKey);
     if (!row) throw invalidInput("/renditionFileId", "out-of-range");
-    return JSON.parse(row.value);
+    const rendition = JSON.parse(row.value);
+    validateSchema("Preview", rendition);
+    if (rendition.fileId !== fileId || rendition.renditionFileId !== renditionFileId) {
+      throw invalidInput("/renditionFileId", "out-of-range");
+    }
+    for (const page of rendition.pages) files.read(principal, page.imageFileId);
+    return rendition;
   }
   function save(principal, value) {
     validateSchema("Preview", value);

@@ -116,10 +116,10 @@
     },
     {
       "id": "catalog-combined-target",
-      "schema": "ModuleCatalogV3",
+      "schema": "ModuleCatalogV4",
       "valid": true,
       "value": {
-        "version": 3,
+        "version": 4,
         "items": [
           {
             "id": "questions",
@@ -127,7 +127,8 @@
             "path": "/questions",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "math",
@@ -135,7 +136,8 @@
             "path": "/math",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "resources",
@@ -143,7 +145,8 @@
             "path": "/resources",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "schedule",
@@ -151,6 +154,16 @@
             "path": "/calendar",
             "navigation": "top",
             "auxiliaryPanel": true,
+            "requires": [],
+            "webEnabled": true
+          },
+          {
+            "id": "classroom",
+            "name": "班级",
+            "path": "/classroom",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "webEnabled": false,
             "requires": []
           }
         ]
@@ -158,10 +171,10 @@
     },
     {
       "id": "catalog-duplicate-id",
-      "schema": "ModuleCatalogV3",
+      "schema": "ModuleCatalogV4",
       "valid": true,
       "value": {
-        "version": 3,
+        "version": 4,
         "items": [
           {
             "id": "questions",
@@ -169,7 +182,8 @@
             "path": "/questions",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "math",
@@ -177,7 +191,8 @@
             "path": "/math",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "resources",
@@ -185,7 +200,8 @@
             "path": "/resources",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "questions",
@@ -193,7 +209,8 @@
             "path": "/other",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "schedule",
@@ -201,7 +218,8 @@
             "path": "/calendar",
             "navigation": "top",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           }
         ]
       },
@@ -214,10 +232,10 @@
     },
     {
       "id": "catalog-duplicate-path",
-      "schema": "ModuleCatalogV3",
+      "schema": "ModuleCatalogV4",
       "valid": true,
       "value": {
-        "version": 3,
+        "version": 4,
         "items": [
           {
             "id": "questions",
@@ -225,7 +243,8 @@
             "path": "/questions",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "math",
@@ -233,7 +252,8 @@
             "path": "/math",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "resources",
@@ -241,7 +261,8 @@
             "path": "/resources",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "schedule",
@@ -249,7 +270,8 @@
             "path": "/questions",
             "navigation": "top",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           }
         ]
       },
@@ -280,10 +302,10 @@
     },
     {
       "id": "catalog-unknown-port",
-      "schema": "ModuleCatalogV3",
+      "schema": "ModuleCatalogV4",
       "valid": false,
       "value": {
-        "version": 3,
+        "version": 4,
         "items": [
           {
             "id": "questions",
@@ -293,7 +315,8 @@
             "auxiliaryPanel": true,
             "requires": [
               "other.unknown"
-            ]
+            ],
+            "webEnabled": true
           },
           {
             "id": "math",
@@ -301,7 +324,8 @@
             "path": "/math",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "resources",
@@ -309,7 +333,8 @@
             "path": "/resources",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           },
           {
             "id": "schedule",
@@ -317,7 +342,8 @@
             "path": "/calendar",
             "navigation": "top",
             "auxiliaryPanel": true,
-            "requires": []
+            "requires": [],
+            "webEnabled": true
           }
         ]
       },

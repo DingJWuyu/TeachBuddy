@@ -1073,10 +1073,10 @@
   },
   {
     "id": "catalog-materials-math",
-    "schema": "ModuleCatalogV3",
+    "schema": "ModuleCatalogV4",
     "valid": true,
     "value": {
-      "version": 3,
+      "version": 4,
       "items": [
         {
           "id": "questions",
@@ -1084,7 +1084,8 @@
           "path": "/questions",
           "navigation": "sidebar",
           "auxiliaryPanel": true,
-          "requires": []
+          "requires": [],
+          "webEnabled": true
         },
         {
           "id": "math",
@@ -1092,7 +1093,8 @@
           "path": "/math",
           "navigation": "sidebar",
           "auxiliaryPanel": true,
-          "requires": []
+          "requires": [],
+          "webEnabled": true
         },
         {
           "id": "resources",
@@ -1100,17 +1102,18 @@
           "path": "/resources",
           "navigation": "sidebar",
           "auxiliaryPanel": true,
-          "requires": []
+          "requires": [],
+          "webEnabled": true
         }
       ]
     }
   },
   {
     "id": "catalog-combined-target",
-    "schema": "ModuleCatalogV3",
+    "schema": "ModuleCatalogV4",
     "valid": true,
     "value": {
-      "version": 3,
+      "version": 4,
       "items": [
         {
           "id": "questions",
@@ -1118,7 +1121,8 @@
           "path": "/questions",
           "navigation": "sidebar",
           "auxiliaryPanel": true,
-          "requires": []
+          "requires": [],
+          "webEnabled": true
         },
         {
           "id": "math",
@@ -1126,7 +1130,8 @@
           "path": "/math",
           "navigation": "sidebar",
           "auxiliaryPanel": true,
-          "requires": []
+          "requires": [],
+          "webEnabled": true
         },
         {
           "id": "resources",
@@ -1134,7 +1139,8 @@
           "path": "/resources",
           "navigation": "sidebar",
           "auxiliaryPanel": true,
-          "requires": []
+          "requires": [],
+          "webEnabled": true
         },
         {
           "id": "schedule",
@@ -1142,6 +1148,16 @@
           "path": "/calendar",
           "navigation": "top",
           "auxiliaryPanel": true,
+          "requires": [],
+          "webEnabled": true
+        },
+        {
+          "id": "classroom",
+          "name": "班级",
+          "path": "/classroom",
+          "navigation": "sidebar",
+          "auxiliaryPanel": true,
+          "webEnabled": false,
           "requires": []
         }
       ]

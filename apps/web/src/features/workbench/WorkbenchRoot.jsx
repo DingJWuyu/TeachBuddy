@@ -1,3 +1,4 @@
+import { moduleCatalogVersion } from '@refatos/shared';
 import { useTranslation } from 'react-i18next';
 import { prepareDeviceRecovery } from '../reliability/deviceRecovery.js';
 import { useEffect, useState } from 'react';
@@ -39,7 +40,7 @@ export default function WorkbenchRoot() {
         const recovery = (await workbenchGet('/api/reliability/v1/context')).body;
         const recoveryChanged = await prepareDeviceRecovery(accountKey, recovery);
         const catalog = (await workbenchGet('/api/modules')).body;
-        if (catalog.version !== 3) throw new Error('Unsupported module catalog version');
+        if (catalog.version !== moduleCatalogVersion) throw new Error('Unsupported module catalog version');
         if (live) setBoot({ accountKey, sessionId, mode: 'ready', recoveryChanged });
       } catch (error) {
         if (live) setBoot({ accountKey, sessionId, mode: error.problem?.kind === 'identity' ? 'identity' : 'unavailable' });
