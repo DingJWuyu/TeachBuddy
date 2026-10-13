@@ -90,7 +90,7 @@ Document 是 B11 v1 或本批 v2 的封闭联合。v2 增加图片、标题、�
 
 文字与 LaTeX 是规范源，OMML 是导出制品，不新增第二套可写数学主数据。公共转换须支持分式、根式、上下标、函数/对数、不等号、区间、绝对值及两行 cases；分段条件保持逐行对应。源码白名单数学语法，不运行 TeX 的文件/网络/宏指令。存储允许未知数学表达的原始源，编辑器显示失败；导出前若不能形成真实可编辑 OMML，返回带 field 的 unsupported-formula，用户修正后重新导出。不能把整题/公式截图作为 Word 成功路径。验证须覆盖一般公式源到 OMML 的路径，固定硬编码节点不能证明公共转换可用。
 
-Document 每层数组及源字符串上限由 schema 给出，另外总块数≤2000、总数学源≤200000 字符；不得无限递归。正文至少有一项可见文字/公式/图片。answerStatus=absent 时 solution 必须空；present 时 solution 非空。unresolved 仅存在收录草稿，不可入库。题面和答案不得夹带 teacher-note，长期笔记在 note。旧 v1 文档仍按 B11 规则处理。
+Document 每层数组及源字符串上限由 schema 给出，另外总块数≤2000、总数学源≤200000 字符；不得无限递归。正文至少有一项可见文字/公式/图片。answerStatus=absent 时 solution 必须空；present 时 solution 非空。unresolved 仅存在收录草稿，不可入库。题面和答案不得夹带 teacher-note，手写长期笔记在 `note`，归入的资料摘录在 `noteFragments`。旧 v1 文档仍按 B11 规则处理。
 
 内容演进只追加明确版本及迁移，不借存储 JSON 跳过校验。未知 Document.version 在读取端保留原数据并提示只读，在写入端明确拒绝，绝不删掉不认识的节点。数学作品使用文档与文件端口；作品源和引用扩展见[数学契约](math.md)。
 
@@ -100,15 +100,19 @@ createImport 先原子持久保存原稿绑定和 extraction Job，然后后台�
 
 未配置视觉识别器时，文字层 PDF 使用本机 Xpdf 阅读顺序自动读取，支持常规双栏、题号拆分、明确答案匹配及显式续题，Poppler 继续提供页图与配图定位；扫描页与图片明确报告视觉识别未配置，不将手动补录算成自动完成。复杂跨栏图文、无明确标记的跨页续题及复杂数学排版仍需核对。DOCX 原生提取保留原文段落到任务记录；旧 DOC 在受限的 LibreOffice 进程内转换为 DOCX，再读取可用公式对象、文字和图片。任务固定派生文件、原件与派生件摘要、段落快照，重试复用该转换稿；个人资料包保留这些来源记录及文件。`GET imports/{id}` 可附带只读 `originalDocuments`；校对页可切换分页预览与段落，点击段落定位进入对应视图。DOC 显示“转换稿段落”，DOCX 显示“原文段落”，均不承诺 Word 分页和排版。原始文件与分页预览保留；旧 DOC 的对象风险仍标受限，原件缺失内容不补造。旧材料没有该字段时仍使用现有预览或下载。
 
-原生文字无题号时，非空正文保留为待校对候选；仅答案或教师活动不建空题。题号比较使用 NFKC、去空白、去末尾分隔符与 `Q` 前缀，原文和字符范围不改变。答案必须唯一匹配题目，重复题号保留答案片段并标记待核对，不按出现顺序猜测归属。
+原生文字无题号时，非空正文保留为待校对候选；仅答案或教师活动不建空题。题号比较使用 NFKC、去空白、去末尾分隔符与 `Q` 前缀，原文和字符范围不改变。独立“答案：”与“参考答案”标题均进入答案区；答案必须唯一匹配题目，重复题号保留答案片段并标记待核对，不按出现顺序猜测归属。
 
 任务输出必须验证 schema、输入覆盖、题边界、公式、实际配图绑定、原有答案角色和原稿定位，不能照抄 Provider 的 needs_review=false。草稿处置由老师控制；机器必须保留未分配片段与疑点。截断响应只采纳前缀中完整、独立可验证对象，记录 truncated-response，禁止补括号后声称整批成功。已有答案和未提供答案严格区分；识别不生成解答。
 
-未分配 Fragment 可带 `document`（沿用 Document 版本契约，机器稿为 v2），保留表格、数学与图片；`text` 是最多 20000 字符的阅读摘要，完整内容以该 Document 为准。旧纯文字片段继续按 `text` 读取。结构片段不按摘要长度拆成多个重复文稿，保存时沿用 Document 校验及当前账户的附件归属检查；个人资料包和部署备份保留其文稿与文件关系。教师明确归入题干时追加原块及该片段的真实来源，不自动推断其所属题目，也不改原始机器结果。
+未分配 Fragment 可带 `document`（沿用 Document 版本契约，机器稿为 v2），保留表格、数学与图片；`text` 是最多 20000 字符的阅读摘要，完整内容以该 Document 为准。旧纯文字片段继续按 `text` 读取。结构片段不按摘要长度拆成多个重复文稿，保存时沿用 Document 校验及当前账户的附件归属检查；个人资料包和部署备份保留其文稿与文件关系。教师明确归入题干或答案时追加原块及该片段的真实来源，未提供答案的草稿归入答案后设 `answerStatus=present`，原有待核对状态仍须解决；不自动推断所属题目，也不改原始机器结果。
+
+归入笔记使用 Draft、Question、UpdateQuestion 的可选 `noteFragments`，每条保存原 Fragment 的 `id`、当前 `importId`、可编辑 `document` 与固定 `locations`。同一片段在同一收录中最多归入一个草稿笔记，原片段须标为 assigned；来源必须匹配已保存片段，不能伪造或将已经归入题干/答案的片段再次归入笔记。草稿移除摘录恢复待处理。入库时把采用稿存入题目已有扩展元数据，与原材料独立；彻底删除原材料后题目及摘录仍可读，资料包只省略失效的原稿链接，保留来源 ID、采用稿和附件。
+
+普通题目更新只允许编辑既有摘录文稿或移除条目，不接受新增摘录 ID 或改变出处。题目更新与校对保存省略 `noteFragments` 时保留旧值，显式空数组才清空，confirmed 草稿仍不可更改。CreateQuestion、CopyQuestion 不接受该字段；复制改编的起点同时清空两类笔记。文稿版本与账户附件权限沿用 Document 校验，未知版本只读；个人资料包和部署备份包含摘录及图片。班级引用、改编快照和 PPT 素材不包含两类笔记。
 
 saveImportReview 全量原子保存当前草稿/片段数组，baseVersion 与 import 比较；running/queued/cancelling 时返回 import-not-editable，先停止或等终态。新草稿 ID 由客户端创建（拆分/手工补充），移除草稿即丢弃该候选，原件保留。已 confirmed 草稿及其 questionId 只读且不可遗漏；客户端不能把 pending 自改为 confirmed，也不能自填 questionId。commitImportDrafts 是唯一入库动作，验证选中草稿无 open 疑点、answerStatus 非 unresolved、正文与图片/公式齐全，在同一事务建立 Questions 并写映射/新 import version。acknowledged 仅用于非阻断的文字/边界复核；missing-figure、uncertain-formula、incomplete-answer、unverified-location 必须 corrected。忽略草稿不能提交。
 
-相同 draftId 永远最多关联一个 Question，重复用新键提交已 confirmed 项也返回既有题映射，不增加题目/材料版本；混合提交时只为未确认项创建对象。这是业务去重，幂等仍遵循原键重放。失败整个选中批次不变。一次确认部分题后，其他草稿继续等待，材料不会因“部分入库”消失。
+相同 draftId 永远最多关联一个 Question，重复用新键提交已 confirmed 项也返回既有题映射，不增加题目/材料版本；混合提交时只为未确认项创建对象。这是业务去重，幂等仍遵循原键重放。失败整个选中批次不变。一次确认部分题后，其他草稿继续等待，材料不会因“部分入库”消失。`listImports` 为每份材料返回只读 `jobState`；只有 succeeded 且没有 pending 草稿或 unassigned 片段才可收进已完成列表，其他状态保守留在继续收录。
 
 重试结束后新机器结果只补充候选，已有人工校对或已入库对象保持。重复机器片段按输入单元与原稿定位关联，不靠重复题号覆盖；老师合并/忽略重复候选。补充原稿操作只追加 fileIds，新照片不能替换旧原稿；该操作在材料终态时受理，为新增文件自动建立新的提取 Job、更新 import.jobId 并增加版本，已有候选保持。运行中补充返回 import-not-editable，先停止或等待。
 
@@ -118,7 +122,7 @@ QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不�
 
 ## 引用和输出
 
-用于 PPT 的 question-asset Job 冻结题目版本。question-png 生成透明背景题面分片，includeAnswers=true 时答案另成分片，不含长期笔记；figure-png 必须给属于该快照的 figureFileId，其他模式该字段为 null。PNG 宽度 1600 px，按块分片且单片高度不超过 2400 px；超高单个图等比缩小，公式保持完整。outputFileIds 按显示顺序排列。文字/公式复制直接从 Document 读取，不新增服务端端口。
+用于 PPT 的 question-asset Job 冻结题目版本。question-png 生成透明背景题面分片，includeAnswers=true 时答案另成分片，不含长期笔记；figure-png 必须给属于该快照的 figureFileId，其他模式该字段为 null。PNG 宽度 1600 px，文字与行内公式按段混排，保留选项、表格和配图顺序。分片优先使用块边界，长块按真实行边界拆分，单片高度不超过 2400 px；超高单个图等比缩小，公式保持完整。outputFileIds 按显示顺序排列。文字/公式复制直接从 Document 读取，不新增服务端端口。
 
 ## 短任务与恢复
 

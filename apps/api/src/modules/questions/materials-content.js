@@ -35,6 +35,7 @@ export function validateQuestionContent(content, p, q, { draft = false } = {}) {
         throw invalidInput("/" + field, "out-of-range");
     });
   }
+  for (const fragment of q.noteFragments ?? []) content.validate(p, fragment.document);
   if (!documentText(q.body).trim() && !images(q.body).length)
     throw invalidInput("/body", "empty-content");
   const answered = Boolean(

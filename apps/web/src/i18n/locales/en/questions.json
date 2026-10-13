@@ -431,5 +431,14 @@
   "已有改编题会保留。": "Existing adapted questions will be kept.",
   "在左侧查找题目，查看答案或改编题目。": "Find questions on the left, view answers or adapt questions.",
   "收录试卷、截图或文字里的题目，之后随时查找和改编。": "Collect questions from papers, screenshots or text to find and adapt later.",
-  "删除后题目来源与副本都保留，可以在已删除中恢复。": "The source and copies will be kept. You can restore the question from Deleted."
+  "删除后题目来源与副本都保留，可以在已删除中恢复。": "The source and copies will be kept. You can restore the question from Deleted.",
+  "已完成材料": "Completed materials",
+  "撤销{{label}}结构操作": "Undo {{label}} structure change",
+  "撤销结构操作": "Undo structure change",
+  "片段归入位置": "Fragment destination",
+  "已归入": "Assigned",
+  "归入答案与解析": "Add to answer and explanation",
+  "归入笔记": "Add to notes",
+  "笔记片段 {{number}}": "Note fragment {{number}}",
+  "移除笔记片段 {{number}}": "Remove note fragment {{number}}"
 }

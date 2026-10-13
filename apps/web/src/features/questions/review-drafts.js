@@ -30,6 +30,7 @@ export function splitReviewDraft(draft, at) {
       next.id = crypto.randomUUID();
       next.title = (draft.title.slice(0, 197) + '（续）');
       next.solution = { version: 2, blocks: [] };
+      next.noteFragments = [];
       next.issues = next.issues.map(issue => ({ ...issue, id: crypto.randomUUID() }));
     }
     next.body.blocks = body;

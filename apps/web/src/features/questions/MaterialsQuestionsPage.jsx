@@ -17,6 +17,9 @@ import {
   documentAssets,
 } from "./materials-api.js";
 import { useScrollRestore } from "../workbench/useScrollRestore.js";
+import { FragmentReview } from './FragmentReview.jsx';
+import { NoteFragments } from './NoteFragments.jsx';
+import { ImportList } from './ImportList.jsx';
 import OriginalPane from "./OriginalPane.jsx";
 import ResizeDivider from "./ResizeDivider.jsx";
 import { QuestionIcon, QuestionDialog, QuestionDocumentEditor, QuestionWelcome } from './QuestionControls.jsx';
@@ -28,6 +31,7 @@ const editableFields = (q) => ({
   solution: q.solution,
   answerStatus: q.answerStatus,
   note: q.note,
+  ...(q.noteFragments !== undefined ? { noteFragments: q.noteFragments } : {}),
   starred: q.starred,
   typeId: q.typeId,
   tagIds: q.tagIds,
@@ -475,7 +479,7 @@ export default function MaterialsQuestionsPage({
     return result;
   }
   const newDraftKey = 'questions-materials-draft:new:new';
-  const meaningful = q => Boolean(q && (q.title?.trim() || sourceText(q.body).trim() || documentAssets(q.body).figures.length || sourceText(q.solution).trim() || documentAssets(q.solution).figures.length || q.note?.trim() || q.source?.kind === 'copy'));
+  const meaningful = q => Boolean(q && (q.title?.trim() || sourceText(q.body).trim() || documentAssets(q.body).figures.length || sourceText(q.solution).trim() || documentAssets(q.solution).figures.length || q.note?.trim() || q.noteFragments?.length || q.source?.kind === 'copy'));
   function startCapture() { setMessage(''); setCapture("选择"); }
   function beginEdit(addAnswer = false) {
     const local = readLocal(accountKey, localKey) ?? value;
@@ -506,7 +510,7 @@ export default function MaterialsQuestionsPage({
     return q;
   }
   function startCopy(question) {
-    const next = { ...editableFields(question), note: '', starred: false,
+    const next = { ...editableFields(question), note: '', noteFragments: undefined, starred: false,
       source: { kind: 'copy', questionId: question.id, questionVersion: question.version,
         snapshot: { title: question.title, body: question.body, solution: question.solution } } };
     writeLocal(accountKey, newDraftKey, next);
@@ -761,21 +765,7 @@ export default function MaterialsQuestionsPage({
             patchScene({ listScroll: e.currentTarget.scrollTop })
           }
         >
-          {imports.length > 0 && <details className="q-imports" open>
-            <summary>{archived ? t("归档材料") : t("继续收录")} · {imports.length} {t("份材料")}</summary>
-            {imports.map((m) => (
-              <button
-                className={scene.id === m.id ? "selected" : ""}
-                key={m.id}
-                onClick={() => open("import", m.id)}
-              >
-                <strong>{m.title}</strong>
-                <small>
-                  {m.drafts.filter((d) => d.disposition === "confirmed").length}{" "} {t("已入库 ·")}{" "}
-                  {m.drafts.filter((d) => d.disposition === "pending").length}{" "} {t("待校对")} </small>
-              </button>
-            ))}
-          </details>}
+          <ImportList imports={imports} archived={archived} selectedId={scene.id} onOpen={id => open("import", id)} />
           {listState === 'loading' ? <p className="q-list-empty" role="status">{t("正在读取题库…")}</p> : listState === 'error' ? <div className="q-list-empty"><p>{t("题库暂时无法读取")}</p><button onClick={() => action(refresh)}>{t("重新加载")}</button></div> : items.length === 0 && <p className="q-list-empty">{hasFilters ? t("没有符合条件的题目，试试调整筛选。") : archived ? t("没有归档的题目。") : imports.length ? t("材料确认入库后，题目会出现在这里。") : t("收录第一道题，开始积累。")}</p>}
           {items.map((q) => (
             <div className="q-list-entry" key={q.id}>
@@ -871,7 +861,7 @@ export default function MaterialsQuestionsPage({
         ) : scene.kind === "import" ? (
           <>
             <header className="q-review-heading">
-              <div className="q-review-title"><button className="q-text-button q-back" onClick={() => returnToLibrary()}><QuestionIcon name="back" />{archived ? t("返回归档内容") : t("返回题库")}</button><h2>{value.title}</h2><span className="q-muted">{value.deletedAt ? t("已归档") : job?.state === 'succeeded' && value.drafts.length && value.drafts.every(d => d.disposition !== 'pending') ? t("全部检查完成") : (stateNames[job?.state] ? t(stateNames[job.state]) : "")}</span></div>
+              <div className="q-review-title"><button className="q-text-button q-back" onClick={() => returnToLibrary()}><QuestionIcon name="back" />{archived ? t("返回归档内容") : t("返回题库")}</button><h2>{value.title}</h2><span className="q-muted">{value.deletedAt ? t("已归档") : job?.state === 'succeeded' && value.drafts.every(d => d.disposition !== 'pending') && value.fragments.every(f => f.disposition !== 'unassigned') ? t("全部检查完成") : (stateNames[job?.state] ? t(stateNames[job.state]) : "")}</span></div>
               <div className="q-review-progress"><span><QuestionIcon name="check" size={15} />{t("原稿已保存")}</span><span>{value.drafts.filter(d => d.disposition === 'confirmed').length} {t("题已入库")}</span><span>{value.drafts.filter(d => d.disposition === 'pending').length} {t("题待检查")}</span></div>
               <div className="q-tools">
                 {!value.deletedAt && <button
@@ -1087,9 +1077,9 @@ export default function MaterialsQuestionsPage({
                     <div className="q-review-current"><h3>{t("第 {{number}} 题", { number: value.drafts.indexOf(draft) + 1 })} <span className="q-muted">{t("共 {{count}} 题", { count: value.drafts.length })}</span></h3>{draft.disposition !== 'confirmed' && <button className="q-text-button" onClick={() => patchScene({ reviewEditing: !scene.reviewEditing })}><QuestionIcon name={scene.reviewEditing ? 'check' : 'edit'} size={16} />{scene.reviewEditing ? t("完成修改") : t("修改题目")}</button>}</div>
                     {scene.reviewEditing ? <>
                       <label className="q-title-field">{t("题目名称")}<input aria-label={t("草稿标题")} value={draft.title} onChange={e => editDraft({ title: e.target.value })} /></label>
-                      <QuestionDocumentEditor value={draft.body} onChange={body => editDraft({ body })} onPickImage={pickImage} readOnly={locked} />
+                      <QuestionDocumentEditor resetKey={value.version} key={draft.id + "-body"} value={draft.body} onChange={body => editDraft({ body })} onPickImage={pickImage} readOnly={locked} />
                     </> : <article className="q-reading-body" aria-label={t("待检查题干")}><DocumentView value={draft.body} /></article>}
-                    {draft.answerStatus !== 'absent' && (scene.reviewEditing ? <QuestionDocumentEditor label={t("答案与解析")} value={draft.solution} onChange={solution => editDraft({ solution })} onPickImage={pickImage} readOnly={locked} /> : <section className="q-review-answer"><h4>{t("答案与解析")}</h4><DocumentView value={draft.solution} /></section>)}
+                    {draft.answerStatus !== 'absent' && (scene.reviewEditing ? <QuestionDocumentEditor resetKey={value.version} key={draft.id + "-solution"} label={t("答案与解析")} value={draft.solution} onChange={solution => editDraft({ solution })} onPickImage={pickImage} readOnly={locked} /> : <section className="q-review-answer"><h4>{t("答案与解析")}</h4><DocumentView value={draft.solution} /></section>)}
                     {draft.answerStatus === 'absent' && !scene.reviewEditing && <p className="q-muted">{t("原稿中未提供答案")}</p>}
                     {(scene.reviewEditing || draft.answerStatus === 'unresolved') && <label className="q-answer-state">{t("答案是否完整")}<select data-question-answer-status aria-label={t("答案状态")} value={draft.answerStatus} onChange={e => editDraft({ answerStatus: e.target.value })}><option value="absent">{t("未提供答案")}</option><option value="present">{t("已有完整答案")}</option><option value="unresolved">{t("答案待核对")}</option></select></label>}
                     {draft.issues.length > 0 && <section className="q-review-checks" aria-label={t("需要检查的内容")}><h4>{draft.issues.some(i => i.resolution === 'open') ? t("请对照原稿检查") : t("检查已完成")}</h4>
@@ -1139,6 +1129,12 @@ export default function MaterialsQuestionsPage({
                         </select>
                       </div>
                     ))}</section>}
+                    {Boolean(draft.noteFragments?.length) && <ModuleDisclosure title={t("教学笔记")}>
+                      <NoteFragments resetKey={value.version} fragments={draft.noteFragments} editing={Boolean(scene.reviewEditing)} onPickImage={pickImage}
+                        onChange={noteFragments => editDraft({ noteFragments })} onRemove={id => change({ ...value,
+                          drafts: value.drafts.map(item => item.id === draft.id ? { ...item, noteFragments: item.noteFragments.filter(fragment => fragment.id !== id) } : item),
+                          fragments: value.fragments.map(fragment => fragment.id === id ? { ...fragment, disposition: 'unassigned' } : fragment) })} />
+                    </ModuleDisclosure>}
                     <ModuleDisclosure title={t("题型与标签")}>{classification(draft, editDraft)}</ModuleDisclosure>
                     {draft.disposition !== 'confirmed' && <ModuleDisclosure title={t("调整题目：拆分、合并或忽略")} className="q-adjust-question">
                     <p className="q-muted">{t("同一段有两题时，先修改题目，在分界处换行，再拆分。原稿始终保留。")}</p>
@@ -1224,6 +1220,7 @@ export default function MaterialsQuestionsPage({
                                             ].includes("present")
                                           ? "present"
                                           : "absent",
+                                      noteFragments: [...new Map([...(x.noteFragments ?? []), ...(other.noteFragments ?? [])].map(fragment => [fragment.id, fragment])).values()],
                                       parts: [...x.parts, ...other.parts],
                                       issues: [...x.issues, ...other.issues],
                                     }
@@ -1251,63 +1248,7 @@ export default function MaterialsQuestionsPage({
                 ) : (
                   <p>{t("原稿保留在左侧。处理完成后，题目草稿会出现在这里。")}</p>
                 )}
-                {value.fragments.length > 0 && (
-                  <details>
-                    <summary>{t("未分配片段 ·")} {value.fragments.length}</summary>
-                    {value.fragments.map((f) => (
-                      <div key={f.id}>
-                        {f.document ? <DocumentView value={f.document} /> : <pre>{["未确定题目归属的识别疑点：这行有不一致的识别结果，请对照原稿核对。", "未确定题目归属的识别疑点：这行有较大留白，请对照原稿核对。"].includes(f.text) ? t(f.text) : f.text}</pre>}
-                        <select
-                          aria-label={t("片段处理")}
-                          value={f.disposition}
-                          onChange={(e) =>
-                            change({
-                              ...value,
-                              fragments: value.fragments.map((x) =>
-                                x.id === f.id
-                                  ? { ...x, disposition: e.target.value }
-                                  : x,
-                              ),
-                            })
-                          }
-                        >
-                          <option value="unassigned">{t("待处理")}</option>
-                          <option value="assigned" disabled>{t("已归入题干")}</option>
-                          <option value="ignored">{t("忽略")}</option>
-                        </select>
-                        <button
-                          disabled={!draft || locked || f.disposition !== "unassigned" || Boolean(f.document && !supportedDocument(f.document))}
-                          onClick={() => {
-                            const blocks = f.document?.blocks ?? [{
-                              type: "paragraph",
-                              runs: [{ type: "text", text: f.text }],
-                            }];
-                            change({
-                              ...value,
-                              drafts: value.drafts.map((x) =>
-                                x.id === selected
-                                  ? {
-                                      ...x,
-                                      body: {
-                                        version: 2,
-                                        blocks: [...x.body.blocks, ...structuredClone(blocks)],
-                                      },
-                                      parts: [...x.parts, { role: "body", locations: structuredClone(f.locations) }],
-                                    }
-                                  : x,
-                              ),
-                              fragments: value.fragments.map((x) =>
-                                x.id === f.id
-                                  ? { ...x, disposition: "assigned" }
-                                  : x,
-                              ),
-                            });
-                          }}
-                        > {t("归入题干")} </button>
-                      </div>
-                    ))}
-                  </details>
-                )}
+                <FragmentReview material={value} draft={draft} locked={locked} onChange={change} />
                 {draft && <footer className="q-review-footer">
                   {draft.questionId ? <><span className="q-saved-label"><QuestionIcon name="check" />{t("这道题已入库")}</span><button onClick={() => open('question', draft.questionId)}>{t("查看题目")}</button>{value.drafts.some(d => d.disposition === 'pending') && <button className="primary" onClick={() => { const next = value.drafts.find(d => d.disposition === 'pending'); setSelected(next.id); patchScene({ draftId: next.id, original: {}, reviewEditing: false }); }}>{t("检查下一题")}<QuestionIcon name="chevron" size={15} /></button>}</> : <><span className="q-muted">{draft.issues.filter(i => i.resolution === 'open').length ? t("还有 {{count}} 项需要检查", { count: draft.issues.filter(i => i.resolution === 'open').length }) : draft.disposition === 'ignored' ? t("这道题已忽略，可在调整题目中恢复") : t("确认后，这道题会加入题库")}</span><button className="primary" disabled={locked || draft.disposition === 'ignored'} onClick={confirmDraft}><QuestionIcon name="check" />{t("确认这道题")}</button></>}
                 </footer>}
@@ -1335,11 +1276,14 @@ export default function MaterialsQuestionsPage({
             {!editing && readLocal(accountKey, localKey) && <div className="q-draft-notice"><span>{value.deletedAt ? t("未保存的修改仍保存在此设备，恢复题目后可继续编辑。") : t("这道题有未保存的修改，当前显示已保存内容。")}</span>{!value.deletedAt && <button onClick={beginEdit}>{t("继续编辑")}</button>}<button className="q-text-button" onClick={() => setConfirmDiscard(true)}>{t("放弃草稿")}</button></div>}
             {editing ? <fieldset className="q-edit-fields" disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}>
               <label className="q-title-field">{t("题目名称")} <span className="q-muted">{t("选填，方便以后查找")}</span><input className="q-title-input" aria-label={t("题目标题")} placeholder={t("例如：二次函数的最值")} value={value.title} maxLength={200} onChange={e => change({ ...value, title: e.target.value })} /></label>
-              <QuestionDocumentEditor key={scene.kind + (value.id ?? 'new')} value={value.body} onChange={body => change({ ...value, body })} onPickImage={pickImage} autoFocus />
-              {value.answerStatus === 'present' || !supportedDocument(value.solution) ? <QuestionDocumentEditor label={t("答案与解析")} value={value.solution} onChange={solution => change({ ...value, solution })} onPickImage={pickImage} /> : <button className="q-add-field" onClick={() => change({ ...value, answerStatus: 'present' })}><QuestionIcon name="plus" />{t("添加答案与解析")}</button>}
+              <QuestionDocumentEditor resetKey={value.version} key={scene.kind + (value.id ?? 'new')} value={value.body} onChange={body => change({ ...value, body })} onPickImage={pickImage} autoFocus />
+              {value.answerStatus === 'present' || !supportedDocument(value.solution) ? <QuestionDocumentEditor resetKey={value.version} key={scene.kind + (value.id ?? "new") + "-solution"} label={t("答案与解析")} value={value.solution} onChange={solution => change({ ...value, solution })} onPickImage={pickImage} /> : <button className="q-add-field" onClick={() => change({ ...value, answerStatus: 'present' })}><QuestionIcon name="plus" />{t("添加答案与解析")}</button>}
               <ModuleDisclosure title={t("题型、标签与笔记")} open={Boolean(scene.notesOpen)} onOpenChange={notesOpen => patchScene({ notesOpen })} className="q-question-notes">
                 {classification(value, patch => change({ ...value, ...patch }))}
                 <label className="q-note-field">{t("教学笔记")}<textarea aria-label={t("长期笔记")} placeholder={t("记下讲解思路、易错点，方便下次使用。")} value={value.note} onChange={e => change({ ...value, note: e.target.value })} /></label>
+                <NoteFragments resetKey={value.version} fragments={value.noteFragments} editing onPickImage={pickImage}
+                  onChange={noteFragments => change({ ...value, noteFragments })}
+                  onRemove={id => change({ ...value, noteFragments: value.noteFragments.filter(fragment => fragment.id !== id) })} />
                 <label className="q-checkbox"><input type="checkbox" checked={value.starred} onChange={e => change({ ...value, starred: e.target.checked })} />{t("标记题目，方便以后查找")}</label>
               </ModuleDisclosure>
               {readLocal(accountKey, localKey) && <button className="q-text-button q-discard" onClick={() => setConfirmDiscard(true)}>{t("放弃未保存的修改")}</button>}
@@ -1347,7 +1291,7 @@ export default function MaterialsQuestionsPage({
               <div className="q-question-meta">{taxonomy.types.filter(t => t.id === value.typeId).map(t => <span className="q-type" key={t.id}>{t.name}</span>)}{taxonomy.tags.filter(t => value.tagIds.includes(t.id)).map(t => <span className="q-tag" key={t.id}><QuestionIcon name="tag" size={12} />{t.name}</span>)}</div>
               <article className="q-reading-body" aria-label={t("题干")}><DocumentView value={value.body} /></article>
               {value.answerStatus === 'present' ? <ModuleDisclosure title={t("答案与解析")} open={Boolean(scene.answerOpen)} onOpenChange={answerOpen => patchScene({ answerOpen })} className="q-answer"><DocumentView value={value.solution} /></ModuleDisclosure> : <p className="q-missing-answer">{t("暂未添加答案")} <button className="q-text-button" disabled={Boolean(value.deletedAt) || unsupportedQuestion} onClick={() => { beginEdit(true); patchScene({ answerOpen: true }); }}>{t("添加答案")}</button></p>}
-              {value.note && <ModuleDisclosure title={t("教学笔记")} className="q-reader-note"><p>{value.note}</p></ModuleDisclosure>}
+              {(value.note || value.noteFragments?.length > 0) && <ModuleDisclosure title={t("教学笔记")} className="q-reader-note">{value.note && <p>{value.note}</p>}<NoteFragments fragments={value.noteFragments} /></ModuleDisclosure>}
             </>}
             {value.source?.kind === "import" && (sourceMissing ? <p className="q-muted">{t("原始材料已彻底删除，题目内容仍保留。")}</p> :
               <button disabled={busy} onClick={() => action(openSource)}> {t("对照原稿")} </button>

@@ -72,6 +72,7 @@ export function createMaterialsStore(db, repository, now = () => new Date()) {
           : "absent",
       typeId: meta?.typeId ?? null,
       tagIds: meta?.tagIds ?? [],
+      ...(meta?.noteFragments ? { noteFragments: meta.noteFragments } : {}),
     };
   }
   function writeQuestion(p, q) {
@@ -87,6 +88,7 @@ export function createMaterialsStore(db, repository, now = () => new Date()) {
       answerStatus: q.answerStatus,
       typeId: q.typeId,
       tagIds: q.tagIds,
+      ...(q.noteFragments ? { noteFragments: q.noteFragments } : {}),
     });
     return q;
   }

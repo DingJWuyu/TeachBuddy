@@ -31,7 +31,8 @@ export default function OriginalPane({
     }).catch(() => {});
     return () => {live = false;};
   }, [material.id, material.version]);
-  const loc = draft?.parts
+  const sourceParts = [...(draft?.parts ?? []), ...(draft?.noteFragments ?? []).map(fragment => ({ role: 'note', locations: fragment.locations }))];
+  const loc = sourceParts
     .flatMap((p) => p.locations)
     .find((x) => x.kind === "page" || x.kind === "docx");
   const fileId = scene.fileId ?? loc?.fileId ?? files[0],
@@ -108,12 +109,13 @@ export default function OriginalPane({
     box,
   });
   const positions =
-    draft?.parts.flatMap((p) =>
+    sourceParts.flatMap((p) =>
       p.locations.map((l) => ({ ...l, role: p.role })),
     ) ?? [];
   const roleName = {
     body: t("题面"),
     solution: t("答案"),
+    note: t("教学笔记"),
     figure: t("配图"),
     unassigned: t("未分配"),
   };

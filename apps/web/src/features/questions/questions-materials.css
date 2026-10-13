@@ -316,3 +316,13 @@
 .q-structured-block > .material-editor > .material-block-list > .material-edit-block { display: block; }
 .q-formula-preview { padding: 0 12px; color: var(--q-muted); }
 .q-reading-body .wb-paragraph { font-size: 16px; line-height: 1.95; }
+
+.q-fragment-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 16px; }
+.q-fragment-actions select { width: auto; max-width: 100%; }
+.q-unassigned-fragment + .q-unassigned-fragment { padding-top: 12px; border-top: 1px solid var(--q-line); }
+.q-note-fragments > section + section { margin-top: 16px; }
+.q-document-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 28px; margin-bottom: 12px; }
+.q-document-heading h3 { margin: 0; }
+.q-document-heading button { display: inline-flex; align-items: center; gap: 6px; }
+.q-block-controls .q-move-up svg { transform: rotate(90deg); }
+.q-block-controls .q-move-down svg { transform: rotate(-90deg); }
