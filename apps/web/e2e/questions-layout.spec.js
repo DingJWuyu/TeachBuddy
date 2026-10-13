@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 
 let world;
@@ -73,6 +74,110 @@ async function snapshot(page, info, name) {
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   });
   await page.screenshot({ path: info.outputPath(name + '.png'), fullPage: true });
+}
+
+async function reviewGeometry(page) {
+  return page.locator('.q-review').evaluate(review => {
+    const bounds = selector => {
+      const box = review.querySelector(selector).getBoundingClientRect();
+      return { x: box.x, y: box.y, right: box.right, bottom: box.bottom, width: box.width, height: box.height };
+    };
+    return { original: bounds('.q-original'), divider: bounds('.q-resize-divider'), result: bounds('.q-review-result'), width: review.clientWidth };
+  });
+}
+async function expectReviewBoundary(page) {
+  await expect.poll(async () => {
+    const box = await reviewGeometry(page);
+    return Math.abs(box.original.right - box.divider.x) + Math.abs(box.divider.right - box.result.x)
+      + Math.abs(box.original.y - box.result.y) + Math.abs(box.original.height - box.result.height);
+  }).toBeLessThan(2);
+}
+
+for (const kind of ['文字', '图片']) {
+  test(`${kind}收录校对原稿、分隔条、结果同行对齐，拖拽键盘及窄屏切换正常`, async ({ page }, info) => {
+    await page.locator('.q-finder').getByRole('button', { name: '从资料收录', exact: true }).click();
+    const capture = page.getByRole('dialog', { name: '从资料收录题目', exact: true });
+    if (kind === '文字') {
+      await capture.getByRole('button', { name: /粘贴文字/ }).click();
+      await capture.getByLabel('原始文字').fill('1. 计算 1+1。\n答案：2\n2. 求 2+3。\n答案：5');
+    } else {
+      await capture.getByRole('button', { name: /上传图片/ }).click();
+      await capture.getByLabel('选择原稿').setInputFiles(fileURLToPath(new URL('./fixtures/materials-questions/recognition/I-3/page.png', import.meta.url)));
+    }
+    await capture.getByRole('button', { name: '开始整理', exact: true }).click();
+    await expect(page.locator('.q-review-result')).toBeVisible();
+    if (kind === '文字') await expect(page.getByRole('button', { name: '1 待检查', exact: true })).toBeVisible();
+    else {
+      await expect(page.locator('.q-original .q-page img')).toBeVisible();
+      await expect.poll(() => page.locator('.q-original .q-page img').evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+    }
+    await snapshot(page, info, 'review-desktop-initial');
+    fs.writeFileSync(info.outputPath('review-initial-geometry.json'), JSON.stringify(await reviewGeometry(page), null, 2));
+    await expectReviewBoundary(page);
+    const divider = page.getByRole('separator', { name: '调整原稿对照宽度', exact: true });
+    await divider.focus();
+    await divider.press('Home');
+    await expect(divider).toHaveAttribute('aria-valuenow', '25');
+    await expectReviewBoundary(page);
+    const minimum = await reviewGeometry(page);
+    await divider.press('ArrowRight');
+    await expect.poll(async () => (await reviewGeometry(page)).original.width).toBeGreaterThan(minimum.original.width + 5);
+    await divider.press('ArrowLeft');
+    await expect.poll(async () => Math.abs((await reviewGeometry(page)).original.width - minimum.original.width)).toBeLessThan(2);
+    await divider.press('End');
+    await expect(divider).toHaveAttribute('aria-valuenow', '70');
+    await expectReviewBoundary(page);
+    let handle = await divider.boundingBox();
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + 40);
+    await page.mouse.down();
+    await page.mouse.move(minimum.original.x - 50, handle.y + 40, { steps: 10 });
+    await page.mouse.up();
+    await expect(divider).toHaveAttribute('aria-valuenow', '25');
+    await expectReviewBoundary(page);
+    handle = await divider.boundingBox();
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + 40);
+    await page.mouse.down();
+    await page.mouse.move(minimum.original.x + minimum.width + 50, handle.y + 40, { steps: 10 });
+    await page.mouse.up();
+    await expect(divider).toHaveAttribute('aria-valuenow', '70');
+    await expectReviewBoundary(page);
+    await divider.press('Home');
+    await snapshot(page, info, 'review-desktop-keyboard-focus');
+    await page.reload();
+    await expect(divider).toHaveAttribute('aria-valuenow', '25');
+    await expectReviewBoundary(page);
+    for (const width of [1100, 900, 740]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(divider).toBeHidden();
+      if (width > 1000) await snapshot(page, info, 'review-' + width);
+      else {
+        await page.locator('.q-review-switch').getByRole('button', { name: '原稿', exact: true }).click();
+        await expect(page.locator('.q-original')).toBeVisible();
+        await expect(page.locator('.q-review-result')).toBeHidden();
+        let box = await page.locator('.q-original').boundingBox();
+        expect(box.width).toBeGreaterThan((await page.locator('.q-review').boundingBox()).width - 2);
+        await snapshot(page, info, 'review-original-' + width);
+        await page.locator('.q-review-switch').getByRole('button', { name: '校对结果', exact: true }).click();
+        await expect(page.locator('.q-original')).toBeHidden();
+        await expect(page.locator('.q-review-result')).toBeVisible();
+        box = await page.locator('.q-review-result').boundingBox();
+        expect(box.width).toBeGreaterThan((await page.locator('.q-review').boundingBox()).width - 2);
+        await snapshot(page, info, 'review-result-' + width);
+        await page.reload();
+        await expect(page.locator('.q-review')).toHaveAttribute('data-tab', 'result');
+        await expect(page.locator('.q-review-result')).toBeVisible();
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+    }
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.getByRole('button', { name: '支持', exact: true }).click();
+    await page.getByRole('menuitem', { name: '设置', exact: true }).click();
+    await page.getByRole('button', { name: '深色', exact: true }).click();
+    await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
+    await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
+    await expectReviewBoundary(page);
+    await snapshot(page, info, 'review-desktop-dark');
+  });
 }
 
 test('分类辅助栏开关后分隔条沿真实列边界，点击、指针拖拽和键盘均可用', async ({ page }, info) => {
