@@ -16,12 +16,12 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 产品分区 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 账户与身份 | `TeacherWorkspace-identity` | `fix/identity-completeness` | 候选 `5b97c0c7` 保留账户线修复、独立核验与后续定点回归，尚未集成或推送；按账户线当前安排保留源码、有效证据与工作树 |
+| 账户与身份 | `TeacherWorkspace-identity` | `fix/identity-completeness` | 用户已授权集成；账户线在原工作树对齐最新 trunk，保留昵称能力并补验组合边界；固定候选交总控执行 PR、CI 与集成后清理 |
 | 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；模块负责人继续按用户确认的目标接手，本轮公共文件临时停写安排已解除 |
 | 数学工坊 | 已清理 | 已清理 | 统一制作与网页 AI 已集成并验证；体验使用 preview，商店分发仍待准备 |
 | 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；体验数据与有效证据已保全 |
 
-账户候选将浏览器设备清理交给各存储拥有者，由 `apps/web/src/accountDeviceData.js` 组合并通过 `App.jsx` 注入认证；preview 当前尚未包含该修复。候选还修复关页后的删除核实、注册竞态、未决退出与恢复接续、响应超时及状态反馈。候选的可重建入口为 `apps/web/e2e/auth-completeness.config.mjs` 与 `apps/api/test/account-deletion.test.js`，验证结论与未验边界见账户线回执；该工作树的 `test-results/identity-fixes/independent/followup-report.md` 是本机证据，不是新检出的运行前置。此现场保留到获准集成并完成必要验证后清理；后续须对齐最新 trunk，保留已集成的昵称公开能力、资料同步及工作台身份绑定加载，不以旧候选覆盖公共文件。
+账户候选将浏览器设备清理交给各存储拥有者，由 `apps/web/src/accountDeviceData.js` 组合并通过 `App.jsx` 注入认证；preview 当前尚未包含该修复。候选还修复关页后的删除核实、注册竞态、未决退出与恢复接续、响应超时及状态反馈。候选的可重建入口为 `apps/web/e2e/auth-completeness.config.mjs` 与 `apps/api/test/account-deletion.test.js`，验证结论与未验边界见账户线回执；该工作树的 `test-results/identity-fixes/independent/followup-report.md` 是本机证据，不是新检出的运行前置。本轮对齐保留已集成的昵称公开能力、资料同步及工作台身份绑定加载；原删除摘要维护建议已处理。新组合验证及固定候选记录在 `test-results/identity-alignment/receipt.json`。此现场保留至总控完成集成验证与证据交接后清理，账户线不执行推送或集成。
 
 数学与日程的旧验收证据及体验数据保存在 preview 的 `test-results/math-handoff/`，数学入口为 `math-ai-onboarding/receipt.json`、`math-ux-redesign/final/receipt.json` 和 `math-unified/final/receipt.json`；日程数据在其中 `math-ux-redesign/integration/schedule-evidence/`。私有登录浏览器配置独立保留；旧数学体验浏览器采用临时扩展加载，后续从 preview 的 `extensions/math-web-ai/` 按[扩展说明](../../extensions/math-web-ai/README.md)加载，不依赖已删工作树。这些本机产物不作为新检出运行、必要回归或接手前置；重建入口见[数学规格](../features/math.md#验证入口)和[运行指南](../SETUP.md#数学运行依赖)。
 

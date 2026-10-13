@@ -80,3 +80,28 @@ export async function deviceRequestStore({ database, storeName, account, name, a
     return value;
   } finally { db.close(); }
 }
+
+/** Remove every binary record in this account partition, including archives. */
+export async function clearDeviceRequestAccount({ database, storeName, account }) {
+  const db = await new Promise((resolve, reject) => {
+    const request = indexedDB.open(database, 1);
+    request.onupgradeneeded = () => request.result.createObjectStore(storeName);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  try {
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+      const cursor = store.openKeyCursor();
+      cursor.onsuccess = () => {
+        const item = cursor.result;
+        if (!item) return;
+        if (item.key === account || (typeof item.key === 'string' && item.key.startsWith(account + ':'))) store.delete(item.key);
+        item.continue();
+      };
+      tx.oncomplete = resolve;
+      tx.onerror = tx.onabort = () => reject(tx.error || new Error('设备请求存储不可用'));
+    });
+  } finally { db.close(); }
+}

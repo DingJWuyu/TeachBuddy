@@ -14,8 +14,9 @@ import { PROBLEM, createAuthClient, createTransport } from './api.js';
 import { createPageContext } from './pageContext.js';
 import { normalizeEmail, trimmed } from './rules.js';
 import { COPY, bannerProblem, fieldProblem } from './presentation.js';
-import { readDeletion, rememberDeletion, forgetDeletion, deletionRequestId, clearDeletedAccountDeviceData } from './deletion.js';
+import { listDeletions, readDeletion, rememberDeletion, forgetDeletion, deletionRequestId, readSelectedDeletionId, selectDeletion } from './deletion.js';
 import i18n from '../../i18n/index.js';
+import { listRevocations, rememberRevocation, forgetRevocation } from './revocation.js';
 
 export const INTERNAL_AUTH = createContext(null);
 export const PUBLIC_AUTH = createContext(null);
@@ -30,6 +31,7 @@ const INITIAL_STATE = Object.freeze({
   registrationOpen: true,
   notice: null,
   errorKind: null,
+  revocation: null,
 });
 
 const VISIBILITY_RECHECK_MS = 30_000;
@@ -65,13 +67,15 @@ export function logoutError(kind, outcome) {
   return error;
 }
 
-export default function AuthProvider({ children, timeoutMs = 10_000 }) {
+export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDeleted }) {
   useTranslation('auth');
 
-  const [state, setState] = useState(() => {
-    const deletion = readDeletion();
-    return deletion ? { ...INITIAL_STATE, status: 'deleting', deletion, account: deletion.account } : INITIAL_STATE;
-  });
+  const [state, setState] = useState(INITIAL_STATE);
+  const deletionsRef = useRef([]);
+  const revocationsRef = useRef([]);
+  const deletionDeferredRef = useRef(false);
+  const revocationRunningRef = useRef(false);
+  const prepareLoginRef = useRef(false);
   const stateRef = useRef(state);
   stateRef.current = state;
   useLayoutEffect(() => {
@@ -85,7 +89,6 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   const identityEpochRef = useRef(0);
   const bootStartedRef = useRef(false);
   const lockedRef = useRef(false);
-  const logoutTargetRef = useRef(undefined);
   const profileSavingRef = useRef(false);
   const profileRevisionRef = useRef(0);
   const profileReadRef = useRef(0);
@@ -93,6 +96,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   const channelRef = useRef(null);
   const recheckRef = useRef(null);
   const restoreRef = useRef(null);
+  const bootstrapRef = useRef(null);
 
   const [locked, setLocked] = useState(false);
 
@@ -154,12 +158,24 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     }
   }, []);
 
+  const enterDeletion = useCallback((deletion) => {
+    try { selectDeletion(deletion.body.requestId); }
+    catch { setState(current => ({ ...current, status: 'error', errorKind: 'boot' })); return; }
+    lockedRef.current = true; setLocked(true); bumpIdentity();
+    setState(current => ({ ...current, status: 'deleting', account: deletion.account,
+      session: null, pending: null, recovery: null, deletion, deletionRunning: false, deletionError: null }));
+  }, [bumpIdentity]);
+
   const setActive = useCallback((session, registrationOpen) => {
+    const deletion = deletionsRef.current.find(value => value.body.sessionId === session.id);
+    if (deletion) { enterDeletion(deletion); return; }
+    lockedRef.current = false; setLocked(false);
+
     bumpIdentity();
-    logoutTargetRef.current = undefined;
     setState((current) => ({
       ...current,
       status: 'active',
+      revocation: null,
       account: session.account,
       session,
       pending: null,
@@ -169,23 +185,43 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
       notice: null,
       errorKind: null,
     }));
-  }, [bumpIdentity]);
+  }, [bumpIdentity, enterDeletion]);
 
   const expireSession = useCallback((notice = () => COPY.expired) => {
     // I06 has proved this page's target invalid, including after a lost I07
     // response. Release that target here; another logout could clear a peer's
     // newly bootstrapped browser container.
-    logoutTargetRef.current = undefined;
+    const target = stateRef.current.revocation?.sessionId;
+    if (target) {
+      try { forgetRevocation(target); revocationsRef.current = revocationsRef.current.filter(value => value.sessionId !== target); }
+      catch { return; }
+    }
     lockedRef.current = false;
     setLocked(false);
     rotatePageContext();
+    prepareLoginRef.current = true;
     setState((current) => signedOut(current, {
+      status: 'booting',
+      revocation: null,
       notice: notice ? { get message() { return typeof notice === 'function' ? notice() : notice; }, tone: 'error' } : null,
     }));
+    void bootstrapRef.current?.({ generation: generationRef.current, notice, anonymousOnly: true });
   }, [rotatePageContext]);
 
   const adoptStatus = useCallback((data, { generation, notice = null } = {}) => {
     if (generation !== undefined && generation !== generationRef.current) return;
+    const targetId = data.session?.id ?? data.rememberedSession?.id;
+    const revoked = revocationsRef.current.find(value => value.sessionId === targetId);
+    if (revoked || (!targetId && revocationsRef.current.length)) {
+      const record = revoked ?? revocationsRef.current[0];
+      lockedRef.current = true; setLocked(true);
+      setState(current => signedOut(current, { revocation: { ...record, phase: record.uncertain ? 'unknown' : 'failed' }, registrationOpen: data.registrationOpen }));
+      return;
+    }
+    const deletion = targetId
+      ? deletionsRef.current.find(value => value.body.sessionId === targetId)
+      : !deletionDeferredRef.current && (deletionsRef.current.find(value => value.body.requestId === readSelectedDeletionId()) ?? deletionsRef.current[0]);
+    if (deletion) { enterDeletion(deletion); return; }
     if (data.session?.state === 'active') {
       setActive(data.session, data.registrationOpen);
       return;
@@ -233,9 +269,9 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
       registrationOpen: data.registrationOpen,
       notice: notice ? { get message() { return typeof notice === 'function' ? notice() : notice; }, tone: 'error' } : null,
     }));
-  }, [bumpIdentity, setActive]);
+  }, [bumpIdentity, enterDeletion, setActive]);
 
-  const bootstrap = useCallback(async ({ generation, notice = null } = {}) => {
+  const bootstrap = useCallback(async ({ generation, notice = null, anonymousOnly = false } = {}) => {
     const outcome = await client.bootstrapSession();
     if (generation !== generationRef.current) return;
     if (outcome.kind !== 'result') {
@@ -245,7 +281,11 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     const confirm = await client.getSession();
     if (generation !== generationRef.current) return;
     if (confirm.kind === 'result' && confirm.data.browserReady) {
-      adoptStatus(confirm.data, { generation, notice });
+      if (anonymousOnly) {
+        prepareLoginRef.current = false;
+        setState(current => signedOut(current, { revocation: null, registrationOpen: confirm.data.registrationOpen,
+          notice: notice ? { get message() { return typeof notice === 'function' ? notice() : notice; }, tone: 'error' } : null }));
+      } else adoptStatus(confirm.data, { generation, notice });
       return;
     }
     if (confirm.kind === 'result') {
@@ -254,6 +294,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     }
     setState((current) => ({ ...current, status: 'error', errorKind: 'boot', notice: null }));
   }, [adoptStatus, client]);
+  bootstrapRef.current = bootstrap;
 
   const restore = useCallback(async (sessionId, generation) => {
     setState((current) => ({ ...current, status: 'recovering', errorKind: null, notice: null }));
@@ -278,12 +319,21 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
 
   const boot = useCallback(async () => {
     if (stateRef.current.deletion) return;
+    try {
+      deletionsRef.current = listDeletions();
+      readSelectedDeletionId();
+      revocationsRef.current = listRevocations();
+    } catch {
+      setState(current => ({ ...current, status: 'error', errorKind: 'boot' }));
+      return;
+    }
     const generation = generationRef.current;
     setState((current) => ({ ...current, status: 'booting', notice: null, errorKind: null }));
+    if (prepareLoginRef.current) { await bootstrap({ generation, anonymousOnly: true }); return; }
     const outcome = await client.getSession();
     if (generation !== generationRef.current) return;
     if (outcome.kind === 'result') {
-      if (!outcome.data.browserReady) {
+      if (!outcome.data.browserReady && !deletionsRef.current.length && !revocationsRef.current.length) {
         await bootstrap({ generation });
         return;
       }
@@ -291,15 +341,24 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
       return;
     }
     if (outcome.kind === 'problem' && outcome.type === PROBLEM.SESSION_INVALID) {
+      if (deletionsRef.current.length) {
+        enterDeletion(deletionsRef.current.find(value => value.body.requestId === readSelectedDeletionId()) ?? deletionsRef.current[0]);
+        return;
+      }
+      if (revocationsRef.current.length) {
+        lockedRef.current = true; setLocked(true);
+        setState(current => signedOut(current, { revocation: { ...revocationsRef.current[0], phase: 'unknown', uncertain: true } }));
+        return;
+      }
       await bootstrap({ generation, notice: () => COPY.expired });
       return;
     }
     setState((current) => ({ ...current, status: 'error', errorKind: 'boot', notice: null }));
-  }, [adoptStatus, bootstrap, client]);
+  }, [adoptStatus, bootstrap, client, enterDeletion]);
 
   const publishProfile = useCallback((account, sessionId) => {
     setState(current => {
-      if (lockedRef.current || logoutTargetRef.current !== undefined || current.deletion || current.status !== 'active'
+      if (lockedRef.current || revocationRunningRef.current || current.revocation || current.deletion || current.status !== 'active'
         || current.account?.accountKey !== account.accountKey || current.session?.id !== sessionId) return current;
       if (current.account.nickname === account.nickname && current.account.email === account.email) return current;
       return { ...current, account, session: { ...current.session, account } };
@@ -312,12 +371,19 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     const profileRevision = profileRevisionRef.current;
     const profileRead = ++profileReadRef.current;
     const current = stateRef.current;
-    if (current.status === 'booting' || current.status === 'recovering' || current.deletion) return;
+    if (current.status === 'booting' || current.status === 'recovering' || current.deletion
+      || current.revocation?.phase === 'running') return;
     const outcome = await client.getSession();
     if (generation !== generationRef.current || epoch !== identityEpochRef.current) return;
     const now = stateRef.current;
     if (outcome.kind === 'result') {
       const data = outcome.data;
+      if (now.revocation) {
+        const target = now.revocation.sessionId;
+        if (data.session?.id === target || data.rememberedSession?.id === target) return;
+        if (now.status === 'active' && now.session?.id === target) expireSession(null);
+        return;
+      }
       if (data.session?.state === 'active') {
         if (now.status !== 'active' || now.session?.id !== data.session.id) {
           setActive(data.session, data.registrationOpen);
@@ -513,6 +579,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   }, [client, expireSession, live, notifyPeers, setActive]);
 
   const login = useCallback(async ({ email, password, rememberMe }) => {
+    if (stateRef.current.revocation) return { ok: false, stale: true };
     const generation = generationRef.current;
     const operation = nextOperation();
     setState((current) => ({ ...current, notice: null }));
@@ -548,6 +615,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
   }, [activate, client, live, nextOperation, presentFailure]);
 
   const register = useCallback(async ({ email, nickname, password, challengeId, verificationCode }) => {
+    if (stateRef.current.revocation) return STALE;
     const generation = generationRef.current;
     const operation = nextOperation();
     setState((current) => ({ ...current, notice: null }));
@@ -606,7 +674,13 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
       const banner = bannerProblem(outcome, purpose === 'registration' ? 'register' : 'password-reset');
       if (banner) return { ok: false, banner: { message: banner.message, tone: banner.tone } };
     }
-    return { ok: false, banner: { get message() { return COPY.retrySend; }, tone: 'error' } };
+    if (outcome.reason === 'offline') {
+      return { ok: false, banner: { get message() { return COPY.offline; }, tone: 'error' } };
+    }
+    return { ok: false, banner: {
+      get message() { return t("验证码发送结果暂未确认，可能收到邮件。请稍后重新发送。"); },
+      tone: 'neutral',
+    } };
   }, [client, live, nextOperation]);
 
   const resetPassword = useCallback(async ({ email, challengeId, verificationCode, password }) => {
@@ -644,33 +718,78 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
    */
   const completePending = useCallback(async (rememberMe) => {
     const current = stateRef.current;
-    if (!current.pending) return STALE;
+    if (!current.pending || current.revocation) return STALE;
     const generation = generationRef.current;
     const operation = nextOperation();
     setState((inner) => ({ ...inner, notice: null }));
     return activate({ pending: current.pending, rememberMe, generation, operation });
   }, [activate, nextOperation]);
 
+  const revokeTarget = useCallback(async ({ sessionId, source }) => {
+    if (revocationRunningRef.current) return;
+    const previous = stateRef.current.revocation;
+    const record = previous?.sessionId === sessionId ? previous : { sessionId, source, uncertain: false };
+    try { rememberRevocation({ ...record, uncertain: true }); }
+    catch {
+      setState(current => ({ ...current, revocation: { ...record, phase: 'failed' } }));
+      throw logoutError('failed');
+    }
+    revocationsRef.current = [...revocationsRef.current.filter(value => value.sessionId !== sessionId), record];
+    revocationRunningRef.current = true;
+    generationRef.current += 1;
+    invalidateOperation(); bumpIdentity();
+    const generation = generationRef.current;
+    const epoch = identityEpochRef.current;
+    setState(current => source === 'logout'
+      ? { ...current, revocation: { ...record, phase: 'running' } }
+      : signedOut(current, { revocation: { ...record, phase: 'running' } }));
+    try {
+      const outcome = await client.logout({ sessionId });
+      if (generation !== generationRef.current || epoch !== identityEpochRef.current) return;
+      if (outcome.kind === 'no-content') {
+        try { forgetRevocation(sessionId); }
+        catch { throw logoutError('unconfirmed'); }
+        revocationsRef.current = revocationsRef.current.filter(value => value.sessionId !== sessionId);
+        lockedRef.current = false; setLocked(false);
+        rotatePageContext(); notifyPeers();
+        prepareLoginRef.current = true;
+        setState(current => signedOut(current, { status: source === 'logout' ? 'booting' : 'anonymous',
+          revocation: { ...record, phase: 'running' } }));
+        await bootstrap({ generation: generationRef.current, anonymousOnly: true });
+        return;
+      }
+      const uncertain = record.uncertain || outcome.kind !== 'problem';
+      const next = { ...record, uncertain, phase: uncertain ? 'unknown' : 'failed' };
+      try { rememberRevocation(next); } catch { /* The original intent still remains. */ }
+      revocationsRef.current = revocationsRef.current.map(value => value.sessionId === sessionId ? next : value);
+      lockedRef.current = uncertain || source !== 'logout'; setLocked(lockedRef.current);
+      setState(current => ({ ...current, revocation: next }));
+      throw logoutError(uncertain ? 'unconfirmed' : 'failed', outcome);
+    } catch (error) {
+      if (generation === generationRef.current && epoch === identityEpochRef.current && error.kind === 'logout-unconfirmed') {
+        lockedRef.current = true; setLocked(true);
+        setState(current => ({ ...current, revocation: { ...record, uncertain: true, phase: 'unknown' } }));
+      }
+      throw error;
+    } finally { revocationRunningRef.current = false; }
+  }, [bootstrap, bumpIdentity, client, invalidateOperation, notifyPeers, rotatePageContext]);
+
+  const retryRevocation = useCallback(async () => {
+    const target = stateRef.current.revocation;
+    if (target) await revokeTarget(target).catch(() => {});
+  }, [revokeTarget]);
   const abandonPending = useCallback(() => {
-    const pendingId = stateRef.current.pending?.id ?? null;
-    if (pendingId) void client.logout({ sessionId: pendingId }).catch(() => {});
-    rotatePageContext();
-    setState((current) => signedOut(current));
-  }, [client, rotatePageContext]);
-
-  const retry = useCallback(() => {
-    void boot();
-  }, [boot]);
-
+    const sessionId = stateRef.current.pending?.id;
+    if (sessionId) void revokeTarget({ sessionId, source: 'pending' }).catch(() => {});
+  }, [revokeTarget]);
   const returnFromRecovery = useCallback(() => {
-    const target = stateRef.current.recovery?.id ?? null;
-    if (target) void client.logout({ sessionId: target }).catch(() => {});
-    rotatePageContext();
-    setState((current) => signedOut(current));
-  }, [client, rotatePageContext]);
-
+    const sessionId = stateRef.current.recovery?.id;
+    if (sessionId) void revokeTarget({ sessionId, source: 'recovery' }).catch(() => {});
+    else { rotatePageContext(); prepareLoginRef.current = true; void boot(); }
+  }, [boot, revokeTarget, rotatePageContext]);
+  const retry = useCallback(() => { void boot(); }, [boot]);
   const dismissNotice = useCallback(() => {
-    setState((current) => (current.notice ? { ...current, notice: null } : current));
+    setState(current => current.notice ? { ...current, notice: null } : current);
   }, []);
 
   const updateNickname = useCallback(async nickname => {
@@ -681,7 +800,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     const epoch = identityEpochRef.current;
     const isCurrent = () => generationRef.current === generation && identityEpochRef.current === epoch
       && stateRef.current.status === 'active' && !stateRef.current.deletion && !lockedRef.current
-      && logoutTargetRef.current === undefined && stateRef.current.account?.accountKey === current.account?.accountKey
+      && !revocationRunningRef.current && !stateRef.current.revocation && stateRef.current.account?.accountKey === current.account?.accountKey
       && stateRef.current.session?.id === current.session?.id;
     if (!isCurrent()) throw new Error(t('登录状态已变化，请重新登录。'));
     if (profileSavingRef.current) throw new Error(t('昵称正在保存，请稍候。'));
@@ -726,92 +845,125 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
 
   const logout = useCallback(async () => {
     if (stateRef.current.deletion) throw new Error('Account deletion is awaiting confirmation');
-    const target = logoutTargetRef.current !== undefined
-      ? logoutTargetRef.current
-      : (stateRef.current.session?.id ?? null);
-    logoutTargetRef.current = target;
-    const outcome = await client.logout({ sessionId: target });
-    if (outcome.kind === 'no-content') {
-      logoutTargetRef.current = undefined;
-      lockedRef.current = false;
-      setLocked(false);
-      rotatePageContext();
-      notifyPeers();
-      setState((current) => signedOut(current));
-      return;
-    }
-    if (outcome.kind === 'problem') {
-      lockedRef.current = false;
-      setLocked(false);
-      throw logoutError('failed', outcome);
-    }
-    /*
-     * A lost or unreadable response cannot prove the revocation happened.
-     * Stop business interaction and keep the same target for the retry.
-     */
-    lockedRef.current = true;
-    setLocked(true);
-    throw logoutError('unconfirmed', outcome);
-  }, [client, notifyPeers, rotatePageContext]);
+    const target = stateRef.current.revocation;
+    const sessionId = target?.sessionId ?? stateRef.current.session?.id;
+    if (sessionId) await revokeTarget({ sessionId, source: target?.source ?? 'logout' });
+  }, [revokeTarget]);
 
   const deleteAccount = useCallback(async email => {
     if (deletionRunningRef.current) return;
     const current = stateRef.current;
+    if (current.revocation) throw new Error('Account revocation is awaiting confirmation');
     const deletion = current.deletion ?? {
       account: current.account, locale: i18n.language,
       body: { requestId: deletionRequestId(), sessionId: current.session?.id, email: normalizeEmail(email) },
     };
     if (!deletion.account || !deletion.body.sessionId) throw new Error('deletion-identity');
     rememberDeletion(deletion);
+    selectDeletion(deletion.body.requestId);
+    deletionsRef.current = listDeletions();
     deletionRunningRef.current = true;
     lockedRef.current = true; setLocked(true); bumpIdentity();
+    const generation = generationRef.current;
+    const epoch = identityEpochRef.current;
+    const currentDeletion = () => generation === generationRef.current && epoch === identityEpochRef.current;
     setState(value => ({ ...value, status: 'deleting', deletion, deletionRunning: true, deletionError: null }));
     try {
-      const outcome = await client.deleteAccount(deletion.body);
+      let outcome = await client.deleteAccount(deletion.body);
+      if (!currentDeletion()) return;
+      let contextLost = false;
+      let sessionUnavailable = false;
+      if (outcome.kind === 'problem' && [PROBLEM.BROWSER_CONTEXT_REQUIRED, PROBLEM.SESSION_INVALID].includes(outcome.type)) {
+        const check = await client.getSession();
+        if (!currentDeletion()) return;
+        contextLost = (check.kind === 'result' && !check.data.browserReady)
+          || (check.kind === 'problem' && check.type === PROBLEM.SESSION_INVALID);
+        if (check.kind === 'result' && check.data.browserReady) {
+          const originalTarget = deletion.body.sessionId;
+          if (check.data.rememberedSession?.id === originalTarget
+            && !revocationsRef.current.some(value => value.sessionId === originalTarget)) {
+            // The original request might never have reached I08. Restore only
+            // its exact remembered target, without publishing a business identity.
+            const restored = await client.restoreSession({ sessionId: originalTarget });
+            if (!currentDeletion()) return;
+            if (restored.kind === 'result' && restored.data.session?.state === 'active'
+              && restored.data.session.id === originalTarget) {
+              outcome = await client.deleteAccount(deletion.body);
+              if (!currentDeletion()) return;
+              sessionUnavailable = outcome.kind === 'problem' && outcome.type === PROBLEM.SESSION_INVALID;
+            } else {
+              sessionUnavailable = restored.kind === 'problem' && restored.type === PROBLEM.SESSION_INVALID;
+            }
+          } else sessionUnavailable = true;
+        }
+      }
       if (outcome.kind !== 'no-content') {
         const rejected = outcome.kind === 'problem' && [400, 403, 415, 422].includes(outcome.status);
         if (rejected && !current.deletion) {
-          forgetDeletion(); lockedRef.current = false; setLocked(false);
+          forgetDeletion(deletion.body.requestId); deletionsRef.current = listDeletions(); lockedRef.current = false; setLocked(false);
           setState(value => ({ ...value, ...current, deletion: null }));
           throw new Error('deletion-rejected');
         }
-        let contextLost = false;
-        if (outcome.kind === 'problem' && [PROBLEM.BROWSER_CONTEXT_REQUIRED, PROBLEM.SESSION_INVALID].includes(outcome.type)) {
-          // A restore removes authentication containers and completed receipts.
-          // A read can establish that the browser context is gone, never that
-          // the original account deletion succeeded in the current database.
-          const check = await client.getSession();
-          contextLost = (check.kind === 'result' && !check.data.browserReady)
-            || (check.kind === 'problem' && check.type === PROBLEM.SESSION_INVALID);
-        }
         setState(value => ({ ...value, deletionRunning: false,
-          deletionError: contextLost ? 'context-lost' : outcome.type === PROBLEM.DELETION_INCOMPLETE ? 'incomplete' : 'unknown' }));
+          deletionError: contextLost ? 'context-lost' : sessionUnavailable ? 'session-unavailable'
+            : outcome.type === PROBLEM.DELETION_INCOMPLETE ? 'incomplete' : 'unknown' }));
         return;
       }
       // A 401 or anonymous session is never a substitute for this 204 receipt.
-      try { await clearDeletedAccountDeviceData(deletion.account.accountKey); forgetDeletion(); }
+      try { if (typeof onAccountDeleted !== 'function') throw new Error('deletion-device-cleaner-required');
+        await onAccountDeleted(deletion.account.accountKey);
+        // A confirmed new deletion also makes older commands for this exact
+        // account redundant. Keep the current receipt until all removals succeed.
+        for (const old of listDeletions()) {
+          if (old.account.accountKey === deletion.account.accountKey && old.body.requestId !== deletion.body.requestId)
+            forgetDeletion(old.body.requestId);
+        }
+        forgetDeletion(deletion.body.requestId);
+        deletionsRef.current = listDeletions(); }
       catch {
-        setState(value => ({ ...value, deletionRunning: false, deletionError: 'device' }));
+        if (currentDeletion()) setState(value => ({ ...value, deletionRunning: false, deletionError: 'device' }));
         return;
       }
+      if (!currentDeletion()) return;
       lockedRef.current = false; setLocked(false);
       rotatePageContext(); notifyPeers();
       setState(value => signedOut(value, { deletion: null, deletionRunning: false, deletionError: null }));
     } finally { deletionRunningRef.current = false; }
-  }, [bumpIdentity, client, notifyPeers, rotatePageContext]);
+  }, [bumpIdentity, client, notifyPeers, onAccountDeleted, rotatePageContext]);
 
   const returnFromDeletionVerification = useCallback(async () => {
     if (deletionRunningRef.current || stateRef.current.deletionError !== 'context-lost') return;
     // Explicitly leave an unverifiable intent. Preserve account-scoped device
     // drafts: no successful deletion receipt was received by this browser.
-    forgetDeletion();
+    selectDeletion(null); deletionDeferredRef.current = true;
     lockedRef.current = false; setLocked(false);
     rotatePageContext();
     setState(current => signedOut(current, {
       status: 'booting', deletion: null, deletionRunning: false, deletionError: null,
     }));
-    await bootstrap({ generation: generationRef.current, notice: () => COPY.deletionUnverifiable });
+    await bootstrap({ generation: generationRef.current, notice: () => COPY.deletionUnverifiable, anonymousOnly: true });
   }, [bootstrap, rotatePageContext]);
+
+  const resumeDeletion = useCallback(requestId => {
+    if (revocationRunningRef.current || stateRef.current.revocation) return;
+    try {
+      const deletion = readDeletion(requestId);
+      if (deletion) { generationRef.current += 1; invalidateOperation(); enterDeletion(deletion); }
+    } catch { setState(current => ({ ...current, status: 'error', errorKind: 'boot' })); }
+  }, [enterDeletion, invalidateOperation]);
+  const deferDeletion = useCallback(async () => {
+    if (deletionRunningRef.current) return;
+    selectDeletion(null); deletionDeferredRef.current = true;
+    lockedRef.current = false; setLocked(false);
+    rotatePageContext(); prepareLoginRef.current = true;
+    setState(current => signedOut(current, { status: 'booting', deletion: null, deletionError: null }));
+    await bootstrap({ generation: generationRef.current, anonymousOnly: true });
+  }, [bootstrap, rotatePageContext]);
+  const logoutState = state.revocation?.phase ?? 'idle';
+  const deletions = deletionsRef.current;
+  const pendingDeletions = useMemo(() => deletions.map(value => ({
+    requestId: value.body.requestId, nickname: value.account.nickname, email: value.account.email,
+  })), [deletions]);
 
   const publicValue = useMemo(() => ({
     status: state.status,
@@ -819,12 +971,20 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     sessionId: state.status === 'active' ? state.session.id : null,
     request,
     logout,
+    logoutState,
     deleteAccount,
+    pendingDeletions,
+    resumeDeletion,
     updateNickname,
-  }), [state.status, state.account, state.session?.id, request, logout, deleteAccount, updateNickname]);
+  }), [state.status, state.account, state.session?.id, request, logout, logoutState, deleteAccount, pendingDeletions, resumeDeletion, updateNickname]);
 
   const internalValue = useMemo(() => ({
     ...state,
+    pendingDeletions,
+    resumeDeletion,
+    deferDeletion,
+    retryRevocation,
+    logoutState,
     deleteAccount,
     returnFromDeletionVerification,
     locked,
@@ -845,6 +1005,11 @@ export default function AuthProvider({ children, timeoutMs = 10_000 }) {
     request,
   }), [
     state,
+    pendingDeletions,
+    resumeDeletion,
+    deferDeletion,
+    retryRevocation,
+    logoutState,
     deleteAccount,
     returnFromDeletionVerification,
     locked,

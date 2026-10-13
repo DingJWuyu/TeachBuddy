@@ -61,7 +61,7 @@ export function DataManagement({ accountActions, dangerActions }) {
   }, []);
   useEffect(() => {
     mounted.current = true;
-    refresh().catch((e) => setError(e.message));
+    refresh().catch((e) => setError({ message: e.message, authLocked: e.problem?.cause === 'auth-locked' }));
     return () => {
       mounted.current = false;
     };
@@ -69,7 +69,7 @@ export function DataManagement({ accountActions, dangerActions }) {
   useEffect(() => {
     if (!exports.some((e) => ["queued", "running"].includes(e.state))) return;
     const timer = setTimeout(
-      () => refresh().catch((e) => setError(e.message)),
+      () => refresh().catch((e) => setError({ message: e.message, authLocked: e.problem?.cause === 'auth-locked' })),
       1000,
     );
     return () => clearTimeout(timer);
@@ -118,6 +118,9 @@ export function DataManagement({ accountActions, dangerActions }) {
       setBusy("");
     }
   }
+  // The account action already explains this local transport lock. Preserve
+  // genuine export/read errors and pending requests instead of masking them.
+  const visibleError = typeof error === 'object' ? (error.authLocked ? '' : error.message) : error;
   return <>
     <div className="settings-sheet settings-account-sheet"><h2 className="settings-account-title">{t("账户")}</h2>
     <section className="settings-row reliability-export-row" aria-labelledby="personal-data-title">
@@ -126,7 +129,7 @@ export function DataManagement({ accountActions, dangerActions }) {
     </section>
     {accountActions}
     {message && <p role="status">{message}</p>}
-    {!exportOpen && (error || action.problem) && <p role="alert">{error || action.problem.message}</p>}
+    {!exportOpen && (visibleError || action.problem) && <p role="alert">{visibleError || action.problem.message}</p>}
     {!exportOpen && action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>{t("放弃重试")}</button></SettingsDisclosure></div>}
     </div>
     {dangerActions}
@@ -134,12 +137,12 @@ export function DataManagement({ accountActions, dangerActions }) {
       <p>{t("资料包包含已保存及已删除的资料、原文件与对话。下载后解压，打开 index.html 阅读。")}</p>
       <p className="wb-note">{t("文件可重新上传，正文与公式可复制；资料包不能覆盖账户或恢复原关联。")}</p>
       {busy === 'export' && <p role="status">{t("正在生成资料包…")}</p>}
-      {error && !action.pending && <button className="wb-button" disabled={!!busy} onClick={createExport}>{t("重试生成")}</button>}
+      {visibleError && !action.pending && <button className="wb-button" disabled={!!busy} onClick={createExport}>{t("重试生成")}</button>}
       {exports.length > 0 && <ul className="reliability-list" aria-label={t("个人资料导出记录")}>{exports.map(item => <li key={item.id}>
         <div><span>{date(item.snapshotAt)}</span><small>{t(states[item.state])}</small>{item.problem && <small>{item.problem.detail}</small>}</div>
         {item.state === 'ready' && <button className="wb-button" disabled={!!busy} onClick={() => download(item)}>{t("下载资料包")}</button>}
       </li>)}</ul>}
-      {(error || action.problem) && <p role="alert">{error || action.problem.message}</p>}
+      {(visibleError || action.problem) && <p role="alert">{visibleError || action.problem.message}</p>}
       {action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>{t("放弃重试")}</button></SettingsDisclosure></div>}
     </SettingsConfirm>
     <SettingsConfirm show={resetOpen} title={t("放弃重试？")} confirmLabel={t("放弃重试")} onClose={() => setResetOpen(false)} onConfirm={() => { action.reset(); setResetOpen(false); }}><p>{t("放弃重试不会撤销已完成的操作。请保留请求并核对当前资料后再开始新操作。")}</p></SettingsConfirm>

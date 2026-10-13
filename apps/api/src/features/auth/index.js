@@ -98,9 +98,10 @@ export function createAuthModule(options = {}) {
   router.post('/session', handle((request, body) => operations.changeSession(request, body)));
   router.post('/logout', handle((request, body) => operations.logout(request, body)));
   router.post('/profile', handle((request, body) => operations.updateProfile(request, body)));
-  if (options.deleteAccountData) router.post('/account-deletion', handle(createAccountDeletion({
+  const accountDeletion = options.deleteAccountData ? createAccountDeletion({
     db, operations, store, codeSecret, now, cleanup: options.deleteAccountData,
-  })));
+  }) : null;
+  if (accountDeletion) router.post('/account-deletion', handle(accountDeletion.handle));
 
   router.use((error, request, response, next) => {
     if (response.headersSent) {
@@ -117,5 +118,6 @@ export function createAuthModule(options = {}) {
     response.send(JSON.stringify(problem.toBody()));
   });
 
-  return { router, resolvePrincipal: operations.resolvePrincipal, isAccountActive: store.isAccountActive };
+  return { router, resolvePrincipal: operations.resolvePrincipal, isAccountActive: store.isAccountActive,
+    resumePendingDeletions: accountDeletion?.resumePendingDeletions };
 }

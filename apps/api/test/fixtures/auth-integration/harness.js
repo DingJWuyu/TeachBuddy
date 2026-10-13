@@ -9,6 +9,13 @@ export async function createIntegration(options = {}) {
   const directory = options.directory ?? fs.mkdtempSync(path.join(os.tmpdir(), 'a11-'));
   const tls = generateSelfSignedCertificate(directory);
   const server = https.createServer(tls);
+  // closeAllConnections only covers HTTP connections, not speculative sockets
+  // whose TLS handshake has not completed yet. Keep every accepted socket.
+  const sockets = new Set();
+  server.on('connection', socket => {
+    sockets.add(socket);
+    socket.once('close', () => sockets.delete(socket));
+  });
   await new Promise(resolve => server.listen(options.port ?? 0, '127.0.0.1', resolve));
   const origin = `https://127.0.0.1:${server.address().port}`;
   const mailer = createMailer();
@@ -26,6 +33,12 @@ export async function createIntegration(options = {}) {
   } catch (error) { server.close(); await context?.workbench.close(); await error.cleanup; throw error; }
   return { ...context, origin, directory, mailer, clock,
     client: () => createClient(origin, { transport: https }),
-    async close() { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await context.workbench.close(); }
+    async close() {
+      const serverClosed = new Promise(resolve => server.close(resolve));
+      server.closeAllConnections();
+      for (const socket of sockets) socket.destroy();
+      await serverClosed;
+      await context.workbench.close();
+    }
   };
 }

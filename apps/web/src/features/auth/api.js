@@ -213,58 +213,64 @@ export function createAuthClient({ getPageContext, timeoutMs = 10_000 }) {
       }, timeoutMs);
     }
 
-    let response;
+    // Keep the deadline active until the entire response is read and validated.
     try {
-      response = await fetcher(path, init);
-    } catch (error) {
-      if (timedOut) return { kind: 'transport', reason: 'timeout' };
-      if (error?.name === 'AbortError') return { kind: 'transport', reason: 'timeout' };
-      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        return { kind: 'transport', reason: 'offline' };
+      let response;
+      try {
+        response = await fetcher(path, init);
+      } catch (error) {
+        if (timedOut) return { kind: 'transport', reason: 'timeout' };
+        if (error?.name === 'AbortError') return { kind: 'transport', reason: 'timeout' };
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+          return { kind: 'transport', reason: 'offline' };
+        }
+        return { kind: 'transport', reason: 'network' };
       }
-      return { kind: 'transport', reason: 'network' };
+
+      const status = response.status;
+      if (allowNoContent && status === 204) return { kind: 'no-content', status };
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.toLowerCase().includes('json')) {
+        return { kind: 'transport', reason: 'malformed', status };
+      }
+
+      let payload;
+      try {
+        payload = await response.json();
+      } catch (error) {
+        if (timedOut || error?.name === 'AbortError') {
+          return { kind: 'transport', reason: 'timeout', status };
+        }
+        return { kind: 'transport', reason: 'malformed', status };
+      }
+
+      if (status >= 200 && status < 300) {
+        const data = validate ? validate(payload) : payload;
+        if (data === null || data === undefined) return { kind: 'transport', reason: 'malformed', status };
+        return { kind: 'result', status, data };
+      }
+
+      const problem = readProblem(payload, status);
+      if (!problem) return { kind: 'unknown-problem', status, payload };
+      if (!KNOWN_PROBLEM_TYPES.has(problem.type)) {
+        return { kind: 'unknown-problem', status, problem, payload };
+      }
+      const retryAfterHeader = Number.parseInt(response.headers.get('retry-after') || '', 10);
+      const retryAfterSeconds = Number.isInteger(retryAfterHeader)
+        ? retryAfterHeader
+        : problem.retryAfterSeconds;
+      return {
+        kind: 'problem',
+        status,
+        type: problem.type,
+        field: problem.field,
+        remainingAttempts: problem.remainingAttempts,
+        retryAfterSeconds,
+      };
     } finally {
       if (timer) clearTimeout(timer);
     }
-
-    const status = response.status;
-    if (allowNoContent && status === 204) return { kind: 'no-content', status };
-
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.toLowerCase().includes('json')) {
-      return { kind: 'transport', reason: 'malformed', status };
-    }
-
-    let payload;
-    try {
-      payload = await response.json();
-    } catch {
-      return { kind: 'transport', reason: 'malformed', status };
-    }
-
-    if (status >= 200 && status < 300) {
-      const data = validate ? validate(payload) : payload;
-      if (data === null || data === undefined) return { kind: 'transport', reason: 'malformed', status };
-      return { kind: 'result', status, data };
-    }
-
-    const problem = readProblem(payload, status);
-    if (!problem) return { kind: 'unknown-problem', status, payload };
-    if (!KNOWN_PROBLEM_TYPES.has(problem.type)) {
-      return { kind: 'unknown-problem', status, problem, payload };
-    }
-    const retryAfterHeader = Number.parseInt(response.headers.get('retry-after') || '', 10);
-    const retryAfterSeconds = Number.isInteger(retryAfterHeader)
-      ? retryAfterHeader
-      : problem.retryAfterSeconds;
-    return {
-      kind: 'problem',
-      status,
-      type: problem.type,
-      field: problem.field,
-      remainingAttempts: problem.remainingAttempts,
-      retryAfterSeconds,
-    };
   }
 
   return {

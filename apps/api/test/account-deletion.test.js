@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { startServer } from '../src/server.js';
+import https from 'node:https';
+import { createClient } from './fixtures/auth-contract/harness.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
@@ -288,4 +291,54 @@ for (const pending of [true, false]) test(`late logout preserves original deleti
   assert.equal(fs.existsSync(blob), false);
   assert.equal((await other.client.request('POST', '/api/auth/logout', { body: { sessionId: other.session.id } })).status, 204);
   assert.equal(other.client.jar.size(), 0);
+});
+
+// Exercise the real startup entry, rather than teaching the shared harness a
+// second initialization path. Cookie loss does not authorize browser cleanup.
+test('real startup resumes accepted deletion once, preserves failures and other accounts without original Cookie', async t => {
+  let world = await createIntegration();
+  let running, verified = false;
+  const directory = world.directory;
+  t.after(async () => {
+    if (running) await running.close();
+    if (world) await world.close();
+    if (verified) fs.rmSync(directory, { recursive: true, force: true });
+  });
+  const a = await register(world, 'startup-delete@example.test');
+  const b = await register(world, 'startup-healthy@example.test');
+  const file = await upload(a.client);
+  const blob = path.join(directory, 'files', 'blobs', world.workbench.db.prepare('SELECT blobName FROM materials_files WHERE id=?').get(file.json.id).blobName);
+  const bytes = fs.readFileSync(blob); fs.unlinkSync(blob); fs.mkdirSync(blob);
+  const body = deletionBody(a.session);
+  assert.equal((await remove(a.client, body)).status, 503);
+  const origin = world.origin;
+  const env = { nodeEnv: 'test', port: 0,
+    sqlitePath: path.join(directory, 'workspace.sqlite'), authCodeSecret: 'isolated-a11-test-secret',
+    workbench: { publicOrigin: origin, filesDir: path.join(directory, 'files'),
+      tls: { cert: path.join(directory, 'tls-cert.pem'), key: path.join(directory, 'tls-key.pem') } } };
+  await world.close(); world = null;
+  const now = () => Date.parse('2026-01-05T09:00:00.000Z');
+  const start = () => startServer({ env, now, sendCode: async () => {}, workbenchLogger: { info() {}, request() {}, error() {} } });
+  running = await start();
+  assert.equal(running.workbench.db.prepare('SELECT count(*) n FROM auth_account_deletions WHERE completedAt IS NULL').get().n, 1);
+  const healthy = createClient(running.origin, { transport: https, jar: b.client.jar, pageId: b.client.pageId });
+  assert.equal((await healthy.request('GET', '/api/workbench/context')).status, 200);
+  assert.equal((await createClient(running.origin, { transport: https, jar: a.client.jar, pageId: a.client.pageId }).request('GET', '/api/workbench/context')).status, 401);
+  const saved = running.workbench.db.prepare('SELECT filesJson FROM auth_account_deletions').get().filesJson;
+  assert.ok(saved);
+  await running.close(); running = null;
+  fs.rmdirSync(blob); fs.writeFileSync(blob, bytes);
+  running = await start();
+  assert.equal(running.workbench.db.prepare('SELECT count(*) n FROM auth_account_deletions WHERE completedAt IS NULL').get().n, 0);
+  noAccountRows(running.workbench.db, a.principal.accountKey);
+  assert.equal(fs.existsSync(blob), false);
+  const other = createClient(running.origin, { transport: https, jar: b.client.jar, pageId: b.client.pageId });
+  assert.equal((await other.request('GET', '/api/workbench/context')).status, 200);
+  // A different browser still cannot obtain a deletion receipt, while the
+  // surviving original proof can confirm startup's completed work.
+  const anonymous = createClient(running.origin, { transport: https });
+  assert.equal((await anonymous.request('POST', '/api/auth/account-deletion', { body, origin })).status, 401);
+  const original = createClient(running.origin, { transport: https, jar: a.client.jar, pageId: a.client.pageId });
+  assert.equal((await original.request('POST', '/api/auth/account-deletion', { body, origin })).status, 204);
+  verified = true;
 });

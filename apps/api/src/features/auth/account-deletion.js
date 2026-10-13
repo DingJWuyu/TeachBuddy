@@ -45,7 +45,7 @@ export function createAccountDeletion({ db, operations, store, codeSecret, now, 
     try { await work; } finally { running.delete(row.requestHash); }
   }
 
-  return async function deleteAccount(request, body) {
+  async function handle(request, body) {
     const input = readClosedObject(body, REQUEST_SCHEMAS.accountDeletion);
     readPageContext(request);
     if (!/^[0-9a-f]{64}$/.test(input.requestId)) throw authProblem('invalidFieldValue', { field: 'requestId' });
@@ -75,5 +75,18 @@ export function createAccountDeletion({ db, operations, store, codeSecret, now, 
     }
     try { await finish(row); } catch { throw authProblem('deletionIncomplete'); }
     return { status: 204 };
-  };
+  }
+
+  async function resumePendingDeletions() {
+    // Read failures are startup failures. Individual cleanup failures retain
+    // their accepted intent and must not prevent healthy accounts starting.
+    const rows = db.prepare('SELECT * FROM auth_account_deletions WHERE completedAt IS NULL ORDER BY requestHash').all();
+    const result = { completed: 0, incomplete: 0 };
+    for (const row of rows) {
+      try { await finish(row); result.completed++; }
+      catch { result.incomplete++; }
+    }
+    return result;
+  }
+  return { handle, resumePendingDeletions };
 }

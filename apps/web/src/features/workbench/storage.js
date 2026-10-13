@@ -175,3 +175,18 @@ export function migrateLegacyLocal(account, name, legacyKey) {
     return value;
   } catch (error) { blocked.add(scope(account, name)); report(error); return null; }
 }
+
+export function markAccountDeleted(account) {
+  const key = `tb.account.deleted:${account}`;
+  window.localStorage.setItem(key, '1');
+  if (window.localStorage.getItem(key) !== '1') throw new Error('Account deletion marker unavailable');
+}
+export function clearAccountDeviceData(account) {
+  const store = window.localStorage;
+  for (const key of Object.keys(store))
+    if (key.startsWith(`${PREFIX}:${account}:`) || key === `tb.device.clear:${account}`) store.removeItem(key);
+  for (const key of Object.keys(window.sessionStorage))
+    if (key.startsWith(`${PREFIX}:continue:${account}:`)) window.sessionStorage.removeItem(key);
+  resetLocalReaders(account);
+  recovered.delete(account);
+}

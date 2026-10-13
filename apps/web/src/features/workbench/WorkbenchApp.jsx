@@ -25,6 +25,7 @@ import { followAnchor, navigate, useRoute } from './routes.js';
 import { WorkbenchSettings } from './WorkbenchSettings.jsx';
 import { workbenchModules, moduleDisplayName } from '../modules/moduleRegistry.js';
 import { workbenchGet } from './apiClient.js';
+import { useAuth } from '../auth/index.jsx';
 import './workbench.css';
 import './appearance.css';
 
@@ -60,6 +61,8 @@ export default function WorkbenchApp({ boot }) {
 
 function WorkbenchContent({ boot }) {
   const { t } = useTranslation("workbench");
+  const { logoutState } = useAuth();
+  const logoutBlocked = logoutState === 'unknown' || logoutState === 'running';
   const agent = useAgent();
   const { logout, accountKey, nickname, generation, storageFailed, reportIdentityLost, transport } = boot;
   const route = useRoute();
@@ -204,7 +207,20 @@ function WorkbenchContent({ boot }) {
             openSurface={surface} onToggleSurface={value => setSurface(surface === value ? null : value)}
             onOpenSurface={setSurface} onCloseSurface={() => setSurface(null)} />
           <div className="wb-workspace">
-            <main className="wb-main" data-region="main">
+            {logoutBlocked && route.name !== 'settings' && <div className="wb-gate" data-region="logout-confirmation"
+              style={{ position: 'relative', inset: 'auto', flex: 1, minWidth: 0 }}>
+              <div className="wb-gate-card" style={{ width: 'min(420px, 100%)' }}>
+                <h1>{t("退出登录")}</h1>
+                <p role={logoutState === 'running' ? 'status' : 'alert'}>{logoutState === 'running'
+                  ? t("正在退出…") : t("退出结果暂未确认，业务操作已锁定。请重试确认。")}</p>
+                <p>{t("本设备的草稿仍然保留。")}</p>
+                <button className="wb-button" disabled={logoutState === 'running'} onClick={() => { void logout().catch(() => {}); }}>
+                  {logoutState === 'running' ? t("正在退出…") : t("重试确认退出")}
+                </button>
+                <a className="wb-button" href="/settings" onClick={event => followAnchor(event, '/settings')}>{t("设置")}</a>
+              </div>
+            </div>}
+            <main className="wb-main" data-region="main" style={logoutBlocked && route.name !== 'settings' ? { display: 'none' } : undefined}>
               {boot.recoveryChanged && <div className="wb-storage-warning" role="status">{t("工作台已从备份恢复。")}</div>}
               {recoveryNotice && <div className="wb-recovery-notice" role="status">
                 <span>{t("已恢复本设备的未保存输入，请检查后继续。")}</span>
@@ -222,7 +238,7 @@ function WorkbenchContent({ boot }) {
               {page}
             </main>
 
-            {(panelOpen || assistant) && <AuxiliaryPanel hidden={!panelOpen} />}
+            {(panelOpen || assistant) && <AuxiliaryPanel hidden={!panelOpen || logoutBlocked} />}
           </div>
         </div>
       </div>

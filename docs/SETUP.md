@@ -12,6 +12,8 @@
 
 preview 由总控协调集成；模块 session 在独立端口、数据库和文件目录自测。维护后核对实际页面和受影响功能，进程存活不等于业务验证通过。
 
+启动在工作台初始化后，对已受理且未完成的账户删除各接续一次；不创建新删除或周期重试。单条清理失败保留账户锁和文件清单，其他账户仍可使用。修复底层文件故障后可正常重启接续；原浏览器证明丢失时不以启动完成冒充浏览器已核实删除，语义见[账户删除交换](contracts/auth.md#账户删除交换-i08)。
+
 ## 新的隔离环境
 
 服务端已验证基线是 Linux、Node.js 22.23.2、npm workspaces 与 OpenSSL；使用锁文件安装依赖。Office、PDF、OCR 和数学运行时的额外依赖按对应章节准备；数学资产必须先构建，再启动 Web。新机器使用以下步骤，不需要任何旧实例数据库。
@@ -184,7 +186,7 @@ React 页面
 | 代码位置 | 当前职责 |
 | --- | --- |
 | `apps/web/src/features/workbench/` | 工作台与设置的外壳、导航、偏好和支持页；同目录中的共享文稿/保存/冲突机制属于技术底座 |
-| `apps/web/src/features/auth/` | 账户与身份的认证页面、会话恢复及请求 transport；当前设备删号清理的职责偏差与候选见[项目状态](plans/run-state.md) |
+| `apps/web/src/features/auth/` | 账户与身份的认证页面、会话恢复及请求 transport；删除确认后调用 App 注入的设备清理端口，各存储拥有者清理自己的资料 |
 | `apps/web/src/features/{questions,lessons,resources,math,classes,schedule}/` | 依次对应题库、备课、资源库、数学工坊、班级教学、日程的界面与交互 |
 | `apps/web/src/features/agent/`、`apps/api/src/agent/` | AI 助理的对话、引用、模型运行与工具调用；首页/侧栏由工作台承载 |
 | `apps/web/src/features/reliability/` | 技术底座的数据导出和设备恢复界面，供设置等调用 |
