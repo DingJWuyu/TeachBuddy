@@ -16,12 +16,12 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 产品分区 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 账户与身份 | `TeacherWorkspace-identity` | `fix/identity-completeness` | 用户已授权集成；账户线在原工作树对齐最新 trunk，保留昵称能力并补验组合边界；固定候选交总控执行 PR、CI 与集成后清理 |
-| 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；模块负责人继续按用户确认的目标接手，本轮公共文件临时停写安排已解除 |
+| 账户与身份 | 已清理 | 已清理 | [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37) 已集成，独立审查、CI 与 preview 启动核验通过；有效证据已保全，本轮停止开发 |
+| 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；当前暂停，待用户确定后续目标 |
 | 数学工坊 | 已清理 | 已清理 | 统一制作与网页 AI 已集成并验证；体验使用 preview，商店分发仍待准备 |
 | 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；体验数据与有效证据已保全 |
 
-账户候选将浏览器设备清理交给各存储拥有者，由 `apps/web/src/accountDeviceData.js` 组合并通过 `App.jsx` 注入认证；preview 当前尚未包含该修复。候选还修复关页后的删除核实、注册竞态、未决退出与恢复接续、响应超时及状态反馈。候选的可重建入口为 `apps/web/e2e/auth-completeness.config.mjs` 与 `apps/api/test/account-deletion.test.js`，验证结论与未验边界见账户线回执；该工作树的 `test-results/identity-fixes/independent/followup-report.md` 是本机证据，不是新检出的运行前置。本轮对齐保留已集成的昵称公开能力、资料同步及工作台身份绑定加载；原删除摘要维护建议已处理。新组合验证及固定候选记录在 `test-results/identity-alignment/receipt.json`。此现场保留至总控完成集成验证与证据交接后清理，账户线不执行推送或集成。
+账户与身份已集成浏览器设备清理、关页后的删除核实、注册竞态防护、未决退出与恢复接续、完整响应超时及状态反馈；设备数据由各存储拥有者清理，`apps/web/src/accountDeviceData.js` 组合后通过 `App.jsx` 注入认证。昵称公开能力、资料同步及工作台身份绑定加载保留；退出未决时不能切入旧账户删除核实。固定候选、独立审查、CI 与本机入口验证见[核查入口](#核查入口)。源码与验证入口已入库，有效本机证据保存在 preview 的 `test-results/identity-integration/`；原工作树及本地、远端任务分支均已清理。
 
 数学与日程的旧验收证据及体验数据保存在 preview 的 `test-results/math-handoff/`，数学入口为 `math-ai-onboarding/receipt.json`、`math-ux-redesign/final/receipt.json` 和 `math-unified/final/receipt.json`；日程数据在其中 `math-ux-redesign/integration/schedule-evidence/`。私有登录浏览器配置独立保留；旧数学体验浏览器采用临时扩展加载，后续从 preview 的 `extensions/math-web-ai/` 按[扩展说明](../../extensions/math-web-ai/README.md)加载，不依赖已删工作树。这些本机产物不作为新检出运行、必要回归或接手前置；重建入口见[数学规格](../features/math.md#验证入口)和[运行指南](../SETUP.md#数学运行依赖)。
 
@@ -45,11 +45,11 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 ## 已集成能力
 
-下表按产品分区列出当前已知集成能力，不代替每项功能的完整验收。核查入口指向仓库中的规格与验证路径；测试通过与否须针对当前候选记录。账户未集成候选只在上面的工作现场记录，不计入本表。
+下表按产品分区列出当前已知集成能力，不代替每项功能的完整验收。核查入口指向仓库中的规格与验证路径；测试通过与否须针对当前候选记录。
 
 | 产品分区 | 已集成结果 | 核查入口 |
 | --- | --- | --- |
-| 账户与身份 | 注册、登录、找回、退出、会话恢复及永久删除账户的既有流程；昵称修改公开能力与同会话资料同步已接入；目标邮件与设备仍有未验范围 | [规格](../features/identity.md)、[认证契约](../contracts/auth.md)、[核查入口](#核查入口) |
+| 账户与身份 | 注册、登录、找回、退出、会话恢复及永久删除账户；删除/退出未决核实、设备数据清理和注册竞态防护已接入；保留昵称修改公开能力与同会话资料同步；目标邮件与设备仍有未验范围 | [规格](../features/identity.md)、[认证契约](../contracts/auth.md)、[核查入口](#核查入口) |
 | 工作台与设置 | 导航分组、顺序和隐藏状态按账户保存；设备开合独立，冲突和待确认布局可继续处理；主题、背景、头像、语言及中英帮助和更新页已接入；昵称可原位编辑并同步侧栏，保存保持工作台现场，邮箱只读；退出、删号、资料导出消费相应能力 | [规格](../features/workbench.md)、[核查入口](#核查入口) |
 | 题库 | 手工与原生材料整理、校对入库、分类/笔记/改编；旧 DOC 经固定转换稿读取现存公式和配图，PDF 图边公式保留可编辑并核对配图归属；OCR 原图/公式/原答案/来源保留，局部校对保存，已核对题可先入库；未分配表格可保留原结构明确归入题干 | [规格](../features/questions.md)、[材料核查](#核查入口) |
 | 备课 | 环节和混排、跨课复用、历史、资料包、三类 Word/PDF 输出；普通题面/选项/必要配图连续，数学标题接续作品；扫描页与配图独立校对采用，内容疑点可回原页定位，可编辑数值表及打印网格；归档与恢复保留本机草稿及内容冲突 | [规格](../features/lessons.md)、[材料核查](#核查入口) |
@@ -113,7 +113,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 ## 接续顺序与完成条件
 
-已集成的非 AI 助理能力有既有本机验收依据；账户与身份仍有上文记录的未集成候选。后续以用户确认的产品分区目标逐个推进，日程暂时保留。新任务从最新 `preview/integration` 创建现场；数学按[后续开发边界](math-workshop.md)推进。验收按实际影响补充，不因固定样本通过而扩大质量承诺，也不把通用能力边界变为无限扩展待办。
+已集成的非 AI 助理能力有既有本机验收依据，账户与身份本轮集成已完成。按用户指令到此停止；备课模块及其功能连接的删除尚未开始，公共能力保留。后续以用户确认的产品分区目标逐个推进，日程暂时保留。新任务从最新 `preview/integration` 创建现场；数学按[后续开发边界](math-workshop.md)推进。验收按实际影响补充，不因固定样本通过而扩大质量承诺，也不把通用能力边界变为无限扩展待办。
 
 1. AI 助理保持暂停；用户重新授权后创建新会话与工作树，核对实际工具和冻结设计，实现核心工具与恢复衔接，并验证真实模型及跨模块组合。
 2. 新出现的可复现核心问题由 agent 按真实路径处理；当前资料足够时自行验证，不把技术回归全部交给用户。
@@ -123,11 +123,13 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 ## 核查入口
 
-昵称能力的已集成版本为 `1b107651`，已完成隔离生产构建、真实认证 HTTP/数据库、昵称与语言浏览器定点回归及独立核验，包含跨页旧回执、读取乱序、退出/删除锁和未确认输入保留。可重建入口为 `apps/api/test/auth-profile.test.js`、`apps/api/test/auth-integration.test.js` 与 `apps/web/e2e/settings-implementation.config.mjs`；语义见[昵称修改交换](../contracts/auth.md#昵称修改交换-i09)。本机证据为 `test-results/settings-nickname/receipt.json` 与 `independent.md`，不作为新检出前置；真实操作系统输入法、实际触屏、云端 CI 与全仓回归未验。
+账户候选 `d866d0c1` 与 [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37) 的 squash 提交 `de8bd99b` 文件内容一致。fresh-context 独立集成审查无剩余阻断发现；对齐阶段完成 19 个不同浏览器场景与 11 项账户删除/昵称 HTTP/SQLite 检查，按未变范围复用证据，不冒称全部在最终守卫提交上重跑。完整 PR CI 见下文；集成后实际 preview 重启、健康检查和隔离浏览器登录入口通过。可重建入口为 `apps/web/e2e/auth-completeness.config.mjs`、`apps/web/e2e/auth-integration.config.mjs`、`apps/api/test/account-deletion.test.js` 与 `apps/api/test/auth-profile.test.js`。本机证据入口为 `test-results/identity-integration/receipt.json`，独立报告在 `review/pr-review.md`，作者证据在 `author/`；这些均非新检出前置。真实邮件、目标设备/学校网络、整个浏览器进程重启的 Session Cookie 生命周期及掉电恢复未验。
+
+昵称能力的已集成版本为 `1b107651`，已完成隔离生产构建、真实认证 HTTP/数据库、昵称与语言浏览器定点回归及独立核验，包含跨页旧回执、读取乱序、退出/删除锁和未确认输入保留。可重建入口为 `apps/api/test/auth-profile.test.js`、`apps/api/test/auth-integration.test.js` 与 `apps/web/e2e/settings-implementation.config.mjs`；语义见[昵称修改交换](../contracts/auth.md#昵称修改交换-i09)。本机证据为 `test-results/settings-nickname/receipt.json` 与 `independent.md`，不作为新检出前置；真实操作系统输入法、实际触屏与全仓回归未验；当前 CI 的覆盖范围见下文。
 
 本页的集成状态来自当前源码和已记录的验证范围。选择受影响功能，先按[验证指南](../acceptance/README.md)建立隔离候选，再从仓库内的测试与固定样本重建结果。记录 Git 版本、输入、实际环境、通过和未验项；外部原件、真实模型、目标 Office 或设备缺失时保留未验证边界。
 
-当前 CI 在 `03f32f44` 的[云端运行](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38232281895)完成干净 Ubuntu Runner 构建，294 项 HTTP/SQLite、14 项数学输出与离线、4 项浏览器 Cookie/文件/OCR 回放、71 项浏览器 E2E 全部通过，必需汇总检查通过。固定数学运行时的缓存恢复约 2 秒，恢复后仍校验输入与产物；本轮完整 CI 约 18 分钟。总控复用已有验证，不在集成前重跑 CI 覆盖的完整回归，职责及命令见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。本机仅做失败的定点复现与修复确认，证据在 `test-results/ci-cloud-ownership/receipt.json`；真实模型与目标设备仍按各专项验收。
+当前 CI 对账户候选 `d866d0c1` 的[云端运行](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38344140578)完成干净 Ubuntu Runner 构建，297 项 HTTP/SQLite、14 项数学输出与离线、4 项浏览器 Cookie/文件/OCR 回放、108 项浏览器 E2E 全部通过，必需汇总及 PR 规范检查通过。固定数学运行时从缓存恢复后仍校验输入与产物。总控复用已有验证，不在集成前重跑 CI 覆盖的完整回归，职责及命令见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)；真实模型与目标设备仍按各专项验收。
 
 数学集成候选 `e4c61f5a` 与 squash 提交 `1c36e798` 的文件内容一致。[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38219664891) 在干净 Runner 完成锁定依赖安装、本地引擎冷构建、三 workspace 构建和 294 项 HTTP/SQLite 检查。本机另验数学 API/输出/离线与备份 14 项、数学制作 15 项及内容保护 5 项、Chrome/Edge 扩展 4 项、日程 39 项和开发服务 2 项；日程计数包含受影响项的定点复验，不重复累加。preview 引擎校验、健康检查与实际登录页面通过；本机回执和证据在 `test-results/math-integration/receipt.json`。扩展检查使用受控网页，本次未重新调用真实模型，也未执行正式发布或目标设备验收。
 
