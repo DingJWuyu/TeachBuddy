@@ -152,7 +152,7 @@ test('全局分类保存不制造草稿，分类删除保留既有题目的真�
   await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '题库选项' }).click();
   await page.getByRole('menuitem', { name: '管理题型与标签' }).click();
-  await page.locator('.q-taxonomy').getByLabel('分类名称', { exact: true }).fill('新计算题');
+  await page.locator('.q-taxonomy').getByLabel('题型名称', { exact: true }).fill('新计算题');
   await page.getByRole('button', { name: '保存分类', exact: true }).click();
   await expect(page.getByRole('button', { name: '保存分类', exact: true })).toBeEnabled();
   await expect(page.locator('.q-question-meta')).toContainText('新计算题');
@@ -173,8 +173,8 @@ test('全局分类保存不制造草稿，分类删除保留既有题目的真�
   await page.getByRole('button', { name: '题库选项' }).focus();
   await page.keyboard.press('Enter');
   await page.getByRole('menuitem', { name: '管理题型与标签' }).click();
-  await page.locator('.q-taxonomy').getByRole('button', { name: '删除', exact: true }).click();
-  await page.getByRole('dialog', { name: '删除分类', exact: true }).getByRole('button', { name: '删除分类', exact: true }).click();
+  await page.locator('.q-taxonomy').getByRole('button', { name: '删除题型“新计算题”', exact: true }).click();
+  await page.getByRole('dialog', { name: '删除题型', exact: true }).getByRole('button', { name: '删除题型', exact: true }).click();
   await page.getByRole('button', { name: '保存分类', exact: true }).click();
   await expect(page.locator('.q-question-meta')).not.toContainText('新计算题');
   await expect(page.getByRole('button', { name: '保存分类', exact: true })).toBeEnabled();
