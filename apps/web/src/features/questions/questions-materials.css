@@ -302,7 +302,8 @@
   .q-main { flex: 1 0 430px; min-height: 430px; padding: 0 16px; }
   .q-workspace[data-review="true"] > .q-main { min-height: 600px; }
   .q-copy-source { flex: none; max-height: 300px; }
-  .q-workspace .q-question-heading { padding: 16px 0; }
+  .q-workspace .q-question-heading { padding: 16px 0; row-gap: 8px; }
+  .q-question-heading > .q-save-state { flex: 0 0 100%; order: 1; text-align: left; }
   .q-question-title h2 { font-size: 20px; }
   .q-welcome { padding: 28px 6px; }
   .q-welcome h2 { font-size: 19px; }

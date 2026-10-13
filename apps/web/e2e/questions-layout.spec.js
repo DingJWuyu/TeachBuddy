@@ -76,6 +76,75 @@ async function snapshot(page, info, name) {
   await page.screenshot({ path: info.outputPath(name + '.png'), fullPage: true });
 }
 
+async function editorHeaderGeometry(page) {
+  return page.locator('.q-question-heading').evaluate(header => {
+    const box = node => {
+      const rect = node.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+    };
+    const state = header.querySelector('.q-save-state');
+    const range = document.createRange();
+    range.selectNodeContents(state);
+    return { header: box(header), back: box(header.querySelector('.q-back')), state: box(state),
+      stateText: box(range), stateOverflow: state.scrollWidth - state.clientWidth, save: box(header.querySelector('.primary')) };
+  });
+}
+
+for (const language of ['zh-CN', 'en']) {
+  for (const theme of ['light', 'dark']) {
+    test(`编辑头部 ${language}/${theme} 在桌面及390/600窄屏显示返回、保存状态和保存按钮`, async ({ page }, info) => {
+      await page.locator('.q-finder').getByRole('button', { name: '手动录题', exact: true }).click();
+      await page.getByLabel('题目标题').fill('编辑头部原题');
+      await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('计算2与3的和。');
+      await page.getByRole('button', { name: '保存题目', exact: true }).click();
+      await expect(page.getByRole('heading', { name: '编辑头部原题', exact: true })).toBeVisible();
+      await page.getByRole('button', { name: '复制改编', exact: true }).click();
+      await page.getByLabel('题目标题').fill('编辑头部改编');
+      await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('计算2与5的和。');
+      await page.getByRole('button', { name: '支持', exact: true }).click();
+      await page.getByRole('menuitem', { name: '设置', exact: true }).click();
+      await page.getByRole('button', { name: theme === 'dark' ? '深色' : '浅色', exact: true }).click();
+      if (language === 'en') {
+        await page.getByRole('button', { name: '语言', exact: true }).click();
+        await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+      }
+      await page.getByRole('navigation').getByRole('link', { name: language === 'en' ? /^Question bank/ : /^题库/ }).click();
+      await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', theme);
+      await expect(page.locator('.q-save-state')).toHaveText(language === 'en' ? 'Draft saved on this device' : '草稿保存在此设备');
+      const measurements = {};
+      for (const width of [1440, 600, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.locator('.q-question-heading').scrollIntoViewIfNeeded();
+        await snapshot(page, info, 'editor-header-' + width);
+        const geometry = await editorHeaderGeometry(page);
+        measurements[width] = geometry;
+        fs.writeFileSync(info.outputPath('editor-header-geometry.json'), JSON.stringify(measurements, null, 2));
+        expect(geometry.stateOverflow).toBeLessThanOrEqual(1);
+        for (const control of [geometry.back, geometry.stateText, geometry.save]) {
+          expect(control.x).toBeGreaterThanOrEqual(geometry.header.x - 1);
+          expect(control.right).toBeLessThanOrEqual(geometry.header.right + 1);
+          expect(control.y).toBeGreaterThanOrEqual(geometry.header.y - 1);
+          expect(control.bottom).toBeLessThanOrEqual(geometry.header.bottom + 1);
+        }
+        const overlap = (first, second) => Math.max(0, Math.min(first.right, second.right) - Math.max(first.x, second.x))
+          * Math.max(0, Math.min(first.bottom, second.bottom) - Math.max(first.y, second.y));
+        expect(overlap(geometry.stateText, geometry.save)).toBeLessThan(1);
+        expect(overlap(geometry.stateText, geometry.back)).toBeLessThan(1);
+        expect(overlap(geometry.back, geometry.save)).toBeLessThan(1);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+      }
+      await page.locator('.q-question-heading > .primary').click();
+      await expect(page.getByRole('heading', { name: '编辑头部改编', exact: true })).toBeVisible();
+      const records = (await client.request('GET', base + '/items')).json.items;
+      expect(records).toHaveLength(2);
+      expect(records.find(question => question.title === '编辑头部改编').body.blocks[0].runs[0].text).toBe('计算2与5的和。');
+      await page.getByRole('button', { name: language === 'en' ? 'Edit question' : '编辑题目', exact: true }).click();
+      await page.locator('.q-question-heading > .q-back').click();
+      await expect(page.getByRole('button', { name: language === 'en' ? 'Edit question' : '编辑题目', exact: true })).toBeVisible();
+    });
+  }
+}
+
 async function reviewGeometry(page) {
   return page.locator('.q-review').evaluate(review => {
     const bounds = selector => {
