@@ -2609,3 +2609,39 @@ test("搜索发现新资料、外部替换和补充来源后读取当前文件",
   await page.getByRole("button", { name: "下载原件", exact: true }).click();
   expect(fs.readFileSync(await (await download).path()).equals(sample.buffer)).toBe(true);
 });
+
+test("原件 ZIP 下载超过 60 秒仍可完成", async ({ page }, info) => {
+  test.setTimeout(120000);
+  await page.getByLabel("上传第一份资料", { exact: true }).setInputFiles([image, pdf]);
+  await expect(page.locator(".res-status")).toContainText("已处理 2 / 2 份资料");
+  await expect(page.locator(".res-card")).toHaveCount(2);
+  await page.getByRole("button", { name: "选择资料", exact: true }).click();
+  await page.getByRole("button", { name: "选择当前结果", exact: true }).click();
+  await page.route("**/api/modules/resources/items/download", async route => {
+    // Read the genuine authorized archive, then hold its final HTTP response.
+    // This controls only transport timing, not ownership, versions or ZIP bytes.
+    const response = await route.fetch();
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("application/zip");
+    const bytes = await response.body();
+    expect(Object.keys((await JSZip.loadAsync(bytes)).files)).toHaveLength(2);
+    await new Promise(resolve => setTimeout(resolve, 65000));
+    await route.fulfill({ response, body: bytes }).catch(() => {});
+  });
+  const started = Date.now();
+  const outcome = Promise.race([
+    page.waitForEvent("download", { timeout: 100000 }).then(download => ({ download })),
+    page.locator(".res-download-error").waitFor({ state: "visible", timeout: 100000 }).then(async () => ({ error: await page.locator(".res-download-error").textContent() })),
+  ]);
+  await page.getByRole("button", { name: "下载所选原件 ZIP", exact: true }).click();
+  const result = await outcome;
+  const elapsedMs = Date.now() - started;
+  await info.attach("slow-real-zip", { body: JSON.stringify({ elapsedMs, error: result.error ?? null }), contentType: "application/json" });
+  expect(result.error).toBeUndefined();
+  expect(elapsedMs).toBeGreaterThan(60000);
+  const archive = await JSZip.loadAsync(fs.readFileSync(await result.download.path()));
+  const files = await Promise.all(Object.values(archive.files).map(file => file.async("nodebuffer")));
+  expect(files.some(bytes => bytes.equals(fs.readFileSync(image)))).toBe(true);
+  expect(files.some(bytes => bytes.equals(fs.readFileSync(pdf)))).toBe(true);
+  await expect(page.getByRole("button", { name: "取消下载", exact: true })).toHaveCount(0);
+});

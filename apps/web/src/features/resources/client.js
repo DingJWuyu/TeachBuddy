@@ -93,7 +93,14 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
         body,
         credentials: "same-origin",
         cache: "no-store",
-        signal: AbortSignal.any([signal, ...(cancelSignal ? [cancelSignal] : []), AbortSignal.timeout(60000)]),
+        // A legal multi-file archive can take longer than one minute. Its
+        // read-only transfer ends on explicit cancellation, identity change or
+        // transport failure; writes retain their unknown-result time limit.
+        signal: AbortSignal.any([
+          signal,
+          ...(cancelSignal ? [cancelSignal] : []),
+          ...(!downloadOnly ? [AbortSignal.timeout(60000)] : []),
+        ]),
       });
       value =
         blob && response.ok ? await response.blob() : await response.json();
