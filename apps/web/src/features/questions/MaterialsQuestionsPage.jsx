@@ -1496,73 +1496,81 @@ function Taxonomy({ taxonomy, disabled, onSave }) {
     [error, setError] = useState("");
   return (
     <div className="q-taxonomy">
-      <select
-        aria-label={t("分类类别")}
-        value={kind}
-        onChange={(e) => setKind(e.target.value)}
-      >
-        <option value="types">{t("题型")}</option>
-        <option value="tags">{t("标签")}</option>
-      </select>
-      <input
-        aria-label={t("新分类名称")}
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <button
-        onClick={() => {
-          if (name.trim()) {
-            setDraft({
-              ...draft,
-              [kind]: [...draft[kind], { id: crypto.randomUUID(), name }],
-            });
-            setName("");
-          }
-        }}
-      > {t("新增")} </button>
-      {["types", "tags"].map((k) =>
-        draft[k].map((category) => (
-          <div key={category.id}>
-            <input
-              aria-label={t("分类名称")}
-              value={category.name}
-              onChange={(e) =>
-                setDraft({
-                  ...draft,
-                  [k]: draft[k].map((x) =>
-                    x.id === category.id ? { ...x, name: e.target.value } : x,
-                  ),
-                })
-              }
-            />
-            <button
-              disabled={disabled || deleting}
-              onClick={async () => {
-                setDeleting(true);
-                setError("");
-                try {
-                const lists = await Promise.all([
-                  get("/items"),
-                  get("/items?state=deleted"),
-                ]);
-                const affected = lists
-                  .flatMap((x) => x.items)
-                  .filter(
-                    (q) => q.typeId === category.id || q.tagIds.includes(category.id),
-                  ).length;
-                setPendingDelete({ kind: k, id: category.id, name: category.name, affected });
-                } catch (error) { setError(error.message); }
-                finally { setDeleting(false); }
-              }}
-            > {t("删除")} </button>
-          </div>
-        )),
-      )}
+      <div className="q-taxonomy-add">
+        <select
+          aria-label={t("分类类别")}
+          value={kind}
+          onChange={(e) => setKind(e.target.value)}
+        >
+          <option value="types">{t("题型")}</option>
+          <option value="tags">{t("标签")}</option>
+        </select>
+        <input
+          aria-label={t("新分类名称")}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <button
+          onClick={() => {
+            if (name.trim()) {
+              setDraft({
+                ...draft,
+                [kind]: [...draft[kind], { id: crypto.randomUUID(), name }],
+              });
+              setName("");
+            }
+          }}
+        > {t("新增")} </button>
+      </div>
+      {["types", "tags"].map((k) => (
+        <fieldset key={k} className="q-taxonomy-group">
+          <legend>{t(k === "types" ? "题型" : "标签")}</legend>
+          {draft[k].length === 0 && <p className="q-muted">{t(k === "types" ? "暂无题型" : "暂无标签")}</p>}
+          {draft[k].map((category) => (
+            <div key={category.id} className="q-taxonomy-row">
+              <input
+                aria-label={t(k === "types" ? "题型名称" : "标签名称")}
+                value={category.name}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    [k]: draft[k].map((x) =>
+                      x.id === category.id ? { ...x, name: e.target.value } : x,
+                    ),
+                  })
+                }
+              />
+              <button
+                aria-label={t(k === "types" ? "删除题型“{{name}}”" : "删除标签“{{name}}”", { name: category.name })}
+                disabled={disabled || deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  setError("");
+                  try {
+                    const lists = await Promise.all([
+                      get("/items"),
+                      get("/items?state=deleted"),
+                    ]);
+                    const affected = lists
+                      .flatMap((x) => x.items)
+                      .filter(
+                        (q) => q.typeId === category.id || q.tagIds.includes(category.id),
+                      ).length;
+                    setPendingDelete({ kind: k, id: category.id, name: category.name, affected });
+                  } catch (error) { setError(error.message); }
+                  finally { setDeleting(false); }
+                }}
+              > {t("删除")} </button>
+            </div>
+          ))}
+        </fieldset>
+      ))}
       <button disabled={disabled || deleting} onClick={() => onSave(draft)}>{t("保存分类")}</button>
       {error && <p role="alert">{error}</p>}
       <ModulePresence present={Boolean(pendingDelete)}>{pendingDelete && <ConfirmDialog
-        title={t("删除分类")} message={t("删除“{{name}}”并解除 {{affected}} 道题的关联？题目本身会保留。", { name: pendingDelete.name, affected: pendingDelete.affected })}
-        confirmLabel={t("删除分类")} onCancel={() => setPendingDelete(null)} onConfirm={() => {
+        title={t(pendingDelete.kind === "types" ? "删除题型" : "删除标签")}
+        message={t(pendingDelete.kind === "types" ? "删除题型“{{name}}”并解除 {{affected}} 道题的关联？题目本身会保留。" : "删除标签“{{name}}”并解除 {{affected}} 道题的关联？题目本身会保留。", { name: pendingDelete.name, affected: pendingDelete.affected })}
+        confirmLabel={t(pendingDelete.kind === "types" ? "删除题型" : "删除标签")} onCancel={() => setPendingDelete(null)} onConfirm={() => {
           setDraft(current => ({ ...current, [pendingDelete.kind]: current[pendingDelete.kind].filter(item => item.id !== pendingDelete.id) }));
           setPendingDelete(null);
         }} />}</ModulePresence>
