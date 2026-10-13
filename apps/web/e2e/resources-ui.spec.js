@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import JSZip from "jszip";
+import sharp from "sharp";
 import { createIntegration } from "../../api/test/fixtures/auth-integration/harness.js";
 import { registerMath } from "./fixtures/math-static/real.mjs";
 import net from "node:net";
@@ -19,7 +20,7 @@ const test = baseTest.extend({
   recognizer: [null, { option: true }],
   recognitionHome: [null, { option: true }],
 });
-let world, api;
+let world, api, session;
 const image = path.resolve(
   "apps/web/e2e/fixtures/materials-resources/samples/page.png",
 );
@@ -95,7 +96,7 @@ test.beforeEach(async ({ page, recognizer, recognitionHome }) => {
       directory,
       workbench: { recognition: { recognizer, home: recognitionHome } },
     });
-  ({ client: api } = await registerMath(world, "resources-ui@example.test"));
+  ({ client: api, session } = await registerMath(world, "resources-ui@example.test"));
   await page.goto(world.origin + "/resources");
   if (process.env.RESOURCE_UI_DEV)
     await expect(page.locator('script[src="/@vite/client"]')).toHaveCount(1);
@@ -2644,4 +2645,54 @@ test("原件 ZIP 下载超过 60 秒仍可完成", async ({ page }, info) => {
   expect(files.some(bytes => bytes.equals(fs.readFileSync(image)))).toBe(true);
   expect(files.some(bytes => bytes.equals(fs.readFileSync(pdf)))).toBe(true);
   await expect(page.getByRole("button", { name: "取消下载", exact: true })).toHaveCount(0);
+});
+
+test("预览任务实际重启中断后停止列表轮询并可明确重试", async ({ page }, info) => {
+  test.skip(Boolean(process.env.RESOURCE_UI_DEV), "使用固定构建与同端口真实服务重启");
+  const bytes = await sharp({ create: { width: 6000, height: 6000, channels: 3, background: "blue" } }).png().toBuffer();
+  const started = page.waitForResponse(response => response.url().endsWith("/preview") && response.request().method() === "POST");
+  await page.getByLabel("上传第一份资料", { exact: true }).setInputFiles({ name: "中断预览.png", mimeType: "image/png", buffer: bytes });
+  const response = await started;
+  expect(response.status()).toBe(202);
+  const job = await response.json();
+  const principal = { accountKey: session.account.accountKey };
+  await expect.poll(() => world.workbench.jobs.get(principal, job.id).state).toBe("running");
+  const { directory, origin } = world;
+  await world.close();
+  world = await createIntegration({ directory, port: Number(new URL(origin).port) });
+  expect(world.workbench.jobs.get(principal, job.id).state).toBe("interrupted");
+  const resource = (await api.request("GET", "/api/modules/resources/items")).json.items[0];
+  const preview = (await api.request("GET", `/api/workbench/files/${resource.fileId}/preview`)).json;
+  expect(preview.state).toBe("pending");
+  const reads = [];
+  page.on("request", request => {
+    if (request.method() === "GET" && (request.url().endsWith(`/files/${resource.fileId}/preview`) || request.url().endsWith(`/jobs/${job.id}`))) reads.push(request.url());
+  });
+  await page.reload();
+  await expect(page.getByRole("button", { name: "返回资源库", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  await expect(page.locator(".res-card-open")).toBeVisible();
+  await expect(page.locator(".res-browser")).toHaveAttribute("aria-busy", "false");
+  await expect(page.locator(".res-preview-state")).toHaveText("预览未完成，打开后可重试");
+  await page.clock.install();
+  const count = reads.length;
+  await page.clock.fastForward(6500);
+  expect(reads).toHaveLength(count);
+  expect(reads.some(url => url.endsWith(`/jobs/${job.id}`))).toBe(true);
+  await info.attach("interrupted-preview-read-count", { body: JSON.stringify({ job: "interrupted", preview: preview.state, reads }), contentType: "application/json" });
+  await screenshot(page, info, "interrupted-preview-list");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "列表视图", exact: true }).click();
+  await expect(page.locator(".res-list .res-preview-state")).toBeVisible();
+  await screenshot(page, info, "interrupted-preview-list-phone");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.locator(".res-card-open").click();
+  await expect(page.getByRole("heading", { name: "暂时无法预览", exact: true })).toBeVisible();
+  const retried = page.waitForResponse(response => response.url().endsWith("/retry") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "重试预览", exact: true }).click();
+  expect((await retried).status()).toBe(202);
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  await expect(page.locator(".res-thumb img")).toHaveCount(1);
+  await expect(page.locator(".res-preview-state")).toHaveCount(0);
+  await screenshot(page, info, "interrupted-preview-retry-completed");
 });

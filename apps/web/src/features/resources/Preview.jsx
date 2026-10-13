@@ -1,3 +1,4 @@
+import { readPreviewSnapshot, previewNeedsPolling, previewJobActive, previewJobFailed } from "./previewLifecycle.js";
 import { useTranslation } from 'react-i18next';
 import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "../workbench/chrome/icons.jsx";
@@ -39,6 +40,7 @@ export function Preview({
   page = 1,
   onPage,
   onViewed,
+  onPreviewWrite,
   zoom = 100,
   onZoom,
   scrollPosition,
@@ -95,29 +97,11 @@ export function Preview({
     setError("");
     async function load() {
       try {
-        let result = await client.request(
-          `/api/workbench/files/${fileId}/preview`,
-        );
-        if (!active) return;
-        const currentJob = result.jobId
-          ? await client.request(`/api/workbench/jobs/${result.jobId}`)
-          : null;
-        // The job can finish between the two reads. Read its committed rendition
-        // once more before stopping, rather than displaying the older snapshot.
-        if (["succeeded", "partial"].includes(currentJob?.state))
-          result = await client.request(
-            `/api/workbench/files/${fileId}/preview`,
-          );
+        const { preview: result, job: currentJob } = await readPreviewSnapshot(client, fileId);
         if (!active) return;
         setPreview(result);
         setJob(currentJob);
-        // Retrying keeps the previous rendition/state until conversion finishes.
-        // Follow the new job even when the previous preview is failed or limited.
-        if (
-          ["queued", "running", "cancelling"].includes(currentJob?.state) ||
-          (result.state === "pending" && !currentJob)
-        )
-          timer = setTimeout(load, 2000);
+        if (previewNeedsPolling(result, currentJob)) timer = setTimeout(load, 2000);
       } catch (e) {
         if (active) setError(e.message);
       }
@@ -156,18 +140,19 @@ export function Preview({
           key: requestKey.current,
         });
       requestKey.current = null;
+      onPreviewWrite?.();
       setReload((n) => n + 1);
     } catch (e) {
       if (!e.unknown) requestKey.current = null;
       setError(e.message);
     }
   }
-  const preparing = ["queued", "running", "cancelling"].includes(job?.state);
+  const preparing = previewJobActive(job);
   const unsupported = preview?.issues.includes("unsupported-format");
   const failed =
     !preparing &&
     (preview?.state === "failed" ||
-      ["failed", "cancelled", "interrupted"].includes(job?.state));
+      previewJobFailed(job));
   return (
     <section
       className="res-preview"
@@ -385,7 +370,7 @@ export function Preview({
               }
             >
               {preview?.state === "failed" ||
-              ["failed", "cancelled", "interrupted"].includes(job?.state)
+              previewJobFailed(job)
                 ? t("重试预览")
                 : t("生成预览")}
             </button>

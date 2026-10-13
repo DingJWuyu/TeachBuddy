@@ -1,3 +1,4 @@
+import { readPreviewSnapshot, previewNeedsPolling } from "./previewLifecycle.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const root = "/api/modules/resources";
@@ -41,11 +42,11 @@ export function useLibraryData({
     async function read() {
       if (!cycle.active) return;
       try {
-        const preview = await client.request(`/api/workbench/files/${result.id}/preview`);
+        const { preview, job } = await readPreviewSnapshot(client, result.id);
         if (!cycle.active) return;
-        cycle.results.set(result.id, { ...result, preview: { status: "fulfilled", value: preview }, applied: true });
-        setPreviews(current => ({ ...current, [result.id]: preview }));
-        if (preview.state === "pending") schedule();
+        cycle.results.set(result.id, { ...result, preview: { status: "fulfilled", value: preview }, job, applied: true });
+        setPreviews(current => ({ ...current, [result.id]: { ...preview, jobState: job?.state ?? null } }));
+        if (previewNeedsPolling(preview, job)) schedule();
         else cycle.watching.delete(result.id);
       } catch {
         if (cycle.active) setFileErrors(current => ({
@@ -63,9 +64,12 @@ export function useLibraryData({
       if (!cycle.pending.has(id)) {
         const read = Promise.allSettled([
           client.request(`/api/workbench/files/${id}`),
-          client.request(`/api/workbench/files/${id}/preview`),
-        ]).then(([file, preview]) => {
-          const result = { id, file, preview, applied: false };
+          readPreviewSnapshot(client, id),
+        ]).then(([file, snapshot]) => {
+          const preview = snapshot.status === "fulfilled"
+            ? { status: "fulfilled", value: snapshot.value.preview } : snapshot;
+          const job = snapshot.status === "fulfilled" ? snapshot.value.job : null;
+          const result = { id, file, preview, job, applied: false };
           cycle.results.set(id, result);
           cycle.pending.delete(id);
           return result;
@@ -79,14 +83,14 @@ export function useLibraryData({
     if (!fresh.length) return;
     fresh.forEach(result => {
       result.applied = true;
-      if (result.preview.status === "fulfilled" && result.preview.value.state === "pending") watchPreview(result);
+      if (result.preview.status === "fulfilled" && previewNeedsPolling(result.preview.value, result.job)) watchPreview(result);
     });
     setFiles(current => ({ ...current, ...Object.fromEntries(fresh
       .filter(result => result.file.status === "fulfilled")
       .map(result => [result.id, result.file.value])) }));
     setPreviews(current => ({ ...current, ...Object.fromEntries(fresh
       .filter(result => result.preview.status === "fulfilled")
-      .map(result => [result.id, result.preview.value])) }));
+      .map(result => [result.id, { ...result.preview.value, jobState: result.job?.state ?? null }])) }));
     setFileErrors(current => {
       const next = { ...current };
       fresh.forEach(({ id, file, preview }) => {

@@ -1,3 +1,4 @@
+import { previewJobFailed, previewNeedsPolling } from "./previewLifecycle.js";
 import { SelectionDownload } from "./SelectionDownload.jsx";
 import { folderPath } from "./folderPath.js";
 import { useTranslation } from 'react-i18next';
@@ -374,6 +375,9 @@ export function Library({
           {items.map((resource) => {
             const sourceId = resource.supplementPreviewFileId || resource.fileId;
             const preview = previews[sourceId];
+            const job = preview?.jobState ? { state: preview.jobState } : null;
+            const preparing = previewNeedsPolling(preview, job);
+            const interrupted = previewJobFailed(job) && !preview?.issues.includes("unsupported-format");
             const extension =
               files[resource.fileId]?.name.split(".").pop()?.toUpperCase() ||
               t("文件");
@@ -419,18 +423,22 @@ export function Library({
                             .join("、")}`
                         : ""}
                     </span>
-                  </div>
-                  <span className="res-file-type">{extension}</span>
                   {((fileErrors[resource.fileId] || fileErrors[sourceId]) ||
-                    ["limited", "failed"].includes(preview?.state)) && (
+                    (preparing || interrupted || ["limited", "failed"].includes(preview?.state))) && (
                     <span className="res-preview-state">
                       {(fileErrors[resource.fileId] || fileErrors[sourceId])
                         ? t("文件读取失败")
-                        : preview.state === "limited"
-                          ? t("预览需核对")
-                          : t("暂不可预览")}
+                        : preparing
+                          ? t("正在准备预览")
+                          : interrupted
+                            ? t("预览未完成，打开后可重试")
+                            : preview.state === "limited"
+                              ? t("预览需核对")
+                              : t("暂不可预览")}
                     </span>
                   )}
+                  </div>
+                  <span className="res-file-type">{extension}</span>
                 </button>
                 {scene.selectionMode && (
                   <label className="res-pick">

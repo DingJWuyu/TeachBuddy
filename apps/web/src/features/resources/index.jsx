@@ -959,6 +959,7 @@ function ResourceWorkspace({
               <Preview
                 key={previewId}
                 client={client}
+                onPreviewWrite={refresh}
                 fileId={previewId}
                 searchHit={searchHit?.itemId === item.id && searchHit.sourceId === previewId ? searchHit : null}
                 recognitionOpen={scene.recognitionOpen}

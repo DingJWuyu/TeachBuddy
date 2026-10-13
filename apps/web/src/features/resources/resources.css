@@ -1399,9 +1399,6 @@
   .res-detail-title {
     min-width: 120px;
   }
-  .res-list .res-preview-state {
-    display: none;
-  }
   .res-status {
     bottom: 10px;
   }
@@ -1476,3 +1473,6 @@
 .res-page-navigation { display: flex; align-items: center; gap: 8px; }
 .res-history-preview .res-preview-toolbar { padding-inline: 0; }
 .res-history-preview .res-page-navigation { gap: 4px; }
+
+.res-card-text > .res-preview-state { color: light-dark(#986322, #e2b77d); }
+.res-list .res-card-text > .res-preview-state { align-self: flex-start; }
