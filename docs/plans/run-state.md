@@ -18,7 +18,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 产品分区 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 账户与身份 | 已清理 | 已清理 | [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37) 已集成，独立审查、CI 与 preview 启动核验通过；有效证据已保全，本轮停止开发 |
+| 账户与身份 | 已清理 | 已清理 | 身份能力 [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37) 与全屏入口 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39) 已集成，独立审查、CI 与 preview 入口核验通过；临时实例已停止，有效证据已保全，本轮停止开发 |
 | 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；当前暂停，待用户确定后续目标 |
 | 数学工坊 | 已清理 | 已清理 | 统一制作与网页 AI 已集成并验证；体验使用 preview，商店分发仍待准备 |
 | 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；体验数据与有效证据已保全 |
@@ -123,6 +123,8 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 每个事项只有满足其具名结果才改变状态；保留问题归属、证据及下一动作。缺材料/环境标待验证，用户选择标待决定，代码已合入但未验证不写验收完成。
 
 ## 核查入口
+
+全屏身份入口候选 `b5ccb039` 与 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39) 的 squash 提交 `2c43d63e` 文件内容一致，fresh-context 独立审查无剩余发现。[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38362936254) 构建、HTTP/SQLite、真实文件输出与 109 项浏览器 E2E 通过；另完成 5 项入口定点回归及 CI 未包含的 9 项契约视觉用例，覆盖错误、等待、恢复、键盘、触摸和长内容。可重建入口为 `apps/web/e2e/fixtures/auth-contract/playwright.config.mjs`、`auth-contract-entry.spec.js` 与 `auth-contract-visual.spec.js`。集成后实际 preview 健康检查及登录、注册呈现通过；无 API 或数据库迁移。本机证据在 `test-results/auth-ui-integration/receipt.json`，不作为新检出前置；目标设备与真实邮件仍沿既有未验边界。
 
 备课退役候选 `22dd8df4` 与 squash 提交 `9e9edf6c` 文件内容一致，独立集中审查无剩余阻断项。可重建入口为 `apps/api/test/lessons-retirement.test.js`、固定 `apps/api/test/fixtures/retirement/` 备份、`apps/web/e2e/remove-lessons.config.mjs` 和公共 `apps/api/test/materials-pandoc.test.js`；其余受影响回归沿模块规格选择。本机还完成 14 项定点浏览器用例、现行原型脚本及固定旧版升级检查。实际 preview 重启、健康与登录入口通过；备课表已退役，19 张保留表内容及 11 个共享文件哈希与升级前备份一致，日程仅清理退役字段。证据入口为 `test-results/remove-lessons-integration/root-receipt.json`，备份位置见同目录 `preview-backup.json`；这些本机产物不是新检出前置。固定旧包恢复、再备份及未知迁移拒绝由入库测试保护；真实邮件、模型、目标设备与 Office 人工操作仍沿未验边界，作者专项缺失的外部 PDF 样本不计通过。
 
