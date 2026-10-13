@@ -87,20 +87,33 @@ export default function OriginalPane({
   }, [fileId, material.version, previewAttempt]);
   const current = previewFileId === fileId ? preview?.pages.find((x) => x.page === page) : null;
   const original = originalDocuments.find(item => item.fileId === fileId);
-  const paragraph = scene.paragraph ?? loc?.paragraph;
+  const paragraph = scene.paragraph ?? sourceParts.flatMap(part => part.locations)
+    .find(location => location.kind === "docx" && location.fileId === fileId)?.paragraph;
+  const paragraphLocations = [
+    ...material.drafts.flatMap(item => [
+      ...item.parts.flatMap(part => part.locations),
+      ...(item.noteFragments ?? []).flatMap(fragment => fragment.locations),
+      ...item.issues.flatMap(issue => issue.locations),
+    ]),
+    ...material.fragments.flatMap(fragment => fragment.locations),
+  ].filter(location => location.kind === "docx" && location.fileId === fileId);
+  const paragraphLocation = paragraphLocations.find(location => location.paragraph === paragraph);
   const legacyWord = preview?.issues.includes("legacy-object-loss");
   const paragraphLabel = legacyWord ? t("转换稿段落") : t("原文段落");
-  const paragraphView = Boolean(original?.paragraphs.length && (scene.originalView === "paragraphs" || !current));
+  const paragraphView = Boolean(original?.paragraphs.length && (scene.originalView === "paragraphs" ||
+    (!scene.originalView && draft?.questionId && loc?.kind === "docx") || !current));
   useEffect(() => {
     const visible = fileId
-      ? current && !paragraphView && previewFileId === fileId && preview.renditionFileId
-        ? { kind: "page", fileId, renditionFileId: preview.renditionFileId, page, box: null }
-        : null
+      ? paragraphView
+        ? paragraphLocation ?? null
+        : current && previewFileId === fileId && preview.renditionFileId
+          ? { kind: "page", fileId, renditionFileId: preview.renditionFileId, page, box: null }
+          : null
       : material.input.kind === "text" && material.input.text.length
         ? { kind: "text", start: 0, end: [...material.input.text].length }
         : null;
     onVisibleLocation?.(visible);
-  }, [fileId, page, current, paragraphView, preview, previewFileId, material.input, onVisibleLocation]);
+  }, [fileId, page, current, paragraphView, paragraphLocation, preview, previewFileId, material.input, onVisibleLocation]);
   const restoreParagraph = () => {
     const pane = nativePane.current;
     const node = pane?.querySelector(`[data-paragraph="${Number(paragraph)}"]`);
@@ -180,6 +193,14 @@ export default function OriginalPane({
               onChange={e => onScene({originalView: e.target.value})}>
               <option value="pages">{t("分页预览")}</option>
               <option value="paragraphs">{paragraphLabel}</option>
+            </select>}
+            {paragraphView && <select aria-label={t("原稿段落")} value={paragraph ?? ""}
+              onChange={event => onScene({ paragraph: Number(event.target.value) })}>
+              <option value="" disabled>{t("选择原稿段落")}</option>
+              {original.paragraphs.map(item => <option key={item.paragraph} value={item.paragraph}
+                disabled={!paragraphLocations.some(location => location.paragraph === item.paragraph)}>
+                {t("段落")} {item.paragraph}
+              </option>)}
             </select>}
             {!paragraphView && Boolean(preview?.pages.length) && <>{preview.pages.length === 1 ? <span className="q-muted">{t("第 1 页")}</span> : <select
               aria-label={t("原稿页码")}

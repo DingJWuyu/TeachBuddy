@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import {createIntegration} from '../../api/test/fixtures/auth-integration/harness.js';
 
 let world, directory, pageKey;
+const originalOfficeRoot=process.env.MATERIALS_OFFICE_ROOT;
 const evidence = process.env.QUESTIONS_INTAKE_EVIDENCE;
 const phase = process.env.CASE_PHASE ?? 'green';
 async function capture(page, name, data) {
@@ -36,7 +37,7 @@ async function get(page, route) {
   expect(response.status()).toBe(200);
   return response.json();
 }
-test.afterEach(async({context},info)=>{await context.close();await world?.close();world=undefined;if(directory){if(info.status===info.expectedStatus)fs.rmSync(directory,{recursive:true,force:true});else console.log('保留失败现场：'+directory);}});
+test.afterEach(async({context},info)=>{if(originalOfficeRoot===undefined)delete process.env.MATERIALS_OFFICE_ROOT;else process.env.MATERIALS_OFFICE_ROOT=originalOfficeRoot;await context.close();await world?.close();world=undefined;if(directory){if(info.status===info.expectedStatus)fs.rmSync(directory,{recursive:true,force:true});else console.log('保留失败现场：'+directory);}});
 async function photo(name, text) {
   return {name,mimeType:'image/png',buffer:await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="600" height="800" fill="white"/><text x="40" y="120" font-size="28">${text}</text></svg>`)).png().toBuffer()};
 }
@@ -202,3 +203,53 @@ test('PDF当前第2页补录保存真实原件、预览版本与页码',async({p
   await expect(page.getByLabel('原稿页码')).toHaveValue('2');
   await capture(page,'pdf-reopened',{saved:result.saved});
 });
+
+for (const pagination of ['ready','unavailable','legacy']) {
+  test(`Word ${pagination === 'ready' ? '有分页切原文段落' : pagination === 'legacy' ? '旧DOC切转换稿段落' : '无分页但保留原段落'}时可补录并保存真实docx来源`,async({page})=>{
+    if(pagination==='unavailable') process.env.MATERIALS_OFFICE_ROOT=path.join(os.tmpdir(),'questions-intake-office-unavailable');
+    await start(page);
+    await page.locator('.q-finder').getByRole('button',{name:'从资料收录',exact:true}).click();
+    await page.getByRole('button',{name:/^上传 Word/}).click();
+    await page.getByLabel('选择原稿').setInputFiles(pagination==='legacy' ? 'apps/web/e2e/fixtures/materials/samples/w.doc' : 'apps/web/e2e/fixtures/materials-questions/W.docx');
+    await page.getByRole('button',{name:'开始整理',exact:true}).click();
+    await expect(page.locator('.q-review-heading')).toContainText(/整理完成|部分内容待处理/,{timeout:60000});
+    const entry=(await get(page,'/imports')).items[0];
+    const original=await get(page,'/imports/'+entry.id);
+    const sources=original.drafts.flatMap(draft=>draft.parts.flatMap(part=>part.locations)).filter(location=>location.kind==='docx');
+    const source=sources.find(location=>location.paragraph!==sources[0].paragraph) ?? sources[0];
+    expect(source).toBeTruthy();
+    if(pagination!=='unavailable') {
+      await expect(page.getByLabel('原稿视图')).toBeVisible();
+      await page.getByLabel('原稿视图').selectOption('paragraphs');
+    } else {
+      await expect(page.getByLabel('原稿页码')).toHaveCount(0);
+      await expect(page.getByLabel('原稿视图')).toHaveCount(0);
+    }
+    await expect(page.locator('.q-word-original')).toBeVisible();
+    await page.getByLabel('原稿段落',{exact:true}).selectOption(String(source.paragraph));
+    await expect(page.locator(`.q-word-original [data-paragraph="${source.paragraph}"]`)).toHaveClass(/is-current/);
+    await page.getByRole('button',{name:'材料操作',exact:true}).click();
+    await page.getByRole('button',{name:'补充题目草稿',exact:true}).click();
+    await capture(page,`word-${pagination}-supplement-action`,{source,original});
+    await expect(page.locator(".q-review-current h3")).toContainText(`共 ${original.drafts.length+1} 题`);
+    await page.getByRole('button',{name:'修改题目',exact:true}).click();
+    const text=`Word ${pagination} 原段落补充题目`;
+    await page.getByLabel('题干段落 1',{exact:true}).fill(text);
+    await page.getByRole('button',{name:'完成修改',exact:true}).click();
+    await page.getByRole('button',{name:'保存检查进度',exact:true}).click();
+    await expect(page.getByText('校对已保存',{exact:true})).toBeVisible();
+    const saved=await get(page,'/imports/'+entry.id);
+    const draft=saved.drafts.at(-1);
+    expect(draft.parts).toEqual([{role:'body',locations:[source]}]);
+    await page.reload();
+    await page.getByRole('button',{name:'确认这道题',exact:true}).click();
+    await page.getByRole('button',{name:'查看题目',exact:true}).click();
+    const committed=await get(page,'/imports/'+entry.id);
+    const question=await get(page,'/items/'+committed.drafts.at(-1).questionId);
+    expect(question.source.parts).toEqual(draft.parts);
+    await page.getByRole('button',{name:'对照原稿',exact:true}).click();
+    await expect(page.locator('.q-word-original')).toBeVisible();
+    await expect(page.locator(`.q-word-original [data-paragraph="${source.paragraph}"]`)).toHaveClass(/is-current/);
+    await capture(page,`word-${pagination}-reopened`,{source,saved,question});
+  });
+}

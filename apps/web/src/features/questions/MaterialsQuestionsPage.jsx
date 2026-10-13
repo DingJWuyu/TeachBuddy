@@ -956,7 +956,7 @@ export default function MaterialsQuestionsPage({
                   onClick={() =>
                     action(async () => {
                       const location = visibleOriginal.current;
-                      if (!location) throw Error(t("请先打开可预览的原稿页"));
+                      if (!location) throw Error(t("请先选择可定位的原稿页或段落"));
                       const d = {
                         id: crypto.randomUUID(),
                         title: "补充题目",
