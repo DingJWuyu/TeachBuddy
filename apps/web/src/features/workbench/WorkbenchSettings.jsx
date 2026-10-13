@@ -195,7 +195,7 @@ export function WorkbenchSettings() {
       {logoutState === 'unknown' && <p role="alert">{t("退出结果暂未确认，业务操作已锁定。请重试确认。")}</p>}
       {pendingDeletions.length > 0 && <Row title={t("继续核实账户删除", { ns: 'auth' })}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 8, width: 'min(200px, 55vw)', minWidth: 0 }}>
-        {pendingDeletions.map(item => <button key={item.requestId} className="wb-button"
+        {pendingDeletions.map(item => <button key={item.requestId} className="wb-button" disabled={logoutState !== 'idle'}
           aria-label={pendingDeletions.length > 1 ? `${t("继续核实账户删除", { ns: 'auth' })} - ${item.nickname || item.email} ${item.email}` : undefined}
           style={{ display: 'block', height: 'auto', minWidth: 0, width: '100%', lineHeight: 1.5, whiteSpace: 'normal', overflowWrap: 'anywhere' }}
           onClick={() => resumeDeletion(item.requestId)}>{pendingDeletions.length > 1

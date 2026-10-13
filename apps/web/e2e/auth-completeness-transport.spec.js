@@ -36,6 +36,24 @@ async function logout(page) {
   await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
 }
 
+test('昵称已保存但正文超时后读取核实，不重放且保持工作台', async ({ page, world }) => {
+  await register(page, world, 'profile-timeout@example.test');
+  await openSettings(page);
+  const mounted = await page.locator('.wb-shell').elementHandle();
+  const held = holdResponse(world, '/api/auth/profile');
+  let writes = 0;
+  page.on('request', request => { if (request.url().endsWith('/api/auth/profile')) writes++; });
+  await page.getByRole('button', { name: '修改昵称', exact: true }).click();
+  const input = page.getByRole('textbox', { name: '昵称', exact: true });
+  await input.fill('正文超时后已核实'); await input.press('Enter');
+  await expect.poll(() => held.held.length).toBe(1);
+  await expect(page.getByRole('button', { name: '修改昵称', exact: true })).toHaveText('正文超时后已核实', { timeout: 16000 });
+  await expect(page.locator('.tb-account-row')).toContainText('正文超时后已核实');
+  expect(writes).toBe(1);
+  expect(await mounted.evaluate(element => element.isConnected)).toBe(true);
+  held.remove();
+});
+
 for (const partialBody of [false, true]) {
   test(`登录收到${partialBody ? '部分 JSON' : '仅响应头'}后仍完整超时，并能继续登录`, async ({ page, world }, info) => {
     const email = 'transport-login@example.test';

@@ -945,6 +945,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
   }, [bootstrap, rotatePageContext]);
 
   const resumeDeletion = useCallback(requestId => {
+    if (revocationRunningRef.current || stateRef.current.revocation) return;
     try {
       const deletion = readDeletion(requestId);
       if (deletion) { generationRef.current += 1; invalidateOperation(); enterDeletion(deletion); }
