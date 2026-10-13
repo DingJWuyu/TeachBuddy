@@ -33,7 +33,7 @@ test('退出未决时保留当前核实目标，不能切入另一账户删除�
   const retry = page.waitForRequest('**/api/auth/logout');
   await page.getByRole('button', { name: '重试确认退出', exact: true }).click();
   expect((await retry).postDataJSON().sessionId).toBe(target);
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
 });
 
 test('退出处理中及结果未知时昵称不能绕过身份锁提交', async ({ page, world }) => {
@@ -59,7 +59,7 @@ test('退出处理中及结果未知时昵称不能绕过身份锁提交', async
     expect(world.workbench.db.prepare('SELECT nickname FROM auth_accounts').get().nickname).toBe('核查教师');
     await page.unroute('**/api/auth/logout');
     await page.getByRole('button', { name: '重试确认退出', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   } finally { held.release(); }
 });
 
@@ -88,7 +88,7 @@ test('昵称迟到回执不能复活已删除账户或移除删除核实状态',
     expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n).toBe(0);
     await page.unroute('**/api/auth/account-deletion');
     await page.getByRole('button', { name: '重试核实删除', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   } finally { held.release(); }
 });
 

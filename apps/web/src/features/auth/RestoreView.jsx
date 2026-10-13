@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import BrandMark from './BrandMark.jsx';
+import AuthEntryLayout from './AuthEntryLayout.jsx';
 import { COPY } from './presentation.js';
 
 /*
@@ -10,21 +11,21 @@ import { COPY } from './presentation.js';
  */
 export function BootCard() {
   return (
-    <div className="ae-page" data-auth-surface="boot">
+    <AuthEntryLayout surface="boot">
       <div className="ae-shell">
         <header className="ae-brand">
           <BrandMark />
         </header>
         <div className="ae-card ae-boot-card" aria-busy="true" />
       </div>
-    </div>
+    </AuthEntryLayout>
   );
 }
 
 export default function RestoreCard({ checking, message, onRetry, onReturn }) {
   const { t } = useTranslation('auth');
   return (
-    <div className="ae-page" data-auth-surface={checking ? 'restoring' : 'restore-failed'}>
+    <AuthEntryLayout surface={checking ? 'restoring' : 'restore-failed'} expression={checking ? 'busy' : 'error'}>
       <div className="ae-shell">
         <header className="ae-brand">
           <BrandMark />
@@ -46,6 +47,6 @@ export default function RestoreCard({ checking, message, onRetry, onReturn }) {
           )}
         </div>
       </div>
-    </div>
+    </AuthEntryLayout>
   );
 }

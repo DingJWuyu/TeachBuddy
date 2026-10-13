@@ -142,7 +142,7 @@ test('real identity expiry locks drafts; same account recovers; late export cann
     await page.getByLabel('中文说明').fill('账户 A 未保存说明');
     world.clock.advance(8 * 86400000);
     await page.getByRole('button', { name: '保存', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
     await expect(page.getByLabel('LaTeX', { exact: true })).toHaveCount(0);
     await login(page, 'math-race@example.test');
     await expect(page.getByLabel('中文说明')).toHaveValue('账户 A 未保存说明');
@@ -159,7 +159,7 @@ test('real identity expiry locks drafts; same account recovers; late export cann
     await arrived;
     world.clock.advance(8 * 86400000);
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-    await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
     await register(page, world, 'math-new-account@example.test');
     release();
     await expect(page.getByRole('heading', { name: '制作数学作品', exact: true })).toBeVisible();
@@ -168,7 +168,7 @@ test('real identity expiry locks drafts; same account recovers; late export cann
     await page.screenshot({ path: path.join(evidence, 'account-switch.png') });
     world.clock.advance(8 * 86400000);
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-    await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
     await login(page, 'math-race@example.test');
     await expect(page.getByLabel('中文说明')).toHaveValue('账户 A 未保存说明');
     await page.unroute('**/api/workbench/files/*/content');
@@ -202,7 +202,7 @@ for (const mode of ['login', 'register']) {
       const documentId = await page.evaluate(() => window.mathDocumentId = crypto.randomUUID());
       network.length = 0;
       await page.getByRole('button', { name: '退出登录', exact: true }).click();
-      await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
       await expect(page.getByLabel('LaTeX', { exact: true })).toHaveCount(0);
       if (mode === 'login') await login(page, 'logout-owner@example.test');
       else await register(page, world, 'logout-new@example.test');
@@ -256,7 +256,7 @@ for (const method of ['POST', 'GET']) {
       await page.screenshot({ path: path.join(evidence, `prepare-${method}-failed.png`) });
       await page.unroute('**/api/auth/session');
       await page.getByRole('button', { name: '重试', exact: true }).click();
-      await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
       await login(page, 'retry@example.test');
       expect(await page.evaluate(() => window.mathDocumentId)).toBe(marker);
       fs.writeFileSync(path.join(evidence, `prepare-${method}.json`), JSON.stringify({ blocked, entryClosed: true, sameDocument: true, retryLogin: true }, null, 2));
@@ -276,9 +276,9 @@ test('post-logout preparation does not restore another remembered account', asyn
   const actions = [];
   try {
     await page.goto(world.origin);
-    await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
     await other.goto(world.origin);
-    await expect(other.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+    await expect(other.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
     await register(page, world, 'page-a@example.test');
     await register(other, world, 'page-b@example.test');
     await other.getByRole('button', { name: '新建公式', exact: true }).first().click();
@@ -290,7 +290,7 @@ test('post-logout preparation does not restore another remembered account', asyn
     });
     const marker = await page.evaluate(() => window.mathDocumentId = crypto.randomUUID());
     await page.getByRole('button', { name: '退出登录', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
     await expect(other.getByLabel('LaTeX', { exact: true })).toHaveValue('b=2');
     await other.getByLabel('中文说明').fill('A 退出后 B 继续保存');
     expect((await save(other)).version).toBe(2);

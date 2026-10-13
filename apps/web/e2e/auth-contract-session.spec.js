@@ -38,7 +38,7 @@ test.beforeEach(async () => {
 
 async function openEntry(page, query = '') {
   await page.goto(`${BASE}/${query}`);
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 }
 
 /* Register/reset unknown results keep the form; the way back to login is the
@@ -50,7 +50,7 @@ async function returnToLogin(page) {
   } else {
     await page.locator('.ae-switch button').click();
   }
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 }
 
 async function signIn(page, { email, password, nickname, remember = true }) {
@@ -81,7 +81,7 @@ test('不记住我：刷新回登录且旧页面绑定不能授权（SE01 / C21�
   const oldPageId = Object.keys(before.containers[0].pages)[0];
 
   await page.reload();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 
   const response = await page.context().request.get(`${BASE}/api/workbench/context`, {
     headers: { 'X-TeachBuddy-Page': oldPageId },
@@ -160,7 +160,7 @@ test('恢复失败返回登录会定向放弃恢复目标（S47 / CC-PENDING）'
   await page.reload();
   await expect(page.getByRole('heading', { name: '恢复失败' })).toBeVisible();
   await page.getByRole('button', { name: '返回登录' }).click();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 
   await expect
     .poll(async () => (await readState(PORT)).sessions.find((session) => session.id === target)?.revoked)
@@ -190,7 +190,7 @@ test('记住我保存失败：继续当前会话进入 page 模式，刷新回�
   expect(session.persistence).toBe('page');
 
   await page.reload();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 });
 
 test('记住我保存失败：重试保存成功后刷新可恢复（PN01 / WB-AUTH-013）', async ({ page }) => {
@@ -233,7 +233,7 @@ test('离开保存失败卡：定向撤销旧身份且迟到结果不改写新�
   await armFault(PORT, { operation: 'session-post', kind: 'delay', ms: 1500, times: 1 });
   await page.getByRole('button', { name: '重试保存登录状态' }).click();
   await page.getByRole('button', { name: '返回登录' }).click();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await page.getByLabel('邮箱', { exact: true }).fill('late@example.com');
   await page.waitForTimeout(2000);
 
@@ -371,7 +371,7 @@ test('已知未发出的离线失败可重试，不为注册业务制造副作�
 test('请求超时：登录按普通失败、注册按结果未确认（L02 / CC-UNKNOWN）', async ({ page }) => {
   await seedAccount(PORT, TEACHER);
   await page.goto(`${BASE}/?requestTimeoutMs=1500`);
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 
   await armFault(PORT, { operation: 'login', kind: 'delay', ms: 4000, times: 1 });
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
@@ -405,7 +405,7 @@ test('业务 401 触发身份复核并锁住工作台（C20 / CC-SESSION）', as
   await revokeSession(PORT, session.id);
 
   await page.locator('[data-harness-business-401]').click();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await expect(page.getByText('登录状态已过期，请重新登录。')).toBeVisible();
   await expect(page.locator('[data-harness-nickname]')).toHaveCount(0);
 });
@@ -419,11 +419,11 @@ test('隐藏页恢复可见时先复核身份（CC-SESSION）', async ({ page, c
 
   const second = await context.newPage();
   await second.goto(`${BASE}/`);
-  await expect(second.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(second.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await page.bringToFront();
   await page.waitForTimeout(300);
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await second.close();
 });
 
@@ -436,7 +436,7 @@ test('跨页身份变化只触发核验，不清除另一账户的当前会话�
 
   const second = await context.newPage();
   await second.goto(`${BASE}/`);
-  await expect(second.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(second.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await second.getByLabel('邮箱', { exact: true }).fill(OTHER.email);
   await second.getByLabel('密码', { exact: true }).fill(OTHER.password);
   await second.getByRole('button', { name: '登录', exact: true }).click();
@@ -462,7 +462,7 @@ test('登录迟到 pending 不激活，也不污染已切换的新表单（RA02 
   await page.waitForTimeout(2200);
 
   await expect(page.getByLabel('昵称', { exact: true })).toHaveValue('迟到的新教师');
-  await expect(page.getByRole('heading', { name: '注册' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '创建账户' })).toBeVisible();
   await expect(page.locator('[data-harness-nickname]')).toHaveCount(0);
   expect(await activateRequests()).toHaveLength(0);
   const pending = (await readState(PORT)).sessions.find((session) => session.state === 'pending');
@@ -477,7 +477,7 @@ test('账户重置撤销所有旧会话，其他账户不受影响（IS01 / WB-A
 
   const second = await context.newPage();
   await second.goto(`${BASE}/`);
-  await expect(second.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(second.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await second.getByLabel('邮箱', { exact: true }).fill(OTHER.email);
   await second.getByLabel('密码', { exact: true }).fill(OTHER.password);
   await second.getByRole('button', { name: '登录', exact: true }).click();
@@ -487,7 +487,7 @@ test('账户重置撤销所有旧会话，其他账户不受影响（IS01 / WB-A
 
   const response = await page.evaluate(() => window.__authHarness.request('/api/workbench/context'));
   expect(response.status).toBe(401);
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   const other = await second.evaluate(() => window.__authHarness.request('/api/workbench/context'));
   expect(other.status).toBe(200);
   await second.close();
@@ -523,7 +523,7 @@ test('保存失败期间的其他页面通知只触发核验，不误报过期�
 
   const second = await context.newPage();
   await second.goto(`${BASE}/`);
-  await expect(second.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(second.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await second.getByLabel('邮箱', { exact: true }).fill(OTHER.email);
   await second.getByLabel('密码', { exact: true }).fill(OTHER.password);
   await second.getByRole('button', { name: '登录', exact: true }).click();
@@ -572,7 +572,7 @@ test('身份存储不可读时不回退旧身份，也不冒充已退出（C21 /
   await page.waitForTimeout(400);
   await expect(page.locator('[data-harness-nickname]')).toHaveText(TEACHER.nickname);
   await expect(page.locator('[data-harness-account-key]')).toHaveText(accountKey);
-  await expect(page.getByRole('heading', { name: '登录' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toHaveCount(0);
 
   await clearFaults(PORT);
   const business = await page.evaluate(() => window.__authHarness.request('/api/workbench/context'));
@@ -588,9 +588,9 @@ test('BFCache 恢复不沿用旧页面级身份（SE01）', async ({ page }) => 
 
   /* A fresh document (new page context) cannot reuse the page-level identity. */
   await page.goto(`${BASE}/?away=1`);
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await expect(page.locator('[data-harness-nickname]')).toHaveCount(0);
   await expect.poll(lastPageId).not.toBe(before);
 
@@ -605,7 +605,7 @@ test('BFCache 恢复不沿用旧页面级身份（SE01）', async ({ page }) => 
   await page.evaluate(() => {
     window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
   });
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await expect(page.locator('[data-harness-nickname]')).toHaveCount(0);
   await expect.poll(lastPageId).not.toBe(active);
 });

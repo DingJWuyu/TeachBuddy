@@ -13,7 +13,7 @@ export function headers(page) {
 }
 export async function register(page, world, email = 'teacher-a@example.test') {
   track(page);
-  if (!await page.getByRole('heading', { name: '登录', exact: true }).isVisible()) await page.goto(world.origin);
+  if (!await page.getByRole('heading', { name: '欢迎回来', exact: true }).isVisible()) await page.goto(world.origin);
   await page.getByRole('button', { name: '创建账户' }).click();
   await page.getByLabel('昵称', { exact: true }).fill(email.startsWith('teacher-a') ? '甲老师' : '乙老师');
   await page.getByLabel('邮箱', { exact: true }).fill(email);
@@ -39,5 +39,5 @@ export async function logout(page) {
   if (!await settings.isVisible()) await page.getByRole('button', { name: '展开侧栏', exact: true }).click();
   await settings.click();
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
 }

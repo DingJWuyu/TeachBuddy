@@ -31,9 +31,9 @@ function holdResponse(world, pathname, { partialBody = true, headers = true } = 
 async function logout(page) {
   await openSettings(page);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
 }
 
 test('昵称已保存但正文超时后读取核实，不重放且保持工作台', async ({ page, world }) => {
@@ -149,7 +149,7 @@ for (const outcome of ['success', 'disconnect', 'timeout']) {
     await settled;
     // Flush the application's promise chain after the browser consumed the body.
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)));
-    await expect(page.getByRole('heading', { name: '注册', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '创建账户', exact: true })).toBeVisible();
     await expect(page.getByLabel('昵称', { exact: true })).toHaveValue('迟到响应后的新昵称');
     await expect(page.getByLabel('邮箱', { exact: true })).toHaveValue('transport-fresh@example.test');
     await expect(page.locator('.ae-notice')).toHaveCount(0);

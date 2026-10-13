@@ -35,7 +35,7 @@ test('注册预读中切回登录不创建账户或交接身份', async ({ page,
   await held.reached.promise;
   await page.getByRole('button', { name: '登录', exact: true }).click();
   await settlePreflight(page, held);
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await expect(page.locator('.wb-shell')).toHaveCount(0);
   expect(registrations).toBe(0);
   expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n).toBe(0);
