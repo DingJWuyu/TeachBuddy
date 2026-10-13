@@ -243,6 +243,20 @@ export function createJobs({ db, mutations, files, clock = () => new Date(), log
     );
   }
   return {
+    async cancelFilesAndWait(principal, ids) {
+      const selected = list(principal).items.filter(job => job.target.kind === 'file' && ids.includes(job.target.id));
+      db.transaction(() => {
+        for (const job of selected) if (active.has(job.state)) save(principal, { ...job,
+          state: controller?.id === job.id ? 'cancelling' : 'cancelled', updatedAt: stamp() });
+      })();
+      const current = selected.some(job => job.id === controller?.id) ? controller : null;
+      if (current) { current.abort.abort(); await current.done; }
+    },
+    removeFiles(principal, ids) {
+      for (const job of list(principal).items)
+        if (job.target.kind === 'file' && ids.includes(job.target.id))
+          db.prepare('DELETE FROM materials_jobs WHERE accountKey=? AND id=?').run(principal.accountKey, job.id);
+    },
     async cancelAccountAndWait(accountKey) {
       // Revocation is already durable before this call. Queued work must never
       // enter a handler, including after a server restart.

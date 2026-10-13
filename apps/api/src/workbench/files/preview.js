@@ -278,6 +278,11 @@ export function createPreviews({
     },
   };
   return {
+    async settleFileConversions(principal, ids) {
+      const active = [...textConversions.values()].filter(handle => handle.accountKey === principal.accountKey && ids.includes(handle.fileId));
+      for (const handle of active) handle.abort.abort();
+      await Promise.allSettled([...active.map(handle => handle.done), ...ids.map(id => inFlight.get(id)).filter(Boolean)]);
+    },
     // Used by resources only. Original files and existing preview jobs stay intact.
     async extractText(principal, id) {
       const file = files.read(principal, id);
@@ -292,7 +297,7 @@ export function createPreviews({
       const abort = new AbortController();
       let settled;
       const done = new Promise(resolve => { settled = resolve; });
-      const handle = { accountKey: principal.accountKey, abort, done };
+      const handle = { accountKey: principal.accountKey, fileId: id, abort, done };
       textConversions.set(handle, handle);
       try {
       const result = await convertFile({

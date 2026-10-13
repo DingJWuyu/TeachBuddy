@@ -45,4 +45,10 @@ export const migrations = [
       )`);
     },
   },
+  {
+    id: "resources_004_file_reclamation",
+    up(db) {
+      db.exec(`CREATE TABLE resource_purges (id TEXT PRIMARY KEY, accountKey TEXT NOT NULL, roots TEXT, completed INTEGER NOT NULL)`);
+    },
+  },
 ];

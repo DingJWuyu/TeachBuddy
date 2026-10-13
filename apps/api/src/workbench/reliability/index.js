@@ -277,6 +277,15 @@ export function createReliability({
     },
     router,
     agentRecoveryGuard,
+    async waitForFileReaders(principal) {
+      const ids = db.prepare('SELECT id FROM reliability_exports WHERE accountKey=?').all(principal.accountKey).map(row => row.id);
+      await Promise.all(ids.map(id => running.get(id)?.done).filter(Boolean));
+    },
+    retainedFiles(principal) {
+      return db.prepare('SELECT snapshot,value FROM reliability_exports WHERE accountKey=? AND snapshot IS NOT NULL').all(principal.accountKey)
+        .filter(row => ['queued', 'running'].includes(JSON.parse(row.value).state))
+        .map(row => JSON.parse(row.snapshot));
+    },
     initialize() {
       // Packages are derived caches. A removed export row revokes its archive,
       // including packages created before a module was retired.

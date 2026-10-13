@@ -1,3 +1,4 @@
+import { createFileReclamation } from "./files/reclamation.js";
 import { retirementMigrations } from './retire-lessons.js';
 import { createNavigationRouter, navigationMigrations } from './navigation.js';
 import { createReliability } from './reliability/index.js';
@@ -122,6 +123,13 @@ export function createWorkbench({
   const recognition = createRecognition({ db, mutations, files, readBytes, jobs, content,
     recognizer: workbenchEnv.recognition?.recognizer ?? createRecognizer({ home: workbenchEnv.recognition?.home,
       workDirectory: path.join(workbenchEnv.filesDir ?? path.join(path.dirname(env.sqlitePath), 'files'), 'recognition-work') }) });
+  const reclamation = createFileReclamation({ db, files, jobs, recognition, waitForReaders: principal => reliability.waitForFileReaders(principal), retainedValues(principal) {
+    return [
+      ...['questions', 'math', 'classes', 'schedule'].map(id => loader.get(id).port.readForExport(principal)),
+      agent?.store.list(principal.accountKey) ?? [],
+      reliability.retainedFiles(principal),
+    ];
+  } });
   const migrations = createMigrationRunner({ db, clock });
   const loader = createModuleLoader({
     catalog,
@@ -129,7 +137,7 @@ export function createWorkbench({
       ...implementations,
       ...(workbenchEnv.extraImplementations ?? {}),
     },
-    dependencies: { db, mutations, files, content, jobs, recognition, mathRuntimeDirectory,
+    dependencies: { db, mutations, files, content, jobs, recognition, reclamation, mathRuntimeDirectory,
       clock: { now: () => (clock ? clock() : new Date()).toISOString() } },
     logger,
   });
@@ -222,6 +230,7 @@ export function createWorkbench({
       const operations = connectBusinessOperations(loader);
       agent = createAgent({ db, mutations, identity, trustedOrigins: workbenchEnv.trustedOrigins ?? [], operations, config: env.agent });
       jobs.start(handlers);
+      await loader.get("resources")?.port.resumePurges?.();
       return migrationResult;
     })();
     return initialization;

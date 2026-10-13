@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID, createHash } from 'node:crypto';
-import { Readable } from 'node:stream';
+import { Readable, Transform } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { fileTypeFromBuffer } from 'file-type';
 import sharp from 'sharp';
 import { contractError, problems, invalidInput } from '../problems.js';
@@ -54,9 +55,13 @@ async function detect(bytes) {
 export function createFiles({ db, mutations, directory, clock = () => new Date() }) {
   const staging = path.join(directory, 'staging');
   const blobs = path.join(directory, 'blobs');
+  const downloads = path.join(directory, 'downloads');
   function initialize() {
     fs.mkdirSync(staging, { recursive: true });
     fs.mkdirSync(blobs, { recursive: true });
+    // Download snapshots are request-scoped caches, never committed files.
+    fs.rmSync(downloads, { recursive: true, force: true });
+    fs.mkdirSync(downloads, { recursive: true, mode: 0o700 });
     // Only uncommitted staging files belong to cleanup. Committed/orphan blobs stay.
     for (const name of fs.readdirSync(staging)) {
       if (/^[0-9a-f-]{36}\.part$/.test(name)) fs.unlinkSync(path.join(staging, name));
@@ -68,6 +73,7 @@ export function createFiles({ db, mutations, directory, clock = () => new Date()
       .prepare('SELECT * FROM materials_files WHERE accountKey = ? AND id = ?')
       .get(account(principal), id);
     if (!result) throw contractError(problems.notFound());
+    if (db.prepare('SELECT 1 FROM materials_file_reclamation WHERE accountKey=? AND id=?').get(principal.accountKey, id)) throw storageError();
     return result;
   }
   function read(principal, id) {
@@ -192,7 +198,38 @@ export function createFiles({ db, mutations, directory, clock = () => new Date()
         fs.rmSync(path.join(blobs, name), { force: true });
       }
       fs.rmSync(path.join(directory, 'work', digest(Buffer.from(accountKey))), { recursive: true, force: true });
+      fs.rmSync(path.join(downloads, digest(Buffer.from(accountKey))), { recursive: true, force: true });
       syncDirectory(blobs);
+    },
+    downloadDirectory(principal) {
+      mutations.assertAccountActive(principal);
+      const accountDownloads = path.join(downloads, digest(Buffer.from(principal.accountKey)));
+      fs.mkdirSync(accountDownloads, { recursive: true, mode: 0o700 });
+      return fs.mkdtempSync(path.join(accountDownloads, 'request-'));
+    },
+    async copyVerified(principal, id, target, signal) {
+      const record = row(principal, id), metadata = JSON.parse(record.metadata);
+      const hash = createHash('sha256');
+      let length = 0;
+      try {
+        await pipeline(fs.createReadStream(path.join(blobs, record.blobName)),
+          new Transform({ transform(chunk, encoding, done) { length += chunk.length; hash.update(chunk); done(null, chunk); } }),
+          fs.createWriteStream(target, { flags: 'wx', mode: 0o600 }), { signal });
+        if (length !== metadata.byteLength || hash.digest('hex') !== metadata.sha256) throw storageError();
+        return metadata;
+      } catch { throw storageError(); }
+    },
+    removeBlobs(principal, ids) {
+      for (const id of ids) {
+        const record = db.prepare('SELECT blobName FROM materials_files WHERE accountKey=? AND id=?').get(account(principal), id);
+        if (!record) continue;
+        if (!/^[0-9a-f-]+\.blob$/.test(record.blobName)) throw storageError();
+        const references = db.prepare('SELECT id FROM materials_files WHERE blobName=?').all(record.blobName);
+        if (references.some(row => !ids.includes(row.id))) continue;
+        try { fs.rmSync(path.join(blobs, record.blobName), { force: true }); }
+        catch { throw storageError(); }
+      }
+      try { syncDirectory(blobs); } catch { throw storageError(); }
     },
     initialize,
     readBytes,

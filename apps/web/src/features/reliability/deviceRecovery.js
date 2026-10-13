@@ -1,10 +1,10 @@
+import { freezeResourceUploads, readResourceRecoveryUploads } from "../resources/deviceRecovery.js";
 import { isDeletedAccount } from '../workbench/storage.js';
 // Move existing device state out of the active namespaces before mounting any
 // editor after a time-point restore. Values remain byte-for-byte inspectable.
 const tracker = (account) => `teachbuddy:data-recovery:${account}`;
 const prefix = (account) => `teachbuddy:data-recovery-archive:${account}:`;
 const stores = [
-  ["teachbuddy-resources-pending", "requests", "pending:resources"],
   ["teachbuddy.math.uploads", "pending", "pending:math-upload"],
   ["teachbuddy.questions.uploads", "pending", "pending:questions-upload"],
 ];
@@ -17,6 +17,7 @@ function database(name, store) {
   });
 }
 async function moveUploads(account, recoveryId) {
+  await freezeResourceUploads(account, recoveryId);
   for (const [name, storeName] of stores) {
     const db = await database(name, storeName);
     try {
@@ -141,6 +142,7 @@ export async function archivedUploads(account, recoveryId) {
       db.close();
     }
   }
+  result.push(...await readResourceRecoveryUploads(account, recoveryId, archive?.records));
   return result;
 }
 

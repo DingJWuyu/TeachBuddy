@@ -1,3 +1,5 @@
+import { createResourceStorage } from "./storage.js";
+import { mountResourceDownload } from "./download.js";
 import { createTaxonomy } from "./taxonomy.js";
 import { createResourceHistory } from "./history.js";
 import { createResourceTextSearch } from "./text-search.js";
@@ -24,6 +26,7 @@ export function createResourcesModule({
   files,
   jobs,
   recognition,
+  reclamation,
   now = () => new Date().toISOString(),
 }) {
   const history = createResourceHistory(db, files);
@@ -91,6 +94,7 @@ export function createResourcesModule({
       : { items };
   }
   function current(principal, id, input, allowDeleted = false) {
+    storage.assertEditable(principal, id);
     const item = read(principal, id);
     if (item.version !== input.baseVersion)
       throw contractError(problems.versionConflict(item.version));
@@ -250,16 +254,6 @@ export function createResourcesModule({
       method: "POST",
       route: "/items/:id/purge",
       schema: "PurgeResource",
-      run: ({ principal, id, input }) => {
-        const item = current(principal, id, input, true);
-        if (!item.deletedAt) throw invalidInput("/id", "invalid-reference");
-        db.prepare(
-          "DELETE FROM resource_items WHERE accountKey=? AND id=?",
-        ).run(principal.accountKey, id);
-        history.remove(principal, id);
-        // Managed file bytes have their own lifetime.
-        return { id, permanentlyDeleted: true };
-      },
     },
     getResourceTaxonomy: {
       method: "GET",
@@ -306,8 +300,10 @@ export function createResourcesModule({
       },
     },
   };
+  const storage = createResourceStorage({ db, mutations, reclamation, history, textSearch, current, all });
   const operations = {};
   const router = Router();
+  mountResourceDownload(router, { db, files, read });
   for (const [name, definition] of Object.entries(definitions)) {
     operations[name] = async ({ principal, key, input, id, query = {} }) => {
       if (!principal?.accountKey)
@@ -328,6 +324,7 @@ export function createResourcesModule({
         };
       if (!uuidPattern.test(key ?? ""))
         throw invalidInput("/headers/Idempotency-Key", "invalid-type");
+      if (name === "purgeResource") return storage.purge({ principal, key, input, id });
       return mutations.execute(
         {
           principal,
@@ -362,7 +359,9 @@ export function createResourcesModule({
   materialErrors(router);
   return { router, port: {
     operations,
+    resumePurges: storage.resume,
     readForExport(principal) {
+      storage.assertExportable(principal);
       return { resources: all(principal), taxonomy: taxonomy.readStored(principal), fileRevisions: history.readForExport(principal) };
     },
   } };
@@ -415,6 +414,6 @@ function validateInput(schema, input) {
 
 // Account lifecycle owned by this module; the composition root owns the transaction.
 export function deleteAccountData(db, accountKey) {
-  for (const table of ['resource_file_history', 'resource_text_cache', 'resource_taxonomy', 'resource_items'])
+  for (const table of ['resource_purges', 'resource_file_history', 'resource_text_cache', 'resource_taxonomy', 'resource_items'])
     db.prepare(`DELETE FROM ${table} WHERE accountKey=?`).run(accountKey);
 }

@@ -11,7 +11,10 @@ export const fileMigrations = [
       );
       CREATE INDEX materials_files_account_digest ON materials_files(accountKey, sha256);`);
         }
-      }
+      },
+      { id: 'materials_files_002_reclamation', up(db) {
+        db.exec(`CREATE TABLE materials_file_reclamation (id TEXT PRIMARY KEY, accountKey TEXT NOT NULL, ownerId TEXT NOT NULL)`);
+      } }
     ]
   }
 ];

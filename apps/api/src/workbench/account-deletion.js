@@ -7,7 +7,7 @@ import { deleteAccountData as deleteMathData } from '../modules/math/index.js';
 // Shared workbench data is cleared alongside module-owned data in one transaction.
 const accountTables = [
   'materials_recognition_requests', 'materials_recognition_results', 'materials_renditions', 'materials_previews',
-  'materials_jobs', 'materials_files', 'reliability_frozen_operations', 'reliability_exports',
+  'materials_jobs', 'materials_file_reclamation', 'materials_files', 'reliability_frozen_operations', 'reliability_exports',
   'reliability_preferences', 'workbench_navigation', 'workbench_mutation_keys', 'agent_conversations',
 ];
 

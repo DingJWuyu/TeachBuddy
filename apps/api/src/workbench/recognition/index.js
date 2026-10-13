@@ -246,6 +246,34 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
     },
   };
   return { get, readPage, readResult, request, ensurePage, jobHandlers: { recognition: handler },
+    fileRetention(principal) {
+      return db.prepare('SELECT inputHash,value FROM materials_recognition_results WHERE accountKey=?').all(principal.accountKey)
+        .map(row => {
+          const value = JSON.parse(row.value);
+          const unfinishedOutputs = db.prepare('SELECT body FROM workbench_mutation_keys WHERE accountKey=? AND path=?')
+            .all(principal.accountKey, `/internal/recognition/${value.resultId}`).map(row => JSON.parse(row.body));
+          return [row.inputHash, { ...value, unfinishedOutputs }];
+        });
+    },
+    async settleFiles(principal, ids) {
+      // Jobs have settled first. A failed stop must be confirmed by the runtime
+      // before their late evidence or associated files can be removed.
+      const hashes = new Set(ids.map(id => db.prepare('SELECT sha256 FROM materials_files WHERE accountKey=? AND id=?').get(principal.accountKey, id)?.sha256));
+      const results = db.prepare('SELECT value FROM materials_recognition_results WHERE accountKey=?').all(principal.accountKey).map(row => JSON.parse(row.value));
+      if (results.some(value => hashes.has(value.inputHash) && value.issues?.some(issue => issue.code === 'recognition-cleanup')))
+        await recognizer?.stopAccountAndWait?.(principal.accountKey);
+    },
+    removeFiles(principal, ids) {
+      const hashes = new Set(ids.map(id => db.prepare('SELECT sha256 FROM materials_files WHERE accountKey=? AND id=?').get(principal.accountKey, id)?.sha256));
+      for (const row of db.prepare('SELECT id,inputHash,value FROM materials_recognition_results WHERE accountKey=?').all(principal.accountKey)) {
+        const result = JSON.parse(row.value);
+        const retainedImage = db.prepare('SELECT id FROM materials_files WHERE accountKey=? AND sha256=?').all(principal.accountKey, row.inputHash).some(file => !ids.includes(file.id));
+        const outputs = [result.rawFileId, ...(result.assetFileIds ?? []), ...(result.originalAssetFileIds ?? [])].filter(Boolean);
+        if (hashes.has(row.inputHash) && !retainedImage && outputs.every(id => ids.includes(id)))
+          db.prepare('DELETE FROM materials_recognition_results WHERE accountKey=? AND id=?').run(principal.accountKey, row.id);
+      }
+      for (const id of ids) db.prepare('DELETE FROM materials_recognition_requests WHERE accountKey=? AND (fileId=? OR renditionFileId=?)').run(principal.accountKey, id, id);
+    },
     async cleanupAccount(accountKey) {
       await Promise.allSettled([...inFlight.entries()]
         .filter(([key]) => key.startsWith(`${accountKey}/`)).map(([, work]) => work));

@@ -102,6 +102,9 @@ export function createResourceTextSearch({ db, files, jobs, recognition, mutatio
     }
   }
   return {
+    async settle(principal, ids) {
+      await Promise.allSettled(ids.map(id => inFlight.get(`${principal.accountKey}/${id}`)).filter(Boolean));
+    },
     retry(principal) {
       db.prepare(
         "DELETE FROM resource_text_cache WHERE accountKey=? AND json_extract(value,'$.state')='failed'",
