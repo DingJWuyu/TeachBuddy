@@ -99,7 +99,7 @@ test('real A11 page transport uploads, displays, downloads and restores R31 file
     await page.screenshot({ path: path.join(evidence, 'real-page-files.png') });
     const boundPage = pageId;
     await page.getByRole('button', { name: '退出登录', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
     const denied = await page.request.get(`${world.origin}/api/workbench/files/${fileId}/content`, { headers: { 'X-TeachBuddy-Page': boundPage } });
     expect(denied.status()).toBe(401);
     const fileRequests = observed.filter(item => item.path.startsWith('/api/workbench/files'));

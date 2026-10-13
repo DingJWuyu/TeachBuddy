@@ -59,7 +59,7 @@ async function apiHeaders(page, extra = {}) {
 async function signIn(page, query = '') {
   await seedAccount(PORT, TEACHER);
   await page.goto(`${BASE}/${query}`);
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
   await page.getByRole('button', { name: '登录', exact: true }).click();
@@ -272,7 +272,7 @@ test('transport 只接受同源 /api，其他地址直接拒绝（工作台 tran
 test('退出确认后回登录，重复退出仍为 204（O01 / WB-AUTH-017）', async ({ page }) => {
   await signIn(page, '?requestTimeoutMs=1500');
   await page.locator('[data-harness-logout]').click();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 
   const revoked = (await readState(PORT)).sessions[0];
   expect(revoked.revoked).toBe(true);
@@ -308,7 +308,7 @@ test('退出结果未确认时锁住业务并重试同一目标（O02 / WB-AUTH-
   expect(locked).toBe('auth-locked');
 
   await page.locator('[data-harness-logout]').click();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   const logouts = await requestsFor(PORT, { method: 'POST', path: '/api/auth/logout' });
   expect(logouts.length).toBeGreaterThanOrEqual(2);
   expect(logouts.every((request) => request.body.sessionId === sessionId)).toBe(true);
@@ -330,7 +330,7 @@ test('退出失败（已回滚）保留现场可重试，不锁业务（O02）',
   expect(business.status).toBe(200);
 
   await page.locator('[data-harness-logout]').click();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 });
 
 test('受保护操作清单与工作台契约的 operationId 一致（15 个）', () => {

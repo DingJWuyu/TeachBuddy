@@ -18,6 +18,6 @@ for(const [label,path] of [['帮助','help'],['更新日志','releases'],['设�
 }
 await page.screenshot({path:path.join(evidence,'settings.png')});
 console.log('SCROLL',await page.evaluate(()=>({body:document.body.scrollHeight,viewport:innerHeight,sidebar:getComputedStyle(document.querySelector('.tb-module-nav')).overflowY,main:getComputedStyle(document.querySelector('.wb-main')).overflowY})));
-await page.reload();await page.locator('.wb-shell').waitFor();await page.getByRole('button',{name:'退出登录',exact:true}).click();await page.getByRole('heading',{name:'登录',exact:true}).waitFor();console.log('AUTH register, refresh, logout PASS');
+await page.reload();await page.locator('.wb-shell').waitFor();await page.getByRole('button',{name:'退出登录',exact:true}).click();await page.getByRole('heading',{name:'欢迎回来',exact:true}).waitFor();console.log('AUTH register, refresh, logout PASS');
 
 } finally {await browser.close();await world.close();}

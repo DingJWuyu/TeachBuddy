@@ -89,7 +89,7 @@ async function expectActionsInsideViewport(page, locator) {
 
 async function openEntry(page, query = '') {
   await page.goto(`${BASE}/${query}`);
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 }
 
 async function signInRemotely(page) {
@@ -236,7 +236,7 @@ test.describe('keyboard and pointer', () => {
     expect(await requestsFor(PORT, { method: 'POST', path: '/api/auth/login' })).toHaveLength(1);
 
     await page.locator('[data-harness-logout]').click();
-    await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
     await page.getByLabel('密码', { exact: true }).fill('pointer-secret');
     await page.getByRole('button', { name: '显示密码' }).click();
     await expect(page.getByLabel('密码', { exact: true })).toHaveAttribute('type', 'text');
@@ -246,10 +246,10 @@ test.describe('keyboard and pointer', () => {
      * not navigate anywhere. */
     const url = page.url();
     await page.getByRole('button', { name: '创建账户' }).click();
-    await expect(page.getByRole('heading', { name: '注册' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '创建账户' })).toBeVisible();
     await page.getByRole('link', { name: '服务条款' }).click();
     expect(page.url()).toBe(url);
-    await expect(page.getByRole('heading', { name: '注册' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '创建账户' })).toBeVisible();
   });
 });
 
@@ -259,7 +259,7 @@ test.describe('touch input', () => {
   test('触摸点击可完成注册发码并保持卡片布局', async ({ page }) => {
     await openEntry(page);
     await page.getByRole('button', { name: '创建账户' }).tap();
-    await expect(page.getByRole('heading', { name: '注册' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '创建账户' })).toBeVisible();
     await page.getByLabel('昵称', { exact: true }).tap();
     await page.getByLabel('昵称', { exact: true }).fill('触摸教师');
     await page.getByLabel('邮箱', { exact: true }).fill('touch@example.com');
@@ -295,8 +295,7 @@ test.describe('long content', () => {
 
     const cardBox = await page.locator('.ae-card').boundingBox();
     expect(cardBox.width).toBeLessThanOrEqual(390);
-    const nicknameCounter = await page.locator('.ae-field-count').first().textContent();
-    expect(nicknameCounter).toBe('40/40');
+    await expect(page.getByLabel('昵称', { exact: true })).toHaveValue('😀'.repeat(40));
     const state = await readState(PORT);
     expect(state.accounts).toHaveLength(0);
   });

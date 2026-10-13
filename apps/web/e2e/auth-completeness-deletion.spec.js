@@ -58,7 +58,7 @@ test('删除账户清除真实题库未确认上传的原文件，并保留其�
   }, owner);
   await page.getByRole('dialog', { name: '从资料收录题目' }).getByRole('button', { name: /关闭/ }).click();
   await removeAccount(page, email);
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n).toBe(0);
   for (const [database, storeName] of [['teachbuddy.questions.uploads', 'pending'], ['teachbuddy.math.uploads', 'pending'], ['teachbuddy-resources-pending', 'requests']])
     expect(await uploadKeys(page, database, storeName)).toEqual(['other-account:original']);
@@ -92,7 +92,7 @@ test('真实删除清理故障后关页重开仍使用原请求完成核实', as
   const repeated = reopened.waitForRequest(request => request.url().endsWith('/api/auth/account-deletion'));
   await reopened.getByRole('button', { name: '重试核实删除', exact: true }).click();
   expect((await repeated).postDataJSON()).toEqual(original);
-  await expect(reopened.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(reopened.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n).toBe(0);
   expect(fs.existsSync(blob)).toBe(false);
 });
@@ -113,7 +113,7 @@ test('设备清理失败保留核实记录，并可重试完成', async ({ page,
   expect(await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith('teachbuddy:account-deletion:v1:')).length)).toBe(1);
   await page.evaluate(() => { Storage.prototype.removeItem = window.originalRemove; delete window.originalRemove; });
   await page.getByRole('button', { name: '重试清理本设备', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith('teachbuddy:account-deletion:v1:')))).toEqual([]);
 });
 
@@ -126,7 +126,7 @@ test('稍后核实保留A删除记录，B正常登录与刷新后不被A锁定',
   await removeAccount(page, 'delete-pending@example.test');
   await expect(page.getByRole('button', { name: '重试核实删除', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '稍后核实，登录其他账户', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await signIn(page, 'delete-other@example.test');
   const tutorial = page.getByRole('button', { name: '知道了', exact: true });
   if (await tutorial.isVisible()) await tutorial.click();
@@ -160,7 +160,7 @@ test('另一标签页已开始读取的题库原稿不能在删除后重新写�
   await other.getByRole('button', { name: '开始整理', exact: true }).click();
   await expect.poll(() => other.evaluate(() => window.fileReadStarted)).toBe(true);
   await removeAccount(page, 'late-device@example.test');
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await other.evaluate(() => {
     const original = Storage.prototype.getItem;
     Storage.prototype.getItem = function(key) {
@@ -202,7 +202,7 @@ test('首次删除未送达服务器，关页重开后恢复原会话并核实�
   await reopened.getByRole('button', { name: '重试核实删除', exact: true }).click();
   await expect.poll(() => repeated.length).toBeGreaterThan(0);
   expect(repeated[0]).toEqual(original);
-  await expect(reopened.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(reopened.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(await reopened.evaluate(() => window.workspaceMounts)).toBe(0);
   for (const body of repeated) expect(body).toEqual(original);
   expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n).toBe(0);
@@ -233,7 +233,7 @@ test('首次删除未送达后新会话可重新确认删除，并收敛同账�
   await expect(page.getByRole('button', { name: '重试核实删除', exact: true })).toBeVisible();
   expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_account_deletions').get().n).toBe(0);
   await page.getByRole('button', { name: '稍后核实，登录其他账户', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   const loggedIn = page.waitForResponse(response => response.url().endsWith('/api/auth/login'));
   await page.getByLabel('邮箱', { exact: true }).fill(email);
   await page.getByLabel('密码', { exact: true }).fill(password);
@@ -256,7 +256,7 @@ test('首次删除未送达后新会话可重新确认删除，并收敛同账�
   const newBody = (await newDeletion).postDataJSON();
   expect(newBody.requestId).not.toBe(original.requestId);
   expect(newBody.sessionId).not.toBe(original.sessionId);
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(await page.evaluate(() => Object.keys(localStorage).filter(name => name.startsWith('teachbuddy:account-deletion:v1:'))
     .map(name => [name, localStorage.getItem(name)]))).toEqual([otherIntent]);
   await page.reload();
@@ -302,7 +302,7 @@ test('删除后释放另一标签页排队的设备恢复，不会重建账户�
     return locks.pending.filter(lock => lock.name === `teachbuddy-recovery:${account}`).length;
   }, account)).toBeGreaterThan(0);
   await removeAccount(page, email);
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(await page.evaluate(account => localStorage.getItem(`teachbuddy:data-recovery:${account}`), account)).toBeNull();
   await page.evaluate(async account => {
     window.releaseRecoveryLock();

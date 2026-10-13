@@ -178,7 +178,7 @@ document.querySelector('#results').textContent=JSON.stringify(result);
     world.clock.advance(8 * 86400000);
     await page.getByRole("button", { name: "保存", exact: true }).click();
     await expect(
-      page.getByRole("heading", { name: "登录", exact: true }),
+      page.getByRole("heading", { name: "欢迎回来", exact: true }),
     ).toBeVisible();
     await expect(page.locator("iframe")).toHaveCount(0);
     await expect(page.getByLabel("HTML 源码")).toHaveCount(0);

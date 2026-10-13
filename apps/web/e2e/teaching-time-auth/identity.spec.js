@@ -60,7 +60,7 @@ test('AUTH-T01: UI create save, expiry login recovery, account isolation and pre
   // Real server expiry, not an injected principal or a fabricated HTTP result.
   now = '2026-09-29T09:00:00Z';
   await page.getByRole('link', { name: '班级', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await shot(page, 'expired');
   await login(page);
   await page.goto(world.origin + '/classes/' + classId);
@@ -101,7 +101,7 @@ test('AUTH-T02: late schedule response is discarded after logout and another acc
   // Client navigation keeps the pending response in this document.
   await page.locator('.wb-sidebar').getByRole('link', { name: '设置', exact: true }).click();
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   // Register directly from the current document, preserving the late-response race.
   await page.getByRole('button', { name: '创建账户' }).click();
   await page.getByLabel('昵称', { exact: true }).fill('乙老师');

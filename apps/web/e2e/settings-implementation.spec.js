@@ -165,7 +165,7 @@ test('昵称迟到回执不恢复已退出的身份或覆盖另一账户', async
   await input.fill('旧账户的迟到昵称'); await input.press('Enter');
   await expect.poll(() => committed).toBe(true);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await register(page, world, 'teacher-b@example.test');
   const response = page.waitForResponse('**/api/auth/profile');
   release(); await response;
@@ -246,7 +246,7 @@ test('删除账户提供可执行的危险确认', async ({ page }, info) => {
   await page.getByRole('button', { name: '删除账户', exact: true }).click();
   await dialog.getByLabel('输入账户邮箱以确认').fill('teacher-a@example.test');
   await dialog.getByRole('button', { name: '永久删除账户', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n).toBe(0);
 });
 
@@ -289,7 +289,7 @@ test('删除丢失回执后刷新仍可用原请求核实，英文不串入匿�
   const retry = page.waitForRequest('**/api/auth/account-deletion');
   await page.getByRole('button', { name: 'Retry deletion verification', exact: true }).click();
   expect((await retry).postDataJSON()).toEqual(submitted);
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   const device = await page.evaluate(async account => {
     const result = { keys: Object.keys(localStorage).filter(key => key.includes(account) && !key.startsWith('tb.account.deleted:')), other: localStorage.getItem('tb.workbench.v1:other-account:draft'), uploads: [] };
     for (const [database, storeName] of [['teachbuddy.math.uploads', 'pending'], ['teachbuddy-resources-pending', 'requests']]) {
@@ -333,7 +333,7 @@ test('英文覆盖六模块和帮助，独立浏览器读回，同浏览器换�
   } finally { await context.close(); }
   await page.goto(world.origin + '/settings');
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await register(page, world, 'teacher-b@example.test');
   const coach = page.getByRole('button', { name: '知道了', exact: true });
   if (await coach.count()) await coach.click();
@@ -472,7 +472,7 @@ test('维护恢复清除删除回执后明确无法核实，可重新准备登�
   expect((await verify).status()).toBe(409);
   await expect(page.getByText('浏览器验证信息已失效，原删除结果无法继续核实。服务器可能已从备份恢复。重新登录后请核对账户和资料。', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '重新准备登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(await page.evaluate(key => localStorage.getItem(key), deviceKey)).toBe('未确认设备原文');
   expect(await page.evaluate(() => sessionStorage.getItem('teachbuddy:account-deletion'))).toBe(null);
   await page.screenshot({ path: info.outputPath('restored-deletion-login.png'), animations: 'disabled' });

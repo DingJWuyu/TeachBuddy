@@ -336,7 +336,7 @@ test("真实身份边界及保存丢响应：同键恢复、草稿保留、退�
   await nav(page, "设置");
   await page.getByRole("button", { name: "退出登录", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "登录", exact: true }),
+    page.getByRole("heading", { name: "欢迎回来", exact: true }),
   ).toBeVisible();
   const denied = await page.request.get(world.origin + endpoint, {
     headers: { "X-TeachBuddy-Page": pageId },

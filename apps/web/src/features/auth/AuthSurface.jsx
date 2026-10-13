@@ -8,7 +8,6 @@ import PasswordToggle from './PasswordToggle.jsx';
 import { useInternalAuth } from './AuthProvider.jsx';
 import { COPY, unknownResultMessage } from './presentation.js';
 import {
-  codePointLength,
   emailIssue,
   isVerificationCodeShape,
   nicknameIssue,
@@ -18,6 +17,7 @@ import {
 const MODE_COPY = {
   login: {
     get title() { return t("登录"); },
+    get heading() { return t("欢迎回来"); },
     get submit() { return t("登录"); },
     get pending() { return t("登录中"); },
     get switchText() { return t("还没有账户？"); },
@@ -26,6 +26,7 @@ const MODE_COPY = {
   },
   register: {
     get title() { return t("注册"); },
+    get heading() { return t("创建账户"); },
     get submit() { return t("注册"); },
     get pending() { return t("注册中"); },
     get switchText() { return t("已经有账户？"); },
@@ -538,7 +539,7 @@ export default function AuthSurface() {
 
         <div className="ae-card">
           <div className="ae-card-head">
-            <h1>{closed ? MODE_COPY.register.title : copy.title}</h1>
+            <h1>{closed ? MODE_COPY.register.heading : copy.heading || copy.title}</h1>
           </div>
 
           {revocation ? (
@@ -586,11 +587,11 @@ export default function AuthSurface() {
                 <div className={`ae-field${fieldError.field === 'name' ? ' has-error' : ''}`}>
                   <div className="ae-field-head">
                     <label htmlFor="ae-name">{t("昵称")}</label>
-                    <small className="ae-field-count">{codePointLength(name.trim())}/40</small>
                   </div>
                   <input
                     id="ae-name"
                     autoComplete="nickname"
+                    placeholder={t("例如：李老师")}
                     value={name}
                     onChange={(event) => edit(setName, event.target.value)}
                   />
@@ -619,7 +620,7 @@ export default function AuthSurface() {
                     type="text"
                     inputMode="email"
                     autoComplete="email"
-                    placeholder={isRegistration ? '' : 'example@example.com'}
+                    placeholder="example@example.com"
                     value={email}
                     onChange={(event) => {
                       edit(setEmail, event.target.value);
@@ -657,7 +658,6 @@ export default function AuthSurface() {
                 <div className={`ae-field${fieldError.field === 'password' ? ' has-error' : ''}`}>
                   <div className="ae-field-head">
                     <label htmlFor="ae-password">{isRecoveryConfirm ? t("新密码") : t("密码")}</label>
-                    <small className="ae-field-count">{codePointLength(password)}/128</small>
                     {mode === 'login' && (
                       <button className="ae-text-action" type="button" onClick={() => switchMode('recovery-request')}>
                         {t("忘记密码？")}
@@ -691,6 +691,7 @@ export default function AuthSurface() {
                     id="ae-password-confirmation"
                     type="password"
                     autoComplete="new-password"
+                    placeholder={t("再次输入密码")}
                     value={passwordConfirmation}
                     onChange={(event) => edit(setPasswordConfirmation, event.target.value)}
                   />
