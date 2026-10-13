@@ -11,7 +11,7 @@
 | 题库 | [行为与验证](../features/questions.md)、[first-flow.feature](first-flow.feature)、[materials.feature](materials.feature) | 四入口原稿、提取校对、自建/修改/复制、笔记/标记/分类、检索、保存刷新、幂等/冲突/未知恢复 |
 | 资源库 | [行为与验证](../features/resources.md)、[materials.feature](materials.feature) | 文件收录、分类/检索、实际预览、替换与历史版本、归档、恢复和彻底删除 |
 | 数学工坊 | [行为与验证](../features/math.md)、[math.feature](math.feature) | 可改源码、公式/函数/平面/空间/动态、HTML 隔离、离线 |
-| 班级（待实现） | [班级讨论](../plans/classes-discussion.md) | 已确认方向尚未形成开发和验收规格，不以旧模块场景代签 |
+| 班级 | [班级行为](../features/classroom.md)、[后端验收](classroom.md) | 名单/座位/自由记录、真实 Excel 与原卷、校对确认及跨考统计、数据生命周期；界面和 AI 接入另行验收 |
 | 日程 | [行为与验证](../features/schedule.md)、[schedule.feature](schedule.feature) | 日期/时区/DST、重复与单次独立任务、事项、提醒补呈现、通知定位及返回 |
 | AI 助理 | [行为与验证](../features/agent.md)、[agent.feature](agent.feature) | 真模型真实业务操作、新题而非固定示例、手工冲突/停止/恢复、四模块全部覆盖 |
 

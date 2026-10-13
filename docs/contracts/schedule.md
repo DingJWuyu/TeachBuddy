@@ -94,4 +94,4 @@ T53 仅在站内通知查询/写入及 schedule 变更时结算；浏览器工�
 
 ## 模块目录
 
-当前目录使用 ModuleCatalogV3，按 questions、math、resources、schedule 的稳定顺序注册实际实现。日程没有班级或教学记录依赖。目录校验 ID/path 唯一、依赖提供方存在及无环；未知目录版本保留设备草稿并提示升级。
+当前目录使用 ModuleCatalogV4，按 questions、math、resources、schedule、classroom 的稳定顺序注册实际实现；classroom 的 `webEnabled=false`，现有页面顺序不变。日程没有班级或教学记录依赖。目录校验 ID/path 唯一、依赖提供方存在及无环；未知目录版本保留设备草稿并提示升级。

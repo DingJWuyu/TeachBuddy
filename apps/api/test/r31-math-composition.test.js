@@ -27,15 +27,15 @@ async function register(world, email) {
 }
 
 test('isolated static math mapping: real A11, native work, files, replay and two restarts share one composition', async () => {
-  assert.deepEqual(moduleCatalog.map(entry => entry.id), ['questions', 'math', 'resources', 'schedule']);
+  assert.deepEqual(moduleCatalog.map(entry => entry.id), ['questions', 'math', 'resources', 'schedule', 'classroom']);
   let world = await createIntegration({ workbench });
   const directory = world.directory;
   try {
     const { client, session } = await register(world, 'math-composition@example.test');
-    assert.deepEqual(world.workbench.loader.enabledIds().sort(), ['math', 'questions', 'resources', 'schedule']);
+    assert.deepEqual(world.workbench.loader.enabledIds().sort(), ['classroom', 'math', 'questions', 'resources', 'schedule']);
     const catalog = await client.request('GET', '/api/modules');
     assert.equal(catalog.status, 200);
-    assert.deepEqual(catalog.json.items.map(entry => entry.id), ['questions', 'math', 'resources', 'schedule']);
+    assert.deepEqual(catalog.json.items.map(entry => entry.id), ['questions', 'math', 'resources', 'schedule', 'classroom']);
     const source = emptySource('plane');
     source.scene.elements = [{ ...newElement('function', 'curve'), expression: 'x^2-2*x-3' }];
     const input = { title: '组合原生函数', source, originalFileId: null };

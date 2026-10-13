@@ -9,7 +9,7 @@ import i18n from '../../i18n/index.js';
  * catalog is the only source of descriptors (ADR 0001).
  */
 
-import { moduleCatalog, modulePorts } from '@refatos/shared';
+import { assertModuleCatalog, moduleCatalog, modulePorts } from '@refatos/shared';
 import QuestionsPage from '../questions/index.jsx';
 import ResourceRoute from '../resources/ResourceRoute.jsx';
 import { MathWorkbench } from '../math/index.jsx';
@@ -25,6 +25,8 @@ const localRegistry = {
 const PORT_PROVIDERS = Object.fromEntries(Object.entries(modulePorts).map(([name, descriptor]) => [name, descriptor.provider]));
 
 export function resolveWorkbenchModules(descriptors = moduleCatalog) {
+  assertModuleCatalog(descriptors);
+  descriptors = descriptors.filter(descriptor => descriptor.webEnabled);
   const ids = new Set();
   const paths = new Set();
   const byId = new Map(descriptors.map((item) => [item.id, item]));

@@ -1,6 +1,7 @@
 import { deleteAccountData as deleteQuestionsData } from '../modules/questions/index.js';
 import { deleteAccountData as deleteResourcesData } from '../modules/resources/index.js';
 import { deleteAccountData as deleteScheduleData } from '../modules/schedule/index.js';
+import { deleteAccountData as deleteClassroomData } from '../modules/classroom/index.js';
 import { deleteAccountData as deleteMathData } from '../modules/math/index.js';
 
 // Shared workbench data is cleared alongside module-owned data in one transaction.
@@ -17,6 +18,7 @@ export function eraseAccountRows(db, accountKey) {
     deleteResourcesData(db, accountKey);
     deleteScheduleData(db, accountKey);
     deleteMathData(db, accountKey);
+    deleteClassroomData(db, accountKey);
     for (const table of accountTables) db.prepare(`DELETE FROM ${table} WHERE accountKey=?`).run(accountKey);
   }).immediate();
 }

@@ -17,6 +17,7 @@ export const fixtureCatalog = Object.freeze([
     path: '/calendar',
     navigation: 'top',
     auxiliaryPanel: true,
+    webEnabled: true,
     requires: Object.freeze([])
   })
 ]);

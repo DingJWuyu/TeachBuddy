@@ -194,6 +194,7 @@ test('workbench module paths are owned only for catalog module IDs', async () =>
       path: '/unavailable',
       navigation: 'top',
       auxiliaryPanel: false,
+      webEnabled: true,
       requires: []
     }]
   });
@@ -246,10 +247,10 @@ test('the composed app mounts the catalog handler on the exact contract path', a
       .expect(200);
 
     assert.equal(response.headers['cache-control'], 'no-store');
-    assert.equal(response.body.version, 3);
+    assert.equal(response.body.version, 4);
     // Only mapped implementations are enabled: the fixture probe and the two
     // product modules of this branch.
-    assert.deepEqual(response.body.items.map((entry) => entry.id), ['questions', 'math', 'resources', 'schedule', 'workbench-probe']);
+    assert.deepEqual(response.body.items.map((entry) => entry.id), ['questions', 'math', 'resources', 'schedule', 'classroom', 'workbench-probe']);
 
     // The retired legacy Bearer route never answers this path: a bearer token is
     // not a workbench identity, so the contract 401 problem is returned.
@@ -271,8 +272,8 @@ test('the composed app mounts the catalog handler on the exact contract path', a
         .get(workbenchPaths.modules)
         .set(workbenchRequestHeaders(bare))
         .expect(200);
-      assert.equal(empty.body.version, 3);
-      assert.deepEqual(empty.body.items.map((entry) => entry.id), ['questions', 'math', 'resources', 'schedule']);
+      assert.equal(empty.body.version, 4);
+      assert.deepEqual(empty.body.items.map((entry) => entry.id), ['questions', 'math', 'resources', 'schedule', 'classroom']);
     } finally {
       await bare.cleanup();
     }

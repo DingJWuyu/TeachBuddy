@@ -825,7 +825,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ModuleCatalogV3"
+                  "$ref": "#/components/schemas/ModuleCatalogV4"
                 }
               }
             }
@@ -1603,7 +1603,7 @@
           },
           "step": {
             "type": "number",
-            "minimum": 0.000001,
+            "minimum": 1e-06,
             "maximum": 1000000
           },
           "initial": {
@@ -2438,7 +2438,7 @@
           "snapshot"
         ]
       },
-      "ModuleDescriptorV3": {
+      "ModuleDescriptorV4": {
         "type": "object",
         "properties": {
           "id": {
@@ -2446,7 +2446,8 @@
               "questions",
               "math",
               "resources",
-              "schedule"
+              "schedule",
+              "classroom"
             ]
           },
           "name": {
@@ -2473,6 +2474,9 @@
             "items": {
               "type": "string"
             }
+          },
+          "webEnabled": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -2481,19 +2485,20 @@
           "path",
           "navigation",
           "auxiliaryPanel",
-          "requires"
+          "requires",
+          "webEnabled"
         ]
       },
-      "ModuleCatalogV3": {
+      "ModuleCatalogV4": {
         "type": "object",
         "properties": {
           "version": {
-            "const": 3
+            "const": 4
           },
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ModuleDescriptorV3"
+              "$ref": "#/components/schemas/ModuleDescriptorV4"
             },
             "minItems": 0,
             "maxItems": 6

@@ -60,7 +60,7 @@ export function createMutations({ db, clock = () => new Date(), assertAccountAct
     'SELECT COUNT(*) AS count FROM workbench_mutation_keys WHERE accountKey = ?'
   );
 
-  function execute({ principal, key, method, path, body }, write) {
+  function checkedRequest({ principal, key, method, path, body }) {
     const accountKey = principal?.accountKey;
     if (typeof accountKey !== 'string' || !accountKey) {
       throw new Error('mutations.execute requires a verified principal.');
@@ -71,12 +71,12 @@ export function createMutations({ db, clock = () => new Date(), assertAccountAct
     if (typeof method !== 'string' || !method || typeof path !== 'string' || !path) {
       throw new Error('mutations.execute requires the request method and path.');
     }
-    if (typeof write !== 'function') {
-      throw new Error('mutations.execute requires a write callback.');
-    }
-
     const requestHash = requestFingerprint({ method, path, body });
     assertAccountActive(principal);
+    return { accountKey, key, method, path, requestHash };
+  }
+
+  function confirmedResponse({ accountKey, key, method, path, requestHash }) {
     const existing = selectStatement.get(accountKey, key);
     if (existing) {
       if (existing.method !== method || existing.path !== path || existing.requestHash !== requestHash) {
@@ -84,6 +84,25 @@ export function createMutations({ db, clock = () => new Date(), assertAccountAct
       }
       return { status: existing.status, body: JSON.parse(existing.body) };
     }
+    return null;
+  }
+
+  // Async preparation (for example reading an uploaded workbook) can replay a
+  // completed write before opening its inputs. A miss does not reserve the key;
+  // execute still checks the receipt and account again after preparation.
+  function peek(request) {
+    return confirmedResponse(checkedRequest(request));
+  }
+
+  function execute(request, write) {
+    const checked = checkedRequest(request);
+    if (typeof write !== 'function') {
+      throw new Error('mutations.execute requires a write callback.');
+    }
+    const existing = confirmedResponse(checked);
+    if (existing) return existing;
+    const { principal } = request;
+    const { accountKey, key, method, path, requestHash } = checked;
 
     const transaction = db.transaction(() => {
       assertAccountActive(principal);
@@ -114,6 +133,7 @@ export function createMutations({ db, clock = () => new Date(), assertAccountAct
 
   return {
     execute,
+    peek,
     assertAccountActive,
 
     /** Test/diagnostic helper: number of confirmed requests for one account. */

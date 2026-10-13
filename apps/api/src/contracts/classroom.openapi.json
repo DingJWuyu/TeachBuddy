@@ -1,0 +1,6822 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "班级后端",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/modules/classroom/classes": {
+      "get": {
+        "operationId": "listClasses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "deleted",
+                "all"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/classes"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createClass",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classes"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/classesCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/classes/{id}": {
+      "get": {
+        "operationId": "getClass",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classes"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateClass",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classes"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/classesUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/classes/{id}/deletion": {
+      "put": {
+        "operationId": "setClassDeletion",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classes"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Deletion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/students": {
+      "get": {
+        "operationId": "listStudents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "name": "classId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "deleted",
+                "all"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/students"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createStudent",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/students"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/studentsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/students/{id}": {
+      "get": {
+        "operationId": "getStudent",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/students"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateStudent",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/students"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/studentsUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/students/{id}/deletion": {
+      "put": {
+        "operationId": "setStudentDeletion",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/students"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Deletion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/records": {
+      "get": {
+        "operationId": "listRecords",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "class",
+                "student"
+              ]
+            }
+          },
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "deleted",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/records"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createRecord",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/records"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/recordsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/records/{id}": {
+      "get": {
+        "operationId": "getRecord",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/records"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateRecord",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/records"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/recordsUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/records/{id}/deletion": {
+      "put": {
+        "operationId": "setRecordDeletion",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/records"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Deletion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/exams": {
+      "get": {
+        "operationId": "listExams",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "deleted",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/exams"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createExam",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/exams"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/examsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/exams/{id}": {
+      "get": {
+        "operationId": "getExam",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/exams"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateExam",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/exams"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/examsUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/exams/{id}/deletion": {
+      "put": {
+        "operationId": "setExamDeletion",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/exams"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Deletion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/tags": {
+      "get": {
+        "operationId": "listTags",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/tags"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createTag",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tags"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tagsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/tags/{id}": {
+      "get": {
+        "operationId": "getTag",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tags"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateTag",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tags"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tagsUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/imports": {
+      "get": {
+        "operationId": "listImports",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "name": "examId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "classId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "confirmed"
+              ]
+            }
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "deleted",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/imports"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createImport",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/imports"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/importsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/imports/{id}": {
+      "get": {
+        "operationId": "getImport",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/imports"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateImport",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/imports"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/importsUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/imports/{id}/deletion": {
+      "put": {
+        "operationId": "setImportDeletion",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/imports"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Deletion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/results": {
+      "get": {
+        "operationId": "listResults",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "name": "examId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "classId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "deleted",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/results"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/modules/classroom/results/{id}": {
+      "get": {
+        "operationId": "getResult",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/results"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateResult",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectedResult"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/resultsUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/results/{id}/deletion": {
+      "put": {
+        "operationId": "setResultDeletion",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/results"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Deletion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/classes/{id}/seating": {
+      "put": {
+        "operationId": "setSeating",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classes"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSeating"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/tags/{id}/merge": {
+      "post": {
+        "operationId": "mergeTags",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MergedTags"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Merge"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/imports/{id}/confirmation": {
+      "post": {
+        "operationId": "confirmImport",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserProtection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmedImport"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Confirmation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/classroom/classes/{id}/statistics": {
+      "get": {
+        "operationId": "classStatistics",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "examId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "tagIds",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F-]{36}(,[0-9a-fA-F-]{36})*$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Statistics"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/modules/classroom/students/{id}/statistics": {
+      "get": {
+        "operationId": "studentStatistics",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "examId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "tagIds",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F-]{36}(,[0-9a-fA-F-]{36})*$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Statistics"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/modules/classroom/exams/{id}/comparison": {
+      "get": {
+        "operationId": "compareExam",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "name": "classIds",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F-]{36}(,[0-9a-fA-F-]{36})*$"
+            }
+          },
+          {
+            "name": "tagIds",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F-]{36}(,[0-9a-fA-F-]{36})*$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功，已保存的对象版本或只读结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comparison"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "所有业务响应禁止缓存",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Seating": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "columns": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "seats": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "row": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 50
+                },
+                "column": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 50
+                },
+                "studentId": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "required": [
+                "row",
+                "column",
+                "studentId"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "rows",
+          "columns",
+          "seats"
+        ],
+        "additionalProperties": false
+      },
+      "SourcePart": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "renditionFileId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "fileId",
+          "renditionFileId"
+        ],
+        "additionalProperties": false
+      },
+      "Box": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "width": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "height": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "width",
+          "height"
+        ],
+        "additionalProperties": false
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "renditionFileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "box": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Box"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "fileId",
+          "renditionFileId",
+          "page",
+          "box"
+        ],
+        "additionalProperties": false
+      },
+      "QuestionInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1
+          },
+          "groupLabel": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "multipleOf": 0.01,
+            "exclusiveMinimum": 0
+          },
+          "tagIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 20
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            },
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "label",
+          "groupLabel",
+          "maxScore",
+          "tagIds",
+          "locations"
+        ],
+        "additionalProperties": false
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1
+          },
+          "groupLabel": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "multipleOf": 0.01,
+            "exclusiveMinimum": 0
+          },
+          "tagIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 20
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            },
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "groupLabel",
+          "maxScore",
+          "tagIds",
+          "locations"
+        ],
+        "additionalProperties": false
+      },
+      "ScoreRowInput": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "unrecorded"
+            ]
+          },
+          "totalScore": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scores": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100000,
+                  "multipleOf": 0.01
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            }
+          }
+        },
+        "required": [
+          "studentId",
+          "status",
+          "totalScore",
+          "scores"
+        ],
+        "additionalProperties": false
+      },
+      "ImportRow": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "unrecorded"
+            ]
+          },
+          "totalScore": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scores": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100000,
+                  "multipleOf": 0.01
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            }
+          },
+          "sourceRow": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "ignored": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "studentId",
+          "status",
+          "totalScore",
+          "scores",
+          "sourceRow",
+          "ignored"
+        ],
+        "additionalProperties": false
+      },
+      "Mapping": {
+        "type": "object",
+        "properties": {
+          "sheetIndex": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 19
+          },
+          "headerRow": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "firstDataRow": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "lastDataRow": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "nameColumn": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 256
+          },
+          "studentNumberColumn": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "totalColumn": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 256
+          },
+          "attendanceColumn": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "questionColumns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "column": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 256
+                },
+                "questionId": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "required": [
+                "column",
+                "questionId"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 300
+          },
+          "ignoredRows": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2000
+            },
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "sheetIndex",
+          "headerRow",
+          "firstDataRow",
+          "lastDataRow",
+          "nameColumn",
+          "studentNumberColumn",
+          "totalColumn",
+          "attendanceColumn",
+          "questionColumns",
+          "ignoredRows"
+        ],
+        "additionalProperties": false
+      },
+      "Issue": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "sourceRow": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "column": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "studentId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "questionId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "severity",
+          "code",
+          "sourceRow",
+          "column",
+          "studentId",
+          "questionId",
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "classesCreate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "term": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seating": {
+            "$ref": "#/components/schemas/Seating"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "classesUpdate": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "term": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "baseVersion",
+          "name",
+          "term"
+        ],
+        "additionalProperties": false
+      },
+      "classes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "term": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seating": {
+            "$ref": "#/components/schemas/Seating"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "name",
+          "term",
+          "seating"
+        ],
+        "additionalProperties": true
+      },
+      "studentsCreate": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "studentNumber": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "birthday": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interests": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "classId",
+          "name",
+          "studentNumber",
+          "birthday",
+          "interests",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "studentsUpdate": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "studentNumber": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "birthday": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interests": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "baseVersion",
+          "classId",
+          "name",
+          "studentNumber",
+          "birthday",
+          "interests",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "students": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "studentNumber": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "birthday": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interests": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "classId",
+          "name",
+          "studentNumber",
+          "birthday",
+          "interests",
+          "description"
+        ],
+        "additionalProperties": true
+      },
+      "recordsCreate": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "class",
+              "student"
+            ]
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "scope",
+          "subjectId",
+          "occurredOn",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "recordsUpdate": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "occurredOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "baseVersion",
+          "occurredOn",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "records": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "class",
+              "student"
+            ]
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "scope",
+          "subjectId",
+          "occurredOn",
+          "text"
+        ],
+        "additionalProperties": true
+      },
+      "examsCreate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "occurredOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "totalMax": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "multipleOf": 0.01,
+            "exclusiveMinimum": 0
+          },
+          "source": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourcePart"
+            },
+            "maxItems": 100
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionInput"
+            },
+            "maxItems": 300
+          }
+        },
+        "required": [
+          "name",
+          "subject",
+          "occurredOn",
+          "totalMax",
+          "source",
+          "questions"
+        ],
+        "additionalProperties": false
+      },
+      "examsUpdate": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "occurredOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "totalMax": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "multipleOf": 0.01,
+            "exclusiveMinimum": 0
+          },
+          "source": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourcePart"
+            },
+            "maxItems": 100
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionInput"
+            },
+            "maxItems": 300
+          }
+        },
+        "required": [
+          "baseVersion",
+          "name",
+          "subject",
+          "occurredOn",
+          "totalMax",
+          "source",
+          "questions"
+        ],
+        "additionalProperties": false
+      },
+      "exams": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "occurredOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "totalMax": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "multipleOf": 0.01,
+            "exclusiveMinimum": 0
+          },
+          "source": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourcePart"
+            },
+            "maxItems": 100
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            },
+            "maxItems": 300
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "name",
+          "subject",
+          "occurredOn",
+          "totalMax",
+          "source",
+          "questions"
+        ],
+        "additionalProperties": true
+      },
+      "tagsCreate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "tagsUpdate": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "baseVersion",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "tags": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "normalizedName": {
+            "type": "string"
+          },
+          "mergedIntoId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "name",
+          "normalizedName",
+          "mergedIntoId"
+        ],
+        "additionalProperties": true
+      },
+      "importsCreate": {
+        "type": "object",
+        "properties": {
+          "examId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceFileId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "examId",
+          "classId",
+          "sourceFileId"
+        ],
+        "additionalProperties": false
+      },
+      "importsUpdate": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mapping": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Mapping"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rows": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ImportRow"
+                },
+                "maxItems": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "baseVersion",
+          "mapping",
+          "rows"
+        ],
+        "additionalProperties": false
+      },
+      "imports": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "examId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceFileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "confirmed"
+            ]
+          },
+          "workbook": {
+            "$ref": "#/components/schemas/Workbook"
+          },
+          "mapping": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Mapping"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportRow"
+            },
+            "maxItems": 1000
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            }
+          },
+          "baselines": {
+            "$ref": "#/components/schemas/Baselines"
+          },
+          "confirmedResultId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviewedSourceRows": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2000
+            },
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "examId",
+          "classId",
+          "sourceFileId",
+          "sourceSha256",
+          "state",
+          "workbook",
+          "mapping",
+          "rows",
+          "issues",
+          "baselines",
+          "confirmedResultId",
+          "reviewedSourceRows"
+        ],
+        "additionalProperties": true
+      },
+      "resultsCreate": {
+        "type": "object",
+        "properties": {
+          "examId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreRowInput"
+            },
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "examId",
+          "classId",
+          "rows"
+        ],
+        "additionalProperties": false
+      },
+      "resultsUpdate": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "examVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreRowInput"
+            },
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "baseVersion",
+          "examVersion",
+          "rows"
+        ],
+        "additionalProperties": false
+      },
+      "results": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "examId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreRow"
+            },
+            "maxItems": 1000
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "examVersionAtConfirmation": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "examId",
+          "classId",
+          "rows",
+          "provenance",
+          "examVersionAtConfirmation"
+        ],
+        "additionalProperties": true
+      },
+      "Deletion": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "deleted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "baseVersion",
+          "deleted"
+        ],
+        "additionalProperties": false
+      },
+      "Confirmation": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "baseVersion"
+        ],
+        "additionalProperties": false
+      },
+      "Merge": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "targetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "targetVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "baseVersion",
+          "targetId",
+          "targetVersion"
+        ],
+        "additionalProperties": false
+      },
+      "SetSeating": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "seating": {
+            "$ref": "#/components/schemas/Seating"
+          }
+        },
+        "required": [
+          "baseVersion",
+          "seating"
+        ],
+        "additionalProperties": false
+      },
+      "StudentSnapshot": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "studentNumber": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "studentNumber"
+        ],
+        "additionalProperties": true
+      },
+      "ScoreRow": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "unrecorded"
+            ]
+          },
+          "totalScore": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scores": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100000,
+                  "multipleOf": 0.01
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            }
+          },
+          "studentSnapshot": {
+            "$ref": "#/components/schemas/StudentSnapshot"
+          }
+        },
+        "required": [
+          "studentId",
+          "status",
+          "totalScore",
+          "scores",
+          "studentSnapshot"
+        ],
+        "additionalProperties": true
+      },
+      "Provenance": {
+        "type": "object",
+        "properties": {
+          "importId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sourceFileId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "correctedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "importId",
+          "sourceFileId"
+        ],
+        "additionalProperties": true
+      },
+      "WorkbookCell": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "column": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "number",
+              "string",
+              "boolean",
+              "error",
+              "blank"
+            ]
+          },
+          "value": {
+            "type": [
+              "number",
+              "string",
+              "boolean",
+              "null"
+            ]
+          },
+          "display": {
+            "type": "string"
+          },
+          "formula": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "address",
+          "column",
+          "type",
+          "value",
+          "display",
+          "formula"
+        ],
+        "additionalProperties": true
+      },
+      "WorkbookIssue": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "sheet": {
+            "type": "string"
+          },
+          "row": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "column": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "address": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "sheet",
+          "row",
+          "column",
+          "address",
+          "detail"
+        ],
+        "additionalProperties": true
+      },
+      "WorkbookSheet": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "range": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "merges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "object",
+                  "properties": {
+                    "row": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "column": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "required": [
+                    "row",
+                    "column"
+                  ],
+                  "additionalProperties": true
+                },
+                "end": {
+                  "type": "object",
+                  "properties": {
+                    "row": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "column": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "required": [
+                    "row",
+                    "column"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "start",
+                "end"
+              ],
+              "additionalProperties": true
+            },
+            "maxItems": 100000
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rowNumber": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "cells": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkbookCell"
+                  },
+                  "maxItems": 256
+                }
+              },
+              "required": [
+                "rowNumber",
+                "cells"
+              ],
+              "additionalProperties": true
+            },
+            "maxItems": 2000
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkbookIssue"
+            },
+            "maxItems": 100000
+          }
+        },
+        "required": [
+          "name",
+          "range",
+          "merges",
+          "rows",
+          "issues"
+        ],
+        "additionalProperties": true
+      },
+      "Workbook": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "xlsx",
+              "xls"
+            ]
+          },
+          "sheets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkbookSheet"
+            },
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "format",
+          "sheets"
+        ],
+        "additionalProperties": true
+      },
+      "Baselines": {
+        "type": "object",
+        "properties": {
+          "examVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "classVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "resultVersion": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "version"
+              ],
+              "additionalProperties": true
+            },
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "examVersion",
+          "classVersion",
+          "resultVersion",
+          "students"
+        ],
+        "additionalProperties": true
+      },
+      "ConfirmedImport": {
+        "type": "object",
+        "properties": {
+          "import": {
+            "$ref": "#/components/schemas/imports"
+          },
+          "result": {
+            "$ref": "#/components/schemas/results"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            }
+          }
+        },
+        "required": [
+          "import",
+          "result",
+          "warnings"
+        ],
+        "additionalProperties": true
+      },
+      "CorrectedResult": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/results"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            }
+          }
+        },
+        "required": [
+          "result",
+          "warnings"
+        ],
+        "additionalProperties": true
+      },
+      "MergedTags": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/tags"
+          },
+          "target": {
+            "$ref": "#/components/schemas/tags"
+          },
+          "affectedExamIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "source",
+          "target",
+          "affectedExamIds"
+        ],
+        "additionalProperties": true
+      },
+      "DataVersions": {
+        "type": "object",
+        "properties": {
+          "exam": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "version"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "version"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "version"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "exam",
+          "results",
+          "tags"
+        ],
+        "additionalProperties": true
+      },
+      "ExamInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "occurredOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "totalMax": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "multipleOf": 0.01,
+            "exclusiveMinimum": 0
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourcePart"
+            },
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "subject",
+          "occurredOn",
+          "totalMax",
+          "version",
+          "source"
+        ],
+        "additionalProperties": true
+      },
+      "Evidence": {
+        "type": "object",
+        "properties": {
+          "questionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 300
+          },
+          "questionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scoreSum": {
+            "type": "number",
+            "minimum": 0
+          },
+          "maxSum": {
+            "type": "number",
+            "minimum": 0
+          },
+          "possibleMax": {
+            "type": "number",
+            "minimum": 0
+          },
+          "observedCells": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "eligibleCells": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "missingCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "absentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unrecordedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "coverage": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "not-assessed",
+              "missing-scores",
+              null
+            ]
+          }
+        },
+        "required": [
+          "questionIds",
+          "questionCount",
+          "scoreSum",
+          "maxSum",
+          "possibleMax",
+          "observedCells",
+          "eligibleCells",
+          "rate",
+          "missingCount",
+          "absentCount",
+          "unrecordedCount",
+          "coverage",
+          "reason"
+        ],
+        "additionalProperties": true
+      },
+      "StatisticsPoint": {
+        "type": "object",
+        "properties": {
+          "exam": {
+            "$ref": "#/components/schemas/ExamInfo"
+          },
+          "resultVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "overall": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ClassOverall"
+              },
+              {
+                "$ref": "#/components/schemas/StudentOverall"
+              }
+            ]
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionStatistics"
+            },
+            "maxItems": 300
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagStatistics"
+            }
+          },
+          "tagSelection": {
+            "type": "object",
+            "properties": {
+              "tagIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "maxItems": 1000
+              },
+              "questionIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "maxItems": 300
+              },
+              "questionCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "scoreSum": {
+                "type": "number",
+                "minimum": 0
+              },
+              "maxSum": {
+                "type": "number",
+                "minimum": 0
+              },
+              "possibleMax": {
+                "type": "number",
+                "minimum": 0
+              },
+              "observedCells": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "eligibleCells": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "missingCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "absentCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unrecordedCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "coverage": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "not-assessed",
+                  "missing-scores",
+                  null
+                ]
+              }
+            },
+            "required": [
+              "tagIds",
+              "questionIds",
+              "questionCount",
+              "scoreSum",
+              "maxSum",
+              "possibleMax",
+              "observedCells",
+              "eligibleCells",
+              "rate",
+              "missingCount",
+              "absentCount",
+              "unrecordedCount",
+              "coverage",
+              "reason"
+            ],
+            "additionalProperties": true
+          },
+          "resultId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "examVersionAtConfirmation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "scoreEvidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "studentId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "sumOfKnownScores": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "knownQuestionCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "totalMismatch": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "studentId",
+                "sumOfKnownScores",
+                "knownQuestionCount",
+                "totalMismatch"
+              ],
+              "additionalProperties": true
+            },
+            "maxItems": 1000
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "total-mismatch"
+                  ]
+                },
+                "studentId": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "required": [
+                "code",
+                "studentId"
+              ],
+              "additionalProperties": true
+            },
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "exam",
+          "resultId",
+          "resultVersion",
+          "examVersionAtConfirmation",
+          "overall",
+          "questions",
+          "tags",
+          "tagSelection"
+        ],
+        "additionalProperties": true
+      },
+      "Statistics": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/StudentScope"
+              },
+              {
+                "$ref": "#/components/schemas/ClassScope"
+              }
+            ]
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsPoint"
+            }
+          },
+          "dataVersions": {
+            "$ref": "#/components/schemas/DataVersions"
+          }
+        },
+        "required": [
+          "scope",
+          "points",
+          "dataVersions"
+        ],
+        "additionalProperties": true
+      },
+      "Comparison": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "comparison"
+              },
+              "examId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "classIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "maxItems": 20
+              }
+            },
+            "required": [
+              "type",
+              "examId",
+              "classIds"
+            ],
+            "additionalProperties": true
+          },
+          "exam": {
+            "$ref": "#/components/schemas/ExamInfo"
+          },
+          "classes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "class": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "deletedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "version",
+                    "deletedAt"
+                  ],
+                  "additionalProperties": true
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "recorded",
+                    "no-result"
+                  ]
+                },
+                "point": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/StatisticsPoint"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "class",
+                "state",
+                "point"
+              ],
+              "additionalProperties": true
+            },
+            "maxItems": 20
+          },
+          "dataVersions": {
+            "$ref": "#/components/schemas/DataVersions"
+          }
+        },
+        "required": [
+          "scope",
+          "exam",
+          "classes",
+          "dataVersions"
+        ],
+        "additionalProperties": true
+      },
+      "DistributionBin": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "to": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "upperInclusive": {
+            "type": "boolean"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "studentIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "upperInclusive",
+          "count",
+          "studentIds"
+        ],
+        "additionalProperties": true
+      },
+      "ClassOverall": {
+        "type": "object",
+        "properties": {
+          "rosterCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "presentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "absentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unrecordedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "missingTotalCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scoredCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rankedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scoreSum": {
+            "type": "number",
+            "minimum": 0
+          },
+          "maxSum": {
+            "type": "number",
+            "minimum": 0
+          },
+          "mean": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "median": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "distribution": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DistributionBin"
+            },
+            "maxItems": 10
+          }
+        },
+        "required": [
+          "rosterCount",
+          "presentCount",
+          "absentCount",
+          "unrecordedCount",
+          "missingTotalCount",
+          "scoredCount",
+          "rankedCount",
+          "scoreSum",
+          "maxSum",
+          "mean",
+          "median",
+          "min",
+          "max",
+          "rate",
+          "distribution"
+        ],
+        "additionalProperties": true
+      },
+      "ClassInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "version",
+          "deletedAt"
+        ],
+        "additionalProperties": true
+      },
+      "RowEvidence": {
+        "type": "object",
+        "properties": {
+          "sumOfKnownScores": {
+            "type": "number",
+            "minimum": 0
+          },
+          "knownQuestionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalMismatch": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sumOfKnownScores",
+          "knownQuestionCount",
+          "totalMismatch"
+        ],
+        "additionalProperties": true
+      },
+      "StudentOverall": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "unrecorded"
+            ]
+          },
+          "totalScore": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rank": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rankedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sumOfKnownScores": {
+            "type": "number",
+            "minimum": 0
+          },
+          "knownQuestionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalMismatch": {
+            "type": "boolean"
+          },
+          "studentSnapshot": {
+            "$ref": "#/components/schemas/StudentSnapshot"
+          },
+          "classReference": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "name": {
+                "type": "string"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "deletedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "overall": {
+                "$ref": "#/components/schemas/ClassOverall"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "version",
+              "deletedAt",
+              "overall"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "status",
+          "totalScore",
+          "rate",
+          "rank",
+          "rankedCount",
+          "sumOfKnownScores",
+          "knownQuestionCount",
+          "totalMismatch",
+          "studentSnapshot",
+          "classReference"
+        ],
+        "additionalProperties": true
+      },
+      "QuestionStatistics": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1
+          },
+          "groupLabel": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "multipleOf": 0.01,
+            "exclusiveMinimum": 0
+          },
+          "tagIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 20
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            },
+            "maxItems": 20
+          },
+          "questionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 300
+          },
+          "questionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scoreSum": {
+            "type": "number",
+            "minimum": 0
+          },
+          "maxSum": {
+            "type": "number",
+            "minimum": 0
+          },
+          "possibleMax": {
+            "type": "number",
+            "minimum": 0
+          },
+          "observedCells": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "eligibleCells": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "missingCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "absentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unrecordedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "coverage": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "not-assessed",
+              "missing-scores",
+              null
+            ]
+          },
+          "observedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "eligibleCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mean": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "groupLabel",
+          "maxScore",
+          "tagIds",
+          "locations",
+          "questionIds",
+          "questionCount",
+          "scoreSum",
+          "maxSum",
+          "possibleMax",
+          "observedCells",
+          "eligibleCells",
+          "rate",
+          "missingCount",
+          "absentCount",
+          "unrecordedCount",
+          "coverage",
+          "reason",
+          "observedCount",
+          "eligibleCount",
+          "mean"
+        ],
+        "additionalProperties": true
+      },
+      "TagStatistics": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "version": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "questionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 300
+          },
+          "questionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scoreSum": {
+            "type": "number",
+            "minimum": 0
+          },
+          "maxSum": {
+            "type": "number",
+            "minimum": 0
+          },
+          "possibleMax": {
+            "type": "number",
+            "minimum": 0
+          },
+          "observedCells": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "eligibleCells": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "missingCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "absentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unrecordedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "coverage": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "not-assessed",
+              "missing-scores",
+              null
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "version",
+          "questionIds",
+          "questionCount",
+          "scoreSum",
+          "maxSum",
+          "possibleMax",
+          "observedCells",
+          "eligibleCells",
+          "rate",
+          "missingCount",
+          "absentCount",
+          "unrecordedCount",
+          "coverage",
+          "reason"
+        ],
+        "additionalProperties": true
+      },
+      "StudentScope": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "student"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "type",
+          "studentId",
+          "name",
+          "version",
+          "deletedAt"
+        ],
+        "additionalProperties": true
+      },
+      "ClassScope": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "class"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "version",
+          "deletedAt"
+        ],
+        "additionalProperties": true
+      },
+      "Problem": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "^/problems/workbench/"
+          },
+          "currentVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "field": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "required",
+              "unknown-field",
+              "invalid-type",
+              "empty-content",
+              "out-of-range",
+              "unsupported-content-version",
+              "duplicate-id"
+            ]
+          },
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            }
+          },
+          "tagId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "targetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resultId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-teachbuddy_session"
+      }
+    },
+    "parameters": {
+      "PageContext": {
+        "name": "X-TeachBuddy-Page",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "BrowserProtection": {
+        "name": "X-TeachBuddy-Request",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "1"
+          ]
+        }
+      },
+      "Origin": {
+        "name": "Origin",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "ObjectId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "responses": {
+      "Problem401": {
+        "description": "共享保存或班级业务问题",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        },
+        "headers": {
+          "Cache-Control": {
+            "description": "所有业务响应禁止缓存",
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        }
+      },
+      "Problem403": {
+        "description": "共享保存或班级业务问题",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        },
+        "headers": {
+          "Cache-Control": {
+            "description": "所有业务响应禁止缓存",
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        }
+      },
+      "Problem404": {
+        "description": "共享保存或班级业务问题",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        },
+        "headers": {
+          "Cache-Control": {
+            "description": "所有业务响应禁止缓存",
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        }
+      },
+      "Problem409": {
+        "description": "共享保存或班级业务问题",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        },
+        "headers": {
+          "Cache-Control": {
+            "description": "所有业务响应禁止缓存",
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        }
+      },
+      "Problem413": {
+        "description": "共享保存或班级业务问题",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        },
+        "headers": {
+          "Cache-Control": {
+            "description": "所有业务响应禁止缓存",
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        }
+      },
+      "Problem415": {
+        "description": "共享保存或班级业务问题",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        },
+        "headers": {
+          "Cache-Control": {
+            "description": "所有业务响应禁止缓存",
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        }
+      },
+      "Problem422": {
+        "description": "共享保存或班级业务问题",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        },
+        "headers": {
+          "Cache-Control": {
+            "description": "所有业务响应禁止缓存",
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        }
+      },
+      "Problem503": {
+        "description": "共享保存或班级业务问题",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        },
+        "headers": {
+          "Cache-Control": {
+            "description": "所有业务响应禁止缓存",
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,7 +9,7 @@
 ## 实现入口与格式
 
 - API：`apps/api/src/workbench/reliability/`；Web `apps/web/src/features/reliability/`。偏好行为及 API 归[工作台与设置](workbench.md#账户外观与共享呈现)。
-- 当前手动制品格式：`apps/api/src/workbench/reliability/archive.schema.json`；schema 装配 `schema.js`。未实现可靠性设计输入及固定引用保存在[固定设计输入](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)，原始字节与完整相对引用保持，来源摘要见同目录 `provenance.json`；仅供存续能力参考，旧班级片段不再适用，不作为当前资料包或四模块扩展的精确 schema。Agent 部分的接续仅在[Agent 规格](agent.md)。
+- 当前手动制品格式：`apps/api/src/workbench/reliability/archive.schema.json`；schema 装配 `schema.js`。未实现可靠性设计输入及固定引用保存在[固定设计输入](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)，原始字节与完整相对引用保持，来源摘要见同目录 `provenance.json`；仅供存续能力参考，旧班级片段不再适用，不作为当前资料包或模块扩展的精确 schema。Agent 部分的接续仅在[Agent 规格](agent.md)。
 - 维护命令：`node apps/api/src/scripts/reliability.js --help`，提供 backup / restore / activate；实际运行参数以 CLI 为准。维护前固定停服、独占目录和原数据保全范围。
 - 认证离线操作：`apps/api/src/features/auth/recovery.js` 的 `prepareRestoredAuth`，外层不得自行拼认证表清理 SQL。
 
@@ -74,6 +74,7 @@ ZIP 根含 `manifest.json`、`index.html`（纯静态、无脚本）、`data/` J
 - 活动及软删除的题目、题型/标签、原稿和定位、收录校对草稿/未分配片段、来源与复制链。
 - 资源元数据、分类、每个被保留的文件版本及预览。
 - 数学所有已保留 revision 的 Source、rendererVersion、海报/展示/导出文件；外部 HTML 保持字节，阅读索引只链接下载，不自动运行。
+- 班级、学生、自由记录、正式考试、成绩、导入草稿/确认来源与标签，含软删除及已合并标签；Excel 原件、原卷、固定预览及各项关系。
 - 日程模板/例外/原始日期/通知原时间和已读/清空状态；账户偏好与已有导航布局。
 - 对话、历史引用、公开消息/工具卡/操作结果、服务器已保存输入；原 pi entries、内部指令、请求头、密钥、会话和验证码均不进入个人包。公开对象中的真实教师文本仍原样保留，不用字符串删词破坏用户资料。
 
@@ -94,6 +95,7 @@ ZIP 根含 `manifest.json`、`index.html`（纯静态、无脚本）、`data/` J
 | --- | --- |
 | 题目/资源/作品 | 原 ID、来源、文件、历史版本保留 |
 | 日程 | 当前界面永久删除任务，保留历史通知及幂等回执；兼容软删除 API 可恢复原 ID 与例外，停用期间不补发。编辑单次实例取消原日期并创建独立任务；底层 exceptions 恢复仍沿原实例身份 |
+| 班级 | 软删除保留学生、记录和考试事实；学生恢复不抢占旧座位，考试恢复后原成绩重新进入统计；确认导入保留来源证据 |
 | 收录 | 原稿及草稿/入库映射保持；已入库题不级联删除，重新整理不重复入库 |
 
 上表区分当前删除入口与兼容恢复操作。题目、资源、作品及日程另有须确认的永久删除，条件与影响由对应[模块规格](../README.md#功能规格)定义；永久删除后不再提供恢复，已采用快照、受管文件和已下载副本按各自保留规则处理。文件物理回收与自动 TTL 尚未提供，不能与业务条目永久删除混称。分类词/文件夹沿原 taxonomy 语义，不承诺从回收站恢复。来源永久删除后按缺失来源处理；读取失败不能伪装成合法 tombstone。
@@ -101,7 +103,7 @@ ZIP 根含 `manifest.json`、`index.html`（纯静态、无脚本）、`data/` J
 <a id="backup"></a>
 ## 账户永久删除
 
-设置经[认证删除交换](../contracts/auth.md#账户删除交换-i08)删除当前教师账户。范围包含四模块的活动/已删除资料、历史与关系、原稿/附件/导出文件、识别结果、账户偏好和导航、幂等回执、Agent 对话及内部恢复记录、认证凭据及挑战。清理显式跟随账户归属，包括通过父记录归属的版本和事件表，不删除另一账户数据。
+设置经[认证删除交换](../contracts/auth.md#账户删除交换-i08)删除当前教师账户。范围包含五个业务模块的活动/已删除资料、历史与关系、原稿/附件/导出文件、识别结果、账户偏好和导航、幂等回执、Agent 对话及内部恢复记录、认证凭据及挑战。清理显式跟随账户归属，包括通过父记录归属的版本和事件表，不删除另一账户数据。
 
 先锁定该账户并撤销所有登录，再取消并等待其 Agent、Job、个人导出、转换和 OCR 的真实执行结束，清理该账户受管工作目录与字节，最后删除数据库记录。同步前已授权的迟到写入重新检查账户状态；结果未知和物理清理失败保持锁定，由原请求继续，不能显示成功。OCR 实例归属和清理保证由[识别契约](../contracts/recognition.md)定义。
 
@@ -121,7 +123,7 @@ ZIP 根含 `manifest.json`、`index.html`（纯静态、无脚本）、`data/` J
 
 1. 关闭外部入口，停止旧 API、转换/Agent/邮件等后台写者，抑制自动重启并排空或终止在途请求。保存原库、文件及原配置，确认原库/备份/目标物理分离且无链接别名；数据目录锁不代替停服证明。
 2. 校验 manifest 的 kind/路径/版本/摘要和完整迁移集合，在新目标写 pending 后复制一致 DB 与文件；要求目标 DB 已存在，不能错路径建空库。原库和备份源保持不变。
-3. 执行 SQLite integrity/foreign-key 检查、受支持的追加迁移，再核对完整账本/必需结构、accountKey、四模块对象、历史文件/源码/对话及跨模块引用。认证支持集合与 legacy gaps 停止条件沿认证契约；更高 format/schema、未知模块/迁移、缺失升级链或必需内容版本均停止。支持的旧版本必须由固定候选及升级 fixture 枚举。
+3. 执行 SQLite integrity/foreign-key 检查、受支持的追加迁移，再核对完整账本/必需结构、accountKey、全部注册模块对象、历史文件/源码/对话及跨模块引用。认证支持集合与 legacy gaps 停止条件沿认证契约；更高 format/schema、未知模块/迁移、缺失升级链或必需内容版本均停止。支持的旧版本必须由固定候选及升级 fixture 枚举。
 4. 离线同步调用 `prepareRestoredAuth({db})`，验证 `contractRevision=auth-recovery/2`、`outcome=cleared` 及五项 remaining 为零。关闭连接，以同一物理目标重新打开再调用，五项 removed/remaining 均须为零；非零立即停止调查持久性或额外写者，不能以第二次清理成功掩盖首次问题。保留账户/引用核对合格后关闭认证恢复连接。
 5. 在目标更新新的 recoveryId，并按本契约 B 及原 Job/通知规则裁决运行状态；复核完整性并关闭全部恢复连接。持久记录本次备份/目标/候选、操作 revision、两次脱敏结果及核对证据，只标 prepared，命令退出 0 表示离线准备完成，不表示已经开放。
 6. 维护者按维护 CLI activate选择该目标库、files 与必需配置，核对准备回执与物理目标，执行正常初始化后才开放；不得重新复制未清理库、复用旧连接或以旧日志代替准备回执。启用完成前进程/主机重启默认保持维护停服。成功启用后的普通重启维持原恢复点和新会话，不重跑清理。

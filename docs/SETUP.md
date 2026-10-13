@@ -181,7 +181,7 @@ React 页面
   → SQLite 事务、文件存储、转换任务
 ```
 
-这是一个应用和一个 SQLite 持久底座。[八个产品分区](PRODUCT_SCOPE.md#产品分区)用于职责与任务归属，其中四个教学业务模块通过单一静态目录装配；账户与身份、工作台与设置、AI 助理由应用组合。产品分区不要求一一对应顶层代码目录，也不拆成多服务或动态插件平台。重大约束见 [ADR 0001](adr/0001-use-a-single-static-module-catalog.md)。
+这是一个应用和一个 SQLite 持久底座。[八个产品分区](PRODUCT_SCOPE.md#产品分区)用于职责与任务归属，其中五个教学业务模块通过单一静态目录装配，班级当前只注册后端；账户与身份、工作台与设置、AI 助理由应用组合。产品分区不要求一一对应顶层代码目录，也不拆成多服务或动态插件平台。重大约束见 [ADR 0001](adr/0001-use-a-single-static-module-catalog.md)。
 
 | 代码位置 | 当前职责 |
 | --- | --- |
@@ -196,18 +196,18 @@ React 页面
 | `apps/api/src/contracts/` | API 机器契约及其本地引用，供运行校验和测试读取；文字语义另见[契约说明](README.md#契约说明) |
 | `apps/api/src/workbench/` | 应用装配与身份适配，以及校验、幂等、迁移、文件、识别和任务等技术底座；其中 `navigation.js` 属于工作台与设置 |
 | `apps/api/src/reliability/preferences.js` | 工作台与设置的账户偏好；路径名称不改变职责 |
-| `apps/api/src/modules/` | 题库、资源、数学和日程业务 |
+| `apps/api/src/modules/` | 题库、资源、数学、日程和班级业务；`classroom/` 拥有名单、考试及统计，消费公共文件端口 |
 | `apps/api/src/workbench/reliability/` | 个人资料包、备份、恢复与维护锁 |
 | `packages/shared/` | 两侧消费的静态模块目录及共享定义 |
 | `prototype/` | 已确认 UI/UX 的参考，生产运行不依赖原型源码 |
 
-实际 API 装配映射在 `apps/api/src/workbench/moduleImplementations.js`；Web 的 `features/modules/moduleRegistry.js` 将共享目录投影为页面与图标，外壳、导航、教程和全局搜索消费同一投影，顶层路由从共享目录匹配。资源深链接适配归属资源模块；`workbench/teachingTime.js` 只装配日程与其内部提醒。新增能力先找所属模块，不增加另一套全局注册表。
+实际 API 装配映射在 `apps/api/src/workbench/moduleImplementations.js`；Web 的 `features/modules/moduleRegistry.js` 将共享目录投影为页面与图标，外壳、导航、教程和全局搜索消费同一投影，顶层路由从共享目录匹配。目录 v4 的 `webEnabled` 明确页面开放资格，API 装配全部注册模块，Web 只投影已开放模块；班级不需要占位页面。资源深链接适配归属资源模块；`workbench/teachingTime.js` 只装配日程与其内部提醒。新增能力先找所属模块，不增加另一套全局注册表。
 
 ### 持久化与失败语义
 
 业务通过自己的服务、仓储及迁移处理数据；跨模块采用公开端口，避免直接操作别人的表。保存、版本冲突、幂等与未知结果的共同规则由[共享保存契约](contracts/workbench.md)拥有。
 
-个人资料包在受理事务内同步调用四模块既有 port 的 `readForExport(principal)`，由各模块读取账户范围内的业务值、保留历史与专属证据，不补写默认设置或结算通知。`workbench/reliability/portable.js` 负责资料格式、对象关系和附件组装；异步打包在受理提交后执行。调整模块存储时维护模块自己的读取端口，物理备份仍沿既有维护路径。
+个人资料包在受理事务内同步调用各注册模块既有 port 的 `readForExport(principal)`，由各模块读取账户范围内的业务值、保留历史与专属证据，不补写默认设置或结算通知。`workbench/reliability/portable.js` 负责资料格式、对象关系和附件组装；异步打包在受理提交后执行。调整模块存储时维护模块自己的读取端口，物理备份仍沿既有维护路径。
 
 识别与裁图通过 `workbench/files/preview.js` 的 `readRendition` 读取已有固定预览映射，由文件模块校验原件、派生文件的账户归属与完整性。调用者负责自己的页选择和错误字段，不因当前预览更新而改用另一份来源；交换语义见[共用页识别](contracts/recognition.md)。
 
