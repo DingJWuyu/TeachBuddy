@@ -38,6 +38,8 @@
 
 首次检索逐步读取正文，界面说明尚未完成的数量并自动补充结果。无可提取文字、等待预览和读取失败与零匹配分别处理；某份正文失败不会阻断其他结果，可重新读取。检索中途断网时停止等待提示，提供“继续检索”接续剩余结果。归档列表独立检索，文件夹、标签与格式筛选继续有效。
 
+切换搜索词或筛选复用已读取的分类、文件信息与完成预览；搜索发现新资料或文件来源变化时补读，保存和明确重试后刷新。待完成预览单独跟踪到终态，读取失败停止并提供重试，身份变化或离开资源库时停止跟踪。
+
 PDF 与 Word/PPT 的 PDF 预览保留原页图，在其上叠加 PDF.js 文字层，支持拖选后复制与“复制本页文字”。成功反馈在按钮内短暂显示，保持阅读位置。扫描页没有文字时明确提示；文字读取失败可重试，页图和下载仍可用。缩放、窄屏和翻页同步文字层。复制结果为纯文本，复杂公式、表格和多栏顺序仍需核对原件。
 
 预览工具栏的“查找本页”按需展开输入框、匹配数和上/下一处。按普通文字字面匹配，英文不区分大小写，支持同一行跨文字项命中；原生高亮保留页图和用户选区。Enter/Shift+Enter 切换本页命中，Escape 关闭并将焦点还给入口。手动翻页保留词语并重置命中位置，不自动跨页；切换文件或退出预览清空查找状态。加载、文字读取失败、无文字和无匹配分别提示。浏览器缺少原生高亮能力时说明查找不可用，原预览和复制继续可用。页图高亮只使用原生文字坐标，不提供正则或跨页匹配。
@@ -63,6 +65,8 @@ PDF 与 Word/PPT 的 PDF 预览保留原页图，在其上叠加 PDF.js 文字�
 文件身份、上传未知结果、补充预览、授权下载见[材料契约的文件与定位](../contracts/materials.md#文件与定位)；分类、文件更新、批量下载及删除见同页对应节。活动与归档资料保留原件和历史文件；上传后安全保存原件与预览成功是不同结果。
 
 Web `apps/web/src/features/resources/`，API `apps/api/src/modules/resources/`；共用 `apps/api/src/workbench/files/` 与 `jobs/`。真实认证浏览器流程入口 `apps/web/e2e/resources-ui.config.mjs`，用 `WORKBENCH_WEB_DIST` 指向[隔离构建](../SETUP.md#新的隔离环境)，截图和 trace 可用 `RESOURCE_UI_RESULTS` 指定目录。Office 格式专项入口 `apps/web/e2e/manual-resources.config.mjs`，HTTP `apps/api/test/materials-resources.test.js`，验收 [WB-M013-017](../acceptance/materials.feature)。
+
+物理删除、共享保留、打包与恢复专项为 `apps/api/test/resources-storage.test.js` 和 `apps/api/test/resources-device-recovery.test.js`。搜索测量用 `node scripts/resources/measure-search.mjs`，同样指定隔离 `WORKBENCH_WEB_DIST`；默认建立 20/100 份混合资料并测量冷暖搜索、连续输入和筛选。`RESOURCE_SEARCH_SIZES` 选择规模，`RESOURCE_SEARCH_WARM_ONLY=1` 用于已明确冷加载边界后的暖搜索对比，`RESOURCE_SEARCH_RESULTS` 指定证据目录；测量使用独立账户和数据，不依赖体验实例。
 
 按本次改动选择下列回归，执行范围与剩余验证见[项目状态](../plans/run-state.md)：
 
