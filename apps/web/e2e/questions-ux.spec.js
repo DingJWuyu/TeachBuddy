@@ -212,6 +212,80 @@ test('列表加载后恢复刷新前的真实滚动和选中题目', async ({ pa
   await page.screenshot({ path: info.outputPath('scroll-after.png') });
 });
 
+test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1440, height: 680 });
+  for (let n = 1; n <= 9; n++) {
+    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await page.getByLabel('题目标题').fill('带图滚动 ' + n);
+    await page.getByLabel('题干段落 1', { exact: true }).fill('图形练习 ' + n);
+    const chooser = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: '插入图片', exact: true }).click();
+    await (await chooser).setFiles({ name: 'figure-' + n + '.png', mimeType: 'image/png',
+      buffer: await sharp({ create: { width: 600, height: 600, channels: 3, background: { r: 40 + n * 15, g: 90, b: 140 } } }).png().toBuffer() });
+    await expect(page.locator('.q-edit-fields img')).toBeVisible();
+    await page.getByRole('button', { name: '保存题目', exact: true }).click();
+    await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  }
+  const list = page.locator('.q-list');
+  await expect(list.locator('img')).toHaveCount(9);
+  await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  await list.hover();
+  await page.mouse.wheel(0, 5000);
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  await page.locator('.q-list-entry button').last().click();
+  const before = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  await page.screenshot({ path: info.outputPath('image-scroll-before.png') });
+  const saved = await records();
+  let held = [];
+  await page.route('**/api/workbench/files/*/content', async route => {
+    await new Promise(resolve => { held.push({ release: resolve }); });
+    await route.continue();
+  });
+  try {
+    await page.reload();
+    await expect(page.locator('.q-list-entry')).toHaveCount(9);
+    await expect.poll(() => held.length).toBeGreaterThanOrEqual(10);
+    const pending = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    held.slice(0, 4).forEach(request => request.release());
+    await expect.poll(() => list.locator('img').count()).toBeGreaterThan(0);
+    expect(await list.locator('img').count()).toBeLessThan(9);
+    const partial = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    held.forEach(request => request.release());
+    await expect(list.locator('img')).toHaveCount(9);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(before.top);
+    await expect(page.getByRole('heading', { name: '带图滚动 1', exact: true })).toBeVisible();
+    const after = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    expect(await records()).toEqual(saved);
+    await page.screenshot({ path: info.outputPath('image-scroll-after.png') });
+
+    held = [];
+    await page.reload();
+    await expect(page.locator('.q-list-entry')).toHaveCount(9);
+    await expect.poll(() => held.length).toBeGreaterThanOrEqual(10);
+    await list.hover();
+    await page.mouse.wheel(0, -5000);
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(0);
+    held.forEach(request => request.release());
+    await expect(list.locator('img')).toHaveCount(9);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const userScrolled = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    expect(userScrolled.top).toBe(0);
+    await page.unroute('**/api/workbench/files/*/content');
+    await page.reload();
+    await expect(list.locator('img')).toHaveCount(9);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(0);
+    await expect(page.getByRole('heading', { name: '带图滚动 1', exact: true })).toBeVisible();
+    const refreshed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    fs.writeFileSync(info.outputPath('image-scroll-readback.json'), JSON.stringify({ before, pending, partial, after, userScrolled, refreshed }, null, 2));
+    await page.screenshot({ path: info.outputPath('image-scroll-user-position.png') });
+  } finally {
+    held.forEach(request => request.release());
+  }
+});
+
 test('空收录现场刷新不提示恢复，真实收录输入和新题草稿继续恢复', async ({ page }, info) => {
   const notice = page.getByText('已恢复本设备的未保存输入，请检查后继续。', { exact: true });
   await createQuestion(page, '空收录恢复验证');

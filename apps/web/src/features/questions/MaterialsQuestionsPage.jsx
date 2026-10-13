@@ -128,19 +128,22 @@ export default function MaterialsQuestionsPage({
   useEffect(() => {
     const node = listNode.current;
     if (!node || listState !== 'ready' || listRestored.current) return;
+    const expectedImages = items.filter(item => documentAssets(item.body).figures.length > 0).length;
     const observer = new ResizeObserver(restore);
     function restore() {
       if (listRestored.current) { observer.disconnect(); return; }
       node.scrollTop = initialListTop.current;
-      if (node.scrollTop === initialListTop.current) {
+      const images = [...node.querySelectorAll('.q-list-entry img')];
+      if (node.scrollTop === initialListTop.current && images.length === expectedImages && images.every(image => image.complete)) {
         listRestored.current = true;
         observer.disconnect();
       }
     }
     observer.observe(node);
+    for (const child of node.children) observer.observe(child);
     restore();
     return () => observer.disconnect();
-  }, [listState, items.length, imports.length]);
+  }, [listState, items, imports]);
   const unsupportedQuestion = value && scene.kind !== "import" && value.body
     ? questionDocuments(value).some(([, document]) => !supportedDocument(document))
     : false;
