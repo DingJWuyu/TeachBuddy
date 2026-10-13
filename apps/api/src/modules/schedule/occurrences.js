@@ -61,7 +61,7 @@ export function effectiveLinks(entry, exception) {
   if (exception && exception.mode === 'override' && exception.content?.courseLinks) {
     return exception.content.courseLinks;
   }
-  return entry.courseLinks ?? { classroom: null, lesson: null, records: [] };
+  return entry.courseLinks ?? { classroom: null, records: [] };
 }
 
 /**

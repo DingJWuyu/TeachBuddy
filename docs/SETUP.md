@@ -78,7 +78,7 @@ WantedBy=default.target
 
 材料预览与输出还依赖系统工具和字体，不能只安装 npm 依赖：
 
-- `MATERIALS_PANDOC_PATH` 指向 Pandoc 可执行文件，使用者为 `apps/api/src/modules/lessons/pandoc.js`。
+- `MATERIALS_PANDOC_PATH` 指向 Pandoc 可执行文件，使用者为 `apps/api/src/workbench/files/pandoc.js`。
 - `MATERIALS_OFFICE_ROOT` 指向包含 `program/soffice` 的 LibreOffice 根目录，使用者为 `apps/api/src/workbench/files/converter.js`。Debian/Ubuntu 系统包须同时安装 `libreoffice-writer` 与 `libreoffice-math`，后者负责公式显示，根目录可使用 `/usr/lib/libreoffice`；转换沙箱会同时只读挂载系统包的 `/etc/libreoffice` 配置目录（存在时）。
 - `QUESTIONS_XPDF_PDFTOHTML` 指向 Xpdf 的 `pdftohtml`，用于题库文字 PDF 的阅读顺序与双栏识别；使用者为 `apps/api/src/modules/questions/native-pdf.js`。Poppler 继续负责页图、裁图和资源正文检索。
 - 转换还调用 `bwrap` 和相应格式工具；准确命令从同目录的 `conversion-worker.mjs` 核对。
@@ -126,7 +126,7 @@ GeoGebra 源码按 EUPL-1.2 使用，Giac、GMP、MPFR、字体及其他依赖�
 
 ## 本地页识别工具
 
-`MATERIALS_OCR_HOME` 指向独立、持久的 MinerU 工具目录。未配置时不运行新识别，已保存的机器结果仍可读取。题库、备课和资源共用这一套识别服务；识别与人工采用的边界见[共用页识别](contracts/recognition.md)。
+`MATERIALS_OCR_HOME` 指向独立、持久的 MinerU 工具目录。未配置时不运行新识别，已保存的机器结果仍可读取。题库和资源共用这一套识别服务；识别与人工采用的边界见[共用页识别](contracts/recognition.md)。
 
 固定方案为 MinerU Standard、Pro-2605 Q8、CPU 版面分析和 CUDA llama.cpp 内容识别，只运行单路内容识别，不追加全页 CPU 复核。表格使用固定 LaTeX 提示，保留公式的原始识别文本；配图按模型定位从请求原页裁取，不重画图形。模型、提示、依赖、字体和下载摘要在 `scripts/recognition/manifest.json` 与 `requirements.freeze.txt`，适配入口为 `apps/api/src/workbench/recognition/worker.py` 和 `mineru_adapter.py`。改变识别配置时递增引擎修订，不能用旧缓存代替新配置验证。
 
@@ -181,13 +181,13 @@ React 页面
   → SQLite 事务、文件存储、转换任务
 ```
 
-这是一个应用和一个 SQLite 持久底座。[九个产品分区](PRODUCT_SCOPE.md#产品分区)用于职责与任务归属，其中六个教学业务模块通过单一静态目录装配；账户与身份、工作台与设置、AI 助理由应用组合。产品分区不要求一一对应顶层代码目录，也不拆成多服务或动态插件平台。重大约束见 [ADR 0001](adr/0001-use-a-single-static-module-catalog.md)。
+这是一个应用和一个 SQLite 持久底座。[八个产品分区](PRODUCT_SCOPE.md#产品分区)用于职责与任务归属，其中五个教学业务模块通过单一静态目录装配；账户与身份、工作台与设置、AI 助理由应用组合。产品分区不要求一一对应顶层代码目录，也不拆成多服务或动态插件平台。重大约束见 [ADR 0001](adr/0001-use-a-single-static-module-catalog.md)。
 
 | 代码位置 | 当前职责 |
 | --- | --- |
 | `apps/web/src/features/workbench/` | 工作台与设置的外壳、导航、偏好和支持页；同目录中的共享文稿/保存/冲突机制属于技术底座 |
 | `apps/web/src/features/auth/` | 账户与身份的认证页面、会话恢复及请求 transport；删除确认后调用 App 注入的设备清理端口，各存储拥有者清理自己的资料 |
-| `apps/web/src/features/{questions,lessons,resources,math,classes,schedule}/` | 依次对应题库、备课、资源库、数学工坊、班级教学、日程的界面与交互 |
+| `apps/web/src/features/{questions,resources,math,classes,schedule}/` | 依次对应题库、资源库、数学工坊、班级教学、日程的界面与交互 |
 | `apps/web/src/features/agent/`、`apps/api/src/agent/` | AI 助理的对话、引用、模型运行与工具调用；首页/侧栏由工作台承载 |
 | `apps/web/src/features/reliability/` | 技术底座的数据导出和设备恢复界面，供设置等调用 |
 | `apps/api/src/server.js` | 同源 HTTPS、可选 Vite 开发服务、启动完成后监听与停止连接 |
@@ -196,7 +196,7 @@ React 页面
 | `apps/api/src/contracts/` | API 机器契约及其本地引用，供运行校验和测试读取；文字语义另见[契约说明](README.md#契约说明) |
 | `apps/api/src/workbench/` | 应用装配与身份适配，以及校验、幂等、迁移、文件、识别和任务等技术底座；其中 `navigation.js` 属于工作台与设置 |
 | `apps/api/src/reliability/preferences.js` | 工作台与设置的账户偏好；路径名称不改变职责 |
-| `apps/api/src/modules/` | 题库、备课、资源、数学、班级和日程业务 |
+| `apps/api/src/modules/` | 题库、资源、数学、班级和日程业务 |
 | `apps/api/src/workbench/reliability/` | 个人资料包、备份、恢复与维护锁 |
 | `packages/shared/` | 两侧消费的静态模块目录及共享定义 |
 | `prototype/` | 已确认 UI/UX 的参考，生产运行不依赖原型源码 |
@@ -207,7 +207,7 @@ React 页面
 
 业务通过自己的服务、仓储及迁移处理数据；跨模块采用公开端口，避免直接操作别人的表。保存、版本冲突、幂等与未知结果的共同规则由[共享保存契约](contracts/workbench.md)拥有。
 
-个人资料包在受理事务内同步调用六模块既有 port 的 `readForExport(principal)`，由各模块读取账户范围内的业务值、保留历史与专属证据，不补写默认设置或结算通知。`workbench/reliability/portable.js` 负责资料格式、对象关系和附件组装；异步打包在受理提交后执行。调整模块存储时维护模块自己的读取端口，物理备份仍沿既有维护路径。
+个人资料包在受理事务内同步调用五模块既有 port 的 `readForExport(principal)`，由各模块读取账户范围内的业务值、保留历史与专属证据，不补写默认设置或结算通知。`workbench/reliability/portable.js` 负责资料格式、对象关系和附件组装；异步打包在受理提交后执行。调整模块存储时维护模块自己的读取端口，物理备份仍沿既有维护路径。
 
 识别与裁图通过 `workbench/files/preview.js` 的 `readRendition` 读取已有固定预览映射，由文件模块校验原件、派生文件的账户归属与完整性。调用者负责自己的页选择和错误字段，不因当前预览更新而改用另一份来源；交换语义见[共用页识别](contracts/recognition.md)。
 

@@ -44,7 +44,6 @@ test('公共端口：readClass/readRecord 允许 tombstone，外账户统一 404
     const service = createClassesService({
       repository: createClassesRepository(harness.db()),
       questions: { readForReferenceV2: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
-      lessons: { readForTeachingLink: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
       now: () => new Date('2026-09-21T06:00:00.000Z')
     });
     const principal = { accountKey: 'teacher-a' };
@@ -88,7 +87,6 @@ test('公共端口：readRecord 的 label 取首个非空文字并截前 300 个
     const service = createClassesService({
       repository: createClassesRepository(harness.db()),
       questions: { readForReferenceV2: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
-      lessons: { readForTeachingLink: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
       now: () => new Date('2026-09-21T06:00:00.000Z')
     });
     const principal = { accountKey: 'teacher-a' };
@@ -133,7 +131,6 @@ test('公共端口：listSourceRecords 与 HTTP 同语义，返回活动记录�
       repository: createClassesRepository(harness.db()),
       // The v2 consumer seam; this test uses a v1-representable question.
       questions: { readForReferenceV2: (principal, id) => questionsService.readForReference(principal, id) },
-      lessons: { readForTeachingLink: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
       now: fixedNow
     });
     const portItems = service.listSourceRecords({ accountKey: 'teacher-a' }, {
@@ -171,7 +168,6 @@ test('来源读取失败使本次读取失败，404 同样传播而非伪删除'
     const failing = createClassesService({
       repository,
       questions: { readForReferenceV2: () => { throw contractFailure(503, '/problems/workbench/temporarily-unavailable'); } },
-      lessons: { readForTeachingLink: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
       now: () => new Date('2026-09-21T06:00:00.000Z')
     });
     assert.throws(() => failing.getRecord(principal, record.body.id), (error) => error.status === 503);
@@ -179,7 +175,6 @@ test('来源读取失败使本次读取失败，404 同样传播而非伪删除'
     const missing = createClassesService({
       repository,
       questions: { readForReferenceV2: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
-      lessons: { readForTeachingLink: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
       now: () => new Date('2026-09-21T06:00:00.000Z')
     });
     assert.throws(() => missing.getRecord(principal, record.body.id), (error) => error.status === 404);
@@ -192,7 +187,6 @@ test('直接业务调用同样拒绝非法输入，不依赖 HTTP 层', async ()
     const service = createClassesService({
       repository,
       questions: { readForReferenceV2: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
-      lessons: { readForTeachingLink: () => { throw contractFailure(404, '/problems/workbench/not-found'); } },
       now: () => new Date('2026-09-21T06:00:00.000Z')
     });
     const principal = { accountKey: 'teacher-a' };

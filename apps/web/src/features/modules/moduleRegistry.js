@@ -12,7 +12,6 @@ import i18n from '../../i18n/index.js';
 import { moduleCatalog, modulePorts } from '@refatos/shared';
 import QuestionsPage from '../questions/index.jsx';
 import ResourceRoute from '../resources/ResourceRoute.jsx';
-import LessonsPage from '../lessons/index.jsx';
 import { MathWorkbench } from '../math/index.jsx';
 
 import { ClassesRoute } from '../classes/index.jsx';
@@ -20,9 +19,8 @@ import SchedulePage from '../schedule/index.jsx';
 const localRegistry = {
   classes: { Page: ClassesRoute, icon: 'classes' },
   schedule: { Page: SchedulePage, icon: 'calendar' },
-  questions: { Page: QuestionsPage, icon: 'lessons' },
+  questions: { Page: QuestionsPage, icon: 'book' },
   resources: { Page: ResourceRoute, icon: 'folder' },
-  lessons: { Page: LessonsPage, icon: 'pencil' },
   math: { Page: MathWorkbench, icon: 'graph' }
 };
 

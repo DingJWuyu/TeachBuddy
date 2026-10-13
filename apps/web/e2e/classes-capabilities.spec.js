@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { registerMath } from './fixtures/math-static/real.mjs';
-import { http, C, R } from '../../api/test/teaching-time-classes-materials-fixture.js';
+import { http, C, R, Q, question } from '../../api/test/teaching-time-classes-materials-fixture.js';
 
 let world, call, directory, teachingTime;
 test.beforeEach(async ({ page }) => {
@@ -66,17 +66,17 @@ test('修改同一天较早记录的文字，不会把教学进度倒退', async
 });
 
 test('一份关联资料读取失败时仍能阅读与编辑课堂正文，并重试资料', async ({ page }) => {
-  const lesson = await call('POST', '/api/modules/lessons/v3', { title: '单调性备课', intro: { version: 1, blocks: [] }, sections: [], materials: [] }, 201);
+  await call('POST', Q, question('单调性题目'), 201);
   await createClass(page);
   await page.getByRole('button', { name: '关联资料', exact: true }).click();
   const picker = page.getByRole('dialog', { name: '关联资料' });
-  await picker.getByRole('button', { name: '单调性备课', exact: true }).click();
+  await picker.getByRole('button', { name: '单调性题目', exact: true }).click();
   await picker.getByRole('button', { name: '加入记录（1）' }).click();
   await saveRecord(page, '资料故障也要保留的课堂原文');
   await saveRecord(page, '没有关联的正常记录');
-  const port = world.workbench.loader.get('lessons').port;
-  const original = port.readForTeachingLink;
-  port.readForTeachingLink = () => { throw Object.assign(new Error('isolated source unavailable'), { status: 503 }); };
+  const port = world.workbench.loader.get('questions').port;
+  const original = port.readForReferenceV2;
+  port.readForReferenceV2 = () => { throw Object.assign(new Error('isolated source unavailable'), { status: 503 }); };
   await page.reload();
   await expect(rows(page)).toHaveCount(2);
   await expect(rows(page).filter({ hasText: '资料故障也要保留的课堂原文' })).toBeVisible();
@@ -87,7 +87,7 @@ test('一份关联资料读取失败时仍能阅读与编辑课堂正文，并�
   await expect(page.locator('[data-region=record-editor] [data-save-status]')).toHaveAttribute('data-save-status', 'saved');
   await page.getByRole('button', { name: '返回记录', exact: true }).click();
   await expect(rows(page).filter({ hasText: '资料不可用期间仍可编辑' })).toContainText('资料暂不可用');
-  port.readForTeachingLink = original;
+  port.readForReferenceV2 = original;
   await page.getByRole('button', { name: '重试关联资料' }).click();
   await expect(page.getByText('资料暂不可用', { exact: true })).toHaveCount(0);
 });

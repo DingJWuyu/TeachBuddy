@@ -192,12 +192,6 @@ export async function seedLegacy(client) {
     201,
     key,
   );
-  const lesson = await call(
-    "POST",
-    "/api/modules/lessons/v3",
-    { title: "保留备课", intro: doc("", 1), sections: [], materials: [] },
-    201,
-  );
   const sample = JSON.parse(
     fs.readFileSync(
       new URL(
@@ -212,7 +206,6 @@ export async function seedLegacy(client) {
       classroom.id,
       [
         { kind: "math", id: math.id },
-        { kind: "lesson", id: lesson.id },
       ],
       "旧库数学引用",
     );
@@ -223,7 +216,6 @@ export async function seedLegacy(client) {
     body,
     key,
     saved,
-    lesson,
     math,
     mixed,
     mathKey,

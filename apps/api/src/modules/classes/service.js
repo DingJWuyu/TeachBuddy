@@ -31,10 +31,9 @@ import {
   validateUpdateRecord
 } from './schema.js';
 
-export function createClassesService({ repository, questions, lessons, math, content, now = () => new Date() }) {
+export function createClassesService({ repository, questions, math, content, now = () => new Date() }) {
   const sourceReaders = {
     question: (principal, id) => questions.readForReferenceV2(principal, id),
-    lesson: (principal, id) => lessons.readForTeachingLink(principal, id),
     math: (principal, id) => math.readForTeachingLinkV1(principal, id)
   };
 

@@ -29,7 +29,7 @@ try {
   let runner;
   const snapshot = (db) =>
     Object.fromEntries(
-      ['users', 'workspaceLayouts', 'question_items', 'lesson_items', 'workbench_mutation_keys'].map(
+      ['users', 'workspaceLayouts', 'question_items', 'workbench_mutation_keys'].map(
         (table) => [table, db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()]
       )
     );
@@ -107,6 +107,8 @@ try {
     for (let pass = 1; pass <= 2; pass += 1) {
       runner = await startFirstFlowRunner({ ...options, reset: false });
       assert.deepEqual(snapshot(runner.workbench.db), before);
+      assert.equal(runner.workbench.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='lesson_items'").get(), undefined);
+      assert.equal(runner.workbench.db.prepare("SELECT 1 FROM workbench_migrations WHERE moduleId='lessons'").get(), undefined);
       assert.deepEqual(
         (await request('/api/modules/questions/items', { method: 'POST', body: input, key, headers }))
           .body,
@@ -142,7 +144,7 @@ try {
           retainedTables: Object.keys(before),
           checks: [
             'B16真实HTTP旧账户/布局/题目/幂等创建',
-            '迁移后全部旧行逐值保持',
+            '迁移后保留模块旧行逐值保持，备课表与迁移记录已移除',
             '原键重放响应不变',
             '连续两次保留库启动只迁移一次',
             'A11迁移后旧账户真实登录/激活，旧数据保持'

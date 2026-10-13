@@ -25,8 +25,8 @@ async function route(page, path, name) {
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', name);
 }
 
-test('六模块真实外壳、辅助栏、前进后退、未知及非法深链接', async ({ page }, info) => {
-  for (const [id, path] of [['questions', '/questions'], ['lessons', '/lessons'], ['math', '/math'], ['resources', '/resources'], ['classes', '/classes'], ['schedule', '/calendar']]) {
+test('五模块真实外壳、辅助栏、前进后退、未知及非法深链接', async ({ page }, info) => {
+  for (const [id, path] of [['questions', '/questions'], ['math', '/math'], ['resources', '/resources'], ['classes', '/classes'], ['schedule', '/calendar']]) {
     await route(page, path, id);
     if (id !== 'schedule') await expect(row(page, id)).toHaveAttribute('aria-current', 'page');
     else {
@@ -108,15 +108,14 @@ async function create(page, path, data) {
   return response.json();
 }
 
-test('题目课稿数学详情、资源一次消费与 Agent 返回现场', async ({ page }, info) => {
+test('题目数学详情、资源一次消费与 Agent 返回现场', async ({ page }, info) => {
   const q = await create(page, '/api/modules/questions/v2/items', question('目录题目'));
-  const lesson = await create(page, '/api/modules/lessons/v3', { title: '目录课稿', intro: doc('目录课稿正文'), sections: [], materials: [] });
   const sample = JSON.parse(fs.readFileSync(new URL('../../api/test/fixtures/contracts/math-samples.json', import.meta.url))).find(item => item.id === 'create-formula').value;
   const math = await create(page, '/api/modules/math/v1/works', { ...sample, title: '目录公式' });
   const uploaded = await page.request.post(world.origin + '/api/workbench/files', { multipart: { file: { name: 'catalog.png', mimeType: 'image/png', buffer: fs.readFileSync(new URL('./fixtures/materials-questions/figure.png', import.meta.url)) } }, headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': randomUUID() } });
   expect(uploaded.status()).toBe(201);
   const resource = await create(page, '/api/modules/resources/items', { title: '目录资料', fileId: (await uploaded.json()).id, folderId: null, tagIds: [], note: '' });
-  for (const [path, name, id, title] of [[`/questions/${q.id}`, 'question', 'questions', '目录题目'], [`/lessons/${lesson.id}`, 'lesson', 'lessons', '目录课稿'], [`/math?workId=${math.id}`, 'math', 'math', '目录公式'], [`/resources/${resource.id}`, 'resource', 'resources', '目录资料']]) {
+  for (const [path, name, id, title] of [[`/questions/${q.id}`, 'question', 'questions', '目录题目'], [`/math?workId=${math.id}`, 'math', 'math', '目录公式'], [`/resources/${resource.id}`, 'resource', 'resources', '目录资料']]) {
     await route(page, path, name);
     await expect(row(page, id)).toHaveAttribute('aria-current', 'page');
     if (id === 'math') await expect(page.getByRole('textbox', { name: '作品名称', exact: true })).toHaveValue(title);
@@ -138,7 +137,7 @@ test('题目课稿数学详情、资源一次消费与 Agent 返回现场', asyn
   await page.getByRole('button', { name: '返回工作', exact: true }).click();
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'question');
   await expect(page.locator('.wb-shell')).toHaveClass(/has-panel/);
-  const entry = await create(page, '/api/modules/schedule/entries', { title: '目录日程详情', items: [], time: { date: '2026-09-28', startTime: '10:00', durationMinutes: 45, timeZone: 'Asia/Shanghai' }, repeat: null, course: { classId: null, lessonId: null, recordIds: [] }, reminder: null });
+  const entry = await create(page, '/api/modules/schedule/entries', { title: '目录日程详情', items: [], time: { date: '2026-09-28', startTime: '10:00', durationMinutes: 45, timeZone: 'Asia/Shanghai' }, repeat: null, course: { classId: null, recordIds: [] }, reminder: null });
   await route(page, `/calendar?entry=${entry.id}`, 'schedule');
   await expect(page.locator('[name=entry-title]')).toHaveValue('目录日程详情');
   await page.reload();

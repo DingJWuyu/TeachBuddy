@@ -1,12 +1,12 @@
 // Classes module entry point. The workbench composition root mounts the router
-// under /api/modules/classes and passes the questions and lessons ports; the
+// under /api/modules/classes and passes the questions and math ports; the
 // returned port serves schedule and the reverse feedback panels.
 import { createClassesRepository } from './repository.js';
 import { createClassesRouter } from './router.js';
 import { createClassesService } from './service.js';
 import { migrations } from './migrations/index.js';
 
-export function createClassesModule({ db, mutations, questions, lessons, math, content, enableV2 = math !== undefined, now } = {}) {
+export function createClassesModule({ db, mutations, questions, math, content, enableV2 = math !== undefined, now } = {}) {
   if (!db || typeof db.prepare !== 'function') {
     throw new TypeError('createClassesModule requires a better-sqlite3 Database instance.');
   }
@@ -16,16 +16,13 @@ export function createClassesModule({ db, mutations, questions, lessons, math, c
   if (!questions || typeof questions.readForReferenceV2 !== 'function') {
     throw new TypeError('createClassesModule requires the questions.readForReferenceV2 port.');
   }
-  if (!lessons || typeof lessons.readForTeachingLink !== 'function') {
-    throw new TypeError('createClassesModule requires the lessons.readForTeachingLink port.');
-  }
 
   if (enableV2 && typeof math?.readForTeachingLinkV1 !== 'function') {
     throw new TypeError('classes v2 requires math.readForTeachingLinkV1 on the same database.');
   }
 
   const repository = createClassesRepository(db);
-  const service = createClassesService({ repository, questions, lessons, math, content, now });
+  const service = createClassesService({ repository, questions, math, content, now });
   const router = createClassesRouter({ service, mutations });
 
   if (enableV2) router.use('/v2', createClassesRouter({ service, mutations, version: 2 }));

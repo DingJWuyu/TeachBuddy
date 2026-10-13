@@ -43,7 +43,7 @@ try {
     return response.json();
   }
   let savedFile, savedQuestion, snapshot, oldLedger;
-  const tables = ['users', 'workspaceLayouts', 'question_items', 'lesson_items', 'materials_files', 'workbench_mutation_keys'];
+  const tables = ['users', 'workspaceLayouts', 'question_items', 'materials_files', 'workbench_mutation_keys'];
   const readTables = (db) => Object.fromEntries(tables.map(table => [table, db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()]));
   try {
     const body = new FormData();
@@ -51,7 +51,7 @@ try {
     savedFile = await oldRequest('/api/workbench/files', body, null, randomUUID());
     savedQuestion = await oldRequest('/api/modules/questions/items', JSON.stringify(question), 'application/json', key);
     snapshot = readTables(old.workbench.db);
-    oldLedger = old.workbench.db.prepare('SELECT * FROM workbench_migrations ORDER BY rowid').all();
+    oldLedger = old.workbench.db.prepare("SELECT * FROM workbench_migrations WHERE moduleId <> 'lessons' ORDER BY rowid").all();
   } finally {
     await new Promise(resolve => server.close(resolve));
     await old.workbench.close();
@@ -72,11 +72,13 @@ try {
       assert.equal((await client.request('GET', `/api/workbench/files/${savedFile.id}/content`)).text, '固定 R31 原文件');
       assert.deepEqual((await client.request('POST', '/api/modules/questions/items', { body: question, headers: { 'Idempotency-Key': key } })).json, savedQuestion);
       assert.deepEqual(readTables(world.workbench.db), snapshot);
+      assert.equal(world.workbench.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='lesson_items'").get(), undefined);
+      assert.equal(world.workbench.db.prepare("SELECT 1 FROM workbench_migrations WHERE moduleId='lessons'").get(), undefined);
       assert.deepEqual(oldLedger.map(({ id }) => world.workbench.db.prepare('SELECT * FROM workbench_migrations WHERE id = ?').get(id)), oldLedger);
       const ledger = world.workbench.db.prepare('SELECT * FROM workbench_migrations ORDER BY rowid').all();
       if (run === 0) upgradedLedger = ledger;
       else assert.deepEqual(ledger, upgradedLedger);
-      console.log(`Upgrade restart ${run + 1}: real login, original file bytes, question replay, all legacy rows and ledger unchanged`);
+      console.log(`Upgrade restart ${run + 1}: real login, original file bytes, question replay, retained-module rows and ledger unchanged, retired lesson schema absent`);
     } finally { await world.close(); }
   }
   passed = true;

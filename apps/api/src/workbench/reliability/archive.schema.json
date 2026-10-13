@@ -146,8 +146,6 @@
             "question",
             "question-taxonomy",
             "import",
-            "lesson",
-            "lesson-revision",
             "resource",
             "resource-taxonomy",
             "resource-file-revision",
@@ -162,7 +160,6 @@
             "schedule-settings",
             "file",
             "job",
-            "lesson-export",
             "math-revision"
           ]
         },

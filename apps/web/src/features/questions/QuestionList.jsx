@@ -8,7 +8,7 @@ import { Icon } from '../workbench/icons.jsx';
 import { excerptFor, hasMath } from '../workbench/documents.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
 
-/** One row of 找题, shared by the module list and the in-lesson picker. */
+/** One row of 找题 in the question list. */
 export function QuestionRow({ item, selectedIndex = -1, inTarget = false, disabled = false, onOpen, onToggleSelect }) {
   const { t } = useTranslation("questions");
   const excerpt = excerptFor(item.title, item.body, 46) || t("未命名题目");

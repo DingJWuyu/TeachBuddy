@@ -57,7 +57,7 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
       const allowed =
         method === "PUT"
           ? new RegExp(
-              `^/api/modules/(?:resources/(?:taxonomy|items/${id}(?:/(?:file|supplement-preview))?)|lessons/v3/${id})$`,
+              `^/api/modules/resources/(?:taxonomy|items/${id}(?:/(?:file|supplement-preview))?)$`,
             )
           : method === "POST"
             ? new RegExp(

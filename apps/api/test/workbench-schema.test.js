@@ -101,41 +101,6 @@ test('sources accept the frozen kinds and reject an unknown one', () => {
   expectError(contractSchemas.createSource, { kind: 'paste', text: '' }, '/text', 'empty-content');
 });
 
-test('reference and section inputs use the shared ID, version and note shapes', () => {
-  const reference = {
-    id: '00000000-0000-4000-8000-000000000010',
-    questionId: '00000000-0000-4000-8000-000000000001',
-    questionVersion: 2,
-    note: '本课备注'
-  };
-  assert.equal(validateSchema(contractSchemas.referenceInput, reference).ok, true);
-  expectError(
-    contractSchemas.referenceInput,
-    { ...reference, questionVersion: 0 },
-    '/questionVersion',
-    'out-of-range'
-  );
-  expectError(
-    contractSchemas.referenceInput,
-    { ...reference, id: 'not-a-uuid' },
-    '/id',
-    'out-of-range'
-  );
-  expectError(
-    contractSchemas.referenceInput,
-    { ...reference, questionId: reference.questionId, snapshot: {} },
-    '/snapshot',
-    'unknown-field'
-  );
-
-  const section = { id: reference.id, title: '环节一', content: { version: 1, blocks: [] }, references: [reference] };
-  assert.equal(validateSchema(contractSchemas.sectionInput, section).ok, true);
-  // A blank section title is out-of-range in both spellings: fields are
-  // validated, never trimmed.
-  expectError(contractSchemas.sectionInput, { ...section, title: '   ' }, '/title', 'out-of-range');
-  expectError(contractSchemas.sectionInput, { ...section, title: '' }, '/title', 'out-of-range');
-});
-
 test('the boolean branch matches the frozen starred field', () => {
   assert.equal(validateSchema(schema.boolean(), true).ok, true);
   assert.equal(validateSchema(schema.boolean(), false).ok, true);

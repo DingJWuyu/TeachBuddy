@@ -11,7 +11,6 @@
 | 通用材料、题库与 Office | `apps/web/e2e/fixtures/materials/`、`materials-questions/`、`office/`；自编源材料和实际文件随仓库提供 |
 | OCR 方案比较 | `apps/api/test/fixtures/ocr-selection/` 的输入、分组、真值及勘误；比较方法和当前结果见[选型验收](ocr-selection.md)，原始识别成绩与人工采用分开 |
 | 题库与资源识别消费 | `apps/web/e2e/fixtures/materials-questions/recognition/`、`recognition-document-4/` 与 `resources-recognition/`；固定机器结果仅证明消费与保存 |
-| 备课配图校对、采用与恢复 | `apps/api/test/fixtures/lessons-region/`，包含自编父材料及真实表格裁图的机器结果，来源与校验见目录内 `provenance.json`；默认加载，`LESSONS_REGION_REPLAY_ROOT` 仅用于显式替换同布局的 fixture 目录 |
 | 外部 PDF E 与扩展页 | 完整 PDF 按下节下载和校验，用 `M33_PRIVATE_PDF` 显式指定；E7/E8/E9 的固定机器结果在 `recognition-document-4/`，完整原件与渲染页均核对摘要；可选覆盖参数见[题库验证](../features/questions.md#接口代码与判断结果) |
 
 缺少外部 PDF、模型或目标设备时，只将对应专项标为未验证，不影响仓库固定样本的必要消费回归。测试生成结果放在输出目录，固定输入保持只读；当前验证安排见[项目状态](../plans/run-state.md#核查入口)。
@@ -68,7 +67,7 @@ Office 样本可按上述内容独立物化，不等待识别实验。
 | O-H | 2页以上导学案/讲义：Q2/Q3/Q4、分式/根式例子、图与学生作答留白。 |
 | O-X | 3页以上练习：六题题面及已有答案，公式与配图同上。 |
 
-O-L/O-H/O-X 都分别输出学生 DOCX/PDF 与教师 DOCX/PDF，共12个小文件。学生版关闭答案和注记，教师版开启二者；教师注记使用自编标记串 `C22教师注记-勿发学生`，答案区使用 `C22答案解析`。至少一个成果具有行内分式、独立根式/上下标与跨页段落。检查结构和版面可读性，不硬定每个编辑器的页数一致。
+O-L/O-H/O-X 是公共 Office 转换的固定版式输入，可分别生成学生 DOCX/PDF 与教师 DOCX/PDF，共12个小文件；这些输入不定义产品的课稿编排或生成入口。学生版关闭答案和注记，教师版开启二者；教师注记使用自编标记串 `C22教师注记-勿发学生`，答案区使用 `C22答案解析`。至少一个成果具有行内分式、独立根式/上下标与跨页段落。检查结构和版面可读性，不硬定每个编辑器的页数一致。
 
 题库固定 W 的图片节点直接位于 `w:p` 下，缺少 `w:r` 包裹。原生提取可读出三张图，但 LibreOffice 分页预览不显示它们；其原生提取评分不能代替合法 DOCX 的分页兼容验证。原件保持固定，不静默修写字节。
 

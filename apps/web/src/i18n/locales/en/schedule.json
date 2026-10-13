@@ -38,14 +38,10 @@
   "（已删除）": " (deleted)",
   "（已关联）": " (linked)",
   "教学关联": "Teaching links",
-  "关联已有备课和实际教学记录。修改日程不会改写教学记录。": "Link an existing lesson plan and actual teaching records. Schedule changes do not change teaching records.",
   "重试加载": "Retry loading",
   "正在加载…": "Loading…",
   "班级": "Class",
   "不关联班级": "No linked class",
-  "备课": "Lesson plan",
-  "不关联备课": "No linked lesson plan",
-  "未命名备课": "Untitled lesson plan",
   "实际教学记录": "Actual teaching records",
   "正在加载记录…": "Loading records…",
   "这个班级还没有教学记录。": "This class has no teaching records yet.",
@@ -253,7 +249,6 @@
   "安排班级已改变，请在安排中重新选择记录": "The task's class has changed. Select records again in the task.",
   "查看实际记录": "View actual records",
   "记课后情况": "Record after-class feedback",
-  "本次备课": "This lesson plan",
   "收起": "Collapse",
   "记录已保存并关联安排": "Record saved and linked to task",
   "记录已保存，尚未关联安排": "Record saved but not linked to task",
@@ -347,5 +342,6 @@
   "标签已删除，请取消编辑": "The label was deleted. Cancel editing.",
   "最多选择30个标签": "Select up to 30 labels",
   "目标已有200条事项，请选择其他安排": "The destination already has 200 items. Choose another task.",
-  "最新标签": "Latest label"
+  "最新标签": "Latest label",
+  "关联班级和实际教学记录。修改日程不会改写教学记录。": "Link a class and teaching records. Editing the schedule does not change teaching records."
 }

@@ -275,7 +275,6 @@ export function useSavableDocument({
         id: targetId,
         payload,
         submittedInput,
-        apiVersion: retry ? current.pending?.apiVersion : (kind === "lesson" ? 3 : undefined),
         createdAt: Date.now()
       }
     });

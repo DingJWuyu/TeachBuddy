@@ -72,7 +72,6 @@ export default function ResourcesPage() {
         ...fileData(file),
         folder: w.folder === "全部资源" ? "未分类" : w.folder,
         note: "",
-        lessons: [],
       })),
       ...items,
     ]);
@@ -168,18 +167,6 @@ export default function ResourcesPage() {
               <Button icon="upload" onClick={() => replace.current?.click()}>
                 更新文件
               </Button>
-              <Button
-                primary
-                onClick={() =>
-                  w.setPicker({
-                    kind: "destination",
-                    resourceKind: "resources",
-                    ids: [preview.id],
-                  })
-                }
-              >
-                加入备课
-              </Button>
             </div>
           </div>
           <div className="wb-scroll wb-resource-preview-scroll">
@@ -219,14 +206,6 @@ export default function ResourcesPage() {
                   onChange={(event) => update({ note: event.target.value })}
                 />
               </label>
-              <span className="wb-eyebrow">关联备课</span>
-              <div className="wb-tags">
-                {preview.lessons.map((id) => (
-                  <span key={id}>
-                    {w.lessons.find((lesson) => lesson.id === id)?.title}
-                  </span>
-                ))}
-              </div>
             </div>
           </div>
         </div>

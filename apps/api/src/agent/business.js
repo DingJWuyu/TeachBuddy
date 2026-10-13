@@ -4,17 +4,13 @@ import { legacyArguments } from './schema.js';
 // Legacy calls remain replayable; current documents are never flattened to v1.
 export function connectBusinessOperations(loader) {
   const questions = loader.get('questions');
-  const lessons = loader.get('lessons');
-  const legacy = { ...questions?.operations, ...lessons?.operations };
-  const current = { ...questions?.port?.operations, ...lessons?.port?.operations };
+  const legacy = { ...questions?.operations };
+  const current = { ...questions?.port?.operations };
   const names = {
     listQuestions: 'listQuestionsV2', getQuestion: 'getQuestionV2',
     createQuestion: 'createQuestionV2', updateQuestion: 'updateQuestionV2',
     copyQuestion: 'copyQuestionV2', setQuestionDeletion: 'setQuestionDeletionV2',
-    listDerivatives: 'listQuestionCopiesV2', listLessons: 'listLessonsV3',
-    getLesson: 'getLessonV3', createLesson: 'createLessonV3',
-    updateLesson: 'updateLessonV3', setLessonDeletion: 'setLessonDeletionV3',
-    listQuestionUsages: 'listQuestionUsagesV2',
+    listDerivatives: 'listQuestionCopiesV2',
   };
   return Object.fromEntries(Object.entries(legacy).map(([name, operation]) => [name, input => {
     if (legacyArguments(name, input.arguments)) {
@@ -31,8 +27,6 @@ export function connectBusinessOperations(loader) {
       const result = current.listQuestionsV2({ principal: input.principal, query: args.query });
       return { ...result, body: { items: result.body.items.filter(item => item.source.kind === 'copy' && item.source.questionId === args.id) } };
     }
-    const result = target({ principal: input.principal, key: input.key, id: args.id ?? args.questionId, input: args.body, query: args.query });
-    if (name === 'listQuestionUsages') return { ...result, body: { items: result.body.items.map(({ adoptedVersion, ...item }) => ({ ...item, questionVersion: adoptedVersion })) } };
-    return result;
+    return target({ principal: input.principal, key: input.key, id: args.id, input: args.body, query: args.query });
   }]));
 }

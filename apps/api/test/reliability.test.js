@@ -8,7 +8,7 @@ import sharp from "sharp";
 import Database from "better-sqlite3";
 import JSZip from "jszip";
 import { createIntegration } from "./fixtures/auth-integration/harness.js";
-import { manualQuestionSample, lessonSample } from "./first-flow-harness.js";
+import { manualQuestionSample } from "./first-flow-harness.js";
 import {
   backup,
   restore,
@@ -420,7 +420,7 @@ test("offline backup lock, isolated restore, persistent auth cleanup, activation
   );
 });
 
-test("all eight deletion kinds restore through original endpoints, class/record independence and saved relations", async () => {
+test("all seven deletion kinds restore through original endpoints, class/record independence and saved relations", async () => {
   const directory = fs.mkdtempSync(path.join(root, "deleted-"));
   let world = await createIntegration({ directory });
   try {
@@ -434,7 +434,6 @@ test("all eight deletion kinds restore through original endpoints, class/record 
       "/api/modules/questions/items",
       manualQuestionSample(),
     );
-    const l = await make("/api/modules/lessons/items", lessonSample());
     const f = await world.workbench.files.store(
       { accountKey: a.accountKey },
       { name: "original.txt", bytes: Buffer.from("保留文件") },
@@ -454,34 +453,6 @@ test("all eight deletion kinds restore through original endpoints, class/record 
       source: { ...emptySource("formula"), latex: "x^2" },
       originalFileId: null,
     });
-    const lessonUpdate = await a.client.request(
-      "PUT",
-      `/api/modules/lessons/v3/${l.id}`,
-      {
-        body: {
-          ...lessonSample(),
-          baseVersion: 1,
-          materials: [
-            {
-              id: randomUUID(),
-              kind: "question",
-              questionId: q.id,
-              questionVersion: 1,
-              note: "采用原题快照",
-            },
-            {
-              id: randomUUID(),
-              kind: "math",
-              workId: m.id,
-              workVersion: 1,
-              note: "采用公式快照",
-            },
-          ],
-        },
-        headers: { "Idempotency-Key": randomUUID() },
-      },
-    );
-    assert.equal(lessonUpdate.status, 200, lessonUpdate.text);
     const c = await make("/api/modules/classes/items", { name: "班级" });
     const record = await make("/api/modules/classes/v2/records", {
       classId: c.id,
@@ -501,7 +472,7 @@ test("all eight deletion kinds restore through original endpoints, class/record 
       items: [],
       time: null,
       repeat: null,
-      course: { classId: c.id, lessonId: l.id, recordIds: [] },
+      course: { classId: c.id, recordIds: [] },
       reminder: null,
     });
     const i = await make("/api/modules/questions/v2/imports", {
@@ -511,7 +482,6 @@ test("all eight deletion kinds restore through original endpoints, class/record 
     });
     const items = [
       ["question", "/api/modules/questions/v2/items", q],
-      ["lesson", "/api/modules/lessons/v3", l],
       ["resource", "/api/modules/resources/items", r],
       ["math", "/api/modules/math/v1/works", m],
       ["record", "/api/modules/classes/v2/records", record],
@@ -576,15 +546,12 @@ test("all eight deletion kinds restore through original endpoints, class/record 
     assert(manifest.relations.some((r) => r.relation === "class-record"));
     assert(
       manifest.relations.some(
-        (r) => r.relation === "reference-snapshot" && r.to.id === m.id,
+        (r) => r.relation === "current-link" && r.to.id === m.id,
       ),
     );
     const preservedTables = [
       "question_items",
       "questions_materials_imports",
-      "lesson_items",
-      "lesson_sections",
-      "lesson_references",
       "resource_items",
       "math_works",
       "math_revisions",

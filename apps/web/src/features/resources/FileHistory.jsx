@@ -37,7 +37,7 @@ export function FileHistory({ client, item, disabled, onRestore, onClose }) {
       {!entries && !error && <p>{t("正在读取历史版本…")}</p>}
       {confirm ? (
         <>
-          <p> {t("将当前文件恢复为“")}{confirm.file.name} {t("”？已有备课继续保留其采用的版本。")} </p>
+          <p> {t("将当前文件恢复为“")}{confirm.file.name} {t("”？")} </p>
           <div className="res-actions">
             <button
               className="res-primary"

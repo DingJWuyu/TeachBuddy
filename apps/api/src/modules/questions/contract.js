@@ -1,6 +1,6 @@
 // Contract helpers owned by the first-flow backend modules. The workbench
 // contract fixes these error shapes, document rules and search projections;
-// keeping one copy prevents questions and lessons from drifting apart.
+// keeping one copy prevents question consumers from drifting apart.
 
 const MAX_DOCUMENT_BLOCKS = 1000;
 const MAX_PARAGRAPH_RUNS = 1000;

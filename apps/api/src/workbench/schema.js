@@ -281,14 +281,7 @@ const primitives = {
     ['text', schema.string({ minLength: 1, maxLength: workbenchLimits.pasteSourceLength })]
   ]),
 
-  createSource: schema.oneOf([() => primitives.manualSource, () => primitives.pasteSource]),
-
-  referenceInput: schema.object([
-    ['id', () => primitives.id],
-    ['questionId', () => primitives.id],
-    ['questionVersion', () => primitives.version],
-    ['note', () => primitives.note]
-  ])
+  createSource: schema.oneOf([() => primitives.manualSource, () => primitives.pasteSource])
 };
 
 primitives.snapshot = schema.object([
@@ -310,11 +303,5 @@ primitives.source = schema.oneOf([
   () => primitives.copySource
 ]);
 
-primitives.sectionInput = schema.object([
-  ['id', () => primitives.id],
-  ['title', schema.string({ minLength: 1, maxLength: 200, nonBlank: true })],
-  ['content', () => primitives.document],
-  ['references', schema.array(() => primitives.referenceInput, { maxItems: 1000 })]
-]);
 
 export const contractSchemas = Object.freeze(primitives);

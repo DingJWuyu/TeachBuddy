@@ -63,7 +63,7 @@ test.beforeAll(() => {
     web_dist: T51_WEB_DIST,
     accounts: Object.values(T51_ACCOUNTS),
     database: path.join(T51_DATA_DIR, 'data', 'workspace.sqlite'),
-    fixture: 'apps/api/test/fixtures/teaching-time-classes (real classes module + real lessons service read port)',
+    fixture: 'apps/api/test/fixtures/teaching-time-classes (real classes module + real questions service read port)',
     faults: {
       committed_response_loss: 'Playwright route.fetch() then route.abort() on POST records',
       api_stop: 'service.stop() then start() on the same data directory',
@@ -127,12 +127,11 @@ async function seedClass(page, name) {
   return created.body;
 }
 
-async function seedLesson(page, title) {
-  const created = await apiWrite(page, 'POST', '/api/modules/lessons/items', {
+async function seedQuestion(page, title) {
+  const created = await apiWrite(page, 'POST', '/api/modules/questions/items', {
     title,
-    intro: { version: 1, blocks: [] },
-    sections: [],
-    materials: []
+    body: { version: 1, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text: title }] }] },
+    solution: { version: 1, blocks: [] }, note: '', starred: false, source: { kind: 'manual' }
   });
   expect(created.status).toBe(201);
   return created.body;
@@ -258,30 +257,30 @@ test('WB-T002/TT-U2 补充字段、最近实际位置、删除回退与恢复', 
 
 /* ------------------------------------------------------------ 反馈与双向 */
 
-test('WB-T003/TT-U3 同一备课两班反馈独立，改删来源仍可回看', async ({ page }) => {
-  const lesson = await seedLesson(page, '函数单调性');
+test('WB-T003/TT-U3 同一题目两班反馈独立，改删来源仍可回看', async ({ page }) => {
+  const question = await seedQuestion(page, '函数单调性');
   const first = await seedClass(page, '高一(1)班');
   const second = await seedClass(page, '高一(2)班');
   const firstRecord = await seedRecord(page, {
     classId: first.id,
     recordedOn: '2026-09-21',
     note: '一班：例2没讲',
-    sources: [{ kind: 'lesson', id: lesson.id }]
+    sources: [{ kind: 'question', id: question.id }]
   });
   await seedRecord(page, {
     classId: second.id,
     recordedOn: '2026-09-20',
     note: '二班：例2讲完了',
-    sources: [{ kind: 'lesson', id: lesson.id }]
+    sources: [{ kind: 'question', id: question.id }]
   });
 
-  // The exported reverse-feedback panel (T53 assembles it into 备课/题目 pages).
-  await page.goto(`/panel/lesson/${lesson.id}`);
+  // The exported reverse-feedback panel (T53 assembles it into 题目 pages).
+  await page.goto(`/panel/question/${question.id}`);
   await expect(page.locator('[data-region="source-record-rows"] [data-source-record-id]')).toHaveCount(2);
   await expect(page.locator('[data-region="source-records-panel"]')).toContainText('高一(1)班');
   await expect(page.locator('[data-region="source-records-panel"]')).toContainText('一班：例2没讲');
   await expect(page.locator('[data-region="source-records-panel"]')).toContainText('二班：例2讲完了');
-  await shot(page, PASS_SHOTS, 'PC-备课反馈面板');
+  await shot(page, PASS_SHOTS, 'PC-题目反馈面板');
 
   // Opening one class's record lands on the class page with that record open.
   await page.locator(`[data-source-record-id="${firstRecord.id}"]`).click();
@@ -290,13 +289,11 @@ test('WB-T003/TT-U3 同一备课两班反馈独立，改删来源仍可回看', 
   expect(page.url()).toContain(`/classes/${first.id}/records/${firstRecord.id}`);
   await shot(page, PASS_SHOTS, 'PC-从反馈打开记录');
 
-  // Renaming the lesson updates the current label but keeps the saved title.
-  const renamed = await apiWrite(page, 'PUT', `/api/modules/lessons/items/${lesson.id}`, {
-    baseVersion: lesson.version,
+  // Renaming the question updates the current label but keeps the saved title.
+  const renamed = await apiWrite(page, 'PUT', `/api/modules/questions/items/${question.id}`, {
+    baseVersion: question.version,
     title: '函数单调性（修订）',
-    intro: lesson.intro,
-    sections: [],
-    materials: []
+    body: question.body, solution: question.solution, note: question.note, starred: question.starred
   });
   expect(renamed.status).toBe(200);
   await page.goto(`/classes/${first.id}`);
@@ -305,12 +302,12 @@ test('WB-T003/TT-U3 同一备课两班反馈独立，改删来源仍可回看', 
 
   // The record opens the material it linked; returning keeps the class page.
   await page.locator(`[data-record-id="${firstRecord.id}"] button[name="open-source"]`).click();
-  await expect.poll(() => page.url()).toContain(`/lessons/${lesson.id}`);
+  await expect.poll(() => page.url()).toContain(`/questions/${question.id}`);
   await page.goBack();
   await expect(page.locator('[data-region="record-rows"]')).toContainText('一班：例2没讲');
 
-  // Deleting the lesson keeps the record text and marks the link deleted.
-  const deleted = await apiWrite(page, 'POST', `/api/modules/lessons/items/${lesson.id}/deletion`, {
+  // Deleting the question keeps the record text and marks the link deleted.
+  const deleted = await apiWrite(page, 'POST', `/api/modules/questions/items/${question.id}/deletion`, {
     baseVersion: 2,
     deleted: true
   });
@@ -334,19 +331,6 @@ test('WB-T003/TT-U3 同一备课两班反馈独立，改删来源仍可回看', 
   await shot(page, PASS_SHOTS, 'PC-来源删除后回看');
 });
 
-test('TT-U8/WB-T004 班级记录选择器可供日程装配', async ({ page }) => {
-  const classroom = await seedClass(page, '高一(1)班');
-  await seedRecord(page, { classId: classroom.id, recordedOn: '2026-09-21', note: '记录一' });
-  await seedRecord(page, { classId: classroom.id, recordedOn: '2026-09-20', note: '记录二' });
-
-  await page.goto('/picker');
-  await expect(page.locator('[data-region="picker-summary"]')).toContainText('未选择班级');
-  await page.locator('select[aria-label="选择班级"]').selectOption({ label: '高一(1)班' });
-  await expect(page.locator('[data-region="class-record-options"] [data-record-id]')).toHaveCount(2);
-  await page.locator('[data-region="class-record-options"] [data-record-id] input').first().check();
-  await expect(page.locator('[data-region="picker-summary"]')).toContainText('已选 1 条记录');
-  await shot(page, PASS_SHOTS, 'PC-班级记录选择器');
-});
 
 /* ------------------------------------------------------- 故障、冲突与身份 */
 

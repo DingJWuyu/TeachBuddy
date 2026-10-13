@@ -23,10 +23,10 @@ export function Organize({
     <ResourceDialog label={title} onClose={onClose}>
       <h2>{title}</h2>
       <p> {t("已选择")} {resources.length} {t("份资料。")} {action === "archive"
-          ? t("归档后可恢复，已有备课引用保持不变。")
+          ? t("归档后可恢复。")
           : action === "add-tags"
             ? t("保留原有标签。")
-            : t("原文件和已有备课引用保持不变。")}
+            : t("原文件保持不变。")}
       </p>
       {action === "move" && (
         <label> {t("移动到文件夹")} <select

@@ -26,14 +26,7 @@ const MODULE_CATALOG = {
   version: 1,
   items: [
     { id: 'questions', name: '题库', path: '/questions', navigation: 'sidebar', auxiliaryPanel: true, requires: [] },
-    {
-      id: 'lessons',
-      name: '备课',
-      path: '/lessons',
-      navigation: 'sidebar',
-      auxiliaryPanel: true,
-      requires: ['questions.readForReference']
-    }
+
   ]
 };
 
@@ -59,13 +52,13 @@ function emptyStore() {
   return {
     accounts: new Map(),
     faults: [],
-    stats: { writes: 0, questions: { A: 0, B: 0 }, lessons: { A: 0, B: 0 } }
+    stats: { writes: 0, questions: { A: 0, B: 0 } }
   };
 }
 
 function accountData(store, accountKey) {
   if (!store.accounts.has(accountKey)) {
-    store.accounts.set(accountKey, { questions: new Map(), lessons: new Map(), idempotency: new Map() });
+    store.accounts.set(accountKey, { questions: new Map(), idempotency: new Map() });
   }
   return store.accounts.get(accountKey);
 }
@@ -223,17 +216,6 @@ function documentHasContent(document) {
   });
 }
 
-function validateReferenceInput(reference, pointer) {
-  const shape = checkObject(reference, pointer, ['id', 'questionId', 'questionVersion', 'note']);
-  if (shape) return shape;
-  return firstNonNull(
-    checkUuid(reference.id, `${pointer}/id`),
-    checkUuid(reference.questionId, `${pointer}/questionId`),
-    checkVersion(reference.questionVersion, `${pointer}/questionVersion`),
-    checkString(reference.note, `${pointer}/note`, { maxLength: 20000 })
-  );
-}
-
 function validateQuestionInput(body, { creating }) {
   const allowed = creating
     ? ['title', 'body', 'solution', 'note', 'starred', 'source']
@@ -267,64 +249,6 @@ function validateQuestionInput(body, { creating }) {
       return checkString(body.source.text, '/source/text', { minLength: 1, maxLength: 100000 });
     }
     return { field: '/source/kind', reason: 'invalid-type' };
-  }
-  return null;
-}
-
-function validateLessonInput(body, { creating }) {
-  const allowed = creating
-    ? ['title', 'intro', 'sections', 'materials']
-    : ['baseVersion', 'title', 'intro', 'sections', 'materials'];
-  const shape = checkObject(body, '', allowed);
-  if (shape) return shape;
-
-  if (!creating) {
-    const baseError = checkVersion(body.baseVersion, '/baseVersion');
-    if (baseError) return baseError;
-  }
-  const titleError = checkString(body.title, '/title', { minLength: 1, maxLength: 200 });
-  if (titleError) return titleError;
-  const introError = validateDocument(body.intro, '/intro');
-  if (introError) return introError;
-
-  if (!Array.isArray(body.sections)) return { field: '/sections', reason: 'invalid-type' };
-  if (body.sections.length > 200) return { field: '/sections', reason: 'out-of-range' };
-  const sectionIds = new Set();
-  const referenceIds = new Set();
-  for (let index = 0; index < body.sections.length; index += 1) {
-    const section = body.sections[index];
-    const pointer = `/sections/${index}`;
-    const sectionShape = checkObject(section, pointer, ['id', 'title', 'content', 'references']);
-    if (sectionShape) return sectionShape;
-    const sectionIdError = checkUuid(section.id, `${pointer}/id`);
-    if (sectionIdError) return sectionIdError;
-    if (sectionIds.has(section.id)) return { field: `${pointer}/id`, reason: 'duplicate-id' };
-    sectionIds.add(section.id);
-    const sectionTitleError = checkString(section.title, `${pointer}/title`, { minLength: 1, maxLength: 200 });
-    if (sectionTitleError) return sectionTitleError;
-    const contentError = validateDocument(section.content, `${pointer}/content`);
-    if (contentError) return contentError;
-    if (!Array.isArray(section.references)) return { field: `${pointer}/references`, reason: 'invalid-type' };
-    if (section.references.length > 1000) return { field: `${pointer}/references`, reason: 'out-of-range' };
-    for (let refIndex = 0; refIndex < section.references.length; refIndex += 1) {
-      const refPointer = `${pointer}/references/${refIndex}`;
-      const refError = validateReferenceInput(section.references[refIndex], refPointer);
-      if (refError) return refError;
-      if (referenceIds.has(section.references[refIndex].id)) {
-        return { field: `${refPointer}/id`, reason: 'duplicate-id' };
-      }
-      referenceIds.add(section.references[refIndex].id);
-    }
-  }
-
-  if (!Array.isArray(body.materials)) return { field: '/materials', reason: 'invalid-type' };
-  if (body.materials.length > 1000) return { field: '/materials', reason: 'out-of-range' };
-  for (let index = 0; index < body.materials.length; index += 1) {
-    const refPointer = `/materials/${index}`;
-    const refError = validateReferenceInput(body.materials[index], refPointer);
-    if (refError) return refError;
-    if (referenceIds.has(body.materials[index].id)) return { field: `${refPointer}/id`, reason: 'duplicate-id' };
-    referenceIds.add(body.materials[index].id);
   }
   return null;
 }
@@ -394,48 +318,6 @@ function questionSummary(question) {
   };
 }
 
-function serializeReference(reference, question) {
-  return {
-    id: reference.id,
-    questionId: reference.questionId,
-    questionVersion: reference.questionVersion,
-    note: reference.note,
-    snapshot: reference.snapshot,
-    sourceState: question && !question.deletedAt ? 'active' : 'deleted',
-    latestVersion: question ? question.version : reference.questionVersion
-  };
-}
-
-function serializeLesson(lesson, data) {
-  const questionById = data.questions;
-  return {
-    id: lesson.id,
-    version: lesson.version,
-    createdAt: lesson.createdAt,
-    updatedAt: lesson.updatedAt,
-    deletedAt: lesson.deletedAt,
-    title: lesson.title,
-    intro: lesson.intro,
-    sections: lesson.sections.map((section) => ({
-      id: section.id,
-      title: section.title,
-      content: section.content,
-      references: section.references.map((reference) => serializeReference(reference, questionById.get(reference.questionId)))
-    })),
-    materials: lesson.materials.map((reference) => serializeReference(reference, questionById.get(reference.questionId)))
-  };
-}
-
-function lessonSummary(lesson) {
-  return {
-    id: lesson.id,
-    version: lesson.version,
-    updatedAt: lesson.updatedAt,
-    deletedAt: lesson.deletedAt,
-    title: lesson.title
-  };
-}
-
 /* --------------------------------------------------------------- searching */
 
 function documentSearchText(document) {
@@ -456,14 +338,6 @@ function questionMatches(question, query) {
   return matches(question.title, query)
     || matches(documentSearchText(question.body), query)
     || matches(question.note, query);
-}
-
-function lessonMatches(lesson, query) {
-  if (!query.trim()) return true;
-  return matches(lesson.title, query)
-    || matches(documentSearchText(lesson.intro), query)
-    || lesson.sections.some((section) => matches(section.title, query)
-      || matches(documentSearchText(section.content), query));
 }
 
 function sortSummaries(items) {
@@ -703,48 +577,6 @@ function conflict(res, currentVersion) {
   sendProblem(res, 'version-conflict', { currentVersion });
 }
 
-function resolveReferences(data, referenceEntries, existingReferences) {
-  const existingById = new Map((existingReferences || []).map((reference) => [reference.id, reference]));
-  const resolved = [];
-  for (const { input, pointer } of referenceEntries) {
-    const existing = existingById.get(input.id);
-    if (existing && existing.questionId !== input.questionId) {
-      return { error: { type: 'invalid-input', extra: { field: `${pointer}/questionId`, reason: 'invalid-reference' } } };
-    }
-    const question = data.questions.get(input.questionId);
-    if (!question) return { error: { type: 'not-found' } };
-    if (existing && existing.questionVersion === input.questionVersion) {
-      resolved.push({ ...existing, note: input.note });
-      continue;
-    }
-    if (question.deletedAt) return { error: { type: 'object-deleted' } };
-    if (question.version !== input.questionVersion) {
-      return { error: { type: 'reference-version-conflict', extra: { questionId: input.questionId, currentVersion: question.version } } };
-    }
-    resolved.push({
-      id: input.id,
-      questionId: input.questionId,
-      questionVersion: input.questionVersion,
-      note: input.note,
-      snapshot: snapshotOf(question)
-    });
-  }
-  return { resolved };
-}
-
-function referenceEntriesOf(sections, materials) {
-  return {
-    sections: sections.map((section, sectionIndex) => ({
-      section,
-      entries: section.references.map((input, refIndex) => ({
-        input,
-        pointer: `/sections/${sectionIndex}/references/${refIndex}`
-      }))
-    })),
-    materials: materials.map((input, index) => ({ input, pointer: `/materials/${index}` }))
-  };
-}
-
 async function handleRequest(req, res, context) {
   const url = new URL(req.url, context.origin);
   const requestPath = url.pathname;
@@ -800,9 +632,6 @@ async function handleApi(req, res, context, { url, requestPath, method }) {
   const questionItem = requestPath.match(/^\/api\/modules\/questions\/items\/([^/]+)$/);
   const questionCopies = requestPath.match(/^\/api\/modules\/questions\/items\/([^/]+)\/copies$/);
   const questionDeletion = requestPath.match(/^\/api\/modules\/questions\/items\/([^/]+)\/deletion$/);
-  const lessonItem = requestPath.match(/^\/api\/modules\/lessons\/items\/([^/]+)$/);
-  const lessonDeletion = requestPath.match(/^\/api\/modules\/lessons\/items\/([^/]+)\/deletion$/);
-  const usages = requestPath.match(/^\/api\/modules\/lessons\/question-usages\/([^/]+)$/);
 
   if (requestPath === '/api/modules/questions/items' && method === 'GET') {
     const accountKey = resolveAccount(req);
@@ -947,161 +776,6 @@ async function handleApi(req, res, context, { url, requestPath, method }) {
     return;
   }
 
-  if (requestPath === '/api/modules/lessons/items' && method === 'GET') {
-    const accountKey = resolveAccount(req);
-    if (!accountKey) return sendProblem(res, 'unauthenticated');
-    const query = readQuery(res, url, ['q', 'state']);
-    if (!query) return;
-    const data = accountData(context.store, accountKey);
-    const items = sortSummaries([...data.lessons.values()]
-      .filter((lesson) => (query.state === 'deleted' ? Boolean(lesson.deletedAt) : !lesson.deletedAt))
-      .filter((lesson) => lessonMatches(lesson, query.q))
-      .map(lessonSummary));
-    sendJson(res, 200, { items });
-    return;
-  }
-
-  if (requestPath === '/api/modules/lessons/items' && method === 'POST') {
-    await handleWrite(req, res, context, {
-      method,
-      path: requestPath,
-      validate: (body) => validateLessonInput(body, { creating: true }),
-      commit: (body, { accountKey, data }) => {
-        const lesson = newObject({
-          title: body.title,
-          intro: body.intro,
-          sections: [],
-          materials: []
-        });
-        const entries = referenceEntriesOf(body.sections, body.materials);
-        const resolvedSections = [];
-        for (const { section, entries: sectionEntries } of entries.sections) {
-          const outcome = resolveReferences(data, sectionEntries, []);
-          if (outcome.error) return { error: outcome.error };
-          resolvedSections.push({ id: section.id, title: section.title, content: section.content, references: outcome.resolved });
-        }
-        const outcome = resolveReferences(data, entries.materials, []);
-        if (outcome.error) return { error: outcome.error };
-        lesson.sections = resolvedSections;
-        lesson.materials = outcome.resolved;
-        data.lessons.set(lesson.id, lesson);
-        context.store.stats.lessons[accountLabel(accountKey)] += 1;
-        return { status: 201, body: serializeLesson(lesson, data) };
-      }
-    });
-    return;
-  }
-
-  if (lessonItem && method === 'GET') {
-    const accountKey = resolveAccount(req);
-    if (!accountKey) return sendProblem(res, 'unauthenticated');
-    const data = accountData(context.store, accountKey);
-    const lesson = data.lessons.get(lessonItem[1]);
-    if (!lesson) return sendProblem(res, 'not-found');
-    sendJson(res, 200, serializeLesson(lesson, data));
-    return;
-  }
-
-  if (lessonItem && method === 'PUT') {
-    await handleWrite(req, res, context, {
-      method,
-      path: requestPath,
-      validate: (body) => validateLessonInput(body, { creating: false }),
-      commit: (body, { accountKey, data }) => {
-        const lesson = data.lessons.get(lessonItem[1]);
-        if (!lesson) return { error: { type: 'not-found' } };
-        if (lesson.deletedAt) return { error: { type: 'object-deleted' } };
-        if (lesson.version !== body.baseVersion) {
-          return { error: { type: 'version-conflict', extra: { currentVersion: lesson.version } } };
-        }
-        const existingReferences = [
-          ...lesson.sections.flatMap((section) => section.references),
-          ...lesson.materials
-        ];
-        const entries = referenceEntriesOf(body.sections, body.materials);
-        const sections = [];
-        for (const { section, entries: sectionEntries } of entries.sections) {
-          const outcome = resolveReferences(data, sectionEntries, existingReferences);
-          if (outcome.error) return { error: outcome.error };
-          sections.push({ id: section.id, title: section.title, content: section.content, references: outcome.resolved });
-        }
-        const outcome = resolveReferences(data, entries.materials, existingReferences);
-        if (outcome.error) return { error: outcome.error };
-        const updated = {
-          ...lesson,
-          version: lesson.version + 1,
-          updatedAt: nowIso(),
-          title: body.title,
-          intro: body.intro,
-          sections,
-          materials: outcome.resolved
-        };
-        data.lessons.set(updated.id, updated);
-        return { status: 200, body: serializeLesson(updated, data) };
-      }
-    });
-    return;
-  }
-
-  if (lessonDeletion && method === 'POST') {
-    await handleWrite(req, res, context, {
-      method,
-      path: requestPath,
-      validate: validateDeletion,
-      commit: (body, { data }) => {
-        const lesson = data.lessons.get(lessonDeletion[1]);
-        if (!lesson) return { error: { type: 'not-found' } };
-        if (lesson.version !== body.baseVersion) {
-          return { error: { type: 'version-conflict', extra: { currentVersion: lesson.version } } };
-        }
-        const updated = {
-          ...lesson,
-          version: lesson.version + 1,
-          updatedAt: nowIso(),
-          deletedAt: body.deleted ? nowIso() : null
-        };
-        data.lessons.set(updated.id, updated);
-        return { status: 200, body: serializeLesson(updated, data) };
-      }
-    });
-    return;
-  }
-
-  if (usages && method === 'GET') {
-    const accountKey = resolveAccount(req);
-    if (!accountKey) return sendProblem(res, 'unauthenticated');
-    const data = accountData(context.store, accountKey);
-    if (!data.questions.get(usages[1])) return sendProblem(res, 'not-found');
-    const items = [];
-    for (const lesson of data.lessons.values()) {
-      if (lesson.deletedAt) continue;
-      lesson.sections.forEach((section) => {
-        section.references
-          .filter((reference) => reference.questionId === usages[1])
-          .forEach((reference) => items.push({
-            lessonId: lesson.id,
-            lessonTitle: lesson.title,
-            sectionId: section.id,
-            sectionTitle: section.title,
-            referenceId: reference.id,
-            questionVersion: reference.questionVersion
-          }));
-      });
-      lesson.materials
-        .filter((reference) => reference.questionId === usages[1])
-        .forEach((reference) => items.push({
-          lessonId: lesson.id,
-          lessonTitle: lesson.title,
-          sectionId: null,
-          sectionTitle: null,
-          referenceId: reference.id,
-          questionVersion: reference.questionVersion
-        }));
-    }
-    sendJson(res, 200, { items });
-    return;
-  }
-
   if (requestPath.startsWith('/api/')) {
     sendProblem(res, 'not-found');
     return;
@@ -1144,7 +818,7 @@ async function handleTestControl(req, res, context, requestPath, method) {
   if (requestPath === '/__test__/reset' && method === 'POST') {
     context.store.accounts = new Map();
     context.store.faults = [];
-    context.store.stats = { writes: 0, questions: { A: 0, B: 0 }, lessons: { A: 0, B: 0 } };
+    context.store.stats = { writes: 0, questions: { A: 0, B: 0 } };
     sendJson(res, 200, { ok: true });
     return;
   }
@@ -1175,11 +849,9 @@ async function handleTestControl(req, res, context, requestPath, method) {
       objects: {
         A: {
           questions: accountData(context.store, ACCOUNTS.A).questions.size,
-          lessons: accountData(context.store, ACCOUNTS.A).lessons.size
         },
         B: {
           questions: accountData(context.store, ACCOUNTS.B).questions.size,
-          lessons: accountData(context.store, ACCOUNTS.B).lessons.size
         }
       }
     });
@@ -1245,7 +917,7 @@ export async function startWorkbenchSubstitute({ port = 0, host = '127.0.0.1', s
       reset() {
         store.accounts = new Map();
         store.faults = [];
-        store.stats = { writes: 0, questions: { A: 0, B: 0 }, lessons: { A: 0, B: 0 } };
+        store.stats = { writes: 0, questions: { A: 0, B: 0 } };
       },
       setFault({ mode, match = null, times = 1, ms = 0 }) {
         store.faults.push({ mode, match, times: mode === 'delay-ms' ? Number.MAX_SAFE_INTEGER : times, ms });
@@ -1259,11 +931,9 @@ export async function startWorkbenchSubstitute({ port = 0, host = '127.0.0.1', s
           objects: {
             A: {
               questions: accountData(store, ACCOUNTS.A).questions.size,
-              lessons: accountData(store, ACCOUNTS.A).lessons.size
             },
             B: {
               questions: accountData(store, ACCOUNTS.B).questions.size,
-              lessons: accountData(store, ACCOUNTS.B).lessons.size
             }
           }
         };

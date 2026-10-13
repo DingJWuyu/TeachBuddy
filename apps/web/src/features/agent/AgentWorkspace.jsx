@@ -11,7 +11,7 @@ import { Popover } from '../workbench/overlays.jsx';
 import { navigate } from '../workbench/routes.js';
 import { workbenchGet } from '../workbench/apiClient.js';
 import './agent.css';
-const labels = { get wb_list_questions() { return t("查找题目"); }, get wb_get_question() { return t("读取题目"); }, get wb_list_derivatives() { return t("查找衍生题"); }, get wb_create_question() { return t("创建题目"); }, get wb_update_question() { return t("修改题目"); }, get wb_copy_question() { return t("复制改编"); }, get wb_set_question_deletion() { return t("删除或恢复题目"); }, get wb_list_lessons() { return t("查找备课"); }, get wb_get_lesson() { return t("读取备课"); }, get wb_create_lesson() { return t("创建备课"); }, get wb_update_lesson() { return t("保存备课"); }, get wb_set_lesson_deletion() { return t("删除或恢复备课"); }, get wb_list_question_usages() { return t("查找引用"); } };
+const labels = { get wb_list_questions() { return t("查找题目"); }, get wb_get_question() { return t("读取题目"); }, get wb_list_derivatives() { return t("查找衍生题"); }, get wb_create_question() { return t("创建题目"); }, get wb_update_question() { return t("修改题目"); }, get wb_copy_question() { return t("复制改编"); }, get wb_set_question_deletion() { return t("删除或恢复题目"); }, };
 const states = { get prepared() { return t("待执行"); }, get executing() { return t("进行中"); }, get read() { return t("已读取"); }, get confirmed() { return t("已保存"); }, get rejected() { return t("操作被拒绝"); }, get failed() { return t("读取失败"); }, get unconfirmed() { return t("结果待确认"); }, get cancelled() { return t("未执行"); }, get interrupted() { return t("读取已中断，未保存结果"); } };
 const reasons = { get 'server-restart'() { return t("上次生成已中断"); }, get 'user-stop'() { return t("已停止"); }, get 'provider-error'() { return t("模型连接失败"); }, get 'provider-quota'() { return t("模型调用被拒绝"); }, get 'provider-authorization'() { return t("模型调用被拒绝"); }, get 'model-unavailable'() { return t("AI 暂不可用"); }, get 'context-limit'() { return t("这段对话过长，请新建对话并重新选择引用"); }, get 'run-limit'() { return t("本轮已达到运行上限"); }, get 'auth-invalid'() { return t("身份已失效"); }, get 'tool-rejected'() { return t("操作未完成，请查看结果"); }, get 'tool-unconfirmed'() { return t("请确认写入结果"); }, get 'tool-failed'() { return t("读取未完成"); }, get 'store-unavailable'() { return t("保存失败，请重试"); } };
 const toolProblemKeys = {
@@ -43,15 +43,15 @@ function markdown(text) {
 function ObjectLink({ object, kind }) {
   const { t } = useTranslation('agent');
   const [error, setError] = useState('');
-  if (!object?.id) return null;
+  if (!object?.id || kind !== 'questions') return null;
   return <><button className="wb-button" onClick={async () => {
-    try { await workbenchGet(`/api/modules/${kind === 'questions' ? 'questions/v2/items' : 'lessons/v3'}/${object.id}`); navigate(`/${kind}/${object.id}`); }
+    try { await workbenchGet(`/api/modules/questions/v2/items/${object.id}`); navigate(`/${kind}/${object.id}`); }
     catch { setError(t("当前内容不可用")); }
-  }}>{t("打开")}{kind === 'questions' ? t("题目") : t("备课")} · {object.title || t("查看内容")}</button>{error && <span role="status">{error}</span>}</>;
+  }}>{t("打开")}{t("题目")} · {object.title || t("查看内容")}</button>{error && <span role="status">{error}</span>}</>;
 }
 function ToolCard({ call, calls, reconcile }) {
   const { t } = useTranslation('agent');
-  const kind = call.name.includes('lesson') ? 'lessons' : 'questions';
+  const kind = Object.hasOwn(labels, call.name) ? 'questions' : null;
   const same = call.operationId && calls.find(c => c.operationId === call.operationId) !== call;
   return <article className="agent-tool" data-tool-state={call.state}>
     <header><strong>{labels[call.name]}</strong><span>{states[call.state]}</span></header>
@@ -92,9 +92,9 @@ export function AgentWorkspace({ variant = 'panel' }) {
       if (nearBottom.current) setNewMessages(false);
       try { if (!isDeletedAccount(agent.accountKey)) localStorage.setItem(agent.prefix + agent.id + ':scroll', String(area.scrollTop)); } catch {}
     }}>
-      {!snapshot && <div className="agent-empty"><h1>{t("从一个教学想法开始")}</h1><p>{t("找题、改编题目，或整理备课。")}</p></div>}
+      {!snapshot && <div className="agent-empty"><h1>{t("从一个教学想法开始")}</h1><p>{t("查找题目，或改编教学材料。")}</p></div>}
       {snapshot?.turns.map(turn => <section className="agent-turn" key={turn.id}>
-        {snapshot.messages.filter(m => m.turnId === turn.id && m.role === 'user').map(m => <article className="agent-message is-user" key={m.id}><p>{m.text}</p>{m.references.map((r,i) => <details key={i}><summary>{r.title} · v{r.input.version}</summary><pre>{JSON.stringify(r.snapshot, null, 2)}</pre><ObjectLink object={r.snapshot} kind={r.input.kind === 'question' ? 'questions' : 'lessons'} /></details>)}</article>)}
+        {snapshot.messages.filter(m => m.turnId === turn.id && m.role === 'user').map(m => <article className="agent-message is-user" key={m.id}><p>{m.text}</p>{m.references.map((r,i) => <details key={i}><summary>{r.title} · v{r.input.version}</summary><pre>{JSON.stringify(r.snapshot, null, 2)}</pre><ObjectLink object={r.snapshot} kind={r.input.kind === 'question' ? 'questions' : null} /></details>)}</article>)}
         {snapshot.toolCalls.filter(c => c.turnId === turn.id).sort((a,b) => a.ordinal - b.ordinal).map(c => <ToolCard key={c.toolCallId} call={c} calls={snapshot.toolCalls} reconcile={agent.reconcile} />)}
         {snapshot.messages.filter(m => m.turnId === turn.id && m.role === 'assistant').map(m => <article className="agent-message" key={m.id}><ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false }]]} skipHtml>{markdown(m.text)}</ReactMarkdown>{m.state === 'partial' && <small>{t("部分回答")}</small>}</article>)}
         <div className="agent-turn-status"><span>{turn.state === 'running' ? t("生成中") : turn.state === 'completed' ? t("已完成") : reasons[turn.reason]}</span>
@@ -107,7 +107,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
     {agent.error && <div className="agent-notice" role="alert">{agent.error}<button className="wb-button" onClick={() => draft?.dirty ? agent.save() : agent.retry()}>{t("重试")}</button></div>}
     {agent.conflict && <div className="agent-conflict"><strong>{t("草稿已在其他设备修改")}</strong><div><p>{t("本机：")}{draft.text}</p><p>{t("已保存：")}{agent.conflict.text}</p></div><button className="wb-button" onClick={() => agent.chooseDraft(true)}>{t("保留本机内容")}</button><button className="wb-button" onClick={() => agent.chooseDraft(false)}>{t("采用已保存内容")}</button></div>}
     {draft && <form className="wb-ai-composer" onSubmit={event => { event.preventDefault(); void agent.send(); }}>
-      <div className="agent-references">{draft.references.map((r,i) => <span key={`${r.kind}:${r.id}:${r.sectionId}`}><button type="button" onClick={() => navigate(`/${r.kind === 'question' ? 'questions' : 'lessons'}/${r.id}`)}>{r.kind === 'question' ? t("题目") : t("备课")} v{r.version}</button><button type="button" aria-label={t("移除引用")} onClick={() => agent.edit({ references: draft.references.filter((_,index) => i !== index) })}>×</button></span>)}</div>
+      <div className="agent-references">{draft.references.map((r,i) => <span key={`${r.kind}:${r.id}:${r.sectionId}`}>{r.kind === 'question' ? <button type="button" onClick={() => navigate(`/questions/${r.id}`)}>{t("题目")} v{r.version}</button> : <span>{t("当前内容不可用")}</span>}<button type="button" aria-label={t("移除引用")} onClick={() => agent.edit({ references: draft.references.filter((_,index) => i !== index) })}>×</button></span>)}</div>
       <textarea className="wb-input wb-ai-input" aria-label={t("AI 输入")} placeholder={t("向 AI 描述你要做的工作")} value={draft.text} rows={variant === 'home' ? 3 : 2} onChange={e => agent.edit({ text: e.target.value })} onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); if (!running && ready) void agent.send(); } }} />
       <div className="wb-ai-actions"><span role="status">{agent.status}</span><select aria-label={t("选择模型")} value={agent.model} onChange={e => agent.setModel(e.target.value)}><option value="deepseek/deepseek-v4.1-flash">DeepSeek</option><option value="z-ai/glm-5.3-flash">GLM</option></select>
         {running ? <button type="button" className="wb-button" onClick={() => agent.stop(running)}>{t("停止")}</button> : <button type="submit" className="wb-button is-primary" disabled={!ready || agent.busy || Boolean(agent.conflict) || !draft.text.trim()}>{t("发送")}</button>}

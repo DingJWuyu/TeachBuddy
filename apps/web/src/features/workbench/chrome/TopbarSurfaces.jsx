@@ -8,7 +8,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createDragChip } from './dragChip.js';
 import { Icon } from './icons.jsx';
 import { listClasses } from '../../classes/api.js';
-import { listLessons } from '../../lessons/api.js';
 import { navigate, routeClick, withSearch } from './routes.js';
 import { workbenchModules, moduleDisplayName } from '../../modules/moduleRegistry.js';
 
@@ -38,22 +37,15 @@ export function SearchModal({ onClose, onAnnounce }) {
     let cancelled = false;
     setLoading(true);
     setProblems([]);
-    Promise.allSettled([listClasses(), listLessons()]).then(results => {
+    listClasses().then(items => {
       if (cancelled) return;
-      const labels = [t("班级"), t("备课")];
-      setSources(results.flatMap((result, index) => result.status === 'fulfilled' ? [{
-        group: labels[index],
-        items: result.value.map(item => ({
-          id: `${index === 0 ? 'class' : 'lesson'}-${item.id}`,
-          name: index === 0 ? item.name : item.title,
-          hint: labels[index],
-          icon: index === 0 ? 'classes' : 'pencil',
-          route: `/${index === 0 ? 'classes' : 'lessons'}/${encodeURIComponent(item.id)}`
-        }))
-      }] : []));
-      setProblems(results.flatMap((result, index) => result.status === 'rejected' ? [t("{{value}}读取失败：{{message}}", { value: labels[index], message: result.reason.message })] : []));
-      setLoading(false);
-    });
+      setSources([{ group: t("班级"), items: items.map(item => ({
+        id: `class-${item.id}`, name: item.name, hint: t("班级"), icon: 'classes',
+        route: `/classes/${encodeURIComponent(item.id)}`
+      })) }]);
+    }).catch(error => {
+      if (!cancelled) setProblems([t("{{value}}读取失败：{{message}}", { value: t("班级"), message: error.message })]);
+    }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [reload]);
 
@@ -120,8 +112,8 @@ export function SearchModal({ onClose, onAnnounce }) {
             className="tb-search-input"
             type="search"
             value={query}
-            placeholder={t("搜索模块、班级、备课…")}
-            aria-label={t("搜索模块、班级、备课")}
+            placeholder={t("搜索模块、班级…")}
+            aria-label={t("搜索模块、班级")}
             onChange={(event) => setQuery(event.target.value)}
           />
           <button type="button" className="tb-search-close" aria-label={t("关闭搜索")} onClick={onClose}>
@@ -129,7 +121,7 @@ export function SearchModal({ onClose, onAnnounce }) {
           </button>
         </div>
         <div className="tb-search-results">
-          {loading && <div className="tb-search-state" role="status">{t("正在读取班级和备课…")}</div>}
+          {loading && <div className="tb-search-state" role="status">{t("正在读取班级…")}</div>}
           {problems.length > 0 && <div className="tb-search-state" role="alert">
             {problems.map(problem => <p key={problem}>{problem}</p>)}
             <button className="wb-button" onClick={() => setReload(value => value + 1)}>{t("重试")}</button>
@@ -138,7 +130,7 @@ export function SearchModal({ onClose, onAnnounce }) {
             <div className="tb-search-empty">
               <Icon name="search" size={20} />
               <p>{t("没有匹配「")}{query}{t("」的结果")}</p>
-              <span>{t("试试模块、班级或备课名称。")}</span>
+              <span>{t("试试模块或班级名称。")}</span>
             </div>
           )}
           {groups.map((group) => (

@@ -4,16 +4,15 @@
 
 ## 固定数据与执行方法
 
-服务端测试时钟初始 `2026-09-21T06:00:00Z`，账户 A 时区 Asia/Shanghai；B 是另一个可信测试账户。B16 runner 建立不同 Cookie jar，不由请求提交账户。以 B11 createLesson/createQuestion 在 A 建“函数单调性”及一道例题，测试记录真实返回的 ID；下面样本使用固定 UUID 仅供同版替身，真实测试按 fixture 的 ID 映射代入。
+服务端测试时钟初始 `2026-09-21T06:00:00Z`，账户 A 时区 Asia/Shanghai；B 是另一个可信测试账户。B16 runner 建立不同 Cookie jar，不由请求提交账户。以 createQuestion 在 A 建一道标题为“函数单调性”的例题，测试记录真实返回的 ID；下面样本使用固定 UUID 仅供同版替身，真实测试按 fixture 的 ID 映射代入。
 
 | 代号 | 样本 ID |
 | --- | --- |
 | C1 高一(1)班 | `10000000-0000-4000-8000-000000000001` |
 | C2 高一(2)班 | `10000000-0000-4000-8000-000000000002` |
-| L1 函数单调性 | `20000000-0000-4000-8000-000000000001` |
-| Q1 例题 | `20000000-0000-4000-8000-000000000002` |
+| Q1 函数单调性 | `20000000-0000-4000-8000-000000000001` |
 | R1 一班实际记录 | `30000000-0000-4000-8000-000000000001` |
-| E1 备课时间段 | `40000000-0000-4000-8000-000000000001` |
+| E1 教学时间段 | `40000000-0000-4000-8000-000000000001` |
 | I1 选例题 / I2 印讲义 | `50000000-0000-4000-8000-000000000001` / `50000000-0000-4000-8000-000000000002` |
 
 写请求都加唯一 UUID Idempotency-Key、B11 固定保护头、同源 Origin/Referer 与当前 Cookie，JSON Content-Type。应答 no-store。前端替身必须按明确场景返回完整匹配 JSON 或 Problem，后端用同一输入经真实 HTTP/重启查询，不能直接写仓储来代替操作。
@@ -21,10 +20,10 @@
 ## TT-C1 一句话、两班反馈与删源（WB-T001 至 004、019）
 
 1. POST `/api/modules/classes/items`，`{"name":"高一(1)班"}` -> 201 Class，C1/version=1；GET items -> items 包含 C1。改名用 ClassUpdate/expectedVersion=1 -> version=2；重复名允许，空白名 422 invalid-input、field=/name。班级删除/恢复分别 POST deletion，携当时版本与 deleted，均返回同 ID 和递增版本。
-2. POST `/api/modules/classes/records` 用样本 `record-create` -> 201 Record，R1/version=1，来源标签与删除态由服务器解析；本样本只连 L1，一个来源。无链接的 `record-quick` 同样成功，不要求 position。
-3. PUT records/R1 用完整 RecordUpdate，expectedVersion=1，补 position=“定义讲完”、unfinished=“例2”、commonIssues=“忽略任意性”、nextNote=“下节先辨析反例” -> version=2。GET records?classId=C1 -> 同文字。为 C2 写另一条关联 L1 的记录，C1 列表不含它。
-4. GET source-records/lesson/L1 -> 两条真实记录；前端按 classId 关联班级名并显示独立日期。点记录进入 C1/R1 后返回恢复备课草稿。不把反馈写入 L1 正文或改它 version。
-5. 用 B11 更新/删除 L1；GET R1 保持 labelAtLink=“函数单调性”，currentLabel 为当前标题，deleted=true 时仍保留 note。原链接不变的 PUT 可成功；新记录试图添加已删 L1 -> 409 reference-deleted。另一账户 L1 或不存在 ID -> 404，不暴露当前版本。
+2. POST `/api/modules/classes/records` 用样本 `record-create` -> 201 Record，R1/version=1，来源标签与删除态由服务器解析；本样本只连 Q1，一个来源。无链接的 `record-quick` 同样成功，不要求 position。
+3. PUT records/R1 用完整 RecordUpdate，expectedVersion=1，补 position=“定义讲完”、unfinished=“例2”、commonIssues=“忽略任意性”、nextNote=“下节先辨析反例” -> version=2。GET records?classId=C1 -> 同文字。为 C2 写另一条关联 Q1 的记录，C1 列表不含它。
+4. GET source-records/question/Q1 -> 两条真实记录；前端按 classId 关联班级名并显示独立日期。点记录进入 C1/R1 后返回恢复题目草稿。不把反馈写入 Q1 正文或改它 version。
+5. 用 B11 更新/删除 Q1；GET R1 保持 labelAtLink=“函数单调性”，currentLabel 为当前标题，deleted=true 时仍保留 note。原链接不变的 PUT 可成功；新记录试图添加已删 Q1 -> 409 reference-deleted。另一账户 Q1 或不存在 ID -> 404，不暴露当前版本。
 6. 删除 C1，记录保留；编辑其记录 -> 409 object-deleted，反向活动反馈仅剩 C2。恢复 C1 后 R1 原 ID/版本/源关联仍在；单独已删记录仍需单独恢复。
 
 公共端口替身：classes.readClass(A,C1) 返回 ClassReference；readRecord(A,R1) 返回 classId=C1、classDeletedAt=null、deletedAt=null 的 RecordReference；外账户调用统一 404。删班后 readRecord 仍返回但 classDeletedAt 非空。T52 必须分别覆盖这些结果，不把 tombstone 当新可选项。
@@ -33,7 +32,7 @@
 ## TT-C2 记事、安排、顺序与原子移动（WB-T005 至 008）
 
 1. POST schedule/entries 用 `unscheduled-create` -> 201，time/repeat/reminder=null；GET entries?placement=unscheduled 返回该 Entry。刷新/重启保留 I1。
-2. PUT 此 Entry，设 date=2026-09-21、startTime=15:00、timeZone=Asia/Shanghai、durationMinutes=90，repeat=null，course 三项为空、reminder=null -> 200 Entry。GET occurrences?from=2026-09-21&to=2026-10-01 -> E1 startsAt=07:00Z、endsAt=08:30Z，key.originDate=null（完整日期前缀同当天）。
+2. PUT 此 Entry，设 date=2026-09-21、startTime=15:00、timeZone=Asia/Shanghai、durationMinutes=90，repeat=null，course 的班级为空、记录数组为空、reminder=null -> 200 Entry。GET occurrences?from=2026-09-21&to=2026-10-01 -> E1 startsAt=07:00Z、endsAt=08:30Z，key.originDate=null（完整日期前缀同当天）。
 3. PUT 加 I2(high)，I1(normal)，数组 `[I1,I2]` -> 段内仍先 I1，优先视图先 I2。再 PUT `[I2,I1]` -> 优先级不变。事项 text 纯空白、重复 item ID、空标题且空 items -> 422 invalid-input。
 4. moveItem `{itemId:I2,fromEntryId:E1,fromVersion:当前,toEntryId:null,toVersion:null,toIndex:0}` -> MoveResult，from 只剩 I1 且 version+1，to 为新未排期 Entry/version=1、只含 I2、high。相同键原体重放不得创建第二个目标。
 5. 向已有目标移动，若目标 version 已变 -> 409 version-conflict，objectId 为目标，from/to 都不变。目标已有同一 itemId、索引越界 -> 422 invalid-input；重复系列参与或同源目标 -> 409 invalid-move。HTTP 掉线保留原请求，恢复后同键确认一次。
@@ -42,7 +41,7 @@
 
 ## TT-C3 周重复、例外、日期与时区（WB-T009 至 011）
 
-创建每周一 E1：time=2026-09-21 15:00、90分钟、Asia/Shanghai，until=2026-10-05，课程 classId=C1、lessonId=L1、recordIds=[]。实例原始日期为 09-21、09-28、10-05。
+创建每周一 E1：time=2026-09-21 15:00、90分钟、Asia/Shanghai，until=2026-10-05，课程 classId=C1、recordIds=[]。实例原始日期为 09-21、09-28、10-05。
 
 - PUT entries/E1/exceptions/2026-09-28，expectedVersion=1、mode=override、完整 content 的 time 改为 2026-09-29 16:00（90分钟） -> 200 Occurrence，key 仍是 E1/09-28，entryVersion=2，startsAt=`2026-09-29T08:00:00Z`、endsAt=`2026-09-29T09:30:00Z`。GET 仅09-29也返回它；GET 仅09-28不再返回它。其余两周时间不变。
 - 整组 PUT version=2，startTime 改14:00 -> version=3；09-28例外仍为09-29 16:00。缩短 until=09-21 -> 例外列表保留09-28、eligible=false；单实例返回 outside-series，区间查询不返回；再延长到10-05恢复它，提醒从重新可见时刻生效。
@@ -79,33 +78,22 @@
 
 ## TT-C5 关联回写和失败（WB-T004、017、018）
 
-T52 用同版 classes/lessons 替身验证：course.classId=C1、lessonId=L1、recordIds=[R1] 成功；R1属于C2 ->409 class-mismatch；新连被删对象 ->409 reference-deleted；外账户任一ID ->404，整个 Entry 不变。重复模板带recordIds ->422 invalid-input；在一次例外 content 中可连。
+T52 用同版 classes 替身验证：course.classId=C1、recordIds=[R1] 成功；R1属于C2 ->409 class-mismatch；新连被删对象 ->409 reference-deleted；外账户任一ID ->404，整个 Entry 不变。重复模板带recordIds ->422 invalid-input；在一次例外 content 中可连。
 
-老师从某次课程进入快记，createRecord 已成功；随后 setException/updateEntry 关联记录故障。UI 显示“记录已保存，尚未关联到安排”，持有 R1，在恢复连接后仅重试第二步。R1 的来源可含 L1，不要求反向修改 L1。T53用真实两个模块重跑，T54从UI确认双向返回。
+老师从某次课程进入快记，createRecord 已成功；随后 setException/updateEntry 关联记录故障。UI 显示“记录已保存，尚未关联到安排”，持有 R1，在恢复连接后仅重试第二步。R1 的来源可含 Q1，不要求反向修改 Q1。T53用真实两个模块重跑，T54从UI确认双向返回。
 
 对任一写操作：先成功落库再丢弃应答 -> 客户端结果未确认、保留原键原体；服务重启后同键重试返回原成功，GET取得当前对象，只有一次版本推进。相同键换字段 ->409 idempotency-key-reused。不同设备旧版本 ->409 version-conflict；不得自动覆盖。401保留原账户草稿，切B不可见，旧A响应不得回填B。缺保护头/异源403；无身份401；外账户对象404；JSON损坏400；媒体类型错误415；过大413；存储回滚503且不误报已保存。
 
 ## TT-C6 作品接入（WB-T020）
 
-`teaching-time-v1.openapi.yaml` 的记录 v1 `SourceInput` 只接受 lesson/question；work、math、resource 或未知 blob 字段均为 422。当前记录 v2 的 `SourceInputV2` 已支持 kind=math，见[数学关联与兼容契约](teaching-time.md#数学作品关联)和[对应场景](#数学关联用例)；work/resource 仍不受支持。验证需同时覆盖 v1 拒绝、v2 真实作品选择/保存/删源/双向回看和旧键确认。已有局部接线不等于 WB-T020 全范围通过，替身及 schema 样本也不能代签。
+`teaching-time-v1.openapi.yaml` 的记录 v1 `SourceInput` 只接受 question；work、math、resource 或未知 blob 字段均为 422。当前记录 v2 的 `SourceInputV2` 已支持 kind=math，见[数学关联与兼容契约](teaching-time.md#数学作品关联)和[对应场景](#数学关联用例)；work/resource 仍不受支持。验证需同时覆盖 v1 拒绝、v2 真实作品选择/保存/删源/双向回看和旧键确认。已有局部接线不等于 WB-T020 全范围通过，替身及 schema 样本也不能代签。
 
 <a id="tt-c7"></a>
 ## TT-C7 静态目录 v2 校验
 
-本组仅验证教学基础目录 v2 的固定输入。当前六模块组合返回 v3，见[目录版本](teaching-time.md#静态目录-v2-与当前-v3)，不使用下述四模块样本断言当前运行响应。
+本组验证教学基础目录 v2 的固定输入；当前五模块运行目录返回 v3，见[目录版本](teaching-time.md#静态目录-v2-与当前-v3)。固定样本的顺序与字段按当前入库 schema 和 samples 逐项比对，不把历史目录当作当前运行响应。
 
-在该 v2 fixture 中，`GET /api/modules` 成功返回样本 `catalog-v2`，状态 200，响应为 `version=2` 且 `items` 顺序严格为 `questions`、`lessons`、`classes`、`schedule`；四项完整 descriptor 的 `name`、`path`、`navigation`、`auxiliaryPanel` 和 `requires` 逐项按样本比对。该响应是 v2，不能返回 B11 v1 的 `{items: []}` 形状。
-
-T53 对同一静态输入先校验再投影。以下变体都通过 `ModuleCatalogV2` 的单对象 JSON Schema 形状检查，但必须由目录校验器拒绝；拒绝不启动/不暴露部分目录，固定返回 `422 invalid-input`：
-
-| 变体 | 固定改动 | 预期 Problem |
-| --- | --- | --- |
-| `catalog-v2-reject-duplicate-id` | 将 `items[2].id` 从 `classes` 改为 `questions` | `field=/items/2/id`、`reason=duplicate-id` |
-| `catalog-v2-reject-duplicate-path` | 将 `items[3].path` 从 `/calendar` 改为 `/lessons` | `field=/items/3/path`、`reason=duplicate-id` |
-| `catalog-v2-reject-missing-dependency` | 将 `items[0].id/path` 改为 `other`/`/other`，保留 `items[1].requires[0]=questions.readForReference` | `field=/items/1/requires/0`、`reason=invalid-reference` |
-| `catalog-v2-reject-cycle` | 将 `items[1].requires` 改为 `[classes.readClass]`，保留 classes 对 lessons 的依赖 | `field=/items`、`reason=invalid-reference` |
-
-重复检查按 descriptor 原顺序返回第一个确定错误；缺依赖指向无法解析的 requires 项；依赖环指向目录根。未知 descriptor 字段仍属于响应加法兼容，不因本校验而拒绝未来响应字段。
+目录应拒绝重复 ID、重复路径、缺少依赖与依赖环，不启动或暴露部分目录。重复检查按 descriptor 原顺序返回第一个错误，缺依赖指向无法解析的 requires 项，依赖环指向目录根。未知 descriptor 字段沿响应加法兼容规则处理。
 
 ## 两侧独立检查
 
@@ -115,13 +103,13 @@ T53 对同一静态输入先校验再投影。以下变体都通过 `ModuleCatal
 
 教学记录 v2 数学关联验收规格。精确形状见 [OpenAPI](../../apps/api/src/contracts/teaching-time-v2.openapi.json)，语义见[契约](teaching-time.md#数学作品关联)。[机器样本](../../apps/api/test/fixtures/contracts/teaching-time-v2-samples.json)中的 `valid` 只表示 schema 判断，`exchanges` 才记录跨请求的预期；样本本身不是产品通过记录。
 
-固定账户 A/B 由可信测试入口提供，客户端不提交 accountKey。C1/C2、L1、Q1、R1 复用本页[基础用例](#固定数据与执行方法)；W1 为 `60000000-0000-4000-8000-000000000001`，R2 为 `30000000-0000-4000-8000-000000000002`。初始时间 `2026-09-21T06:00:00Z`，记录日期 `2026-09-21`，每次写入推进一分钟。W1 初始 title=“函数图象”、version=1、deletedAt=null。真实复验通过公共操作建立对象并映射真实 ID，固定 UUID 仅用于同版替身。
+固定账户 A/B 由可信测试入口提供，客户端不提交 accountKey。C1/C2、Q1、Q1、R1 复用本页[基础用例](#固定数据与执行方法)；W1 为 `60000000-0000-4000-8000-000000000001`，R2 为 `30000000-0000-4000-8000-000000000002`。初始时间 `2026-09-21T06:00:00Z`，记录日期 `2026-09-21`，每次写入推进一分钟。W1 初始 title=“函数图象”、version=1、deletedAt=null。真实复验通过公共操作建立对象并映射真实 ID，固定 UUID 仅用于同版替身。
 
 所有 HTTP 写入沿 T50/B11 的 Cookie、同源保护、Content-Type、独立 Idempotency-Key；成功和失败均 no-store。每个分支使用独立 fixture，除明确连续步骤外不跨 case 继承状态。
 
 ### TM-C1 新旧记录与当前作品
 
-1. `POST /api/modules/classes/v2/records` 使用 `create-mixed` -> 201 `record-linked`。sources 顺序 lesson/question/math，W1 首次标题为“函数图象”。只填一句话无来源的 `create-quick-v2` 同样可保存。
+1. `POST /api/modules/classes/v2/records` 使用 `create-mixed` -> 201 `record-linked`。sources 顺序 question/math，W1 首次标题为“函数图象”。只填一句话无来源的 `create-quick-v2` 同样可保存。
 2. v2 GET 旧无 math 记录 -> 同 ID/version/updatedAt/labelAtLink；旧 GET 仍能读。v2 PUT 给旧记录补 math，只加一次 version；v2 保存与旧记录处于同一班级列表。
 3. 通过 math 公共操作改 W1 为“二次函数图象”，再 GET R1 -> `record-renamed`，除 sources 的 currentLabel 外逐字段等于 `record-linked`。提供方新 version 不增加记录 version/updatedAt。
 4. 活动但 render=invalid 的作品可被新记录关联；数学渲染、源码、导出或快照不进入教学请求。`workVersion/accountId/labelAtLink/attrs` 等客户端附加字段被严格拒绝。
@@ -136,7 +124,7 @@ T53 对同一静态输入先校验再投影。以下变体都通过 `ModuleCatal
 ### TM-C3 两班反查与完整结果
 
 1. 两班各建混合记录指向 W1。R1.updatedAt=06:00Z、R2.updatedAt=06:01Z，recordedOn 相同；`GET /api/modules/classes/v2/source-records/math/W1` -> `reverse-two-classes`，顺序 R2/R1，完整来源保留，班级可辨认。
-2. v2 反查 lesson/L1、question/Q1 同样返回含 math 的完整记录。删 W1 仍返回，删 R2 或 C2 只剩 R1。相同时间/日期时 ID 升序；恢复后重新按排序返回。
+2. v2 反查 question/Q1 同样返回含 math 的完整记录。删 W1 仍返回，删 R2 或 C2 只剩 R1。相同时间/日期时 ID 升序；恢复后重新按排序返回。
 3. 不存在或 B 账户作品 -> 404；先校验来源，不可返回 `{items:[]}` 掩盖越权。提供方 503 或列表某记录的其他来源投影失败 -> 整次失败，无部分成功。
 
 ### TM-C4 旧接口的可表示性
@@ -144,9 +132,9 @@ T53 对同一静态输入先校验再投影。以下变体都通过 `ModuleCatal
 | 动作 | 预期 |
 | --- | --- |
 | 旧 GET R1（含 math，包括已删除 R1） | 422 `error-v1-record` |
-| 旧 GET records?classId=C1&state=active 或旧反查 lesson/L1，匹配集中有 R1 | 422 `error-v1-list`；不能只返回能表示的行或删掉 math |
+| 旧 GET records?classId=C1&state=active 或旧反查 question/Q1，匹配集中有 R1 | 422 `error-v1-list`；不能只返回能表示的行或删掉 math |
 | math 记录不在所请求 classId/state/反查匹配集合内 | 不影响此旧查询，返回原可表示结果 |
-| 旧 PUT R1 使用当前版本并提交只含 lesson/question 的完整体 | 422 `error-v1-record`，不能借覆盖移除 math |
+| 旧 PUT R1 使用当前版本并提交只含 question 的完整体 | 422 `error-v1-record`，不能借覆盖移除 math |
 | 旧 POST R1/deletion 使用当前版本 | 422 同上，不改变删除态 |
 | 上两项 expectedVersion 已过期 | 409 `error-version`，先于可表示性检查 |
 | 旧创建/更新体带 math 或旧 source-records/math/W1 | 422 invalid-input，字段和 reason 见契约；旧 schema 继续拒绝 |
@@ -161,12 +149,12 @@ T53 对同一静态输入先校验再投影。以下变体都通过 `ModuleCatal
 ### TM-C6 故障与输入拒绝
 
 - 首次保存/已有记录读取/反查中注入 math 存储 503 -> `error-unavailable`，写入与成功回执回滚；恢复后原键只成功一次。任何 provider 404 -> `error-not-found`，不得伪装 deleted=true，tombstone 成功结果与错误明确区分。
-- 两个同 kind/id source 形状合法但业务拒绝 `422 invalid-input`、`/sources/1/id`、`duplicate-id`；math 与 lesson 恰好同 UUID 是不同来源。
+- 两个同 kind/id source 形状合法但业务拒绝 `422 invalid-input`、`/sources/1/id`、`duplicate-id`；math 与 question 恰好同 UUID 是不同来源。
 - 输入 `kind=work`、多余 workVersion/accountId/attrs/labelAtLink、缺 math id、非法 UUID 或 null sources 均失败；五段文字全空即使已选作品也无有效教学记录，仍按旧规则拒绝。
 - 提供方不存在导致旧关联读取失败时保留旧画面和草稿；用户可显式移除该关联并保存其余有效内容。删除/恢复操作返回完整 RecordV2，若投影失败须回滚本次状态变化，不能成功删记录却返回伪造 sources。
 
 ### TM-C7 目录与无关行为保留
 
-`catalog-combined-target` 逐字值取自固定 M40 样本：version=3，六模块顺序和 requires 相同。生产投影实际模块子集；数学与教学时间真实装配时 classes 必须含 math.readForTeachingLinkV1。静态 duplicate-id/path、缺 math 提供方、依赖环变体按旧 TT-C7 的 field/reason 拒绝，不能用 shape valid 代替语义校验。
+`catalog-combined-target` 逐字值取自固定 M40 样本：version=3，五模块顺序和 requires 相同。生产投影实际模块子集；数学与教学时间真实装配时 classes 必须含 math.readForTeachingLinkV1。静态 duplicate-id/path、缺 math 提供方、依赖环变体按旧 TT-C7 的 field/reason 拒绝，不能用 shape valid 代替语义校验。
 
-原 79 个 T50 样本、schema、时间/提醒/班级操作仍保留；新 schema 的原 60 个 schema 与所有 schedule 操作逐项相等。记录作品更新/删源不重置 armedAt、不结算或生成通知、不写日程。已有日程关联 R1 时仍使用原 RecordReference，math 故障不影响该摘要。实现变更须验证这些不变量，回归从[核查入口](../plans/run-state.md#核查入口)进入。
+当前入库样本覆盖保留的时间、提醒与班级操作；按现行 schema 检查请求、响应和日程行为。记录作品更新/删源不重置 armedAt、不结算或生成通知、不写日程。已有日程关联 R1 时仍使用原 RecordReference，math 故障不影响该摘要。实现变更须验证这些不变量，回归从[核查入口](../plans/run-state.md#核查入口)进入。

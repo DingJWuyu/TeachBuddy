@@ -192,7 +192,7 @@ test("the frozen material catalog fixture is version 2 without registering unimp
   assert.equal(fixture.version, 2);
   assert.deepEqual(
     fixture.items.map((x) => x.id),
-    ["questions", "resources", "lessons"],
+    ["questions", "resources"],
   );
   assert.equal(validateSchema("ModuleCatalog", fixture), fixture);
 });

@@ -9,12 +9,11 @@
 | 账户与身份 | [行为与验证](../features/identity.md)、[auth.feature](auth.feature)、[认证案例](../contracts/auth-cases.md) | 真实登录/恢复/退出、账户删除、邮件与页面绑定、第二设备/账户隔离及恢复后旧身份失效 |
 | 工作台与设置 | [行为与验证](../features/workbench.md)、[界面规则](../rules/design-and-verification.md) | 各分区草稿/选择/滚动、失效身份接入、导航和偏好真实生效、当前删减、帮助可达、渐进交互 |
 | 题库 | [行为与验证](../features/questions.md)、[first-flow.feature](first-flow.feature)、[materials.feature](materials.feature) | 四入口原稿、提取校对、自建/修改/复制、笔记/标记/分类、检索、保存刷新、幂等/冲突/未知恢复 |
-| 备课 | [行为与验证](../features/lessons.md)、[materials.feature](materials.feature) | 混合取材、环节编排、引用快照、六输出与角色过滤、版本恢复、删除来源与旧请求 |
-| 资源库 | [行为与验证](../features/resources.md)、[materials.feature](materials.feature) | 文件收录、分类/检索、实际预览、替换与历史版本、删除来源后的既有引用 |
-| 数学工坊 | [行为与验证](../features/math.md)、[math.feature](math.feature) | 可改源码、公式/函数/平面/空间/动态、HTML 隔离、往返、离线 |
+| 资源库 | [行为与验证](../features/resources.md)、[materials.feature](materials.feature) | 文件收录、分类/检索、实际预览、替换与历史版本、归档、恢复和彻底删除 |
+| 数学工坊 | [行为与验证](../features/math.md)、[math.feature](math.feature) | 可改源码、公式/函数/平面/空间/动态、HTML 隔离、教学关联、离线 |
 | 班级教学 | [行为与验证](../features/classes.md)、[teaching-time.feature](teaching-time.feature)、[丰富题目接缝](../contracts/teaching-time.md#丰富题目关联) | 两班反馈、当前对象链接、检索回顾、公式图片、移动/删除恢复、旧协议保护 |
 | 日程 | [行为与验证](../features/schedule.md)、[teaching-time.feature](teaching-time.feature) | 日期/时区/DST、重复与单次独立任务、事项、提醒补呈现、通知定位及返回、计划不改实际记录 |
-| AI 助理 | [行为与验证](../features/agent.md)、[agent.feature](agent.feature) | 真模型真实业务操作、新题而非固定示例、手工冲突/停止/恢复、六模块全部覆盖 |
+| AI 助理 | [行为与验证](../features/agent.md)、[agent.feature](agent.feature) | 真模型真实业务操作、新题而非固定示例、手工冲突/停止/恢复、五模块全部覆盖 |
 
 共享文件、材料交换和班级/日程场景可以覆盖多个分区；场景文件名不定义新的产品分区。
 
@@ -46,13 +45,13 @@ T 原文字不含 Q2/Q5/Q6 的图字节，图项按不适用记录，文字忠�
 | 场景 | 可观察通过条件 |
 | --- | --- |
 | OF-01 真实逐页预览 | O-W 的 `.doc/.docx`、O-S 的 `.ppt/.pptx`、P 与 E 的 PDF、I 图片逐个打开全部页/幻灯片。显示实际中文、公式与图，顺序和内容完整；无方框字、裁掉题干、遮挡公式或丢页。格式损坏时明确失败并保留可下载原件。报告每种格式的实际转换命令和限制。 |
-| OF-02 可编辑成果 | 教案/提纲、导学案/讲义、练习三类各生成一份 DOCX 和对应 PDF。任选其中一份在真实编辑器修改一处中文、一处行内分式和一处独立根式/上下标公式，保存、关闭、重开并重新导出 PDF；三个修改都保留且公式继续能编辑。XML 检查只能补证，不能代替编辑。 |
-| OF-03 分页与版本 | 三类成果均检查打印预览和 PDF 全部页，中文/公式/图完整，分页不截断题目必需内容，无意外空白页。学生版不含答案解析与教师注记，教师版含二者；固定标记串用于核查，不另造一套权限系统。允许合理字体替换和重排，不要求 WPS/LibreOffice 像素相同。 |
+| OF-02 可编辑成果 | 用公共转换器从固定文稿生成 DOCX 和对应 PDF，再在真实编辑器修改一处中文、一处行内分式和一处独立根式/上下标公式，保存、关闭、重开并重新导出 PDF；三个修改都保留且公式继续能编辑。XML 检查只能补证，不能代替编辑。 |
+| OF-03 分页与版本 | 公共转换生成成果检查打印预览和 PDF 全部页，中文/公式/图完整，分页不截断题目必需内容，无意外空白页。允许合理字体替换和重排，不要求 WPS/LibreOffice 像素相同。 |
 | OF-04 成本与故障 | 记录版本、字体/替换、原件与输出体积、各转换耗时、临时目录和候选部署所需组件。一次转换进程失败后原件仍在，重试能输出；不要求构建任务平台。 |
 
 旧 `.doc/.ppt` 即使只支持先转再预览，也必须实际完成；不能用改后缀当真实旧格式。普通教学静态内容为本次范围，不追加动画播放、宏执行或复杂 OLE 编辑门槛。
 
-公式须覆盖一般 LaTeX → OMML 路径，分式、根式、上下标、函数/对数、不等式、区间、绝对值、两行 cases 和中文说明；固定硬编码 OMML 不证明通用转换。答案/教师注记四种开关组合检查 DOCX XML、正文/附件与 PDF，不仅检查文件名或固定串。
+公式须覆盖一般 LaTeX → OMML 路径，分式、根式、上下标、函数/对数、不等式、区间、绝对值、两行 cases 和中文说明；固定硬编码 OMML 不证明通用转换。实际检查 DOCX XML、正文、附件与 PDF，不仅检查文件名或固定串。
 
 <a id="math"></a>
 ## 数学与离线

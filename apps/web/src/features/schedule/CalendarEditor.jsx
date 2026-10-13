@@ -169,7 +169,7 @@ export default function CalendarEditor({ draft, onPatch, onClose, onConfirm, onD
     </> : <button className="cal-assign-time" onClick={() => onPatch({ time: defaultTime(draft.zone) })}><CalendarIcon name="clock" size={16}/>{t("安排时间")}</button>}
     {content.time && content.time.timeZone !== draft.zone && <p className="cal-help cal-scheduling-zone">{t("排课时区：")}{content.time.timeZone}</p>}
     {adjustment && <p className="cal-help">{t("夏令时跳时，这次实际开始于")} {adjustment.date} {adjustment.startTime}（{adjustment.timeZone}）。</p>}
-    {(content.repeat || content.reminder || content.course.classId || content.course.lessonId || content.course.recordIds.length > 0) && <div className="cal-time-options">
+    {(content.repeat || content.reminder || content.course.classId || content.course.recordIds.length > 0) && <div className="cal-time-options">
       {content.repeat && <button className="cal-repeat-summary" onClick={() => setRepeatOpen(true)}><CalendarIcon name="repeat" size={14}/><span>{repeatLabel(content.repeat, draft.forceSeries ? content.time.date : draft.entry?.time?.date ?? content.time.date)}</span></button>}
       {content.reminder && <button className="cal-detail-summary cal-reminder-summary" onClick={() => setDetails('reminder')}><CalendarIcon name="clock" size={14}/><span>{reminderLabel(content.reminder)}</span></button>}
       <CourseSummary course={content.course} state={draft.courseState} onClick={() => setDetails('course')}/>

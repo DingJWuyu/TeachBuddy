@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import { lessonsAdapter } from "./lessons-adapter.mjs";
 import path from "node:path";
 import express from "express";
 import YAML from "yaml";
@@ -89,19 +88,6 @@ export async function startResourcesFixture({
   );
   const resources = workbench.loader.get("resources");
   app.use("/api/modules/resources", resources.router);
-  app.use(
-    ["/fixture/adopt", "/fixture/references", "/api/modules/lessons/v2", "/api/modules/lessons/v3"],
-    guards.protectionGuard,
-    guards.identityGuard,
-    express.json(),
-  );
-  app.use(
-    lessonsAdapter({
-      db: workbench.db,
-      resources: resources.port,
-      mutations: workbench.mutations,
-    }),
-  );
   app.use("/api/workbench/files", workbench.filesRouter);
   app.use("/api/workbench/jobs", workbench.jobsRouter);
   app.use("/api/workbench", workbench.contextRouter);

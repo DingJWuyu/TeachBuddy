@@ -159,32 +159,21 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768
   });
 }
 
-test('formula tools and shared lesson return remain usable', async ({ page, context }) => {
+test('formula tools save and reopen their content', async ({ page, context }) => {
   const world = await createIntegration();
   try {
     await register(page, world, 'scroll-return@example.test');
     await closeTools(page);
-    await page.locator('.wb-sidebar').getByRole('link', { name: '备课', exact: true }).click();
-    await page.getByRole('button', { name: '新建备课', exact: true }).click();
-    await page.getByLabel('课题', { exact: true }).fill('滚动修复直接回归');
-    await page.getByRole('button', { name: '保存', exact: true }).click();
-    await expect(page.getByRole('status').first()).toContainText('已保存');
-    await page.getByRole('button', { name: '添加环节', exact: true }).click();
-    await page.getByLabel('环节名称 1').fill('未保存环节');
-    await page.locator('[data-section-id]').getByRole('button', { name: '制作数学作品', exact: true }).click();
+    await page.goto(world.origin + '/math');
     await showTools(page);
     await clickTool(page, page.getByRole('button', { name: '新建公式', exact: true }).last());
     await closeTools(page);
-    await page.getByLabel('作品名称').fill('带回公式');
+    await page.getByLabel('作品名称').fill('回归公式');
     await page.getByLabel('LaTeX', { exact: true }).fill('a^2+b^2=c^2');
     await save(page);
-    await page.getByRole('button', { name: '带回备课', exact: true }).click();
-    await expect(page.locator('[data-reference-id]')).toHaveCount(1);
-    await expect(page.getByRole('status').first()).toContainText('已保存');
-    await expect(page.getByLabel('环节名称 1')).toHaveValue('未保存环节');
     await page.reload();
-    await expect(page.locator('[data-reference-id]')).toContainText('带回公式');
-    await page.screenshot({ path: path.join(evidence, 'lesson-return.png') });
+    await expect(page.getByLabel('作品名称')).toHaveValue('回归公式');
+    await page.screenshot({ path: path.join(evidence, 'formula-reopened.png') });
   } finally {
     await context.close();
     await world.close();

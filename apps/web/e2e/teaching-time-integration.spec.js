@@ -17,7 +17,7 @@ let now;
 const input = {
   title: '函数单调性课程', items: [],
   time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, lessonId: null, recordIds: [] }, reminder: { side: 'before', minutes: 10 }
+  repeat: null, course: { classId: null, recordIds: [] }, reminder: { side: 'before', minutes: 10 }
 };
 const emptyDoc = { version: 1, blocks: [] };
 async function start(reset = false) {
@@ -118,10 +118,9 @@ test('WB-T010/015/016: moved occurrence opens actual date; read failure still op
   await expect(page.getByRole('button', { name: '恢复安排', exact: true })).toBeVisible();
 });
 
-test('WB-T003/004/017: real class and lesson feedback, separate linking failure and retry after committed response loss', async ({ page }) => {
+test('WB-T003/004/017: real class feedback, separate linking failure and retry after committed response loss', async ({ page }) => {
   const classroom = await write(page, '/api/modules/classes/items', { name: '高一(1)班' });
-  const lesson = await write(page, '/api/modules/lessons/items', { title: '函数单调性', intro: emptyDoc, sections: [], materials: [] });
-  const entry = await write(page, entries, { ...input, course: { classId: classroom.id, lessonId: lesson.id, recordIds: [] } });
+  const entry = await write(page, entries, { ...input, course: { classId: classroom.id, recordIds: [] } });
   await page.goto(`/calendar?entry=${entry.id}`);
   await page.getByRole('button', { name: '记课后情况' }).click();
   await page.getByRole('textbox', { name: '写一句', exact: true }).fill('例2没讲，任意性还需强调');
@@ -142,13 +141,8 @@ test('WB-T003/004/017: real class and lesson feedback, separate linking failure 
   await expect(page.getByText('记录已保存并关联安排', { exact: true })).toBeVisible();
   expect((await read(page, `${entries}/${entry.id}`)).course.recordIds).toEqual([saved.items[0].id]);
   expect((await read(page, `/api/modules/classes/records?classId=${classroom.id}`)).items).toHaveLength(1);
-  await page.goto(`/lessons/${lesson.id}`);
-  if (await page.getByRole('button', { name: 'AI 助理', exact: true }).count()) await page.getByRole('button', { name: 'AI 助理', exact: true }).first().click();
-  await page.getByRole('tab', { name: '班级反馈', exact: true }).click();
-  await expect(page.locator('[data-region="source-records-panel"]')).toContainText('例2没讲');
-  await shot(page, 'lesson-feedback');
-  await page.locator('[data-source-record-id]').click();
-  await expect(page).toHaveURL(new RegExp(`/classes/${classroom.id}/records/`));
+  await page.goto(`/classes/${classroom.id}/records/${saved.items[0].id}`);
+  await expect(page.getByRole('textbox', { name: '编辑记录内容', exact: true })).toHaveValue('例2没讲，任意性还需强调');
 });
 
 test('WB-T008: tablet navigation and notification selection preserve AI draft', async ({ page }) => {
@@ -195,10 +189,9 @@ test('WB-T005: actual pointer selection in the integrated shell preserves AI and
   await expect(page.getByRole('textbox', { name: 'AI 输入' })).toHaveValue('拖选后仍保留');
 });
 
-test('WB-T001/002/003/019: two real classes keep feedback separate and source round-trip preserves lesson draft', async ({ page }) => {
+test('WB-T001/002/003/019: two real classes keep feedback separate and question feedback round-trip preserves records', async ({ page }) => {
   const c1 = await write(page, '/api/modules/classes/items', { name: '高一(1)班' });
   const c2 = await write(page, '/api/modules/classes/items', { name: '高一(2)班' });
-  const lesson = await write(page, '/api/modules/lessons/items', { title: '共用备课', intro: emptyDoc, sections: [], materials: [] });
   const q = await write(page, '/api/modules/questions/items', {
     title: '共用题目', body: { version: 1, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text: '证明单调性' }] }] },
     solution: emptyDoc, note: '', starred: false, source: { kind: 'manual' }
@@ -207,7 +200,7 @@ test('WB-T001/002/003/019: two real classes keep feedback separate and source ro
   for (const [c, note] of [[c1, '一班需要强调任意性'], [c2, '二班已讲例2']]) {
     records.push(await write(page, '/api/modules/classes/records', {
       classId: c.id, recordedOn: '2026-09-21', note, position: '函数单调性', unfinished: '', commonIssues: '', nextNote: '',
-      sources: [{ kind: 'lesson', id: lesson.id }, { kind: 'question', id: q.id }]
+      sources: [{ kind: 'question', id: q.id }]
     }));
   }
   await page.goto(`/classes/${c1.id}`);
@@ -217,17 +210,12 @@ test('WB-T001/002/003/019: two real classes keep feedback separate and source ro
   await stop(); await start(); await page.reload();
   await expect(page.getByText('一句话真实保存', { exact: true })).toBeVisible();
   await shot(page, 'classes-real-records');
-  await page.goto(`/lessons/${lesson.id}`);
-  await page.locator('input[aria-label="课题"]').fill('尚未保存的备课草稿');
-  await page.getByRole('button', { name: 'AI 助理', exact: true }).first().click();
-  await page.getByRole('tab', { name: '班级反馈', exact: true }).click();
+  await page.goto(`/questions/${q.id}`);
+  await page.getByText('教学反馈', { exact: true }).click();
   await expect(page.locator('[data-source-record-id]')).toHaveCount(2);
   await page.locator(`[data-source-record-id="${records[0].id}"]`).click();
   await expect(page).toHaveURL(new RegExp(records[0].id));
   await page.goBack();
-  await expect(page.locator('input[aria-label="课题"]')).toHaveValue('尚未保存的备课草稿');
-  await page.goto(`/questions/${q.id}`);
-  await page.getByRole('tab', { name: '班级反馈', exact: true }).click();
   await expect(page.locator('[data-source-record-id]')).toHaveCount(2);
   await shot(page, 'question-two-class-feedback');
   await write(page, `/api/modules/classes/records/${records[0].id}/deletion`, { expectedVersion: 1, deleted: true });
@@ -251,7 +239,7 @@ test('review: class timezone network failure is explicit and recoverable', async
 
 test('review: old notification opens a now-unscheduled entry without impossible record linking', async ({ page }) => {
   const classroom = await write(page, '/api/modules/classes/items', { name: '高一(1)班' });
-  const body = { ...input, course: { classId: classroom.id, lessonId: null, recordIds: [] } };
+  const body = { ...input, course: { classId: classroom.id, recordIds: [] } };
   const entry = await write(page, entries, body);
   now = '2026-09-21T09:00:00.000Z';
   await read(page, notices);

@@ -128,7 +128,7 @@ export function layoutDay(segments) {
 }
 
 function emptyCourse() {
-  return { classId: null, lessonId: null, recordIds: [] };
+  return { classId: null, recordIds: [] };
 }
 
 /** Draft used by the editor; the same shape for create, edit and override. */
@@ -162,7 +162,6 @@ export function draftFromContent({ entry, content = null, unscheduled = false, w
     course: source.course
       ? {
         classId: source.course.classId,
-        lessonId: source.course.lessonId,
         recordIds: [...(source.course.recordIds ?? [])]
       }
       : emptyCourse()
@@ -193,7 +192,6 @@ export function entryInputFromDraft(draft) {
     repeat: time !== null && draft.weekly ? { until: draft.until } : null,
     course: {
       classId: draft.course.classId,
-      lessonId: draft.course.lessonId,
       recordIds: time === null || draft.weekly ? [] : [...draft.course.recordIds]
     },
     reminder: time !== null && draft.reminder ? { side: draft.reminder.side, minutes: Number(draft.reminder.minutes), ...(draft.reminder.anchor ? { anchor: draft.reminder.anchor } : {}) } : null

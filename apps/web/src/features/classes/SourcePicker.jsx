@@ -14,11 +14,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon } from '../workbench/icons.jsx';
 import { navigate } from '../workbench/routes.js';
 import { listTeachingQuestions, listTeachingWorks } from './api.js';
-import { listLessons } from '../lessons/api.js';
-import { sourceFallbackLabel, sourceHistoryHint, sourceKindLabel, sourceLabel, sourcePath } from './model.js';
+import { supportedSources, sourceFallbackLabel, sourceHistoryHint, sourceKindLabel, sourceLabel, sourcePath } from './model.js';
 
 export function SourceChips({ sources, onRemove, onPick, returnPath, disabled = false }) {
   const { t } = useTranslation('classes');
+  sources = supportedSources(sources);
   return (
     <div className="c-sources" data-region="record-sources">
       {sources.length === 0 && !onPick && <span className="wb-muted">{t("未关联资料")}</span>}
@@ -39,6 +39,7 @@ export function SourceChips({ sources, onRemove, onPick, returnPath, disabled = 
               className="c-source-open"
               name="open-source"
               title={t("打开{{sourceKind}}", { sourceKind: sourceKindLabel(source.kind) })}
+              disabled={!sourcePath(source.kind, source.id)}
               onClick={() => navigate(sourcePath(source.kind, source.id), { fromPath: returnPath })}
             >
               {label}
@@ -73,9 +74,10 @@ export function SourceChips({ sources, onRemove, onPick, returnPath, disabled = 
 export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel: cancel, onConfirm: confirm, explain = false }) {
   const { t } = useTranslation('classes');
   const [scene, patchScene] = useScene(accountKey, `class-source-picker:${sceneKey}`, {
-    kind: 'lesson', query: '', workKind: '', selected: null, scrollTop: 0
+    kind: 'question', query: '', workKind: '', selected: null, scrollTop: 0
   });
-  const { kind, query, workKind } = scene;
+  const { query, workKind } = scene;
+  const kind = ['question', 'math'].includes(scene.kind) ? scene.kind : 'question';
   const setKind = kind => patchScene({ kind });
   const setQuery = query => patchScene({ query });
   const setWorkKind = workKind => patchScene({ workKind });
@@ -87,7 +89,7 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState(null);
-  const selected = scene.selected ?? value.map(source => ({ ...source, label: sourceLabel(source), deleted: Boolean(source.deleted) }));
+  const selected = supportedSources(scene.selected ?? value).map(source => ({ ...source, label: sourceLabel(source), deleted: Boolean(source.deleted) }));
   const setSelected = change => patchScene({ selected: typeof change === 'function' ? change(selected) : change });
   const scroll = useScrollRestore(scene.scrollTop, top => patchScene({ scrollTop: top }), items.length);
   const searchRef = useRef(null);
@@ -98,7 +100,7 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
     setStatus('loading');
     setItems([]);
     setError(null);
-    const loader = kind === 'math' ? listTeachingWorks({ q: query, kind: workKind }) : kind === 'lesson' ? listLessons({ q: query, state: 'active' }) : listTeachingQuestions({ q: query });
+    const loader = kind === 'math' ? listTeachingWorks({ q: query, kind: workKind }) : listTeachingQuestions({ q: query });
     loader
       .then((rows) => {
         if (!cancelled) {
@@ -157,18 +159,8 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
             <Icon name="close" size={15} />
           </button>
         </div>
-        {explain && <p className="c-picker-description">{t("选择本次用到的备课、题目或作品。保存记录后，就能从这里直接打开。")}</p>}
+        {explain && <p className="c-picker-description">{t("选择本次用到的题目或作品。保存记录后，就能从这里直接打开。")}</p>}
         <div className="c-picker-tabs" role="tablist" aria-label={t("资料类型")}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={kind === 'lesson'}
-            className={`wb-chip${kind === 'lesson' ? ' is-active' : ''}`}
-            name="picker-kind-lesson"
-            onClick={() => setKind('lesson')}
-          >
-            {t("备课")}
-          </button>
           <button
             type="button"
             role="tab"
@@ -191,7 +183,7 @@ export function SourcePicker({ accountKey, value, sceneKey = 'default', onCancel
             type="search"
             maxLength={200}
             aria-label={t("搜索资料")}
-            placeholder={kind === 'math' ? t("搜索作品") : kind === 'lesson' ? t("搜索备课") : t("搜索题目")}
+            placeholder={kind === 'math' ? t("搜索作品") : t("搜索题目")}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />

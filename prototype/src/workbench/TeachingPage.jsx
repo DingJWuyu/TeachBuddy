@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { modulePath, navigate } from "../routes.js";
 import { useWorkspace, newId } from "./context.js";
 import { TODAY } from "./data.js";
 import { Button, Empty, Toolbar } from "./ui.jsx";
@@ -11,7 +10,6 @@ export default function TeachingPage() {
   const draft = drafts[w.className] || {
     text: "",
     progress: "",
-    lesson: "",
     date: TODAY,
   };
   function change(patch) {
@@ -28,13 +26,11 @@ export default function TeachingPage() {
         ...draft,
         id: newId("record"),
         className: w.className,
-        title:
-          w.lessons.find((item) => item.id === draft.lesson)?.title ||
-          "课堂随记",
+        title: "课堂随记",
       },
       ...items,
     ]);
-    change({ text: "", progress: "", lesson: "" });
+    change({ text: "", progress: "" });
     setEditing(false);
   }
   return (
@@ -81,18 +77,6 @@ export default function TeachingPage() {
                   value={draft.date}
                   onChange={(event) => change({ date: event.target.value })}
                 />
-                <select
-                  aria-label="关联备课"
-                  value={draft.lesson}
-                  onChange={(event) => change({ lesson: event.target.value })}
-                >
-                  <option value="">关联备课（可选）</option>
-                  {w.lessons.map((lesson) => (
-                    <option value={lesson.id} key={lesson.id}>
-                      {lesson.title}
-                    </option>
-                  ))}
-                </select>
                 <Button
                   primary
                   onClick={save}
@@ -113,22 +97,11 @@ export default function TeachingPage() {
                   <div className="wb-record-position">{record.progress}</div>
                 )}
                 <p>{record.text}</p>
-                {record.lesson && (
-                  <Button
-                    icon="link"
-                    onClick={() => {
-                      w.setLessonId(record.lesson);
-                      navigate(modulePath("prep"));
-                    }}
-                  >
-                    查看当时的备课
-                  </Button>
-                )}
               </article>
             ))}
             {!records.length && (
               <Empty title="从第一条课堂记录开始">
-                课间的一句话，也能帮助下一次备课。
+                课间的一句话，也能帮助下一次教学。
               </Empty>
             )}
           </div>

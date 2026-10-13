@@ -1,7 +1,6 @@
 // Prototype fixtures for layout and teaching workflows. No school or API data.
 export const WORKBENCH_MODULES = [
-  { id: "bank", name: "题库", icon: "lessons" },
-  { id: "prep", name: "备课", icon: "pencil" },
+  { id: "bank", name: "题库", icon: "book" },
   { id: "studio", name: "数学工坊", icon: "graph" },
   { id: "resources", name: "资源库", icon: "folder" },
   { id: "classes", name: "班级教学", icon: "classes" },
@@ -53,7 +52,7 @@ export const QUESTIONS = [
       "可以从图象或一次函数的斜率理解，再比较直观解释与定义证明的区别。",
     note: "",
     tags: ["定义证明", "课堂例题"],
-    source: "备课选题",
+    source: "个人选题",
   },
   {
     id: "q4",
@@ -78,72 +77,6 @@ export const QUESTIONS = [
     graph: true,
   },
 ];
-export const LESSONS = [
-  {
-    id: "l1",
-    title: "函数的单调性",
-    subtitle: "第 1 课时 · 从直观到严谨",
-    goal: "借助图象理解单调性，用符号语言表达，并尝试依据定义证明。",
-    blocks: [
-      {
-        id: "b1",
-        title: "观察图象",
-        text: "从熟悉的二次函数出发。先请学生描述自变量变化时函数值如何变化，再追问：怎样把“上升”和“下降”说清楚？",
-        questions: [],
-        works: ["w1"],
-        resources: [],
-      },
-      {
-        id: "b2",
-        title: "建立定义",
-        text: "把学生的自然语言转化为符号表达，重点讨论“区间”和“任意两个自变量”。给学生留出独立表述的时间。",
-        questions: ["q2"],
-        works: [],
-        resources: [],
-      },
-      {
-        id: "b3",
-        title: "例题讲解",
-        text: "先请学生给出图象上的判断，再一起用定义完成证明。强调每个不等式使用的条件。",
-        questions: ["q1"],
-        works: [],
-        resources: [],
-      },
-      {
-        id: "b4",
-        title: "独立练习与回顾",
-        text: "用一道简短练习检查证明步骤。请学生回顾：图象观察与定义证明分别帮助我们做了什么？",
-        questions: ["q3"],
-        works: [],
-        resources: [],
-      },
-    ],
-  },
-  {
-    id: "l2",
-    title: "函数的奇偶性",
-    subtitle: "第 1 课时 · 对称与数量关系",
-    goal: "从图象对称性出发，理解并运用奇偶性的定义。",
-    blocks: [
-      {
-        id: "b5",
-        title: "从对称出发",
-        text: "观察熟悉的函数图象，寻找图形特征与数量关系的联系。",
-        questions: ["q5"],
-        works: [],
-        resources: [],
-      },
-      {
-        id: "b6",
-        title: "概念辨析",
-        text: "检查定义域，再讨论 f(−x) 与 f(x) 的关系。",
-        questions: ["q4"],
-        works: [],
-        resources: [],
-      },
-    ],
-  },
-];
 export const RESOURCES = [
   {
     id: "r1",
@@ -152,8 +85,7 @@ export const RESOURCES = [
     folder: "教学课件",
     size: "2.4 MB",
     note: "图象观察、定义与例题。沿用自己的紫灰配色。",
-    lessons: ["l1"],
-    cover: "lesson",
+    cover: "slides",
   },
   {
     id: "r2",
@@ -162,7 +94,6 @@ export const RESOURCES = [
     folder: "我的模板",
     size: "1.8 MB",
     note: "标题页、概念页、例题页和章节过渡。",
-    lessons: [],
     cover: "template",
   },
   {
@@ -172,7 +103,6 @@ export const RESOURCES = [
     folder: "教学文档",
     size: "128 KB",
     note: "为学生保留思考与书写的空间。",
-    lessons: ["l1"],
     cover: "document",
   },
   {
@@ -182,7 +112,6 @@ export const RESOURCES = [
     folder: "常用插图",
     size: "18 KB",
     note: "函数图象示意，使用时调整坐标与标注。",
-    lessons: ["l1"],
     cover: "graph",
   },
   {
@@ -192,7 +121,6 @@ export const RESOURCES = [
     folder: "我的模板",
     size: "640 KB",
     note: "左右对照，分步呈现解法。",
-    lessons: [],
     cover: "example",
   },
   {
@@ -202,7 +130,6 @@ export const RESOURCES = [
     folder: "参考资料",
     size: "420 KB",
     note: "整理提问方式与学生回应。",
-    lessons: [],
     cover: "notes",
   },
 ];
@@ -215,7 +142,6 @@ export const RECORDS = [
     title: "函数的单调性",
     progress: "定义与例题 1 已讲，例题 2 留到下次。",
     text: "学生能根据图象判断，但在定义证明中容易省略“任取”。下次先比较两份证明，请学生找出缺少的条件。",
-    lesson: "l1",
   },
   {
     id: "c2",
@@ -224,7 +150,6 @@ export const RECORDS = [
     title: "函数的概念",
     progress: "函数表示与定义域",
     text: "从实际对应关系进入概念比较顺畅。需要再补一组定义域不同的例子。",
-    lesson: "",
   },
 ];
 

@@ -157,7 +157,6 @@
 .q-export p { margin: 6px 0 12px; }
 .q-export .q-tools { margin: 12px 0; }
 .q-export textarea { min-height: 100px; }
-.q-usage-link { text-decoration: underline; text-underline-offset: 3px; color: inherit; }
 .q-workspace[data-compare="true"] { grid-template-columns: minmax(0, calc((100% - 16px) * var(--q-ratio, .5))) minmax(0, 1fr); }
 .q-workspace[data-compare="true"] > .q-finder { display: none; }
 .q-copy-source { grid-column: 1; grid-row: 1; padding: 20px 24px; overflow: auto; }

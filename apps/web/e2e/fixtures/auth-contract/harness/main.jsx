@@ -1,7 +1,7 @@
 /*
  * Contract harness for the account-entry feature. It mounts AuthProvider and
  * AuthGate exactly as the integrator will, and adds the minimum workbench-like
- * shell: an account row, a settings logout button and a runner for the fifteen
+ * shell: an account row, a settings logout button and a runner for the
  * protected workbench operations. Only the transport and handoff surface are
  * exercised here; the harness is a test fixture, not product code.
  */
@@ -72,7 +72,7 @@ function WorkbenchShell() {
       {logoutError && <p data-harness-logout-error role="alert">{logoutError}</p>}
       <section className="harness-panel">
         <div className="harness-actions">
-          <button type="button" data-harness-run-all onClick={runAll}>依次请求 15 个受保护操作</button>
+          <button type="button" data-harness-run-all onClick={runAll}>依次请求所有受保护操作</button>
           <button
             type="button"
             data-harness-business-401

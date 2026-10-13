@@ -60,13 +60,12 @@ test("WB-MTA001/006/007: rich, imported, copied and mixed sources through public
   const legacy = await seedLegacy(client);
   const input = record(legacy.classroom.id, [
     { kind: "question", id: rich.id },
-    { kind: "lesson", id: legacy.lesson.id },
     { kind: "math", id: legacy.math.id },
   ]);
   const mixed = await call("POST", R, input, 201);
   assert.deepEqual(
     mixed.sources.map((s) => s.kind),
-    ["question", "lesson", "math"],
+    ["question", "math"],
   );
   assert.equal(mixed.sources[0].labelAtLink, rich.title);
   for (const source of mixed.sources) {
@@ -143,7 +142,6 @@ test("WB-MTA001/006/007: rich, imported, copied and mixed sources through public
         db: world.workbench.db,
         mutations: world.workbench.mutations,
         questions: { readForReference() {} },
-        lessons: { readForTeachingLink() {} },
       }),
     /readForReferenceV2/,
   );

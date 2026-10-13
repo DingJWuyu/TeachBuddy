@@ -7,9 +7,7 @@
  * storage fault. Ports and paths are T51's isolated group (47151/48151/49151);
  * nothing here touches a developer database or the product `apps/web/dist`.
  *
- * The classes implementation and catalog entry are the T51 fixture (the product
- * catalog is T53-owned); the missing `lessons.readForTeachingLink` provider is
- * projected from the real lessons service in the same process.
+ * The fixture uses the real classes and questions services.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -36,7 +34,6 @@ const COUNTABLE_TABLES = new Set([
   'classes_records',
   'classes_record_sources',
   'question_items',
-  'lesson_items',
   'workbench_mutation_keys'
 ]);
 

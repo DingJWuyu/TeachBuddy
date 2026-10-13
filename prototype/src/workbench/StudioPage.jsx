@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import { modulePath, navigate } from "../routes.js";
 import { useWorkspace, newId } from "./context.js";
 import { Button, Toolbar } from "./ui.jsx";
 
@@ -24,19 +23,9 @@ export default function StudioPage() {
     w.setWorkId(item.id);
     event.target.value = "";
   }
-  function returnToLesson() {
-    w.attach("works", [work.id], w.returnTarget);
-    w.setLessonId(w.returnTarget.lessonId);
-    navigate(modulePath("prep"));
-  }
   return (
     <div className="wb-module">
       <Toolbar title="数学工坊" trail={work.name}>
-        {w.returnTarget && (
-          <Button icon="arrowLeft" onClick={returnToLesson}>
-            插入并返回备课
-          </Button>
-        )}
         <Button icon="upload" onClick={() => upload.current?.click()}>
           导入 HTML
         </Button>

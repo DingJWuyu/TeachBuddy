@@ -1,15 +1,4 @@
-/**
- * Isolated T52 workbench composition.
- *
- * The production composition root (`apps/api/src/workbench/index.js`) is owned
- * by the integration writer, and the frozen shared catalog does not know the
- * `classes.readClass`, `classes.readRecord` or `lessons.readForTeachingLink`
- * ports yet. This fixture therefore wires the same real facilities - one SQLite
- * database, the identity seam, `mutations.execute`, the migration runner, the
- * workbench routers and the real schedule module factory - with explicit
- * dependencies and a fixture-only catalog. It is a test composition, never a
- * product surface, and it writes nothing back to the product catalog.
- */
+// Isolated schedule composition with real storage and classes reference substitutes.
 import { openWorkbenchDatabase } from '../../../src/workbench/storage.js';
 import { assertWorkbenchRuntimeConfig, createIdentity } from '../../../src/workbench/identity.js';
 import { createMutations } from '../../../src/workbench/mutations.js';
@@ -19,19 +8,10 @@ import { createModuleCatalogHandler, createWorkbenchRouters } from '../../../src
 import { createScheduleModule, migrations as scheduleMigrations } from '../../../src/modules/schedule/index.js';
 import { fixtureBeforeChange, fixtureClock } from './runtime.js';
 import { createClassesModule, migrations as classesMigrations } from './modules/classes/index.js';
-import { createLessonsModule, migrations as lessonsMigrations } from './modules/lessons/index.js';
 import { createPreferencesRouter, preferenceMigrations } from '../../../src/reliability/preferences.js';
 
 /** Fixture-only descriptors; the real v2 catalog (with requires) is T53's. */
 export const fixtureCatalog = Object.freeze([
-  Object.freeze({
-    id: 'lessons',
-    name: '备课',
-    path: '/lessons',
-    navigation: 'sidebar',
-    auxiliaryPanel: true,
-    requires: Object.freeze([])
-  }),
   Object.freeze({
     id: 'classes',
     name: '班级',
@@ -76,30 +56,26 @@ export function createTeachingTimeWorkbench({
   const migrationResult = migrations.run(
     [
       { moduleId: 'classes', migrations: classesMigrations },
-      { moduleId: 'lessons', migrations: lessonsMigrations },
       { moduleId: 'schedule', migrations: scheduleMigrations },
       ...preferenceMigrations
     ],
-    // A database migrated by the previous stage also carries questions/lessons
+    // A database migrated by the previous stage also carries questions
     // ledger rows; a caller may narrow the known module set so an upgrade check
     // does not treat them as removed definitions.
     { knownModuleIds: knownModuleIds ?? fixtureCatalog.map((entry) => entry.id) }
   );
 
   const classes = createClassesModule({ db, mutations });
-  const lessons = createLessonsModule({ db, mutations });
   const schedule = createScheduleModule({
     db,
     mutations,
     classes: classes.port,
-    lessons: lessons.port,
     beforeChange: fixtureBeforeChange,
     clock
   });
 
   const implementations = new Map([
     ['classes', { moduleId: 'classes', router: classes.router, port: classes.port }],
-    ['lessons', { moduleId: 'lessons', router: lessons.router, port: lessons.port }],
     ['schedule', { moduleId: 'schedule', router: schedule.router, port: schedule.port }]
   ]);
 
@@ -108,7 +84,6 @@ export function createTeachingTimeWorkbench({
     get: (moduleId) => implementations.get(moduleId) ?? null,
     moduleMigrations: () => [
       { moduleId: 'classes', migrations: classesMigrations },
-      { moduleId: 'lessons', migrations: lessonsMigrations },
       { moduleId: 'schedule', migrations: scheduleMigrations }
     ]
   };

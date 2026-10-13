@@ -33,4 +33,4 @@ Status: Mixed (既有外壳已验收；新增模块布局待评审)
 
 ## Evidence
 
-当前截图、复现步骤、断言结果及覆盖缺口见 [工作台场景覆盖](workbench-scenarios.md#外壳)。
+当前验证入口与历史证据边界见 [工作台场景覆盖](workbench-scenarios.md)。

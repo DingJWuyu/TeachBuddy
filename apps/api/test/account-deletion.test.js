@@ -11,7 +11,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { createIntegration as createAgentIntegration } from './fixtures/c26/harness.js';
 import { provider } from './fixtures/c26/provider.js';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
-import { manualQuestionSample, lessonSample } from './first-flow-harness.js';
+import { manualQuestionSample } from './first-flow-harness.js';
 import { unscheduledEntry } from './fixtures/teaching-time-schedule/samples.js';
 
 const password = 'delete-account-test-password';
@@ -47,7 +47,6 @@ async function seed(world, owner) {
   for (const [route, body] of [
     ['/api/modules/classes/items', { name: '中文班级名' }],
     ['/api/modules/questions/items', manualQuestionSample()],
-    ['/api/modules/lessons/items', lessonSample()],
     ['/api/modules/schedule/entries', unscheduledEntry()],
     ['/api/agent/conversations', {}],
   ]) {
@@ -164,7 +163,7 @@ test('an upload authorized before deletion cannot store bytes or a receipt after
 test('deletion waits for cancelled jobs to settle and lets another account queue continue', async t => {
   const started = gate(), aborted = gate(), release = gate(), otherDone = gate();
   let target;
-  const world = await createIntegration({ workbench: { jobHandlers: { export: { async run({ principal, signal }) {
+  const world = await createIntegration({ workbench: { jobHandlers: { 'question-asset': { async run({ principal, signal }) {
     if (principal.accountKey === target) {
       started.resolve(); signal.addEventListener('abort', aborted.resolve, { once: true });
       await release.promise;
@@ -176,7 +175,7 @@ test('deletion waits for cancelled jobs to settle and lets another account queue
   target = a.principal.accountKey;
   function enqueue(owner) {
     return world.workbench.mutations.execute({ principal: owner.principal, key: randomUUID(), method: 'POST', path: '/internal/test-job', body: {} }, () => ({ status: 202,
-      body: world.workbench.jobs.enqueue({ principal: owner.principal, kind: 'export', target: { kind: 'lesson', id: randomUUID(), version: 1 } }) }));
+      body: world.workbench.jobs.enqueue({ principal: owner.principal, kind: 'question-asset', target: { kind: 'question', id: randomUUID(), version: 1 } }) }));
   }
   enqueue(a); await started.promise; const other = enqueue(b).body;
   let completed = false;

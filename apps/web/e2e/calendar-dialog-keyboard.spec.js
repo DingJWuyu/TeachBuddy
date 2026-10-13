@@ -12,7 +12,7 @@ const L = '/api/modules/schedule/labels';
 let world, client, errors, now;
 const content = (title, pending = false) => ({ title, items: [],
   time: pending ? null : { date: '2026-09-25', startTime: '15:00', durationMinutes: 30, timeZone: 'Asia/Shanghai' },
-  repeat: null, reminder: null, course: { classId: null, lessonId: null, recordIds: [] },
+  repeat: null, reminder: null, course: { classId: null, recordIds: [] },
   calendar: { allDay: false, tags: [], notes: '' } });
 async function call(method, url, body) {
   const response = await client.request(method, url, { body, headers: method === 'GET' ? {} : { 'Idempotency-Key': randomUUID() } });
@@ -102,13 +102,10 @@ async function prepareDialog(page, kind, pending = false) {
     await page.getByRole('dialog', { name: kind, exact: true }).getByLabel('分钟数').fill('5');
   } else if (kind === '教学关联') {
     const classroom = await call('POST', '/api/modules/classes/items', { name: '键盘班级' });
-    const lesson = await call('POST', '/api/modules/lessons/v3', {
-      title: '键盘备课', intro: { version: 1, blocks: [] }, sections: [], materials: [] });
     await action(page, '教学关联');
     const d = page.getByRole('dialog', { name: kind, exact: true });
     await d.getByLabel('班级', { exact: true }).selectOption(classroom.id);
-    await d.getByLabel('备课', { exact: true }).selectOption(lesson.id);
-    course = { classId: classroom.id, lessonId: lesson.id, recordIds: [] };
+    course = { classId: classroom.id, recordIds: [] };
   } else if (kind === '移动事项') {
     target = await call('POST', E, content('移动目标', true));
     await open(page, task);
@@ -345,7 +342,6 @@ test('Escape 后立即重开教学关联，不复用已取消的选择', async (
   await action(page, '教学关联');
   const d = page.getByRole('dialog', { name: '教学关联', exact: true });
   await expect(d.getByLabel('班级', { exact: true })).toHaveValue('');
-  await expect(d.getByLabel('备课', { exact: true })).toHaveValue('');
   await page.keyboard.press('Enter'); await expect(d).toHaveCount(0);
   expect((await call('GET', `${E}/${scene.task.id}`)).course).toEqual(scene.value.course);
 });

@@ -25,7 +25,7 @@ async function axisPosition(bytes) {
   return { width: info.width, height: info.height, x: columns.indexOf(Math.max(...columns)), y: rows.indexOf(Math.max(...rows)) };
 }
 
-test('workshop saved viewport: real HTTP PNG/SVG, whole poster and editable DOCX retain the saved opening view', { timeout: 120000 }, async () => {
+test('workshop saved viewport: real HTTP PNG/SVG, whole poster retain the saved opening view', { timeout: 120000 }, async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'math-workshop-view-'));
   const runtime = createApp({ env: { nodeEnv: 'test', sqlitePath: path.join(directory, 'workspace.sqlite'), workbench: { mode: 'test-principal', testPrincipals: ['view-a'], trustedOrigins: ['http://localhost'], webDist: path.resolve(process.env.MATH_WORKSHOP_VIEW_WEB_DIST ?? 'apps/web/public'), logDir: path.join(directory, 'logs') } } });
   await runtime.workbench.initialize(); let success = false;
@@ -50,15 +50,7 @@ test('workshop saved viewport: real HTTP PNG/SVG, whole poster and editable DOCX
       assert.ok(Math.abs(exportedOrigin.x / exportedOrigin.width - origin.x / origin.width) < 0.015, JSON.stringify(exportedOrigin));
       assert.ok(Math.abs(exportedOrigin.y / exportedOrigin.height - origin.y / origin.height) < 0.02, JSON.stringify(exportedOrigin));
     }
-    const materialId = randomUUID(); const lesson = await send('post', '/api/modules/lessons/v3', { title: '视区讲义', intro: { version: 1, blocks: [] }, sections: [], materials: [{ id: materialId, kind: 'math', workId: response.body.id, workVersion: 1, note: '' }] });
-    assert.equal(lesson.status, 201, JSON.stringify(lesson.body)); const accepted = await send('post', `/api/modules/lessons/v3/${lesson.body.id}/exports`, { baseVersion: 1, kind: 'handout', format: 'docx', includeAnswers: false, includeTeacherNotes: false, sectionIds: [], materialReferenceIds: [materialId], answerSpaceLines: 4 });
-    assert.equal(accepted.status, 202, JSON.stringify(accepted.body)); let job;
-    for (let attempt = 0; attempt < 300; attempt++) { job = (await send('get', `/api/workbench/jobs/${accepted.body.jobId}`)).body; if (!['queued', 'running'].includes(job.state)) break; await new Promise(resolve => setTimeout(resolve, 100)); }
-    assert.equal(job.state, 'succeeded', JSON.stringify(job)); const docx = await bytesFor(job.outputFileIds[0]); fs.writeFileSync(path.join(evidence, 'handout.docx'), docx); const document = await JSZip.loadAsync(docx);
-    const xml = await document.file('word/document.xml').async('string'); assert.equal((xml.match(/<m:oMath>/g) ?? []).length, 1);
-    const images = Object.keys(document.files).filter(name => /^word\/media\/[^/]+$/.test(name)); assert.equal(images.length, 1);
-    const documentGraph = await document.file(images[0]).async('nodebuffer'); assert.deepEqual(documentGraph, bytes); fs.writeFileSync(path.join(evidence, 'graph-docx.png'), documentGraph);
-    checks.docx = { editableFormulas: 1, images: 1, fixedGraphIdentical: true }; fs.writeFileSync(path.join(evidence, 'graph-http-origin.json'), JSON.stringify(checks, null, 2));
+    fs.writeFileSync(path.join(evidence, 'graph-http-origin.json'), JSON.stringify(checks, null, 2));
     assert.deepEqual(response.body.source, source); fs.writeFileSync(path.join(evidence, 'classroom.zip'), await bytesFor(response.body.render.presentationFileId)); success = true;
   } finally { await runtime.dataStore.close(); if (success) fs.rmSync(directory, { recursive: true, force: true }); }
 });

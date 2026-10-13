@@ -2451,6 +2451,24 @@
           }
         ],
         "responses": {
+          "201": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
           "400": {
             "$ref": "#/components/responses/400"
           },
@@ -2477,24 +2495,6 @@
           },
           "503": {
             "$ref": "#/components/responses/503"
-          },
-          "201": {
-            "description": "持久成功结果；写入重放保持原状态码和结果。",
-            "headers": {
-              "Cache-Control": {
-                "required": true,
-                "schema": {
-                  "const": "no-store"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Entry"
-                }
-              }
-            }
           }
         },
         "requestBody": {
@@ -2548,7 +2548,6 @@
         "schema": {
           "type": "string",
           "enum": [
-            "lesson",
             "question"
           ]
         }
@@ -2598,7 +2597,6 @@
         "schema": {
           "type": "string",
           "enum": [
-            "lesson",
             "question",
             "math"
           ]
@@ -3026,7 +3024,6 @@
           "kind": {
             "type": "string",
             "enum": [
-              "lesson",
               "question"
             ]
           },
@@ -3046,7 +3043,6 @@
           "kind": {
             "type": "string",
             "enum": [
-              "lesson",
               "question"
             ]
           },
@@ -3086,16 +3082,6 @@
               }
             ]
           },
-          "lessonId": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Id"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "recordIds": {
             "type": "array",
             "items": {
@@ -3107,7 +3093,6 @@
         },
         "required": [
           "classId",
-          "lessonId",
           "recordIds"
         ],
         "additionalProperties": false
@@ -3150,16 +3135,6 @@
               }
             ]
           },
-          "lesson": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/LinkedObject"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "records": {
             "type": "array",
             "items": {
@@ -3169,7 +3144,6 @@
         },
         "required": [
           "classroom",
-          "lesson",
           "records"
         ]
       },
@@ -4586,37 +4560,6 @@
           "classDeletedAt"
         ]
       },
-      "LessonReference": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/Id"
-          },
-          "version": {
-            "$ref": "#/components/schemas/Version"
-          },
-          "title": {
-            "type": "string",
-            "maxLength": 300
-          },
-          "deletedAt": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Timestamp"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "version",
-          "title",
-          "deletedAt"
-        ]
-      },
       "ReminderCandidate": {
         "type": "object",
         "properties": {
@@ -4673,7 +4616,6 @@
               "type": "string",
               "enum": [
                 "questions.readForReference",
-                "lessons.readForTeachingLink",
                 "classes.readClass",
                 "classes.readRecord"
               ]
@@ -4840,16 +4782,6 @@
               }
             ]
           },
-          "lessonId": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Id"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "recordIds": {
             "type": "array",
             "items": {
@@ -4861,7 +4793,6 @@
         },
         "required": [
           "classId",
-          "lessonId",
           "recordIds"
         ]
       },
@@ -5137,7 +5068,6 @@
           "kind": {
             "enum": [
               "question",
-              "lesson",
               "math"
             ]
           },

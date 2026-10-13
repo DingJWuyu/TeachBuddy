@@ -84,7 +84,6 @@ const itemSchema = schema.oneOf([
 
 const courseSchema = schema.object([
   ['classId', id],
-  ['lessonId', id],
   ['recordIds', schema.array(() => id, { maxItems: 100 })]
 ]);
 
@@ -154,13 +153,11 @@ const entryNullables = [
   { path: ['repeat'], sentinel: repeatSentinel },
   { path: ['reminder'], sentinel: reminderSentinel },
   { path: ['course', 'classId'], sentinel: placeholderId },
-  { path: ['course', 'lessonId'], sentinel: placeholderId }
 ];
 
 const overrideNullables = [
   { path: ['reminder'], sentinel: reminderSentinel },
   { path: ['course', 'classId'], sentinel: placeholderId },
-  { path: ['course', 'lessonId'], sentinel: placeholderId }
 ];
 
 const moveNullables = [

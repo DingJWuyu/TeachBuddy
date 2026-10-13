@@ -7,7 +7,7 @@ import { createMaterialsService } from "./materials-service.js";
 import { createMaterialsRouter } from "./materials-router.js";
 import { createExtractionHandler } from "./extraction.js";
 // Questions module entry point. The workbench composition root mounts the
-// returned router under /api/modules/questions and hands the port to lessons.
+// returned router under /api/modules/questions.
 import { createQuestionsRepository } from "./repository.js";
 import { createQuestionsRouter } from "./router.js";
 import { createQuestionsService } from "./service.js";

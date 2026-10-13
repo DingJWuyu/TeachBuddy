@@ -278,6 +278,13 @@ export function createReliability({
     router,
     agentRecoveryGuard,
     initialize() {
+      // Packages are derived caches. A removed export row revokes its archive,
+      // including packages created before a module was retired.
+      if (fs.existsSync(directory)) {
+        const retained = new Set(db.prepare('SELECT id FROM reliability_exports').all().map(row => `${row.id}.zip`));
+        for (const name of fs.readdirSync(directory))
+          if (/^[0-9a-f-]+\.zip$/.test(name) && !retained.has(name)) fs.unlinkSync(path.join(directory, name));
+      }
       for (const row of db
         .prepare("SELECT value FROM reliability_exports")
         .all()) {

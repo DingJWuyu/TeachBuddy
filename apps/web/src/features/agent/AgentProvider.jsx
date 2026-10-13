@@ -145,13 +145,14 @@ export function AgentProvider({ accountKey, children }) {
   }
   async function stop(turn) { try { await workbenchPost(`${base}/${turn.conversationId}/turns/${turn.id}/stop`, {}, uuid()); } catch { setError(t("停止尚未确认，请重试")); } }
   async function reconcile(operationId) { try { await workbenchPost(`${base}/${id}/operations/${operationId}/reconcile`, {}, uuid()); } catch { setError(t("暂时无法确认结果，请重试")); } }
-  async function addReference(kind, objectId, sectionId) {
+  async function addReference(kind, objectId) {
+    if (kind !== 'question') return;
     if (!id) { setError(t("请先新建对话")); return; }
     try {
-      const { body } = await workbenchGet(`/api/modules/${kind === 'question' ? 'questions/v2/items' : 'lessons/v3'}/${objectId}`);
-      const input = { kind, id: objectId, version: body.version, ...(sectionId ? { sectionId } : {}) };
+      const { body } = await workbenchGet(`/api/modules/questions/v2/items/${objectId}`);
+      const input = { kind, id: objectId, version: body.version };
       const refs = draftRef.current?.references ?? [];
-      edit({ references: [...refs.filter(r => !(r.kind === kind && r.id === objectId && r.sectionId === sectionId)), input] });
+      edit({ references: [...refs.filter(r => !(r.kind === kind && r.id === objectId)), input] });
     } catch { setError(t("当前内容不可用")); }
   }
   return <Context.Provider value={{ accountKey, list, id, sendPending, businessRevision, select: setId, snapshot, draft,
