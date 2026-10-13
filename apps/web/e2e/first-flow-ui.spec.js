@@ -1,5 +1,5 @@
 /**
- * B14 UI self-verification: first-flow question bank, lesson preparation and the
+ * B14 UI self-verification: first-flow question bank and the
  * shared shell, driven through a substitute that implements the frozen OpenAPI on
  * one origin and serves the production build.
  *
@@ -115,18 +115,6 @@ async function seedQuestion(page, { title = '二次函数最小值', text = '已
   });
   expect(result.status).toBe(201);
   return result.body;
-}
-
-async function seedLesson(page, { title = '二次函数的最值', sectionTitle = '例题讨论' } = {}) {
-  const sectionId = uuid();
-  const result = await apiWrite(page, 'POST', '/api/modules/lessons/items', {
-    title,
-    intro: { version: 1, blocks: [] },
-    sections: [{ id: sectionId, title: sectionTitle, content: { version: 1, blocks: [] }, references: [] }],
-    materials: []
-  });
-  expect(result.status).toBe(201);
-  return { lesson: result.body, sectionId };
 }
 
 async function shot(page, name) {
@@ -417,26 +405,11 @@ test.describe('题库 UI', () => {
     await shot(page, 'PC-本地存储失败');
   });
 
-  test('WB-009/U7 删除后保留引用关系，恢复使用原 ID', async ({ page }) => {
+  test('WB-009/U7 删除后恢复使用原 ID', async ({ page }) => {
     const question = await seedQuestion(page, { title: '被引用的题目' });
-    const { lesson, sectionId } = await seedLesson(page);
-    await apiWrite(page, 'PUT', `/api/modules/lessons/items/${lesson.id}`, {
-      baseVersion: 1,
-      title: lesson.title,
-      intro: lesson.intro,
-      sections: [{
-        id: sectionId,
-        title: '例题讨论',
-        content: { version: 1, blocks: [] },
-        references: [{ id: uuid(), questionId: question.id, questionVersion: 1, note: '本课备注' }]
-      }],
-      materials: []
-    });
-
     await openQuestion(page, question.id);
     await page.getByRole('button', { name: '更多操作' }).click();
     await page.getByRole('menuitem', { name: '删除题目' }).click();
-    await expect(page.getByRole('dialog', { name: '删除题目' })).toContainText('引用和快照都保留');
     await page.locator('button[name="dialog-confirm"]').click();
     await expect(page.locator('[data-region="question-deleted"]')).toBeVisible();
     await shot(page, 'PC-U7-已删除可恢复');
@@ -450,28 +423,6 @@ test.describe('题库 UI', () => {
     await expect(page.locator('[data-region="question-deleted"]')).toHaveCount(0);
     expect(page.url()).toContain(question.id);
 
-    const lessonAfter = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    expect(lessonAfter.body.sections[0].references[0].snapshot.body.blocks[0].runs[0].text).toBe('已知函数 ');
-    expect(lessonAfter.body.sections[0].references[0].sourceState).toBe('active');
-  });
-
-  test('WB-007 题库加入备课：留在题库并可前往，重复加入被跳过', async ({ page }) => {
-    const question = await seedQuestion(page, { title: '题库选题' });
-    await page.goto('/questions');
-    await page.locator('[data-region="question-rows"] .wb-row-select input').check();
-    await page.locator('button[name="add-to-lesson"]').click();
-    await field(page, '新备课课题').fill('第一次备课');
-    await page.locator('button[name="confirm-add"]').click();
-    await expect(page.locator('[data-region="add-result"]')).toContainText('本课材料');
-    await expect(page.locator('[data-region="add-result"] a')).toHaveAttribute('href', /\/lessons\//);
-    await shot(page, 'PC-加入备课');
-    await page.getByRole('button', { name: '留在题库' }).click();
-    expect(page.url()).toContain('/questions');
-
-    const lessonId = (await apiRead(page, '/api/modules/lessons/items')).body.items[0].id;
-    const detail = await apiRead(page, `/api/modules/lessons/items/${lessonId}`);
-    expect(detail.body.materials).toHaveLength(1);
-    expect(detail.body.materials[0].snapshot.title).toBe('题库选题');
   });
 
   test('WB-016/017 身份隔离：另一账户看不到题目与本地草稿，回到原账户草稿仍在', async ({ page }) => {
@@ -608,8 +559,8 @@ test.describe('题库 UI', () => {
     await page.locator('[data-region="question-rows"] .wb-row-select input').first().check();
     await page.locator('button[name="new-manual"]').click();
     await fillParagraph(page, '题面', '题面段落 1', '临时草稿');
-    await page.locator('.wb-sidebar').getByRole('link', { name: '备课' }).click();
-    await expect(page.locator('[data-region="lessons-index"]')).toBeVisible();
+    await page.getByRole('link', { name: '设置', exact: true }).click();
+    await expect(page).toHaveURL(/\/settings$/);
     await page.locator('.wb-sidebar').getByRole('link', { name: '题库' }).click();
     await expect(field(page, '搜索题目')).toHaveValue('现场');
     await expect(page.locator('[data-region="selection"]')).toContainText('已选 1 题');
@@ -631,307 +582,6 @@ test.describe('题库 UI', () => {
   });
 });
 
-test.describe('备课 UI', () => {
-  test.beforeEach(async ({ page }) => {
-    await reset(page);
-    await signIn(page, 'A');
-  });
-
-  test('WB-005/U4 新建备课、环节排序与零环节保存，刷新后稳定 ID 与顺序', async ({ page }) => {
-    await page.goto('/lessons');
-    await page.locator('button[name="new-lesson"]').click();
-    await expect(page.locator('[data-region="lesson-editor"]')).toBeVisible();
-    await field(page, '课题').fill('二次函数的最值');
-    await page.locator('button[name="add-section"]').click();
-    await field(page, '环节名称 1').fill('例题讨论');
-    await fillParagraph(page, '环节文稿 1', '环节文稿 1段落 1', '先讨论配方过程。');
-    await page.locator('button[name="add-section"]').click();
-    await field(page, '环节名称 2').fill('课堂练习');
-    await page.locator('button[name="save"]').click();
-    await expectSaved(page);
-    const lessonId = page.url().split('/lessons/')[1];
-
-    const firstIds = await page.locator('[data-section-id]').evaluateAll((nodes) => nodes.map((node) => node.dataset.sectionId));
-    expect(firstIds).toHaveLength(2);
-    await page.locator('button[aria-label="上移环节 课堂练习"]').click();
-    await page.locator('button[name="save"]').click();
-    await expectSaved(page);
-    await page.reload();
-    const reordered = await page.locator('[data-section-id]').evaluateAll((nodes) => nodes.map((node) => node.dataset.sectionId));
-    expect(reordered).toEqual([firstIds[1], firstIds[0]]);
-    await expect(field(page, '环节名称 1')).toHaveValue('课堂练习');
-    await expect(field(page, '环节文稿 2段落 1')).toHaveValue('先讨论配方过程。');
-    await shot(page, 'PC-U4-备课编辑');
-
-    // 零环节的粗略备课也可保存
-    await page.goto('/lessons/new');
-    await field(page, '课题').fill('零环节备课');
-    await page.locator('button[name="save"]').click();
-    await expectSaved(page);
-    const stored = await apiRead(page, `/api/modules/lessons/items/${page.url().split('/lessons/')[1]}`);
-    expect(stored.body.sections).toHaveLength(0);
-    expect(lessonId).not.toBe(stored.body.id);
-  });
-
-  test('WB-005 备课列表可滚动并进入备课', async ({ page }) => {
-    for (let index = 0; index < 30; index += 1) {
-      await seedLesson(page, { title: `备课 ${index}` });
-    }
-    await page.goto('/lessons');
-    await expect(page.locator('[data-region="lesson-rows"] button').first()).toBeVisible();
-    const metrics = await page.locator('[data-region="lessons-scroll"]').evaluate((node) => ({
-      clientHeight: node.clientHeight,
-      scrollHeight: node.scrollHeight
-    }));
-    expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
-    await page.locator('[data-region="lessons-scroll"]').evaluate((node) => { node.scrollTop = 120; });
-    await expect.poll(() => page.locator('[data-region="lessons-scroll"]').evaluate((node) => node.scrollTop))
-      .toBeGreaterThan(0);
-    await shot(page, 'PC-备课列表');
-    await page.locator('[data-region="lesson-rows"] button').first().click();
-    await expect(page.locator('[data-region="lesson-editor"]')).toBeVisible();
-  });
-
-  test('WB-006/U5 环节取题：先保存文稿，多选按顺序原子加入，返回原处', async ({ page }) => {
-    const first = await seedQuestion(page, { title: '第一题' });
-    const second = await seedQuestion(page, { title: '第二题' });
-    const { lesson, sectionId } = await seedLesson(page);
-    await page.goto(`/lessons/${lesson.id}`);
-    await fillParagraph(page, '环节文稿 1', '环节文稿 1段落 1', '引入：先复习二次函数图象。');
-    await page.locator('button[name="pick-section"]').click();
-    await expect(page.locator('[data-region="question-picker"]')).toBeVisible();
-    await expect(page.locator('button[name="picker-back"]')).toContainText('二次函数的最值 · 例题讨论');
-    await page.locator(`[data-question-id="${second.id}"] .wb-row-select input`).check();
-    await page.locator(`[data-question-id="${first.id}"] .wb-row-select input`).check();
-    await expect(page.locator(`[data-question-id="${second.id}"] [data-select-index]`)).toHaveText('1');
-    await expect(page.locator(`[data-question-id="${first.id}"] [data-select-index]`)).toHaveText('2');
-    await shot(page, 'PC-U5-取题多选');
-
-    await page.reload();
-    await expect(page.locator('[data-region="question-picker"]')).toBeVisible();
-    await expect(page.locator(`[data-question-id="${second.id}"] [data-select-index]`)).toHaveText('1');
-    const afterDraftSave = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    expect(afterDraftSave.body.version).toBe(2);
-    expect(afterDraftSave.body.sections[0].content.blocks[0].runs[0].text).toBe('引入：先复习二次函数图象。');
-    await page.locator('button[name="picker-confirm"]').click();
-    await expect(page.locator('[data-region="section-references"] [data-reference-id]')).toHaveCount(2);
-    await expect(field(page, '环节文稿 1段落 1')).toHaveValue('引入：先复习二次函数图象。');
-
-    // The draft was saved before picking (version 2) and the batch of references
-    // was committed by exactly one further save (version 3).
-    const stored = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    expect(stored.body.version).toBe(3);
-    const references = stored.body.sections.find((section) => section.id === sectionId).references;
-    expect(references.map((reference) => reference.questionId)).toEqual([second.id, first.id]);
-    expect(references[0].snapshot.title).toBe('第二题');
-  });
-
-  test('WB-007 同题不重复加入，再放一次创建独立引用，移位保留 ID 与备注', async ({ page }) => {
-    const question = await seedQuestion(page, { title: '重复讲题' });
-    const { lesson, sectionId } = await seedLesson(page);
-    await page.goto(`/lessons/${lesson.id}`);
-    await page.locator('button[name="pick-section"]').click();
-    await page.locator(`[data-question-id="${question.id}"] .wb-row-select input`).check();
-    await page.locator('button[name="picker-confirm"]').click();
-    await expect(page.locator('[data-region="section-references"] [data-reference-id]')).toHaveCount(1);
-
-    // 再次取题：已在此处，选中被禁用
-    await page.locator('button[name="pick-section"]').click();
-    await expect(page.locator(`[data-question-id="${question.id}"] [data-tag="in-target"]`)).toBeVisible();
-    await expect(page.locator(`[data-question-id="${question.id}"] .wb-row-select input`)).toBeDisabled();
-    await page.locator('button[name="picker-back"]').click();
-
-    await page.locator('button[name="place-again"]').click();
-    await page.locator('button[name="save"]').click();
-    await expectSaved(page);
-    await expect(page.locator('[data-region="section-references"] [data-reference-id]')).toHaveCount(2);
-
-    const referenceId = await page.locator('[data-region="section-references"] [data-reference-id]').first().getAttribute('data-reference-id');
-    const noteField = page.locator(`[data-reference-id="${referenceId}"] textarea`);
-    await noteField.fill('本课重点讲配方');
-    await expect(noteField).toHaveValue('本课重点讲配方');
-    await expect(saveStatus(page)).toHaveAttribute('data-save-status', 'dirty');
-    await page.locator('button[name="save"]').click();
-    await expectSaved(page);
-
-    // 移入本课材料：ID 与备注保持
-    await page.locator(`[data-reference-id="${referenceId}"] select`).selectOption('materials');
-    await expect(saveStatus(page)).toHaveAttribute('data-save-status', 'dirty');
-    await page.locator('button[name="save"]').click();
-    await expectSaved(page);
-    const stored = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    const inMaterials = stored.body.materials.find((reference) => reference.id === referenceId);
-    expect(inMaterials).toBeTruthy();
-    expect(inMaterials.note).toBe('本课重点讲配方');
-    expect(stored.body.sections.find((section) => section.id === sectionId).references).toHaveLength(1);
-  });
-
-  test('WB-008/U6 采用更新只影响该引用并保留本课备注', async ({ page }) => {
-    const question = await seedQuestion(page, { title: '会被修订的题' });
-    const { lesson, sectionId } = await seedLesson(page);
-    const referenceId = uuid();
-    await apiWrite(page, 'PUT', `/api/modules/lessons/items/${lesson.id}`, {
-      baseVersion: 1,
-      title: lesson.title,
-      intro: lesson.intro,
-      sections: [{
-        id: sectionId,
-        title: '例题讨论',
-        content: { version: 1, blocks: [] },
-        references: [{ id: referenceId, questionId: question.id, questionVersion: 1, note: '本课备注' }]
-      }],
-      materials: []
-    });
-    await apiWrite(page, 'PUT', `/api/modules/questions/items/${question.id}`, {
-      baseVersion: 1,
-      title: question.title,
-      body: documentBody('修订后的题面'),
-      solution: documentBody('修订后的答案'),
-      note: '',
-      starred: false
-    });
-
-    await page.goto(`/lessons/${lesson.id}`);
-    await expect(page.locator('[data-reference-id]')).toContainText('采用版本 1');
-    await page.locator('button[name="view-update"]').click();
-    await expect(page.locator('[data-region="reference-new"]')).toContainText('修订后的题面');
-    await shot(page, 'PC-U6-对照更新');
-    await page.locator('button[name="adopt-update"]').click();
-    await page.locator('button[name="save"]').click();
-    await expectSaved(page);
-    const stored = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    expect(stored.body.sections[0].references[0].questionVersion).toBe(2);
-    expect(stored.body.sections[0].references[0].snapshot.body.blocks[0].runs[0].text).toBe('修订后的题面');
-    expect(stored.body.sections[0].references[0].note).toBe('本课备注');
-  });
-
-  test('WB-006 取题选择不受搜索结果变化影响', async ({ page }) => {
-    const first = await seedQuestion(page, { title: '甲题' });
-    await seedQuestion(page, { title: '乙题' });
-    const { lesson } = await seedLesson(page);
-    await page.goto(`/lessons/${lesson.id}`);
-    await page.locator('button[name="pick-section"]').click();
-    await page.locator(`[data-question-id="${first.id}"] .wb-row-select input`).check();
-    await field(page, '搜索题目').fill('乙题');
-    await expect(page.locator(`[data-question-id="${first.id}"]`)).toHaveCount(0);
-    await page.locator('button[name="picker-confirm"]').click();
-    await expect(page.locator(`[data-region="picker-notice"]`)).toHaveCount(0);
-    await expect(page.locator('[data-region="section-references"] [data-reference-id]')).toHaveCount(1);
-    const stored = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    expect(stored.body.sections[0].references[0].questionId).toBe(first.id);
-  });
-
-  test('WB-015 取题冲突必须先确认取回服务器版本', async ({ page }) => {
-    const question = await seedQuestion(page, { title: '冲突时加入的题' });
-    const { lesson } = await seedLesson(page);
-    await page.goto(`/lessons/${lesson.id}`);
-    await page.locator('button[name="pick-section"]').click();
-    await page.locator(`[data-question-id="${question.id}"] .wb-row-select input`).check();
-    // 另一页面改了备课但保留环节
-    const current = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    await apiWrite(page, 'PUT', `/api/modules/lessons/items/${lesson.id}`, {
-      baseVersion: current.body.version,
-      title: '别处改过的课题',
-      intro: current.body.intro,
-      sections: current.body.sections.map((section) => ({
-        id: section.id,
-        title: section.title,
-        content: section.content,
-        references: []
-      })),
-      materials: []
-    });
-    await page.locator('button[name="picker-confirm"]').click();
-    await expect(page.getByRole('dialog', { name: '备课已在别处修改' })).toBeVisible();
-    await shot(page, 'PC-取题冲突需确认');
-    await page.locator('button[name="dialog-confirm"]').click();
-    await expect(page.locator(`[data-question-id="${question.id}"] [data-select-index]`)).toHaveText('1');
-    await page.locator('button[name="picker-confirm"]').click();
-    await expect(page.locator('[data-region="section-references"] [data-reference-id]')).toHaveCount(1);
-    const stored = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    expect(stored.body.title).toBe('别处改过的课题');
-    expect(stored.body.sections[0].references).toHaveLength(1);
-  });
-
-  test('WB-009 原题删除后本课内容仍可读可保存', async ({ page }) => {
-    const question = await seedQuestion(page, { title: '将被删除的题' });
-    const { lesson, sectionId } = await seedLesson(page);
-    await apiWrite(page, 'PUT', `/api/modules/lessons/items/${lesson.id}`, {
-      baseVersion: 1,
-      title: lesson.title,
-      intro: lesson.intro,
-      sections: [{
-        id: sectionId,
-        title: '例题讨论',
-        content: { version: 1, blocks: [] },
-        references: [{ id: uuid(), questionId: question.id, questionVersion: 1, note: '保留的备注' }]
-      }],
-      materials: []
-    });
-    await apiWrite(page, 'POST', `/api/modules/questions/items/${question.id}/deletion`, { baseVersion: 1, deleted: true });
-
-    await page.goto(`/lessons/${lesson.id}`);
-    await expect(page.locator('[data-region="source-deleted"]')).toBeVisible();
-    await expect(page.locator('[data-reference-id]')).toContainText('已知函数');
-    await field(page, '课题').fill('原题已删除仍能保存');
-    await page.locator('button[name="save"]').click();
-    await expectSaved(page);
-    const stored = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    expect(stored.body.materials).toHaveLength(0);
-    expect(stored.body.sections[0].references[0].snapshot.body.blocks[1].latex).toBe('f(x)=x^2-2x');
-  });
-
-  test('WB-015 取题目标失效时保留选题并允许改选本课材料', async ({ page }) => {
-    const question = await seedQuestion(page, { title: '待加入的题' });
-    const { lesson, sectionId } = await seedLesson(page);
-    await page.goto(`/lessons/${lesson.id}`);
-    await page.locator('button[name="pick-section"]').click();
-    await page.locator(`[data-question-id="${question.id}"] .wb-row-select input`).check();
-
-    // 另一页面删除该环节
-    await apiWrite(page, 'PUT', `/api/modules/lessons/items/${lesson.id}`, {
-      baseVersion: 1,
-      title: lesson.title,
-      intro: lesson.intro,
-      sections: [],
-      materials: []
-    });
-    await page.locator('button[name="picker-confirm"]').click();
-    // The conflict is never resolved silently: the teacher confirms taking the
-    // server version first, and only then is the missing target reported.
-    await expect(page.getByRole('dialog', { name: '备课已在别处修改' })).toBeVisible();
-    await page.locator('button[name="dialog-confirm"]').click();
-    await expect(page.getByRole('dialog', { name: '目标环境已变化' })).toBeVisible();
-    await shot(page, 'PC-WB015-目标失效');
-    await page.locator('button[name="dialog-confirm"]').click();
-    await expect(page.locator(`[data-question-id="${question.id}"] [data-select-index]`)).toHaveText('1');
-    await page.locator('button[name="picker-confirm"]').click();
-    await expect(page.locator('[data-region="materials"] [data-reference-id]')).toHaveCount(1);
-    const stored = await apiRead(page, `/api/modules/lessons/items/${lesson.id}`);
-    expect(stored.body.materials).toHaveLength(1);
-    expect(stored.body.materials[0].questionId).toBe(question.id);
-  });
-
-  test('WB-018 明确拒绝：空白题面本地定位并保留输入', async ({ page }) => {
-    await page.goto('/questions/new-manual');
-    await fillParagraph(page, '题面', '题面段落 1', '   ');
-    await page.locator('button[name="save"]').click();
-    await expect(page.locator('[data-region="question-editor"]')).toBeVisible();
-    await expect(page.locator('[data-field="body"] .wb-field-error')).toContainText('不能只有空白');
-    await expect(field(page, '题面段落 1')).toHaveValue('   ');
-    const empty = await apiWrite(page, 'POST', '/api/modules/questions/items', {
-      title: '',
-      body: { version: 1, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text: '   ' }] }] },
-      solution: { version: 1, blocks: [] },
-      note: '',
-      starred: false,
-      source: { kind: 'manual' }
-    });
-    expect(empty.status).toBe(422);
-    expect(empty.body.reason).toBe('empty-content');
-  });
-});
-
 test.describe('平板 768×1024', () => {
   test.use({ viewport: { width: 768, height: 1024 } });
 
@@ -946,7 +596,6 @@ test.describe('平板 768×1024', () => {
       text: '已知函数 ',
       latex: 'f(x)=\\frac{-b+\\sqrt{b^{2}-4ac}}{2a}+\\sum_{n=1}^{\\infty}\\frac{1}{n^{2}}+\\int_{0}^{1}x^{2}\\,dx'
     });
-    const { lesson } = await seedLesson(page);
     await page.goto('/questions');
     await expect(page.locator('[data-region="question-list"]')).toBeVisible();
     await expect(page.locator('[data-region="question-pane"]')).toBeHidden();
@@ -995,13 +644,6 @@ test.describe('平板 768×1024', () => {
     const pageOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(pageOverflow).toBeLessThanOrEqual(1);
 
-    await page.goto(`/lessons/${lesson.id}`);
-    await fillParagraph(page, '环节文稿 1', '环节文稿 1段落 1', '平板备课输入');
-    await page.locator('button[name="save"]').click();
-    await expect(page.locator('[data-region="lesson-editor"]')).toBeVisible();
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    expect(overflow).toBeLessThanOrEqual(1);
-    await shot(page, '平板-备课编辑');
   });
 });
 

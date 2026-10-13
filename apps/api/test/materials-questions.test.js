@@ -182,16 +182,11 @@ test("native text import preserves unnumbered originals and matches only unique 
   }
 });
 
-test("permanent question deletion requires archive and current version, replays safely and retains adopted snapshots", async (t) => {
+test("permanent question deletion requires archive and current version, replays safely and retains copy snapshots", async (t) => {
   const e = await environment(t);
   const q = (await e.q("/items", manual())).body;
   const { source, ...copyInput } = manual();
   const copy = (await e.q(`/items/${q.id}/copies`, { ...copyInput, baseVersion: q.version })).body;
-  const lesson = await e.call("/api/modules/lessons/v2/items", {
-    title: "保留引用", intro: doc(""), sections: [],
-    materials: [{ id: randomUUID(), kind: "question", questionId: q.id, questionVersion: q.version, note: "课堂使用" }],
-  });
-  assert.equal(lesson.status, 201, JSON.stringify(lesson.body));
   const active = await e.q(`/items/${q.id}/purge`, { baseVersion: q.version });
   assert.equal(active.status, 409);
   assert.equal(active.body.type, "/problems/materials/archive-required");
@@ -208,8 +203,6 @@ test("permanent question deletion requires archive and current version, replays 
   assert.equal((await e.q(`/items/${q.id}/purge`, input)).status, 404);
   assert.equal((await e.q(`/items/${q.id}/deletion`, { ...input, deleted: false })).status, 404);
   assert.deepEqual((await e.q(`/items/${copy.id}`, null, "GET")).body.source.snapshot, copy.source.snapshot);
-  assert.deepEqual((await e.call(`/api/modules/lessons/v2/items/${lesson.body.id}`, null, "GET")).body.materials,
-    lesson.body.materials.map(reference => ({ ...reference, sourceState: "deleted" })));
 });
 
 test("permanent import deletion waits for running extraction", async (t) => {

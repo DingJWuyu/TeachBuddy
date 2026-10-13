@@ -111,7 +111,7 @@ export function QuestionWelcome({ onCapture, onCreate, hasItems }) {
   return <div className="q-welcome">
     <span className="q-welcome-icon"><QuestionIcon name="book" size={32} /></span>
     <h2>{hasItems ? t("选一道题，开始准备下一节课") : t("把好题留下来，随时用起来")}</h2>
-    <p>{hasItems ? t("在左侧查找题目，查看答案、改编题目，或加入备课。") : t("收录试卷、截图或文字里的题目，之后随时查找、改编和用于备课。")}</p>
+    <p>{hasItems ? t("在左侧查找题目，查看答案或改编题目。") : t("收录试卷、截图或文字里的题目，之后随时查找和改编。")}</p>
     <div className="q-welcome-actions">
       <button className="primary" onClick={onCapture}><QuestionIcon name="upload" />{t("从资料收录")}</button>
       <button onClick={onCreate}><QuestionIcon name="edit" />{t("手动录题")}</button>

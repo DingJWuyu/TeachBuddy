@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { WorkspaceContext } from "./context.js";
 import {
   CLASSES,
-  LESSONS,
   QUESTIONS,
   RECORDS,
   RESOURCES,
@@ -16,7 +15,6 @@ export function WorkspaceProvider({ children }) {
   const [questions, setQuestions] = useState(() =>
     QUESTIONS.map((question) => ({ ...question, sourceBody: question.body })),
   );
-  const [lessons, setLessons] = useState(LESSONS);
   const [resources, setResources] = useState(RESOURCES);
   const [records, setRecords] = useState(RECORDS);
   const [works, setWorks] = useState(WORKS);
@@ -34,15 +32,12 @@ export function WorkspaceProvider({ children }) {
     "参考资料",
   ]);
   const [questionId, setQuestionId] = useState("q1");
-  const [lessonId, setLessonId] = useState("l1");
   const [className, setClassName] = useState(CLASSES[0]);
   const [folder, setFolder] = useState("全部资源");
   const [tag, setTag] = useState("全部题目");
   const [workId, setWorkId] = useState("w1");
   const [panelMode, setPanelMode] = useState("tools");
   const [panelOpen, setPanelOpen] = useState(() => window.innerWidth > 1050);
-  const [picker, setPicker] = useState(null);
-  const [returnTarget, setReturnTarget] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [events, setEvents] = useState([
     {
@@ -128,41 +123,9 @@ export function WorkspaceProvider({ children }) {
       document.getElementById("wb-agent-input")?.focus(),
     );
   }
-  function attach(kind, ids, target) {
-    if (kind === "resources")
-      setResources((items) =>
-        items.map((item) =>
-          ids.includes(item.id)
-            ? {
-                ...item,
-                lessons: [...new Set([...item.lessons, target.lessonId])],
-              }
-            : item,
-        ),
-      );
-    setLessons((items) =>
-      items.map((lesson) =>
-        lesson.id !== target.lessonId
-          ? lesson
-          : {
-              ...lesson,
-              blocks: lesson.blocks.map((block) =>
-                block.id !== target.blockId
-                  ? block
-                  : {
-                      ...block,
-                      [kind]: [...new Set([...block[kind], ...ids])],
-                    },
-              ),
-            },
-      ),
-    );
-  }
   const value = {
     questions,
     setQuestions,
-    lessons,
-    setLessons,
     resources,
     setResources,
     records,
@@ -175,8 +138,6 @@ export function WorkspaceProvider({ children }) {
     setFolders,
     questionId,
     setQuestionId,
-    lessonId,
-    setLessonId,
     className,
     setClassName,
     folder,
@@ -191,17 +152,12 @@ export function WorkspaceProvider({ children }) {
     setPanelOpen,
     openTools,
     openAssistant,
-    picker,
-    setPicker,
-    returnTarget,
-    setReturnTarget,
     notifications,
     setNotifications,
     events,
     setEvents,
     schedule,
     setSchedule,
-    attach,
     fileUrl,
   };
   return (

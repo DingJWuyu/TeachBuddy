@@ -52,7 +52,6 @@ jobs:
       WORKBENCH_WEB_DIST: apps/web/dist
       MATERIALS_PANDOC_PATH: /usr/bin/pandoc
       MATERIALS_OFFICE_ROOT: /usr/lib/libreoffice
-      MATH_INTEGRATION_EVIDENCE: test-results/math-integration/outputs
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:

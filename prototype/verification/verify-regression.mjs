@@ -43,13 +43,13 @@ ok('no nested interactive controls', a11y.nestedInteractive === 0);
 
 // --- hide a module and confirm the trash can restore it ---
 await p.evaluate(() => {
-  const row = [...document.querySelectorAll('.tb-module-row')].find((r) => r.textContent.includes('规划器'));
+  const row = [...document.querySelectorAll('.tb-module-row')].find((r) => r.textContent.includes('题库'));
   row.focus();
   row.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
 });
 await p.waitForTimeout(400);
 const afterHide = await p.evaluate(() => {
-  const stillListed = [...document.querySelectorAll('.tb-module-row')].some((r) => r.textContent.includes('规划器'));
+  const stillListed = [...document.querySelectorAll('.tb-module-row')].some((r) => r.textContent.includes('题库'));
   const trashLabel = document.querySelector('.tb-trash-target')?.getAttribute('aria-label') || '';
   return { stillListed, trashLabel };
 });
@@ -72,7 +72,7 @@ if (panel) {
   ok('trash panel lists restorable items', panel.hasRestoreButton);
   await p.click('.tb-hidden-panel button', { force: true });
   await p.waitForTimeout(400);
-  const restored = await p.evaluate(() => [...document.querySelectorAll('.tb-module-row')].some((r) => r.textContent.includes('规划器')));
+  const restored = await p.evaluate(() => [...document.querySelectorAll('.tb-module-row')].some((r) => r.textContent.includes('题库')));
   ok('module restores to Ungrouped', restored);
 }
 

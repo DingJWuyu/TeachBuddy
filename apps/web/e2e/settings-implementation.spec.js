@@ -304,13 +304,12 @@ test('删除丢失回执后刷新仍可用原请求核实，英文不串入匿�
   await page.screenshot({ path: info.outputPath('deleted-login.png'), animations: 'disabled' });
 });
 
-
-test('英文覆盖六模块和帮助，独立浏览器读回，同浏览器换账户恢复默认中文', async ({ page, browser }, info) => {
+test('英文覆盖五模块和帮助，独立浏览器读回，同浏览器换账户恢复默认中文', async ({ page, browser }, info) => {
   await page.getByRole('button', { name: '语言', exact: true }).click();
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect.poll(async () => (await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json()).values.locale).toBe('en');
   const pages = [];
-  for (const route of ['/classes', '/calendar', '/questions', '/resources', '/lessons', '/math', '/help']) {
+  for (const route of ['/classes', '/calendar', '/questions', '/resources', '/math', '/help']) {
     await page.goto(world.origin + route);
     await expect(page.locator('.wb-shell')).toBeVisible();
     await page.waitForLoadState('networkidle');
@@ -346,7 +345,6 @@ test('英文覆盖六模块和帮助，独立浏览器读回，同浏览器换�
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-
 test('语言保存回执丢失后原键核实，保留期间的新选择并同步侧栏', async ({ page }) => {
   const requests = [];
   let lose = true;
@@ -371,7 +369,6 @@ test('语言保存回执丢失后原键核实，保留期间的新选择并同�
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Language', exact: true })).toBeVisible();
 });
-
 
 test('键盘语言菜单、真实偏好冲突、教师原文及英文窄屏危险确认', async ({ page }, info) => {
   await page.goto(world.origin + '/classes');
@@ -411,13 +408,6 @@ test('键盘语言菜单、真实偏好冲突、教师原文及英文窄屏危�
   await page.goto(world.origin + '/classes');
   await expect(page.getByRole('button', { name: '保留中文名称', exact: true })).toBeVisible();
   expect(world.workbench.db.prepare('SELECT * FROM classes_items').all()).toEqual(original);
-  await page.goto(world.origin + '/lessons');
-  await page.getByRole('button', { name: 'View a lesson plan example', exact: true }).click();
-  const example = page.getByRole('dialog', { name: 'Lesson plan example', exact: true });
-  await expect(example).toBeVisible();
-  expect(await example.innerText()).not.toMatch(/[\u3400-\u9fff]/);
-  await page.screenshot({ path: info.outputPath('lesson-example-en.png'), animations: 'disabled' });
-  await example.getByRole('button', { name: 'Close example', exact: true }).click();
   await page.goto(world.origin + '/settings');
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('button', { name: 'Language', exact: true })).toBeEnabled();
@@ -432,7 +422,6 @@ test('键盘语言菜单、真实偏好冲突、教师原文及英文窄屏危�
   await expect(confirm).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Delete account', exact: true })).toBeFocused();
 });
-
 
 test('维护恢复清除删除回执后明确无法核实，可重新准备登录且不清未确认设备资料', async ({ page, browser }, info) => {
   const other = await browser.newContext({ ignoreHTTPSErrors: true });

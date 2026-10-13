@@ -468,42 +468,6 @@
   white-space: nowrap;
 }
 
-/* -------------------------------------------------------- record selector */
-
-.c-record-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.c-record-picker-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-height: 220px;
-  overflow-y: auto;
-}
-
-.c-record-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 28px;
-  padding: 2px 4px;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-.c-record-option:hover {
-  background: light-dark(#f5f5f6, var(--app-soft));
-}
-
-.c-record-option span:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* -------------------------------------------------------------- responsive */
 
 @media (max-width: 1080px) {

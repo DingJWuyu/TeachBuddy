@@ -20,12 +20,6 @@ const SEARCH_GROUPS = [
     items: [
       { id: 'c-strong', name: '高一 · 理科强基班', hint: '实际进度与课堂记录', dot: '#b29cc8', route: modulePath('classes') }
     ]
-  },
-  {
-    group: '课程',
-    items: [
-      { id: 'l-fn', name: '函数的单调性', hint: '教学思路与本课材料', icon: 'lessons', route: modulePath('prep') }
-    ]
   }
 ];
 
@@ -98,8 +92,8 @@ export function SearchModal({ onClose, onAnnounce }) {
             className="tb-search-input"
             type="search"
             value={query}
-            placeholder="搜索模块、班级、备课…"
-            aria-label="搜索模块、班级、备课"
+            placeholder="搜索模块、班级…"
+            aria-label="搜索模块、班级"
             onChange={(event) => setQuery(event.target.value)}
           />
           <button type="button" className="tb-search-close" aria-label="关闭搜索" onClick={onClose}>
@@ -111,7 +105,7 @@ export function SearchModal({ onClose, onAnnounce }) {
             <div className="tb-search-empty">
               <Icon name="search" size={20} />
               <p>没有匹配「{query}」的结果</p>
-              <span>试试模块、班级或备课名称。</span>
+              <span>试试模块或班级名称。</span>
             </div>
           )}
           {groups.map((group) => (

@@ -19,7 +19,7 @@ export const ICON_PATHS = {
   classes: <><path d="M4 6.5h16v12H4z"/><path d="M8 6.5v12M16 6.5v12M4 10.5h16"/></>,
   calendar: <><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M7.5 3v4M16.5 3v4M3.5 9h17"/></>,
   planner: <><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></>,
-  lessons: <><path d="M4 5.5c3-1.6 5.6-1.6 8 0v14c-2.4-1.6-5-1.6-8 0z"/><path d="M20 5.5c-3-1.6-5.6-1.6-8 0v14c2.4-1.6 5-1.6 8 0z"/></>,
+  book: <><path d="M4 5.5c3-1.6 5.6-1.6 8 0v14c-2.4-1.6-5-1.6-8 0z"/><path d="M20 5.5c-3-1.6-5.6-1.6-8 0v14c2.4-1.6 5-1.6 8 0z"/></>,
   students: <><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.3"/><path d="M3.5 19c.5-4 2.4-6 5.5-6s5 2 5.5 6M14 14c3-.5 5 .9 5.8 4"/></>,
   classwork: <><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9l2 2 5-5M8 15h8"/></>,
   grades: <><path d="M5 19L19 5M7 6h.01M17 18h.01"/><circle cx="7" cy="6" r="2.5"/><circle cx="17" cy="18" r="2.5"/></>,

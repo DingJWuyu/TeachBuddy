@@ -208,20 +208,9 @@ test("先收录后整理：图片、就地建文件夹和标签、保存重开�
   await expect(page.locator(".res-card-open")).toHaveCount(1);
 });
 
-test("真实 PDF 翻页、加入备课、更新文件、归档恢复保留资料和旧引用", async ({
+test("真实 PDF 翻页、更新文件、归档恢复与彻底删除", async ({
   page,
 }, info) => {
-  // Only the destination lesson is a fixture. All resource actions use visible UI.
-  const created = await api.request("POST", "/api/modules/lessons/v3", {
-    headers: { "Idempotency-Key": randomUUID() },
-    body: {
-      title: "函数复习课",
-      intro: { version: 2, blocks: [] },
-      sections: [],
-      materials: [],
-    },
-  });
-  expect(created.status).toBe(201);
   await upload(page, pdf);
   await page.getByRole("button", { name: "下一页", exact: true }).click();
   await expect(page.getByAltText("第 2 页", { exact: true })).toBeVisible();
@@ -230,17 +219,7 @@ test("真实 PDF 翻页、加入备课、更新文件、归档恢复保留资料
   await page.locator(".res-card-open").click();
   await expect(page.getByAltText("第 2 页", { exact: true })).toBeVisible();
   await expect(page.getByLabel("缩放", { exact: true })).toHaveValue("125");
-  await page.getByRole("button", { name: "加入备课", exact: true }).click();
-  await page.getByLabel("选择备课").selectOption(created.json.id);
-  await page.getByRole("button", { name: "确认加入", exact: true }).click();
-  await expect(page.locator(".res-status")).toContainText("已加入备课");
   await infoPanel(page);
-  await expect(page.locator(".res-usage")).toContainText("函数复习课");
-  const before = await api.request(
-    "GET",
-    "/api/modules/lessons/v3/" + created.json.id,
-  );
-  const snapshot = before.json.materials[0].snapshot;
   await page.getByLabel("资源名称").fill("函数复习资料");
   await page.getByLabel("资源笔记").fill("更新文件也保留这条备注");
   await page.getByRole("button", { name: "保存修改", exact: true }).click();
@@ -260,12 +239,6 @@ test("真实 PDF 翻页、加入备课、更新文件、归档恢复保留资料
   await expect(page.getByLabel("资源笔记")).toHaveValue(
     "更新文件也保留这条备注",
   );
-  await expect(page.locator(".res-usage")).toContainText("文件有更新");
-  const after = await api.request(
-    "GET",
-    "/api/modules/lessons/v3/" + created.json.id,
-  );
-  expect(after.json.materials[0].snapshot).toEqual(snapshot);
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
   await page.getByRole("button", { name: "确认 归档", exact: true }).click();
@@ -329,17 +302,6 @@ test("真实 PDF 翻页、加入备课、更新文件、归档恢复保留资料
     (await api.request("GET", `/api/modules/resources/items/${resource.id}`))
       .status,
   ).toBe(404);
-  const lesson = (
-    await api.request("GET", "/api/modules/lessons/v3/" + created.json.id)
-  ).json;
-  expect(lesson.materials[0].snapshot).toEqual(snapshot);
-  expect(lesson.materials[0].sourceState).toBe("deleted");
-  const original = await api.request(
-    "GET",
-    `/api/workbench/files/${snapshot.fileId}/content`,
-  );
-  expect(original.status).toBe(200);
-  expect(original.text).toBe(fs.readFileSync(pdf, "utf8"));
 });
 
 test("文件夹浏览与菜单键盘操作，桌面和平板布局保持可用", async ({
@@ -730,37 +692,31 @@ test("不支持的预览格式给出明确原因而不是无效重试", async ({
   ).toBeEnabled();
 });
 
-test("历史文件可下载核对并恢复，备注和旧引用保持", async ({ page }, info) => {
+test("历史文件可下载核对并恢复，备注保持", async ({ page }, info) => {
   await upload(page, pdf);
   await infoPanel(page);
-  await page.getByLabel("资源笔记").fill("保留的教学备注");
-  await page.getByRole("button", { name: "保存修改", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "保存修改", exact: true }),
-  ).toBeDisabled();
-  const original = (await api.request("GET", "/api/modules/resources/items"))
-    .json.items[0];
-  const lesson = await api.request("POST", "/api/modules/lessons/v3", {
-    headers: { "Idempotency-Key": randomUUID() },
-    body: {
-      title: "历史文件引用",
-      intro: { version: 2, blocks: [] },
-      sections: [],
-      materials: [
-        {
-          id: randomUUID(),
-          kind: "resource",
-          resourceId: original.id,
-          resourceVersion: original.version,
-          note: "",
-        },
-      ],
-    },
-  });
-  expect(lesson.status).toBe(201);
-  await page.getByLabel("资源笔记").fill("只更新备注，不更新文件");
-  await page.getByRole("button", { name: "保存修改", exact: true }).click();
-  await expect(page.locator(".res-usage")).toContainText("资料信息有更新");
+  // Hold the list refresh so consecutive edits use the confirmed save response.
+  const lists = /\/api\/modules\/resources\/items(?:\?.*)?$/;
+  let releaseLists;
+  const listGate = new Promise(resolve => { releaseLists = resolve; });
+  await page.route(lists, async route => { await listGate; await route.continue(); });
+  let original;
+  try {
+    await page.getByLabel("资源笔记").fill("保留的教学备注");
+    const firstSave = page.waitForResponse(response => response.request().method() === 'PUT' && /\/resources\/items\//.test(response.url()));
+    await page.getByRole("button", { name: "保存修改", exact: true }).click();
+    expect((await firstSave).status()).toBe(200);
+    await expect(page.getByRole("button", { name: "保存修改", exact: true })).toBeDisabled();
+    original = (await api.request("GET", "/api/modules/resources/items")).json.items[0];
+    await page.getByLabel("资源笔记").fill("只更新备注，不更新文件");
+    const secondSave = page.waitForResponse(response => response.request().method() === 'PUT' && /\/resources\/items\//.test(response.url()));
+    await page.getByRole("button", { name: "保存修改", exact: true }).click();
+    expect((await secondSave).status()).toBe(200);
+    await expect(page.getByRole('dialog', { name: '版本冲突', exact: true })).toHaveCount(0);
+  } finally {
+    releaseLists();
+    await page.unrouteAll({ behavior: 'wait' });
+  }
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
@@ -830,10 +786,6 @@ test("历史文件可下载核对并恢复，备注和旧引用保持", async ({
     await api.request("GET", `/api/modules/resources/items/${original.id}`)
   ).json;
   expect(current.fileId).toBe(original.fileId);
-  expect(
-    (await api.request("GET", `/api/modules/lessons/v3/${lesson.json.id}`)).json
-      .materials[0].snapshot.fileId,
-  ).toBe(original.fileId);
   const history = await api.request(
     "GET",
     `/api/modules/resources/items/${original.id}/history`,

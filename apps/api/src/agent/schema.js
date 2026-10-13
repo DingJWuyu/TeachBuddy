@@ -11,7 +11,6 @@ const contractRoot = new URL('../contracts/', import.meta.url);
 const documents = new Map([['agent.openapi.json', agent], ['workbench.openapi.yaml', business]]);
 const currentSchemas = Object.fromEntries([
   ...['Question', 'QuestionList', 'CreateQuestion', 'UpdateQuestion', 'CopyQuestion'].map(name => [name, ['materials.openapi.yaml', name]]),
-  ...['Lesson', 'LessonList', 'CreateLesson', 'UpdateLesson'].map(name => [name, ['math.openapi.json', name + 'V3']]),
 ]);
 function resolve(value, file = 'agent.openapi.json', adapt = true) {
   if (Array.isArray(value)) return value.map(v => resolve(v, file, adapt));

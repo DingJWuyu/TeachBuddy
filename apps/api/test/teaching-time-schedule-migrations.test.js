@@ -33,7 +33,6 @@ test('an empty database receives every schedule table and ledger row', async () 
       .map((row) => `${row.moduleId}:${row.id}`);
     assert.deepEqual(applied, [
       'classes:classes_fixture_0001',
-      'lessons:lessons_fixture_0001',
       'schedule:schedule_0001_settings_entries',
       'schedule:schedule_0002_calendar_details',
       'reliability-preferences:reliability_preferences_001'

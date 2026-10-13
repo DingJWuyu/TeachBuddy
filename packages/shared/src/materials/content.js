@@ -23,21 +23,3 @@ export function questionDocuments(question) {
   }
   return documents;
 }
-
-export function lessonDocuments(lesson) {
-  const documents = [['/intro', lesson.intro]];
-  const references = (items, path) => items.forEach((reference, index) => {
-    if ((reference.kind ?? 'question') === 'question') {
-      documents.push(
-        [`${path}/${index}/snapshot/body`, reference.snapshot.body],
-        [`${path}/${index}/snapshot/solution`, reference.snapshot.solution],
-      );
-    }
-  });
-  (lesson.sections ?? []).forEach((section, index) => {
-    documents.push([`/sections/${index}/content`, section.content]);
-    references(section.references ?? [], `/sections/${index}/references`);
-  });
-  references(lesson.materials ?? [], '/materials');
-  return documents;
-}

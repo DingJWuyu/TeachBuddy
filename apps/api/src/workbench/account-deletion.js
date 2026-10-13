@@ -1,5 +1,4 @@
 import { deleteAccountData as deleteClassesData } from '../modules/classes/index.js';
-import { deleteAccountData as deleteLessonsData } from '../modules/lessons/index.js';
 import { deleteAccountData as deleteQuestionsData } from '../modules/questions/index.js';
 import { deleteAccountData as deleteResourcesData } from '../modules/resources/index.js';
 import { deleteAccountData as deleteScheduleData } from '../modules/schedule/index.js';
@@ -16,7 +15,6 @@ export function eraseAccountRows(db, accountKey) {
   db.transaction(() => {
     db.prepare('DELETE FROM agent_events WHERE conversationId IN (SELECT id FROM agent_conversations WHERE accountKey=?)').run(accountKey);
     deleteClassesData(db, accountKey);
-    deleteLessonsData(db, accountKey);
     deleteQuestionsData(db, accountKey);
     deleteResourcesData(db, accountKey);
     deleteScheduleData(db, accountKey);

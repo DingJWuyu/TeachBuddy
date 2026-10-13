@@ -45,9 +45,6 @@ const stateNames = {
 export default function MaterialsQuestionsPage({
   accountKey,
   transport,
-  onAddToLesson,
-  onOpenLesson,
-  usageRevision,
   requestedId,
   registerTools,
   onOpenTools,
@@ -91,7 +88,6 @@ export default function MaterialsQuestionsPage({
     [capture, setCapture] = useState(collection.capture ?? null),
     [manage, setManage] = useState(false),
     [copies, setCopies] = useState([]),
-    [usages, setUsages] = useState([]),
     [assets, setAssets] = useState(null),
     [source, setSource] = useState(null),
     [conflict, setConflict] = useState(null);
@@ -286,25 +282,6 @@ export default function MaterialsQuestionsPage({
     };
   }, [scene.id, scene.kind]);
   useEffect(() => {
-    let live = true;
-    setUsages([]);
-    if (scene.kind === "question" && scene.id)
-      get("/api/modules/lessons/v2/question-usages/" + scene.id)
-        .then((x) => live && setUsages(x.items))
-        .catch(() => live && setUsages(null));
-    return () => { live = false; };
-  }, [scene.kind, scene.id, usageRevision]);
-  useEffect(() => {
-    const target = readLocal(accountKey, "questions-return-focus");
-    if (!target || !value) return;
-    const trigger = Array.from(pageNode.current?.querySelectorAll("[data-return-focus]") ?? [])
-      .find((node) => node.dataset.returnFocus === target);
-    if (trigger) {
-      trigger.focus({ preventScroll: true });
-      removeLocal(accountKey, "questions-return-focus");
-    }
-  }, [accountKey, value, usages]);
-  useEffect(() => {
     if (!job || !active.has(job.state) || scene.kind !== "import") return;
     let live = true;
     const timer = setInterval(async () => {
@@ -444,7 +421,7 @@ export default function MaterialsQuestionsPage({
   }
   function returnToLibrary(state = scene.state, clearFilters = false) {
     setValue(null);
-    patchScene({ kind: 'list', id: null, state, compare: false, editing: false, reviewEditing: false, draftId: null, selectedIds: [], selecting: false,
+    patchScene({ kind: 'list', id: null, state, compare: false, editing: false, reviewEditing: false, draftId: null,
       ...(clearFilters ? { q: '', typeId: '', tagIds: [], starred: false, searchAnswers: false } : {}) });
     onReturnToLibrary?.();
     requestAnimationFrame(() => pageNode.current?.querySelector('.q-finder h1')?.focus({ preventScroll: true }));
@@ -750,7 +727,6 @@ export default function MaterialsQuestionsPage({
             {({ close }) => <div className="q-question-menu">
               <button role="menuitem" onClick={() => { setManage(true); onOpenTools?.(); close(); }}>{t("管理题型与标签")}</button>
               <button role="menuitem" onClick={() => { returnToLibrary(archived ? 'active' : 'deleted', true); close(); }}>{archived ? t("返回题库") : t("归档内容")}</button>
-              {!archived && <button role="menuitem" onClick={() => { patchScene({ selecting: !scene.selecting, selectedIds: [] }); close(); }}>{scene.selecting ? t("退出多选") : t("选择多道题目")}</button>}
             </div>}
           </Popover>
         </header>
@@ -803,12 +779,6 @@ export default function MaterialsQuestionsPage({
           {listState === 'loading' ? <p className="q-list-empty" role="status">{t("正在读取题库…")}</p> : listState === 'error' ? <div className="q-list-empty"><p>{t("题库暂时无法读取")}</p><button onClick={() => action(refresh)}>{t("重新加载")}</button></div> : items.length === 0 && <p className="q-list-empty">{hasFilters ? t("没有符合条件的题目，试试调整筛选。") : archived ? t("没有归档的题目。") : imports.length ? t("材料确认入库后，题目会出现在这里。") : t("收录第一道题，开始积累。")}</p>}
           {items.map((q) => (
             <div className="q-list-entry" key={q.id}>
-            {onAddToLesson && scene.selecting && !q.deletedAt && <input type="checkbox"
-              aria-label={t("选择题目：{{value}}", { value: q.title || t("未命名题目") })}
-              checked={(scene.selectedIds ?? []).includes(q.id)}
-              onChange={(event) => patchScene({selectedIds: event.target.checked
-                ? [...(scene.selectedIds ?? []), q.id]
-                : (scene.selectedIds ?? []).filter(id => id !== q.id)})} />}
             <button
               className={scene.id === q.id ? "selected" : ""}
               key={q.id}
@@ -825,18 +795,6 @@ export default function MaterialsQuestionsPage({
             </div>
           ))}
         </div>
-        {onAddToLesson && Boolean(scene.selectedIds?.length) && <div className="q-tools">
-          <button disabled={busy} onClick={() => action(async () => {
-            for (const id of scene.selectedIds) {
-              if (readLocal(accountKey, `questions-materials-draft:question:${id}`))
-                throw Error(t("所选题目有未保存修改，请先打开并保存，再加入备课。"));
-            }
-            const selected = await Promise.all(scene.selectedIds.map(id => get("/items/" + id)));
-            if (selected.some(q => q.deletedAt)) throw Error(t("所选题目中有已归档题目，请取消选择后重试。"));
-            onAddToLesson(selected);
-          })}>{t("加入备课（")}{scene.selectedIds.length} {t("题）")}</button>
-          <button onClick={() => patchScene({selectedIds: [], selecting: false})}>{t("取消选择")}</button>
-        </div>}
       </aside>
       <ModulePresence present={Boolean(scene.compare && value?.source?.kind === "copy")} className="q-compare-presence">
       {scene.compare && value?.source?.kind === "copy" && <section className="q-copy-source" aria-label={t("原题对照")}>
@@ -1373,7 +1331,6 @@ export default function MaterialsQuestionsPage({
             {!editing && <div className="q-reader-actions">{value.deletedAt ? <button className="primary" disabled={busy || unsupportedQuestion} onClick={() => requestLifecycle('restore')}>{t("恢复题目")}</button> : <>
               <button disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} onClick={beginEdit}><QuestionIcon name="edit" />{t("编辑题目")}</button>
               <button disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} onClick={copyQuestion} title={t("保留原题，另存一道改编题")}><QuestionIcon name="copy" />{t("复制改编")}</button>
-              {onAddToLesson && <button className="primary" disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} data-return-focus="add-to-lesson" onClick={() => onAddToLesson([value])}><QuestionIcon name="plus" />{t("加入备课")}</button>}
             </>}</div>}
             {!editing && readLocal(accountKey, localKey) && <div className="q-draft-notice"><span>{value.deletedAt ? t("未保存的修改仍保存在此设备，恢复题目后可继续编辑。") : t("这道题有未保存的修改，当前显示已保存内容。")}</span>{!value.deletedAt && <button onClick={beginEdit}>{t("继续编辑")}</button>}<button className="q-text-button" onClick={() => setConfirmDiscard(true)}>{t("放弃草稿")}</button></div>}
             {editing ? <fieldset className="q-edit-fields" disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}>
@@ -1385,7 +1342,6 @@ export default function MaterialsQuestionsPage({
                 <label className="q-note-field">{t("教学笔记")}<textarea aria-label={t("长期笔记")} placeholder={t("记下讲解思路、易错点，方便下次使用。")} value={value.note} onChange={e => change({ ...value, note: e.target.value })} /></label>
                 <label className="q-checkbox"><input type="checkbox" checked={value.starred} onChange={e => change({ ...value, starred: e.target.checked })} />{t("标记题目，方便以后查找")}</label>
               </ModuleDisclosure>
-              {onAddToLesson && <button className="q-text-button" disabled={busy} data-return-focus="add-to-lesson" onClick={() => action(async () => onAddToLesson([await saveQuestion()]))}>{t("保存并加入备课")}</button>}
               {readLocal(accountKey, localKey) && <button className="q-text-button q-discard" onClick={() => setConfirmDiscard(true)}>{t("放弃未保存的修改")}</button>}
             </fieldset> : <>
               <div className="q-question-meta">{taxonomy.types.filter(t => t.id === value.typeId).map(t => <span className="q-type" key={t.id}>{t.name}</span>)}{taxonomy.tags.filter(t => value.tagIds.includes(t.id)).map(t => <span className="q-tag" key={t.id}><QuestionIcon name="tag" size={12} />{t.name}</span>)}</div>
@@ -1411,23 +1367,6 @@ export default function MaterialsQuestionsPage({
               <button key={q.id} onClick={() => open("question", q.id)}> {t("改编题：")}{q.title || t("未命名")}
               </button>
             ))}
-            {value.id && <ModuleDisclosure title={t("使用位置")} open={Boolean(scene.usagesOpen)} onOpenChange={usagesOpen => patchScene({ usagesOpen })}>
-              {usages === null ? (
-                <p>{t("使用位置尚未接入")}</p>
-              ) : (
-                usages.length ? usages.map((u) => (
-                  <p key={u.referenceId}>
-                    <a className="q-usage-link" data-return-focus={`usage-${u.referenceId}`} href={`/lessons/${u.lessonId}`} onClick={(event) => {
-                      if (!onOpenLesson || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                      event.preventDefault();
-                      onOpenLesson(u.lessonId, u.referenceId, `usage-${u.referenceId}`);
-                    }}>
-                      {u.lessonTitle ?? u.title} {u.sectionTitle ?? t("本课材料")}
-                    </a>
-                  </p>
-                )) : <p className="q-muted">{t("还没有加入备课。")}</p>
-              )}
-            </ModuleDisclosure>}
             {value.id && renderTeachingFeedback && (
               <ModuleDisclosure title={t("教学反馈")} open={Boolean(scene.teachingOpen)} onOpenChange={teachingOpen => patchScene({ teachingOpen })}>
                 {renderTeachingFeedback(value.id)}
@@ -1579,7 +1518,7 @@ export default function MaterialsQuestionsPage({
         title={`${lifecycleAction.mode === 'purge' ? t("彻底删除") : lifecycleAction.mode === 'restore' ? t("恢复") : t("归档")}${lifecycleAction.kind === 'import' ? t("材料") : t("题目")}？`}
         onClose={() => { if (!busy) setLifecycleAction(null); }} className="q-lifecycle-dialog">
         <p>{lifecycleAction.mode === 'purge'
-          ? t("“{{value}}”及其本地草稿将彻底删除，无法恢复。{{detail}}", { value: lifecycleAction.item.title || t("未命名题目"), detail: lifecycleAction.kind === 'import' ? t("已入库的题目会保留。") : t("已有改编题和备课中的快照会保留。") })
+          ? t("“{{value}}”及其本地草稿将彻底删除，无法恢复。{{detail}}", { value: lifecycleAction.item.title || t("未命名题目"), detail: lifecycleAction.kind === 'import' ? t("已入库的题目会保留。") : t("已有改编题会保留。") })
           : lifecycleAction.mode === 'restore' ? t("恢复后，会重新出现在题库中。") : t("将移出当前列表，并返回题库。你可以在“题库选项”的“归档内容”中恢复或彻底删除。")}</p>
         {message && <p className="q-error" role="alert">{message}</p>}
         <footer><button disabled={busy} onClick={() => setLifecycleAction(null)}>{t("取消")}</button><button className={lifecycleAction.mode === 'purge' ? 'q-danger-primary' : 'primary'} disabled={busy} onClick={() => action(confirmLifecycle)}>{busy ? t("正在处理…") : lifecycleAction.mode === 'purge' ? t("彻底删除") : lifecycleAction.mode === 'restore' ? t("确认恢复") : t("确认归档")}</button></footer>

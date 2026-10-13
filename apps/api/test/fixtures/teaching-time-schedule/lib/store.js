@@ -1,14 +1,4 @@
-/**
- * Classes/lessons substitutes for the isolated T52 suites.
- *
- * T51 owns the real classes module and T53 adds `lessons.readForTeachingLink`;
- * until those candidates are fixed, the schedule module is verified against
- * these substitutes. They implement exactly the three public ports the schedule
- * port table lists, including the tombstone and label rules, and expose a small
- * fixture-only HTTP surface so a browser can select a class, a lesson and a
- * record. Nothing here is a product contract and nothing writes the product
- * catalog.
- */
+// Classes reference substitutes for the isolated schedule suites.
 import crypto from 'node:crypto';
 import { contractError, problems } from '../../../../src/workbench/problems.js';
 import { assertPortAvailable } from '../runtime.js';
@@ -59,18 +49,6 @@ export function createFixtureStore(db) {
     findRecord: db.prepare('SELECT * FROM teaching_time_fixture_records WHERE accountKey = ? AND id = ?'),
     setRecordDeleted: db.prepare(`
       UPDATE teaching_time_fixture_records
-      SET deletedAt = @deletedAt, version = version + 1, updatedAt = @now
-      WHERE accountKey = @accountKey AND id = @id
-    `),
-
-    insertLesson: db.prepare(`
-      INSERT INTO teaching_time_fixture_lessons (id, accountKey, title, version, createdAt, updatedAt, deletedAt)
-      VALUES (@id, @accountKey, @title, 1, @now, @now, NULL)
-    `),
-    listLessons: db.prepare('SELECT * FROM teaching_time_fixture_lessons WHERE accountKey = ? ORDER BY updatedAt DESC, id ASC'),
-    findLesson: db.prepare('SELECT * FROM teaching_time_fixture_lessons WHERE accountKey = ? AND id = ?'),
-    setLessonDeleted: db.prepare(`
-      UPDATE teaching_time_fixture_lessons
       SET deletedAt = @deletedAt, version = version + 1, updatedAt = @now
       WHERE accountKey = @accountKey AND id = @id
     `)
@@ -133,24 +111,6 @@ export function createFixtureStore(db) {
       return store.findRecord(accountKey, id);
     },
 
-    createLesson(accountKey, { title }) {
-      const id = crypto.randomUUID();
-      statements.insertLesson.run({ id, accountKey, title, now: now() });
-      return store.findLesson(accountKey, id);
-    },
-    listLessons(accountKey) {
-      return statements.listLessons.all(accountKey);
-    },
-    findLesson(accountKey, id) {
-      return statements.findLesson.get(accountKey, id) ?? null;
-    },
-    setLessonDeleted(accountKey, id, deleted) {
-      const existing = store.findLesson(accountKey, id);
-      if (!existing) throw contractError(problems.notFound());
-      statements.setLessonDeleted.run({ accountKey, id, deletedAt: deleted ? now() : null, now: now() });
-      return store.findLesson(accountKey, id);
-    },
-
     /** Public port: ClassReference; another account is a 404, never a leak. */
     readClassReference(principal, id) {
       assertPortAvailable('classes.readClass');
@@ -177,19 +137,6 @@ export function createFixtureStore(db) {
         label: recordReferenceLabel(row),
         deletedAt: row.deletedAt,
         classDeletedAt: classroom?.deletedAt ?? null
-      };
-    },
-
-    /** Public port: LessonReference. */
-    readLessonReference(principal, id) {
-      assertPortAvailable('lessons.readForTeachingLink');
-      const row = store.findLesson(principal.accountKey, id);
-      if (!row) throw contractError(problems.notFound());
-      return {
-        id: row.id,
-        version: row.version,
-        title: row.title,
-        deletedAt: row.deletedAt
       };
     }
   };

@@ -42,7 +42,7 @@ await test('缺失模块的持久化布局整份回落默认', async (page) => {
   await openWithLayout(page, base, (key) => localStorage.setItem(key, JSON.stringify({
     version: 1, layout: { groups: [{id:'ungrouped',name:'未分组',moduleIds:[]}],hiddenModuleIds:[] }
   })));
-  await expect(page.locator('[data-drop-module]')).toHaveCount(9);
+  await expect(page.locator('[data-drop-module]')).toHaveCount(4);
 });
 await test('手机弹层完整落在视口内', async (page) => {
   await page.setViewportSize({width:390,height:844});
@@ -58,7 +58,8 @@ await test('手机弹层完整落在视口内', async (page) => {
 });
 await test('目的页面没有开发说明', async (page) => {
   await page.locator('.tb-global-nav a').nth(1).click();
-  await expect(page.locator('.tb-empty-page')).not.toContainText('没有开始设计');
+  await expect(page.locator('.wb-stage')).not.toContainText('没有开始设计');
+  await expect(page.getByRole('heading', { name: '日程', exact: true })).toBeVisible();
 });
 await test('窄轨名称提示完整可见', async (page) => {
   await page.locator('.tb-topbar').hover();
@@ -83,7 +84,7 @@ await test('减少动态效果直接显示终态', async (page) => {
   await page.locator('[data-surface="notifications"]').click();
   const motion = await page.evaluate(() => ({
     panel: getComputedStyle(document.querySelector('.tb-popover')).animationName,
-    page: getComputedStyle(document.querySelector('.tb-page')).animationName,
+    page: getComputedStyle(document.querySelector('.wb-layout')).animationName,
     collapse: getComputedStyle(document.querySelector('.tb-module-collapse')).transitionDuration
   }));
   expect(motion).toEqual({ panel: 'none', page: 'none', collapse: '0s' });

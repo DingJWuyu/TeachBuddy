@@ -95,7 +95,6 @@ function WorkbenchContent({ boot }) {
     panelMode: 'ai',
     panelWidth: 300
   });
-  const [materialNavigation, setMaterialNavigation] = useScene(accountKey, 'material-navigation', {});
   const [tools, setTools] = useState([]);
   const [assistant, setAssistant] = useState(null);
   const [timeZone, setTimeZone] = useState(null);
@@ -141,15 +140,8 @@ function WorkbenchContent({ boot }) {
     setPanelWidth: (width) => patchScene({ panelWidth: width }),
     notifyIdentityLost: reportIdentityLost,
     navigate,
-    questionUsage: materialNavigation.questionUsage,
-    openQuestionUsage: (lessonId, referenceId, sourcePath) => {
-      const lessonPath = `/lessons/${lessonId}`;
-      setMaterialNavigation({ questionUsage: { lessonPath, sourcePath, referenceId } });
-      navigate(lessonPath);
-    },
-    openMaterialSource: (path, lessonPath) => { setMaterialNavigation({ sourcePath: path, lessonPath }); navigate(path); }
   }), [logout, accountKey, nickname, generation, agent.businessRevision, storageFailed, narrow, scene.panelMode, scene.panelOpen, scene.panelWidth,
-    tools, registerTools, assistant, registerAssistant, openPanel, patchScene, reportIdentityLost, setMaterialNavigation, materialNavigation.questionUsage, timeZone, timeZoneError, preferences, appearance, setAppearance, locale, setLocale]);
+    tools, registerTools, assistant, registerAssistant, openPanel, patchScene, reportIdentityLost, timeZone, timeZoneError, preferences, appearance, setAppearance, locale, setLocale]);
 
   const collapsed = narrow ? !scene.drawerOpen : Boolean(scene.sidebarCollapsed);
   const hasPanel = Boolean(activeModule?.auxiliaryPanel);
@@ -161,7 +153,7 @@ function WorkbenchContent({ boot }) {
   }
 
   let page = null;
-  if (route.name === 'home') page = <RestoredHome returnPath={scene.lastWorkPath} />;
+  if (route.name === 'home') page = <RestoredHome returnPath={workbenchModules.some(module => scene.lastWorkPath?.split(/[/?]/)[1] === module.path.slice(1)) ? scene.lastWorkPath : null} />;
   else if (activeModule) {
     const Page = activeModule.Page;
     page = <Page route={route} transport={transport} />;
@@ -228,12 +220,6 @@ function WorkbenchContent({ boot }) {
               </div>}
               {storageFailed && (
                 <div className="wb-storage-warning" role="alert" data-region="storage-warning"> {t("草稿无法保留，请先保存")} </div>
-              )}
-              {materialNavigation.sourcePath === route.path + window.location.search && materialNavigation.lessonPath && (
-                <div className="wb-material-return"><button className="wb-button" onClick={() => navigate(materialNavigation.lessonPath)}>{t("返回备课现场")}</button></div>
-              )}
-              {materialNavigation.questionUsage?.lessonPath === route.path && (
-                <div className="wb-material-return"><button className="wb-button" onClick={() => navigate(materialNavigation.questionUsage.sourcePath)}>{t("返回题库现场")}</button></div>
               )}
               {page}
             </main>

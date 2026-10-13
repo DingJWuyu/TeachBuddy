@@ -13,7 +13,7 @@ import { doc, question, http, Q } from './teaching-time-classes-materials-fixtur
 import { replayRecognizer, sourceImage } from '../../web/e2e/fixtures/materials-questions/recognition/replay.mjs';
 import { weeklyEntry, overrideContent } from './fixtures/teaching-time-schedule/samples.js';
 
-const L = '/api/modules/lessons/v3', R = '/api/modules/resources/items';
+const R = '/api/modules/resources/items';
 const M = '/api/modules/math/v1/works', S = '/api/modules/schedule/entries';
 async function download(world, client, call, id) {
   for (let n = 0; n < 300; n++) {
@@ -39,7 +39,7 @@ async function download(world, client, call, id) {
   assert.fail('Export timed out');
 }
 
-test('six-module export keeps stored values, account boundaries and a read-only acceptance snapshot', async () => {
+test('five-module export keeps stored values, account boundaries and a read-only acceptance snapshot', async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'export-ownership-'));
   let instant = '2026-09-20T00:00:00Z';
   const world = await createIntegration({ directory, workbenchClock: () => new Date(instant) });
@@ -59,26 +59,24 @@ test('six-module export keeps stored values, account boundaries and a read-only 
       let math = await call('POST', M, { ...mathInput, originalFileId: null }, 201);
       math = await call('PUT', `${M}/${math.id}`, { ...mathInput, source: { ...mathInput.source, latex: 'x^3' }, baseVersion: math.version });
       const mathExport = await call('POST', `${M}/${math.id}/exports`, { version: math.version, format: 'source', width: 1600, background: 'transparent' }, 201);
-      const lesson = await call('POST', L, { title: email, intro: doc(email), sections: [], materials: [] }, 201);
       const classroom = await call('POST', '/api/modules/classes/items', { name: email }, 201);
       let record = await call('POST', '/api/modules/classes/v2/records', { classId: classroom.id, recordedOn: '2026-09-20', note: email, position: '', unfinished: '', commonIssues: '', nextNote: 'next', content: doc('丰富教学记录'), sources: [{ kind: 'question', id: q.id }] }, 201);
       record = await call('POST', `/api/modules/classes/v2/records/${record.id}/next-note-visibility`, { expectedVersion: record.version, hidden: true });
       let entry = await call('POST', S, weeklyEntry({ title: email, reminder: { side: 'before', minutes: 10 } }), 201);
       await call('PUT', `${S}/${entry.id}/exceptions/2026-09-28`, { expectedVersion: entry.version, mode: 'override', content: overrideContent() });
       entry = await call('GET', `${S}/${entry.id}`);
-      return { client, call, principal, file, replacement, q, resource, historical, math, mathExport, mathInput, lesson, classroom, record, entry };
+      return { client, call, principal, file, replacement, q, resource, historical, math, mathExport, mathInput, classroom, record, entry };
     }
     const a = await populate('ownership-a@example.test'), b = await populate('ownership-b@example.test');
     // Empty storage must stay distinct from UI defaults and virtual resource history.
     db.prepare('DELETE FROM resource_file_history WHERE resourceId=?').run(a.resource.id);
-    db.prepare('DELETE FROM lesson_history WHERE lessonId=?').run(a.lesson.id);
     assert.equal(db.prepare('SELECT COUNT(*) n FROM schedule_settings').get().n, 0);
     // Two already-settled notifications include a dismissed and a read item.
     const notification = db.prepare('INSERT INTO schedule_notifications VALUES (?,?,?,?,?,?,?,?)');
     for (const [origin, readAt, dismissedAt] of [['2026-09-07', instant, null], ['2026-09-14', null, instant]])
       notification.run(randomUUID(), a.principal.accountKey, a.entry.id, origin, origin, instant, readAt, dismissedAt);
     instant = '2026-09-22T00:00:00Z'; // the first armed occurrence is now due, but not settled
-    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE 'question%' OR name LIKE 'lesson_%' OR name LIKE 'resource_%' OR name LIKE 'math_%' OR name LIKE 'classes_%' OR name LIKE 'schedule_%') ORDER BY name").all().map(row => row.name);
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE 'question%' OR name LIKE 'resource_%' OR name LIKE 'math_%' OR name LIKE 'classes_%' OR name LIKE 'schedule_%') ORDER BY name").all().map(row => row.name);
     const business = () => Object.fromEntries(tables.map(name => [name, db.prepare(`SELECT * FROM ${name} ORDER BY rowid`).all()]));
     const before = business();
     const accepted = await a.call('POST', '/api/reliability/v1/exports', {}, 202);
@@ -91,10 +89,10 @@ test('six-module export keeps stored values, account boundaries and a read-only 
     await a.call('PUT', `${S}/${a.entry.id}/exceptions/2026-09-28`, { expectedVersion: a.entry.version, mode: 'cancelled' });
     const { bytes, zip, manifest } = await download(world, a.client, a.call, accepted.id);
     const values = await Promise.all(manifest.objects.map(async object => ({ ...object.key, value: JSON.parse(await zip.file(object.dataPath).async('string')).value })));
-    for (const [kind, expected] of [['question', a.q], ['resource', a.resource], ['math', a.math], ['lesson', a.lesson], ['class', a.classroom], ['record', a.record]])
+    for (const [kind, expected] of [['question', a.q], ['resource', a.resource], ['math', a.math], ['class', a.classroom], ['record', a.record]])
       assert.deepEqual(values.find(item => item.kind === kind && item.id === expected.id)?.value, expected, kind);
     assert.deepEqual(values.find(item => item.kind === 'entry').value, { entry: a.entry, exceptions: expectedExceptions });
-    for (const item of [b.q, b.resource, b.math, b.lesson, b.classroom, b.record, b.entry]) assert(!values.some(value => value.id === item.id));
+    for (const item of [b.q, b.resource, b.math, b.classroom, b.record, b.entry]) assert(!values.some(value => value.id === item.id));
     assert.deepEqual(values.filter(item => item.kind === 'math-revision').map(item => item.version), [1, 2]);
     const fileRevisions = values.filter(item => item.kind === 'resource-file-revision');
     assert.deepEqual(fileRevisions.map(item => item.version).sort(), [1, 2]);
@@ -103,7 +101,6 @@ test('six-module export keeps stored values, account boundaries and a read-only 
     assert.equal(fileRevisions.find(item => item.version === 2).value.fileId, a.replacement.id);
     const supplemental = JSON.parse(await zip.file('data/supplemental.json').async('string'));
     assert.deepEqual(supplemental.mathExports, [a.mathExport]);
-    assert.equal(values.filter(item => item.kind === 'lesson-revision').length, 1);
     assert.equal(values.filter(item => item.kind === 'notification').length, 2);
     assert(values.some(item => item.kind === 'notification' && item.value.dismissedAt));
     assert(values.some(item => item.kind === 'notification' && item.value.readAt));
@@ -201,48 +198,6 @@ test('cancelled extraction keeps each attempt’s late OCR evidence and managed 
     passed = true;
   } finally {
     release?.();
-    await world.close();
-    if (passed) fs.rmSync(directory, { recursive: true, force: true });
-  }
-});
-
-test('personal export retains persisted lesson output and its accepted snapshot independently of job display state', async () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'export-lesson-output-'));
-  const world = await createIntegration({ directory });
-  let passed = false;
-  try {
-    const { client } = await registerMath(world, 'output-export@example.test'), call = http(client);
-    const lesson = await call('POST', L, { title: '保存输出', intro: doc('受理时文稿'), sections: [], materials: [] }, 201);
-    const output = await call('POST', `${L}/${lesson.id}/exports`, {
-      baseVersion: lesson.version, kind: 'lesson-plan', format: 'docx', includeAnswers: false,
-      includeTeacherNotes: false, sectionIds: [], materialReferenceIds: [], answerSpaceLines: 0,
-    }, 202);
-    let job;
-    for (let n = 0; n < 300; n++) {
-      job = await call('GET', `/api/workbench/jobs/${output.jobId}`);
-      if (!['queued', 'running', 'cancelling'].includes(job.state)) break;
-      await new Promise(resolve => setTimeout(resolve, 20));
-    }
-    assert.equal(job.state, 'succeeded', JSON.stringify(job));
-    const db = world.workbench.db;
-    const stored = db.prepare('SELECT record,snapshot FROM lesson_exports WHERE id=?').get(output.id);
-    const expected = JSON.parse(stored.record);
-    assert(expected.fileId);
-    // A saved output can outlive its job's succeeded display state. The archive
-    // preserves the stored record, while the normal list intentionally hides it.
-    db.prepare('UPDATE materials_jobs SET value=? WHERE id=?').run(JSON.stringify({ ...job, state: 'failed' }), job.id);
-    assert.equal((await call('GET', `${L}/${lesson.id}/exports`)).items[0].fileId, null);
-    const accepted = await call('POST', '/api/reliability/v1/exports', {}, 202);
-    const { zip, manifest } = await download(world, client, call, accepted.id);
-    const entry = manifest.objects.find(item => item.key.kind === 'lesson-export');
-    assert.deepEqual(JSON.parse(await zip.file(entry.dataPath).async('string')).value, expected);
-    const supplemental = JSON.parse(await zip.file('data/supplemental.json').async('string'));
-    assert.deepEqual(supplemental.lessonExportSnapshots, [{ id: expected.id, snapshot: JSON.parse(stored.snapshot) }]);
-    const attachment = manifest.files.find(file => file.path.startsWith(`files/${expected.fileId}/`));
-    const document = await JSZip.loadAsync(await zip.file(attachment.path).async('nodebuffer'));
-    assert((await document.file('word/document.xml').async('string')).includes('受理时文稿'));
-    passed = true;
-  } finally {
     await world.close();
     if (passed) fs.rmSync(directory, { recursive: true, force: true });
   }

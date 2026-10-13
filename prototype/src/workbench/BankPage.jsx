@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { Icon } from "../icons.jsx";
-import { modulePath, navigate } from "../routes.js";
 import { useWorkspace, newId } from "./context.js";
 import { Button, Empty, IconButton, QuestionContent, Toolbar } from "./ui.jsx";
 
@@ -8,7 +7,6 @@ export default function BankPage() {
   const w = useWorkspace();
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("read");
-  const [selected, setSelected] = useState([]);
   const [split, setSplit] = useState(35);
   const [compareSplit, setCompareSplit] = useState(50);
   const [source, setSource] = useState(null);
@@ -200,19 +198,6 @@ export default function BankPage() {
           </div>
           <div className="wb-list-caption">
             <span>{list.length} 道题目</span>
-            {selected.length > 0 && (
-              <Button
-                onClick={() =>
-                  w.setPicker({
-                    kind: "destination",
-                    resourceKind: "questions",
-                    ids: selected,
-                  })
-                }
-              >
-                选用 {selected.length} 题
-              </Button>
-            )}
           </div>
           <div className="wb-scroll" aria-label="题目列表">
             {list.map((item, index) => (
@@ -223,18 +208,6 @@ export default function BankPage() {
                 }
                 key={item.id}
               >
-                <input
-                  type="checkbox"
-                  aria-label={"选择 " + item.title}
-                  checked={selected.includes(item.id)}
-                  onChange={(event) =>
-                    setSelected((ids) =>
-                      event.target.checked
-                        ? [...ids, item.id]
-                        : ids.filter((id) => id !== item.id),
-                    )
-                  }
-                />
                 <button
                   className="wb-question-select"
                   onClick={() => {
@@ -345,18 +318,6 @@ export default function BankPage() {
                       ? "完成编辑"
                       : "编辑"}
                   </Button>
-                  <Button
-                    primary
-                    onClick={() =>
-                      w.setPicker({
-                        kind: "destination",
-                        resourceKind: "questions",
-                        ids: [question.id],
-                      })
-                    }
-                  >
-                    加入备课
-                  </Button>
                 </>
               )}
             </div>
@@ -465,26 +426,6 @@ export default function BankPage() {
                     查看原题：{original.title}
                   </Button>
                 )}
-                <div className="wb-used-in">
-                  <span className="wb-eyebrow">用于备课</span>
-                  {w.lessons
-                    .filter((lesson) =>
-                      lesson.blocks.some((block) =>
-                        block.questions.includes(question.id),
-                      ),
-                    )
-                    .map((lesson) => (
-                      <Button
-                        key={lesson.id}
-                        onClick={() => {
-                          w.setLessonId(lesson.id);
-                          navigate(modulePath("prep"));
-                        }}
-                      >
-                        {lesson.title}
-                      </Button>
-                    ))}
-                </div>
               </>
             )}
           </div>

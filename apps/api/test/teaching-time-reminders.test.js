@@ -7,7 +7,7 @@ const notices = '/api/modules/schedule/notifications';
 const input = {
   title: '函数课', items: [],
   time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, lessonId: null, recordIds: [] },
+  repeat: null, course: { classId: null, recordIds: [] },
   reminder: { side: 'before', minutes: 10 }
 };
 
@@ -226,29 +226,29 @@ test('TT-C5: notification actions reject malformed, unknown and duplicate input 
   assert.equal((await f.getNotices()).unreadCount, 1);
 }));
 
-test('B16 database upgrades into the real four-module composition without losing linked sources', async () => {
+test('B16 database upgrades into the current composition without losing linked sources', async () => {
   const fs = await import('node:fs');
   const os = await import('node:os');
   const path = await import('node:path');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 't53-upgrade-'));
   const databasePath = path.join(dir, 'workbench.sqlite');
-  const { lessonSample } = await import('./first-flow-harness.js');
+  const { manualQuestionSample: questionSample } = await import('./first-flow-harness.js');
   let h = await createFirstFlowHarness({ databasePath, baselineOnly: true });
   try {
     let a = h.agent(h.createAccount('teacher-a'));
-    const lesson = (await a.post('/api/modules/lessons/items', lessonSample(), { key: h.nextUuid() })).body;
+    const question = (await a.post('/api/modules/questions/items', questionSample(), { key: h.nextUuid() })).body;
     await h.close();
     h = await createFirstFlowHarness({ databasePath });
     a = h.agent(h.createAccount('teacher-a'));
-    assert.equal((await a.get(`/api/modules/lessons/items/${lesson.id}`)).body.title, lesson.title);
+    assert.equal((await a.get(`/api/modules/questions/items/${question.id}`)).body.title, question.title);
     const classroom = (await a.post('/api/modules/classes/items', { name: '升级后的班级' }, { key: randomKey() })).body;
     const record = await a.post('/api/modules/classes/records', {
       classId: classroom.id, recordedOn: '2026-09-21', note: '真实关联', position: '', unfinished: '', commonIssues: '', nextNote: '',
-      sources: [{ kind: 'lesson', id: lesson.id }]
+      sources: [{ kind: 'question', id: question.id }]
     }, { key: randomKey() });
     assert.equal(record.status, 201, JSON.stringify(record.body));
     await h.restart();
-    assert.equal((await a.get(`/api/modules/classes/records/${record.body.id}`)).body.sources[0].currentLabel, lesson.title);
+    assert.equal((await a.get(`/api/modules/classes/records/${record.body.id}`)).body.sources[0].currentLabel, question.title);
     assert.deepEqual((await a.get(notices)).body, { items: [], unreadCount: 0 });
   } finally { await h.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 });

@@ -246,7 +246,7 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
           db.prepare("DELETE FROM math_exports WHERE accountKey=? AND json_extract(value, '$.workId')=?").run(principal.accountKey, id);
           db.prepare("DELETE FROM math_revisions WHERE workId=?").run(id);
           db.prepare("DELETE FROM math_works WHERE id=? AND accountKey=?").run(id, principal.accountKey);
-          // Adopted lesson snapshots and shared immutable files have their own lifetime.
+          // Shared immutable files have their own lifetime.
           return { status: 200, body: { id, permanentlyDeleted: true } };
         });
       }

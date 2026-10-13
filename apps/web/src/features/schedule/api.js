@@ -4,7 +4,6 @@ const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
 
 import { WorkbenchError, buildQuery, workbenchGet, workbenchPost, workbenchPut } from '../workbench/apiClient.js';
 import { listRecords } from '../classes/api.js';
-export { listLessons } from '../lessons/api.js';
 import { unexpectedSuccessProblem } from '../workbench/problems.js';
 
 // This schedule-specific 422 is a confirmed rejection, so the teacher can

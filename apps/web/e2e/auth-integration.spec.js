@@ -185,7 +185,7 @@ test('真实业务保存、响应丢失幂等重试、刷新、草稿账户分�
   await page.screenshot({ path: path.join(evidence, 'account-isolation.png') });
 });
 
-test('15 个工作台操作从实际界面经认证 transport 发送页面头', async ({ page }) => {
+test('工作台题库操作从实际界面经认证 transport 发送页面头', async ({ page }) => {
   const seen = new Map();
   page.on('request', request => {
     const endpoint = new URL(request.url()).pathname;
@@ -195,16 +195,16 @@ test('15 个工作台操作从实际界面经认证 transport 发送页面头', 
     seen.set(`${request.method()} ${normalized}`, { page: headers['x-teachbuddy-page'], key: headers['idempotency-key'], protection: headers['x-teachbuddy-request'] });
   });
   await register(page);
-  await newQuestion(page, '十五操作原题');
+  await newQuestion(page, '认证操作原题');
   const id = await saveQuestion(page);
   await page.getByRole('button', { name: '编辑题目', exact: true }).click();
-  await field(page, '题目标题').fill('十五操作更新');
+  await field(page, '题目标题').fill('认证操作更新');
   expect(await saveQuestion(page)).toBe(id);
   const copied = page.waitForResponse(response => response.url().endsWith(`/questions/v2/items/${id}/copies`) && response.request().method() === 'POST');
   await page.getByRole('button', { name: '复制改编', exact: true }).click();
   await expect(page.getByRole('button', { name: '保存题目', exact: true })).toBeEnabled();
-  await expect(field(page, '题目标题')).toHaveValue('十五操作更新');
-  await field(page, '题目标题').fill('十五操作变式');
+  await expect(field(page, '题目标题')).toHaveValue('认证操作更新');
+  await field(page, '题目标题').fill('认证操作变式');
   const copyId = await saveQuestion(page);
   expect((await copied).status()).toBe(201);
   expect(copyId).not.toBe(id);
@@ -215,28 +215,12 @@ test('15 个工作台操作从实际界面经认证 transport 发送页面头', 
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.goto(`${world.origin}/questions/${id}`);
   await expect(page.getByRole('button', { name: '恢复题目', exact: true })).toBeVisible();
-  await page.goto(`${world.origin}/lessons/new`);
-  await field(page, '课题').fill('十五操作备课');
-  await page.locator('button[name="save"]').click();
-  await expect(page).toHaveURL(/\/lessons\/[a-f0-9-]{36}$/);
-  await field(page, '课题').fill('十五操作备课更新');
-  await page.locator('button[name="save"]').click();
-  await expect(page.locator('[data-save-status]').first()).toContainText('已保存');
-  await page.getByRole('button', { name: '备课操作', exact: true }).click();
-  await page.getByRole('menuitem', { name: '归档备课', exact: true }).click();
-  const listing = page.waitForResponse(response => response.url().includes('/api/modules/lessons/v3?') && response.request().method() === 'GET');
-  await page.getByRole('dialog').getByRole('button', { name: '归档备课', exact: true }).click();
-  await listing;
-  await expect(page).toHaveURL(/\/lessons$/);
   const expected = [
     'GET /api/workbench/context', 'GET /api/modules',
     'GET /api/modules/questions/v2/items', 'POST /api/modules/questions/v2/items',
     'GET /api/modules/questions/v2/items/:id', 'PUT /api/modules/questions/v2/items/:id',
     'GET /api/modules/questions/v2/items/:id/copies', 'POST /api/modules/questions/v2/items/:id/copies',
     'POST /api/modules/questions/v2/items/:id/deletion',
-    'GET /api/modules/lessons/v3', 'POST /api/modules/lessons/v3',
-    'GET /api/modules/lessons/v3/:id', 'PUT /api/modules/lessons/v3/:id',
-    'POST /api/modules/lessons/v3/:id/deletion', 'GET /api/modules/lessons/v2/question-usages/:id'
   ];
   for (const operation of expected) {
     expect(seen.has(operation), operation).toBe(true);
@@ -280,7 +264,6 @@ test('同浏览器双账户：A 定向退出停在登录，B 的 remembered 会�
   await login(page);
   await expect(page.locator('.tb-account-row')).toContainText('林老师');
 });
-
 
 test('共享 remembered 双页退出：迟到清理不得破坏登录准备（A12-LOCAL-001）', async ({ page, context }) => {
   await register(page);

@@ -101,7 +101,7 @@ test("带网页超链接的 Word 可预览、下载并重开", async ({ page }) 
   await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible();
 });
 
-test("全部常用格式内容预览，分类搜索、备课复用及更新后保库重开", async ({
+test("全部常用格式内容预览，分类搜索及更新后保库重开", async ({
   page,
 }) => {
   const nav = (name) =>
@@ -109,13 +109,6 @@ test("全部常用格式内容预览，分类搜索、备课复用及更新后�
       .locator(".wb-sidebar")
       .getByRole("link", { name, exact: true })
       .click();
-  await nav("备课");
-  await page.getByRole("button", { name: "新建备课", exact: true }).click();
-  await page.getByLabel("课题", { exact: true }).fill("资源复用课");
-  await page.getByRole("button", { name: "添加环节", exact: true }).click();
-  await page.getByLabel("环节名称 1", { exact: true }).fill("课堂展示");
-  await page.getByRole("button", { name: "保存", exact: true }).click();
-  await expect(page.getByRole("status").first()).toContainText("已保存");
   await nav("资源库");
   const files = [
     "materials/samples/c22.pptx",
@@ -187,11 +180,6 @@ test("全部常用格式内容预览，分类搜索、备课复用及更新后�
     .check();
   await page.getByRole("button", { name: "保存修改", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("已保存");
-  await page.getByRole("button", { name: "加入备课", exact: true }).click();
-  await page.getByLabel("选择备课").selectOption({ label: "资源复用课" });
-  await page.getByLabel("放入位置").selectOption({ label: "课堂展示" });
-  await page.getByRole("button", { name: "确认加入", exact: true }).click();
-  await expect(page.locator(".res-usage")).toContainText("资源复用课");
   await page
     .getByLabel("更新文件", { exact: true })
     .setInputFiles("apps/web/e2e/fixtures/materials/samples/c22.pdf");
@@ -206,30 +194,11 @@ test("全部常用格式内容预览，分类搜索、备课复用及更新后�
   await expect(
     page.locator(".res-metadata").getByLabel("复习", { exact: true }),
   ).toBeChecked();
-  await expect(page.locator(".res-usage")).toContainText("文件有更新");
-  await page.locator(".res-usage").click();
-  await expect(page.getByLabel("课题", { exact: true })).toHaveValue(
-    "资源复用课",
-  );
-  await expect(page.locator("[data-reference-id]")).toContainText(
-    "函数课堂课件",
-  );
-  await expect(page.getByText(/有更新|来源已更新/).first()).toBeVisible();
-  await nav("资源库");
-  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
-  await page.getByLabel("搜索资料").fill("归纳单调性");
-  await expect(page.locator(".res-card-open")).toHaveCount(1);
-  await page.locator(".res-card-open").click();
-  await openInfo(page);
   await page.reload();
   await openInfo(page);
   await expect(page.getByLabel("资源名称")).toHaveValue("函数课堂课件");
-  await expect(page.locator(".res-page-paper img")).toBeVisible({
-    timeout: 60000,
-  });
-  await page.screenshot({
-    path: path.join(evidence, "metadata-and-usage.png"),
-  });
+  await expect(page.locator(".res-page-paper img")).toBeVisible({ timeout: 60000 });
+  await page.screenshot({ path: path.join(evidence, "metadata-reopened.png") });
   const directory = world.directory;
   await world.close();
   world = await createIntegration({ directory });
@@ -257,7 +226,6 @@ test("全部常用格式内容预览，分类搜索、备课复用及更新后�
   await page.locator(".res-card-open").click();
   await openInfo(page);
   await expect(page.getByLabel("资源名称")).toHaveValue("函数课堂课件");
-  await expect(page.locator(".res-usage")).toContainText("资源复用课");
   await expect(page.locator(".res-page-paper img")).toBeVisible();
 });
 

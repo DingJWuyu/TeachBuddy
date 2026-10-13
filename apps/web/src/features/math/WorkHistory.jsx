@@ -30,7 +30,7 @@ export default function WorkHistory({ work, client, font, hasChanges, onClose, o
     <div className="wb-dialog-scrim" onClick={onClose} role="presentation"/>
     <div ref={ref} className="wb-dialog math-history" role="dialog" aria-modal="true" aria-label={t("历史版本")}>
       <div className="math-history-heading"><h2>{t("历史版本")}</h2><button className="math-icon-button" aria-label={t("关闭历史版本")} onClick={onClose}>×</button></div>
-      <p className="math-hint">{t("选一版查看。恢复后成为当前编辑内容，保存时生成新版本，已有备课引用保持原样。")}</p>
+      <p className="math-hint">{t("选一版查看。恢复后成为当前编辑内容，保存时生成新版本。")}</p>
       {error ? <p role="alert">{error}<button onClick={() => retry(n => n + 1)}>{t("重试")}</button></p> : !items ? <p role="status">{t("正在读取历史版本…")}</p> : <>
         <label className="math-version-select">{t("保存记录")}<select aria-label={t("保存记录")} value={selected?.version ?? ''} onChange={event => setSelected(items.find(item => item.version === Number(event.target.value)))}>
           {items.map(item => <option key={item.version} value={item.version}>{t("版本")} {item.version} · {new Date(item.createdAt).toLocaleString(i18n.resolvedLanguage, { hour12: false })}{item.deletedAt ? t("· 已归档") : ''}{item.version === work.version ? t("· 当前版本") : ''}</option>)}

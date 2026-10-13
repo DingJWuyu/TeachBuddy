@@ -8,14 +8,11 @@ import test from 'node:test';
 import {
   assertProblem,
   createFirstFlowHarness,
-  lessonSample,
   pastedQuestionSample,
-  sectionInput,
   TRUSTED_ORIGIN
 } from './first-flow-harness.js';
 
 const QUESTIONS = '/api/modules/questions/items';
-const LESSONS = '/api/modules/lessons/items';
 const PREFERRED_PORT = 47113;
 
 async function withHarness(run) {
@@ -103,45 +100,16 @@ test('WB-012: committed writes survive restart and replay without duplicating ob
     const questionKey = harness.nextUuid();
     const created = (await api.post(QUESTIONS, sample, { key: questionKey }).expect(201)).body;
 
-    const sectionId = harness.nextUuid();
-    const lesson = (
-      await api.post(LESSONS, lessonSample({ sections: [sectionInput(sectionId)] }), {
-        key: harness.nextUuid()
-      }).expect(201)
-    ).body;
-    const referenceId = harness.nextUuid();
-    const referenceBody = {
-      baseVersion: 1,
-      title: lesson.title,
-      intro: lesson.intro,
-      sections: [
-        {
-          ...lesson.sections[0],
-          references: [{ id: referenceId, questionId: created.id, questionVersion: 1, note: '重放测试' }]
-        }
-      ],
-      materials: []
-    };
-    const lessonKey = harness.nextUuid();
-    const referenced = (await api.put(`${LESSONS}/${lesson.id}`, referenceBody, { key: lessonKey }).expect(200)).body;
-    assert.equal(referenced.version, 2);
-
     await harness.restart();
 
     const afterRestart = await api.get(`${QUESTIONS}/${created.id}`).expect(200);
     assert.deepEqual(afterRestart.body, created);
-    const lessonAfterRestart = await api.get(`${LESSONS}/${lesson.id}`).expect(200);
-    assert.deepEqual(lessonAfterRestart.body, referenced);
-
     const replay = await api.post(QUESTIONS, sample, { key: questionKey }).expect(201);
     assert.equal(replay.headers['cache-control'], 'no-store');
     assert.deepEqual(replay.body, created);
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM question_items'), 1);
 
-    const lessonReplay = await api.put(`${LESSONS}/${lesson.id}`, referenceBody, { key: lessonKey }).expect(200);
-    assert.deepEqual(lessonReplay.body, referenced);
-    assert.equal(harness.count('SELECT COUNT(*) AS count FROM lesson_references'), 1);
-    assert.equal(harness.count('SELECT COUNT(*) AS count FROM workbench_mutation_keys'), 3);
+    assert.equal(harness.count('SELECT COUNT(*) AS count FROM workbench_mutation_keys'), 1);
 
     const updated = (await api.put(
       `${QUESTIONS}/${created.id}`,
@@ -211,12 +179,11 @@ test('WB-012: one key is bound to one logical request per account', async () => 
     assertProblem(differentBody, 409, '/problems/workbench/idempotency-key-reused');
 
     const differentPath = await apiA
-      .post(LESSONS, lessonSample({ sections: [sectionInput(harness.nextUuid())] }), { key })
+      .post(`${QUESTIONS}/${created.id}/deletion`, { baseVersion: 1, deleted: true }, { key })
       .expect(409);
     assertProblem(differentPath, 409, '/problems/workbench/idempotency-key-reused');
 
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM question_items'), 2);
-    assert.equal(harness.count('SELECT COUNT(*) AS count FROM lesson_items'), 0);
     const unchanged = await apiA.get(`${QUESTIONS}/${created.id}`).expect(200);
     assert.deepEqual(unchanged.body, created);
 
@@ -231,51 +198,6 @@ test('WB-018: a failing write rolls back fully and the key stays reusable', asyn
     const teacherA = harness.createAccount('teacher-a');
     const api = harness.agent(teacherA);
     const question = (await api.post(QUESTIONS, pastedQuestionSample(), { key: harness.nextUuid() }).expect(201)).body;
-    const lesson = (
-      await api.post(LESSONS, lessonSample({ sections: [sectionInput(harness.nextUuid())] }), {
-        key: harness.nextUuid()
-      }).expect(201)
-    ).body;
-
-    const referenceBody = {
-      baseVersion: 1,
-      title: lesson.title,
-      intro: lesson.intro,
-      sections: [
-        {
-          ...lesson.sections[0],
-          content: { version: 1, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text: '失败前的新输入' }] }] },
-          references: [
-            { id: harness.nextUuid(), questionId: question.id, questionVersion: 1, note: '注入失败' }
-          ]
-        }
-      ],
-      materials: []
-    };
-    const failingKey = harness.nextUuid();
-    harness.failWritesTo('lesson_references');
-
-    const failed = await api.put(`${LESSONS}/${lesson.id}`, referenceBody, { key: failingKey }).expect(503);
-    assertProblem(failed, 503, '/problems/workbench/temporarily-unavailable');
-
-    const untouched = await api.get(`${LESSONS}/${lesson.id}`).expect(200);
-    assert.deepEqual(untouched.body, lesson, 'no partial lesson, section or reference survives');
-    assert.equal(
-      harness.count('SELECT COUNT(*) AS count FROM workbench_mutation_keys WHERE key = ?', failingKey),
-      0,
-      'a failed write does not consume the key'
-    );
-
-    harness.clearFaults();
-    const retried = (await api.put(`${LESSONS}/${lesson.id}`, referenceBody, { key: failingKey }).expect(200)).body;
-    assert.equal(retried.version, 2);
-    assert.equal(retried.sections[0].references.length, 1);
-    assert.equal(retried.sections[0].content.blocks[0].runs[0].text, '失败前的新输入');
-    assert.equal(
-      harness.count('SELECT COUNT(*) AS count FROM workbench_mutation_keys WHERE key = ?', failingKey),
-      1
-    );
-
     const questionKey = harness.nextUuid();
     harness.failWritesTo('question_items');
     const questionFailed = await api
@@ -283,6 +205,8 @@ test('WB-018: a failing write rolls back fully and the key stays reusable', asyn
       .expect(503);
     assertProblem(questionFailed, 503, '/problems/workbench/temporarily-unavailable');
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM question_items'), 1);
+    assert.deepEqual((await api.get(`${QUESTIONS}/${question.id}`).expect(200)).body, question);
+    assert.equal(harness.count('SELECT COUNT(*) AS count FROM workbench_mutation_keys WHERE key = ?', questionKey), 0);
     harness.clearFaults();
     await api.post(QUESTIONS, pastedQuestionSample({ title: '注入失败的新题' }), { key: questionKey }).expect(201);
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM question_items'), 2);
@@ -404,19 +328,6 @@ test('WB-014/018: transport and query failures use the contract problem types', 
       'the single-question GET accepts no query parameters'
     );
 
-    const lesson = (
-      await api.post(LESSONS, lessonSample({ sections: [sectionInput(harness.nextUuid())] }), {
-        key: harness.nextUuid()
-      }).expect(201)
-    ).body;
-    const unknownLessonQuery = await api.get(`${LESSONS}/${lesson.id}`).query({ q: 'x' }).expect(422);
-    assertProblem(unknownLessonQuery, 422, '/problems/workbench/invalid-input');
-    assert.deepEqual(
-      { field: unknownLessonQuery.body.field, reason: unknownLessonQuery.body.reason },
-      { field: '/query/q', reason: 'unknown-field' },
-      'the single-lesson GET accepts no query parameters'
-    );
-
     const badStarred = await api.get(QUESTIONS).query({ starred: '1' }).expect(422);
     assert.deepEqual(
       { field: badStarred.body.field, reason: badStarred.body.reason },
@@ -502,13 +413,6 @@ test('WB-012: a real HTTP listener keeps the same persisted result across restar
     assert.match(String(created.contentType), /^application\/json/);
     assert.equal(created.body.version, 1);
 
-    const lesson = await httpJson(baseUrl, 'POST', LESSONS, {
-      cookie: teacherA.cookie,
-      body: lessonSample({ sections: [sectionInput(harness.nextUuid())] }),
-      key: harness.nextUuid()
-    });
-    assert.equal(lesson.status, 201);
-
     await closeServer(server);
     server = null;
     await harness.restart();
@@ -529,12 +433,6 @@ test('WB-012: a real HTTP listener keeps the same persisted result across restar
     assert.equal(replayed.status, 201);
     assert.deepEqual(replayed.body, created.body);
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM question_items'), 1);
-
-    const lessonFetched = await httpJson(restartedUrl, 'GET', `${LESSONS}/${lesson.body.id}`, {
-      cookie: teacherA.cookie
-    });
-    assert.equal(lessonFetched.status, 200);
-    assert.deepEqual(lessonFetched.body, lesson.body);
 
     const noIdentity = await httpJson(restartedUrl, 'GET', QUESTIONS, {});
     assert.equal(noIdentity.status, 401);

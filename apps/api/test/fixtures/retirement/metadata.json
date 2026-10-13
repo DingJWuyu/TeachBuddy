@@ -1,0 +1,21 @@
+{
+  "sourceRevision": "ed4478503fb64da1fd88b34c4f9e28437904e44e",
+  "email": "retirement@example.test",
+  "password": "Retirement-test-123",
+  "ids": {
+    "question": "b56d83a0-1faf-4d56-b1a8-173b53665c0c",
+    "lesson": "96ae9260-f1c7-44b8-9191-8cb413e83d64",
+    "file": "4849310c-8337-466b-a205-e1c28ff22aca",
+    "resource": "f20c0c6f-2178-4962-addb-24350b437f13",
+    "math": "9b13c829-64ef-460b-91e0-46159c1b912a",
+    "class": "12082fc5-f1d9-4038-85a1-362e3b38bd3d",
+    "record": "4d941d6b-b10e-482c-ada3-ead9c6f0bdf2",
+    "entry": "74e2de9d-c25b-47bb-81a4-edfbbf7ff414",
+    "conversation": "a58320b3-5d42-496d-a579-77307921876d"
+  },
+  "accountKey": "usr_bZtjsLa5pVaZpzGVkz6cSCxbC1ijSa66",
+  "exportJobId": "396bbcbb-ea40-4978-9270-998364d69873",
+  "personalExportId": "427583f1-c415-4bc6-b721-71c7ab1564c3",
+  "backupSha256": "8f4c64e169cce5698e90a751ce4e69e2eb5f89c9d4407792fb04bfcd4ee7b6cb",
+  "provenance": "Created using the source revision API with isolated test authentication and its deployment backup command. Contains synthetic records for five retained modules, a lesson, class/schedule lesson links, an exception, navigation, a lesson export job, a personal export and an Agent draft. Credentials are test-only."
+}

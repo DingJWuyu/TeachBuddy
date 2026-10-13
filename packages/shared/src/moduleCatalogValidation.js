@@ -218,7 +218,7 @@ export function projectModuleCatalog(enabledIds, entries = moduleCatalog) {
 
 /**
  * Every dependency of an enabled module must be enabled too. This is the
- * startup half of "missing dependency": mounting lessons without questions
+ * startup half of "missing dependency": mounting classes without questions
  * would otherwise fail at the first reference read.
  */
 export function assertModuleDependencies(enabledIds, entries = moduleCatalog) {

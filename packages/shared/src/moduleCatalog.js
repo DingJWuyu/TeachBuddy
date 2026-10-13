@@ -1,4 +1,4 @@
-/** Frozen M40 v3 catalog, projected only into real implementations. */
+/** Static catalog using registration contract v3, projected into real implementations. */
 export const moduleCatalogVersion = 3;
 export const moduleCatalog = Object.freeze([
   {
@@ -8,18 +8,6 @@ export const moduleCatalog = Object.freeze([
     "navigation": "sidebar",
     "auxiliaryPanel": true,
     "requires": []
-  },
-  {
-    "id": "lessons",
-    "name": "备课",
-    "path": "/lessons",
-    "navigation": "sidebar",
-    "auxiliaryPanel": true,
-    "requires": [
-      "questions.readForReferenceV2",
-      "resources.readForReferenceV2",
-      "math.readForReferenceV1"
-    ]
   },
   {
     "id": "math",
@@ -45,7 +33,6 @@ export const moduleCatalog = Object.freeze([
     "auxiliaryPanel": true,
     "requires": [
       "questions.readForReferenceV2",
-      "lessons.readForTeachingLink",
       "math.readForTeachingLinkV1"
     ]
   },
@@ -57,18 +44,13 @@ export const moduleCatalog = Object.freeze([
     "auxiliaryPanel": true,
     "requires": [
       "classes.readClass",
-      "classes.readRecord",
-      "lessons.readForTeachingLink"
+      "classes.readRecord"
     ]
   }
 ].map(entry => Object.freeze({...entry, requires: Object.freeze(entry.requires)})));
 export const modulePorts = Object.freeze({
   "questions.readForReferenceV2": {
     "provider": "questions",
-    "port": "readForReferenceV2"
-  },
-  "resources.readForReferenceV2": {
-    "provider": "resources",
     "port": "readForReferenceV2"
   },
   "math.readForReferenceV1": {
@@ -78,10 +60,6 @@ export const modulePorts = Object.freeze({
   "questions.readForReference": {
     "provider": "questions",
     "port": "readForReference"
-  },
-  "lessons.readForTeachingLink": {
-    "provider": "lessons",
-    "port": "readForTeachingLink"
   },
   "math.readForTeachingLinkV1": {
     "provider": "math",

@@ -12,7 +12,7 @@ const L = '/api/modules/schedule/labels';
 let world, client, errors;
 const content = (title, pending = false) => ({ title, items: [],
   time: pending ? null : { date: '2026-09-25', startTime: '15:00', durationMinutes: 30, timeZone: 'Asia/Shanghai' },
-  repeat: null, reminder: null, course: { classId: null, lessonId: null, recordIds: [] },
+  repeat: null, reminder: null, course: { classId: null, recordIds: [] },
   calendar: { allDay: false, tags: [], notes: '' } });
 async function call(method, url, body) {
   const response = await client.request(method, url, { body, headers: method === 'GET' ? {} : { 'Idempotency-Key': randomUUID() } });

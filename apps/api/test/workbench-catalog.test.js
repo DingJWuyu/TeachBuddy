@@ -56,7 +56,7 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
   assert.ok(duplicatePath.some((problem) => problem.includes('duplicates catalog[0].path')));
 
   const missingDependency = validateModuleCatalog([
-    catalogEntry({ id: 'lessons', name: 'L', path: '/lessons', requires: ['questions.readForReferenceV2', 'resources.readForReferenceV2'] })
+    catalogEntry({ id: 'classes', name: 'C', path: '/classes', requires: ['questions.readForReferenceV2', 'math.readForTeachingLinkV1'] })
   ]);
   assert.ok(missingDependency.some((problem) => problem.includes('provider questions is not in the catalog')));
 
@@ -64,7 +64,7 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
   assert.ok(unknownPort.some((problem) => problem.includes('unknown port')));
 
   const cycle = validateModuleCatalog([
-    catalogEntry({ id: 'questions', name: 'Q', path: '/questions', requires: ['questions.readForReferenceV2', 'resources.readForReferenceV2'] })
+    catalogEntry({ id: 'questions', name: 'Q', path: '/questions', requires: ['questions.readForReferenceV2', 'math.readForTeachingLinkV1'] })
   ]);
   assert.ok(cycle.some((problem) => problem.includes('requires its own port')));
 
@@ -77,9 +77,9 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
 test('catalog projection enables only implemented modules and rejects orphans', () => {
   assert.deepEqual(projectModuleCatalog([]), { version: 3, items: [] });
 
-  const lessonsOnly = projectModuleCatalog(['lessons']);
-  assert.deepEqual(lessonsOnly.items.map((entry) => entry.id), ['lessons']);
-  assert.deepEqual(lessonsOnly.items[0].requires, ['questions.readForReferenceV2', 'resources.readForReferenceV2', 'math.readForReferenceV1']);
+  const classesOnly = projectModuleCatalog(['classes']);
+  assert.deepEqual(classesOnly.items.map((entry) => entry.id), ['classes']);
+  assert.deepEqual(classesOnly.items[0].requires, ['questions.readForReferenceV2', 'math.readForTeachingLinkV1']);
 
   assert.throws(
     () => projectModuleCatalog(['questions', 'unknown-module']),
@@ -87,10 +87,10 @@ test('catalog projection enables only implemented modules and rejects orphans', 
   );
 
   assert.throws(
-    () => assertModuleDependencies(['lessons']),
-    /Module lessons requires questions.readForReferenceV2 but provider module questions is not enabled/
+    () => assertModuleDependencies(['classes']),
+    /Module classes requires questions.readForReferenceV2 but provider module questions is not enabled/
   );
-  assert.doesNotThrow(() => assertModuleDependencies(['questions', 'resources', 'math', 'lessons']));
+  assert.doesNotThrow(() => assertModuleDependencies(['questions', 'math', 'classes']));
 });
 
 test('the shared contract vocabulary stays in the frozen OpenAPI documents', () => {
@@ -175,35 +175,35 @@ test('the loader wires a required public port and enforces its presence', async 
         })
       })
     },
-    resources: { factory: async () => ({ createResourcesModule: () => ({ router() {}, port: { readForReferenceV2: () => ({ id: 'r' }) } }) }) },
-    lessons: {
+    math: { factory: async () => ({ createMathModule: () => ({ router() {}, port: { readForTeachingLinkV1: () => ({ id: 'm' }) } }) }) },
+    classes: {
       factory: async () => ({
-        createLessonsModule: ({ questions, resources }) => ({
+        createClassesModule: ({ questions, math }) => ({
           router() {},
-          port: { questionsPort: questions.readForReferenceV2(), resourcePort: resources.readForReferenceV2() }
+          port: { questionsPort: questions.readForReferenceV2(), mathPort: math.readForTeachingLinkV1() }
         })
       })
     }
   };
   const dependencies = { db: { name: 'db' }, mutations: { name: 'mutations' } };
-  const loader = createModuleLoader({ catalog: moduleCatalog.filter(e=>['questions','resources','lessons'].includes(e.id)).map(e=>({...e,requires:e.requires.filter(p=>!p.startsWith('math.'))})), implementations, dependencies });
+  const loader = createModuleLoader({ catalog: moduleCatalog.filter(e=>['questions','math','classes'].includes(e.id)), implementations, dependencies });
   await loader.instantiate();
 
-  assert.deepEqual(loader.enabledIds(), ['questions', 'resources', 'lessons']);
+  assert.deepEqual(loader.enabledIds(), ['questions', 'math', 'classes']);
   assert.equal(loader.get('questions').port.mutations.name, 'mutations');
-  assert.deepEqual(loader.get('lessons').port.questionsPort, { id: 'q' });
-  assert.deepEqual(loader.get('lessons').port.resourcePort, { id: 'r' });
+  assert.deepEqual(loader.get('classes').port.questionsPort, { id: 'q' });
+  assert.deepEqual(loader.get('classes').port.mathPort, { id: 'm' });
 });
 
 test('a module that requires a missing provider stops composition', async () => {
   const loader = createModuleLoader({
     implementations: {
-      lessons: { factory: async () => ({ createLessonsModule: () => ({ router() {} }) }) }
+      classes: { factory: async () => ({ createClassesModule: () => ({ router() {} }) }) }
     },
     dependencies: {}
   });
   await assert.rejects(
     loader.instantiate(),
-    /Module lessons requires questions.readForReferenceV2 but provider module questions is not enabled/
+    /Module classes requires questions.readForReferenceV2 but provider module questions is not enabled/
   );
 });

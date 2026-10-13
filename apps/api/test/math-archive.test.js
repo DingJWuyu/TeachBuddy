@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto';
 import { startMathFixture } from '../../web/e2e/fixtures/math-static/server.mjs';
 import { emptySource } from '../../web/src/features/math/model.js';
 
-test('math archive and purge: version, account, rollback, replay, references and restart', async () => {
+test('math archive and purge: version, account, rollback, replay and restart', async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'math-archive-'));
   let world = await startMathFixture({ dataDir: directory, port: 0 });
   let passed = false;
@@ -22,14 +22,10 @@ test('math archive and purge: version, account, rollback, replay, references and
   }
   try {
     const source = { ...emptySource('formula'), latex: 'x^2' };
-    const created = await request('POST', base, { title: '保留备课引用', source, originalFileId: null });
+    const created = await request('POST', base, { title: '归档作品', source, originalFileId: null });
     assert.equal(created.status, 201);
     const id = created.body.id, route = `${base}/${id}`;
     assert.equal((await request('POST', `${route}/purge`, { baseVersion: 1 })).status, 422);
-    const reference = { id: randomUUID(), kind: 'math', workId: id, workVersion: 1, note: '' };
-    const lessonInput = { title: '引用归档作品', intro: { version: 1, blocks: [] }, sections: [], materials: [reference] };
-    const lesson = await request('POST', '/api/modules/lessons/v3', lessonInput);
-    assert.equal(lesson.status, 201, JSON.stringify(lesson));
     const exported = await request('POST', `${route}/exports`, { version: 1, format: 'source', background: 'transparent', width: 1600 });
     assert.equal(exported.status, 201);
     await request('POST', `${route}/deletion`, { baseVersion: 1, deleted: true });
@@ -51,11 +47,6 @@ test('math archive and purge: version, account, rollback, replay, references and
     for (const suffix of ['', '/versions', '/versions/1', '/reference']) assert.equal((await request('GET', `${route}${suffix}`)).status, 404);
     assert.equal((await request('POST', `${route}/deletion`, { baseVersion: 4, deleted: false })).status, 404);
     assert.equal((await request('GET', `${base}?state=deleted`)).body.items.length, 0);
-    const savedLesson = await request('PUT', `/api/modules/lessons/v3/${lesson.body.id}`, { ...lessonInput, baseVersion: 1, materials: [{ ...reference, note: '仍可修改本课备注' }] });
-    assert.equal(savedLesson.status, 200, JSON.stringify(savedLesson));
-    assert.deepEqual(savedLesson.body.materials[0].snapshot, lesson.body.materials[0].snapshot);
-    assert.equal(savedLesson.body.materials[0].sourceState, 'deleted');
-    world.workbench.files.read({ accountKey: 'm41-a' }, lesson.body.materials[0].snapshot.posterFileId);
     await world.close();
     world = await startMathFixture({ dataDir: directory, port: 0 });
     assert.deepEqual(await request('POST', `${route}/purge`, input, key), purged);

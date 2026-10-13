@@ -10,7 +10,7 @@ export function createQuestionsRouter({ operations, service, mutations }) {
   for (const [id, method, route] of routes) {
     router[method.toLowerCase()](route, (req, res) => {
       const args = { ...req.params };
-      if (method === 'GET' && ['listQuestions', 'listLessons', 'listDerivatives'].includes(id)) args.query = req.query;
+      if (method === 'GET' && ['listQuestions', 'listDerivatives'].includes(id)) args.query = req.query;
       else validateNoQuery(req.query);
       if (method !== 'GET') {
         if (req.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json') throw contractError(problems.unsupportedMediaType());

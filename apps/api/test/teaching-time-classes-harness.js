@@ -35,8 +35,7 @@ const FAULT_TABLES = [
   'classes_items',
   'classes_records',
   'classes_record_sources',
-  'question_items',
-  'lesson_items'
+  'question_items'
 ];
 
 export async function createTeachingTimeClassesHarness(options = {}) {
@@ -216,16 +215,6 @@ export function questionSample(overrides = {}) {
     note: '',
     starred: false,
     source: { kind: 'manual' },
-    ...overrides
-  };
-}
-
-export function lessonSample(overrides = {}) {
-  return {
-    title: '函数单调性',
-    intro: { version: 1, blocks: [] },
-    sections: [],
-    materials: [],
     ...overrides
   };
 }

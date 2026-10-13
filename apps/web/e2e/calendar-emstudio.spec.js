@@ -11,7 +11,7 @@ const L = '/api/modules/schedule/labels';
 const date = '2026-09-25';
 let world, client, pageErrors;
 const content = (title, time = '01:10') => ({ title, items: [], time: { date, startTime: time, durationMinutes: 70, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, lessonId: null, recordIds: [] }, reminder: null, calendar: { allDay: false, notes: '', tags: [] } });
+  repeat: null, course: { classId: null, recordIds: [] }, reminder: null, calendar: { allDay: false, notes: '', tags: [] } });
 async function call(method, url, body) {
   const result = await client.request(method, url, { body, headers: method === 'GET' ? {} : { 'Idempotency-Key': randomUUID() } });
   expect(result.status, JSON.stringify(result.json)).toBeLessThan(300);

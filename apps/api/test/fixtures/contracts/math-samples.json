@@ -943,81 +943,6 @@
     }
   },
   {
-    "id": "math-reference-input",
-    "schema": "MathReferenceInput",
-    "valid": true,
-    "value": {
-      "id": "00000000-0000-4000-8000-000000000022",
-      "kind": "math",
-      "workId": "00000000-0000-4000-8000-000000000001",
-      "workVersion": 1,
-      "note": "先让学生观察判别式"
-    }
-  },
-  {
-    "id": "return-lesson",
-    "schema": "UpdateLessonV3",
-    "valid": true,
-    "value": {
-      "baseVersion": 3,
-      "title": "二次函数",
-      "intro": {
-        "version": 1,
-        "blocks": []
-      },
-      "sections": [
-        {
-          "id": "00000000-0000-4000-8000-000000000021",
-          "title": "探究",
-          "content": {
-            "version": 1,
-            "blocks": []
-          },
-          "references": [
-            {
-              "id": "00000000-0000-4000-8000-000000000022",
-              "kind": "math",
-              "workId": "00000000-0000-4000-8000-000000000001",
-              "workVersion": 1,
-              "note": "先让学生观察判别式"
-            }
-          ]
-        }
-      ],
-      "materials": []
-    }
-  },
-  {
-    "id": "adopted-reference",
-    "schema": "MathReference",
-    "valid": true,
-    "value": {
-      "id": "00000000-0000-4000-8000-000000000022",
-      "kind": "math",
-      "workId": "00000000-0000-4000-8000-000000000001",
-      "workVersion": 1,
-      "note": "先让学生观察判别式",
-      "snapshot": {
-        "title": "求根公式",
-        "workVersion": 1,
-        "source": {
-          "schemaVersion": 1,
-          "kind": "formula",
-          "latex": "x_{1,2}=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
-          "caption": "判别式 D=b²-4ac",
-          "includeCaption": true,
-          "color": "#172033",
-          "fontSize": 28
-        },
-        "posterFileId": "00000000-0000-4000-8000-000000000091",
-        "rendererVersion": "math-native-1",
-        "presentationFileId": null
-      },
-      "sourceState": "active",
-      "latestVersion": 2
-    }
-  },
-  {
     "id": "reference-provider",
     "schema": "ReferenceReadWork",
     "valid": true,
@@ -1073,17 +998,6 @@
       "labelAtLink": "求根公式",
       "currentLabel": "判别式与求根",
       "deleted": false
-    }
-  },
-  {
-    "id": "return-target",
-    "schema": "ReturnTarget",
-    "valid": true,
-    "value": {
-      "lessonId": "00000000-0000-4000-8000-000000000020",
-      "sectionId": "00000000-0000-4000-8000-000000000021",
-      "baseVersion": 3,
-      "referenceId": "00000000-0000-4000-8000-000000000022"
     }
   },
   {
@@ -1190,34 +1104,6 @@
     }
   },
   {
-    "id": "reject-reference-snapshot",
-    "schema": "MathReferenceInput",
-    "valid": false,
-    "value": {
-      "id": "00000000-0000-4000-8000-000000000022",
-      "kind": "math",
-      "workId": "00000000-0000-4000-8000-000000000001",
-      "workVersion": 1,
-      "note": "先让学生观察判别式",
-      "snapshot": {
-        "title": "求根公式",
-        "workVersion": 1,
-        "source": {
-          "schemaVersion": 1,
-          "kind": "formula",
-          "latex": "x_{1,2}=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
-          "caption": "判别式 D=b²-4ac",
-          "includeCaption": true,
-          "color": "#172033",
-          "fontSize": 28
-        },
-        "posterFileId": "00000000-0000-4000-8000-000000000091",
-        "rendererVersion": "math-native-1",
-        "presentationFileId": null
-      }
-    }
-  },
-  {
     "id": "reject-teaching-version",
     "schema": "TeachingMathInput",
     "valid": false,
@@ -1241,18 +1127,6 @@
           "navigation": "sidebar",
           "auxiliaryPanel": true,
           "requires": []
-        },
-        {
-          "id": "lessons",
-          "name": "备课",
-          "path": "/lessons",
-          "navigation": "sidebar",
-          "auxiliaryPanel": true,
-          "requires": [
-            "questions.readForReferenceV2",
-            "resources.readForReferenceV2",
-            "math.readForReferenceV1"
-          ]
         },
         {
           "id": "math",
@@ -1289,18 +1163,6 @@
           "requires": []
         },
         {
-          "id": "lessons",
-          "name": "备课",
-          "path": "/lessons",
-          "navigation": "sidebar",
-          "auxiliaryPanel": true,
-          "requires": [
-            "questions.readForReferenceV2",
-            "resources.readForReferenceV2",
-            "math.readForReferenceV1"
-          ]
-        },
-        {
           "id": "math",
           "name": "数学工坊",
           "path": "/math",
@@ -1324,7 +1186,6 @@
           "auxiliaryPanel": true,
           "requires": [
             "questions.readForReference",
-            "lessons.readForTeachingLink",
             "math.readForTeachingLinkV1"
           ]
         },
@@ -1336,8 +1197,7 @@
           "auxiliaryPanel": true,
           "requires": [
             "classes.readClass",
-            "classes.readRecord",
-            "lessons.readForTeachingLink"
+            "classes.readRecord"
           ]
         }
       ]

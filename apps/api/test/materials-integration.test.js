@@ -45,22 +45,20 @@ test("material composition serves the frozen v3 catalog through real page-bound 
   validateSchema("ModuleCatalogV3", catalog.json);
   assert.deepEqual(
     catalog.json.items.map((x) => x.id),
-    ["questions", "lessons", "math", "resources", "classes", "schedule"],
+    ["questions", "math", "resources", "classes", "schedule"],
   );
 });
 
 import { randomUUID } from "node:crypto";
 import { startMaterialsHttp } from "../../web/e2e/fixtures/materials-integration/server.mjs";
 import { createWorkbench } from "../src/workbench/index.js";
-const evidence = path.resolve("../../test-results/evidence/R34/v1/attempt2");
-const empty = { version: 2, blocks: [] };
 const doc = (text) => ({
   version: 2,
   blocks: [{ type: "paragraph", runs: [{ type: "text", text }] }],
 });
 
 test(
-  "real modules: import review, immutable mixed references, 24 filtered outputs, isolation and restart",
+  "real modules: import review, resources, question assets, isolation and restart",
   { timeout: 180000 },
   async (t) => {
     const directory = fs.mkdtempSync(path.join(root, "chain-"));
@@ -113,7 +111,6 @@ test(
       assert.fail("job timeout");
     }
     const q = "/api/modules/questions/v2",
-      l = "/api/modules/lessons/v2/items",
       r = "/api/modules/resources/items";
     const imported = await ok(
       q + "/imports",
@@ -176,116 +173,10 @@ test(
       "POST",
       201,
     );
-    const sid = randomUUID(),
-      refid = randomUUID();
-    const lesson = await ok(
-      l,
-      {
-        title: "真实六输出",
-        intro: doc("文稿专用标记"),
-        sections: [
-          {
-            id: sid,
-            title: "探究",
-            content: {
-              version: 2,
-              blocks: [
-                { type: "teacher-note", blocks: doc("教师专用标记").blocks },
-              ],
-            },
-            references: [
-              {
-                id: randomUUID(),
-                kind: "question",
-                questionId: question.id,
-                questionVersion: question.version,
-                note: "本课专用标记",
-              },
-              {
-                id: refid,
-                kind: "resource",
-                resourceId: resource.id,
-                resourceVersion: resource.version,
-                note: "",
-              },
-            ],
-          },
-        ],
-        materials: [],
-      },
-      "POST",
-      201,
-    );
-    const usages = await ok(
-      "/api/modules/lessons/v2/resource-usages/" + resource.id,
-    );
-    assert.equal(usages.items[0].lessonId, lesson.id);
     const replacement = await upload("替换.pdf");
-    await ok(
-      r + "/" + resource.id + "/file",
-      { baseVersion: resource.version, fileId: replacement.id },
-      "PUT",
-    );
-    const retained = await ok(l + "/" + lesson.id);
-    assert.equal(
-      retained.sections[0].references[1].snapshot.fileId,
-      original.id,
-    );
-    assert.equal(
-      retained.sections[0].references[1].resourceVersion,
-      resource.version,
-    );
-    const manifest = [];
-    const outputDir = path.join(directory, "outputs");
-    fs.mkdirSync(outputDir);
-    for (const kind of ["lesson-plan", "handout", "practice"])
-      for (const format of ["docx", "pdf"])
-        for (const includeAnswers of [false, true])
-          for (const includeTeacherNotes of [false, true]) {
-            const options = {
-              baseVersion: lesson.version,
-              kind,
-              format,
-              includeAnswers,
-              includeTeacherNotes,
-              sectionIds: [sid],
-              materialReferenceIds: [],
-              answerSpaceLines: 1,
-            };
-            const accepted = await ok(
-              l + "/" + lesson.id + "/exports",
-              options,
-              "POST",
-              202,
-            );
-            const job = await wait(accepted.jobId);
-            assert.equal(job.state, "succeeded", JSON.stringify(job));
-            const fileId = job.outputFileIds[0];
-            const download = await call(
-              "/api/workbench/files/" + fileId + "/content",
-            );
-            assert.equal(download.status, 200);
-            const name = `${kind}-${includeAnswers}-${includeTeacherNotes}.${format}`;
-            fs.writeFileSync(path.join(outputDir, name), download.bytes);
-            assert.equal(
-              (
-                await call(
-                  "/api/workbench/files/" + fileId + "/content",
-                  undefined,
-                  "GET",
-                  "integration-b",
-                )
-              ).status,
-              404,
-            );
-            manifest.push({
-              name,
-              options,
-              fileId,
-              jobId: job.id,
-              bytes: download.bytes.length,
-            });
-          }
+    const replaced = await ok(r + "/" + resource.id + "/file", { baseVersion: resource.version, fileId: replacement.id }, "PUT");
+    assert.equal(replaced.fileId, replacement.id);
+    assert.equal((await call(r + "/" + resource.id, undefined, "GET", "integration-b")).status, 404);
     const asset = await ok(
       q + "/items/" + question.id + "/assets",
       {
@@ -297,7 +188,14 @@ test(
       "POST",
       202,
     );
-    assert.equal((await wait(asset.id)).state, "succeeded");
+    const assetJob = await wait(asset.id);
+    assert.equal(assetJob.state, "succeeded");
+    assert.equal(assetJob.outputFileIds.length, 1);
+    const assetRoute = "/api/workbench/files/" + assetJob.outputFileIds[0] + "/content";
+    const assetFile = await call(assetRoute);
+    assert.equal(assetFile.status, 200);
+    assert.deepEqual([...assetFile.bytes.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+    assert.equal((await call(assetRoute, undefined, "GET", "integration-b")).status, 404);
     const nativeImport = await ok(
       q + "/imports",
       {
@@ -349,23 +247,16 @@ test(
     const retainedScan = await call("/api/workbench/files/" + scanned.id + "/content");
     assert.equal(retainedScan.status, 200);
     assert.deepEqual(retainedScan.bytes, imageBytes);
-    assert.equal((await ok(l + "/" + lesson.id + "/exports")).items.length, 24);
-    assert.equal(
-      (await ok(l + "/" + lesson.id)).sections[0].references.length,
-      2,
-    );
-    fs.writeFileSync(
-      path.join(directory, "manifest.json"),
-      JSON.stringify({ directory, manifest, nativeJob, failedJob }, null, 2),
-    );
-    console.log("R34_OUTPUT_MANIFEST " + path.join(directory, "manifest.json"));
+    assert.deepEqual((await call(assetRoute)).bytes, assetFile.bytes);
+    assert.deepEqual(await ok(r + "/" + resource.id), replaced);
+    assert.deepEqual(await ok(q + "/items/" + question.id), question);
   },
 );
 
 test("production composes real handlers and rejects missing or fixture overrides before serving", async () => {
   for (const [name, override, pass] of [
     ["real", {}, true],
-    ["missing", { export: null }, false],
+    ["missing", { extraction: null }, false],
     ["fixture", { extraction: { fixture: true, run() {} } }, false],
   ]) {
     const directory = fs.mkdtempSync(path.join(root, "production-"));
@@ -384,7 +275,7 @@ test("production composes real handlers and rejects missing or fixture overrides
       });
       if (pass) await workbench.initialize();
       else
-        await assert.rejects(workbench.initialize(), /requires export handler/);
+        await assert.rejects(workbench.initialize(), /requires extraction handler/);
     } catch (error) {
       if (name !== "fixture") throw error;
       assert.match(error.message, /fixture handlers are forbidden/);

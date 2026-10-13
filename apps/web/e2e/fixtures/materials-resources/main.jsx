@@ -3,13 +3,11 @@ import { createRoot } from "react-dom/client";
 import ResourcesPage from "../../../src/features/resources/index.jsx";
 import { ShellContext } from "../../../src/features/workbench/shellContext.js";
 import "./fixture.css";
-import { Lesson } from "./Lesson.jsx";
 const transport = window.fetch.bind(window);
 function Fixture() {
   const [tools, setTools] = useState([]),
     [panel, setPanel] = useState(true);
   const [account, setAccount] = useState(null),
-    [lesson, setLesson] = useState(false),
     [lost, setLost] = useState(false);
   useEffect(() => {
     fetch("/api/workbench/")
@@ -37,14 +35,7 @@ function Fixture() {
         </nav>
         <div className="fixture-body">
           <main>
-            {lesson ? (
-              <Lesson transport={transport} onBack={() => setLesson(false)} />
-            ) : (
-              <ResourcesPage
-                transport={transport}
-                onOpenLesson={() => setLesson(true)}
-              />
-            )}
+            <ResourcesPage transport={transport} />
           </main>
           {panel && (
             <aside aria-label="辅助栏">

@@ -1,6 +1,6 @@
 import { emptyRecordContent } from '@refatos/shared';
 // Storage for the classes module: classes, actual records and their links to
-// lesson/question sources. The module owns these tables and no other module
+// question/math sources. The module owns these tables and no other module
 // reads them; reverse lookups are served from the link index maintained here.
 //
 // Sorting is fixed by the contract: classes by name then id ascending (SQLite's

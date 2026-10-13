@@ -17,7 +17,7 @@ function parseRoute(pathname) {
   if (segments.length === 0) return { name: 'home', path: '/' };
   const descriptor = moduleCatalog.find(module => module.path === `/${segments[0]}`);
   if (descriptor) {
-    const modulePath = ['questions', 'lessons', 'resources'].includes(descriptor.id)
+    const modulePath = ['questions', 'resources'].includes(descriptor.id)
       ? descriptor.path + (segments[1] ? `/${segments[1]}` : '') : path;
     const base = { moduleId: descriptor.id, path: modulePath };
     if (segments.length === 1) {
@@ -33,7 +33,6 @@ function parseRoute(pathname) {
         if (descriptor.id === 'classes') return { ...base, name: 'class', classId: id };
         if (descriptor.id === 'resources') return { ...base, name: 'resource', id };
         if (descriptor.id === 'questions') return { ...base, name: 'question', id };
-        if (descriptor.id === 'lessons') return { ...base, name: 'lesson', id };
       }
       if (descriptor.id === 'classes' && segments.length === 4 && segments[2] === 'records') {
         return { ...base, name: 'class-record', classId: decodeURIComponent(segments[1]), recordId: decodeURIComponent(segments[3]) };

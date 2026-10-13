@@ -4,8 +4,7 @@
  * Every request goes through the production workbench transport: the same
  * SQLite file, migration runner, `mutations.execute` transaction, identity
  * seam, origin/protection guards and Problem mapping the API process uses. The
- * only substitutions are the classes/lessons provider ports (T51/T53 deliver
- * the real ones) and the fixture clock/beforeChange the composition root would
+ * only substitutions are the classes reference ports and the fixture clock/beforeChange the composition root would
  * otherwise own.
  */
 import fs from 'node:fs';

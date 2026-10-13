@@ -132,7 +132,7 @@ await p.evaluate(() => {
 });
 await p.waitForTimeout(450);
 await p.evaluate(() => {
-  const row = [...document.querySelectorAll('.tb-module-row')].find((r) => r.textContent.includes('规划器'));
+  const row = [...document.querySelectorAll('.tb-module-row')].find((r) => r.textContent.includes('题库'));
   row.focus();
   row.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
 });
@@ -264,7 +264,7 @@ for (const r of results) console.log(`${r.pass ? 'ok  ' : 'FAIL'} ${r.name}${r.d
 console.log(`\n${results.filter((r) => r.pass).length}/${results.length} passed`);
 
 await p.evaluate(() => {
-  const row = [...document.querySelectorAll('.tb-module-row')].find((r) => r.textContent.includes('规划器'));
+  const row = [...document.querySelectorAll('.tb-module-row')].find((r) => r.textContent.includes('题库'));
   if (row) { row.focus(); row.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true })); }
 });
 await p.waitForTimeout(300);

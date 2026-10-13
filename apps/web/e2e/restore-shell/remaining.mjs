@@ -9,7 +9,6 @@ let pageContext; page.on('request',request=>{const context=request.headers()['x-
 try {
 await page.goto(world.origin); await page.getByRole('button',{name:'创建账户'}).click(); await page.getByLabel('昵称',{exact:true}).fill('外壳验收'); await page.getByLabel('邮箱',{exact:true}).fill('shell@example.test'); await page.getByLabel('密码',{exact:true}).fill('shell-test-password'); await page.getByLabel('确认密码',{exact:true}).fill('shell-test-password'); await page.getByRole('button',{name:'发送验证码'}).click(); await page.getByLabel('邮箱验证码').fill(world.mailer.lastCode('registration','shell@example.test')); await page.getByRole('checkbox').check(); await page.getByRole('button',{name:'注册',exact:true}).click(); await page.locator('.wb-shell').waitFor(); if(await page.locator('.tb-coach-dismiss').count()) await page.locator('.tb-coach-dismiss').click(); await page.screenshot({path:path.join(evidence,'home.png')}); console.log('RESTORED TOPBAR',await page.locator('.tb-global-nav').count()); if(!await page.locator('.tb-global-nav').count()) throw new Error('Prototype topbar missing');
 
-
 const shot = async name => { await page.evaluate(()=>Promise.all(document.getAnimations().filter(a=>a.effect?.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))); await page.screenshot({path:path.join(evidence,name+'.png')}); };
 const check = (value, message) => { if(!value) throw new Error(message); };
 const errors=[]; page.on('pageerror',e=>errors.push(e.message));
@@ -36,7 +35,7 @@ await shot('privacy-after');await page.keyboard.press('Escape');
 await page.getByRole('button',{name:'通知',exact:true}).click();
 await page.getByRole('dialog',{name:'通知',exact:true}).waitFor();
 await shot('notifications-after');await page.keyboard.press('Escape');
-const created=await page.evaluate(async pageContext=>{const response=await fetch('/api/modules/schedule/entries',{method:'POST',headers:{'Content-Type':'application/json','X-TeachBuddy-Request':'1','Idempotency-Key':crypto.randomUUID(),'X-TeachBuddy-Page':pageContext},body:JSON.stringify({title:'外壳通知验收',items:[],time:{date:'2026-09-23',startTime:'18:00',durationMinutes:60,timeZone:'Asia/Shanghai'},repeat:null,course:{classId:null,lessonId:null,recordIds:[]},reminder:{side:'before',minutes:10}})}); return {status:response.status,body:await response.json()};},pageContext);
+const created=await page.evaluate(async pageContext=>{const response=await fetch('/api/modules/schedule/entries',{method:'POST',headers:{'Content-Type':'application/json','X-TeachBuddy-Request':'1','Idempotency-Key':crypto.randomUUID(),'X-TeachBuddy-Page':pageContext},body:JSON.stringify({title:'外壳通知验收',items:[],time:{date:'2026-09-23',startTime:'18:00',durationMinutes:60,timeZone:'Asia/Shanghai'},repeat:null,course:{classId:null,recordIds:[]},reminder:{side:'before',minutes:10}})}); return {status:response.status,body:await response.json()};},pageContext);
 check(created.status===201,JSON.stringify(created));now=new Date('2026-09-23T10:55:00Z');
 await page.reload();await page.locator('.wb-shell').waitFor();
 await page.getByRole('button',{name:'通知',exact:true}).click();
@@ -64,13 +63,13 @@ await page.getByRole('combobox',{name:'2026秋季学期',exact:true}).waitFor();
 await page.getByRole('button',{name:'使用教程',exact:true}).click();
 check(await page.getByRole('progressbar').getAttribute('aria-valuenow')==='1','tutorial progress lost');
 await page.keyboard.press('Escape');
-for(const route of ['questions','lessons','math','resources','classes']) {
+for(const route of ['questions','math','resources','classes']) {
  await page.locator('.tb-module-nav .tb-module-row[href="/'+route+'"]').click();
  await page.waitForURL('**/'+route);
  const metrics=await page.evaluate(()=>({body:document.body.scrollHeight, viewport:innerHeight,main:getComputedStyle(document.querySelector('.wb-main')).overflowY}));
  check(metrics.body<=metrics.viewport+1,'body scrolls on '+route);console.log('NAV + SCROLL',route,metrics);
  await page.waitForFunction(()=>[...document.querySelectorAll('.wb-main *')].some(el=>/(auto|scroll)/.test(getComputedStyle(el).overflowY)&&el.clientHeight>0));
- console.log('SCROLL REGIONS',route,await page.evaluate(()=>[...document.querySelectorAll('.wb-main *')].filter(el=>/(auto|scroll)/.test(getComputedStyle(el).overflowY)&&el.clientHeight>0).map(el=>el.className))); 
+ console.log('SCROLL REGIONS',route,await page.evaluate(()=>[...document.querySelectorAll('.wb-main *')].filter(el=>/(auto|scroll)/.test(getComputedStyle(el).overflowY)&&el.clientHeight>0).map(el=>el.className)));
 }
 await page.locator('.tb-global-nav a[href="/calendar"]').click();
 await page.locator('.sch-grid-scroll').waitFor();
@@ -82,7 +81,7 @@ await page.setViewportSize({width:390,height:844});
 await page.getByRole('button',{name:'打开工作台导航'}).click();
 await page.locator('.tb-sidebar.is-mobile-open').waitFor();
 await shot('narrow-sidebar');
-await page.locator('.tb-module-nav .tb-module-row[href="/lessons"]').click();await page.waitForURL('**/lessons');
+await page.locator('.tb-module-nav .tb-module-row[href="/math"]').click();await page.waitForURL('**/math');
 check(!await page.locator('.tb-sidebar').isVisible(),'drawer remains after navigation');
 await page.getByRole('button',{name:'发送反馈',exact:true}).click();await page.getByRole('dialog',{name:'发送反馈',exact:true}).waitFor();await shot('narrow-feedback');
 check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'narrow horizontal overflow');
@@ -92,7 +91,7 @@ await page.locator('.tb-global-nav a[href="/"]').click();
 await page.locator('.restored-start').click();
 await page.getByRole('textbox',{name:'AI 输入',exact:true}).fill('保留首页输入现场');
 await shot('home-input');
-await page.locator('.tb-module-row[href="/lessons"]').click();
+await page.locator('.tb-module-row[href="/math"]').click();
 await page.locator('.tb-global-nav a[href="/"]').click();
 check(await page.getByRole('textbox',{name:'AI 输入',exact:true}).inputValue()==='保留首页输入现场','home draft lost');
 check(errors.length===0,errors.join(';'));

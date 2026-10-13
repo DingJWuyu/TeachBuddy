@@ -34,7 +34,7 @@ const primitives = {
 };
 
 const sourceInputSchema = schema.object([
-  ['kind', schema.string({ enum: ['lesson', 'question'] })],
+  ['kind', schema.string({ enum: ['question'] })],
   ['id', () => primitives.id]
 ]);
 
@@ -77,7 +77,7 @@ const recordUpdateSchema = schema.object([
 ]);
 
 const sourceInputV2Schema = schema.object([
-  ['kind', schema.string({ enum: ['lesson', 'question', 'math'] })],
+  ['kind', schema.string({ enum: ['question', 'math'] })],
   ['id', () => primitives.id]
 ]);
 const recordInputV2Schema = schema.object(recordFieldList(sourceInputV2Schema));
@@ -185,7 +185,7 @@ export function validateRecordsQuery(query) {
 
 /** source-records/{kind}/{id}: the kind enum and the UUID are one request schema. */
 export function validateSourceRecordsPath(kind, id, version = 1) {
-  if (!['lesson', 'question', ...(version === 2 ? ['math'] : [])].includes(kind)) throw invalidInput('/path/kind', 'invalid-reference');
+  if (!['question', ...(version === 2 ? ['math'] : [])].includes(kind)) throw invalidInput('/path/kind', 'invalid-reference');
   if (typeof id !== 'string' || !uuidPattern.test(id)) throw invalidInput('/path/id', 'invalid-type');
   return { kind, id };
 }

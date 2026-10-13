@@ -247,27 +247,13 @@ test("HTML 导入、源码修改、保存重开及离线交互", async ({
   }
 });
 
-test("备课原环节往返、公式中文说明、透明导出与服务重启", async ({
+test("公式中文说明、透明导出与服务重启", async ({
   page,
   browser,
 }, info) => {
   world = await createIntegration();
   await register(page, world, "manual-math@example.test");
-  await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "备课", exact: true })
-    .click();
-  await page.getByRole("button", { name: "新建备课", exact: true }).click();
-  await page.getByLabel("课题", { exact: true }).fill("函数性质讨论");
-  await page.getByRole("button", { name: "添加环节", exact: true }).click();
-  await page.getByLabel("环节名称 1").fill("判别式探究");
-  await page.getByRole("button", { name: "保存", exact: true }).click();
-  await expect(page.getByRole("status").first()).toContainText("已保存");
-  await page.getByLabel("课题", { exact: true }).fill("保留的备课草稿");
-  await page
-    .locator("[data-section-id]")
-    .getByRole("button", { name: "制作数学作品", exact: true })
-    .click();
+  await page.goto(world.origin + "/math");
   await page
     .getByRole("button", { name: "新建公式", exact: true })
     .first()
@@ -288,19 +274,6 @@ test("备课原环节往返、公式中文说明、透明导出与服务重启",
     .toBuffer({ resolveWithObject: true });
   expect(data.some((v, i) => i % 4 === 3 && v === 0)).toBe(true);
   await download(page, "svg", info.outputPath("formula.svg"));
-  await page.getByRole("button", { name: "带回备课", exact: true }).click();
-  await expect(page.getByLabel("课题", { exact: true })).toHaveValue(
-    "保留的备课草稿",
-  );
-  await expect(
-    page.locator("[data-section-id] [data-reference-id]"),
-  ).toHaveCount(1);
-  await expect(page.getByRole("status").first()).toContainText("已保存");
-  await page.reload();
-  await expect(
-    page.locator("[data-section-id] [data-reference-id]"),
-  ).toHaveCount(1);
-  await page.screenshot({ path: info.outputPath("lesson-return.png") });
   const directory = world.directory;
   const storageState = await page.context().storageState();
   await world.close();

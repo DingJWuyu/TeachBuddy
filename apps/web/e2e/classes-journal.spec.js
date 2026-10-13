@@ -4,7 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { registerMath } from './fixtures/math-static/real.mjs';
-import { http, C, R, record } from '../../api/test/teaching-time-classes-materials-fixture.js';
+import { http, C, R, Q, question, record } from '../../api/test/teaching-time-classes-materials-fixture.js';
 
 let world, call, directory;
 test.beforeEach(async ({ page }) => {
@@ -102,8 +102,8 @@ test('从用途空态完成一句话记录，编辑与新建互斥，重新打�
   await expect(page.getByLabel('写一句', { exact: true })).toHaveValue('新记录的草稿');
 });
 
-test('补充逐项出现，关联备课不需要先填进度，保存后按日期显示摘要', async ({ page }) => {
-  const lesson = await call('POST', '/api/modules/lessons/v3', { title: '函数单调性', intro: { version: 1, blocks: [] }, sections: [], materials: [] }, 201);
+test('补充逐项出现，关联题目不需要先填进度，保存后按日期显示摘要', async ({ page }) => {
+  const source = await call('POST', Q, question('函数单调性'), 201);
   await createClass(page);
   await page.getByRole('button', { name: '关联资料', exact: true }).click();
   const picker = page.getByRole('dialog', { name: '关联资料' });
@@ -122,7 +122,7 @@ test('补充逐项出现，关联备课不需要先填进度，保存后按日�
   const classes = await call('GET', C);
   const records = await call('GET', `${R}?classId=${classes.items[0].id}`);
   expect(records.items).toHaveLength(1);
-  expect(records.items[0].sources[0].id).toBe(lesson.id);
+  expect(records.items[0].sources[0].id).toBe(source.id);
   await page.getByRole('button', { name: '编辑记录', exact: true }).click();
   await page.getByLabel('教学位置', { exact: true }).fill('');
   await expect(page.getByLabel('教学位置', { exact: true })).toBeFocused();

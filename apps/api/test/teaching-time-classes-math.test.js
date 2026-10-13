@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createTeachingTimeClassesHarness, classSample, questionSample, lessonSample, recordSample } from './teaching-time-classes-harness.js';
+import { createTeachingTimeClassesHarness, classSample, questionSample, recordSample } from './teaching-time-classes-harness.js';
 
-for (const kind of ['question', 'lesson']) {
+for (const kind of ['question']) {
   test(`TM-C6 HTTP: ${kind} 404 must not become a tombstone`, async () => {
     const h = await createTeachingTimeClassesHarness();
     try {
       const api = h.agent(h.createAccount('teacher-a'));
       const c = (await api.post('/api/modules/classes/items', classSample(), { key: h.nextUuid() }).expect(201)).body;
-      const source = (await api.post(`/api/modules/${kind}s/items`, kind === 'question' ? questionSample() : lessonSample(), { key: h.nextUuid() }).expect(201)).body;
+      const source = (await api.post(`/api/modules/${kind}s/items`, questionSample(), { key: h.nextUuid() }).expect(201)).body;
       const r = (await api.post('/api/modules/classes/records', recordSample(c.id, { sources: [{kind, id: source.id}] }), {key: h.nextUuid()}).expect(201)).body;
       h.db().prepare(`DELETE FROM ${kind}_items WHERE id = ?`).run(source.id);
       const result = await api.get(`/api/modules/classes/records/${r.id}`);
@@ -135,7 +135,7 @@ test('TM-C7 schedule RecordReference remains readable when math projection fails
   const r=(await write(V2,input,201)).body;
   const entry=(await write('/api/modules/schedule/entries',{
     title:'摘要不解析作品',items:[],time:{date:'2026-09-21',startTime:'15:00',durationMinutes:90,timeZone:'Asia/Shanghai'},repeat:null,reminder:null,
-    course:{classId:input.classId,lessonId:null,recordIds:[r.id]}
+    course:{classId:input.classId,recordIds:[r.id]}
   },201)).body;
   h.db().prepare('UPDATE t51_math_adapter SET fault=503').run();
   const summary=await api.get(`/api/modules/schedule/entries/${entry.id}`).expect(200);

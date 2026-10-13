@@ -9,7 +9,7 @@ const evidence = path.resolve(process.env.T53_AUTH_EVIDENCE || 'test-results/t53
 let world, now, directory, network;
 const entries = '/api/modules/schedule/entries';
 const notices = '/api/modules/schedule/notifications';
-const input = { title: '甲账户安排', items: [], time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' }, repeat: null, course: { classId: null, lessonId: null, recordIds: [] }, reminder: { side: 'before', minutes: 10 } };
+const input = { title: '甲账户安排', items: [], time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' }, repeat: null, course: { classId: null, recordIds: [] }, reminder: { side: 'before', minutes: 10 } };
 async function api(page, endpoint, data, method = 'POST') {
   const response = await page.request.fetch(world.origin + endpoint, { method: data ? method : 'GET', data,
     headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': randomUUID() } });
@@ -44,7 +44,7 @@ test('AUTH-T01: UI create save, expiry login recovery, account isolation and pre
   await page.locator('[data-region=record-composer]').getByRole('button', { name: '保存', exact: true }).click();
   await expect(page.locator('[data-region=record-rows]')).toContainText('真实认证教学记录');
   const record = (await api(page, '/api/modules/classes/records?classId=' + classId)).body.items[0];
-  const entry = (await api(page, entries, { ...input, course: { classId, lessonId: null, recordIds: [record.id] } })).body;
+  const entry = (await api(page, entries, { ...input, course: { classId, recordIds: [record.id] } })).body;
   await page.goto(world.origin + '/calendar?entry=' + entry.id);
   await page.locator('[name=entry-title]').fill('真实认证安排已修改');
   await page.locator('[data-action=save]').click();

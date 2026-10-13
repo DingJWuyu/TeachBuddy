@@ -270,8 +270,6 @@
 .wb-content-pane,
 .wb-preview-pane,
 .wb-panel,
-.wb-lesson-block,
-.wb-section,
 .wb-editor,
 .wb-reader,
 .wb-tool {
@@ -307,14 +305,6 @@
   padding: 6px;
 }
 
-.wb-lessons-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 4px 12px 12px;
-}
-
 .wb-card-row {
   display: flex;
   align-items: center;
@@ -346,7 +336,6 @@
 .wb-card-list,
 .wb-tool-list,
 .wb-draft-list ul,
-.wb-choice-list,
 .wb-relation ul {
   list-style: none;
   margin: 0;
@@ -592,8 +581,7 @@
 }
 
 .wb-reader,
-.wb-editor,
-.wb-lesson {
+.wb-editor {
   min-height: 0;
   overflow: hidden;
   display: flex;
@@ -601,7 +589,6 @@
 }
 
 .wb-reader-scroll,
-.wb-lesson-scroll,
 .wb-editor {
   flex: 1;
   min-height: 0;
@@ -682,8 +669,7 @@
 }
 
 .wb-note-block h3,
-.wb-relation h3,
-.wb-lesson-block h3 {
+.wb-relation h3 {
   font-size: 12px;
   font-weight: 600;
   color: var(--wb-muted);
@@ -765,7 +751,6 @@
 .wb-chip:focus-visible,
 .wb-tab:focus-visible,
 .wb-row-body:focus-visible,
-.wb-choice:focus-visible,
 .wb-outline-row:focus-visible,
 .wb-ai-entry:focus-visible {
   outline: 2px solid #a796cf;
@@ -973,98 +958,6 @@
 
 .wb-muted {
   color: var(--wb-muted);
-}
-
-/* ---------------------------------------------------------------- lessons */
-
-.wb-lesson-scroll {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 12px;
-  background: var(--wb-bg);
-}
-
-.wb-lesson-block,
-.wb-section {
-  padding: 10px 12px;
-}
-
-.wb-inline-action {
-  align-self: flex-start;
-}
-
-.wb-section-head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-
-.wb-section-title {
-  flex: 1;
-  min-width: 100px;
-  font-weight: 600;
-  border-color: transparent;
-  background: transparent;
-}
-
-.wb-section-title:hover,
-.wb-section-title:focus {
-  border-color: var(--wb-line);
-  background: var(--wb-surface);
-}
-
-.wb-references {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.wb-reference {
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: light-dark(#fafafa, var(--app-soft));
-  box-shadow: inset 0 0 0 1px var(--wb-line-soft);
-}
-
-.wb-reference-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 6px;
-}
-
-.wb-reference-head h4 {
-  font-size: 13px;
-  font-weight: 600;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.wb-reference-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-}
-
-.wb-move-select {
-  width: auto;
-  height: 28px;
-  padding: 0 6px;
-  font-size: 12px;
-}
-
-.wb-reference-note {
-  display: block;
-  margin-top: 8px;
-}
-
-.wb-reference-body {
-  font-size: 13px;
 }
 
 .wb-banner {
@@ -1416,36 +1309,6 @@
   flex-wrap: wrap;
 }
 
-.wb-choice-list {
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.wb-choice {
-  height: 30px;
-  padding: 0 11px;
-  border: 1px solid var(--wb-line);
-  border-radius: 8px;
-  background: var(--wb-surface);
-  cursor: pointer;
-}
-
-.wb-choice.is-active {
-  background: var(--wb-ink);
-  border-color: var(--wb-ink);
-  color: var(--app-on-primary);
-}
-
-.wb-new-lesson {
-  display: flex;
-  gap: 6px;
-}
-
-.wb-add-dialog {
-  width: min(560px, calc(100vw - 32px));
-}
-
 .wb-compare-dialog {
   width: min(880px, calc(100vw - 32px));
 }
@@ -1711,8 +1574,6 @@
 .wb-settings dd {
   overflow-wrap: anywhere;
 }
-
-.wb-material-return { padding: 8px 16px; border-bottom: 1px solid light-dark(#e3e3e3, var(--app-line)); }
 .wb-sidebar.is-collapsed .wb-ai-entry span { display: none; }
 .wb-main > .res-workspace { flex: 1; height: auto; }
 
@@ -1792,7 +1653,7 @@
 .wb-module .wb-button.is-primary:not(:disabled):hover { background-color: #6952ad; }
 .wb-module .wb-split { background-image: none; gap: 16px; padding: 16px; }
 .wb-module :is(.wb-list-pane, .wb-content-pane, .wb-preview-pane) { box-shadow: inset 0 0 0 1px var(--wb-line); }
-.wb-module :is(.wb-reader, .wb-editor, .wb-lesson-block, .wb-section) { box-shadow: none; }
+.wb-module :is(.wb-reader, .wb-editor) { box-shadow: none; }
 .wb-module :is(.wb-reader-scroll, .wb-editor) { padding: 20px 24px; }
 .wb-module .wb-object-head { min-height: 52px; padding: 10px 20px; gap: 12px; }
 .wb-module .wb-object-title { font-size: 16px; }
@@ -1800,15 +1661,6 @@
 .wb-module input.wb-object-title-input:is(:hover, :focus) { border-color: var(--wb-line); }
 .wb-module .wb-label { font-size: 12px; line-height: 18px; letter-spacing: 0; text-transform: none; }
 .wb-module .wb-field { gap: 6px; margin-bottom: 20px; }
-.wb-module .wb-lesson-scroll { gap: 0; padding: 24px clamp(20px, 4vw, 56px); background: light-dark(#fff, var(--app-surface)); }
-.wb-module .wb-section { padding: 20px 0; border-radius: 0; border-top: 1px solid var(--wb-line-soft); }
-.wb-module .wb-lesson-block { padding: 0 0 20px; border-radius: 0; }
-.wb-module .wb-reference { border-radius: 6px; padding: 12px; box-shadow: none; background: light-dark(#f8f8f9, var(--app-soft)); }
-.wb-module .wb-section-title { font-size: 15px; }
-.wb-module .wb-section-head { gap: 8px; }
-.wb-module .wb-lesson-block h3 { font-size: 12px; letter-spacing: 0; margin-bottom: 8px; }
-.wb-module .wb-lesson-scroll > .wb-section:first-child { border-top: 0; }
-.wb-module .wb-lesson-scroll > .wb-inline-action { margin: 12px 0 24px; }
 .wb-module .wb-empty-note { padding: 20px 16px; line-height: 1.8; }
 .wb-module .wb-block-controls { gap: 2px; }
 .wb-module .wb-block-controls .wb-icon-button { border-color: transparent; background: transparent; color: var(--wb-muted); }
@@ -1841,8 +1693,7 @@
 }
 .wb-module-presence.is-surface > :is(.wb-dialog-host, .q-modal-backdrop, .res-overlay) { z-index: 400; }
 .wb-module-presence.is-surface[data-state='closed'] > * { opacity: 0; pointer-events: none; }
-.wb-module-presence.is-surface > :is(.wb-popover, .wb-dialog-host, .q-modal-backdrop, .res-overlay),
-.wb-module-presence.is-surface :is(.wb-dialog, .q-modal, .res-dialog) { animation: none; }
+.wb-module-presence.is-surface > :is(.wb-popover, .wb-dialog-host, .q-modal-backdrop, .res-overlay), .wb-module-presence.is-surface :is(.wb-dialog, .q-modal, .res-dialog) { animation: none; }
 .wb-module-presence.is-surface > .wb-popover {
   transform: translateY(0) scale(1);
   transition: opacity 180ms ease, transform 180ms var(--wb-module-ease, cubic-bezier(.22,1,.36,1));
@@ -1884,7 +1735,6 @@
 @media (max-width: 1000px) {
   .wb-module :is(.wb-reader-scroll, .wb-editor) { padding: 16px; }
   .wb-module .wb-object-head { padding: 10px 12px; flex-wrap: wrap; }
-  .wb-module .wb-lesson-scroll { padding: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .wb-module details::details-content,

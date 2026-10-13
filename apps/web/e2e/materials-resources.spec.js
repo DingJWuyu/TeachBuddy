@@ -71,7 +71,7 @@ test("WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复", as
   await page.getByRole("button", { name: "恢复资料", exact: true }).click();
   await page.getByRole("button", { name: "确认恢复", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "加入备课", exact: true }),
+    page.getByRole("button", { name: "资料更多操作", exact: true }),
   ).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("资源笔记")).toHaveValue("板书：先观察，再归纳");
@@ -142,7 +142,7 @@ test("WB-M015 旧DOC风险和逐页核对补充PDF", async ({ page }) => {
   });
 });
 
-test("WB-M014 全格式真实页图、返回现场及备课取用 Adapter", async ({ page }) => {
+test("WB-M014 全格式真实页图与返回现场", async ({ page }) => {
   await page.goto("/fixture/session");
   const own = path.resolve("apps/web/e2e/fixtures/materials-resources/samples");
   for (const source of [
@@ -185,13 +185,6 @@ test("WB-M014 全格式真实页图、返回现场及备课取用 Adapter", asyn
     .getByRole("button", { name: /page.webp/ })
     .first()
     .click();
-  await page.getByRole("button", { name: "加入备课", exact: true }).click();
-  await page.getByLabel("选择备课").selectOption({ label: "函数复习课" });
-  await page.getByRole("button", { name: "确认加入", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "前往备课：函数复习课" }),
-  ).toBeVisible();
-  await expect(page.locator(".res-usage")).toContainText("函数复习课");
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await expect(page.getByLabel("搜索资料")).toHaveValue("page.webp");
   await page.screenshot({ path: path.join(evidence, "filtered-library.png") });
@@ -451,53 +444,4 @@ test("预览阅读位置随文件和页恢复", async ({ page }) => {
   await expect
     .poll(() => page.locator(".res-page-scroll").evaluate((e) => e.scrollTop))
     .toBe(scroll);
-});
-test("备课目标快速切换不被迟到响应覆盖", async ({ page }) => {
-  await page.goto("/fixture/session");
-  await page.getByLabel("搜索资料").fill("函数课堂课件");
-  await expect(page.locator(".res-card-open")).toHaveCount(1);
-  await page.locator(".res-card-open").click();
-  const lesson = await page.request
-    .get("/api/modules/lessons/v3")
-    .then((r) => r.json())
-    .then((v) => v.items[0]);
-  const a = {
-      ...lesson,
-      id: "00000000-0000-4000-8000-000000000801",
-      title: "备课 A",
-    },
-    b = {
-      ...lesson,
-      id: "00000000-0000-4000-8000-000000000802",
-      title: "备课 B",
-    };
-  let release;
-  const gate = new Promise((resolve) => {
-    release = resolve;
-  });
-  await page.route("**/api/modules/lessons/v3", (route) =>
-    route.fulfill({ json: { items: [a, b] } }),
-  );
-  await page.route(`**/api/modules/lessons/v3/${a.id}`, async (route) => {
-    await gate;
-    await route.fulfill({ json: a });
-  });
-  await page.route(`**/api/modules/lessons/v3/${b.id}`, (route) =>
-    route.fulfill({ json: b }),
-  );
-  await page.getByRole("button", { name: "加入备课", exact: true }).click();
-  const requested = page.waitForRequest((r) => r.url().endsWith(a.id));
-  await page.getByLabel("选择备课").selectOption(a.id);
-  await requested;
-  await page.getByLabel("选择备课").selectOption(b.id);
-  await expect(page.getByLabel("选择备课")).toHaveValue(b.id);
-  const late = page.waitForResponse((r) => r.url().endsWith(a.id));
-  release();
-  await late;
-  await page.waitForFunction(() =>
-    performance
-      .getEntriesByType("resource")
-      .some((r) => r.name.endsWith("00000000-0000-4000-8000-000000000801")),
-  );
-  await expect(page.getByLabel("选择备课")).toHaveValue(b.id);
 });

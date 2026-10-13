@@ -14,7 +14,7 @@ import { localParts } from './zoned.js';
 import * as api from './api.js';
 import './schedule.css';
 
-const withoutEmptyItems = content => content && ({ ...content, items: content.items.filter(item => item.text.trim()) });
+const withoutEmptyItems = content => content && ({ ...contentOf(content), items: content.items.filter(item => item.text.trim()) });
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const overrideContent = ({ repeat, ...content }) => content;
 function shiftRepeat(content, delta) {

@@ -32,7 +32,7 @@ function snapshot(directory, legacyColumns = false) {
     return Object.fromEntries(
       db
         .prepare(
-          "SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE 'question%' OR name LIKE 'classes_%' OR name LIKE 'lesson_%' OR name LIKE 'math_%' OR name='materials_files' OR name='workbench_mutation_keys') ORDER BY name",
+          "SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE 'question%' OR name LIKE 'classes_%' OR name LIKE 'math_%' OR name='materials_files' OR name='workbench_mutation_keys') ORDER BY name",
         )
         .all()
         .map(({ name }) => [
@@ -125,7 +125,7 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
   }
   try {
     let call = await start();
-    assert.deepEqual(snapshot(candidate, true), { ...oldRows, lesson_order: hash("[]"), lesson_history: hash("[]"), classes_removed_objects: hash("[]") });
+    assert.deepEqual(snapshot(candidate, true), { ...oldRows, classes_removed_objects: hash("[]") });
     assert.deepEqual(files(candidate), oldFiles);
     assert.deepEqual(await call("GET", `${R}/${seed.saved.id}`), { ...seed.saved, nextNoteHidden: false, content: { version: 2, blocks: [] } });
     assert.deepEqual(
@@ -138,7 +138,7 @@ test("WB-MTA002: immutable old candidate database, normal rich upgrade and two r
       ),
       seed.saved,
     );
-    assert.deepEqual(snapshot(candidate, true), { ...oldRows, lesson_order: hash("[]"), lesson_history: hash("[]"), classes_removed_objects: hash("[]") });
+    assert.deepEqual(snapshot(candidate, true), { ...oldRows, classes_removed_objects: hash("[]") });
     const upgraded = await call("PUT", `${Q}/${seed.item.id}`, {
       ...writable({
         ...seed.item,

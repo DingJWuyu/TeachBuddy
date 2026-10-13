@@ -20,7 +20,7 @@ export default function Home({ returnPath }) {
   {empty && <div className="restored-welcome"><div className="restored-mark"><Icon name="sparkles" size={30}/></div><h1>{t("今天，想从哪里开始？")}</h1><p>{t("从一道好题、一个想法，开始准备下一节课。")}</p></div>}
   <div className="restored-composer-area">
   <AiWorkspace variant="home" />
-  {empty && !agent.draft && <button className="restored-start" onClick={()=>{focusComposer.current=true; void agent.create();}} disabled={agent.busy}><span className="restored-placeholder">{t("聊聊备课思路，或带上一道题……")}</span><span className="restored-composer-bottom"><span>{t("教学助理")}</span><span className="restored-send" aria-hidden="true"><Icon name="arrowUp" size={18}/></span></span></button>}
+  {empty && !agent.draft && <button className="restored-start" onClick={()=>{focusComposer.current=true; void agent.create();}} disabled={agent.busy}><span className="restored-placeholder">{t("聊聊教学思路，或带上一道题……")}</span><span className="restored-composer-bottom"><span>{t("教学助理")}</span><span className="restored-send" aria-hidden="true"><Icon name="arrowUp" size={18}/></span></span></button>}
   {empty && <div className="restored-suggestions">{[t("梳理一节课的讲解顺序"),t("讨论一道题的不同讲法"),t("构思一个数学演示")].map(text=><button className="wb-button" key={text} disabled={agent.busy} onClick={()=>{
    if (agent.draft) { agent.edit({text}); document.querySelector('.restored-home .wb-ai-input')?.focus(); }
    else { pendingPrompt.current=text; focusComposer.current=true; void agent.create(); }

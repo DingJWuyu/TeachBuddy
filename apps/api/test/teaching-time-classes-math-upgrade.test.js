@@ -31,12 +31,12 @@ test('TM-C1/C5 fixed T53 SQLite upgrade preserves old links and successful recei
     fs.symlinkSync(path.join(dir,'packages/shared'),path.join(dir,'node_modules/@refatos/shared'),'dir');
     fs.writeFileSync(path.join(dir,'package.json'),' {"type":"module"}');
     const script=`
-      import { createTeachingTimeClassesHarness, classSample, lessonSample, recordSample } from './apps/api/test/teaching-time-classes-harness.js';
+      import { createTeachingTimeClassesHarness, classSample, questionSample, recordSample } from './apps/api/test/teaching-time-classes-harness.js';
       const h=await createTeachingTimeClassesHarness({databasePath:${JSON.stringify(db)}});
       const api=h.agent(h.createAccount('teacher-a'));
       const c=(await api.post('/api/modules/classes/items',classSample(),{key:h.nextUuid()}).expect(201)).body;
-      const l=(await api.post('/api/modules/lessons/items',lessonSample(),{key:h.nextUuid()}).expect(201)).body;
-      const body=recordSample(c.id,{sources:[{kind:'lesson',id:l.id}]}); const key=h.nextUuid();
+      const l=(await api.post('/api/modules/questions/items',questionSample(),{key:h.nextUuid()}).expect(201)).body;
+      const body=recordSample(c.id,{sources:[{kind:'question',id:l.id}]}); const key=h.nextUuid();
       const r=(await api.post('/api/modules/classes/records',body,{key}).expect(201)).body;
       process.stdout.write(JSON.stringify({body,key,r})); h.close();
     `;

@@ -72,7 +72,7 @@ test('有文字层的 PDF 自动拆题，保留原稿并可确认', async ({page
   await page.screenshot({path:path.join(evidence,'pdf-review.png')});
 });
 
-test('图文公式答案、分类标记检索、删除恢复、批量备课与班级反馈', async ({page}) => {
+test('图文公式答案、分类标记检索、删除恢复、班级反馈', async ({page}) => {
   await start(page);
   await create(page,'图文题');
   await expect(page.getByRole('button',{name:'教师注记',exact:true})).toHaveCount(0);
@@ -113,16 +113,6 @@ test('图文公式答案、分类标记检索、删除恢复、批量备课与�
   await expect(page.locator('.q-list-entry')).toHaveCount(1);
   await page.getByLabel('搜索题目').fill('');
   await create(page,'第二题');
-  await page.getByLabel('选择题目：图文题',{exact:true}).check();
-  await page.getByLabel('选择题目：第二题',{exact:true}).check();
-  await page.getByRole('button',{name:'加入备课（2 题）',exact:true}).click();
-  await page.getByLabel('新备课课题').fill('平方根复习');
-  await page.locator('[name="confirm-add"]').click();
-  await expect(page.locator('[data-region="add-result"]')).toContainText('已加入');
-  await page.getByRole('button',{name:'留在题库',exact:true}).click();
-  await page.locator('.q-list button').filter({hasText:'图文题'}).click();
-  await page.getByText('使用位置',{exact:true}).click();
-  await expect(page.locator('.q-usage-link')).toContainText('平方根复习');
   await page.locator('.wb-sidebar').getByRole('link',{name:'班级教学',exact:true}).click();
   await page.getByRole('button',{name:'新建班级',exact:true}).click();
   await page.getByLabel('班级名称',{exact:true}).fill('题库验证班');
@@ -329,7 +319,7 @@ test('旧 DOC 本机转换后自动读取，对照校对并保存重开', async 
   } finally { await fresh.close(); }
 });
 
-test('未保存编辑经删除恢复仍在，取用时使用当前修改', async ({page}) => {
+test('未保存编辑经删除恢复仍在，再次保存保留当前修改', async ({page}) => {
   await start(page);
   await create(page,'修改后取用');
   await page.locator('.q-question textarea').first().fill('当前修改：$x^2=16$。');
@@ -339,16 +329,9 @@ test('未保存编辑经删除恢复仍在，取用时使用当前修改', async
   await expect(page.getByRole('button',{name:'恢复题目',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'恢复题目',exact:true}).click();
   await expect(page.locator('.q-question textarea').first()).toHaveValue('当前修改：$x^2=16$。');
-  await page.getByRole('button',{name:'保存并加入备课',exact:true}).click();
-  await page.getByLabel('新备课课题').fill('采用当前编辑');
-  await page.locator('[name="confirm-add"]').click();
-  await expect(page.locator('[data-region="add-result"]')).toContainText('已加入');
-  const lessonUrl = await page.getByRole('link',{name:'前往备课',exact:true}).getAttribute('href');
-  const reading = page.waitForResponse(response => response.url().endsWith('/api/modules/lessons/v3/' + lessonUrl.split('/').at(-1)) && response.ok());
-  await page.getByRole('link',{name:'前往备课',exact:true}).click();
-  const data = await (await reading).json();
-  expect(JSON.stringify(data)).toContain('当前修改');
-  expect(JSON.stringify(data)).toContain('16');
+  await page.getByRole('button',{name:'保存题目',exact:true}).click();
+  await page.reload();
+  await expect(page.locator('.q-question textarea').first()).toHaveValue('当前修改：$x^2=16$。');
 });
 
 test('修改后的公式可生成并下载透明题面 PNG', async ({page}) => {

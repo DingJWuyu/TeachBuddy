@@ -5,7 +5,6 @@
 export const SAMPLE_IDS = Object.freeze({
   classOne: '10000000-0000-4000-8000-000000000001',
   classTwo: '10000000-0000-4000-8000-000000000002',
-  lessonOne: '20000000-0000-4000-8000-000000000001',
   questionOne: '20000000-0000-4000-8000-000000000002',
   recordOne: '30000000-0000-4000-8000-000000000001',
   entryOne: '40000000-0000-4000-8000-000000000001',
@@ -14,7 +13,7 @@ export const SAMPLE_IDS = Object.freeze({
 });
 
 export function emptyCourse(overrides = {}) {
-  return { classId: null, lessonId: null, recordIds: [], ...overrides };
+  return { classId: null, recordIds: [], ...overrides };
 }
 
 export function unscheduledEntry(overrides = {}) {

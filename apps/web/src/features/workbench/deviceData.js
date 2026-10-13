@@ -1,8 +1,9 @@
 import { pendingStore } from '../resources/client.js';
 import { uploadDraft } from '../math/uploadDraft.js';
 import { currentEditorBranch, listLocalNames, resetLocalReaders, selectLocalSnapshots } from './storage.js';
+const retiredScene = name => /lesson|material-navigation|math-return|questions-return-focus/.test(name);
 const prefix = account => `tb.workbench.v1:${account}:`;
-const moduleOf = name => /question/.test(name) ? 'questions' : /lesson/.test(name) ? 'lessons'
+const moduleOf = name => /question/.test(name) ? 'questions'
   : /resource/.test(name) ? 'resources' : /math/.test(name) ? 'math' : /class|record/.test(name) ? 'classes'
     : /schedule|notification|feedback/.test(name) ? 'schedule' : /preference/.test(name) ? 'preferences' : 'shell';
 function hasPending(value) {
@@ -38,7 +39,7 @@ export async function inspectDeviceData(account) {
   for (const entry of entries) entry.keep = entry.unreadable || protectedModules.has(entry.module);
   const unique = [...new Map(entries.filter(entry => !entry.name.startsWith('head:')).map(entry => [JSON.stringify([entry.name.replace(/^branch:[^:]+:/, ''), entry.value]), entry])).values()];
   const groups = new Map();
-  for (const entry of entries.filter(entry => entry.branch && entry.branch !== currentEditorBranch() && !entry.unreadable)) {
+  for (const entry of entries.filter(entry => entry.branch && entry.branch !== currentEditorBranch() && !entry.unreadable && !retiredScene(entry.logicalName ?? entry.name))) {
     const id = `${entry.branch}:${entry.module}`;
     if (!groups.has(id)) groups.set(id, { id, module: entry.module, updatedAt: entry.updatedAt, entries: [] });
     const group = groups.get(id); group.entries.push(entry);
@@ -64,10 +65,8 @@ export function resumeDeviceCandidate(account, inventory, candidate) {
   const names = [...new Set(inventory.entries.filter(entry => entry.module === candidate.module && !entry.name.startsWith('head:'))
     .map(entry => entry.logicalName ?? entry.name))];
   selectLocalSnapshots(account, names, candidate.entries);
-  const draft = candidate.entries.find(entry => /^draft:lesson:/.test(entry.logicalName));
-  return draft ? `/lessons/${encodeURIComponent(draft.logicalName.slice('draft:lesson:'.length))}`
-    : ({ questions: '/questions', lessons: '/lessons', resources: '/resources', math: '/math',
-      classes: '/classes', schedule: '/calendar', preferences: '/settings', shell: '/' })[candidate.module];
+  return ({ questions: '/questions', resources: '/resources', math: '/math',
+    classes: '/classes', schedule: '/calendar', preferences: '/settings', shell: '/' })[candidate.module] ?? '/';
 }
 export async function clearDeviceData(account) {
   // Re-read immediately before removing: never delete a newly pending operation.

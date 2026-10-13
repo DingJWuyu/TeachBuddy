@@ -36,7 +36,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           }
         ]
@@ -76,7 +76,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -100,7 +100,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           }
         ]
@@ -123,7 +123,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": null
@@ -134,7 +133,7 @@
       "schema": "EntryInput",
       "valid": true,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -151,7 +150,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -170,7 +168,7 @@
         "createdAt": "2026-09-21T06:00:00Z",
         "updatedAt": "2026-09-21T06:00:00Z",
         "deletedAt": null,
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -187,7 +185,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -196,7 +193,6 @@
         },
         "courseState": {
           "classroom": null,
-          "lesson": null,
           "records": []
         }
       }
@@ -207,7 +203,7 @@
       "valid": true,
       "value": {
         "expectedVersion": 1,
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -224,7 +220,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -238,7 +233,7 @@
       "schema": "EntryInput",
       "valid": true,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -257,7 +252,6 @@
         },
         "course": {
           "classId": "10000000-0000-4000-8000-000000000001",
-          "lessonId": "20000000-0000-4000-8000-000000000001",
           "recordIds": []
         },
         "reminder": {
@@ -288,7 +282,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -305,7 +298,7 @@
         "expectedVersion": 1,
         "mode": "override",
         "content": {
-          "title": "备课",
+          "title": "教学安排",
           "items": [
             {
               "id": "50000000-0000-4000-8000-000000000001",
@@ -321,7 +314,6 @@
           },
           "course": {
             "classId": null,
-            "lessonId": null,
             "recordIds": []
           },
           "reminder": {
@@ -361,7 +353,7 @@
         "entryVersion": 1,
         "exception": false,
         "state": "active",
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -380,12 +372,10 @@
         "timeAdjusted": false,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "courseState": {
           "classroom": null,
-          "lesson": null,
           "records": []
         },
         "reminder": {
@@ -410,7 +400,7 @@
             "entryVersion": 1,
             "exception": false,
             "state": "active",
-            "title": "备课",
+            "title": "教学安排",
             "items": [
               {
                 "id": "50000000-0000-4000-8000-000000000001",
@@ -429,12 +419,10 @@
             "timeAdjusted": false,
             "course": {
               "classId": null,
-              "lessonId": null,
               "recordIds": []
             },
             "courseState": {
               "classroom": null,
-              "lesson": null,
               "records": []
             },
             "reminder": {
@@ -469,7 +457,7 @@
           "entryId": "40000000-0000-4000-8000-000000000001",
           "originDate": null
         },
-        "title": "备课",
+        "title": "教学安排",
         "dueAt": "2026-09-21T08:20:00Z",
         "readAt": null,
         "dismissedAt": null
@@ -487,7 +475,7 @@
               "entryId": "40000000-0000-4000-8000-000000000001",
               "originDate": null
             },
-            "title": "备课",
+            "title": "教学安排",
             "dueAt": "2026-09-21T08:20:00Z",
             "readAt": null,
             "dismissedAt": null
@@ -567,17 +555,6 @@
       }
     },
     {
-      "id": "lesson-port",
-      "schema": "LessonReference",
-      "valid": true,
-      "value": {
-        "id": "20000000-0000-4000-8000-000000000001",
-        "version": 1,
-        "title": "函数单调性",
-        "deletedAt": null
-      }
-    },
-    {
       "id": "catalog-v2",
       "schema": "ModuleCatalogV2",
       "valid": true,
@@ -593,24 +570,13 @@
             "requires": []
           },
           {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
-            "requires": [
-              "questions.readForReference"
-            ]
-          },
-          {
             "id": "classes",
             "name": "班级",
             "path": "/classes",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
             "requires": [
-              "questions.readForReference",
-              "lessons.readForTeachingLink"
+              "questions.readForReference"
             ]
           },
           {
@@ -621,8 +587,7 @@
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
@@ -644,24 +609,13 @@
             "requires": []
           },
           {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
-            "requires": [
-              "questions.readForReference"
-            ]
-          },
-          {
             "id": "questions",
             "name": "班级",
             "path": "/classes",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
             "requires": [
-              "questions.readForReference",
-              "lessons.readForTeachingLink"
+              "questions.readForReference"
             ]
           },
           {
@@ -672,15 +626,14 @@
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
       },
       "expectedStaticValidation": {
         "status": 422,
-        "field": "/items/2/id",
+        "field": "/items/1/id",
         "reason": "duplicate-id"
       }
     },
@@ -700,9 +653,9 @@
             "requires": []
           },
           {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
+            "id": "classes",
+            "name": "班级",
+            "path": "/classes",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
             "requires": [
@@ -710,33 +663,21 @@
             ]
           },
           {
-            "id": "classes",
-            "name": "班级",
-            "path": "/classes",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
-            "requires": [
-              "questions.readForReference",
-              "lessons.readForTeachingLink"
-            ]
-          },
-          {
             "id": "schedule",
             "name": "日程",
-            "path": "/lessons",
+            "path": "/questions",
             "navigation": "top",
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
       },
       "expectedStaticValidation": {
         "status": 422,
-        "field": "/items/3/path",
+        "field": "/items/2/path",
         "reason": "duplicate-id"
       }
     },
@@ -756,24 +697,13 @@
             "requires": []
           },
           {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
-            "requires": [
-              "questions.readForReference"
-            ]
-          },
-          {
             "id": "classes",
             "name": "班级",
             "path": "/classes",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
             "requires": [
-              "questions.readForReference",
-              "lessons.readForTeachingLink"
+              "questions.readForReference"
             ]
           },
           {
@@ -784,8 +714,7 @@
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
@@ -809,14 +738,6 @@
             "path": "/questions",
             "navigation": "sidebar",
             "auxiliaryPanel": true,
-            "requires": []
-          },
-          {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
             "requires": [
               "classes.readClass"
             ]
@@ -828,8 +749,7 @@
             "navigation": "sidebar",
             "auxiliaryPanel": true,
             "requires": [
-              "questions.readForReference",
-              "lessons.readForTeachingLink"
+              "questions.readForReference"
             ]
           },
           {
@@ -840,8 +760,7 @@
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
@@ -861,7 +780,7 @@
           "entryId": "40000000-0000-4000-8000-000000000001",
           "originDate": null
         },
-        "title": "备课",
+        "title": "教学安排",
         "dueAt": "2026-09-21T08:20:00Z",
         "armedAt": "2026-09-21T06:00:00Z"
       }
@@ -1060,7 +979,7 @@
       "schema": "EntryInput",
       "valid": false,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1078,7 +997,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1097,7 +1015,7 @@
       "schema": "EntryInput",
       "valid": false,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1115,7 +1033,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1134,7 +1051,7 @@
       "schema": "EntryInput",
       "valid": false,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1154,7 +1071,6 @@
         },
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1173,7 +1089,7 @@
       "schema": "EntryInput",
       "valid": false,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1190,7 +1106,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": [],
           "unexpected": true
         },
@@ -1210,7 +1125,7 @@
       "schema": "EntryInput",
       "valid": false,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1227,7 +1142,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1248,7 +1162,7 @@
       "valid": false,
       "value": {
         "expectedVersion": 1,
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1266,7 +1180,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1286,7 +1199,7 @@
       "valid": false,
       "value": {
         "expectedVersion": 1,
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1304,7 +1217,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1324,7 +1236,7 @@
       "valid": false,
       "value": {
         "expectedVersion": 1,
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1344,7 +1256,6 @@
         },
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1364,7 +1275,7 @@
       "valid": false,
       "value": {
         "expectedVersion": 1,
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1381,7 +1292,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": [],
           "unexpected": true
         },
@@ -1402,7 +1312,7 @@
       "valid": false,
       "value": {
         "expectedVersion": 1,
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1419,7 +1329,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1439,7 +1348,7 @@
       "schema": "Override",
       "valid": false,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1456,7 +1365,6 @@
         },
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1475,7 +1383,7 @@
       "schema": "Override",
       "valid": false,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1491,7 +1399,6 @@
         },
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": [],
           "unexpected": true
         },
@@ -1511,7 +1418,7 @@
       "schema": "Override",
       "valid": false,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1527,7 +1434,6 @@
         },
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1547,7 +1453,7 @@
       "schema": "EntryInput",
       "valid": false,
       "value": {
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1564,7 +1470,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1659,7 +1564,7 @@
         "expectedVersion": 1,
         "mode": "inherit",
         "content": {
-          "title": "备课",
+          "title": "教学安排",
           "items": [
             {
               "id": "50000000-0000-4000-8000-000000000001",
@@ -1675,7 +1580,6 @@
           },
           "course": {
             "classId": null,
-            "lessonId": null,
             "recordIds": []
           },
           "reminder": {
@@ -1695,7 +1599,7 @@
         "createdAt": "2026-09-21T06:00:00Z",
         "updatedAt": "2026-09-21T06:00:00Z",
         "deletedAt": null,
-        "title": "备课",
+        "title": "教学安排",
         "items": [
           {
             "id": "50000000-0000-4000-8000-000000000001",
@@ -1713,7 +1617,6 @@
         "repeat": null,
         "course": {
           "classId": null,
-          "lessonId": null,
           "recordIds": []
         },
         "reminder": {
@@ -1722,7 +1625,6 @@
         },
         "courseState": {
           "classroom": null,
-          "lesson": null,
           "records": []
         },
         "extra": true
@@ -1743,6 +1645,25 @@
       "value": {
         "type": "/problems/workbench/invalid-input",
         "field": "/title"
+      }
+    },
+    {
+      "id": "reject-retired-source",
+      "schema": "SourceInput",
+      "valid": false,
+      "value": {
+        "kind": "lesson",
+        "id": "20000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "id": "reject-retired-course-field",
+      "schema": "Course",
+      "valid": false,
+      "value": {
+        "classId": null,
+        "recordIds": [],
+        "lessonId": null
       }
     }
   ]

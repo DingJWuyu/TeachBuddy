@@ -5,7 +5,7 @@
  * occurrences, exceptions, range queries, settings and atomic item moves. It
  * runs either inside a `mutations.execute` transaction (HTTP writes) or as a
  * plain synchronous call (public port reads), never returns a Promise and does
- * no network I/O; cross-module reads go through the injected classes/lessons
+ * no network I/O; cross-module reads go through the injected classes
  * ports, which throw `{status, problem}` contract errors.
  */
 import { contractError, invalidInput, problems } from '../../workbench/problems.js';
@@ -40,13 +40,12 @@ import {
 } from './occurrences.js';
 
 export const DEFAULT_TIME_ZONE = 'Asia/Shanghai';
-export const LESSON_LABEL_FALLBACK = '未命名备课';
 
-const EMPTY_COURSE = Object.freeze({ classId: null, lessonId: null, recordIds: [] });
-const EMPTY_LINKS = Object.freeze({ classroom: null, lesson: null, records: [] });
+const EMPTY_COURSE = Object.freeze({ classId: null, recordIds: [] });
+const EMPTY_LINKS = Object.freeze({ classroom: null, records: [] });
 
 function emptyLinks() {
-  return { classroom: null, lesson: null, records: [] };
+  return { classroom: null, records: [] };
 }
 
 function randomUuid() {
@@ -66,10 +65,6 @@ function sameTime(left, right) {
     && left.durationMinutes === right.durationMinutes;
 }
 
-function displayLessonLabel(title) {
-  const text = typeof title === 'string' ? title.trim() : '';
-  return text === '' ? LESSON_LABEL_FALLBACK : title;
-}
 
 function normalizeContent(value) {
   const repeat = value.repeat ?? null;
@@ -82,7 +77,6 @@ function normalizeContent(value) {
     ...(value.calendar ? { calendar: structuredClone(value.calendar) } : {}),
     course: {
       classId: value.course.classId,
-      lessonId: value.course.lessonId,
       recordIds: [...value.course.recordIds]
     },
     reminder: value.reminder === null ? null : { side: value.reminder.side, minutes: value.reminder.minutes, ...(value.reminder.anchor ? { anchor: value.reminder.anchor } : {}) }
@@ -107,13 +101,10 @@ function parseNow(clock) {
   return { ms, iso: formatIsoZ(ms) };
 }
 
-export function createScheduleService({ repository, classes, lessons, beforeChange, clock }) {
+export function createScheduleService({ repository, classes, beforeChange, clock }) {
   if (!repository) throw new TypeError('createScheduleService requires a repository.');
   if (!classes || typeof classes.readClass !== 'function' || typeof classes.readRecord !== 'function') {
     throw new TypeError('createScheduleService requires the classes.readClass/readRecord ports.');
-  }
-  if (!lessons || typeof lessons.readForTeachingLink !== 'function') {
-    throw new TypeError('createScheduleService requires the lessons.readForTeachingLink port.');
   }
   if (typeof beforeChange !== 'function') {
     throw new TypeError('createScheduleService requires a synchronous beforeChange seam.');
@@ -236,15 +227,6 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
       };
     }
 
-    if (course.lessonId !== null) {
-      const reference = lessons.readForTeachingLink(principal, course.lessonId);
-      const changed = !previous.lesson || previous.lesson.id !== course.lessonId;
-      if (changed && reference.deletedAt !== null) throw scheduleProblems.referenceDeleted();
-      links.lesson = {
-        id: course.lessonId,
-        labelAtLink: changed ? reference.title : previous.lesson.labelAtLink
-      };
-    }
 
     const previousRecords = new Map((previous.records ?? []).map((record) => [record.id, record]));
     if (course.recordIds.length > 0) {
@@ -266,22 +248,13 @@ export function createScheduleService({ repository, classes, lessons, beforeChan
   /** Derived link state for responses; a failing source read fails the read. */
   function buildCourseState(principal, course, links) {
     const stored = links ?? EMPTY_LINKS;
-    const state = { classroom: null, lesson: null, records: [] };
+    const state = { classroom: null, records: [] };
     if (course.classId !== null) {
       const reference = classes.readClass(principal, course.classId);
       state.classroom = {
         id: course.classId,
         labelAtLink: stored.classroom?.labelAtLink ?? reference.name,
         currentLabel: reference.name,
-        deleted: reference.deletedAt !== null
-      };
-    }
-    if (course.lessonId !== null) {
-      const reference = lessons.readForTeachingLink(principal, course.lessonId);
-      state.lesson = {
-        id: course.lessonId,
-        labelAtLink: stored.lesson?.labelAtLink ?? reference.title,
-        currentLabel: displayLessonLabel(reference.title),
         deleted: reference.deletedAt !== null
       };
     }

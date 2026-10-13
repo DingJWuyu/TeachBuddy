@@ -30,8 +30,8 @@ Status: Mixed (既有顶部栏已验收；日程提醒待评审)
 - 引导遮罩拦截其他区域的指针操作，教程入口保持点亮。遮罩从 0s 开始淡入，入口从 0.06s 开始放大点亮，气泡从 0.3s 开始上浮淡入；减少动态效果偏好下直接显示稳态。
 - 全部教程完成时显示祝贺卡片和循环烟花，可关闭；减少动态效果偏好下关闭烟花动画。
 - 通知面板底部的垃圾桶整行常驻，不随列表内容出现或消失；列表为空时显示空状态。
-- 当前尺寸、排版和对齐约束见 [样式](../src/sidebarEditingPrototype.css) 与 [顶部栏验证](../verification/verify-topbar.mjs)。
+- 当前尺寸、排版和对齐约束见 [样式](../src/sidebarEditingPrototype.css) 与 [当前导航与浮层验证](../verification/verify-navigation-notifications-feedback.mjs)。
 
 ## Evidence
 
-当前截图、复现步骤、断言结果及覆盖缺口见 [工作台场景覆盖](workbench-scenarios.md#顶部栏)。
+当前验证入口与历史证据边界见 [工作台场景覆盖](workbench-scenarios.md)。

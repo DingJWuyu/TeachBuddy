@@ -52,7 +52,7 @@ function entryBody(overrides = {}) {
     items: [{ id: overrides.itemId ?? '50000000-0000-4000-8000-000000000001', text: '选例题', priority: 'normal' }],
     time: { date: '2026-09-21', startTime: '15:00', timeZone: 'Asia/Shanghai', durationMinutes: 90 },
     repeat: null,
-    course: { classId: null, lessonId: null, recordIds: [] },
+    course: { classId: null, recordIds: [] },
     reminder: null,
     ...overrides
   };
@@ -274,7 +274,7 @@ test('WB-T007: the priority view is independent from the segment order', async (
     items: [{ id: '50000000-0000-4000-8000-000000000033', text: '未排期的同级事项', priority: 'normal' }],
     time: null,
     repeat: null,
-    course: { classId: null, lessonId: null, recordIds: [] },
+    course: { classId: null, recordIds: [] },
     reminder: null
   });
   assert.equal(pending.status, 201);
@@ -485,17 +485,15 @@ test('WB-T011: the account timezone is editable without moving stored instants',
   await expect(page.locator('[data-region="dst-note"]')).toContainText('03:30');
 });
 
-test('TT-U8/TT-U6: a normal entry links class, lesson and record, and items move back to unscheduled', async ({ page }) => {
+test('TT-U8/TT-U6: a normal entry links class and record, and items move back to unscheduled', async ({ page }) => {
   const client = api('teacher-a');
   const classroom = await client.post('/api/modules/classes/items', { name: '高一(1)班' });
-  const lesson = await client.post('/api/modules/lessons/items', { title: '函数单调性' });
   const record = await client.post('/api/modules/classes/records', {
     classId: classroom.body.id,
     recordedOn: '2026-09-21',
     note: '例2没讲，任意性还需强调'
   });
   assert.equal(classroom.status, 201);
-  assert.equal(lesson.status, 201);
   assert.equal(record.status, 201);
 
   await openPage(page);
@@ -505,7 +503,6 @@ test('TT-U8/TT-U6: a normal entry links class, lesson and record, and items move
   await page.locator('input[name="entry-title"]').fill('关联课');
   await page.locator('[data-region="editor-items"] input[name="item-text"]').first().fill('选例题');
   await page.locator('select[name="class-select"]').selectOption(classroom.body.id);
-  await page.locator('select[name="lesson-select"]').selectOption(lesson.body.id);
   await page.locator(`input[name="record-checkbox"][value="${record.body.id}"]`).check();
   await page.locator('[data-region="entry-editor"] [data-action="save"]').click();
   await expect(page.locator('[data-region="save-state"]')).toContainText('已保存');
@@ -514,11 +511,9 @@ test('TT-U8/TT-U6: a normal entry links class, lesson and record, and items move
   const linked = stored.body.items.find((item) => item.title === '关联课');
   assert.deepEqual(linked.course, {
     classId: classroom.body.id,
-    lessonId: lesson.body.id,
     recordIds: [record.body.id]
   });
   assert.equal(linked.courseState.classroom.currentLabel, '高一(1)班');
-  assert.equal(linked.courseState.lesson.currentLabel, '函数单调性');
   assert.equal(linked.courseState.records[0].currentLabel, '例2没讲，任意性还需强调');
 
   // The item moves back to a brand-new unscheduled entry in one atomic call.
@@ -559,7 +554,7 @@ test('WB-T018: a second save updates, and a version conflict keeps both sides', 
     items: [{ id: current.items[0].id, text: '另一台设备的修改', priority: 'normal' }],
     time: null,
     repeat: null,
-    course: { classId: null, lessonId: null, recordIds: [] },
+    course: { classId: null, recordIds: [] },
     reminder: null
   });
   assert.equal(elsewhere.status, 200);

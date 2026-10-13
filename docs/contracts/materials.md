@@ -1,6 +1,6 @@
-# 材料契约：文件、题目、资源与备课
+# 材料契约：文件、题目与资源
 
-材料语义已采用，当前能力并非全部达标。精确 HTTP/数据定义在 [materials.openapi.yaml](../../apps/api/src/contracts/materials.openapi.yaml)，交换正反例在[案例](#材料交换用例)，技术接缝在[材料实现](#材料实现)。只处理题目保存时读内容、分类和共享保存；涉及文件才展开文件/任务；涉及备课才展开引用/输出。
+材料语义已采用，当前能力并非全部达标。精确 HTTP/数据定义在 [materials.openapi.yaml](../../apps/api/src/contracts/materials.openapi.yaml)，交换正反例在[案例](#材料交换用例)，技术接缝在[材料实现](#材料实现)。只处理题目保存时读内容、分类和共享保存；涉及文件才展开文件/任务；题面素材展开输出节。
 
 ## 共用规则与真实认证边界
 
@@ -8,19 +8,19 @@
 
 所有操作，包括文件字节、缩略图、裁图、预览、任务、补充原稿和引用读取，先经 `resolvePrincipal(request)`。无身份 401，本账户不存在或外账户对象统一 404。客户端不传 accountKey/accountId，不发任意下载 URL 给服务器拉取。真实认证已装配；可信 test-principal 只用于隔离测试，不能被产品 UI/请求参数启用，不能签真实认证 PASS。
 
-JSON 写体上限沿用 2 MiB，文件上传例外为一个 multipart file、100 MiB；单材料最多 100 张图片或一个 PDF/Word，总页数最多 500。超过限制明确 413 或 422，原件若已经保存仍可下载；500 页不是一次 Provider 请求。未知字段及类型不转换，使用 B11 首错次序。资源/备课/环节/材料的标题须含非空白字符，空白标题返回422 invalid-input，按输入保存不自动改写；taxonomy名称的归一化另见分类节。JSON schema 后按归属、版本、对象状态、分类/位置/内容/引用顺序校验；引用依数组顺序。响应允许附加字段，不允许必填值缺失或未知状态当成功。
+JSON 写体上限沿用 2 MiB，文件上传例外为一个 multipart file、100 MiB；单材料最多 100 张图片或一个 PDF/Word，总页数最多 500。超过限制明确 413 或 422，原件若已经保存仍可下载；500 页不是一次 Provider 请求。未知字段及类型不转换，使用 B11 首错次序。资源/材料的标题须含非空白字符，空白标题返回422 invalid-input，按输入保存不自动改写；taxonomy名称的归一化另见分类节。JSON schema 后按归属、版本、对象状态、分类/位置/内容/引用顺序校验；引用依数组顺序。响应允许附加字段，不允许必填值缺失或未知状态当成功。
 
 所有写请求都带 Idempotency-Key；202 仅原子保存任务与初始业务记录，不表示任务完成。幂等成功记录跨重启保留，失败不消耗键。上传按文件名、检测 MIME、SHA-256 绑定请求，multipart 分隔符不参与指纹；同键异字节 409。客户端超时/5xx/无效结果先用同键同请求确认，用户后续输入单存草稿。已知 4xx 修正后新键。Provider 请求的未知结果与浏览器写入未知结果不同，前者不自动再次付费，见任务节。
 
 ## B11 兼容与版本过渡
 
-B11 的文件与冻结定义保持不变。新增题库/备课操作分别位于 `/api/modules/questions/v2`、`/api/modules/lessons/v2`；资源使用自己的模块路径，文件和短任务是 workbench 基础能力。v2 与 B11 读写相同对象、ID、业务版本和幂等账本。路径属于幂等指纹，因此未知旧请求必须在原 B11 路径确认，不能换到 v2 重试。
+B11 的文件与冻结定义保持不变。题库丰富内容操作位于 `/api/modules/questions/v2`；资源使用自己的模块路径，文件和短任务是 workbench 基础能力。v2 与 B11 读写相同对象、ID、业务版本和幂等账本。路径属于幂等指纹，因此未知旧请求必须在原 B11 路径确认，不能换到 v2 重试。
 
-v2 读取旧对象时，原 Document.version=1 原样返回；补充空分类、由旧 solution 是否为空确定 answerStatus，为旧 question 引用补 kind=question。既有题目/来源/引用快照/环节/笔记/时间/删除标记都保留。纯读取不写回、不增加版本。v2 写入时可以继续使用 Document v1，只有使用新节点的文档才写 v2，不全量重写旧文档。快照不被后续内容迁移偷偷替换。
+v2 读取旧对象时，原 Document.version=1 原样返回；补充空分类、由旧 solution 是否为空确定 answerStatus。既有题目/来源/改编快照/笔记/时间/删除标记都保留。纯读取不写回、不增加版本。v2 写入时可以继续使用 Document v1，只有使用新节点的文档才写 v2，不全量重写旧文档。快照不被后续内容迁移偷偷替换。
 
-旧 B11 操作在其可表示对象上继续满足原 schema；附加分类等元数据在旧请求未提供时保持。若旧客户端访问含 v2 文档、新来源或资源引用的对象，服务器返回 B11 已有的 `422 invalid-input / unsupported-content-version`，不做有损投影。旧列表若匹配到不可表示对象，同样明确要求使用新版入口，不静默漏题；旧 UI 保留草稿并进入升级提示/只读路径。旧写入先重放已成功原请求，再检查当前版本，最后拒绝不可表示对象的覆盖。v2 全部对象可正常读取，故这是客户端协议升级，不是丢失数据。
+旧 B11 操作在其可表示对象上继续满足原 schema；附加分类等元数据在旧请求未提供时保持。若旧客户端访问含 v2 文档或新来源的对象，服务器返回 B11 已有的 `422 invalid-input / unsupported-content-version`，不做有损投影。旧列表若匹配到不可表示对象，同样明确要求使用新版入口，不静默漏题；旧 UI 保留草稿并进入升级提示/只读路径。旧写入先重放已成功原请求，再检查当前版本，最后拒绝不可表示对象的覆盖。v2 全部对象可正常读取，故这是客户端协议升级，不是丢失数据。
 
-B11 的 readForReference 端口继续供旧调用方使用，新增 `readForReferenceV2` 支持本批 Snapshot；新 lessons 只消费后者。旧副本来源中的 v1 快照维持 v1。题库和备课各自拥有自身对象兼容，未知旧请求沿原路径确认。
+B11 的 readForReference 端口继续供旧调用方使用，新增 `readForReferenceV2` 支持本批 Snapshot。旧副本来源中的 v1 快照维持 v1。题库拥有自身对象兼容，未知旧请求沿原路径确认。
 
 静态模块目录只有一份。材料版历史协议定义 ModuleCatalog version=2；当前完整组合返回数学契约的 version=3。材料版 v2 的精确描述与依赖名在 materials.openapi.yaml；这是该目录操作的显式版本演进，B11 原定义保留为版本1历史冻结输入，不作为材料版运行响应的竞争定义。支持版本1的旧客户端遇到2必须保留草稿并提示重新加载，不用未知依赖继续装配。当前只注册真实实现并检查映射、缺依赖和环路。
 
@@ -34,7 +34,7 @@ PNG/JPEG/WebP/PDF 产生实际可读预览；DOCX/DOC/PPTX/PPT 经固定转换�
 
 对同一不可变文件重复 requestFilePreview 时，复用已受理的当前预览 Job，返回202及该Job当前状态，不追加相同转换；失败后通过retryJob建立新尝试。已有页图在重试时仍可读，新的完整预览原子替换派生元数据，引用的固定rendition字节仍保留。limited的风险经同一路线重跑仍需保留，不因重试成功而抹去。
 
-资源补充预览必须是本账户完整 PDF，其 fileId 与资源当前原件 fileId 共同提交；原件已替换时拒绝。老师查看全部页后使用该 PDF，保存为 resource.supplementPreviewFileId；资源版本增加，备课仍需显式采用更新。它不更改原文件，也不宣称恢复了旧 DOC 的可编辑公式。
+资源补充预览必须是本账户完整 PDF，其 fileId 与资源当前原件 fileId 共同提交；原件已替换时拒绝。老师查看全部页后使用该 PDF，保存为 resource.supplementPreviewFileId；资源版本增加。它不更改原文件，也不宣称恢复了旧 DOC 的可编辑公式。
 
 定位规则：
 
@@ -54,13 +54,13 @@ LocatedPart 区分题面/答案/配图/未分配片段；跨页一题包含多�
 
 `POST /api/modules/questions/v2/items/{id}/purge` 与 `/imports/{id}/purge` 接收 `{baseVersion}` 和幂等键，返回 `{id, permanentlyDeleted: true}`。仅本账户已归档且无运行中关联任务的对象可彻底删除；活动对象返回 409 `archive-required`，运行中任务返回 409 `processing-in-progress`，版本过期返回 409，外账户或不存在返回 404。成功后读取、恢复和新键再次删除均返回 404；原键原请求仍返回原成功结果，包括重启后确认。
 
-操作在原有业务写入事务中移除题目及其扩展元数据，或收录材料，同时移除相应题库处理数据。已入库题目不随材料删除；改编来源快照和备课引用不随原题删除。原件、输出和快照引用的受管文件遵循本契约文件保留规则，不在此接口回收。已删除材料的处理任务不能重试生成材料。
+操作在原有业务写入事务中移除题目及其扩展元数据，或收录材料，同时移除相应题库处理数据。已入库题目不随材料删除；改编来源快照不随原题删除。原件、输出和快照引用的受管文件遵循本契约文件保留规则，不在此接口回收。已删除材料的处理任务不能重试生成材料。
 
 ## 资源归档与彻底删除
 
-资源库 UI 将可恢复的 `deletedAt` 状态称为归档，继续使用 `POST /api/modules/resources/items/{id}/deletion` 和 `SetDeletion`，保持既有客户端及备课来源状态兼容。归档、恢复均增加版本，已有引用的文件与快照保持。
+资源库 UI 将可恢复的 `deletedAt` 状态称为归档，继续使用 `POST /api/modules/resources/items/{id}/deletion` 和 `SetDeletion`，保持既有客户端兼容。归档、恢复均增加版本，原件和文件历史保持。
 
-`POST /api/modules/resources/items/{id}/purge` 接收 `{baseVersion}` 与幂等键，仅允许彻底删除本账户已归档的资料条目，返回 `{id, permanentlyDeleted: true}`。活动资料返回 422 `invalid-input`（`/id`, `invalid-reference`），过期版本返回 409，外账户或不存在返回 404。删除后 GET、恢复及新键再次删除均返回 404；成功原键重放仍返回原成功结果，不能重新创建或恢复条目。已有备课引用通过其快照继续读取文件，受管文件生命周期不由此接口清理。
+`POST /api/modules/resources/items/{id}/purge` 接收 `{baseVersion}` 与幂等键，仅允许彻底删除本账户已归档的资料条目，返回 `{id, permanentlyDeleted: true}`。活动资料返回 422 `invalid-input`（`/id`, `invalid-reference`），过期版本返回 409，外账户或不存在返回 404。删除后 GET、恢复及新键再次删除均返回 404；成功原键重放仍返回原成功结果，不能重新创建或恢复条目。受管文件生命周期不由此接口清理。
 
 ## 资源正文检索
 
@@ -80,7 +80,7 @@ PDF 文字复用隔离转换器中的 Poppler `pdftotext`，不重复生成页�
 
 `resource_file_history` 属于资源模块，主键为账户、资料 ID 和保存版本。新建、替换原件、采用或移除补充预览、恢复历史文件时保存原件及补充预览身份；备注、标签、分类与归档不新增文件历史。迁移仅记录当时的当前文件，不能还原启用前的历史。
 
-`GET /api/modules/resources/items/{id}/history` 返回倒序 `ResourceFileHistory`，含文件元数据；单个历史原件损坏时保留记录并标记 `unavailable`。`POST /api/modules/resources/items/{id}/restore-file` 接收 `{baseVersion, fileVersion}` 与幂等键，仅允许本账户活动资料采用自身历史文件。校验原件和补充预览可读后，保持资料身份及元数据，以新的资料版本保存并追加文件历史。旧备课快照不变；外账户/不存在 404、版本过期 409、未知历史版本 422。恢复操作可按原键重放，不重复追加历史。
+`GET /api/modules/resources/items/{id}/history` 返回倒序 `ResourceFileHistory`，含文件元数据；单个历史原件损坏时保留记录并标记 `unavailable`。`POST /api/modules/resources/items/{id}/restore-file` 接收 `{baseVersion, fileVersion}` 与幂等键，仅允许本账户活动资料采用自身历史文件。校验原件和补充预览可读后，保持资料身份及元数据，以新的资料版本保存并追加文件历史。外账户/不存在 404、版本过期 409、未知历史版本 422。恢复操作可按原键重放，不重复追加历史。
 
 彻底删除条目时同时移除其历史记录，文件字节仍遵循文件保留规则。个人资料包包含 `resource-file-revision` 对象；实例备份包含历史表，并检查其中引用的文件归属与可达性。
 
@@ -88,9 +88,9 @@ PDF 文字复用隔离转换器中的 Poppler `pdftotext`，不重复生成页�
 
 Document 是 B11 v1 或本批 v2 的封闭联合。v2 增加图片、标题、选项/小问列表、表格、教师注记；没有任意 HTML/attrs。列表 item 有显示 label 和有序块，可独立增删排序；表格各行列数相同，不支持合并单元格，复杂原稿表格可保留原图供局部校对。题干的实际内容无需先选题型。
 
-文字与 LaTeX 是规范源，OMML 是导出制品，不新增第二套可写数学主数据。必须支持 C21/C22 所需的分式、根式、上下标、函数/对数、不等号、区间、绝对值及两行 cases；分段条件保持逐行对应。源码白名单数学语法，不运行 TeX 的文件/网络/宏指令。存储允许未知数学表达的原始源，编辑器显示失败；导出前若不能形成真实可编辑 OMML，返回带 field 的 unsupported-formula，用户修正后重新导出。不能把整题/公式截图作为 Word 成功路径。R34 必须验证源编辑到 OMML 的一般路径，C22 的硬编码节点不等价于此能力已交付。
+文字与 LaTeX 是规范源，OMML 是导出制品，不新增第二套可写数学主数据。公共转换须支持分式、根式、上下标、函数/对数、不等号、区间、绝对值及两行 cases；分段条件保持逐行对应。源码白名单数学语法，不运行 TeX 的文件/网络/宏指令。存储允许未知数学表达的原始源，编辑器显示失败；导出前若不能形成真实可编辑 OMML，返回带 field 的 unsupported-formula，用户修正后重新导出。不能把整题/公式截图作为 Word 成功路径。验证须覆盖一般公式源到 OMML 的路径，固定硬编码节点不能证明公共转换可用。
 
-Document 每层数组及源字符串上限由 schema 给出，另外总块数≤2000、总数学源≤200000 字符；不得无限递归。正文至少有一项可见文字/公式/图片。answerStatus=absent 时 solution 必须空；present 时 solution 非空。unresolved 仅存在收录草稿，不可入库。教师注记块只用于备课正文；题面和答案不得夹带 teacher-note，长期笔记在 note。旧 v1 文档仍按 B11 规则处理。
+Document 每层数组及源字符串上限由 schema 给出，另外总块数≤2000、总数学源≤200000 字符；不得无限递归。正文至少有一项可见文字/公式/图片。answerStatus=absent 时 solution 必须空；present 时 solution 非空。unresolved 仅存在收录草稿，不可入库。题面和答案不得夹带 teacher-note，长期笔记在 note。旧 v1 文档仍按 B11 规则处理。
 
 内容演进只追加明确版本及迁移，不借存储 JSON 跳过校验。未知 Document.version 在读取端保留原数据并提示只读，在写入端明确拒绝，绝不删掉不认识的节点。数学作品使用文档与文件端口；作品源和引用扩展见[数学契约](math.md)。
 
@@ -118,37 +118,17 @@ QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不�
 
 ## 引用和输出
 
-### 课题顺序
-
-当前备课 v3 列表遵循账户保存的课题顺序；尚未参与排序的新课题放在前面，按更新时间降序、ID 升序排列。v1/v2 列表保持原规则。正文编辑不改变已保存的课题顺序。
-
-`GET /api/modules/lessons/v3/order` 返回 `{version, lessonIds}`，包括本账户已删除课题以便恢复原位；没有排序记录时版本为 0。`PUT` 提交 `{baseVersion, lessonIds}`，ID 数组必须恰好包含本账户全部课题且不重复，顺序版本冲突返回 409，缺项或外账户 ID 返回 422。成功仅增加顺序版本，不增加文稿版本。沿用真实身份、页面上下文、写保护和幂等键；未知结果必须用原键原请求确认。精确 schema 见 [v3 OpenAPI](../../apps/api/src/contracts/math.openapi.json)。
-
-列表与右侧“我的备课”的上下移操作交换相邻可见课题；搜索或已删除过滤不移除隐藏课题的排序记录。课题顺序由 lessons 模块独占的 `lesson_order` 保存。
-
-### 材料与导出
-
-材料 v2 引用为题目/资源两种封闭类型；当前备课 v3 另接受数学引用。题目/资源引用，均由服务器读取本账户当前源建立 snapshot。既有引用 ID/类型/源 ID/采用版本均不变时保存旧快照，不重新解析内容；源已删除仍可编辑备课和导出快照。改变采用版本必须是当前活动源的版本，否则 reference-version-conflict。引用不能换指另一个对象，需要新 ID。资源 snapshot 固定 fileId、补充预览 fileId、标题与原文件名，排除资源备注；题 snapshot 排除长期笔记、标签和标记。
-
-所有新/更新引用校验与备课写入同一 SQLite 事务。每份备课所有环节 ID、引用 ID 全局唯一，总引用数≤1000；顺序以数组为准。环节删除/移动、本课材料投影及显式重复沿用 B11。使用位置由 lessons 公共查询提供，包含活动备课位置及采用版本，不让 questions/resources 读 lessons 表。
-
-导出 POST 先检查 baseVersion，冻结该保存版本的完整服务端快照和选项，返回 ExportRecord + jobId。新源更新不影响已受理输出，snapshot 中文件持续保留。sectionIds 必须唯一且属于该备课；输出始终按备课顺序，不按请求乱序。materialReferenceIds 必须来自未安排集合，按其原顺序置末尾。练习只包含题引用；选中集合没有题返回 invalid-export-selection。生成后 listLessonExports 能找到全部历史输出及其保存版本；软删除备课仍可读取已有输出，恢复不重建。
-
-精确组合规则归 [成果规则](../features/lessons.md#u-m6-六种成果与手工-ppt)。输出器先构造经过选项过滤的内容树，再生成 DOCX/PDF；关闭选项的答案和注记不得留在 DOCX XML、注释、隐藏段落、PDF 文本或附件里。文件属性不写私人笔记。答案区在全文后按导出题号对应，同题显式重复则按各出现位置编号。讲义/练习的 answerSpaceLines 控制每题后的空白行，教案忽略此选项。
-
-Word 输出是 DOCX；PDF 从同一过滤后内容和 DOCX 版式转换。页型 A4、正文可打印宽 170 mm、默认 20 mm 页边距；嵌入可分发中文字体或实测可用替代，公式/题图不跨页裁切，长题按段落继续并保留题号。环节和段落可自然分页，不强行每题一页。数学必需支持范围与目标编辑器证据见[输出验收](../acceptance/mvp-matrix.md#office)。输出页数和布局在最终内容上校验，失败保留快照与原件，不能返回坏文件下载成功。
-
 用于 PPT 的 question-asset Job 冻结题目版本。question-png 生成透明背景题面分片，includeAnswers=true 时答案另成分片，不含长期笔记；figure-png 必须给属于该快照的 figureFileId，其他模式该字段为 null。PNG 宽度 1600 px，按块分片且单片高度不超过 2400 px；超高单个图等比缩小，公式保持完整。outputFileIds 按显示顺序排列。文字/公式复制直接从 Document 读取，不新增服务端端口。
 
 ## 短任务与恢复
 
-只为页预览、提取、页识别、导出和题面素材这些长操作保存 Job。单进程中顺序执行重操作，UI 轮询 GET（运行时 2 秒，离页停止）；不用消息队列、分布式锁或通用工作流平台。progress.completed/total 按实际页/阶段统计，未知 total=null，不编造百分比。Job.target 不携带账户，账户由服务端持有。
+只为页预览、提取、页识别和题面素材这些长操作保存 Job。单进程中顺序执行重操作，UI 轮询 GET（运行时 2 秒，离页停止）；不用消息队列、分布式锁或通用工作流平台。progress.completed/total 按实际页/阶段统计，未知 total=null，不编造百分比。Job.target 不携带账户，账户由服务端持有。
 
 queued → running → succeeded/partial/failed；停止请求立即持久进入 cancelling，安全检查点后 cancelled；进程重启时遗留 running → interrupted，cancelling → cancelled。partial 表示已有成功内容及明确未完成单元，succeeded 仅表示机器处理完成，收题仍需老师校对。输入损坏或全部失败为 failed。已落盘结果逐单元检查后继续，不能靠内存状态认定成功。
 
-retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择未完成单元，非空必须是该任务 issues 的 unitId。文件提取单元为 file:<UUID>:page:<N>，文字为 text:<start>:<end>；预览整体失败单元为 file:<UUID>，共用页识别单元为 page:<N>。不得重跑已成功的付费单元；需要重新识别成功页时由老师明确发起新的收录。重试生成新 Job 并指向 attemptOf，旧任务保持；questions 更新 import.jobId 并增加版本后继续，exports 的原 ExportRecord 保留原 Job，新导出请求冻结同一或新备课版本。
+retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择未完成单元，非空必须是该任务 issues 的 unitId。文件提取单元为 file:<UUID>:page:<N>，文字为 text:<start>:<end>；预览整体失败单元为 file:<UUID>，共用页识别单元为 page:<N>。不得重跑已成功的付费单元；需要重新识别成功页时由老师明确发起新的收录。重试生成新 Job 并指向 attemptOf，旧任务保持；questions 更新 import.jobId 并增加版本后继续。
 
-导出/素材失败用原入口和新键重新生成，retryJob 仅对 preview/extraction/recognition 开放，其他 kind 返回 job-not-retryable，避免一个 ExportRecord 指向多种含义。同键重放受理请求始终返回最初任务，之后 GET 当前状态。取消是持久停止意图；已终态则返回原终态，running 先返回 cancelling 并在安全检查点停止，最多保留已完成单元；外部调用迟到结果仅作为该任务证据保存，不重开任务。
+素材失败用原入口和新键重新生成，retryJob 仅对 preview/extraction/recognition 开放，其他 kind 返回 job-not-retryable。同键重放受理请求始终返回最初任务，之后 GET 当前状态。取消是持久停止意图；已终态则返回原终态，running 先返回 cancelling 并在安全检查点停止，最多保留已完成单元；外部调用迟到结果仅作为该任务证据保存，不重开任务。
 
 本地可重复的转换不涉及新增模型费，恢复可重试；Provider 已发出而无可验证输出时标 provider-result-unknown，后台不自动追加请求。老师在产品中明确点击重试才启动新的受理，部署运维另核准预算。设计 session 不新调模型。R33 在运行接入任务授权下补真实自动提取门槛，不能用此故障分支永久回退为手工录入。
 
@@ -159,12 +139,9 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 | WB-M001 至 M009 | U-M1、2、7 | uploadFile、createImport、saveImportReview、commitImportDrafts、Location、Job | R31 文件；R33 收录 |
 | WB-M010 至 M012 | U-M3 | taxonomy、Question v2、copies、source-location | R33 |
 | WB-M013 至 M017 | U-M4 | Resource、Preview、replaceResourceFile、supplement-preview | R31/R32 |
-| WB-M018、M019 | U-M5 | Lesson v2、Reference、Usage | R34 |
-| WB-M020 至 M023 | U-M6 | ExportInput/Record、Job、Document | R34 |
 | WB-M024 | U-M6 | createQuestionAsset、Document | R33；R31 公共呈现 |
-| WB-M025 至 M028 | U-M7、8 | B11 协议、File、Job、版本适配 | R31-R34 按模块；R34 集成 |
+| WB-M025 至 M028 | U-M7、8 | B11 协议、File、Job、版本适配 | 各模块与共享底座 |
 
-`materials.openapi.yaml` 的备课 v2 Reference 只接受 question/resource，仍拒绝 math 或任意 provider。当前备课使用已存在的 [lessons v3 数学引用契约](math.md)，通过相同 File、Document、Location 和[公共端口](#公共端口)组合；v2 的拒绝与未知请求原路径确认继续有效，不能将 v3 的 math 字段直接发给 v2。
 
 ## 材料实现
 
@@ -172,20 +149,19 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 
 沿用 React/Vite、Express、better-sqlite3 单一后端及[静态模块目录](../adr/0001-use-a-single-static-module-catalog.md)。一个教师规模下顺序执行重转换即可；文件目录和 SQLite 一起备份。不建立上传服务、对象存储网关、通用内容平台、分类平台或队列平台。
 
-材料历史协议使用 ModuleCatalog version=2；当前六模块组合使用数学 schema 的 version=3；questions/resources 无业务模块必需依赖，lessons 声明 questions.readForReferenceV2 与 resources.readForReferenceV2。File/Document/Job 是启动底座，不注册为额外业务模块。只在实际实现集成后注册，Web/API从同一目录投影；旧目录版本客户端按契约升级保护，不另维护一份业务目录。
+材料历史协议使用 ModuleCatalog version=2；当前五模块组合使用数学 schema 的 version=3；questions/resources 无业务模块必需依赖。File/Document/Job 是启动底座，不注册为额外业务模块。只在实际实现集成后注册，Web/API从同一目录投影；旧目录版本客户端按契约升级保护，不另维护一份业务目录。
 
 | Module | 独占数据与 Implementation | 消费者 |
 | --- | --- | --- |
-| workbench/files | 原件和衍生字节、文件元数据、受控下载、固定页预览与裁图、文件持久提交；本机 LibreOffice/Poppler 隔离调用 | questions/resources/lessons、math |
-| workbench/content + shared/materials | 唯一 schema 的校验和受控 Document 呈现；Web 的公共文档编辑/阅读原语，v1/v2 兼容 | 三个材料模块、math |
-| workbench/jobs | 最小持久任务记录、停止意图、重启 interrupted；只承载四种固定工作，不拥有业务草稿和成果选项 | 文件预览、questions 提取/PNG、lessons 导出 |
-| questions | 题目、原始材料绑定、拆题草稿/片段、局部校对、题型/标签、复制来源、提取 Adapter、题面 PNG | lessons、Agent、教学记录 |
-| resources | 资源条目、当前文件/补充预览、文件夹/标签/备注、替换与恢复 | lessons、Agent |
-| lessons | 备课、环节、题目/资源引用快照，数学由 v3 扩展、使用位置查询、导出快照与 DOCX/PDF 成果 | Agent、classes/schedule/math |
+| workbench/files | 原件和衍生字节、文件元数据、受控下载、固定页预览与裁图、文件持久提交；本机 LibreOffice/Poppler 隔离调用 | questions/resources、math |
+| workbench/content + shared/materials | 唯一 schema 的校验和受控 Document 呈现；Web 的公共文档编辑/阅读原语，v1/v2 兼容 | 题库、资源库、math |
+| workbench/jobs | 最小持久任务记录、停止意图、重启 interrupted；只承载固定任务类型，不拥有业务草稿和成果选项 | 文件预览、questions 提取/PNG |
+| questions | 题目、原始材料绑定、拆题草稿/片段、局部校对、题型/标签、复制来源、提取 Adapter、题面 PNG | Agent、教学记录 |
+| resources | 资源条目、当前文件/补充预览、文件夹/标签/备注、替换与恢复 | Agent |
 
 自动提取的设计目标为“原生读取保存 + B 视觉辅助 + 结构/完整性校验 + 局部校对”。T/Word 先保留原生段落、OMML、图片关系；结构明确时本地自动拆题，通用文本整理失败时可将文本受控排版为页图走同一 B 路线，不能改成空题手填。PDF/扫描/图片按小批原页或区域提取，跨页续题可带相邻页上下文；答案页归并与题面分开。具体模型请求参数不进入公共 schema。R33 必须以真实输入证明这条完整路径，未通过项如实阻塞该实现能力。
 
-当前 DOCX 生成走 `apps/api/src/modules/lessons/pandoc.js` 的 Pandoc JSON → DOCX；公式由一般 LaTeX 源转换为可编辑 OMML。LibreOffice 负责 PDF 和 Office 预览，Poppler 负责页图/文本；实际工具与字体条件见[运行指南](../SETUP.md#文件转换工具)。旧 DOC 的公式对象丢失仍需受限状态及补充 PDF，原文件不变。目标 Office 实测和本地 XML 检查是不同证据。
+当前 DOCX 生成走 `apps/api/src/workbench/files/pandoc.js` 的 Pandoc JSON → DOCX；公式由一般 LaTeX 源转换为可编辑 OMML。LibreOffice 负责 PDF 和 Office 预览，Poppler 负责页图/文本；实际工具与字体条件见[运行指南](../SETUP.md#文件转换工具)。旧 DOC 的公式对象丢失仍需受限状态及补充 PDF，原文件不变。目标 Office 实测和本地 XML 检查是不同证据。
 
 ### 公共端口
 
@@ -202,17 +178,15 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 | 公共 Web 阅读 | `DocumentView({value, onOpenFile})` | value 为 Document；按内容版本安全呈现，图片通过授权 fileId 获取。 |
 | 公共 Web 编辑 | `DocumentEditor({value, onChange, readOnly, onOpenFile, onPickImage})` | onChange(Document)；onPickImage()返回Promise<File或null>，由调用方完成上传/选择，编辑器不让老师填写fileId。支持本批封闭节点、公式源和错误定位，保存由所属模块负责。 |
 | 题目引用 | `questions.readForReferenceV2(principal, questionId)` | 同步 ReferenceReadQuestion，deletedAt 可非空，调用者事务中核对采用版本。 |
-| 资源引用 | `resources.readForReferenceV2(principal, resourceId)` | 同步 ReferenceReadResource，保留 current 文件及补充预览。 |
-| 使用位置 | `lessons.listUsages(principal, {kind, id})` | 同步 UsageList；材料版 kind 为 question/resource；v3 另见数学架构，按备课 updatedAt 降序再 referenceId 升序。 |
 | 业务动作 | 各模块 `port.operations.<operationId>({principal, key, input, id, query})` | Promise<{status, body}>，input/查询来自对应 HTTP schema；读取省略 key，缺省 id/query 不传。与 HTTP 共用业务校验与 mutations，不再执行另一份 SQL。 |
 
-Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档，已有 resource/question 引用可供复用。作品制作状态和隔离 HTML 由[数学架构](../features/math.md#制作实现)定义。
+Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档。作品制作状态和隔离 HTML 由[数学架构](../features/math.md#制作实现)定义。
 
-R31 组合工厂提供 `{db, mutations, files, content, jobs}`；R32/R33/R34 的模块工厂在 B11 形式上分别注入必需端口。lessons 注入 questions/resources，不反向注入 lessons。HTTP 的 usages 挂 lessons；UI 从该公共查询取使用位置，避免必需依赖环。
+组合工厂提供 `{db, mutations, files, content, jobs}`，业务模块只注入所需的公共端口，不读取其他模块的表。
 
-Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)` 在调用方已有业务受理事务内同步返回 Job，不嵌套提交 mutations.execute；input 只能是 kind 对应的已验证业务请求/固定快照标识，存在模块自己的记录内，jobs 不存任意可执行指令。`jobs.get(principal,id)`、`jobs.cancel(principal,id,mutation)`、`jobs.retry(principal,id,RetryJob,mutation)` 对应 HTTP。组合入口以固定四项处理函数绑定执行器，handler 返回进度/文件 ID/JobIssue，业务输出写回各自 Module。固定绑定由组合入口装配；不做动态注册或发现。任务创建衍生文件使用持久保存的独立内部请求键，不复用用户已经确认的受理键；确保同任务重启后不重复产物。
+Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)` 在调用方已有业务受理事务内同步返回 Job，不嵌套提交 mutations.execute；input 只能是 kind 对应的已验证业务请求/固定快照标识，存在模块自己的记录内，jobs 不存任意可执行指令。`jobs.get(principal,id)`、`jobs.cancel(principal,id,mutation)`、`jobs.retry(principal,id,RetryJob,mutation)` 对应 HTTP。组合入口以固定处理函数绑定执行器，handler 返回进度/文件 ID/JobIssue，业务输出写回各自 Module。固定绑定由组合入口装配；不做动态注册或发现。任务创建衍生文件使用持久保存的独立内部请求键，不复用用户已经确认的受理键；确保同任务重启后不重复产物。
 
-跨模块的执行绑定固定为 `jobs.start({preview, extraction, export, 'question-asset'})`，服务器启动前调用一次，缺项以明确未接入的测试handler占位且禁止生产启动。每项具有 `run({principal, job, signal, reportProgress})`，返回Promise的 `{state, outputFileIds, issues}`，state仅succeeded/partial/failed，其他字段复用Job定义；signal为AbortSignal，reportProgress接收Job.progress并持久记录。停止状态由jobs裁决，迟到run结果不能把cancelled改成succeeded。preview/extraction另提供同步 `retry({principal, job, unitIds, mutation}) -> Job`，在jobs.retry已开启的事务中调用enqueue并同步更新业务记录，其他两种不接受retry。模块工厂返回 `{router, port, jobHandlers}`，questions提供extraction和question-asset，lessons提供export，files提供preview；测试Adapter使用同样形状。各handler在报告成功前持久保存自己的输出，按jobId/输入单元保持重复执行不重复写入。
+跨模块的执行绑定固定为 `jobs.start({preview, extraction, recognition, 'question-asset'})`，服务器启动前调用一次，缺项以明确未接入的测试handler占位且禁止生产启动。每项具有 `run({principal, job, signal, reportProgress})`，返回Promise的 `{state, outputFileIds, issues}`，state仅succeeded/partial/failed，其他字段复用Job定义；signal为AbortSignal，reportProgress接收Job.progress并持久记录。停止状态由jobs裁决，迟到run结果不能把cancelled改成succeeded。preview/extraction/recognition 另提供同步 `retry({principal, job, unitIds, mutation}) -> Job`，在jobs.retry已开启的事务中调用enqueue并同步更新业务记录，question-asset 不接受 retry。模块工厂返回 `{router, port, jobHandlers}`，questions 提供 extraction 和 question-asset，files 提供 preview，共用识别提供 recognition；测试Adapter使用同样形状。各handler在报告成功前持久保存自己的输出，按jobId/输入单元保持重复执行不重复写入。
 
 ### 文件持久性、运行与恢复
 
@@ -226,9 +200,9 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 
 ### 材料迁移
 
-模块迁移沿用 B11 `migrations/index.js` 的有序 `{id, up(db)}` 和 ledger。新 ID 分别为 `materials_files_*`、`materials_jobs_*`、`questions_materials_*`、`resources_*`、`lessons_materials_*`，既有迁移不重写。每个 worker 独立 DB/文件目录；组合验证使用独立集成库。
+模块迁移沿用 B11 `migrations/index.js` 的有序 `{id, up(db)}` 和 ledger。新 ID 分别为 `materials_files_*`、`materials_jobs_*`、`questions_materials_*`、`resources_*`，既有迁移不重写。每个 worker 独立 DB/文件目录；组合验证使用独立集成库。
 
-迁移验证固定旧库来源版本及运行入口，公共语义冲突按本契约处理。空库、B16 旧库、重复启动迁移都验证，旧数据/账户/布局与 B11 未确认请求保留。R33/R34 分别验证旧题目与备课 v2 读取/编辑和旧客户端保护，不迁移认证内部表。
+迁移验证固定旧库来源版本及运行入口，公共语义冲突按本契约处理。空库、B16 旧库、重复启动迁移都验证，旧数据/账户/布局与 B11 未确认请求保留。题库验证旧题目 v2 读取/编辑和旧客户端保护，不迁移认证内部表。
 
 ## 材料交换用例
 
@@ -236,7 +210,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 
 ### 起点与替身
 
-每个用例单独从 R31 隔离 runner reset。建立可信身份 A/B、不同 Cookie jar，使用同源 HTTPS；写入按 B11 带来源/保护头及新的 UUID 幂等键。用户对象与文件 ID 使用真实响应替换示例 ID，环节/引用/分类/草稿的客户端 ID 保持稳定；示例 File 的100字节和摘要只是协议值，真实文件上传按实际字节返回，不伪造该摘要。
+每个用例单独从 R31 隔离 runner reset。建立可信身份 A/B、不同 Cookie jar，使用同源 HTTPS；写入按 B11 带来源/保护头及新的 UUID 幂等键。用户对象与文件 ID 使用真实响应替换示例 ID，分类/草稿的客户端 ID 保持稳定；示例 File 的100字节和摘要只是协议值，真实文件上传按实际字节返回，不伪造该摘要。
 
 前端使用同版 examples 驱动替身：请求先按对应 requestBody 校验，再按以下序列返回结果和延迟/失败；不能只根据按钮名返回成功。后端测试直接调用相同 HTTP 操作并独立断言预期数据，不能以实现生成的快照作为唯一预期。成功/失败之后 GET 验证状态，所有 mutation failure 检查无部分变更。
 
@@ -258,18 +232,12 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 | MC10 / M011 | CreateManualV2 → QuestionSavedV2；PUT基于保存结果；CopyV2；GET copies/source/for-reference | 直接编辑同ID；复制新ID、采用时Snapshot，笔记/标记按请求。原题删除后副本来源仍可读，relocateQuestion仅修改import题来源位置。 |
 | MC11 / M012 | B11 CreatePasted/引用/未知请求，迁移后GET v2；加入ImageBlock | 原Document v1不强转，旧ID版本关系保留。未知旧请求在原路径重放；旧GET/列表/覆盖新内容返回UnknownVersion，v2可正常操作。 |
 | MC12 / M013 | ResourceFolders；移动/删除folder与tag；listResources组合查询 | 文件夹含后代筛选，多个tag为AND；删除父目录移到保留祖先，不删除资源；q搜索原文件名/名称/备注及当前可提取正文，未完成读取的进度单独返回。 |
-| MC13 / M015 | PreviewLegacyLimited；SupplementPreview | 原DOC显示limited且实际页可读；绑定本账户PDF后resource.version增加，旧引用不变。原fileId已变或PDF不完整拒绝，不能蒙混成ready。 |
-| MC14 / M016 | CreateLessonV2引用ResourceSaved；ReplaceFile；GET LessonSavedV2形状 | 资源ID/名称/分类/备注保持，源版本增加；旧snapshot.fileId仍F1、latestVersion变2；明确采用2才换F2。采用旧版返回ResourceVersionConflict并原子拒绝整课。 |
-| MC15 / M017 | 对question/resource/import/lesson分别SetDeletion；恢复后查usages/文件 | 删除不改文件/来源/已有快照。活动usages不含已删课，恢复同ID；源deleted仍能供保留引用编辑/导出，不允许新引用采用deleted。 |
-| MC16 / M018、M019 | CreateLessonV2；PUT移动references到materials，显式再放一次用新ID | 本课总览不重复持久化；移动保持ID/快照/note，新ID才代表重复使用。旧reference换源、跨账户源、来源版本冲突都整课拒绝。 |
-| MC17 / M020 | 六个Export_* → 对应ExportAccepted_*；GET Job；listLessonExports；downloadFile | 202含固定lessonVersion与options，不等于下载就绪；终态成功产生fileId，旧输出继续可取。输出来自受理时快照而非生成完成时最新源。 |
-| MC18 / M021 | 每类Export_*依次将两个开关置00、10、01、11 | 学生内容树没有solution/teacher-note/note；教师答案编号对应出现位置。OOXML解包和PDF全文/页图同时检查，使用Q2配方与教师注记定位反例。 |
-| MC19 / M022、M023 | 不支持公式→FormulaFailure；有效内容但转换器退出/磁盘满→Job failed | 受理前FormulaFailure为422不建Job；受理后失败在Job.issues，ExportRecord.fileId为null。成功原件/旧输出不丢；重新生成用原导出入口新键，retryJob不接export。 |
+| MC13 / M015 | PreviewLegacyLimited；SupplementPreview | 原DOC显示limited且实际页可读；绑定本账户PDF后resource.version增加，文件历史记录原件及补充预览。原fileId已变或PDF不完整拒绝，不能蒙混成ready。 |
 | MC20 / M024 | PptAsset → Job；figure-png选择题内真实图ID | 获取透明PNG分片与原图，复制公式源可编辑；选其他题图或跨账户fileId拒绝。答案关闭则图片无答案，note永不输出。 |
 | MC21 / M025 | 文件写满前、rename后DB提交前、DB提交后丢响应分别断开/重启 | 未提交不会有可获取的File记录；已提交同键恢复同ID。持久文件缺失返回DiskFailure，不以假成功掩盖。 |
 | MC22 / M026、M027 | 以B/无身份访问每类数据和衍生文件，错误来源/伪造身份；恶意HTML/Office/zip | 401/404/403/422符合顺序，不泄漏A对象信息；HTML转义，转换无宿主网络/文件读写权限，超限明确失败。 |
 
-所有列表返回全部匹配结果；排序除 usages 特例外按 updatedAt 降序、ID升序，File无列表接口。GET查询不隐式修改对象。taxonomy的 GET 是一次集合读取，改名/删除成功后 UI 更新筛选chip；正在编辑旧baseVersion的题/资源会冲突，不能覆盖分类删除效果。
+所有列表返回全部匹配结果；排序按 updatedAt 降序、ID升序，File无列表接口。GET查询不隐式修改对象。taxonomy的 GET 是一次集合读取，改名/删除成功后 UI 更新筛选chip；正在编辑旧baseVersion的题/资源会冲突，不能覆盖分类删除效果。
 
 ### 精确拒绝矩阵
 
@@ -280,30 +248,15 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 | JSON损坏、未知字段、隐式类型、超限 | 400 malformed-json / 422 invalid-input / 413 payload-too-large | 不保存任务/业务半成品；已有原件可读。 |
 | 同键不同JSON/字节 | 409 idempotency-key-reused | 原成功对象/任务保持。 |
 | baseVersion过期 | 409 version-conflict，currentVersion | 不自动merge/overwrite，客户端GET对照再新键。 |
-| 源版本过期/来源已删 | 409 materials/reference-version-conflict / workbench/object-deleted | 备课整个PUT不写入。 |
 | 框越界/错原稿链/文字范围越界 | 422 materials/invalid-location | 不创建裁图或修改题来源。 |
 | 不支持Document版本 | 422 invalid-input + unsupported-content-version | 旧字节/节点原样保留。 |
 | import仍running时保存 | 409 materials/import-not-editable | 先停止/等待；校对输入保留在本地。 |
-| 无可重试单元/重试export | 409 materials/job-not-retryable | 原任务不变。 |
+| 无可重试单元/重试题面素材 | 409 materials/job-not-retryable | 原任务不变。 |
 | taxonomy同名/循环/未知ID | 422 materials/invalid-taxonomy | 集合与关联原子不变。 |
-| 空练习/不属于本课的输出选择 | 422 materials/invalid-export-selection | 不建立空成功文件。 |
 | 本地文件持久设施失败 | 503 materials/storage-unavailable | 结果未确认时按原键确认，不能主动生成新逻辑请求。 |
 
 problem完整字段由schema拥有。业务 field采用JSON Pointer；解析schema合法后违反跨字段关系也必须返回规定problem，而非500。已成功原键重放先于归属对象的最新版本/状态校验，身份/来源/schema仍先校验。
 
-### 六种输出的独立预期
-
-| 样本名后缀 | 固定预期 |
-| --- | --- |
-| lesson-plan_docx | DOCX可解包，标题/开头/环节/题目/资源目录和选中备用内容按顺序，数学为OMML。 |
-| lesson-plan_pdf | 同一过滤内容，A4可读，资源目录无私密URL，正文与教师专属内容分离。 |
-| handout_docx | 题面和文稿文字可编辑，公式可再次编辑，作答空白是可编辑文档内容。 |
-| handout_pdf | 题目与配图完整，作答空白按answerSpaceLines，跨页不截公式。 |
-| practice_docx | 只含所选题目，重新编号，同题多次出现各编号，小问/选项/图保留，无环节说明。 |
-| practice_pdf | 同上且打印稳定；Q2配方关闭答案后消失，Q6未给答案时不补造。 |
-
-每类至少一个教师变体、一个学生变体。每格式原件链接见[六种格式样本](../acceptance/mvp-matrix.md#office)。Linux可编辑切片与目标Windows/WPS切片各自有实际应用版本与行为证据；保存后XML仍有m:oMath只是补证，不能单独证明实际编辑体验。
-
 ### 验证方法
 
-用 schema 做真实请求/响应断言，并验证本表的跨字段/状态行为；schema 通过不代替行为检查。样本覆盖六种 kind×format。UI 优先真实 HTTP 集成和浏览器流程，不写单元测试，临时校验环境不成为产品依赖。
+用 schema 做真实请求/响应断言，并验证本表的跨字段/状态行为；schema 通过不代替行为检查。样本覆盖当前文件、提取、题面素材及资源操作。UI 优先真实 HTTP 集成和浏览器流程，不写单元测试，临时校验环境不成为产品依赖。

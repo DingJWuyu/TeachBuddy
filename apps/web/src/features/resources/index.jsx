@@ -20,7 +20,6 @@ import { Taxonomy, TaxonomyDialog } from "./Taxonomy.jsx";
 import "./resources.css";
 import { ResourceDialog } from "./ResourceDialog.jsx";
 import { ModulePresence } from "../workbench/ModuleMotion.jsx";
-import { AddToLesson } from "./AddToLesson.jsx";
 import { FileHistory } from "./FileHistory.jsx";
 import { Organize } from "./Organize.jsx";
 const root = "/api/modules/resources";
@@ -34,8 +33,6 @@ const metadata = (item) => ({
 
 export default function ResourcesPage({
   transport,
-  onOpenLesson,
-  onPickResources,
 }) {
   useTranslation("resources");
   const shell = useWorkbenchShell();
@@ -44,16 +41,12 @@ export default function ResourcesPage({
       key={`${shell.accountKey}:${shell.generation}`}
       transport={transport}
       shell={shell}
-      onOpenLesson={onOpenLesson}
-      onPickResources={onPickResources}
     />
   );
 }
 function ResourceWorkspace({
   transport,
   shell,
-  onOpenLesson,
-  onPickResources,
 }) {
   const { t } = useTranslation("resources");
   const controller = useRef(null);
@@ -102,10 +95,7 @@ function ResourceWorkspace({
     [tax, setTax] = useState({ version: 1, folders: [], tags: [] }),
     [files, setFiles] = useState({}),
     [fileErrors, setFileErrors] = useState({}),
-    [previews, setPreviews] = useState({}),
-    [usages, setUsages] = useState([]),
-    [fileHistory, setFileHistory] = useState([]),
-    [usageError, setUsageError] = useState("");
+    [previews, setPreviews] = useState({});
   const [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [pending, setPending] = useState(null),
@@ -114,9 +104,7 @@ function ResourceWorkspace({
     [listLoading, setListLoading] = useState(true),
     [revision, setRevision] = useState(0),
     [dialog, setDialog] = useState(null),
-    [conflict, setConflict] = useState(null),
-    [addToLesson, setAddToLesson] = useState(null),
-    [lastLesson, setLastLesson] = useState(null);
+    [conflict, setConflict] = useState(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [organize, setOrganize] = useState(null);
   const listRef = useRef(null),
@@ -131,7 +119,6 @@ function ResourceWorkspace({
     if (!message || busy || pending || error) return;
     const timer = setTimeout(() => {
       setMessage("");
-      setLastLesson(null);
     }, 3000);
     return () => clearTimeout(timer);
   }, [message, busy, pending, error]);
@@ -258,29 +245,6 @@ function ResourceWorkspace({
     file = item && files[item.fileId];
   const draft = item ? (scene.drafts[item.id] ?? metadata(item)) : null;
   useEffect(() => {
-    let active = true;
-    setUsages([]);
-    setFileHistory([]);
-    setUsageError("");
-    if (item)
-      client
-        .request(`/api/modules/lessons/v2/resource-usages/${item.id}`)
-        .then((r) => active && setUsages(r.items))
-        .catch((e) => active && setUsageError(e.message));
-    if (item)
-      client
-        .request(`${root}/items/${item.id}/history`)
-        .then((result) => {
-          if (active) setFileHistory(result.items);
-        })
-        .catch(() => {
-          /* Usage status remains generic if history is unavailable. */
-        });
-    return () => {
-      active = false;
-    };
-  }, [client, item?.id, item?.version, revision]);
-  useEffect(() => {
     if (!scene.openId && listRef.current)
       listRef.current.scrollTop = scene.scroll;
   }, [scene.openId, items]);
@@ -291,6 +255,10 @@ function ResourceWorkspace({
   }
   async function execute(record) {
     if (busyRef.current) return false;
+    if (!["upload", "create", "replace", "restore-file", "metadata", "taxonomy", "supplement", "deletion", "purge", "organize", "recognition", "recognition-cancel"].includes(record.purpose)) {
+      setError(t("原请求格式暂不支持，已保留设备资料，请核对后处理"));
+      return false;
+    }
     if (record.requiresReselection) {
       setError(t("请重新选择原文件核对名称、长度和内容，再确认上传"));
       return false;
@@ -458,6 +426,10 @@ function ResourceWorkspace({
           if (purged || value.deletedAt) close(true);
         }
         if (record.purpose === "metadata") {
+          // The next edit must use the acknowledged version even while the
+          // background list refresh is still in flight.
+          setAllItems(current => current.map(item => item.id === value.id ? value : item));
+          setItems(current => current.map(item => item.id === value.id ? value : item));
           const live = sceneRef.current.drafts[value.id];
           if (JSON.stringify(live) === JSON.stringify(record.input)) {
             const drafts = { ...sceneRef.current.drafts };
@@ -498,10 +470,6 @@ function ResourceWorkspace({
               },
             });
         }
-        if (record.purpose === "lesson") {
-          setAddToLesson(null);
-          setLastLesson({ lessonId: value.id, lessonTitle: value.title });
-        }
         const next = nextUpload(record);
         await remember(next);
         setMessage(
@@ -511,11 +479,10 @@ function ResourceWorkspace({
                 ? t("已处理 {{value}} / {{batchTotal}} 份资料", { value: (record.completed ?? 0) + 1, batchTotal: record.batchTotal })
                 : t("文件已保存"),
             replace: t("文件已更新"),
-            "restore-file": t("已恢复历史文件，已有备课引用保持不变"),
+            "restore-file": t("已恢复历史文件"),
             metadata: t("资料信息已保存"),
             taxonomy: t("整理已保存"),
             supplement: t("已采用补充预览"),
-            lesson: t("已加入备课"),
             deletion: value.deletedAt
               ? t("资料已归档，可在已归档资料中恢复")
               : t("资料已恢复"),
@@ -538,7 +505,6 @@ function ResourceWorkspace({
       if (!controller.current.signal.aborted) {
         setError(e.message);
         setDialog(null);
-        if (e.unknown) setAddToLesson(null);
         if (e.status === 409 && !record.purpose?.startsWith("recognition")) {
           setConflict({ record });
           refresh();
@@ -813,11 +779,6 @@ function ResourceWorkspace({
               onManage={(kind) => manageTaxonomy(kind, null, true)}
               disabled={disabled}
               dirty={dirty}
-              usages={usages}
-              fileHistory={fileHistory}
-              usageError={usageError}
-              onRefresh={refresh}
-              onOpenLesson={onOpenLesson}
             />
           ) : (
             <Taxonomy
@@ -837,9 +798,6 @@ function ResourceWorkspace({
     disabled,
     allItems,
     files,
-    usages,
-    fileHistory,
-    usageError,
   ]);
   useEffect(() => () => shell.registerTools([]), [shell.registerTools]);
   const breadcrumbs = [];
@@ -888,7 +846,6 @@ function ResourceWorkspace({
         onUpload={upload}
         onFolders={shell.openPanel ? toggleTools : null}
         foldersOpen={infoOpen}
-        onPickResources={onPickResources}
         onOrganize={(action) =>
           setOrganize({
             action,
@@ -896,13 +853,6 @@ function ResourceWorkspace({
               scene.selected.includes(item.id),
             ),
           })
-        }
-        onAddToLesson={() =>
-          setAddToLesson(
-            allItems.filter(
-              (item) => scene.selected.includes(item.id) && !item.deletedAt,
-            ),
-          )
         }
       />
       {scene.openId && (
@@ -919,19 +869,12 @@ function ResourceWorkspace({
               </span>
             </div>
             <div className="res-header-actions">
-              {item?.deletedAt ? (
+              {item?.deletedAt && (
                 <button
                   className="res-primary"
                   disabled={disabled}
                   onClick={() => setDialog({ kind: "delete", item })}
                 > {t("恢复资料")} </button>
-              ) : (
-                <button
-                  disabled={disabled || !item}
-                  className="res-primary"
-                  onClick={() => setAddToLesson([item])}
-                >
-                  <Icon name="lessons" size={16} /> {t("加入备课")} </button>
               )}
               <button
                 disabled={!file}
@@ -1159,7 +1102,7 @@ function ResourceWorkspace({
         </section>
       )}
       <ModulePresence
-        present={Boolean(message || error || busy || pending || lastLesson)}
+        present={Boolean(message || error || busy || pending)}
       >
         <div
           className={`res-status${error ? " has-error" : ""}`}
@@ -1174,10 +1117,6 @@ function ResourceWorkspace({
                 : t("正在保存，请稍候…")
               : error || message}
           </span>
-          {lastLesson && (
-            <button onClick={() => onOpenLesson?.(lastLesson)}> {t("前往备课：")}{lastLesson.lessonTitle}
-            </button>
-          )}
           {pending?.requiresReselection && !busy ? (
             <label className="res-button"> {t("重新选择原文件")} <input
                 type="file"
@@ -1208,7 +1147,6 @@ function ResourceWorkspace({
               onClick={() => {
                 setMessage("");
                 setError("");
-                setLastLesson(null);
               }}
             >
               <Icon name="close" size={14} />
@@ -1257,19 +1195,6 @@ function ResourceWorkspace({
             onClose={() => patchScene({ taxonomyDraft: null })}
             disabled={disabled}
             items={allItems}
-          />
-        )}
-      </ModulePresence>
-      <ModulePresence present={!!addToLesson}>
-        {addToLesson && (
-          <AddToLesson
-            client={client}
-            resources={addToLesson}
-            disabled={disabled}
-            onClose={() => setAddToLesson(null)}
-            onSave={(id, input) =>
-              write(`/api/modules/lessons/v3/${id}`, input, "lesson")
-            }
           />
         )}
       </ModulePresence>
@@ -1355,17 +1280,14 @@ function ResourceWorkspace({
                   {file?.name} → {dialog.source.name}
                 </p>
                 <p>{t("名称、文件夹、标签和备注都会保留。")}</p>
-                {usages.length > 0 && (
-                  <p> {t("已有")} {usages.length}{" "} {t("处备课引用仍保留旧文件，需要时可在备课中采用新版。")} </p>
-                )}
               </>
             ) : (
               <p>
                 {dialog.kind === "purge"
-                  ? t("“{{title}}”将从资源库永久删除，无法恢复。已有备课引用的文件会保留。", { title: dialog.item.title })
+                  ? t("“{{title}}”将从资源库永久删除，无法恢复。", { title: dialog.item.title })
                   : dialog.item.deletedAt
                     ? t("恢复后可以继续查看和整理这份资料。")
-                    : t("资料会移入“已归档资料”，可以随时恢复。已有备课仍可使用引用的文件。")}
+                    : t("资料会移入“已归档资料”，可以随时恢复。")}
               </p>
             )}
             <div className="res-actions">

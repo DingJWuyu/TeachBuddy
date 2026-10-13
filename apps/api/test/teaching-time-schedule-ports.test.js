@@ -210,7 +210,7 @@ test('cancelled instances stay silent while a moved override is found on its new
         title: '备课',
         items: [{ id: SAMPLE_IDS.itemOne, text: '选例题', priority: 'normal' }],
         time: { date: '2026-09-29', startTime: '16:00', timeZone: 'Asia/Shanghai', durationMinutes: 90 },
-        course: { classId: null, lessonId: null, recordIds: [] },
+        course: { classId: null, recordIds: [] },
         reminder: { side: 'before', minutes: 10 }
       }
     }, { key: harness.key() });
@@ -349,11 +349,11 @@ test('beforeChange runs once, inside the write, before the change and never on r
     assert.deepEqual(beforeChangeCalls(), []);
 
     clearBeforeChangeCalls();
-    setPortFailure('lessons.readForTeachingLink', true);
+    setPortFailure('classes.readClass', true);
     const failing = await a.post(ENTRIES, timedEntry({
-      course: { classId: null, lessonId: SAMPLE_IDS.lessonOne, recordIds: [] }
+      course: { classId: SAMPLE_IDS.classOne, recordIds: [] }
     }), { key: harness.key() });
-    setPortFailure('lessons.readForTeachingLink', false);
+    setPortFailure('classes.readClass', false);
     assert.equal(failing.status, 503);
     assert.deepEqual(beforeChangeCalls(), []);
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM schedule_entries'), 1);
@@ -398,21 +398,21 @@ test('a failing beforeChange rolls the whole schedule write back', async () => {
 test('a failing source read fails the read instead of faking a deletion', async () => {
   await withHarness(async (harness) => {
     const a = harness.agent(harness.account('teacher-a'));
-    const lesson = await a.post('/api/modules/lessons/items', { title: '函数单调性' }, { key: harness.key() });
+    const classroom = await a.post('/api/modules/classes/items', { name: '高一(1)班' }, { key: harness.key() });
     const created = await a.post(ENTRIES, timedEntry({
-      course: { classId: null, lessonId: lesson.body.id, recordIds: [] }
+      course: { classId: classroom.body.id, recordIds: [] }
     }), { key: harness.key() });
     assert.equal(created.status, 201);
 
-    setPortFailure('lessons.readForTeachingLink', true);
+    setPortFailure('classes.readClass', true);
     const failingRead = await a.get(`${ENTRIES}/${created.body.id}`);
-    setPortFailure('lessons.readForTeachingLink', false);
+    setPortFailure('classes.readClass', false);
     assert.equal(failingRead.status, 503);
     assert.equal(failingRead.body.type, '/problems/workbench/temporarily-unavailable');
 
     const restoredRead = await a.get(`${ENTRIES}/${created.body.id}`);
     assert.equal(restoredRead.status, 200);
-    assert.equal(restoredRead.body.courseState.lesson.deleted, false);
+    assert.equal(restoredRead.body.courseState.classroom.deleted, false);
   });
 });
 

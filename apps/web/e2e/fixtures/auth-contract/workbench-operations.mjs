@@ -1,5 +1,5 @@
 /*
- * The fifteen protected workbench operations declared by
+ * The protected workbench operations declared by
  * apps/api/src/contracts/workbench.openapi.yaml. The harness drives them
  * through useAuth.request; the transport spec checks the page header, the
  * protection header, bodies and keys on every one.
@@ -60,48 +60,6 @@ export const WORKBENCH_OPERATIONS = [
     path: '/api/modules/questions/items/q-1/deletion',
     idempotencyKey: '44444444-4444-4444-8444-444444444444',
     body: { deleted: true },
-  },
-  {
-    id: 'listLessons',
-    status: 200,
-    method: 'GET',
-    path: '/api/modules/lessons/items?state=active',
-  },
-  {
-    id: 'createLesson',
-    status: 201,
-    method: 'POST',
-    path: '/api/modules/lessons/items',
-    idempotencyKey: '55555555-5555-4555-8555-555555555555',
-    body: { title: '契约替身备课' },
-  },
-  {
-    id: 'getLesson',
-    status: 200,
-    method: 'GET',
-    path: '/api/modules/lessons/items/l-1',
-  },
-  {
-    id: 'updateLesson',
-    status: 200,
-    method: 'PUT',
-    path: '/api/modules/lessons/items/l-1',
-    idempotencyKey: '66666666-6666-4666-8666-666666666666',
-    body: { title: '更新备课', version: 1 },
-  },
-  {
-    id: 'setLessonDeletion',
-    status: 200,
-    method: 'POST',
-    path: '/api/modules/lessons/items/l-1/deletion',
-    idempotencyKey: '77777777-7777-4777-8777-777777777777',
-    body: { deleted: true },
-  },
-  {
-    id: 'listQuestionUsages',
-    status: 200,
-    method: 'GET',
-    path: '/api/modules/lessons/question-usages/q-1',
   },
   {
     id: 'getModuleCatalog',

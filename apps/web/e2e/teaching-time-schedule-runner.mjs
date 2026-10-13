@@ -3,7 +3,7 @@
  *
  * One process serves the built schedule harness page and the real workbench API
  * from a single HTTPS origin with runner-bound test identities. The composition
- * is the T52 fixture (real schedule module plus classes/lessons substitutes);
+ * is the T52 fixture (real schedule module plus classes substitutes);
  * the web build comes from `teaching-time-schedule.vite.config.mjs`, so the
  * browser sees the production pipeline of the current candidate.
  */
@@ -105,7 +105,6 @@ export async function startScheduleRunner({ dataDir, port = 47113, reset = true 
         DELETE FROM workbench_mutation_keys;
         DELETE FROM teaching_time_fixture_records;
         DELETE FROM teaching_time_fixture_classes;
-        DELETE FROM teaching_time_fixture_lessons;
       `);
     },
     cookieFor(accountKey) {

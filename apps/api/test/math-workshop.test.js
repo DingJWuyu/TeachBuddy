@@ -9,12 +9,10 @@ import sharp from 'sharp';
 import JSZip from 'jszip';
 import { createApp } from '../src/app.js';
 import { validate } from '../src/modules/math/contract.js';
-import { exportTree } from '../src/modules/lessons/output.js';
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
 import { createWorkshopSource } from '../../../packages/shared/src/math/workshop.js';
 
 const works = '/api/modules/math/v1/works';
-const lessons = '/api/modules/lessons/v3';
 const formula = (id, latex) => ({ id, latex, caption: '中文条件：a≠0', includeCaption: true, color: '#172554', fontSize: 32 });
 const source = () => ({ ...createWorkshopSource(), formulas: [formula('root', 'x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}'), formula('condition', '\\begin{cases}a>0\\\\b^2-4ac\\ge0\\end{cases}')],
   steps: [{ id: 'first', title: '公式', description: '先看求根公式', values: {}, visibleObjects: [], visibleFormulas: ['root'], view: 'plane' }, { id: 'second', title: '条件', description: '再看条件', values: {}, visibleObjects: [], visibleFormulas: ['root', 'condition'], view: 'plane' }], initialStepId: 'first' });
@@ -31,7 +29,7 @@ async function harness(directory = fs.mkdtempSync(path.join(os.tmpdir(), 'math-w
   }, async bytes(id) { const stream = await runtime.workbench.files.open({ accountKey: 'workshop-a' }, id); const chunks = []; for await (const chunk of stream) chunks.push(chunk); return Buffer.concat(chunks); }, async restart() { await runtime.dataStore.close(); await start(); }, async close() { await runtime.dataStore.close(); } };
 }
 
-test('workshop real HTTP/SQLite: complete formula source, fixed snapshots, exports and replay', { timeout: 90000 }, async () => {
+test('workshop real HTTP/SQLite: complete formula source, version history, exports and replay', { timeout: 90000 }, async () => {
   const h = await harness(); let success = false;
   const evidence = path.resolve(process.env.MATH_WORKSHOP_EVIDENCE ?? 'test-results/math-unified/outputs/formulas');
   fs.mkdirSync(evidence, { recursive: true });
@@ -44,13 +42,6 @@ test('workshop real HTTP/SQLite: complete formula source, fixed snapshots, expor
     const classroom = await h.bytes(work.render.presentationFileId); const zip = await JSZip.loadAsync(classroom); const html = await zip.file('index.html').async('string'); assert.ok(html.includes('求根公式与条件')); assert.ok(!html.includes('runtime/loader.js')); assert.ok(!html.includes('/api/')); fs.writeFileSync(path.join(evidence, 'classroom.zip'), classroom);
     assert.deepEqual((await h.send('post', works, input, key)).body, work);
     assert.equal((await h.send('get', `${works}/${work.id}`, undefined, randomUUID(), 'workshop-b')).status, 404);
-    const ref = { id: randomUUID(), kind: 'math', workId: work.id, workVersion: 1, note: '私密备注' };
-    const lessonInput = { title: '公式课', intro: { version: 1, blocks: [] }, sections: [], materials: [ref] };
-    const lesson = await h.send('post', lessons, lessonInput); assert.equal(lesson.status, 201, JSON.stringify(lesson.body));
-    const snapshot = lesson.body.materials[0].snapshot; assert.equal(snapshot.graphPosterFileId, null);
-    const output = exportTree(lesson.body, { kind: 'handout', includeAnswers: false, includeTeacherNotes: false, sectionIds: [], materialReferenceIds: [ref.id], answerSpaceLines: 4 });
-    assert.equal(output.filter(block => block.type === 'math').length, 1); assert.equal(output.filter(block => block.type === 'image').length, 0);
-    assert.equal(output.find(block => block.type === 'math').latex, input.source.formulas[0].latex);
     for (const options of [{ format: 'source' }, { format: 'bundle' }, { format: 'png' }, { format: 'svg' }, { format: 'svg', selection: 'formula', formulaId: 'condition' }]) {
       const result = await h.send('post', `${works}/${work.id}/exports`, { version: 1, background: 'transparent', width: 1600, ...options });
       assert.equal(result.status, 201, JSON.stringify(result.body)); validate('WorkExport', result.body);
@@ -58,24 +49,15 @@ test('workshop real HTTP/SQLite: complete formula source, fixed snapshots, expor
       if (options.format === 'bundle') { assert.equal(result.body.file.mediaType, 'application/zip'); assert.equal(result.body.offline, 'self-contained'); }
       fs.writeFileSync(path.join(evidence, `${options.selection ?? 'work'}.${options.format === 'bundle' ? 'zip' : options.format === 'source' ? 'json' : options.format}`), bytes);
     }
-    const accepted = await h.send('post', `${lessons}/${lesson.body.id}/exports`, { baseVersion: 1, kind: 'handout', format: 'docx', includeAnswers: false, includeTeacherNotes: false, sectionIds: [], materialReferenceIds: [ref.id], answerSpaceLines: 4 });
-    assert.equal(accepted.status, 202, JSON.stringify(accepted.body)); let job;
-    for (let attempt = 0; attempt < 300; attempt++) { job = (await h.send('get', `/api/workbench/jobs/${accepted.body.jobId}`)).body; if (!['queued', 'running'].includes(job.state)) break; await new Promise(resolve => setTimeout(resolve, 100)); }
-    assert.equal(job.state, 'succeeded', JSON.stringify(job)); const docx = await h.bytes(job.outputFileIds[0]); fs.writeFileSync(path.join(evidence, 'handout.docx'), docx);
-    const document = await JSZip.loadAsync(docx); const documentXml = await document.file('word/document.xml').async('string');
-    assert.equal((documentXml.match(/<m:oMath>/g) ?? []).length, 1, 'saved initial step outputs one editable Office equation');
-    assert.equal(Object.keys(document.files).filter(name => name.startsWith('word/media/')).length, 0, 'formula poster is not embedded a second time');
-    assert.ok(documentXml.includes('中文条件')); assert.ok(!documentXml.includes('私密备注'));
     const modified = structuredClone(input.source); modified.initialStepId = 'second'; const updated = await h.send('put', `${works}/${work.id}`, { baseVersion: 1, title: input.title, source: modified }); assert.equal(updated.status, 200, JSON.stringify(updated.body));
-    assert.deepEqual((await h.send('get', `${lessons}/${lesson.body.id}`)).body.materials[0].snapshot, snapshot);
+    assert.deepEqual((await h.send('get', `${works}/${work.id}/versions/1`)).body.source, input.source);
     const invalidSource = structuredClone(modified); invalidSource.formulas[0].latex = '\\frac{';
     const invalid = await h.send('put', `${works}/${work.id}`, { baseVersion: 2, title: input.title, source: invalidSource }); assert.equal(invalid.status, 200, JSON.stringify(invalid.body)); assert.equal(invalid.body.render.state, 'invalid'); assert.equal(invalid.body.render.graphPosterFileId, null); assert.equal(invalid.body.render.presentationFileId, null);
     const rejected = await h.send('post', works, { ...input, source: { ...source(), initialStepId: 'missing' } }); assert.equal(rejected.status, 422);
     const paramError = source(); paramError.steps[0].values = { a: 1 }; assert.equal((await h.send('post', works, { ...input, source: paramError })).status, 422);
     await h.restart(); assert.deepEqual((await h.send('post', works, input, key)).body, work); assert.deepEqual((await h.send('get', `${works}/${work.id}/versions/1`)).body.source, input.source);
     const archived = await h.send('post', `${works}/${work.id}/deletion`, { baseVersion: 3, deleted: true }); assert.equal(archived.status, 200); assert.equal(archived.body.version, 4);
-    const preserved = await h.send('put', `${lessons}/${lesson.body.id}`, { ...lessonInput, baseVersion: 1, materials: [{ ...ref, note: '仍可使用' }] }); assert.equal(preserved.status, 200, JSON.stringify(preserved.body)); assert.deepEqual(preserved.body.materials[0].snapshot, snapshot);
-    fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify({ state: 'passed', identity: 'isolated-test-principal', workId: work.id, lessonId: lesson.body.id, fixedSnapshot: snapshot, source: input.source }, null, 2)); success = true;
+    fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify({ state: 'passed', identity: 'isolated-test-principal', workId: work.id, source: input.source }, null, 2)); success = true;
   } finally { await h.close(); if (success) fs.rmSync(h.directory, { recursive: true, force: true }); }
 });
 
@@ -121,7 +103,6 @@ test('workshop real authenticated HTTPS: physical backup and restore retain mixe
     const created = await write(client, 'POST', works, input, key); assert.equal(created.status, 201, created.text); const work = created.json;
     const legacySource = { schemaVersion: 1, kind: 'formula', ...formula('old', 'a+b') }; delete legacySource.id;
     const legacy = await write(client, 'POST', works, { title: '原生公式', originalFileId: null, source: legacySource }); assert.equal(legacy.status, 201, legacy.text); assert.notEqual(legacy.json.rendererVersion, work.rendererVersion);
-    const ref = { id: randomUUID(), kind: 'math', workId: work.id, workVersion: 1, note: '' }; const lesson = await write(client, 'POST', lessons, { title: '备份公式课', intro: { version: 1, blocks: [] }, sections: [], materials: [ref] }); assert.equal(lesson.status, 201, lesson.text);
     const download = async id => { assert.equal((await client.request('GET', `/api/workbench/files/${id}/content`)).status, 200); const accountKey = (await client.request('GET', '/api/workbench/context')).json.accountKey; const stream = await world.workbench.files.open({ accountKey }, id); const chunks = []; for await (const chunk of stream) chunks.push(chunk); return Buffer.concat(chunks); };
     const poster = await download(work.render.posterFileId); const classroom = await download(work.render.presentationFileId); const graph = await download(work.render.graphPosterFileId); assert.ok(poster.length > 1000); assert.ok(classroom.length > 1000); assert.ok(graph.length > 1000);
     const backupTarget = path.join(archiveRoot, 'backup'); const restoreTarget = path.join(archiveRoot, 'restored'); await world.close(); world = null;
@@ -129,12 +110,12 @@ test('workshop real authenticated HTTPS: physical backup and restore retain mixe
     assert.equal(restore({ source: backupTarget, target: restoreTarget, stopped: true }).state, 'prepared'); assert.equal(activate({ target: restoreTarget, stopped: true }).state, 'activated');
     world = await createIntegration({ directory: restoreTarget, webDist: path.resolve('apps/web/public') }); client = await authenticate(false);
     const reloaded = await client.request('GET', `${works}/${work.id}`); assert.deepEqual(reloaded.json, work); assert.deepEqual((await write(client, 'POST', works, input, key)).json, work);
-    assert.deepEqual(await download(work.render.posterFileId), poster); assert.deepEqual(await download(work.render.graphPosterFileId), graph); assert.deepEqual(await download(work.render.presentationFileId), classroom); assert.deepEqual((await client.request('GET', `${lessons}/${lesson.json.id}`)).json.materials[0].snapshot, lesson.json.materials[0].snapshot);
-    const evidence = path.resolve(process.env.MATH_WORKSHOP_EVIDENCE ?? 'test-results/math-unified/outputs/formulas'); fs.writeFileSync(path.join(evidence, 'backup-restored.json'), JSON.stringify({ state: 'passed', identity: 'real-cookie-session', source: 'physical SQLite+files backup', mixedRenderers: true, preserved: ['complete-source', 'poster', 'graph-poster', 'classroom', 'lesson-snapshot', 'idempotency-receipt'] }, null, 2)); success = true;
+    assert.deepEqual(await download(work.render.posterFileId), poster); assert.deepEqual(await download(work.render.graphPosterFileId), graph); assert.deepEqual(await download(work.render.presentationFileId), classroom);
+    const evidence = path.resolve(process.env.MATH_WORKSHOP_EVIDENCE ?? 'test-results/math-unified/outputs/formulas'); fs.writeFileSync(path.join(evidence, 'backup-restored.json'), JSON.stringify({ state: 'passed', identity: 'real-cookie-session', source: 'physical SQLite+files backup', mixedRenderers: true, preserved: ['complete-source', 'poster', 'graph-poster', 'classroom', 'idempotency-receipt'] }, null, 2)); success = true;
   } finally { await world?.close(); if (success) { fs.rmSync(directory, { recursive: true, force: true }); fs.rmSync(archiveRoot, { recursive: true, force: true }); } }
 });
 
-test('workshop graph HTTP: fixed static asset root, trusted plane/space posters, source exports and editable lesson output', { timeout: 120000 }, async () => {
+test('workshop graph HTTP: fixed static asset root, trusted plane/space posters, source exports', { timeout: 120000 }, async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'math-workshop-graph-api-'));
   const webDist = path.join(directory, 'candidate-web'); fs.mkdirSync(webDist); fs.writeFileSync(path.join(webDist, 'index.html'), '<!doctype html><title>isolated candidate</title>');
   const h = await harness(path.join(directory, 'data'), webDist); let success = false;
@@ -149,11 +130,6 @@ test('workshop graph HTTP: fixed static asset root, trusted plane/space posters,
     const poster = await h.bytes(work.render.posterFileId); const graph = await h.bytes(work.render.graphPosterFileId); fs.writeFileSync(path.join(evidence, 'saved-workshop.png'), poster); fs.writeFileSync(path.join(evidence, 'saved-graph.png'), graph);
     assert.equal((await sharp(poster).metadata()).format, 'png'); assert.equal((await sharp(graph).metadata()).format, 'png');
     const bundle = await JSZip.loadAsync(await h.bytes(work.render.presentationFileId)); assert.ok((await bundle.file('runtime/loader.js').async('string')).includes('isolated-static-build'), 'classroom uses the same configured static runtime as browser');
-    const ref = { id: randomUUID(), kind: 'math', workId: work.id, workVersion: 1, note: '图形课私密备注' }; const lesson = await h.send('post', lessons, { title: '图形课', intro: { version: 1, blocks: [] }, sections: [], materials: [ref] }); assert.equal(lesson.status, 201, JSON.stringify(lesson.body));
-    const tree = exportTree(lesson.body, { kind: 'handout', includeAnswers: false, includeTeacherNotes: false, sectionIds: [], materialReferenceIds: [ref.id], answerSpaceLines: 4 }); assert.equal(tree.filter(b => b.type === 'math').length, 1); assert.deepEqual(tree.filter(b => b.type === 'image').map(b => b.fileId), [work.render.graphPosterFileId]);
-    const accepted = await h.send('post', `${lessons}/${lesson.body.id}/exports`, { baseVersion: 1, kind: 'handout', format: 'docx', includeAnswers: false, includeTeacherNotes: false, sectionIds: [], materialReferenceIds: [ref.id], answerSpaceLines: 4 }); assert.equal(accepted.status, 202, JSON.stringify(accepted.body)); let job;
-    for (let attempt = 0; attempt < 300; attempt++) { job = (await h.send('get', `/api/workbench/jobs/${accepted.body.jobId}`)).body; if (!['queued', 'running'].includes(job.state)) break; await new Promise(resolve => setTimeout(resolve, 100)); }
-    assert.equal(job.state, 'succeeded', JSON.stringify(job)); const docx = await h.bytes(job.outputFileIds[0]); fs.writeFileSync(path.join(evidence, 'handout.docx'), docx); const document = await JSZip.loadAsync(docx); const xml = await document.file('word/document.xml').async('string'); assert.equal((xml.match(/<m:oMath>/g) ?? []).length, 1); assert.equal(Object.keys(document.files).filter(name => /^word\/media\/[^/]+$/.test(name)).length, 1); assert.ok(!xml.includes('图形课私密备注'));
     for (const options of [{ format: 'png', selection: 'work', background: 'white', width: 1000 }, { format: 'png', selection: 'graph', background: 'white', width: 1000 }, { format: 'ggb', selection: 'graph', background: 'transparent', width: 1600 }, { format: 'bundle', background: 'transparent', width: 1600 }]) {
       const exported = await h.send('post', `${works}/${work.id}/exports`, { version: 1, ...options }); assert.equal(exported.status, 201, JSON.stringify(exported.body)); const bytes = await h.bytes(exported.body.file.id); if (options.format === 'ggb') assert.deepEqual(bytes, Buffer.from(data.graph.base64, 'base64'));
       fs.writeFileSync(path.join(evidence, `export-${options.selection ?? 'work'}.${options.format === 'bundle' ? 'zip' : options.format}`), bytes);
@@ -162,8 +138,8 @@ test('workshop graph HTTP: fixed static asset root, trusted plane/space posters,
     const badRef = structuredClone(data); badRef.steps[0].visibleObjects.push('missing'); assert.equal((await h.send('post', works, { ...input, source: badRef })).status, 422);
     const plane = structuredClone(data); plane.view = plane.steps[0].view = 'plane'; const changed = await h.send('put', `${works}/${work.id}`, { title: input.title, source: plane, baseVersion: 1 }); assert.equal(changed.status, 200, JSON.stringify(changed.body));
     const vector = await h.send('post', `${works}/${work.id}/exports`, { version: 2, format: 'svg', selection: 'graph', background: 'transparent', width: 1000 }); assert.equal(vector.status, 201, JSON.stringify(vector.body)); const svg = await h.bytes(vector.body.file.id); assert.ok(svg.includes(Buffer.from('<path'))); assert.ok(!svg.includes(Buffer.from('<image'))); fs.writeFileSync(path.join(evidence, 'export-plane.svg'), svg);
-    await h.restart(); assert.deepEqual((await h.send('get', `${works}/${work.id}/versions/1`)).body.source, data); assert.equal((await h.send('get', `${lessons}/${lesson.body.id}`)).body.materials[0].snapshot.graphPosterFileId, work.render.graphPosterFileId);
-    fs.writeFileSync(path.join(evidence, 'http-result.json'), JSON.stringify({ state: 'passed', identity: 'isolated-test-principal', absentConfiguredRuntime: 503, staticRuntimeMarker: 'isolated-static-build', source: data, workId: work.id, lessonId: lesson.body.id, equationCount: 1, graphCount: 1 }, null, 2)); success = true;
+    await h.restart(); assert.deepEqual((await h.send('get', `${works}/${work.id}/versions/1`)).body.source, data);
+    fs.writeFileSync(path.join(evidence, 'http-result.json'), JSON.stringify({ state: 'passed', identity: 'isolated-test-principal', absentConfiguredRuntime: 503, staticRuntimeMarker: 'isolated-static-build', source: data, workId: work.id, graphCount: 1 }, null, 2)); success = true;
   } finally { await h.close(); if (success) fs.rmSync(directory, { recursive: true, force: true }); }
 });
 
