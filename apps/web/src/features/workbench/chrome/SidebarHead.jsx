@@ -457,7 +457,7 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
             <div className="tb-dialog-preview-body">
               <div className="tb-preview-card">
                 <div className="tb-preview-mark"><Icon name="sparkles" size={24} /></div>
-                <p>{t("您的新学期将以空白状态开始。您可以从零开始添加班级、学生和课程，或随时切换到「从已有学期复制」。")}</p>
+                <p>{t("您的新学期将以空白状态开始。您可以从零开始添加内容，或随时切换到「从已有学期复制」。")}</p>
               </div>
             </div>
           )}

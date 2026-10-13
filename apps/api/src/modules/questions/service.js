@@ -241,16 +241,6 @@ export function createQuestionsService({ repository, now = () => new Date(), has
     return toQuestion(next);
   }
 
-  function readForReference(principal, questionId) {
-    const record = requireOwned(principal, questionId);
-    return {
-      id: record.id,
-      version: record.version,
-      deletedAt: record.deletedAt,
-      snapshot: snapshotOf(record),
-    };
-  }
-
   return {
     listQuestions,
     getQuestion,
@@ -259,6 +249,5 @@ export function createQuestionsService({ repository, now = () => new Date(), has
     copyQuestion,
     listDerivatives,
     setQuestionDeletion,
-    readForReference,
   };
 }

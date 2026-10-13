@@ -54,8 +54,6 @@ export default function MaterialsQuestionsPage({
   registerTools,
   onOpenTools,
   onReturnToLibrary,
-  onReturnToRecord,
-  renderTeachingFeedback,
 }) {
   const { t } = useTranslation("questions");
   const pageNode = useRef(null);
@@ -1302,7 +1300,6 @@ export default function MaterialsQuestionsPage({
           </>
         ) : (
           <section className="q-question" ref={questionScroll.ref} onScroll={questionScroll.onScroll}>
-            {onReturnToRecord && <button onClick={onReturnToRecord}>{t("返回教学记录")}</button>}
             <header className="q-question-heading">
               {editing ? <>
                 <button className="q-text-button q-back" disabled={busy} onClick={() => action(leaveEditor)}><QuestionIcon name="back" />{scene.kind === 'new' ? t("返回题库") : t("返回题目")}</button>
@@ -1374,11 +1371,6 @@ export default function MaterialsQuestionsPage({
               <button key={q.id} onClick={() => open("question", q.id)}> {t("改编题：")}{q.title || t("未命名")}
               </button>
             ))}
-            {value.id && renderTeachingFeedback && (
-              <ModuleDisclosure title={t("教学反馈")} open={Boolean(scene.teachingOpen)} onOpenChange={teachingOpen => patchScene({ teachingOpen })}>
-                {renderTeachingFeedback(value.id)}
-              </ModuleDisclosure>
-            )}
             {value.id && (
               <ModuleDisclosure title={t("复制文字或下载图片")} className="q-export">
                 <p className="q-muted">{t("把题目放进你自己的课件。图片采用透明背景，可直接插入 PPT。")}</p>

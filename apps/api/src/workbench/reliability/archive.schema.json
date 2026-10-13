@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "Frozen manual archive definitions from 31575c5c9d386c03a1f9fcde38b9a216f87a5b08:docs/contracts/reliability.schema.json. Conversation payloads retain their existing native public schema.",
+  "$comment": "Manual archive definitions derived from 31575c5c9d386c03a1f9fcde38b9a216f87a5b08:docs/contracts/reliability.schema.json, restricted to the current modules. Conversation payloads retain their existing native public schema.",
   "$defs": {
     "DeploymentManifest": {
       "type": "object",
@@ -150,8 +150,6 @@
             "resource-taxonomy",
             "resource-file-revision",
             "math",
-            "class",
-            "record",
             "entry",
             "notification",
             "conversation",
@@ -201,8 +199,6 @@
             "reference-snapshot",
             "current-link",
             "conversation-reference",
-            "class-record",
-            "course",
             "exception"
           ]
         },

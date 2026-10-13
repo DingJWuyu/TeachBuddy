@@ -1,0 +1,333 @@
+{
+  "description": "日程、日历和提醒契约样本；静态目录反例分别记录结构与跨条目验证预期。",
+  "samples": [
+    {
+      "id": "error-v1-record",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/sources",
+        "reason": "unsupported-content-version"
+      }
+    },
+    {
+      "id": "error-v1-list",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/items",
+        "reason": "unsupported-content-version"
+      }
+    },
+    {
+      "id": "error-deleted",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/reference-deleted",
+        "status": 409
+      }
+    },
+    {
+      "id": "error-version",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/version-conflict",
+        "status": 409,
+        "currentVersion": 2,
+        "objectId": "30000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "id": "error-key-reused",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/idempotency-key-reused",
+        "status": 409
+      }
+    },
+    {
+      "id": "error-not-found",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/not-found",
+        "status": 404
+      }
+    },
+    {
+      "id": "error-unavailable",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/temporarily-unavailable",
+        "status": 503
+      }
+    },
+    {
+      "id": "error-duplicate",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/sources/1/id",
+        "reason": "duplicate-id"
+      }
+    },
+    {
+      "id": "error-empty",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/note",
+        "reason": "empty-content"
+      }
+    },
+    {
+      "id": "error-math-v1-input",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/sources/2/kind",
+        "reason": "invalid-reference"
+      }
+    },
+    {
+      "id": "error-math-v1-query",
+      "schema": "Problem",
+      "valid": true,
+      "value": {
+        "type": "/problems/workbench/invalid-input",
+        "status": 422,
+        "field": "/path/kind",
+        "reason": "invalid-reference"
+      }
+    },
+    {
+      "id": "catalog-combined-target",
+      "schema": "ModuleCatalogV3",
+      "valid": true,
+      "value": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "math",
+            "name": "数学工坊",
+            "path": "/math",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "catalog-duplicate-id",
+      "schema": "ModuleCatalogV3",
+      "valid": true,
+      "value": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "math",
+            "name": "数学工坊",
+            "path": "/math",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "questions",
+            "name": "其他模块",
+            "path": "/other",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": []
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "type": "/problems/workbench/invalid-input",
+        "field": "/items/3/id",
+        "reason": "duplicate-id"
+      }
+    },
+    {
+      "id": "catalog-duplicate-path",
+      "schema": "ModuleCatalogV3",
+      "valid": true,
+      "value": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "math",
+            "name": "数学工坊",
+            "path": "/math",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/questions",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": []
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "type": "/problems/workbench/invalid-input",
+        "field": "/items/4/path",
+        "reason": "duplicate-id"
+      }
+    },
+    {
+      "id": "delete-current",
+      "schema": "Deletion",
+      "valid": true,
+      "value": {
+        "expectedVersion": 2,
+        "deleted": true
+      }
+    },
+    {
+      "id": "restore-current",
+      "schema": "Deletion",
+      "valid": true,
+      "value": {
+        "expectedVersion": 3,
+        "deleted": false
+      }
+    },
+    {
+      "id": "catalog-unknown-port",
+      "schema": "ModuleCatalogV3",
+      "valid": false,
+      "value": {
+        "version": 3,
+        "items": [
+          {
+            "id": "questions",
+            "name": "题库",
+            "path": "/questions",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": [
+              "other.unknown"
+            ]
+          },
+          {
+            "id": "math",
+            "name": "数学工坊",
+            "path": "/math",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "resources",
+            "name": "资源库",
+            "path": "/resources",
+            "navigation": "sidebar",
+            "auxiliaryPanel": true,
+            "requires": []
+          },
+          {
+            "id": "schedule",
+            "name": "日程",
+            "path": "/calendar",
+            "navigation": "top",
+            "auxiliaryPanel": true,
+            "requires": []
+          }
+        ]
+      },
+      "expectedStaticValidation": {
+        "status": 422,
+        "type": "/problems/workbench/invalid-input",
+        "field": "/items/0/requires/0",
+        "reason": "invalid-reference"
+      }
+    }
+  ],
+  "exchanges": []
+}

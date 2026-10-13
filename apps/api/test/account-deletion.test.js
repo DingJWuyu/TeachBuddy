@@ -45,7 +45,6 @@ async function upload(client, name = 'source.txt') {
 async function seed(world, owner) {
   const { client, principal } = owner;
   for (const [route, body] of [
-    ['/api/modules/classes/items', { name: '中文班级名' }],
     ['/api/modules/questions/items', manualQuestionSample()],
     ['/api/modules/schedule/entries', unscheduledEntry()],
     ['/api/agent/conversations', {}],
@@ -115,7 +114,7 @@ test('real HTTPS deletion removes owned rows/files, invalidates every session, p
   assert.ok(!JSON.stringify(receipt).includes(body.email));
   const fresh = await register(world, body.email);
   assert.notEqual(fresh.principal.accountKey, a.principal.accountKey);
-  assert.equal((await fresh.client.request('GET', '/api/modules/classes/items')).json.items.length, 0);
+  assert.equal((await fresh.client.request('GET', '/api/modules/classes/items')).status, 404);
 });
 
 test('filesystem failure stays locked across restart; only the cookie-bound original request can continue', async t => {

@@ -26,54 +26,15 @@ export const moduleCatalog = Object.freeze([
     "requires": []
   },
   {
-    "id": "classes",
-    "name": "班级教学",
-    "path": "/classes",
-    "navigation": "sidebar",
-    "auxiliaryPanel": true,
-    "requires": [
-      "questions.readForReferenceV2",
-      "math.readForTeachingLinkV1"
-    ]
-  },
-  {
     "id": "schedule",
     "name": "日程",
     "path": "/calendar",
     "navigation": "top",
     "auxiliaryPanel": true,
-    "requires": [
-      "classes.readClass",
-      "classes.readRecord"
-    ]
+    "requires": []
   }
 ].map(entry => Object.freeze({...entry, requires: Object.freeze(entry.requires)})));
-export const modulePorts = Object.freeze({
-  "questions.readForReferenceV2": {
-    "provider": "questions",
-    "port": "readForReferenceV2"
-  },
-  "math.readForReferenceV1": {
-    "provider": "math",
-    "port": "readForReferenceV1"
-  },
-  "questions.readForReference": {
-    "provider": "questions",
-    "port": "readForReference"
-  },
-  "math.readForTeachingLinkV1": {
-    "provider": "math",
-    "port": "readForTeachingLinkV1"
-  },
-  "classes.readClass": {
-    "provider": "classes",
-    "port": "readClass"
-  },
-  "classes.readRecord": {
-    "provider": "classes",
-    "port": "readRecord"
-  }
-});
+export const modulePorts = Object.freeze({});
 export const moduleCatalogIdPattern = /^[a-z][a-z0-9-]*$/;
 export const moduleCatalogPathPattern = /^\/[a-z][a-z0-9-]*$/;
 export const moduleCatalogNavigationValues = Object.freeze(['sidebar', 'top']);

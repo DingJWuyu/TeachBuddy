@@ -9,7 +9,7 @@ await page.goto(world.origin); await page.getByRole('button',{name:'创建账户
 
 if(await page.locator('.tb-sidebar .wb-ai-entry').count()) throw new Error('Sidebar AI entry remains');
 await page.getByRole('button',{name:'全局搜索',exact:true}).click(); await page.getByRole('dialog',{name:'全局搜索'}).waitFor(); await page.getByRole('button',{name:'关闭搜索'}).click();
-for(const [label,path] of [['题库','questions'],['数学工坊','math'],['资源库','resources'],['班级教学','classes']]) {
+for(const [label,path] of [['题库','questions'],['数学工坊','math'],['资源库','resources']]) {
  await page.locator('.tb-module-nav a').filter({hasText:label}).click(); await page.waitForURL('**/'+path); await page.locator('.wb-main').waitFor(); console.log('NAV',path);
 }
 await page.locator('.tb-global-nav').getByRole('link',{name:'日程',exact:true}).click();await page.waitForURL('**/calendar');

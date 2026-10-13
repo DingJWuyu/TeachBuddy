@@ -40,17 +40,6 @@ export function getHelpTopics() {
     ]
   },
   {
-    id: "classes", label: t("班级教学"), icon: "classes",
-    description: t("分别记录各班教学进度、课后情况和下一步安排。"),
-    destination: "/classes", action: t("进入班级教学"),
-    articles: [
-      { id: "1", title: t("记录课后情况"),
-        body: t("创建并选择班级，写一句课后情况即可保存。需要时补充教学进度、共性问题、下一步和关联材料。") },
-      { id: "2", title: t("区分教学计划与记录"),
-        body: t("不同班级的实际授课记录分别保存。课程安排表示计划，不会自动成为已授课记录。") }
-    ]
-  },
-  {
     id: "schedule", label: t("日程与提醒"), icon: "calendar",
     description: t("安排课程与事项，管理重复课程和站内提醒。"),
     destination: "/calendar", action: t("进入日程"),

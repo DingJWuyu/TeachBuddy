@@ -18,7 +18,7 @@
 | 跨模块组合 | 受影响的真实跨模块路径及必要回归 |
 | 开发服务、组件挂载与清理 | [开发服务回归](#开发服务回归)，保留 React StrictMode，验证重复初始化后仍可读取、上传和保存 |
 
-测试文件/config 从[功能规格](../README.md#功能规格)进入；命令以根和各 workspace 的 `package.json` 为准。根 `npm run test:e2e` 当前通过 `playwright.config.mjs` 仅选择认证集成场景，不能代表全模块 E2E；模块验证使用相应配置，运行前核对其 `testMatch` 和候选。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。教学基础和数学关联各有独立 Background，不混用前置条件。旧场景中的“软删除”对应可恢复的归档/删除；永久删除另按模块规格验收，不用归档场景证明不可恢复操作。
+测试文件/config 从[功能规格](../README.md#功能规格)进入；命令以根和各 workspace 的 `package.json` 为准。根 `npm run test:e2e` 当前通过 `playwright.config.mjs` 仅选择认证集成场景，不能代表全模块 E2E；模块验证使用相应配置，运行前核对其 `testMatch` 和候选。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。各场景使用自己的 Background。旧场景中的“软删除”对应可恢复的归档/删除；永久删除另按模块规格验收，不用归档场景证明不可恢复操作。
 
 引入 lint、hooks 或新验证工具前，先指出已有检查漏掉的具体问题，确认该工具确实能检出，并评估误报、重复覆盖及持续维护负担。现有构建、集成测试或人工浏览足以提供反馈时沿用；不因缺少某类工具而补齐工具清单。
 
@@ -55,7 +55,7 @@
 | 题干/答案原稿独立定位 | 先运行 `node apps/web/e2e/fixtures/materials-questions/build.mjs` 构建隔离题库页面，再执行 `npx playwright test -c apps/web/e2e/fixtures/materials-questions/playwright.config.mjs materials-questions-fragments.spec.js`。该 test-principal fixture 使用自己的页面入口，不能用真实认证主应用构建替代。 |
 | Agent 真实模型保留库 | `apps/api/test/fixtures/c26/live.mjs` 生成模型报告和隔离数据；`apps/web/e2e/c26/agent.spec.js` 读取。二者共用 `AGENT_EVIDENCE_DIR`，默认 `test-results/evidence/C26/v1`。执行前核对报告与数据目录来自同一候选；新环境缺少它们时标记未验证，真实模型请求须有本次授权。Agent 扩展开发仍按[项目状态](../plans/run-state.md)暂停。 |
 | API 字段与兼容 | 从[文字契约](../README.md#契约说明)进入；机器契约在 `apps/api/src/contracts/`，交换样本在 `apps/api/test/fixtures/contracts/`。测试以固定样本和预期行为验证实现，不能只用实现自身生成预期结果。 |
-| 固定旧版升级 | `npm run test:api` 包含 A11/T53、R31 题库及班级材料关联旧库升级；数学和材料旧版分别执行 `node scripts/math-support/verify-upgrade.mjs`、`node scripts/materials/verify-migration.mjs`。入口从 `apps/api/test/fixtures/legacy-source/` 的不可变源码包创建旧库，来源、路径和摘要见同目录 `provenance.json`；不需要旧 checkout、Git 归档引用或环境变量。归档内部保留当时的路径。 |
+| 固定旧版升级 | `npm run test:api` 包含 A11/T53、R31 题库旧库升级及退役迁移；数学和材料旧版分别执行 `node scripts/math-support/verify-upgrade.mjs`、`node scripts/materials/verify-migration.mjs`。入口从 `apps/api/test/fixtures/legacy-source/` 的不可变源码包创建旧库，来源、路径和摘要见同目录 `provenance.json`；不需要旧 checkout、Git 归档引用或环境变量。归档内部保留当时的路径。 |
 | 数学旧库升级 | `apps/api/test/math-integration-migrations.test.js` 从固定旧版题库/数学源码包重建库、附件与请求回执，再验证保留模块的数据、文件、回执和重启，并确认退役模块表及迁移记录已清理。原版源码包保持字节固定；退役模块不成为当前功能兼容承诺。缺失或不支持的升级须如实报告，不把旧候选通过结果移用于新版本。 |
 | 外部 E 选页与跨页 | 按[质量样本](samples.md#固定输入与回放)下载并校验公开原件，设置 `M33_PRIVATE_PDF` 后运行 `npm run test:api`；`materials-questions.test.js` 与 `materials-questions-fragments.test.js` 分别核对选页及原件保留、受控提取结果的跨页关联。缺原件时两项明确跳过；这些检查不证明新的 GPU OCR 推理准确率。 |
 | 当前能力核查 | [项目状态的核查入口](../plans/run-state.md#核查入口)指向当前源码、固定样本和可重现测试；既往本机结果只证明当时的候选。新候选按影响范围补验，缺少输入或目标设备时记未验证。 |

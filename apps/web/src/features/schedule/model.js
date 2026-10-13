@@ -127,10 +127,6 @@ export function layoutDay(segments) {
   return { segments: placed, columns: Math.max(1, columns.length) };
 }
 
-function emptyCourse() {
-  return { classId: null, recordIds: [] };
-}
-
 /** Draft used by the editor; the same shape for create, edit and override. */
 export function emptyDraft({ date = '', startTime = '', durationMinutes = 60, timeZone = 'Asia/Shanghai' } = {}) {
   return {
@@ -141,7 +137,6 @@ export function emptyDraft({ date = '', startTime = '', durationMinutes = 60, ti
     weekly: false,
     until: date,
     reminder: null,
-    course: emptyCourse()
   };
 }
 
@@ -159,12 +154,6 @@ export function draftFromContent({ entry, content = null, unscheduled = false, w
     weekly,
     until: until ?? (time ? time.date : ''),
     reminder: source.reminder ? { ...source.reminder } : null,
-    course: source.course
-      ? {
-        classId: source.course.classId,
-        recordIds: [...(source.course.recordIds ?? [])]
-      }
-      : emptyCourse()
   };
 }
 
@@ -190,10 +179,6 @@ export function entryInputFromDraft(draft) {
     items: cleanItems(draft.items),
     time,
     repeat: time !== null && draft.weekly ? { until: draft.until } : null,
-    course: {
-      classId: draft.course.classId,
-      recordIds: time === null || draft.weekly ? [] : [...draft.course.recordIds]
-    },
     reminder: time !== null && draft.reminder ? { side: draft.reminder.side, minutes: Number(draft.reminder.minutes), ...(draft.reminder.anchor ? { anchor: draft.reminder.anchor } : {}) } : null
   };
 }
@@ -205,7 +190,6 @@ export function overrideFromDraft(draft) {
     title: value.title,
     items: value.items,
     time: value.time,
-    course: value.course,
     reminder: value.reminder
   };
 }

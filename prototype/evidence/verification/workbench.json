@@ -241,18 +241,6 @@
       "status": "passed"
     },
     {
-      "id": "CW20",
-      "journey": "navigation",
-      "description": "从模块行进入我的班级页",
-      "viewport": "PC",
-      "width": 1440,
-      "height": 900,
-      "screenshots": [
-        "navigation/PC-CW20-module.png"
-      ],
-      "status": "passed"
-    },
-    {
       "id": "CW21",
       "journey": "topbar",
       "description": "标已读、撤销、全部已读",
@@ -853,18 +841,6 @@
       "status": "passed"
     },
     {
-      "id": "CW20",
-      "journey": "navigation",
-      "description": "从模块行进入我的班级页",
-      "viewport": "平板",
-      "width": 768,
-      "height": 1024,
-      "screenshots": [
-        "navigation/平板-CW20-module.png"
-      ],
-      "status": "passed"
-    },
-    {
       "id": "CW21",
       "journey": "topbar",
       "description": "标已读、撤销、全部已读",
@@ -1457,18 +1433,6 @@
         "navigation/手机-CW19-calendar.png",
         "navigation/手机-CW19-back.png",
         "navigation/手机-CW19-forward.png"
-      ],
-      "status": "passed"
-    },
-    {
-      "id": "CW20",
-      "journey": "navigation",
-      "description": "从模块行进入我的班级页",
-      "viewport": "手机",
-      "width": 390,
-      "height": 844,
-      "screenshots": [
-        "navigation/手机-CW20-module.png"
       ],
       "status": "passed"
     },

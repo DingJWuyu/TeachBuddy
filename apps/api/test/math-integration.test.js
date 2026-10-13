@@ -26,18 +26,3 @@ test('real composition preserves math versions, account isolation and replay aft
  assert.equal((await h.send('get',`${works}/${work.body.id}`)).body.title,'新版本');
  }finally{await h.close();}
 });
-
-test('MC06/10: real classes reverse links preserve linked labels',async()=>{
- const h=await harness();try {
- const sample=JSON.parse(fs.readFileSync(new URL('./fixtures/contracts/math-samples.json', import.meta.url),'utf8')).find(c=>c.id==='create-plane').value;
- const work=(await h.send('post',works,sample)).body;
- const c=await h.send('post','/api/modules/classes/items',{name:'高一一班'});assert.equal(c.status,201,JSON.stringify(c.body));
- const recordInput={classId:c.body.id,recordedOn:'2026-09-22',note:'斜率易错',position:'',unfinished:'',commonIssues:'',nextNote:'',sources:[{kind:'math',id:work.id}]};
- const record=await h.send('post','/api/modules/classes/v2/records',recordInput);assert.equal(record.status,201,JSON.stringify(record.body));
- const renamed=await h.send('put',`${works}/${work.id}`,{baseVersion:1,title:'新图名',source:work.source});assert.equal(renamed.status,200);
- const linked=await h.send('get',`/api/modules/classes/v2/records/${record.body.id}`);assert.equal(linked.body.sources[0].labelAtLink,'plane');assert.equal(linked.body.sources[0].currentLabel,'新图名');
- await h.send('post',`${works}/${work.id}/deletion`,{baseVersion:2,deleted:true});
- const reverse=await h.send('get',`/api/modules/classes/v2/source-records/math/${work.id}`);assert.equal(reverse.status,200);assert.equal(reverse.body.items[0].id,record.body.id);
- await h.restart();assert.equal((await h.send('get',`/api/modules/classes/v2/records/${record.body.id}`)).body.sources[0].deleted,true);
- }finally{await h.close();}
-});

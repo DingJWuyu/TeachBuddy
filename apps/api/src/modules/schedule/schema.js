@@ -82,17 +82,11 @@ const itemSchema = schema.oneOf([
   schema.object(itemFields)
 ]);
 
-const courseSchema = schema.object([
-  ['classId', id],
-  ['recordIds', schema.array(() => id, { maxItems: 100 })]
-]);
-
 const entryBodyFields = [
   ['title', schema.string({ maxLength: 300 })],
   ['items', schema.array(() => itemSchema, { maxItems: 200 })],
   ['time', timeSchema],
   ['repeat', repeatSchema],
-  ['course', courseSchema],
   ['reminder', reminderSchema]
 ];
 
@@ -100,7 +94,6 @@ const overrideSchema = schema.object([
   ['title', schema.string({ maxLength: 300 })],
   ['items', schema.array(() => itemSchema, { maxItems: 200 })],
   ['time', timeSchema],
-  ['course', courseSchema],
   ['reminder', reminderSchema]
 ]);
 
@@ -152,12 +145,10 @@ const entryNullables = [
   { path: ['time'], sentinel: timeSentinel },
   { path: ['repeat'], sentinel: repeatSentinel },
   { path: ['reminder'], sentinel: reminderSentinel },
-  { path: ['course', 'classId'], sentinel: placeholderId },
 ];
 
 const overrideNullables = [
   { path: ['reminder'], sentinel: reminderSentinel },
-  { path: ['course', 'classId'], sentinel: placeholderId },
 ];
 
 const moveNullables = [
@@ -209,14 +200,6 @@ function assertItems(items, pointer) {
   });
 }
 
-function assertCourse(course, pointer) {
-  const seen = new Set();
-  course.recordIds.forEach((recordId, index) => {
-    if (seen.has(recordId)) throw invalidInput(`${pointer}/recordIds/${index}`, 'duplicate-id');
-    seen.add(recordId);
-  });
-}
-
 function assertDateFields(value, pointer) {
   if (value.time && !isDate(value.time.date)) throw invalidInput(`${pointer}/time/date`, 'out-of-range');
   if (value.repeat && !isDate(value.repeat.until)) throw invalidInput(`${pointer}/repeat/until`, 'out-of-range');
@@ -226,7 +209,6 @@ function assertDateFields(value, pointer) {
 export function validateEntryShape(value, pointer = '') {
   assertItems(value.items, pointer);
   assertDateFields(value, pointer);
-  assertCourse(value.course, pointer);
   if (value.calendar) {
     if (new Set(value.calendar.tags).size !== value.calendar.tags.length) throw invalidInput(`${pointer}/calendar/tags`, 'duplicate-id');
     if (value.calendar.allDay && value.time && (value.time.startTime !== '00:00' || value.time.durationMinutes % 1440 !== 0)) {

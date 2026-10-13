@@ -5,7 +5,7 @@ import os from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { registerMath } from './fixtures/math-static/real.mjs';
-import { http, seedLegacy, C, R, Q, question, record } from '../../api/test/teaching-time-classes-materials-fixture.js';
+import { http } from '../../api/test/materials-http-fixture.js';
 
 const evidence = path.resolve('test-results/evidence/MANUAL-TEACHING/v1/browser');
 const E = '/api/modules/schedule/entries';
@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
 test.afterEach(async ({ context }) => { await context.close(); await world?.close(); });
 const entry = (overrides = {}) => ({ title: '函数课程', items: [],
   time: { date: '2026-09-23', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, recordIds: [] }, reminder: null, ...overrides });
+  repeat: null, reminder: null, ...overrides });
 async function open(page, value, on = null) {
   await page.goto(`${world.origin}/calendar?entry=${value.id}${on ? `&on=${on}` : ''}`);
   await expect(page.locator('[name=entry-title]')).toHaveValue(value.title);
@@ -54,63 +54,6 @@ test('任意提醒分钟可编辑并保存重开', async ({ page }) => {
   expect((await call('GET', `${E}/${value.id}`)).reminder).toEqual({ side: 'after', minutes: 20 });
 });
 
-test('重复课程整组可以调整班级，单次例外保持原关联', async ({ page }) => {
-  const first = await call('POST', C, { name: '高一一班' }, 201);
-  const second = await call('POST', C, { name: '高一二班' }, 201);
-  const value = await call('POST', E, entry({ repeat: { until: '2026-10-21' },
-    course: { classId: first.id, recordIds: [] } }), 201);
-  await open(page, value, '2026-09-23');
-  await page.locator('[name=entry-title]').fill('本次临时课程');
-  await save(page);
-  await page.getByRole('button', { name: '整组', exact: true }).click();
-  await shot(page, 'repeating-group');
-  await expect(page.locator('[name=class-select]')).toBeVisible();
-  await page.locator('[name=class-select]').selectOption(second.id);
-  await save(page);
-  expect((await call('GET', `${E}/${value.id}`)).course.classId).toBe(second.id);
-  expect((await call('GET', `${E}/${value.id}/occurrence?originDate=2026-09-23`)).course.classId).toBe(first.id);
-});
-
-test('已设提醒和实际记录的安排可以移回未排期', async ({ page }) => {
-  const classroom = await call('POST', C, { name: '高一一班' }, 201);
-  const note = await call('POST', R, record(classroom.id, [], '例二待补充'), 201);
-  const value = await call('POST', E, entry({ reminder: { side: 'before', minutes: 10 },
-    course: { classId: classroom.id, recordIds: [note.id] } }), 201);
-  await open(page, value);
-  await page.getByRole('checkbox', { name: '暂不安排时间' }).check();
-  await save(page);
-  const saved = await call('GET', `${E}/${value.id}`);
-  expect(saved.time).toBeNull(); expect(saved.reminder).toBeNull(); expect(saved.course.recordIds).toEqual([]);
-  await page.reload();
-  await expect(page.getByRole('checkbox', { name: '暂不安排时间' })).toBeChecked();
-});
-
-test('题目显示分班反馈并回到原教学记录', async ({ page }) => {
-  const source = await call('POST', Q, question('函数单调性'), 201);
-  for (const [name, note] of [['高一一班', '例二待补充'], ['高一二班', '定义已讲完']]) {
-    const classroom = await call('POST', C, { name }, 201);
-    await call('POST', R, record(classroom.id, [{ kind: 'question', id: source.id }], note), 201);
-  }
-  await page.goto(`${world.origin}/questions/${source.id}`);
-  await expect(page.getByRole('heading', { name: '函数单调性', exact: true })).toBeVisible();
-  await shot(page, 'question-feedback-entry');
-  await page.getByText('教学反馈', { exact: true }).click();
-  const panel = page.locator('[data-region=source-records-panel]');
-  await expect(panel).toContainText('高一一班'); await expect(panel).toContainText('高一二班');
-  await panel.getByRole('button').filter({ hasText: '例二待补充' }).click();
-  await expect(page.getByLabel('编辑记录内容', { exact: true })).toHaveValue('例二待补充');
-});
-
-test('日程可选含数学作品的实际记录', async ({ page }) => {
-  const seeded = await seedLegacy(client);
-  const value = await call('POST', E, entry({ course: { classId: seeded.classroom.id, recordIds: [] } }), 201);
-  await open(page, value);
-  await expect(page.getByRole('checkbox', { name: /旧库数学引用/ })).toBeVisible();
-  await page.getByRole('checkbox', { name: /旧库数学引用/ }).check();
-  await save(page);
-  const saved = await call('GET', `${E}/${value.id}`);
-  expect(saved.course.recordIds).toContain(seeded.mixed.id);
-});
 
 async function range(page, from, to) {
   await page.locator('[name=range-from]').fill(from);
@@ -190,106 +133,6 @@ test('保存后恢复某次原安排不会显示旧的已保存草稿', async ({
   await expect(page.locator('[name=entry-title]')).toHaveValue('函数课程');
 });
 
-test('相对结束提醒随调时变化，关闭后补提醒保留原时刻并定位返回', async ({ page, browser }) => {
-  const value = await call('POST', E, entry(), 201);
-  await open(page, value);
-  await page.getByLabel('提醒方式').selectOption('before');
-  await page.getByLabel('提醒分钟', { exact: true }).fill('10');
-  await save(page);
-  await page.locator('[name=entry-start]').fill('16:00');
-  await save(page);
-  await expect(page.locator('[data-region=reminder-instant]')).toContainText('17:20');
-  await call('POST', E, entry({ title: '课后整理', reminder: { side: 'after', minutes: 20 } }), 201);
-  await call('POST', E, entry({ title: '静默安排' }), 201);
-  const storageState = await page.context().storageState();
-  const directory = world.directory;
-  await page.close();
-  await world.close();
-  businessNow = '2026-09-23T09:30:00Z';
-  world = await createIntegration({ directory, workbenchClock });
-  world.clock.set('2026-09-23T09:30:00Z');
-  const context = await browser.newContext({ storageState, ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 } });
-  try {
-    const reopened = await context.newPage();
-    await reopened.goto(world.origin + '/classes');
-    await reopened.getByRole('button', { name: '知道了', exact: true }).click();
-    await reopened.getByRole('button', { name: /^通知/ }).click();
-    const panel = reopened.getByRole('dialog', { name: '通知', exact: true });
-    const notices = panel.locator('.tb-notification');
-    await expect(notices).toHaveCount(2);
-    await expect(notices.filter({ hasText: '函数课程' }).locator('.tb-row-meta')).toHaveText('9/23 17:20');
-    await expect(notices.filter({ hasText: '课后整理' }).locator('.tb-row-meta')).toHaveText('9/23 16:50');
-    await shot(reopened, 'catch-up-notifications');
-    await notices.filter({ hasText: '函数课程' }).click();
-    await expect(reopened).toHaveURL(new RegExp(`entry=${value.id}`));
-    await expect(reopened.locator('[name=entry-start]')).toHaveValue('16:00');
-    await reopened.locator('[data-action=cancel]').click();
-    await reopened.getByRole('button', { name: /^通知/ }).click();
-    await notices.filter({ hasText: '函数课程' }).click();
-    await expect(reopened.locator('[name=entry-start]')).toHaveValue('16:00');
-    await reopened.getByRole('button', { name: /^通知/ }).click();
-    await expect(panel.locator('.tb-notification.is-read')).toHaveCount(1);
-    await panel.getByRole('button', { name: '全部已读', exact: true }).click();
-    await expect(panel.locator('.tb-notification.is-read')).toHaveCount(2);
-    for (let remaining = 2; remaining > 0; remaining--) {
-      await notices.first().dragTo(panel.locator('.tb-notification-trash'));
-      await expect(notices).toHaveCount(remaining - 1);
-    }
-    await expect(reopened.getByText('暂无通知', { exact: true })).toBeVisible();
-    await reopened.reload();
-    await reopened.getByRole('button', { name: /^通知/ }).click();
-    await expect(reopened.getByText('暂无通知', { exact: true })).toBeVisible();
-  } finally { await context.close(); }
-});
-
-test('班级管理、一句话后补充进度问题和两类关联、保存重开', async ({ page }) => {
-  const seeded = await seedLegacy(client);
-  await page.getByRole('complementary', { name: '工作台导航' }).locator('a[href="/classes"]').click();
-  await page.locator('[name=new-class]').click();
-  await page.getByLabel('班级名称', { exact: true }).fill('高二一班');
-  await page.getByRole('button', { name: '创建', exact: true }).click();
-  await page.getByLabel('写一句', { exact: true }).fill('定义中的任意性还需强调');
-  await page.locator('[data-region=record-composer]').getByRole('button', { name: '保存', exact: true }).click();
-  const row = page.locator('[data-region=record-rows] [data-record-id]').first();
-  await expect(row).toContainText('定义中的任意性还需强调');
-  await row.getByRole('button', { name: '编辑', exact: true }).click();
-  const editor = page.locator('[data-region=record-editor]');
-  await editor.getByLabel('教学位置', { exact: true }).fill('第一章例2');
-  await editor.getByLabel('未讲内容', { exact: true }).fill('例3');
-  await editor.getByLabel('共性问题', { exact: true }).fill('量词与定义域');
-  await editor.getByLabel('下次备注', { exact: true }).fill('补充反例');
-  await editor.getByRole('button', { name: '关联资料', exact: true }).click();
-  const picker = page.getByRole('dialog', { name: '关联资料' });
-  await picker.getByRole('tab', { name: '题目', exact: true }).click();
-  await picker.locator(`[data-source-id="${seeded.item.id}"]`).click();
-  await picker.getByRole('tab', { name: '数学作品', exact: true }).click();
-  await picker.locator(`[data-source-id="${seeded.math.id}"]`).click();
-  await picker.getByRole('button', { name: '关联 2 项', exact: true }).click();
-  await editor.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(editor).toContainText('已保存');
-  const recordId = await row.getAttribute('data-record-id');
-  const saved = await call('GET', `${R}/${recordId}`);
-  expect(saved.sources.map(s => s.kind)).toEqual(['question', 'math']);
-  await page.reload();
-  await expect(page.getByLabel('教学位置', { exact: true })).toHaveValue('第一章例2');
-  await expect(page.getByLabel('共性问题', { exact: true })).toHaveValue('量词与定义域');
-  await expect(page.locator('[data-region=latest-position]')).toContainText('第一章例2');
-  await page.getByRole('button', { name: '班级操作', exact: true }).click();
-  await page.getByRole('menuitem', { name: '重命名', exact: true }).click();
-  await page.getByLabel('班级名称', { exact: true }).fill('高二实验班');
-  await page.locator('[name=save-class-name]').click();
-  await expect(page.getByRole('heading', { name: '高二实验班', exact: true })).toBeVisible();
-  await shot(page, 'class-complete-record');
-  await page.getByRole('button', { name: '班级操作', exact: true }).click();
-  await page.getByRole('menuitem', { name: '删除班级', exact: true }).click();
-  await page.getByRole('dialog').getByRole('button', { name: '删除', exact: true }).click();
-  await expect(page.locator('[data-region=class-deleted-note]')).toBeVisible();
-  await expect(page.locator('[data-region=record-editor]')).toHaveCount(0);
-  await expect(page.locator('[name=record-open]')).toHaveCount(0);
-  await page.getByRole('button', { name: '恢复班级', exact: true }).click();
-  await expect(page.locator('[data-region=class-deleted-note]')).toHaveCount(0);
-  expect((await call('GET', `${R}/${recordId}`)).note).toBe('定义中的任意性还需强调');
-});
 
 test('日程删除后有可发现的恢复入口', async ({ page }) => {
   const value = await call('POST', E, entry(), 201);
@@ -324,23 +167,6 @@ test('编辑日期与提醒时的暂时空值保留页面和草稿', async ({ pa
   expect((await call('GET', `${E}/${value.id}`)).reminder.minutes).toBe(25);
 });
 
-test('重复课程课后记录独立保存并关联回本次安排', async ({ page }) => {
-  const classroom = await call('POST', C, { name: '高一反馈班' }, 201);
-  const value = await call('POST', E, entry({ repeat: { until: '2026-10-07' },
-    course: { classId: classroom.id, recordIds: [] } }), 201);
-  await open(page, value, '2026-09-23');
-  await page.getByRole('button', { name: '记课后情况', exact: true }).click();
-  await page.getByLabel('写一句', { exact: true }).fill('本班例二未讲，需补充反例');
-  await page.locator('[data-region=record-composer]').getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByText('记录已保存，尚未关联安排', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '关联回本次安排', exact: true }).click();
-  await expect(page.getByText('记录已保存并关联安排', { exact: true })).toBeVisible();
-  const actual = await call('GET', `${E}/${value.id}/occurrence?originDate=2026-09-23`);
-  expect(actual.course.recordIds).toHaveLength(1);
-  expect((await call('GET', `${E}/${value.id}/occurrence?originDate=2026-09-30`)).course.recordIds).toEqual([]);
-  await page.goto(`${world.origin}/classes/${classroom.id}/records/${actual.course.recordIds[0]}`);
-  await expect(page.getByLabel('编辑记录内容', { exact: true })).toHaveValue('本班例二未讲，需补充反例');
-});
 
 test('日程保存慢响应不会串写后来打开的安排', async ({ page }) => {
   const first = await call('POST', E, entry({ title: '先保存的安排' }), 201);
@@ -367,17 +193,6 @@ test('日程保存慢响应不会串写后来打开的安排', async ({ page }) 
   expect((await call('GET', `${E}/${second.id}`)).title).toBe('后打开的安排已修改');
 });
 
-test('日程关联读取失败明确提示并允许原地重试', async ({ page }) => {
-  const seeded = await seedLegacy(client);
-  const value = await call('POST', E, entry({ course: { classId: seeded.classroom.id, recordIds: [] } }), 201);
-  await page.route('**/api/modules/classes/v2/records?**', route => route.abort('failed'));
-  await open(page, value);
-  await expect(page.getByText('实际记录读取失败', { exact: true })).toBeVisible();
-  await expect(page.getByText('本班还没有实际记录', { exact: true })).toHaveCount(0);
-  await page.unroute('**/api/modules/classes/v2/records?**');
-  await page.getByRole('button', { name: '重试关联资料', exact: true }).click();
-  await expect(page.getByRole('checkbox', { name: /旧库数学引用/ })).toBeVisible();
-});
 
 test('页面新建周重复课程、单次调课与取消恢复不改其他周', async ({ page }) => {
   await page.getByRole('link', { name: '日程', exact: true }).click();
@@ -528,4 +343,67 @@ test('移入请求途中刷新后即使源事项已消失仍可按原键原体�
   await expect(page.getByRole('button', { name: '重试移入时间段', exact: true })).toHaveCount(0);
   expect(requests[1]).toEqual(requests[0]);
   expect((await call('GET', `${E}/${target.id}`)).items).toHaveLength(1);
+});
+
+test('相对结束提醒随调时变化，关闭后补提醒保留原时刻并定位返回', async ({ page, browser }) => {
+  const value = await call('POST', E, entry(), 201);
+  await open(page, value);
+  await page.getByLabel('提醒方式').selectOption('before');
+  await page.getByLabel('提醒分钟', { exact: true }).fill('10');
+  await save(page);
+  await page.locator('[name=entry-start]').fill('16:00');
+  await save(page);
+  await expect(page.locator('[data-region=reminder-instant]')).toContainText('17:20');
+  await call('POST', E, entry({ title: '课后整理', reminder: { side: 'after', minutes: 20 } }), 201);
+  await call('POST', E, entry({ title: '静默安排' }), 201);
+  const storageState = await page.context().storageState();
+  const directory = world.directory;
+  await page.close();
+  await world.close();
+  businessNow = '2026-09-23T09:30:00Z';
+  world = await createIntegration({ directory, workbenchClock });
+  world.clock.set('2026-09-23T09:30:00Z');
+  const context = await browser.newContext({ storageState, ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 } });
+  try {
+    const reopened = await context.newPage();
+    await reopened.goto(world.origin + '/questions');
+    await reopened.getByRole('button', { name: '知道了', exact: true }).click();
+    await reopened.getByRole('button', { name: /^通知/ }).click();
+    const panel = reopened.getByRole('dialog', { name: '通知', exact: true });
+    const notices = panel.locator('.tb-notification');
+    await expect(notices).toHaveCount(2);
+    await expect(notices.filter({ hasText: '函数课程' }).locator('.tb-row-meta')).toHaveText('9/23 17:20');
+    await expect(notices.filter({ hasText: '课后整理' }).locator('.tb-row-meta')).toHaveText('9/23 16:50');
+    await shot(reopened, 'catch-up-notifications');
+    await notices.filter({ hasText: '函数课程' }).click();
+    await expect(reopened).toHaveURL(new RegExp(`entry=${value.id}`));
+    await expect(reopened.locator('[name=entry-start]')).toHaveValue('16:00');
+    await reopened.locator('[data-action=cancel]').click();
+    await reopened.getByRole('button', { name: /^通知/ }).click();
+    await notices.filter({ hasText: '函数课程' }).click();
+    await expect(reopened.locator('[name=entry-start]')).toHaveValue('16:00');
+    await reopened.getByRole('button', { name: /^通知/ }).click();
+    await expect(panel.locator('.tb-notification.is-read')).toHaveCount(1);
+    await panel.getByRole('button', { name: '全部已读', exact: true }).click();
+    await expect(panel.locator('.tb-notification.is-read')).toHaveCount(2);
+    for (let remaining = 2; remaining > 0; remaining--) {
+      await notices.first().dragTo(panel.locator('.tb-notification-trash'));
+      await expect(notices).toHaveCount(remaining - 1);
+    }
+    await expect(reopened.getByText('暂无通知', { exact: true })).toBeVisible();
+    await reopened.reload();
+    await reopened.getByRole('button', { name: /^通知/ }).click();
+    await expect(reopened.getByText('暂无通知', { exact: true })).toBeVisible();
+  } finally { await context.close(); }
+});
+
+test('已设提醒的安排可以移回待安排，刷新读回取消排期和提醒', async ({ page }) => {
+  const value = await call('POST', E, entry({ reminder: { side: 'before', minutes: 10 } }), 201);
+  await open(page, value);
+  await page.locator('.cal-editor-heading').getByRole('button', { name: '移回待安排', exact: true }).click();
+  await page.getByRole('dialog', { name: '移回待安排', exact: true }).getByRole('button', { name: '移回待安排', exact: true }).click();
+  await expect.poll(async () => (await call('GET', `${E}/${value.id}`)).time).toBeNull();
+  expect((await call('GET', `${E}/${value.id}`)).reminder).toBeNull();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '安排时间', exact: true })).toBeVisible();
 });

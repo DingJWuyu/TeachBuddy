@@ -14,7 +14,7 @@
 
 Work 是工坊唯一可写聚合，包含标题、Source、原始导入文件关联与归档状态；它不是 Resource，不强迫生成第二份资源条目。版本是完整、不可变的 WorkRevision。保存、归档和恢复写入新 revision。归档沿用 `deletedAt`、`state=deleted` 和 `/deletion`，保持既有请求可确认。getWork 返回当前 tombstone，getWorkVersion/listWorkVersions 可读本账户历史；revision.createdAt 是该次提交时间，Work.createdAt 是首次建立时间。恢复保持 ID 并新增版本。
 
-`POST /api/modules/math/v1/works/{id}/purge` 接收 `baseVersion`，仅允许本账户已归档作品；活动作品返回422 invalid-input，旧版本409，外账户或不存在404。在同一幂等事务中移除 Work、全部 WorkRevision 和作品导出记录，返回 `{id, permanentlyDeleted:true}`。成功后读取、恢复和新的导出请求均404；原成功请求仍可按原键确认，不重新建立作品。既有教学关联与共享不可变 File 保留，彻底删除不是账户文件的物理清理；教学记录保留关联时的标题，读取失败或来源缺失沿教学契约处理。
+`POST /api/modules/math/v1/works/{id}/purge` 接收 `baseVersion`，仅允许本账户已归档作品；活动作品返回422 invalid-input，旧版本409，外账户或不存在404。在同一幂等事务中移除 Work、全部 WorkRevision 和作品导出记录，返回 `{id, permanentlyDeleted:true}`。成功后读取、恢复和新的导出请求均404；原成功请求仍可按原键确认，不重新建立作品。共享不可变 File 保留，彻底删除不是账户文件的物理清理。
 
 Source.schemaVersion=1 是编辑格式版本，与 Work.version 分开。kind 创建后不可变，另存可建立新 ID。未知格式必须保留原字节，客户端只读并提示升级；旧客户端不得损坏它。Workshop 是统一制作源；Formula/Plane/Space/Dynamic 是既有受控结构化源；HtmlSource.fileId 指不可变 HTML 字节。原始导入允许File检测为text/html，或以.html/.htm命名的text/plain/application/octet-stream；明确检测为PDF/Office/图片等格式则415。扩展名只表达导入意图，不授权执行；运行/编辑另验UTF-8和大小，损坏或不支持编码仍可保存取回。用 files.store 保存，createWork.originalFileId 必须与初始 source.fileId 相同；非 HTML 为 null。updateWork 不可改 originalFileId。HTML 修改先保存新 File，再提交其 ID；失败只留下可复用文件，不覆盖原件。copyWork 读取 baseVersion 对应的当前活动作品，复制源与原件指针，新 ID/version=1，随后两者独立编辑；复制版本不符为409。
 
@@ -79,22 +79,19 @@ sandbox 隔离读取，CSP限制资源，不是完整恶意代码沙箱或可证
 
 UTF-8且≤1 MiB的HTML支持源码编辑/运行副本；更大或无法UTF-8解码的原件可保存/下载，尝试执行/编辑返回明确受限（source-too-large 413，编码不支持422 unsupported-export），不有损改码。母页面退出或账户代次改变销毁iframe及源码视图；预览异常可停止，不能宣称任意恶意无限循环都能无卡顿回收。
 
-## 目录、公共端口与教学反馈
+## 目录与公共端口
 
-进程内协作见[公共端口](#公共端口)。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及包含教学时间的组合目标；生产只注册实际接好的模块，按 questions/math/resources/classes/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖，classes可以依赖math教学链接；反向反馈仅前端组合，不制造math→classes服务端环。
+进程内协作见[公共端口](#公共端口)。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及当前模块的组合目标；生产只注册实际接好的模块，按 questions/math/resources/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖。
 
-教学链接和 kind=math 分支由[教学记录 v2 契约](teaching-time.md#数学作品关联)组合；固定 schema 输入与消费版本见该契约，不从其他分支取漂移输入。
 
 ## 公共端口
 
-具体工厂和操作签名以 `apps/api/src/modules/math/index.js` 及 classes 的模块入口为准；DTO 使用本目录 schema。只读提供方同步投影已保存结果，供同一 SQLite 事务调用，不经 HTTP 回环或跨模块读表。
+具体工厂和操作签名以 `apps/api/src/modules/math/index.js` 为准；DTO 使用本目录 schema。业务操作通过 `port.operations` 与 HTTP 共用实现；目录未暴露数学跨模块读取端口，不跨模块读表。
 
 | 端口 | 唯一语义与消费者 |
 | --- | --- |
 | `math.port.operations` | 与 HTTP 相同的校验、版本、幂等和错误；手工与 Agent 共用 |
-| `math.readForReferenceV1` | 本账户当前作品与版本快照；只读已保存源和固定文件，不现场生成资产 |
-| `math.readForTeachingLinkV1` | 作品 ID、版本、标题、删除态，不含源/文件；classes 消费 |
-| `classes.listSourceRecordsV2` | 教学记录列表，由工坊的可选反馈容器消费 |
+| `readWorkForReference` HTTP 操作 | `/api/modules/math/v1/works/{id}/reference` 返回本账户当前作品与版本快照；只读已保存源和固定文件，不现场生成资产，内部读取函数不作为目录公共端口暴露 |
 
 文件字节与重渲染在事务外准备，随后重新校验版本，在同一 mutations 事务保存 Work/Revision/成功回执。冲突留下的 File 按材料保留规则处理，用户原件不回滚。复用[材料端口](materials.md#公共端口)，导出采用有界本地任务，不新增通用工作流。
 
@@ -128,8 +125,7 @@ UTF-8且≤1 MiB的HTML支持源码编辑/运行副本；更大或无法UTF-8解
 | MC07 / WB-MA013、014 | export-transparent 返回File及固定workVersion；用透明度/像素、SVG结构和外部PPT实际插入核验。export-html 原生offline=self-contained，外部unverified；UI对应措辞。全新Chrome配置禁网、关闭服务，双击真实下载物，键盘/拖动/步骤仍工作。 |
 | MC08 / WB-MA016 | 两客户端读version1，A写得2，B以1写409 version-conflict；B源保持。A响应丢失时先同键确认，再GET当前版本，不因超时再建作品。同键异体409；服务重启仍可确认。 |
 | MC09 / WB-MA017 | 未绑页面/过期Cookie401；错误Origin403先于业务；另账户读作品/历史/File/导出/引用统一404。身份切换销毁iframe、锁原草稿；迟到回包不显示到新账户。缺文件503，元数据保持。 |
-| MC10 / WB-MA018 | teaching-input 新连活动作品，通过teaching-provider保存labelAtLink；改名后teaching-linked旧label保持、currentLabel更新；删除后已有链接显示deleted，新链接拒绝。反向列表由classes提供，工作版本不进入教学关联。此片为扩展fixture，真实接入等待教学时间新版与M44。 |
-| MC12 / WB-MA020 | 在隔离测试中math缺提供方、目录重复ID/path或加入必需依赖环，拒绝装配；HTTP fixture 422 invalid-input，reason=invalid-reference或duplicate-id，field指向错误descriptor。材料+math与教学时间组合目录均检查。 |
+| MC12 / WB-MA020 | 在隔离测试中math缺提供方、目录重复ID/path或加入必需依赖环，拒绝装配；HTTP fixture 422 invalid-input，reason=invalid-reference或duplicate-id，field指向错误descriptor。材料+math与当前组合目录均检查。 |
 | MC13 / WB-MA015 | 无模型直接经port调用list/get/create/update/export，结果同HTTP；传accountId或snapshot拒绝。Agent操作清单只暴露声明操作，不能访问SQL、磁盘路径、Cookie或执行HTML。真实模型制作归后续Agent验收，不由此用例代签。 |
 
 ### 结构与数学的反例

@@ -11,7 +11,7 @@ const errors=[];page.on('pageerror',e=>errors.push(String(e)));
 try {
  await openWorkbench(page,base,{dismissCoach:true});
  const token=await page.evaluate(()=>window.navigationProbe=crypto.randomUUID());
- for(const [id,title] of [['bank','题库'],['studio','数学工坊'],['resources','资源库'],['classes','班级教学']]){
+ for(const [id,title] of [['bank','题库'],['studio','数学工坊'],['resources','资源库']]){
   await page.locator(`[data-drop-module="${id}"]`).click();
   await expect(page.getByRole('heading',{name:title,exact:true})).toBeVisible();
   expect(await page.evaluate(()=>window.navigationProbe)).toBe(token);

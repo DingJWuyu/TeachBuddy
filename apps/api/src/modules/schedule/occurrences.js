@@ -34,7 +34,6 @@ export function templateContent(entry) {
     title: entry.title,
     items: entry.items,
     time: entry.time,
-    course: entry.course,
     reminder: entry.reminder,
     calendar: entry.calendar ?? { allDay: false, notes: '', tags: [] }
   };
@@ -54,14 +53,6 @@ export function effectiveContent(entry, exception, originDate = null) {
     return { ...template, time: { ...template.time, date: originDate } };
   }
   return template;
-}
-
-/** Effective course links of one instance (override links, else template). */
-export function effectiveLinks(entry, exception) {
-  if (exception && exception.mode === 'override' && exception.content?.courseLinks) {
-    return exception.content.courseLinks;
-  }
-  return entry.courseLinks ?? { classroom: null, records: [] };
 }
 
 /**
@@ -108,11 +99,8 @@ export function dueInstantMs(content) {
   return content.reminder.side === 'before' ? anchor - offset : anchor + offset;
 }
 
-/**
- * Build one instance. `courseState` is attached by the service, which owns the
- * cross-module reads; `links` are the links this instance actually displays.
- */
-export function buildOccurrence({ entry, originDate, exception, links }) {
+/** Build one instance from its effective editable content. */
+export function buildOccurrence({ entry, originDate, exception }) {
   const state = instanceState(entry, originDate, exception);
   const content = state === 'active'
     ? effectiveContent(entry, exception, originDate)
@@ -135,20 +123,15 @@ export function buildOccurrence({ entry, originDate, exception, links }) {
     startsAt: formatIsoZ(start.utcMs),
     endsAt: formatIsoZ(endsAtMs),
     timeAdjusted: start.timeAdjusted,
-    course: content.course,
-    courseState: null,
     reminder: content.reminder ?? null,
     dueAt: dueMs === null ? null : formatIsoZ(dueMs),
     __startsAtMs: start.utcMs,
-    __endsAtMs: endsAtMs,
-    // A cancelled or out-of-range instance shows the template content, so it
-    // must also derive its link state from the template links.
-    __links: state === 'active' ? (links ?? entry.courseLinks) : entry.courseLinks
+    __endsAtMs: endsAtMs
   };
 }
 
 export function stripInternal(occurrence) {
-  const { __startsAtMs, __endsAtMs, __links, ...rest } = occurrence;
+  const { __startsAtMs, __endsAtMs, ...rest } = occurrence;
   return rest;
 }
 

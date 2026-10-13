@@ -5,8 +5,7 @@
  * occurrences, exceptions, range queries, settings and atomic item moves. It
  * runs either inside a `mutations.execute` transaction (HTTP writes) or as a
  * plain synchronous call (public port reads), never returns a Promise and does
- * no network I/O; cross-module reads go through the injected classes
- * ports, which throw `{status, problem}` contract errors.
+ * no network I/O.
  */
 import { contractError, invalidInput, problems } from '../../workbench/problems.js';
 import { scheduleProblems } from './problems.js';
@@ -27,7 +26,6 @@ import {
   buildOccurrence,
   dueInstantMs,
   effectiveContent,
-  effectiveLinks,
   fitsSeries,
   instanceState,
   isRepeating,
@@ -40,13 +38,6 @@ import {
 } from './occurrences.js';
 
 export const DEFAULT_TIME_ZONE = 'Asia/Shanghai';
-
-const EMPTY_COURSE = Object.freeze({ classId: null, recordIds: [] });
-const EMPTY_LINKS = Object.freeze({ classroom: null, records: [] });
-
-function emptyLinks() {
-  return { classroom: null, records: [] };
-}
 
 function randomUuid() {
   return globalThis.crypto.randomUUID();
@@ -75,10 +66,6 @@ function normalizeContent(value) {
     time: value.time === null ? null : { ...value.time },
     repeat: repeat === null ? null : { ...repeat },
     ...(value.calendar ? { calendar: structuredClone(value.calendar) } : {}),
-    course: {
-      classId: value.course.classId,
-      recordIds: [...value.course.recordIds]
-    },
     reminder: value.reminder === null ? null : { side: value.reminder.side, minutes: value.reminder.minutes, ...(value.reminder.anchor ? { anchor: value.reminder.anchor } : {}) }
   };
 }
@@ -88,7 +75,6 @@ function overrideView(content) {
     title: content.title,
     items: content.items,
     time: content.time,
-    course: content.course,
     reminder: content.reminder,
     ...(content.calendar ? { calendar: content.calendar } : {})
   };
@@ -101,11 +87,8 @@ function parseNow(clock) {
   return { ms, iso: formatIsoZ(ms) };
 }
 
-export function createScheduleService({ repository, classes, beforeChange, clock }) {
+export function createScheduleService({ repository, beforeChange, clock }) {
   if (!repository) throw new TypeError('createScheduleService requires a repository.');
-  if (!classes || typeof classes.readClass !== 'function' || typeof classes.readRecord !== 'function') {
-    throw new TypeError('createScheduleService requires the classes.readClass/readRecord ports.');
-  }
   if (typeof beforeChange !== 'function') {
     throw new TypeError('createScheduleService requires a synchronous beforeChange seam.');
   }
@@ -151,26 +134,19 @@ export function createScheduleService({ repository, classes, beforeChange, clock
   }
 
   /** Title-or-item rule plus the null couplings the contract fixes. */
-  function assertContentRules(content, { repeatingTemplate }) {
+  function assertContentRules(content) {
     if (content.title.trim() === '' && content.items.length === 0) {
       throw invalidInput('/title', 'empty-content');
     }
     if (content.time === null) {
       if (content.repeat !== null) throw invalidInput('/repeat', 'invalid-type');
       if (content.reminder !== null) throw invalidInput('/reminder', 'invalid-type');
-      if (content.course.recordIds.length > 0) throw invalidInput('/course/recordIds', 'invalid-type');
     } else {
       if (!isTimeZone(content.time.timeZone)) throw scheduleProblems.invalidTimeZone('/time/timeZone');
       if (!isTimeOfDay(content.time.startTime)) throw invalidInput('/time/startTime', 'out-of-range');
       if (content.repeat !== null && compareDates(content.repeat.until, content.time.date) < 0) {
         throw invalidInput('/repeat/until', 'out-of-range');
       }
-      if (repeatingTemplate && content.repeat !== null && content.course.recordIds.length > 0) {
-        throw invalidInput('/course/recordIds', 'out-of-range');
-      }
-    }
-    if (content.course.recordIds.length > 0 && content.course.classId === null) {
-      throw invalidInput('/course/recordIds', 'invalid-reference');
     }
   }
 
@@ -184,7 +160,7 @@ export function createScheduleService({ repository, classes, beforeChange, clock
 
   function assertReminderFuture(content, previous, nowMs, { repeatingTemplate }) {
     if (content.reminder === null || content.time === null) return;
-    // An unchanged past configuration survives text, item and course edits; a
+    // An unchanged past configuration survives text and item edits; a
     // newly enabled or adjusted due instant must still be in the future.
     const unchanged = previous
       && sameReminder(previous.reminder, content.reminder)
@@ -209,68 +185,6 @@ export function createScheduleService({ repository, classes, beforeChange, clock
     if (changed && dueMs <= nowMs) throw scheduleProblems.reminderNotFuture('/reminder');
   }
 
-  /**
-   * Resolve course links through the public ports. New or changed links must
-   * point at active objects; an unchanged deleted link stays readable.
-   */
-  function resolveCourse(principal, course, previousLinks) {
-    const links = emptyLinks();
-    const previous = previousLinks ?? EMPTY_LINKS;
-
-    if (course.classId !== null) {
-      const reference = classes.readClass(principal, course.classId);
-      const changed = !previous.classroom || previous.classroom.id !== course.classId;
-      if (changed && reference.deletedAt !== null) throw scheduleProblems.referenceDeleted();
-      links.classroom = {
-        id: course.classId,
-        labelAtLink: changed ? reference.name : previous.classroom.labelAtLink
-      };
-    }
-
-
-    const previousRecords = new Map((previous.records ?? []).map((record) => [record.id, record]));
-    if (course.recordIds.length > 0) {
-      links.records = course.recordIds.map((recordId) => {
-        const reference = classes.readRecord(principal, recordId);
-        if (reference.classId !== course.classId) throw scheduleProblems.classMismatch();
-        const existing = previousRecords.get(recordId);
-        if (!existing && reference.deletedAt !== null) throw scheduleProblems.referenceDeleted();
-        return {
-          id: recordId,
-          labelAtLink: existing ? existing.labelAtLink : reference.label
-        };
-      });
-    }
-
-    return links;
-  }
-
-  /** Derived link state for responses; a failing source read fails the read. */
-  function buildCourseState(principal, course, links) {
-    const stored = links ?? EMPTY_LINKS;
-    const state = { classroom: null, records: [] };
-    if (course.classId !== null) {
-      const reference = classes.readClass(principal, course.classId);
-      state.classroom = {
-        id: course.classId,
-        labelAtLink: stored.classroom?.labelAtLink ?? reference.name,
-        currentLabel: reference.name,
-        deleted: reference.deletedAt !== null
-      };
-    }
-    state.records = course.recordIds.map((recordId) => {
-      const reference = classes.readRecord(principal, recordId);
-      const link = (stored.records ?? []).find((record) => record.id === recordId);
-      return {
-        id: recordId,
-        labelAtLink: link?.labelAtLink ?? reference.label,
-        currentLabel: reference.label,
-        deleted: reference.deletedAt !== null
-      };
-    });
-    return state;
-  }
-
   function entryView(principal, entry) {
     return {
       id: entry.id,
@@ -282,16 +196,13 @@ export function createScheduleService({ repository, classes, beforeChange, clock
       items: entry.items,
       time: entry.time,
       repeat: entry.repeat,
-      course: entry.course,
       reminder: entry.reminder,
-      calendar: entry.calendar ?? { allDay: false, notes: '', tags: [] },
-      courseState: buildCourseState(principal, entry.course, entry.courseLinks)
+      calendar: entry.calendar ?? { allDay: false, notes: '', tags: [] }
     };
   }
 
   function occurrenceView(principal, occurrence) {
     const view = stripInternal(occurrence);
-    view.courseState = buildCourseState(principal, view.course, occurrence.__links);
     return view;
   }
 
@@ -307,7 +218,6 @@ export function createScheduleService({ repository, classes, beforeChange, clock
       entry,
       originDate,
       exception,
-      links: effectiveLinks(entry, exception)
     });
   }
 
@@ -319,7 +229,7 @@ export function createScheduleService({ repository, classes, beforeChange, clock
     }
   }
 
-  function insertEntry(principal, content, links, now) {
+  function insertEntry(principal, content, now) {
     const entry = {
       id: randomUuid(),
       accountKey: principal.accountKey,
@@ -329,8 +239,6 @@ export function createScheduleService({ repository, classes, beforeChange, clock
       time: content.time,
       repeat: content.repeat,
       calendar: content.calendar ?? { allDay: false, notes: '', tags: [] },
-      course: content.course,
-      courseLinks: links,
       reminder: content.reminder,
       reminderArmedAt: now.iso,
       createdAt: now.iso,
@@ -421,12 +329,11 @@ export function createScheduleService({ repository, classes, beforeChange, clock
     createEntry(principal, body) {
       const content = normalizeContent(body);
       const repeatingTemplate = content.repeat !== null;
-      assertContentRules(content, { repeatingTemplate });
+      assertContentRules(content);
       const now = parseNow(clock);
-      const links = resolveCourse(principal, content.course, EMPTY_LINKS);
       assertReminderFuture(content, null, now.ms, { repeatingTemplate });
       beforeChange(principal, now.iso);
-      const entry = insertEntry(principal, content, links, now);
+      const entry = insertEntry(principal, content, now);
       return entryView(principal, entry);
     },
 
@@ -436,7 +343,7 @@ export function createScheduleService({ repository, classes, beforeChange, clock
       const content = normalizeContent(body);
       if (entry.repeat?.frequency && body.repeat && !body.repeat.frequency) content.repeat = { ...entry.repeat, until: body.repeat.until };
       const repeatingTemplate = content.repeat !== null;
-      assertContentRules(content, { repeatingTemplate });
+      assertContentRules(content);
 
       if (!body.calendar && isRepeating(entry)) {
         if (content.repeat === null || content.time === null) throw scheduleProblems.immutableSeries();
@@ -448,7 +355,6 @@ export function createScheduleService({ repository, classes, beforeChange, clock
       }
 
       const now = parseNow(clock);
-      const links = resolveCourse(principal, content.course, entry.courseLinks);
       const previousContent = { ...templateContent(entry), repeat: entry.repeat };
       assertReminderFuture(content, previousContent, now.ms, { repeatingTemplate });
 
@@ -473,8 +379,6 @@ export function createScheduleService({ repository, classes, beforeChange, clock
         time: content.time,
         repeat: content.repeat,
         calendar: content.calendar ?? entry.calendar,
-        course: content.course,
-        courseLinks: links,
         reminder: content.reminder,
         reminderArmedAt: timingChanged ? now.iso : entry.reminderArmedAt,
         updatedAt: now.iso,
@@ -536,15 +440,14 @@ export function createScheduleService({ repository, classes, beforeChange, clock
       const previous = existing?.mode === 'override' && existing.content ? existing.content : effectiveContent(entry, null, originDate);
       const content = normalizeContent(body);
       if (content.repeat !== null) throw invalidInput('/repeat', 'out-of-range');
-      assertContentRules(content, { repeatingTemplate: false });
-      const links = resolveCourse(principal, content.course, existing?.content?.courseLinks ?? entry.courseLinks);
+      assertContentRules(content);
       const now = parseNow(clock);
       assertReminderFuture(content, previous, now.ms, { repeatingTemplate: false });
       beforeChange(principal, now.iso);
       repository.writeException({ entryId: id, originDate, mode: 'cancelled', content: null, now: now.iso });
       repository.writeArm({ entryId: id, originDate, armedAt: now.iso });
       repository.writeEntry({ ...entry, version: entry.version + 1, updatedAt: now.iso });
-      return entryView(principal, insertEntry(principal, content, links, now));
+      return entryView(principal, insertEntry(principal, content, now));
     },
 
     setException(principal, id, originDate, body) {
@@ -565,19 +468,14 @@ export function createScheduleService({ repository, classes, beforeChange, clock
 
       if (body.mode === 'override') {
         const content = normalizeContent(body.content);
-        assertContentRules(content, { repeatingTemplate: false });
-        const links = resolveCourse(
-          principal,
-          content.course,
-          existing?.content?.courseLinks ?? entry.courseLinks
-        );
+        assertContentRules(content);
         assertReminderFuture(content, previousContent, now.ms, { repeatingTemplate: false });
         beforeChange(principal, now.iso);
         repository.writeException({
           entryId: entry.id,
           originDate,
           mode: 'override',
-          content: { ...content, calendar: content.calendar ?? previousContent.calendar, courseLinks: links },
+          content: { ...content, calendar: content.calendar ?? previousContent.calendar },
           now: now.iso
         });
         if (!sameTime(previousContent.time, content.time) || !sameReminder(previousContent.reminder, content.reminder)) {
@@ -623,7 +521,6 @@ export function createScheduleService({ repository, classes, beforeChange, clock
             entry,
             originDate: null,
             exception: null,
-            links: entry.courseLinks
           });
           if (intersects(occurrence, start, end)) items.push(occurrence);
           continue;
@@ -640,7 +537,6 @@ export function createScheduleService({ repository, classes, beforeChange, clock
             entry,
             originDate,
             exception,
-            links: effectiveLinks(entry, exception)
           });
           if (occurrence.state !== 'active') continue;
           if (intersects(occurrence, start, end)) items.push(occurrence);
@@ -677,8 +573,6 @@ export function createScheduleService({ repository, classes, beforeChange, clock
           items: [item],
           time: null,
           repeat: null,
-          course: { ...EMPTY_COURSE, recordIds: [] },
-          courseLinks: emptyLinks(),
           reminder: null,
           reminderArmedAt: now.iso,
           createdAt: now.iso,

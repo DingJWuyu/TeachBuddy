@@ -1,11 +1,11 @@
 /**
- * TT-C2 / TT-C5: entry CRUD, placement, strict request schema and course links
+ * TT-C2 / TT-C5: entry CRUD, placement, strict request schema and retired-field rejection
  * through the substitute ports, all over the real workbench HTTP transport.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createScheduleHarness } from './fixtures/teaching-time-schedule/harness.js';
-import { SAMPLE_IDS, emptyCourse, timedEntry, unscheduledEntry, weeklyEntry } from './fixtures/teaching-time-schedule/samples.js';
+import { SAMPLE_IDS, timedEntry, unscheduledEntry, weeklyEntry } from './fixtures/teaching-time-schedule/samples.js';
 
 const SETTINGS = '/api/modules/schedule/settings';
 const ENTRIES = '/api/modules/schedule/entries';
@@ -55,7 +55,6 @@ test('unscheduled entries save, list and schedule without losing item identity',
     assert.equal(created.body.time, null);
     assert.equal(created.body.repeat, null);
     assert.equal(created.body.reminder, null);
-    assert.deepEqual(created.body.course.recordIds, []);
     const entryId = created.body.id;
 
     const unscheduled = await a.get(ENTRIES, { placement: 'unscheduled' });
@@ -130,7 +129,7 @@ test('strict request schema rejects unknown nested fields with the exact pointer
       ['items', { items: [{ ...base.items[0], unexpected: true }] }, '/items/0/unexpected'],
       ['time', { time: { ...base.time, unexpected: true } }, '/time/unexpected'],
       ['repeat', { repeat: { until: '2026-10-05', unexpected: true } }, '/repeat/unexpected'],
-      ['course', { course: { ...base.course, unexpected: true } }, '/course/unexpected'],
+      ['retired course', { course: {} }, '/course'],
       ['reminder', { reminder: { side: 'before', minutes: 10, unexpected: true } }, '/reminder/unexpected']
     ];
     for (const [label, patch, field] of cases) {
@@ -166,7 +165,6 @@ test('cross-field entry rules reject empty content, blank or duplicate items and
     }), '/items/1/id', 'duplicate-id');
     await reject(unscheduledEntry({ repeat: { until: '2026-10-05' } }), '/repeat', 'invalid-type');
     await reject(unscheduledEntry({ reminder: { side: 'before', minutes: 10 } }), '/reminder', 'invalid-type');
-    await reject(unscheduledEntry({ course: emptyCourse({ recordIds: [SAMPLE_IDS.recordOne] }) }), '/course/recordIds', 'invalid-type');
     await reject(timedEntry({ repeat: { until: '2026-09-20' } }), '/repeat/until', 'out-of-range');
     await reject(timedEntry({ time: { ...timedEntry().time, date: '2026-02-30' } }), '/time/date', 'out-of-range');
     await reject(timedEntry({ time: { ...timedEntry().time, date: '2101-01-01' } }), '/time/date', 'out-of-range');
@@ -176,7 +174,6 @@ test('cross-field entry rules reject empty content, blank or duplicate items and
     await reject(timedEntry({ time: { ...timedEntry().time, durationMinutes: 0 } }), '/time/durationMinutes', 'out-of-range');
     await reject(timedEntry({ time: { ...timedEntry().time, durationMinutes: 1441 } }), '/time/durationMinutes', 'out-of-range');
     await reject(timedEntry({ time: { ...timedEntry().time, timeZone: 'Mars/Olympus' } }), '/time/timeZone', 'invalid-zone');
-    await reject(timedEntry({ course: emptyCourse({ recordIds: [SAMPLE_IDS.recordOne] }) }), '/course/recordIds', 'invalid-reference');
     await reject(timedEntry({ time: null, repeat: { until: '2026-10-05' } }), '/repeat', 'invalid-type');
   });
 });
@@ -201,82 +198,6 @@ test('the supported date window is inclusive on both ends', async () => {
   });
 });
 
-test('course links resolve through the ports and derived state never fakes a deletion', async () => {
-  await withHarness(async (harness) => {
-    const a = harness.agent(harness.account('teacher-a'));
-    const b = harness.agent(harness.account('teacher-b'));
-
-    const classroom = await a.post('/api/modules/classes/items', { name: '高一(1)班' }, { key: harness.key() });
-    assert.equal(classroom.status, 201);
-    const otherClass = await a.post('/api/modules/classes/items', { name: '高一(2)班' }, { key: harness.key() });
-    const record = await a.post('/api/modules/classes/records', {
-      classId: classroom.body.id,
-      recordedOn: '2026-09-21',
-      note: '例2没讲，任意性还需强调'
-    }, { key: harness.key() });
-    assert.equal(record.status, 201);
-
-    const created = await a.post(ENTRIES, timedEntry({
-      course: { classId: classroom.body.id, recordIds: [record.body.id] }
-    }), { key: harness.key() });
-    assert.equal(created.status, 201);
-    assert.deepEqual(created.body.course, {
-      classId: classroom.body.id,
-      recordIds: [record.body.id]
-    });
-    assert.equal(created.body.courseState.classroom.currentLabel, '高一(1)班');
-    assert.equal(created.body.courseState.classroom.deleted, false);
-    assert.equal(created.body.courseState.records[0].currentLabel, '例2没讲，任意性还需强调');
-
-    // Another class record cannot be attached to this class.
-    const mismatched = await a.post(ENTRIES, timedEntry({
-      course: { classId: otherClass.body.id, recordIds: [record.body.id] }
-    }), { key: harness.key() });
-    assert.equal(mismatched.status, 409);
-    assert.equal(mismatched.body.type, '/problems/workbench/class-mismatch');
-
-    // Another account's objects are a 404, never a leak.
-    const foreign = await b.get(`${ENTRIES}/${created.body.id}`);
-    assert.equal(foreign.status, 404);
-    const foreignClass = await a.post(ENTRIES, timedEntry({
-      course: { classId: '99999999-0000-4000-8000-000000000009', recordIds: [] }
-    }), { key: harness.key() });
-    assert.equal(foreignClass.status, 404);
-
-    // A deleted record stays readable on the existing link but cannot be linked anew.
-    await a.post(`/api/modules/classes/records/${record.body.id}/deletion`, { deleted: true }, { key: harness.key() });
-    const readBack = await a.get(`${ENTRIES}/${created.body.id}`);
-    assert.equal(readBack.body.courseState.records[0].deleted, true);
-    assert.equal(readBack.body.courseState.records[0].currentLabel, '例2没讲，任意性还需强调');
-    assert.equal(readBack.body.courseState.records[0].labelAtLink, '例2没讲，任意性还需强调');
-
-    const relink = await a.post(ENTRIES, timedEntry({
-      course: { classId: classroom.body.id, recordIds: [record.body.id] }
-    }), { key: harness.key() });
-    assert.equal(relink.status, 409);
-    assert.equal(relink.body.type, '/problems/workbench/reference-deleted');
-
-    // Editing an unrelated field keeps the deleted link.
-    const renamed = await a.put(`${ENTRIES}/${created.body.id}`, {
-      expectedVersion: created.body.version,
-      ...timedEntry({
-        title: '备课（改）',
-        course: { classId: classroom.body.id, recordIds: [record.body.id] }
-      })
-    }, { key: harness.key() });
-    assert.equal(renamed.status, 200);
-    assert.equal(renamed.body.version, created.body.version + 1);
-    assert.equal(renamed.body.courseState.records[0].deleted, true);
-
-    // A repeating template cannot carry record links.
-    const repeating = await a.post(ENTRIES, weeklyEntry({
-      course: { classId: classroom.body.id, recordIds: [record.body.id] }
-    }), { key: harness.key() });
-    assert.equal(repeating.status, 422);
-    assert.equal(repeating.body.field, '/course/recordIds');
-    assert.equal(repeating.body.reason, 'out-of-range');
-  });
-});
 
 test('repeating templates keep the first day, zone and kind after the first save', async () => {
   await withHarness(async (harness) => {
@@ -459,7 +380,6 @@ function unstableEntry() {
     items: [{ id: SAMPLE_IDS.itemTwo, text: '未排期事项', priority: 'low' }],
     time: null,
     repeat: null,
-    course: emptyCourse(),
     reminder: null
   };
 }
@@ -540,7 +460,7 @@ test('item completion is optional for old entries, validated and persisted with 
     assert.equal(moved.status, 200);
     const stored = (await a.get(`${ENTRIES}/${target.body.id}`)).body;
     assert.equal(stored.items[0].completed, true);
-    const updated = await a.put(`${ENTRIES}/${stored.id}`, { title: stored.title, items: [{ ...stored.items[0], completed: false }], time: stored.time, repeat: stored.repeat, reminder: stored.reminder, course: stored.course, expectedVersion: stored.version }, { key: harness.key() });
+    const updated = await a.put(`${ENTRIES}/${stored.id}`, { title: stored.title, items: [{ ...stored.items[0], completed: false }], time: stored.time, repeat: stored.repeat, reminder: stored.reminder, expectedVersion: stored.version }, { key: harness.key() });
     assert.equal(updated.status, 200);
     assert.equal((await a.get(`${ENTRIES}/${stored.id}`)).body.items[0].completed, false);
   });

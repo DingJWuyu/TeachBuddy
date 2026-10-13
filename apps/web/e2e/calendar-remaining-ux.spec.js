@@ -9,7 +9,7 @@ const E = '/api/modules/schedule/entries';
 const L = '/api/modules/schedule/labels';
 let world, client, now, errors;
 const entry = (title, patch = {}) => ({ title, items: [], time: { date: '2026-09-25', startTime: '15:00', durationMinutes: 30, timeZone: 'Asia/Shanghai' },
-  repeat: null, reminder: null, course: { classId: null, recordIds: [] }, calendar: { allDay: false, tags: [], notes: '' }, ...patch });
+  repeat: null, reminder: null, calendar: { allDay: false, tags: [], notes: '' }, ...patch });
 async function call(method, url, body) {
   const r = await client.request(method, url, { body, headers: method === 'GET' ? {} : { 'Idempotency-Key': randomUUID() } });
   expect(r.status, JSON.stringify(r.json)).toBeLessThan(300); return r.json;
@@ -40,7 +40,6 @@ test.afterEach(async ({ context }, info) => {
   if (!failed) fs.rmSync(world.directory, { recursive: true, force: true });
   expect(errors).toEqual([]);
 });
-
 
 
 test('无效结束时间就地提示不挤动布局，关闭保留原时间且不阻塞',async({page})=>{

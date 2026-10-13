@@ -6,7 +6,7 @@ import { Popover, MenuItem } from '../workbench/ModuleOverlays.jsx';
 import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
 
 export function WorkspaceToolbar({ draft, busy, readOnly, pending, exportOpen, empty,
-  onHome, onSave, onCopy, onDelete, onPurge, onExport, onFeedback, onHistory, onDynamic }) {
+  onHome, onSave, onCopy, onDelete, onPurge, onExport, onHistory, onDynamic }) {
   const { t } = useTranslation('math');
   const presentation = ['dynamic', 'html'].includes(draft?.source.kind);
   return <div className="math-workspace-actions">
@@ -21,7 +21,6 @@ export function WorkspaceToolbar({ draft, busy, readOnly, pending, exportOpen, e
           {!draft.deletedAt && <MenuItem icon="copy" disabled={busy || readOnly || !!pending} onClick={() => { close(); onCopy(); }}>{t("另存作品")}</MenuItem>}
           {draft.id && !draft.deletedAt && <MenuItem icon="history" disabled={busy || readOnly || !!pending} onClick={() => { close(); onHistory(); }}>{t("历史版本")}</MenuItem>}
           {draft.source.kind === 'plane' && !draft.deletedAt && <MenuItem disabled={busy || readOnly || !!pending} onClick={() => { close(); onDynamic(); }}>{t("制作动态副本")}</MenuItem>}
-          {draft.id && <MenuItem onClick={() => { close(); onFeedback(); }}>{t("教学反馈")}</MenuItem>}
           {draft.id && !draft.deletedAt && <MenuItem icon="folder" disabled={busy || !!pending}
             onClick={() => { close(); onDelete(); }}>{t("归档作品")}</MenuItem>}
           {draft.deletedAt && <MenuItem icon="trash" danger disabled={busy || !!pending}

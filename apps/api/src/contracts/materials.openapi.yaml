@@ -4233,12 +4233,9 @@ components:
           type: boolean
         requires:
           type: array
+          maxItems: 0
           items:
-            enum:
-            - questions.readForReferenceV2
-          minItems: 0
-          maxItems: 20
-          uniqueItems: true
+            type: string
       required:
       - id
       - name

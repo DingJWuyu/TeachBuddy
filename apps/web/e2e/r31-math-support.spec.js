@@ -77,10 +77,10 @@ test('real A11 page transport uploads, displays, downloads and restores R31 file
     await page.getByRole('checkbox').check();
     await page.getByRole('button', { name: '注册', exact: true }).click();
     await expect(page.getByRole('heading', { name: '公共文件身份验证' })).toBeVisible();
-    await expect(page.getByLabel('隔离模块映射')).toHaveText('题库、数学工坊、资源库、班级教学、日程');
+    await expect(page.getByLabel('隔离模块映射')).toHaveText('题库、数学工坊、资源库、日程');
     const catalog = await page.request.get(`${world.origin}/api/modules`, { headers: { 'X-TeachBuddy-Page': pageId } });
     expect(catalog.status()).toBe(200);
-    expect((await catalog.json()).items.map(item => item.id)).toEqual(['questions', 'math', 'resources', 'classes', 'schedule']);
+    expect((await catalog.json()).items.map(item => item.id)).toEqual(['questions', 'math', 'resources', 'schedule']);
     const fontfile = require.resolve('@fontsource/noto-sans-sc/files/noto-sans-sc-chinese-simplified-400-normal.woff');
     const png = await sharp({ text: { text: '函数图像与中文说明', font: 'Noto Sans SC 24', fontfile, rgba: true, dpi: 144 } }).png().toBuffer();
     await page.getByLabel('上传图片').setInputFiles({ name: 'poster.png', mimeType: 'image/png', buffer: png });

@@ -32,8 +32,6 @@ const kindLabels = {
   "resource-file-revision": "资源文件历史版本",
   math: "数学作品",
   "math-revision": "数学历史版本",
-  class: "班级",
-  record: "教学记录",
   entry: "日程",
   notification: "通知",
   conversation: "对话",
@@ -51,10 +49,6 @@ const labels = {
   intro: "引言",
   note: "备注",
   noteFragments: "教学笔记摘录",
-  position: "进度",
-  unfinished: "未完成",
-  commonIssues: "共性问题",
-  nextNote: "下一步",
   caption: "说明",
   source: "来源与源码",
   snapshot: "已采用的历史快照",
@@ -98,7 +92,6 @@ export function takeSnapshot(db, principal, loader) {
   const questions = loader.get("questions").port.readForExport(principal);
   const resources = loader.get("resources").port.readForExport(principal);
   const math = loader.get("math").port.readForExport(principal);
-  const classes = loader.get("classes").port.readForExport(principal);
   const schedule = loader.get("schedule").port.readForExport(principal);
   const rows = (table) =>
     db.prepare(`SELECT * FROM ${table} WHERE accountKey=?`).all(account);
@@ -133,8 +126,6 @@ export function takeSnapshot(db, principal, loader) {
     recognitionRequests: rows('materials_recognition_requests').map(row => ({ jobId: row.jobId, ...JSON.parse(row.value) })),
     questionRecognitionEvidence: questions.recognitionEvidence,
   };
-  classes.classes.forEach(value => add("class", value));
-  classes.records.forEach(value => add("record", value));
   schedule.entries.forEach(value => add("entry", value, value.entry.id, value.entry.version));
   schedule.notifications.forEach(value => add("notification", value));
   if (schedule.settings) add("schedule-settings", schedule.settings);
@@ -301,15 +292,6 @@ export async function writeArchive(snapshot, directory, destination, signal) {
     // Adopted question content is independent of an import that was permanently deleted.
     if (object.kind === "question" && value.source?.kind === "import" && lookup("import", value.source.importId))
       relation("import", value.source.importId, "origin", "source/importId");
-    if (object.kind === "record") {
-      relation("class", value.classId, "class-record", "classId");
-      value.sources.forEach((r, i) =>
-        relation(r.kind, r.id, "current-link", `sources/${i}`),
-      );
-    }
-    if (object.kind === "entry") {
-      relation("class", current.course?.classId, "course", "course/classId");
-    }
     // Any file reference, including deeply nested source/revision snapshots.
     function walk(v, location = "") {
       if (!v || typeof v !== "object") return;
@@ -340,10 +322,6 @@ export async function writeArchive(snapshot, directory, destination, signal) {
       }
     }
     walk(value);
-    if (object.kind === "entry")
-      (current.course?.recordIds ?? []).forEach((id, i) =>
-        relation("record", id, "course", `course/recordIds/${i}`),
-      );
     if (object.kind === "math-revision")
       relation("math", object.id, "current-link", "work");
     if (object.kind === "resource-file-revision")

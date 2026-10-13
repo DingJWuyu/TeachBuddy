@@ -4,7 +4,7 @@ import { CalendarDialog, CalendarIcon, CalendarMenu, CalendarOverlay, IconButton
 import { COLORS, changeEnd, defaultTime, endOf, endTimeProblem, formatClock, monthDays, presetRepeat, repeatAnchor, repeatLabel, todayInZone, weekday } from './calendarModel.js';
 import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import * as api from './api.js';
-import { ConflictPreview, CourseDialog, CourseSummary, ReminderDialog, reminderLabel } from './CalendarDetails.jsx';
+import { ConflictPreview, ReminderDialog, reminderLabel } from './CalendarDetails.jsx';
 import { EntryItems } from './CalendarItems.jsx';
 import { dstAdjustment, weekdayLabel } from './model.js';
 
@@ -157,7 +157,6 @@ export default function CalendarEditor({ draft, onPatch, onClose, onConfirm, onD
           <div className="cal-menu-divider"/><button role="menuitem" type="button" onClick={() => { setRepeatOpen(true); close(); }}>{t("自定义…")}</button></div></div>
           <button type="button" role="menuitemcheckbox" aria-checked={allDay} onClick={() => { const time = content.time ?? { date: todayInZone(draft.zone), startTime: '09:00', durationMinutes: 60, timeZone: draft.zone }; onPatch({ calendar: { ...content.calendar, allDay: !allDay }, time: { ...time, startTime: allDay ? '09:00' : '00:00', durationMinutes: allDay ? 60 : Math.max(1440, Math.ceil(time.durationMinutes / 1440) * 1440) } }); close(); }}>{t("全天")}{allDay && <CalendarIcon name="check" size={14}/>}</button>
           <button type="button" role="menuitem" onClick={() => { setDetails('reminder'); close(); }}>{t("设置提醒")}</button></>}
-          <button type="button" role="menuitem" onClick={() => { setDetails('course'); close(); }}>{t("教学关联")}</button>
           <div className="cal-menu-divider"/><button type="button" role="menuitem" className="is-danger" onClick={() => { onDelete(); close(); }}>{t("删除任务")}</button>
         </>}
       </CalendarMenu><IconButton name="close" label={t("关闭任务")} onClick={onClose}/>
@@ -169,21 +168,19 @@ export default function CalendarEditor({ draft, onPatch, onClose, onConfirm, onD
     </> : <button className="cal-assign-time" onClick={() => onPatch({ time: defaultTime(draft.zone) })}><CalendarIcon name="clock" size={16}/>{t("安排时间")}</button>}
     {content.time && content.time.timeZone !== draft.zone && <p className="cal-help cal-scheduling-zone">{t("排课时区：")}{content.time.timeZone}</p>}
     {adjustment && <p className="cal-help">{t("夏令时跳时，这次实际开始于")} {adjustment.date} {adjustment.startTime}（{adjustment.timeZone}）。</p>}
-    {(content.repeat || content.reminder || content.course.classId || content.course.recordIds.length > 0) && <div className="cal-time-options">
+    {(content.repeat || content.reminder) && <div className="cal-time-options">
       {content.repeat && <button className="cal-repeat-summary" onClick={() => setRepeatOpen(true)}><CalendarIcon name="repeat" size={14}/><span>{repeatLabel(content.repeat, draft.forceSeries ? content.time.date : draft.entry?.time?.date ?? content.time.date)}</span></button>}
       {content.reminder && <button className="cal-detail-summary cal-reminder-summary" onClick={() => setDetails('reminder')}><CalendarIcon name="clock" size={14}/><span>{reminderLabel(content.reminder)}</span></button>}
-      <CourseSummary course={content.course} state={draft.courseState} onClick={() => setDetails('course')}/>
     </div>}
     <div className="cal-field"><span>{t("标签")}</span><TagPicker tags={content.calendar.tags} labels={labels} onChange={tags => patchCalendar({ tags })} onLabels={onLabels} accountKey={accountKey}/></div>
     <label className="cal-field cal-notes-label"><span>{t("备注")}</span><div ref={notes} className="cal-notes" role="textbox" aria-label={t("备注")} aria-multiline="true" contentEditable suppressContentEditableWarning data-placeholder={t("添加备注…")} data-empty={!content.calendar.notes.trim()} onInput={e => patchCalendar({ notes: e.currentTarget.innerText })} onKeyDown={confirmField} onPaste={e => { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain')); }}/></label>
     <EntryItems items={content.items} repeating={Boolean(content.repeat)} onChange={items => onPatch({ items })} onMove={draft.id || content.title.trim() ? onMoveItem : null} onRemoveLast={draft.id && !content.title.trim() ? onDelete : null}/>
-    {draft.savePaused && <ConflictPreview content={draft.baseline} courseState={draft.serverCourseState} labels={labels} onAdopt={() => setDetails('adopt')}/>}
+    {draft.savePaused && <ConflictPreview content={draft.baseline} labels={labels} onAdopt={() => setDetails('adopt')}/>}
     <CalendarOverlay present={repeatOpen || Boolean(details)}>
     {repeatOpen && <RepeatDialog value={content.repeat} date={content.time.date} anchor={draft.forceSeries ? content.time.date : draft.entry?.time?.date ?? content.time.date} onSave={setRepeat} onClose={() => setRepeatOpen(false)}/>}
     {details === 'reminder' && <ReminderDialog value={content.reminder} onClose={() => setDetails(null)} onSave={reminder => { onPatch({ reminder }); setDetails(null); }}/>}
-    {details === 'course' && <CourseDialog draft={draft} onClose={() => setDetails(null)} onSave={course => { onPatch({ course }); setDetails(null); }}/>}
     {details === 'adopt' && <CalendarDialog title={t("采用服务器内容")} onClose={() => setDetails(null)}><p>{t("用服务器内容替换当前本地输入？未保存的本地修改将被丢弃。")}</p><footer><button onClick={() => setDetails(null)}>{t("取消")}</button><button className="is-primary" data-dialog-confirm="" onClick={() => { onAdoptServer(); setDetails(null); }}>{t("采用")}</button></footer></CalendarDialog>}
-    {details === 'unschedule' && <CalendarDialog title={t("移回未排期")} onClose={() => setDetails(null)}><p>{t("移除这项任务的时间和提醒，并取消它与实际记录的关联。实际教学记录会保留。")}</p><footer><button onClick={() => setDetails(null)}>{t("取消")}</button><button className="is-primary" data-dialog-confirm="" onClick={() => { onPatch({ time: null, repeat: null, reminder: null, course: { ...content.course, recordIds: [] }, calendar: { ...content.calendar, allDay: false } }); setDetails(null); }}>{t("移回未排期")}</button></footer></CalendarDialog>}
+    {details === 'unschedule' && <CalendarDialog title={t("移回未排期")} onClose={() => setDetails(null)}><p>{t("移除这项任务的时间和提醒。")}</p><footer><button onClick={() => setDetails(null)}>{t("取消")}</button><button className="is-primary" data-dialog-confirm="" onClick={() => { onPatch({ time: null, repeat: null, reminder: null, calendar: { ...content.calendar, allDay: false } }); setDetails(null); }}>{t("移回未排期")}</button></footer></CalendarDialog>}
     </CalendarOverlay>
   </section>;
 }

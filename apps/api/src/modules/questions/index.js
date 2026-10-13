@@ -77,12 +77,6 @@ export function createQuestionsModule({
             .map(task => ({ jobId: task.id, importId: task.importId, lateResults: task.lateResults, nativeWordSources: task.nativeWordSources, originalDocuments: task.originalDocuments })),
         };
       },
-      readForReferenceV2(principal, id) {
-        return materials.service.readQuestionForReferenceV2({ principal, id });
-      },
-      readForReference(principal, questionId) {
-        return service.readForReference(principal, questionId);
-      },
     },
   };
 }

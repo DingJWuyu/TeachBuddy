@@ -1,3 +1,5 @@
+import { classRetirementMigrations, classRetirementMigrationId, retiredClassMigrationIds } from '../retire-classes.js';
+import retiredClassSchema from './retired-classes-schema.json' with { type: 'json' };
 import { retirementMigrations, retirementMigrationId, retiredLessonMigrationIds } from '../retire-lessons.js';
 import fs from "node:fs";
 import path from "node:path";
@@ -9,7 +11,6 @@ import { migrations as auth } from "../../features/auth/migrations/index.js";
 import { migrations as questions } from "../../modules/questions/migrations/index.js";
 import { migrations as resources } from "../../modules/resources/migrations/index.js";
 import { migrations as math } from "../../modules/math/migrations.js";
-import { migrations as classes } from "../../modules/classes/migrations/index.js";
 import { migrations as schedule } from "../teachingTime.js";
 import { migrations as agent } from "../../agent/store.js";
 import { navigationMigrations } from "../navigation.js";
@@ -38,7 +39,6 @@ const supported = [
     questions,
     resources,
     math,
-    classes,
     schedule,
     agent,
   }).map(([moduleId, migrations]) => ({ moduleId, migrations })),
@@ -49,6 +49,7 @@ const supported = [
   ...preferenceMigrations,
   ...navigationMigrations,
   ...retirementMigrations,
+  ...classRetirementMigrations,
 ];
 const ledger = (db) =>
   db.prepare("SELECT id,moduleId FROM workbench_migrations ORDER BY id").all();
@@ -61,6 +62,18 @@ function checkStructure(db, actual) {
     createMigrationRunner({ db: reference });
     createMutations({ db: reference });
     const ids = new Set(actual.map((row) => row.id));
+    const classIds = actual.filter(row => row.moduleId === 'classes').map(row => row.id);
+    if (classIds.length) {
+      const prefix = retiredClassMigrationIds.slice(0, classIds.length);
+      if (!equal([...prefix].sort(), [...classIds].sort())) throw new Error('Unsupported retired classes migration set');
+      for (const [name, schema] of Object.entries(retiredClassSchema)) {
+        if (name === 'classes_removed_objects' && !ids.has(retiredClassMigrationIds[1])) continue;
+        const expected = schema.filter(column =>
+          (column.name !== 'nextNoteHidden' || ids.has(retiredClassMigrationIds[2])) &&
+          (column.name !== 'content' || ids.has(retiredClassMigrationIds[3])));
+        if (!equal(expected, db.pragma(`table_info(${name})`))) throw new Error(`Unsupported retired table structure: ${name}`);
+      }
+    }
     for (const group of supported)
       for (const migration of group.migrations)
         if (ids.has(migration.id)) migration.up(reference);
@@ -120,7 +133,6 @@ function contentSchemas(db) {
     }
   }
   const jsonColumns = {
-    classes_records: ["content"],
     question_items: ["body", "solution", "source"],
     questions_materials_meta: ["value"],
     questions_materials_imports: ["value"],
@@ -131,14 +143,14 @@ function contentSchemas(db) {
   // These former tables exist only while inspecting a pre-retirement backup.
   // Validate its declared content versions before removing it in the restored copy.
   for (const [table, columns] of Object.entries({
-    lesson_items: ['intro'], lesson_sections: ['content', 'pageSource'],
+    classes_records: ['content'], lesson_items: ['intro'], lesson_sections: ['content', 'pageSource'],
     lesson_references: ['snapshot'], lesson_history: ['snapshot'], lesson_exports: ['record', 'snapshot'],
   })) if (db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(table))
     jsonColumns[table] = columns;
   for (const [table, columns] of Object.entries(jsonColumns))
     for (const row of db.prepare(`SELECT * FROM ${table}`).all())
       for (const column of columns)
-        visit(JSON.parse(row[column]), row.accountKey);
+        if (row[column] !== undefined) visit(JSON.parse(row[column]), row.accountKey);
   // Older backups predate resource file history; their migration seeds the current file.
   if (db.prepare("SELECT name FROM sqlite_master WHERE name='resource_file_history'").get())
     for (const row of db.prepare("SELECT accountKey, value FROM resource_file_history").all())
@@ -174,11 +186,15 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     actual.some(row => row.moduleId === 'lessons') ||
     db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name GLOB 'lesson_*'").get()
   )) throw new Error('Retired module storage remains in a current database');
+  if (actual.some(row => row.id === classRetirementMigrationId) && (
+    actual.some(row => row.moduleId === 'classes') ||
+    db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name GLOB 'classes_*'").get()
+  )) throw new Error('Retired classes storage remains in a current database');
   const optional = new Set(
-    [...migrations, ...navigationMigrations].flatMap((s) => s.migrations.map((m) => m.id)).concat('auth_0008_account_deletions', retirementMigrationId),
+    [...migrations, ...navigationMigrations].flatMap((s) => s.migrations.map((m) => m.id)).concat('auth_0008_account_deletions', retirementMigrationId, classRetirementMigrationId, 'schedule_0003_remove_teaching_links'),
   );
   if (
-    actual.some((a) => !expected.some((e) => equal(e, a)) && !(allowOlder && a.moduleId === 'lessons' && retiredLessonMigrationIds.includes(a.id))) ||
+    actual.some((a) => !expected.some((e) => equal(e, a)) && !(allowOlder && ((a.moduleId === 'lessons' && retiredLessonMigrationIds.includes(a.id)) || (a.moduleId === 'classes' && retiredClassMigrationIds.includes(a.id))))) ||
     expected.some(
       (e) =>
         !actual.some((a) => equal(e, a)) && !(allowOlder && optional.has(e.id)),
@@ -213,14 +229,14 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     }
   }
   const links = [
-    ["classes_records", "classId", "classes_items"],
-    ["classes_record_sources", "recordId", "classes_records"],
     ["math_revisions", "workId", "math_works"],
     ["schedule_exceptions", "entryId", "schedule_entries"],
     ["agent_events", "conversationId", "agent_conversations"],
     ["materials_previews", "fileId", "materials_files"],
     ["materials_renditions", "fileId", "materials_files"],
   ];
+  if (actual.some(row => row.moduleId === 'classes')) links.push(
+    ['classes_records', 'classId', 'classes_items'], ['classes_record_sources', 'recordId', 'classes_records']);
   for (const [child, key, parent] of links) {
     const scoped = db
       .pragma(`table_info(${child})`)
@@ -252,7 +268,7 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     ? db.prepare("SELECT 1 FROM classes_removed_objects WHERE id=? AND accountKey=? AND kind=?") : null;
   function owned(kind, id, account, adoptedSnapshot = null) {
     const table = sourceTables[kind];
-    const source = table && db.prepare(`SELECT accountKey FROM ${table} WHERE id=?`).get(id);
+    const source = table && db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(table) && db.prepare(`SELECT accountKey FROM ${table} WHERE id=?`).get(id);
     if (source && source.accountKey !== account)
       throw new Error("Missing or foreign object reference");
     const removed = ["class", "record"].includes(kind) && removedTeachingObject?.get(id, account, kind);
@@ -262,13 +278,14 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     if (!source && !removed && !captured)
       throw new Error("Missing or foreign object reference");
   }
-  for (const row of db.prepare("SELECT * FROM classes_record_sources").all())
+  if (actual.some(row => row.moduleId === 'classes')) for (const row of db.prepare("SELECT * FROM classes_record_sources").all())
     if (!(allowOlder && row.kind === 'lesson')) owned(row.kind, row.sourceId, row.accountKey);
   for (const row of db
     .prepare("SELECT * FROM question_items WHERE sourceQuestionId IS NOT NULL")
     .all())
     owned("question", row.sourceQuestionId, row.accountKey, JSON.parse(row.source).snapshot);
   for (const row of db.prepare("SELECT * FROM schedule_entries").all()) {
+    if (row.courseJson === undefined) continue;
     const course = JSON.parse(row.courseJson);
     if (course.classId) owned("class", course.classId, row.accountKey);
     for (const id of course.recordIds) owned("record", id, row.accountKey);

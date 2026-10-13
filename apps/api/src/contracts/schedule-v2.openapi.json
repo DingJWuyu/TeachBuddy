@@ -1,0 +1,3068 @@
+{
+  "openapi": "3.2.1",
+  "info": {
+    "title": "TeachBuddy schedule",
+    "version": "2.0.0-candidate.1",
+    "description": "日程、日历和提醒操作契约。"
+  },
+  "x-source-revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "SessionCookie": []
+    }
+  ],
+  "paths": {
+    "/api/modules/schedule/settings": {
+      "get": {
+        "operationId": "getScheduleSettings",
+        "description": "getScheduleSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "当前账户结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Settings"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateScheduleSettings",
+        "description": "updateScheduleSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Settings"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/entries": {
+      "get": {
+        "operationId": "listEntries",
+        "description": "返回完整模板，不展开重复。updatedAt 降序、id 升序。未排期用 placement=unscheduled。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/State"
+          },
+          {
+            "name": "placement",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "unscheduled"
+              ],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "当前账户结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createEntry",
+        "description": "createEntry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/entries/{id}": {
+      "get": {
+        "operationId": "getEntry",
+        "description": "getEntry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "当前账户结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateEntry",
+        "description": "updateEntry",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/entries/{id}/deletion": {
+      "post": {
+        "operationId": "setEntryDeletion",
+        "description": "setEntryDeletion",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Deletion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/entries/{id}/exceptions": {
+      "get": {
+        "operationId": "listExceptions",
+        "description": "listExceptions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "当前账户结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExceptionList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/entries/{id}/exceptions/{originDate}": {
+      "put": {
+        "operationId": "setException",
+        "description": "override/取消/恢复继承；成功返回该实例以及递增后的 entryVersion。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/originDate"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Occurrence"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExceptionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/entries/{id}/occurrence": {
+      "get": {
+        "operationId": "getOccurrence",
+        "description": "重复必须 originDate；非重复必须省略。未排期或不符合原始周节律404；取消/删除返回可辨认内容。符合节律但超过until（有无例外均同）返回outside-series供旧通知定位。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "当前账户结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Occurrence"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/occurrences": {
+      "get": {
+        "operationId": "listOccurrences",
+        "description": "listOccurrences",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "当前账户结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccurrenceList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/item-moves": {
+      "post": {
+        "operationId": "moveItem",
+        "description": "moveItem",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveItem"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/notifications": {
+      "get": {
+        "operationId": "listNotifications",
+        "description": "T53：结算到期后返回未 dismissed 的全部记录和未读计数；不展示生成时间。",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "当前账户结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/notifications/{id}": {
+      "post": {
+        "operationId": "changeNotification",
+        "description": "单条 read/unread/dismiss；重复已读保留第一次 readAt，unread 清空 readAt，dismiss 保留唯一痕迹。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notification"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticeAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/notification-actions": {
+      "post": {
+        "operationId": "changeNotifications",
+        "description": "T53：全部已读/清空传当前展示的明确 ID 集合，新到通知不被吞。任一外账户/不存在 ID 404 且整体不写。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoticeBatchResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticeBatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules": {
+      "get": {
+        "operationId": "getTeachingModuleCatalog",
+        "description": "已装配的四个模块按当前目录投影。",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "当前账户结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleCatalogV3"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/entries/{id}/delete": {
+      "post": {
+        "operationId": "deleteEntry",
+        "description": "永久删除本账户任务及其系列例外、提醒生效点，保留历史通知与幂等回执；按期望版本同事务提交。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDeleted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryDelete"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modules/schedule/entries/{id}/occurrences/{originDate}/detach": {
+      "post": {
+        "operationId": "detachOccurrence",
+        "description": "取消有效原日期并创建独立非重复任务，内容、系列版本与幂等回执原子提交；失败整体回滚。",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "$ref": "#/components/parameters/originDate"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/BrowserRequestProtection"
+          },
+          {
+            "$ref": "#/components/parameters/RequestOrigin"
+          },
+          {
+            "$ref": "#/components/parameters/RequestReferer"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "持久成功结果；写入重放保持原状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryDetach"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SessionCookie": {
+        "$ref": "auth.openapi.yaml#/components/securitySchemes/SessionCookie"
+      }
+    },
+    "parameters": {
+      "id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Id"
+        }
+      },
+      "originDate": {
+        "name": "originDate",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Date"
+        }
+      },
+      "kind": {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "question"
+          ]
+        }
+      },
+      "State": {
+        "name": "state",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "active",
+            "deleted"
+          ],
+          "default": "active"
+        }
+      },
+      "Origin": {
+        "name": "originDate",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "$ref": "#/components/schemas/Date"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Id"
+        }
+      },
+      "BrowserRequestProtection": {
+        "$ref": "auth.openapi.yaml#/components/parameters/BrowserRequestProtection"
+      },
+      "RequestOrigin": {
+        "$ref": "auth.openapi.yaml#/components/parameters/RequestOrigin"
+      },
+      "RequestReferer": {
+        "$ref": "auth.openapi.yaml#/components/parameters/RequestReferer"
+      },
+      "kindV2": {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "question",
+            "math"
+          ]
+        }
+      }
+    },
+    "responses": {
+      "400": {
+        "description": "malformed-json",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "/problems/workbench/malformed-json"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "unauthenticated",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "/problems/workbench/unauthenticated"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "request-not-allowed",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "/problems/workbench/request-not-allowed"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "not-found",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "/problems/workbench/not-found"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "409": {
+        "description": "version-conflict / idempotency-key-reused / object-deleted / reference-deleted / class-mismatch / immutable-series / invalid-move",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "/problems/workbench/version-conflict",
+                        "/problems/workbench/idempotency-key-reused",
+                        "/problems/workbench/object-deleted",
+                        "/problems/workbench/reference-deleted",
+                        "/problems/workbench/class-mismatch",
+                        "/problems/workbench/immutable-series",
+                        "/problems/workbench/invalid-move"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "413": {
+        "description": "payload-too-large",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "/problems/workbench/payload-too-large"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "415": {
+        "description": "unsupported-media-type",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "/problems/workbench/unsupported-media-type"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "422": {
+        "description": "invalid-input / invalid-time-zone / reminder-not-future",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "/problems/workbench/invalid-input",
+                        "/problems/workbench/invalid-time-zone",
+                        "/problems/workbench/reminder-not-future"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "503": {
+        "description": "temporarily-unavailable",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "/problems/workbench/temporarily-unavailable"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "Version": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "Date": {
+        "type": "string",
+        "format": "date",
+        "pattern": "^(19\\d{2}|20\\d{2}|2100)-\\d{2}-\\d{2}$",
+        "description": "有效公历日期 1900-01-01 至 2100-12-31，语义仍校验月日。"
+      },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "Z$"
+      },
+      "Zone": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "description": "有效 IANA 时区；初始 Asia/Shanghai。"
+      },
+      "Time": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "startTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "timeZone": {
+            "$ref": "#/components/schemas/Zone"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "timeZone",
+          "durationMinutes"
+        ],
+        "additionalProperties": false
+      },
+      "Reminder": {
+        "type": "object",
+        "properties": {
+          "side": {
+            "type": "string",
+            "enum": [
+              "before",
+              "after"
+            ]
+          },
+          "minutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10080
+          },
+          "anchor": {
+            "type": "string",
+            "enum": [
+              "start",
+              "end"
+            ],
+            "description": "Reminder anchor; omitted means end."
+          }
+        },
+        "required": [
+          "side",
+          "minutes"
+        ],
+        "additionalProperties": false
+      },
+      "Repeat": {
+        "type": "object",
+        "properties": {
+          "until": {
+            "$ref": "#/components/schemas/Date"
+          }
+        },
+        "required": [
+          "until"
+        ],
+        "additionalProperties": false
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "normal",
+              "high"
+            ]
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "事项完成状态；缺省或 false 为未完成，true 为完成。随排序、移动与实例独立保留。"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "priority"
+        ],
+        "additionalProperties": false
+      },
+      "Deletion": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "deleted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "deleted"
+        ],
+        "additionalProperties": false
+      },
+      "EntryInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "maxItems": 200
+          },
+          "time": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repeat": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Repeat"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reminder"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "items",
+          "time",
+          "repeat",
+          "reminder"
+        ],
+        "additionalProperties": false,
+        "description": "标题非空或至少一个非空事项；事项 ID 在本 Entry 唯一。未排期 time=null 时 repeat/reminder=null。repeat 非空必须有 time。"
+      },
+      "EntryUpdate": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "maxItems": 200
+          },
+          "time": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repeat": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Repeat"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reminder"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "title",
+          "items",
+          "time",
+          "repeat",
+          "reminder"
+        ],
+        "additionalProperties": false
+      },
+      "Entry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "deletedAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemView"
+            },
+            "maxItems": 200
+          },
+          "time": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimeView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repeat": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RepeatView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReminderView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "title",
+          "items",
+          "time",
+          "repeat",
+          "reminder"
+        ]
+      },
+      "EntryList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Entry"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "Settings": {
+        "type": "object",
+        "properties": {
+          "timeZone": {
+            "$ref": "#/components/schemas/Zone"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "required": [
+          "timeZone",
+          "version"
+        ]
+      },
+      "SettingsUpdate": {
+        "type": "object",
+        "properties": {
+          "timeZone": {
+            "$ref": "#/components/schemas/Zone"
+          },
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "required": [
+          "timeZone",
+          "expectedVersion"
+        ],
+        "additionalProperties": false
+      },
+      "OccurrenceKey": {
+        "type": "object",
+        "properties": {
+          "entryId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "originDate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "entryId",
+          "originDate"
+        ],
+        "additionalProperties": false
+      },
+      "Override": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "maxItems": 200
+          },
+          "time": {
+            "$ref": "#/components/schemas/Time"
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reminder"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "items",
+          "time",
+          "reminder"
+        ],
+        "additionalProperties": false
+      },
+      "SetOverride": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "mode": {
+            "const": "override"
+          },
+          "content": {
+            "$ref": "#/components/schemas/Override"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "mode",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "SetCancelled": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "mode": {
+            "const": "cancelled"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "mode"
+        ],
+        "additionalProperties": false
+      },
+      "ResetException": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "mode": {
+            "const": "inherit"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "mode"
+        ],
+        "additionalProperties": false
+      },
+      "ExceptionInput": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/SetOverride"
+          },
+          {
+            "$ref": "#/components/schemas/SetCancelled"
+          },
+          {
+            "$ref": "#/components/schemas/ResetException"
+          }
+        ]
+      },
+      "Exception": {
+        "type": "object",
+        "properties": {
+          "originDate": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "override",
+              "cancelled"
+            ]
+          },
+          "eligible": {
+            "type": "boolean"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverrideView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "originDate",
+          "mode",
+          "eligible",
+          "content"
+        ]
+      },
+      "ExceptionList": {
+        "type": "object",
+        "properties": {
+          "entryId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Exception"
+            }
+          }
+        },
+        "required": [
+          "entryId",
+          "version",
+          "items"
+        ]
+      },
+      "Occurrence": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/OccurrenceKeyView"
+          },
+          "entryVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "exception": {
+            "type": "boolean"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "cancelled",
+              "deleted",
+              "outside-series"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemView"
+            }
+          },
+          "time": {
+            "$ref": "#/components/schemas/TimeView"
+          },
+          "startsAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "endsAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "timeAdjusted": {
+            "type": "boolean"
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReminderView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dueAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "entryVersion",
+          "exception",
+          "state",
+          "title",
+          "items",
+          "time",
+          "startsAt",
+          "endsAt",
+          "timeAdjusted",
+          "reminder",
+          "dueAt"
+        ],
+        "description": "活动实例与通知定位。取消/删除/范围外保留可识别内容，dueAt 只表示配置所得时刻，不表示仍会产生通知；timeAdjusted 表示 DST 缺失时刻发生了调整。"
+      },
+      "OccurrenceList": {
+        "type": "object",
+        "properties": {
+          "timeZone": {
+            "$ref": "#/components/schemas/Zone"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Occurrence"
+            }
+          }
+        },
+        "required": [
+          "timeZone",
+          "items"
+        ]
+      },
+      "MoveItem": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "fromEntryId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "fromVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "toEntryId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "toVersion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Version"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "toIndex": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "toScope": {
+            "type": "string",
+            "enum": [
+              "series",
+              "instance"
+            ]
+          },
+          "toOriginDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "itemId",
+          "fromEntryId",
+          "fromVersion",
+          "toEntryId",
+          "toVersion",
+          "toIndex"
+        ],
+        "additionalProperties": false,
+        "description": "源为活动非重复 Entry；普通或新待安排目标保持原字段。重复目标要求 toScope/toOriginDate：series/null 插入原系列模板；instance/活动原日期 独立该次并插入事项。源、目标与实例独立同事务，保留事项 ID，版本冲突完全回滚，幂等重放不复制系列。toIndex<=有效目标长度且目标最多 200 项。",
+        "dependentRequired": {
+          "toScope": [
+            "toOriginDate"
+          ],
+          "toOriginDate": [
+            "toScope"
+          ]
+        }
+      },
+      "MoveResult": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "$ref": "#/components/schemas/Entry"
+          },
+          "to": {
+            "$ref": "#/components/schemas/Entry"
+          },
+          "toOriginDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "重复目标请求返回的打开日期，独立后的目标为 null；普通移动不返回此字段。"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ]
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "key": {
+            "$ref": "#/components/schemas/OccurrenceKeyView"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "由 projectReminderTitle(entry) 投影；标题去首尾空白后为空时取首项事项，再按 Unicode code point 取前300个字符且不追加省略号。"
+          },
+          "dueAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "readAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dismissedAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "title",
+          "dueAt",
+          "readAt",
+          "dismissedAt"
+        ]
+      },
+      "NotificationList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            }
+          },
+          "unreadCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "items",
+          "unreadCount"
+        ]
+      },
+      "NoticeAction": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "read",
+              "unread",
+              "dismiss"
+            ]
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "NoticeBatch": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "read",
+              "unread",
+              "dismiss"
+            ]
+          }
+        },
+        "required": [
+          "ids",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "NoticeBatchResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "/problems/workbench/malformed-json",
+              "/problems/workbench/unauthenticated",
+              "/problems/workbench/request-not-allowed",
+              "/problems/workbench/not-found",
+              "/problems/workbench/version-conflict",
+              "/problems/workbench/idempotency-key-reused",
+              "/problems/workbench/object-deleted",
+              "/problems/workbench/invalid-input",
+              "/problems/workbench/payload-too-large",
+              "/problems/workbench/unsupported-media-type",
+              "/problems/workbench/temporarily-unavailable",
+              "/problems/workbench/invalid-time-zone",
+              "/problems/workbench/reminder-not-future",
+              "/problems/workbench/reference-deleted",
+              "/problems/workbench/class-mismatch",
+              "/problems/workbench/immutable-series",
+              "/problems/workbench/invalid-move"
+            ]
+          },
+          "status": {
+            "type": "integer"
+          },
+          "currentVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "objectId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "field": {
+            "type": "string",
+            "description": "RFC6901 JSON Pointer，查询为 /query/<name>，请求头为 /headers/<name>。"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "required",
+              "unknown-field",
+              "invalid-type",
+              "out-of-range",
+              "empty-content",
+              "duplicate-id",
+              "invalid-reference",
+              "unsupported-content-version"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "description": "B11公共错误形状保持；status可省略，若有则与HTTP一致。version-conflict必须currentVersion，冲突对象有UUID时另有objectId；settings冲突不带objectId。invalid-input必须field/reason；本批时间错误必须field。校验顺序见契约；单个确定错误按请求字段顺序返回，移动先源版本再目标版本。",
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "/problems/workbench/version-conflict"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "currentVersion"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/invalid-input",
+                    "/problems/workbench/invalid-time-zone",
+                    "/problems/workbench/reminder-not-future"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "field"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/malformed-json"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": 400
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/unauthenticated"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": 401
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/request-not-allowed"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": 403
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/not-found"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": 404
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/version-conflict",
+                    "/problems/workbench/idempotency-key-reused",
+                    "/problems/workbench/object-deleted",
+                    "/problems/workbench/reference-deleted",
+                    "/problems/workbench/class-mismatch",
+                    "/problems/workbench/immutable-series",
+                    "/problems/workbench/invalid-move"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": 409
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/payload-too-large"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": 413
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/unsupported-media-type"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": 415
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/invalid-input",
+                    "/problems/workbench/invalid-time-zone",
+                    "/problems/workbench/reminder-not-future"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": 422
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "/problems/workbench/temporarily-unavailable"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": 503
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "/problems/workbench/invalid-input"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "reason"
+              ]
+            }
+          }
+        ]
+      },
+      "ReminderCandidate": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/OccurrenceKeyView"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "由 projectReminderTitle(entry) 投影；标题去首尾空白后为空时取首项事项，再按 Unicode code point 取前300个字符且不追加省略号。"
+          },
+          "dueAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "armedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "dueAt",
+          "armedAt"
+        ]
+      },
+      "ModuleDescriptorV2": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^/[a-z][a-z0-9-]*$"
+          },
+          "navigation": {
+            "type": "string",
+            "enum": [
+              "sidebar",
+              "top"
+            ]
+          },
+          "auxiliaryPanel": {
+            "type": "boolean"
+          },
+          "requires": {
+            "type": "array",
+            "maxItems": 0,
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "path",
+          "navigation",
+          "auxiliaryPanel",
+          "requires"
+        ]
+      },
+      "ModuleCatalogV2": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "const": 2
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModuleDescriptorV2"
+            }
+          }
+        },
+        "required": [
+          "version",
+          "items"
+        ]
+      },
+      "ReminderView": {
+        "type": "object",
+        "properties": {
+          "side": {
+            "type": "string",
+            "enum": [
+              "before",
+              "after"
+            ]
+          },
+          "minutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10080
+          }
+        },
+        "required": [
+          "side",
+          "minutes"
+        ]
+      },
+      "OverrideView": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemView"
+            },
+            "maxItems": 200
+          },
+          "time": {
+            "$ref": "#/components/schemas/TimeView"
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReminderView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "items",
+          "time",
+          "reminder"
+        ]
+      },
+      "RepeatView": {
+        "type": "object",
+        "properties": {
+          "until": {
+            "$ref": "#/components/schemas/Date"
+          }
+        },
+        "required": [
+          "until"
+        ]
+      },
+      "OccurrenceKeyView": {
+        "type": "object",
+        "properties": {
+          "entryId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "originDate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "entryId",
+          "originDate"
+        ]
+      },
+      "TimeView": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "startTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "timeZone": {
+            "$ref": "#/components/schemas/Zone"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "timeZone",
+          "durationMinutes"
+        ]
+      },
+      "ItemView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "normal",
+              "high"
+            ]
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "事项完成状态；缺省或 false 为未完成，true 为完成。随排序、移动与实例独立保留。"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "priority"
+        ]
+      },
+      "ModuleCatalogV3": {
+        "$ref": "math.openapi.json#/components/schemas/ModuleCatalogV3"
+      },
+      "EntryDelete": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ]
+      },
+      "EntryDeleted": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ]
+      },
+      "CalendarTime": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "startTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "timeZone": {
+            "$ref": "#/components/schemas/Zone"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 527040
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "timeZone",
+          "durationMinutes"
+        ],
+        "additionalProperties": false
+      },
+      "EntryDetach": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "maxItems": 200
+          },
+          "time": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CalendarTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repeat": {
+            "type": "null"
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reminder"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calendar": {
+            "type": "object",
+            "properties": {
+              "allDay": {
+                "type": "boolean"
+              },
+              "notes": {
+                "type": "string",
+                "maxLength": 50000
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "maxItems": 30,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "allDay",
+              "notes",
+              "tags"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "title",
+          "items",
+          "time",
+          "repeat",
+          "reminder"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "x-math-source-revision": "1a5dd015863d749e5244346f4eaad24ac506670d"
+}

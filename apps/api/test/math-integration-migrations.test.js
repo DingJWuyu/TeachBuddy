@@ -130,7 +130,7 @@ for (const kind of ['questions', 'math']) {
       const files = runtime.workbench.db.prepare('SELECT id FROM materials_files ORDER BY id').all();
       const downloads = new Map();
       for (const { id } of files) downloads.set(id, await downloadHash(runtime, id));
-      const oldLedger = runtime.workbench.db.prepare("SELECT * FROM workbench_migrations WHERE moduleId <> 'lessons' ORDER BY rowid").all();
+      const oldLedger = runtime.workbench.db.prepare("SELECT * FROM workbench_migrations WHERE moduleId NOT IN ('lessons', 'classes') ORDER BY rowid").all();
       await closeLibrary(runtime); runtime = null;
       const before = businessState(path.join(original, 'workspace.sqlite'));
       const originalFiles = fileHashes(path.join(original, 'files'));
@@ -148,7 +148,9 @@ for (const kind of ['questions', 'math']) {
         assert.deepEqual(current.body, expected);
         assert.equal((await send(runtime, 'get', readRoute, otherAccount)).status, 404);
         assert.equal(runtime.workbench.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='lesson_items'").get(), undefined);
+        assert.equal(runtime.workbench.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='classes_items'").get(), undefined);
         assert.equal(runtime.workbench.db.prepare("SELECT 1 FROM workbench_migrations WHERE moduleId='lessons'").get(), undefined);
+        assert.equal(runtime.workbench.db.prepare("SELECT 1 FROM workbench_migrations WHERE moduleId='classes'").get(), undefined);
         for (const receipt of receipts) {
           const replay = await send(runtime, receipt.method, receipt.route)
             .set('Idempotency-Key', receipt.key).send(receipt.input);

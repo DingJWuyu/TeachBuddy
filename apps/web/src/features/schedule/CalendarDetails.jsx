@@ -1,11 +1,10 @@
 import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CalendarDialog, CalendarIcon } from './CalendarControls.jsx';
 import { endOf, repeatLabel } from './calendarModel.js';
 import { weekdayLabel } from './model.js';
-import * as api from './api.js';
 
 export const reminderLabel = reminder => {
   const start = reminder.anchor === 'start';
@@ -27,59 +26,9 @@ export function ReminderDialog({ value, onSave, onClose }) {
   </CalendarDialog>;
 }
 
-const linkLabel = link => link?.currentLabel || link?.labelAtLink || t("已关联资料");
-export function CourseDialog({ draft, onSave, onClose }) {
-  const { t } = useTranslation("schedule");
-  const [course, setCourse] = useState(() => ({ classId: draft.content.course.classId, recordIds: [...draft.content.course.recordIds] }));
-  const [options, setOptions] = useState(null);
-  const [records, setRecords] = useState(null);
-  const [error, setError] = useState('');
-  const [revision, setRevision] = useState(0);
-  const state = draft.courseState ?? {};
-  const canLinkRecords = Boolean(draft.content.time && (!draft.content.repeat || draft.origin));
-  useEffect(() => {
-    let live = true;
-    setError('');
-    api.listClasses().then(classes => {
-      if (live) setOptions({ classes });
-    }).catch(e => { if (live) setError(e.problem?.message ?? t("未能加载教学资料")); });
-    return () => { live = false; };
-  }, [revision]);
-  useEffect(() => {
-    let live = true;
-    setRecords(null);
-    if (course.classId && canLinkRecords) api.listClassRecords(course.classId).then(items => {
-      if (live) setRecords(items);
-    }).catch(e => { if (live) setError(e.problem?.message ?? t("未能加载教学记录")); });
-    else setRecords([]);
-    return () => { live = false; };
-  }, [course.classId, canLinkRecords, revision]);
-  const preserved = (id, items, link) => id && !items.some(x => x.id === id) ? <option value={id}>{linkLabel(link)}{link?.deleted ? t("（已删除）") : t("（已关联）")}</option> : null;
-  return <CalendarDialog title={t("教学关联")} onClose={onClose}>
-    <p className="cal-help">{t("关联班级和实际教学记录。修改日程不会改写教学记录。")}</p>
-    {error && <p className="cal-error" role="alert">{error}<button onClick={() => setRevision(x => x + 1)}>{t("重试加载")}</button></p>}
-    {!options ? !error && <p role="status">{t("正在加载…")}</p> : <div className="cal-details-fields">
-      <label className="cal-field">{t("班级")}<select aria-label={t("班级")} value={course.classId ?? ''} onChange={e => setCourse({ ...course, classId: e.target.value || null, recordIds: [] })}><option value="">{t("不关联班级")}</option>{preserved(course.classId, options.classes, state.classroom)}{options.classes.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
-      {course.classId && canLinkRecords && <fieldset className="cal-record-options"><legend>{t("实际教学记录")}</legend>{records === null ? <p role="status">{t("正在加载记录…")}</p> : <>
-        {records.length === 0 && !course.recordIds.length && <p className="cal-help">{t("这个班级还没有教学记录。")}</p>}
-        {[...records.map(record => ({ id: record.id, label: `${record.recordedOn} · ${record.note || record.position || record.unfinished || record.commonIssues || record.nextNote || t("课堂记录")}` })), ...(state.records ?? []).filter(x => course.recordIds.includes(x.id) && !records.some(record => record.id === x.id)).map(x => ({ id: x.id, label: `${linkLabel(x)}${x.deleted ? t("（已删除）") : ''}` }))].map(record => <label key={record.id}><input type="checkbox" checked={course.recordIds.includes(record.id)} onChange={e => setCourse({ ...course, recordIds: e.target.checked ? [...course.recordIds, record.id] : course.recordIds.filter(x => x !== record.id) })}/><span>{record.label}</span></label>)}
-      </>}</fieldset>}
-      {draft.content.repeat && <p className="cal-help">{draft.origin ? t("教学记录只关联当前这次任务。") : t("先保存重复任务，再打开具体日期关联教学记录。")}</p>}
-    </div>}
-    <footer><button onClick={onClose}>{t("取消")}</button><button className="is-primary" data-dialog-confirm="" disabled={!options || Boolean(error)} onClick={() => onSave(course, Boolean(draft.origin && (course.recordIds.length || draft.content.course.recordIds.length)))}>{t("完成")}</button></footer>
-  </CalendarDialog>;
-}
-
-export function CourseSummary({ course, state, onClick }) {
-  const { t } = useTranslation("schedule");
-  if (!course.classId && !course.recordIds.length) return null;
-  return <button className="cal-detail-summary cal-course-summary" aria-label={t("教学关联")} onClick={onClick}><CalendarIcon name="book" size={14}/><span>{t("教学关联")} · {[course.classId && (linkLabel(state?.classroom) + (state?.classroom?.deleted ? t("（已删除）") : '')), course.recordIds.length > 0 && t("{{count}} 条记录", { count: course.recordIds.length })].filter(Boolean).join(' · ')}</span></button>;
-}
-
-export function ConflictPreview({ content, courseState, labels, onAdopt }) {
+export function ConflictPreview({ content, labels, onAdopt }) {
   const { t } = useTranslation("schedule");
   const end = endOf(content);
-  const course = content.course;
   return <details className="cal-conflict-preview"><summary>{t("查看服务器内容")}</summary>
     <dl>
       <dt>{t("标题")}</dt><dd>{content.title || t("无标题")}</dd>
@@ -89,7 +38,6 @@ export function ConflictPreview({ content, courseState, labels, onAdopt }) {
       <dt>{t("备注")}</dt><dd>{content.calendar.notes || t("无")}</dd>
       <dt>{t("标签")}</dt><dd>{labels.filter(label => content.calendar.tags.includes(label.id)).map(label => label.name).join('、') || t("无")}</dd>
       <dt>{t("提醒")}</dt><dd>{content.reminder ? reminderLabel(content.reminder) : t("无")}</dd>
-      <dt>{t("教学关联")}</dt><dd>{[course.classId && linkLabel(courseState?.classroom), course.recordIds.length > 0 && t("{{count}} 条教学记录：{{detail}}", { count: course.recordIds.length, detail: (courseState?.records ?? []).map(linkLabel).join('、') })].filter(Boolean).join(' · ') || t("无")}</dd>
     </dl><button onClick={onAdopt}>{t("采用服务器内容")}</button>
   </details>;
 }

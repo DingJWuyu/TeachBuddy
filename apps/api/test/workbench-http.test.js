@@ -249,7 +249,7 @@ test('the composed app mounts the catalog handler on the exact contract path', a
     assert.equal(response.body.version, 3);
     // Only mapped implementations are enabled: the fixture probe and the two
     // product modules of this branch.
-    assert.deepEqual(response.body.items.map((entry) => entry.id), ['questions', 'math', 'resources', 'classes', 'schedule', 'workbench-probe']);
+    assert.deepEqual(response.body.items.map((entry) => entry.id), ['questions', 'math', 'resources', 'schedule', 'workbench-probe']);
 
     // The retired legacy Bearer route never answers this path: a bearer token is
     // not a workbench identity, so the contract 401 problem is returned.
@@ -272,7 +272,7 @@ test('the composed app mounts the catalog handler on the exact contract path', a
         .set(workbenchRequestHeaders(bare))
         .expect(200);
       assert.equal(empty.body.version, 3);
-      assert.deepEqual(empty.body.items.map((entry) => entry.id), ['questions', 'math', 'resources', 'classes', 'schedule']);
+      assert.deepEqual(empty.body.items.map((entry) => entry.id), ['questions', 'math', 'resources', 'schedule']);
     } finally {
       await bare.cleanup();
     }

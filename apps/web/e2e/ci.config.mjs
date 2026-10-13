@@ -5,7 +5,7 @@ import math from './math-unified.config.mjs';
 import protection from './math-unified-repair.config.mjs';
 import calendar from './calendar-capabilities.config.mjs';
 import development from './development.config.mjs';
-import retirement from './remove-lessons.config.mjs';
+import retirement from './module-retirement.config.mjs';
 
 // Reuse each suite's viewport, timezone, assertions and evidence location.
 export default defineConfig({

@@ -181,7 +181,7 @@ check('trash hidden', rail.trash, 'hidden');
 check('sidebar footer removed', rail.footer, 'absent');
 check('module label hidden', rail.rowLabel, 'hidden');
 check('group divider present', rail.groupDivider.startsWith('1px'), true);
-check('tooltip text bound', rail.tooltipContent.includes('我的班级'), true);
+check('tooltip text bound', rail.tooltipContent.includes('数学工坊'), true);
 
 const rows2 = rows.slice(-16);
 for (const r of rows2) {

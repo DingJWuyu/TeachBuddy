@@ -134,10 +134,10 @@ async function fresh() {
       note: document.querySelector('.tb-copy-note p')?.textContent.trim()
     };
   });
-  record('选来源后列出复制内容', afterPick.count === 6 && afterPick.label === '2026春季学期',
+  record('选来源后列出复制内容', afterPick.count === 5 && afterPick.label === '2026春季学期',
     `label=${afterPick.label} count=${afterPick.count}`);
   record('数量胶囊与名称齐全',
-    afterPick.pills[0] === '2 个班级' && afterPick.names[0] === '班级',
+    afterPick.pills[0] === '48 名学生' && afterPick.names[0] === '学生',
     `${afterPick.names?.[0]} / ${afterPick.pills?.[0]}`);
   record('零数量行禁用', afterPick.disabled.filter(Boolean).length === 1,
     `disabled=${JSON.stringify(afterPick.disabled)}`);

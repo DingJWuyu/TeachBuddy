@@ -18,7 +18,6 @@ export const blankCalendar = () => ({ allDay: false, notes: '', tags: [] });
 export function contentOf(entry) {
   return { title: entry.title, items: structuredClone(entry.items ?? []), time: entry.time ? { ...entry.time } : null,
     repeat: entry.repeat ? structuredClone(entry.repeat) : null,
-    course: { classId: entry.course?.classId ?? null, recordIds: [...(entry.course?.recordIds ?? [])] },
     reminder: entry.reminder ? { ...entry.reminder } : null, calendar: structuredClone(entry.calendar ?? blankCalendar()) };
 }
 export function defaultTime(zone) {
@@ -32,7 +31,7 @@ export function newContent(zone, start, end, allDay = false) {
   const duration = end ? allDay ? diffDays(date, end.slice(0, 10)) * 1440
     : Math.round((instantAt(zone, end.slice(0, 10), parseClock(end.slice(11, 16))) - instantAt(zone, date, parseClock(startTime))) / 60000) : allDay ? 1440 : 60;
   return { title: '', items: [], time: { date, startTime, timeZone: zone, durationMinutes: Math.max(5, duration) },
-    repeat: null, course: { classId: null, recordIds: [] }, reminder: null, calendar: { ...blankCalendar(), allDay } };
+    repeat: null, reminder: null, calendar: { ...blankCalendar(), allDay } };
 }
 export function endOf(content) {
   if (!content.time) return { date: '', time: '' };

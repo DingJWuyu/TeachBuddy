@@ -7,7 +7,6 @@ import { useWorkbenchShell } from '../shellContext.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createDragChip } from './dragChip.js';
 import { Icon } from './icons.jsx';
-import { listClasses } from '../../classes/api.js';
 import { navigate, routeClick, withSearch } from './routes.js';
 import { workbenchModules, moduleDisplayName } from '../../modules/moduleRegistry.js';
 
@@ -28,36 +27,15 @@ export function SearchModal({ onClose, onAnnounce }) {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef(null);
-  const [sources, setSources] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [problems, setProblems] = useState([]);
-  const [reload, setReload] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setProblems([]);
-    listClasses().then(items => {
-      if (cancelled) return;
-      setSources([{ group: t("班级"), items: items.map(item => ({
-        id: `class-${item.id}`, name: item.name, hint: t("班级"), icon: 'classes',
-        route: `/classes/${encodeURIComponent(item.id)}`
-      })) }]);
-    }).catch(error => {
-      if (!cancelled) setProblems([t("{{value}}读取失败：{{message}}", { value: t("班级"), message: error.message })]);
-    }).finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [reload]);
-
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return [...searchGroups(), ...sources]
+    return searchGroups()
       .map((group) => ({
         ...group,
         items: group.items.filter((item) => `${item.name}${item.hint}`.toLowerCase().includes(needle))
       }))
       .filter((group) => group.items.length > 0);
-  }, [query, sources, i18n.resolvedLanguage]);
+  }, [query, i18n.resolvedLanguage]);
 
   const flat = useMemo(() => groups.flatMap((group) => group.items), [groups]);
 
@@ -67,7 +45,7 @@ export function SearchModal({ onClose, onAnnounce }) {
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [query, sources, i18n.resolvedLanguage]);
+  }, [query, i18n.resolvedLanguage]);
 
   /*
    * Results navigate to the destination they name, so search leaves the shell
@@ -112,8 +90,8 @@ export function SearchModal({ onClose, onAnnounce }) {
             className="tb-search-input"
             type="search"
             value={query}
-            placeholder={t("搜索模块、班级…")}
-            aria-label={t("搜索模块、班级")}
+            placeholder={t("搜索模块…")}
+            aria-label={t("搜索模块")}
             onChange={(event) => setQuery(event.target.value)}
           />
           <button type="button" className="tb-search-close" aria-label={t("关闭搜索")} onClick={onClose}>
@@ -121,16 +99,11 @@ export function SearchModal({ onClose, onAnnounce }) {
           </button>
         </div>
         <div className="tb-search-results">
-          {loading && <div className="tb-search-state" role="status">{t("正在读取班级…")}</div>}
-          {problems.length > 0 && <div className="tb-search-state" role="alert">
-            {problems.map(problem => <p key={problem}>{problem}</p>)}
-            <button className="wb-button" onClick={() => setReload(value => value + 1)}>{t("重试")}</button>
-          </div>}
-          {!loading && problems.length === 0 && flat.length === 0 && (
+          {flat.length === 0 && (
             <div className="tb-search-empty">
               <Icon name="search" size={20} />
               <p>{t("没有匹配「")}{query}{t("」的结果")}</p>
-              <span>{t("试试模块或班级名称。")}</span>
+              <span>{t("试试模块名称。")}</span>
             </div>
           )}
           {groups.map((group) => (

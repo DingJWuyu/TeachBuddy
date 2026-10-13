@@ -1,4 +1,4 @@
-// Isolated schedule composition with real storage and classes reference substitutes.
+// Isolated schedule composition with real storage.
 import { openWorkbenchDatabase } from '../../../src/workbench/storage.js';
 import { assertWorkbenchRuntimeConfig, createIdentity } from '../../../src/workbench/identity.js';
 import { createMutations } from '../../../src/workbench/mutations.js';
@@ -7,19 +7,10 @@ import { createWorkbenchLogger } from '../../../src/workbench/logger.js';
 import { createModuleCatalogHandler, createWorkbenchRouters } from '../../../src/workbench/http.js';
 import { createScheduleModule, migrations as scheduleMigrations } from '../../../src/modules/schedule/index.js';
 import { fixtureBeforeChange, fixtureClock } from './runtime.js';
-import { createClassesModule, migrations as classesMigrations } from './modules/classes/index.js';
 import { createPreferencesRouter, preferenceMigrations } from '../../../src/reliability/preferences.js';
 
 /** Fixture-only descriptors; the real v2 catalog (with requires) is T53's. */
 export const fixtureCatalog = Object.freeze([
-  Object.freeze({
-    id: 'classes',
-    name: '班级',
-    path: '/classes',
-    navigation: 'sidebar',
-    auxiliaryPanel: true,
-    requires: Object.freeze([])
-  }),
   Object.freeze({
     id: 'schedule',
     name: '日程',
@@ -55,7 +46,6 @@ export function createTeachingTimeWorkbench({
   // discover -> migrate -> instantiate order.
   const migrationResult = migrations.run(
     [
-      { moduleId: 'classes', migrations: classesMigrations },
       { moduleId: 'schedule', migrations: scheduleMigrations },
       ...preferenceMigrations
     ],
@@ -65,17 +55,14 @@ export function createTeachingTimeWorkbench({
     { knownModuleIds: knownModuleIds ?? fixtureCatalog.map((entry) => entry.id) }
   );
 
-  const classes = createClassesModule({ db, mutations });
   const schedule = createScheduleModule({
     db,
     mutations,
-    classes: classes.port,
     beforeChange: fixtureBeforeChange,
     clock
   });
 
   const implementations = new Map([
-    ['classes', { moduleId: 'classes', router: classes.router, port: classes.port }],
     ['schedule', { moduleId: 'schedule', router: schedule.router, port: schedule.port }]
   ]);
 
@@ -83,7 +70,6 @@ export function createTeachingTimeWorkbench({
     enabledIds: () => [...implementations.keys()],
     get: (moduleId) => implementations.get(moduleId) ?? null,
     moduleMigrations: () => [
-      { moduleId: 'classes', migrations: classesMigrations },
       { moduleId: 'schedule', migrations: scheduleMigrations }
     ]
   };

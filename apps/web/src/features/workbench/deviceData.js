@@ -1,10 +1,10 @@
 import { pendingStore } from '../resources/client.js';
 import { uploadDraft } from '../math/uploadDraft.js';
 import { currentEditorBranch, listLocalNames, resetLocalReaders, selectLocalSnapshots } from './storage.js';
-const retiredScene = name => /lesson|material-navigation|math-return|questions-return-focus/.test(name);
+const retiredScene = name => /(?:^|:)class(?:-|:)|classes|course-feedback|lesson|material-navigation|math-return|questions-return-focus/.test(name);
 const prefix = account => `tb.workbench.v1:${account}:`;
 const moduleOf = name => /question/.test(name) ? 'questions'
-  : /resource/.test(name) ? 'resources' : /math/.test(name) ? 'math' : /class|record/.test(name) ? 'classes'
+  : /resource/.test(name) ? 'resources' : /math/.test(name) ? 'math'
     : /schedule|notification|feedback/.test(name) ? 'schedule' : /preference/.test(name) ? 'preferences' : 'shell';
 function hasPending(value) {
   if (!value || typeof value !== 'object') return false;
@@ -66,7 +66,7 @@ export function resumeDeviceCandidate(account, inventory, candidate) {
     .map(entry => entry.logicalName ?? entry.name))];
   selectLocalSnapshots(account, names, candidate.entries);
   return ({ questions: '/questions', resources: '/resources', math: '/math',
-    classes: '/classes', schedule: '/calendar', preferences: '/settings', shell: '/' })[candidate.module] ?? '/';
+    schedule: '/calendar', preferences: '/settings', shell: '/' })[candidate.module] ?? '/';
 }
 export async function clearDeviceData(account) {
   // Re-read immediately before removing: never delete a newly pending operation.

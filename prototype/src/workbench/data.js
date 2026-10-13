@@ -3,7 +3,6 @@ export const WORKBENCH_MODULES = [
   { id: "bank", name: "题库", icon: "book" },
   { id: "studio", name: "数学工坊", icon: "graph" },
   { id: "resources", name: "资源库", icon: "folder" },
-  { id: "classes", name: "班级教学", icon: "classes" },
 ];
 
 export function dateKey(date) {
@@ -133,26 +132,6 @@ export const RESOURCES = [
     cover: "notes",
   },
 ];
-export const CLASSES = ["高一 · 理科强基班", "高一 · 数学拓展课"];
-export const RECORDS = [
-  {
-    id: "c1",
-    className: CLASSES[0],
-    date: TODAY,
-    title: "函数的单调性",
-    progress: "定义与例题 1 已讲，例题 2 留到下次。",
-    text: "学生能根据图象判断，但在定义证明中容易省略“任取”。下次先比较两份证明，请学生找出缺少的条件。",
-  },
-  {
-    id: "c2",
-    className: CLASSES[0],
-    date: shiftDate(TODAY, -2),
-    title: "函数的概念",
-    progress: "函数表示与定义域",
-    text: "从实际对应关系进入概念比较顺畅。需要再补一组定义域不同的例子。",
-  },
-];
-
 export const WORKS = [
   { id: "w1", name: "观察二次函数的变化", type: "动态演示" },
   { id: "w2", name: "单调性的符号表达", type: "公式" },
