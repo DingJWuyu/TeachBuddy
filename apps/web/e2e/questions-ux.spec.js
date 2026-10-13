@@ -51,6 +51,428 @@ async function records() {
   return response.json.items;
 }
 
+test('改编首存遇到原题更新，刷新后核对来源并保留全部改编输入', async ({ page }, info) => {
+  await createQuestion(page, '冲突原题');
+  const [original] = await records();
+  await page.getByRole('button', { name: '复制改编', exact: true }).click();
+  await page.getByLabel('题目标题').fill('冲突改编');
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('改编 $x^2=36$。');
+  await page.getByRole('button', { name: '添加答案与解析', exact: true }).click();
+  await page.getByRole('textbox', { name: '答案与解析段落 1', exact: true }).fill('$x=\\pm6$');
+  await page.getByRole('button', { name: '题型、标签与笔记', exact: true }).click();
+  await page.getByLabel('长期笔记').fill('改编私有笔记');
+  await page.getByRole('button', { name: '新建题型', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '新建题型' });
+  await dialog.getByLabel('分类名称').fill('改编计算题');
+  await dialog.getByRole('button', { name: '创建并选用' }).click();
+  await page.getByRole('button', { name: '新建标签', exact: true }).click();
+  const tagDialog = page.getByRole('dialog', { name: '新建标签' });
+  await tagDialog.getByLabel('分类名称').fill('改编复用');
+  await tagDialog.getByRole('button', { name: '创建并选用' }).click();
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await page.locator('.q-list-entry button').filter({ hasText: '冲突原题' }).click();
+  await page.getByRole('button', { name: '编辑题目', exact: true }).click();
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('当前原题 $x^2=25$。');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '继续未完成的题目', exact: true }).click();
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.locator('.q-message')).toContainText('内容已在别处修改');
+  await page.screenshot({ path: info.outputPath('copy-conflict.png') });
+  await expect(page.getByRole('region', { name: '版本冲突对照' })).toBeVisible();
+  await page.setViewportSize({ width: 600, height: 900 });
+  await expect(page.getByRole('region', { name: '版本冲突对照' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await page.screenshot({ path: info.outputPath('copy-conflict-narrow.png') });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.reload();
+  const conflict = page.getByRole('region', { name: '版本冲突对照' });
+  await expect(conflict).toContainText('当前原题');
+  await page.getByLabel('长期笔记').fill('核对期间继续补充的笔记');
+  await conflict.getByRole('button', { name: '以当前原题作为来源，保留改编内容', exact: true }).click();
+  await expect(page.getByLabel('题目标题')).toHaveValue('冲突改编');
+  await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('改编 $x^2=36$。');
+  await expect(page.getByRole('textbox', { name: '答案与解析段落 1', exact: true })).toHaveValue('$x=\\pm6$');
+  await expect(page.getByLabel('长期笔记')).toHaveValue('核对期间继续补充的笔记');
+  await expect(page.getByLabel('题型', { exact: true })).toHaveValue(/.+/);
+  const currentOriginal = (await records())[0];
+  let release;
+  let accepted;
+  const submitted = new Promise(resolve => { accepted = resolve; });
+  const waiting = new Promise(resolve => { release = resolve; });
+  await page.route('**/api/modules/questions/v2/items/*/copies', async route => {
+    const response = await route.fetch();
+    accepted();
+    await waiting;
+    await route.fulfill({ response });
+  });
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await submitted;
+  await expect(page.getByLabel('长期笔记')).toBeEnabled();
+  await page.getByLabel('长期笔记').fill('保存等待期间继续补充的笔记');
+  release();
+  await expect(page.locator('.q-message')).toContainText('之后补充的修改仍保留在草稿中');
+  await expect(page.getByLabel('长期笔记')).toHaveValue('保存等待期间继续补充的笔记');
+  expect((await records()).find(q => q.id !== original.id).note).toBe('核对期间继续补充的笔记');
+  await page.reload();
+  await expect(page.getByLabel('长期笔记')).toHaveValue('保存等待期间继续补充的笔记');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '冲突改编', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '冲突改编', exact: true })).toBeVisible();
+  const items = await records();
+  const copy = items.find(q => q.id !== original.id);
+  expect(items).toHaveLength(2);
+  expect(items.find(q => q.id === original.id)).toEqual(currentOriginal);
+  expect(copy.source.questionId).toBe(original.id);
+  expect(copy.source.questionVersion).toBe(currentOriginal.version);
+  expect(copy.source.snapshot.body).toEqual(currentOriginal.body);
+  expect(copy.note).toBe('保存等待期间继续补充的笔记');
+  expect(copy.typeId).toBeTruthy();
+  expect(copy.tagIds).toHaveLength(1);
+  expect(copy.answerStatus).toBe('present');
+  fs.writeFileSync(info.outputPath('copy-records.json'), JSON.stringify(items, null, 2));
+  await page.screenshot({ path: info.outputPath('copy-restored.png') });
+});
+
+test('全局分类保存不制造草稿，分类删除保留既有题目的真实草稿', async ({ page }, info) => {
+  const draftSnapshots = [];
+  const captureDrafts = async step => {
+    draftSnapshots.push({ step, values: await page.evaluate(() => Object.fromEntries(Object.keys(localStorage).filter(key => key.includes('questions-materials-draft')).map(key => [key, JSON.parse(localStorage.getItem(key))]))) });
+    fs.writeFileSync(info.outputPath('taxonomy-drafts.json'), JSON.stringify(draftSnapshots, null, 2));
+  };
+  await createQuestion(page, '分类草稿验证');
+  await page.getByRole('button', { name: '编辑题目', exact: true }).click();
+  await page.getByRole('button', { name: '题型、标签与笔记', exact: true }).click();
+  await page.getByRole('button', { name: '新建题型', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '新建题型' });
+  await dialog.getByLabel('分类名称').fill('旧计算题');
+  await dialog.getByRole('button', { name: '创建并选用' }).click();
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '题库选项' }).click();
+  await page.getByRole('menuitem', { name: '管理题型与标签' }).click();
+  await page.locator('.q-taxonomy').getByLabel('题型名称', { exact: true }).fill('新计算题');
+  await page.getByRole('button', { name: '保存分类', exact: true }).click();
+  await expect(page.getByRole('button', { name: '保存分类', exact: true })).toBeEnabled();
+  await expect(page.locator('.q-question-meta')).toContainText('新计算题');
+  await page.screenshot({ path: info.outputPath('taxonomy-saved.png') });
+  await expect(page.locator('.q-draft-notice')).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.q-question-meta')).toContainText('新计算题');
+  await expect(page.locator('.q-draft-notice')).toHaveCount(0);
+  await page.getByRole('button', { name: '编辑题目', exact: true }).click();
+  const notes = page.getByRole('button', { name: '题型、标签与笔记', exact: true });
+  if (await notes.getAttribute('aria-expanded') !== 'true') await notes.click();
+  await expect(notes).toHaveAttribute('aria-expanded', 'true');
+  await page.getByLabel('长期笔记').click();
+  await page.getByLabel('长期笔记').fill('分类维护前的真实未保存笔记');
+  await expect(page.getByLabel('长期笔记')).toHaveValue('分类维护前的真实未保存笔记');
+  await page.getByRole('button', { name: '返回题目', exact: true }).click();
+  await captureDrafts('真实草稿退出编辑');
+  await page.getByRole('button', { name: '题库选项' }).focus();
+  await page.keyboard.press('Enter');
+  await page.getByRole('menuitem', { name: '管理题型与标签' }).click();
+  await page.locator('.q-taxonomy').getByRole('button', { name: '删除题型“新计算题”', exact: true }).click();
+  await page.getByRole('dialog', { name: '删除题型', exact: true }).getByRole('button', { name: '删除题型', exact: true }).click();
+  await page.getByRole('button', { name: '保存分类', exact: true }).click();
+  await expect(page.locator('.q-question-meta')).not.toContainText('新计算题');
+  await expect(page.getByRole('button', { name: '保存分类', exact: true })).toBeEnabled();
+  await captureDrafts('分类保存完成');
+  await page.reload();
+  await page.getByRole('button', { name: '继续编辑', exact: true }).click();
+  await expect(page.getByLabel('长期笔记')).toHaveValue('分类维护前的真实未保存笔记');
+  await expect(page.getByLabel('题型', { exact: true })).toHaveValue('');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  await page.reload();
+  const [saved] = await records();
+  expect(saved.note).toBe('分类维护前的真实未保存笔记');
+  expect(saved.typeId).toBeNull();
+  fs.writeFileSync(info.outputPath('taxonomy-record.json'), JSON.stringify(saved, null, 2));
+});
+
+test('列表加载后恢复刷新前的真实滚动和选中题目', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1440, height: 680 });
+  for (let n = 1; n <= 7; n++) await createQuestion(page, `滚动练习 ${n}`);
+  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
+  const list = page.locator('.q-list');
+  await list.hover();
+  await page.mouse.wheel(0, 1200);
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  await page.locator('.q-list-entry button').last().click();
+  const before = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight }));
+  await page.screenshot({ path: info.outputPath('scroll-before.png') });
+  await page.reload();
+  await expect(page.locator('.q-list-entry')).toHaveCount(7);
+  await expect(page.getByRole('heading', { name: '滚动练习 1', exact: true })).toBeVisible();
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(before.top);
+  const after = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight }));
+  fs.writeFileSync(info.outputPath('scroll-readback.json'), JSON.stringify({ before, after }, null, 2));
+  await page.screenshot({ path: info.outputPath('scroll-after.png') });
+});
+
+test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1440, height: 680 });
+  for (let n = 1; n <= 9; n++) {
+    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await page.getByLabel('题目标题').fill('带图滚动 ' + n);
+    await page.getByLabel('题干段落 1', { exact: true }).fill('图形练习 ' + n);
+    const chooser = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: '插入图片', exact: true }).click();
+    await (await chooser).setFiles({ name: 'figure-' + n + '.png', mimeType: 'image/png',
+      buffer: await sharp({ create: { width: 600, height: 600, channels: 3, background: { r: 40 + n * 15, g: 90, b: 140 } } }).png().toBuffer() });
+    await expect(page.locator('.q-edit-fields img')).toBeVisible();
+    await page.getByRole('button', { name: '保存题目', exact: true }).click();
+    await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  }
+  const list = page.locator('.q-list');
+  await expect(list.locator('img')).toHaveCount(9);
+  await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+  await list.hover();
+  await page.mouse.wheel(0, 5000);
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  await page.locator('.q-list-entry button').last().click();
+  const before = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  await page.screenshot({ path: info.outputPath('image-scroll-before.png') });
+  const saved = await records();
+  let held = [];
+  await page.route('**/api/workbench/files/*/content', async route => {
+    await new Promise(resolve => { held.push({ release: resolve }); });
+    await route.continue();
+  });
+  try {
+    await page.reload();
+    await expect(page.locator('.q-list-entry')).toHaveCount(9);
+    await expect.poll(() => held.length).toBeGreaterThanOrEqual(10);
+    const pending = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    held.slice(0, 4).forEach(request => request.release());
+    await expect.poll(() => list.locator('img').count()).toBeGreaterThan(0);
+    expect(await list.locator('img').count()).toBeLessThan(9);
+    const partial = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    held.forEach(request => request.release());
+    await expect(list.locator('img')).toHaveCount(9);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(before.top);
+    await expect(page.getByRole('heading', { name: '带图滚动 1', exact: true })).toBeVisible();
+    const after = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    expect(await records()).toEqual(saved);
+    await page.screenshot({ path: info.outputPath('image-scroll-after.png') });
+
+    held = [];
+    await page.reload();
+    await expect(page.locator('.q-list-entry')).toHaveCount(9);
+    await expect.poll(() => held.length).toBeGreaterThanOrEqual(10);
+    await list.hover();
+    await page.mouse.wheel(0, -5000);
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(0);
+    held.forEach(request => request.release());
+    await expect(list.locator('img')).toHaveCount(9);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const userScrolled = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    expect(userScrolled.top).toBe(0);
+    await page.unroute('**/api/workbench/files/*/content');
+    await page.reload();
+    await expect(list.locator('img')).toHaveCount(9);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
+    await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(0);
+    await expect(page.getByRole('heading', { name: '带图滚动 1', exact: true })).toBeVisible();
+    const refreshed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    fs.writeFileSync(info.outputPath('image-scroll-readback.json'), JSON.stringify({ before, pending, partial, after, userScrolled, refreshed }, null, 2));
+    await page.screenshot({ path: info.outputPath('image-scroll-user-position.png') });
+  } finally {
+    held.forEach(request => request.release());
+  }
+});
+
+for (const structure of ['表格', '列表']) test('嵌套' + structure + '图分批读取后保留原滚动', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1440, height: 680 });
+  for (let n = 1; n <= 9; n++) {
+    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await page.getByLabel('题目标题').fill('嵌套' + structure + ' ' + n);
+    await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
+    await page.getByRole('menuitem', { name: structure === '表格' ? '添加表格' : '添加选项或列表', exact: true }).click();
+    const chooser = page.waitForEvent('filechooser');
+    await page.locator(structure === '表格' ? '.q-edit-fields .material-table-scroll td' : '.q-edit-fields .material-list-item').first().getByRole('button', { name: '图片', exact: true }).click();
+    await (await chooser).setFiles({ name: 'nested-' + n + '.png', mimeType: 'image/png', buffer: await sharp({ create: { width: 600, height: 600, channels: 3, background: '#345678' } }).png().toBuffer() });
+    await expect(page.locator('.q-edit-fields img')).toBeVisible();
+    await page.getByRole('button', { name: '保存题目', exact: true }).click();
+    await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  }
+  const list = page.locator('.q-list');
+  await expect(list.locator('img')).toHaveCount(18);
+  await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  await list.hover(); await page.mouse.wheel(0, 300);
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  const before = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  let held = [];
+  await page.route('**/api/workbench/files/*/content', async route => {
+    await new Promise(resolve => held.push(resolve));
+    await route.continue();
+  });
+  try {
+    await page.reload();
+    await expect(page.locator('.q-list-entry')).toHaveCount(9);
+    await expect.poll(() => held.length).toBeGreaterThanOrEqual(19);
+    held.slice(9, 18).forEach(release => release());
+    await expect(list.locator('img')).toHaveCount(9);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const partial = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    held.forEach(release => release());
+    await expect(list.locator('img')).toHaveCount(18);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const after = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    fs.writeFileSync(info.outputPath('nested-readback.json'), JSON.stringify({ structure, before, partial, after, held: held.length }, null, 2));
+    await expect(page.getByRole('heading', { name: '嵌套' + structure + ' 9', exact: true })).toBeVisible();
+    expect((await records()).every(question => question.body.blocks[0].type === (structure === '表格' ? 'table' : 'list'))).toBe(true);
+    await page.screenshot({ path: info.outputPath('nested-after.png') });
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(before.top);
+    await page.unroute('**/api/workbench/files/*/content');
+    await page.getByRole('button', { name: '复制改编', exact: true }).click();
+    await page.reload();
+    await expect(page.getByRole('region', { name: '原题对照' })).toBeVisible();
+    await expect(list.locator('img[data-image-state=ready]')).toHaveCount(18);
+    await page.getByRole('button', { name: '结束对照', exact: true }).click();
+    await expect(finder(page)).toBeVisible();
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(before.top);
+  } finally { held.forEach(release => release()); }
+});
+
+test('图片失败终态后展开筛选不重新拉回旧位置', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1440, height: 680 });
+  for (let n = 1; n <= 9; n++) {
+    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await page.getByLabel('题目标题').fill('失败终态 ' + n);
+    await page.getByLabel('题干段落 1', { exact: true }).fill('题干 ' + n);
+    const chooser = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: '插入图片', exact: true }).click();
+    await (await chooser).setFiles({ name: 'failure-' + n + '.png', mimeType: 'image/png', buffer: await sharp({ create: { width: 600, height: 600, channels: 3, background: '#789abc' } }).png().toBuffer() });
+    await expect(page.locator('.q-edit-fields img')).toBeVisible();
+    await page.getByRole('button', { name: '保存题目', exact: true }).click();
+    await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  }
+  const list = page.locator('.q-list');
+  await expect(list.locator('img')).toHaveCount(9);
+  await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  await list.hover(); await page.mouse.wheel(0, 5000);
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  const before = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  const failureId = (await records()).find(question => question.title === '失败终态 1').body.blocks.find(block => block.type === 'image').fileId;
+  await page.route('**/api/workbench/files/*/content', route => {
+    if (route.request().url().endsWith('/' + failureId + '/content')) return route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/unavailable', title: 'Image unavailable', status: 503 }) });
+    return route.continue();
+  });
+  await page.reload();
+  await expect(list.locator('[data-image-state=failed]')).toBeVisible();
+  await expect(list.locator('img')).toHaveCount(8);
+  await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  await expect(list.locator('[data-image-state=loading]')).toHaveCount(0);
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  const failed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  await page.screenshot({ path: info.outputPath('failed-before-filter.png') });
+  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+  const expanded = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  fs.writeFileSync(info.outputPath('failed-readback.json'), JSON.stringify({ before, failed, expanded }, null, 2));
+  await page.screenshot({ path: info.outputPath('failed-after-filter.png') });
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(failed.top);
+  await page.unroute('**/api/workbench/files/*/content');
+  await page.reload();
+  await expect(list.locator('img[data-image-state=ready]')).toHaveCount(9);
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(failed.top);
+  const refreshed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  fs.writeFileSync(info.outputPath('failed-readback.json'), JSON.stringify({ before, failed, expanded, refreshed }, null, 2));
+});
+
+test('普通图片阅读成功、HTTP失败与无效图片都明确结束加载', async ({ page }, info) => {
+  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await page.getByLabel('题目标题').fill('共享图片终态验证');
+  await page.getByLabel('题干段落 1', { exact: true }).fill('失败时仍保留的题干内容');
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: '插入图片', exact: true }).click();
+  await (await chooser).setFiles({ name: 'valid.png', mimeType: 'image/png', buffer: await sharp({ create: { width: 600, height: 600, channels: 3, background: '#abc123' } }).png().toBuffer() });
+  await expect(page.locator('.q-edit-fields img')).toBeVisible();
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  const reading = page.locator('.q-reading-body');
+  await expect(reading.locator('img[data-image-state=ready]')).toBeVisible();
+  const saved = await records();
+  await page.route('**/api/workbench/files/*/content', route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/unavailable', title: 'Image unavailable', status: 503 }) }));
+  await page.reload();
+  await expect(reading.locator('[data-image-state=failed]')).toBeVisible();
+  await expect(reading.locator('[data-image-state=loading]')).toHaveCount(0);
+  await expect(reading).toContainText('失败时仍保留的题干内容');
+  await page.unroute('**/api/workbench/files/*/content');
+  await page.route('**/api/workbench/files/*/content', route => route.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('invalid PNG bytes') }));
+  await page.reload();
+  await expect(reading.locator('[data-image-state=failed]')).toBeVisible();
+  await expect(reading.locator('[data-image-state=loading]')).toHaveCount(0);
+  await expect(reading).toContainText('失败时仍保留的题干内容');
+  await page.screenshot({ path: info.outputPath('invalid-image-terminal.png') });
+  await page.unroute('**/api/workbench/files/*/content');
+  await page.reload();
+  await expect(reading.locator('img[data-image-state=ready]')).toBeVisible();
+  expect(await reading.locator('img').evaluate(image => image.naturalWidth)).toBe(600);
+  expect(await records()).toEqual(saved);
+  fs.writeFileSync(info.outputPath('shared-image-record.json'), JSON.stringify(saved, null, 2));
+  await page.screenshot({ path: info.outputPath('valid-image-restored.png') });
+});
+
+test('空收录现场刷新不提示恢复，真实收录输入和新题草稿继续恢复', async ({ page }, info) => {
+  const notice = page.getByText('已恢复本设备的未保存输入，请检查后继续。', { exact: true });
+  await createQuestion(page, '空收录恢复验证');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '空收录恢复验证', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('empty-capture-restored.png') });
+  await expect(notice).toHaveCount(0);
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /粘贴文字/ }).click();
+  await page.reload();
+  const capture = page.getByRole('dialog', { name: '从资料收录题目' });
+  await expect(capture).toHaveCount(0);
+  await expect(notice).toHaveCount(0);
+  await page.evaluate(() => {
+    const sceneKey = Object.keys(localStorage).find(key => key.endsWith(':questions-materials-scene') && !key.includes(':branch:') && !key.includes(':head:'));
+    const key = sceneKey.replace(/questions-materials-scene$/, 'questions-collection');
+    localStorage.setItem(key, JSON.stringify({ capture: '文字', text: '', title: '', origin: '', pages: '', fileNames: [] }));
+    for (const pointer of Object.keys(sessionStorage).filter(key => key.endsWith(':questions-collection'))) sessionStorage.removeItem(pointer);
+  });
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '空收录恢复验证', exact: true })).toBeVisible();
+  await expect(capture).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '空收录恢复验证', exact: true })).toBeVisible();
+  await expect(notice).toHaveCount(0);
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /粘贴文字/ }).click();
+  await page.getByLabel('原始文字').fill('准备收录的真实输入：求 $3+4$。');
+  await page.reload();
+  await expect(capture).toBeVisible();
+  await expect(page.getByLabel('原始文字')).toHaveValue('准备收录的真实输入：求 $3+4$。');
+  await expect(notice).toBeVisible();
+  await expect.poll(() => capture.evaluate(node => Number(getComputedStyle(node.closest('.q-modal-backdrop')).opacity))).toBe(1);
+  await page.screenshot({ path: info.outputPath('real-capture-restored.png') });
+  await capture.getByRole('button', { name: '关闭', exact: true }).click();
+  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await page.getByLabel('题目标题').fill('新题草稿仍恢复');
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('真实新题草稿 $4+5$。');
+  await page.reload();
+  await expect(page.getByLabel('题目标题')).toHaveValue('新题草稿仍恢复');
+  await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('真实新题草稿 $4+5$。');
+  await expect(notice).toBeVisible();
+});
+
 test('空稿退出、输入即录题、保存后阅读与刷新，已有题目的草稿独立保留', async ({ page }) => {
   await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toBeFocused();
@@ -71,6 +493,7 @@ test('空稿退出、输入即录题、保存后阅读与刷新，已有题目�
   await page.getByRole('button', { name: '添加答案与解析', exact: true }).click();
   await page.getByRole('textbox', { name: '答案与解析段落 1', exact: true }).fill('$x=\\pm4$');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
   await page.reload();
   await page.getByRole('button', { name: '答案与解析', exact: true }).click();
   await expect(page.locator('.q-answer .katex')).toBeVisible();
@@ -599,6 +1022,7 @@ test('功能：无答案草稿拆分再合并，保存和刷新保留题干与�
   await page.getByRole('button', { name: '合并', exact: true }).click();
   await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+  await expect(page.locator('.q-message')).toContainText('校对已保存');
   await page.reload();
   await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('先观察');
   await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('再观察');
@@ -677,6 +1101,7 @@ test('导入：PDF 明示续题跨页合并，保留两页来源和后续独立�
   await page.keyboard.press('Escape');
   await page.getByLabel('片段处理', { exact: true }).selectOption('ignored');
   await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+  await expect(page.locator('.q-message')).toContainText('校对已保存');
   await page.reload();
   await page.getByText('未分配片段 · 1', { exact: true }).click();
   await expect(page.getByLabel('片段处理', { exact: true })).toHaveValue('ignored');
@@ -788,3 +1213,212 @@ test('导入：双栏 PDF 左栏题目和右栏答案不能整页误判为答案
   }
   await expect(page.getByRole('button', { name: '3 待检查', exact: true })).toHaveCount(0);
 });
+
+test('核心体验：删除和移动段落可局部撤销，保留之后输入', async ({ page }) => {
+  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await page.getByLabel('题目标题').fill('局部恢复');
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('第一段保留');
+  await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
+  await page.getByRole('menuitem', { name: '添加段落', exact: true }).click();
+  await page.getByRole('textbox', { name: '题干段落 2', exact: true }).fill('误删的第二段');
+  await page.getByRole('button', { name: '删除题干第 2 段', exact: true }).click();
+  await page.getByLabel('题目标题').fill('删除后补写的标题');
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('删除后补写的第一段');
+  await page.getByRole('button', { name: '撤销题干结构操作', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '题干段落 2', exact: true })).toHaveValue('误删的第二段');
+  await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('删除后补写的第一段');
+  await expect(page.getByLabel('题目标题')).toHaveValue('删除后补写的标题');
+  await page.getByRole('button', { name: '上移题干第 2 段', exact: true }).click();
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('移动后补写的第二段');
+  await page.getByRole('button', { name: '撤销题干结构操作', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '题干段落 2', exact: true })).toHaveValue('移动后补写的第二段');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await page.reload();
+  expect((await records())[0].body.blocks.map(b => b.runs[0].text)).toEqual(['删除后补写的第一段', '移动后补写的第二段']);
+});
+
+test('核心体验：全部处理材料折叠访问，待处理材料继续收录', async ({ page }) => {
+  await collectText(page, '1. 求三加五的和。');
+  await page.getByLabel('题干是否完整，是否混入了其他题目？').selectOption('acknowledged');
+  await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await expect(page.locator('.q-imports').filter({ hasText: '继续收录' })).toHaveCount(0);
+  const completed = page.locator('.q-imports').filter({ hasText: '已完成材料' });
+  await expect(completed).not.toHaveAttribute('open');
+  await completed.locator('summary').click();
+  await completed.getByRole('button').click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await page.locator('.q-list-entry button').first().click();
+  await page.getByRole('button', { name: '对照原稿', exact: true }).click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await collectText(page, '1. 尚未确认的新题。');
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await expect(page.locator('.q-imports').filter({ hasText: '继续收录' })).toBeVisible();
+  await page.reload();
+  await expect(page.locator('.q-imports').filter({ hasText: '继续收录' }).getByRole('button')).toHaveCount(1);
+  await page.screenshot({ path: test.info().outputPath('materials-completed-folded-light.png') });
+});
+
+test('核心体验：表格内部删除可撤销，保住另一格后续文字', async ({ page }) => {
+  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
+  await page.getByRole('menuitem', { name: '添加表格', exact: true }).click();
+  const cells = page.locator('.material-table-scroll td');
+  await cells.nth(0).getByRole('button', { name: '段落', exact: true }).click();
+  await cells.nth(0).getByRole('textbox').fill('保留格');
+  await cells.nth(1).getByRole('button', { name: '段落', exact: true }).click();
+  await cells.nth(1).getByRole('textbox').fill('误删格');
+  await page.getByRole('button', { name: '删除末列', exact: true }).click();
+  await cells.nth(0).getByRole('textbox').fill('后来补写的格');
+  await page.getByRole('button', { name: '撤销题干结构操作', exact: true }).click();
+  await expect(cells.nth(0).getByRole('textbox')).toHaveValue('后来补写的格');
+  await expect(cells.nth(1).getByRole('textbox')).toHaveValue('误删格');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await page.reload();
+  expect((await records())[0].body.blocks.find(b => b.type === 'table').rows[0].map(c => c.blocks[0].runs[0].text)).toEqual(['后来补写的格', '误删格']);
+});
+
+test('核心体验：未分配片段选择答案或笔记，保存刷新不重复归入', async ({ page }) => {
+  await collectText(page, '1. 计算 $1+1$。\n1. 计算 $2+2$。\n参考答案\n1. $2$。\n1. $4$。');
+  await page.getByText('未分配片段 · 2', { exact: true }).click();
+  await page.getByLabel('片段归入位置', { exact: true }).nth(0).selectOption('solution');
+  await page.getByRole('button', { name: '归入答案与解析', exact: true }).nth(0).click();
+  await page.getByLabel('片段归入位置', { exact: true }).nth(1).selectOption('note');
+  await page.getByRole('button', { name: '归入笔记', exact: true }).click();
+  await expect(page.getByRole('button', { name: '归入笔记', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: '修改题目', exact: true }).click();
+  await page.getByRole('button', { name: '教学笔记', exact: true }).click();
+  await page.getByRole('button', { name: '移除笔记片段 1', exact: true }).click();
+  await expect(page.getByLabel('片段处理', { exact: true }).nth(1)).toHaveValue('unassigned');
+  await expect(page.getByRole('button', { name: '归入笔记', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '归入笔记', exact: true }).click();
+  await page.getByRole('button', { name: '完成修改', exact: true }).click();
+  await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+  await expect(page.getByRole('button', { name: '确认上次请求', exact: true })).toHaveCount(0);
+  await expect(page.locator('.q-message')).toContainText('校对已保存');
+  await page.reload();
+  await page.getByText('未分配片段 · 2', { exact: true }).click();
+  await expect(page.getByLabel('片段处理', { exact: true }).nth(0)).toBeDisabled();
+  await expect(page.getByLabel('片段处理', { exact: true }).nth(1)).toBeDisabled();
+  const notes = page.getByRole('button', { name: '教学笔记', exact: true });
+  if (await notes.getAttribute('aria-expanded') !== 'true') await notes.click();
+  await expect(page.locator('.q-note-fragments .katex')).toBeVisible();
+  for (const control of await page.locator('.q-review-checks select').all()) await control.selectOption('corrected');
+  await page.getByRole('button', { name: '修改题目', exact: true }).click();
+  await page.getByLabel('答案状态', { exact: true }).selectOption('present');
+  await page.getByRole('button', { name: '完成修改', exact: true }).click();
+  await page.getByRole('button', { name: '确认这道题', exact: true }).click();
+  await expect(page.getByText('1 题已入库')).toBeVisible();
+  await page.getByRole('button', { name: '查看题目', exact: true }).click();
+  await page.getByRole('button', { name: '教学笔记', exact: true }).click();
+  await expect(page.locator('.q-reader-note .katex')).toBeVisible();
+  await page.reload();
+  const [saved] = await records();
+  for (const [theme, width] of [['light', 1440], ['dark', 600]]) {
+    await page.getByRole('link', { name: '账户：题库老师' }).click();
+    await page.getByRole('button', { name: theme === 'light' ? '浅色' : '深色', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-workbench-theme', theme);
+    await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
+    await page.setViewportSize({ width, height: 900 });
+    const noteToggle = page.getByRole('button', { name: '教学笔记', exact: true });
+    if (await noteToggle.getAttribute('aria-expanded') !== 'true') await noteToggle.click();
+    await expect.poll(() => page.locator('.q-reader-note .wb-module-disclosure-grid').evaluate(element => element.getAnimations().filter(animation => animation.playState === 'running').length)).toBe(0);
+    await page.locator('.q-reader-note .katex').scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+    await page.screenshot({ path: test.info().outputPath(`fragment-notes-${theme}-${width}.png`) });
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  expect(saved.note).toBe('');
+  expect(saved.noteFragments).toHaveLength(1);
+  expect(saved.noteFragments[0].locations.length).toBeGreaterThan(0);
+  expect(saved.noteFragments[0].document.blocks.flatMap(b => b.runs ?? []).some(r => r.type === 'math')).toBe(true);
+  expect(saved.solution.blocks.flatMap(b => b.runs ?? []).some(r => r.type === 'math')).toBe(true);
+  await page.getByRole('button', { name: '编辑题目', exact: true }).click();
+  await page.getByRole('button', { name: '题型、标签与笔记', exact: true }).click();
+  await page.getByLabel('长期笔记', { exact: true }).fill('手写讲解提醒');
+  await page.getByRole('textbox', { name: '笔记片段 1段落 1', exact: true }).fill('$4$ 是另一份答案。');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  await page.reload();
+  expect((await records())[0].note).toBe('手写讲解提醒');
+  expect((await records())[0].noteFragments[0].document.blocks[0].runs[1].text).toContain('另一份答案');
+  await page.getByRole('button', { name: '复制改编', exact: true }).click();
+  const copyNotes = page.getByRole('button', { name: '题型、标签与笔记', exact: true });
+  if (await copyNotes.getAttribute('aria-expanded') !== 'true') await copyNotes.click();
+  await expect(page.getByLabel('长期笔记', { exact: true })).toHaveValue('');
+  await expect(page.getByRole('textbox', { name: '笔记片段 1段落 1', exact: true })).toHaveCount(0);
+  await page.getByLabel('题目标题').fill('片段笔记独立的改编');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '片段笔记独立的改编', exact: true })).toBeVisible();
+  expect((await records()).find(item => item.id !== saved.id).noteFragments ?? []).toEqual([]);
+});
+
+test('核心体验：局部撤销入口深浅色和窄屏可达', async ({ page }) => {
+  for (const theme of ['light', 'dark']) {
+    await page.getByRole('link', { name: '账户：题库老师' }).click();
+    await page.getByRole('button', { name: theme === 'light' ? '浅色' : '深色', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-workbench-theme', theme);
+    await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
+    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('已知 $x^2=9$，求实数 $x$。');
+    await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
+    await page.getByRole('menuitem', { name: '添加段落', exact: true }).click();
+    await page.getByRole('textbox', { name: '题干段落 2', exact: true }).fill('请说明解题步骤。');
+    await page.getByRole('button', { name: '删除题干第 2 段', exact: true }).click();
+    for (const width of [1440, 600]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(page.getByRole('button', { name: '撤销题干结构操作', exact: true })).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+      await page.screenshot({ path: test.info().outputPath(`structure-undo-${theme}-${width}.png`) });
+    }
+    await page.getByRole('button', { name: '撤销题干结构操作', exact: true }).click();
+    await expect(page.getByRole('textbox', { name: '题干段落 2', exact: true })).toHaveValue('请说明解题步骤。');
+    await page.getByRole('button', { name: '保存题目', exact: true }).click();
+    await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+    await page.setViewportSize({ width: 1440, height: 900 });
+  }
+});
+
+test('核心体验：没有待检查题但仍有未分配答案的材料继续收录', async ({ page }) => {
+  await collectText(page, '参考答案\n1. $8$。');
+  await expect(page.getByText('未分配片段 · 1', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  const pending = page.locator('.q-imports').filter({ hasText: '继续收录' });
+  await expect(pending.getByRole('button')).toHaveCount(1);
+  await expect(pending).toContainText('0 待校对');
+  await expect(page.locator('.q-imports').filter({ hasText: '已完成材料' })).toHaveCount(0);
+  await page.reload();
+  await expect(pending.getByRole('button')).toHaveCount(1);
+});
+
+for (const label of ['题干', '答案与解析']) {
+  test(`审查回归：空${label}首次输入不成为结构撤销，显式添加段落仍可撤销`, async ({ page }) => {
+    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    if (label === '答案与解析') {
+      await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('用于保存的题干。');
+      await page.getByRole('button', { name: '添加答案与解析', exact: true }).click();
+    }
+    const editor = page.locator('.q-document-field').filter({ has: page.getByRole('heading', { name: label, exact: true }) });
+    const undo = page.getByRole('button', { name: `撤销${label}结构操作`, exact: true });
+    const first = page.getByRole('textbox', { name: `${label}段落 1`, exact: true });
+    await first.pressSequentially('首次输入保留');
+    await expect(first).toHaveValue('首次输入保留');
+    await expect(undo).toHaveCount(0);
+    await editor.getByRole('button', { name: '插入更多内容', exact: true }).click();
+    await page.getByRole('menuitem', { name: '添加段落', exact: true }).click();
+    await page.getByRole('textbox', { name: `${label}段落 2`, exact: true }).fill('显式添加的第二段');
+    await first.fill('添加后补写的第一段');
+    await undo.click();
+    await expect(first).toHaveValue('添加后补写的第一段');
+    await expect(page.getByRole('textbox', { name: `${label}段落 2`, exact: true })).toHaveCount(0);
+    await expect(undo).toHaveCount(0);
+    await page.getByRole('button', { name: '保存题目', exact: true }).click();
+    await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+    await page.reload();
+    const [saved] = await records();
+    expect(saved[label === '题干' ? 'body' : 'solution'].blocks[0].runs[0].text).toBe('添加后补写的第一段');
+  });
+}

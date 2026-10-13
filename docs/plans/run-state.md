@@ -18,6 +18,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 产品分区 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
+| 题库 | `TeacherWorkspace-questions` | `fix/questions-core-usability` | 核心体验修复已完成，两轮作者定点自验、独立验收及双轴审查证据保存在本工作树 `test-results/questions-core/receipt.json` 和 `test-results/questions-next/receipt.json`。用户已授权集成，正在对齐最新 trunk、独立 PR 审查及 CI；完成体验核验后保全证据并清理现场。旧空收录记录首次读取可能提示一次恢复，清除后不再出现；外部 E 样本、真实 OCR / 邮件及目标设备专项未新增验证 |
 | 账户与身份 | 已清理 | 已清理 | 身份能力 [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37) 与全屏入口 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39) 已集成，独立审查、CI 与 preview 入口核验通过；临时实例已停止，有效证据已保全，本轮停止开发 |
 | 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；当前暂停，待用户确定后续目标 |
 | 数学工坊 | 已清理 | 已清理 | 统一制作与网页 AI 已集成并验证；体验使用 preview，商店分发仍待准备 |

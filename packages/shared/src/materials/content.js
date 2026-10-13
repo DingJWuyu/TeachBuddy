@@ -15,6 +15,9 @@ export function supportedDocument(value) {
 // Enumerate only owned Documents, including immutable question snapshots.
 export function questionDocuments(question) {
   const documents = [['/body', question.body], ['/solution', question.solution]];
+  for (const [index, fragment] of (question.noteFragments ?? []).entries()) {
+    documents.push([`/noteFragments/${index}/document`, fragment.document]);
+  }
   if (question.source?.kind === 'copy') {
     documents.push(
       ['/source/snapshot/body', question.source.snapshot.body],

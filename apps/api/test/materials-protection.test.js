@@ -26,11 +26,16 @@ test('stored future Documents reject deletion and replacement atomically through
   const qbase = '/api/modules/questions/v2/items';
   const source = await call(qbase, 'POST', questionInput);
   assert.equal(source.status, 201);
-  for (const location of ['body', 'solution', 'source']) {
+  for (const location of ['body', 'solution', 'source', 'noteFragments']) {
     const created = await call(qbase, 'POST', questionInput);
     const id = created.body.id;
     const value = location === 'source' ? { kind: 'copy', questionId: source.body.id, questionVersion: 1, snapshot: { title: '原题', body: future, solution: doc(), answerStatus: 'absent' } } : future;
-    db.prepare(`UPDATE question_items SET ${location}=? WHERE id=?`).run(JSON.stringify(value), id);
+    if (location === 'noteFragments') {
+      const row = db.prepare('SELECT value FROM questions_materials_meta WHERE id=?').get(id);
+      const meta = { ...JSON.parse(row.value), noteFragments: [{ id: randomUUID(), importId: randomUUID(), document: future, locations: [{ kind: 'text', start: 0, end: 1 }] }] };
+      db.prepare('UPDATE questions_materials_meta SET value=? WHERE id=?').run(JSON.stringify(meta), id);
+    } else db.prepare(`UPDATE question_items SET ${location}=? WHERE id=?`).run(JSON.stringify(value), id);
+    const metadata = db.prepare('SELECT value FROM questions_materials_meta WHERE id=?').get(id);
     const before = db.prepare('SELECT * FROM question_items WHERE id=?').get(id);
     assert.equal((await call(qbase + '/' + id)).status, 200);
     const { source: omitted, ...fields } = questionInput;
@@ -43,6 +48,7 @@ test('stored future Documents reject deletion and replacement atomically through
       assert.equal(result.status, 422, JSON.stringify({ location, result }));
       assert.equal(result.body.reason, 'unsupported-content-version');
       assert.deepEqual(db.prepare('SELECT * FROM question_items WHERE id=?').get(id), before);
+      assert.deepEqual(db.prepare('SELECT value FROM questions_materials_meta WHERE id=?').get(id), metadata);
     }
     assert.equal((await call(qbase + '/' + id, 'PUT', { ...fields, baseVersion: 9 })).status, 409);
     assert.equal((await call(qbase + '/' + id, 'PUT', { ...fields, baseVersion: 1 }, randomUUID(), 'integration-b')).status, 404);

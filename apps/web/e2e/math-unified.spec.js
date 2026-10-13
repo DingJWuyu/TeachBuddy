@@ -562,12 +562,15 @@ test('按需展开：参数、连接与算式连续开合，快速反向和末�
   async function sample(root, trigger, name, opening) {
     await root.evaluate(el => {
       window.mathFoldFrames = [];
-      const frame = time => {
-        const grid = el.querySelector('.wb-module-disclosure-grid');
-        window.mathFoldFrames.push({ time, height: el.getBoundingClientRect().height, opacity: Number(grid ? getComputedStyle(grid).opacity : getComputedStyle(el, el.classList.contains('wb-module-presence') ? null : '::details-content').opacity) });
-        if (window.mathFoldFrames.length < 26) requestAnimationFrame(frame);
-      };
-      requestAnimationFrame(frame);
+      // Arm first, then sample from the real click after Playwright's actionability waits.
+      el.addEventListener('click', () => {
+        const frame = time => {
+          const grid = el.querySelector('.wb-module-disclosure-grid');
+          window.mathFoldFrames.push({ time, height: el.getBoundingClientRect().height, opacity: Number(grid ? getComputedStyle(grid).opacity : getComputedStyle(el, el.classList.contains('wb-module-presence') ? null : '::details-content').opacity) });
+          if (window.mathFoldFrames.length < 26) requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }, { once: true, capture: true });
     });
     await trigger.click();
     await expect.poll(() => page.evaluate(() => window.mathFoldFrames.length)).toBe(26);
@@ -593,8 +596,10 @@ test('按需展开：参数、连接与算式连续开合，快速反向和末�
   const box = await conversion.boundingBox();
   await conversion.locator('..').evaluate(el => {
     window.mathReverseFrames = [];
-    const frame = time => { const grid = el.querySelector('.wb-module-disclosure-grid'); window.mathReverseFrames.push({ time, height: el.getBoundingClientRect().height, opacity: Number(getComputedStyle(grid).opacity) }); if (window.mathReverseFrames.length < 30) requestAnimationFrame(frame); };
-    requestAnimationFrame(frame);
+    el.addEventListener('click', () => {
+      const frame = time => { const grid = el.querySelector('.wb-module-disclosure-grid'); window.mathReverseFrames.push({ time, height: el.getBoundingClientRect().height, opacity: Number(getComputedStyle(grid).opacity) }); if (window.mathReverseFrames.length < 30) requestAnimationFrame(frame); };
+      requestAnimationFrame(frame);
+    }, { once: true, capture: true });
   });
   await page.mouse.click(box.x + 20, box.y + box.height / 2);
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
@@ -612,14 +617,16 @@ test('按需展开：参数、连接与算式连续开合，快速反向和末�
   await page.getByRole('tab', { name: 'AI 助理', exact: true }).click();
   const provider = page.locator('.math-ai-provider');
   await expect(page.locator('.math-ai-connection').first()).toHaveClass(/is-missing/);
-  await page.evaluate(() => {
+  await provider.evaluate(button => {
     window.mathPopoverFrames = [];
-    const frame = time => {
-      const el = document.querySelector('.math-ai-setup-popover');
-      window.mathPopoverFrames.push({ time, opacity: el ? Number(getComputedStyle(el).opacity) : 0, visible: Boolean(el && el.getBoundingClientRect().height > 0) });
-      if (window.mathPopoverFrames.length < 26) requestAnimationFrame(frame);
-    };
-    requestAnimationFrame(frame);
+    button.addEventListener('click', () => {
+      const frame = time => {
+        const el = document.querySelector('.math-ai-setup-popover');
+        window.mathPopoverFrames.push({ time, opacity: el ? Number(getComputedStyle(el).opacity) : 0, visible: Boolean(el && el.getBoundingClientRect().height > 0) });
+        if (window.mathPopoverFrames.length < 26) requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    }, { once: true, capture: true });
   });
   await provider.click();
   const popover = page.locator('.math-ai-setup-popover');
@@ -638,10 +645,13 @@ test('按需展开：参数、连接与算式连续开合，快速反向和末�
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
   const expression = page.locator('.mw-expression-disclosure');
   const toggle = page.getByRole('button', { name: '输入算式', exact: true });
-  await page.evaluate(() => {
+  await toggle.evaluate(button => {
     window.mathExpressionFrames = [];
-    const frame = time => { const el = document.querySelector('.mw-expression-disclosure'); window.mathExpressionFrames.push({ time, height: el?.getBoundingClientRect().height ?? 0, opacity: el ? Number(getComputedStyle(el).opacity) : 0 }); if (window.mathExpressionFrames.length < 26) requestAnimationFrame(frame); };
-    requestAnimationFrame(frame);
+    // Start at the actual click so actionability waits cannot consume the animation samples.
+    button.addEventListener('click', () => {
+      const frame = time => { const el = document.querySelector('.mw-expression-disclosure'); window.mathExpressionFrames.push({ time, height: el?.getBoundingClientRect().height ?? 0, opacity: el ? Number(getComputedStyle(el).opacity) : 0 }); if (window.mathExpressionFrames.length < 26) requestAnimationFrame(frame); };
+      requestAnimationFrame(frame);
+    }, { once: true, capture: true });
   });
   await toggle.click();
   await expect(page.getByLabel('图形表达式', { exact: true })).toBeFocused();
@@ -652,10 +662,12 @@ test('按需展开：参数、连接与算式连续开合，快速反向和末�
   expect(frames.some(f => f.opacity > 0 && f.opacity < 1)).toBe(true);
   await sample(expression, page.getByRole('button', { name: '收起算式', exact: true }), '输入算式', false);
   await expect(expression).toHaveCount(0);
-  await page.evaluate(() => {
+  await toggle.evaluate(button => {
     window.mathExpressionReverse = [];
-    const frame = time => { const el = document.querySelector('.mw-expression-disclosure'); window.mathExpressionReverse.push({ time, height: el?.getBoundingClientRect().height ?? 0, opacity: el ? Number(getComputedStyle(el).opacity) : 0 }); if (window.mathExpressionReverse.length < 30) requestAnimationFrame(frame); };
-    requestAnimationFrame(frame);
+    button.addEventListener('click', () => {
+      const frame = time => { const el = document.querySelector('.mw-expression-disclosure'); window.mathExpressionReverse.push({ time, height: el?.getBoundingClientRect().height ?? 0, opacity: el ? Number(getComputedStyle(el).opacity) : 0 }); if (window.mathExpressionReverse.length < 30) requestAnimationFrame(frame); };
+      requestAnimationFrame(frame);
+    }, { once: true, capture: true });
   });
   const toggleBox = await toggle.boundingBox();
   for (let index = 0; index < 3; index += 1) {

@@ -34,7 +34,8 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
       .filter(
         (x) =>
           !q.q ||
-          [x.title, x.note ?? "", x.body ? documentText(x.body) : "",
+          [x.title, x.note ?? "", ...(x.noteFragments ?? []).map(f => documentText(f.document)),
+            x.body ? documentText(x.body) : "",
             (q.searchAnswers === true || q.searchAnswers === "true") && x.solution ? documentText(x.solution) : ""]
             .join("\n")
             .toLowerCase()
@@ -74,6 +75,32 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
   function validate(p, q, options) {
     validateTaxonomyIds(s.taxonomy(p), q);
     validateQuestionContent(content, p, q, options);
+  }
+  function checkNoteEdits(previous, next) {
+    const seen = new Set();
+    for (const fragment of next ?? []) {
+      const prior = (previous ?? []).find(f => f.id === fragment.id);
+      if (seen.has(fragment.id) || !prior || prior.importId !== fragment.importId ||
+          !isDeepStrictEqual(prior.locations, fragment.locations))
+        throw invalidInput("/noteFragments", "out-of-range");
+      seen.add(fragment.id);
+    }
+  }
+  function checkReviewNotes(p, m, drafts, fragments) {
+    const priorNotes = new Map(m.drafts.flatMap(d => (d.noteFragments ?? []).map(f => [f.id, f])));
+    const seen = new Set();
+    for (const draft of drafts) for (const note of draft.noteFragments ?? []) {
+      const original = m.fragments.find(f => f.id === note.id);
+      const adopted = fragments.find(f => f.id === note.id);
+      const prior = priorNotes.get(note.id);
+      if (seen.has(note.id) || note.importId !== m.id || !original ||
+          (!prior && original.disposition === "assigned") ||
+          adopted?.disposition !== "assigned" ||
+          !isDeepStrictEqual(note.locations, (prior ?? original).locations))
+        throw invalidInput("/drafts/noteFragments", "out-of-range");
+      seen.add(note.id);
+      locations(p, m, [note]);
+    }
   }
   function accept(p, m, units = null) {
     const job = jobs.enqueue(
@@ -153,6 +180,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
       s.check(q, input.baseVersion);
       assertWritable(q);
       validate(p, input);
+      checkNoteEdits(q.noteFragments, input.noteFragments);
       const { baseVersion, ...fields } = input;
       return s.writeQuestion(p, { ...s.bump(q), ...fields });
     },
@@ -269,11 +297,18 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
         .map(([fileId, paragraphs]) => ({fileId, paragraphs}))};
     },
     listImports: ({ principal: p, query = {} }) => ({
-      items: filtered(s.list("imports", p), query),
+      items: filtered(s.list("imports", p), query).map(m => ({
+        ...m, jobState: jobs.get(p, m.jobId).state,
+      })),
     }),
     saveImportReview({ principal: p, id, input }) {
       const m = s.get("imports", p, id);
       editable(p, m, input.baseVersion);
+      const drafts = input.drafts.map(d => {
+        const prior = m.drafts.find(x => x.id === d.id);
+        return d.noteFragments === undefined && prior?.noteFragments
+          ? { ...d, noteFragments: prior.noteFragments } : d;
+      });
       const seen = new Set();
       const otherDraftIds = new Set(
         s
@@ -281,7 +316,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
           .filter((x) => x.id !== id)
           .flatMap((x) => x.drafts.map((d) => d.id)),
       );
-      for (const d of input.drafts) {
+      for (const d of drafts) {
         if (seen.has(d.id) || otherDraftIds.has(d.id))
           throw invalidInput("/drafts", "out-of-range");
         seen.add(d.id);
@@ -311,9 +346,10 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
         locations(p, m, [f]);
         if (f.document) content.validate(p, f.document);
       }
+      checkReviewNotes(p, m, drafts, input.fragments);
       return s.save("imports", p, {
         ...s.bump(m),
-        drafts: input.drafts,
+        drafts,
         fragments: input.fragments,
       });
     },

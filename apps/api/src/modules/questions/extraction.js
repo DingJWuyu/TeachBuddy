@@ -13,7 +13,7 @@ import {
 } from "./extraction-fragments.js";
 const issue = (code, unitId, detail) => ({ code, unitId, field: null, detail });
 export const questionStart = /^\s*(Q\s*[0-9０-９]+(?=\s*$)|(?:Q\s*)?[0-9０-９]+(?:[.．](?![0-9０-９])|[、:：)）])|例\s*[0-9０-９]+[:：.、]?|练习\s*[0-9０-９]+[:：.、]?)[ \t]*(.*)$/i;
-export const answerHeading = /^\s*(?:【.*(?:答案|解析).*】|(?:第.+页[:：]\s*)?(?:已有答案(?:解析)?|原有答案|(?:原有)?(?:参考答案|答案解析|参考解答))\s*[:：]?\s*$)/;
+export const answerHeading = /^\s*(?:【.*(?:答案|解析).*】|(?:第.+页[:：]\s*)?(?:已有答案(?:解析)?|原有答案|(?:原有)?(?:参考答案|答案解析|参考解答)|答案|解析|解答))\s*[:：]?\s*$/;
 export const continuationHeading = /^(?:续第\s*([0-9０-９]+)\s*题|第\s*([0-9０-９]+)\s*题[（(]续[）)])[ \t]*[:：]?[ \t]*(?:\r?\n|$)/;
 const inlineAnswer = /^\s*(?:参考答案|答案|解析|解答)\s*[:：]\s*(.*)$/;
 export function nativeText(text, location) {
@@ -86,8 +86,26 @@ export function nativeText(text, location) {
     }
     group = null;
   }
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     if (answerHeading.test(line.text)) {
+      // An answer section can introduce unknown answers before known labels.
+      // Evidence belongs to this heading only, never a later answer section.
+      const following = [];
+      for (const item of lines.slice(index + 1)) {
+        if (answerHeading.test(item.text)) break;
+        following.push(item);
+      }
+      const next = following.find(item => item.text.trim());
+      const knownLabels = new Set([...drafts, ...(group ? [group] : [])].map(item => questionLabel(item.title)));
+      const resumesKnownLabel = following.some(item => {
+        const numbered = item.text.match(questionStart);
+        return numbered && knownLabels.has(questionLabel(numbered[1]));
+      });
+      if (group && !answerSection && /^\s*(?:答案|解析|解答)\s*[:：]?\s*$/.test(line.text) && !questionStart.test(next?.text ?? "") && !resumesKnownLabel) {
+        answer = true;
+        group.answerStart ??= line.start;
+        continue;
+      }
       finish();
       answerSection = true;
       continue;

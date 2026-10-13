@@ -25,7 +25,7 @@
 
 ## 本地运行
 
-需要 Node.js 22、npm、同源 HTTPS、SQLite 与持久文件目录；注册和找回还需邮件配置。Office 预览和成果输出另需 Pandoc、LibreOffice、Poppler、字体及隔离转换工具；数学图形保存与输出另需 Chromium，本地数学引擎首次准备见[数学运行依赖](docs/SETUP.md#数学运行依赖)。
+需要 Node.js 22、npm、同源 HTTPS、SQLite 与持久文件目录；注册和找回还需邮件配置。Office 预览和成果输出另需 Pandoc、LibreOffice、Poppler、字体及隔离转换工具；数学图形保存、输出及题面 PNG 排版另需 Chromium，本地数学引擎首次准备见[数学运行依赖](docs/SETUP.md#数学运行依赖)。
 
 题库文字 PDF 整理另需 Xpdf 4.06，安装和路径配置见[题库 PDF 运行依赖](docs/SETUP.md#题库文字-pdf)。
 

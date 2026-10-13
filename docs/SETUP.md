@@ -118,7 +118,7 @@ npx playwright install chromium
 
 `npm run dev`、Web 的 dev/build 前置步骤只执行运行时 `--check`；缺失或输入已改变时明确失败，重新执行上述构建命令。公式字体、MathJax 和扩展 ZIP 由同一资产准备入口生成。正式固定构建将这些资源带入 Web dist，API 按实际 Web 资产根目录读取 `vendor/math/geogebra`：开发使用 public，固定构建使用 `WORKBENCH_WEB_DIST`。API 与浏览器必须使用同一候选资产；缺失运行时是服务错误。
 
-数学图形保存与输出在服务端使用生产依赖 Playwright 和单独安装的 Chromium；只运行 `npm ci` 不保证浏览器可执行文件存在。若宿主缺少浏览器系统库，按 Playwright 安装提示补齐，Linux 可使用 `npx playwright install --with-deps chromium`。纯公式渲染不启动 GeoGebra。部署账户与安装账户不同或移动浏览器缓存时，需重新核对 Chromium 可执行路径和实际图形保存；不能只检查服务进程。
+数学图形保存、输出及题面 PNG 排版在服务端使用生产依赖 Playwright 和单独安装的 Chromium；只运行 `npm ci` 不保证浏览器可执行文件存在。若宿主缺少浏览器系统库，按 Playwright 安装提示补齐，Linux 可使用 `npx playwright install --with-deps chromium`。纯公式渲染不启动 GeoGebra。部署账户与安装账户不同或移动浏览器缓存时，需重新核对 Chromium 可执行路径和实际图形保存；不能只检查服务进程。
 
 制作和下载物使用本地数学运行时，不请求 GeoGebra 官方服务；DeepSeek 网页 AI 仍需网络、正常登录账号及[浏览器扩展](../extensions/math-web-ai/README.md)。桌面 Chrome/Edge 的正式安装入口由 Web 构建环境变量 `VITE_MATH_AI_CHROME_STORE_URL`、`VITE_MATH_AI_EDGE_STORE_URL` 配置，必须使用对应商店已发布的真实条目地址。默认留空，产品如实显示尚未上架；开发服务从根 `.env` 读取，固定构建须向构建命令传入这些环境变量，修改后重启开发服务或重新构建。开发 ZIP 仍随资产准备生成，商店上传包、发布材料及本机测试方式见扩展说明。全站离线不属于这一能力。
 

@@ -6,10 +6,12 @@ import { Icon } from '../workbench/icons.jsx';
 import { DocumentEditor, DocumentView } from '../workbench/materials/index.js';
 import { parseInlineRuns, serializeInlineRuns } from '../workbench/documents.js';
 import { Popover } from '../workbench/ModuleOverlays.jsx';
+import { structureChanged, undoStructure } from './document-structure.js';
 import { supportedDocument } from '@refatos/shared';
 import { useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
 
 const paths = {
+  undo: 'M6 4 2 8l4 4M2 8h9a5 5 0 0 1 0 10',
   book: 'M10 5C7 3 4 3 2 4v12c3-1 5-1 8 1 3-2 5-2 8-1V4c-2-1-5-1-8 1Zm0 0v12',
   upload: 'M10 13V3M6 7l4-4 4 4M3 12v5h14v-5',
   edit: 'm4 12 9-9 4 4-9 9-5 1 1-5Zm7-7 4 4',
@@ -64,13 +66,25 @@ function QuestionParagraph({ block, onChange, label }) {
   </div>;
 }
 
-export function QuestionDocumentEditor({ value, onChange, label = t("题干"), onPickImage, readOnly = false, autoFocus = false }) {
+export function QuestionDocumentEditor({ value, onChange, label = t("题干"), onPickImage, readOnly = false, autoFocus = false, resetKey }) {
   const { t } = useTranslation("questions");
   const ref = useRef(null);
   const [error, setError] = useState('');
+  const [history, setHistory] = useState([]);
+  useEffect(() => setHistory([]), [resetKey]);
   useEffect(() => { if (autoFocus) ref.current?.querySelector('textarea')?.focus(); }, []);
   const blocks = value.blocks?.length ? value.blocks : [{ type: 'paragraph', runs: [] }];
-  const update = blocks => onChange({ ...value, version: value.version === 2 || blocks.some(block => !['paragraph', 'math'].includes(block.type)) ? 2 : 1, blocks });
+  const update = (blocks, recordStructure = true) => {
+    const next = { ...value, version: value.version === 2 || blocks.some(block => !['paragraph', 'math'].includes(block.type)) ? 2 : 1, blocks };
+    if (recordStructure && structureChanged(value, next)) setHistory(current => [...current, { before: value, after: next }]);
+    onChange(next);
+  };
+  const undo = () => {
+    const operation = history.at(-1);
+    if (!operation) return;
+    onChange(undoStructure(operation.before, operation.after, value));
+    setHistory(current => current.slice(0, -1));
+  };
   async function insert(type) {
     let block;
     if (type === 'paragraph') block = { type, runs: [] };
@@ -89,12 +103,14 @@ export function QuestionDocumentEditor({ value, onChange, label = t("题干"), o
     update([...value.blocks, block]);
   }
   return <section ref={ref} className="q-document-field" aria-label={label}>
-    <h3>{label}</h3>
+    <div className="q-document-heading"><h3>{label}</h3>
+      {!readOnly && supportedDocument(value) && history.length > 0 && <button type="button" className="q-text-button" aria-label={t("撤销{{label}}结构操作", { label })} onClick={undo}><QuestionIcon name="undo" size={15} />{t("撤销结构操作")}</button>}
+    </div>
     {readOnly || !supportedDocument(value) ? <DocumentView value={value} /> : <div className="q-composer">
       {blocks.map((block, index) => <div className="q-compose-block" key={index}>
-        {block.type === 'paragraph' ? <QuestionParagraph block={block} label={t("{{label}}段落 {{detail}}", { label: label, detail: index + 1 })} onChange={next => update(blocks.map((item, i) => i === index ? next : item))} /> : <div className="q-structured-block"><DocumentEditor label={label} value={{ ...value, blocks: [block] }} allowTeacherNotes={false} onPickImage={onPickImage} onChange={next => update(blocks.flatMap((item, i) => i === index ? next.blocks : [item]))} /></div>}
+        {block.type === 'paragraph' ? <QuestionParagraph block={block} label={t("{{label}}段落 {{detail}}", { label: label, detail: index + 1 })} onChange={next => update(blocks.map((item, i) => i === index ? next : item), false)} /> : <div className="q-structured-block"><DocumentEditor label={label} value={{ ...value, blocks: [block] }} allowTeacherNotes={false} onPickImage={onPickImage} onChange={next => update(blocks.flatMap((item, i) => i === index ? next.blocks : [item]))} /></div>}
         <div className="q-block-controls">
-          {blocks.length > 1 && <><button type="button" aria-label={t("上移{{label}}第 {{detail}} 段", { label: label, detail: index + 1 })} title={t("上移")} disabled={!index} onClick={() => { const next = [...blocks]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; update(next); }}><QuestionIcon name="back" size={14} /></button><button type="button" aria-label={t("下移{{label}}第 {{detail}} 段", { label: label, detail: index + 1 })} title={t("下移")} disabled={index === blocks.length - 1} onClick={() => { const next = [...blocks]; [next[index + 1], next[index]] = [next[index], next[index + 1]]; update(next); }}><QuestionIcon name="back" size={14} /></button></>}
+          {blocks.length > 1 && <><button type="button" className="q-move-up" aria-label={t("上移{{label}}第 {{detail}} 段", { label: label, detail: index + 1 })} title={t("上移")} disabled={!index} onClick={() => { const next = [...blocks]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; update(next); }}><QuestionIcon name="back" size={14} /></button><button type="button" className="q-move-down" aria-label={t("下移{{label}}第 {{detail}} 段", { label: label, detail: index + 1 })} title={t("下移")} disabled={index === blocks.length - 1} onClick={() => { const next = [...blocks]; [next[index + 1], next[index]] = [next[index], next[index + 1]]; update(next); }}><QuestionIcon name="back" size={14} /></button></>}
           {value.blocks.length > 0 && <button type="button" aria-label={t("删除{{label}}第 {{detail}} 段", { label: label, detail: index + 1 })} title={t("删除此段")} onClick={() => update(blocks.filter((_, i) => i !== index))}><QuestionIcon name="close" size={14} /></button>}
         </div>
       </div>)}

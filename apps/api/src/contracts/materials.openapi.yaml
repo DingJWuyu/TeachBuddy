@@ -3079,6 +3079,8 @@ components:
           maxLength: 200
         body:
           $ref: '#/components/schemas/Document'
+        noteFragments:
+          $ref: '#/components/schemas/NoteFragments'
         solution:
           $ref: '#/components/schemas/Document'
         answerStatus:
@@ -3175,6 +3177,8 @@ components:
           maxLength: 200
         body:
           $ref: '#/components/schemas/Document'
+        noteFragments:
+          $ref: '#/components/schemas/NoteFragments'
         solution:
           $ref: '#/components/schemas/Document'
         answerStatus:
@@ -3393,6 +3397,8 @@ components:
           maxLength: 200
         body:
           $ref: '#/components/schemas/Document'
+        noteFragments:
+          $ref: '#/components/schemas/NoteFragments'
         solution:
           $ref: '#/components/schemas/Document'
         answerStatus:
@@ -3445,6 +3451,27 @@ components:
       - disposition
       - questionId
       additionalProperties: false
+    NoteFragments:
+      description: 归入教学笔记的资料摘录。省略时更新保留已有值，空数组表示移除；出处固定，document 为可编辑采用稿。
+      type: array
+      maxItems: 1000
+      items:
+        type: object
+        additionalProperties: false
+        required: [id, importId, document, locations]
+        properties:
+          id:
+            $ref: '#/components/schemas/Id'
+          importId:
+            $ref: '#/components/schemas/Id'
+          document:
+            $ref: '#/components/schemas/Document'
+          locations:
+            type: array
+            minItems: 1
+            maxItems: 100
+            items:
+              $ref: '#/components/schemas/Location'
     Fragment:
       type: object
       properties:
@@ -3529,6 +3556,10 @@ components:
           minItems: 0
           maxItems: 100
           uniqueItems: true
+        jobState:
+          description: 列表查询返回的当前处理状态，用于区分待处理与已完成材料；不参与校对写入。
+          readOnly: true
+          enum: [queued, running, cancelling, succeeded, partial, failed, cancelled, interrupted]
         jobId:
           $ref: '#/components/schemas/Id'
         drafts:

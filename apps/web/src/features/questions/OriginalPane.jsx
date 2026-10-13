@@ -10,6 +10,7 @@ export default function OriginalPane({
   onCrop,
   scene,
   onScene,
+  onVisibleLocation,
   readOnly = false,
 }) {
   const { t } = useTranslation("questions");
@@ -19,6 +20,7 @@ export default function OriginalPane({
   ];
   const [preview, setPreview] = useState(null),
     [error, setError] = useState("");
+  const [previewFileId, setPreviewFileId] = useState(null);
   const start = useRef(null);
   const [previewAttempt, setPreviewAttempt] = useState(0);
   const nativePane = useRef(null);
@@ -31,7 +33,8 @@ export default function OriginalPane({
     }).catch(() => {});
     return () => {live = false;};
   }, [material.id, material.version]);
-  const loc = draft?.parts
+  const sourceParts = [...(draft?.parts ?? []), ...(draft?.noteFragments ?? []).map(fragment => ({ role: 'note', locations: fragment.locations }))];
+  const loc = sourceParts
     .flatMap((p) => p.locations)
     .find((x) => x.kind === "page" || x.kind === "docx");
   const fileId = scene.fileId ?? loc?.fileId ?? files[0],
@@ -67,6 +70,7 @@ export default function OriginalPane({
         const value = await get(`/api/workbench/files/${fileId}/preview`);
         if (!active) return;
         setPreview(value);
+        setPreviewFileId(fileId);
         if (!value.pages.length && value.state !== "failed")
           timer = setTimeout(refresh, 2000);
         if (value.state === "failed")
@@ -81,12 +85,35 @@ export default function OriginalPane({
       clearTimeout(timer);
     };
   }, [fileId, material.version, previewAttempt]);
-  const current = preview?.pages.find((x) => x.page === page);
+  const current = previewFileId === fileId ? preview?.pages.find((x) => x.page === page) : null;
   const original = originalDocuments.find(item => item.fileId === fileId);
-  const paragraph = scene.paragraph ?? loc?.paragraph;
+  const paragraph = scene.paragraph ?? sourceParts.flatMap(part => part.locations)
+    .find(location => location.kind === "docx" && location.fileId === fileId)?.paragraph;
+  const paragraphLocations = [
+    ...material.drafts.flatMap(item => [
+      ...item.parts.flatMap(part => part.locations),
+      ...(item.noteFragments ?? []).flatMap(fragment => fragment.locations),
+      ...item.issues.flatMap(issue => issue.locations),
+    ]),
+    ...material.fragments.flatMap(fragment => fragment.locations),
+  ].filter(location => location.kind === "docx" && location.fileId === fileId);
+  const paragraphLocation = paragraphLocations.find(location => location.paragraph === paragraph);
   const legacyWord = preview?.issues.includes("legacy-object-loss");
   const paragraphLabel = legacyWord ? t("转换稿段落") : t("原文段落");
-  const paragraphView = Boolean(original?.paragraphs.length && (scene.originalView === "paragraphs" || !current));
+  const paragraphView = Boolean(original?.paragraphs.length && (scene.originalView === "paragraphs" ||
+    (!scene.originalView && draft?.questionId && loc?.kind === "docx") || !current));
+  useEffect(() => {
+    const visible = fileId
+      ? paragraphView
+        ? paragraphLocation ?? null
+        : current && previewFileId === fileId && preview.renditionFileId
+          ? { kind: "page", fileId, renditionFileId: preview.renditionFileId, page, box: null }
+          : null
+      : material.input.kind === "text" && material.input.text.length
+        ? { kind: "text", start: 0, end: [...material.input.text].length }
+        : null;
+    onVisibleLocation?.(visible);
+  }, [fileId, page, current, paragraphView, paragraphLocation, preview, previewFileId, material.input, onVisibleLocation]);
   const restoreParagraph = () => {
     const pane = nativePane.current;
     const node = pane?.querySelector(`[data-paragraph="${Number(paragraph)}"]`);
@@ -108,12 +135,13 @@ export default function OriginalPane({
     box,
   });
   const positions =
-    draft?.parts.flatMap((p) =>
+    sourceParts.flatMap((p) =>
       p.locations.map((l) => ({ ...l, role: p.role })),
     ) ?? [];
   const roleName = {
     body: t("题面"),
     solution: t("答案"),
+    note: t("教学笔记"),
     figure: t("配图"),
     unassigned: t("未分配"),
   };
@@ -165,6 +193,14 @@ export default function OriginalPane({
               onChange={e => onScene({originalView: e.target.value})}>
               <option value="pages">{t("分页预览")}</option>
               <option value="paragraphs">{paragraphLabel}</option>
+            </select>}
+            {paragraphView && <select aria-label={t("原稿段落")} value={paragraph ?? ""}
+              onChange={event => onScene({ paragraph: Number(event.target.value) })}>
+              <option value="" disabled>{t("选择原稿段落")}</option>
+              {original.paragraphs.map(item => <option key={item.paragraph} value={item.paragraph}
+                disabled={!paragraphLocations.some(location => location.paragraph === item.paragraph)}>
+                {t("段落")} {item.paragraph}
+              </option>)}
             </select>}
             {!paragraphView && Boolean(preview?.pages.length) && <>{preview.pages.length === 1 ? <span className="q-muted">{t("第 1 页")}</span> : <select
               aria-label={t("原稿页码")}

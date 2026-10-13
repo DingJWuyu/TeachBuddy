@@ -50,6 +50,7 @@ const labels = {
   solution: "答案解析",
   intro: "引言",
   note: "备注",
+  noteFragments: "教学笔记摘录",
   position: "进度",
   unfinished: "未完成",
   commonIssues: "共性问题",
@@ -297,7 +298,8 @@ export async function writeArchive(snapshot, directory, destination, signal) {
         value.source.questionVersion ?? null,
         value.source.snapshot,
       );
-    if (object.kind === "question" && value.source?.kind === "import")
+    // Adopted question content is independent of an import that was permanently deleted.
+    if (object.kind === "question" && value.source?.kind === "import" && lookup("import", value.source.importId))
       relation("import", value.source.importId, "origin", "source/importId");
     if (object.kind === "record") {
       relation("class", value.classId, "class-record", "classId");
