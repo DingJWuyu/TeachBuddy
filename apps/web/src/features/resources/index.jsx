@@ -1,3 +1,4 @@
+import { useLibraryData } from "./useLibraryData.js";
 import { useTranslation } from 'react-i18next';
 import React, {
   useEffect,
@@ -141,107 +142,11 @@ function ResourceWorkspace({
           setError(t("无法保存恢复记录，请允许浏览器存储后重试"));
       });
   }, [shell.accountKey]);
-  useEffect(() => {
-    let active = true;
-    let searchTimer;
-    setListLoading(true);
-    setSearchInfo(null);
-    const query = new URLSearchParams();
-    for (const name of ["q", "folderId", "mediaType", "state"])
-      if (scene[name]) query.set(name, scene[name]);
-    scene.tagIds.forEach((id) => query.append("tagIds", id));
-    const receiveSearch = (list) => {
-      if (!active) return;
-      setItems(list.items);
-      setSearchInfo(list.search ?? null);
-      if (list.search?.pending || list.search?.ocr?.pendingPages)
-        searchTimer = setTimeout(
-          async () => {
-            try {
-              receiveSearch(await client.request(`${root}/items?${query}`));
-            } catch (e) {
-              if (active)
-                setSearchInfo((current) => ({
-                  ...current,
-                  pending: 0,
-                  ...(current?.ocr
-                    ? { ocr: { ...current.ocr, pendingPages: 0 } }
-                    : {}),
-                  interrupted: true,
-                }));
-            }
-          },
-          list.search?.ocr?.pendingPages ? 2000 : 800,
-        );
-    };
-    Promise.all([
-      client.request(`${root}/items?${query}`),
-      client.request(`${root}/taxonomy`),
-      client.request(`${root}/items`),
-      client.request(`${root}/items?state=deleted`),
-    ])
-      .then(async ([list, taxonomy, activeItems, deleted]) => {
-        if (!active) return;
-        receiveSearch(list);
-        setAllItems([...activeItems.items, ...deleted.items]);
-        setTax(taxonomy);
-        const ids = [
-          ...new Set(
-            [...activeItems.items, ...deleted.items].flatMap((i) => [i.fileId, i.supplementPreviewFileId].filter(Boolean)),
-          ),
-        ];
-        const results = await Promise.all(
-          ids.map(async (id) => {
-            const [file, preview] = await Promise.allSettled([
-              client.request(`/api/workbench/files/${id}`),
-              client.request(`/api/workbench/files/${id}/preview`),
-            ]);
-            return [id, file, preview];
-          }),
-        );
-        if (active) {
-          setFiles((current) => ({
-            ...current,
-            ...Object.fromEntries(
-              results
-                .filter(([, file]) => file.status === "fulfilled")
-                .map(([id, file]) => [id, file.value]),
-            ),
-          }));
-          setPreviews(
-            Object.fromEntries(
-              results
-                .filter(([, , preview]) => preview.status === "fulfilled")
-                .map(([id, , preview]) => [id, preview.value]),
-            ),
-          );
-          setFileErrors(
-            Object.fromEntries(
-              results
-                .filter(
-                  ([, file, preview]) =>
-                    file.status === "rejected" || preview.status === "rejected",
-                )
-                .map(([id]) => [id, t("文件暂时无法读取，请重试")]),
-            ),
-          );
-        }
-      })
-      .catch((e) => active && setError(e.message))
-      .finally(() => active && setListLoading(false));
-    return () => {
-      active = false;
-      clearTimeout(searchTimer);
-    };
-  }, [
-    client,
-    scene.q,
-    scene.folderId,
-    scene.mediaType,
-    scene.state,
-    JSON.stringify(scene.tagIds),
-    revision,
-  ]);
+  useLibraryData({
+    client, scene, revision, t,
+    setItems, setSearchInfo, setAllItems, setTax,
+    setFiles, setPreviews, setFileErrors, setError, setListLoading,
+  });
   const item = allItems.find((i) => i.id === scene.openId),
     file = item && files[item.fileId];
   const draft = item ? (scene.drafts[item.id] ?? metadata(item)) : null;

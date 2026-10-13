@@ -2515,3 +2515,87 @@ test("历史只读预览在英文深色桌面与窄屏保持可用", async ({ pa
   await dialog.getByRole("button", { name: "Back to version list", exact: true }).click();
   await expect(historical.getByRole("button", { name: "Preview this version", exact: true })).toBeFocused();
 });
+
+test("改变搜索和筛选不会重读已加载文件与分类", async ({ page }, info) => {
+  await page.getByLabel("上传第一份资料", { exact: true }).setInputFiles([image, pdf]);
+  await expect(page.locator(".res-status")).toContainText("已处理 2 / 2 份资料");
+  await expect(page.locator(".res-browser")).toHaveAttribute("aria-busy", "false");
+  await expect(page.locator(".res-thumb img")).toHaveCount(2);
+  await screenshot(page, info, "batch-thumbnails-completed");
+  const reads = [];
+  page.on("request", request => {
+    const url = new URL(request.url());
+    if (request.method() === "GET" && (
+      /\/api\/workbench\/files\/[0-9a-f-]+(?:\/preview)?$/.test(url.pathname) ||
+      url.pathname === "/api/modules/resources/taxonomy" ||
+      (url.pathname === "/api/modules/resources/items" && (!url.search || url.search === "?state=deleted"))
+    )) reads.push(url.pathname + url.search);
+  });
+  await page.getByLabel("搜索资料").fill("c22");
+  await expect(page.locator(".res-card")).toHaveCount(1);
+  await expect(page.locator(".res-browser")).toHaveAttribute("aria-busy", "false");
+  await page.getByRole("button", { name: "筛选", exact: true }).click();
+  await page.getByLabel("格式筛选").selectOption("application/pdf");
+  await expect(page.locator(".res-card")).toHaveCount(1);
+  await expect(page.locator(".res-browser")).toHaveAttribute("aria-busy", "false");
+  await info.attach("unchanged-source-requests", { body: JSON.stringify(reads), contentType: "application/json" });
+  expect(reads).toEqual([]);
+});
+
+test("搜索发现新资料、外部替换和补充来源后读取当前文件", async ({ page, context }) => {
+  await upload(page, pdf);
+  const original = (await api.request("GET", "/api/modules/resources/items")).json.items[0];
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  const sample = await findSample(context);
+  const form = new FormData();
+  form.append("file", new Blob([sample.buffer], { type: "application/pdf" }), "新来源.pdf");
+  const uploadRequest = new Request("https://fixture.test", { method: "POST", body: form });
+  const uploaded = await api.request("POST", "/api/workbench/files", {
+    headers: { "Idempotency-Key": randomUUID() },
+    rawBody: Buffer.from(await uploadRequest.arrayBuffer()),
+    contentType: uploadRequest.headers.get("content-type"),
+  });
+  expect(uploaded.status).toBe(201);
+  const newFile = uploaded.json;
+  expect((await api.request("POST", `/api/workbench/files/${newFile.id}/preview`, {
+    headers: { "Idempotency-Key": randomUUID() }, body: {},
+  })).status).toBe(202);
+  await expect.poll(async () => (await api.request("GET", `/api/workbench/files/${newFile.id}/preview`)).json.pages.length).toBe(2);
+  expect((await api.request("POST", "/api/modules/resources/items", {
+    headers: { "Idempotency-Key": randomUUID() },
+    body: { title: "外部新增", fileId: newFile.id, folderId: null, tagIds: [], note: "" },
+  })).status).toBe(201);
+  await page.getByLabel("搜索资料").fill("外部新增");
+  await expect(page.locator(".res-card-text strong")).toHaveText("外部新增");
+  await expect(page.locator(".res-browser")).toHaveAttribute("aria-busy", "false");
+  await page.locator(".res-card-open").click();
+  await expect(page.locator(".res-detail-title .res-muted")).toHaveText("新来源.pdf");
+  await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  const replaced = await api.request("PUT", `/api/modules/resources/items/${original.id}/file`, {
+    headers: { "Idempotency-Key": randomUUID() },
+    body: { baseVersion: original.version, fileId: newFile.id },
+  });
+  expect(replaced.status).toBe(200);
+  await page.getByLabel("搜索资料").fill("c22");
+  await expect(page.locator(".res-card-text strong")).toHaveText("c22.pdf");
+  await expect(page.locator(".res-browser")).toHaveAttribute("aria-busy", "false");
+  await page.locator(".res-card-open").click();
+  await expect(page.locator(".res-detail-title .res-muted")).toHaveText("新来源.pdf");
+  await infoPanel(page);
+  await expect(page.getByRole("button", { name: "保存修改", exact: true })).toBeDisabled();
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  expect((await api.request("PUT", `/api/modules/resources/items/${original.id}/supplement-preview`, {
+    headers: { "Idempotency-Key": randomUUID() },
+    body: { baseVersion: replaced.json.version, fileId: newFile.id, supplementPreviewFileId: original.fileId },
+  })).status).toBe(200);
+  await page.getByLabel("搜索资料").fill("三角形");
+  await expect(page.locator(".res-search-excerpt")).toContainText("第 3 页");
+  await page.locator(".res-card-open").click();
+  await expect(page.getByAltText("第 3 页", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("查找本页文字", { exact: true })).toHaveValue("三角形");
+  await expect(page.locator(".res-detail-title .res-muted")).toHaveText("新来源.pdf");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "下载原件", exact: true }).click();
+  expect(fs.readFileSync(await (await download).path()).equals(sample.buffer)).toBe(true);
+});
