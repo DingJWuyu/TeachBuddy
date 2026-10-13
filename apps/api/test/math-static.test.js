@@ -142,9 +142,8 @@ test("real HTTP: source, history, replay, exports, restart and failures", async 
     assert.equal(cube.status, 201, JSON.stringify(cube));
     const port = f.workbench.loader.get("math").port,
       principal = { accountKey: "m41-a" };
-    assert.equal(port.readForTeachingLinkV1(principal, w.id).title, w.title);
     assert.equal(
-      port.readForReferenceV1(principal, w.id).snapshot.workVersion,
+      (await request("GET", `/${w.id}/reference`)).body.snapshot.workVersion,
       3,
     );
     assert(

@@ -215,6 +215,15 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
           .sort(compareByUpdatedDescThenId),
       };
     },
+    readQuestionForReferenceV2: ({ principal: p, id }) => {
+      const q = s.question(p, id);
+      return {
+        id: q.id,
+        version: q.version,
+        deletedAt: q.deletedAt,
+        snapshot: snapshot(q),
+      };
+    },
     setQuestionDeletionV2({ principal: p, id, input }) {
       const q = s.question(p, id);
       s.check(q, input.baseVersion, false);

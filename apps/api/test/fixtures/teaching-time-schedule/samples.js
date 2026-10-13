@@ -1,6 +1,6 @@
 /**
- * Fixed T52 samples from the contract cases. IDs match the machine samples in
- * docs/contracts/teaching-time-cases.md so a failure can be replayed verbatim.
+ * Fixed schedule samples; behavior cases are in docs/contracts/schedule-cases.md.
+ * Machine exchange samples live in test/fixtures/contracts/schedule-v1-samples.json.
  */
 export const SAMPLE_IDS = Object.freeze({
   questionOne: '20000000-0000-4000-8000-000000000002',
