@@ -44,6 +44,8 @@ export function Preview({
   scrollPosition,
   onScrollPosition,
   onSupplement,
+  searchHit,
+  readOnly = false,
   recognitionOpen = false,
   onRecognitionOpen,
   recognitionRevision,
@@ -58,7 +60,7 @@ export function Preview({
   const requestKey = useRef(null);
   const [textResult, setText] = useState({ state: "loading", text: "" });
   const [copyMessage, setCopyMessage] = useState("");
-  const [findOpen, setFindOpen] = useState(false);
+  const [findOpen, setFindOpen] = useState(Boolean(searchHit && !searchHit.recognition));
   const findButton = useRef(null);
   const recognitionButton = useRef(null);
   const [loadedImage, setLoadedImage] = useState(null);
@@ -185,7 +187,7 @@ export function Preview({
     >
       <div className="res-preview-toolbar">
         {preview?.pageCount > 1 ? (
-          <>
+          <div className="res-page-navigation">
             <button
               className="res-icon-button"
               aria-label={t("上一页")}
@@ -233,7 +235,7 @@ export function Preview({
             >
               <Icon name="arrowRight" size={16} />
             </button>
-          </>
+          </div>
         ) : (
           <span className="res-muted">{current ? t("共 1 页") : t("文件预览")}</span>
         )}
@@ -305,6 +307,7 @@ export function Preview({
       {current && preview?.renditionFileId && onRecognitionWrite && (
         <Recognition
           open={recognitionOpen}
+          searchQuery={searchHit?.recognition && searchHit.page === current.page ? searchHit.query : ""}
           client={client}
           fileId={fileId}
           renditionFileId={preview.renditionFileId}
@@ -318,6 +321,7 @@ export function Preview({
       )}
       <PageFind
         open={findOpen}
+        initialQuery={searchHit && !searchHit.recognition ? searchHit.query : ""}
         source={`${preview?.renditionFileId}:${current?.page}`}
         text={text}
         imageReady={loadedImage === current?.imageFileId}
@@ -373,7 +377,7 @@ export function Preview({
                 ? t("转换未完成，请确认原文件能正常打开，或补充 PDF 预览。")
                 : t("预览完成后会自动显示。")}
           </p>
-          {preview && !preparing && !unsupported && (
+          {!readOnly && preview && !preparing && !unsupported && (
             <button
               onClick={generate}
               disabled={

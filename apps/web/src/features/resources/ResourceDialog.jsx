@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
 
-export function ResourceDialog({ label, onClose, children }) {
+export function ResourceDialog({ label, onClose, children, className = "" }) {
   const ref = useRef(null);
   useModuleDialogFocus(ref, onClose);
   useEffect(() => {
@@ -18,7 +18,7 @@ export function ResourceDialog({ label, onClose, children }) {
     >
       <div
         ref={ref}
-        className="res-dialog"
+        className={`res-dialog ${className}`}
         role="dialog"
         aria-modal="true"
         aria-label={label}

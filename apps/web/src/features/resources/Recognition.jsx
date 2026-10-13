@@ -1,3 +1,4 @@
+import { RecognitionHit } from "./RecognitionHit.jsx";
 import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "../workbench/chrome/icons.jsx";
@@ -11,6 +12,7 @@ const active = (state) => ["queued", "running", "cancelling"].includes(state);
 
 export function Recognition({
   open,
+  searchQuery = "",
   client,
   fileId,
   renditionFileId,
@@ -219,6 +221,7 @@ export function Recognition({
                       aria-label={t("第 {{page}} 页识别正文", { page: page })}
                       tabIndex={0}
                     >
+                      <RecognitionHit text={result.text || ""} query={searchQuery} />
                       <DocumentView value={result.document} />
                     </section>
                     {result.text?.trim() && (

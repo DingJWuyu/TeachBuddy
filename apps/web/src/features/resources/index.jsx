@@ -106,6 +106,7 @@ function ResourceWorkspace({
     [dialog, setDialog] = useState(null),
     [conflict, setConflict] = useState(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [searchHit, setSearchHit] = useState(null);
   const [organize, setOrganize] = useState(null);
   const listRef = useRef(null),
     opening = useRef(0),
@@ -186,7 +187,7 @@ function ResourceWorkspace({
         setTax(taxonomy);
         const ids = [
           ...new Set(
-            [...activeItems.items, ...deleted.items].map((i) => i.fileId),
+            [...activeItems.items, ...deleted.items].flatMap((i) => [i.fileId, i.supplementPreviewFileId].filter(Boolean)),
           ),
         ];
         const results = await Promise.all(
@@ -674,6 +675,7 @@ function ResourceWorkspace({
         },
       }));
     }
+    setSearchHit(match ? { itemId: id, sourceId: resource?.supplementPreviewFileId || resource?.fileId, query: scene.q, page: match.page, recognition: Boolean(match.recognition) } : null);
     patchScene({
       openId: id,
       recognitionOpen: Boolean(match?.recognition),
@@ -687,6 +689,7 @@ function ResourceWorkspace({
     setMessage("");
   }
   function close(removed = false) {
+    setSearchHit(null);
     opening.current++;
     patchScene({ openId: null, recognitionOpen: false });
     if (!shell.isPanelOpen || shell.panelMode === "resource-taxonomy") {
@@ -846,6 +849,7 @@ function ResourceWorkspace({
         onUpload={upload}
         onFolders={shell.openPanel ? toggleTools : null}
         foldersOpen={infoOpen}
+        selectedItems={scene.selected.map(id => allItems.find(item => item.id === id)).filter(Boolean)}
         onOrganize={(action) =>
           setOrganize({
             action,
@@ -1051,6 +1055,7 @@ function ResourceWorkspace({
                 key={previewId}
                 client={client}
                 fileId={previewId}
+                searchHit={searchHit?.itemId === item.id && searchHit.sourceId === previewId ? searchHit : null}
                 recognitionOpen={scene.recognitionOpen}
                 onRecognitionOpen={(open) =>
                   patchScene({ recognitionOpen: open })
@@ -1284,7 +1289,7 @@ function ResourceWorkspace({
             ) : (
               <p>
                 {dialog.kind === "purge"
-                  ? t("“{{title}}”将从资源库永久删除，无法恢复。", { title: dialog.item.title })
+                  ? t("“{{title}}”及其历史版本将永久删除，无法恢复。不再使用的文件将释放空间，其他资料仍使用的文件会保留。", { title: dialog.item.title })
                   : dialog.item.deletedAt
                     ? t("恢复后可以继续查看和整理这份资料。")
                     : t("资料会移入“已归档资料”，可以随时恢复。")}

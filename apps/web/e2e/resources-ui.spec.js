@@ -444,6 +444,9 @@ test("预览失败后可以重试，并逐页核对补充 PDF，原文件仍可�
   await page.getByRole("button", { name: "下载原件", exact: true }).click();
   const download = await downloadEvent;
   expect(fs.readFileSync(await download.path()).equals(bytes)).toBe(true);
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  await expect(page.locator(".res-thumb img")).toBeVisible();
+  await expect(page.locator(".res-preview-state")).toHaveCount(0);
 });
 
 test("保存响应丢失后保留原请求及后续草稿，关闭信息栏和刷新可恢复", async ({
@@ -729,6 +732,22 @@ test("历史文件可下载核对并恢复，备注保持", async ({ page }, inf
     .click();
   const old = page.locator(".res-history-entry").filter({ hasText: "c22.pdf" });
   await expect(old).toBeVisible();
+  await expect(old.getByRole("button", { name: "预览此版本", exact: true })).toBeVisible();
+  const beforeViewing = (await api.request("GET", `/api/modules/resources/items/${original.id}`)).json;
+  await old.getByRole("button", { name: "预览此版本", exact: true }).click();
+  const historyDialog = page.getByRole("dialog", { name: "文件历史版本" });
+  await expect(historyDialog.getByAltText("第 1 页", { exact: true })).toBeVisible();
+  await historyDialog.getByRole("button", { name: "下一页", exact: true }).click();
+  await expect(historyDialog.getByAltText("第 2 页", { exact: true })).toBeVisible();
+  await expect(historyDialog.getByRole("button", { name: "识别文字", exact: true })).toHaveCount(0);
+  await expect(historyDialog.getByRole("button", { name: "生成预览", exact: true })).toHaveCount(0);
+  await screenshot(page, info, "history-readonly-preview");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(historyDialog.getByLabel("跳转页码")).toBeVisible();
+  await screenshot(page, info, "history-readonly-phone");
+  expect((await api.request("GET", `/api/modules/resources/items/${original.id}`)).json).toEqual(beforeViewing);
+  await historyDialog.getByRole("button", { name: "返回历史列表", exact: true }).click();
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await screenshot(page, info, "history-desktop");
   await page.setViewportSize({ width: 768, height: 900 });
   await screenshot(page, info, "history-narrow");
@@ -1445,6 +1464,9 @@ test("正文检索定位、中文选择复制、刷新与缩放保留文字层",
   await screenshot(page, info, "body-search");
   await page.locator(".res-card-open").click();
   await expect(page.getByAltText("第 3 页", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("查找本页文字", { exact: true })).toHaveValue("三角形");
+  await expect(page.locator(".res-find-status")).toHaveText(/1 \/ \d+ 处/);
+  await screenshot(page, info, "search-native-highlight");
   await expect(copy).toBeVisible();
   await copy.click();
   await expect
@@ -1920,6 +1942,9 @@ test.describe("OCR 资源消费", () => {
     expect(search.search.ocr.unprocessedPages).toBe(1);
     await page.locator(".res-card-open").click();
     await expect(text).toContainText(/解不等式/);
+    await expect(text.locator(".res-recognition-hit mark").first()).toHaveText("不等式");
+    await screenshot(page, info, "ocr-search-highlight");
+    await expect(page.locator(".res-issue-box")).toHaveCount(0);
     await expect(page.getByAltText("第 2 页", { exact: true })).toBeVisible();
     expect(recognizer.calls).toBe(1);
     await expect(
@@ -2372,4 +2397,121 @@ test.describe("真实 OCR 运行链", () => {
       contentType: "application/json",
     });
   });
+});
+
+test("多级同名文件夹在资料归属、批量移动与父目录中显示完整路径", async ({ page }, info) => {
+  const a = randomUUID(), b = randomUUID(), aa = randomUUID(), bb = randomUUID(), aaa = randomUUID();
+  const folders = [
+    { id: a, name: "数学", parentId: null },
+    { id: b, name: "英语", parentId: null },
+    { id: aa, name: "复习", parentId: a },
+    { id: bb, name: "复习", parentId: b },
+    { id: aaa, name: "复习", parentId: aa },
+  ];
+  expect((await api.request("PUT", "/api/modules/resources/taxonomy", {
+    headers: { "Idempotency-Key": randomUUID() }, body: { baseVersion: 1, folders, tags: [] },
+  })).status).toBe(200);
+  await upload(page);
+  await infoPanel(page);
+  await expect(page.getByLabel("资源文件夹").locator(`option[value="${aaa}"]`)).toHaveText("数学 / 复习 / 复习");
+  await page.getByLabel("资源文件夹").selectOption(aaa);
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
+  await expect(page.locator(".res-status")).toContainText("资料信息已保存");
+  await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+  await expect(page.locator(".res-card-text")).toContainText("数学 / 复习 / 复习");
+  await page.getByRole("button", { name: "选择资料", exact: true }).click();
+  await page.locator(".res-pick input").check();
+  await page.getByRole("button", { name: "移动", exact: true }).click();
+  await expect(page.getByLabel("目标文件夹").locator(`option[value="${bb}"]`)).toHaveText("英语 / 复习");
+  await screenshot(page, info, "folder-paths-move");
+  await page.getByRole("button", { name: "取消", exact: true }).click();
+  await page.getByRole("button", { name: "文件夹与标签", exact: true }).click();
+  await page.getByRole("button", { name: "管理文件夹 数学", exact: true }).click();
+  await expect(page.getByLabel("上级文件夹").locator(`option[value="${bb}"]`)).toHaveText("英语 / 复习");
+  await expect(page.getByLabel("上级文件夹").locator(`option[value="${a}"], option[value="${aa}"], option[value="${aaa}"]`)).toHaveCount(0);
+});
+
+test("全文命中带词定位时中文换行和连续空白与检索一致", async ({ page, context }, info) => {
+  const source = await context.newPage();
+  let bytes;
+  try {
+    await source.setContent('<style>@page {size:A4} body{font:24px "Noto Sans CJK SC",sans-serif}</style><p>中文<br>换行</p><p>Alpha　 Beta</p>');
+    await source.evaluate(() => document.fonts.ready);
+    bytes = await source.pdf();
+  } finally { await source.close(); }
+  await upload(page, { name: "搜索空白样本.pdf", mimeType: "application/pdf", buffer: bytes });
+  for (const query of ["中文换行", "alpha beta"]) {
+    await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+    await page.getByLabel("搜索资料").fill(query);
+    await expect(page.locator(".res-search-excerpt")).toBeVisible();
+    await page.locator(".res-card-open").click();
+    await expect(page.getByLabel("查找本页文字", { exact: true })).toHaveValue(query);
+    await expect(page.locator(".res-find-status")).toHaveText("1 / 1 处");
+    const highlights = await findHighlights(page);
+    expect(highlights.some(entry => entry.name.endsWith("-current") && entry.texts.length === 1)).toBe(true);
+    await screenshot(page, info, query === "中文换行" ? "search-chinese-line-break" : "search-english-space");
+  }
+});
+
+test("多选原件 ZIP 下载保留真实字节和同名文件，取消不触发下载", async ({ page }, info) => {
+  await page.getByLabel("上传第一份资料", { exact: true }).setInputFiles([
+    { name: "课堂资料.pdf", mimeType: "application/pdf", buffer: fs.readFileSync(pdf) },
+    { name: "课堂资料.pdf", mimeType: "image/png", buffer: fs.readFileSync(image) },
+  ]);
+  await expect(page.locator(".res-status")).toContainText("已处理 2 / 2 份资料");
+  await expect(page.locator(".res-card")).toHaveCount(2);
+  await page.getByRole("button", { name: "选择资料", exact: true }).click();
+  await page.getByRole("button", { name: "选择当前结果", exact: true }).click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "下载所选原件 ZIP", exact: true }).click();
+  const archive = await download;
+  expect(archive.suggestedFilename()).toBe("resources.zip");
+  const zip = await JSZip.loadAsync(fs.readFileSync(await archive.path()));
+  const entries = Object.values(zip.files).filter(file => !file.dir);
+  expect(entries).toHaveLength(2);
+  expect(entries.map(file => file.name).sort()).toEqual(["课堂资料 (2).pdf", "课堂资料.pdf"].sort());
+  const content = await Promise.all(entries.map(file => file.async("nodebuffer")));
+  expect(content.some(value => value.equals(fs.readFileSync(pdf)))).toBe(true);
+  expect(content.some(value => value.equals(fs.readFileSync(image)))).toBe(true);
+  await screenshot(page, info, "selection-zip");
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  await page.route("**/api/modules/resources/items/download", async route => { await gate; await route.continue().catch(() => {}); });
+  let downloads = 0;
+  page.on("download", () => downloads++);
+  await page.getByRole("button", { name: "下载所选原件 ZIP", exact: true }).click();
+  await page.getByRole("button", { name: "取消下载", exact: true }).click();
+  await expect(page.getByRole("button", { name: "取消下载", exact: true })).toHaveCount(0);
+  release();
+  await page.unrouteAll({ behavior: "wait" });
+  expect(downloads).toBe(0);
+  await expect(page.locator(".res-download-error")).toHaveCount(0);
+});
+
+test("历史只读预览在英文深色桌面与窄屏保持可用", async ({ page }, info) => {
+  await upload(page, pdf);
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
+  await (await chooser).setFiles(image);
+  await page.getByRole("button", { name: "确认 更新", exact: true }).click();
+  await expect(page.locator(".res-status")).toContainText("文件已更新");
+  await page.getByRole("link", { name: /^账户：/ }).click();
+  await page.getByRole("button", { name: "深色", exact: true }).click();
+  await page.getByRole("button", { name: "语言", exact: true }).click();
+  await page.getByRole("menuitemradio", { name: "English", exact: true }).click();
+  await page.getByRole("navigation", { name: "Modules" }).getByRole("link", { name: /^Resource library/ }).click();
+  await expect(page.locator(".wb-shell")).toHaveAttribute("data-theme", "dark");
+  await page.getByRole("button", { name: "More material actions", exact: true }).click();
+  await page.getByRole("menuitem", { name: "File history", exact: true }).click();
+  const historical = page.locator(".res-history-entry").filter({ hasText: "c22.pdf" });
+  await historical.getByRole("button", { name: "Preview this version", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "File history", exact: true });
+  await expect(dialog.getByText("Read-only preview. The current file and resource information stay unchanged.")).toBeVisible();
+  await expect(dialog.locator(".res-page-paper img")).toBeVisible();
+  await screenshot(page, info, "history-english-dark-desktop");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await screenshot(page, info, "history-english-dark-phone");
+  await dialog.getByRole("button", { name: "Back to version list", exact: true }).click();
+  await expect(historical.getByRole("button", { name: "Preview this version", exact: true })).toBeFocused();
 });

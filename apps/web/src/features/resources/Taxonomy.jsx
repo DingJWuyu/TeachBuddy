@@ -1,3 +1,4 @@
+import { folderPath } from "./folderPath.js";
 import { useTranslation } from 'react-i18next';
 import { Icon } from "../workbench/chrome/icons.jsx";
 import { ResourceDialog } from "./ResourceDialog.jsx";
@@ -22,7 +23,7 @@ export function Taxonomy({ value, scene, patchScene, disabled, onManage }) {
               }
             >
               <Icon name="folder" size={16} />
-              <span>{folder.name}</span>
+              <span title={folderPath(value.folders, folder.id)}>{folder.name}</span>
             </button>
             <button
               className="res-icon-button"
@@ -228,7 +229,7 @@ export function TaxonomyDialog({
                     .filter((item) => !descendants.has(item.id))
                     .map((item) => (
                       <option key={item.id} value={item.id}>
-                        {item.name}
+                        {folderPath(value.folders, item.id)}
                       </option>
                     ))}
                 </select>

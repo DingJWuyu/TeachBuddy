@@ -1,3 +1,4 @@
+import { textMatches } from "./textMatches.js";
 import { useTranslation } from 'react-i18next';
 import {
   useEffect,
@@ -12,7 +13,7 @@ import { ModulePresence } from "../workbench/ModuleMotion.jsx";
 
 // Match the rendered text itself. RegExp keeps offsets in the original UTF-16
 // string, including case-insensitive matches, so Range never uses folded offsets.
-function findRanges(layer, lineBreaks, query) {
+function findRanges(layer, lineBreaks, query, normalize) {
   if (!layer || !query.trim()) return [];
   let text = "";
   const nodes = [];
@@ -32,9 +33,8 @@ function findRanges(layer, lineBreaks, query) {
   const ranges = [];
   let start = 0,
     end = 0;
-  for (const match of text.matchAll(pattern)) {
-    const from = match.index,
-      to = from + match[0].length;
+  const matches = normalize ? textMatches(text, query) : [...text.matchAll(pattern)].map(match => ({from: match.index, to: match.index + match[0].length}));
+  for (const {from, to} of matches) {
     while (nodes[start]?.end <= from) start++;
     while (nodes[end]?.end < to) end++;
     if (
@@ -54,6 +54,7 @@ function findRanges(layer, lineBreaks, query) {
 
 export function PageFind({
   open,
+  initialQuery = "",
   source,
   text,
   imageReady,
@@ -61,7 +62,7 @@ export function PageFind({
   onClose,
 }) {
   const { t } = useTranslation("resources");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [selection, setSelection] = useState(null);
   const scrolled = useRef(null);
   const input = useRef(null);
@@ -72,9 +73,9 @@ export function PageFind({
   const ranges = useMemo(
     () =>
       open && supported && text.state === "ready"
-        ? findRanges(text.layer, text.lineBreaks, query)
+        ? findRanges(text.layer, text.lineBreaks, query, Boolean(initialQuery))
         : [],
-    [open, supported, text, query],
+    [open, supported, text, query, initialQuery],
   );
   const selected =
     selection?.source === source && selection.query === query
@@ -116,8 +117,8 @@ export function PageFind({
     };
   }, [open]);
   useLayoutEffect(() => {
-    setSelection(null);
-  }, [source]);
+    setSelection(initialQuery ? { source, query: initialQuery, index: 0, scroll: true } : null);
+  }, [source, initialQuery]);
   useLayoutEffect(() => {
     if (!open || !supported || !ranges.length) return;
     const all = new Highlight(),

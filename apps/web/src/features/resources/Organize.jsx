@@ -1,3 +1,4 @@
+import { folderPath } from "./folderPath.js";
 import { useTranslation } from 'react-i18next';
 import { useState } from "react";
 import { ResourceDialog } from "./ResourceDialog.jsx";
@@ -37,7 +38,7 @@ export function Organize({
             <option value="">{t("未归入文件夹")}</option>
             {tax.folders.map((folder) => (
               <option key={folder.id} value={folder.id}>
-                {folder.name}
+                {folderPath(tax.folders, folder.id)}
               </option>
             ))}
           </select>

@@ -46,10 +46,11 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
     throw new Error("Resources requires the page-bound transport");
   async function request(
     path,
-    { method = "GET", input, key, blob = false } = {},
+    { method = "GET", input, key, blob = false, signal: cancelSignal } = {},
   ) {
     // Capture this request's lifecycle even if React later restarts the effect.
     const signal = getSignal();
+    const downloadOnly = method === "POST" && path === "/api/modules/resources/items/download";
     const headers = {};
     let body;
     if (method !== "GET") {
@@ -65,8 +66,8 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
               )
             : null;
       if (
-        !allowed?.test(path) ||
-        typeof key !== "string" ||
+        (!downloadOnly && !allowed?.test(path)) ||
+        (!downloadOnly && typeof key !== "string") ||
         !input ||
         typeof input !== "object"
       )
@@ -75,7 +76,7 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
           { unknown: true },
         );
       headers["X-TeachBuddy-Request"] = "1";
-      headers["Idempotency-Key"] = key;
+      if (!downloadOnly) headers["Idempotency-Key"] = key;
       if (input instanceof Blob) {
         body = new FormData();
         body.append("file", input, input.name || "upload");
@@ -92,11 +93,13 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
         body,
         credentials: "same-origin",
         cache: "no-store",
-        signal: AbortSignal.any([signal, AbortSignal.timeout(60000)]),
+        signal: AbortSignal.any([signal, ...(cancelSignal ? [cancelSignal] : []), AbortSignal.timeout(60000)]),
       });
       value =
         blob && response.ok ? await response.blob() : await response.json();
     } catch (error) {
+      if (cancelSignal?.aborted) throw new DOMException("Cancelled", "AbortError");
+      if (downloadOnly && !signal.aborted) throw new Error(t("下载未完成，请重试。"));
       throw Object.assign(
         new Error(
           signal.aborted ? t("身份已变更") : t("结果未确认，请用原请求重试确认"),
@@ -104,6 +107,7 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
         { unknown: true },
       );
     }
+    if (cancelSignal?.aborted) throw new DOMException("Cancelled", "AbortError");
     if (signal.aborted)
       throw Object.assign(new Error(t("身份已变更")), { unknown: true });
     if (response.status === 401) {
@@ -125,7 +129,7 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
         {
           status: response.status,
           problem: value,
-          unknown: response.status >= 500,
+          unknown: !downloadOnly && response.status >= 500,
         },
       );
     if (!blob && (!value || typeof value !== "object"))
@@ -134,6 +138,18 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
   }
   return {
     request,
+    async downloadItems(items, signal) {
+      const blob = await request("/api/modules/resources/items/download", {
+        method: "POST", input: { items }, blob: true, signal,
+      });
+      if (signal.aborted) throw new DOMException("Cancelled", "AbortError");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resources.zip";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    },
     async download(id, name) {
       const blob = await request(`/api/workbench/files/${id}/content`, {
         blob: true,

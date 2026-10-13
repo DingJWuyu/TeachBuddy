@@ -1,3 +1,5 @@
+import { SelectionDownload } from "./SelectionDownload.jsx";
+import { folderPath } from "./folderPath.js";
 import { useTranslation } from 'react-i18next';
 import { Icon } from "../workbench/chrome/icons.jsx";
 import { Popover } from "../workbench/ModuleOverlays.jsx";
@@ -66,6 +68,7 @@ export function Library({
   onFolders,
   foldersOpen,
   onOrganize,
+  selectedItems,
 }) {
   const { t } = useTranslation("resources");
   const selectionRef = useRef(null);
@@ -369,7 +372,8 @@ export function Library({
           }
         >
           {items.map((resource) => {
-            const preview = previews[resource.fileId];
+            const sourceId = resource.supplementPreviewFileId || resource.fileId;
+            const preview = previews[sourceId];
             const extension =
               files[resource.fileId]?.name.split(".").pop()?.toUpperCase() ||
               t("文件");
@@ -403,10 +407,8 @@ export function Library({
                         {searchInfo.matches[resource.id].excerpt}
                       </span>
                     )}
-                    <span>
-                      {tax.folders.find(
-                        (folder) => folder.id === resource.folderId,
-                      )?.name || t("未归入文件夹")}
+                    <span title={folderPath(tax.folders, resource.folderId)}>
+                      {folderPath(tax.folders, resource.folderId) || t("未归入文件夹")}
                       {resource.tagIds.length
                         ? ` · ${resource.tagIds
                             .map(
@@ -419,10 +421,10 @@ export function Library({
                     </span>
                   </div>
                   <span className="res-file-type">{extension}</span>
-                  {(fileErrors[resource.fileId] ||
+                  {((fileErrors[resource.fileId] || fileErrors[sourceId]) ||
                     ["limited", "failed"].includes(preview?.state)) && (
                     <span className="res-preview-state">
-                      {fileErrors[resource.fileId]
+                      {(fileErrors[resource.fileId] || fileErrors[sourceId])
                         ? t("文件读取失败")
                         : preview.state === "limited"
                           ? t("预览需核对")
@@ -503,6 +505,7 @@ export function Library({
         {scene.selectionMode && (
           <div className="res-selection" ref={selectionRef}>
             <span>{t("已选")} {scene.selected.length} {t("份")}</span>
+            <SelectionDownload client={client} items={selectedItems} disabled={busy} />
             <button
               disabled={!items.length}
               onClick={() =>

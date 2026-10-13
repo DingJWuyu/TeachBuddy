@@ -1,6 +1,7 @@
+import { Preview } from "./Preview.jsx";
 import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ResourceDialog } from "./ResourceDialog.jsx";
 
 export function FileHistory({ client, item, disabled, onRestore, onClose }) {
@@ -8,7 +9,17 @@ export function FileHistory({ client, item, disabled, onRestore, onClose }) {
   const [entries, setEntries] = useState(null);
   const [error, setError] = useState("");
   const [confirm, setConfirm] = useState(null);
+  const [viewing, setViewing] = useState(null);
+  const [page, setPage] = useState(1);
+  const [zoom, setZoom] = useState(100);
   const [reload, setReload] = useState(0);
+  const previewRef = useRef(null);
+  const previewButtons = useRef(new Map());
+  const lastViewed = useRef(null);
+  useLayoutEffect(() => {
+    if (viewing) previewRef.current?.focus();
+    else previewButtons.current.get(lastViewed.current)?.focus();
+  }, [viewing]);
   useEffect(() => {
     let active = true;
     setError("");
@@ -25,7 +36,7 @@ export function FileHistory({ client, item, disabled, onRestore, onClose }) {
     };
   }, [client, item.id, item.version, reload]);
   return (
-    <ResourceDialog label={t("文件历史版本")} onClose={onClose}>
+    <ResourceDialog label={t("文件历史版本")} onClose={onClose} className={viewing ? "res-history-dialog" : ""}>
       <h2>{t("文件历史版本")}</h2>
       <p>{t("下载核对旧文件，或将它恢复为当前文件。名称、分类和备注保持不变。")}</p>
       {error && (
@@ -35,6 +46,18 @@ export function FileHistory({ client, item, disabled, onRestore, onClose }) {
         </p>
       )}
       {!entries && !error && <p>{t("正在读取历史版本…")}</p>}
+      {viewing && (
+        <div className="res-history-preview" ref={previewRef} tabIndex={-1}>
+          <h3>{viewing.file.name} · {t("保存版本 {{version}}", {version: viewing.version})}</h3>
+          <p>{t("只读预览，不会更改当前文件或资料信息。")}{viewing.supplementPreviewFileId ? t(" · 含补充 PDF") : ""}</p>
+          <Preview key={viewing.version} client={client} fileId={viewing.supplementPreviewFileId || viewing.fileId}
+            page={page} onPage={setPage} zoom={zoom} onZoom={setZoom} readOnly />
+          <div className="res-actions">
+            <button onClick={() => setViewing(null)}>{t("返回历史列表")}</button>
+            {!confirm && !item.deletedAt && viewing.version !== entries?.[0]?.version && <button disabled={disabled} onClick={() => setConfirm(viewing)}>{t("恢复为当前文件")}</button>}
+          </div>
+        </div>
+      )}
       {confirm ? (
         <>
           <p> {t("将当前文件恢复为“")}{confirm.file.name} {t("”？")} </p>
@@ -47,7 +70,7 @@ export function FileHistory({ client, item, disabled, onRestore, onClose }) {
             <button onClick={() => setConfirm(null)}>{t("取消恢复")}</button>
           </div>
         </>
-      ) : (
+      ) : !viewing && (
         <div className="res-history-list">
           {entries?.map((entry, index) => (
             <div className="res-history-entry" key={entry.version}>
@@ -62,6 +85,19 @@ export function FileHistory({ client, item, disabled, onRestore, onClose }) {
                 {entry.supplementPreviewFileId ? t(" · 含补充 PDF") : ""}
               </p>
               <div className="res-actions">
+                <button
+                  ref={button => {
+                    if (button) previewButtons.current.set(entry.version, button);
+                    else previewButtons.current.delete(entry.version);
+                  }}
+                  disabled={entry.unavailable}
+                  onClick={() => {
+                    lastViewed.current = entry.version;
+                    setViewing(entry);
+                    setPage(1);
+                    setZoom(100);
+                  }}
+                >{t("预览此版本")}</button>
                 <button
                   disabled={entry.unavailable}
                   onClick={() =>

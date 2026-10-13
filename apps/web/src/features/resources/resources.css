@@ -1458,3 +1458,21 @@
 .res-history-entry strong {
   overflow-wrap: anywhere;
 }
+
+.res-history-dialog { width: min(920px, 100%); }
+.res-history-preview .res-preview { height: min(64dvh, 620px); min-height: 280px; }
+.res-history-preview h3 { margin-bottom: 0; overflow-wrap: anywhere; }
+
+.res-recognition-hit pre { white-space: pre-wrap; margin: 0; font: inherit; max-height: 160px; overflow: auto; }
+.res-recognition-hit mark { color: var(--res-text); background: #facc1577; border-radius: 2px; }
+.res-recognition-hit { padding: 12px; margin-bottom: 16px; border: 1px solid var(--res-line); border-radius: 8px; }
+.res-history-preview .res-page-jump label { flex-direction: row; white-space: nowrap; }
+.res-history-preview .res-page-jump input { width: 60px; }
+.res-history-preview .res-preview-toolbar select { width: 80px; }
+@media (max-width: 600px) {
+  .res-history-preview .res-preview { height: 48dvh; min-height: 280px; }
+}
+
+.res-page-navigation { display: flex; align-items: center; gap: 8px; }
+.res-history-preview .res-preview-toolbar { padding-inline: 0; }
+.res-history-preview .res-page-navigation { gap: 4px; }
