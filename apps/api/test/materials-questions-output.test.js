@@ -9,8 +9,14 @@ import { startQuestionsFixture } from "../../web/e2e/fixtures/materials-question
 
 async function environment(t) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "questions-output-"));
-  const runtime = await startQuestionsFixture({ dataDir: dir, port: 0 });
-  t.after(async () => { await runtime.close(); await fs.rm(dir, { recursive: true, force: true }); });
+  let runtime;
+  let successful = false;
+  t.after(async () => {
+    await runtime?.close();
+    if (successful) await fs.rm(dir, { recursive: true, force: true });
+    else console.error(`题库输出测试失败现场保留：${dir}`);
+  });
+  runtime = await startQuestionsFixture({ dataDir: dir, port: 0 });
   const origin = `http://localhost:${runtime.server.address().port}`;
   const headers = {
     Cookie: runtime.workbench.identity.testPrincipalCookie("r33-a").header.split(";")[0],
@@ -30,6 +36,7 @@ async function environment(t) {
     return value;
   }
   return {
+    complete() { successful = true; },
     async upload(bytes) {
       const form = new FormData();
       form.append("file", new Blob([bytes], { type: "image/png" }), "配图.png");
@@ -85,7 +92,7 @@ test("standalone common answer headings match numbered answers instead of splitt
     assert.equal(result.fragments.length, 0, heading);
     assert.equal(result.input.text, input);
   }
-  for (const text of ["计算 1+1。\n答案：\n2", "1. 计算 1+1。\n答案：\n2", "1. 计算 1+1。\n答案：2\n2. 计算 2+2。\n答案：4"]) {
+  for (const text of ["计算 1+1。\n答案：\n2", "1. 计算 1+1。\n答案：\n2", "1. 计算 1+1。\n答案：2\n2. 计算 2+2。\n答案：4", "1. 计算 1+1。\n答案：\n先求和得2。\n2. 计算 2+2。\n答案：\n得4。"]) {
     const created = await e.q("/imports", { title: "逐题答案", origin: "", input: { kind: "text", text } });
     assert.equal((await e.job(created.jobId)).state, "succeeded");
     const result = await e.q(`/imports/${created.id}`, null, "GET");
@@ -93,6 +100,34 @@ test("standalone common answer headings match numbered answers instead of splitt
     assert.ok(result.drafts.every(d => d.answerStatus === "present"));
     assert.equal(result.fragments.length, 0);
   }
+  e.complete();
+});
+
+test("standalone answer section preserves introduction before numbered answers", async t => {
+  const e = await environment(t);
+  const input = "1. 计算1+1。\n2. 计算2+2。\n答案：\n以下为各题答案。\n1. 2\n2. 4";
+  const created = await e.q("/imports", { title: "答案区说明", origin: "", input: { kind: "text", text: input } });
+  assert.equal((await e.job(created.jobId)).state, "succeeded");
+  const result = await e.q(`/imports/${created.id}`, null, "GET");
+  await evidence("answer-introduction.json", Buffer.from(JSON.stringify(result, null, 2)));
+  assert.equal(result.drafts.length, 2);
+  assert.deepEqual(result.drafts.map(d => d.answerStatus), ["present", "present"]);
+  assert.deepEqual(result.drafts.map(d => d.solution.blocks[0].runs[0].text), ["2", "4"]);
+  assert.equal(result.fragments.length, 1);
+  assert.equal(result.fragments[0].text, "以下为各题答案。");
+  assert.equal(result.fragments[0].disposition, "unassigned");
+  const location = result.fragments[0].locations[0];
+  assert.equal([...input].slice(location.start, location.end).join(""), "以下为各题答案。");
+  assert.equal(result.input.text, input);
+  const repeatedInput = "1. 第一题。\n1. 第二题。\n答案：\n以下为各题答案。\n1. 2\n1. 4";
+  const repeated = await e.q("/imports", { title: "重复题号答案区", origin: "", input: { kind: "text", text: repeatedInput } });
+  assert.equal((await e.job(repeated.jobId)).state, "succeeded");
+  const ambiguous = await e.q(`/imports/${repeated.id}`, null, "GET");
+  assert.equal(ambiguous.drafts.length, 2);
+  assert.deepEqual(ambiguous.drafts.map(d => d.answerStatus), ["unresolved", "unresolved"]);
+  assert.ok(ambiguous.drafts.every(d => d.solution.blocks.length === 0));
+  assert.deepEqual(ambiguous.fragments.map(f => f.text), ["以下为各题答案。", "2", "4"]);
+  e.complete();
 });
 
 test("question PNG keeps text and inline math on one normal line and answers in a separate PNG", async t => {
@@ -110,6 +145,7 @@ test("question PNG keeps text and inline math on one normal line and answers in 
   assert.ok(meta.height <= 190, `短句应连排成一行，实际高度 ${meta.height}`);
   const { data } = await sharp(outputs[0]).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   assert.equal(data[3], 0);
+  e.complete();
 });
 
 test("long paragraph PNG fragments retain every complete line including the tail", async t => {
@@ -133,6 +169,7 @@ test("long paragraph PNG fragments retain every complete line including the tail
     }
   }
   assert.equal(bands, lines.length, "每一条真实文字行都应完整出现，不能丢行或截断成两行");
+  e.complete();
 });
 
 test("mixed formula, original figure, option and table order survives actual PNG export", async t => {
@@ -167,6 +204,7 @@ test("mixed formula, original figure, option and table order survives actual PNG
   }
   assert.equal(figurePixels, 160 * 100, "原图保持尺寸、颜色及完整像素");
   assert.ok(firstFigureRow > 100, "原图应位于题干之后");
+  e.complete();
 });
 
 test("oversized table cells keep all lines across bounded PNG fragments", async t => {
@@ -193,6 +231,7 @@ test("oversized table cells keep all lines across bounded PNG fragments", async 
     }
   }
   assert.equal(bands, 80, "表格各行文字必须完整，不能整体缩成难以辨认的小字或丢失末行");
+  e.complete();
 });
 
 test("oversized display formula scales intact instead of exceeding a PNG fragment", async t => {
@@ -203,4 +242,5 @@ test("oversized display formula scales intact instead of exceeding a PNG fragmen
   const meta = await sharp(outputs[0]).metadata();
   assert.equal(meta.width, 1600);
   assert.ok(meta.height <= 2400);
+  e.complete();
 });

@@ -970,3 +970,32 @@ test('核心体验：没有待检查题但仍有未分配答案的材料继续�
   await page.reload();
   await expect(pending.getByRole('button')).toHaveCount(1);
 });
+
+for (const label of ['题干', '答案与解析']) {
+  test(`审查回归：空${label}首次输入不成为结构撤销，显式添加段落仍可撤销`, async ({ page }) => {
+    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    if (label === '答案与解析') {
+      await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('用于保存的题干。');
+      await page.getByRole('button', { name: '添加答案与解析', exact: true }).click();
+    }
+    const editor = page.locator('.q-document-field').filter({ has: page.getByRole('heading', { name: label, exact: true }) });
+    const undo = page.getByRole('button', { name: `撤销${label}结构操作`, exact: true });
+    const first = page.getByRole('textbox', { name: `${label}段落 1`, exact: true });
+    await first.pressSequentially('首次输入保留');
+    await expect(first).toHaveValue('首次输入保留');
+    await expect(undo).toHaveCount(0);
+    await editor.getByRole('button', { name: '插入更多内容', exact: true }).click();
+    await page.getByRole('menuitem', { name: '添加段落', exact: true }).click();
+    await page.getByRole('textbox', { name: `${label}段落 2`, exact: true }).fill('显式添加的第二段');
+    await first.fill('添加后补写的第一段');
+    await undo.click();
+    await expect(first).toHaveValue('添加后补写的第一段');
+    await expect(page.getByRole('textbox', { name: `${label}段落 2`, exact: true })).toHaveCount(0);
+    await expect(undo).toHaveCount(0);
+    await page.getByRole('button', { name: '保存题目', exact: true }).click();
+    await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+    await page.reload();
+    const [saved] = await records();
+    expect(saved[label === '题干' ? 'body' : 'solution'].blocks[0].runs[0].text).toBe('添加后补写的第一段');
+  });
+}

@@ -88,10 +88,14 @@ export function nativeText(text, location) {
   }
   for (const [index, line] of lines.entries()) {
     if (answerHeading.test(line.text)) {
-      // A plain heading with unnumbered content still belongs to the current
-      // question. Numbered answers start a separate section and match by label.
-      const next = lines.slice(index + 1).find(item => item.text.trim());
-      if (group && !answerSection && /^\s*(?:答案|解析|解答)\s*[:：]?\s*$/.test(line.text) && !questionStart.test(next?.text ?? "")) {
+      // An answer section can have introductory prose before restarting known
+      // question labels. A later new question label still ends an inline answer.
+      const following = lines.slice(index + 1);
+      const next = following.find(item => item.text.trim());
+      const firstNumbered = following.find(item => questionStart.test(item.text))?.text.match(questionStart);
+      const resumesKnownLabel = firstNumbered && [...drafts, ...(group ? [group] : [])]
+        .some(item => questionLabel(item.title) === questionLabel(firstNumbered[1]));
+      if (group && !answerSection && /^\s*(?:答案|解析|解答)\s*[:：]?\s*$/.test(line.text) && !questionStart.test(next?.text ?? "") && !resumesKnownLabel) {
         answer = true;
         group.answerStart ??= line.start;
         continue;

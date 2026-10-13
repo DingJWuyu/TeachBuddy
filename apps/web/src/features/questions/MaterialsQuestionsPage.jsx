@@ -19,7 +19,7 @@ import {
 import { useScrollRestore } from "../workbench/useScrollRestore.js";
 import { FragmentReview } from './FragmentReview.jsx';
 import { NoteFragments } from './NoteFragments.jsx';
-import { ImportList } from './ImportList.jsx';
+import { ImportList, isCompletedImport } from './ImportList.jsx';
 import OriginalPane from "./OriginalPane.jsx";
 import ResizeDivider from "./ResizeDivider.jsx";
 import { QuestionIcon, QuestionDialog, QuestionDocumentEditor, QuestionWelcome } from './QuestionControls.jsx';
@@ -861,7 +861,7 @@ export default function MaterialsQuestionsPage({
         ) : scene.kind === "import" ? (
           <>
             <header className="q-review-heading">
-              <div className="q-review-title"><button className="q-text-button q-back" onClick={() => returnToLibrary()}><QuestionIcon name="back" />{archived ? t("返回归档内容") : t("返回题库")}</button><h2>{value.title}</h2><span className="q-muted">{value.deletedAt ? t("已归档") : job?.state === 'succeeded' && value.drafts.every(d => d.disposition !== 'pending') && value.fragments.every(f => f.disposition !== 'unassigned') ? t("全部检查完成") : (stateNames[job?.state] ? t(stateNames[job.state]) : "")}</span></div>
+              <div className="q-review-title"><button className="q-text-button q-back" onClick={() => returnToLibrary()}><QuestionIcon name="back" />{archived ? t("返回归档内容") : t("返回题库")}</button><h2>{value.title}</h2><span className="q-muted">{value.deletedAt ? t("已归档") : isCompletedImport({ ...value, jobState: job?.state }) ? t("全部检查完成") : (stateNames[job?.state] ? t(stateNames[job.state]) : "")}</span></div>
               <div className="q-review-progress"><span><QuestionIcon name="check" size={15} />{t("原稿已保存")}</span><span>{value.drafts.filter(d => d.disposition === 'confirmed').length} {t("题已入库")}</span><span>{value.drafts.filter(d => d.disposition === 'pending').length} {t("题待检查")}</span></div>
               <div className="q-tools">
                 {!value.deletedAt && <button
