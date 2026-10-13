@@ -454,11 +454,14 @@ test('主题真实切换、窄屏展开字段可达，账户草稿和未知请�
   await page.locator('[name=entry-title]').fill('账户甲未确认标题');
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
   await page.locator('[name=entry-title]').fill('账户甲后续草稿');
+  // Finish logout and anonymous context preparation before navigating to another login.
   await page.getByRole('link', { name: /^账户：/ }).click(); await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await expect(page.getByRole('button', { name: '登录', exact: true })).toBeEnabled();
   await registerMath(world, 'schedule-other@example.test'); await login(page, 'schedule-other@example.test');
   await expect(page.locator('[name=entry-title]')).toHaveCount(0); await expect(page.getByRole('button', { name: '重试确认', exact: true })).toHaveCount(0);
   await expect(page.locator('.cal-upcoming-row')).toHaveCount(0);
   await page.getByRole('link', { name: /^账户：/ }).click(); await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await expect(page.getByRole('button', { name: '登录', exact: true })).toBeEnabled();
   await page.unroute(`**${E}/${task.id}`); await login(page);
   await expect(page.locator('[name=entry-title]')).toHaveValue('账户甲后续草稿');
   await page.getByRole('button', { name: '重试确认', exact: true }).click();
