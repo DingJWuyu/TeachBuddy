@@ -53,10 +53,6 @@ export const modulePorts = Object.freeze({
     "provider": "questions",
     "port": "readForReferenceV2"
   },
-  "resources.readForReferenceV2": {
-    "provider": "resources",
-    "port": "readForReferenceV2"
-  },
   "math.readForReferenceV1": {
     "provider": "math",
     "port": "readForReferenceV1"

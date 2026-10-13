@@ -18,7 +18,7 @@ B11 的文件与冻结定义保持不变。题库丰富内容操作位于 `/api/
 
 v2 读取旧对象时，原 Document.version=1 原样返回；补充空分类、由旧 solution 是否为空确定 answerStatus。既有题目/来源/改编快照/笔记/时间/删除标记都保留。纯读取不写回、不增加版本。v2 写入时可以继续使用 Document v1，只有使用新节点的文档才写 v2，不全量重写旧文档。快照不被后续内容迁移偷偷替换。
 
-旧 B11 操作在其可表示对象上继续满足原 schema；附加分类等元数据在旧请求未提供时保持。若旧客户端访问含 v2 文档、新来源或资源引用的对象，服务器返回 B11 已有的 `422 invalid-input / unsupported-content-version`，不做有损投影。旧列表若匹配到不可表示对象，同样明确要求使用新版入口，不静默漏题；旧 UI 保留草稿并进入升级提示/只读路径。旧写入先重放已成功原请求，再检查当前版本，最后拒绝不可表示对象的覆盖。v2 全部对象可正常读取，故这是客户端协议升级，不是丢失数据。
+旧 B11 操作在其可表示对象上继续满足原 schema；附加分类等元数据在旧请求未提供时保持。若旧客户端访问含 v2 文档或新来源的对象，服务器返回 B11 已有的 `422 invalid-input / unsupported-content-version`，不做有损投影。旧列表若匹配到不可表示对象，同样明确要求使用新版入口，不静默漏题；旧 UI 保留草稿并进入升级提示/只读路径。旧写入先重放已成功原请求，再检查当前版本，最后拒绝不可表示对象的覆盖。v2 全部对象可正常读取，故这是客户端协议升级，不是丢失数据。
 
 B11 的 readForReference 端口继续供旧调用方使用，新增 `readForReferenceV2` 支持本批 Snapshot。旧副本来源中的 v1 快照维持 v1。题库拥有自身对象兼容，未知旧请求沿原路径确认。
 
@@ -58,7 +58,7 @@ LocatedPart 区分题面/答案/配图/未分配片段；跨页一题包含多�
 
 ## 资源归档与彻底删除
 
-资源库 UI 将可恢复的 `deletedAt` 状态称为归档，继续使用 `POST /api/modules/resources/items/{id}/deletion` 和 `SetDeletion`，保持既有客户端兼容。归档、恢复均增加版本，已有引用的文件与快照保持。
+资源库 UI 将可恢复的 `deletedAt` 状态称为归档，继续使用 `POST /api/modules/resources/items/{id}/deletion` 和 `SetDeletion`，保持既有客户端兼容。归档、恢复均增加版本，原件和文件历史保持。
 
 `POST /api/modules/resources/items/{id}/purge` 接收 `{baseVersion}` 与幂等键，仅允许彻底删除本账户已归档的资料条目，返回 `{id, permanentlyDeleted: true}`。活动资料返回 422 `invalid-input`（`/id`, `invalid-reference`），过期版本返回 409，外账户或不存在返回 404。删除后 GET、恢复及新键再次删除均返回 404；成功原键重放仍返回原成功结果，不能重新创建或恢复条目。受管文件生命周期不由此接口清理。
 
@@ -178,10 +178,9 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 | 公共 Web 阅读 | `DocumentView({value, onOpenFile})` | value 为 Document；按内容版本安全呈现，图片通过授权 fileId 获取。 |
 | 公共 Web 编辑 | `DocumentEditor({value, onChange, readOnly, onOpenFile, onPickImage})` | onChange(Document)；onPickImage()返回Promise<File或null>，由调用方完成上传/选择，编辑器不让老师填写fileId。支持本批封闭节点、公式源和错误定位，保存由所属模块负责。 |
 | 题目引用 | `questions.readForReferenceV2(principal, questionId)` | 同步 ReferenceReadQuestion，deletedAt 可非空，调用者事务中核对采用版本。 |
-| 资源引用 | `resources.readForReferenceV2(principal, resourceId)` | 同步 ReferenceReadResource，保留 current 文件及补充预览。 |
 | 业务动作 | 各模块 `port.operations.<operationId>({principal, key, input, id, query})` | Promise<{status, body}>，input/查询来自对应 HTTP schema；读取省略 key，缺省 id/query 不传。与 HTTP 共用业务校验与 mutations，不再执行另一份 SQL。 |
 
-Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档，已有 resource/question 引用可供复用。作品制作状态和隔离 HTML 由[数学架构](../features/math.md#制作实现)定义。
+Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档。作品制作状态和隔离 HTML 由[数学架构](../features/math.md#制作实现)定义。
 
 组合工厂提供 `{db, mutations, files, content, jobs}`，业务模块只注入所需的公共端口，不读取其他模块的表。
 
@@ -233,7 +232,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 | MC10 / M011 | CreateManualV2 → QuestionSavedV2；PUT基于保存结果；CopyV2；GET copies/source/for-reference | 直接编辑同ID；复制新ID、采用时Snapshot，笔记/标记按请求。原题删除后副本来源仍可读，relocateQuestion仅修改import题来源位置。 |
 | MC11 / M012 | B11 CreatePasted/引用/未知请求，迁移后GET v2；加入ImageBlock | 原Document v1不强转，旧ID版本关系保留。未知旧请求在原路径重放；旧GET/列表/覆盖新内容返回UnknownVersion，v2可正常操作。 |
 | MC12 / M013 | ResourceFolders；移动/删除folder与tag；listResources组合查询 | 文件夹含后代筛选，多个tag为AND；删除父目录移到保留祖先，不删除资源；q搜索原文件名/名称/备注及当前可提取正文，未完成读取的进度单独返回。 |
-| MC13 / M015 | PreviewLegacyLimited；SupplementPreview | 原DOC显示limited且实际页可读；绑定本账户PDF后resource.version增加，旧引用不变。原fileId已变或PDF不完整拒绝，不能蒙混成ready。 |
+| MC13 / M015 | PreviewLegacyLimited；SupplementPreview | 原DOC显示limited且实际页可读；绑定本账户PDF后resource.version增加，文件历史记录原件及补充预览。原fileId已变或PDF不完整拒绝，不能蒙混成ready。 |
 | MC20 / M024 | PptAsset → Job；figure-png选择题内真实图ID | 获取透明PNG分片与原图，复制公式源可编辑；选其他题图或跨账户fileId拒绝。答案关闭则图片无答案，note永不输出。 |
 | MC21 / M025 | 文件写满前、rename后DB提交前、DB提交后丢响应分别断开/重启 | 未提交不会有可获取的File记录；已提交同键恢复同ID。持久文件缺失返回DiskFailure，不以假成功掩盖。 |
 | MC22 / M026、M027 | 以B/无身份访问每类数据和衍生文件，错误来源/伪造身份；恶意HTML/Office/zip | 401/404/403/422符合顺序，不泄漏A对象信息；HTML转义，转换无宿主网络/文件读写权限，超限明确失败。 |

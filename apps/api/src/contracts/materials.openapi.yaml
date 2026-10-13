@@ -1542,37 +1542,6 @@ paths:
             schema:
               $ref: '#/components/schemas/PurgeResource'
 
-  /api/modules/resources/items/{id}/for-reference:
-    get:
-      operationId: readResourceForReferenceV2
-      summary: readResourceForReferenceV2
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/Id'
-      responses:
-        '200':
-          description: 当前账户的持久结果。
-          headers:
-            Cache-Control:
-              required: true
-              schema:
-                const: no-store
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReferenceReadResource'
-        '401':
-          $ref: '#/components/responses/401'
-        '404':
-          $ref: '#/components/responses/404'
-        '422':
-          $ref: '#/components/responses/422'
-        '503':
-          $ref: '#/components/responses/503'
   /api/modules/questions/v2/items/{id}/copies:
     post:
       operationId: copyQuestionV2
@@ -3863,33 +3832,6 @@ components:
       - fileId
       - supplementPreviewFileId
       additionalProperties: false
-    ResourceSnapshot:
-      type: object
-      properties:
-        title:
-          type: string
-          minLength: 1
-          maxLength: 200
-        fileId:
-          $ref: '#/components/schemas/Id'
-        fileName:
-          type: string
-          minLength: 1
-          maxLength: 200
-        mediaType:
-          type: string
-          minLength: 1
-          maxLength: 150
-        supplementPreviewFileId:
-          anyOf:
-          - $ref: '#/components/schemas/Id'
-          - type: 'null'
-      required:
-      - title
-      - fileId
-      - fileName
-      - mediaType
-      - supplementPreviewFileId
     AssetInput:
       type: object
       properties:
@@ -3924,24 +3866,6 @@ components:
           - type: 'null'
         snapshot:
           $ref: '#/components/schemas/Snapshot'
-      required:
-      - id
-      - version
-      - deletedAt
-      - snapshot
-    ReferenceReadResource:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/Id'
-        version:
-          $ref: '#/components/schemas/Version'
-        deletedAt:
-          anyOf:
-          - $ref: '#/components/schemas/Timestamp'
-          - type: 'null'
-        snapshot:
-          $ref: '#/components/schemas/ResourceSnapshot'
       required:
       - id
       - version
@@ -4281,7 +4205,6 @@ components:
           items:
             enum:
             - questions.readForReferenceV2
-            - resources.readForReferenceV2
           minItems: 0
           maxItems: 20
           uniqueItems: true

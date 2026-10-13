@@ -56,7 +56,7 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
   assert.ok(duplicatePath.some((problem) => problem.includes('duplicates catalog[0].path')));
 
   const missingDependency = validateModuleCatalog([
-    catalogEntry({ id: 'classes', name: 'C', path: '/classes', requires: ['questions.readForReferenceV2', 'resources.readForReferenceV2'] })
+    catalogEntry({ id: 'classes', name: 'C', path: '/classes', requires: ['questions.readForReferenceV2', 'math.readForTeachingLinkV1'] })
   ]);
   assert.ok(missingDependency.some((problem) => problem.includes('provider questions is not in the catalog')));
 
@@ -64,7 +64,7 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
   assert.ok(unknownPort.some((problem) => problem.includes('unknown port')));
 
   const cycle = validateModuleCatalog([
-    catalogEntry({ id: 'questions', name: 'Q', path: '/questions', requires: ['questions.readForReferenceV2', 'resources.readForReferenceV2'] })
+    catalogEntry({ id: 'questions', name: 'Q', path: '/questions', requires: ['questions.readForReferenceV2', 'math.readForTeachingLinkV1'] })
   ]);
   assert.ok(cycle.some((problem) => problem.includes('requires its own port')));
 
@@ -175,24 +175,24 @@ test('the loader wires a required public port and enforces its presence', async 
         })
       })
     },
-    resources: { factory: async () => ({ createResourcesModule: () => ({ router() {}, port: { readForReferenceV2: () => ({ id: 'r' }) } }) }) },
+    math: { factory: async () => ({ createMathModule: () => ({ router() {}, port: { readForTeachingLinkV1: () => ({ id: 'm' }) } }) }) },
     classes: {
       factory: async () => ({
-        createClassesModule: ({ questions, resources }) => ({
+        createClassesModule: ({ questions, math }) => ({
           router() {},
-          port: { questionsPort: questions.readForReferenceV2(), resourcePort: resources.readForReferenceV2() }
+          port: { questionsPort: questions.readForReferenceV2(), mathPort: math.readForTeachingLinkV1() }
         })
       })
     }
   };
   const dependencies = { db: { name: 'db' }, mutations: { name: 'mutations' } };
-  const loader = createModuleLoader({ catalog: moduleCatalog.filter(e=>['questions','resources','classes'].includes(e.id)).map(e=>({...e,requires:e.id==='classes'?['questions.readForReferenceV2','resources.readForReferenceV2']:e.requires})), implementations, dependencies });
+  const loader = createModuleLoader({ catalog: moduleCatalog.filter(e=>['questions','math','classes'].includes(e.id)), implementations, dependencies });
   await loader.instantiate();
 
-  assert.deepEqual(loader.enabledIds(), ['questions', 'resources', 'classes']);
+  assert.deepEqual(loader.enabledIds(), ['questions', 'math', 'classes']);
   assert.equal(loader.get('questions').port.mutations.name, 'mutations');
   assert.deepEqual(loader.get('classes').port.questionsPort, { id: 'q' });
-  assert.deepEqual(loader.get('classes').port.resourcePort, { id: 'r' });
+  assert.deepEqual(loader.get('classes').port.mathPort, { id: 'm' });
 });
 
 test('a module that requires a missing provider stops composition', async () => {

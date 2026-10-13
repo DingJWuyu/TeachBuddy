@@ -105,24 +105,6 @@ export function createResourcesModule({
       version: item.version + 1,
       updatedAt: now(),
     });
-  function readForReferenceV2(principal, id) {
-    if (!principal?.accountKey) throw contractError(problems.unauthenticated());
-    validateIdPath(id);
-    const item = read(principal, id),
-      file = files.read(principal, item.fileId);
-    return {
-      id: item.id,
-      version: item.version,
-      deletedAt: item.deletedAt,
-      snapshot: {
-        title: item.title,
-        fileId: item.fileId,
-        fileName: file.name,
-        mediaType: file.mediaType,
-        supplementPreviewFileId: item.supplementPreviewFileId,
-      },
-    };
-  }
   const definitions = {
     retryResourceText: {
       method: "POST",
@@ -199,11 +181,6 @@ export function createResourcesModule({
         history.capture(principal, result);
         return result;
       },
-    },
-    readResourceForReferenceV2: {
-      method: "GET",
-      route: "/items/:id/for-reference",
-      run: ({ principal, id }) => readForReferenceV2(principal, id),
     },
     updateResource: {
       method: "PUT",
@@ -385,7 +362,6 @@ export function createResourcesModule({
   materialErrors(router);
   return { router, port: {
     operations,
-    readForReferenceV2,
     readForExport(principal) {
       return { resources: all(principal), taxonomy: taxonomy.readStored(principal), fileRevisions: history.readForExport(principal) };
     },

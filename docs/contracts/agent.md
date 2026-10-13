@@ -135,7 +135,7 @@ entry 引用快照同时保存 Entry 和选定 Occurrence：有 originDate 时�
 | 题面/PPT 素材与原稿预览下载 | createQuestionAsset、File get/preview/requestPreview，下载由卡片受保护动作提供 | 返回真实 File/Job，PNG 或原件可下载；不把二进制塞进模型 JSON |
 | 数学公式、函数、平面/空间、动态制作/修改、参数/标注/样式/步骤、复制/版本 | math works 的 list/get/create/update/copy/versions/reference | 保存可编辑 Source；演示按原隔离方式预览，旧引用固定旧版 |
 | 数学 PNG/SVG/透明公式/源码/离线 HTML，外部 HTML 导入 | exportWork；create/updateWork 消费已上传 File | 卡片打开真实作品和成果；不赋予任意 HTML 结构化编辑承诺 |
-| 资源收录、分类/标签/备注/检索、预览/下载、替换文件/补充预览 | resources 全套 items、taxonomy、file、supplement-preview；File 端口 | 替换保留条目与关联 |
+| 资源收录、分类/标签/备注/检索、预览/下载、替换文件/补充预览 | resources 全套 items、taxonomy、file、supplement-preview；File 端口 | 替换保留条目、分类、标签与备注 |
 | 班级管理、一句话/进度/共性问题/下一步、题目/作品关联、两班反馈 | classes items；records v2、source-records v2 | 实际记录可打开来源并返回，反馈按班分开；不把日程当已授课 |
 | 任意连续日期、未排期、多事项、优先级/段内排序、跨段移动、课程关联 | schedule entries、occurrences、moveItem | 返回准确日期/时段及内容，优先级与顺序互不派生 |
 | 周重复/结束日/仅这次/恢复原安排、提醒前后间隔/通知 | exceptions、settings、notifications | 保留 originDate；只通知站内，原 dueAt/去重与修改前结算不变 |

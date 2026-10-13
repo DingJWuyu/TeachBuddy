@@ -3,7 +3,6 @@ import { useLayoutEffect, useState } from "react";
 import ResourcesPage from "./index.jsx";
 import { readLocal, writeLocal } from "../workbench/storage.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
-import { navigate } from "../workbench/routes.js";
 
 /** Adapt the shell deep link to the resource module's account-scoped scene. */
 export default function ResourceRoute(props) {

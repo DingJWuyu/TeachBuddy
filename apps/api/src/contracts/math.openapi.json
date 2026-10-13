@@ -2551,7 +2551,6 @@
               "enum": [
                 "questions.readForReference",
                 "questions.readForReferenceV2",
-                "resources.readForReferenceV2",
                 "math.readForReferenceV1",
                 "math.readForTeachingLinkV1",
                 "classes.readClass",

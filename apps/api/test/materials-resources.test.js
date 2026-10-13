@@ -230,13 +230,13 @@ test("MC12 分类移动删除、组合检索及跨账户隔离", async () => {
   }
 });
 
-test("MC13-15 替换、补充预览、固定快照、删除恢复及幂等", async () => {
+test("MC13-15 替换、补充预览、文件历史、删除恢复及幂等", async () => {
   fixture = await startResourcesFixture({ dataDir });
   try {
     const file = await upload(),
       second = await upload();
     const input = {
-      title: "固定采用",
+      title: "保留文件历史",
       fileId: file.id,
       folderId: null,
       tagIds: [],
@@ -247,9 +247,9 @@ test("MC13-15 替换、补充预览、固定快照、删除恢复及幂等", asy
       await request("POST", "/api/modules/resources/items", input, { key })
     ).body;
     const base = `/api/modules/resources/items/${item.id}`;
-    const snapshot = (await request("GET", base + "/for-reference")).body;
-    assert.equal(snapshot.snapshot.fileId, file.id);
-    assert.equal(snapshot.snapshot.note, undefined);
+    assert.equal((await request("GET", base)).body.fileId, file.id);
+    assert.equal((await request("GET", base + "/for-reference")).status, 404);
+    assert.equal(fixture.resources.port.readForReferenceV2, undefined);
     assert.equal(
       (
         await request("PUT", base + "/supplement-preview", {
@@ -271,10 +271,6 @@ test("MC13-15 替换、补充预览、固定快照、删除恢复及幂等", asy
     });
     assert.equal(current.status, 200, JSON.stringify(current));
     assert.equal(current.body.version, 2);
-    const adopted = fixture.resources.port.readForReferenceV2(
-      { accountKey: "r32-a" },
-      item.id,
-    );
     current = await request("PUT", base + "/file", {
       baseVersion: 2,
       fileId: second.id,
@@ -282,8 +278,11 @@ test("MC13-15 替换、补充预览、固定快照、删除恢复及幂等", asy
     assert.equal(current.status, 200);
     assert.equal(current.body.supplementPreviewFileId, null);
     assert.equal(current.body.note, "私人备注");
-    assert.equal(adopted.snapshot.fileId, file.id);
-    assert.equal(adopted.snapshot.supplementPreviewFileId, second.id);
+    const previous = (await request("GET", base + "/history")).body.items.find(
+      (entry) => entry.version === 2,
+    );
+    assert.equal(previous.fileId, file.id);
+    assert.equal(previous.supplementPreviewFileId, second.id);
     assert.equal(
       (
         await request("PUT", base + "/file", {
@@ -300,7 +299,7 @@ test("MC13-15 替换、补充预览、固定快照、删除恢复及幂等", asy
     assert.equal(current.status, 200);
     assert.ok(current.body.deletedAt);
     assert.equal(
-      (await request("GET", base + "/for-reference")).body.snapshot.fileId,
+      (await request("GET", base)).body.fileId,
       second.id,
     );
     assert.equal(
