@@ -1111,15 +1111,15 @@ function MathSession({ transport, route }) {
     onChangeSource={next => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'workshop') return; if (JSON.stringify(current.source) !== JSON.stringify(next)) edit({ ...current, source: next }, false); }}
     onChangeInput={workshopInput => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'workshop') return; const next = { ...current, workshopInput }; draftRef.current = next; setDraft(next); writeLocal(account, 'math-workspace', { draft: next, pending: liveSave.current.pending, status: liveSave.current.status, selected, search, deleted, format, background, exportWidth }); }}
     onTitle={title => edit({ ...draftRef.current, title }, false)} onHome={goHome} onSave={() => save()} onError={handleError} onHistory={() => setHistoryOpen(true)} onCopy={() => save(true)} onArchive={() => deletion(false)} onDownload={exportFile}>
-    {confirmationDialog}<ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
+    <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>{confirmationDialog}
   </WorkshopWorkspace>;
   if (!home && !readOnly && draft?.source.kind === 'geogebra') return <GgbWorkspace key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflictNotice={conflictNotice} flushRef={ggbFlush}
     onChangeSource={(next, touched) => { const current = draftRef.current; if (editorSessionRef.current !== editorSession || current?.source.kind !== 'geogebra') return; if (current.source.base64 !== next.base64 || (!current.id && touched && !current.ggbTouched)) edit({ ...current, source: next, ggbTouched: current.ggbTouched || touched }, false); }}
     onUnchanged={(previous, previousStatus) => { if (editorSessionRef.current === editorSession && previousStatus === '已保存' && draftRef.current === previous && !inFlight.current && !pending) setStatus('已保存'); }}
     onDirty={() => setStatus('未保存')} onTitle={title => edit({ ...draftRef.current, title }, false)} onHome={goHome} onSave={() => save()} onError={handleError}
     onHistory={() => setHistoryOpen(true)} onRestore={() => deletion(false)}>
-    {confirmationDialog}
     <ModulePresence present={historyOpen}>{historyOpen && <WorkHistory work={draft} client={client} font={font} hasChanges={status !== '已保存'} onClose={() => setHistoryOpen(false)} onRestore={restoreVersion}/>}</ModulePresence>
+    {confirmationDialog}
   </GgbWorkspace>;
   return (
     <div className="math-workbench wb-module">

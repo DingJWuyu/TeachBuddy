@@ -27,5 +27,5 @@ export function useMathConfirm() {
 function MathConfirmDialog(props) {
   const ref = useRef(null);
   useMathDialogKeys(ref);
-  return <div ref={ref} style={{ display: 'contents' }}><ConfirmDialog {...props}/></div>;
+  return <div ref={ref} className="wb-dialog-host"><ConfirmDialog {...props}/></div>;
 }
