@@ -326,10 +326,10 @@
   "只读预览，不会更改当前文件或资料信息。": "Read-only preview. The current file and resource information stay unchanged.",
   "返回历史列表": "Back to version list",
   "识别正文搜索命中": "Search matches in recognized text",
-  "搜索命中识别原文，位置仅对应文字。": "Search matches in recognized text. Locations refer to text only.",
   "下载未完成，请重试。": "Download did not complete. Please try again.",
   "正在打包原件…": "Preparing original files…",
   "下载所选原件 ZIP": "Download selected originals as ZIP",
   "取消下载": "Cancel download",
-  "“{{title}}”及其历史版本将永久删除，无法恢复。不再使用的文件将释放空间，其他资料仍使用的文件会保留。": "“{{title}}” and its file history will be permanently deleted. Files no longer in use will be removed to free space; files used by other resources will be kept."
+  "“{{title}}”及其历史版本将永久删除，无法恢复。不再使用的文件将释放空间，其他资料仍使用的文件会保留。": "“{{title}}” and its file history will be permanently deleted. Files no longer in use will be removed to free space; files used by other resources will be kept.",
+  "此命中来自识别原文，请与排版正文和原页核对。": "This match is from recognized source text. Check it against the formatted text and original page."
 }

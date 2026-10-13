@@ -221,8 +221,9 @@ export function Recognition({
                       aria-label={t("第 {{page}} 页识别正文", { page: page })}
                       tabIndex={0}
                     >
-                      <RecognitionHit text={result.text || ""} query={searchQuery} />
-                      <DocumentView value={result.document} />
+                      <RecognitionHit text={result.text || ""} query={searchQuery}>
+                        <DocumentView value={result.document} />
+                      </RecognitionHit>
                     </section>
                     {result.text?.trim() && (
                       <ModuleDisclosure

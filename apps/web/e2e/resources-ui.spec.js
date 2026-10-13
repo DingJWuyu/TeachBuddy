@@ -1942,8 +1942,25 @@ test.describe("OCR 资源消费", () => {
     expect(search.search.ocr.unprocessedPages).toBe(1);
     await page.locator(".res-card-open").click();
     await expect(text).toContainText(/解不等式/);
-    await expect(text.locator(".res-recognition-hit mark").first()).toHaveText("不等式");
+    await expect.poll(() => page.evaluate(() => [...CSS.highlights.entries()]
+      .filter(([name]) => name.startsWith("res-ocr-hit-"))
+      .flatMap(([, value]) => [...value].map(range => range.toString())))).toContain("不等式");
+    await expect(text.locator(".res-recognition-hit")).toHaveCount(0);
     await screenshot(page, info, "ocr-search-highlight");
+    await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+    await page.getByLabel("搜索资料").fill("\\begin{cases}");
+    await expect(page.locator(".res-search-excerpt")).toContainText("begin{cases}");
+    await page.locator(".res-card-open").click();
+    const fallback = page.getByRole("region", { name: "识别正文搜索命中", exact: true });
+    await expect(fallback.locator("mark")).toHaveText("\\begin{cases}");
+    expect((await fallback.textContent()).length).toBeLessThan(220);
+    await screenshot(page, info, "ocr-formula-source-excerpt");
+    await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+    await page.getByLabel("搜索资料").fill("不等式");
+    await expect(page.locator(".res-search-excerpt")).toContainText("不等式");
+    await page.locator(".res-card-open").click();
+    await expect(text).toContainText(/解不等式/);
+
     await expect(page.locator(".res-issue-box")).toHaveCount(0);
     await expect(page.getByAltText("第 2 页", { exact: true })).toBeVisible();
     expect(recognizer.calls).toBe(1);
@@ -1980,8 +1997,13 @@ test.describe("OCR 资源消费", () => {
       .getByRole("navigation", { name: "功能模块" })
       .getByRole("link", { name: /^资源库/ })
       .click();
-    await showRecognition(page);
+    await page.getByRole("button", { name: "返回资源库", exact: true }).click();
+    await expect(page.locator(".res-search-excerpt")).toContainText("不等式");
+    await page.locator(".res-card-open").click();
     await expect(text).toContainText(/解不等式/);
+    await expect.poll(() => page.evaluate(() => [...CSS.highlights.entries()]
+      .filter(([name]) => name.startsWith("res-ocr-hit-"))
+      .flatMap(([, value]) => [...value].map(range => range.toString())))).toContain("不等式");
     await screenshot(page, info, "ocr-dark-desktop");
     await page.setViewportSize({ width: 390, height: 844 });
     await screenshot(page, info, "ocr-dark-phone");
@@ -2114,7 +2136,7 @@ test.describe("OCR 资源消费", () => {
       .json.items[0];
     await page.getByRole("button", { name: "返回资源库", exact: true }).click();
     // The other HTTP client keeps an owned file ready before replacing the
-    // resource. Its temporary resource entry is removed, not the managed file.
+    // resource. Archiving the helper resource keeps its owned file available.
     const archived = await api.request(
       "POST",
       `/api/modules/resources/items/${newer.id}/deletion`,
@@ -2124,18 +2146,6 @@ test.describe("OCR 资源消费", () => {
       },
     );
     expect(archived.status).toBe(200);
-    expect(
-      (
-        await api.request(
-          "POST",
-          `/api/modules/resources/items/${newer.id}/purge`,
-          {
-            headers: { "Idempotency-Key": randomUUID() },
-            body: { baseVersion: archived.json.version },
-          },
-        )
-      ).status,
-    ).toBe(200);
     await upload(
       page,
       {
