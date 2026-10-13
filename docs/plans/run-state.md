@@ -20,7 +20,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 | --- | --- | --- | --- |
 | 账户与身份 | 已清理 | 已清理 | [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37) 已集成，独立审查、CI 与 preview 启动核验通过；有效证据已保全，本轮停止开发 |
 | 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；当前暂停，待用户确定后续目标 |
-| 资源库 | `TeacherWorkspace-resources` | `feat/resources-core` | 已授权七项核心改进及搜索性能测量，独立候选开发与验证中；用户要求完成后保留工作树，不集成 preview/main |
+| 资源库 | `TeacherWorkspace-resources` | `feat/resources-core` | 七项核心改进及有实测依据的搜索优化已实现，通过专项验证与独立审查；按用户要求保留完整候选，未集成 preview/main。等待用户确定后续体验或集成安排，获准集成并验证后清理此工作树 |
 | 数学工坊 | 已清理 | 已清理 | 统一制作与网页 AI 已集成并验证；体验使用 preview，商店分发仍待准备 |
 | 日程 | 已清理 | 已清理 | 最新成果及专项 E2E 已集成并验证；体验数据与有效证据已保全 |
 
@@ -124,6 +124,8 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 每个事项只有满足其具名结果才改变状态；保留问题归属、证据及下一动作。缺材料/环境标待验证，用户选择标待决定，代码已合入但未验证不写验收完成。
 
 ## 核查入口
+
+资源库代码候选 `a3ec6f5a` 已在独立工作树完成生产构建、真实认证浏览器和开发模式验证，覆盖存储边界、彻底删除的独占文件回收、原件 ZIP、文件夹路径、补充封面、搜索高亮与历史只读预览。存储专项包含实际 SIGKILL 后接续、共享历史并发删除和备份还原；ZIP64 实测 100 份共 4.61GB，浏览器超过 60 秒的真实 ZIP 传输通过。Standards/Spec 独立审查无未解决发现，中断预览轮询的修正已独立复验。100 份相同输入暖搜索中位数从 290ms 降到 181ms，请求从 204 次降到 1 次；首次冷正文提取仍有渐进等待，首批结果没有明显提速。可重建入口见[资源库验证](../features/resources.md#接口与验证)，本机证据在该工作树的 `test-results/resources-core/receipt.md` 和 `test-results/resources-search/comparison.md`。子工作树的成果与有效证据已收拢，交付工作树保留；这些本机产物不作为新检出前置。未运行本候选的远端 CI、真实 OCR 新推理或目标课堂设备验证，preview 仍使用原集成代码。
 
 备课退役候选 `22dd8df4` 与 squash 提交 `9e9edf6c` 文件内容一致，独立集中审查无剩余阻断项。可重建入口为 `apps/api/test/lessons-retirement.test.js`、固定 `apps/api/test/fixtures/retirement/` 备份、`apps/web/e2e/remove-lessons.config.mjs` 和公共 `apps/api/test/materials-pandoc.test.js`；其余受影响回归沿模块规格选择。本机还完成 14 项定点浏览器用例、现行原型脚本及固定旧版升级检查。实际 preview 重启、健康与登录入口通过；备课表已退役，19 张保留表内容及 11 个共享文件哈希与升级前备份一致，日程仅清理退役字段。证据入口为 `test-results/remove-lessons-integration/root-receipt.json`，备份位置见同目录 `preview-backup.json`；这些本机产物不是新检出前置。固定旧包恢复、再备份及未知迁移拒绝由入库测试保护；真实邮件、模型、目标设备与 Office 人工操作仍沿未验边界，作者专项缺失的外部 PDF 样本不计通过。
 
