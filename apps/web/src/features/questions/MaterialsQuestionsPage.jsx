@@ -112,6 +112,25 @@ export default function MaterialsQuestionsPage({
   );
   const reviewScroll = useScrollRestore(scene.reviewScroll?.[selected] ?? 0,
     top => patchScene({ reviewScroll: { ...scene.reviewScroll, [selected]: top } }), selected);
+  const listNode = useRef(null);
+  const initialListTop = useRef(scene.listScroll ?? 0);
+  const listRestored = useRef(false);
+  useEffect(() => {
+    const node = listNode.current;
+    if (!node || listState !== 'ready' || listRestored.current) return;
+    const observer = new ResizeObserver(restore);
+    function restore() {
+      if (listRestored.current) { observer.disconnect(); return; }
+      node.scrollTop = initialListTop.current;
+      if (node.scrollTop === initialListTop.current) {
+        listRestored.current = true;
+        observer.disconnect();
+      }
+    }
+    observer.observe(node);
+    restore();
+    return () => observer.disconnect();
+  }, [listState, items.length, imports.length]);
   const unsupportedQuestion = value && scene.kind !== "import" && value.body
     ? questionDocuments(value).some(([, document]) => !supportedDocument(document))
     : false;
@@ -244,20 +263,23 @@ export default function MaterialsQuestionsPage({
       get("/api/workbench/jobs/" + assetId)
         .then((j) => live && setAssets(j))
         .catch((e) => live && setMessage(e.message));
-    if (scene.kind === "new")
-      setValue(
-        readLocal(accountKey, localKey) ?? {
-          title: "",
-          body: empty(),
-          solution: empty(),
-          answerStatus: "absent",
-          note: "",
-          starred: false,
-          typeId: null,
-          tagIds: [],
-          source: { kind: "manual" },
-        },
-      );
+    if (scene.kind === "new") {
+      const local = readLocal(accountKey, localKey) ?? {
+        title: "",
+        body: empty(),
+        solution: empty(),
+        answerStatus: "absent",
+        note: "",
+        starred: false,
+        typeId: null,
+        tagIds: [],
+        source: { kind: "manual" },
+      };
+      setValue(local);
+      if (local.source?.kind === 'copy') get('/items/' + local.source.questionId).then(current => {
+        if (live && current.version !== local.source.questionVersion) setConflict(current);
+      }).catch(error => { if (live) setMessage(error.message); });
+    }
     if (scene.id) {
       get(`/${scene.kind === "import" ? "imports" : "items"}/${scene.id}`)
         .then(async (v) => {
@@ -333,13 +355,14 @@ export default function MaterialsQuestionsPage({
     try {
       await fn();
     } catch (e) {
-      if (e.problem?.kind === "conflict" && scene.id) {
+      const current = editorRef.current;
+      const copySource = current.scene.kind === 'new' && current.value?.source?.kind === 'copy' ? current.value.source : null;
+      const conflictId = current.scene.id ?? copySource?.questionId;
+      if (e.problem?.kind === "conflict" && conflictId) {
         try {
-          setConflict(
-            await get(
-              `/${scene.kind === "import" ? "imports" : "items"}/${scene.id}`,
-            ),
-          );
+          const server = await get(`/${current.scene.kind === "import" ? "imports" : "items"}/${conflictId}`);
+          if (alive.current && editorRef.current.scene.kind === current.scene.kind && editorRef.current.scene.id === current.scene.id)
+            setConflict(server);
         } catch {
           /* Keep the local document available if the comparison read fails. */
         }
@@ -461,20 +484,23 @@ export default function MaterialsQuestionsPage({
     await refresh();
   }
   async function save() {
-    const result = await mutate(
-      `/${scene.kind === "import" ? "imports" : "items"}/${value.id}`,
-      scene.kind === "import"
+    const path = `/${scene.kind === "import" ? "imports" : "items"}/${value.id}`;
+    const input = scene.kind === "import"
         ? {
             baseVersion: value.version,
             drafts: value.drafts,
             fragments: value.fragments,
           }
-        : { baseVersion: value.version, ...editableFields(value) },
-      "PUT",
-    );
-    setValue(result);
-    removeLocal(accountKey, localKey);
-    setMessage(scene.kind === "import" ? t("校对已保存") : t("题目已保存"));
+        : { baseVersion: value.version, ...editableFields(value) };
+    const result = await mutate(path, input, "PUT");
+    if (scene.kind === 'import') {
+      setValue(result);
+      removeLocal(accountKey, localKey);
+      setMessage(t("校对已保存"));
+    } else {
+      acceptRecoveredQuestion({ path, input, method: 'PUT' }, result);
+      setMessage(readLocal(accountKey, localKey) ? t("题目已保存，之后补充的修改仍保留在草稿中。") : t("题目已保存"));
+    }
     await refresh();
     return result;
   }
@@ -500,13 +526,13 @@ export default function MaterialsQuestionsPage({
   }
   async function saveQuestion() {
     if (scene.kind !== 'new') return save();
-    const q = value.source?.kind === 'copy'
-      ? await mutate('/items/' + value.source.questionId + '/copies', { baseVersion: value.source.questionVersion, ...editableFields(value) })
-      : await mutate('/items', value);
-    removeLocal(accountKey, localKey);
+    const path = value.source?.kind === 'copy' ? '/items/' + value.source.questionId + '/copies' : '/items';
+    const input = value.source?.kind === 'copy' ? { baseVersion: value.source.questionVersion, ...editableFields(value) } : value;
+    const q = await mutate(path, input);
+    acceptRecoveredQuestion({ path, input, method: 'POST' }, q);
+    patchScene({ compare: false });
     await refresh();
-    open('question', q.id);
-    setMessage(t("题目已保存"));
+    setMessage(readLocal(accountKey, `questions-materials-draft:question:${q.id}`) ? t("题目已保存，之后补充的修改仍保留在草稿中。") : t("题目已保存"));
     return q;
   }
   function startCopy(question) {
@@ -663,20 +689,30 @@ export default function MaterialsQuestionsPage({
                 typeId: saved.types.some(t => t.id === q.typeId) ? q.typeId : null,
                 tagIds: q.tagIds.filter(id => saved.tags.some(t => t.id === id)),
               });
+              const after = before ? await get("/items/" + before.id) : null;
               const current = editorRef.current;
               if (current.scene.kind === editing.scene.kind && current.scene.id === editing.scene.id && current.value) {
+                const local = readLocal(accountKey, current.localKey);
                 let nextValue = current.value;
+                let nextLocal = local;
                 if (before) {
-                  const after = await get("/items/" + before.id);
                   const cleaned = classify(before);
                   const changed = cleaned.typeId !== before.typeId || cleaned.tagIds.length !== before.tagIds.length;
-                  if (current.value.version === before.version && after.version === before.version + Number(changed))
-                    nextValue = {...classify(current.value), version: after.version, updatedAt: after.updatedAt};
-                  else setConflict(after);
-                } else if (current.scene.kind === "new") nextValue = classify(current.value);
-                else if (current.scene.kind === "import") nextValue = {...current.value, drafts: current.value.drafts.map(classify)};
+                  if (local) {
+                    if (local.version === before.version && after.version === before.version + Number(changed))
+                      nextLocal = {...classify(local), version: after.version, updatedAt: after.updatedAt};
+                    else setConflict(after);
+                  }
+                  nextValue = current.scene.editing && nextLocal ? nextLocal : after;
+                } else if (current.scene.kind === "new") {
+                  nextValue = classify(current.value);
+                  if (local) nextLocal = nextValue;
+                } else if (current.scene.kind === "import") {
+                  nextValue = {...current.value, drafts: current.value.drafts.map(classify)};
+                  if (local) nextLocal = nextValue;
+                }
                 setValue(nextValue);
-                writeLocal(accountKey, current.localKey, nextValue);
+                if (nextLocal) writeLocal(accountKey, current.localKey, nextLocal);
               }
               const latestScene = editorRef.current.scene;
               const filters = {
@@ -755,15 +791,13 @@ export default function MaterialsQuestionsPage({
         {!registerTools && taxonomyTools}
         <div
           className="q-list"
-          ref={(el) => {
-            if (el && !el.dataset.restored) {
-              el.scrollTop = scene.listScroll ?? 0;
-              el.dataset.restored = "1";
-            }
+          ref={listNode}
+          onWheel={() => { listRestored.current = true; }}
+          onPointerDown={() => { listRestored.current = true; }}
+          onKeyDown={() => { listRestored.current = true; }}
+          onScroll={event => {
+            if (listRestored.current) patchScene({ listScroll: event.currentTarget.scrollTop });
           }}
-          onScroll={(e) =>
-            patchScene({ listScroll: e.currentTarget.scrollTop })
-          }
         >
           <ImportList imports={imports} archived={archived} selectedId={scene.id} onOpen={id => open("import", id)} />
           {listState === 'loading' ? <p className="q-list-empty" role="status">{t("正在读取题库…")}</p> : listState === 'error' ? <div className="q-list-empty"><p>{t("题库暂时无法读取")}</p><button onClick={() => action(refresh)}>{t("重新加载")}</button></div> : items.length === 0 && <p className="q-list-empty">{hasFilters ? t("没有符合条件的题目，试试调整筛选。") : archived ? t("没有归档的题目。") : imports.length ? t("材料确认入库后，题目会出现在这里。") : t("收录第一道题，开始积累。")}</p>}
@@ -814,7 +848,7 @@ export default function MaterialsQuestionsPage({
             > {t("确认上次请求")} </button>
           )}
         </div>
-        {conflict && (
+        {conflict && !(scene.kind === 'new' && value?.source?.kind === 'copy') && (
           <section aria-label={t("版本冲突对照")}>
             <p>{t("服务器已有更新。本地修改仍保留，请核对后选择。")}</p>
             <details>
@@ -1262,19 +1296,37 @@ export default function MaterialsQuestionsPage({
               {editing ? <>
                 <button className="q-text-button q-back" disabled={busy} onClick={() => action(leaveEditor)}><QuestionIcon name="back" />{scene.kind === 'new' ? t("返回题库") : t("返回题目")}</button>
                 <span className="q-save-state">{busy ? t("正在保存…") : readLocal(accountKey, localKey) ? t("草稿保存在此设备") : scene.kind === 'new' ? t("尚未保存") : t("已保存")}</span>
-                <button className="primary" disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} onClick={() => action(async () => { await saveQuestion(); patchScene({ editing: false }); })}><QuestionIcon name="check" />{t("保存题目")}</button>
+                <button className="primary" disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} onClick={() => action(saveQuestion)}><QuestionIcon name="check" />{t("保存题目")}</button>
               </> : <>
                 <div className="q-question-title"><span className="q-eyebrow">{value.deletedAt ? t("已归档") : value.source?.kind === 'copy' ? t("改编题目") : t("我的题目")}</span><h2>{value.title || t("未命名题目")}{value.starred && <QuestionIcon name="star" size={18} />}</h2></div>
                 <Popover label={t("更多题目操作")}>{({ close }) => <div className="q-question-menu"><button role="menuitem" disabled={busy || unsupportedQuestion} onClick={() => { requestLifecycle(value.deletedAt ? 'restore' : 'archive'); close(); }}>{value.deletedAt ? t("恢复题目") : t("归档题目")}</button>{value.deletedAt && <button className="q-danger" role="menuitem" disabled={busy} onClick={() => { requestLifecycle('purge'); close(); }}>{t("彻底删除题目")}</button>}</div>}</Popover>
               </>}
             </header>
+            {conflict && scene.kind === 'new' && value?.source?.kind === 'copy' && (
+              <section aria-label={t("版本冲突对照")}>
+                <p>{t("原题已更新。请核对当前原题，再选择是否将它作为改编来源。题干、答案、分类和笔记都会保留；选择后仍需保存题目。")}</p>
+                <details open>
+                  <summary>{t("当前原题")}</summary>
+                  <strong>{conflict.title || t("未命名题目")}</strong>
+                  <DocumentView value={conflict.body} />
+                  <DocumentView value={conflict.solution} />
+                </details>
+                <button disabled={busy || Boolean(conflict.deletedAt)} onClick={() => {
+                  const current = editorRef.current.value;
+                  change({ ...current, source: { ...current.source, questionVersion: conflict.version,
+                    snapshot: { title: conflict.title, body: conflict.body, solution: conflict.solution } } });
+                  setConflict(null);
+                  setMessage(t("已选用当前原题作为来源，改编内容仍保留，请再次保存。"));
+                }}>{t("以当前原题作为来源，保留改编内容")}</button>
+              </section>
+            )}
             {unsupportedQuestion && <p className="q-error" role="status">{t("这道题包含当前无法编辑的内容，已保留原数据，可以继续阅读。")}</p>}
             {!editing && <div className="q-reader-actions">{value.deletedAt ? <button className="primary" disabled={busy || unsupportedQuestion} onClick={() => requestLifecycle('restore')}>{t("恢复题目")}</button> : <>
               <button disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} onClick={beginEdit}><QuestionIcon name="edit" />{t("编辑题目")}</button>
               <button disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} onClick={copyQuestion} title={t("保留原题，另存一道改编题")}><QuestionIcon name="copy" />{t("复制改编")}</button>
             </>}</div>}
             {!editing && readLocal(accountKey, localKey) && <div className="q-draft-notice"><span>{value.deletedAt ? t("未保存的修改仍保存在此设备，恢复题目后可继续编辑。") : t("这道题有未保存的修改，当前显示已保存内容。")}</span>{!value.deletedAt && <button onClick={beginEdit}>{t("继续编辑")}</button>}<button className="q-text-button" onClick={() => setConfirmDiscard(true)}>{t("放弃草稿")}</button></div>}
-            {editing ? <fieldset className="q-edit-fields" disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}>
+            {editing ? <fieldset className="q-edit-fields" disabled={Boolean(value.deletedAt) || unsupportedQuestion}>
               <label className="q-title-field">{t("题目名称")} <span className="q-muted">{t("选填，方便以后查找")}</span><input className="q-title-input" aria-label={t("题目标题")} placeholder={t("例如：二次函数的最值")} value={value.title} maxLength={200} onChange={e => change({ ...value, title: e.target.value })} /></label>
               <QuestionDocumentEditor resetKey={value.version} key={scene.kind + (value.id ?? 'new')} value={value.body} onChange={body => change({ ...value, body })} onPickImage={pickImage} autoFocus />
               {value.answerStatus === 'present' || !supportedDocument(value.solution) ? <QuestionDocumentEditor resetKey={value.version} key={scene.kind + (value.id ?? "new") + "-solution"} label={t("答案与解析")} value={value.solution} onChange={solution => change({ ...value, solution })} onPickImage={pickImage} /> : <button className="q-add-field" onClick={() => change({ ...value, answerStatus: 'present' })}><QuestionIcon name="plus" />{t("添加答案与解析")}</button>}
