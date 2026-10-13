@@ -4,9 +4,9 @@
 
 ## 工作现场与授权
 
-新“班级”的后端开发已获授权，当前在 `TeacherWorkspace-classroom-backend` 的 `feat/classroom-backend` 工作树推进，尚未集成。范围为班级与学生资料、自由记录、座位、正式考试原卷和 Excel 成绩导入校对、题目标签、学生与班级统计及公共数据生命周期；前端页面和 AI 实际接入暂缓。共识见[班级规格](../features/classroom.md)，后端结果通过真实接口、数据库和构造文件验证，不据此声明教师界面已完成。
+新“班级”后端已通过 [PR #42](https://github.com/DingJWuyu/TeacherWorkspace/pull/42) 集成并更新到 preview。班级与学生资料、自由记录、座位、正式考试原卷和 Excel 成绩导入校对、题目标签、学生与班级统计及公共数据生命周期已实现；前端页面和 AI 实际接入暂缓。独立审查、最终 CI 与实际实例核对通过，证据和升级前一致备份已保全，本轮任务工作树及本地、远端分支已清理。产品共识见[班级规格](../features/classroom.md)，后续原型按该规格与[接口契约](../contracts/classroom.md)设计，不据后端验收声明教师界面已完成。
 
-旧“班级教学”已通过 [PR #41](https://github.com/DingJWuyu/TeacherWorkspace/pull/41) 整体退役并更新到 preview：专属界面、API、数据及跨模块连接已移除，日程和公共底座保留。独立审查、最终 CI 与实际实例核对通过；证据和升级前一致备份已保全，任务工作树及本地、远端任务分支已清理。新班级后端另行开发，全部共识见[班级规格](../features/classroom.md)，核查入口见下文。
+旧“班级教学”已通过 [PR #41](https://github.com/DingJWuyu/TeacherWorkspace/pull/41) 整体退役并更新到 preview：专属界面、API、数据及跨模块连接已移除，日程和公共底座保留。独立审查、最终 CI 与实际实例核对通过；证据和升级前一致备份已保全，任务工作树及本地、远端任务分支已清理。新班级使用独立的 `classroom` 身份，不复用退役的 `classes`；核查入口见下文。
 
 备课模块、专属连接及课稿 Word/PDF 编排已通过 [PR #38](https://github.com/DingJWuyu/TeacherWorkspace/pull/38) 完整移除并更新到 preview，不迁入其他分区。公共文稿、文件、转换和 OCR 底座已保留。独立审查、CI 与实际实例核对通过，证据已保全，任务工作树及本地、远端任务分支已清理。升级前的原版本一致备份独立保留，核查入口见下文。
 
@@ -22,7 +22,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 产品分区 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 班级 | TeacherWorkspace-classroom-backend | feat/classroom-backend | 后端实现及本地定点验证完成；页面未开放，待独立审查、CI 和集成验证后清理本轮现场 |
+| 班级 | 已清理 | 已清理 | 后端已通过 PR #42 集成并完成独立审查、CI 与 preview 核对；前端页面及 AI 接入尚未实现，后续从当前规格开展原型设计 |
 | 题库 | 已清理 | 已清理 | 两轮核心体验修复已通过 [PR #40](https://github.com/DingJWuyu/TeacherWorkspace/pull/40) 集成，独立审查、最终 CI 与 preview 启动及入口核验通过；有效证据已保全，本轮任务现场已清理 |
 | 账户与身份 | 已清理 | 已清理 | 身份能力 [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37) 与全屏入口 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39) 已集成，独立审查、CI 与 preview 入口核验通过；临时实例已停止，有效证据已保全，本轮停止开发 |
 | 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；当前暂停，待用户确定后续目标 |
@@ -62,7 +62,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 | 题库 | 手工与原生材料整理、校对入库、分类/笔记/改编；旧 DOC 经固定转换稿读取现存公式和配图，PDF 图边公式保留可编辑并核对配图归属；OCR 原图/公式/原答案/来源保留，局部校对保存，已核对题可先入库；未分配结构可明确归入题干、答案或笔记 | [规格](../features/questions.md)、[材料核查](#核查入口) |
 | 资源库 | 收录/分类/检索、常用格式预览与下载、文件替换/历史、页内查找；OCR 正文/公式/配图阅读、复制和搜索定位，内容疑点可高亮原页区域 | [规格](../features/resources.md)、[材料核查](#核查入口) |
 | 数学工坊 | 同一作品的可编辑公式、二维/三维构造、参数和步骤；本地 GeoGebra、自动保存与历史、图片/源码/课堂 ZIP；Chrome/Edge 网页 AI 接入和更新接续，旧类型保持可读 | [规格](../features/math.md)、[模块核查](#核查入口) |
-| 班级 | 后端已实现并完成本地定点验证，尚未集成；独立审查与CI待完成，前端页面和实际 AI 接入暂缓 | [班级规格](../features/classroom.md) |
+| 班级 | 后端名单、资料、座位与自由记录；正式考试原卷、Excel 映射校对、题目标签、跨考试学生/班级统计与同场对照；导出、恢复和删号已接入。前端页面及实际 AI 接入暂缓 | [班级规格](../features/classroom.md)、[班级验收](../acceptance/classroom.md)、[核查入口](#核查入口) |
 | 日程 | 日期视图、拖选/拖动/拉伸、标签、全天、自定义重复与单次独立任务；开始/结束前后提醒、通知已读/未读、待安排、事项完成/排序/原子移动、跟随系统时区以及键盘确认已集成。界面任务永久删除，兼容软删除 API 保留；真实输入法另验 | [规格](../features/schedule.md)、[模块核查](#核查入口) |
 | AI 助理 | 首批题库工具、对话及操作记录已接入；四业务模块扩展设计保留，开发暂停 | [规格](../features/agent.md)、[实现边界](../contracts/agent.md#四模块扩展契约) |
 
@@ -70,7 +70,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 | --- | --- | --- |
 | 数据管理与恢复 | 个人资料包、各模块误删恢复的公共支持、实例备份还原及旧身份撤销；源码、快照和附件曾有本机验证，业务删除与恢复规则由所属分区拥有 | [数据规格](../features/data.md)、[核查入口](#核查入口) |
 | 文件、材料与识别 | 固定预览、文件版本、转换及本地单路 OCR 已被题库和资源库使用；输入限制、校对与输出各按所属分区验证 | [材料契约](../contracts/materials.md)、[识别契约](../contracts/recognition.md)、[选型验收](../acceptance/ocr-selection.md) |
-| 公共保存与模块装配 | 四业务模块沿静态目录装配，账户隔离、版本、幂等、冲突及资料导出只读端口沿公共约定 | [共享契约](../contracts/workbench.md)、[代码结构](../SETUP.md#代码结构) |
+| 公共保存与模块装配 | 单一静态目录装配五个后端模块，四个现有 Web 页面开放；账户隔离、版本、幂等、冲突及资料导出只读端口沿公共约定 | [共享契约](../contracts/workbench.md)、[代码结构](../SETUP.md#代码结构) |
 
 ## 剩余事项
 
@@ -87,6 +87,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 事项 | 当前事实 | 下一动作与完成条件 |
 | --- | --- | --- |
+| 班级界面与 AI 接入 | 后端接口已集成；座位图、学生/班级记录与成绩观察的界面尚未实现，AI 工具尚未接入 | 先按[班级规格](../features/classroom.md)设计原型，再消费已有接口；AI 仍以老师主动提问为入口，不因后端完成自动启动该线 |
 | AI 助理四模块工具与恢复衔接 | 首批仅题库业务绑定；全模块工具及恢复后旧操作的完整处理尚未实现。设计清单不是产品能力 | 保持暂停；恢复时复用冻结设计和真实模块端口，按[Agent/数据判据](../acceptance/mvp-matrix.md)逐项实现验证 |
 | AI 助理的通用外部 AI 文本交接 | 保留预览提问、复制并打开外链、粘贴或上传回流的范围；当前未接入通用前端入口，旧 `externalAi` 偏好字段不能证明功能完成。数学工坊的网页 AI 已有独立实现 | 归 AI 助理分区，随该线恢复后明确实现与验证；当前暂停，不在文档整理中新增功能 |
 | 数学网页 AI 扩展正式分发 | 桌面 Edge/Chrome 本机安装识别、登录返回及更新接续已验证，上传包与说明材料已准备；用户尚无开发者账号或商店条目，产品如实显示未上架 | 准备发布账号、真实联系与公开隐私说明、审核可访问工作台；获准发布并配置真实商店地址后，验证商店安装和自动更新。当前扩展仅连接本机工作台，正式域名确定后补入并验证 |
@@ -97,8 +98,9 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 | --- | --- | --- |
 | 辅助提取与局部校对 | 当前 MinerU 单路方案在冻结八页开发及四页留出中满足具名门槛；保留消费者的实际校对与使用按候选补验，成绩和修订量见[选型验收](../acceptance/ocr-selection.md)。原生 T/W/P 和题目提取继续由固定输入回归保护；原稿缺图不伪造补齐。识别完成不等于题目边界与活动归属全部自动完成 | 按[固定样本提取判据](../acceptance/mvp-matrix.md#extraction)核对实际材料。根式范围、选项标号、标题可能错漏，部分数学文本需补定界符；受损文字可能错读且不提示，不能承诺自动发现每处错误 |
 | 常用文件预览与输出 | 备课退役候选已验证公共转换归位后的可编辑公式、表格、插图 DOCX 及 LibreOffice PDF，并通过现行数学输出与离线回归；常用格式逐页预览的其他证明沿用固定旧版本 | 真实 Word/WPS 编辑、保存、重开与打印仍按下节暂缓 |
-| 数学、教学、身份与数据手工全链 | 既有固定版本的导航、资料包和备份往返有验证证据；本轮班级退役候选尚待集成验收，完整手工教学工作日仍仅有固定旧版本证据 | 产品模型与 Agent 组合另验，完整手工工作日及目标环境按实际后续任务安排 |
+| 数学、教学、身份与数据手工全链 | 既有固定版本的导航、资料包和备份往返有验证证据；班级退役及新后端的接口、原卷与恢复路径已验，完整手工教学工作日仍仅有固定旧版本证据 | 产品模型与 Agent 组合另验，完整手工工作日及目标环境按实际后续任务安排 |
 | `fetch failed` 观察 | 本轮未复现，仍无原观察的明确触发条件和因果关闭证据 | 再现时记录入口、请求与环境；不据此认定当前已确认缺陷，也不声称已修复 |
+| 数学保存超时观察 | CI 出现过一次保存请求 35 秒未收到响应；同输入渲染、重复本地原路径及最终 CI 均通过，原因未确定，未放宽超时或保存断言 | 再现时沿请求与服务端处理时序定位；证据在班级集成回执，不声称已修复 |
 
 ### 用户验收与待决定
 
@@ -130,6 +132,8 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 ## 核查入口
 
+班级后端候选 `02c41bb5` 与 [PR #42](https://github.com/DingJWuyu/TeacherWorkspace/pull/42) 的 squash 提交 `614b7ee3` 文件内容一致，Standards / Spec 独立审查无剩余发现。[最终 CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38422366903) 完成三 workspace 构建、269 项 HTTP/SQLite、11 项数学输出与离线、8 项公共文稿及班级文件/恢复、3 项 Cookie/文件/OCR 回放及 115 项浏览器用例，均无失败或跳过。独立检出以空依赖缓存安装并验证实际 Excel 导入；真实原卷、可离线阅读资料包与旧 GeoGebra 弹窗链另有本机证据。可重建入口见[班级验收](../acceptance/classroom.md)，数学弹窗回归为 `apps/web/e2e/math-unified-repair.spec.js`。实际 preview 健康、登录页与五后端/四页面装配核对通过；43 张已有表内容及 11 个受管文件哈希与备份一致，仅新增七张空班级表和对应迁移。未写入私人业务记录。有效证据入口为 `test-results/classroom-backend-integration/root-receipt.json`，备份位置见同目录 `preview-backup.json`；这些产物不作为新检出前置。班级前端、实际 AI 接入、真实教师成绩表和目标设备不在本次通过结论中。
+
 班级退役候选 `7810f570` 与 [PR #41](https://github.com/DingJWuyu/TeacherWorkspace/pull/41) 的 squash 提交 `0a0a737e` 文件内容一致，fresh-context Standards / Spec 独立审查无剩余发现。[最终 CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38397665945) 完成三 workspace 构建、254 项 HTTP/SQLite、11 项数学输出与离线、2 项公共文稿转换、3 项 Cookie/文件/OCR 回放及 109 项浏览器用例，均无失败或跳过。本机另验 CI 外的题库引用读取和数学混合回归，独立检出按入库清单完成数学运行时冷构建。可重建入口为 `apps/api/test/classes-retirement.test.js`、`lessons-retirement.test.js`、固定 `apps/api/test/fixtures/retirement/` 备份及 `apps/web/e2e/module-retirement.config.mjs`。实际 preview 已验证健康、登录页面及四模块装配；旧班级四张表移除，41 张保留表与升级前备份一致（日程只排除退役关联列），11 个共享文件哈希一致，导航、幂等回执和迁移账本仅发生预期清理。登录后的业务交互沿隔离实例与 CI 验证，未写入私人业务数据。有效本机证据入口为 `test-results/remove-classes-integration/root-receipt.json`，备份位置见同目录 `preview-backup.json`；这些产物不是新检出前置。真实邮件、OCR/AI 模型、目标设备与 Office 人工操作未新增验证。
 
 题库核心体验候选 `ac414d25` 已通过 [PR #40](https://github.com/DingJWuyu/TeacherWorkspace/pull/40) squash 集成为 `a53f2285`，合入内容与核对过的最新主线组合树一致，fresh-context 独立审查无剩余发现。[最终 CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38387387677) 的构建、HTTP/SQLite、文件输出及浏览器回归通过；两轮题库独立验收和最新身份入口组合验证按未变范围复用。可重建入口为 `apps/web/e2e/questions-ux.config.mjs`、`apps/api/test/materials-question-notes*.test.js` 与 `materials-questions-output.test.js`；集成中发现的数学动画采样和日程账户切换测试时序已修正，原有行为断言保留。集成后 preview 服务重启、健康检查、未登录题库入口和更新后的模块资源读取通过；题库保存等业务路径沿隔离环境与 CI 验证，未使用私人账户数据。有效本机证据入口为 `test-results/questions-integration/receipt.json`，不作为新检出前置。旧空收录记录首次读取可能提示一次恢复，清除后不再出现；外部 E 样本、真实 OCR / 邮件、目标设备及 Office 人工操作未新增验证。
@@ -142,7 +146,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 昵称能力的已集成版本为 `1b107651`，已完成隔离生产构建、真实认证 HTTP/数据库、昵称与语言浏览器定点回归及独立核验，包含跨页旧回执、读取乱序、退出/删除锁和未确认输入保留。可重建入口为 `apps/api/test/auth-profile.test.js`、`apps/api/test/auth-integration.test.js` 与 `apps/web/e2e/settings-implementation.config.mjs`；语义见[昵称修改交换](../contracts/auth.md#昵称修改交换-i09)。本机证据为 `test-results/settings-nickname/receipt.json` 与 `independent.md`，不作为新检出前置；真实操作系统输入法、实际触屏与全仓回归未验；当前 CI 的覆盖范围见下文。
 
-以下旧候选证据只证明其明确具名范围；当前班级退役候选的定点验证、审查、CI 与实际实例核对以本节所列入口为准。选择受影响功能，先按[验证指南](../acceptance/README.md)建立隔离候选，再从仓库内的测试与固定样本重建结果。记录 Git 版本、输入、实际环境、通过和未验项；外部原件、真实模型、目标 Office 或设备缺失时保留未验证边界。
+以下旧候选证据只证明其明确具名范围；当前班级后端的定点验证、审查、CI 与实际实例核对以本节所列入口为准。选择受影响功能，先按[验证指南](../acceptance/README.md)建立隔离候选，再从仓库内的测试与固定样本重建结果。记录 Git 版本、输入、实际环境、通过和未验项；外部原件、真实模型、目标 Office 或设备缺失时保留未验证边界。
 
 固定备课退役候选 `22dd8df4` 的 [CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38349246126) 完成干净 Ubuntu Runner 构建，288 项 HTTP/SQLite、11 项数学输出与离线、2 项公共文稿转换、3 项浏览器 Cookie/文件/OCR 回放、109 项浏览器 E2E 全部通过，0 失败、0 跳过；必需汇总及 PR 正文更新后的规范检查通过。固定数学运行时从缓存恢复后仍校验输入与产物。总控复用已有验证，不在集成前重跑 CI 覆盖的完整回归，职责及命令见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)；真实模型与目标设备仍按各专项验收。
 
