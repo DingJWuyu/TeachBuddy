@@ -75,7 +75,7 @@ async function addGroup(page, name) {
 async function logout(page) {
   await page.locator('.tb-account-row').click();
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
 }
 async function start(page) { await register(page, world); await dismissCoach(page); await settled(page); }
 

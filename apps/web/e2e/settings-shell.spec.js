@@ -69,7 +69,7 @@ test('设置外观、占位边界、真实导出和退出', async ({ page }, tes
   expect(fs.statSync(await download.path()).size).toBeGreaterThan(100);
   await page.keyboard.press('Escape');
   await settings.getByRole('button', { name: '退出登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
 });
 test('窄屏设置可阅读且不横向溢出', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });

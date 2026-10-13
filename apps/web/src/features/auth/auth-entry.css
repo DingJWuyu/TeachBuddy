@@ -1,0 +1,228 @@
+/*
+ * WeStud-inspired entry layout. Opt-in scope is deliberate: auth.css is also
+ * consumed by account deletion and other existing surfaces; leave it intact.
+ */
+.ae-page.ae-entry {
+  --ae-entry-height: 100svh;
+  --ae-ink: #1b1c21;
+  --ae-muted: #6e6f75;
+  --ae-accent: #6312f6;
+  --ae-primary: #1b1c21;
+  --ae-line: #96969b;
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 0;
+  background: #1b1c21;
+  color-scheme: light;
+}
+
+.ae-entry .ae-entry-frame {
+  display: grid;
+  grid-template-columns: minmax(0, 57.6fr) minmax(0, 42.4fr);
+  width: 100%;
+  min-width: 0;
+  min-height: var(--ae-entry-height);
+  margin: 0;
+  border-radius: 0;
+  background: #e8e8e8;
+  isolation: isolate;
+}
+
+.ae-entry .ae-entry-panel {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  margin: 10px 10px 10px 0;
+  padding: 78px clamp(28px, 4.3vw, 78px) 30px;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.ae-entry .ae-shell {
+  width: 100%;
+  max-width: 348px;
+  min-width: 0;
+}
+
+.ae-entry .ae-brand { margin: 0 0 64px; }
+.ae-entry .ae-brand-lockup { gap: 9px; }
+.ae-entry .ae-brand-mark { width: 30px; height: 30px; background: var(--ae-ink); }
+.ae-entry .ae-brand-wordmark { font-size: 17px; font-weight: 600; letter-spacing: -.5px; }
+
+.ae-entry .ae-card {
+  min-width: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ae-entry .ae-card-head {
+  padding: 0 0 92px;
+  border: 0;
+  text-align: center;
+}
+
+.ae-entry .ae-card-head h1 {
+  font-size: clamp(27px, 2.5vw, 34px);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -.8px;
+  overflow-wrap: anywhere;
+}
+
+.ae-entry .ae-form { gap: 24px; padding: 0; }
+.ae-entry .ae-field-head { min-height: 20px; margin-bottom: 0; gap: 6px; }
+.ae-entry .ae-field-head label { color: var(--ae-ink); font-size: 14px; font-weight: 500; line-height: 20px; }
+
+.ae-entry .ae-field input[type="text"],
+.ae-entry .ae-field input[type="email"],
+.ae-entry .ae-field input[type="password"],
+.ae-entry .ae-field input:not([type]) {
+  height: 44px;
+  padding: 7px 0 9px;
+  border: 0;
+  border-bottom: 1px solid var(--ae-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ae-ink);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  box-shadow: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.ae-entry .ae-field input::placeholder { color: #97979e; font-size: 14px; }
+.ae-entry .ae-field input:focus-visible { outline: none; border-color: var(--ae-accent); box-shadow: 0 1px 0 var(--ae-accent); }
+.ae-entry .ae-field.has-error input { border-color: var(--ae-danger); }
+.ae-entry .ae-field.has-error input:focus-visible { box-shadow: 0 1px 0 var(--ae-danger); }
+.ae-entry .ae-field input[readonly] { color: var(--ae-muted); border-bottom-style: dashed; }
+.ae-entry .ae-password { margin: 0; font-weight: 400; }
+.ae-entry .ae-field .ae-password input { padding-right: 40px; }
+.ae-entry .ae-password-toggle { right: 0; width: 36px; height: 36px; color: #4a4b52; border-radius: 50%; }
+.ae-entry .ae-password-toggle:hover { background: #f2f2f4; }
+
+.ae-entry .ae-combo { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; margin: 0; font-weight: 400; }
+.ae-entry .ae-send {
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid #e5e5e8;
+  border-radius: 24px;
+  background: #f5f5f6;
+  color: var(--ae-ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ae-entry .ae-send:hover:not(:disabled) { border-color: #d6d6dc; background: #ececf0; }
+.ae-entry .ae-primary {
+  min-height: 48px;
+  height: auto;
+  margin: 6px 0 0;
+  padding: 11px 22px;
+  border: 1px solid transparent;
+  border-radius: 28px;
+  background: var(--ae-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+  cursor: pointer;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+.ae-entry .ae-primary:hover:not(:disabled) { background: #37383e; }
+.ae-entry .ae-primary:active:not(:disabled) { transform: translateY(1px); }
+.ae-entry .ae-send:disabled,
+.ae-entry .ae-primary:disabled { color: #7b7c84; border-color: transparent; background: #eeeeF1; cursor: default; }
+.ae-entry .ae-primary[aria-busy="true"] { color: #fff; background: #55565d; cursor: wait; }
+
+.ae-entry .ae-check { min-height: 20px; gap: 8px; }
+.ae-entry .ae-check > span { color: #595a62; font-size: 12px; line-height: 20px; }
+.ae-entry .ae-check input { width: 15px; height: 15px; }
+.ae-entry .ae-check.is-terms > span { line-height: 20px; }
+.ae-entry .ae-check.is-terms input { margin-top: 3px; }
+.ae-page.ae-entry .ae-text-action { font-size: 12px; line-height: 20px; }
+.ae-entry .ae-field-hint { color: #767780; }
+.ae-entry .ae-field-note,
+.ae-entry .ae-field-hint,
+.ae-entry .ae-field-error { overflow-wrap: anywhere; }
+
+.ae-entry .ae-notice {
+  margin: 0 0 20px;
+  padding: 12px;
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+}
+.ae-entry .ae-notice-dismiss { width: 24px; height: 24px; line-height: 24px; }
+.ae-entry .ae-closed-state,
+.ae-entry .ae-session-recovery { padding: 0; }
+.ae-entry .ae-session-recovery { gap: 14px; }
+.ae-entry .ae-session-recovery p,
+.ae-entry .ae-closed-state p { color: var(--ae-muted); line-height: 1.8; text-align: left; }
+.ae-entry .ae-restore-card { min-height: 154px; padding: 0; }
+.ae-entry .ae-restore-card .ae-card-head { margin: 0; }
+.ae-entry .ae-restore-message { line-height: 1.8; }
+.ae-entry .ae-restore-actions { gap: 14px; }
+.ae-entry .ae-boot-card { min-height: 208px; }
+
+.ae-entry .ae-switch { margin: auto 0 0; padding-top: 52px; font-size: 12px; line-height: 22px; }
+.ae-entry .ae-switch button { min-height: 28px; color: var(--ae-ink); font-size: 12px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.ae-entry .ae-help { margin-top: 12px; color: #797980; font-size: 10px; line-height: 18px; overflow-wrap: anywhere; }
+.ae-entry .ae-help a { color: #5c5d65; }
+
+/* The reference has a short login form; existing registration needs five fields. */
+.ae-entry[data-auth-surface="recovery-confirm"] .ae-entry-panel { padding-top: 34px; }
+.ae-entry[data-auth-surface="recovery-confirm"] .ae-brand { margin-bottom: 22px; }
+.ae-entry[data-auth-surface="recovery-confirm"] .ae-card-head { padding-bottom: 24px; }
+.ae-entry:is([data-auth-surface="register"], [data-auth-surface="recovery-confirm"]) .ae-form { gap: 15px; }
+.ae-entry:is([data-auth-surface="register"], [data-auth-surface="recovery-confirm"]) .ae-switch { padding-top: 24px; }
+
+/* Keep the entry header anchored when the form changes length. */
+.ae-entry:is([data-auth-surface="login"], [data-auth-surface="register"]) .ae-entry-panel { padding-top: 48px; }
+.ae-entry:is([data-auth-surface="login"], [data-auth-surface="register"]) .ae-brand { margin-bottom: 32px; }
+.ae-entry:is([data-auth-surface="login"], [data-auth-surface="register"]) .ae-card-head { padding-bottom: 32px; }
+
+@media (max-width: 1099px) and (min-width: 760px) {
+  .ae-entry .ae-entry-frame { grid-template-columns: minmax(0, 47fr) minmax(0, 53fr); }
+  .ae-entry .ae-entry-panel { padding-right: 28px; padding-left: 28px; }
+  .ae-entry .ae-characters-scene { width: 94%; }
+}
+
+@media (max-width: 759px) {
+  .ae-page.ae-entry { align-items: flex-start; }
+  .ae-entry .ae-entry-frame { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  .ae-entry .ae-entry-panel { margin: 0 6px 6px; padding: 26px 26px 24px; border-radius: 17px; }
+  .ae-entry .ae-brand { margin-bottom: 24px; }
+  .ae-entry .ae-brand-mark { width: 25px; height: 25px; font-size: 13px; }
+  .ae-entry .ae-brand-wordmark { font-size: 16px; }
+  .ae-entry .ae-card-head { padding-bottom: 28px; }
+  .ae-entry .ae-card-head h1 { font-size: 27px; }
+  .ae-entry .ae-form { gap: 20px; }
+  .ae-entry .ae-switch { padding-top: 28px; }
+  .ae-entry:is([data-auth-surface="register"], [data-auth-surface="recovery-confirm"]) .ae-characters { height: 112px; }
+  .ae-entry:is([data-auth-surface="register"], [data-auth-surface="recovery-confirm"]) .ae-characters-scene { width: 130px; transform: translateY(0); }
+  .ae-entry:is([data-auth-surface="register"], [data-auth-surface="recovery-confirm"]) .ae-entry-panel { padding-top: 24px; }
+  .ae-entry:is([data-auth-surface="register"], [data-auth-surface="recovery-confirm"]) .ae-form { gap: 12px; }
+  .ae-entry:is([data-auth-surface="register"], [data-auth-surface="recovery-confirm"]) .ae-field input { height: 38px; }
+  .ae-entry:is([data-auth-surface="register"], [data-auth-surface="recovery-confirm"]) .ae-brand { margin-bottom: 16px; }
+  .ae-entry:is([data-auth-surface="register"], [data-auth-surface="recovery-confirm"]) .ae-card-head { padding-bottom: 18px; }
+  .ae-entry:is([data-auth-surface="login"], [data-auth-surface="register"]) .ae-characters { height: 112px; }
+  .ae-entry:is([data-auth-surface="login"], [data-auth-surface="register"]) .ae-characters-scene { width: 130px; transform: translateY(0); }
+  .ae-entry:is([data-auth-surface="login"], [data-auth-surface="register"]) .ae-entry-panel { padding-top: 24px; }
+  .ae-entry:is([data-auth-surface="login"], [data-auth-surface="register"]) .ae-brand { margin-bottom: 24px; }
+  .ae-entry:is([data-auth-surface="login"], [data-auth-surface="register"]) .ae-card-head { padding-bottom: 28px; }
+}
+
+@media (max-width: 359px) {
+  .ae-entry .ae-entry-panel { padding-right: 18px; padding-left: 18px; }
+  .ae-entry .ae-combo { gap: 6px; }
+  .ae-entry .ae-send { padding-right: 12px; padding-left: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ae-entry *, .ae-entry *::before, .ae-entry *::after { animation: none; transition: none; }
+}

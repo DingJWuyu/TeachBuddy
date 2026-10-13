@@ -36,13 +36,13 @@ test.beforeEach(async () => {
 
 async function openEntry(page, query = '') {
   await page.goto(`${BASE}/${query}`);
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 }
 
 async function openRegister(page) {
   await openEntry(page);
   await page.getByRole('button', { name: '创建账户' }).click();
-  await expect(page.getByRole('heading', { name: '注册' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '创建账户' })).toBeVisible();
 }
 
 async function fillRegistration(page, { nickname = '新教师', email, password = 'password-8' } = {}) {
@@ -264,7 +264,7 @@ test('注册关闭在表单进入与提交裁决两处生效（CC-CLOSED / CL01�
   await expect(page.getByText('目前暂时不能创建新账户。')).toBeVisible();
   expect(await requestsFor(PORT, { method: 'POST', path: '/api/auth/registration-codes' })).toHaveLength(0);
   await page.getByRole('button', { name: '返回登录' }).click();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 
   await setConfig(PORT, { registrationOpen: true });
   await page.getByRole('button', { name: '创建账户' }).click();
@@ -332,7 +332,7 @@ test('找回流程：未知邮箱字段拒绝、确认卡只读、更换邮箱�
   await page.getByLabel('确认新密码').fill('new-password-9');
   await page.getByRole('button', { name: '重置密码' }).click();
 
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await expect(page.getByText('密码已重置，请用新密码登录。')).toBeVisible();
   const state = await readState(PORT);
   expect(state.accounts[0].password).toBe('new-password-9');
@@ -400,7 +400,7 @@ test('键盘 Enter 只提交一次，密码显隐与条款链接遵守既定行�
 
   const url = page.url();
   await page.getByRole('button', { name: '创建账户' }).click();
-  await expect(page.getByRole('heading', { name: '注册' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '创建账户' })).toBeVisible();
   await expect(page.getByLabel('邮箱', { exact: true })).toHaveValue(TEACHER.email);
   await expect(page.getByLabel('密码', { exact: true })).toHaveValue('');
   await expect(page.getByRole('checkbox', { name: /注册即表示同意/ })).not.toBeChecked();
@@ -428,7 +428,7 @@ test('40 个 code points 的昵称完整交接（H04 / G05）', async ({ page })
   const nickname = '😀'.repeat(40);
   await openRegister(page);
   await fillRegistration(page, { nickname, email: 'emoji@example.com' });
-  await expect(page.locator('.ae-field-count').first()).toHaveText('40/40');
+  await expect(page.getByLabel('昵称', { exact: true })).toHaveValue(nickname);
   await sendRegistrationCode(page);
   const challenge = await latestMail(PORT, 'emoji@example.com');
   await fillCode(page, challenge.code);
@@ -447,10 +447,10 @@ test('第一步发码冷却在按钮上倒计时，冷却结束后可重发（S0
   await fillRegistration(page, { nickname: '新教师', email: 'cooldown@example.com' });
   await sendRegistrationCode(page);
   await page.locator('.ae-switch button').click();
-  await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 
   await page.getByRole('button', { name: '创建账户' }).click();
-  await expect(page.getByRole('heading', { name: '注册' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '创建账户' })).toBeVisible();
   await fillRegistration(page, { nickname: '新教师', email: 'cooldown@example.com' });
   const send = page.getByRole('button', { name: '发送验证码' });
   await send.click();

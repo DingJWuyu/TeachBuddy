@@ -141,7 +141,7 @@ test("恢复后新旧格式上传原字节保留且请求隔离", async ({ page 
   });
   await page.goto(world.origin + "/settings");
   await expect(
-    page.getByRole("heading", { name: "登录", exact: true }),
+    page.getByRole("heading", { name: "欢迎回来", exact: true }),
   ).toBeVisible();
   await page
     .getByLabel("邮箱", { exact: true })

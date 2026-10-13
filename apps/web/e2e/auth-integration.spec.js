@@ -57,11 +57,11 @@ test('真实注册、Cookie、账号行、remembered 刷新、退出和 page 登
   await expect(page.locator('.wb-shell')).toBeVisible();
   expect(requests.filter(item => item.path === '/api/workbench/context').at(-1).page).not.toBe(firstPage);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await page.reload();
   await login(page, false);
   await page.reload();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(requests.every(item => /^[a-f0-9]{32}$/.test(item.page))).toBe(true);
   fs.writeFileSync(path.join(evidence, 'browser-requests.json'), JSON.stringify(requests, null, 2));
 });
@@ -86,7 +86,7 @@ test('设置退出已知失败、结果未知和同目标重试', async ({ page 
   const retry = page.waitForRequest('**/api/auth/logout');
   await page.getByRole('button', { name: '重试确认退出' }).click();
   expect((await retry).postDataJSON().sessionId).toBe(target);
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
 });
 
 for (const [name, viewport] of [['tablet', { width: 820, height: 1180 }], ['mobile', { width: 390, height: 844 }]]) {
@@ -242,7 +242,7 @@ test('退出响应丢失后 I06 确认失效，同页仍可重新登录', async 
   await page.unroute('**/api/auth/logout');
   // Exercise the browser-focus recheck hook; all I06 traffic is real HTTPS.
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await login(page);
   await expect(page.locator('.tb-account-row')).toContainText('林老师');
 });
@@ -256,7 +256,7 @@ test('同浏览器双账户：A 定向退出停在登录，B 的 remembered 会�
   await register(otherPage, 'other-tab@example.test', '另一页教师');
   await settings(page);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await expect(page.locator('.wb-shell')).toHaveCount(0);
   await expect(otherPage.locator('.tb-account-row')).toContainText('另一页教师');
   await otherPage.reload();
@@ -296,8 +296,8 @@ test('共享 remembered 双页退出：迟到清理不得破坏登录准备（A1
   const revoked = second.waitForResponse(response => response.url().endsWith('/api/auth/logout') && response.status() === 204);
   await second.getByRole('button', { name: '退出登录', exact: true }).click();
   await revoked;
-  await expect(second.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await expect(second.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await second.screenshot({ path: path.join(evidence, 'shared-session-logout.png') });
   await login(second);
   await expect(page.locator('.wb-shell')).toHaveCount(0);

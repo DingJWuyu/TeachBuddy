@@ -190,7 +190,7 @@ test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ pa
   });
   await page.goto(world.origin + "/settings");
   await expect(
-    page.getByRole("heading", { name: "登录", exact: true }),
+    page.getByRole("heading", { name: "欢迎回来", exact: true }),
   ).toBeVisible();
   await page
     .getByLabel("邮箱", { exact: true })
