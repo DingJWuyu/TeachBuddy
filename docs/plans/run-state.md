@@ -18,7 +18,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 产品分区 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 题库 | `TeacherWorkspace-questions` | `fix/questions-core-usability` | 核心体验修复已完成，两轮作者定点自验、独立验收及双轴审查证据保存在本工作树 `test-results/questions-core/receipt.json` 和 `test-results/questions-next/receipt.json`。用户已授权集成，正在对齐最新 trunk、独立 PR 审查及 CI；完成体验核验后保全证据并清理现场。旧空收录记录首次读取可能提示一次恢复，清除后不再出现；外部 E 样本、真实 OCR / 邮件及目标设备专项未新增验证 |
+| 题库 | 已清理 | 已清理 | 两轮核心体验修复已通过 [PR #40](https://github.com/DingJWuyu/TeacherWorkspace/pull/40) 集成，独立审查、最终 CI 与 preview 启动及入口核验通过；有效证据已保全，本轮任务现场已清理 |
 | 账户与身份 | 已清理 | 已清理 | 身份能力 [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37) 与全屏入口 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39) 已集成，独立审查、CI 与 preview 入口核验通过；临时实例已停止，有效证据已保全，本轮停止开发 |
 | 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；当前暂停，待用户确定后续目标 |
 | 数学工坊 | 已清理 | 已清理 | 统一制作与网页 AI 已集成并验证；体验使用 preview，商店分发仍待准备 |
@@ -54,7 +54,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 | --- | --- | --- |
 | 账户与身份 | 注册、登录、找回、退出、会话恢复及永久删除账户；删除/退出未决核实、设备数据清理和注册竞态防护已接入；保留昵称修改公开能力与同会话资料同步；目标邮件与设备仍有未验范围 | [规格](../features/identity.md)、[认证契约](../contracts/auth.md)、[核查入口](#核查入口) |
 | 工作台与设置 | 导航分组、顺序和隐藏状态按账户保存；设备开合独立，冲突和待确认布局可继续处理；主题、背景、头像、语言及中英帮助和更新页已接入；昵称可原位编辑并同步侧栏，保存保持工作台现场，邮箱只读；退出、删号、资料导出消费相应能力 | [规格](../features/workbench.md)、[核查入口](#核查入口) |
-| 题库 | 手工与原生材料整理、校对入库、分类/笔记/改编；旧 DOC 经固定转换稿读取现存公式和配图，PDF 图边公式保留可编辑并核对配图归属；OCR 原图/公式/原答案/来源保留，局部校对保存，已核对题可先入库；未分配表格可保留原结构明确归入题干 | [规格](../features/questions.md)、[材料核查](#核查入口) |
+| 题库 | 手工与原生材料整理、校对入库、分类/笔记/改编；旧 DOC 经固定转换稿读取现存公式和配图，PDF 图边公式保留可编辑并核对配图归属；OCR 原图/公式/原答案/来源保留，局部校对保存，已核对题可先入库；未分配结构可明确归入题干、答案或笔记 | [规格](../features/questions.md)、[材料核查](#核查入口) |
 | 资源库 | 收录/分类/检索、常用格式预览与下载、文件替换/历史、页内查找；OCR 正文/公式/配图阅读、复制和搜索定位，内容疑点可高亮原页区域 | [规格](../features/resources.md)、[材料核查](#核查入口) |
 | 数学工坊 | 同一作品的可编辑公式、二维/三维构造、参数和步骤；本地 GeoGebra、自动保存与历史、图片/源码/课堂 ZIP；Chrome/Edge 网页 AI 接入和更新接续，旧类型保持可读 | [规格](../features/math.md)、[模块核查](#核查入口) |
 | 班级教学 | 班级记录、搜索回顾、公式配图、跨班移动及题目/作品关联，归档、恢复与彻底删除 | [规格](../features/classes.md)、[模块核查](#核查入口) |
@@ -124,6 +124,8 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 每个事项只有满足其具名结果才改变状态；保留问题归属、证据及下一动作。缺材料/环境标待验证，用户选择标待决定，代码已合入但未验证不写验收完成。
 
 ## 核查入口
+
+题库核心体验候选 `ac414d25` 已通过 [PR #40](https://github.com/DingJWuyu/TeacherWorkspace/pull/40) squash 集成为 `a53f2285`，合入内容与核对过的最新主线组合树一致，fresh-context 独立审查无剩余发现。[最终 CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38387387677) 的构建、HTTP/SQLite、文件输出及浏览器回归通过；两轮题库独立验收和最新身份入口组合验证按未变范围复用。可重建入口为 `apps/web/e2e/questions-ux.config.mjs`、`apps/api/test/materials-question-notes*.test.js` 与 `materials-questions-output.test.js`；集成中发现的数学动画采样和日程账户切换测试时序已修正，原有行为断言保留。集成后 preview 服务重启、健康检查、未登录题库入口和更新后的模块资源读取通过；题库保存等业务路径沿隔离环境与 CI 验证，未使用私人账户数据。有效本机证据入口为 `test-results/questions-integration/receipt.json`，不作为新检出前置。旧空收录记录首次读取可能提示一次恢复，清除后不再出现；外部 E 样本、真实 OCR / 邮件、目标设备及 Office 人工操作未新增验证。
 
 全屏身份入口候选 `b5ccb039` 与 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39) 的 squash 提交 `2c43d63e` 文件内容一致，fresh-context 独立审查无剩余发现。[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38362936254) 构建、HTTP/SQLite、真实文件输出与 109 项浏览器 E2E 通过；另完成 5 项入口定点回归及 CI 未包含的 9 项契约视觉用例，覆盖错误、等待、恢复、键盘、触摸和长内容。可重建入口为 `apps/web/e2e/fixtures/auth-contract/playwright.config.mjs`、`auth-contract-entry.spec.js` 与 `auth-contract-visual.spec.js`。集成后实际 preview 健康检查及登录、注册呈现通过；无 API 或数据库迁移。本机证据在 `test-results/auth-ui-integration/receipt.json`，不作为新检出前置；目标设备与真实邮件仍沿既有未验边界。
 
