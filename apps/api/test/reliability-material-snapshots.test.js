@@ -8,7 +8,7 @@ import JSZip from 'jszip';
 import Database from 'better-sqlite3';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
-import { doc, question, http, writable, Q } from './teaching-time-classes-materials-fixture.js';
+import { doc, question, http, writable, Q } from './materials-http-fixture.js';
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
 
 const email = 'snapshots@example.test';

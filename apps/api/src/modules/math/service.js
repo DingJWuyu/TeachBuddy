@@ -97,10 +97,6 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
       },
     };
   }
-  function readForTeachingLinkV1(principal, id) {
-    const { version, title, deletedAt } = get(principal, id);
-    return { id, version, title, deletedAt };
-  }
   async function store(principal, request, bytes, name) {
     const hash = createHash("sha256")
       .update(requestFingerprint(request))
@@ -460,5 +456,5 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
         .all(accountKey).map(row => JSON.parse(row.value)),
     };
   }
-  return { operations, readForReferenceV1, readForTeachingLinkV1, readForExport };
+  return { operations, readForExport };
 }

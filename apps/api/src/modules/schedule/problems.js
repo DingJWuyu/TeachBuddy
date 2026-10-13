@@ -19,14 +19,6 @@ export const scheduleProblems = {
     workbenchProblemStatus[workbenchProblemTypes.reminderNotFuture],
     problem(workbenchProblemTypes.reminderNotFuture, { field })
   ),
-  referenceDeleted: () => raise(
-    workbenchProblemStatus[workbenchProblemTypes.referenceDeleted],
-    problem(workbenchProblemTypes.referenceDeleted)
-  ),
-  classMismatch: () => raise(
-    workbenchProblemStatus[workbenchProblemTypes.classMismatch],
-    problem(workbenchProblemTypes.classMismatch)
-  ),
   immutableSeries: () => raise(
     workbenchProblemStatus[workbenchProblemTypes.immutableSeries],
     problem(workbenchProblemTypes.immutableSeries)

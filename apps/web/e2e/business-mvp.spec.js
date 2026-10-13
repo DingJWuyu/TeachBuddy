@@ -23,19 +23,10 @@ async function register(page) {
  await expect(page.locator('.wb-shell')).toBeVisible();
 }
 const nav=(page,name)=>page.locator('.wb-sidebar').getByRole('link',{name,exact:true}).click();
-test('班级一句话记录与真实指针选时段，保存刷新重开',async({page,browser})=>{
+
+
+test('真实指针选时段，保存刷新重开',async({page,browser})=>{
  await register(page);
- await nav(page,'班级教学');
- await page.getByRole('button',{name:'新建班级',exact:true}).click();
- await page.getByLabel('班级名称',{exact:true}).fill('高一强基班');
- await page.getByRole('button',{name:'创建',exact:true}).click();
- await page.getByLabel('写一句',{exact:true}).fill('例2尚未讲完，下次强调定义中的任意性。');
- await page.locator('[data-region="record-composer"]').getByRole('button',{name:'保存',exact:true}).click();
- await expect(page.getByText('例2尚未讲完，下次强调定义中的任意性。',{exact:true})).toBeVisible();
- await page.reload();
- await expect(page.getByText('例2尚未讲完，下次强调定义中的任意性。',{exact:true})).toBeVisible();
- const classPath=new URL(page.url()).pathname;
- await page.screenshot({path:path.join(evidence,'class-record.png'),animations:'disabled'});
  await page.getByRole('link',{name:'日程',exact:true}).click();
  await page.locator('[name="range-from"]').fill('2026-09-23');
  await page.locator('[name="range-to"]').fill('2026-09-25');
@@ -60,8 +51,6 @@ test('班级一句话记录与真实指针选时段，保存刷新重开',async(
  const fresh=await browser.newContext({storageState,ignoreHTTPSErrors:true});
  try {
   const reopened=await fresh.newPage();
-  await reopened.goto(world.origin+classPath);
-  await expect(reopened.getByText('例2尚未讲完，下次强调定义中的任意性。',{exact:true})).toBeVisible();
   await reopened.goto(world.origin+schedulePath);
   await reopened.locator('[name="range-from"]').fill('2026-09-23');
   await reopened.locator('[name="range-to"]').fill('2026-09-25');

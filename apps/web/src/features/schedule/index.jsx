@@ -203,7 +203,7 @@ export default function SchedulePage({ route }) {
       const origin = payload.kind === 'override' ? current.origin : entry.repeat ? payload.ruleChange ? payload.draftContent.time.date : current.origin ?? entry.time.date : null;
       let occurrence = null;
       if (payload.ruleChange && origin) {
-        // 规则可能把编辑目标移到另一天，读取那一次的例外和教学关联。
+        // 规则可能把编辑目标移到另一天，读取那一次的例外。
         try { occurrence = await api.getOccurrence(entry.id, origin); } catch { /* 保存已确认，列表刷新仍可恢复该日期。 */ }
       }
       const latest = sceneRef.current.draft;
@@ -212,8 +212,7 @@ export default function SchedulePage({ route }) {
         const refreshed = occurrence?.state === 'active' ? contentOf({ ...entry, ...occurrence, repeat: entry.repeat }) : null;
         const content = payload.ruleChange && unchanged && refreshed ? refreshed : payload.kind === 'detach' ? { ...latest.content, repeat: null } : latest.content;
         setDraft({ ...latest, id: result.id ?? latest.id, version: result.version ?? result.entryVersion,
-          origin, entry, content, courseState: occurrence?.courseState ?? result.courseState ?? latest.courseState,
-          baseline: payload.ruleChange && unchanged && refreshed ? refreshed : payload.kind === 'detach' ? { ...payload.draftContent, repeat: null } : payload.draftContent ?? payload.content,
+          origin, entry, content, baseline: payload.ruleChange && unchanged && refreshed ? refreshed : payload.kind === 'detach' ? { ...payload.draftContent, repeat: null } : payload.draftContent ?? payload.content,
           forceSeries: latest.ruleChangeId === payload.ruleChangeId ? false : latest.forceSeries, savePaused: false,
           readOnly: payload.ruleChange && occurrence && occurrence.state !== 'active' ? occurrence.state === 'cancelled' ? t("这次任务已取消") : t("这次任务已不在重复范围内") : latest.readOnly,
           occurrenceState: occurrence?.state ?? latest.occurrenceState,
@@ -276,7 +275,6 @@ export default function SchedulePage({ route }) {
       }
     }
     if (single) content.repeat = null;
-    if (content.repeat && !single) content.course.recordIds = [];
     return perform({ kind: !current.id ? 'create' : single ? 'detach' : 'update', id: current.id, origin: current.origin,
       version: current.version, clientId: current.clientId, content, draftContent: current.content, ruleChangeId: current.ruleChangeId, ruleChange: Boolean(current.forceSeries && content.repeat) });
   }
@@ -379,7 +377,7 @@ export default function SchedulePage({ route }) {
       const sameDraft = preserveDraft && current?.id === id && current.origin === origin;
       const keepDraft = sameDraft
         && (entry.version < current.version || current.savePaused || !same(withoutEmptyItems(current.content), withoutEmptyItems(current.baseline)) || opRef.current.pending);
-      if (!keepDraft) setDraft({ clientId: sameDraft ? current.clientId : crypto.randomUUID(), id, origin, version: entry.version, entry, content, courseState: occurrence?.courseState ?? entry.courseState, baseline: structuredClone(content), zone: zoneRef.current, readOnly, occurrenceState: occurrence?.state, isException: occurrence?.exception });
+      if (!keepDraft) setDraft({ clientId: sameDraft ? current.clientId : crypto.randomUUID(), id, origin, version: entry.version, entry, content, baseline: structuredClone(content), zone: zoneRef.current, readOnly, occurrenceState: occurrence?.state, isException: occurrence?.exception });
       if (!bypass && shell.isPanelOpen) shell.closePanel();
       setValidation(''); setMobileSidebar(true);
       return true;
@@ -431,7 +429,7 @@ export default function SchedulePage({ route }) {
       const occurrence = current.origin ? await api.getOccurrence(current.id, current.origin) : null;
       if (!mounted.current || sceneRef.current.draft?.clientId !== current.clientId) return;
       const baseline = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
-      setDraft({ ...sceneRef.current.draft, entry, version: entry.version, baseline, serverCourseState: occurrence?.courseState ?? entry.courseState, savePaused: !same(sceneRef.current.draft.content, baseline) });
+      setDraft({ ...sceneRef.current.draft, entry, version: entry.version, baseline, savePaused: !same(sceneRef.current.draft.content, baseline) });
       setItemToMove(null); op.reset(); reload();
       setValidation(t("已读取最新版本；本地输入保留，请核对后继续"));
     } catch { setValidation(t("读取失败，请重试")); }
@@ -439,7 +437,7 @@ export default function SchedulePage({ route }) {
   function adoptServer() {
     const current = sceneRef.current.draft;
     if (!current?.savePaused) return;
-    setDraft({ ...current, content: structuredClone(current.baseline), courseState: current.serverCourseState, savePaused: false, forceSeries: false });
+    setDraft({ ...current, content: structuredClone(current.baseline), savePaused: false, forceSeries: false });
     setValidation('');
   }
   async function moveEvent(info) {

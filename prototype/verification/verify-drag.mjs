@@ -66,8 +66,8 @@ const dragTo = async (fromLabel, toExpr) => p.evaluate(({ fromLabel, toExpr }) =
 
 // This boundary case needs two populated groups. The current default keeps
 // Ungrouped empty, so prepare it using the existing drop path first.
-await dragTo('班级教学', "document.querySelector('[data-drop-group=\"ungrouped\"] .tb-group-heading')");
-await p.waitForSelector('[data-drop-group="ungrouped"] [data-drop-module="classes"]');
+await dragTo('数学工坊', "document.querySelector('[data-drop-group=\"ungrouped\"] .tb-group-heading')");
+await p.waitForSelector('[data-drop-group="ungrouped"] [data-drop-module="studio"]');
 await p.evaluate(() => { window.__mutations = 0; });
 
 // --- 1. geometry must not move while hovering a drop target ---
@@ -188,7 +188,7 @@ ok('dropping there puts the module first in that group',
 
 // --- 4. no jitter on the real drop-target path either ---
 const before4 = await rowGeometry();
-await dragTo('班级教学', "document.querySelector('.tb-module-row:nth-of-type(1)')");
+await dragTo('数学工坊', "document.querySelector('.tb-module-row:nth-of-type(1)')");
 await p.waitForTimeout(200);
 ok('no console errors', errs.length === 0, JSON.stringify(errs.slice(0, 3)));
 

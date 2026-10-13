@@ -2,7 +2,7 @@
  * Schedule module entry point.
  *
  * The composition root mounts the returned router under
- * `/api/modules/schedule` and injects the classes public ports, the
+ * `/api/modules/schedule` and injects the
  * server clock and the `beforeChange` seam. `clock.now()` returns a UTC ISO Z
  * instant; `beforeChange(principal, now)` is the synchronous settlement hook T53
  * replaces with the persistent `reminders.captureDue`. There is deliberately no
@@ -14,15 +14,12 @@ import { createScheduleRouter } from './router.js';
 import { createScheduleService } from './service.js';
 import { migrations } from './migrations/index.js';
 
-export function createScheduleModule({ db, mutations, classes, beforeChange, clock } = {}) {
+export function createScheduleModule({ db, mutations, beforeChange, clock } = {}) {
   if (!db || typeof db.prepare !== 'function') {
     throw new TypeError('createScheduleModule requires a better-sqlite3 Database instance.');
   }
   if (!mutations || typeof mutations.execute !== 'function') {
     throw new TypeError('createScheduleModule requires the mutations.execute seam.');
-  }
-  if (!classes || typeof classes.readClass !== 'function' || typeof classes.readRecord !== 'function') {
-    throw new TypeError('createScheduleModule requires the classes.readClass/readRecord ports.');
   }
   if (typeof beforeChange !== 'function') {
     throw new TypeError('createScheduleModule requires a synchronous beforeChange seam.');
@@ -32,7 +29,7 @@ export function createScheduleModule({ db, mutations, classes, beforeChange, clo
   }
 
   const repository = createScheduleRepository(db);
-  const service = createScheduleService({ repository, classes, beforeChange, clock });
+  const service = createScheduleService({ repository, beforeChange, clock });
   const router = createScheduleRouter({ service, mutations });
 
   return {

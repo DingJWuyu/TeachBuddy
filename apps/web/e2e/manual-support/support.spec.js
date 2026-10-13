@@ -123,21 +123,6 @@ test('日程本地草稿重开保留原版本，不覆盖别处修改', async ({
   expect(current.title).toBe('别处已保存内容');
 });
 
-test('班级创建输入和记录关联选择刷新恢复', async ({ page }) => {
-  await page.locator('a[href^="/classes"]').first().click();
-  await page.getByRole('button', { name: '创建班级', exact: true }).click();
-  await page.getByLabel('班级名称', { exact: true }).fill('创建中的班级');
-  await page.reload();
-  await expect(page.getByLabel('班级名称', { exact: true })).toHaveValue('创建中的班级');
-  await page.getByRole('dialog', { name: '创建班级' }).getByRole('button', { name: '创建班级', exact: true }).click();
-  await page.getByLabel('写一句', { exact: true }).fill('待补充关联资料的记录');
-  await page.getByRole('button', { name: '关联资料', exact: true }).click();
-  await page.getByRole('tab', { name: '题目', exact: true }).click();
-  await page.getByLabel('搜索资料').fill('保持筛选');
-  await page.reload();
-  await expect(page.getByRole('dialog', { name: '关联资料' })).toBeVisible();
-  await expect(page.getByLabel('搜索资料')).toHaveValue('保持筛选');
-});
 
 test('数学预览参数和工具展开位置重开，不改作品源码', async ({ page }) => {
   await page.locator('a[href^="/math"]').first().click();

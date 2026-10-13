@@ -45,7 +45,7 @@ test("material composition serves the frozen v3 catalog through real page-bound 
   validateSchema("ModuleCatalogV3", catalog.json);
   assert.deepEqual(
     catalog.json.items.map((x) => x.id),
-    ["questions", "math", "resources", "classes", "schedule"],
+    ["questions", "math", "resources", "schedule"],
   );
 });
 

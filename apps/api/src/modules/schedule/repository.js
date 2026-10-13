@@ -2,7 +2,7 @@
  * Schedule persistence.
  *
  * One Entry is a small aggregate stored as a row plus JSON columns: items keep
- * their order, time/repeat/course/reminder are fixed shapes the service parses
+ * their order, time/repeat/reminder are fixed shapes the service parses
  * once, and exceptions are one row per (entryId, originDate). No instance rows
  * are pre-generated; the range query expands the weekly rhythm at read time.
  */
@@ -22,8 +22,6 @@ export function mapEntryRow(row) {
     time: parseJson(row.timeJson),
     repeat: parseJson(row.repeatJson) ?? (row.repeatUntil === null ? null : { until: row.repeatUntil }),
     calendar: parseJson(row.calendarJson) ?? { allDay: false, notes: '', tags: [] },
-    course: JSON.parse(row.courseJson),
-    courseLinks: JSON.parse(row.courseLinks),
     reminder: parseJson(row.reminderJson),
     reminderArmedAt: row.reminderArmedAt,
     createdAt: row.createdAt,
@@ -63,10 +61,10 @@ export function createScheduleRepository(db) {
     ),
     insertEntry: db.prepare(`
       INSERT INTO schedule_entries (
-        id, accountKey, version, title, items, timeJson, repeatUntil, courseJson, courseLinks,
+        id, accountKey, version, title, items, timeJson, repeatUntil,
         reminderJson, reminderArmedAt, createdAt, updatedAt, deletedAt, calendarJson, repeatJson
       ) VALUES (
-        @id, @accountKey, @version, @title, @items, @timeJson, @repeatUntil, @courseJson, @courseLinks,
+        @id, @accountKey, @version, @title, @items, @timeJson, @repeatUntil,
         @reminderJson, @reminderArmedAt, @createdAt, @updatedAt, @deletedAt, @calendarJson, @repeatJson
       )
     `),
@@ -79,8 +77,6 @@ export function createScheduleRepository(db) {
         repeatUntil = @repeatUntil,
         repeatJson = @repeatJson,
         calendarJson = @calendarJson,
-        courseJson = @courseJson,
-        courseLinks = @courseLinks,
         reminderJson = @reminderJson,
         reminderArmedAt = @reminderArmedAt,
         updatedAt = @updatedAt,
@@ -133,8 +129,6 @@ export function createScheduleRepository(db) {
       repeatUntil: entry.repeat === null ? null : entry.repeat.until,
       repeatJson: entry.repeat == null ? null : JSON.stringify(entry.repeat),
       calendarJson: entry.calendar == null ? null : JSON.stringify(entry.calendar),
-      courseJson: JSON.stringify(entry.course),
-      courseLinks: JSON.stringify(entry.courseLinks),
       reminderJson: entry.reminder === null ? null : JSON.stringify(entry.reminder),
       reminderArmedAt: entry.reminderArmedAt ?? null,
       createdAt: entry.createdAt,

@@ -969,38 +969,6 @@
     }
   },
   {
-    "id": "teaching-provider",
-    "schema": "TeachingWork",
-    "valid": true,
-    "value": {
-      "id": "00000000-0000-4000-8000-000000000001",
-      "version": 2,
-      "title": "判别式与求根",
-      "deletedAt": null
-    }
-  },
-  {
-    "id": "teaching-input",
-    "schema": "TeachingMathInput",
-    "valid": true,
-    "value": {
-      "kind": "math",
-      "id": "00000000-0000-4000-8000-000000000001"
-    }
-  },
-  {
-    "id": "teaching-linked",
-    "schema": "TeachingMathSource",
-    "valid": true,
-    "value": {
-      "kind": "math",
-      "id": "00000000-0000-4000-8000-000000000001",
-      "labelAtLink": "求根公式",
-      "currentLabel": "判别式与求根",
-      "deleted": false
-    }
-  },
-  {
     "id": "error-work-not-ready",
     "schema": "MathProblem",
     "valid": true,
@@ -1104,16 +1072,6 @@
     }
   },
   {
-    "id": "reject-teaching-version",
-    "schema": "TeachingMathInput",
-    "valid": false,
-    "value": {
-      "kind": "math",
-      "id": "00000000-0000-4000-8000-000000000001",
-      "workVersion": 1
-    }
-  },
-  {
     "id": "catalog-materials-math",
     "schema": "ModuleCatalogV3",
     "valid": true,
@@ -1179,26 +1137,12 @@
           "requires": []
         },
         {
-          "id": "classes",
-          "name": "班级教学",
-          "path": "/classes",
-          "navigation": "sidebar",
-          "auxiliaryPanel": true,
-          "requires": [
-            "questions.readForReference",
-            "math.readForTeachingLinkV1"
-          ]
-        },
-        {
           "id": "schedule",
           "name": "日程",
           "path": "/calendar",
           "navigation": "top",
           "auxiliaryPanel": true,
-          "requires": [
-            "classes.readClass",
-            "classes.readRecord"
-          ]
+          "requires": []
         }
       ]
     }

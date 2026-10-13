@@ -32,6 +32,5 @@ export {
 } from './contract.js';
 
 export { canRenderMath, supportedDocument, questionDocuments } from './materials/content.js';
-export { emptyRecordContent, recordContentText } from './classRecordContent.js';
 
 export { defaultNavigation, validNavigation, includeNewNavigationModules, navigationLayoutSchema } from './navigation.js';

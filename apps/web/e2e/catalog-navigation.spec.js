@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { randomUUID } from 'node:crypto';
-import { doc, question } from '../../api/test/teaching-time-classes-materials-fixture.js';
+import { doc, question } from '../../api/test/materials-http-fixture.js';
 import { register, headers } from './teaching-time-auth/helpers.mjs';
 let world;
 let errors;
@@ -25,8 +25,8 @@ async function route(page, path, name) {
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', name);
 }
 
-test('五模块真实外壳、辅助栏、前进后退、未知及非法深链接', async ({ page }, info) => {
-  for (const [id, path] of [['questions', '/questions'], ['math', '/math'], ['resources', '/resources'], ['classes', '/classes'], ['schedule', '/calendar']]) {
+test('四模块真实外壳、辅助栏、前进后退、未知及非法深链接', async ({ page }, info) => {
+  for (const [id, path] of [['questions', '/questions'], ['math', '/math'], ['resources', '/resources'], ['schedule', '/calendar']]) {
     await route(page, path, id);
     if (id !== 'schedule') await expect(row(page, id)).toHaveAttribute('aria-current', 'page');
     else {
@@ -79,28 +79,6 @@ test('侧栏分组、拖动、隐藏恢复和刷新保留', async ({ page }, inf
   expect(errors).toEqual([]);
 });
 
-test('班级时区失败重试以及详情路由', async ({ page }, info) => {
-  await page.route('**/api/modules/schedule/settings', request => request.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: { message: '隔离时区读取失败' } }) }));
-  await route(page, '/classes', 'classes');
-  await expect(page.getByRole('alert')).toContainText('时区读取失败');
-  await page.unroute('**/api/modules/schedule/settings');
-  await page.getByRole('button', { name: '重试读取时区' }).click();
-  await page.getByRole('button', { name: '创建班级', exact: true }).click();
-  await page.getByLabel('班级名称').fill('目录回归班级');
-  await page.getByRole('dialog', { name: '创建班级' }).getByRole('button', { name: '创建班级', exact: true }).click();
-  await expect(page).toHaveURL(/\/classes\/[^/]+$/);
-  const classId = new URL(page.url()).pathname.split('/').at(-1);
-  await route(page, `/classes/${classId}`, 'class');
-  await expect(row(page, 'classes')).toHaveAttribute('aria-current', 'page');
-  await page.getByRole('textbox', { name: '写一句', exact: true }).fill('目录详情课堂记录');
-  await page.locator('[data-region=record-composer]').getByRole('button', { name: '保存记录', exact: true }).click();
-  await expect(page.locator('[data-region=record-rows]')).toContainText('目录详情课堂记录');
-  const recordId = await page.locator('[data-record-id]').first().getAttribute('data-record-id');
-  await route(page, `/classes/${classId}/records/${recordId}`, 'class-record');
-  await expect(page.locator('[data-record-id]').first()).toContainText('目录详情课堂记录');
-  await page.screenshot({ path: info.outputPath('class-detail.png') });
-  expect(errors).toEqual([]);
-});
 
 async function create(page, path, data) {
   const response = await page.request.post(world.origin + path, { data, headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': randomUUID() } });
@@ -137,7 +115,7 @@ test('题目数学详情、资源一次消费与 Agent 返回现场', async ({ p
   await page.getByRole('button', { name: '返回工作', exact: true }).click();
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'question');
   await expect(page.locator('.wb-shell')).toHaveClass(/has-panel/);
-  const entry = await create(page, '/api/modules/schedule/entries', { title: '目录日程详情', items: [], time: { date: '2026-09-28', startTime: '10:00', durationMinutes: 45, timeZone: 'Asia/Shanghai' }, repeat: null, course: { classId: null, recordIds: [] }, reminder: null });
+  const entry = await create(page, '/api/modules/schedule/entries', { title: '目录日程详情', items: [], time: { date: '2026-09-28', startTime: '10:00', durationMinutes: 45, timeZone: 'Asia/Shanghai' }, repeat: null, reminder: null });
   await route(page, `/calendar?entry=${entry.id}`, 'schedule');
   await expect(page.locator('[name=entry-title]')).toHaveValue('目录日程详情');
   await page.reload();
@@ -148,8 +126,8 @@ test('题目数学详情、资源一次消费与 Agent 返回现场', async ({ p
 
 test('教程搜索消费目录，窄屏日程入口和侧栏高亮', async ({ page }, info) => {
   await page.getByRole('button', { name: '使用教程', exact: true }).click();
-  await expect(page.getByRole('progressbar', { name: '教程完成进度' })).toHaveAttribute('aria-valuemax', '5');
-  await expect(page.locator('.tb-popover-tutorial')).toContainText('班级教学');
+  await expect(page.getByRole('progressbar', { name: '教程完成进度' })).toHaveAttribute('aria-valuemax', '3');
+  await expect(page.locator('.tb-popover-tutorial')).not.toContainText('班级教学');
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: '全局搜索', exact: true }).click();
   await page.getByRole('searchbox').fill('日程');
@@ -165,7 +143,7 @@ test('教程搜索消费目录，窄屏日程入口和侧栏高亮', async ({ pa
   expect(errors).toEqual([]);
 });
 
-for (const [name, path, main] of [['classes', '/classes', '[data-region=class-home]'], ['schedule', '/calendar', '.cal-board']]) {
+for (const [name, path, main] of [['schedule', '/calendar', '.cal-board']]) {
   test(`${name} 主面板和辅助栏上下对齐`, async ({ page }, info) => {
     await route(page, path, name);
     await page.getByRole('button', { name: 'AI 助理', exact: true }).click();

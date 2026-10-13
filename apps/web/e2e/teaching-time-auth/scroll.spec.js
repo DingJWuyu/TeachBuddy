@@ -18,7 +18,7 @@ let runner;
 const entryInput = {
   title: '定向回归课程', items: [],
   time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, recordIds: [] },
+  repeat: null,
   reminder: { side: 'before', minutes: 10 }
 };
 async function write(page, url, data) {
@@ -58,7 +58,7 @@ test('D04: tablet long list scrolls in its main region and restores after naviga
   const position = await region.evaluate(n => n.scrollTop);
   await shot(page, 'independent-main-region-scroll');
   const storedBefore = await page.evaluate(() => Object.fromEntries(Object.entries(localStorage).filter(([key]) => key.endsWith(':scene:schedule')).map(([key, value]) => [key, JSON.parse(value)])));
-  await page.locator('a[href="/classes"]').click();
+  await page.locator('a[href="/questions"]').click();
   await page.getByRole('link', {name:'日程',exact:true}).click();
   await expect(page.locator('[data-region=unscheduled] [data-item-id]')).toHaveCount(30);
   await shot(page, 'independent-main-region-returned');
@@ -213,7 +213,7 @@ for (const viewport of [{ width: 768, height: 1024 }, { width: 1440, height: 900
     const scrolled = await position();
     await expectTop(page, 0);
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
-    await page.locator('a[href="/classes"]').click();
+    await page.locator('a[href="/questions"]').click();
     await page.getByRole('link', { name: '日程', exact: true }).click();
     await expect.poll(position).toEqual(scrolled);
     await expectTop(page, 0);
@@ -251,7 +251,7 @@ test('WB-T005: actual pointer selection in the integrated shell preserves AI and
   await shot(page, 'desktop-pointer-selection');
   await page.getByRole('tab', { name: 'AI 助理', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'AI 输入' })).toHaveValue('拖选后仍保留');
-  await page.locator('a[href="/classes"]').click();
+  await page.locator('a[href="/questions"]').click();
   await page.getByRole('link', { name: '日程', exact: true }).click();
   await expect(page.locator('[data-region=range-label]')).toContainText('11 天');
   await expect(page.locator('[data-region=selection][data-day="2026-09-21"]')).toHaveCount(1);

@@ -1,3 +1,4 @@
+import { classRetirementMigrations, assertRetiredClassLedger } from './retire-classes.js';
 import { retirementMigrations } from './retire-lessons.js';
 import { createNavigationRouter, navigationMigrations } from './navigation.js';
 import { createReliability } from './reliability/index.js';
@@ -183,8 +184,9 @@ export function createWorkbench({
     if (closed) return Promise.reject(new Error('Workbench is closing'));
     initialization ??= (async () => {
       await loader.discover();
+      assertRetiredClassLedger(db);
       const migrationResult = migrations.run(
-        [...fileMigrations, ...jobMigrations, ...recognitionMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...navigationMigrations, ...loader.moduleMigrations(), ...retirementMigrations],
+        [...fileMigrations, ...jobMigrations, ...recognitionMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...navigationMigrations, ...loader.moduleMigrations(), ...retirementMigrations, ...classRetirementMigrations],
         {
           knownModuleIds: [
             "reliability",

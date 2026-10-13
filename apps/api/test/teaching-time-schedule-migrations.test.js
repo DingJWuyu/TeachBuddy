@@ -32,9 +32,9 @@ test('an empty database receives every schedule table and ledger row', async () 
       .query('SELECT id, moduleId FROM workbench_migrations ORDER BY rowid')
       .map((row) => `${row.moduleId}:${row.id}`);
     assert.deepEqual(applied, [
-      'classes:classes_fixture_0001',
       'schedule:schedule_0001_settings_entries',
       'schedule:schedule_0002_calendar_details',
+      'schedule:schedule_0003_remove_teaching_links',
       'reliability-preferences:reliability_preferences_001'
     ]);
   } finally {
@@ -82,7 +82,7 @@ test('a B16 database upgrades in place and keeps its previous rows', async () =>
     const ledger = upgraded.query("SELECT id FROM workbench_migrations WHERE moduleId = 'questions'");
     assert.ok(ledger.length > 0);
     const scheduleLedger = upgraded.query("SELECT id FROM workbench_migrations WHERE moduleId = 'schedule'");
-    assert.deepEqual(scheduleLedger.map((row) => row.id), ['schedule_0001_settings_entries', 'schedule_0002_calendar_details']);
+    assert.deepEqual(scheduleLedger.map((row) => row.id), ['schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_0003_remove_teaching_links']);
 
     // The schedule module is usable on the upgraded database and survives a restart.
     const a = upgraded.agent(upgraded.account('teacher-a'));

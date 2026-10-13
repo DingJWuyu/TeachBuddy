@@ -1,4 +1,4 @@
-# AI 助理契约：首批工具与五模块扩展
+# AI 助理契约：首批工具与四模块扩展
 
 首批 Agent 契约，设计已采用；开发暂停和实现边界见[当前状态](../plans/run-state.md)。精确 HTTP、请求/响应、工具参数和错误对照唯一归 [agent.openapi.json](../../apps/api/src/contracts/agent.openapi.json)，有效交换样本见 [agent-examples.json](../../apps/api/test/fixtures/contracts/agent-examples.json)。本页定义请求之间的不变量，不是另一份字段 schema。
 
@@ -85,15 +85,15 @@ reconcile 是受当前身份保护的零模型操作：读取原 operation 及�
 
 每次 provider 请求开始即持久记录 request ordinal；按该 ordinal 只记一次已报告 usage。聚合字段为已报告值之和，无任何报告时为 null；complete 仅当所有已发请求都取得完整 usage。token 字段采用原返回语义，reasoning 是细分，不重复加到 totalTokens。流中断、授权失败、网络失败可能已收费但没有 usage，必须标为不完整。当前实际账单/余额未知，配置返回 null，模型元数据 cost=0 不参与费用计算。provider 额度/额外收费授权拒绝立即停止后续请求，无自动充值、换模型或付费重试。
 
-## 五模块扩展契约
+## 四模块扩展契约
 
-本节保留 F60 设计中当前五业务模块的扩展范围，完整实现暂停。精确扩展 schema 与完整相对引用保存在[待实现契约](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)，采集来源与现行调整范围见同目录 `provenance.json`。这些文件不参与当前 API 契约装配，不能用当前首批 schema 替代；读取时直接使用仓库内文件，不需要本机历史 Git 引用。新增 HTTP 继续使用认证 transport、账户幂等与共享 Problem。所有业务操作只调用各模块公共端口。
+本节保留 F60 设计中当前四业务模块的扩展范围；旧班级工具和 class/record 引用已退役，新班级工具另行设计，完整实现暂停。[固定设计输入](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)及其完整相对引用保留采集时的原始字节，来源与哈希见同目录 `provenance.json`。它们不参与当前 API 契约装配，仅供存续能力的未实现设计参考；其中旧班级工具、引用和教学关联片段不再适用，也不是当前四模块扩展的精确 schema。恢复开发时须按当前模块公开操作重新核对并形成现行契约，读取固定输入无需本机历史 Git 引用。新增 HTTP 继续使用认证 transport、账户幂等与共享 Problem。所有业务操作只调用各模块公共端口。
 
 冻结文件内的 `x-sources` 和旧验收引用保留采集来源，不作为接手前置。`x-auth-recovery` 记录冻结时的 `auth-recovery/1`；恢复开发时按[当前认证恢复契约](auth.md#部署恢复的认证撤销)的 `auth-recovery/2`、现有实现及恢复测试处理账户删除与清理计数，不能沿用旧版本假定。
 
 ### 版本与调用
 
-C25 的 pi runtime、模型白名单、用量/次数上界、工具 journal、SSE 游标、停止与 reconcile 语义原样继承。新增 `/api/agent/v2` 与 v2 snapshot/schema，以便接纳五模块对象和工具；原 `/api/agent` 保留只处理原可表示历史。旧路径读到新工具/丰富引用时整体拒绝 `unsupported-agent-version`，不能丢卡或降级源；旧路径未知写入仍在原路径原键确认。v2 可读取旧历史且不改写其消息/工具/幂等原件，旧未决操作在 v2 核实也执行原 journal 路径。
+C25 的 pi runtime、模型白名单、用量/次数上界、工具 journal、SSE 游标、停止与 reconcile 语义原样继承。新增 `/api/agent/v2` 与 v2 snapshot/schema，以便接纳四模块对象和工具；原 `/api/agent` 保留只处理原可表示历史。旧路径读到新工具/丰富引用时整体拒绝 `unsupported-agent-version`，不能丢卡或降级源；旧路径未知写入仍在原路径原键确认。v2 可读取旧历史且不改写其消息/工具/幂等原件，旧未决操作在 v2 核实也执行原 journal 路径。
 
 旧写路径先按原顺序重放已成功请求，再拒绝不可表示的新写入；不能清草稿或开始模型后才报版本不支持。旧 SSE 已连接时，在首个不可表示事件前关闭流，不发送畸形 v1 帧；重读 snapshot 得到版本错误并引导刷新升级，旧游标不伪进位。新 v2 对话和原历史共用同一账户运行锁，不出现两个并行 turn。
 
@@ -101,14 +101,13 @@ C25 的 pi runtime、模型白名单、用量/次数上界、工具 journal、SS
 
 参数转为原 HTTP 表示时按原参数 style/explode 编码数组，路径逐段编码；journal 保存真实方法、规范路径、解析后的原业务 body 与完整参数，不能把工具包装 `{path,query,body}` 当成业务 body。Job/query/通知等原接口明确的读取副作用仍按原业务规则，工具 `read` 只表示该次查询结果，不改通知结算语义。v2 ToolOutcome 使用 schema 的完整四字段投影，历史 C25 原生结果字节不重写。
 
-Agent v2 引用允许 question、resource、math、class、record、entry、import、file。业务对象带明确当前版本，file 使用不可变 ID；entry 可定位 originDate。引用只用于捕获上下文，不是修改权限。捕获完整公开对象及当前引用版本，文件仅捕获元数据与已授权内容投影，不把凭据下载地址传给模型。未知类型拒绝，外账户统一 404。旧引用规则扩展到这些类型：保存输入可保留本账户失效引用，发送要求当前活动版和目标存在；文件须完整可读。当前对象更新不能改变历史快照。
+Agent v2 引用允许 question、resource、math、entry、import、file。业务对象带明确当前版本，file 使用不可变 ID；entry 可定位 originDate。引用只用于捕获上下文，不是修改权限。捕获完整公开对象及当前引用版本，文件仅捕获元数据与已授权内容投影，不把凭据下载地址传给模型。未知类型拒绝，外账户统一 404。旧引用规则扩展到这些类型：保存输入可保留本账户失效引用，发送要求当前活动版和目标存在；文件须完整可读。当前对象更新不能改变历史快照。
 
 entry 引用快照同时保存 Entry 和选定 Occurrence：有 originDate 时按原实例端口读取真实调课结果，取消/超范围实例拒绝发送；未指定则 occurrence=null，表示整组或非重复 Entry。基线始终是原聚合 version，不能把例外时间当模板内容。去重键为 kind/id 与该类型允许的 originDate，文件按 id；捕获与发送接受仍在同一一致事务中。
 
 <a id="tool-classification"></a>
 ### 工具卡读写分类与传递
 
-老师查询班级得到空列表时仍是一张成功读卡：`wb_listClasses`、`arguments={}`、`state=read`、`result={items:[]}`、`operationId=null`。读取失败或中断保留同一张卡，不制造写入回执。
 
 本扩展设计以 `x-tool-bindings.mutation` 为读写依据。`AgentToolCall` 新版分支的只读名称枚举必须精确对应其中 `mutation=false` 名称；其余为写工具。修改绑定时同时核对名称集合，旧 snake_case 名称只用于已有历史分支，不进入新回合工具集合。
 
@@ -122,11 +121,11 @@ entry 引用快照同时保存 Entry 和选定 Occurrence：有 originDate 时�
 
 `AgentSnapshot.toolCalls`、`AgentEvent(type=toolCall).value` 和 `PortableData(kind=conversation).value.toolCalls` 均递归消费同一个 `AgentToolCall`，保留名称、参数、顺序、结果及 null operationId。消费者不得按旧名称重新猜测分类、伪造 Operation、丢卡或跳过校验。v2 ToolOutcome 沿既定四字段投影，终态须与对应卡一致。正常重启或部署恢复的只读 executing 标 interrupted、未开始调用标 cancelled；只有执行中的写操作进入 unconfirmed 及原有核实/恢复隔离路径。
 
-实现状态与后续验证见[项目状态](../plans/run-state.md)；产品运行仍需覆盖五模块业务一致性，静态检查不代替运行证据。
+实现状态与后续验证见[项目状态](../plans/run-state.md)；产品运行仍需覆盖四模块业务一致性，静态检查不代替运行证据。
 
 ### 手工能力对应表
 
-下表指定行为覆盖；精确工具名、路径和请求 schema 只在 JSON 的 `x-tool-bindings`。同一格中每项都须经真实公开端口实现，不以列出工具名视为已完成。
+下表指定行为覆盖；固定设计中的工具名、路径和请求 schema 可从 JSON 的 `x-tool-bindings` 查阅；当前对应关系须按存续模块操作重新确认。同一格中每项都须经真实公开端口实现，不以列出工具名视为已完成。
 
 | 模块/能力 | 业务操作族 | 页面与确认结果 |
 | --- | --- | --- |
@@ -136,10 +135,9 @@ entry 引用快照同时保存 Entry 和选定 Occurrence：有 originDate 时�
 | 数学公式、函数、平面/空间、动态制作/修改、参数/标注/样式/步骤、复制/版本 | math works 的 list/get/create/update/copy/versions/reference | 保存可编辑 Source；演示按原隔离方式预览，旧引用固定旧版 |
 | 数学 PNG/SVG/透明公式/源码/离线 HTML，外部 HTML 导入 | exportWork；create/updateWork 消费已上传 File | 卡片打开真实作品和成果；不赋予任意 HTML 结构化编辑承诺 |
 | 资源收录、分类/标签/备注/检索、预览/下载、替换文件/补充预览 | resources 全套 items、taxonomy、file、supplement-preview；File 端口 | 替换保留条目、分类、标签与备注 |
-| 班级管理、一句话/进度/共性问题/下一步、题目/作品关联、两班反馈 | classes items；records v2、source-records v2 | 实际记录可打开来源并返回，反馈按班分开；不把日程当已授课 |
-| 任意连续日期、未排期、多事项、优先级/段内排序、跨段移动、课程关联 | schedule entries、occurrences、moveItem | 返回准确日期/时段及内容，优先级与顺序互不派生 |
+| 任意连续日期、未排期、多事项、优先级/段内排序、跨段移动 | schedule entries、occurrences、moveItem | 返回准确日期/时段及内容，优先级与顺序互不派生 |
 | 周重复/结束日/仅这次/恢复原安排、提醒前后间隔/通知 | exceptions、settings、notifications | 保留 originDate；只通知站内，原 dueAt/去重与修改前结算不变 |
-| 五模块误删恢复 | 原 deletion 操作及 deleted 列表 | 操作卡明确删除或恢复，原 ID/关系保持，不给永久删除工具 |
+| 四模块误删恢复 | 原 deletion 操作及 deleted 列表 | 操作卡明确删除或恢复，原 ID/关系保持，不给永久删除工具 |
 
 模型不能上传本机文件；上传是老师操作。已上传 File 与生成的受限数学 Source 才能进入工具。素材选中态、滚动、预览翻页、下载到本机、操作系统 Office 编辑属于 UI/外部环境动作，不伪装成服务端修改；工具卡提供这些动作的真实入口。
 

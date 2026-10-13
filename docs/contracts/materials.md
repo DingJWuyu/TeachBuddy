@@ -20,7 +20,7 @@ v2 读取旧对象时，原 Document.version=1 原样返回；补充空分类、
 
 旧 B11 操作在其可表示对象上继续满足原 schema；附加分类等元数据在旧请求未提供时保持。若旧客户端访问含 v2 文档或新来源的对象，服务器返回 B11 已有的 `422 invalid-input / unsupported-content-version`，不做有损投影。旧列表若匹配到不可表示对象，同样明确要求使用新版入口，不静默漏题；旧 UI 保留草稿并进入升级提示/只读路径。旧写入先重放已成功原请求，再检查当前版本，最后拒绝不可表示对象的覆盖。v2 全部对象可正常读取，故这是客户端协议升级，不是丢失数据。
 
-B11 的 readForReference 端口继续供旧调用方使用，新增 `readForReferenceV2` 支持本批 Snapshot。旧副本来源中的 v1 快照维持 v1。题库拥有自身对象兼容，未知旧请求沿原路径确认。
+旧副本来源中的 v1 快照维持 v1。题库拥有自身对象兼容，未知旧请求沿原路径确认。
 
 静态模块目录只有一份。材料版历史协议定义 ModuleCatalog version=2；当前完整组合返回数学契约的 version=3。材料版 v2 的精确描述与依赖名在 materials.openapi.yaml；这是该目录操作的显式版本演进，B11 原定义保留为版本1历史冻结输入，不作为材料版运行响应的竞争定义。支持版本1的旧客户端遇到2必须保留草稿并提示重新加载，不用未知依赖继续装配。当前只注册真实实现并检查映射、缺依赖和环路。
 
@@ -108,7 +108,7 @@ createImport 先原子持久保存原稿绑定和 extraction Job，然后后台�
 
 归入笔记使用 Draft、Question、UpdateQuestion 的可选 `noteFragments`，每条保存原 Fragment 的 `id`、当前 `importId`、可编辑 `document` 与固定 `locations`。同一片段在同一收录中最多归入一个草稿笔记，原片段须标为 assigned；来源必须匹配已保存片段，不能伪造或将已经归入题干/答案的片段再次归入笔记。草稿移除摘录恢复待处理。入库时把采用稿存入题目已有扩展元数据，与原材料独立；彻底删除原材料后题目及摘录仍可读，资料包只省略失效的原稿链接，保留来源 ID、采用稿和附件。
 
-普通题目更新只允许编辑既有摘录文稿或移除条目，不接受新增摘录 ID 或改变出处。题目更新与校对保存省略 `noteFragments` 时保留旧值，显式空数组才清空，confirmed 草稿仍不可更改。CreateQuestion、CopyQuestion 不接受该字段；复制改编的起点同时清空两类笔记。文稿版本与账户附件权限沿用 Document 校验，未知版本只读；个人资料包和部署备份包含摘录及图片。班级引用、改编快照和 PPT 素材不包含两类笔记。
+普通题目更新只允许编辑既有摘录文稿或移除条目，不接受新增摘录 ID 或改变出处。题目更新与校对保存省略 `noteFragments` 时保留旧值，显式空数组才清空，confirmed 草稿仍不可更改。CreateQuestion、CopyQuestion 不接受该字段；复制改编的起点同时清空两类笔记。文稿版本与账户附件权限沿用 Document 校验，未知版本只读；个人资料包和部署备份包含摘录及图片。改编快照和 PPT 素材不包含两类笔记。
 
 saveImportReview 全量原子保存当前草稿/片段数组，baseVersion 与 import 比较；running/queued/cancelling 时返回 import-not-editable，先停止或等终态。新草稿 ID 由客户端创建（拆分/手工补充），移除草稿即丢弃该候选，原件保留。已 confirmed 草稿及其 questionId 只读且不可遗漏；客户端不能把 pending 自改为 confirmed，也不能自填 questionId。commitImportDrafts 是唯一入库动作，验证选中草稿无 open 疑点、answerStatus 非 unresolved、正文与图片/公式齐全，在同一事务建立 Questions 并写映射/新 import version。acknowledged 仅用于非阻断的文字/边界复核；missing-figure、uncertain-formula、incomplete-answer、unverified-location 必须 corrected。忽略草稿不能提交。
 
@@ -153,14 +153,14 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 
 沿用 React/Vite、Express、better-sqlite3 单一后端及[静态模块目录](../adr/0001-use-a-single-static-module-catalog.md)。一个教师规模下顺序执行重转换即可；文件目录和 SQLite 一起备份。不建立上传服务、对象存储网关、通用内容平台、分类平台或队列平台。
 
-材料历史协议使用 ModuleCatalog version=2；当前五模块组合使用数学 schema 的 version=3；questions/resources 无业务模块必需依赖。File/Document/Job 是启动底座，不注册为额外业务模块。只在实际实现集成后注册，Web/API从同一目录投影；旧目录版本客户端按契约升级保护，不另维护一份业务目录。
+材料历史协议使用 ModuleCatalog version=2；当前四模块组合使用数学 schema 的 version=3；questions/resources 无业务模块必需依赖。File/Document/Job 是启动底座，不注册为额外业务模块。只在实际实现集成后注册，Web/API从同一目录投影；旧目录版本客户端按契约升级保护，不另维护一份业务目录。
 
 | Module | 独占数据与 Implementation | 消费者 |
 | --- | --- | --- |
 | workbench/files | 原件和衍生字节、文件元数据、受控下载、固定页预览与裁图、文件持久提交；本机 LibreOffice/Poppler 隔离调用 | questions/resources、math |
 | workbench/content + shared/materials | 唯一 schema 的校验和受控 Document 呈现；Web 的公共文档编辑/阅读原语，v1/v2 兼容 | 题库、资源库、math |
 | workbench/jobs | 最小持久任务记录、停止意图、重启 interrupted；只承载固定任务类型，不拥有业务草稿和成果选项 | 文件预览、questions 提取/PNG |
-| questions | 题目、原始材料绑定、拆题草稿/片段、局部校对、题型/标签、复制来源、提取 Adapter、题面 PNG | Agent、教学记录 |
+| questions | 题目、原始材料绑定、拆题草稿/片段、局部校对、题型/标签、复制来源、提取 Adapter、题面 PNG | Agent |
 | resources | 资源条目、当前文件/补充预览、文件夹/标签/备注、替换与恢复 | Agent |
 
 自动提取的设计目标为“原生读取保存 + B 视觉辅助 + 结构/完整性校验 + 局部校对”。T/Word 先保留原生段落、OMML、图片关系；结构明确时本地自动拆题，通用文本整理失败时可将文本受控排版为页图走同一 B 路线，不能改成空题手填。PDF/扫描/图片按小批原页或区域提取，跨页续题可带相邻页上下文；答案页归并与题面分开。具体模型请求参数不进入公共 schema。R33 必须以真实输入证明这条完整路径，未通过项如实阻塞该实现能力。
@@ -181,7 +181,6 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 | 内容校验 | `content.validate(principal, Document)` | 同步返回原 Document 或契约错误，校验文件归属/格式，不转换源；v1 保留。 |
 | 公共 Web 阅读 | `DocumentView({value, onOpenFile})` | value 为 Document；按内容版本安全呈现，图片通过授权 fileId 获取。 |
 | 公共 Web 编辑 | `DocumentEditor({value, onChange, readOnly, onOpenFile, onPickImage})` | onChange(Document)；onPickImage()返回Promise<File或null>，由调用方完成上传/选择，编辑器不让老师填写fileId。支持本批封闭节点、公式源和错误定位，保存由所属模块负责。 |
-| 题目引用 | `questions.readForReferenceV2(principal, questionId)` | 同步 ReferenceReadQuestion，deletedAt 可非空，调用者事务中核对采用版本。 |
 | 业务动作 | 各模块 `port.operations.<operationId>({principal, key, input, id, query})` | Promise<{status, body}>，input/查询来自对应 HTTP schema；读取省略 key，缺省 id/query 不传。与 HTTP 共用业务校验与 mutations，不再执行另一份 SQL。 |
 
 Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档。作品制作状态和隔离 HTML 由[数学架构](../features/math.md#制作实现)定义。

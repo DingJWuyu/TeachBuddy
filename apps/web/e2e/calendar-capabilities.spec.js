@@ -5,13 +5,12 @@ import os from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { registerMath } from './fixtures/math-static/real.mjs';
-import { record, C, R } from '../../api/test/teaching-time-classes-materials-fixture.js';
 
 const E = '/api/modules/schedule/entries';
 const N = '/api/modules/schedule/notifications';
 let world, client, now, pageErrors;
 const input = (title, extra = {}) => ({ title, items: [], time: { date: '2026-09-25', startTime: '15:00', durationMinutes: 60, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, recordIds: [] }, reminder: null, calendar: { allDay: false, notes: '', tags: [] }, ...extra });
+  repeat: null, reminder: null, calendar: { allDay: false, notes: '', tags: [] }, ...extra });
 async function call(method, url, body) {
   const r = await client.request(method, url, { body, headers: method === 'GET' ? {} : { 'Idempotency-Key': randomUUID() } });
   expect(r.status, JSON.stringify(r.json)).toBeLessThan(300); return r.json;
@@ -233,18 +232,12 @@ test('单次重复提醒摘要明确范围并保存后重开', async ({ page }) 
 });
 
 test('重复任务这一次移回待安排，保留内容及后续排期', async ({ page }) => {
-  const classroom = await call('POST', C, { name: '移回待安排的班级' });
   const item = { id: randomUUID(), text: '课堂清单', priority: 'normal' };
-  const value = input('待调整重复课堂', { repeat: { until: '2026-10-09' }, items: [item], course: { classId: classroom.id, recordIds: [] }, calendar: { allDay: false, notes: '保留课堂笔记', tags: [] } });
+  const value = input('待调整重复课堂', { repeat: { until: '2026-10-09' }, items: [item], calendar: { allDay: false, notes: '保留课堂笔记', tags: [] } });
   let entry = await call('POST', E, value);
   const { repeat, ...instance } = value;
   await call('PUT', `${E}/${entry.id}/exceptions/2026-10-02`, { expectedVersion: entry.version, mode: 'override', content: { ...instance, title: '旧单次例外' } });
   await page.reload(); await open(page, value.title);
-  await expect(page.locator('.cal-time-options .cal-course-summary svg')).toBeVisible();
-  const relation = await page.locator('.cal-course-summary').boundingBox();
-  const labels = await page.getByRole('button', { name: '标签', exact: true }).boundingBox();
-  expect(relation.y + relation.height).toBeLessThan(labels.y);
-  await shot(page, 'course-after-repeat-before-tags');
   await page.locator('.cal-editor-heading').getByRole('button', { name: '移回待安排', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '移回待安排', exact: true });
   await expect(dialog).toContainText('移除这项任务的时间和提醒');
@@ -260,7 +253,6 @@ test('重复任务这一次移回待安排，保留内容及后续排期', async
   entry = (await call('GET', E)).items.find(x => x.id !== originalId && x.title === value.title);
   expect(entry.repeat).toBeNull(); expect(entry.reminder).toBeNull();
   expect(entry.items).toEqual([item]); expect(entry.calendar.notes).toBe('保留课堂笔记');
-  expect(entry.course).toEqual(value.course);
   expect((await call('GET', `${E}/${entry.id}/exceptions`)).items).toEqual([]);
   await page.getByRole('button', { name: '安排时间', exact: true }).click();
   await expect.poll(async () => Boolean((await call('GET', `${E}/${entry.id}`)).time)).toBeTruthy();
@@ -300,30 +292,6 @@ test('提醒按需配置，关闭浏览器后补呈现原时间，计划不被�
   await context.close();
 });
 
-test('教学关联实际提供方、换班清记录、单次例外保留记录且不改模板', async ({ page }) => {
-  const first = await call('POST', C, { name: '高一（1）班' }); const second = await call('POST', C, { name: '高一（2）班' });
-  const actual = await call('POST', R, record(first.id, [], '一班已讲到函数定义'));
-  const other = await call('POST', R, record(second.id, [], '二班还需要复习'));
-  const task = await call('POST', E, input('重复课堂', { repeat: { until: '2026-10-09' } }));
-  await page.reload(); await open(page, '重复课堂'); await action(page, '教学关联');
-  let dialog = page.getByRole('dialog', { name: '教学关联', exact: true });
-  await dialog.getByLabel('班级', { exact: true }).selectOption(first.id);
-  await dialog.getByRole('checkbox', { name: /一班已讲到函数定义/ }).check();
-  await shot(page, 'course-desktop');
-  await dialog.getByRole('button', { name: '完成', exact: true }).click();
-  await expect.poll(async () => (await call('GET', E)).items.find(x => x.id !== task.id && x.title === task.title)?.course.recordIds).toEqual([actual.id]);
-  const detached = (await call('GET', E)).items.find(x => x.id !== task.id && x.title === task.title);
-  expect((await call('GET', `${E}/${task.id}`)).course.recordIds).toEqual([]);
-  await page.reload(); await action(page, '教学关联');
-  await expect(dialog.getByRole('checkbox', { name: /一班已讲到函数定义/ })).toBeChecked();
-  await dialog.getByLabel('班级', { exact: true }).selectOption(second.id);
-  await expect(dialog.getByRole('checkbox', { name: /一班已讲到函数定义/ })).toHaveCount(0);
-  await dialog.getByRole('checkbox', { name: /二班还需要复习/ }).check();
-  await dialog.getByRole('button', { name: '完成', exact: true }).click();
-  await expect.poll(async () => (await call('GET', `${E}/${detached.id}`)).course.recordIds).toEqual([other.id]);
-  expect((await call('GET', `${R}/${actual.id}`)).note).toBe(actual.note);
-  expect((await call('GET', `${R}/${other.id}`)).version).toBe(other.version);
-});
 
 test('删除任务不保留，响应丢失后刷新原键确认，单次删除不影响整组', async ({ page }) => {
   const task = await call('POST', E, input('永久删除的课堂'));
@@ -447,8 +415,6 @@ test('主题真实切换、窄屏展开字段可达，账户草稿和未知请�
   await page.getByLabel('事项 2', { exact: true }).click(); await page.getByLabel('事项 2', { exact: true }).pressSequentially('窄屏补充');
   await expect.poll(async () => (await saved(task.title))?.items[1]?.text).toBe('窄屏补充');
   await shot(page, 'dark-mobile-items');
-  await action(page, '教学关联'); await shot(page, 'dark-mobile-course');
-  await page.getByRole('dialog', { name: '教学关联' }).getByRole('button', { name: '取消', exact: true }).click();
   await page.setViewportSize({ width: 1675, height: 950 });
   await page.route(`**${E}/${task.id}`, async route => { if (route.request().method() !== 'PUT') return route.continue(); await route.fetch(); await route.abort('failed'); });
   await page.locator('[name=entry-title]').fill('账户甲未确认标题');
@@ -904,7 +870,7 @@ test('待安排只在有时间后提供排期选项，移回按钮位于菜单�
   await expect(page.getByRole('menuitem', { name: '重复', exact: true })).toHaveCount(0);
   await expect(page.getByRole('menuitemcheckbox', { name: '全天', exact: true })).toHaveCount(0);
   await expect(page.getByRole('menuitem', { name: '设置提醒', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('menuitem', { name: '教学关联', exact: true })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: '教学关联', exact: true })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: '安排时间', exact: true }).click();
   const undo = page.locator('.cal-editor-heading').getByRole('button', { name: '移回待安排', exact: true });

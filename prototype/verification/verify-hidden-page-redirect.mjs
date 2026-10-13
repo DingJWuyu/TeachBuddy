@@ -25,7 +25,7 @@ try {
   await page.locator('.tb-hidden-panel button').filter({hasText:'题库'}).click();
   await expect(page.locator('[data-drop-group="ungrouped"] [data-drop-module="bank"]')).toBeVisible();
   await page.keyboard.press('Escape');
-  for(const id of ['studio','resources','classes']) await page.locator(`[data-drop-module="${id}"]`).press('Delete');
+  for(const id of ['studio','resources']) await page.locator(`[data-drop-module="${id}"]`).press('Delete');
   await expect(page.locator('[data-drop-group="teaching-group"] .tb-module-row')).toHaveCount(0);
   await expect(page.locator('[data-drop-group="teaching-group"]')).toBeVisible();
   await page.screenshot({path:paths.screenshots+'/empty-group.png'});

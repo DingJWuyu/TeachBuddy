@@ -74,5 +74,17 @@ export const migrations = [
         CREATE INDEX schedule_labels_account ON schedule_labels (accountKey);
       `);
     }
+  },
+  {
+    id: 'schedule_0003_remove_teaching_links',
+    up(db) {
+      db.exec('ALTER TABLE schedule_entries DROP COLUMN courseJson; ALTER TABLE schedule_entries DROP COLUMN courseLinks');
+      for (const row of db.prepare('SELECT entryId,originDate,contentJson FROM schedule_exceptions WHERE contentJson IS NOT NULL').all()) {
+        const content = JSON.parse(row.contentJson);
+        delete content.course;
+        delete content.courseLinks;
+        db.prepare('UPDATE schedule_exceptions SET contentJson=? WHERE entryId=? AND originDate=?').run(JSON.stringify(content), row.entryId, row.originDate);
+      }
+    }
   }
 ];

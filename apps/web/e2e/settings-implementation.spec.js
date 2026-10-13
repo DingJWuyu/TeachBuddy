@@ -304,12 +304,12 @@ test('删除丢失回执后刷新仍可用原请求核实，英文不串入匿�
   await page.screenshot({ path: info.outputPath('deleted-login.png'), animations: 'disabled' });
 });
 
-test('英文覆盖五模块和帮助，独立浏览器读回，同浏览器换账户恢复默认中文', async ({ page, browser }, info) => {
+test('英文覆盖四模块和帮助，独立浏览器读回，同浏览器换账户恢复默认中文', async ({ page, browser }, info) => {
   await page.getByRole('button', { name: '语言', exact: true }).click();
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect.poll(async () => (await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json()).values.locale).toBe('en');
   const pages = [];
-  for (const route of ['/classes', '/calendar', '/questions', '/resources', '/math', '/help']) {
+  for (const route of ['/calendar', '/questions', '/resources', '/math', '/help']) {
     await page.goto(world.origin + route);
     await expect(page.locator('.wb-shell')).toBeVisible();
     await page.waitForLoadState('networkidle');
@@ -371,13 +371,12 @@ test('语言保存回执丢失后原键核实，保留期间的新选择并同�
 });
 
 test('键盘语言菜单、真实偏好冲突、教师原文及英文窄屏危险确认', async ({ page }, info) => {
-  await page.goto(world.origin + '/classes');
-  await page.getByRole('button', { name: '创建班级', exact: true }).first().click();
-  const create = page.getByRole('dialog', { name: '创建班级', exact: true });
-  await create.getByLabel('班级名称', { exact: true }).fill('保留中文名称');
-  await create.getByRole('button', { name: '创建班级', exact: true }).click();
-  await expect(create).not.toBeVisible();
-  const original = world.workbench.db.prepare('SELECT * FROM classes_items').all();
+  const created = await page.request.post(world.origin + '/api/modules/schedule/entries', {
+    headers: { ...headers(page), 'X-TeachBuddy-Request': '1', Origin: world.origin, 'Idempotency-Key': crypto.randomUUID() },
+    data: { title: '保留中文名称', items: [], time: null, repeat: null, reminder: null },
+  });
+  expect(created.status()).toBe(201);
+  const original = await created.json();
   await page.goto(world.origin + '/settings');
   await expect(page.getByRole('button', { name: '语言', exact: true })).toBeEnabled();
   let conflictInjected = false;
@@ -405,9 +404,8 @@ test('键盘语言菜单、真实偏好冲突、教师原文及英文窄屏危�
   await page.keyboard.press('ArrowDown'); await page.keyboard.press('End'); await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: 'Language', exact: true })).toBeFocused();
   await expect.poll(async () => (await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json()).values.locale).toBe('en');
-  await page.goto(world.origin + '/classes');
-  await expect(page.getByRole('button', { name: '保留中文名称', exact: true })).toBeVisible();
-  expect(world.workbench.db.prepare('SELECT * FROM classes_items').all()).toEqual(original);
+  const preserved = await page.request.get(world.origin + `/api/modules/schedule/entries/${original.id}`, { headers: headers(page) });
+  expect(await preserved.json()).toEqual(original);
   await page.goto(world.origin + '/settings');
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('button', { name: 'Language', exact: true })).toBeEnabled();

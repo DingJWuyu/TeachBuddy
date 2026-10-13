@@ -3,7 +3,6 @@ import { randomUUID } from 'node:crypto';
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { register, headers } from './teaching-time-auth/helpers.mjs';
-import { C, R, record } from '../../api/test/teaching-time-classes-materials-fixture.js';
 let world;
 test.beforeEach(async ({ page }) => {
   world = await createIntegration();
@@ -59,34 +58,4 @@ test('共享保存：账户外观丢响应后保留后续选择，冲突刷新�
   await expect(page.locator('.settings-save-status')).toHaveText('已保存');
   expect(await call(page, 'GET', path)).toEqual(remote);
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'light');
-});
-
-test('共享保存：课堂记录丢响应同键确认，冲突刷新保留记录草稿', async ({ page }) => {
-  const cls = await call(page, 'POST', C, { name: '保存回归班' }, 201);
-  const input = record(cls.id, [], '课堂原文');
-  const saved = await call(page, 'POST', R, input, 201), path = `${R}/${saved.id}`;
-  await page.goto(world.origin + `/classes/${cls.id}/records/${saved.id}`);
-  const editor = page.locator('[data-region="record-editor"]');
-  const writes = []; let lose = true;
-  await page.route('**' + path, async route => {
-    if (route.request().method() !== 'PUT') return route.continue();
-    writes.push({ key: route.request().headers()['idempotency-key'], body: route.request().postDataJSON() });
-    if (lose) { lose = false; await route.fetch(); await route.abort('failed'); }
-    else await route.continue();
-  });
-  await editor.getByLabel('编辑记录内容').fill('已提交未确认记录');
-  await editor.getByRole('button', { name: '保存修改', exact: true }).click();
-  await editor.getByRole('button', { name: '重试确认', exact: true }).waitFor();
-  await editor.getByLabel('编辑记录内容').fill('本机后续记录');
-  const current = await call(page, 'GET', path);
-  const remote = await call(page, 'PUT', path, { ...input, note: '远端课堂记录', expectedVersion: current.version });
-  await editor.getByRole('button', { name: '重试确认', exact: true }).click();
-  expect(writes[1]).toEqual(writes[0]);
-  for (let n = 0; n < 2; n++) {
-    await expect(editor.locator('[data-region="conflict"]')).toBeVisible(); await page.reload();
-  }
-  await expect(editor.getByLabel('编辑记录内容')).toHaveValue('本机后续记录');
-  await adopt(page, editor);
-  await expect(editor.getByLabel('编辑记录内容')).toHaveValue('远端课堂记录');
-  expect(await call(page, 'GET', path)).toEqual(remote);
 });

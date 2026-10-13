@@ -11,7 +11,7 @@ const errors=[];page.on('pageerror',e=>errors.push(String(e)));
 try {
  await openWorkbench(page,base,{dismissCoach:true});
  const token=await page.evaluate(()=>window.navigationProbe=crypto.randomUUID());
- for(const id of ['bank','studio','resources','classes']){
+ for(const id of ['bank','studio','resources']){
   await page.locator(`[data-drop-module="${id}"]`).click();
   await expect(page).toHaveURL(new RegExp('/modules/'+id));
   expect(await page.evaluate(()=>window.navigationProbe)).toBe(token);

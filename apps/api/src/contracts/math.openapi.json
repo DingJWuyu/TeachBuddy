@@ -2438,83 +2438,6 @@
           "snapshot"
         ]
       },
-      "TeachingWork": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/Id"
-          },
-          "version": {
-            "$ref": "#/components/schemas/Version"
-          },
-          "title": {
-            "$ref": "#/components/schemas/Name"
-          },
-          "deletedAt": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Timestamp"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "version",
-          "title",
-          "deletedAt"
-        ]
-      },
-      "TeachingMathInput": {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "const": "math"
-          },
-          "id": {
-            "$ref": "#/components/schemas/Id"
-          }
-        },
-        "required": [
-          "kind",
-          "id"
-        ],
-        "additionalProperties": false
-      },
-      "TeachingMathSource": {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "const": "math"
-          },
-          "id": {
-            "$ref": "#/components/schemas/Id"
-          },
-          "labelAtLink": {
-            "type": "string",
-            "minLength": 0,
-            "maxLength": 300
-          },
-          "currentLabel": {
-            "type": "string",
-            "minLength": 0,
-            "maxLength": 300
-          },
-          "deleted": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "kind",
-          "id",
-          "labelAtLink",
-          "currentLabel",
-          "deleted"
-        ]
-      },
       "ModuleDescriptorV3": {
         "type": "object",
         "properties": {
@@ -2523,7 +2446,6 @@
               "questions",
               "math",
               "resources",
-              "classes",
               "schedule"
             ]
           },
@@ -2547,19 +2469,10 @@
           },
           "requires": {
             "type": "array",
+            "maxItems": 0,
             "items": {
-              "enum": [
-                "questions.readForReference",
-                "questions.readForReferenceV2",
-                "math.readForReferenceV1",
-                "math.readForTeachingLinkV1",
-                "classes.readClass",
-                "classes.readRecord"
-              ]
-            },
-            "minItems": 0,
-            "maxItems": 20,
-            "uniqueItems": true
+              "type": "string"
+            }
           }
         },
         "required": [

@@ -34,10 +34,9 @@ const catalogEntry = (overrides = {}) => ({
   ...overrides
 });
 
-test('the shared catalog applies only the frozen teaching question dependency overlay', () => {
+test('the shared catalog matches the current four-module contract', () => {
   const sample = JSON.parse(fs.readFileSync(path.join(repoRoot,'apps/api/test/fixtures/contracts/math-samples.json'))).find(s=>s.id==='catalog-combined-target');
   const expected = structuredClone(sample.value.items);
-  expected.find(entry => entry.id === 'classes').requires[0] = 'questions.readForReferenceV2';
   assert.deepEqual(moduleCatalog, expected);
   assert.equal(validateModuleCatalog(moduleCatalog).length, 0);
 });
@@ -55,18 +54,8 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
   ]);
   assert.ok(duplicatePath.some((problem) => problem.includes('duplicates catalog[0].path')));
 
-  const missingDependency = validateModuleCatalog([
-    catalogEntry({ id: 'classes', name: 'C', path: '/classes', requires: ['questions.readForReferenceV2', 'math.readForTeachingLinkV1'] })
-  ]);
-  assert.ok(missingDependency.some((problem) => problem.includes('provider questions is not in the catalog')));
-
   const unknownPort = validateModuleCatalog([catalogEntry({ requires: ['a.missing'] })]);
   assert.ok(unknownPort.some((problem) => problem.includes('unknown port')));
-
-  const cycle = validateModuleCatalog([
-    catalogEntry({ id: 'questions', name: 'Q', path: '/questions', requires: ['questions.readForReferenceV2', 'math.readForTeachingLinkV1'] })
-  ]);
-  assert.ok(cycle.some((problem) => problem.includes('requires its own port')));
 
   const unknownField = validateModuleCatalog([catalogEntry({ extra: true })]);
   assert.ok(unknownField.some((problem) => problem.includes('unknown field extra')));
@@ -77,20 +66,17 @@ test('catalog validation reports duplicates, missing dependencies and cycles', (
 test('catalog projection enables only implemented modules and rejects orphans', () => {
   assert.deepEqual(projectModuleCatalog([]), { version: 3, items: [] });
 
-  const classesOnly = projectModuleCatalog(['classes']);
-  assert.deepEqual(classesOnly.items.map((entry) => entry.id), ['classes']);
-  assert.deepEqual(classesOnly.items[0].requires, ['questions.readForReferenceV2', 'math.readForTeachingLinkV1']);
+  const scheduleOnly = projectModuleCatalog(['schedule']);
+  assert.deepEqual(scheduleOnly.items.map(entry => entry.id), ['schedule']);
+  assert.deepEqual(scheduleOnly.items[0].requires, []);
 
   assert.throws(
     () => projectModuleCatalog(['questions', 'unknown-module']),
     /without a catalog mapping: unknown-module/
   );
 
-  assert.throws(
-    () => assertModuleDependencies(['classes']),
-    /Module classes requires questions.readForReferenceV2 but provider module questions is not enabled/
-  );
-  assert.doesNotThrow(() => assertModuleDependencies(['questions', 'math', 'classes']));
+  assert.doesNotThrow(() => assertModuleDependencies(['questions', 'math', 'resources', 'schedule']));
+
 });
 
 test('the shared contract vocabulary stays in the frozen OpenAPI documents', () => {
@@ -98,7 +84,7 @@ test('the shared contract vocabulary stays in the frozen OpenAPI documents', () 
     path.join(repoRoot, 'apps', 'api', 'src', 'contracts', 'workbench.openapi.yaml'),
     'utf-8'
   );
-  const allOpenapi = openapi + fs.readFileSync(path.join(repoRoot,'apps/api/src/contracts/teaching-time-v1.openapi.yaml'),'utf8');
+  const allOpenapi = openapi + fs.readFileSync(path.join(repoRoot,'apps/api/src/contracts/schedule-v1.openapi.yaml'),'utf8');
   const authOpenapi = fs.readFileSync(
     path.join(repoRoot, 'apps', 'api', 'src', 'contracts', 'auth.openapi.yaml'),
     'utf-8'
@@ -165,45 +151,13 @@ test('the loader names factories by convention and requires {router, port}', asy
   await assert.rejects(wrongName.instantiate(), /must export createQuestionsModule/);
 });
 
-test('the loader wires a required public port and enforces its presence', async () => {
-  const implementations = {
-    questions: {
-      factory: async () => ({
-        createQuestionsModule: ({ db, mutations }) => ({
-          router() {},
-          port: { readForReferenceV2: () => ({ id: 'q' }), db, mutations }
-        })
-      })
-    },
-    math: { factory: async () => ({ createMathModule: () => ({ router() {}, port: { readForTeachingLinkV1: () => ({ id: 'm' }) } }) }) },
-    classes: {
-      factory: async () => ({
-        createClassesModule: ({ questions, math }) => ({
-          router() {},
-          port: { questionsPort: questions.readForReferenceV2(), mathPort: math.readForTeachingLinkV1() }
-        })
-      })
-    }
-  };
-  const dependencies = { db: { name: 'db' }, mutations: { name: 'mutations' } };
-  const loader = createModuleLoader({ catalog: moduleCatalog.filter(e=>['questions','math','classes'].includes(e.id)), implementations, dependencies });
-  await loader.instantiate();
-
-  assert.deepEqual(loader.enabledIds(), ['questions', 'math', 'classes']);
-  assert.equal(loader.get('questions').port.mutations.name, 'mutations');
-  assert.deepEqual(loader.get('classes').port.questionsPort, { id: 'q' });
-  assert.deepEqual(loader.get('classes').port.mathPort, { id: 'm' });
-});
-
-test('a module that requires a missing provider stops composition', async () => {
+test('the loader passes shared dependencies to enabled module factories', async () => {
   const loader = createModuleLoader({
-    implementations: {
-      classes: { factory: async () => ({ createClassesModule: () => ({ router() {} }) }) }
-    },
-    dependencies: {}
+    implementations: { questions: { factory: async () => ({ createQuestionsModule: ({ db, mutations }) => ({ router() {}, port: { db, mutations } }) }) } },
+    dependencies: { db: { name: 'db' }, mutations: { name: 'mutations' } }
   });
-  await assert.rejects(
-    loader.instantiate(),
-    /Module classes requires questions.readForReferenceV2 but provider module questions is not enabled/
-  );
+  await loader.instantiate();
+  assert.deepEqual(loader.enabledIds(), ['questions']);
+  assert.equal(loader.get('questions').port.mutations.name, 'mutations');
+  assert.equal(loader.get('questions').port.db.name, 'db');
 });

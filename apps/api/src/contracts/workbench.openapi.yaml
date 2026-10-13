@@ -1106,10 +1106,9 @@ components:
           type: boolean
         requires:
           type: array
-          uniqueItems: true
+          maxItems: 0
           items:
-            enum:
-            - questions.readForReference
+            type: string
     ModuleCatalog:
       type: object
       required:

@@ -9,7 +9,7 @@ const evidence = path.resolve(process.env.T53_AUTH_EVIDENCE || 'test-results/t53
 let world, now, directory, network;
 const entries = '/api/modules/schedule/entries';
 const notices = '/api/modules/schedule/notifications';
-const input = { title: '甲账户安排', items: [], time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' }, repeat: null, course: { classId: null, recordIds: [] }, reminder: { side: 'before', minutes: 10 } };
+const input = { title: '甲账户安排', items: [], time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' }, repeat: null, reminder: { side: 'before', minutes: 10 } };
 async function api(page, endpoint, data, method = 'POST') {
   const response = await page.request.fetch(world.origin + endpoint, { method: data ? method : 'GET', data,
     headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': randomUUID() } });
@@ -34,17 +34,7 @@ test.afterEach(async ({}, info) => {
 });
 
 test('AUTH-T01: UI create save, expiry login recovery, account isolation and preserved database restart', async ({ page }) => {
-  await page.goto(world.origin + '/classes');
-  await page.getByRole('button', { name: '新建班级', exact: true }).click();
-  await page.getByLabel('班级名称').fill('真实认证高一班');
-  await page.getByRole('button', { name: '创建', exact: true }).click();
-  await expect(page.locator('button[data-class-id]')).toHaveCount(1);
-  const classId = await page.locator('button[data-class-id]').getAttribute('data-class-id');
-  await page.getByRole('textbox', { name: '写一句', exact: true }).fill('真实认证教学记录');
-  await page.locator('[data-region=record-composer]').getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.locator('[data-region=record-rows]')).toContainText('真实认证教学记录');
-  const record = (await api(page, '/api/modules/classes/records?classId=' + classId)).body.items[0];
-  const entry = (await api(page, entries, { ...input, course: { classId, recordIds: [record.id] } })).body;
+  const entry = (await api(page, entries, input)).body;
   await page.goto(world.origin + '/calendar?entry=' + entry.id);
   await page.locator('[name=entry-title]').fill('真实认证安排已修改');
   await page.locator('[data-action=save]').click();
@@ -59,19 +49,19 @@ test('AUTH-T01: UI create save, expiry login recovery, account isolation and pre
   await shot(page, 'saved-notification-target');
   // Real server expiry, not an injected principal or a fabricated HTTP result.
   now = '2026-09-29T09:00:00Z';
-  await page.getByRole('link', { name: '班级', exact: true }).click();
+  await page.getByRole('link', { name: '日程', exact: true }).click();
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await shot(page, 'expired');
   await login(page);
-  await page.goto(world.origin + '/classes/' + classId);
-  await expect(page.locator('[data-region=record-rows]')).toContainText('真实认证教学记录');
+  await page.goto(world.origin + '/calendar?entry=' + entry.id);
+  await expect(page.locator('[name=entry-title]')).toHaveValue('真实认证安排已修改');
   await logout(page);
   expect((await api(page, entries)).status).toBe(401);
   await register(page, world, 'teacher-b@example.test');
-  for (const endpoint of ['/api/modules/classes/items/' + classId, '/api/modules/classes/records/' + record.id, entries + '/' + entry.id]) expect((await api(page, endpoint)).status).toBe(404);
+  for (const endpoint of [entries + '/' + entry.id]) expect((await api(page, endpoint)).status).toBe(404);
   expect((await api(page, notices)).body.items).toEqual([]);
-  await page.goto(world.origin + '/classes');
-  await expect(page.locator('[data-region=class-empty]')).toBeVisible();
+  await page.goto(world.origin + '/calendar');
+  await expect(page.locator('[name=entry-title]')).toHaveCount(0);
   await shot(page, 'account-b-empty');
   await logout(page); await login(page);
   await world.close();
@@ -79,11 +69,10 @@ test('AUTH-T01: UI create save, expiry login recovery, account isolation and pre
   await page.reload();
   await expect(page.locator('.wb-shell')).toBeVisible();
   expect((await api(page, entries + '/' + entry.id)).body.title).toBe('真实认证安排已修改');
-  expect((await api(page, '/api/modules/classes/records/' + record.id)).body.note).toBe('真实认证教学记录');
   const persisted = (await api(page, notices)).body;
   expect(persisted.items).toHaveLength(1); expect(persisted.items[0].id).toBe(notificationId); expect(persisted.unreadCount).toBe(0);
-  await page.goto(world.origin + '/classes/' + classId);
-  await expect(page.locator('[data-region=record-rows]')).toContainText('真实认证教学记录');
+  await page.goto(world.origin + '/calendar?entry=' + entry.id);
+  await expect(page.locator('[name=entry-title]')).toHaveValue('真实认证安排已修改');
   await shot(page, 'database-restart');
   expect(network.filter(x => x.path.startsWith('/api/modules')).every(x => x.pageHeader)).toBe(true);
 });

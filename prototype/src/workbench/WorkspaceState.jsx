@@ -3,9 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { WorkspaceContext } from "./context.js";
 import {
-  CLASSES,
   QUESTIONS,
-  RECORDS,
   RESOURCES,
   TODAY,
   WORKS,
@@ -16,7 +14,6 @@ export function WorkspaceProvider({ children }) {
     QUESTIONS.map((question) => ({ ...question, sourceBody: question.body })),
   );
   const [resources, setResources] = useState(RESOURCES);
-  const [records, setRecords] = useState(RECORDS);
   const [works, setWorks] = useState(WORKS);
   const [tags, setTags] = useState([
     "概念辨析",
@@ -32,7 +29,6 @@ export function WorkspaceProvider({ children }) {
     "参考资料",
   ]);
   const [questionId, setQuestionId] = useState("q1");
-  const [className, setClassName] = useState(CLASSES[0]);
   const [folder, setFolder] = useState("全部资源");
   const [tag, setTag] = useState("全部题目");
   const [workId, setWorkId] = useState("w1");
@@ -128,8 +124,6 @@ export function WorkspaceProvider({ children }) {
     setQuestions,
     resources,
     setResources,
-    records,
-    setRecords,
     works,
     setWorks,
     tags,
@@ -138,8 +132,6 @@ export function WorkspaceProvider({ children }) {
     setFolders,
     questionId,
     setQuestionId,
-    className,
-    setClassName,
     folder,
     setFolder,
     tag,

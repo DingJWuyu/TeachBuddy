@@ -30,12 +30,8 @@ function parseRoute(pathname) {
     try {
       if (segments.length === 2) {
         const id = decodeURIComponent(segments[1]);
-        if (descriptor.id === 'classes') return { ...base, name: 'class', classId: id };
         if (descriptor.id === 'resources') return { ...base, name: 'resource', id };
         if (descriptor.id === 'questions') return { ...base, name: 'question', id };
-      }
-      if (descriptor.id === 'classes' && segments.length === 4 && segments[2] === 'records') {
-        return { ...base, name: 'class-record', classId: decodeURIComponent(segments[1]), recordId: decodeURIComponent(segments[3]) };
       }
     } catch (error) {
       if (!(error instanceof URIError)) throw error;

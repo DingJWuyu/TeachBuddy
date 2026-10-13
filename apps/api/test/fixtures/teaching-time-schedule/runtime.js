@@ -13,15 +13,13 @@ export const FIXTURE_START = '2026-09-21T06:00:00Z';
 const state = {
   nowMs: Date.parse(FIXTURE_START),
   beforeChangeCalls: [],
-  failBeforeChange: false,
-  portFailures: new Set()
+  failBeforeChange: false
 };
 
 export function resetFixtureRuntime({ now = FIXTURE_START } = {}) {
   state.nowMs = typeof now === 'number' ? now : Date.parse(now);
   state.beforeChangeCalls = [];
   state.failBeforeChange = false;
-  state.portFailures = new Set();
 }
 
 export function setFixtureNow(instant) {
@@ -60,17 +58,4 @@ export function fixtureBeforeChange(principal, now) {
     state.failBeforeChange = false;
     throw contractError(problems.temporarilyUnavailable());
   }
-}
-
-export function setPortFailure(port, enabled) {
-  if (enabled) state.portFailures.add(port);
-  else state.portFailures.delete(port);
-}
-
-export function isPortFailing(port) {
-  return state.portFailures.has(port);
-}
-
-export function assertPortAvailable(port) {
-  if (isPortFailing(port)) throw contractError(problems.temporarilyUnavailable());
 }

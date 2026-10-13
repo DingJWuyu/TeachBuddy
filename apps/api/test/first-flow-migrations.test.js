@@ -12,7 +12,7 @@ import {
 } from './first-flow-harness.js';
 
 const QUESTIONS = '/api/modules/questions/items';
-const MIGRATION_IDS = ['agent_001_conversations', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'math_001', 'questions_0001_question_items', 'questions_materials_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications', 'workbench_navigation_001', 'workbench_retirement_001_lessons'];
+const MIGRATION_IDS = ['agent_001_conversations', 'materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'math_001', 'questions_0001_question_items', 'questions_materials_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_0003_remove_teaching_links', 'schedule_reminders_0001_notifications', 'workbench_navigation_001', 'workbench_retirement_001_lessons', 'workbench_retirement_002_classes'];
 
 function appliedMigrations(harness) {
   return harness

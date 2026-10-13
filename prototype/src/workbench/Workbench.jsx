@@ -4,11 +4,9 @@ import { Icon } from "../icons.jsx";
 import { CALENDAR_PATH, HOME_PATH, navigate } from "../routes.js";
 import { EmptyPage, UnknownPage } from "../pages.jsx";
 import { useWorkspace } from "./context.js";
-import { CLASSES } from "./data.js";
 import { Button, IconButton } from "./ui.jsx";
 import BankPage from "./BankPage.jsx";
 import ResourcesPage from "./ResourcesPage.jsx";
-import TeachingPage from "./TeachingPage.jsx";
 import StudioPage from "./StudioPage.jsx";
 import SchedulePage, { ScheduleTools } from "./SchedulePage.jsx";
 import "./workbench.css";
@@ -209,26 +207,6 @@ function ResourceTools() {
     />
   );
 }
-function ClassTools() {
-  const w = useWorkspace();
-  return (
-    <>
-      <div className="wb-section-head">
-        <strong>我的班级</strong>
-      </div>
-      {CLASSES.map((name) => (
-        <button
-          className={"wb-nav-item" + (w.className === name ? " is-active" : "")}
-          key={name}
-          onClick={() => w.setClassName(name)}
-        >
-          <Icon name="classes" size={17} />
-          <span>{name}</span>
-        </button>
-      ))}
-    </>
-  );
-}
 function StudioTools() {
   const w = useWorkspace();
   return (
@@ -415,9 +393,7 @@ export default function Workbench({ page }) {
   const context =
     key === "bank"
       ? w.questions.find((item) => item.id === w.questionId)?.title
-      : key === "classes"
-        ? w.className
-        : key === "resources"
+      : key === "resources"
           ? w.folder
           : key === "studio"
             ? w.works.find((item) => item.id === w.workId)?.name
@@ -433,7 +409,6 @@ export default function Workbench({ page }) {
       bank: "分类",
       resources: "分类",
       studio: "作品",
-      classes: "班级",
       schedule: "日程",
     }[key] || "工具";
   return (
@@ -459,9 +434,6 @@ export default function Workbench({ page }) {
         </div>
         <div className="wb-page-frame" hidden={key !== "resources"}>
           <ResourcesPage />
-        </div>
-        <div className="wb-page-frame" hidden={key !== "classes"}>
-          <TeachingPage />
         </div>
         <div className="wb-page-frame" hidden={key !== "schedule"}>
           <SchedulePage active={key === "schedule"} />
@@ -506,9 +478,6 @@ export default function Workbench({ page }) {
           </div>
           <div className="wb-tool-page wb-scroll" hidden={key !== "resources"}>
             <ResourceTools />
-          </div>
-          <div className="wb-tool-page wb-scroll" hidden={key !== "classes"}>
-            <ClassTools />
           </div>
           <div className="wb-tool-page wb-scroll" hidden={key !== "studio"}>
             <StudioTools />

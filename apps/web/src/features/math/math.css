@@ -312,7 +312,6 @@
 .math-dynamic button[aria-pressed="true"] { background: light-dark(#e8efff, var(--app-soft)); color: #2855a6; }
 .math-dynamic .step-description { margin: 8px 0; line-height: 1.6; }
 .math-tools-panel input, .math-tools-panel select, .math-tools-panel textarea { max-width: 100%; }
-.math-integration { padding: 4px 12px; }
 
 .math-main footer select { width: auto; }
 .math-formula input[type="checkbox"] { width: auto; margin-right: 8px; }

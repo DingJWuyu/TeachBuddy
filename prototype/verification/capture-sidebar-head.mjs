@@ -153,9 +153,9 @@ const scenarios = {
     await activate(page.locator('.tb-copy-source'));
     await shot('copy-sources', '复制来源列表', () => expect(page.locator('.tb-copy-source-option')).toHaveCount(3));
     await activate(page.locator('.tb-copy-source-option').first());
-    await activate(page.getByRole('checkbox',{name:'班级',exact:true}));
+    await activate(page.getByRole('checkbox',{name:'学生',exact:true}));
     await shot('copy-picked', '勾选与零数量禁用', async () => {
-      await expect(page.getByRole('checkbox',{name:'班级',exact:true})).toHaveAttribute('aria-checked','true');
+      await expect(page.getByRole('checkbox',{name:'学生',exact:true})).toHaveAttribute('aria-checked','true');
       await expect(page.getByRole('checkbox',{name:'课堂主题',exact:true})).toBeDisabled();
     });
     await page.locator('.tb-copy-item').last().scrollIntoViewIfNeeded();
@@ -163,7 +163,7 @@ const scenarios = {
     await activate(page.locator('.tb-copy-source'));
     await activate(page.locator('.tb-copy-source-option').nth(1));
     await shot('copy-reset', '换来源清除勾选', () => expect(page.locator('[role="checkbox"][aria-checked="true"]')).toHaveCount(0));
-    await activate(page.getByRole('checkbox',{name:'班级',exact:true}));
+    await activate(page.getByRole('checkbox',{name:'学生',exact:true}));
     await activate(page.getByRole('button',{name:'从头开始'}));
     await shot('copy-to-fresh', '返回从头开始', () => expect(page.locator('.tb-copy-panel')).toHaveCount(0));
     await activate(page.locator('.tb-dialog-submit'));
@@ -173,7 +173,7 @@ const scenarios = {
     await activate(page.getByRole('button',{name:'从已有学期复制'}));
     await activate(page.locator('.tb-copy-source'));
     await activate(page.locator('.tb-copy-source-option').first());
-    await activate(page.getByRole('checkbox',{name:'班级',exact:true}));
+    await activate(page.getByRole('checkbox',{name:'学生',exact:true}));
     await page.locator('.tb-dialog-submit').scrollIntoViewIfNeeded();
     await shot('copy-submit', '复制内容与提交入口可访问', shown(page,'.tb-dialog-submit'));
     await activate(page.locator('.tb-dialog-submit'));

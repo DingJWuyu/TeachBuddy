@@ -30,7 +30,7 @@ test.beforeEach(async ({ page }) => {
 const entryInput = {
   title: '定向回归课程', items: [],
   time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, recordIds: [] },
+  repeat: null,
   reminder: { side: 'before', minutes: 10 }
 };
 async function write(page, url, data) {
@@ -121,7 +121,7 @@ for (const count of [0, 3, 12, 30]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
       const name = `desktop-${count}-ai-${openAI ? 'open' : 'closed'}`;
       await shot(page, `${name}-bottom`);
-      await page.locator('a[href="/classes"]').click();
+      await page.locator('a[href="/questions"]').click();
       await page.getByRole('link', { name: '日程', exact: true }).click();
       await expect.poll(measure).toEqual(listMoved);
       await expect(last).toBeInViewport({ ratio: 1 });

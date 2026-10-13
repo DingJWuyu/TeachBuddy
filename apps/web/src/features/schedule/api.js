@@ -3,7 +3,6 @@ const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
 /** Schedule module API surface: the only endpoints this feature may call. */
 
 import { WorkbenchError, buildQuery, workbenchGet, workbenchPost, workbenchPut } from '../workbench/apiClient.js';
-import { listRecords } from '../classes/api.js';
 import { unexpectedSuccessProblem } from '../workbench/problems.js';
 
 // This schedule-specific 422 is a confirmed rejection, so the teacher can
@@ -120,15 +119,6 @@ export async function moveItem({ key, payload }) {
   const { body } = await workbenchPost('/api/modules/schedule/item-moves', payload, key);
   if (!body || !body.from || !body.to) throw new WorkbenchError(unexpectedSuccessProblem(t("移动结果无法识别")));
   return body;
-}
-
-export async function listClasses() {
-  const { body } = await workbenchGet('/api/modules/classes/items');
-  return assertList(body, t("班级")).items;
-}
-
-export function listClassRecords(classId) {
-  return listRecords({ classId });
 }
 
 export async function listLabels() {

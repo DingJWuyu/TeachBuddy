@@ -35,7 +35,7 @@ await shot('privacy-after');await page.keyboard.press('Escape');
 await page.getByRole('button',{name:'通知',exact:true}).click();
 await page.getByRole('dialog',{name:'通知',exact:true}).waitFor();
 await shot('notifications-after');await page.keyboard.press('Escape');
-const created=await page.evaluate(async pageContext=>{const response=await fetch('/api/modules/schedule/entries',{method:'POST',headers:{'Content-Type':'application/json','X-TeachBuddy-Request':'1','Idempotency-Key':crypto.randomUUID(),'X-TeachBuddy-Page':pageContext},body:JSON.stringify({title:'外壳通知验收',items:[],time:{date:'2026-09-23',startTime:'18:00',durationMinutes:60,timeZone:'Asia/Shanghai'},repeat:null,course:{classId:null,recordIds:[]},reminder:{side:'before',minutes:10}})}); return {status:response.status,body:await response.json()};},pageContext);
+const created=await page.evaluate(async pageContext=>{const response=await fetch('/api/modules/schedule/entries',{method:'POST',headers:{'Content-Type':'application/json','X-TeachBuddy-Request':'1','Idempotency-Key':crypto.randomUUID(),'X-TeachBuddy-Page':pageContext},body:JSON.stringify({title:'外壳通知验收',items:[],time:{date:'2026-09-23',startTime:'18:00',durationMinutes:60,timeZone:'Asia/Shanghai'},repeat:null,reminder:{side:'before',minutes:10}})}); return {status:response.status,body:await response.json()};},pageContext);
 check(created.status===201,JSON.stringify(created));now=new Date('2026-09-23T10:55:00Z');
 await page.reload();await page.locator('.wb-shell').waitFor();
 await page.getByRole('button',{name:'通知',exact:true}).click();
@@ -63,7 +63,7 @@ await page.getByRole('combobox',{name:'2026秋季学期',exact:true}).waitFor();
 await page.getByRole('button',{name:'使用教程',exact:true}).click();
 check(await page.getByRole('progressbar').getAttribute('aria-valuenow')==='1','tutorial progress lost');
 await page.keyboard.press('Escape');
-for(const route of ['questions','math','resources','classes']) {
+for(const route of ['questions','math','resources']) {
  await page.locator('.tb-module-nav .tb-module-row[href="/'+route+'"]').click();
  await page.waitForURL('**/'+route);
  const metrics=await page.evaluate(()=>({body:document.body.scrollHeight, viewport:innerHeight,main:getComputedStyle(document.querySelector('.wb-main')).overflowY}));

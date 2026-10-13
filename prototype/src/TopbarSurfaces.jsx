@@ -15,12 +15,6 @@ const SEARCH_GROUPS = [
       { id: 'm-schedule', name: '日程', hint: '课程、时间段与待办', icon: 'calendar', route: '/calendar' }
     ]
   },
-  {
-    group: '班级',
-    items: [
-      { id: 'c-strong', name: '高一 · 理科强基班', hint: '实际进度与课堂记录', dot: '#b29cc8', route: modulePath('classes') }
-    ]
-  }
 ];
 
 export function SearchModal({ onClose, onAnnounce }) {
@@ -92,8 +86,8 @@ export function SearchModal({ onClose, onAnnounce }) {
             className="tb-search-input"
             type="search"
             value={query}
-            placeholder="搜索模块、班级…"
-            aria-label="搜索模块、班级"
+            placeholder="搜索模块…"
+            aria-label="搜索模块"
             onChange={(event) => setQuery(event.target.value)}
           />
           <button type="button" className="tb-search-close" aria-label="关闭搜索" onClick={onClose}>
@@ -105,7 +99,7 @@ export function SearchModal({ onClose, onAnnounce }) {
             <div className="tb-search-empty">
               <Icon name="search" size={20} />
               <p>没有匹配「{query}」的结果</p>
-              <span>试试模块或班级名称。</span>
+              <span>试试模块名称。</span>
             </div>
           )}
           {groups.map((group) => (

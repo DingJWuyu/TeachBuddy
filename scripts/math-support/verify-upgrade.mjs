@@ -51,7 +51,7 @@ try {
     savedFile = await oldRequest('/api/workbench/files', body, null, randomUUID());
     savedQuestion = await oldRequest('/api/modules/questions/items', JSON.stringify(question), 'application/json', key);
     snapshot = readTables(old.workbench.db);
-    oldLedger = old.workbench.db.prepare("SELECT * FROM workbench_migrations WHERE moduleId <> 'lessons' ORDER BY rowid").all();
+    oldLedger = old.workbench.db.prepare("SELECT * FROM workbench_migrations WHERE moduleId NOT IN ('lessons', 'classes') ORDER BY rowid").all();
   } finally {
     await new Promise(resolve => server.close(resolve));
     await old.workbench.close();
@@ -73,7 +73,9 @@ try {
       assert.deepEqual((await client.request('POST', '/api/modules/questions/items', { body: question, headers: { 'Idempotency-Key': key } })).json, savedQuestion);
       assert.deepEqual(readTables(world.workbench.db), snapshot);
       assert.equal(world.workbench.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='lesson_items'").get(), undefined);
+      assert.equal(world.workbench.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='classes_items'").get(), undefined);
       assert.equal(world.workbench.db.prepare("SELECT 1 FROM workbench_migrations WHERE moduleId='lessons'").get(), undefined);
+      assert.equal(world.workbench.db.prepare("SELECT 1 FROM workbench_migrations WHERE moduleId='classes'").get(), undefined);
       assert.deepEqual(oldLedger.map(({ id }) => world.workbench.db.prepare('SELECT * FROM workbench_migrations WHERE id = ?').get(id)), oldLedger);
       const ledger = world.workbench.db.prepare('SELECT * FROM workbench_migrations ORDER BY rowid').all();
       if (run === 0) upgradedLedger = ledger;

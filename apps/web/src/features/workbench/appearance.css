@@ -87,23 +87,23 @@
 
 /* The shell owns the canvas; modules keep their existing controls and panes. */
 .wb-shell :is(.restored-home, .cal-page, .wb-split, .math-workbench) { background: transparent; }
-.wb-shell:is([data-route="questions"], [data-route="question"], [data-route="math"], [data-route="resources"], [data-route="resource"], [data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="help"]) .wb-main {
+.wb-shell:is([data-route="questions"], [data-route="question"], [data-route="math"], [data-route="resources"], [data-route="resource"], [data-route="help"]) .wb-main {
   padding: var(--app-workspace-padding);
 }
-/* Keep teaching pages and their shared assistant inside one canvas inset. */
-.wb-shell.tb-prototype:is([data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="schedule"]) .wb-workspace {
+/* Keep the calendar and its shared assistant inside one canvas inset. */
+.wb-shell.tb-prototype[data-route="schedule"] .wb-workspace {
   padding: var(--app-workspace-padding);
   gap: 16px;
 }
-.wb-shell.tb-prototype:is([data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="schedule"]) :is(.wb-main, .cal-page) {
+.wb-shell.tb-prototype[data-route="schedule"] :is(.wb-main, .cal-page) {
   padding: 0;
 }
-.wb-shell.tb-prototype:is([data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="schedule"]) .wb-aux {
+.wb-shell.tb-prototype[data-route="schedule"] .wb-aux {
   margin: 0;
   border-radius: 12px;
   box-shadow: var(--wb-shadow);
 }
-.wb-shell.tb-prototype:is([data-route="classes"], [data-route="class"], [data-route="class-record"], [data-route="schedule"]).is-narrow .wb-aux {
+.wb-shell.tb-prototype[data-route="schedule"].is-narrow .wb-aux {
   inset: var(--app-workspace-padding);
 }
 .wb-shell .wb-split { padding: 0; gap: 16px; }

@@ -71,9 +71,8 @@ test('MC01/08/09/13 real-auth formula source, immutable files/history, failures 
     const portStream = await world.workbench.files.open(session.account, portExported.body.file.id);
     const portChunks = []; for await (const chunk of portStream) portChunks.push(chunk);
     assert.doesNotMatch(Buffer.concat(portChunks).toString(), /判别式决定/);
-    fs.writeFileSync(path.join(evidence, 'provider-fixtures.json'), JSON.stringify({ created: viaPort, updated: portUpdated, reference: port.readForReferenceV1(session.account, viaPort.body.id), teaching: port.readForTeachingLinkV1(session.account, viaPort.body.id), exported: portExported, rejectedInput: { status: 422, type: '/problems/workbench/invalid-input', field: '/accountId' } }, null, 2));
-    assert.equal(port.readForTeachingLinkV1(session.account, id).version, 2);
-    assert.equal(port.readForReferenceV1(session.account, id).snapshot.workVersion, 2);
+    fs.writeFileSync(path.join(evidence, 'provider-fixtures.json'), JSON.stringify({ created: viaPort, updated: portUpdated, reference: (await get(`${root}/${viaPort.body.id}/reference`)).json, exported: portExported, rejectedInput: { status: 422, type: '/problems/workbench/invalid-input', field: '/accountId' } }, null, 2));
+    assert.equal((await get(`${route}/reference`)).json.snapshot.workVersion, 2);
     assert.deepEqual((await port.operations.getWork({ principal: session.account, id })).body, changed.json);
     assert((await port.operations.listWorks({ principal: session.account })).body.items.some(w => w.id === id));
     for (const latex of [String.raw`\frac{1`, String.raw`\require{html}\href{https://example.test}{x}`, String.raw`\htmlClass{evil}{x}`]) {

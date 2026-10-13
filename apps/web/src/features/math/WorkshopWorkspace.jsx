@@ -5,7 +5,6 @@ import VisualFormulaInput from './VisualFormulaInput.jsx';
 import FormulaPreview from './FormulaPreview.jsx';
 import { MathWebAssistant } from './web-ai/MathWebAssistant.jsx';
 import { Icon } from '../workbench/icons.jsx';
-import { MathIntegration, MathTeachingFeedback } from './Integration.jsx';
 import { createPortal, flushSync } from 'react-dom';
 import { useAuxiliaryTools, ShellContext, useAuxiliaryAssistant } from '../workbench/shellContext.js';
 import { ModuleDisclosure, ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
@@ -250,7 +249,6 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
         </>}</MathMenu>
       </div>
     </header>
-    {client && <MathIntegration/>}
     {(message || pending && !busy) && <div className="mw-notice" role="alert">{message || t('保存结果待确认')}{pending && <button onClick={onSave} disabled={busy || state.busy}>{t('确认操作结果')}</button>}</div>}{conflictNotice}
     <div className="mw-toolbar">
       <div className="mw-create-tools">
@@ -308,7 +306,6 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
           {!tool && !editFormula && !selectedObject && !selectedStep && <div className="mw-selection-empty"><Icon name="math" size={24}/><p>{t('选择公式、图形或步骤，调整它的属性。')}</p></div>}
           {state.objects.length > 0 && <div className="mw-object-list"><h3>{t('图形与参数')}</h3>{state.objects.map(object => <button key={objectId(object)} className={selectedObject === object ? 'is-selected' : ''} onClick={() => { setTool(null); select({ type: 'object', id: objectId(object) }); }}><span style={{ color: object.color ?? '#64748b' }}>●</span><strong>{objectId(object)}</strong><span>{objectExpression(object) || t(object.slider ? '参数' : '图形')}</span></button>)}</div>}
 
-          {client && draft.id && <MathTeachingFeedback work={draft}/>}
         </div>
       </WorkshopToolsPortal>}
     </div>

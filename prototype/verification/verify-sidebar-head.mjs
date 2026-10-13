@@ -26,7 +26,7 @@ const chooseCopy = async (page) => {
   await activate(page.getByRole('button', { name: '从已有学期复制' }));
   await activate(page.locator('.tb-copy-source'));
   await activate(page.locator('.tb-copy-source-option').first());
-  await activate(page.getByRole('checkbox', { name: '班级', exact: true }));
+  await activate(page.getByRole('checkbox', { name: '学生', exact: true }));
 };
 
 for (const key of ['Enter', 'Space']) test(`CW49 编辑按钮 ${key}`, async (page) => {

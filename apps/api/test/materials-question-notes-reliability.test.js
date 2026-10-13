@@ -7,7 +7,7 @@ import Database from 'better-sqlite3';
 import JSZip from 'jszip';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
-import { doc, paragraph, http, Q } from './teaching-time-classes-materials-fixture.js';
+import { doc, paragraph, http, Q } from './materials-http-fixture.js';
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
 
 const evidence = path.resolve('test-results/questions-core/notes-reliability');

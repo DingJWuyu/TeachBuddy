@@ -56,6 +56,34 @@ function requireEnumQuery(query, name, allowed, fallback) {
   return value;
 }
 
+// A successful pre-retirement save can still be awaiting its browser receipt.
+// Validate the surviving fields, but keep the original body for the existing
+// idempotency fingerprint. Only an existing receipt may accept the old field;
+// a new write still runs the current validator and rejects it.
+function createEntryMutationHandler(options) {
+  const retiredField = body => {
+    if (body && Object.hasOwn(body, 'course')) return 'course';
+    if (body?.mode === 'override' && body.content && Object.hasOwn(body.content, 'course')) return 'content';
+    return null;
+  };
+  return createMutationHandler({
+    ...options,
+    validate(body, request) {
+      const field = retiredField(body);
+      if (!field) return options.validate(body, request);
+      const current = structuredClone(body);
+      if (field === 'content') delete current.content.course;
+      else delete current.course;
+      options.validate(current, request);
+      return body;
+    },
+    write(input) {
+      if (retiredField(input.body)) options.validate(input.body, input.request);
+      return options.write(input);
+    }
+  });
+}
+
 export function createScheduleRouter({ service, mutations }) {
   const router = Router();
 
@@ -90,7 +118,7 @@ export function createScheduleRouter({ service, mutations }) {
     res.json(service.listEntries(principal, query));
   });
 
-  router.post('/entries', createMutationHandler({
+  router.post('/entries', createEntryMutationHandler({
     mutations,
     method: 'POST',
     validate: validateCreateEntry,
@@ -103,7 +131,7 @@ export function createScheduleRouter({ service, mutations }) {
     res.json(service.getEntry(requirePrincipal(req), req.params.id));
   });
 
-  router.put('/entries/:id', createMutationHandler({
+  router.put('/entries/:id', createEntryMutationHandler({
     mutations,
     method: 'PUT',
     validate: withPathId(validateUpdateEntry),
@@ -139,7 +167,7 @@ export function createScheduleRouter({ service, mutations }) {
     res.json(service.listExceptions(requirePrincipal(req), req.params.id));
   });
 
-  router.put('/entries/:id/exceptions/:originDate', createMutationHandler({
+  router.put('/entries/:id/exceptions/:originDate', createEntryMutationHandler({
     mutations,
     method: 'PUT',
     validate: (body, request) => {
@@ -152,7 +180,7 @@ export function createScheduleRouter({ service, mutations }) {
     })
   }));
 
-  router.post('/entries/:id/occurrences/:originDate/detach', createMutationHandler({
+  router.post('/entries/:id/occurrences/:originDate/detach', createEntryMutationHandler({
     mutations,
     method: 'POST',
     validate: withPathId(validateUpdateEntry),

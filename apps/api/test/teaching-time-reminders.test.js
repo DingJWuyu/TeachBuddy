@@ -7,7 +7,7 @@ const notices = '/api/modules/schedule/notifications';
 const input = {
   title: '函数课', items: [],
   time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, recordIds: [] },
+  repeat: null,
   reminder: { side: 'before', minutes: 10 }
 };
 
@@ -152,7 +152,7 @@ test('WB-T012: Unicode fallback title matches the public candidate projection wi
 test('WB-T010/016: moved weekly instances, cancellation recovery, deletion and outside-series targets', async () => fixture(async f => {
   const series = await f.create({ ...input, repeat: { until: '2026-10-05' } });
   const exception = `${entries}/${series.id}/exceptions/2026-09-28`;
-  const moved = { title: '调课', items: [], time: { ...input.time, date: '2026-09-29', startTime: '16:00' }, course: input.course, reminder: input.reminder };
+  const moved = { title: '调课', items: [], time: { ...input.time, date: '2026-09-29', startTime: '16:00' }, reminder: input.reminder };
   assert.equal((await f.a.put(exception, { expectedVersion: 1, mode: 'override', content: moved }, { key: f.h.nextUuid() })).status, 200);
   f.at('2026-09-28T09:00:00.000Z');
   assert.equal((await f.getNotices()).items.length, 1);
@@ -170,14 +170,11 @@ test('WB-T010/016: moved weekly instances, cancellation recovery, deletion and o
   assert.equal((await f.getNotices()).items.length, 2);
 }));
 
-test('TT-C7: production catalog matches combined v3 with the frozen teaching question overlay and rejects all four invalid static inputs', async () => {
+test('TT-C7: production catalog matches the four-module contract and rejects malformed static inputs', async () => {
   const { readFileSync } = await import('node:fs');
   const { assertModuleCatalog, projectModuleCatalog } = await import('@refatos/shared');
-  const samples = JSON.parse(readFileSync(new URL('./fixtures/contracts/teaching-time-v1-samples.json', import.meta.url))).samples;
+  const samples = JSON.parse(readFileSync(new URL('./fixtures/contracts/schedule-v1-samples.json', import.meta.url))).samples;
   const expected = JSON.parse(readFileSync(new URL('./fixtures/contracts/math-samples.json', import.meta.url))).find(s=>s.id==='catalog-combined-target').value;
-  // materials-teaching-alignment.md: only classes' question dependency changes;
-  // the historical M40 sample and every other descriptor field stay unchanged.
-  expected.items.find(entry => entry.id === 'classes').requires[0] = 'questions.readForReferenceV2';
   await fixture(async f => {
     const response = await f.a.get('/api/modules');
     assert.equal(response.status, 200);
@@ -226,7 +223,7 @@ test('TT-C5: notification actions reject malformed, unknown and duplicate input 
   assert.equal((await f.getNotices()).unreadCount, 1);
 }));
 
-test('B16 database upgrades into the current composition without losing linked sources', async () => {
+test('B16 database upgrades into the current composition without losing saved questions', async () => {
   const fs = await import('node:fs');
   const os = await import('node:os');
   const path = await import('node:path');
@@ -241,14 +238,8 @@ test('B16 database upgrades into the current composition without losing linked s
     h = await createFirstFlowHarness({ databasePath });
     a = h.agent(h.createAccount('teacher-a'));
     assert.equal((await a.get(`/api/modules/questions/items/${question.id}`)).body.title, question.title);
-    const classroom = (await a.post('/api/modules/classes/items', { name: '升级后的班级' }, { key: randomKey() })).body;
-    const record = await a.post('/api/modules/classes/records', {
-      classId: classroom.id, recordedOn: '2026-09-21', note: '真实关联', position: '', unfinished: '', commonIssues: '', nextNote: '',
-      sources: [{ kind: 'question', id: question.id }]
-    }, { key: randomKey() });
-    assert.equal(record.status, 201, JSON.stringify(record.body));
     await h.restart();
-    assert.equal((await a.get(`/api/modules/classes/records/${record.body.id}`)).body.sources[0].currentLabel, question.title);
+    assert.equal((await a.get(`/api/modules/questions/items/${question.id}`)).body.title, question.title);
     assert.deepEqual((await a.get(notices)).body, { items: [], unreadCount: 0 });
   } finally { await h.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 });

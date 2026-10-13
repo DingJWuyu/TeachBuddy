@@ -84,7 +84,7 @@ test('外观和背景覆盖外壳与全部页面并在刷新后保留', async ({
   await page.getByRole('button', { name: '深色', exact: true }).click();
   await page.getByRole('button', { name: '条纹', exact: true }).click();
   await expect(page.locator('.settings-save-status')).toHaveText('已保存');
-  for (const route of ['/', '/questions', '/math', '/classes', '/resources', '/calendar', '/settings', '/help', '/releases']) {
+  for (const route of ['/', '/questions', '/math', '/resources', '/calendar', '/settings', '/help', '/releases']) {
     await page.goto(world.origin + route);
     await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
     await expect(page.locator('.wb-shell')).toHaveAttribute('data-background', 'stripes');

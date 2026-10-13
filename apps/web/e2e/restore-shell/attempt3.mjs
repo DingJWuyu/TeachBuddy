@@ -68,58 +68,20 @@ try {
   }
   const [actual, reference] = metrics.slice(-2).map(m => m.drawer);
   for (const key of Object.keys(reference)) for (const prop of ['x', 'y', 'w', 'h']) check(Math.abs(actual[key][prop] - reference[key][prop]) <= 1, `RUI-01 ${key}.${prop}: ${actual[key][prop]} / ${reference[key][prop]}`);
-  await p.locator('.tb-module-nav a[href="/classes"]').click();
+  await p.locator('.tb-module-nav a[href="/questions"]').click();
   await expect(p.locator('.tb-sidebar')).not.toBeVisible();
   await p.setViewportSize({ width: 1680, height: 910 });
-  await p.getByRole('button', { name: '新建班级', exact: true }).click();
-  await p.getByLabel('班级名称', { exact: true }).fill('独立验收班级');
-  await p.getByRole('button', { name: '创建', exact: true }).click();
-  await expect(p.getByText('独立验收班级', { exact: true }).first()).toBeVisible();
-  await p.reload();
-  await expect(p.getByText('独立验收班级', { exact: true }).first()).toBeVisible();
   await p.getByRole('button', { name: '全局搜索', exact: true }).click();
-  await p.getByRole('searchbox').fill('独立验收班级');
-  const result = p.locator('.tb-search-results a').filter({ hasText: '独立验收班级' });
-  try { await expect(result).toBeVisible({ timeout: 3000 }); } catch { /* Capture the exact missing-result symptom. */ }
-  await shot(p, 'search-class');
-  check(await result.isVisible(), 'RUI-03 persisted class is searchable');
-  if (await result.isVisible()) {
-    const destination = await result.getAttribute('href');
-    await result.click();
-    await expect(p).toHaveURL(world.origin + destination);
-    await expect(p.getByRole('dialog', { name: '全局搜索' })).not.toBeVisible();
-    await expect(p.getByRole('heading', { name: '独立验收班级', exact: true })).toBeVisible();
-    await shot(p, 'search-class-open');
-  } else await p.keyboard.press('Escape');
+  await p.getByRole('searchbox').fill('题库');
+  const result = p.locator('.tb-search-results a').filter({ hasText: '题库' });
+  await expect(result).toBeVisible();
+  await shot(p, 'search-module');
+  await result.click();
+  await expect(p).toHaveURL(world.origin + '/questions');
+  await expect(p.getByRole('dialog', { name: '全局搜索' })).not.toBeVisible();
   if (!failures.length) {
-    // Each open reloads real saved data; partial failure must retain usable results.
-    await p.route('**/api/modules/resources/items?*', route => route.abort('failed'));
-    await p.getByRole('button', { name: '全局搜索', exact: true }).click();
-    await expect(p.locator('.tb-search-state[role="alert"]')).toContainText('资源库读取失败');
-    await p.getByRole('searchbox').fill('独立验收班级');
-    await expect(result).toBeVisible();
-    await shot(p, 'search-partial-error');
-    await p.unroute('**/api/modules/resources/items?*');
-    await p.getByRole('button', { name: '重试', exact: true }).click();
-    await expect(p.locator('.tb-search-state')).toHaveCount(0);
-    await p.getByRole('searchbox').fill('完全不存在的课题');
-    await expect(p.getByText('没有匹配「完全不存在的课题」的结果')).toBeVisible();
-    await p.keyboard.press('Escape');
     await p.setViewportSize({ width: 390, height: 844 });
-    for (const [query, path] of [['独立验收班级', '/classes/']]) {
-      await p.getByRole('button', { name: '全局搜索', exact: true }).click();
-      await p.getByRole('searchbox').fill(query);
-      const target = p.locator('.tb-search-item').filter({ hasText: query });
-      await expect(target).toBeVisible();
-      const destination = await target.getAttribute('href');
-      check(destination.startsWith(path), 'RUI-03 narrow detail destination');
-      await shot(p, 'narrow-search-class');
-      await p.keyboard.press('ArrowDown');
-      await p.keyboard.press('Enter');
-      await expect(p).toHaveURL(world.origin + destination);
-      await expect(p.getByRole('dialog', { name: '全局搜索' })).not.toBeVisible();
-    }
-    for (const route of ['questions', 'math', 'resources', 'classes']) {
+    for (const route of ['questions', 'math', 'resources']) {
       await p.getByRole('button', { name: '打开工作台导航' }).click();
       await p.locator(`.tb-module-nav .tb-module-row[href^="/${route}"]`).click();
       await expect(p.locator('.tb-sidebar')).not.toBeVisible();

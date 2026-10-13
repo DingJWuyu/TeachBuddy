@@ -127,7 +127,7 @@
 .cal-input, .cal-field > input, .cal-field > select, .cal-field-pair input, .cal-dialog input:not([type='radio']), .cal-dialog select { display: block; width: 100%; height: 40px; padding: 8px 12px; border: 1px solid light-dark(#e3e3e3, var(--app-line)); border-radius: 6px; background: light-dark(#fff, var(--app-surface)); box-shadow: 0 1px 2px #00000003; font-size: 14px; line-height: 20px; }
 .cal-input:focus, .cal-field input:focus, .cal-dialog input:focus { border-color: #565961; outline: none; }
 .cal-field { display: flex; flex-direction: column; min-width: 0; gap: 8px; font-size: 14px; line-height: 14px; font-weight: 400; color: light-dark(#2e3137, var(--app-text)); }
-.cal-field > span, .cal-record-options label > span { margin: 0; color: inherit; font-size: inherit; }
+.cal-field > span { margin: 0; color: inherit; font-size: inherit; }
 .cal-editor > .cal-field, .cal-field-pair { margin-top: 16px; }
 .cal-field-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .cal-field-pair input { padding: 8px 10px; }
@@ -184,11 +184,6 @@
 .cal-detail-summary { display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 12px; padding: 0; text-align: left; border: 0; background: transparent; font-size: 12px !important; color: light-dark(#767a82, var(--app-muted)) !important; }
 .cal-detail-summary > :first-child { flex: none; }
 .cal-detail-summary > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cal-record-options { margin: 0; padding: 0; border: 0; min-width: 0; }
-.cal-record-options legend { margin-bottom: 10px; font-size: 14px; }
-.cal-record-options label { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 13px; line-height: 1.6; }
-.cal-dialog .cal-record-options input[type='checkbox'] { width: 16px; height: 16px; flex: none; padding: 0; margin: 2px 0 0; box-shadow: none; }
-.cal-record-options span { min-width: 0; overflow-wrap: anywhere; }
 .cal-entry-items { margin-top: 16px; }
 .cal-entry-items h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 500; }
 .cal-entry-items h3 span { color: light-dark(#85858b, var(--app-muted)); font-weight: 400; }

@@ -420,7 +420,7 @@ test("offline backup lock, isolated restore, persistent auth cleanup, activation
   );
 });
 
-test("all seven deletion kinds restore through original endpoints, class/record independence and saved relations", async () => {
+test("all five deletion kinds restore through original endpoints and preserve shared files", async () => {
   const directory = fs.mkdtempSync(path.join(root, "deleted-"));
   let world = await createIntegration({ directory });
   try {
@@ -453,26 +453,11 @@ test("all seven deletion kinds restore through original endpoints, class/record 
       source: { ...emptySource("formula"), latex: "x^2" },
       originalFileId: null,
     });
-    const c = await make("/api/modules/classes/items", { name: "班级" });
-    const record = await make("/api/modules/classes/v2/records", {
-      classId: c.id,
-      recordedOn: "2026-09-23",
-      note: "记录",
-      position: "",
-      unfinished: "",
-      commonIssues: "",
-      nextNote: "",
-      sources: [
-        { kind: "question", id: q.id },
-        { kind: "math", id: m.id },
-      ],
-    });
     const e = await make("/api/modules/schedule/entries", {
       title: "日程",
       items: [],
       time: null,
       repeat: null,
-      course: { classId: c.id, recordIds: [] },
       reminder: null,
     });
     const i = await make("/api/modules/questions/v2/imports", {
@@ -484,8 +469,6 @@ test("all seven deletion kinds restore through original endpoints, class/record 
       ["question", "/api/modules/questions/v2/items", q],
       ["resource", "/api/modules/resources/items", r],
       ["math", "/api/modules/math/v1/works", m],
-      ["record", "/api/modules/classes/v2/records", record],
-      ["class", "/api/modules/classes/items", c],
       ["entry", "/api/modules/schedule/entries", e],
       ["import", "/api/modules/questions/v2/imports", i],
     ];
@@ -497,7 +480,7 @@ test("all seven deletion kinds restore through original endpoints, class/record 
     }
     for (const [kind, base, value] of items) {
       const latest = await a.client.request("GET", `${base}/${value.id}`);
-      const field = ["record", "class", "entry"].includes(kind)
+      const field = kind === "entry"
         ? "expectedVersion"
         : "baseVersion";
       await make(`${base}/${value.id}/deletion`, {
@@ -507,24 +490,16 @@ test("all seven deletion kinds restore through original endpoints, class/record 
     }
     const exported = await make("/api/reliability/v1/exports", {});
     assert.equal((await untilReady(a.client, exported.id)).state, "ready");
-    for (const [kind, base, value] of [...items].sort(
-      (a, b) => Number(b[0] === "class") - Number(a[0] === "class"),
-    )) {
+    for (const [kind, base, value] of items) {
       const deleted = await a.client.request("GET", `${base}/${value.id}`);
       assert(deleted.json.deletedAt);
-      const field = ["record", "class", "entry"].includes(kind) ? "expectedVersion" : "baseVersion";
+      const field = kind === "entry" ? "expectedVersion" : "baseVersion";
       await make(`${base}/${value.id}/deletion`, {
         [field]: deleted.json.version,
         deleted: false,
       });
       assert.equal((await a.client.request("GET", `${base}/${value.id}`)).json.deletedAt, null);
     }
-    const reopened = await a.client.request(
-      "GET",
-      `/api/modules/classes/v2/records/${record.id}`,
-    );
-    assert.equal(reopened.json.sources.length, 2);
-    assert.equal(reopened.json.classId, c.id);
     const zip = await JSZip.loadAsync(
       fs.readFileSync(
         path.join(directory, "personal-exports", `${exported.id}.zip`),
@@ -543,21 +518,13 @@ test("all seven deletion kinds restore through original endpoints, class/record 
         ),
         kind,
       );
-    assert(manifest.relations.some((r) => r.relation === "class-record"));
-    assert(
-      manifest.relations.some(
-        (r) => r.relation === "current-link" && r.to.id === m.id,
-      ),
-    );
+    assert(!manifest.objects.some(object => ["class", "record"].includes(object.key.kind)));
     const preservedTables = [
       "question_items",
       "questions_materials_imports",
       "resource_items",
       "math_works",
       "math_revisions",
-      "classes_items",
-      "classes_records",
-      "classes_record_sources",
       "schedule_entries",
       "schedule_exceptions",
       "materials_files",

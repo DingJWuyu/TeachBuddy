@@ -10,12 +10,12 @@
 | 工作台与设置 | [行为与验证](../features/workbench.md)、[界面规则](../rules/design-and-verification.md) | 各分区草稿/选择/滚动、失效身份接入、导航和偏好真实生效、当前删减、帮助可达、渐进交互 |
 | 题库 | [行为与验证](../features/questions.md)、[first-flow.feature](first-flow.feature)、[materials.feature](materials.feature) | 四入口原稿、提取校对、自建/修改/复制、笔记/标记/分类、检索、保存刷新、幂等/冲突/未知恢复 |
 | 资源库 | [行为与验证](../features/resources.md)、[materials.feature](materials.feature) | 文件收录、分类/检索、实际预览、替换与历史版本、归档、恢复和彻底删除 |
-| 数学工坊 | [行为与验证](../features/math.md)、[math.feature](math.feature) | 可改源码、公式/函数/平面/空间/动态、HTML 隔离、教学关联、离线 |
-| 班级教学 | [行为与验证](../features/classes.md)、[teaching-time.feature](teaching-time.feature)、[丰富题目接缝](../contracts/teaching-time.md#丰富题目关联) | 两班反馈、当前对象链接、检索回顾、公式图片、移动/删除恢复、旧协议保护 |
-| 日程 | [行为与验证](../features/schedule.md)、[teaching-time.feature](teaching-time.feature) | 日期/时区/DST、重复与单次独立任务、事项、提醒补呈现、通知定位及返回、计划不改实际记录 |
-| AI 助理 | [行为与验证](../features/agent.md)、[agent.feature](agent.feature) | 真模型真实业务操作、新题而非固定示例、手工冲突/停止/恢复、五模块全部覆盖 |
+| 数学工坊 | [行为与验证](../features/math.md)、[math.feature](math.feature) | 可改源码、公式/函数/平面/空间/动态、HTML 隔离、离线 |
+| 班级（待实现） | [班级讨论](../plans/classes-discussion.md) | 已确认方向尚未形成开发和验收规格，不以旧模块场景代签 |
+| 日程 | [行为与验证](../features/schedule.md)、[schedule.feature](schedule.feature) | 日期/时区/DST、重复与单次独立任务、事项、提醒补呈现、通知定位及返回 |
+| AI 助理 | [行为与验证](../features/agent.md)、[agent.feature](agent.feature) | 真模型真实业务操作、新题而非固定示例、手工冲突/停止/恢复、四模块全部覆盖 |
 
-共享文件、材料交换和班级/日程场景可以覆盖多个分区；场景文件名不定义新的产品分区。
+共享文件、材料交换和日程场景可以覆盖多个分区；场景文件名不定义新的产品分区。
 
 | 共享技术底座与交付 | 验证入口 | 完整核查要点 |
 | --- | --- | --- |

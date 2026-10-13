@@ -1,0 +1,44 @@
+{
+  "classes_items": [
+    {"cid":0,"name":"id","type":"TEXT","notnull":0,"dflt_value":null,"pk":1},
+    {"cid":1,"name":"accountKey","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":2,"name":"version","type":"INTEGER","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":3,"name":"createdAt","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":4,"name":"updatedAt","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":5,"name":"deletedAt","type":"TEXT","notnull":0,"dflt_value":null,"pk":0},
+    {"cid":6,"name":"name","type":"TEXT","notnull":1,"dflt_value":null,"pk":0}
+  ],
+  "classes_records": [
+    {"cid":0,"name":"id","type":"TEXT","notnull":0,"dflt_value":null,"pk":1},
+    {"cid":1,"name":"accountKey","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":2,"name":"classId","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":3,"name":"version","type":"INTEGER","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":4,"name":"createdAt","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":5,"name":"updatedAt","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":6,"name":"deletedAt","type":"TEXT","notnull":0,"dflt_value":null,"pk":0},
+    {"cid":7,"name":"recordedOn","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":8,"name":"note","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":9,"name":"position","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":10,"name":"unfinished","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":11,"name":"commonIssues","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":12,"name":"nextNote","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":13,"name":"nextNoteHidden","type":"INTEGER","notnull":1,"dflt_value":"0","pk":0},
+    {"cid":14,"name":"content","type":"TEXT","notnull":1,"dflt_value":"'{\"version\":2,\"blocks\":[]}'","pk":0}
+  ],
+  "classes_record_sources": [
+    {"cid":0,"name":"recordId","type":"TEXT","notnull":1,"dflt_value":null,"pk":1},
+    {"cid":1,"name":"accountKey","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":2,"name":"kind","type":"TEXT","notnull":1,"dflt_value":null,"pk":2},
+    {"cid":3,"name":"sourceId","type":"TEXT","notnull":1,"dflt_value":null,"pk":3},
+    {"cid":4,"name":"position","type":"INTEGER","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":5,"name":"labelAtLink","type":"TEXT","notnull":1,"dflt_value":null,"pk":0}
+  ],
+  "classes_removed_objects": [
+    {"cid":0,"name":"id","type":"TEXT","notnull":0,"dflt_value":null,"pk":1},
+    {"cid":1,"name":"accountKey","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":2,"name":"kind","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":3,"name":"classId","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":4,"name":"version","type":"INTEGER","notnull":1,"dflt_value":null,"pk":0},
+    {"cid":5,"name":"removedAt","type":"TEXT","notnull":1,"dflt_value":null,"pk":0}
+  ]
+}

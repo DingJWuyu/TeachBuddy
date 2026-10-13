@@ -1,11 +1,9 @@
-import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
 import { useTranslation } from 'react-i18next';
 
 import { createPortal } from 'react-dom';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useAuxiliaryTools, useWorkbenchShell } from '../workbench/shellContext.js';
 import { useScene } from '../workbench/useScene.js';
-import { SourceRecordsPanel } from '../classes/index.jsx';
 
 export function MathTools({ children, sceneKey = 'current' }) {
   const { t } = useTranslation('math');
@@ -33,23 +31,4 @@ export function MathTools({ children, sceneKey = 'current' }) {
     restored.current = { host, key: sceneKey };
   }, [host, children, sceneKey]);
   return host ? createPortal(children, host) : null;
-}
-export function MathIntegration() {
-  const { t } = useTranslation('math');
-  const shell = useWorkbenchShell();
-  const fromPath = window.history.state?.fromPath;
-  if (!fromPath?.startsWith('/classes/')) return null;
-  return <div className="math-integration">
-    <button className="wb-button" onClick={() => shell.navigate(fromPath)}>{t("返回教学记录")}</button>
-  </div>;
-}
-
-export function MathTeachingFeedback({ work }) {
-  const { t } = useTranslation('math');
-  if (!work?.id) return null;
-  return <div className="math-teaching-feedback">
-    <ModuleDisclosure title={t("教学反馈")}>
-      <SourceRecordsPanel kind="math" id={work.id}/>
-    </ModuleDisclosure>
-  </div>;
 }

@@ -2,7 +2,7 @@
 
 本页属于共享技术底座，拥有跨模块保存和失败语义；不定义工作台外壳或设置的产品范围。只改公共保存时读[写入、冲突与未知结果](#写入冲突与未知结果)及[保存与恢复反馈](#保存与恢复反馈)；题库基础 API 与兼容任务再读对象、引用及交换用例。认证由[auth](auth.md)定义；基础题目字段在 [workbench.openapi.yaml](../../apps/api/src/contracts/workbench.openapi.yaml)，丰富内容在[材料契约](materials.md)，数学引用在[数学契约](math.md)。正反交换见[基础案例](#基础交换用例)。
 
-身份、保存与冲突规则跨模块共用；下文的内容结构、搜索范围和删除接口描述基础题目 API。材料、数学及[班级教学与日程](teaching-time.md)的扩展行为以各自契约为准。
+身份、保存与冲突规则跨模块共用；下文的内容结构、搜索范围和删除接口描述基础题目 API。材料、数学及[日程](schedule.md)的扩展行为以各自契约为准。
 
 认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 已采用，基础受保护操作均要求 PageContext。新版本仍保留旧成功请求的原路径重放；接口版本不等于当前验证状态。
 
@@ -64,9 +64,9 @@
 
 ### 模块与接缝
 
-遵守 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。权威静态目录位于 `packages/shared/src/`，基础格式见 OpenAPI 的 ModuleCatalog 与同名样本，扩展目录由材料及数学契约定义。当前五模块目录及接缝在 `packages/shared/src/`，日程为 top 类型。questions 无业务依赖。目录纯数据，Web/API 从同一目录投影到各自本地代码映射；构建检查缺映射、重复 ID/路径、缺依赖与环路，启动前检查迁移。停用或隐藏导航不代表拒绝模块 API。
+遵守 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。权威静态目录位于 `packages/shared/src/`，基础格式见 OpenAPI 的 ModuleCatalog 与同名样本，扩展目录由材料及数学契约定义。当前四模块目录及接缝在 `packages/shared/src/`，日程为 top 类型。questions 无业务依赖。目录纯数据，Web/API 从同一目录投影到各自本地代码映射；构建检查缺映射、重复 ID/路径、缺依赖与环路，启动前检查迁移。停用或隐藏导航不代表拒绝模块 API。
 
-下表描述基础 v1 接缝。当前模块工厂另注入材料及数学依赖，具体参数见[材料公共端口](materials.md#公共端口)与[数学公共接口](math.md#公共端口)；`readForReference` 保留供旧调用方，当前丰富引用使用 `readForReferenceV2`。模块内部文件、组件和 SQL 由所属模块维护。
+下表描述公共实现接缝。当前四个业务模块均无目录声明的跨业务模块依赖，`modulePorts` 为空；应用装配继续注入文件、文稿、任务等公共底座，接口见[材料公共端口](materials.md#公共端口)。模块内部文件、组件和 SQL 由所属模块维护。
 
 | 接缝 | 约定 | 写者/消费者 |
 | --- | --- | --- |
@@ -74,12 +74,11 @@
 | 存储 | B12 在组合入口提供同一隔离库的 `better-sqlite3` Database 实例 `db`；模块拥有自己的表，不暴露仓储给别的模块。 | B12 提供；B13 模块使用 |
 | 幂等事务 | `mutations.execute({principal, key, method, path, body}, write)`；同步 write 在该 db 事务内返回 `{status, body}`，execute 返回同形结果或契约错误。来源/身份/schema 校验先于调用；模块在 write 内做归属、版本和业务校验。 | B12 提供；B13 使用 |
 | 模块工厂 | `apps/api/src/modules/questions/index.js` 导出 `createQuestionsModule({db, mutations})`，返回 `{router, port}`。router 为 Express Router，挂载 `/api/modules/<id>`，请求 `req.workbenchPrincipal` 已验证。 | B13 导出；B12 组合入口挂载 |
-| 题目公共端口 | `port.readForReference(principal, questionId)` 同步返回 `{id, version, deletedAt, snapshot}`，无权/不存在抛契约 404。snapshot 同 OpenAPI。调用者在同一写事务内判断当前版本与删除状态；读操作也可查已删除源状态。 | questions 提供；公开消费者使用 |
-| 业务工具调用 | 题库对外行为即 OpenAPI 中的操作集合；现有首批 Agent adapter 携带可信 principal 调用同一业务操作及 mutations，不另写 SQL。pi adapter 形式已在[Agent 接缝](../features/agent.md#助理实现)定义；全五模块扩展仍暂停。 | B13；C25/C26 消费 |
+| 业务工具调用 | 题库对外行为即 OpenAPI 中的操作集合；现有首批 Agent adapter 携带可信 principal 调用同一业务操作及 mutations，不另写 SQL。pi adapter 形式已在[Agent 接缝](../features/agent.md#助理实现)定义；全四模块扩展仍暂停。 | B13；C25/C26 消费 |
 | 模块迁移 | 各模块 `migrations/index.js` 导出有序 `migrations` 数组，项 `{id, up(db)}`；ID 使用模块专属前缀，成功 ledger 与迁移同事务，已执行 ID 不重跑。 | B13 提供；B12 runner 汇总 |
 | Web 入口 | 各 feature 的 `index.jsx` 默认导出 React 页面；外壳处理 route、可信 accountKey、共享右栏和按账户的本地恢复。模块 API client 只调用唯一 OpenAPI。 | B14 独占，无需后端参与 UI 内部设计 |
 
-SQLite 内业务写入和幂等成功记录一个事务提交，不使用先写题目再补操作记录的分步确认。公共端口及 write 回调的已知失败抛出带 `status` 和 `problem`（OpenAPI Problem）的 Error；execute 回滚后原样传播，由工作台 HTTP 层映射。未知存储错误回滚并映射 503。write 不返回 Promise，事务中不进行网络调用。模块路由错误按契约返回，单个页面/API 错误不清空别的模块现场。读引用时只过 questions 公共端口。文件接口见[材料架构](materials.md#材料实现)。
+SQLite 内业务写入和幂等成功记录一个事务提交，不使用先写题目再补操作记录的分步确认。公共端口及 write 回调的已知失败抛出带 `status` 和 `problem`（OpenAPI Problem）的 Error；execute 回滚后原样传播，由工作台 HTTP 层映射。未知存储错误回滚并映射 503。write 不返回 Promise，事务中不进行网络调用。模块路由错误按契约返回，单个页面/API 错误不清空别的模块现场。题目读取和业务工具继续调用题库公开 operations，不跨模块读取其内部表。文件接口见[材料架构](materials.md#材料实现)。
 
 ### 持久化与演进
 

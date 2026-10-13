@@ -34,16 +34,12 @@ try {
   await go('resources');await page.locator('.wb-resource-card').first().click();
   await expect(page.getByRole('button',{name:'返回资源',exact:true})).toBeVisible();await shot('resource');
   await page.getByRole('button',{name:'返回资源',exact:true}).click();
-  await go('classes');await page.getByRole('button',{name:'记一笔',exact:true}).click();
-  await page.getByRole('textbox',{name:'课堂随记',exact:true}).fill('保留的课堂记录');
-  await page.getByRole('button',{name:'保存记录',exact:true}).click();
-  await expect(page.getByText('保留的课堂记录',{exact:true})).toBeVisible();await shot('classes');
   await go('studio');
   const slider=page.frameLocator('iframe[title="观察二次函数的变化"]').getByRole('slider',{name:'参数 a'});
   await slider.focus();await slider.press('ArrowRight');await expect(slider).toHaveValue('0.1');await shot('studio');
   await go('bank');await expect(page.getByLabel('当前题目内容').getByText('跨模块保留的题目内容',{exact:true})).toBeVisible();
   await page.locator('[data-surface="search"]').click();
-  await expect(page.getByRole('searchbox',{name:'搜索模块、班级',exact:true})).toBeVisible();
+  await expect(page.getByRole('searchbox',{name:'搜索模块',exact:true})).toBeVisible();
   await page.getByRole('searchbox').fill('备课');await expect(page.locator('.tb-search-empty')).toBeVisible();await shot('search');await page.keyboard.press('Escape');
   await page.locator('[data-surface="notifications"]').click();await expect(page.locator('.tb-popover-notifications')).toBeVisible();
   await expect(page.locator('.tb-notification')).toHaveCount(0);await page.keyboard.press('Escape');

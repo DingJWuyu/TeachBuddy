@@ -7,6 +7,7 @@ import JSZip from 'jszip';
 import Database from 'better-sqlite3';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
+import { classRetirementMigrationId } from '../src/workbench/retire-classes.js';
 import { retirementMigrationId } from '../src/workbench/retire-lessons.js';
 const fixture = new URL('./fixtures/retirement/', import.meta.url);
 const metadata = JSON.parse(fs.readFileSync(new URL('metadata.json', fixture)));
@@ -39,9 +40,17 @@ async function verify(world) {
   assert.deepEqual(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name GLOB 'lesson_*'").all(), []);
   assert.deepEqual(db.prepare("SELECT id FROM workbench_migrations WHERE moduleId='lessons'").all(), []);
   assert(db.prepare('SELECT 1 FROM workbench_migrations WHERE id=?').get(retirementMigrationId));
+  assert.deepEqual(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name GLOB 'classes_*'").all(), []);
+  assert.deepEqual(db.prepare("SELECT id FROM workbench_migrations WHERE moduleId='classes'").all(), []);
+  assert(db.prepare('SELECT 1 FROM workbench_migrations WHERE id=?').get(classRetirementMigrationId));
+  assert(!db.prepare('PRAGMA table_info(schedule_entries)').all().some(column => ['courseJson', 'courseLinks'].includes(column.name)));
+  assert(!db.prepare("SELECT 1 FROM workbench_mutation_keys WHERE path LIKE '/api/modules/classes/%'").get());
   const catalog = await call('GET', '/api/modules');
   assert(!JSON.stringify(catalog).includes('lessons'));
-  assert(!JSON.stringify(await call('GET', '/api/workbench/navigation')).includes('lessons'));
+  assert(!JSON.stringify(catalog).includes('classes'));
+  const navigation = JSON.stringify(await call('GET', '/api/workbench/navigation'));
+  assert(!navigation.includes('lessons'));
+  assert(!navigation.includes('classes'));
   assert.equal((await client.request('GET', `/api/workbench/jobs/${metadata.exportJobId}`)).status, 404);
   assert.equal((await client.request('GET', `/api/reliability/v1/exports/${metadata.personalExportId}`)).status, 404);
   assert(!db.prepare("SELECT 1 FROM workbench_mutation_keys WHERE path LIKE '/api/modules/lessons/%'").get());
@@ -49,16 +58,15 @@ async function verify(world) {
   assert.equal((await call('GET', `/api/modules/questions/v2/items/${ids.question}`)).title, '保留题目');
   assert.equal((await call('GET', `/api/modules/resources/items/${ids.resource}`)).note, '保留资源备注');
   assert.equal((await call('GET', `/api/modules/math/v1/works/${ids.math}`)).source.latex, 'x^2');
-  assert.equal((await call('GET', `/api/modules/classes/items/${ids.class}`)).name, '保留班级');
-  const record = await call('GET', `/api/modules/classes/v2/records/${ids.record}`);
-  assert.equal(record.note, '保留教学记录');
-  assert.deepEqual(record.sources.map(source => source.kind), ['question', 'math']);
+  assert.equal((await client.request('GET', `/api/modules/classes/items/${ids.class}`)).status, 404);
+  assert.equal((await client.request('GET', `/api/modules/classes/v2/records/${ids.record}`)).status, 404);
   const entry = await call('GET', `/api/modules/schedule/entries/${ids.entry}`);
   assert.equal(entry.title, '保留日程');
-  assert.deepEqual(entry.course, { classId: ids.class, recordIds: [] });
+  assert(!Object.hasOwn(entry, 'course'));
+  assert(!Object.hasOwn(entry, 'courseState'));
   const exceptions = await call('GET', `/api/modules/schedule/entries/${ids.entry}/exceptions`);
   assert(!JSON.stringify(exceptions).includes('lesson'));
-  assert(JSON.stringify(exceptions).includes(ids.record));
+  assert(!JSON.stringify(exceptions).includes(ids.record));
   const draft = (await call('GET', `/api/agent/conversations/${ids.conversation}`)).draft;
   assert.equal(draft.text, '保留助理草稿');
   assert.deepEqual(draft.references.map(ref => ref.kind), ['question']);
@@ -67,7 +75,7 @@ async function verify(world) {
   assert.equal(Buffer.concat(chunks).toString(), '保留公共附件与资源原件');
 }
 
-test('retirement upgrades an existing database, restarts, and preserves five modules and shared files', async () => {
+test('retirement upgrades an existing database, restarts, and preserves four modules and shared files', async () => {
   const directory = fs.mkdtempSync(path.join(root, 'retirement-start-'));
   await unpack(directory);
   const cache = path.join(directory, 'personal-exports', `${metadata.personalExportId}.zip`);

@@ -35,8 +35,10 @@ export const retirementMigrations = [{ moduleId: 'workbench-retirement', migrati
       ['schedule_entries', ['courseJson', 'courseLinks']], ['schedule_exceptions', ['contentJson']],
     ]) {
       if (!exists(table)) continue;
-      for (const row of db.prepare(`SELECT rowid AS rowKey,${columns.join(',')} FROM ${table}`).all()) {
-        for (const column of columns) {
+      const existingColumns = columns.filter(column => db.pragma(`table_info(${table})`).some(info => info.name === column));
+      if (!existingColumns.length) continue;
+      for (const row of db.prepare(`SELECT rowid AS rowKey,${existingColumns.join(',')} FROM ${table}`).all()) {
+        for (const column of existingColumns) {
           if (row[column] === null) continue;
           const next = JSON.stringify(withoutLessonLinks(JSON.parse(row[column])));
           if (next !== row[column]) db.prepare(`UPDATE ${table} SET ${column}=? WHERE rowid=?`).run(next, row.rowKey);

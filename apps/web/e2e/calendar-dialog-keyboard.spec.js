@@ -12,7 +12,7 @@ const L = '/api/modules/schedule/labels';
 let world, client, errors, now;
 const content = (title, pending = false) => ({ title, items: [],
   time: pending ? null : { date: '2026-09-25', startTime: '15:00', durationMinutes: 30, timeZone: 'Asia/Shanghai' },
-  repeat: null, reminder: null, course: { classId: null, recordIds: [] },
+  repeat: null, reminder: null,
   calendar: { allDay: false, tags: [], notes: '' } });
 async function call(method, url, body) {
   const response = await client.request(method, url, { body, headers: method === 'GET' ? {} : { 'Idempotency-Key': randomUUID() } });
@@ -68,7 +68,7 @@ for (const focus of ['default', '取消', '关闭']) test(`移回待安排 Enter
   await page.reload(); await expect(page.getByRole('button',{name:'安排时间',exact:true})).toBeVisible();
 });
 
-const dialogKinds = ['自定义天数', '重复', '创建标签', '编辑标签', '提醒', '教学关联',
+const dialogKinds = ['自定义天数', '重复', '创建标签', '编辑标签', '提醒',
   '移动事项', '采用服务器内容', '删除任务', '移回待安排', '提醒时间已过去'];
 
 // Public APIs only seed the preconditions; every confirmation uses actual keyboard input.
@@ -78,7 +78,7 @@ async function prepareDialog(page, kind, pending = false) {
   if (kind === '提醒时间已过去') value.reminder = { side: 'before', minutes: 10 };
   const task = await call('POST', E, value);
   await open(page, task);
-  let target, label, course;
+  let target, label;
   if (kind === '自定义天数') {
     await page.getByRole('button', { name: '日历视图', exact: true }).click();
     await page.getByRole('menuitem', { name: '天数', exact: true }).hover();
@@ -100,12 +100,6 @@ async function prepareDialog(page, kind, pending = false) {
   } else if (kind === '提醒') {
     await action(page, '设置提醒');
     await page.getByRole('dialog', { name: kind, exact: true }).getByLabel('分钟数').fill('5');
-  } else if (kind === '教学关联') {
-    const classroom = await call('POST', '/api/modules/classes/items', { name: '键盘班级' });
-    await action(page, '教学关联');
-    const d = page.getByRole('dialog', { name: kind, exact: true });
-    await d.getByLabel('班级', { exact: true }).selectOption(classroom.id);
-    course = { classId: classroom.id, recordIds: [] };
   } else if (kind === '移动事项') {
     target = await call('POST', E, content('移动目标', true));
     await open(page, task);
@@ -129,11 +123,11 @@ async function prepareDialog(page, kind, pending = false) {
   }
   const d = page.getByRole('dialog', { name: kind, exact: true });
   await expect(d).toBeVisible();
-  return { d, task, value, target, label, course };
+  return { d, task, value, target, label };
 }
 
 async function verifyOperation(page, kind, scene, saved) {
-  const { task, target, course, value, label } = scene;
+  const { task, target, value, label } = scene;
   if (kind === '删除任务') {
     await expect.poll(async () => (await call('GET', E)).items.length).toBe(saved ? 0 : 1);
     return;
@@ -144,7 +138,6 @@ async function verifyOperation(page, kind, scene, saved) {
   else if (kind === '创建标签' || kind === '编辑标签') {
     await expect.poll(async () => (await call('GET', L)).items.map(x => x.name)).toEqual(saved ? ['已确认标签'] : label ? ['原标签'] : []);
   } else if (kind === '提醒') await expect.poll(async () => (await read()).reminder).toEqual(saved ? { side: 'before', minutes: 5 } : null);
-  else if (kind === '教学关联') await expect.poll(async () => (await read()).course).toEqual(saved ? course : value.course);
   else if (kind === '移动事项') {
     await expect.poll(async () => (await read()).items.length).toBe(saved ? 0 : 1);
     expect((await call('GET', `${E}/${target.id}`)).items).toEqual(saved ? value.items : []);
@@ -173,7 +166,7 @@ for (const kind of dialogKinds) for (const key of ['Enter', 'Escape']) {
   });
 }
 
-for (const kind of ['重复', '创建标签', '提醒', '教学关联', '移动事项']) {
+for (const kind of ['重复', '创建标签', '提醒', '移动事项']) {
   test(`${kind} 聚焦取消后 Enter 仍确认，鼠标取消保留原行为`, async ({ page }) => {
     let scene = await prepareDialog(page, kind);
     await scene.d.getByRole('button', { name: '取消', exact: true }).click();
@@ -200,41 +193,6 @@ for (const [kind, field, invalid, valid] of [
   await expect(scene.d).toHaveCount(0); await verifyOperation(page, kind, scene, true);
 });
 
-test('教学关联加载时 Enter 不误关，Escape 取消不写入', async ({ page }, info) => {
-  const task = await call('POST', E, content('等待教学选项')); await open(page, task);
-  let release, hit;
-  const gate = new Promise(resolve => release = resolve), started = new Promise(resolve => hit = resolve);
-  await page.route('**/api/modules/classes/items', async route => {
-    hit(); await gate; await route.continue();
-  });
-  try {
-    await action(page, '教学关联'); await started;
-    const d = page.getByRole('dialog', { name: '教学关联', exact: true });
-    await expect(d).toBeFocused();
-    await expect(d.locator('[data-dialog-confirm]')).toBeDisabled();
-    expect(await d.evaluate(e => getComputedStyle(e).outlineStyle)).toBe('none');
-    await page.keyboard.press('Enter'); await expect(d).toBeVisible();
-    await expect(d.locator('..').locator('..')).toHaveCSS('opacity', '1');
-    await page.screenshot({ path: info.outputPath('loading-dialog-focus.png') });
-    await page.keyboard.press('Escape'); await expect(d).toHaveCount(0);
-    expect((await call('GET', `${E}/${task.id}`)).course).toEqual(task.course);
-  } finally { release(); }
-});
-
-test('教学关联复选框 Space 勾选，Enter 保存当前关联不反选', async ({ page }) => {
-  const scene = await prepareDialog(page, '教学关联');
-  const record = await call('POST', '/api/modules/classes/v2/records', {
-    classId: scene.course.classId, recordedOn: '2026-09-25', note: '键盘教学记录',
-    position: '', unfinished: '', commonIssues: '', nextNote: '', sources: [] });
-  await page.keyboard.press('Escape'); await expect(scene.d).toHaveCount(0); await action(page, '教学关联');
-  const d = page.getByRole('dialog', { name: '教学关联', exact: true });
-  await d.getByLabel('班级', { exact: true }).selectOption(scene.course.classId);
-  const box = d.getByRole('checkbox'); await expect(box).toHaveCount(1);
-  await box.focus(); await page.keyboard.press('Space'); await expect(box).toBeChecked();
-  await page.keyboard.press('Enter'); await expect(d).toHaveCount(0);
-  await expect.poll(async () => (await call('GET', `${E}/${scene.task.id}`)).course.recordIds).toEqual([record.id]);
-  await page.reload(); await expect(page.locator('.cal-course-summary')).toContainText('1 条记录');
-});
 
 test('编辑标签即使聚焦删除标签，Enter 保存而非误删', async ({ page }) => {
   const scene = await prepareDialog(page, '编辑标签');
@@ -309,13 +267,6 @@ for (const scope of ['series', 'instance']) test(`移动事项重复目标 ${sco
   }
 });
 
-for (const pending of [false, true]) test(`教学关联 ${pending ? '待安排' : '任务'}聚焦叉号后 Enter 保存`, async ({ page }) => {
-  const scene = await prepareDialog(page, '教学关联', pending);
-  await scene.d.getByRole('button', { name: '关闭', exact: true }).focus();
-  await page.keyboard.press('Enter'); await expect(scene.d).toHaveCount(0);
-  await verifyOperation(page, '教学关联', scene, true);
-  await expect(page.locator('.cal-editor')).toBeVisible();
-});
 
 for (const theme of ['浅色', '深色']) for (const width of [390, 1675]) {
   test(`确认弹窗 ${theme} ${width} 焦点无外框且布局完整`, async ({ page }, info) => {
@@ -335,16 +286,6 @@ for (const theme of ['浅色', '深色']) for (const width of [390, 1675]) {
   });
 }
 
-test('Escape 后立即重开教学关联，不复用已取消的选择', async ({ page }) => {
-  const scene = await prepareDialog(page, '教学关联');
-  await page.keyboard.press('Escape');
-  // Deliberately reopen before the outgoing 180ms presence animation unmounts.
-  await action(page, '教学关联');
-  const d = page.getByRole('dialog', { name: '教学关联', exact: true });
-  await expect(d.getByLabel('班级', { exact: true })).toHaveValue('');
-  await page.keyboard.press('Enter'); await expect(d).toHaveCount(0);
-  expect((await call('GET', `${E}/${scene.task.id}`)).course).toEqual(scene.value.course);
-});
 
 test('刷新后立即清空备注并 Enter 保存，迟到旧读取不恢复原内容', async ({ page }) => {
   const value = content('清空备注竞态'); value.calendar.notes = '已保存的备注';

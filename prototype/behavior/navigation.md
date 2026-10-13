@@ -29,7 +29,7 @@ Status: Mixed (既有导航已验收；模块入口与首页正文待评审)
 
 ## Visible information
 
-模块、班级与课程名称是固定样例。搜索尚未查询当前编辑的业务数据。完整样例位于 [外壳源码](../src/SidebarEditingPrototype.jsx) 与 [搜索面板源码](../src/TopbarSurfaces.jsx)。
+模块与课程名称是固定样例。搜索尚未查询当前编辑的业务数据。完整样例位于 [外壳源码](../src/SidebarEditingPrototype.jsx) 与 [搜索面板源码](../src/TopbarSurfaces.jsx)。
 
 原型无需查询参数即可运行；已有查询参数在站内跳转时保留。页面标题同步为「TeachBuddy · <页面名>」。
 
