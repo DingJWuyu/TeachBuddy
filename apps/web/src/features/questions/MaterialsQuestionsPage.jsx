@@ -25,6 +25,7 @@ import ResizeDivider from "./ResizeDivider.jsx";
 import { QuestionIcon, QuestionDialog, QuestionDocumentEditor, QuestionWelcome } from './QuestionControls.jsx';
 import "./questions-materials.css";
 const active = new Set(["queued", "running", "cancelling"]);
+const hasCollectionInput = value => Boolean(value && (value.text || value.title || value.origin || value.pages || value.fileNames?.length));
 const editableFields = (q) => ({
   title: q.title,
   body: q.body,
@@ -58,9 +59,14 @@ export default function MaterialsQuestionsPage({
 }) {
   const { t } = useTranslation("questions");
   const pageNode = useRef(null);
-  const collection = useRef(
-    readLocal(accountKey, "questions-collection") ?? {},
-  ).current;
+  const [collection] = useState(() => {
+    const stored = readLocal(accountKey, "questions-collection");
+    if (stored && !hasCollectionInput(stored)) {
+      removeLocal(accountKey, "questions-collection");
+      return {};
+    }
+    return stored ?? {};
+  });
   const [scene, setScene] = useState(
     () =>
       readLocal(accountKey, "questions-materials-scene") ?? {
@@ -148,14 +154,17 @@ export default function MaterialsQuestionsPage({
     return () => { live = false; };
   }, [sourcePath]);
   useEffect(() => {
-    writeLocal(accountKey, "questions-collection", {
+    const next = {
       capture,
       text,
       title,
       origin,
       pages,
       fileNames: chosenFiles.length ? chosenFiles.map(file => file.name) : collection.fileNames ?? [],
-    });
+    };
+    if (hasCollectionInput(next))
+      writeLocal(accountKey, "questions-collection", next);
+    else removeLocal(accountKey, "questions-collection");
   }, [capture, text, title, origin, pages, chosenFiles]);
   const pending = useRef(readLocal(accountKey, "questions-materials-pending")),
     alive = useRef(true);

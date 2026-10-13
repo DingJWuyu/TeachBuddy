@@ -212,6 +212,50 @@ test('列表加载后恢复刷新前的真实滚动和选中题目', async ({ pa
   await page.screenshot({ path: info.outputPath('scroll-after.png') });
 });
 
+test('空收录现场刷新不提示恢复，真实收录输入和新题草稿继续恢复', async ({ page }, info) => {
+  const notice = page.getByText('已恢复本设备的未保存输入，请检查后继续。', { exact: true });
+  await createQuestion(page, '空收录恢复验证');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '空收录恢复验证', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('empty-capture-restored.png') });
+  await expect(notice).toHaveCount(0);
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /粘贴文字/ }).click();
+  await page.reload();
+  const capture = page.getByRole('dialog', { name: '从资料收录题目' });
+  await expect(capture).toHaveCount(0);
+  await expect(notice).toHaveCount(0);
+  await page.evaluate(() => {
+    const sceneKey = Object.keys(localStorage).find(key => key.endsWith(':questions-materials-scene') && !key.includes(':branch:') && !key.includes(':head:'));
+    const key = sceneKey.replace(/questions-materials-scene$/, 'questions-collection');
+    localStorage.setItem(key, JSON.stringify({ capture: '文字', text: '', title: '', origin: '', pages: '', fileNames: [] }));
+    for (const pointer of Object.keys(sessionStorage).filter(key => key.endsWith(':questions-collection'))) sessionStorage.removeItem(pointer);
+  });
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '空收录恢复验证', exact: true })).toBeVisible();
+  await expect(capture).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '空收录恢复验证', exact: true })).toBeVisible();
+  await expect(notice).toHaveCount(0);
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /粘贴文字/ }).click();
+  await page.getByLabel('原始文字').fill('准备收录的真实输入：求 $3+4$。');
+  await page.reload();
+  await expect(capture).toBeVisible();
+  await expect(page.getByLabel('原始文字')).toHaveValue('准备收录的真实输入：求 $3+4$。');
+  await expect(notice).toBeVisible();
+  await expect.poll(() => capture.evaluate(node => Number(getComputedStyle(node.closest('.q-modal-backdrop')).opacity))).toBe(1);
+  await page.screenshot({ path: info.outputPath('real-capture-restored.png') });
+  await capture.getByRole('button', { name: '关闭', exact: true }).click();
+  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await page.getByLabel('题目标题').fill('新题草稿仍恢复');
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('真实新题草稿 $4+5$。');
+  await page.reload();
+  await expect(page.getByLabel('题目标题')).toHaveValue('新题草稿仍恢复');
+  await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('真实新题草稿 $4+5$。');
+  await expect(notice).toBeVisible();
+});
+
 test('空稿退出、输入即录题、保存后阅读与刷新，已有题目的草稿独立保留', async ({ page }) => {
   await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toBeFocused();
