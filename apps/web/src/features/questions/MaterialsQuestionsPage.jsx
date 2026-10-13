@@ -59,6 +59,10 @@ export default function MaterialsQuestionsPage({
 }) {
   const { t } = useTranslation("questions");
   const pageNode = useRef(null);
+  const visibleOriginal = useRef(null);
+  const sourceField = useRef(null);
+  const sourceCopyAttempt = useRef(0);
+  const [sourceCopyStatus, setSourceCopyStatus] = useState("");
   const [collection] = useState(() => {
     const stored = readLocal(accountKey, "questions-collection");
     if (stored && !hasCollectionInput(stored)) {
@@ -263,6 +267,8 @@ export default function MaterialsQuestionsPage({
     setJob(null);
     setSelected(null);
     setSource(null);
+    sourceCopyAttempt.current += 1;
+    setSourceCopyStatus("");
     setConflict(null);
     setAssets(null);
     setCopies([]);
@@ -949,28 +955,8 @@ export default function MaterialsQuestionsPage({
                   }
                   onClick={() =>
                     action(async () => {
-                      let location;
-                      if (value.input.kind === "text")
-                        location = {
-                          kind: "text",
-                          start: 0,
-                          end: [...value.input.text].length,
-                        };
-                      else {
-                        const id = value.input.fileIds[0],
-                          preview = await get(
-                            "/api/workbench/files/" + id + "/preview",
-                          );
-                        if (!preview.renditionFileId)
-                          throw Error(t("请先生成原稿预览"));
-                        location = {
-                          kind: "page",
-                          fileId: id,
-                          renditionFileId: preview.renditionFileId,
-                          page: scene.original?.page ?? 1,
-                          box: null,
-                        };
-                      }
+                      const location = visibleOriginal.current;
+                      if (!location) throw Error(t("请先打开可预览的原稿页"));
                       const d = {
                         id: crypto.randomUUID(),
                         title: "补充题目",
@@ -1038,6 +1024,7 @@ export default function MaterialsQuestionsPage({
               <ResizeDivider value={scene.reviewWidth ?? 0.5} label={t("调整原稿对照宽度")}
                 onChange={reviewWidth => patchScene({reviewWidth})} />
               <OriginalPane
+                onVisibleLocation={location => { visibleOriginal.current = location; }}
                 readOnly={locked}
                 material={value}
                 draft={draft}
@@ -1387,7 +1374,25 @@ export default function MaterialsQuestionsPage({
                     onChange={(e) => setIncludeAnswers(e.target.checked)}
                   /> {t("包含答案（单独分片）")} </label>
                 <div className="q-tools">
-                  <button onClick={() => setSource(sourceText(value.body))}> {t("复制文字与公式源")} </button>
+                  <button disabled={sourceCopyStatus === "copying"} onClick={async () => {
+                    const text = sourceText(value.body);
+                    const attempt = ++sourceCopyAttempt.current;
+                    setSource(text);
+                    setSourceCopyStatus("copying");
+                    try {
+                      await navigator.clipboard.writeText(text);
+                      if (attempt === sourceCopyAttempt.current) setSourceCopyStatus("copied");
+                    } catch {
+                      if (attempt === sourceCopyAttempt.current) {
+                        setSourceCopyStatus("failed");
+                        requestAnimationFrame(() => {
+                          if (attempt !== sourceCopyAttempt.current) return;
+                          sourceField.current?.focus();
+                          sourceField.current?.select();
+                        });
+                      }
+                    }
+                  }}> {t("复制文字与公式源")} </button>
                   <button
                     disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion}
                     onClick={() =>
@@ -1454,11 +1459,13 @@ export default function MaterialsQuestionsPage({
                     </button>
                   ))}
                   {documentAssets(value.body).formulas.map((formula, i) => (
-                    <button key={i} onClick={() => setSource(formula)}> {t("公式")} {i + 1} {t("源")} </button>
+                    <button key={i} onClick={() => { sourceCopyAttempt.current += 1; setSourceCopyStatus(""); setSource(formula); }}> {t("公式")} {i + 1} {t("源")} </button>
                   ))}
                 </div>
+                {sourceCopyStatus && <p role="status" className={sourceCopyStatus === "failed" ? "q-error" : "q-muted"}>{sourceCopyStatus === "copied" ? t("文字与公式源已复制") : sourceCopyStatus === "failed" ? t("未能自动复制，请复制下方已选文字") : t("正在复制…")}</p>}
                 {source !== null && (
                   <textarea
+                    ref={sourceField}
                     aria-label={t("可复制文字公式源")}
                     readOnly
                     value={source}

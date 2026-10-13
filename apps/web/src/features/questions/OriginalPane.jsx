@@ -10,6 +10,7 @@ export default function OriginalPane({
   onCrop,
   scene,
   onScene,
+  onVisibleLocation,
   readOnly = false,
 }) {
   const { t } = useTranslation("questions");
@@ -19,6 +20,7 @@ export default function OriginalPane({
   ];
   const [preview, setPreview] = useState(null),
     [error, setError] = useState("");
+  const [previewFileId, setPreviewFileId] = useState(null);
   const start = useRef(null);
   const [previewAttempt, setPreviewAttempt] = useState(0);
   const nativePane = useRef(null);
@@ -68,6 +70,7 @@ export default function OriginalPane({
         const value = await get(`/api/workbench/files/${fileId}/preview`);
         if (!active) return;
         setPreview(value);
+        setPreviewFileId(fileId);
         if (!value.pages.length && value.state !== "failed")
           timer = setTimeout(refresh, 2000);
         if (value.state === "failed")
@@ -82,12 +85,22 @@ export default function OriginalPane({
       clearTimeout(timer);
     };
   }, [fileId, material.version, previewAttempt]);
-  const current = preview?.pages.find((x) => x.page === page);
+  const current = previewFileId === fileId ? preview?.pages.find((x) => x.page === page) : null;
   const original = originalDocuments.find(item => item.fileId === fileId);
   const paragraph = scene.paragraph ?? loc?.paragraph;
   const legacyWord = preview?.issues.includes("legacy-object-loss");
   const paragraphLabel = legacyWord ? t("转换稿段落") : t("原文段落");
   const paragraphView = Boolean(original?.paragraphs.length && (scene.originalView === "paragraphs" || !current));
+  useEffect(() => {
+    const visible = fileId
+      ? current && !paragraphView && previewFileId === fileId && preview.renditionFileId
+        ? { kind: "page", fileId, renditionFileId: preview.renditionFileId, page, box: null }
+        : null
+      : material.input.kind === "text" && material.input.text.length
+        ? { kind: "text", start: 0, end: [...material.input.text].length }
+        : null;
+    onVisibleLocation?.(visible);
+  }, [fileId, page, current, paragraphView, preview, previewFileId, material.input, onVisibleLocation]);
   const restoreParagraph = () => {
     const pane = nativePane.current;
     const node = pane?.querySelector(`[data-paragraph="${Number(paragraph)}"]`);
