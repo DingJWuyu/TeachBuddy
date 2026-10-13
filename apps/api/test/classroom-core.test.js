@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { C, createClassroomWorld, teacher, studentBody } from './classroom-http-fixture.js';
 test('classroom real identity: roster, records, seats, account isolation and optimistic atomic writes', async () => {
   const world = await createClassroomWorld();
+  let passed = false;
   try {
     const a = await teacher(world),
       b = await teacher(world, 'classroom-b@example.test');
@@ -109,8 +110,9 @@ test('classroom real identity: roster, records, seats, account isolation and opt
     await a.call('POST', C + '/classes', {
       name: '回滚'
     }, 201, failedKey);
+    passed = true;
   } finally {
-    await world.close();
+    await world.close(passed);
   }
 });
 test('classroom SQLite restart preserves IDs, versions and confirmed request receipts', async () => {
@@ -123,6 +125,7 @@ test('classroom SQLite restart preserves IDs, versions and confirmed request rec
   const fs = await import('node:fs');
   let world = await createIntegration();
   const directory = world.directory;
+  let passed = false;
   try {
     const a = await teacher(world, 'restart-classroom@example.test');
     const key = randomUUID();
@@ -159,11 +162,16 @@ test('classroom SQLite restart preserves IDs, versions and confirmed request rec
     const request = call(client);
     assert.deepEqual(await request('GET', C + '/classes/' + cls.id), cls);
     assert.deepEqual(await request('POST', C + '/classes', body, 201, key), cls);
+    passed = true;
   } finally {
-    await world.close();
-    fs.rmSync(directory, {
-      recursive: true,
-      force: true
-    });
+    await world.close(passed);
+    if (passed) {
+      fs.rmSync(directory, {
+        recursive: true,
+        force: true
+      });
+    } else {
+      console.error('Classroom restart failure evidence retained at ' + directory);
+    }
   }
 });

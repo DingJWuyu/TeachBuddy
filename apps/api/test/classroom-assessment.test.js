@@ -2,7 +2,7 @@ import { validateStoredData } from '../src/modules/classroom/index.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
-import { C, createClassroomWorld, teacher, upload } from './classroom-http-fixture.js';
+import { C, createClassroomWorld, teacher, upload, studentBody } from './classroom-http-fixture.js';
 export async function seedExam(a) {
   const file = await upload(a.client, 'triangle.png', fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url)), 'image/png');
   const tag = await a.call('POST', C + '/tags', {
@@ -39,6 +39,7 @@ export async function seedExam(a) {
 }
 test('classroom assessment: fixed source locations, tags and deleted exam reads', async () => {
   const world = await createClassroomWorld();
+  let passed = false;
   try {
     const a = await teacher(world),
       b = await teacher(world, 'assessment-b@example.test'),
@@ -140,7 +141,105 @@ test('classroom assessment: fixed source locations, tags and deleted exam reads'
       readFile: world.workbench.files.read,
       readRendition: world.workbench.files.readRendition
     }), true);
+    passed = true;
   } finally {
-    await world.close();
+    await world.close(passed);
+  }
+});
+test('classroom scores require exact hundredths and positive maxima at least 0.01', async () => {
+  const world = await createClassroomWorld();
+  let passed = false;
+  try {
+    const a = await teacher(world, 'score-precision@example.test');
+    const {
+      exam
+    } = await seedExam(a);
+    const input = {
+      name: '小数满分',
+      subject: exam.subject,
+      occurredOn: exam.occurredOn,
+      source: exam.source,
+      questions: [{
+        label: '1',
+        groupLabel: null,
+        maxScore: 1,
+        tagIds: [],
+        locations: []
+      }]
+    };
+    for (const invalid of [1e-12, 0.000000001, 0.010000000001, 0.291]) {
+      await a.call('POST', C + '/exams', {
+        ...input,
+        totalMax: invalid
+      }, 422);
+      await a.call('POST', C + '/exams', {
+        ...input,
+        totalMax: 1,
+        questions: [{
+          ...input.questions[0],
+          maxScore: invalid
+        }]
+      }, 422);
+    }
+    const classroom = await a.call('POST', C + '/classes', {
+      name: '小数班'
+    }, 201);
+    const student = await a.call('POST', C + '/students', studentBody(classroom.id, '零分学生', '001'), 201);
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([['姓名', '总分', '1'], ['零分学生', 0, 0]]), '成绩');
+    const spreadsheet = await upload(a.client, 'zero-score.xlsx', XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx'
+    }));
+    for (const valid of [0.01, 0.29, 1.15]) {
+      const stored = await a.call('POST', C + '/exams', {
+        ...input,
+        totalMax: valid,
+        questions: [{
+          ...input.questions[0],
+          maxScore: valid
+        }]
+      }, 201);
+      assert.equal(stored.totalMax, valid);
+      assert.equal(stored.questions[0].maxScore, valid);
+      const draft = await a.call('POST', C + '/imports', {
+        examId: stored.id,
+        classId: classroom.id,
+        sourceFileId: spreadsheet.id
+      }, 201);
+      const mapped = await a.call('PUT', C + '/imports/' + draft.id, {
+        baseVersion: draft.version,
+        rows: null,
+        mapping: {
+          sheetIndex: 0,
+          headerRow: 1,
+          firstDataRow: 2,
+          lastDataRow: 2,
+          nameColumn: 1,
+          studentNumberColumn: null,
+          totalColumn: 2,
+          attendanceColumn: null,
+          questionColumns: [{
+            column: 3,
+            questionId: stored.questions[0].id
+          }],
+          ignoredRows: []
+        }
+      });
+      const confirmed = await a.call('POST', C + '/imports/' + draft.id + '/confirmation', {
+        baseVersion: mapped.version
+      });
+      assert.equal(confirmed.result.rows[0].totalScore, 0);
+      const statistics = await a.call('GET', C + '/classes/' + classroom.id + '/statistics?examId=' + stored.id);
+      assert.equal(statistics.points[0].overall.rate, 0);
+      assert.equal(statistics.points[0].overall.scoredCount, 1);
+      assert.equal(statistics.points[0].questions[0].rate, 0);
+      const individual = await a.call('GET', C + '/students/' + student.id + '/statistics?examId=' + stored.id);
+      assert.equal(individual.points[0].overall.rank, 1);
+    }
+    passed = true;
+  } finally {
+    await world.close(passed);
   }
 });

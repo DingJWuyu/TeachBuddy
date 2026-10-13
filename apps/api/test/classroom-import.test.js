@@ -79,6 +79,7 @@ async function setup(a) {
 }
 test('classroom workbook HTTP: mapping generates candidates, confirmation is atomic, mismatch warning and missing scores survive', async () => {
   const world = await createClassroomWorld();
+  let passed = false;
   try {
     const a = await teacher(world),
       s = await setup(a);
@@ -174,12 +175,14 @@ test('classroom workbook HTTP: mapping generates candidates, confirmation is ato
     await a.call('POST', C + '/imports/' + draft.id + '/confirmation', {
       baseVersion: mapped.version
     }, 409);
+    passed = true;
   } finally {
-    await world.close();
+    await world.close(passed);
   }
 });
 test('classroom explicit review resolves invalid source cells without bypassing score or identity validation', async () => {
   const world = await createClassroomWorld();
+  let passed = false;
   try {
     const a = await teacher(world, 'review-source@example.test');
     const s = await setup(a);
@@ -246,7 +249,267 @@ test('classroom explicit review resolves invalid source cells without bypassing 
     assert.equal(row.totalScore, null);
     assert.equal(row.status, 'present');
     assert.equal(row.scores[s.exam.questions[0].id], null);
+    passed = true;
   } finally {
+    await world.close(passed);
+  }
+});
+for (const change of ['move', 'delete']) {
+  test(`classroom reimport preserves historical rows after student ${change}`, async () => {
+    const world = await createClassroomWorld();
+    let passed = false;
+    try {
+      const a = await teacher(world, `history-${change}@example.test`);
+      const s = await setup(a);
+      const first = await a.call('PUT', C + '/imports/' + s.imp.id, {
+        baseVersion: s.imp.version,
+        mapping: s.mapping,
+        rows: null
+      });
+      const original = await a.call('POST', C + '/imports/' + first.id + '/confirmation', {
+        baseVersion: first.version
+      });
+      const historical = original.result.rows.find(row => row.studentId === s.students[0].id);
+      if (change === 'move') {
+        const target = await a.call('POST', C + '/classes', {
+          name: '转入班'
+        }, 201);
+        await a.call('PUT', C + '/students/' + s.students[0].id, {
+          ...studentBody(target.id, '改名后', '001'),
+          baseVersion: s.students[0].version
+        });
+      } else {
+        await a.call('PUT', C + '/students/' + s.students[0].id + '/deletion', {
+          baseVersion: s.students[0].version,
+          deleted: true
+        });
+      }
+      const draft = await a.call('POST', C + '/imports', {
+        examId: s.exam.id,
+        classId: s.cls.id,
+        sourceFileId: s.file.id
+      }, 201);
+      const mapped = await a.call('PUT', C + '/imports/' + draft.id, {
+        baseVersion: draft.version,
+        mapping: {
+          ...s.mapping,
+          ignoredRows: [2]
+        },
+        rows: null
+      });
+      const edited = await a.call('PUT', C + '/imports/' + draft.id, {
+        baseVersion: mapped.version,
+        mapping: mapped.mapping,
+        rows: mapped.rows.map(row => row.sourceRow === 3 ? {
+          ...row,
+          totalScore: 5,
+          scores: {
+            [s.exam.questions[0].id]: 5,
+            [s.exam.questions[1].id]: null
+          }
+        } : row)
+      });
+      const again = await a.call('POST', C + '/imports/' + draft.id + '/confirmation', {
+        baseVersion: edited.version
+      });
+      assert.deepEqual(again.result.rows.find(row => row.studentId === s.students[0].id), historical);
+      assert.equal(again.result.rows.find(row => row.studentId === s.students[1].id).totalScore, 5);
+      const individual = await a.call('GET', C + '/students/' + s.students[0].id + '/statistics');
+      assert.equal(individual.points.length, 1);
+      assert.equal(individual.points[0].overall.totalScore, historical.totalScore);
+      assert.equal(individual.points[0].overall.classReference.id, s.cls.id);
+      assert.equal(validateStoredData(world.workbench.db, {
+        readFile: world.workbench.files.read,
+        readRendition: world.workbench.files.readRendition
+      }), true);
+      passed = true;
+    } finally {
+      await world.close(passed);
+    }
+  });
+}
+test('classroom result correction rejects unknown score keys without changing stored version', async () => {
+  const world = await createClassroomWorld();
+  let passed = false;
+  try {
+    const a = await teacher(world, 'unknown-question@example.test');
+    const s = await setup(a);
+    const mapped = await a.call('PUT', C + '/imports/' + s.imp.id, {
+      baseVersion: s.imp.version,
+      mapping: s.mapping,
+      rows: null
+    });
+    const confirmed = await a.call('POST', C + '/imports/' + mapped.id + '/confirmation', {
+      baseVersion: mapped.version
+    });
+    const unknown = randomUUID();
+    const rows = confirmed.result.rows.map(({
+      studentSnapshot,
+      ...row
+    }) => ({
+      ...row,
+      scores: {
+        ...row.scores,
+        [unknown]: 999
+      }
+    }));
+    await a.call('PUT', C + '/results/' + confirmed.result.id, {
+      baseVersion: confirmed.result.version,
+      examVersion: s.exam.version,
+      rows
+    }, 422);
+    assert.deepEqual(await a.call('GET', C + '/results/' + confirmed.result.id), confirmed.result);
+    passed = true;
+  } finally {
+    await world.close(passed);
+  }
+});
+test('classroom backup rejects foreign import rows including ignored rows and baseline students', async () => {
+  const {
+    createIntegration
+  } = await import('./fixtures/auth-integration/harness.js');
+  const {
+    backup,
+    restore
+  } = await import('../src/workbench/reliability/backup.js');
+  const {
+    default: Database
+  } = await import('better-sqlite3');
+  const {
+    createHash
+  } = await import('node:crypto');
+  const os = await import('node:os');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'classroom-reference-'));
+  const directory = path.join(root, 'source');
+  fs.mkdirSync(directory);
+  const world = await createIntegration({
+    directory
+  });
+  let stopped = false;
+  let passed = false;
+  try {
+    const a = await teacher(world, 'backup-reference-a@example.test');
+    const b = await teacher(world, 'backup-reference-b@example.test');
+    const s = await setup(a);
+    const foreignClass = await b.call('POST', C + '/classes', {
+      name: '外账户班'
+    }, 201);
+    const foreignStudent = await b.call('POST', C + '/students', studentBody(foreignClass.id, '外账户', '001'), 201);
+    const mapped = await a.call('PUT', C + '/imports/' + s.imp.id, {
+      baseVersion: s.imp.version,
+      mapping: s.mapping,
+      rows: null
+    });
+    for (const ignored of [false, true]) {
+      await a.call('PUT', C + '/imports/' + mapped.id, {
+        baseVersion: mapped.version,
+        mapping: mapped.mapping,
+        rows: mapped.rows.map((row, index) => index ? row : {
+          ...row,
+          studentId: foreignStudent.id,
+          ignored
+        })
+      }, 404);
+    }
+    assert.equal((await a.call('GET', C + '/imports/' + mapped.id)).version, mapped.version);
+    const confirmed = await a.call('POST', C + '/imports/' + mapped.id + '/confirmation', {
+      baseVersion: mapped.version
+    });
+    const target = await a.call('POST', C + '/classes', {
+      name: '历史换班'
+    }, 201);
+    await a.call('PUT', C + '/students/' + s.students[0].id, {
+      ...studentBody(target.id, '原学生', '001'),
+      baseVersion: s.students[0].version
+    });
+    await a.call('PUT', C + '/students/' + s.students[1].id + '/deletion', {
+      baseVersion: s.students[1].version,
+      deleted: true
+    });
     await world.close();
+    stopped = true;
+    const database = path.join(directory, 'workspace.sqlite');
+    const files = path.join(directory, 'files');
+    const validBackup = path.join(root, 'valid-backup');
+    await backup({
+      database,
+      files,
+      target: validBackup,
+      stopped: true
+    });
+    const db = new Database(database);
+    try {
+      for (const [name, corrupt] of [['foreign-row', {
+        ...confirmed.import,
+        rows: confirmed.import.rows.map((row, index) => index ? row : {
+          ...row,
+          studentId: foreignStudent.id
+        })
+      }], ['foreign-ignored-row', {
+        ...confirmed.import,
+        rows: confirmed.import.rows.map((row, index) => index ? row : {
+          ...row,
+          studentId: foreignStudent.id,
+          ignored: true
+        })
+      }], ['foreign-baseline', {
+        ...confirmed.import,
+        baselines: {
+          ...confirmed.import.baselines,
+          students: confirmed.import.baselines.students.map((student, index) => index ? student : {
+            ...student,
+            id: foreignStudent.id
+          })
+        }
+      }]]) {
+        db.prepare('UPDATE classroom_imports SET value=? WHERE accountKey=? AND id=?').run(JSON.stringify(corrupt), a.session.account.accountKey, confirmed.import.id);
+        await assert.rejects(backup({
+          database,
+          files,
+          target: path.join(root, name),
+          stopped: true
+        }), /classroom/);
+      }
+      db.prepare('UPDATE classroom_imports SET value=? WHERE accountKey=? AND id=?').run(JSON.stringify(confirmed.import), a.session.account.accountKey, confirmed.import.id);
+    } finally {
+      db.close();
+    }
+    const backupDb = new Database(path.join(validBackup, 'workspace.sqlite'));
+    try {
+      const corrupt = {
+        ...confirmed.import,
+        rows: confirmed.import.rows.map((row, index) => index ? row : {
+          ...row,
+          studentId: foreignStudent.id
+        })
+      };
+      backupDb.prepare('UPDATE classroom_imports SET value=? WHERE accountKey=? AND id=?').run(JSON.stringify(corrupt), a.session.account.accountKey, confirmed.import.id);
+    } finally {
+      backupDb.close();
+    }
+    const manifestPath = path.join(validBackup, 'manifest.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const bytes = fs.readFileSync(path.join(validBackup, 'workspace.sqlite'));
+    manifest.database.bytes = bytes.length;
+    manifest.database.sha256 = createHash('sha256').update(bytes).digest('hex');
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    assert.throws(() => restore({
+      source: validBackup,
+      target: path.join(root, 'restored'),
+      stopped: true
+    }), /classroom/);
+    passed = true;
+  } finally {
+    if (!stopped) {
+      await world.close();
+    }
+    if (passed) {
+      fs.rmSync(root, {
+        recursive: true,
+        force: true
+      });
+    } else {
+      console.error('Classroom backup failure evidence retained at ' + root);
+    }
   }
 });

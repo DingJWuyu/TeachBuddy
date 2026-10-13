@@ -8,7 +8,8 @@ export const C = '/api/modules/classroom';
 const contract = JSON.parse(fs.readFileSync(new URL('../src/contracts/classroom.openapi.json', import.meta.url), 'utf8'));
 const ajv = new Ajv2020({
   strict: false,
-  allErrors: true
+  allErrors: true,
+  multipleOfPrecision: 12
 });
 addFormats(ajv);
 ajv.addSchema({
@@ -47,12 +48,21 @@ function validateResponse(method, url, status, value) {
 export async function createClassroomWorld() {
   const world = await createIntegration();
   const originalClose = world.close;
-  world.close = async () => {
-    await originalClose();
-    fs.rmSync(world.directory, {
-      recursive: true,
-      force: true
-    });
+  world.close = async (passed = false) => {
+    let closed = false;
+    try {
+      await originalClose();
+      closed = true;
+    } finally {
+      if (passed && closed) {
+        fs.rmSync(world.directory, {
+          recursive: true,
+          force: true
+        });
+      } else {
+        console.error('Classroom failure evidence retained at ' + world.directory);
+      }
+    }
   };
   return world;
 }

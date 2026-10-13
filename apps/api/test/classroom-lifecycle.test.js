@@ -222,3 +222,80 @@ test('fixed historical deployment backup restores retained modules and adds empt
     else console.error(`Historical backup evidence retained at ${root}`);
   }
 });
+
+test('foreign fixed page images reject real exam writes, stopped backup and checksum-valid damaged restore', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'classroom-fixed-page-'));
+  const directory = path.join(root, 'source');
+  fs.mkdirSync(directory);
+  let world = await createIntegration({ directory });
+  let passed = false;
+  try {
+    const a = await register(world, 'fixed-page-a@example.test'), b = await register(world, 'fixed-page-b@example.test');
+    const facts = await seed(world, a), other = await seed(world, b);
+    const key = [facts.source.id, facts.preview.renditionFileId, a.principal.accountKey];
+    const select = 'SELECT value FROM materials_renditions WHERE fileId=? AND renditionId=? AND accountKey=?';
+    const update = 'UPDATE materials_renditions SET value=? WHERE fileId=? AND renditionId=? AND accountKey=?';
+    const original = world.workbench.db.prepare(select).get(...key).value;
+    const damaged = JSON.parse(original);
+    damaged.pages[0].imageFileId = other.preview.pages[0].imageFileId;
+    const foreignValue = JSON.stringify(damaged);
+    const countBefore = world.workbench.db.prepare('SELECT count(*) n FROM classroom_exams WHERE accountKey=?').get(a.principal.accountKey).n;
+    const examBefore = world.workbench.db.prepare('SELECT value FROM classroom_exams WHERE accountKey=? AND id=?').get(a.principal.accountKey, facts.exam.id).value;
+    const input = Object.fromEntries(['name', 'subject', 'occurredOn', 'totalMax', 'source', 'questions'].map(field => [field, facts.exam[field]]));
+    world.workbench.db.prepare(update).run(foreignValue, ...key);
+    const createKey = randomUUID(), updateKey = randomUUID();
+    const created = await a.client.request('POST', `${base}/exams`, { body: {
+      ...input, questions: input.questions.map(({ id, ...question }) => question),
+    }, headers: { 'Idempotency-Key': createKey } });
+    const edited = await a.client.request('PUT', `${base}/exams/${facts.exam.id}`, { body: {
+      ...input, baseVersion: facts.exam.version, name: '不得保存的修改',
+    }, headers: { 'Idempotency-Key': updateKey } });
+    const countAfter = world.workbench.db.prepare('SELECT count(*) n FROM classroom_exams WHERE accountKey=?').get(a.principal.accountKey).n;
+    const examAfter = world.workbench.db.prepare('SELECT value FROM classroom_exams WHERE accountKey=? AND id=?').get(a.principal.accountKey, facts.exam.id).value;
+    world.workbench.db.prepare(update).run(original, ...key);
+    await world.close(); world = null;
+    const database = path.join(directory, 'workspace.sqlite'), files = path.join(directory, 'files');
+    const cleanBackup = path.join(root, 'clean-backup');
+    await backup({ database, files, target: cleanBackup, stopped: true });
+    const sourceDb = new Database(database);
+    sourceDb.prepare(update).run(foreignValue, ...key);
+    sourceDb.close();
+    let backupError;
+    try { await backup({ database, files, target: path.join(root, 'rejected-backup'), stopped: true }); }
+    catch (error) { backupError = error.message; }
+    // Modify the already-created archive and recompute its database checksum.
+    // This exercises restore's semantic validation rather than a checksum error.
+    const archiveDbPath = path.join(cleanBackup, 'workspace.sqlite');
+    const archiveDb = new Database(archiveDbPath);
+    archiveDb.prepare(update).run(foreignValue, ...key);
+    archiveDb.pragma('wal_checkpoint(TRUNCATE)');
+    archiveDb.close();
+    const manifestPath = path.join(cleanBackup, 'manifest.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath));
+    const bytes = fs.readFileSync(archiveDbPath);
+    manifest.database.bytes = bytes.length;
+    manifest.database.sha256 = createHash('sha256').update(bytes).digest('hex');
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    let restoreError;
+    const destination = path.join(root, 'rejected-restored');
+    try { restore({ source: cleanBackup, target: destination, stopped: true }); }
+    catch (error) { restoreError = error.message; }
+    const evidence = { createStatus: created.status, updateStatus: edited.status, backupError: backupError ?? null, restoreError: restoreError ?? null };
+    console.log('Fixed page ownership result:', JSON.stringify(evidence));
+    assert.equal(created.status, 404, created.text);
+    assert.deepEqual(created.json, { type: '/problems/workbench/not-found' });
+    assert.equal(edited.status, 404, edited.text);
+    assert.deepEqual(edited.json, { type: '/problems/workbench/not-found' });
+    assert.equal(countAfter, countBefore);
+    assert.equal(examAfter, examBefore);
+    assert.match(backupError ?? '', /Missing or foreign.*file/i);
+    assert.equal(fs.existsSync(path.join(root, 'rejected-backup')), false);
+    assert.match(restoreError ?? '', /Missing or foreign.*file/i);
+    assert.equal(fs.existsSync(path.join(destination, 'recovery-prepared.json')), false);
+    passed = true;
+  } finally {
+    await world?.close();
+    if (passed) fs.rmSync(root, { recursive: true, force: true });
+    else console.error(`Fixed page ownership evidence retained at ${root}`);
+  }
+});

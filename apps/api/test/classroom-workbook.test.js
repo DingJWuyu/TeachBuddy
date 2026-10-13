@@ -18,7 +18,11 @@ const rejectsCode = code => error => error instanceof WorkbookInputError && erro
 
 test('constructed actual XLSX and BIFF8 files retain coordinates, merged headers, duplicate names, zero and blank', async t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'classroom-workbooks-'));
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  let passed = false;
+  t.after(() => {
+    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+    else console.error('Retained failed classroom workbook samples:', directory);
+  });
   writeScoreSamples(directory);
   for (const format of ['xlsx', 'xls']) {
     const result = await readScoreWorkbook(fs.readFileSync(path.join(directory, `scores.${format}`)));
@@ -38,6 +42,7 @@ test('constructed actual XLSX and BIFF8 files retain coordinates, merged headers
     assert.equal(cell(sheet, 3, 7).value, '3');
     assert.deepEqual(JSON.parse(JSON.stringify(result)), result);
   }
+  passed = true;
 });
 
 test('cached formulas are preserved without execution; missing and error caches are addressed issues', async () => {

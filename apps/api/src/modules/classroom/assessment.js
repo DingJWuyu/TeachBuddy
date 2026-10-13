@@ -143,6 +143,7 @@ export function createAssessment({
           fail('/rows');
         }
       }
+      const warnings = validateScores(exam, body.rows);
       const rows = body.rows.map((row, i) => {
         const student = get('students', p, row.studentId);
         if (!previous.has(student.id) && (student.classId !== old.classId || student.deletedAt)) {
@@ -153,7 +154,6 @@ export function createAssessment({
           ...previous.get(student.id).studentSnapshot
         } : student);
       });
-      const warnings = validateScores(exam, rows);
       const result = save('results', p, changed(old, clock, {
         rows,
         examVersionAtConfirmation: exam.version,
@@ -219,6 +219,12 @@ export function createAssessment({
         totalScore: null,
         scores: {}
       }, s));
+      const currentStudentIds = new Set(students.map(student => student.id));
+      for (const historicalRow of existing?.rows ?? []) {
+        if (!currentStudentIds.has(historicalRow.studentId)) {
+          rows.push(historicalRow);
+        }
+      }
       validateScores(exam, rows);
       const fields = {
         examId: exam.id,

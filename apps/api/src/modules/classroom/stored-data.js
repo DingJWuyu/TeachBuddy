@@ -183,6 +183,11 @@ export function validateStoredData(db, {
   return true;
 }
 function validateImportEvidence(value, find) {
+  for (const row of value.rows) {
+    if (row.studentId !== null) {
+      find('students', row.studentId);
+    }
+  }
   const reviewedRows = array(value.reviewedSourceRows ?? [], '/reviewedSourceRows', 1000);
   reviewedRows.forEach(row => integer(row, '/reviewedSourceRows', 1, 2000));
   if (new Set(reviewedRows).size !== reviewedRows.length || reviewedRows.some(number => !value.mapping || number < value.mapping.firstDataRow || number > value.mapping.lastDataRow || !value.rows.some(row => row.sourceRow === number && !row.ignored))) {
@@ -201,6 +206,7 @@ function validateImportEvidence(value, find) {
     }
     if (issue.studentId !== null) {
       id(issue.studentId, '/issues/studentId');
+      find('students', issue.studentId);
     }
     if (issue.questionId !== null) {
       id(issue.questionId, '/issues/questionId');

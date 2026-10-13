@@ -44,11 +44,14 @@ export function date(v, p) {
   }
   return v;
 }
+export function isScoreValue(value, positive = false) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= (positive ? 0.01 : 0) && value <= 100000 && value === Math.round(value * 100) / 100;
+}
 export function score(v, p, positive = false) {
   if (typeof v !== 'number' || !Number.isFinite(v)) {
     fail(p, 'invalid-type');
   }
-  if (v < 0 || v > 100000 || positive && v === 0 || Math.abs(v * 100 - Math.round(v * 100)) > 1e-7) {
+  if (!isScoreValue(v, positive)) {
     fail(p);
   }
   return v;
@@ -144,7 +147,7 @@ export function mapping(v, p = '/mapping') {
   return v;
 }
 export function rows(v, draft = false, p = '/rows') {
-  return array(v, p, 1000).map((r, i) => {
+  return array(v, p, draft ? 1000 : undefined).map((r, i) => {
     const f = p + '/' + i;
     const fields = draft ? ['sourceRow', 'studentId', 'status', 'totalScore', 'scores', 'ignored'] : ['studentId', 'status', 'totalScore', 'scores'];
     object(r, fields, undefined, f);

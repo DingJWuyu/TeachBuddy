@@ -3425,7 +3425,7 @@
           },
           "maxScore": {
             "type": "number",
-            "minimum": 0,
+            "minimum": 0.01,
             "maximum": 100000,
             "multipleOf": 0.01,
             "exclusiveMinimum": 0
@@ -3480,7 +3480,7 @@
           },
           "maxScore": {
             "type": "number",
-            "minimum": 0,
+            "minimum": 0.01,
             "maximum": 100000,
             "multipleOf": 0.01,
             "exclusiveMinimum": 0
@@ -4276,7 +4276,7 @@
           },
           "totalMax": {
             "type": "number",
-            "minimum": 0,
+            "minimum": 0.01,
             "maximum": 100000,
             "multipleOf": 0.01,
             "exclusiveMinimum": 0
@@ -4329,7 +4329,7 @@
           },
           "totalMax": {
             "type": "number",
-            "minimum": 0,
+            "minimum": 0.01,
             "maximum": 100000,
             "multipleOf": 0.01,
             "exclusiveMinimum": 0
@@ -4406,7 +4406,7 @@
           },
           "totalMax": {
             "type": "number",
-            "minimum": 0,
+            "minimum": 0.01,
             "maximum": 100000,
             "multipleOf": 0.01,
             "exclusiveMinimum": 0
@@ -4763,8 +4763,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ScoreRowInput"
-            },
-            "maxItems": 1000
+            }
           }
         },
         "required": [
@@ -4816,8 +4815,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ScoreRow"
-            },
-            "maxItems": 1000
+            }
           },
           "provenance": {
             "$ref": "#/components/schemas/Provenance"
@@ -5460,7 +5458,7 @@
           },
           "totalMax": {
             "type": "number",
-            "minimum": 0,
+            "minimum": 0.01,
             "maximum": 100000,
             "multipleOf": 0.01,
             "exclusiveMinimum": 0
@@ -5742,8 +5740,7 @@
                 "totalMismatch"
               ],
               "additionalProperties": true
-            },
-            "maxItems": 1000
+            }
           },
           "warnings": {
             "type": "array",
@@ -5766,8 +5763,7 @@
                 "studentId"
               ],
               "additionalProperties": true
-            },
-            "maxItems": 1000
+            }
           }
         },
         "required": [
@@ -5943,8 +5939,7 @@
             "items": {
               "type": "string",
               "format": "uuid"
-            },
-            "maxItems": 1000
+            }
           }
         },
         "required": [
@@ -6237,7 +6232,7 @@
           },
           "maxScore": {
             "type": "number",
-            "minimum": 0,
+            "minimum": 0.01,
             "maximum": 100000,
             "multipleOf": 0.01,
             "exclusiveMinimum": 0

@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { readScoreWorkbook, WorkbookInputError } from './workbook.js';
 import { account, required, active, version, changed, timestamp, listed, conflict } from './problems.js';
-import { fail } from './schema.js';
+import { fail, isScoreValue } from './schema.js';
 import { issue, validateScores } from './scores.js';
 export function createImports({
   repository: r,
@@ -108,7 +108,7 @@ export function createImports({
         }
         const numericDisplay = /^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(shown(c));
         const formatting = !numericDisplay;
-        if (c.type !== 'number' || c.value === null || formatting || c.value < 0 || c.value > 100000 || Math.abs(c.value * 100 - Math.round(c.value * 100)) > 1e-7) {
+        if (c.type !== 'number' || c.value === null || formatting || !isScoreValue(c.value)) {
           issues.push(issue('error', 'score-cell-review-required', '计分格不是可用分数，请人工校对。', {
             sourceRow: n,
             column,
@@ -279,6 +279,11 @@ export function createImports({
       const {
         baselines
       } = context(p, old.examId, old.classId);
+      for (const row of body.rows ?? []) {
+        if (row.studentId !== null) {
+          required(r, 'students', p, row.studentId);
+        }
+      }
       files.read(p, old.sourceFileId);
       let value = changed(old, clock, {
         mapping: body.mapping,
