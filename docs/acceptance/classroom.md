@@ -23,7 +23,7 @@
 
 ## 运行入口
 
-先按[隔离环境](../SETUP.md#新的隔离环境)安装锁定依赖。`apps/api/test/classroom-core.test.js`、`classroom-assessment.test.js`、`classroom-import.test.js`、`classroom-statistics.test.js`、`classroom-lifecycle.test.js`、`classroom-workbook.test.js` 使用真实 HTTP/SQLite 或真实工作簿；固定生成器在 `apps/api/test/fixtures/classroom/`，测试不读取 docs 作为输入。`classroom-paper.test.js` 使用公共转换器及真实原卷，需按[文件转换工具](../SETUP.md#文件转换工具)配置工具。
+先按[隔离环境](../SETUP.md#新的隔离环境)安装锁定依赖。`apps/api/test/classroom-core.test.js`、`classroom-assessment.test.js`、`classroom-import.test.js`、`classroom-statistics.test.js`、`classroom-lifecycle.test.js`、`classroom-workbook.test.js` 使用真实 HTTP/SQLite 或真实工作簿；固定生成器在 `apps/api/test/fixtures/classroom/`，测试不读取 docs 作为输入。`classroom-paper.test.js` 使用公共转换器及真实原卷；它和 assessment、lifecycle 的预览场景均需按[文件转换工具](../SETUP.md#文件转换工具)配置工具，由 CI 的文件输出组运行。
 
 导航用 `apps/web/e2e/catalog-navigation.spec.js`，构建和 CI 分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)，不要为 API 另建 UI 单元测试。测试自行生成隔离数据，产物与清理沿[验证指南](README.md#隔离与产物)。
 
