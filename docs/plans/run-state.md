@@ -18,7 +18,7 @@ OCR 识别方案优化已集成到 `TeacherWorkspace-preview`，本机体验服�
 
 | 产品分区 | 工作树 | 分支 | 当前安排 |
 | --- | --- | --- | --- |
-| 题库 | `TeacherWorkspace-questions` | `fix/questions-core-usability` | 答案区识别、未分配片段归入、题面图片混排、结构编辑撤销和已完成材料收起已实现并通过作者定点自验，待固定候选独立核验；证据见本工作树 `test-results/questions-core/`。按用户授权提交后保留，暂不集成；等待指示，获准集成并验证后清理现场 |
+| 题库 | `TeacherWorkspace-questions` | `fix/questions-core-usability` | 答案区识别、片段三去向、PNG 混排、结构撤销和完成材料收起已完成，代码候选 `2c5ebc1a` 通过定点自验、独立验收及双轴审查；证据见本工作树 `test-results/questions-core/receipt.json`。未集成、未推送，按用户指令保留并等待集成授权；获准集成并验证后清理现场。外部 E 样本未提供，云端 CI 未运行 |
 | 账户与身份 | 已清理 | 已清理 | [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37) 已集成，独立审查、CI 与 preview 启动核验通过；有效证据已保全，本轮停止开发 |
 | 工作台与设置 | 无独立工作树，使用 preview | 昵称任务分支已清理 | 昵称原位编辑及账户公开能力已集成、验证并同步远端；当前暂停，待用户确定后续目标 |
 | 数学工坊 | 已清理 | 已清理 | 统一制作与网页 AI 已集成并验证；体验使用 preview，商店分发仍待准备 |
