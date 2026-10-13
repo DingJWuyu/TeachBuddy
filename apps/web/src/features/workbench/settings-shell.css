@@ -14,6 +14,17 @@
 .settings-profile { display: flex; align-items: center; gap: 40px; padding: 0 0 32px; min-width: 0; }
 .settings-profile-copy { min-width: 0; overflow-wrap: anywhere; }
 .wb-settings .settings-profile h1 { font-size: 24px; font-weight: 800; line-height: 1.35; margin: 0 0 16px; color: var(--settings-text); }
+.settings-nickname { position: relative; max-width: 100%; }
+.settings-nickname-trigger { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 0; border: 0; border-radius: 3px; background: transparent; color: inherit; font: inherit; line-height: inherit; text-align: left; cursor: pointer; }
+.settings-nickname-trigger > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings-nickname-trigger > svg { flex-shrink: 0; color: var(--settings-muted); opacity: 0; transition: opacity 150ms ease; }
+.settings-nickname-trigger:hover > svg, .settings-nickname-trigger:focus-visible > svg { opacity: 1; }
+.settings-nickname-trigger:focus-visible { outline: 2px solid var(--settings-text); outline-offset: 3px; }
+.settings-nickname-editor { display: inline-grid; max-width: 100%; min-width: min(5ch, 100%); vertical-align: top; }
+.settings-nickname-measure { grid-area: 1 / 1; padding-right: 28px; white-space: pre; visibility: hidden; overflow: hidden; }
+.wb-settings .settings-nickname-editor input { grid-area: 1 / 1; width: 100%; min-width: 0; box-sizing: border-box; padding: 0; border: 0; border-radius: 0; background: transparent; color: inherit; font: inherit; line-height: inherit; box-shadow: inset 0 -1px var(--settings-text); outline: none; }
+.settings-nickname-status { display: block; margin: -8px 0 10px; color: var(--settings-muted); font-size: 12px; font-weight: 400; line-height: 1.4; }
+@media (hover: none) { .settings-nickname-trigger > svg { opacity: 1; } }
 .wb-settings .settings-profile p { margin: 0 0 14px; color: var(--settings-muted); font-size: 16px; }
 .settings-avatar { position: relative; display: grid; place-items: center; flex: 0 0 auto; width: 112px; height: 112px; padding: 0; border: 0; border-radius: 50%; background: #303238; color: #fff; font: 600 24px/1 inherit; cursor: pointer; }
 .settings-avatar > span:first-child { font-size: 24px; }

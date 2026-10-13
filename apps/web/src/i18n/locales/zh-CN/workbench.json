@@ -396,5 +396,9 @@
   "modules.lessons": "备课",
   "modules.math": "数学工坊",
   "navigationGroups.teaching": "教学",
-  "navigationGroups.ungrouped": "未分组"
+  "navigationGroups.ungrouped": "未分组",
+  "修改昵称": "修改昵称",
+  "昵称": "昵称",
+  "昵称需为 1-40 个字符。": "昵称需为 1-40 个字符。",
+  "昵称未能保存，请重试。": "昵称未能保存，请重试。"
 }

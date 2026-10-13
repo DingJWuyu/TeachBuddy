@@ -5,6 +5,7 @@ export function createAuthStore(db) {
   const statements = {
     accountByEmail: db.prepare('SELECT * FROM auth_accounts WHERE email = ? COLLATE NOCASE'),
     accountById: db.prepare('SELECT * FROM auth_accounts WHERE id = ?'),
+    accountNicknameUpdate: db.prepare('UPDATE auth_accounts SET nickname = ?, updatedAt = ? WHERE id = ?'),
     accountInsert: db.prepare(`
       INSERT INTO auth_accounts (id, accountKey, email, nickname, passwordHash, passwordVersion, createdAt, updatedAt)
       VALUES (@id, @accountKey, @email, @nickname, @passwordHash, @passwordVersion, @createdAt, @updatedAt)
@@ -106,6 +107,11 @@ export function createAuthStore(db) {
 
     getAccountById(id) {
       return statements.accountById.get(id) ?? null;
+    },
+
+    updateNickname(id, nickname, updatedAt) {
+      statements.accountNicknameUpdate.run(nickname, updatedAt, id);
+      return statements.accountById.get(id);
     },
 
     insertAccount(account) {

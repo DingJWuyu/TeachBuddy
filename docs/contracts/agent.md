@@ -1,4 +1,4 @@
-# 早期 Agent 契约语义
+# AI 助理契约：首批工具与六模块扩展
 
 首批 Agent 契约，设计已采用；开发暂停和实现边界见[当前状态](../plans/run-state.md)。精确 HTTP、请求/响应、工具参数和错误对照唯一归 [agent.openapi.json](../../apps/api/src/contracts/agent.openapi.json)，有效交换样本见 [agent-examples.json](../../apps/api/test/fixtures/contracts/agent-examples.json)。本页定义请求之间的不变量，不是另一份字段 schema。
 

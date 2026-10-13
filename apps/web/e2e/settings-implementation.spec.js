@@ -19,6 +19,163 @@ test.afterEach(async ({ context }, info) => {
   if (info.status === info.expectedStatus) for (const directory of [world.directory, ...extraDirectories]) fs.rmSync(directory, { recursive: true, force: true });
   else fs.writeFileSync(info.outputPath('fixture-directory.txt'), [world.directory, ...extraDirectories].join('\n'));
 });
+test('昵称原位编辑同步侧栏，刷新及另一浏览器登录读回', async ({ page, browser }, info) => {
+  const name = page.getByRole('button', { name: '修改昵称', exact: true });
+  await expect(name).toHaveText('甲老师');
+  await name.hover();
+  await expect(name.locator('svg')).toHaveCSS('opacity', '1');
+  await page.locator('.settings-profile').screenshot({ path: info.outputPath('nickname-hover.png') });
+  const mounted = await page.locator('.wb-shell').elementHandle();
+  await name.click();
+  const input = page.getByRole('textbox', { name: '昵称', exact: true });
+  await expect(input).toBeFocused();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await input.pressSequentially('林老师');
+  await input.press('Enter');
+  await expect(name).toHaveText('林老师');
+  await expect(page.locator('.tb-account-row')).toContainText('林老师');
+  expect(await mounted.evaluate(element => element.isConnected)).toBe(true);
+  await expect(name).toBeFocused();
+  await page.reload();
+  await expect(name).toHaveText('林老师');
+  await expect(page.locator('.tb-account-row')).toContainText('林老师');
+  const other = await browser.newContext({ ignoreHTTPSErrors: true });
+  try {
+    const second = await other.newPage();
+    await second.goto(world.origin);
+    await login(second);
+    await expect(second.locator('.tb-account-row')).toContainText('林老师');
+  } finally { await other.close(); }
+  await page.locator('.settings-profile').screenshot({ path: info.outputPath('nickname-saved.png') });
+});
+
+test('昵称编辑取消、空白校验、失焦保存及长昵称窄屏呈现', async ({ page }, info) => {
+  const name = page.getByRole('button', { name: '修改昵称', exact: true });
+  const input = page.getByRole('textbox', { name: '昵称', exact: true });
+  await name.click();
+  await input.fill('不保存的昵称');
+  await input.press('Escape');
+  await expect(name).toHaveText('甲老师');
+  await expect(name).toBeFocused();
+  await name.click();
+  await input.fill('  ');
+  await input.press('Enter');
+  await expect(page.getByRole('alert')).toHaveText('昵称需为 1-40 个字符。');
+  await expect(page.locator('.tb-account-row')).toContainText('甲老师');
+  await input.fill('长'.repeat(41));
+  await input.press('Enter');
+  await expect(page.getByRole('alert')).toHaveText('昵称需为 1-40 个字符。');
+  const longName = '林老师的数学课堂'.repeat(4) + '😀'.repeat(8);
+  expect(Array.from(longName)).toHaveLength(40);
+  await input.fill(`  ${longName}  `);
+  await page.getByText('TeachBuddy 账户', { exact: true }).click();
+  await expect(name).toHaveText(longName);
+  await expect(page.locator('.tb-account-row')).toContainText(longName);
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const theme of ['浅色', '深色']) {
+    await page.getByRole('button', { name: theme, exact: true }).click();
+    await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+    await name.click();
+    await expect(input).toBeFocused();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(await page.locator('[data-region=settings]').evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+    await page.screenshot({ path: info.outputPath(`nickname-390-${theme}.png`) });
+    await input.press('Escape');
+  }
+});
+
+test('昵称保存失败保留输入，未知结果先读取核实且不自动重放', async ({ page }) => {
+  const name = page.getByRole('button', { name: '修改昵称', exact: true });
+  const input = page.getByRole('textbox', { name: '昵称', exact: true });
+  world.workbench.db.exec("CREATE TRIGGER fail_nickname BEFORE UPDATE OF nickname ON auth_accounts BEGIN SELECT RAISE(ABORT, 'write rejected'); END");
+  await name.click(); await input.fill('失败后重试'); await input.press('Enter');
+  await expect(page.getByRole('alert')).toHaveText('昵称未能保存，请重试。');
+  await expect(input).toHaveValue('失败后重试');
+  await expect(page.locator('.tb-account-row')).toContainText('甲老师');
+  world.workbench.db.exec('DROP TRIGGER fail_nickname');
+  await input.press('Enter');
+  await expect(name).toHaveText('失败后重试');
+  let writes = 0;
+  await page.route('**/api/auth/profile', async route => { writes++; await route.fetch(); await route.abort('failed'); });
+  await name.click(); await input.fill('已保存但回执丢失'); await input.press('Enter');
+  await expect(name).toHaveText('已保存但回执丢失');
+  expect(writes).toBe(1);
+  await page.unroute('**/api/auth/profile');
+  await page.route('**/api/auth/profile', async route => { writes++; await route.abort('failed'); });
+  await name.click(); await input.fill('结果仍未确认'); await input.press('Enter');
+  await expect(page.getByRole('alert')).toHaveText('昵称保存结果未确认，请重试。');
+  await expect(input).toHaveValue('结果仍未确认');
+  await page.getByText('TeachBuddy 账户', { exact: true }).click();
+  expect(writes).toBe(2);
+  await expect(page.locator('.tb-account-row')).toContainText('已保存但回执丢失');
+  await page.unroute('**/api/auth/profile');
+  await input.press('Enter');
+  await expect(name).toHaveText('结果仍未确认');
+});
+
+test('昵称在同一会话的另一标签页同步，保留工作台挂载', async ({ page, context }) => {
+  const mounted = await page.locator('.wb-shell').elementHandle();
+  const second = await context.newPage();
+  await second.goto(world.origin + '/settings');
+  await second.getByRole('button', { name: '修改昵称', exact: true }).click();
+  await second.getByRole('textbox', { name: '昵称', exact: true }).fill('另一页的昵称');
+  await second.getByRole('textbox', { name: '昵称', exact: true }).press('Enter');
+  await expect(page.getByRole('button', { name: '修改昵称', exact: true })).toHaveText('另一页的昵称');
+  await expect(page.locator('.tb-account-row')).toContainText('另一页的昵称');
+  expect(await mounted.evaluate(element => element.isConnected)).toBe(true);
+});
+
+test('昵称较早写入的迟到回执不覆盖另一标签页的后续改名', async ({ page, context }) => {
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  let committed = false;
+  await page.route('**/api/auth/profile', async route => {
+    const response = await route.fetch(); committed = true;
+    await held; await route.fulfill({ response });
+  });
+  const second = await context.newPage();
+  await second.goto(world.origin + '/settings');
+  await page.getByRole('button', { name: '修改昵称', exact: true }).click();
+  await page.getByRole('textbox', { name: '昵称', exact: true }).fill('较早写入的昵称');
+  await page.getByRole('textbox', { name: '昵称', exact: true }).press('Enter');
+  await expect.poll(() => committed).toBe(true);
+  const rechecked = page.waitForResponse(response => response.url().endsWith('/api/auth/session') && response.request().method() === 'GET');
+  await second.getByRole('button', { name: '修改昵称', exact: true }).click();
+  await second.getByRole('textbox', { name: '昵称', exact: true }).fill('后来写入的昵称');
+  await second.getByRole('textbox', { name: '昵称', exact: true }).press('Enter');
+  await expect(second.getByRole('button', { name: '修改昵称', exact: true })).toHaveText('后来写入的昵称');
+  expect((await (await rechecked).json()).session.account.nickname).toBe('后来写入的昵称');
+  release();
+  for (const target of [page, second]) {
+    await expect(target.getByRole('button', { name: '修改昵称', exact: true })).toHaveText('后来写入的昵称');
+    await expect(target.locator('.tb-account-row')).toContainText('后来写入的昵称');
+  }
+});
+
+test('昵称迟到回执不恢复已退出的身份或覆盖另一账户', async ({ page }) => {
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  let committed = false;
+  await page.route('**/api/auth/profile', async route => {
+    const response = await route.fetch(); committed = true;
+    await held; await route.fulfill({ response });
+  });
+  await page.getByRole('button', { name: '修改昵称', exact: true }).click();
+  const input = page.getByRole('textbox', { name: '昵称', exact: true });
+  await input.fill('旧账户的迟到昵称'); await input.press('Enter');
+  await expect.poll(() => committed).toBe(true);
+  await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '登录', exact: true })).toBeVisible();
+  await register(page, world, 'teacher-b@example.test');
+  const response = page.waitForResponse('**/api/auth/profile');
+  release(); await response;
+  const coach = page.getByRole('button', { name: '知道了', exact: true });
+  if (await coach.count()) await coach.click();
+  await page.goto(world.origin + '/settings');
+  await expect(page.getByRole('button', { name: '修改昵称', exact: true })).toHaveText('乙老师');
+  await expect(page.locator('.tb-account-row')).toContainText('乙老师');
+});
+
 test('语言选择立即应用真实界面并写入账户偏好', async ({ page }, info) => {
   const before = await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json();
   await page.getByRole('button', { name: '语言', exact: true }).click();

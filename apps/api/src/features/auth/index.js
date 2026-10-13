@@ -97,6 +97,7 @@ export function createAuthModule(options = {}) {
   router.get('/session', handle((request) => operations.getSessionStatus(request), { write: false }));
   router.post('/session', handle((request, body) => operations.changeSession(request, body)));
   router.post('/logout', handle((request, body) => operations.logout(request, body)));
+  router.post('/profile', handle((request, body) => operations.updateProfile(request, body)));
   const accountDeletion = options.deleteAccountData ? createAccountDeletion({
     db, operations, store, codeSecret, now, cleanup: options.deleteAccountData,
   }) : null;

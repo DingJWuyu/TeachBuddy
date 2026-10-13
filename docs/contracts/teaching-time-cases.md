@@ -1,6 +1,6 @@
-# Teaching-time 契约用例
+# 班级教学与日程契约用例
 
-教学时间 v1 验收规格。字段只见 [OpenAPI](../../apps/api/src/contracts/teaching-time-v1.openapi.yaml)，下列是独立前后端可重放的交换预期，不是已跑过的产品测试。机器样本见 [samples.json](../../apps/api/test/fixtures/contracts/teaching-time-v1-samples.json)，每项注明 schema 和是否应接受；语义条件仍按本页与[契约入口](teaching-time.md)验证，JSON Schema 通过不代表跨字段/业务通过。
+班级教学与日程 v1 验收规格。字段只见 [OpenAPI](../../apps/api/src/contracts/teaching-time-v1.openapi.yaml)，下列是独立前后端可重放的交换预期，不是已跑过的产品测试。机器样本见 [samples.json](../../apps/api/test/fixtures/contracts/teaching-time-v1-samples.json)，每项注明 schema 和是否应接受；语义条件仍按本页与[契约入口](teaching-time.md)验证，JSON Schema 通过不代表跨字段/业务通过。
 
 ## 固定数据与执行方法
 

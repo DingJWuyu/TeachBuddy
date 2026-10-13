@@ -1,12 +1,14 @@
-# 个人数据、备份与恢复
+# 数据管理与恢复
+
+本页属于共享技术底座，维护资料包组装、恢复完整性与公共清理规则；各分区仍拥有自己的内容和删除操作。[工作台与设置](workbench.md)只提供相关操作入口。
 
 个人资料包是可阅读、可带走的资料；模块内的误删恢复保留原对象；部署备份用于停服后恢复整个实例。三者目的和格式不同，个人 ZIP 不能直接覆盖账户。
 
-手动导出、误删恢复、维护还原及旧身份撤销已有本地独立切片。设置不提供最近删除聚合、设备草稿、恢复隔离或备份说明 UI，见[设置边界](settings.md)；下文的底层保护继续有效。主题、背景、头像和语言的账户持久化由[账户外观](settings.md#账户外观与共享呈现)定义，周起点不在偏好接口内。
+手动导出、误删恢复、维护还原及旧身份撤销已有本地独立切片。设置不提供最近删除聚合、设备草稿、恢复隔离或备份说明 UI，见[设置边界](workbench.md#设置的有效边界)；下文的底层保护继续有效。主题、背景、头像和语言的账户持久化由[账户外观](workbench.md#账户外观与共享呈现)定义，周起点不在偏好接口内。
 
 ## 实现入口与格式
 
-- API：`apps/api/src/workbench/reliability/`，偏好 `apps/api/src/reliability/preferences.js`；Web `apps/web/src/features/reliability/`。
+- API：`apps/api/src/workbench/reliability/`；Web `apps/web/src/features/reliability/`。偏好行为及 API 归[工作台与设置](workbench.md#账户外观与共享呈现)。
 - 当前手动制品格式：`apps/api/src/workbench/reliability/archive.schema.json`；schema 装配 `schema.js`。未来可靠性设计源及固定引用保存在[待实现契约](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)，来源摘要见同目录 `provenance.json`；Agent 部分的接续仅在[Agent 规格](agent.md)。
 - 维护命令：`node apps/api/src/scripts/reliability.js --help`，提供 backup / restore / activate；实际运行参数以 CLI 为准。维护前固定停服、独占目录和原数据保全范围。
 - 认证离线操作：`apps/api/src/features/auth/recovery.js` 的 `prepareRestoredAuth`，外层不得自行拼认证表清理 SQL。
@@ -133,14 +135,6 @@ ZIP 根含 `manifest.json`、`index.html`（纯静态、无脚本）、`data/` J
 原路径未切换可正常启动原部署；路径已切换则先停候选，恢复原 DB/files/配置集合，再启动原部署。保留失败副本供诊断，不覆盖写回原库。一旦恢复库接受新写入，再切回旧库属于新的时间点恢复，须先保存新资料并由维护者明确选择；无自动跨库合并或跨账户重映射。
 
 这是时间点恢复：备份后账户创建、密码修改及业务写入不自动合并；启动前报告备份时间点和凭据回滚影响，教师用备份内密码重新登录原 accountKey。旧 Cookie、page/remembered/pending、备份后撤销或新签发凭据及旧挑战的拒绝语义沿认证契约，重新发码按既有流程。AUTH_CODE_SECRET 无须为清理而读取或轮换，密钥不变时旧 Cookie 仍须失效。旧页面在确认失效后锁定、同页重新准备登录及迟到响应隔离由原认证前端保证；recoveryId 继续只保护设备/Agent 的旧意图重放。
-
-
-
-## 外部 AI 衔接
-
-本节描述通用文本交接；数学工坊的网页协作按[数学规格](math.md#geogebra-数学画布与网页-ai)。
-
-从当前账户可见对象/草稿在客户端生成提问文本，老师预览后复制，使用白名单普通 HTTPS 外链并加 `noopener,noreferrer`；不把正文塞进 query、不内嵌或自动登录第三方网页、不共享 API 会话。成果由老师粘贴/上传，仍走原业务校验。外部 AI 默认目标的旧偏好设计不扩大当前设置 UI。
 
 ## 验证
 

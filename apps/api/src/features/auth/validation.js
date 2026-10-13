@@ -104,6 +104,7 @@ export function readClosedObject(body, schema) {
 }
 
 export const REQUEST_SCHEMAS = {
+  profile: { properties: { nickname: 'string' }, required: ['nickname'] },
   accountDeletion: {
     properties: { requestId: 'string', sessionId: 'string', email: 'string' },
     required: ['requestId', 'sessionId', 'email']
