@@ -88,13 +88,19 @@ export function nativeText(text, location) {
   }
   for (const [index, line] of lines.entries()) {
     if (answerHeading.test(line.text)) {
-      // An answer section can have introductory prose before restarting known
-      // question labels. A later new question label still ends an inline answer.
-      const following = lines.slice(index + 1);
+      // An answer section can introduce unknown answers before known labels.
+      // Evidence belongs to this heading only, never a later answer section.
+      const following = [];
+      for (const item of lines.slice(index + 1)) {
+        if (answerHeading.test(item.text)) break;
+        following.push(item);
+      }
       const next = following.find(item => item.text.trim());
-      const firstNumbered = following.find(item => questionStart.test(item.text))?.text.match(questionStart);
-      const resumesKnownLabel = firstNumbered && [...drafts, ...(group ? [group] : [])]
-        .some(item => questionLabel(item.title) === questionLabel(firstNumbered[1]));
+      const knownLabels = new Set([...drafts, ...(group ? [group] : [])].map(item => questionLabel(item.title)));
+      const resumesKnownLabel = following.some(item => {
+        const numbered = item.text.match(questionStart);
+        return numbered && knownLabels.has(questionLabel(numbered[1]));
+      });
       if (group && !answerSection && /^\s*(?:答案|解析|解答)\s*[:：]?\s*$/.test(line.text) && !questionStart.test(next?.text ?? "") && !resumesKnownLabel) {
         answer = true;
         group.answerStart ??= line.start;

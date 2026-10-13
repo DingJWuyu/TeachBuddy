@@ -148,6 +148,38 @@ test("question PNG keeps text and inline math on one normal line and answers in 
   e.complete();
 });
 
+test("answer section keeps leading unknown labels unassigned without crossing later answer headings", async t => {
+  const e = await environment(t);
+  for (const prefix of ["", "3. 原稿缺题的答案\n"]) {
+    const input = `1. 计算1+1。\n2. 计算2+2。\n答案：\n以下为各题答案。\n${prefix}1. 2\n2. 4`;
+    const created = await e.q("/imports", { title: "未知答案题号", origin: "", input: { kind: "text", text: input } });
+    assert.equal((await e.job(created.jobId)).state, "succeeded");
+    const result = await e.q(`/imports/${created.id}`, null, "GET");
+    await evidence(`answer-leading-${prefix ? "unknown" : "known"}.json`, Buffer.from(JSON.stringify(result, null, 2)));
+    assert.equal(result.drafts.length, 2);
+    assert.deepEqual(result.drafts.map(d => d.answerStatus), ["present", "present"]);
+    assert.deepEqual(result.drafts.map(d => d.solution.blocks[0].runs[0].text), ["2", "4"]);
+    assert.deepEqual(result.fragments.map(f => f.text), ["以下为各题答案。", ...(prefix ? ["原稿缺题的答案"] : [])]);
+    assert.ok(result.fragments.every(f => f.disposition === "unassigned"));
+    assert.equal(result.input.text, input);
+  }
+  for (const heading of ["参考答案", "答案："]) {
+    const input = `1. 计算1+1。\n答案：\n逐题非编号解答。\n2. 计算2+2。\n${heading}\n3. 原稿缺题的答案\n1. 2\n2. 4`;
+    const created = await e.q("/imports", { title: "独立答案标题边界", origin: "", input: { kind: "text", text: input } });
+    assert.equal((await e.job(created.jobId)).state, "succeeded");
+    const result = await e.q(`/imports/${created.id}`, null, "GET");
+    await evidence(`answer-boundary-${heading === "参考答案" ? "reference" : "plain"}.json`, Buffer.from(JSON.stringify(result, null, 2)));
+    assert.equal(result.drafts.length, 2, heading);
+    assert.deepEqual(result.drafts[1].body.blocks[0].runs, [
+      { type: "text", text: "计算" }, { type: "math", latex: "2+2" }, { type: "text", text: "。" },
+    ], heading);
+    assert.deepEqual(result.drafts.map(d => d.answerStatus), ["present", "present"], heading);
+    assert.deepEqual(result.fragments.map(f => f.text), ["原稿缺题的答案"], heading);
+    assert.ok(result.drafts[0].parts.filter(part => part.role === "solution").some(part => part.locations.some(location => [...input].slice(location.start, location.end).join("").includes("逐题非编号解答。"))), heading);
+  }
+  e.complete();
+});
+
 test("long paragraph PNG fragments retain every complete line including the tail", async t => {
   const e = await environment(t);
   const lines = Array.from({ length: 80 }, (_, index) => `第${String(index + 1).padStart(3, "0")}行：保留完整文字，不允许丢失末尾。`);
