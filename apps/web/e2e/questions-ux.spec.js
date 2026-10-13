@@ -229,6 +229,9 @@ test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({
   const list = page.locator('.q-list');
   await expect(list.locator('img')).toHaveCount(9);
   await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
   await list.hover();
   await page.mouse.wheel(0, 5000);
   await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
@@ -276,6 +279,8 @@ test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({
     await page.reload();
     await expect(list.locator('img')).toHaveCount(9);
     await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
+    await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
     await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(0);
     await expect(page.getByRole('heading', { name: '带图滚动 1', exact: true })).toBeVisible();
     const refreshed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
@@ -284,6 +289,144 @@ test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({
   } finally {
     held.forEach(request => request.release());
   }
+});
+
+for (const structure of ['表格', '列表']) test('嵌套' + structure + '图分批读取后保留原滚动', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1440, height: 680 });
+  for (let n = 1; n <= 9; n++) {
+    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await page.getByLabel('题目标题').fill('嵌套' + structure + ' ' + n);
+    await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
+    await page.getByRole('menuitem', { name: structure === '表格' ? '添加表格' : '添加选项或列表', exact: true }).click();
+    const chooser = page.waitForEvent('filechooser');
+    await page.locator(structure === '表格' ? '.q-edit-fields .material-table-scroll td' : '.q-edit-fields .material-list-item').first().getByRole('button', { name: '图片', exact: true }).click();
+    await (await chooser).setFiles({ name: 'nested-' + n + '.png', mimeType: 'image/png', buffer: await sharp({ create: { width: 600, height: 600, channels: 3, background: '#345678' } }).png().toBuffer() });
+    await expect(page.locator('.q-edit-fields img')).toBeVisible();
+    await page.getByRole('button', { name: '保存题目', exact: true }).click();
+    await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  }
+  const list = page.locator('.q-list');
+  await expect(list.locator('img')).toHaveCount(18);
+  await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  await list.hover(); await page.mouse.wheel(0, 300);
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  const before = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  let held = [];
+  await page.route('**/api/workbench/files/*/content', async route => {
+    await new Promise(resolve => held.push(resolve));
+    await route.continue();
+  });
+  try {
+    await page.reload();
+    await expect(page.locator('.q-list-entry')).toHaveCount(9);
+    await expect.poll(() => held.length).toBeGreaterThanOrEqual(19);
+    held.slice(9, 18).forEach(release => release());
+    await expect(list.locator('img')).toHaveCount(9);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const partial = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    held.forEach(release => release());
+    await expect(list.locator('img')).toHaveCount(18);
+    await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const after = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+    fs.writeFileSync(info.outputPath('nested-readback.json'), JSON.stringify({ structure, before, partial, after, held: held.length }, null, 2));
+    await expect(page.getByRole('heading', { name: '嵌套' + structure + ' 9', exact: true })).toBeVisible();
+    expect((await records()).every(question => question.body.blocks[0].type === (structure === '表格' ? 'table' : 'list'))).toBe(true);
+    await page.screenshot({ path: info.outputPath('nested-after.png') });
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(before.top);
+    await page.unroute('**/api/workbench/files/*/content');
+    await page.getByRole('button', { name: '复制改编', exact: true }).click();
+    await page.reload();
+    await expect(page.getByRole('region', { name: '原题对照' })).toBeVisible();
+    await expect(list.locator('img[data-image-state=ready]')).toHaveCount(18);
+    await page.getByRole('button', { name: '结束对照', exact: true }).click();
+    await expect(finder(page)).toBeVisible();
+    await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(before.top);
+  } finally { held.forEach(release => release()); }
+});
+
+test('图片失败终态后展开筛选不重新拉回旧位置', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1440, height: 680 });
+  for (let n = 1; n <= 9; n++) {
+    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await page.getByLabel('题目标题').fill('失败终态 ' + n);
+    await page.getByLabel('题干段落 1', { exact: true }).fill('题干 ' + n);
+    const chooser = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: '插入图片', exact: true }).click();
+    await (await chooser).setFiles({ name: 'failure-' + n + '.png', mimeType: 'image/png', buffer: await sharp({ create: { width: 600, height: 600, channels: 3, background: '#789abc' } }).png().toBuffer() });
+    await expect(page.locator('.q-edit-fields img')).toBeVisible();
+    await page.getByRole('button', { name: '保存题目', exact: true }).click();
+    await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  }
+  const list = page.locator('.q-list');
+  await expect(list.locator('img')).toHaveCount(9);
+  await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  await list.hover(); await page.mouse.wheel(0, 5000);
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  const before = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  const failureId = (await records()).find(question => question.title === '失败终态 1').body.blocks.find(block => block.type === 'image').fileId;
+  await page.route('**/api/workbench/files/*/content', route => {
+    if (route.request().url().endsWith('/' + failureId + '/content')) return route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/unavailable', title: 'Image unavailable', status: 503 }) });
+    return route.continue();
+  });
+  await page.reload();
+  await expect(list.locator('[data-image-state=failed]')).toBeVisible();
+  await expect(list.locator('img')).toHaveCount(8);
+  await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  await expect(list.locator('[data-image-state=loading]')).toHaveCount(0);
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  const failed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  await page.screenshot({ path: info.outputPath('failed-before-filter.png') });
+  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+  const expanded = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  fs.writeFileSync(info.outputPath('failed-readback.json'), JSON.stringify({ before, failed, expanded }, null, 2));
+  await page.screenshot({ path: info.outputPath('failed-after-filter.png') });
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(failed.top);
+  await page.unroute('**/api/workbench/files/*/content');
+  await page.reload();
+  await expect(list.locator('img[data-image-state=ready]')).toHaveCount(9);
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
+  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+  await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(failed.top);
+  const refreshed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
+  fs.writeFileSync(info.outputPath('failed-readback.json'), JSON.stringify({ before, failed, expanded, refreshed }, null, 2));
+});
+
+test('普通图片阅读成功、HTTP失败与无效图片都明确结束加载', async ({ page }, info) => {
+  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await page.getByLabel('题目标题').fill('共享图片终态验证');
+  await page.getByLabel('题干段落 1', { exact: true }).fill('失败时仍保留的题干内容');
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: '插入图片', exact: true }).click();
+  await (await chooser).setFiles({ name: 'valid.png', mimeType: 'image/png', buffer: await sharp({ create: { width: 600, height: 600, channels: 3, background: '#abc123' } }).png().toBuffer() });
+  await expect(page.locator('.q-edit-fields img')).toBeVisible();
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+  const reading = page.locator('.q-reading-body');
+  await expect(reading.locator('img[data-image-state=ready]')).toBeVisible();
+  const saved = await records();
+  await page.route('**/api/workbench/files/*/content', route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/unavailable', title: 'Image unavailable', status: 503 }) }));
+  await page.reload();
+  await expect(reading.locator('[data-image-state=failed]')).toBeVisible();
+  await expect(reading.locator('[data-image-state=loading]')).toHaveCount(0);
+  await expect(reading).toContainText('失败时仍保留的题干内容');
+  await page.unroute('**/api/workbench/files/*/content');
+  await page.route('**/api/workbench/files/*/content', route => route.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('invalid PNG bytes') }));
+  await page.reload();
+  await expect(reading.locator('[data-image-state=failed]')).toBeVisible();
+  await expect(reading.locator('[data-image-state=loading]')).toHaveCount(0);
+  await expect(reading).toContainText('失败时仍保留的题干内容');
+  await page.screenshot({ path: info.outputPath('invalid-image-terminal.png') });
+  await page.unroute('**/api/workbench/files/*/content');
+  await page.reload();
+  await expect(reading.locator('img[data-image-state=ready]')).toBeVisible();
+  expect(await reading.locator('img').evaluate(image => image.naturalWidth)).toBe(600);
+  expect(await records()).toEqual(saved);
+  fs.writeFileSync(info.outputPath('shared-image-record.json'), JSON.stringify(saved, null, 2));
+  await page.screenshot({ path: info.outputPath('valid-image-restored.png') });
 });
 
 test('空收录现场刷新不提示恢复，真实收录输入和新题草稿继续恢复', async ({ page }, info) => {

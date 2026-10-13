@@ -128,21 +128,33 @@ export default function MaterialsQuestionsPage({
   useEffect(() => {
     const node = listNode.current;
     if (!node || listState !== 'ready' || listRestored.current) return;
-    const expectedImages = items.filter(item => documentAssets(item.body).figures.length > 0).length;
+    const finder = node.parentElement;
     const observer = new ResizeObserver(restore);
+    const images = new MutationObserver(restore);
+    function disconnect() {
+      observer.disconnect();
+      images.disconnect();
+      finder.removeEventListener('transitionend', restore);
+    }
     function restore() {
-      if (listRestored.current) { observer.disconnect(); return; }
+      if (listRestored.current) { disconnect(); return; }
+      if (!node.getClientRects().length) return;
       node.scrollTop = initialListTop.current;
-      const images = [...node.querySelectorAll('.q-list-entry img')];
-      if (node.scrollTop === initialListTop.current && images.length === expectedImages && images.every(image => image.complete)) {
+      const filters = finder.querySelector('.q-filters')?.closest('.wb-module-presence');
+      const opening = editorRef.current.scene.filtersOpen && filters?.dataset.state !== 'open';
+      const moving = filters?.getAnimations().some(animation => animation.playState === 'running');
+      if (!node.querySelector('[data-image-state="loading"]') && !opening && !moving) {
         listRestored.current = true;
-        observer.disconnect();
+        disconnect();
+        patchScene({ listScroll: node.scrollTop });
       }
     }
     observer.observe(node);
     for (const child of node.children) observer.observe(child);
+    images.observe(finder, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-image-state', 'data-state'] });
+    finder.addEventListener('transitionend', restore);
     restore();
-    return () => observer.disconnect();
+    return disconnect;
   }, [listState, items, imports]);
   const unsupportedQuestion = value && scene.kind !== "import" && value.body
     ? questionDocuments(value).some(([, document]) => !supportedDocument(document))

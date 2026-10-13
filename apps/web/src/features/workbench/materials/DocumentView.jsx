@@ -18,12 +18,14 @@ export function ControlledImage({ fileId, alt, widthMm, onOpenFile }) {
   const { t } = useTranslation("workbench");
   const [source, setSource] = useState(null);
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     let active = true,
       url;
     const controller = new AbortController();
     setSource(null);
     setFailed(false);
+    setLoaded(false);
     if (!/^[0-9a-f-]{36}$/i.test(fileId ?? '')) {
       setFailed(true);
       return () => {};
@@ -48,9 +50,11 @@ export function ControlledImage({ fileId, alt, widthMm, onOpenFile }) {
       if (url) URL.revokeObjectURL(url);
     };
   }, [fileId]);
-  if (failed) return <span role="status">{t("图片暂时无法读取：")}{alt}</span>;
-  if (!source) return <span role="status">{t("正在读取图片")}</span>;
-  const image = <img src={source} alt={alt} style={{ width: `${widthMm}mm`, maxWidth: '100%' }} />;
+  if (failed) return <span role="status" data-image-state="failed">{t("图片暂时无法读取：")}{alt}</span>;
+  if (!source) return <span role="status" data-image-state="loading">{t("正在读取图片")}</span>;
+  const image = <img src={source} alt={alt} data-image-state={loaded ? 'ready' : 'loading'}
+    onLoad={() => setLoaded(true)} onError={() => setFailed(true)}
+    style={{ width: `${widthMm}mm`, maxWidth: '100%' }} />;
   return onOpenFile ? (
     <button
       type="button"
