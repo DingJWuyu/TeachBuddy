@@ -30,7 +30,7 @@ export function createAgent({ db, mutations, identity, trustedOrigins, operation
       const key = `${ref.kind}:${ref.id}:${ref.sectionId ?? ''}`;
       if (seen.has(key)) throw contractError(problems.invalidInput(`/body/references/${index}`, 'invalid-type'));
       seen.add(key);
-      const object = operations[ref.kind === 'question' ? 'getQuestion' : 'getLesson']({ principal, arguments: { id: ref.id } }).body;
+      const object = operations['getQuestion']({ principal, arguments: { id: ref.id } }).body;
       if (sending && (object.version !== ref.version || object.deletedAt !== null || (ref.sectionId && !object.sections.some(s => s.id === ref.sectionId)))) {
         throw agentError('reference-conflict', { field: `/body/references/${index}`, currentVersion: object.version });
       }

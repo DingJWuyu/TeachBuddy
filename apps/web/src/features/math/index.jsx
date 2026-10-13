@@ -8,7 +8,7 @@ import { useScene } from '../workbench/useScene.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
 import { readLocal, writeLocal, migrateLegacyLocal } from '../workbench/storage.js';
 import { ShellContext } from "../workbench/shellContext.js";
-import { MathTools, MathIntegration, MathUsageDetails } from "./Integration.jsx";
+import { MathTools, MathIntegration, MathTeachingFeedback } from "./Integration.jsx";
 import { uploadDraft } from "./uploadDraft.js";
 import { reselectDeviceFile } from '../workbench/deviceRequestStore.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
@@ -656,7 +656,7 @@ function MathSession({ transport, route }) {
       setSelected(0);
       setConflict(null);
       setMessage("");
-      patchView({ screen: 'editor', toolTab: 'objects', selectionKind: 'object', exportOpen: false, formulaMode: null, usageOpen: false });
+      patchView({ screen: 'editor', toolTab: 'objects', selectionKind: 'object', exportOpen: false, formulaMode: null, feedbackOpen: false });
     } catch (e) {
       if (epoch === generation.current) handleError(e);
     }
@@ -866,7 +866,7 @@ function MathSession({ transport, route }) {
       return;
     }
     if (!pending && permanent && !await confirm(
-      t("彻底删除“{{title}}”？作品及历史版本将无法恢复。已有备课中采用的内容和已下载文件仍保留。", { title: target.title }),
+      t("彻底删除“{{title}}”？作品及历史版本将无法恢复。已下载文件仍保留。", { title: target.title }),
       { title: t("彻底删除作品"), confirmLabel: t("彻底删除") },
     )) return;
     const epoch = generation.current;
@@ -989,7 +989,7 @@ function MathSession({ transport, route }) {
     }
     if (draftRef.current?.source.kind === 'workshop' && (draftRef.current.source.formulas.length || draftRef.current.source.graph) && liveSave.current.status !== '已保存') { if (!await save()) return; }
     if (!hasContent(draftRef.current) && !pending && !busy) { setDraft(null); draftRef.current = null; }
-    patchView({ screen: 'home', exportOpen: false, usageOpen: false });
+    patchView({ screen: 'home', exportOpen: false, feedbackOpen: false });
     if (route?.workId) shell?.navigate('/math');
     setMessage('');
     if (shell?.panelMode === 'math-tools') shell.closePanel();
@@ -1105,7 +1105,7 @@ function MathSession({ transport, route }) {
     <input ref={importFile} type="file" accept=".html,.htm,text/html" hidden onChange={event => { const file = event.target.files[0]; event.target.value = ''; if (file) void importHtml(file); }}/>
     <input ref={sourceFile} type="file" accept=".json,application/json" hidden onChange={event => { const file = event.target.files[0]; event.target.value = ''; if (file) void importSource(file); }}/>
     {message && <div className="mw-notice" role="alert">{message}{pending && <button disabled={busy} onClick={() => save()}>{t('确认操作结果')}</button>}</div>}
-    {shell && <MathIntegration work={draft} saved={status === '已保存'} busy={busy} onError={handleError} client={client}/>}
+    {shell && <MathIntegration/>}
     <WorkspaceHome accountKey={account} client={client} items={items} search={search} deleted={deleted} busy={busy || !!pending} onSearch={setSearch} onDeleted={setDeleted} onNew={request => newDraft('workshop', typeof request === 'string' ? request : null)} onOpen={open} onImport={() => importFile.current.click()} onImportSource={() => sourceFile.current.click()} onRestore={item => deletion(false, item)} onPurge={item => deletion(true, item)}/>
   </div>;
   if (!home && draft?.source.kind === 'workshop') return <WorkshopWorkspace takeAssistantRequest={takeAssistantRequest} key={editorSession} draft={draft} accountKey={account} busy={busy} pending={pending} status={status} message={message} conflictNotice={conflictNotice} flushRef={ggbFlush} client={shell ? client : null}
@@ -1132,7 +1132,7 @@ function MathSession({ transport, route }) {
           {!home && <WorkspaceToolbar draft={draft} busy={busy} readOnly={readOnly} pending={pending} empty={!hasContent(draft)}
             exportOpen={!!viewScene.exportOpen} onHome={goHome} onSave={() => save()} onCopy={() => save(true)}
             onHistory={() => setHistoryOpen(true)} onDynamic={makeDynamicCopy}
-            onDelete={() => deletion()} onPurge={() => deletion(true)} onExport={() => patchView({ exportOpen: !viewScene.exportOpen })} onUsage={() => patchView({ usageOpen: !viewScene.usageOpen })}/>}
+            onDelete={() => deletion()} onPurge={() => deletion(true)} onExport={() => patchView({ exportOpen: !viewScene.exportOpen })} onFeedback={() => patchView({ feedbackOpen: !viewScene.feedbackOpen })}/>}
           <input ref={importFile} type="file" accept=".html,.htm" aria-label={t("导入 HTML 文件")} hidden onChange={e => { importHtml(e.target.files[0]); e.target.value = ''; }}/>
           <input ref={sourceFile} type="file" accept=".json,application/json" aria-label={t("导入制作源文件")} hidden onChange={e => { importSource(e.target.files[0]); e.target.value = ''; }}/>
           {importPending && <button disabled={busy} onClick={() => importHtml()}>{importPending.requiresReselection ? t("重选原文件并确认上传") : t("重试原文件上传")}</button>}
@@ -1148,13 +1148,7 @@ function MathSession({ transport, route }) {
           </div>}
         </div>}
         {shell && (
-          <MathIntegration
-            work={home ? null : draft}
-            saved={status === "已保存" && !pending}
-            busy={busy}
-            client={client}
-            onError={handleError}
-          />
+          <MathIntegration/>
         )}
         {fontError && (
           <div role="alert" className="math-message">
@@ -1235,7 +1229,7 @@ function MathSession({ transport, route }) {
             </svg>
           </button>
         </div>}
-        {!home && shell && draft?.id && <ModulePresence present={!!viewScene.usageOpen} mode="collapse"><MathUsageDetails work={draft}/></ModulePresence>}
+        {!home && shell && draft?.id && <ModulePresence present={!!viewScene.feedbackOpen} mode="collapse"><MathTeachingFeedback work={draft}/></ModulePresence>}
         <div className={`math-canvas${home ? ' is-home' : ''}`} ref={canvasScroll.ref} onScroll={event => { canvasScroll.onScroll(event); if (!home) patchView({ canvasLeft: event.currentTarget.scrollLeft }); }}>
           {home ? <WorkspaceHome draft={hasContent(draft) ? draft : null} status={status} items={items} search={search} deleted={deleted} busy={busy || !!pending} onRestore={item => deletion(false, item)} onPurge={item => deletion(true, item)}
             onSearch={setSearch} onDeleted={setDeleted} onNew={newDraft} onOpen={item => draft?.id === item.id ? resume() : open(item)} onResume={resume} onDiscard={discard} onImport={() => importFile.current.click()} onImportSource={() => sourceFile.current.click()}/>

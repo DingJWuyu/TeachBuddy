@@ -33,7 +33,7 @@ export function assertProblem(response, status, type) {
   return response.body;
 }
 
-const FAULT_TABLES = ['question_items', 'lesson_items', 'lesson_sections', 'lesson_references'];
+const FAULT_TABLES = ['question_items'];
 
 export async function createFirstFlowHarness(options = {}) {
   // Tests may hand in a database that already holds a previous-stage schema and
@@ -251,26 +251,6 @@ export function variantCopySample(baseVersion, overrides = {}) {
     },
     note: '',
     starred: false,
-    ...overrides
-  };
-}
-
-export function lessonSample(overrides = {}) {
-  return {
-    title: '二次函数的最值',
-    intro: { version: 1, blocks: [] },
-    sections: [],
-    materials: [],
-    ...overrides
-  };
-}
-
-export function sectionInput(sectionId, overrides = {}) {
-  return {
-    id: sectionId,
-    title: '例题讨论',
-    content: { version: 1, blocks: [] },
-    references: [],
     ...overrides
   };
 }

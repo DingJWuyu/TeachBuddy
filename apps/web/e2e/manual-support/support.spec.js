@@ -21,28 +21,7 @@ test.afterEach(async ({ context }, info) => {
   else console.error(`保留失败现场: ${directory}`);
 });
 
-test('两标签页备课输入刷新后各自恢复', async ({ page, context }) => {
-  await page.locator('a[href^="/lessons"]').first().click();
-  await page.getByRole('button', { name: '新建备课', exact: true }).click();
-  await page.getByLabel('课题', { exact: true }).fill('标签甲独立草稿');
-  const second = await context.newPage();
-  await second.goto(page.url());
-  await expect(second.getByLabel('课题', { exact: true })).toHaveValue('标签甲独立草稿');
-  await second.getByLabel('课题', { exact: true }).fill('标签乙独立草稿');
-  await page.reload();
-  await expect(page.getByLabel('课题', { exact: true })).toHaveValue('标签甲独立草稿');
-  await second.reload();
-  await expect(second.getByLabel('课题', { exact: true })).toHaveValue('标签乙独立草稿');
-  await second.close();
-});
-
-test('切换模块返回备课编辑现场，数学双标签页草稿独立', async ({ page, context }) => {
-  await page.locator('a[href^="/lessons"]').first().click();
-  await page.getByRole('button', { name: '新建备课', exact: true }).click();
-  await page.getByLabel('课题', { exact: true }).fill('跨模块返回现场');
-  await page.locator('a[href^="/questions"]').first().click();
-  await page.locator('a[href^="/lessons"]').first().click();
-  await expect(page.getByLabel('课题', { exact: true })).toHaveValue('跨模块返回现场');
+test('数学双标签页草稿独立', async ({ page, context }) => {
   await page.locator('a[href^="/math"]').first().click();
   await page.getByRole('button', { name: '新建公式', exact: true }).first().click();
   await page.getByLabel('作品名称').fill('数学甲草稿');
@@ -271,29 +250,4 @@ test('数学 HTML 上传重开后校验原文件并以原键确认', async ({ pa
   expect((await replay).headers()['idempotency-key']).toBe(key);
   await expect(page.getByLabel('作品名称')).toHaveValue('课堂演示.html');
   await expect(page.getByRole('button', { name: '重选原文件并确认上传' })).toHaveCount(0);
-});
-
-test('返回备课标签页读取最新内容，有本地修改时只显示对照', async ({ page, context }) => {
-  await page.locator('a[href^="/lessons"]').first().click();
-  await page.getByRole('button', { name: '新建备课', exact: true }).click();
-  await page.getByLabel('课题', { exact: true }).fill('前台刷新基线');
-  await page.getByRole('button', { name: '保存备课', exact: true }).click();
-  await expect(page.locator('[data-save-status]')).toHaveAttribute('data-save-status', /clean|saved/);
-  const second = await context.newPage(); await second.goto(page.url());
-  await second.getByLabel('课题', { exact: true }).fill('另一标签的第一版');
-  await second.getByRole('button', { name: '保存备课', exact: true }).click();
-  await expect(second.locator('[data-save-status]')).toHaveAttribute('data-save-status', /clean|saved/);
-  await page.bringToFront();
-  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-  await expect(page.getByLabel('课题', { exact: true })).toHaveValue('另一标签的第一版');
-  await page.getByLabel('课题', { exact: true }).fill('当前标签未保存稿');
-  await second.bringToFront();
-  await second.getByLabel('课题', { exact: true }).fill('另一标签的第二版');
-  await second.getByRole('button', { name: '保存备课', exact: true }).click();
-  await expect(second.locator('[data-save-status]')).toHaveAttribute('data-save-status', /clean|saved/);
-  await page.bringToFront();
-  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-  await expect(page.getByLabel('课题', { exact: true })).toHaveValue('当前标签未保存稿');
-  await expect(page.locator('[data-region="conflict"]')).toBeVisible();
-  await second.close();
 });

@@ -1,5 +1,5 @@
 // T51 migration coverage: the classes migration applies on top of the existing
-// B16 database (questions/lessons/accounts/layout untouched) and on an empty
+// B16 database (questions/accounts/layout untouched) and on an empty
 // database. The composition override is the T51 fixture; T53 will register the
 // module in the product map and rerun this on the integrated candidate.
 import assert from 'node:assert/strict';
@@ -29,7 +29,7 @@ function questionBody() {
   };
 }
 
-test('classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数据保持可读', async () => {
+test('classes 迁移在 B16 旧库上增量应用，原题目与账户数据保持可读', async () => {
   const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 't51-migration-'));
   const sqlitePath = path.join(rootDir, 'workbench.sqlite');
   const baseEnv = createEnv({
@@ -62,12 +62,6 @@ test('classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数
     .send(body);
 
   const question = await write('post', '/api/modules/questions/items', questionBody()).expect(201);
-  const lesson = await write('post', '/api/modules/lessons/items', {
-    title: '迁移前就存在的备课',
-    intro: { version: 1, blocks: [] },
-    sections: [],
-    materials: []
-  }).expect(201);
   const baseMigrations = base.workbench.migrations.appliedIds().filter((id) => id.startsWith('classes_'));
   assert.deepEqual(baseMigrations, [], 'the B16-only composition has no classes migration');
   await base.dataStore.close();
@@ -78,14 +72,11 @@ test('classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数
     const applied = harness.query("SELECT id FROM workbench_migrations WHERE id LIKE 'classes_%'");
     assert.deepEqual(applied.map((row) => row.id), ['classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content']);
     assert.equal(harness.countRows('question_items'), 1);
-    assert.equal(harness.countRows('lesson_items'), 1);
 
     const api = harness.agent(harness.createAccount('teacher-a'));
     const questionAfter = await api.get(`/api/modules/questions/items/${question.body.id}`).expect(200);
     assert.equal(questionAfter.body.title, '迁移前就存在的题');
     assert.equal(questionAfter.body.version, 1);
-    const lessonAfter = await api.get(`/api/modules/lessons/items/${lesson.body.id}`).expect(200);
-    assert.equal(lessonAfter.body.title, '迁移前就存在的备课');
 
     const classroom = await api.post('/api/modules/classes/items', { name: '高一(1)班' }, { key: harness.nextUuid() }).expect(201);
     const record = await api.post('/api/modules/classes/records', {
@@ -96,9 +87,9 @@ test('classes 迁移在 B16 旧库上增量应用，原题目/备课与账户数
       unfinished: '',
       commonIssues: '',
       nextNote: '',
-      sources: [{ kind: 'lesson', id: lesson.body.id }]
+      sources: [{ kind: 'question', id: question.body.id }]
     }, { key: harness.nextUuid() }).expect(201);
-    assert.equal(record.body.sources[0].labelAtLink, '迁移前就存在的备课');
+    assert.equal(record.body.sources[0].labelAtLink, '迁移前就存在的题');
 
     // A restart on the same file re-reads both the old and the new data.
     await harness.restart();

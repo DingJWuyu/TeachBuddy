@@ -1,6 +1,5 @@
 // WB-019 storage migration coverage: the module runner must give a fresh
-// database and a previous-stage account/layout database the same questions and
-// lessons tables, keep the old rows, and never repeat an applied migration ID.
+// database and a previous-stage account/layout database the same question tables, keep the old rows, and never repeat an applied migration ID.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -9,14 +8,11 @@ import test from 'node:test';
 import { createDataStore } from '../src/core/dataStore.js';
 import {
   createFirstFlowHarness,
-  lessonSample,
-  manualQuestionSample,
-  sectionInput
+  manualQuestionSample
 } from './first-flow-harness.js';
 
 const QUESTIONS = '/api/modules/questions/items';
-const LESSONS = '/api/modules/lessons/items';
-const MIGRATION_IDS = ['agent_001_conversations', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'lessons_0001_lesson_tables', 'lessons_0003_order', 'lessons_0004_history_and_placement', 'lessons_0005_page_source', 'lessons_materials_001', 'materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'math_001', 'questions_0001_question_items', 'questions_materials_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications', 'workbench_navigation_001'];
+const MIGRATION_IDS = ['agent_001_conversations', 'classes_0001_class_tables', 'classes_0002_removed_objects', 'classes_0003_next_note_visibility', 'classes_0004_record_content', 'materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'math_001', 'questions_0001_question_items', 'questions_materials_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_reminders_0001_notifications', 'workbench_navigation_001', 'workbench_retirement_001_lessons'];
 
 function appliedMigrations(harness) {
   return harness
@@ -30,11 +26,11 @@ function tableNames(harness) {
     .map((row) => row.name);
 }
 
-test('WB-019: a fresh database applies both module migrations once and survives restart', async () => {
+test('WB-019: a fresh database applies module migrations once and survives restart', async () => {
   const harness = await createFirstFlowHarness();
   try {
     assert.deepEqual(appliedMigrations(harness), MIGRATION_IDS);
-    for (const table of ['question_items', 'lesson_items', 'lesson_sections', 'lesson_references']) {
+    for (const table of ['question_items']) {
       assert.ok(tableNames(harness).includes(table), `${table} exists after migration`);
     }
 
@@ -81,7 +77,7 @@ test('WB-019: a previous-stage account and layout database upgrades without losi
 
     harness = await createFirstFlowHarness({ databasePath: sqlitePath });
     assert.deepEqual(appliedMigrations(harness), MIGRATION_IDS);
-    for (const table of ['question_items', 'lesson_items', 'lesson_sections', 'lesson_references']) {
+    for (const table of ['question_items']) {
       assert.ok(tableNames(harness).includes(table), `${table} exists after upgrade`);
     }
 
@@ -102,16 +98,9 @@ test('WB-019: a previous-stage account and layout database upgrades without losi
     const question = (
       await api.post(QUESTIONS, manualQuestionSample(), { key: harness.nextUuid() }).expect(201)
     ).body;
-    const lesson = (
-      await api.post(LESSONS, lessonSample({ sections: [sectionInput(harness.nextUuid())] }), {
-        key: harness.nextUuid()
-      }).expect(201)
-    ).body;
-
     await harness.restart();
     assert.deepEqual(appliedMigrations(harness), MIGRATION_IDS, 'the upgraded database is not re-migrated');
     assert.equal((await api.get(`${QUESTIONS}/${question.id}`).expect(200)).body.version, 1);
-    assert.equal((await api.get(`${LESSONS}/${lesson.id}`).expect(200)).body.version, 1);
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM users'), 1, 'the old account row is untouched');
     assert.equal(harness.count('SELECT COUNT(*) AS count FROM workspaceLayouts'), 1);
   } finally {

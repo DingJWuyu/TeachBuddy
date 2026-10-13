@@ -32,7 +32,7 @@ async function upload(client,source) {
   assert.equal(response.status,201,response.text);return response.json;
 }
 
-test('official MinerU typed mathematics and table eq survive HTTP persistence, adoption and question extraction',async()=> {
+test('official MinerU typed mathematics and table eq survive HTTP persistence and question extraction',async()=> {
   const directory=fs.mkdtempSync(path.join(os.tmpdir(),'mineru-recognition-'));
   let world,passed=false;
   const recognizer={revision:'mineru-pro-2605/document-6',async run({width,height}) {
@@ -81,11 +81,7 @@ test('official MinerU typed mathematics and table eq survive HTTP persistence, a
         assert.deepEqual(material.fragments[0].document,{version:2,blocks:[page.document.blocks.find(block=>block.type==='table')]});
         const resource=await write(client,'/api/modules/resources/items',{title:'固定活动页',fileId:file.id,folderId:null,tagIds:[],note:''});
         assert.equal(resource.status,201,resource.text);
-        const lesson=await write(client,'/api/modules/lessons/v3',{title:'识别内容采用',intro:{version:2,blocks:[]},sections:[],materials:[]});
-        const adopted=await write(client,`/api/modules/lessons/v3/${lesson.json.id}/sections/adopt-page`,{
-          baseVersion:lesson.json.version,resourceId:resource.json.id,resourceVersion:resource.json.version,fileId:file.id,
-          renditionFileId:preview.renditionFileId,page:1,resultId:page.resultId,title:'活动页',content:page.document});
-        assert.equal(adopted.status,200,adopted.text);
+
       }
       results.push({endpoint,query,page});
     }

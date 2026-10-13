@@ -65,9 +65,7 @@ export function Library({
   onUpload,
   onFolders,
   foldersOpen,
-  onPickResources,
   onOrganize,
-  onAddToLesson,
 }) {
   const { t } = useTranslation("resources");
   const selectionRef = useRef(null);
@@ -87,7 +85,7 @@ export function Library({
       observer.disconnect();
       workspace.style.removeProperty("--res-selection-height");
     };
-  }, [scene.selectionMode, Boolean(onPickResources), scene.openId, listRef]);
+  }, [scene.selectionMode, scene.openId, listRef]);
   const deleted = scene.state === "deleted";
   const filtered = Boolean(
     scene.q || scene.folderId || scene.mediaType || scene.tagIds.length,
@@ -170,7 +168,7 @@ export function Library({
         {!firstVisit && (
           <>
             <div className="res-browser-toolbar">
-              {items.length > 0 && !onPickResources && (
+              {items.length > 0 && (
                 <button
                   aria-pressed={Boolean(scene.selectionMode)}
                   onClick={() =>
@@ -432,9 +430,7 @@ export function Library({
                     </span>
                   )}
                 </button>
-                {(onPickResources
-                  ? !resource.deletedAt
-                  : scene.selectionMode) && (
+                {scene.selectionMode && (
                   <label className="res-pick">
                     <input
                       type="checkbox"
@@ -487,7 +483,7 @@ export function Library({
                           ? t("试试其他关键词，或清除筛选条件。")
                           : deleted
                             ? t("归档的资料会出现在这里，可以恢复或彻底删除。")
-                            : t("上传课件、文档或图片，随时预览，也可以加入备课。")}
+                            : t("上传课件、文档或图片，随时预览和整理。")}
                   </p>
                   {filtered ? (
                     <button onClick={clear}>{t("清除筛选")}</button>
@@ -504,7 +500,7 @@ export function Library({
             </div>
           )}
         </div>
-        {(onPickResources || scene.selectionMode) && (
+        {scene.selectionMode && (
           <div className="res-selection" ref={selectionRef}>
             <span>{t("已选")} {scene.selected.length} {t("份")}</span>
             <button
@@ -516,47 +512,24 @@ export function Library({
               }
             > {t("选择当前结果")}{items.length > 100 ? t("前 100 份") : ""}
             </button>
-            {onPickResources ? (
-              <button
-                className="res-primary"
-                onClick={() =>
-                  onPickResources(
-                    scene.selected
-                      .map((id) =>
-                        allItems.find(
-                          (item) => item.id === id && !item.deletedAt,
-                        ),
-                      )
-                      .filter(Boolean),
-                  )
-                }
-              > {t("采用所选资料")} </button>
-            ) : (
+            {!deleted && (
               <>
-                {!deleted && (
-                  <>
-                    <button
-                      disabled={busy || !scene.selected.length}
-                      onClick={() => onOrganize("move")}
-                    > {t("移动")} </button>
-                    <button
-                      disabled={busy || !scene.selected.length}
-                      onClick={() => onOrganize("add-tags")}
-                    > {t("添加标签")} </button>
-                    <button
-                      disabled={busy || !scene.selected.length}
-                      onClick={onAddToLesson}
-                    > {t("加入备课")} </button>
-                  </>
-                )}
                 <button
                   disabled={busy || !scene.selected.length}
-                  onClick={() => onOrganize(deleted ? "restore" : "archive")}
-                >
-                  {deleted ? t("恢复") : t("归档")}
-                </button>
+                  onClick={() => onOrganize("move")}
+                > {t("移动")} </button>
+                <button
+                  disabled={busy || !scene.selected.length}
+                  onClick={() => onOrganize("add-tags")}
+                > {t("添加标签")} </button>
               </>
             )}
+            <button
+              disabled={busy || !scene.selected.length}
+              onClick={() => onOrganize(deleted ? "restore" : "archive")}
+            >
+              {deleted ? t("恢复") : t("归档")}
+            </button>
             <button
               onClick={() => patchScene({ selected: [], selectionMode: false })}
             > {t("取消选择")} </button>

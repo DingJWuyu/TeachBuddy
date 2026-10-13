@@ -35,7 +35,7 @@ export function DataManagement({ accountActions, dangerActions }) {
   const mounted = useRef(true);
   async function run({ key, payload }) {
     const allowed =
-      /^\/api\/modules\/(questions\/v2\/(items|imports)|lessons\/v3|resources\/items|math\/v1\/works|classes\/(items|v2\/records)|schedule\/entries)\/[0-9a-f-]{36}\/deletion$/.test(
+      /^\/api\/modules\/(questions\/v2\/(items|imports)|resources\/items|math\/v1\/works|classes\/(items|v2\/records)|schedule\/entries)\/[0-9a-f-]{36}\/deletion$/.test(
         payload.path,
       ) || payload.path === `${base}/exports`;
     if (!allowed) throw new Error(t("无法识别待确认请求，原始内容仍保留。"));

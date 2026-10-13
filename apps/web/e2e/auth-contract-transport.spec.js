@@ -1,5 +1,5 @@
 /*
- * Transport and protected-request seam: the fifteen workbench operations, the
+ * Transport and protected-request seam: the workbench operations, the
  * page header, source/protection rejection, cross-origin attempts and the
  * logout exchange.
  */
@@ -66,20 +66,20 @@ async function signIn(page, query = '') {
   await expect(page.locator('[data-harness-nickname]')).toHaveText(TEACHER.nickname);
 }
 
-test('15 个受保护操作都携带当前页面头并保留 body 与 Idempotency-Key（C19）', async ({ page }) => {
+test('受保护操作都携带当前页面头并保留 body 与 Idempotency-Key（C19）', async ({ page }) => {
   await signIn(page);
   await page.locator('[data-harness-run-all]').click();
   await expect
     .poll(async () => (await page.locator('[data-harness-results]').textContent()).split('\n').filter(Boolean).length, {
       timeout: 15_000,
     })
-    .toBe(15);
+    .toBe(WORKBENCH_OPERATIONS.length);
   const results = (await page.locator('[data-harness-results]').textContent()).split('\n');
   expect(results).toEqual(WORKBENCH_OPERATIONS.map((operation) => `${operation.id}:${operation.status}`));
 
   const workbenchRequests = (await requestsFor(PORT, {}))
     .filter((request) => request.path.startsWith('/api/workbench') || request.path.startsWith('/api/modules'));
-  expect(workbenchRequests).toHaveLength(15);
+  expect(workbenchRequests).toHaveLength(WORKBENCH_OPERATIONS.length);
 
   const pageIds = new Set(workbenchRequests.map((request) => request.page));
   expect(pageIds.size).toBe(1);
@@ -333,14 +333,13 @@ test('退出失败（已回滚）保留现场可重试，不锁业务（O02）',
   await expect(page.getByRole('heading', { name: '登录' })).toBeVisible();
 });
 
-test('受保护操作清单与工作台契约的 operationId 一致（15 个）', () => {
+test('受保护操作清单与工作台契约的 operationId 一致', () => {
   const openapi = fs.readFileSync(
     path.join(REPO_ROOT, 'apps/api/src/contracts/workbench.openapi.yaml'),
     'utf8',
   );
   const declared = [...openapi.matchAll(/operationId: (\w+)/g)].map((match) => match[1]);
-  expect(declared).toHaveLength(15);
+  expect(declared).toHaveLength(WORKBENCH_OPERATIONS.length);
   expect(new Set(declared)).toEqual(new Set(WORKBENCH_OPERATIONS.map((operation) => operation.id)));
-  expect(WORKBENCH_OPERATIONS).toHaveLength(15);
-  expect(WORKBENCH_OPERATIONS.filter((operation) => operation.method !== 'GET')).toHaveLength(7);
+  expect(WORKBENCH_OPERATIONS.filter((operation) => operation.method !== 'GET')).toHaveLength(4);
 });

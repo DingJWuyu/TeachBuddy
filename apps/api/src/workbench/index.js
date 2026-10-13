@@ -1,3 +1,4 @@
+import { retirementMigrations } from './retire-lessons.js';
 import { createNavigationRouter, navigationMigrations } from './navigation.js';
 import { createReliability } from './reliability/index.js';
 import { migrations as reliabilityMigrations, acquireLock } from './reliability/storage.js';
@@ -46,7 +47,7 @@ export function assertFoundationRuntime(env) {
     workbench: env.workbench ?? {},
   });
   if (env.nodeEnv === "production" && Object.values(env.workbench?.jobHandlers ?? {}).some(handler => handler?.fixture))
-    throw new Error("Materials production startup requires preview, extraction, export and question-asset handlers; fixture handlers are forbidden.");
+    throw new Error("Materials production startup requires preview, extraction and question-asset handlers; fixture handlers are forbidden.");
 }
 
 export function createWorkbench({
@@ -183,7 +184,7 @@ export function createWorkbench({
     initialization ??= (async () => {
       await loader.discover();
       const migrationResult = migrations.run(
-        [...fileMigrations, ...jobMigrations, ...recognitionMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...navigationMigrations, ...loader.moduleMigrations()],
+        [...fileMigrations, ...jobMigrations, ...recognitionMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...navigationMigrations, ...loader.moduleMigrations(), ...retirementMigrations],
         {
           knownModuleIds: [
             "reliability",
@@ -192,6 +193,7 @@ export function createWorkbench({
             "materials-recognition",
             "reliability-preferences",
             "workbench-navigation",
+            "workbench-retirement",
             ...catalog.map((entry) => entry.id),
           ],
         },
@@ -208,11 +210,10 @@ export function createWorkbench({
         ...files.jobHandlers,
         ...recognition.jobHandlers,
         ...loader.get("questions")?.jobHandlers,
-        ...loader.get("lessons")?.jobHandlers,
         ...workbenchEnv.jobHandlers,
       };
       if (env.nodeEnv === "production") {
-        for (const kind of ["preview", "extraction", "export", "question-asset"]) {
+        for (const kind of ["preview", "extraction", "question-asset"]) {
           if (typeof handlers[kind]?.run !== "function" || handlers[kind].fixture)
             throw new Error(`Materials production startup requires ${kind} handler.`);
         }

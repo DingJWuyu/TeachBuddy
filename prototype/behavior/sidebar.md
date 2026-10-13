@@ -57,4 +57,4 @@ J17：教师把模块放进一个已经空了的分组。
 
 ## Evidence
 
-当前截图、复现步骤、断言结果及覆盖缺口见 [工作台场景覆盖](workbench-scenarios.md#侧栏)。
+当前验证入口与历史证据边界见 [工作台场景覆盖](workbench-scenarios.md)。

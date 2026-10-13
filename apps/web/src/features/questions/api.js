@@ -55,11 +55,3 @@ export async function listDerivatives(id, { state = 'active' } = {}) {
   const { body } = await workbenchGet(`/api/modules/questions/items/${id}/copies${buildQuery({ state })}`);
   return assertList(body);
 }
-
-export async function listQuestionUsages(id) {
-  const { body } = await workbenchGet(`/api/modules/lessons/question-usages/${id}`);
-  if (!body || !Array.isArray(body.items)) {
-    throw new WorkbenchError(unexpectedSuccessProblem(t("使用位置结果无法识别")));
-  }
-  return body.items;
-}

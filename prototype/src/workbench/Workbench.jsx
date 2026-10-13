@@ -1,14 +1,13 @@
 // A single agreed layout in the existing source prototype. No variant switcher.
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "../icons.jsx";
-import { CALENDAR_PATH, HOME_PATH, modulePath, navigate } from "../routes.js";
+import { CALENDAR_PATH, HOME_PATH, navigate } from "../routes.js";
 import { EmptyPage, UnknownPage } from "../pages.jsx";
 import { useWorkspace } from "./context.js";
 import { CLASSES } from "./data.js";
-import { Button, Empty, Graph, IconButton, QuestionContent } from "./ui.jsx";
+import { Button, IconButton } from "./ui.jsx";
 import BankPage from "./BankPage.jsx";
-import PreparationPage from "./PreparationPage.jsx";
-import ResourcesPage, { ResourceCover } from "./ResourcesPage.jsx";
+import ResourcesPage from "./ResourcesPage.jsx";
 import TeachingPage from "./TeachingPage.jsx";
 import StudioPage from "./StudioPage.jsx";
 import SchedulePage, { ScheduleTools } from "./SchedulePage.jsx";
@@ -210,62 +209,6 @@ function ResourceTools() {
     />
   );
 }
-function PrepTools() {
-  const w = useWorkspace();
-  const [activeBlock, setActiveBlock] = useState(null);
-  const lesson = w.lessons.find((item) => item.id === w.lessonId);
-  function goToBlock(id) {
-    setActiveBlock(id);
-    const element = document.getElementById("wb-block-" + id);
-    const parent = element?.closest(".wb-prep-scroll");
-    if (parent)
-      parent.scrollTo({
-        top:
-          element.getBoundingClientRect().top -
-          parent.getBoundingClientRect().top +
-          parent.scrollTop -
-          20,
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "instant"
-          : "smooth",
-      });
-  }
-  return (
-    <>
-      <div className="wb-section-head">
-        <strong>我的备课</strong>
-      </div>
-      {w.lessons.map((item) => (
-        <button
-          key={item.id}
-          className={
-            "wb-nav-item" + (item.id === w.lessonId ? " is-active" : "")
-          }
-          onClick={() => w.setLessonId(item.id)}
-        >
-          <Icon name="lessons" size={17} />
-          <span>{item.title}</span>
-        </button>
-      ))}
-      <div className="wb-tool-divider" />
-      <div className="wb-section-head">
-        <strong>本课大纲</strong>
-      </div>
-      {lesson.blocks.map((block, index) => (
-        <button
-          key={block.id}
-          className={
-            "wb-nav-item" + (activeBlock === block.id ? " is-active" : "")
-          }
-          onClick={() => goToBlock(block.id)}
-        >
-          <small>{String(index + 1).padStart(2, "0")}</small>
-          <span>{block.title}</span>
-        </button>
-      ))}
-    </>
-  );
-}
 function ClassTools() {
   const w = useWorkspace();
   return (
@@ -283,30 +226,6 @@ function ClassTools() {
           <span>{name}</span>
         </button>
       ))}
-      <div className="wb-tool-divider" />
-      <div className="wb-section-head">
-        <strong>相关备课</strong>
-      </div>
-      {w.lessons
-        .filter((lesson) =>
-          w.records.some(
-            (record) =>
-              record.className === w.className && record.lesson === lesson.id,
-          ),
-        )
-        .map((lesson) => (
-          <button
-            className="wb-nav-item"
-            key={lesson.id}
-            onClick={() => {
-              w.setLessonId(lesson.id);
-              navigate(modulePath("prep"));
-            }}
-          >
-            <Icon name="lessons" size={17} />
-            <span>{lesson.title}</span>
-          </button>
-        ))}
     </>
   );
 }
@@ -437,7 +356,7 @@ function Agent({ home, context, returnPath }) {
             id="wb-agent-input"
             aria-label="向教学助理提问"
             rows={3}
-            placeholder="聊聊备课思路，或带上一道题……"
+            placeholder="聊聊教学思路，或带上一道题……"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
@@ -487,194 +406,6 @@ function Agent({ home, context, returnPath }) {
   );
 }
 
-function MaterialPicker() {
-  const w = useWorkspace();
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState([]);
-  const [previewId, setPreviewId] = useState(null);
-  const [destination, setDestination] = useState("l1");
-  const [blockId, setBlockId] = useState("");
-  useEffect(() => {
-    if (w.picker) {
-      setQuery("");
-      setSelected([]);
-      setPreviewId(null);
-      setDestination(w.lessonId);
-      setBlockId(
-        w.lessons.find((item) => item.id === w.lessonId).blocks[0]?.id || "",
-      );
-    }
-  }, [w.picker]);
-  if (!w.picker) return null;
-  const picker = w.picker;
-  const isDestination = picker.kind === "destination";
-  const all =
-    picker.kind === "questions"
-      ? w.questions
-      : picker.kind === "works"
-        ? w.works
-        : w.resources;
-  const items = all.filter((item) =>
-    (item.title || item.name || "").includes(query),
-  );
-  const preview = items.find((item) => item.id === previewId) || items[0];
-  const lesson = w.lessons.find((item) => item.id === destination);
-  function confirm() {
-    if (isDestination)
-      w.attach(picker.resourceKind, picker.ids, {
-        lessonId: destination,
-        blockId,
-      });
-    else w.attach(picker.kind, selected, picker.target);
-    w.setPicker(null);
-  }
-  return (
-    <section
-      className="wb-picker"
-      aria-label={isDestination ? "选择目标备课" : "为当前环节选择材料"}
-    >
-      <div className="wb-toolbar">
-        <div className="wb-heading">
-          <h1>
-            {isDestination
-              ? "加入备课"
-              : "选择" +
-                (picker.kind === "questions"
-                  ? "题目"
-                  : picker.kind === "works"
-                    ? "数学作品"
-                    : "资源")}
-          </h1>
-          <span>{picker.label || "将选中的内容用于教学"}</span>
-        </div>
-        <IconButton
-          icon="close"
-          label="关闭材料选择"
-          onClick={() => w.setPicker(null)}
-        />
-      </div>
-      {isDestination ? (
-        <div className="wb-scroll wb-destination">
-          <span className="wb-eyebrow">选择备课内容</span>
-          {w.lessons.map((item) => (
-            <button
-              key={item.id}
-              className={
-                "wb-destination-option" +
-                (destination === item.id ? " is-selected" : "")
-              }
-              onClick={() => {
-                setDestination(item.id);
-                setBlockId(item.blocks[0]?.id || "");
-              }}
-            >
-              <Icon name="lessons" size={20} />
-              <div>
-                <strong>{item.title}</strong>
-                <span>{item.subtitle}</span>
-              </div>
-              {destination === item.id && <Icon name="check" size={17} />}
-            </button>
-          ))}
-          <label className="wb-field">
-            放入教学环节
-            <select
-              value={blockId}
-              onChange={(event) => setBlockId(event.target.value)}
-            >
-              {lesson?.blocks.map((block) => (
-                <option key={block.id} value={block.id}>
-                  {block.title}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      ) : (
-        <div className="wb-picker-body">
-          <div className="wb-picker-list">
-            <div className="wb-list-search">
-              <Icon name="search" size={16} />
-              <input
-                aria-label="搜索可选材料"
-                value={query}
-                placeholder="搜索材料"
-                onChange={(event) => setQuery(event.target.value)}
-              />
-            </div>
-            <div className="wb-scroll">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className={
-                    "wb-picker-option" +
-                    (preview?.id === item.id ? " is-selected" : "")
-                  }
-                >
-                  <input
-                    type="checkbox"
-                    aria-label={"选用 " + (item.title || item.name)}
-                    checked={selected.includes(item.id)}
-                    onChange={(event) =>
-                      setSelected((ids) =>
-                        event.target.checked
-                          ? [...ids, item.id]
-                          : ids.filter((id) => id !== item.id),
-                      )
-                    }
-                  />
-                  <button onClick={() => setPreviewId(item.id)}>
-                    <strong>{item.title || item.name}</strong>
-                    <p>{item.body || item.type}</p>
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="wb-scroll wb-picker-preview">
-            {preview ? (
-              picker.kind === "questions" ? (
-                <>
-                  <h2>{preview.title}</h2>
-                  <QuestionContent question={preview} />
-                </>
-              ) : picker.kind === "resources" ? (
-                <>
-                  <ResourceCover item={preview} />
-                  <h2>{preview.name}</h2>
-                  <p>{preview.note}</p>
-                </>
-              ) : (
-                <>
-                  <h2>{preview.name}</h2>
-                  <Graph />
-                </>
-              )
-            ) : (
-              <Empty title="没有找到材料" />
-            )}
-          </div>
-        </div>
-      )}
-      <footer className="wb-picker-footer">
-        <span>
-          {isDestination
-            ? picker.ids.length + " 份内容"
-            : "已选择 " + selected.length + " 项"}
-        </span>
-        <Button onClick={() => w.setPicker(null)}>返回</Button>
-        <Button
-          primary
-          disabled={isDestination ? !blockId : !selected.length}
-          onClick={confirm}
-        >
-          加入备课
-        </Button>
-      </footer>
-    </section>
-  );
-}
-
 export default function Workbench({ page }) {
   const w = useWorkspace();
   const home = page.path === HOME_PATH;
@@ -684,17 +415,15 @@ export default function Workbench({ page }) {
   const context =
     key === "bank"
       ? w.questions.find((item) => item.id === w.questionId)?.title
-      : key === "prep"
-        ? w.lessons.find((item) => item.id === w.lessonId)?.title
-        : key === "classes"
-          ? w.className
-          : key === "resources"
-            ? w.folder
-            : key === "studio"
-              ? w.works.find((item) => item.id === w.workId)?.name
-              : key === "schedule"
-                ? w.schedule.start + " · " + w.schedule.days + " 天日程"
-                : "";
+      : key === "classes"
+        ? w.className
+        : key === "resources"
+          ? w.folder
+          : key === "studio"
+            ? w.works.find((item) => item.id === w.workId)?.name
+            : key === "schedule"
+              ? w.schedule.start + " · " + w.schedule.days + " 天日程"
+              : "";
   if (!home) {
     lastPath.current = page.path;
     lastContext.current = context;
@@ -702,7 +431,6 @@ export default function Workbench({ page }) {
   const label =
     {
       bank: "分类",
-      prep: "导航",
       resources: "分类",
       studio: "作品",
       classes: "班级",
@@ -726,9 +454,6 @@ export default function Workbench({ page }) {
         <div className="wb-page-frame" hidden={key !== "bank"}>
           <BankPage />
         </div>
-        <div className="wb-page-frame" hidden={key !== "prep"}>
-          <PreparationPage />
-        </div>
         <div className="wb-page-frame" hidden={key !== "studio"}>
           <StudioPage />
         </div>
@@ -747,7 +472,6 @@ export default function Workbench({ page }) {
           ) : (
             <EmptyPage title={page.title} icon={page.icon} />
           ))}
-        <MaterialPicker />
       </div>
       <aside
         className={"wb-right" + (home ? " is-agent-home" : "")}
@@ -782,9 +506,6 @@ export default function Workbench({ page }) {
           </div>
           <div className="wb-tool-page wb-scroll" hidden={key !== "resources"}>
             <ResourceTools />
-          </div>
-          <div className="wb-tool-page wb-scroll" hidden={key !== "prep"}>
-            <PrepTools />
           </div>
           <div className="wb-tool-page wb-scroll" hidden={key !== "classes"}>
             <ClassTools />

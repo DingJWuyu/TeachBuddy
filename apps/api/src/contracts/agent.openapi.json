@@ -741,29 +741,6 @@
               "version"
             ],
             "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "const": "lesson"
-              },
-              "id": {
-                "$ref": "#/components/schemas/Id"
-              },
-              "version": {
-                "$ref": "#/components/schemas/Version"
-              },
-              "sectionId": {
-                "$ref": "#/components/schemas/Id"
-              }
-            },
-            "required": [
-              "kind",
-              "id",
-              "version"
-            ],
-            "additionalProperties": false
           }
         ]
       },
@@ -791,41 +768,6 @@
               },
               "snapshot": {
                 "$ref": "workbench.openapi.yaml#/components/schemas/Question"
-              },
-              "capturedAt": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "input",
-              "title",
-              "snapshot",
-              "capturedAt"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "input": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ReferenceInput"
-                  },
-                  {
-                    "properties": {
-                      "kind": {
-                        "const": "lesson"
-                      }
-                    }
-                  }
-                ]
-              },
-              "title": {
-                "type": "string"
-              },
-              "snapshot": {
-                "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
               },
               "capturedAt": {
                 "type": "string",
@@ -1438,98 +1380,6 @@
         ],
         "additionalProperties": false
       },
-      "Tool_listLessons": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "object",
-            "properties": {
-              "q": {
-                "$ref": "workbench.openapi.yaml#/components/parameters/Query/schema"
-              },
-              "state": {
-                "$ref": "workbench.openapi.yaml#/components/parameters/State/schema"
-              }
-            },
-            "required": [],
-            "additionalProperties": false
-          }
-        },
-        "required": [],
-        "additionalProperties": false
-      },
-      "Tool_getLesson": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "additionalProperties": false
-      },
-      "Tool_createLesson": {
-        "type": "object",
-        "properties": {
-          "body": {
-            "$ref": "workbench.openapi.yaml#/components/schemas/CreateLesson"
-          }
-        },
-        "required": [
-          "body"
-        ],
-        "additionalProperties": false
-      },
-      "Tool_updateLesson": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "body": {
-            "$ref": "workbench.openapi.yaml#/components/schemas/UpdateLesson"
-          }
-        },
-        "required": [
-          "id",
-          "body"
-        ],
-        "additionalProperties": false
-      },
-      "Tool_setLessonDeletion": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "body": {
-            "$ref": "workbench.openapi.yaml#/components/schemas/SetDeletion"
-          }
-        },
-        "required": [
-          "id",
-          "body"
-        ],
-        "additionalProperties": false
-      },
-      "Tool_listQuestionUsages": {
-        "type": "object",
-        "properties": {
-          "questionId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "questionId"
-        ],
-        "additionalProperties": false
-      },
       "MutationRequest": {
         "oneOf": [
           {
@@ -1595,54 +1445,6 @@
               "arguments"
             ],
             "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "operationId": {
-                "const": "createLesson"
-              },
-              "arguments": {
-                "$ref": "#/components/schemas/Tool_createLesson"
-              }
-            },
-            "required": [
-              "operationId",
-              "arguments"
-            ],
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "operationId": {
-                "const": "updateLesson"
-              },
-              "arguments": {
-                "$ref": "#/components/schemas/Tool_updateLesson"
-              }
-            },
-            "required": [
-              "operationId",
-              "arguments"
-            ],
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "operationId": {
-                "const": "setLessonDeletion"
-              },
-              "arguments": {
-                "$ref": "#/components/schemas/Tool_setLessonDeletion"
-              }
-            },
-            "required": [
-              "operationId",
-              "arguments"
-            ],
-            "additionalProperties": false
           }
         ]
       },
@@ -1681,9 +1483,6 @@
                 "oneOf": [
                   {
                     "$ref": "workbench.openapi.yaml#/components/schemas/Question"
-                  },
-                  {
-                    "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
                   }
                 ]
               },
@@ -1796,15 +1595,6 @@
                   },
                   {
                     "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
-                  },
-                  {
-                    "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-                  },
-                  {
-                    "$ref": "workbench.openapi.yaml#/components/schemas/LessonList"
-                  },
-                  {
-                    "$ref": "workbench.openapi.yaml#/components/schemas/UsageList"
                   }
                 ]
               }
@@ -1829,9 +1619,6 @@
                 "oneOf": [
                   {
                     "$ref": "workbench.openapi.yaml#/components/schemas/Question"
-                  },
-                  {
-                    "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
                   }
                 ]
               }
@@ -2584,13 +2371,7 @@
               "wb_create_question",
               "wb_update_question",
               "wb_copy_question",
-              "wb_set_question_deletion",
-              "wb_list_lessons",
-              "wb_get_lesson",
-              "wb_create_lesson",
-              "wb_update_lesson",
-              "wb_set_lesson_deletion",
-              "wb_list_question_usages"
+              "wb_set_question_deletion"
             ]
           },
           "arguments": {
@@ -2628,15 +2409,6 @@
               },
               {
                 "$ref": "workbench.openapi.yaml#/components/schemas/Question"
-              },
-              {
-                "$ref": "workbench.openapi.yaml#/components/schemas/LessonList"
-              },
-              {
-                "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-              },
-              {
-                "$ref": "workbench.openapi.yaml#/components/schemas/UsageList"
               },
               {
                 "type": "null"
@@ -2942,168 +2714,6 @@
                     ]
                   }
                 }
-              },
-              {
-                "properties": {
-                  "name": {
-                    "const": "wb_list_lessons"
-                  },
-                  "arguments": {
-                    "anyOf": [
-                      {
-                        "$ref": "#/components/schemas/Tool_listLessons"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "result": {
-                    "anyOf": [
-                      {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/LessonList"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              },
-              {
-                "properties": {
-                  "name": {
-                    "const": "wb_get_lesson"
-                  },
-                  "arguments": {
-                    "anyOf": [
-                      {
-                        "$ref": "#/components/schemas/Tool_getLesson"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "result": {
-                    "anyOf": [
-                      {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              },
-              {
-                "properties": {
-                  "name": {
-                    "const": "wb_create_lesson"
-                  },
-                  "arguments": {
-                    "anyOf": [
-                      {
-                        "$ref": "#/components/schemas/Tool_createLesson"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "result": {
-                    "anyOf": [
-                      {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              },
-              {
-                "properties": {
-                  "name": {
-                    "const": "wb_update_lesson"
-                  },
-                  "arguments": {
-                    "anyOf": [
-                      {
-                        "$ref": "#/components/schemas/Tool_updateLesson"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "result": {
-                    "anyOf": [
-                      {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              },
-              {
-                "properties": {
-                  "name": {
-                    "const": "wb_set_lesson_deletion"
-                  },
-                  "arguments": {
-                    "anyOf": [
-                      {
-                        "$ref": "#/components/schemas/Tool_setLessonDeletion"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "result": {
-                    "anyOf": [
-                      {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              },
-              {
-                "properties": {
-                  "name": {
-                    "const": "wb_list_question_usages"
-                  },
-                  "arguments": {
-                    "anyOf": [
-                      {
-                        "$ref": "#/components/schemas/Tool_listQuestionUsages"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "result": {
-                    "anyOf": [
-                      {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/UsageList"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
               }
             ]
           },
@@ -3114,10 +2724,7 @@
                   "enum": [
                     "wb_list_questions",
                     "wb_get_question",
-                    "wb_list_derivatives",
-                    "wb_list_lessons",
-                    "wb_get_lesson",
-                    "wb_list_question_usages"
+                    "wb_list_derivatives"
                   ]
                 }
               }
@@ -3287,84 +2894,6 @@
         "$ref": "workbench.openapi.yaml#/components/schemas/Question"
       },
       "mutation": true
-    },
-    {
-      "name": "wb_list_lessons",
-      "operationId": "listLessons",
-      "method": "GET",
-      "path": "/api/modules/lessons/items",
-      "parameters": {
-        "$ref": "#/components/schemas/Tool_listLessons"
-      },
-      "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/LessonList"
-      },
-      "mutation": false
-    },
-    {
-      "name": "wb_get_lesson",
-      "operationId": "getLesson",
-      "method": "GET",
-      "path": "/api/modules/lessons/items/{id}",
-      "parameters": {
-        "$ref": "#/components/schemas/Tool_getLesson"
-      },
-      "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-      },
-      "mutation": false
-    },
-    {
-      "name": "wb_create_lesson",
-      "operationId": "createLesson",
-      "method": "POST",
-      "path": "/api/modules/lessons/items",
-      "parameters": {
-        "$ref": "#/components/schemas/Tool_createLesson"
-      },
-      "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-      },
-      "mutation": true
-    },
-    {
-      "name": "wb_update_lesson",
-      "operationId": "updateLesson",
-      "method": "PUT",
-      "path": "/api/modules/lessons/items/{id}",
-      "parameters": {
-        "$ref": "#/components/schemas/Tool_updateLesson"
-      },
-      "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-      },
-      "mutation": true
-    },
-    {
-      "name": "wb_set_lesson_deletion",
-      "operationId": "setLessonDeletion",
-      "method": "POST",
-      "path": "/api/modules/lessons/items/{id}/deletion",
-      "parameters": {
-        "$ref": "#/components/schemas/Tool_setLessonDeletion"
-      },
-      "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/Lesson"
-      },
-      "mutation": true
-    },
-    {
-      "name": "wb_list_question_usages",
-      "operationId": "listQuestionUsages",
-      "method": "GET",
-      "path": "/api/modules/lessons/question-usages/{questionId}",
-      "parameters": {
-        "$ref": "#/components/schemas/Tool_listQuestionUsages"
-      },
-      "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/UsageList"
-      },
-      "mutation": false
     }
   ],
   "x-agent-errors": {

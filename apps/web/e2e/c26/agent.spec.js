@@ -31,7 +31,7 @@ test('WB-AG-001/004: 同一持久草稿从首页到右栏再刷新', async ({ pa
   await page.screenshot({ path: `${evidence}/desktop-draft.png` });
 });
 
-for (const tag of ['deepseek','glm']) test(`WB-AG-003/007: ${tag} live模型结果保留库重启，桌面Pad窄屏打开实际题目和备课`,async({page})=>{
+for (const tag of ['deepseek','glm']) test(`WB-AG-003/007: ${tag} live模型结果保留库重启，桌面Pad窄屏打开实际题目`,async({page})=>{
  await world.close();
  const fs=await import('node:fs');const report=JSON.parse(fs.readFileSync(`${evidence}/live-${tag}.json`,'utf8'));
  const os=await import('node:os');const path=await import('node:path');const directory=fs.mkdtempSync(path.join(os.tmpdir(),`c26-browser-live-${tag}-`));fs.cpSync(report.directory,directory,{recursive:true});
@@ -54,9 +54,6 @@ for (const tag of ['deepseek','glm']) test(`WB-AG-003/007: ${tag} live模型结�
  await page.screenshot({path:`${evidence}/${tag}-copy-open.png`});
  await page.locator('.wb-ai-entry').click();
  await expect(page.locator('.agent-tool')).toHaveCount(6);
- await page.locator('.agent-tool[data-tool-state="confirmed"]').last().getByRole('button',{name:/打开备课/}).click();
- await expect(page).toHaveURL(/\/lessons\//);await expect(page.getByRole('textbox',{name:'环节名称 2'})).toHaveValue('小组挑战');
- await page.screenshot({path:`${evidence}/${tag}-lesson-open.png`});
 });
 
 test('WB-AG-005: 独立浏览器草稿冲突保留双方内容，明确选择后保存',async({page,browser})=>{

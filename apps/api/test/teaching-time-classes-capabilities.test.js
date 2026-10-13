@@ -8,7 +8,7 @@ import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
 import { ContractError } from '../src/workbench/problems.js';
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
-import { C, R, http, record } from './teaching-time-classes-materials-fixture.js';
+import { C, R, Q, question, http, record } from './teaching-time-classes-materials-fixture.js';
 
 async function setup(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'classes-capabilities-api-'));
@@ -24,11 +24,11 @@ async function setup(t) {
 test('record purge is owned, versioned, atomic and replayable; existing schedule references and backup remain readable', async t => {
   const { world, directory, call, other, done } = await setup(t);
   const classroom = await call('POST', C, { name: '一班' }, 201);
-  const lesson = await call('POST', '/api/modules/lessons/v3', { title: '关联备课', intro: { version: 1, blocks: [] }, sections: [], materials: [] }, 201);
-  const saved = await call('POST', R, record(classroom.id, [{ kind: 'lesson', id: lesson.id }], '要移除的原文'), 201);
+  const questionItem = await call('POST', Q, question('关联题目'), 201);
+  const saved = await call('POST', R, record(classroom.id, [{ kind: 'question', id: questionItem.id }], '要移除的原文'), 201);
   const kept = await call('POST', R, record(classroom.id, [], '保留的原文'), 201);
   const body = { title: '既有日程', items: [], time: { date: '2026-09-25', startTime: '09:00', durationMinutes: 60, timeZone: 'Asia/Shanghai' },
-    repeat: null, course: { classId: classroom.id, lessonId: lesson.id, recordIds: [saved.id] }, reminder: null };
+    repeat: null, course: { classId: classroom.id, recordIds: [saved.id] }, reminder: null };
   const entry = await call('POST', '/api/modules/schedule/entries', body, 201);
   const endpoint = `${R}/${saved.id}/purge`;
   await other('POST', endpoint, { expectedVersion: 1 }, 404);
@@ -47,7 +47,7 @@ test('record purge is owned, versioned, atomic and replayable; existing schedule
   await call('GET', `${R}/${saved.id}`, undefined, 404);
   await call('POST', `${R}/${saved.id}/deletion`, { expectedVersion: deleted.version, deleted: false }, 404);
   assert.equal((await call('GET', `${R}/${kept.id}`)).note, kept.note);
-  assert.equal((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).title, lesson.title);
+  assert.equal((await call('GET', `${Q}/${questionItem.id}`)).title, questionItem.title);
   assert.equal(db.prepare('SELECT count(*) n FROM classes_record_sources WHERE recordId=?').get(saved.id).n, 0);
   const linked = await call('GET', `/api/modules/schedule/entries/${entry.id}`);
   assert.equal(linked.courseState.classroom.deleted, false);
@@ -81,20 +81,20 @@ test('next-note visibility preserves text, protects versions and ownership, pers
   const overview = await call('GET', '/api/modules/classes/overview');
   assert.deepEqual(overview.items[0].position, { recordedOn: input.recordedOn, text: '例题3' });
   assert.deepEqual((await other('GET', '/api/modules/classes/overview')).items, []);
-  const port = world.workbench.loader.get('lessons').port;
-  const lesson = await call('POST', '/api/modules/lessons/v3', { title: '故障资料', intro: { version: 1, blocks: [] }, sections: [], materials: [] }, 201);
-  const linked = await call('POST', R, record(classroom.id, [{ kind: 'lesson', id: lesson.id }]), 201);
-  const original = port.readForTeachingLink;
+  const port = world.workbench.loader.get('questions').port;
+  const questionItem = await call('POST', Q, question('故障资料'), 201);
+  const linked = await call('POST', R, record(classroom.id, [{ kind: 'question', id: questionItem.id }]), 201);
+  const original = port.readForReferenceV2;
   for (const status of [404, 503]) {
-    port.readForTeachingLink = () => { throw Object.assign(new Error('isolated fault'), { status }); };
+    port.readForReferenceV2 = () => { throw Object.assign(new Error('isolated fault'), { status }); };
     const read = await call('GET', `${R}/${linked.id}`);
     assert.equal(read.sources[0].deleted, null);
     assert.equal(read.sources[0].currentLabel, '故障资料');
     assert.equal((await call('GET', '/api/modules/classes/overview')).items[0].count, 2);
   }
-  port.readForTeachingLink = () => { throw new ContractError(401, { type: '/problems/workbench/unauthenticated' }); };
+  port.readForReferenceV2 = () => { throw new ContractError(401, { type: '/problems/workbench/unauthenticated' }); };
   await call('GET', `${R}/${linked.id}`, undefined, 401);
-  port.readForTeachingLink = original;
+  port.readForReferenceV2 = original;
   done();
 });
 
@@ -151,12 +151,12 @@ test('cross-class transfer is atomic, owned and replayable, preserving original 
   const source = await call('POST', C, { name: '原班级' }, 201);
   const target = await call('POST', C, { name: '目标班级' }, 201);
   const foreign = await other('POST', C, { name: '外账户班级' }, 201);
-  const lesson = await call('POST', '/api/modules/lessons/v3', { title: '原资料标题', intro: { version: 1, blocks: [] }, sections: [], materials: [] }, 201);
-  const input = { ...record(source.id, [{ kind: 'lesson', id: lesson.id }]), content: { version: 2, blocks: [{ type: 'math', latex: 'x^2' }] }, nextNote: '留在历史中的想法' };
+  const questionItem = await call('POST', Q, question('原资料标题'), 201);
+  const input = { ...record(source.id, [{ kind: 'question', id: questionItem.id }]), content: { version: 2, blocks: [{ type: 'math', latex: 'x^2' }] }, nextNote: '留在历史中的想法' };
   let r = await call('POST', R, input, 201);
   r = await call('POST', `${R}/${r.id}/next-note-visibility`, { expectedVersion: r.version, hidden: true });
   const schedule = { title: '原班级的课堂', items: [], time: { date: '2026-09-25', startTime: '09:00', durationMinutes: 60, timeZone: 'Asia/Shanghai' }, repeat: null,
-    course: { classId: source.id, lessonId: lesson.id, recordIds: [r.id] }, reminder: null };
+    course: { classId: source.id, recordIds: [r.id] }, reminder: null };
   const entry = await call('POST', '/api/modules/schedule/entries', schedule, 201);
   const endpoint = `${R}/${r.id}/move`, body = { expectedVersion: r.version, targetClassId: target.id };
   await other('POST', endpoint, body, 404);

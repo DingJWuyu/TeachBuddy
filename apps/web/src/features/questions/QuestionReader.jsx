@@ -67,7 +67,6 @@ function SourceInfo({ source }) {
 export function QuestionReader({
   question,
   derivatives = [],
-  usages = [],
   onEdit,
   onToggleStar,
   scroll = null,
@@ -116,22 +115,6 @@ export function QuestionReader({
                 {derivatives.map((item) => (
                   <li key={item.id}>
                     <a href={`/questions/${item.id}`}>{excerptFor(item.title, item.body, 30) || t("副本")}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {usages.length > 0 && (
-            <div className="wb-relation" data-region="usages">
-              <h3>{t("使用位置")}</h3>
-              <ul>
-                {usages.map((usage) => (
-                  <li key={usage.referenceId}>
-                    <a href={`/lessons/${usage.lessonId}`}>
-                      {usage.lessonTitle}
-                      {usage.sectionTitle ? ` · ${usage.sectionTitle}` : t(" · 本课材料")}
-                    </a>
-                    <span className="wb-muted">{t("（版本")} {usage.questionVersion}）</span>
                   </li>
                 ))}
               </ul>

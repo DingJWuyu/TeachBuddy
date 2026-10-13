@@ -209,7 +209,6 @@ test('course links resolve through the ports and derived state never fakes a del
     const classroom = await a.post('/api/modules/classes/items', { name: '高一(1)班' }, { key: harness.key() });
     assert.equal(classroom.status, 201);
     const otherClass = await a.post('/api/modules/classes/items', { name: '高一(2)班' }, { key: harness.key() });
-    const lesson = await a.post('/api/modules/lessons/items', { title: '函数单调性' }, { key: harness.key() });
     const record = await a.post('/api/modules/classes/records', {
       classId: classroom.body.id,
       recordedOn: '2026-09-21',
@@ -218,22 +217,20 @@ test('course links resolve through the ports and derived state never fakes a del
     assert.equal(record.status, 201);
 
     const created = await a.post(ENTRIES, timedEntry({
-      course: { classId: classroom.body.id, lessonId: lesson.body.id, recordIds: [record.body.id] }
+      course: { classId: classroom.body.id, recordIds: [record.body.id] }
     }), { key: harness.key() });
     assert.equal(created.status, 201);
     assert.deepEqual(created.body.course, {
       classId: classroom.body.id,
-      lessonId: lesson.body.id,
       recordIds: [record.body.id]
     });
     assert.equal(created.body.courseState.classroom.currentLabel, '高一(1)班');
     assert.equal(created.body.courseState.classroom.deleted, false);
-    assert.equal(created.body.courseState.lesson.currentLabel, '函数单调性');
     assert.equal(created.body.courseState.records[0].currentLabel, '例2没讲，任意性还需强调');
 
     // Another class record cannot be attached to this class.
     const mismatched = await a.post(ENTRIES, timedEntry({
-      course: { classId: otherClass.body.id, lessonId: null, recordIds: [record.body.id] }
+      course: { classId: otherClass.body.id, recordIds: [record.body.id] }
     }), { key: harness.key() });
     assert.equal(mismatched.status, 409);
     assert.equal(mismatched.body.type, '/problems/workbench/class-mismatch');
@@ -242,19 +239,19 @@ test('course links resolve through the ports and derived state never fakes a del
     const foreign = await b.get(`${ENTRIES}/${created.body.id}`);
     assert.equal(foreign.status, 404);
     const foreignClass = await a.post(ENTRIES, timedEntry({
-      course: { classId: '99999999-0000-4000-8000-000000000009', lessonId: null, recordIds: [] }
+      course: { classId: '99999999-0000-4000-8000-000000000009', recordIds: [] }
     }), { key: harness.key() });
     assert.equal(foreignClass.status, 404);
 
-    // A deleted lesson stays readable on the existing link but cannot be linked anew.
-    await a.post(`/api/modules/lessons/items/${lesson.body.id}/deletion`, { deleted: true }, { key: harness.key() });
+    // A deleted record stays readable on the existing link but cannot be linked anew.
+    await a.post(`/api/modules/classes/records/${record.body.id}/deletion`, { deleted: true }, { key: harness.key() });
     const readBack = await a.get(`${ENTRIES}/${created.body.id}`);
-    assert.equal(readBack.body.courseState.lesson.deleted, true);
-    assert.equal(readBack.body.courseState.lesson.currentLabel, '函数单调性');
-    assert.equal(readBack.body.courseState.lesson.labelAtLink, '函数单调性');
+    assert.equal(readBack.body.courseState.records[0].deleted, true);
+    assert.equal(readBack.body.courseState.records[0].currentLabel, '例2没讲，任意性还需强调');
+    assert.equal(readBack.body.courseState.records[0].labelAtLink, '例2没讲，任意性还需强调');
 
     const relink = await a.post(ENTRIES, timedEntry({
-      course: { classId: null, lessonId: lesson.body.id, recordIds: [] }
+      course: { classId: classroom.body.id, recordIds: [record.body.id] }
     }), { key: harness.key() });
     assert.equal(relink.status, 409);
     assert.equal(relink.body.type, '/problems/workbench/reference-deleted');
@@ -264,16 +261,16 @@ test('course links resolve through the ports and derived state never fakes a del
       expectedVersion: created.body.version,
       ...timedEntry({
         title: '备课（改）',
-        course: { classId: classroom.body.id, lessonId: lesson.body.id, recordIds: [record.body.id] }
+        course: { classId: classroom.body.id, recordIds: [record.body.id] }
       })
     }, { key: harness.key() });
     assert.equal(renamed.status, 200);
     assert.equal(renamed.body.version, created.body.version + 1);
-    assert.equal(renamed.body.courseState.lesson.deleted, true);
+    assert.equal(renamed.body.courseState.records[0].deleted, true);
 
     // A repeating template cannot carry record links.
     const repeating = await a.post(ENTRIES, weeklyEntry({
-      course: { classId: classroom.body.id, lessonId: null, recordIds: [record.body.id] }
+      course: { classId: classroom.body.id, recordIds: [record.body.id] }
     }), { key: harness.key() });
     assert.equal(repeating.status, 422);
     assert.equal(repeating.body.field, '/course/recordIds');

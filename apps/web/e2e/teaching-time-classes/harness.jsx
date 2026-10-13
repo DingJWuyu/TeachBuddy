@@ -8,8 +8,7 @@
  * `apps/web/src/features/classes/index.jsx` on a real HTTPS origin with the
  * real SQLite-backed API.
  *
- * Extra fixture routes render the two components T51 exports for other pages
- * (reverse feedback panel, class/record selector) so their browser behaviour
+ * Extra fixture routes render the reverse feedback panel T51 exports for other pages so their browser behaviour
  * can be verified before T53 assembles them.
  */
 import { useEffect, useMemo, useState } from 'react';
@@ -17,7 +16,7 @@ import { createRoot } from 'react-dom/client';
 import { ShellContext } from '../../src/features/workbench/shellContext.js';
 import { navigate } from '../../src/features/workbench/routes.js';
 import ClassesPage, { parseClassesPath } from '../../src/features/classes/index.jsx';
-import { ClassRecordPicker, SourceRecordsPanel } from '../../src/features/classes/FeedbackPanel.jsx';
+import { SourceRecordsPanel } from '../../src/features/classes/FeedbackPanel.jsx';
 import { getWorkbenchContext, setIdentityLostListener } from '../../src/features/workbench/apiClient.js';
 import { canPersistLocally, setStorageFailureListener } from '../../src/features/workbench/storage.js';
 import '../../src/styles/global.css';
@@ -58,20 +57,6 @@ function Gate({ title, children }) {
       <div className="wb-gate-card">
         <h1>{title}</h1>
         {children}
-      </div>
-    </div>
-  );
-}
-
-function PickerFixture() {
-  const [value, setValue] = useState({ classId: null, recordIds: [] });
-  return (
-    <div className="wb-page" data-region="picker-fixture">
-      <div className="c-detail-scroll">
-        <ClassRecordPicker classId={value.classId} recordIds={value.recordIds} onChange={setValue} />
-        <p className="wb-muted" data-region="picker-summary">
-          {value.classId ? `已选 ${value.recordIds.length} 条记录` : '未选择班级'}
-        </p>
       </div>
     </div>
   );
@@ -162,11 +147,10 @@ function Harness() {
     );
   }
 
-  const panelMatch = /^\/panel\/(lesson|question|math)\/([0-9a-f-]+)$/i.exec(pathname);
+  const panelMatch = /^\/panel\/(question|math)\/([0-9a-f-]+)$/i.exec(pathname);
   let page = null;
   if (panelMatch) page = <PanelFixture kind={panelMatch[1].toLowerCase()} id={panelMatch[2]} />;
   else if (pathname === '/math') page = <div className="c-detail-scroll"><p>TeachingWork 同版替身</p><button className="wb-button" onClick={() => window.history.back()}>返回记录</button><SourceRecordsPanel kind="math" id={new URLSearchParams(window.location.search).get('workId')} /></div>;
-  else if (pathname === '/picker') page = <PickerFixture />;
   else page = <ClassesPage route={parseClassesPath(pathname) ?? undefined} />;
 
   return (

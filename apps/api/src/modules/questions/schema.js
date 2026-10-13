@@ -4,13 +4,10 @@
 // never receive an unvalidated aggregate.
 import { assertDocument, invalidInput, isBlankDocument, pointerField } from './contract.js';
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_VERSION = Number.MAX_SAFE_INTEGER;
 const MAX_TITLE_LENGTH = 200;
 const MAX_NOTE_LENGTH = 20000;
 const MAX_PASTE_LENGTH = 100000;
-const MAX_SECTIONS = 200;
-const MAX_REFERENCES = 1000;
 
 function isPlainObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -51,21 +48,12 @@ function requireVersion(value, pointer) {
   return value;
 }
 
-function requireUuid(value, pointer) {
-  if (typeof value !== 'string' || !UUID_PATTERN.test(value)) throw invalidInput(pointer, 'invalid-type');
-  return value;
-}
 
 function requireBoolean(value, pointer) {
   if (typeof value !== 'boolean') throw invalidInput(pointer, 'invalid-type');
   return value;
 }
 
-function requireArray(value, pointer, { maxItems } = {}) {
-  if (!Array.isArray(value)) throw invalidInput(pointer, 'invalid-type');
-  if (maxItems !== undefined && value.length > maxItems) throw invalidInput(pointer, 'out-of-range');
-  return value;
-}
 
 function validateSource(value, pointer) {
   requireObject(value, pointer);
@@ -137,87 +125,6 @@ export function validateSetDeletion(input) {
   return body;
 }
 
-function validateReference(value, pointer) {
-  requireObject(value, pointer);
-  rejectUnknownFields(value, ['id', 'questionId', 'questionVersion', 'note'], pointer);
-  for (const key of ['id', 'questionId', 'questionVersion', 'note']) {
-    requireField(value, key, pointer);
-  }
-  requireUuid(value.id, pointerField(pointer, 'id'));
-  requireUuid(value.questionId, pointerField(pointer, 'questionId'));
-  requireVersion(value.questionVersion, pointerField(pointer, 'questionVersion'));
-  requireString(value.note, pointerField(pointer, 'note'), { maxLength: MAX_NOTE_LENGTH });
-}
-
-function validateSection(value, pointer) {
-  requireObject(value, pointer);
-  rejectUnknownFields(value, ['id', 'title', 'content', 'references'], pointer);
-  for (const key of ['id', 'title', 'content', 'references']) {
-    requireField(value, key, pointer);
-  }
-  requireUuid(value.id, pointerField(pointer, 'id'));
-  requireString(value.title, pointerField(pointer, 'title'), {
-    minLength: 1,
-    maxLength: MAX_TITLE_LENGTH,
-    blankIsOutOfRange: true
-  });
-  assertDocument(value.content, pointerField(pointer, 'content'));
-  requireArray(value.references, pointerField(pointer, 'references'), { maxItems: MAX_REFERENCES });
-  value.references.forEach((reference, index) => validateReference(reference, `${pointer}/references/${index}`));
-}
-
-function validateLessonContent(body, pointer) {
-  requireField(body, 'title', pointer);
-  requireString(body.title, pointerField(pointer, 'title'), {
-    minLength: 1,
-    maxLength: MAX_TITLE_LENGTH,
-    blankIsOutOfRange: true
-  });
-  requireField(body, 'intro', pointer);
-  assertDocument(body.intro, pointerField(pointer, 'intro'));
-  requireField(body, 'sections', pointer);
-  requireArray(body.sections, pointerField(pointer, 'sections'), { maxItems: MAX_SECTIONS });
-  const sectionIds = new Set();
-  body.sections.forEach((section, index) => {
-    const sectionPointer = `${pointer}/sections/${index}`;
-    validateSection(section, sectionPointer);
-    if (sectionIds.has(section.id)) throw invalidInput(`${sectionPointer}/id`, 'duplicate-id');
-    sectionIds.add(section.id);
-  });
-  requireField(body, 'materials', pointer);
-  requireArray(body.materials, pointerField(pointer, 'materials'), { maxItems: MAX_REFERENCES });
-  const referenceIds = new Set();
-  body.sections.forEach((section, sectionIndex) => {
-    section.references.forEach((reference, referenceIndex) => {
-      const referencePointer = `${pointer}/sections/${sectionIndex}/references/${referenceIndex}`;
-      if (referenceIds.has(reference.id)) throw invalidInput(`${referencePointer}/id`, 'duplicate-id');
-      referenceIds.add(reference.id);
-    });
-  });
-  body.materials.forEach((reference, index) => {
-    const referencePointer = `${pointer}/materials/${index}`;
-    validateReference(reference, referencePointer);
-    if (referenceIds.has(reference.id)) throw invalidInput(`${referencePointer}/id`, 'duplicate-id');
-    referenceIds.add(reference.id);
-  });
-}
-
-export function validateCreateLesson(input) {
-  const body = requireObject(input, '');
-  rejectUnknownFields(body, ['title', 'intro', 'sections', 'materials'], '');
-  validateLessonContent(body, '');
-  return body;
-}
-
-export function validateUpdateLesson(input) {
-  const body = requireObject(input, '');
-  rejectUnknownFields(body, ['baseVersion', 'title', 'intro', 'sections', 'materials'], '');
-  requireField(body, 'baseVersion', '');
-  requireVersion(body.baseVersion, '/baseVersion');
-  validateLessonContent(body, '');
-  return body;
-}
-
 function validateQuery(query, allowedKeys, { starred = false } = {}) {
   const source = query ?? {};
   for (const key of Object.keys(source).sort()) {
@@ -241,8 +148,4 @@ export function validateQuestionsQuery(query) {
 
 export function validateDerivativesQuery(query) {
   validateQuery(query, ['state']);
-}
-
-export function validateLessonsQuery(query) {
-  validateQuery(query, ['q', 'state']);
 }

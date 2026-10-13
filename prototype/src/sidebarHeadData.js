@@ -54,7 +54,7 @@ export const COPYABLE_ITEMS = [
   { id: 'classes', label: '班级', unit: '个班级', icon: 'classes', count: 2 },
   { id: 'students', label: '学生', unit: '名学生', icon: 'students', count: 48 },
   { id: 'units', label: '单元', unit: '个单元', icon: 'planner', count: 6 },
-  { id: 'lessons', label: '课程', unit: '节课程', icon: 'lessons', count: 24 },
+  { id: 'lessons', label: '课程', unit: '节课程', icon: 'book', count: 24 },
   { id: 'standards', label: '课程标准', unit: '套标准', icon: 'standards', count: 3 },
   { id: 'topics', label: '课堂主题', unit: '个主题', icon: 'classwork', count: 0 }
 ];

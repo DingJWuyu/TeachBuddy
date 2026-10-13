@@ -91,56 +91,35 @@ try {
     await expect(p.getByRole('heading', { name: '独立验收班级', exact: true })).toBeVisible();
     await shot(p, 'search-class-open');
   } else await p.keyboard.press('Escape');
-  await p.locator('.tb-module-nav a[href="/lessons"]').click();
-  await p.getByRole('button', { name: '新建备课', exact: true }).click();
-  await p.getByLabel('课题', { exact: true }).fill('独立验收备课');
-  await p.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(p.locator('.wb-main').getByRole('status').first()).toContainText('已保存');
-  await p.reload();
-  await expect(p.getByLabel('课题', { exact: true })).toHaveValue('独立验收备课');
-  await p.getByRole('button', { name: '全局搜索', exact: true }).click();
-  await p.getByRole('searchbox').fill('独立验收备课');
-  const lesson = p.locator('.tb-search-results a').filter({ hasText: '独立验收备课' });
-  try { await expect(lesson).toBeVisible({ timeout: 3000 }); } catch { /* Preserve screenshot on baseline. */ }
-  await shot(p, 'search-lesson');
-  check(await lesson.isVisible(), 'RUI-03 persisted lesson is searchable');
-  if (await lesson.isVisible()) {
-    const destination = await lesson.getAttribute('href');
-    await lesson.click();
-    await expect(p).toHaveURL(world.origin + destination);
-    await expect(p.getByRole('dialog', { name: '全局搜索' })).not.toBeVisible();
-    await expect(p.getByLabel('课题', { exact: true })).toHaveValue('独立验收备课');
-    await shot(p, 'search-lesson-open');
-  } else await p.keyboard.press('Escape');
   if (!failures.length) {
     // Each open reloads real saved data; partial failure must retain usable results.
-    await p.route('**/api/modules/lessons/v3?*', route => route.abort('failed'));
+    await p.route('**/api/modules/resources/items?*', route => route.abort('failed'));
     await p.getByRole('button', { name: '全局搜索', exact: true }).click();
-    await expect(p.locator('.tb-search-state[role="alert"]')).toContainText('备课读取失败');
+    await expect(p.locator('.tb-search-state[role="alert"]')).toContainText('资源库读取失败');
     await p.getByRole('searchbox').fill('独立验收班级');
     await expect(result).toBeVisible();
     await shot(p, 'search-partial-error');
-    await p.unroute('**/api/modules/lessons/v3?*');
+    await p.unroute('**/api/modules/resources/items?*');
     await p.getByRole('button', { name: '重试', exact: true }).click();
     await expect(p.locator('.tb-search-state')).toHaveCount(0);
     await p.getByRole('searchbox').fill('完全不存在的课题');
     await expect(p.getByText('没有匹配「完全不存在的课题」的结果')).toBeVisible();
     await p.keyboard.press('Escape');
     await p.setViewportSize({ width: 390, height: 844 });
-    for (const [query, path] of [['独立验收班级', '/classes/'], ['独立验收备课', '/lessons/']]) {
+    for (const [query, path] of [['独立验收班级', '/classes/']]) {
       await p.getByRole('button', { name: '全局搜索', exact: true }).click();
       await p.getByRole('searchbox').fill(query);
       const target = p.locator('.tb-search-item').filter({ hasText: query });
       await expect(target).toBeVisible();
       const destination = await target.getAttribute('href');
       check(destination.startsWith(path), 'RUI-03 narrow detail destination');
-      await shot(p, path.includes('classes') ? 'narrow-search-class' : 'narrow-search-lesson');
+      await shot(p, 'narrow-search-class');
       await p.keyboard.press('ArrowDown');
       await p.keyboard.press('Enter');
       await expect(p).toHaveURL(world.origin + destination);
       await expect(p.getByRole('dialog', { name: '全局搜索' })).not.toBeVisible();
     }
-    for (const route of ['questions', 'lessons', 'math', 'resources', 'classes']) {
+    for (const route of ['questions', 'math', 'resources', 'classes']) {
       await p.getByRole('button', { name: '打开工作台导航' }).click();
       await p.locator(`.tb-module-nav .tb-module-row[href^="/${route}"]`).click();
       await expect(p.locator('.tb-sidebar')).not.toBeVisible();
@@ -155,7 +134,7 @@ try {
     check(send.width === 29 && send.height === 29, 'RUI-02 live composer retains prototype square send button');
     await shot(p, 'narrow-home-input');
     await p.setViewportSize({ width: 1680, height: 910 });
-    await p.locator('.tb-module-nav a[href^="/lessons"]').click();
+    await p.locator('.tb-module-nav a[href^="/math"]').click();
     await p.locator('.tb-global-nav a[href="/"]').click();
     await expect(p.getByRole('textbox', { name: 'AI 输入', exact: true })).toHaveValue('梳理一节课的讲解顺序');
     check(true, 'RUI-02 suggestion creates real draft, focuses input and preserves it across navigation');

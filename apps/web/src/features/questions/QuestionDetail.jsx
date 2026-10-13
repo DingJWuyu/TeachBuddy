@@ -31,7 +31,6 @@ import {
   createQuestion,
   getQuestion,
   listDerivatives,
-  listQuestionUsages,
   setQuestionDeletion,
   updateQuestion
 } from './api.js';
@@ -68,7 +67,7 @@ function PasteSourcePane({ draft, sourceText, disabled, onTextChange, onOrganize
   );
 }
 
-export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
+export default function QuestionDetail({ id, onChanged }) {
   const { t } = useTranslation("questions");
   const shell = useWorkbenchShell();
   const [scene, patchScene] = useScene(shell.accountKey, 'question-detail', {
@@ -118,7 +117,6 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
   const deleteSubmit = useIdempotentSubmit({ accountKey: shell.accountKey, name: `pending:question-deletion:${id}` });
   const [dialog, setDialog] = useState(null);
   const [derivatives, setDerivatives] = useState([]);
-  const [usages, setUsages] = useState([]);
   const [currentSource, setCurrentSource] = useState(null);
   const [localProblem, setLocalProblem] = useState(null);
 
@@ -134,9 +132,6 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
     listDerivatives(id)
       .then((rows) => { if (!cancelled) setDerivatives(rows); })
       .catch(() => { if (!cancelled) setDerivatives([]); });
-    listQuestionUsages(id)
-      .then((rows) => { if (!cancelled) setUsages(rows); })
-      .catch(() => { if (!cancelled) setUsages([]); });
     return () => { cancelled = true; };
   }, [id, mode, saveStatus, deleteSubmit.result]);
 
@@ -271,7 +266,6 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
           {question.source?.kind === 'copy' && question.source.questionId && (
             <MenuItem icon="question" onClick={() => { close(); navigate(`/questions/${question.source.questionId}`); }}> {t("查看原题")} </MenuItem>
           )}
-          <MenuItem icon="prep" onClick={() => { close(); onAddToLesson([question]); }}>{t("加入备课")}</MenuItem>
           {question.deletedAt ? (
             <MenuItem icon="back" onClick={() => { close(); handleDeletion(false); }}>{t("恢复题目")}</MenuItem>
           ) : (
@@ -372,7 +366,6 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
           question={question}
           scroll={readerScroll}
           derivatives={derivatives}
-          usages={usages}
           onEdit={() => patchScene({ editMode: true })}
           onToggleStar={() => savable.save({ input: { ...input, starred: !input.starred } })}
           extraActions={(
@@ -391,7 +384,7 @@ export default function QuestionDetail({ id, onAddToLesson, onChanged }) {
       <ModulePresence present={Boolean(dialog === 'delete')}>{dialog === 'delete' && (
         <ConfirmDialog
           title={t("删除题目")}
-          message={t("删除后题目来源、副本与备课中的引用和快照都保留，可以在已删除中恢复。")}
+          message={t("删除后题目来源与副本都保留，可以在已删除中恢复。")}
           confirmLabel={t("删除题目")}
           onCancel={() => setDialog(null)}
           onConfirm={() => handleDeletion(true)}

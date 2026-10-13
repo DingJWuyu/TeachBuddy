@@ -15,7 +15,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -58,7 +58,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           }
         ]
@@ -99,7 +99,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -141,7 +141,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -183,7 +183,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -225,7 +225,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -254,7 +254,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -296,7 +296,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -338,7 +338,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -382,7 +382,7 @@
             "nextNote": "",
             "sources": [
               {
-                "kind": "lesson",
+                "kind": "question",
                 "id": "20000000-0000-4000-8000-000000000001",
                 "labelAtLink": "函数单调性",
                 "currentLabel": "函数单调性",
@@ -419,7 +419,7 @@
             "nextNote": "",
             "sources": [
               {
-                "kind": "lesson",
+                "kind": "question",
                 "id": "20000000-0000-4000-8000-000000000001",
                 "labelAtLink": "函数单调性",
                 "currentLabel": "函数单调性",
@@ -465,7 +465,7 @@
             "nextNote": "",
             "sources": [
               {
-                "kind": "lesson",
+                "kind": "question",
                 "id": "20000000-0000-4000-8000-000000000001",
                 "labelAtLink": "函数单调性",
                 "currentLabel": "函数单调性",
@@ -517,7 +517,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -552,7 +552,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -580,7 +580,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -624,7 +624,7 @@
             "nextNote": "",
             "sources": [
               {
-                "kind": "lesson",
+                "kind": "question",
                 "id": "20000000-0000-4000-8000-000000000001",
                 "labelAtLink": "函数单调性",
                 "currentLabel": "函数单调性",
@@ -668,7 +668,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -697,7 +697,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -726,7 +726,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -755,7 +755,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -784,7 +784,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -812,7 +812,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -839,7 +839,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -867,7 +867,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -907,7 +907,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -919,7 +919,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -931,7 +931,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -943,7 +943,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -955,7 +955,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -967,7 +967,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -979,7 +979,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -991,7 +991,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1003,7 +1003,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1015,7 +1015,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1027,7 +1027,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1039,7 +1039,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1051,7 +1051,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1063,7 +1063,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1075,7 +1075,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1087,7 +1087,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1099,7 +1099,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1111,7 +1111,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1123,7 +1123,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1135,7 +1135,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1147,7 +1147,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1159,7 +1159,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1171,7 +1171,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1183,7 +1183,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1195,7 +1195,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1207,7 +1207,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1219,7 +1219,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1231,7 +1231,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1243,7 +1243,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1255,7 +1255,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1267,7 +1267,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1279,7 +1279,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1291,7 +1291,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1303,7 +1303,7 @@
             "id": "60000000-0000-4000-8000-000000000001"
           },
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1331,7 +1331,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1360,7 +1360,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1412,7 +1412,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -1440,7 +1440,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -1643,18 +1643,6 @@
             "requires": []
           },
           {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
-            "requires": [
-              "questions.readForReferenceV2",
-              "resources.readForReferenceV2",
-              "math.readForReferenceV1"
-            ]
-          },
-          {
             "id": "math",
             "name": "数学工坊",
             "path": "/math",
@@ -1678,7 +1666,6 @@
             "auxiliaryPanel": true,
             "requires": [
               "questions.readForReference",
-              "lessons.readForTeachingLink",
               "math.readForTeachingLinkV1"
             ]
           },
@@ -1690,8 +1677,7 @@
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
@@ -1713,18 +1699,6 @@
             "requires": []
           },
           {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
-            "requires": [
-              "questions.readForReferenceV2",
-              "resources.readForReferenceV2",
-              "math.readForReferenceV1"
-            ]
-          },
-          {
             "id": "math",
             "name": "数学工坊",
             "path": "/math",
@@ -1748,7 +1722,6 @@
             "auxiliaryPanel": true,
             "requires": [
               "questions.readForReference",
-              "lessons.readForTeachingLink",
               "math.readForTeachingLinkV1"
             ]
           },
@@ -1760,8 +1733,7 @@
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
@@ -1769,7 +1741,7 @@
       "expectedStaticValidation": {
         "status": 422,
         "type": "/problems/workbench/invalid-input",
-        "field": "/items/4/id",
+        "field": "/items/3/id",
         "reason": "duplicate-id"
       }
     },
@@ -1789,18 +1761,6 @@
             "requires": []
           },
           {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
-            "requires": [
-              "questions.readForReferenceV2",
-              "resources.readForReferenceV2",
-              "math.readForReferenceV1"
-            ]
-          },
-          {
             "id": "math",
             "name": "数学工坊",
             "path": "/math",
@@ -1824,20 +1784,18 @@
             "auxiliaryPanel": true,
             "requires": [
               "questions.readForReference",
-              "lessons.readForTeachingLink",
               "math.readForTeachingLinkV1"
             ]
           },
           {
             "id": "schedule",
             "name": "日程",
-            "path": "/lessons",
+            "path": "/questions",
             "navigation": "top",
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
@@ -1845,7 +1803,7 @@
       "expectedStaticValidation": {
         "status": 422,
         "type": "/problems/workbench/invalid-input",
-        "field": "/items/5/path",
+        "field": "/items/4/path",
         "reason": "duplicate-id"
       }
     },
@@ -1865,18 +1823,6 @@
             "requires": []
           },
           {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
-            "requires": [
-              "questions.readForReferenceV2",
-              "resources.readForReferenceV2",
-              "math.readForReferenceV1"
-            ]
-          },
-          {
             "id": "resources",
             "name": "资源库",
             "path": "/resources",
@@ -1892,7 +1838,6 @@
             "auxiliaryPanel": true,
             "requires": [
               "questions.readForReference",
-              "lessons.readForTeachingLink",
               "math.readForTeachingLinkV1"
             ]
           },
@@ -1904,8 +1849,7 @@
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
@@ -1913,7 +1857,7 @@
       "expectedStaticValidation": {
         "status": 422,
         "type": "/problems/workbench/invalid-input",
-        "field": "/items/1/requires/2",
+        "field": "/items/2/requires/1",
         "reason": "invalid-reference"
       }
     },
@@ -1931,18 +1875,6 @@
             "navigation": "sidebar",
             "auxiliaryPanel": true,
             "requires": []
-          },
-          {
-            "id": "lessons",
-            "name": "备课",
-            "path": "/lessons",
-            "navigation": "sidebar",
-            "auxiliaryPanel": true,
-            "requires": [
-              "questions.readForReferenceV2",
-              "resources.readForReferenceV2",
-              "math.readForReferenceV1"
-            ]
           },
           {
             "id": "math",
@@ -1970,7 +1902,6 @@
             "auxiliaryPanel": true,
             "requires": [
               "questions.readForReference",
-              "lessons.readForTeachingLink",
               "math.readForTeachingLinkV1"
             ]
           },
@@ -1982,8 +1913,7 @@
             "auxiliaryPanel": true,
             "requires": [
               "classes.readClass",
-              "classes.readRecord",
-              "lessons.readForTeachingLink"
+              "classes.readRecord"
             ]
           }
         ]
@@ -2009,7 +1939,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -2052,7 +1982,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001"
           },
           {
@@ -2077,7 +2007,7 @@
         "nextNote": "",
         "sources": [
           {
-            "kind": "lesson",
+            "kind": "question",
             "id": "20000000-0000-4000-8000-000000000001",
             "labelAtLink": "函数单调性",
             "currentLabel": "函数单调性",
@@ -2089,6 +2019,25 @@
         "createdAt": "2026-09-21T06:00:00Z",
         "updatedAt": "2026-09-21T06:00:00Z",
         "deletedAt": null
+      }
+    },
+    {
+      "id": "reject-retired-source",
+      "schema": "SourceInputV2",
+      "valid": false,
+      "value": {
+        "kind": "lesson",
+        "id": "20000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "id": "reject-retired-course-field",
+      "schema": "Course",
+      "valid": false,
+      "value": {
+        "classId": null,
+        "recordIds": [],
+        "lessonId": null
       }
     }
   ],
@@ -2206,7 +2155,7 @@
       "precondition": "R1含L1与math",
       "request": {
         "method": "GET",
-        "path": "/api/modules/classes/source-records/lesson/20000000-0000-4000-8000-000000000001"
+        "path": "/api/modules/classes/source-records/question/20000000-0000-4000-8000-000000000001"
       },
       "response": {
         "status": 422,

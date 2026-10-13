@@ -44,6 +44,10 @@ export function emptyRecordInput(classId, recordedOn) {
   };
 }
 
+export function supportedSources(sources = []) {
+  return sources.filter(source => source.kind === 'question' || source.kind === 'math');
+}
+
 /** Editable input derived from a stored record; links keep their display data. */
 export function recordInputFromRecord(record) {
   return {
@@ -55,7 +59,7 @@ export function recordInputFromRecord(record) {
     commonIssues: record.commonIssues,
     nextNote: record.nextNote,
     content: record.content ?? emptyRecordContent(),
-    sources: (record.sources || []).map((source) => ({
+    sources: supportedSources(record.sources).map((source) => ({
       kind: source.kind,
       id: source.id,
       label: source.currentLabel,
@@ -77,7 +81,7 @@ export function recordUpdatePayload(input, baseline) {
     commonIssues: input.commonIssues,
     nextNote: input.nextNote,
     content: input.content ?? emptyRecordContent(),
-    sources: input.sources.map((source) => ({ kind: source.kind, id: source.id }))
+    sources: supportedSources(input.sources).map((source) => ({ kind: source.kind, id: source.id }))
   };
 }
 
@@ -91,7 +95,7 @@ export function recordCreatePayload(input) {
     commonIssues: input.commonIssues,
     nextNote: input.nextNote,
     content: input.content ?? emptyRecordContent(),
-    sources: input.sources.map((source) => ({ kind: source.kind, id: source.id }))
+    sources: supportedSources(input.sources).map((source) => ({ kind: source.kind, id: source.id }))
   };
 }
 
@@ -130,11 +134,11 @@ export function formatRecordedOn(value) {
 }
 
 export function sourceKindLabel(kind) {
-  return { question: t("题目"), lesson: t("备课"), math: t("作品") }[kind];
+  return { question: t("题目"), math: t("作品") }[kind];
 }
 
 export function sourceFallbackLabel(kind) {
-  return { question: t("未命名题目"), lesson: t("未命名备课"), math: t("未命名作品") }[kind];
+  return { question: t("未命名题目"), math: t("未命名作品") }[kind];
 }
 
 /**
@@ -166,5 +170,6 @@ export function sourceHistoryHint(source) {
 /** Product path of a source, so a saved link can be opened from the record. */
 export function sourcePath(kind, id) {
   if (kind === 'math') return `/math?workId=${encodeURIComponent(id)}`;
-  return kind === 'question' ? `/questions/${id}` : `/lessons/${id}`;
+  if (kind === 'question') return `/questions/${encodeURIComponent(id)}`;
+  return null;
 }

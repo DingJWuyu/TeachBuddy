@@ -32,7 +32,7 @@ export default function CourseFeedback({ entryId, originDate, course, timeZone, 
         const content = originDate ? occurrence : entry;
         if (content.course.classId !== record.classId) throw new Error(t("安排班级已改变，请在安排中重新选择记录"));
         const body = Object.fromEntries(['title', 'items', 'time', 'course', 'reminder'].map(key => [key, content[key]]));
-        body.course = { ...content.course, recordIds: [...new Set([...content.course.recordIds, record.id])] };
+        body.course = { classId: content.course.classId, recordIds: [...new Set([...content.course.recordIds, record.id])] };
         const payload = originDate
           ? { expectedVersion: entry.version, mode: 'override', content: body }
           : { ...body, repeat: entry.repeat, expectedVersion: entry.version };
@@ -48,7 +48,6 @@ export default function CourseFeedback({ entryId, originDate, course, timeZone, 
     <ModulePresence present={open && !scene.record} mode="collapse">
     {open && !scene.record && <RecordComposer key={name} accountKey={shell.accountKey} classId={course.classId}
       timeZone={timeZone} draftKey={name}
-      initialSources={course.lessonId ? [{ kind: 'lesson', id: course.lessonId, label: t("本次备课") }] : []}
       onCreated={record => { patch({ record, linked: false }); setOpen(false); }} />}
     </ModulePresence>
     {open && !scene.record && <button type="button" className="wb-text-button" onClick={() => setOpen(false)}>{t("收起")}</button>}

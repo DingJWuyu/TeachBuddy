@@ -29,12 +29,11 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { manualQuestionSample, variantCopySample, lessonSample } from './first-flow-harness.js';
+import { manualQuestionSample, variantCopySample } from './first-flow-harness.js';
 import { createDataStore } from '../src/core/dataStore.js';
 import { hashPassword } from '../src/core/auth.js';
 
 const Q = '/api/modules/questions/items';
-const L = '/api/modules/lessons/items';
 async function account(world, email = 'matrix@example.test', rememberMe = true) {
   const client = world.client();
   await client.request('POST', '/api/auth/session', { body: { action: 'bootstrap' } });
@@ -56,7 +55,7 @@ function problem(result, status) {
   assert.equal(result.headers['cache-control'], 'no-store');
 }
 
-test('C19/C20: all 15 operations use real principal; page rejection precedes data and writes', async () => {
+test('C19/C20: all question and workbench operations use real principal; page rejection precedes data and writes', async () => {
   const world = await createIntegration();
   try {
     const { client } = await account(world);
@@ -65,9 +64,6 @@ test('C19/C20: all 15 operations use real principal; page rejection precedes dat
     assert.equal(created.status, 201, created.text);
     assert.deepEqual((await write(client, 'POST', Q, manualQuestionSample(), key)).json, created.json);
     const q = created.json;
-    const lesson = await write(client, 'POST', L, lessonSample());
-    assert.equal(lesson.status, 201, lesson.text);
-    const l = lesson.json;
     const updateQ = { ...manualQuestionSample(), baseVersion: 1 }; delete updateQ.source;
     const cases = [
       ['GET', '/api/workbench/context'], ['GET', '/api/modules'],
@@ -75,10 +71,7 @@ test('C19/C20: all 15 operations use real principal; page rejection precedes dat
       ['PUT', `${Q}/${q.id}`, updateQ], ['GET', `${Q}/${q.id}/copies`],
       ['POST', `${Q}/${q.id}/copies`, variantCopySample(2), 201],
       ['POST', `${Q}/${q.id}/deletion`, { baseVersion: 2, deleted: true }],
-      ['GET', L], ['POST', L, lessonSample(), 201], ['GET', `${L}/${l.id}`],
-      ['PUT', `${L}/${l.id}`, { ...lessonSample(), baseVersion: 1 }],
-      ['POST', `${L}/${l.id}/deletion`, { baseVersion: 2, deleted: true }],
-      ['GET', `/api/modules/lessons/question-usages/${q.id}`]
+
     ];
     const before = world.workbench.db.prepare('SELECT COUNT(*) n FROM workbench_mutation_keys').get().n;
     for (const page of [null, '', 'a'.repeat(31), 'a'.repeat(33), 'g'.repeat(32), 'f'.repeat(32)]) {

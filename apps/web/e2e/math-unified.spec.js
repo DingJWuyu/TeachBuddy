@@ -380,31 +380,6 @@ test('界面路径：一键编辑、未连接输入保护、菜单键盘与下�
   expect(await page.locator('math-field').evaluate(el => el.getValue('latex'))).toBe('y=x^2+1');
 });
 
-test('备课往返：目标始终可见，保存作品带回原环节', async ({ page }, info) => {
-  await page.getByRole('navigation', { name: '功能模块', exact: true }).getByRole('link', { name: /^备课/ }).click();
-  await page.getByRole('button', { name: '新建备课', exact: true }).click();
-  await page.getByLabel('课题', { exact: true }).fill('二次函数');
-  await page.getByRole('button', { name: '添加教学环节', exact: true }).click();
-  await page.getByLabel('环节名称 1').fill('观察图像');
-  await page.getByRole('button', { name: /^保存(备课)?$/ }).click();
-  await expect(page.locator('[data-save-status]')).toContainText('已保存');
-  await page.locator('[data-section-id]').getByRole('button', { name: '加入材料', exact: true }).click();
-  await page.getByRole('menuitem', { name: '制作数学作品', exact: true }).click();
-  await expect(page.locator('.mw-home-wrapper>.math-integration')).toContainText('观察图像');
-  await page.getByRole('button', { name: '新建作品', exact: true }).click();
-  await expect(page.locator('.math-workshop>.math-integration')).toContainText('观察图像');
-  await page.getByRole('button', { name: '添加公式', exact: true }).click();
-  await expect(page.locator('math-field')).toBeFocused();
-  await page.keyboard.type('y=x^2', { delay: 60 }); await page.keyboard.press('Enter');
-  await expect(page.getByRole('button', { name: '带回备课', exact: true })).toBeEnabled({ timeout: 60000 });
-  await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath('lesson-target.png') });
-  await page.getByRole('button', { name: '带回备课', exact: true }).click();
-  await expect(page.getByLabel('课题', { exact: true })).toHaveValue('二次函数');
-  await expect(page.locator('[data-reference-id]')).toHaveCount(1);
-  await expect(page.locator('[data-save-status]')).toContainText('已保存');
-  await page.reload(); await expect(page.locator('[data-reference-id]')).toHaveCount(1);
-});
-
 test('首页数学对话：缺连接保留输入，一次开始只执行一轮，离开后迟到回复失效', async ({ page }, info) => {
   const { savedMath, deviceMath } = await import('./math-unified-helpers.mjs');
   await page.getByRole('banner').getByRole('button', { name: 'AI 助理', exact: true }).click();

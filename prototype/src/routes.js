@@ -3,7 +3,7 @@
  *
  * The shell navigates for real: the brand, the top-bar nav, every sidebar module
  * row, the support menu and the search results all resolve to a path. Home,
- * schedule and five teaching modules have interactive bodies; other shell
+ * schedule and four teaching modules have interactive bodies; other shell
  * destinations keep their shared empty page.
  *
  * Navigation is client-side. Every anchor keeps a real href, but a plain press is

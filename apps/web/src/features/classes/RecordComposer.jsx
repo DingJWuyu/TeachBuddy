@@ -19,7 +19,7 @@ import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
 import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
 import { useSaveShortcut } from '../workbench/useSaveShortcut.js';
 import { createRecord, decodeRecordRequest, recordRequest } from './api.js';
-import { emptyRecordInput, hasAnyRecordText, recordCreatePayload, todayInZone } from './model.js';
+import { emptyRecordInput, supportedSources, hasAnyRecordText, recordCreatePayload, todayInZone } from './model.js';
 import { SourceChips, SourcePicker } from './SourcePicker.jsx';
 import { RecordFields, RECORD_FIELDS } from './RecordFields.jsx';
 
@@ -28,7 +28,8 @@ export function RecordComposer({ accountKey, classId, timeZone, onCreated, initi
   const draftName = `draft:class-record-new:${draftKey ?? classId}`;
   const [input, setInput] = useState(() => {
     const stored = readLocal(accountKey, draftName);
-    return stored?.input ? { ...stored.input, recordedOn: journal && !stored.manualDate && !hasAnyRecordText(stored.input) && !stored.input.sources.length ? todayInZone(timeZone) : stored.input.recordedOn } : { ...emptyRecordInput(classId, todayInZone(timeZone)), sources: initialSources };
+    const sources = supportedSources(stored?.input?.sources ?? initialSources);
+    return stored?.input ? { ...stored.input, sources, recordedOn: journal && !stored.manualDate && !hasAnyRecordText(stored.input) && !sources.length ? todayInZone(timeZone) : stored.input.recordedOn } : { ...emptyRecordInput(classId, todayInZone(timeZone)), sources };
   });
   const manualDate = useRef(readLocal(accountKey, draftName)?.manualDate ?? false);
   const [expanded, setExpanded] = useState(() => readLocal(accountKey, draftName)?.expanded ?? false);

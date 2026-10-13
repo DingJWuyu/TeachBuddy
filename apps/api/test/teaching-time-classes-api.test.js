@@ -7,7 +7,6 @@ import {
   assertProblem,
   classSample,
   createTeachingTimeClassesHarness,
-  lessonSample,
   questionSample,
   recordSample
 } from './teaching-time-classes-harness.js';
@@ -16,7 +15,6 @@ const CLASSES = '/api/modules/classes/items';
 const RECORDS = '/api/modules/classes/records';
 const SOURCE_RECORDS = '/api/modules/classes/source-records';
 const QUESTIONS = '/api/modules/questions/items';
-const LESSONS = '/api/modules/lessons/items';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 async function withHarness(run) {
@@ -35,11 +33,6 @@ async function seedClass(harness, api, name) {
 
 async function seedQuestion(harness, api, overrides = {}) {
   const created = await api.post(QUESTIONS, questionSample(overrides), { key: harness.nextUuid() }).expect(201);
-  return created.body;
-}
-
-async function seedLesson(harness, api, overrides = {}) {
-  const created = await api.post(LESSONS, lessonSample(overrides), { key: harness.nextUuid() }).expect(201);
   return created.body;
 }
 
@@ -233,20 +226,20 @@ test('TT-C1/WB-T002: 补充实际位置、按班级隔离并按日期排序', as
   });
 });
 
-test('TT-C1/WB-T003/WB-T019: 备课链接保存时标题，两班反馈独立，改删来源不破坏记录', async () => {
+test('TT-C1/WB-T003/WB-T019: 题目链接保存时标题，两班反馈独立，改删来源不破坏记录', async () => {
   await withHarness(async (harness) => {
     const api = harness.agent(harness.createAccount('teacher-a'));
     const first = await seedClass(harness, api, '高一(1)班');
     const second = await seedClass(harness, api, '高一(2)班');
-    const lesson = await seedLesson(harness, api, { title: '函数单调性' });
+    const sourceQuestion = await seedQuestion(harness, api, { title: '函数单调性' });
     const question = await seedQuestion(harness, api, { title: '例1' });
 
     const firstRecord = await api.post(RECORDS, recordSample(first.id, {
-      sources: [{ kind: 'lesson', id: lesson.id }]
+      sources: [{ kind: 'question', id: sourceQuestion.id }]
     }), { key: harness.nextUuid() }).expect(201);
     assert.deepEqual(firstRecord.body.sources, [{
-      kind: 'lesson',
-      id: lesson.id,
+      kind: 'question',
+      id: sourceQuestion.id,
       labelAtLink: '函数单调性',
       currentLabel: '函数单调性',
       deleted: false
@@ -254,23 +247,24 @@ test('TT-C1/WB-T003/WB-T019: 备课链接保存时标题，两班反馈独立，
 
     const secondRecord = await api.post(RECORDS, recordSample(second.id, {
       recordedOn: '2026-09-20',
-      note: '二班也用了这份备课',
-      sources: [{ kind: 'lesson', id: lesson.id }, { kind: 'question', id: question.id }]
+      note: '二班也用了这份题目',
+      sources: [{ kind: 'question', id: sourceQuestion.id }, { kind: 'question', id: question.id }]
     }), { key: harness.nextUuid() }).expect(201);
 
-    const feedback = await api.get(`${SOURCE_RECORDS}/lesson/${lesson.id}`).expect(200);
+    const feedback = await api.get(`${SOURCE_RECORDS}/question/${sourceQuestion.id}`).expect(200);
     assert.deepEqual(feedback.body.items.map((item) => item.id), [firstRecord.body.id, secondRecord.body.id]);
     assert.deepEqual(feedback.body.items.map((item) => item.classId), [first.id, second.id]);
     assert.equal(feedback.body.items[0].note, '例2没讲，任意性还需强调');
-    assert.equal(feedback.body.items[1].note, '二班也用了这份备课');
+    assert.equal(feedback.body.items[1].note, '二班也用了这份题目');
 
-    // Renaming the lesson updates currentLabel, never the saved label or the text.
-    await api.put(`${LESSONS}/${lesson.id}`, {
-      baseVersion: lesson.version,
-      title: '函数单调性（修订）',
-      intro: lesson.intro,
-      sections: lesson.sections,
-      materials: lesson.materials
+    // Renaming the sourceQuestion updates currentLabel, never the saved label or the text.
+    await api.put(`${QUESTIONS}/${sourceQuestion.id}`, {
+      baseVersion: sourceQuestion.version,
+      body: sourceQuestion.body,
+      solution: sourceQuestion.solution,
+      note: sourceQuestion.note,
+      starred: sourceQuestion.starred,
+      title: '函数单调性（修订）'
     }, { key: harness.nextUuid() }).expect(200);
 
     const afterRename = await api.get(`${RECORDS}/${firstRecord.body.id}`).expect(200);
@@ -287,8 +281,8 @@ test('TT-C1/WB-T003/WB-T019: 备课链接保存时标题，两班反馈独立，
     assert.equal(resubmitted.body.version, 2);
     assert.equal(resubmitted.body.sources[0].labelAtLink, '函数单调性');
 
-    // Deleting the lesson keeps the link readable and rejects a new link.
-    await api.post(`${LESSONS}/${lesson.id}/deletion`, {
+    // Deleting the sourceQuestion keeps the link readable and rejects a new link.
+    await api.post(`${QUESTIONS}/${sourceQuestion.id}/deletion`, {
       baseVersion: 2,
       deleted: true
     }, { key: harness.nextUuid() }).expect(200);
@@ -298,20 +292,20 @@ test('TT-C1/WB-T003/WB-T019: 备课链接保存时标题，两班反馈独立，
     assert.equal(afterDelete.body.sources[0].labelAtLink, '函数单调性');
 
     const newLinkToDeleted = await api.post(RECORDS, recordSample(second.id, {
-      note: '想连已删备课',
-      sources: [{ kind: 'lesson', id: lesson.id }]
+      note: '想连已删题目',
+      sources: [{ kind: 'question', id: sourceQuestion.id }]
     }), { key: harness.nextUuid() }).expect(409);
     assertProblem(newLinkToDeleted, 409, '/problems/workbench/reference-deleted');
     assert.equal(harness.countRows('classes_records'), 2, 'no partial record survives the rejected link');
 
     // Feedback for a deleted source is still queryable.
-    const deletedFeedback = await api.get(`${SOURCE_RECORDS}/lesson/${lesson.id}`).expect(200);
+    const deletedFeedback = await api.get(`${SOURCE_RECORDS}/question/${sourceQuestion.id}`).expect(200);
     assert.deepEqual(deletedFeedback.body.items.map((item) => item.id), [firstRecord.body.id, secondRecord.body.id]);
 
-    // The lesson body was never touched by feedback.
-    const lessonAfter = await api.get(`${LESSONS}/${lesson.id}`).expect(200);
-    assert.equal(lessonAfter.body.version, 3);
-    assert.equal(lessonAfter.body.deletedAt !== null, true);
+    // The sourceQuestion body was never touched by feedback.
+    const sourceQuestionAfter = await api.get(`${QUESTIONS}/${sourceQuestion.id}`).expect(200);
+    assert.equal(sourceQuestionAfter.body.version, 3);
+    assert.equal(sourceQuestionAfter.body.deletedAt !== null, true);
 
     // Duplicate kind+id is rejected before any write.
     const duplicate = await api.post(RECORDS, recordSample(first.id, {
@@ -337,9 +331,9 @@ test('TT-C1.6/WB-T002/WB-T019: 删班记录只读，恢复保留原 ID 与来源
   await withHarness(async (harness) => {
     const api = harness.agent(harness.createAccount('teacher-a'));
     const classroom = await seedClass(harness, api, '高一(1)班');
-    const lesson = await seedLesson(harness, api, { title: '函数单调性' });
+    const sourceQuestion = await seedQuestion(harness, api, { title: '函数单调性' });
     const record = await api.post(RECORDS, recordSample(classroom.id, {
-      sources: [{ kind: 'lesson', id: lesson.id }]
+      sources: [{ kind: 'question', id: sourceQuestion.id }]
     }), { key: harness.nextUuid() }).expect(201);
 
     const deletedClass = await api.post(`${CLASSES}/${classroom.id}/deletion`, {
@@ -354,7 +348,7 @@ test('TT-C1.6/WB-T002/WB-T019: 删班记录只读，恢复保留原 ID 与来源
       note: '删班后不该改'
     }), { key: harness.nextUuid() }).expect(409);
     assertProblem(rejected, 409, '/problems/workbench/object-deleted');
-    const feedbackWithDeletedClass = await api.get(`${SOURCE_RECORDS}/lesson/${lesson.id}`).expect(200);
+    const feedbackWithDeletedClass = await api.get(`${SOURCE_RECORDS}/question/${sourceQuestion.id}`).expect(200);
     assert.deepEqual(feedbackWithDeletedClass.body.items, []);
 
     // The class is restored with its original id; the record kept its link.
@@ -366,8 +360,8 @@ test('TT-C1.6/WB-T002/WB-T019: 删班记录只读，恢复保留原 ID 与来源
     const afterRestore = await api.get(`${RECORDS}/${record.body.id}`).expect(200);
     assert.equal(afterRestore.body.id, record.body.id);
     assert.equal(afterRestore.body.version, 1);
-    assert.equal(afterRestore.body.sources[0].id, lesson.id);
-    const feedbackAfterRestore = await api.get(`${SOURCE_RECORDS}/lesson/${lesson.id}`).expect(200);
+    assert.equal(afterRestore.body.sources[0].id, sourceQuestion.id);
+    const feedbackAfterRestore = await api.get(`${SOURCE_RECORDS}/question/${sourceQuestion.id}`).expect(200);
     assert.deepEqual(feedbackAfterRestore.body.items.map((item) => item.id), [record.body.id]);
 
     // A deleted record needs its own restore; restoring the class does not.
@@ -380,7 +374,7 @@ test('TT-C1.6/WB-T002/WB-T019: 删班记录只读，恢复保留原 ID 与来源
     assert.deepEqual(deletedList.body.items.map((item) => item.id), [record.body.id]);
     const activeList = await api.get(RECORDS).query({ classId: classroom.id }).expect(200);
     assert.deepEqual(activeList.body.items, []);
-    const feedbackAfterRecordDelete = await api.get(`${SOURCE_RECORDS}/lesson/${lesson.id}`).expect(200);
+    const feedbackAfterRecordDelete = await api.get(`${SOURCE_RECORDS}/question/${sourceQuestion.id}`).expect(200);
     assert.deepEqual(feedbackAfterRecordDelete.body.items, []);
 
     const restoredRecord = await api.post(`${RECORDS}/${record.body.id}/deletion`, {
@@ -389,7 +383,7 @@ test('TT-C1.6/WB-T002/WB-T019: 删班记录只读，恢复保留原 ID 与来源
     }, { key: harness.nextUuid() }).expect(200);
     assert.equal(restoredRecord.body.id, record.body.id);
     assert.equal(restoredRecord.body.deletedAt, null);
-    const finalFeedback = await api.get(`${SOURCE_RECORDS}/lesson/${lesson.id}`).expect(200);
+    const finalFeedback = await api.get(`${SOURCE_RECORDS}/question/${sourceQuestion.id}`).expect(200);
     assert.deepEqual(finalFeedback.body.items.map((item) => item.id), [record.body.id]);
   });
 });

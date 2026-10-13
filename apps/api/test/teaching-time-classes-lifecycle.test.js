@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
 import { backup, restore } from '../src/workbench/reliability/backup.js';
-import { C, R, http, record } from './teaching-time-classes-materials-fixture.js';
+import { C, R, Q, question, http, record } from './teaching-time-classes-materials-fixture.js';
 
 test('class purge enforces ownership, archive and version; removes records atomically and preserves existing links and backups', async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'classes-lifecycle-'));
@@ -21,13 +21,13 @@ test('class purge enforces ownership, archive and version; removes records atomi
     const call = http(client), other = http(foreign);
     const classroom = await call('POST', C, { name: '待归档班级' }, 201);
     const kept = await call('POST', C, { name: '仍在使用的班级' }, 201);
-    const lesson = await call('POST', '/api/modules/lessons/v3', { title: '保留备课', intro: { version: 1, blocks: [] }, sections: [], materials: [] }, 201);
-    const saved = await call('POST', R, record(classroom.id, [{ kind: 'lesson', id: lesson.id }], '需要彻底删除的课堂原文'), 201);
+    const questionItem = await call('POST', Q, question('保留题目'), 201);
+    const saved = await call('POST', R, record(classroom.id, [{ kind: 'question', id: questionItem.id }], '需要彻底删除的课堂原文'), 201);
     const removed = await call('POST', R, record(classroom.id, [], '已删除记录也要清理'), 201);
     await call('POST', `${R}/${removed.id}/deletion`, { expectedVersion: removed.version, deleted: true });
     const keptRecord = await call('POST', R, record(kept.id, [], '其他班级保留'), 201);
     const entryBody = { title: '已有课程', items: [], time: { date: '2026-09-25', startTime: '09:00', durationMinutes: 60, timeZone: 'Asia/Shanghai' },
-      repeat: null, course: { classId: classroom.id, lessonId: lesson.id, recordIds: [saved.id] }, reminder: null };
+      repeat: null, course: { classId: classroom.id, recordIds: [saved.id] }, reminder: null };
     const entry = await call('POST', '/api/modules/schedule/entries', entryBody, 201);
     const endpoint = `${C}/${classroom.id}/purge`;
     await other('POST', endpoint, { expectedVersion: classroom.version }, 404);
@@ -55,8 +55,8 @@ test('class purge enforces ownership, archive and version; removes records atomi
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM classes_items WHERE id=?').get(classroom.id).n, 0);
     assert.equal((await call('GET', `${C}/${kept.id}`)).name, kept.name);
     assert.equal((await call('GET', `${R}/${keptRecord.id}`)).note, keptRecord.note);
-    assert.equal((await call('GET', `/api/modules/lessons/v3/${lesson.id}`)).title, lesson.title);
-    assert.equal((await call('GET', `/api/modules/classes/v2/source-records/lesson/${lesson.id}`)).items.length, 0);
+    assert.equal((await call('GET', `${Q}/${questionItem.id}`)).title, questionItem.title);
+    assert.equal((await call('GET', `/api/modules/classes/v2/source-records/question/${questionItem.id}`)).items.length, 0);
     const linked = await call('GET', `/api/modules/schedule/entries/${entry.id}`);
     assert.equal(linked.title, entry.title);
     assert.equal(linked.courseState.classroom.deleted, true);

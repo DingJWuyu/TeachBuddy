@@ -71,7 +71,6 @@ test("WB-MTA001/003: rich selection, two-class feedback and exact scene roundtri
         second.id,
         [
           { kind: "question", id: seeded.rich.id },
-          { kind: "lesson", id: legacy.lesson.id },
           { kind: "math", id: legacy.math.id },
         ],
         "二班：配方法需要补讲",

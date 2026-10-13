@@ -2,7 +2,7 @@
 
 Status: Mixed (账户入口与既有外壳已验收；新增模块交互稿待改进与验收)
 
-当前范围包含 TeachBuddy 的账户入口、工作台外壳和新增模块交互稿。首页现为 Agent 工作区，日程与五个模块已有首轮内容和跨模块交互，见[模块原型](modules.md)。新增页面和通知变化尚未通过用户视觉验收，旧外壳截图不能作为新模块的验收证据。
+当前范围包含 TeachBuddy 的账户入口、工作台外壳和新增模块交互稿。首页现为 Agent 工作区，日程与四个模块已有首轮内容和跨模块交互，见[模块原型](modules.md)。新增页面和通知变化尚未通过用户视觉验收，旧外壳截图不能作为新模块的验收证据。
 
 ## 运行
 
@@ -19,12 +19,12 @@ npm run prototype:sidebar
 
 | 文档 | 范围与拥有的标识 |
 | --- | --- |
-| [模块原型](modules.md) | 新增 Agent 首页、五个模块、顶部日程、共享右栏、内部滚动、取材与提醒；当前实现边界及首轮走查 |
+| [模块原型](modules.md) | 新增 Agent 首页、四个模块、顶部日程、共享右栏、内部滚动与提醒；当前实现边界及首轮走查 |
 | [账户入口](auth.md) | 登录、注册、找回密码与会话边界；J11-J13、J25；S14-S21、S36-S47 |
 | [账户场景覆盖](auth-scenarios.md) | CA01-CA40；三端场景复现、截图与验证结果，不重复账户行为定义 |
 | [失败与恢复场景覆盖](auth-behavior-scenarios.md) | CA41-CA109、CA120；三端失败、验证码、恢复与交接场景；CA53 为明确暂缺 |
 | [输入边界场景索引](auth-input-scenarios.md) | CA110-CA119；G06 输入边界的三端复现、截图与结果索引 |
-| [工作台场景覆盖](workbench-scenarios.md) | CW01-CW46、CW52；工作台截图、检查结果与覆盖边界 |
+| [工作台场景覆盖](workbench-scenarios.md) | 当前四模块走查、隐藏恢复、布局持久化与外壳验证入口 |
 | [头部场景覆盖](sidebar-head-scenarios.md) | CW48-CW51；头部、学期对话框与三端交互证据 |
 | [外壳与共享交互](shell.md) | 桌面窄轨、手机抽屉、跳转不重建外壳、浮层互斥与焦点、状态分层；S8、S9、S29 |
 | [导航与搜索](navigation.md) | J1-J4；S1、S2、S2b、S13、S24；导航目的地与支持菜单 |
@@ -40,11 +40,11 @@ npm run prototype:sidebar
 | [flags](../flags/) | 语言菜单用的 20 面圆形国旗，由源码导入并进入构建产物 |
 | [index.html](../index.html)、[Vite 配置](../vite.config.mjs) | 独立运行与构建 |
 | [screenshots](../evidence/screenshots/) | 按旅程分类，文件名包含终端与场景 ID；证据索引由对应场景覆盖文档拥有 |
-| [verification results](../evidence/verification/) | 当前场景断言、几何与交互检查结果，包括账户完整报告与输入边界报告 |
+| [verification results](../evidence/verification/) | 已保留的场景报告；工作台旧报告的固定版本身份见工作台场景覆盖 |
 | [verification](../verification/) | 当前几何、交互、拖拽与响应式验证脚本；账户入口另有走查与截图表脚本 |
 | [项目设计规则](../../docs/rules/design-and-verification.md) | 跨原型与产品适用的设计要求及验证经验 |
 
-下面是仓库保留的验证脚本索引，不是一组适用于当前版本的全量验收命令。账户脚本按账户覆盖文档使用；旧工作台脚本中的空首页、九模块及固定通知断言不适用当前模块稿，尤其不能直接用 `verify-home-empty.mjs` 判定本版是否正确。工作台的历史报告应先逐项核对场景与现状，当前模块覆盖见 [modules.md](modules.md)。
+工作台当前可执行场景及覆盖边界见[工作台场景覆盖](workbench-scenarios.md)。账户脚本按账户覆盖文档使用；专用几何脚本按对应行为选择，以下是入口索引，不表示所有历史报告已经按当前原型重跑。
 
 脚本均从仓库根目录运行：
 
@@ -58,7 +58,6 @@ node prototype/verification/verify-regression.mjs
 node prototype/verification/verify-drag.mjs
 node prototype/verification/verify-ui-review.mjs
 node prototype/verification/verify-visual.mjs
-node prototype/verification/verify-topbar.mjs
 node prototype/verification/capture-hover-details.mjs
 node prototype/verification/verify-navigation-notifications-feedback.mjs
 node prototype/verification/verify-hidden-page-redirect.mjs
@@ -69,10 +68,9 @@ node prototype/verification/verify-sidebar-head.mjs
 node prototype/verification/verify-sidebar-head-geometry.mjs
 node prototype/verification/verify-semester-layout.mjs
 node prototype/verification/verify-semester-actions.mjs
-node prototype/verification/verify-home-empty.mjs
 ```
 
-`capture-workbench.mjs --only=CW27,CW31` 只采集指定场景。`verify-hidden-page-redirect.mjs` 支持 `--only=1` 至 `8`，`verify-flash-chip-collapse-persistence.mjs` 支持 `--only=1` 至 `5`；段号定义在脚本中。分段结果不替代完整结果，异常退出不记为通过。
+当前工作台四项场景脚本执行完整场景，不接受旧 `--only` 编号；历史 CW 编号的复现版本见[工作台场景覆盖](workbench-scenarios.md#补充检查与证据边界)。
 
 头部采集与回归检查使用 PC 1440×900、平板 768×1024、手机 390×844；几何与学期动作专项检查使用 PC 1440×900。`capture-sidebar-head.mjs` 的截图输出指向 `workbench/sidebar-head/`，完整操作与覆盖表见头部场景覆盖。
 

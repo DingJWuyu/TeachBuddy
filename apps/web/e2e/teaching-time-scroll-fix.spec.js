@@ -16,7 +16,7 @@ let runner;
 const entryInput = {
   title: '定向回归课程', items: [],
   time: { date: '2026-09-21', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, lessonId: null, recordIds: [] },
+  repeat: null, course: { classId: null, recordIds: [] },
   reminder: { side: 'before', minutes: 10 }
 };
 async function write(page, url, data) {

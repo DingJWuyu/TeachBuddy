@@ -52,7 +52,7 @@ export function truncateLabel(value) {
 
 /** Display fallback for an empty provider title; never written back to the provider. */
 export function sourceFallbackLabel(kind) {
-  return kind === 'question' ? '未命名题目' : '未命名备课';
+  return kind === 'question' ? '未命名题目' : '未命名作品';
 }
 
 /**

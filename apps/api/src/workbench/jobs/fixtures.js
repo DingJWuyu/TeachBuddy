@@ -20,5 +20,5 @@ export function unconnectedHandlers() {
       throw new Error("Business handler is not connected");
     },
   });
-  return { extraction: make(), export: make(), "question-asset": make() };
+  return { extraction: make(), "question-asset": make() };
 }

@@ -156,17 +156,6 @@
   background: #f97316;
 }
 
-.math-workshop>.math-integration:empty {
-  display: none;
-}
-
-.math-workshop>.math-integration .wb-material-return {
-  margin: 0;
-  border-radius: 0;
-  padding: 10px 18px;
-  flex-wrap: wrap;
-}
-
 .mw-heading-actions {
   display: flex;
   gap: 4px;

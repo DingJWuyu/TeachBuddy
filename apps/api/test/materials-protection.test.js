@@ -10,7 +10,7 @@ import { startMaterialsHttp } from '../../web/e2e/fixtures/materials-integration
 const doc = (text = '') => ({ version: 2, blocks: text ? [{ type: 'paragraph', runs: [{ type: 'text', text }] }] : [] });
 const future = { version: 99, blocks: [{ type: 'future-node', payload: { text: '完整保留', opaque: [1, { future: true }] } }] };
 
-test('stored future Documents reject deletion and replacement atomically through question v2 and lesson v2/v3 HTTP', async (t) => {
+test('stored future Documents reject deletion and replacement atomically through question v2 HTTP', async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'materials-protection-'));
   const world = await startMaterialsHttp(directory);
   const db = new Database(path.join(directory, 'workspace.sqlite'));
@@ -46,39 +46,6 @@ test('stored future Documents reject deletion and replacement atomically through
     }
     assert.equal((await call(qbase + '/' + id, 'PUT', { ...fields, baseVersion: 9 })).status, 409);
     assert.equal((await call(qbase + '/' + id, 'PUT', { ...fields, baseVersion: 1 }, randomUUID(), 'integration-b')).status, 404);
-  }
-  for (const base of ['/api/modules/lessons/v2/items', '/api/modules/lessons/v3']) {
-    for (const location of ['intro', 'section', 'snapshot']) {
-      const input = { title: '保护备课', intro: doc('开头'), sections: [{ id: randomUUID(), title: '环节', content: doc('文稿'), references: [] }], materials: [{ id: randomUUID(), kind: 'question', questionId: source.body.id, questionVersion: 1, note: '本课备注' }] };
-      const key = randomUUID();
-      const created = await call(base, 'POST', input, key);
-      assert.equal(created.status, 201, JSON.stringify(created));
-      const id = created.body.id;
-      if (location === 'intro') db.prepare('UPDATE lesson_items SET intro=? WHERE id=?').run(JSON.stringify(future), id);
-      if (location === 'section') db.prepare('UPDATE lesson_sections SET content=? WHERE lessonId=?').run(JSON.stringify(future), id);
-      if (location === 'snapshot') {
-        const snapshot = { ...created.body.materials[0].snapshot, solution: future };
-        db.prepare('UPDATE lesson_references SET snapshot=? WHERE lessonId=?').run(JSON.stringify(snapshot), id);
-      }
-      const stored = () => ({ item: db.prepare('SELECT * FROM lesson_items WHERE id=?').get(id), sections: db.prepare('SELECT * FROM lesson_sections WHERE lessonId=?').all(id), references: db.prepare('SELECT * FROM lesson_references WHERE lessonId=?').all(id) });
-      const before = stored();
-      assert.equal((await call(base + '/' + id)).status, 200);
-      assert.deepEqual(await call(base, 'POST', input, key), created, 'successful key replays before current content guards');
-      for (const [method, suffix, body] of [['PUT', '', { ...input, sections: [], materials: [], baseVersion: 1 }], ['POST', '/deletion', { baseVersion: 1, deleted: true }]]) {
-        const result = await call(base + '/' + id + suffix, method, body);
-        assert.equal(result.status, 422, JSON.stringify({ base, location, result }));
-        assert.equal(result.body.reason, 'unsupported-content-version');
-        assert.deepEqual(stored(), before);
-      }
-      assert.equal((await call(base + '/' + id, 'PUT', { ...input, baseVersion: 9 })).status, 409);
-    }
-    const input = { title: '正常备课', intro: doc('正常文稿'), sections: [], materials: [] };
-    const created = await call(base, 'POST', input);
-    const saved = await call(base + '/' + created.body.id, 'PUT', { ...input, title: '正常更新', baseVersion: 1 });
-    assert.equal(saved.status, 200);
-    const deleted = await call(base + '/' + created.body.id + '/deletion', 'POST', { baseVersion: 2, deleted: true });
-    assert.equal(deleted.status, 200);
-    assert.equal((await call(base + '/' + created.body.id + '/deletion', 'POST', { baseVersion: 3, deleted: false })).status, 200);
   }
   const { source: omitted, ...fields } = questionInput;
   assert.equal((await call(qbase + '/' + source.body.id, 'PUT', { ...fields, title: '正常修改', baseVersion: 1 })).status, 200);

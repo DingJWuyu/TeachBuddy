@@ -49,13 +49,13 @@
 
 | 需要验证什么 | 入口与使用方法 |
 | --- | --- |
+| 公共文稿实际转换 | `apps/api/test/materials-pandoc.test.js` 使用公共转换器生成固定文稿的 DOCX/PDF，检查可编辑公式、正文与真实文件；不经过业务课稿编排入口。 |
 | Word/WPS 人工编辑与打印 | [Office fixtures](../../apps/web/e2e/fixtures/office/) 的六份 DOCX、源文本/公式/图片；按[人工操作](samples.md#人工-office-样本)核对。输入样本不是产品转换成功证明。 |
-| 备课当前真实输出 | `apps/web/e2e/fixtures/materials-lessons/verify-outputs.mjs` 生成 `test-results/evidence/R34/v1/outputs/`，再由同目录 `office.py` 读取处理；必须先生成本次候选输出。 |
 | 设置/帮助外观 | 按[界面规则](../rules/design-and-verification.md)核对当前运行页面及用户指定参考；截图留本次验证产物 |
 | 题干/答案原稿独立定位 | 先运行 `node apps/web/e2e/fixtures/materials-questions/build.mjs` 构建隔离题库页面，再执行 `npx playwright test -c apps/web/e2e/fixtures/materials-questions/playwright.config.mjs materials-questions-fragments.spec.js`。该 test-principal fixture 使用自己的页面入口，不能用真实认证主应用构建替代。 |
 | Agent 真实模型保留库 | `apps/api/test/fixtures/c26/live.mjs` 生成模型报告和隔离数据；`apps/web/e2e/c26/agent.spec.js` 读取。二者共用 `AGENT_EVIDENCE_DIR`，默认 `test-results/evidence/C26/v1`。执行前核对报告与数据目录来自同一候选；新环境缺少它们时标记未验证，真实模型请求须有本次授权。Agent 扩展开发仍按[项目状态](../plans/run-state.md)暂停。 |
 | API 字段与兼容 | 从[文字契约](../README.md#契约说明)进入；机器契约在 `apps/api/src/contracts/`，交换样本在 `apps/api/test/fixtures/contracts/`。测试以固定样本和预期行为验证实现，不能只用实现自身生成预期结果。 |
 | 固定旧版升级 | `npm run test:api` 包含 A11/T53、R31 题库及班级材料关联旧库升级；数学和材料旧版分别执行 `node scripts/math-support/verify-upgrade.mjs`、`node scripts/materials/verify-migration.mjs`。入口从 `apps/api/test/fixtures/legacy-source/` 的不可变源码包创建旧库，来源、路径和摘要见同目录 `provenance.json`；不需要旧 checkout、Git 归档引用或环境变量。归档内部保留当时的路径。 |
-| 备课与数学旧库升级 | `apps/api/test/math-integration-migrations.test.js` 随 `npm run test:api` 执行。使用入库的 `r31-questions` 原版源码包，分别通过旧版默认装配和其 M41 数学装配的 HTTP 接口创建库、附件及原请求回执，再复制给当前版本升级并重启两次。核对旧业务列、引用、作品版本、文件字节、原键回放、账户隔离与源库不变；允许迁移追加列，不改造旧版源码。输入由测试重建，不需要外部 P/M 验收库或旧 Git 对象，结果只证明该固定旧版。 |
+| 数学旧库升级 | `apps/api/test/math-integration-migrations.test.js` 从固定旧版题库/数学源码包重建库、附件与请求回执，再验证保留模块的数据、文件、回执和重启，并确认退役模块表及迁移记录已清理。原版源码包保持字节固定；退役模块不成为当前功能兼容承诺。缺失或不支持的升级须如实报告，不把旧候选通过结果移用于新版本。 |
 | 外部 E 选页与跨页 | 按[质量样本](samples.md#固定输入与回放)下载并校验公开原件，设置 `M33_PRIVATE_PDF` 后运行 `npm run test:api`；`materials-questions.test.js` 与 `materials-questions-fragments.test.js` 分别核对选页及原件保留、受控提取结果的跨页关联。缺原件时两项明确跳过；这些检查不证明新的 GPU OCR 推理准确率。 |
 | 当前能力核查 | [项目状态的核查入口](../plans/run-state.md#核查入口)指向当前源码、固定样本和可重现测试；既往本机结果只证明当时的候选。新候选按影响范围补验，缺少输入或目标设备时记未验证。 |

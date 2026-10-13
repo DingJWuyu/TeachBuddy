@@ -211,21 +211,21 @@ test('WB-AG-018: 12次provider上限停止，无自动重置窗口',async()=>{
  try {const c=await register(w);const path=await start(c);const s=await finished(c,path);assert.equal(s.turns[0].reason,'run-limit');assert.equal(p.requests(),12);assert.equal(s.turns[0].usage.requestsStarted,12);assert.equal(s.toolCalls.length,12);}finally{await w.close();}
 });
 
-test('WB-AG-009/014: 复制已保存而备课版本冲突，保留副本和真实失败结果',async()=>{
- let c,question,lesson;
+test('WB-AG-009/014: 复制已保存而原题版本冲突，保留副本和真实失败结果',async()=>{
+ let c,question;
  const p=await provider([
  ()=>[{type:'toolCall',id:'partial-copy',name:'wb_copy_question',arguments:{id:question.id,body:variantCopySample(1)}}],
  async context=>{
   const copy=context.messages.find(m=>m.role==='toolResult'&&m.toolCallId==='partial-copy').details.result;
-  const edit={title:'老师已改备课',intro:{version:1,blocks:[]},sections:[],materials:[],baseVersion:1};
-  assert.equal((await write(c,'PUT','/api/modules/lessons/items/'+lesson.id,edit)).status,200);
-  return [{type:'toolCall',id:'partial-lesson',name:'wb_update_lesson',arguments:{id:lesson.id,body:{...edit,title:lesson.title,materials:[{id:randomUUID(),questionId:copy.id,questionVersion:1,note:''}]}}}];
+  const { source, ...fields } = manualQuestionSample();
+  const edit={...fields,title:'老师已改原题',baseVersion:1};
+  assert.equal((await write(c,'PUT','/api/modules/questions/items/'+question.id,edit)).status,200);
+  return [{type:'toolCall',id:'partial-question',name:'wb_update_question',arguments:{id:question.id,body:{...edit,title:copy.title}}}];
  }]);
  const w=await createIntegration({agent:p.config});
  try {c=await register(w);question=(await write(c,'POST','/api/modules/questions/items',manualQuestionSample())).json;
- lesson=(await write(c,'POST','/api/modules/lessons/items',{title:'原备课',intro:{version:1,blocks:[]},sections:[],materials:[]})).json;
- const path=await start(c,'复制并加入备课');const s=await finished(c,path);assert.equal(s.turns[0].reason,'tool-rejected');assert.deepEqual(s.operations.map(o=>o.state),['confirmed','rejected']);
- assert.equal((await c.request('GET','/api/modules/questions/items/'+question.id+'/copies')).json.items.length,1);assert.equal((await c.request('GET','/api/modules/lessons/items/'+lesson.id)).json.title,'老师已改备课');
+ const path=await start(c,'复制后修改原题');const s=await finished(c,path);assert.equal(s.turns[0].reason,'tool-rejected');assert.deepEqual(s.operations.map(o=>o.state),['confirmed','rejected']);
+ assert.equal((await c.request('GET','/api/modules/questions/items/'+question.id+'/copies')).json.items.length,1);assert.equal((await c.request('GET','/api/modules/questions/items/'+question.id)).json.title,'老师已改原题');
  const key=(await c.request('GET','/api/workbench/context')).json.accountKey;const results=w.workbench.agent.store.read(key,s.conversation.id).entries.filter(e=>e.message?.role==='toolResult');assert.deepEqual(results.map(e=>e.message.isError),[false,true]);assert.equal(p.requests(),2);
  }finally{await w.close();}
 });
@@ -312,25 +312,25 @@ test('WB-AG-004/008: 固定A11产品真实旧库升级，认证与题目记录�
  }finally{await w.close();fs.rmSync(source,{recursive:true,force:true});}
 });
 
-test('WB-AG-008/019: 13个真实SDK工具贯通手工HTTP业务与删除恢复版本',async()=>{
- let question,lesson;
- const questionBody=manualQuestionSample();const lessonBody={title:'工具全链备课',intro:{version:1,blocks:[]},sections:[],materials:[]};
+test('WB-AG-008/019: 7个真实SDK工具贯通手工HTTP业务与删除恢复版本',async()=>{
+ let question;
+ const questionBody=manualQuestionSample();
  const tool=(id,name,args)=>({type:'toolCall',id,name,arguments:args});
  const p=await provider([
-  [tool('all-create-q','wb_create_question',{body:questionBody}),tool('all-create-l','wb_create_lesson',{body:lessonBody})],
-  context=>{question=context.messages.find(m=>m.toolCallId==='all-create-q').details.result;lesson=context.messages.find(m=>m.toolCallId==='all-create-l').details.result;return [tool('all-get-q','wb_get_question',{id:question.id}),tool('all-get-l','wb_get_lesson',{id:lesson.id}),tool('all-list-q','wb_list_questions',{}),tool('all-list-l','wb_list_lessons',{})];},
-  ()=>[tool('all-update-q','wb_update_question',{id:question.id,body:{title:'已由工具修改',body:question.body,solution:question.solution,note:question.note,starred:true,baseVersion:1}}),tool('all-update-l','wb_update_lesson',{id:lesson.id,body:{...lessonBody,title:'已由工具修改备课',baseVersion:1}})],
+  [tool('all-create-q','wb_create_question',{body:questionBody})],
+  context=>{question=context.messages.find(m=>m.toolCallId==='all-create-q').details.result;return [tool('all-get-q','wb_get_question',{id:question.id}),tool('all-list-q','wb_list_questions',{})];},
+  ()=>[tool('all-update-q','wb_update_question',{id:question.id,body:{title:'已由工具修改',body:question.body,solution:question.solution,note:question.note,starred:true,baseVersion:1}})],
   ()=>[tool('all-copy','wb_copy_question',{id:question.id,body:variantCopySample(2)})],
-  ()=>[tool('all-copies','wb_list_derivatives',{id:question.id}),tool('all-usages','wb_list_question_usages',{questionId:question.id})],
-  ()=>[tool('all-delete-q','wb_set_question_deletion',{id:question.id,body:{baseVersion:2,deleted:true}}),tool('all-delete-l','wb_set_lesson_deletion',{id:lesson.id,body:{baseVersion:2,deleted:true}})],
-  ()=>[tool('all-restore-q','wb_set_question_deletion',{id:question.id,body:{baseVersion:3,deleted:false}}),tool('all-restore-l','wb_set_lesson_deletion',{id:lesson.id,body:{baseVersion:3,deleted:false}})],
+  ()=>[tool('all-copies','wb_list_derivatives',{id:question.id})],
+  ()=>[tool('all-delete-q','wb_set_question_deletion',{id:question.id,body:{baseVersion:2,deleted:true}})],
+  ()=>[tool('all-restore-q','wb_set_question_deletion',{id:question.id,body:{baseVersion:3,deleted:false}})],
   [{type:'text',text:'完成'}]
  ]);
  const w=await createIntegration({agent:p.config});
- try{const c=await register(w);const endpoint=await start(c,'执行已明确授权的创建修改复制删除恢复');const s=await finished(c,endpoint);assert.equal(s.turns[0].state,'completed',JSON.stringify(s));assert.equal(new Set(s.toolCalls.map(t=>t.name)).size,13);assert.equal(p.requests(),8);
- assert.equal((await c.request('GET','/api/modules/questions/items/'+question.id)).json.version,4);assert.equal((await c.request('GET','/api/modules/lessons/items/'+lesson.id)).json.version,4);
+ try{const c=await register(w);const endpoint=await start(c,'执行已明确授权的创建修改复制删除恢复');const s=await finished(c,endpoint);assert.equal(s.turns[0].state,'completed',JSON.stringify(s));assert.equal(new Set(s.toolCalls.map(t=>t.name)).size,7);assert.equal(p.requests(),8);
+ assert.equal((await c.request('GET','/api/modules/questions/items/'+question.id)).json.version,4);
  const copies=(await c.request('GET','/api/modules/questions/items/'+question.id+'/copies')).json;assert.deepEqual(s.toolCalls.find(t=>t.name==='wb_list_derivatives').result,copies);
- const key=(await c.request('GET','/api/workbench/context')).json.accountKey;const native=w.workbench.agent.store.read(key,s.conversation.id).entries.filter(e=>e.message?.role==='toolResult');assert.equal(native.length,15);assert.ok(native.every(e=>!e.message.isError));
+ const key=(await c.request('GET','/api/workbench/context')).json.accountKey;const native=w.workbench.agent.store.read(key,s.conversation.id).entries.filter(e=>e.message?.role==='toolResult');assert.equal(native.length,8);assert.ok(native.every(e=>!e.message.isError));
  }finally{await w.close();}
 });
 

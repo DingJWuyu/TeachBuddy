@@ -12,11 +12,6 @@ export function ResourceInfo({
   onManage,
   disabled,
   dirty,
-  usages,
-  fileHistory = [],
-  usageError,
-  onRefresh,
-  onOpenLesson,
 }) {
   const { t } = useTranslation("resources");
   if (!item || !draft)
@@ -113,7 +108,7 @@ export function ResourceInfo({
         </fieldset>
         <label> {t("备注")} <textarea
             aria-label={t("资源笔记")}
-            placeholder={t("记下用途、使用方法或下次备课的想法…")}
+            placeholder={t("记下用途、使用方法或教学想法…")}
             maxLength={20000}
             value={draft.note}
             onChange={(event) => onEdit({ note: event.target.value })}
@@ -133,44 +128,6 @@ export function ResourceInfo({
           </div>
         )}
       </form>
-      <section className="res-usages">
-        <h2>
-          <Icon name="lessons" size={16} /> {t("用于哪些备课")}<span className="res-count">{usages.length}</span>
-        </h2>
-        {usageError ? (
-          <p role="alert"> {t("使用位置暂时无法读取。")}<button onClick={onRefresh}>{t("重试")}</button>
-          </p>
-        ) : usages.length ? (
-          usages.map((usage) => (
-            <button
-              className="res-usage"
-              key={usage.referenceId}
-              onClick={() => onOpenLesson?.(usage)}
-            >
-              <span>{usage.lessonTitle}</span>
-              <small>
-                {usage.sectionTitle ?? t("备用材料")}
-                {usage.adoptedVersion < item.version &&
-                  (() => {
-                    const adopted = fileHistory.find(
-                      (entry) => entry.version <= usage.adoptedVersion,
-                    );
-                    return !adopted
-                      ? t(" · 资料有更新")
-                      : adopted.fileId !== item.fileId ||
-                          adopted.supplementPreviewFileId !==
-                            item.supplementPreviewFileId
-                        ? t(" · 文件有更新")
-                        : t(" · 资料信息有更新");
-                  })()}
-              </small>
-              <Icon name="arrowRight" size={14} />
-            </button>
-          ))
-        ) : (
-          <p className="res-muted">{t("尚未加入备课")}</p>
-        )}
-      </section>
       <ModuleDisclosure title={t("原文件信息")} className="res-file-details">
         <div className="res-file-info">
           <strong>{file?.name}</strong>

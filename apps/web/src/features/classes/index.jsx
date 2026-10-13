@@ -6,9 +6,8 @@ import { RecordMoveDialog } from './RecordMoveDialog.jsx';
  * /classes/:classId/records/:recordId.
  *
  * The page owns its two panes and their data; the shell only passes the current
- * route (when it has parsed one) and the account identity. Reverse feedback and
- * the class/record selector are exported from here for the lessons, questions
- * and schedule pages to assemble.
+ * route (when it has parsed one) and the account identity. Reverse feedback is
+ * exported for the questions and math pages to assemble.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWorkbenchShell } from '../workbench/shellContext.js';
@@ -335,7 +334,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
       </ModulePresence>
       <ModulePresence present={Boolean(confirmingPurge)}>
         {confirmingPurge && <ConfirmDialog title={t("彻底删除班级")}
-          message={t("永久删除「{{className}}」及其全部课堂记录，无法恢复。关联的备课、题目、作品和日程会保留。", { className: confirmingPurge.name })}
+          message={t("永久删除「{{className}}」及其全部课堂记录，无法恢复。关联的题目、作品和日程会保留。", { className: confirmingPurge.name })}
           confirmLabel={t("彻底删除")} onCancel={() => setConfirmingPurge(null)} onConfirm={confirmPurge} />}
       </ModulePresence>
       <ModulePresence present={Boolean(scene.creatingClass)}>
@@ -345,7 +344,7 @@ export default function ClassesPage({ route, timeZone = DEFAULT_TIME_ZONE } = {}
   );
 }
 
-export { SourceRecordsPanel, ClassRecordPicker } from './FeedbackPanel.jsx';
+export { SourceRecordsPanel } from './FeedbackPanel.jsx';
 export { RecordComposer } from './RecordComposer.jsx';
 
 /** Keep account time-zone loading and retry visible at the class entry. */

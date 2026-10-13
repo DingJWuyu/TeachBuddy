@@ -4,7 +4,7 @@ import { createScheduleHarness } from './fixtures/teaching-time-schedule/harness
 const E = '/api/modules/schedule/entries';
 const L = '/api/modules/schedule/labels';
 const empty = () => ({ title: '备课', items: [], time: { date: '2026-09-25', startTime: '09:00', durationMinutes: 60, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, lessonId: null, recordIds: [] }, reminder: null, calendar: { allDay: false, notes: '', tags: [] } });
+  repeat: null, course: { classId: null, recordIds: [] }, reminder: null, calendar: { allDay: false, notes: '', tags: [] } });
 const repeat = overrides => ({ until: '2026-12-31', frequency: 'weekly', interval: 1, weekdays: [1,2,3,4,5], monthly: 'date', count: 0, ...overrides });
 async function world(run) {
   const h = await createScheduleHarness();

@@ -14,11 +14,11 @@ try {
     const { client } = await registerMath(world, email);
     const call = http(client);
     const { rich } = await seedRich(client);
-    const { lesson, math } = await seedLegacy(client);
+    const { math } = await seedLegacy(client);
     for (const [name, note] of [['高一一班', '零点需要再练'], ['高一二班', '配方法需要补讲']]) {
       const classroom = await call('POST', C, { name }, 201);
       await call('POST', R, record(classroom.id, [
-        { kind: 'question', id: rich.id }, { kind: 'lesson', id: lesson.id }, { kind: 'math', id: math.id }
+        { kind: 'question', id: rich.id }, { kind: 'math', id: math.id }
       ], note), 201);
     }
   }

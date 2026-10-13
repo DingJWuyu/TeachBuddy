@@ -11,7 +11,7 @@ const E = '/api/modules/schedule/entries';
 const N = '/api/modules/schedule/notifications';
 let world, client, now, pageErrors;
 const input = (title, extra = {}) => ({ title, items: [], time: { date: '2026-09-25', startTime: '15:00', durationMinutes: 60, timeZone: 'Asia/Shanghai' },
-  repeat: null, course: { classId: null, lessonId: null, recordIds: [] }, reminder: null, calendar: { allDay: false, notes: '', tags: [] }, ...extra });
+  repeat: null, course: { classId: null, recordIds: [] }, reminder: null, calendar: { allDay: false, notes: '', tags: [] }, ...extra });
 async function call(method, url, body) {
   const r = await client.request(method, url, { body, headers: method === 'GET' ? {} : { 'Idempotency-Key': randomUUID() } });
   expect(r.status, JSON.stringify(r.json)).toBeLessThan(300); return r.json;
@@ -234,9 +234,8 @@ test('单次重复提醒摘要明确范围并保存后重开', async ({ page }) 
 
 test('重复任务这一次移回待安排，保留内容及后续排期', async ({ page }) => {
   const classroom = await call('POST', C, { name: '移回待安排的班级' });
-  const lesson = await call('POST', '/api/modules/lessons/v3', { title: '函数课堂', intro: { version: 1, blocks: [] }, sections: [], materials: [] });
   const item = { id: randomUUID(), text: '课堂清单', priority: 'normal' };
-  const value = input('待调整重复课堂', { repeat: { until: '2026-10-09' }, items: [item], course: { classId: classroom.id, lessonId: lesson.id, recordIds: [] }, calendar: { allDay: false, notes: '保留课堂笔记', tags: [] } });
+  const value = input('待调整重复课堂', { repeat: { until: '2026-10-09' }, items: [item], course: { classId: classroom.id, recordIds: [] }, calendar: { allDay: false, notes: '保留课堂笔记', tags: [] } });
   let entry = await call('POST', E, value);
   const { repeat, ...instance } = value;
   await call('PUT', `${E}/${entry.id}/exceptions/2026-10-02`, { expectedVersion: entry.version, mode: 'override', content: { ...instance, title: '旧单次例外' } });
@@ -303,14 +302,12 @@ test('提醒按需配置，关闭浏览器后补呈现原时间，计划不被�
 
 test('教学关联实际提供方、换班清记录、单次例外保留记录且不改模板', async ({ page }) => {
   const first = await call('POST', C, { name: '高一（1）班' }); const second = await call('POST', C, { name: '高一（2）班' });
-  const lesson = await call('POST', '/api/modules/lessons/v3', { title: '函数单调性', intro: { version: 1, blocks: [] }, sections: [], materials: [] });
   const actual = await call('POST', R, record(first.id, [], '一班已讲到函数定义'));
   const other = await call('POST', R, record(second.id, [], '二班还需要复习'));
   const task = await call('POST', E, input('重复课堂', { repeat: { until: '2026-10-09' } }));
   await page.reload(); await open(page, '重复课堂'); await action(page, '教学关联');
   let dialog = page.getByRole('dialog', { name: '教学关联', exact: true });
   await dialog.getByLabel('班级', { exact: true }).selectOption(first.id);
-  await dialog.getByLabel('备课', { exact: true }).selectOption(lesson.id);
   await dialog.getByRole('checkbox', { name: /一班已讲到函数定义/ }).check();
   await shot(page, 'course-desktop');
   await dialog.getByRole('button', { name: '完成', exact: true }).click();

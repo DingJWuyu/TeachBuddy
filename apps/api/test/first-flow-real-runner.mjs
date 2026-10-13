@@ -110,8 +110,6 @@ function record(name, ok, detail, response) {
 }
 
 const QUESTIONS = '/api/modules/questions/items';
-const LESSONS = '/api/modules/lessons/items';
-const USAGES = '/api/modules/lessons/question-usages';
 const ACCOUNT_A = 'fixture-teacher-a';
 const ACCOUNT_B = 'fixture-teacher-b';
 
@@ -161,46 +159,6 @@ async function firstPhase() {
     search.status === 200 && search.body.items.length === 1 && search.body.items[0].id === created.body.id,
     `items=${search.body.items.length}`,
     search
-  );
-
-  const sectionId = uuid(10);
-  const lesson = await call('POST', LESSONS, {
-    body: {
-      title: '二次函数的最值',
-      intro: { version: 1, blocks: [] },
-      sections: [{ id: sectionId, title: '例题讨论', content: { version: 1, blocks: [] }, references: [] }],
-      materials: []
-    },
-    key: uuid(2),
-    cookie: cookieA
-  });
-  record('create-lesson-201', lesson.status === 201 && lesson.body.sections.length === 1, `status=${lesson.status}`, lesson);
-
-  const referenceId = uuid(11);
-  const referenced = await call('PUT', `${LESSONS}/${lesson.body.id}`, {
-    body: {
-      baseVersion: 1,
-      title: lesson.body.title,
-      intro: lesson.body.intro,
-      sections: [{
-        id: sectionId,
-        title: '例题讨论',
-        content: { version: 1, blocks: [] },
-        references: [{ id: referenceId, questionId: created.body.id, questionVersion: 1, note: '引用原题' }]
-      }],
-      materials: []
-    },
-    key: uuid(3),
-    cookie: cookieA
-  });
-  const reference = referenced.body?.sections?.[0]?.references?.[0];
-  record(
-    'lesson-reference-with-server-snapshot',
-    referenced.status === 200
-      && referenced.body.version === 2
-      && reference?.snapshot?.title === questionSample.title,
-    `status=${referenced.status} snapshot=${reference?.snapshot?.title}`,
-    referenced
   );
 
   const edit = await call('PUT', `${QUESTIONS}/${created.body.id}`, {
@@ -309,9 +267,6 @@ async function firstPhase() {
   fs.writeFileSync(statePath, `${JSON.stringify({
     questionId: created.body.id,
     questionKey: keyQ,
-    lessonId: lesson.body.id,
-    referenceId,
-    sectionId,
     createdAt: created.body.createdAt,
     version: created.body.version,
     currentVersion: edit.body.version
@@ -349,25 +304,7 @@ async function afterRestartPhase() {
     list
   );
 
-  const lesson = await call('GET', `${LESSONS}/${state.lessonId}`, { cookie: cookieA });
-  const reference = lesson.body?.sections?.[0]?.references?.[0];
-  record(
-    'restart-reference-and-snapshot-survive',
-    lesson.status === 200
-      && reference?.id === state.referenceId
-      && reference?.snapshot?.title === questionSample.title
-      && reference?.sourceState === 'active',
-    `status=${lesson.status} sourceState=${reference?.sourceState}`,
-    lesson
-  );
 
-  const usages = await call('GET', `${USAGES}/${state.questionId}`, { cookie: cookieA });
-  record(
-    'restart-usages-find-reference',
-    usages.status === 200 && usages.body.items.length === 1,
-    `items=${usages.body.items.length}`,
-    usages
-  );
 }
 
 if (options.phase === 'first') {

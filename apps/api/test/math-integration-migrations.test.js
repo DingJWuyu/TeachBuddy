@@ -20,11 +20,11 @@ function businessState(sqlitePath, columns) {
   const db = new Database(sqlitePath, { readonly: true });
   try {
     columns ??= Object.fromEntries(db.prepare(`SELECT name FROM sqlite_master
-      WHERE type='table' AND (name LIKE 'lesson_%' OR name LIKE 'question_%'
+      WHERE type='table' AND (name LIKE 'question_%'
         OR name LIKE 'resource_%' OR name LIKE 'math_%'
         OR name='materials_files' OR name='workbench_mutation_keys') ORDER BY name`).all()
       .map(({ name }) => [name, db.prepare(`PRAGMA table_info(${quote(name)})`).all().map(c => c.name)]));
-    // Additive migrations may add columns; all original columns and rows must survive.
+    // Existing columns and rows of retained modules must survive the upgrade.
     const rows = Object.fromEntries(Object.entries(columns).map(([table, names]) => [table,
       db.prepare(`SELECT ${names.map(quote).join(',')} FROM ${quote(table)} ORDER BY rowid`).all(),
     ]));
@@ -84,7 +84,7 @@ async function downloadHash(runtime, id) {
   return digest(result.body);
 }
 
-for (const kind of ['lessons', 'math']) {
+for (const kind of ['questions', 'math']) {
   test(`MC11: fixed R31 ${kind} library preserves rows, files and receipts across upgrade and two restarts`, async t => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), `legacy-${kind}-library-`));
     const original = path.join(root, 'original');
@@ -109,19 +109,12 @@ for (const kind of ['lessons', 'math']) {
         return result.body;
       }
       const uploaded = await send(runtime, 'post', '/api/workbench/files')
-        .set('Idempotency-Key', randomUUID()).attach('file', Buffer.from('固定旧版原件：公式与备课资料'), '原件.txt');
+        .set('Idempotency-Key', randomUUID()).attach('file', Buffer.from('固定旧版原件：公式与题目资料'), '原件.txt');
       assert.equal(uploaded.status, 201, JSON.stringify(uploaded.body));
       let readRoute, expected;
-      if (kind === 'lessons') {
-        const question = await save('post', '/api/modules/questions/items', manualQuestionSample(), 201);
-        const doc = { version: 1, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text: '旧版讲课思路' }] }] };
-        expected = await save('post', '/api/modules/lessons/items', {
-          title: '旧版备课', intro: doc, materials: [],
-          sections: [{ id: randomUUID(), title: '讲解', content: doc, references: [{
-            id: randomUUID(), questionId: question.id, questionVersion: question.version, note: '保留引用备注',
-          }] }],
-        }, 201);
-        readRoute = `/api/modules/lessons/items/${expected.id}`;
+      if (kind === 'questions') {
+        expected = await save('post', '/api/modules/questions/items', manualQuestionSample(), 201);
+        readRoute = `/api/modules/questions/items/${expected.id}`;
       } else {
         const samples = JSON.parse(fs.readFileSync(new URL('./fixtures/contracts/math-samples.json', import.meta.url)));
         const input = samples.find(s => s.id === 'create-formula').value;
@@ -137,7 +130,7 @@ for (const kind of ['lessons', 'math']) {
       const files = runtime.workbench.db.prepare('SELECT id FROM materials_files ORDER BY id').all();
       const downloads = new Map();
       for (const { id } of files) downloads.set(id, await downloadHash(runtime, id));
-      const oldLedger = runtime.workbench.db.prepare('SELECT * FROM workbench_migrations ORDER BY rowid').all();
+      const oldLedger = runtime.workbench.db.prepare("SELECT * FROM workbench_migrations WHERE moduleId <> 'lessons' ORDER BY rowid").all();
       await closeLibrary(runtime); runtime = null;
       const before = businessState(path.join(original, 'workspace.sqlite'));
       const originalFiles = fileHashes(path.join(original, 'files'));
@@ -154,25 +147,8 @@ for (const kind of ['lessons', 'math']) {
         assert.equal(current.status, 200, JSON.stringify(current.body));
         assert.deepEqual(current.body, expected);
         assert.equal((await send(runtime, 'get', readRoute, otherAccount)).status, 404);
-        if (kind === 'lessons') {
-          const list = await send(runtime, 'get', '/api/modules/lessons/v3');
-          assert.equal(list.status, 200);
-          assert.ok(list.body.items.some(item => item.id === expected.id));
-          const lesson = await send(runtime, 'get', `/api/modules/lessons/v3/${expected.id}`);
-          assert.equal(lesson.status, 200);
-          for (const field of ['id', 'version', 'title', 'createdAt', 'updatedAt', 'deletedAt', 'materials'])
-            assert.deepEqual(lesson.body[field], expected[field], field);
-          assert.deepEqual(lesson.body.intro, expected.intro);
-          // New reads project the v1 reference to v3 without rewriting its stored snapshot.
-          // This seed has no solution, so its contract-defined answerStatus is absent.
-          assert.deepEqual(lesson.body.sections, expected.sections.map(section => ({
-            ...section,
-            references: section.references.map(reference => ({
-              ...reference, kind: 'question', afterBlock: null,
-              snapshot: { ...reference.snapshot, answerStatus: 'absent' },
-            })),
-          })));
-        }
+        assert.equal(runtime.workbench.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='lesson_items'").get(), undefined);
+        assert.equal(runtime.workbench.db.prepare("SELECT 1 FROM workbench_migrations WHERE moduleId='lessons'").get(), undefined);
         for (const receipt of receipts) {
           const replay = await send(runtime, receipt.method, receipt.route)
             .set('Idempotency-Key', receipt.key).send(receipt.input);

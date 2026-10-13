@@ -64,6 +64,12 @@ const dragTo = async (fromLabel, toExpr) => p.evaluate(({ fromLabel, toExpr }) =
   return { x: Math.round(x), y: Math.round(y) };
 }, { fromLabel, toExpr });
 
+// This boundary case needs two populated groups. The current default keeps
+// Ungrouped empty, so prepare it using the existing drop path first.
+await dragTo('班级教学', "document.querySelector('[data-drop-group=\"ungrouped\"] .tb-group-heading')");
+await p.waitForSelector('[data-drop-group="ungrouped"] [data-drop-module="classes"]');
+await p.evaluate(() => { window.__mutations = 0; });
+
 // --- 1. geometry must not move while hovering a drop target ---
 //
 // The dragstart and the dragover go in separate evaluations: the mark is React
@@ -72,8 +78,8 @@ const dragTo = async (fromLabel, toExpr) => p.evaluate(({ fromLabel, toExpr }) =
 const before = await rowGeometry();
 await p.evaluate(() => {
   const rows = [...document.querySelectorAll('.tb-module-row')];
-  const from = rows.find((r) => r.textContent.includes('课程标准'));
-  const onto = rows.find((r) => r.textContent.includes('学生'));
+  const from = rows.find((r) => r.textContent.includes('资源库'));
+  const onto = rows.find((r) => r.textContent.includes('数学工坊'));
   const rect = onto.getBoundingClientRect();
   const dt = new DataTransfer();
   from.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
@@ -120,7 +126,7 @@ const headingSetup = await p.evaluate(() => {
   const second = groups[1];
   const heading = second.querySelector('.tb-group-toggle');
   const rect = heading.getBoundingClientRect();
-  const from = [...document.querySelectorAll('.tb-module-row')].find((r) => r.textContent.includes('课程标准'));
+  const from = [...document.querySelectorAll('.tb-module-row')].find((r) => r.textContent.includes('资源库'));
   const dt = new DataTransfer();
   from.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
   // a few pixels below the heading, still above the first row
@@ -159,7 +165,7 @@ await p.evaluate(() => {
   const second = groups[1];
   const rect = second.querySelector('.tb-group-toggle').getBoundingClientRect();
   const rows = [...document.querySelectorAll('.tb-module-row')];
-  const from = rows.find((r) => r.textContent.includes('课程标准'));
+  const from = rows.find((r) => r.textContent.includes('资源库'));
   const dt = new DataTransfer();
   from.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
   const over = { bubbles: true, cancelable: true, dataTransfer: dt, clientX: rect.x + 40, clientY: rect.y + 8 };
@@ -177,12 +183,12 @@ const orderAfter = await p.evaluate(() => {
 });
 const secondGroup = orderAfter[1];
 ok('dropping there puts the module first in that group',
-  secondGroup.modules[0] === '课程标准',
+  secondGroup.modules[0] === '资源库',
   JSON.stringify({ orderBefore, secondGroup }));
 
 // --- 4. no jitter on the real drop-target path either ---
 const before4 = await rowGeometry();
-await dragTo('成绩', "document.querySelector('.tb-module-row:nth-of-type(1)')");
+await dragTo('班级教学', "document.querySelector('.tb-module-row:nth-of-type(1)')");
 await p.waitForTimeout(200);
 ok('no console errors', errs.length === 0, JSON.stringify(errs.slice(0, 3)));
 

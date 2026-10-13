@@ -25,9 +25,6 @@ export const B15_ACCOUNTS = Object.freeze({
 /** Real tables the physical evidence may count; no other name is accepted. */
 const COUNTABLE_TABLES = new Set([
   'question_items',
-  'lesson_items',
-  'lesson_sections',
-  'lesson_references',
   'workbench_mutation_keys'
 ]);
 

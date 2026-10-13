@@ -280,7 +280,7 @@ export function createResourcesModule({
           "DELETE FROM resource_items WHERE accountKey=? AND id=?",
         ).run(principal.accountKey, id);
         history.remove(principal, id);
-        // Lesson snapshots and managed file bytes have their own lifetime.
+        // Managed file bytes have their own lifetime.
         return { id, permanentlyDeleted: true };
       },
     },

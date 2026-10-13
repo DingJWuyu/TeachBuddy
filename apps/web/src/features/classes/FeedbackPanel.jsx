@@ -1,21 +1,12 @@
 import i18n from '../../i18n/index.js';
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: 'classes', ...options });
-/**
- * Reverse feedback and the class/record selector, exported for the lessons,
- * questions and schedule pages (T53 assembles them).
- *
- * The panel answers "which classes actually used this material": active records
- * in active classes, ordered like the class record list, each one opening the
- * same record the class page owns. The selector is the schedule's course link:
- * a deleted class has no selectable records, and changing the class clears the
- * chosen records so an entry can never point at another class's record.
- */
+/** Active teaching records linked to a question or math work. */
 import { useEffect, useState } from 'react';
 import { useWorkbenchShell } from '../workbench/shellContext.js';
 import { navigate } from '../workbench/routes.js';
 import { Icon } from '../workbench/icons.jsx';
-import { listClasses, listRecords, listSourceRecords } from './api.js';
+import { listClasses, listSourceRecords } from './api.js';
 import { formatRecordedOn, recordExcerpt } from './model.js';
 
 /** Active class names; reverse feedback only ever returns active classes. */
@@ -108,92 +99,6 @@ function SourceRecordsContent({ kind, id, generation, onOpenRecord, emptyText = 
             </li>
           ))}
         </ul>
-      )}
-    </div>
-  );
-}
-
-export function ClassRecordPicker({ classId, recordIds = [], onChange, disabled = false }) {
-  const { t } = useTranslation('classes');
-  const [classes, setClasses] = useState([]);
-  const [records, setRecords] = useState([]);
-  const [status, setStatus] = useState('loading');
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setStatus('loading');
-    listClasses({ state: 'active' })
-      .then((items) => {
-        if (cancelled) return;
-        setClasses(items);
-        setStatus('ready');
-      })
-      .catch((problem) => {
-        if (cancelled) return;
-        setError(problem.problem || { message: t("无法加载班级") });
-        setStatus('error');
-      });
-    return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!classId) {
-      setRecords([]);
-      return undefined;
-    }
-    listRecords({ classId, state: 'active' })
-      .then((items) => {
-        if (!cancelled) setRecords(items);
-      })
-      .catch((problem) => {
-        if (!cancelled) setError(problem.problem || { message: t("无法加载记录") });
-      });
-    return () => { cancelled = true; };
-  }, [classId]);
-
-  function toggleRecord(record) {
-    const next = recordIds.includes(record.id)
-      ? recordIds.filter((id) => id !== record.id)
-      : [...recordIds, record.id];
-    onChange({ classId, recordIds: next });
-  }
-
-  return (
-    <div className="c-record-picker" data-region="class-record-picker">
-      <label className="wb-field">
-        <span className="wb-label">{t("班级")}</span>
-        <select
-          className="wb-input"
-          aria-label={t("选择班级")}
-          value={classId ?? ''}
-          disabled={disabled}
-          onChange={(event) => onChange({ classId: event.target.value || null, recordIds: [] })}
-        >
-          <option value="">{t("不关联班级")}</option>
-          {classes.map((classroom) => (
-            <option key={classroom.id} value={classroom.id}>{classroom.name}</option>
-          ))}
-        </select>
-      </label>
-      {status === 'error' && <p className="wb-inline-error">{error?.message}</p>}
-      {classId && (
-        <div className="c-record-picker-list" data-region="class-record-options">
-          {records.length === 0 && <p className="wb-muted">{t("该班还没有实际记录")}</p>}
-          {records.map((record) => (
-            <label className="c-record-option" key={record.id} data-record-id={record.id}>
-              <input
-                type="checkbox"
-                checked={recordIds.includes(record.id)}
-                disabled={disabled}
-                onChange={() => toggleRecord(record)}
-              />
-              <span className="wb-muted">{formatRecordedOn(record.recordedOn)}</span>
-              <span>{recordExcerpt(record)}</span>
-            </label>
-          ))}
-        </div>
       )}
     </div>
   );

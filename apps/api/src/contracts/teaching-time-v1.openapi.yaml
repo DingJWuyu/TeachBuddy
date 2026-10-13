@@ -970,7 +970,6 @@ components:
       schema:
         type: string
         enum:
-        - lesson
         - question
     State:
       name: state
@@ -1209,7 +1208,6 @@ components:
         kind:
           type: string
           enum:
-          - lesson
           - question
         id:
           $ref: '#/components/schemas/Id'
@@ -1223,7 +1221,6 @@ components:
         kind:
           type: string
           enum:
-          - lesson
           - question
         id:
           $ref: '#/components/schemas/Id'
@@ -1248,10 +1245,6 @@ components:
           anyOf:
           - $ref: '#/components/schemas/Id'
           - type: 'null'
-        lessonId:
-          anyOf:
-          - $ref: '#/components/schemas/Id'
-          - type: 'null'
         recordIds:
           type: array
           items:
@@ -1260,7 +1253,6 @@ components:
           maxItems: 100
       required:
       - classId
-      - lessonId
       - recordIds
       additionalProperties: false
     LinkedObject:
@@ -1288,17 +1280,12 @@ components:
           anyOf:
           - $ref: '#/components/schemas/LinkedObject'
           - type: 'null'
-        lesson:
-          anyOf:
-          - $ref: '#/components/schemas/LinkedObject'
-          - type: 'null'
         records:
           type: array
           items:
             $ref: '#/components/schemas/LinkedObject'
       required:
       - classroom
-      - lesson
       - records
     ClassInput:
       type: object
@@ -2097,25 +2084,6 @@ components:
       - label
       - deletedAt
       - classDeletedAt
-    LessonReference:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/Id'
-        version:
-          $ref: '#/components/schemas/Version'
-        title:
-          type: string
-          maxLength: 300
-        deletedAt:
-          anyOf:
-          - $ref: '#/components/schemas/Timestamp'
-          - type: 'null'
-      required:
-      - id
-      - version
-      - title
-      - deletedAt
     ReminderCandidate:
       type: object
       properties:
@@ -2159,7 +2127,6 @@ components:
             type: string
             enum:
             - questions.readForReference
-            - lessons.readForTeachingLink
             - classes.readClass
             - classes.readRecord
           uniqueItems: true
@@ -2267,10 +2234,6 @@ components:
           anyOf:
           - $ref: '#/components/schemas/Id'
           - type: 'null'
-        lessonId:
-          anyOf:
-          - $ref: '#/components/schemas/Id'
-          - type: 'null'
         recordIds:
           type: array
           items:
@@ -2279,7 +2242,6 @@ components:
           maxItems: 100
       required:
       - classId
-      - lessonId
       - recordIds
     ItemView:
       type: object

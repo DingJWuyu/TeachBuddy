@@ -60,7 +60,6 @@ function ResourceEntry({ route, transport }) {
     ready && (
       <ResourcesPage
         transport={transport}
-        onOpenLesson={(usage) => navigate(`/lessons/${usage.lessonId}`)}
       />
     )
   );
