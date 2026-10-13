@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n/index.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import BrandMark from './BrandMark.jsx';
+import AuthEntryLayout from './AuthEntryLayout.jsx';
 import PasswordToggle from './PasswordToggle.jsx';
 import { useInternalAuth } from './AuthProvider.jsx';
 import { COPY, unknownResultMessage } from './presentation.js';
@@ -125,6 +126,9 @@ export default function AuthSurface() {
   }, [isRegistration]);
 
   const activeNotice = banner || auth.notice;
+  const expression = busy || revocation?.phase === 'running' ? 'busy'
+    : fieldError.field || activeNotice?.tone === 'error' || revocation?.phase === 'failed' ? 'error'
+      : activeNotice?.tone === 'success' ? 'success' : 'idle';
 
   function invalidate() {
     operationRef.current += 1;
@@ -489,7 +493,7 @@ export default function AuthSurface() {
 
   if (isPendingSave) {
     return (
-      <div className="ae-page" data-auth-surface="pending-save">
+      <AuthEntryLayout surface="pending-save" expression={expression}>
         <div className="ae-shell">
           <header className="ae-brand">
             <BrandMark />
@@ -521,12 +525,12 @@ export default function AuthSurface() {
             </div>
           </div>
         </div>
-      </div>
+      </AuthEntryLayout>
     );
   }
 
   return (
-    <div className="ae-page" data-auth-surface={mode}>
+    <AuthEntryLayout surface={mode} expression={expression} passwordVisible={passwordVisible}>
       <div className="ae-shell">
         <header className="ae-brand">
           <BrandMark />
@@ -739,6 +743,6 @@ export default function AuthSurface() {
           </p>
         )}
       </div>
-    </div>
+    </AuthEntryLayout>
   );
 }
