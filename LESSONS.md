@@ -12,6 +12,14 @@
 
 出现日期：2026-10-14。已核实 1 个不同日期。
 
+### 按实际工具依赖分配 CI 测试
+
+把测试加入 CI 前，追到它实际执行的文件转换或浏览器入口，再选具备这些前置的 job。确定性 HTTP 测试也可能调用系统工具；开发机已有工具的通过结果不能证明无工具 Runner 可以执行。
+
+资源 HTTP suite 的补充预览和正文搜索会调用 Bubblewrap 与 Poppler，曾被加入只准备 Node 的 API job，导致两项失败；现归入已准备转换工具的文档输出 job，保留原断言。依据：[错误分组](https://github.com/DingJWuyu/TeacherWorkspace/blob/2ee70e90e6c6c6428e277a5e605e9a9707c3a49c/package.json)、[失败 CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38613661520)；实际依赖见[文件转换器](apps/api/src/workbench/files/converter.js)和[转换 worker](apps/api/src/workbench/files/conversion-worker.mjs)。
+
+出现日期：2026-10-14。已核实 1 个不同日期。
+
 ## 维护规则
 
 1. 完整改动目的或阶段交付时，依据返工、回归、独立审查和用户纠正决定是否新增或更新；没有新的已证实教训时不修改。不建立夜间循环或社区监听。
