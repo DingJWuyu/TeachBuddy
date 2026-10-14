@@ -11,7 +11,8 @@
 | 执行仓库维护、阶段整理或集成后的整体核查 | [仓库维护流程](agents/repository-maintenance.md) | 按检查面展开现行规则，处理实际发现并完成验证与收尾 |
 | 判断是否属于既定目标 | [产品范围](PRODUCT_SCOPE.md) | 页面和跨模块往返读[共同交互](features/workbench.md) |
 | 修改界面 | 对应功能页和[设计与验证规则](rules/design-and-verification.md) | 调整外观时核对当前运行页面及用户指定参考 |
-| 修改存储、接口或跨模块交换 | 功能页指向的文字契约 | 精确字段继续读 `apps/api/src/contracts/` 中的 schema；验证时再读测试 fixtures |
+| 修改模块实现、存储或跨模块调用 | [子系统入口](subsystems/README.md) | 沿实际公开操作找到源码；交换语义读其文字契约，精确字段读机器 schema |
+| 编写或审查代码 | [编码与验收标准](code-standards.md) | 开工和复盘时查根 [LESSONS](../LESSONS.md) 的适用教训；具体测试进入验证指南 |
 | 验证改动或准备交付 | [验证指南](acceptance/README.md) | 本次功能选择对应场景；完整交付才展开[验收矩阵](acceptance/mvp-matrix.md) |
 
 ## 功能规格
@@ -29,7 +30,7 @@
 | 日程 | 日期视图、安排、事项、重复、提醒与时区 | [日程](features/schedule.md) |
 | AI 助理 | 首页/侧栏对话、上下文引用、业务工具与模型接入 | [AI 助理](features/agent.md) |
 
-每个行为入口提供本分区的接口和验证路径。规格描述行为与边界，不授予新增开发、模型调用或外部操作权限；当前暂停和待办只查项目状态及本次用户指令。
+行为页回答老师使用时发生什么；[子系统入口](subsystems/README.md)回答代码由谁拥有、通过哪个操作调用、状态怎样变化以及怎样验证。规格不授予新增开发、模型调用或外部操作权限；当前暂停和待办只查项目状态及本次用户指令。
 
 ## 共享技术底座
 
@@ -56,6 +57,6 @@
 
 ## 维护文档
 
-维护文档时读取根 [AGENTS.md 的文档维护边界](../AGENTS.md#文档维护边界)，按其中指定的 skill 执行；本页只维护任务导航。
+维护文档时使用 `writing-for-agents`，按[文档维护](code-standards.md#文档维护)更新权威事实；保护边界见根 [AGENTS](../AGENTS.md#保护与完成标准)。本页只维护任务导航。
 
 术语与 ADR 按[领域约定](agents/domain.md)，问题记录按[Issue约定](agents/issue-tracker.md)与[标签表](agents/triage-labels.md)。

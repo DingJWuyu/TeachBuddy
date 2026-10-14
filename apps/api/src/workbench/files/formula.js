@@ -1,4 +1,4 @@
-import { checkFormula } from "../../../../../packages/shared/src/math/formula.js";
+import { checkFormula } from "@refatos/shared/math/formula";
 import { materialsError } from "../jobs/index.js";
 import { pandocDocument, runPandocSync } from "./pandoc.js";
 

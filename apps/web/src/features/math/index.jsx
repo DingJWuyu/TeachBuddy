@@ -2,7 +2,7 @@ import i18n from '../../i18n/index.js';
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
 import { addSurface } from './SurfaceTools.jsx';
-import { constructionIssue } from '../../../../../packages/shared/src/math/geometry.js';
+import { constructionIssue } from '@refatos/shared/math/geometry';
 import { useMathConfirm } from "./useMathConfirm.jsx";
 import { useScene } from '../workbench/useScene.js';
 import { useScrollRestore } from '../workbench/useScrollRestore.js';
@@ -24,7 +24,7 @@ import HtmlEditor from "./HtmlEditor.jsx";
 import { dynamicSource, emptyDynamicSource } from "./model.js";
 import { updateObjects } from "./editing.js";
 import React, { useEffect, useLayoutEffect, useMemo, useState, useRef, useContext, useCallback } from "react";
-import { projectSpace } from "../../../../../packages/shared/src/math/graphics.js";
+import { projectSpace } from "@refatos/shared/math/graphics";
 import {
   emptySource,
   newElement,
@@ -42,7 +42,7 @@ import { WorkspaceToolbar } from './WorkspaceControls.jsx';
 import { useDraftHistory } from './useDraftHistory.js';
 import GgbWorkspace from './GgbWorkspace.jsx';
 import WorkshopWorkspace from './WorkshopWorkspace.jsx';
-import { createWorkshopSource } from '../../../../../packages/shared/src/math/workshop.js';
+import { createWorkshopSource } from '@refatos/shared/math/workshop';
 import WorkHistory from './WorkHistory.jsx';
 const base = "/api/modules/math/v1/works";
 const names = {

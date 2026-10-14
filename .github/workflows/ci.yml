@@ -81,12 +81,18 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libreoffice-writer libreoffice-math poppler-utils bubblewrap fonts-noto-cjk
+          sudo apt-get install -y --no-install-recommends libreoffice-writer libreoffice-math libreoffice-impress poppler-utils bubblewrap fonts-noto-cjk
           curl --fail --location --retry 2 \
             https://github.com/jgm/pandoc/releases/download/3.11/pandoc-3.11-1-amd64.deb \
             -o "$RUNNER_TEMP/pandoc.deb"
           printf '%s  %s\n' '89d4c9d97818c62a97157f0072844e4602c6cee795bf84abd1aee7273abcda99' "$RUNNER_TEMP/pandoc.deb" | sha256sum --check
           sudo dpkg -i "$RUNNER_TEMP/pandoc.deb"
+          curl --fail --location --retry 2 \
+            https://dl.xpdfreader.com/xpdf-tools-linux-4.06.tar.gz \
+            -o "$RUNNER_TEMP/xpdf.tar.gz"
+          printf '%s  %s\n' '940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3' "$RUNNER_TEMP/xpdf.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/xpdf.tar.gz" -C "$RUNNER_TEMP"
+          echo "QUESTIONS_XPDF_PDFTOHTML=$RUNNER_TEMP/xpdf-tools-linux-4.06/bin64/pdftohtml" >> "$GITHUB_ENV"
           npx playwright install --with-deps chromium
           pandoc --version
           libreoffice --version

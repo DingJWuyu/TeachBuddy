@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { pathToFileURL } from "node:url";
+import { chromium } from "playwright";
 import { randomUUID } from "node:crypto";
 import {
   startRealMath,
@@ -14,17 +15,15 @@ import {
 } from "../../web/src/features/math/model.js";
 import { validate } from "../src/modules/math/contract.js";
 const root = "/api/modules/math/v1/works";
-const evidence = process.env.M42_EVIDENCE_DIR
-  ? path.resolve(process.env.M42_EVIDENCE_DIR)
-  : fileURLToPath(
-      new URL(
-        "../../../test-results/evidence/M42/v1/artifacts/",
-        import.meta.url,
-      ),
-    );
-test("real HTTP dynamic presets, relation failures, public port, identity, immutable export and two restarts", async () => {
+test("real HTTP dynamic presets, relation failures, public port, identity, immutable export, two restarts and cold offline HTML", { timeout: 90000 }, async () => {
   let world = await startRealMath();
   const directory = world.directory;
+  const evidenceRoot = process.env.M42_EVIDENCE_DIR
+    ? path.resolve(process.env.M42_EVIDENCE_DIR)
+    : path.resolve("test-results/math-dynamic");
+  fs.mkdirSync(evidenceRoot, { recursive: true });
+  const evidence = fs.mkdtempSync(path.join(evidenceRoot, "dynamic-artifacts-"));
+  let browser;
   let passed = false;
   try {
     let { client, session } = await registerMath(
@@ -187,7 +186,50 @@ test("real HTTP dynamic presets, relation failures, public port, identity, immut
         source,
       );
     }
-    fs.mkdirSync(evidence, { recursive: true });
+    const downloaded = await client.request(
+      "GET",
+      `/api/workbench/files/${exported.json.file.id}/content`,
+    );
+    assert.equal(downloaded.status, 200, downloaded.text);
+    assert.match(downloaded.headers["content-type"], /^text\/html/);
+    const htmlPath = path.join(evidence, "dynamic.html");
+    fs.writeFileSync(htmlPath, downloaded.text);
+    await world.close();
+    world = null;
+
+    // Open the actual immutable download with no running service or browser state.
+    browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ offline: true, viewport: { width: 1280, height: 900 } });
+    const page = await context.newPage();
+    const errors = [], requests = [];
+    page.on("pageerror", error => errors.push(error.message));
+    page.on("request", request => { if (/^https?:/.test(request.url())) requests.push(request.url()); });
+    await page.goto(pathToFileURL(htmlPath).href);
+    const frame = page.frameLocator("iframe");
+    await frame.getByRole("button", { name: "平移与定位", exact: true }).waitFor();
+    assert.equal(await frame.getByLabel("h 数值", { exact: true }).inputValue(), "1");
+    assert.equal(await frame.getByLabel("k 数值", { exact: true }).inputValue(), "-4");
+    const curve = frame.locator('[data-object="f"] path');
+    const initialCurve = await curve.getAttribute("d");
+    assert.ok(initialCurve);
+    await frame.getByLabel("h 数值", { exact: true }).fill("2");
+    assert.equal(await frame.getByLabel("h 滑杆", { exact: true }).inputValue(), "2");
+    assert.notEqual(await curve.getAttribute("d"), initialCurve);
+    await frame.getByRole("button", { name: "母函数", exact: true }).click();
+    assert.equal(await frame.getByLabel("h 数值", { exact: true }).inputValue(), "0");
+    assert.equal(await frame.getByLabel("k 数值", { exact: true }).inputValue(), "0");
+    await frame.getByRole("button", { name: "平移与定位", exact: true }).click();
+    assert.equal(await frame.getByLabel("h 数值", { exact: true }).inputValue(), "1");
+    assert.equal(await frame.getByLabel("k 数值", { exact: true }).inputValue(), "-4");
+    await frame.getByLabel("h 数值", { exact: true }).fill("2");
+    await frame.getByRole("button", { name: "重置", exact: true }).click();
+    assert.equal(await frame.getByLabel("h 数值", { exact: true }).inputValue(), "1");
+    assert.equal(await frame.getByRole("status").textContent(), "");
+    assert.equal(await page.getByRole("status").textContent(), "自包含演示");
+    assert.deepEqual(errors, []);
+    assert.deepEqual(requests, []);
+    await page.screenshot({ path: path.join(evidence, "dynamic-offline.png"), fullPage: true });
+    fs.writeFileSync(path.join(evidence, "dynamic-offline.json"), JSON.stringify({ transport: "file://", serviceStopped: true, profile: "fresh", offline: true, errors, requests, steps: "passed", parameters: "passed", reset: "passed" }, null, 2));
     fs.writeFileSync(
       path.join(evidence, "dynamic-api.json"),
       JSON.stringify(
@@ -204,7 +246,11 @@ test("real HTTP dynamic presets, relation failures, public port, identity, immut
     );
     passed = true;
   } finally {
-    await world.close();
-    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+    await browser?.close();
+    await world?.close();
+    if (passed) {
+      fs.rmSync(evidence, { recursive: true, force: true });
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
   }
 });

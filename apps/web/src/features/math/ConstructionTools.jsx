@@ -6,8 +6,8 @@ import {
   acceptsConstructionInput,
   constructionIssue,
   resolveElements,
-} from "../../../../../packages/shared/src/math/geometry.js";
-import { dynamicState } from "../../../../../packages/shared/src/math/dynamic.js";
+} from "@refatos/shared/math/geometry";
+import { dynamicState } from "@refatos/shared/math/dynamic";
 import { newElement } from "./model.js";
 import { updateObjects } from "./editing.js";
 

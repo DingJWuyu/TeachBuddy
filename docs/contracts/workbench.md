@@ -64,21 +64,9 @@
 
 ### 模块与接缝
 
-遵守 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。权威静态目录位于 `packages/shared/src/`，基础格式见 OpenAPI 的 ModuleCatalog 与同名样本，扩展目录由材料及数学契约定义。当前目录为 ModuleCatalogV4，五个业务模块及接缝在 `packages/shared/src/`；日程为 top 类型，班级 `webEnabled=false`。questions 无业务依赖。目录纯数据，Web/API 从同一目录投影到各自本地代码映射；构建检查缺映射、重复 ID/路径、缺依赖与环路，启动前检查迁移。`webEnabled` 只决定 Web 页面、导航、搜索和教程的投影，不决定 API 是否注册；隐藏导航也不代表拒绝模块 API。
+全局静态目录、API/Web 装配、共享事务与迁移入口统一见 [SETUP 的代码结构](../SETUP.md#代码结构) 和 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。各模块真实工厂、操作参数与可信调用见 [当前技术入口](../subsystems/README.md)，公共 files/content/jobs 见 [材料公共端口](materials.md#公共端口)。
 
-下表描述公共实现接缝。当前五个业务模块均无目录声明的跨业务模块依赖，`modulePorts` 为空；应用装配继续注入文件、文稿、任务等公共底座，接口见[材料公共端口](materials.md#公共端口)。模块内部文件、组件和 SQL 由所属模块维护。
-
-| 接缝 | 约定 | 写者/消费者 |
-| --- | --- | --- |
-| 身份 | 服务端 `resolvePrincipal(request)` 返回 Promise 或值 `{accountKey}` / null；异步中间件等待完成，写入时携带已验证 principal。Web 用 OpenAPI 的 context 分区。 | B12 seam；A11 真实 adapter；B13 使用 |
-| 存储 | B12 在组合入口提供同一隔离库的 `better-sqlite3` Database 实例 `db`；模块拥有自己的表，不暴露仓储给别的模块。 | B12 提供；B13 模块使用 |
-| 幂等事务 | `mutations.execute({principal, key, method, path, body}, write)`；同步 write 在该 db 事务内返回 `{status, body}`，execute 返回同形结果或契约错误。来源/身份/schema 校验先于调用；模块在 write 内做归属、版本和业务校验。异步输入准备前可用同参 `mutations.peek` 读取已确认结果，无回执返回 null；它不占键，最终 execute 仍复核。 | B12 提供；B13 使用 |
-| 模块工厂 | `apps/api/src/modules/questions/index.js` 导出 `createQuestionsModule({db, mutations})`，返回 `{router, port}`。router 为 Express Router，挂载 `/api/modules/<id>`，请求 `req.workbenchPrincipal` 已验证。 | B13 导出；B12 组合入口挂载 |
-| 业务工具调用 | 题库对外行为即 OpenAPI 中的操作集合；现有首批 Agent adapter 携带可信 principal 调用同一业务操作及 mutations，不另写 SQL。pi adapter 形式已在[Agent 接缝](../features/agent.md#助理实现)定义；全四模块扩展仍暂停。 | B13；C25/C26 消费 |
-| 模块迁移 | 各模块 `migrations/index.js` 导出有序 `migrations` 数组，项 `{id, up(db)}`；ID 使用模块专属前缀，成功 ledger 与迁移同事务，已执行 ID 不重跑。 | B13 提供；B12 runner 汇总 |
-| Web 入口 | 各 feature 的 `index.jsx` 默认导出 React 页面；外壳处理 route、可信 accountKey、共享右栏和按账户的本地恢复。模块 API client 只调用唯一 OpenAPI。 | B14 独占，无需后端参与 UI 内部设计 |
-
-SQLite 内业务写入和幂等成功记录一个事务提交，不使用先写题目再补操作记录的分步确认。公共端口及 write 回调的已知失败抛出带 `status` 和 `problem`（OpenAPI Problem）的 Error；execute 回滚后原样传播，由工作台 HTTP 层映射。未知存储错误回滚并映射 503。write 不返回 Promise，事务中不进行网络调用。模块路由错误按契约返回，单个页面/API 错误不清空别的模块现场。题目读取和业务工具继续调用题库公开 operations，不跨模块读取其内部表。文件接口见[材料架构](materials.md#材料实现)。
+SQLite 业务写入和幂等成功记录同事务提交；同步 write 不进行网络调用。合法失败沿 `status/problem` 传播并回滚，未知存储错误回滚并映射 503。失败不清空其他模块现场。身份与原键确认的交换保证分别见本页[身份与 HTTP](#身份与-http)、[写入与未知结果](#写入冲突与未知结果)。
 
 ### 持久化与演进
 

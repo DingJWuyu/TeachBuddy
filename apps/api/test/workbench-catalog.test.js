@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import YAML from 'yaml';
 import { fileURLToPath } from 'node:url';
 import {
   assertModuleCatalog,
@@ -92,45 +93,32 @@ test('catalog projection enables only implemented modules and rejects orphans', 
 
 });
 
-test('the shared contract vocabulary stays in the frozen OpenAPI documents', () => {
-  const openapi = fs.readFileSync(
-    path.join(repoRoot, 'apps', 'api', 'src', 'contracts', 'workbench.openapi.yaml'),
-    'utf-8'
-  );
-  const allOpenapi = openapi + fs.readFileSync(path.join(repoRoot,'apps/api/src/contracts/schedule-v1.openapi.yaml'),'utf8');
-  const authOpenapi = fs.readFileSync(
-    path.join(repoRoot, 'apps', 'api', 'src', 'contracts', 'auth.openapi.yaml'),
-    'utf-8'
-  );
-
-  for (const problemType of Object.values(workbenchProblemTypes)) {
-    assert.ok(allOpenapi.includes(problemType), `problem type ${problemType} is missing from the frozen OpenAPI`);
-  }
-  for (const authVocabulary of [workbenchHeaders.sessionCookie, workbenchHeaders.browserProtection]) {
-    assert.ok(
-      authOpenapi.includes(authVocabulary),
-      `${authVocabulary} is missing from the frozen auth OpenAPI`
-    );
-  }
-  assert.ok(
-    openapi.includes(workbenchHeaders.idempotencyKey),
-    `header ${workbenchHeaders.idempotencyKey} is missing from the frozen OpenAPI`
-  );
-  assert.ok(openapi.includes(workbenchPaths.context), 'the context path is missing from the frozen OpenAPI');
-  assert.ok(openapi.includes(workbenchPaths.modules), 'the module path is missing from the frozen OpenAPI');
-
-  const frozenLimits = [
-    `maxLength: ${workbenchLimits.titleLength}`,
-    `maxLength: ${workbenchLimits.noteLength}`,
-    `maxLength: ${workbenchLimits.latexLength}`,
-    `maxLength: ${workbenchLimits.pasteSourceLength}`,
-    `maxItems: ${workbenchLimits.documentBlocks}`,
-    `maxItems: ${workbenchLimits.paragraphRuns}`,
-    `maximum: ${Number.MAX_SAFE_INTEGER}`
-  ];
-  for (const expected of frozenLimits) {
-    assert.ok(openapi.includes(expected), `${expected} is missing from the frozen OpenAPI`);
-  }
+test('shared paths, headers and limits match their OpenAPI schema fields', () => {
+  const readContract = name => YAML.parse(fs.readFileSync(
+    path.join(repoRoot, 'apps/api/src/contracts', name), 'utf8',
+  ));
+  const workbench = readContract('workbench.openapi.yaml');
+  const schedule = readContract('schedule-v1.openapi.yaml');
+  const auth = readContract('auth.openapi.yaml');
+  const problems = new Set([
+    ...workbench.components.schemas.Problem.oneOf.map(schema => schema.properties.type.const),
+    ...schedule.components.schemas.Problem.properties.type.enum,
+  ]);
+  for (const type of Object.values(workbenchProblemTypes)) assert.ok(problems.has(type), type);
+  assert.equal(auth.components.securitySchemes.SessionCookie.name, workbenchHeaders.sessionCookie);
+  assert.equal(auth.components.parameters.BrowserRequestProtection.name, workbenchHeaders.browserProtection);
+  assert.equal(workbench.components.parameters.IdempotencyKey.name, workbenchHeaders.idempotencyKey);
+  assert.ok(workbench.paths[workbenchPaths.context]?.get);
+  assert.ok(workbench.paths[workbenchPaths.modules]?.get);
+  const schemas = workbench.components.schemas;
+  assert.equal(schemas.Title.maxLength, workbenchLimits.titleLength);
+  assert.equal(schemas.Note.maxLength, workbenchLimits.noteLength);
+  assert.equal(schemas.MathRun.properties.latex.maxLength, workbenchLimits.latexLength);
+  assert.equal(schemas.MathBlock.properties.latex.maxLength, workbenchLimits.latexLength);
+  assert.equal(schemas.PasteSource.properties.text.maxLength, workbenchLimits.pasteSourceLength);
+  assert.equal(schemas.Document.properties.blocks.maxItems, workbenchLimits.documentBlocks);
+  assert.equal(schemas.Paragraph.properties.runs.maxItems, workbenchLimits.paragraphRuns);
+  assert.equal(schemas.Version.maximum, Number.MAX_SAFE_INTEGER);
 });
 
 test('the loader refuses an implementation without a catalog mapping', async () => {

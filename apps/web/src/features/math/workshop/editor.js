@@ -1,8 +1,8 @@
 import { mountWorkshopGraph } from '../geogebra/workshop-runtime.js';
 import { validateOperations } from '../geogebra/operations.js';
-import { workshopToolMode, workshopPlaybackValue } from '../../../../../../packages/shared/src/math/workshop-runtime.js';
+import { workshopToolMode, workshopPlaybackValue } from '@refatos/shared/math/workshop-runtime';
 import { GeoGebraError } from '../geogebra/controller.js';
-import { createWorkshopSource, cloneWorkshopSource, validateWorkshopSourceShape, validateWorkshopReferences, reconcileWorkshopReferences } from '../../../../../../packages/shared/src/math/workshop.js';
+import { createWorkshopSource, cloneWorkshopSource, validateWorkshopSourceShape, validateWorkshopReferences, reconcileWorkshopReferences } from '@refatos/shared/math/workshop';
 
 const copy = cloneWorkshopSource;
 const fields = ['formulas', 'graph', 'view', 'steps', 'initialStepId', 'animation', 'traceObjects'];

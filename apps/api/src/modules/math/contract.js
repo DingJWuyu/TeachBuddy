@@ -1,9 +1,9 @@
-import { constructionIssue } from "../../../../../packages/shared/src/math/geometry.js";
-import { parameterOnGrid } from "../../../../../packages/shared/src/math/dynamic.js";
+import { constructionIssue } from "@refatos/shared/math/geometry";
+import { parameterOnGrid } from "@refatos/shared/math/dynamic";
 import { ContractError } from "../../workbench/problems.js";
 import yauzl from "yauzl";
 import { crc32 } from "node:zlib";
-import { validateWorkshopSourceShape } from "../../../../../packages/shared/src/math/workshop.js";
+import { validateWorkshopSourceShape } from "@refatos/shared/math/workshop";
 export { contract, validate } from "../../workbench/content/mathSchema.js";
 export function mathError(type, field = "", reason = type, status = 422) {
   return new ContractError(status, {

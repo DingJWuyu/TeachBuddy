@@ -911,3 +911,45 @@ test('连续点击添加不堆积空事项，放弃空输入也不删除或保�
   await close(page);
   expect((await call('GET', E)).items).toHaveLength(before);
 });
+
+
+test('真实指针选九十分钟，自动保存后刷新及服务重启仍可重开', async ({ page, browser }, info) => {
+  await page.getByRole('button', { name: '日历视图', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: /^周\s/ }).click();
+  const startSlot = page.locator('.fc-timegrid-slot-lane[data-time="15:00:00"]');
+  const endSlot = page.locator('.fc-timegrid-slot-lane[data-time="16:15:00"]');
+  await startSlot.scrollIntoViewIfNeeded();
+  const column = await page.locator('.fc-timegrid-col[data-date="2026-09-25"]').boundingBox();
+  const start = await startSlot.boundingBox();
+  const end = await endSlot.boundingBox();
+  expect(column).not.toBeNull(); expect(start).not.toBeNull(); expect(end).not.toBeNull();
+  const x = column.x + column.width / 2;
+  // Fifteen-minute lanes contain three five-minute hits; selection includes the final hit.
+  await page.mouse.move(x, start.y + start.height / 6); await page.mouse.down();
+  await page.mouse.move(x, end.y + end.height * 5 / 6, { steps: 15 }); await page.mouse.up();
+  await expect(page.locator('[name=entry-start]')).toHaveValue('15:00');
+  await expect(page.locator('[name=entry-end]')).toHaveValue('16:30');
+  const title = '指针选择的函数备课';
+  await page.locator('[name=entry-title]').fill(title);
+  await page.locator('[name=entry-title]').press('Tab');
+  await expect.poll(async () => (await saved(title))?.time?.durationMinutes).toBe(90);
+  await page.reload();
+  await expect(page.locator('[name=entry-title]')).toHaveValue(title);
+  await expect(page.locator('[name=entry-end]')).toHaveValue('16:30');
+  await page.screenshot({ path: info.outputPath('pointer-selection-restored.png') });
+  const entry = await saved(title);
+  const selectedPath = `/calendar?entry=${entry.id}`;
+  const storageState = await page.context().storageState();
+  const directory = world.directory;
+  await world.close();
+  world = await createIntegration({ directory, workbenchClock: () => new Date(now) });
+  const reopenedContext = await browser.newContext({ storageState, ignoreHTTPSErrors: true });
+  try {
+    const reopened = await reopenedContext.newPage();
+    await reopened.clock.setFixedTime(new Date(now));
+    await reopened.goto(world.origin + selectedPath);
+    await expect(reopened.locator('[name=entry-title]')).toHaveValue(title);
+    await expect(reopened.locator('[name=entry-start]')).toHaveValue('15:00');
+    await expect(reopened.locator('[name=entry-end]')).toHaveValue('16:30');
+  } finally { await reopenedContext.close(); }
+});

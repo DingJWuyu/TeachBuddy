@@ -14,7 +14,11 @@ test('stored future Documents reject deletion and replacement atomically through
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'materials-protection-'));
   const world = await startMaterialsHttp(directory);
   const db = new Database(path.join(directory, 'workspace.sqlite'));
-  t.after(async () => { db.close(); await world.close(); fs.rmSync(directory, { recursive: true, force: true }); });
+  t.after(async () => {
+    db.close(); await world.close();
+    if (t.passed) fs.rmSync(directory, { recursive: true, force: true });
+    else console.log('保留文稿保护测试现场：' + directory);
+  });
   async function call(route, method = 'GET', input, key = randomUUID(), who = 'integration-a') {
     const response = await fetch(world.origin + route, { method, headers: {
       Cookie: world.workbench.identity.testPrincipalCookie(who).header.split(';')[0],

@@ -10,7 +10,7 @@ import JSZip from 'jszip';
 import { createApp } from '../src/app.js';
 import { validate } from '../src/modules/math/contract.js';
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
-import { createWorkshopSource } from '../../../packages/shared/src/math/workshop.js';
+import { createWorkshopSource } from '@refatos/shared/math/workshop';
 
 const works = '/api/modules/math/v1/works';
 const formula = (id, latex) => ({ id, latex, caption: '中文条件：a≠0', includeCaption: true, color: '#172554', fontSize: 32 });

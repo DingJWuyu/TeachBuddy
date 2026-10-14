@@ -81,19 +81,11 @@ UTF-8且≤1 MiB的HTML支持源码编辑/运行副本；更大或无法UTF-8解
 
 ## 目录与公共端口
 
-进程内协作见[公共端口](#公共端口)。目录使用明确 version=3，以避免材料和教学时间各自的version=2被误认为同一全集。schema给封闭可用依赖，samples有材料+math子集及当前模块的组合目标；生产只注册实际接好的模块，按 questions/math/resources/schedule 稳定顺序投影，依赖缺项/重复ID或path/环拒绝启动并在fixture返回422。math无必需业务依赖。
-
+当前组合使用 ModuleCatalogV4（version=4）；历史目录版本是兼容输入，不能当作当前响应。目录与应用装配见 [SETUP](../SETUP.md#代码结构)。
 
 ## 公共端口
 
-具体工厂和操作签名以 `apps/api/src/modules/math/index.js` 为准；DTO 使用本目录 schema。业务操作通过 `port.operations` 与 HTTP 共用实现；目录未暴露数学跨模块读取端口，不跨模块读表。
-
-| 端口 | 唯一语义与消费者 |
-| --- | --- |
-| `math.port.operations` | 与 HTTP 相同的校验、版本、幂等和错误；手工与 Agent 共用 |
-| `readWorkForReference` HTTP 操作 | `/api/modules/math/v1/works/{id}/reference` 返回本账户当前作品与版本快照；只读已保存源和固定文件，不现场生成资产，内部读取函数不作为目录公共端口暴露 |
-
-文件字节与重渲染在事务外准备，随后重新校验版本，在同一 mutations 事务保存 Work/Revision/成功回执。冲突留下的 File 按材料保留规则处理，用户原件不回滚。复用[材料端口](materials.md#公共端口)，导出采用有界本地任务，不新增通用工作流。
+数学工厂、操作参数、可信身份、异步准备/事务提交、持久化及产物路径统一见 [数学技术入口](../subsystems/math.md)。DTO 仍以本页链接的 schema 为准，引用读取与文件保留保证仍沿本页交换语义。
 
 ## 错误与恢复
 

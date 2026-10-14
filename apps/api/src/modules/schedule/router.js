@@ -8,9 +8,8 @@
  */
 import { Router } from 'express';
 import { createMutationHandler, withPathId } from '../../workbench/http.js';
-import { invalidInput } from '../../workbench/problems.js';
+import { contractError, invalidInput, problems } from '../../workbench/problems.js';
 import { validateIdPath } from '../../workbench/schema.js';
-import { unauthenticated } from '../questions/contract.js';
 import {
   validateCreateEntry,
   validateCreateLabel,
@@ -27,7 +26,7 @@ import { isDate } from './time.js';
 function requirePrincipal(req) {
   const principal = req.workbenchPrincipal;
   if (!principal || typeof principal.accountKey !== 'string' || principal.accountKey.length === 0) {
-    throw unauthenticated();
+    throw contractError(problems.unauthenticated());
   }
   return principal;
 }

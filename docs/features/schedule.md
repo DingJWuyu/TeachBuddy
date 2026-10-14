@@ -1,5 +1,7 @@
 # 日程：安排、事项与提醒
 
+接口、持久化与跨模块调用读[当前技术入口](../subsystems/schedule.md)。
+
 本分区拥有日期视图、安排、事项、标签、重复规则、提醒和账户时区。日程记录计划，事项可以标记完成，不推断实际教学进度，不增加逾期或催办体系。范围见[产品分区](../PRODUCT_SCOPE.md#产品分区)，当前能力与未验条件见[项目状态](../plans/run-state.md)。
 
 ## 入口与布局
@@ -66,9 +68,9 @@
 
 ## 接口与实现
 
-Web `apps/web/src/features/schedule/` 与 API `apps/api/src/modules/schedule/` 拥有日程；提醒是 `schedule/reminders/` 内部能力。`apps/api/src/workbench/teachingTime.js` 只负责日程与提醒的装配。
+日程工厂、提醒组合、只读 port 与 HTTP 写入路径统一见[日程技术入口](../subsystems/schedule.md)。
 
-时间算法、重复与提醒结算见[日程契约](../contracts/schedule.md#安排事项与排序)，时区见[账户时区与日期](../contracts/schedule.md#账户时区与日期)，端口及版本见[公共端口](../contracts/schedule.md#公共端口与协议版本)。UI 与接入后的 AI 助理调用同一公开操作，时间算法只有一份；这不表示四模块助理已接线。
+时间算法、重复与提醒结算见[日程契约](../contracts/schedule.md#安排事项与排序)，时区见[账户时区与日期](../contracts/schedule.md#账户时区与日期)，端口及版本见[日程技术入口](../subsystems/schedule.md#责任与调用面)。未来 AI 接入须复用所属业务校验与幂等提交，当前四模块助理尚未接线。
 
 重复实例查询时展开原始日期并应用例外，再按实际区间筛选，必须覆盖从区间外移入的例外。删除/恢复保留实例身份、例外和通知痕迹。迁移只追加，保留原记录、来源顺序及旧幂等回执；用空库和旧库验证重启，实际数据备份见[数据管理](data.md#部署备份与还原)。
 

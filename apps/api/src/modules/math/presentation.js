@@ -4,11 +4,11 @@ import { fileURLToPath } from "node:url";
 import {
   isolatedHtml,
   htmlLimit,
-} from "../../../../../packages/shared/src/math/isolation.js";
+} from "@refatos/shared/math/isolation";
 import {
   presentationCss,
-} from "../../../../../packages/shared/src/math/presentation.js";
-import { mathFontStyle } from "../../../../../packages/shared/src/math/formula.js";
+} from "@refatos/shared/math/presentation";
+import { mathFontStyle } from "@refatos/shared/math/formula";
 import { registerAndReadFont } from "./font.js";
 import { contractError, problems } from "../../workbench/problems.js";
 
@@ -36,7 +36,7 @@ export async function readHtml(files, principal, id) {
 }
 let runtimeBundle;
 async function nativeRuntime() {
-  runtimeBundle ??= build({ entryPoints: [fileURLToPath(new URL('../../../../../packages/shared/src/math/offline.js', import.meta.url))],
+  runtimeBundle ??= build({ entryPoints: [fileURLToPath(import.meta.resolve('@refatos/shared/math/offline'))],
     bundle: true, write: false, platform: 'browser', format: 'iife', globalName: 'MathPresentation',
     target: 'es2022', minify: true, legalComments: 'inline',
   }).then(result => result.outputFiles[0].text).catch(error => { runtimeBundle = null; throw error; });

@@ -1,9 +1,9 @@
 import { parentPort, workerData } from "node:worker_threads";
 import sharp from "sharp";
-import { renderDynamic } from "../../../../../packages/shared/src/math/dynamic.js";
-import { renderGraphic } from "../../../../../packages/shared/src/math/graphics.js";
+import { renderDynamic } from "@refatos/shared/math/dynamic";
+import { renderGraphic } from "@refatos/shared/math/graphics";
 import { registerAndReadFont } from "./font.js";
-import { mathFontStyle } from "../../../../../packages/shared/src/math/formula.js";
+import { mathFontStyle } from "@refatos/shared/math/formula";
 import { renderFormula } from "./formula.js";
 try {
   if (workerData.action === "workshop-formulas") {

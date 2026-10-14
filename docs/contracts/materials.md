@@ -22,7 +22,7 @@ v2 读取旧对象时，原 Document.version=1 原样返回；补充空分类、
 
 旧副本来源中的 v1 快照维持 v1。题库拥有自身对象兼容，未知旧请求沿原路径确认。
 
-静态模块目录只有一份。材料版历史协议定义 ModuleCatalog version=2；当前完整组合返回数学契约的 version=3。材料版 v2 的精确描述与依赖名在 materials.openapi.yaml；这是该目录操作的显式版本演进，B11 原定义保留为版本1历史冻结输入，不作为材料版运行响应的竞争定义。支持版本1的旧客户端遇到2必须保留草稿并提示重新加载，不用未知依赖继续装配。当前只注册真实实现并检查映射、缺依赖和环路。
+静态模块目录只有一份。材料版历史协议定义 ModuleCatalog version=2；当前完整组合返回 ModuleCatalogV4（version=4）。材料版 v2 的精确描述与依赖名在 materials.openapi.yaml；这是该目录操作的显式版本演进，B11 原定义保留为版本1历史冻结输入，不作为材料版运行响应的竞争定义。支持版本1的旧客户端遇到2必须保留草稿并提示重新加载，不用未知依赖继续装配。当前只注册真实实现并检查映射、缺依赖和环路。
 
 ## 文件与定位
 
@@ -153,15 +153,15 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 
 沿用 React/Vite、Express、better-sqlite3 单一后端及[静态模块目录](../adr/0001-use-a-single-static-module-catalog.md)。一个教师规模下顺序执行重转换即可；文件目录和 SQLite 一起备份。不建立上传服务、对象存储网关、通用内容平台、分类平台或队列平台。
 
-材料历史协议使用 ModuleCatalog version=2；当前五模块组合使用数学 schema 的 version=4，`webEnabled` 区分后端与页面开放；questions/resources 无业务模块必需依赖。File/Document/Job 是启动底座，不注册为额外业务模块。只在实际实现集成后注册，Web/API从同一目录投影；旧目录版本客户端按契约升级保护，不另维护一份业务目录。
+目录版本过渡见本页[B11 兼容](#b11-兼容与版本过渡)，当前组合与 Web/API 装配见 [SETUP](../SETUP.md#代码结构)。File/Document/Job 是公共底座，不注册为额外业务模块。
 
 | Module | 独占数据与 Implementation | 消费者 |
 | --- | --- | --- |
 | workbench/files | 原件和衍生字节、文件元数据、受控下载、固定页预览与裁图、文件持久提交；本机 LibreOffice/Poppler 隔离调用 | questions/resources、math |
 | workbench/content + shared/materials | 唯一 schema 的校验和受控 Document 呈现；Web 的公共文档编辑/阅读原语，v1/v2 兼容 | 题库、资源库、math |
 | workbench/jobs | 最小持久任务记录、停止意图、重启 interrupted；只承载固定任务类型，不拥有业务草稿和成果选项 | 文件预览、questions 提取/PNG |
-| questions | 题目、原始材料绑定、拆题草稿/片段、局部校对、题型/标签、复制来源、提取 Adapter、题面 PNG | Agent |
-| resources | 资源条目、当前文件/补充预览、文件夹/标签/备注、替换与恢复 | Agent |
+| questions | [题库技术入口](../subsystems/questions.md) | 当前题库与已声明 Agent 工具 |
+| resources | [资源库技术入口](../subsystems/resources.md) | 当前资源页面；全部 Agent 能力尚未接通 |
 
 自动提取的设计目标为“原生读取保存 + B 视觉辅助 + 结构/完整性校验 + 局部校对”。T/Word 先保留原生段落、OMML、图片关系；结构明确时本地自动拆题，通用文本整理失败时可将文本受控排版为页图走同一 B 路线，不能改成空题手填。PDF/扫描/图片按小批原页或区域提取，跨页续题可带相邻页上下文；答案页归并与题面分开。具体模型请求参数不进入公共 schema。R33 必须以真实输入证明这条完整路径，未通过项如实阻塞该实现能力。
 
@@ -181,15 +181,15 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 | 内容校验 | `content.validate(principal, Document)` | 同步返回原 Document 或契约错误，校验文件归属/格式，不转换源；v1 保留。 |
 | 公共 Web 阅读 | `DocumentView({value, onOpenFile})` | value 为 Document；按内容版本安全呈现，图片通过授权 fileId 获取。 |
 | 公共 Web 编辑 | `DocumentEditor({value, onChange, readOnly, onOpenFile, onPickImage})` | onChange(Document)；onPickImage()返回Promise<File或null>，由调用方完成上传/选择，编辑器不让老师填写fileId。支持本批封闭节点、公式源和错误定位，保存由所属模块负责。 |
-| 业务动作 | 各模块 `port.operations.<operationId>({principal, key, input, id, query})` | Promise<{status, body}>，input/查询来自对应 HTTP schema；读取省略 key，缺省 id/query 不传。与 HTTP 共用业务校验与 mutations，不再执行另一份 SQL。 |
+| 业务动作 | [各模块技术入口](../subsystems/README.md) | 工厂返回值及参数按各模块实际实现；题库兼容/v2、班级顶层 operations、日程只读 port 分别说明。 |
 
-Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档。作品制作状态和隔离 HTML 由[数学架构](../features/math.md#制作实现)定义。
+Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档。数学调用与产物路径见[数学技术入口](../subsystems/math.md)，隔离保证见[数学契约](math.md#导出与-html-隔离)。
 
 组合工厂提供 `{db, mutations, files, content, jobs}`，业务模块只注入所需的公共端口，不读取其他模块的表。
 
 Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)` 在调用方已有业务受理事务内同步返回 Job，不嵌套提交 mutations.execute；input 只能是 kind 对应的已验证业务请求/固定快照标识，存在模块自己的记录内，jobs 不存任意可执行指令。`jobs.get(principal,id)`、`jobs.cancel(principal,id,mutation)`、`jobs.retry(principal,id,RetryJob,mutation)` 对应 HTTP。组合入口以固定处理函数绑定执行器，handler 返回进度/文件 ID/JobIssue，业务输出写回各自 Module。固定绑定由组合入口装配；不做动态注册或发现。任务创建衍生文件使用持久保存的独立内部请求键，不复用用户已经确认的受理键；确保同任务重启后不重复产物。
 
-跨模块的执行绑定固定为 `jobs.start({preview, extraction, recognition, 'question-asset'})`，服务器启动前调用一次，缺项以明确未接入的测试handler占位且禁止生产启动。每项具有 `run({principal, job, signal, reportProgress})`，返回Promise的 `{state, outputFileIds, issues}`，state仅succeeded/partial/failed，其他字段复用Job定义；signal为AbortSignal，reportProgress接收Job.progress并持久记录。停止状态由jobs裁决，迟到run结果不能把cancelled改成succeeded。preview/extraction/recognition 另提供同步 `retry({principal, job, unitIds, mutation}) -> Job`，在jobs.retry已开启的事务中调用enqueue并同步更新业务记录，question-asset 不接受 retry。模块工厂返回 `{router, port, jobHandlers}`，questions 提供 extraction 和 question-asset，files 提供 preview，共用识别提供 recognition；测试Adapter使用同样形状。各handler在报告成功前持久保存自己的输出，按jobId/输入单元保持重复执行不重复写入。
+跨模块的执行绑定固定为 `jobs.start({preview, extraction, recognition, 'question-asset'})`，服务器启动前调用一次，缺项以明确未接入的测试handler占位且禁止生产启动。每项具有 `run({principal, job, signal, reportProgress})`，返回Promise的 `{state, outputFileIds, issues}`，state仅succeeded/partial/failed，其他字段复用Job定义；signal为AbortSignal，reportProgress接收Job.progress并持久记录。停止状态由jobs裁决，迟到run结果不能把cancelled改成succeeded。preview/extraction/recognition 另提供同步 `retry({principal, job, unitIds, mutation}) -> Job`，在jobs.retry已开启的事务中调用enqueue并同步更新业务记录，question-asset 不接受 retry。questions 的任务出口见[题库技术入口](../subsystems/questions.md#责任与调用面)；files 提供 preview，共用识别提供 recognition，具体工厂返回形状按所属实现，不以此段统一所有模块。各handler在报告成功前持久保存自己的输出，按jobId/输入单元保持重复执行不重复写入。
 
 ### 文件持久性、运行与恢复
 

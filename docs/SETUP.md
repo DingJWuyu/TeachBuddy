@@ -79,7 +79,7 @@ WantedBy=default.target
 材料预览与输出还依赖系统工具和字体，不能只安装 npm 依赖：
 
 - `MATERIALS_PANDOC_PATH` 指向 Pandoc 可执行文件，使用者为 `apps/api/src/workbench/files/pandoc.js`。
-- `MATERIALS_OFFICE_ROOT` 指向包含 `program/soffice` 的 LibreOffice 根目录，使用者为 `apps/api/src/workbench/files/converter.js`。Debian/Ubuntu 系统包须同时安装 `libreoffice-writer` 与 `libreoffice-math`，后者负责公式显示，根目录可使用 `/usr/lib/libreoffice`；转换沙箱会同时只读挂载系统包的 `/etc/libreoffice` 配置目录（存在时）。
+- `MATERIALS_OFFICE_ROOT` 指向包含 `program/soffice` 的 LibreOffice 根目录，使用者为 `apps/api/src/workbench/files/converter.js`。Debian/Ubuntu 系统包须安装 `libreoffice-writer`、`libreoffice-math` 与 `libreoffice-impress`，分别提供 Word、公式与 PPT/PPTX 转换所需能力，根目录可使用 `/usr/lib/libreoffice`；转换沙箱会同时只读挂载系统包的 `/etc/libreoffice` 配置目录（存在时）。
 - `QUESTIONS_XPDF_PDFTOHTML` 指向 Xpdf 的 `pdftohtml`，用于题库文字 PDF 的阅读顺序与双栏识别；使用者为 `apps/api/src/modules/questions/native-pdf.js`。Poppler 继续负责页图、裁图和资源正文检索。
 - 转换还调用 `bwrap` 和相应格式工具；准确命令从同目录的 `conversion-worker.mjs` 核对。
 - 工具安装在源码之外的持久目录，配置指向实际可执行文件；新环境独立安装，不从旧任务现场复制。
@@ -181,7 +181,7 @@ React 页面
   → SQLite 事务、文件存储、转换任务
 ```
 
-这是一个应用和一个 SQLite 持久底座。[八个产品分区](PRODUCT_SCOPE.md#产品分区)用于职责与任务归属，其中五个教学业务模块通过单一静态目录装配，班级当前只注册后端；账户与身份、工作台与设置、AI 助理由应用组合。产品分区不要求一一对应顶层代码目录，也不拆成多服务或动态插件平台。重大约束见 [ADR 0001](adr/0001-use-a-single-static-module-catalog.md)。
+这是一个应用和一个 SQLite 持久底座。[八个产品分区](PRODUCT_SCOPE.md#产品分区)用于职责与任务归属，其中五个教学业务模块通过单一静态目录装配，班级当前只注册后端；账户与身份、工作台与设置、AI 助理由应用组合。产品分区不要求一一对应顶层代码目录。重大约束见 [ADR 0001](adr/0001-use-a-single-static-module-catalog.md)；修改模块先从[子系统入口](subsystems/README.md)找到其真实操作和状态约束。
 
 | 代码位置 | 当前职责 |
 | --- | --- |
@@ -198,14 +198,14 @@ React 页面
 | `apps/api/src/reliability/preferences.js` | 工作台与设置的账户偏好；路径名称不改变职责 |
 | `apps/api/src/modules/` | 题库、资源、数学、日程和班级业务；`classroom/` 拥有名单、考试及统计，消费公共文件端口 |
 | `apps/api/src/workbench/reliability/` | 个人资料包、备份、恢复与维护锁 |
-| `packages/shared/` | 两侧消费的静态模块目录及共享定义 |
+| `packages/shared/` | 两侧消费的静态模块目录、协议及数学计算、源校验与浏览器/离线呈现；调用方使用 `@refatos/shared` 或显式 `@refatos/shared/math/*` 子路径，实际公开项以 package exports 为准 |
 | `prototype/` | 已确认 UI/UX 的参考，生产运行不依赖原型源码 |
 
-实际 API 装配映射在 `apps/api/src/workbench/moduleImplementations.js`；Web 的 `features/modules/moduleRegistry.js` 将共享目录投影为页面与图标，外壳、导航、教程和全局搜索消费同一投影，顶层路由从共享目录匹配。目录 v4 的 `webEnabled` 明确页面开放资格，API 装配全部注册模块，Web 只投影已开放模块；班级不需要占位页面。资源深链接适配归属资源模块；`workbench/teachingTime.js` 只装配日程与其内部提醒。新增能力先找所属模块，不增加另一套全局注册表。
+模块事实在 `packages/shared/src/moduleCatalog.js`，实际 API 工厂映射在 `apps/api/src/workbench/moduleImplementations.js`，`moduleLoader.js` 校验并装配它们。Web 的 `features/modules/moduleRegistry.js` 将共享目录投影为页面与图标，外壳、导航、教程和全局搜索消费同一投影，顶层路由从共享目录匹配。目录 v4 的 `webEnabled` 明确页面开放资格，API 装配全部注册模块，Web 只投影已开放模块；班级不需要占位页面。资源深链接适配归属资源模块；`workbench/teachingTime.js` 只装配日程与其内部提醒。新增能力先找所属模块，不增加另一套全局注册表。
 
 ### 持久化与失败语义
 
-业务通过自己的服务、仓储及迁移处理数据；跨模块采用公开端口，避免直接操作别人的表。保存、版本冲突、幂等与未知结果的共同规则由[共享保存契约](contracts/workbench.md)拥有。
+业务通过自己的服务、仓储及迁移处理数据；跨模块采用公开端口，避免直接操作别人的表。`apps/api/src/workbench/index.js` 在装配时注入公共依赖，`mutations.js#createMutations` 负责账户范围的幂等回执与事务，`migrations.js#createMigrationRunner` 按模块迁移定义升级数据库。保存、版本冲突、幂等与未知结果的共同规则由[共享保存契约](contracts/workbench.md)拥有。
 
 个人资料包在受理事务内同步调用各注册模块既有 port 的 `readForExport(principal)`，由各模块读取账户范围内的业务值、保留历史与专属证据，不补写默认设置或结算通知。`workbench/reliability/portable.js` 负责资料格式、对象关系和附件组装；异步打包在受理提交后执行。调整模块存储时维护模块自己的读取端口，物理备份仍沿既有维护路径。
 

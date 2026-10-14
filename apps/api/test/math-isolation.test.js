@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { pathToFileURL } from "node:url";
+import { chromium } from "playwright";
 import { randomUUID } from "node:crypto";
 import {
   startRealMath,
@@ -15,9 +16,13 @@ const fixture = fs.readFileSync(
     import.meta.url,
   ),
 );
-test("real HTML upload, original/current bytes, large/broken assets, cross-account and persistent receipts", async () => {
+test("real HTML upload, original/current bytes, large/broken assets, cross-account, persistent receipts and cold offline HTML", { timeout: 90000 }, async () => {
   let world = await startRealMath();
   const directory = world.directory;
+  const evidenceRoot = path.resolve(process.env.M42_EVIDENCE_DIR ?? 'test-results/math-isolation');
+  fs.mkdirSync(evidenceRoot, { recursive: true });
+  const evidence = fs.mkdtempSync(path.join(evidenceRoot, 'html-artifacts-'));
+  let browser;
   let passed = false;
   try {
     let { client, session } = await registerMath(
@@ -181,15 +186,37 @@ test("real HTML upload, original/current bytes, large/broken assets, cross-accou
         fixture.toString(),
       );
     }
-    const evidence = process.env.M42_EVIDENCE_DIR
-      ? path.resolve(process.env.M42_EVIDENCE_DIR)
-      : fileURLToPath(
-          new URL(
-            "../../../test-results/evidence/M42/v1/artifacts/",
-            import.meta.url,
-          ),
-        );
-    fs.mkdirSync(evidence, { recursive: true });
+    const downloaded = await client.request('GET', `/api/workbench/files/${html.json.file.id}/content`);
+    assert.equal(downloaded.status, 200, downloaded.text);
+    assert.match(downloaded.headers['content-type'], /^text\/html/);
+    const htmlPath = path.join(evidence, 'external.html');
+    fs.writeFileSync(htmlPath, downloaded.text);
+    await world.close();
+    world = null;
+    browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ offline: true, viewport: { width: 1280, height: 900 } });
+    const page = await context.newPage();
+    const errors = [], requests = [];
+    page.on('pageerror', error => errors.push(error.message));
+    page.on('request', request => { if (/^https?:/.test(request.url())) requests.push(request.url()); });
+    await page.goto(pathToFileURL(htmlPath).href);
+    const frame = page.frameLocator('iframe');
+    await frame.locator('svg,canvas').first().waitFor({ state: 'visible' });
+    const slider = frame.getByLabel('正比例函数系数 k', { exact: true });
+    assert.equal(await slider.getAttribute('min'), '-10');
+    await slider.focus(); await page.keyboard.press('Home');
+    assert.equal(await frame.locator('#eq').textContent(), 'y = -10x');
+    for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowRight');
+    assert.equal(await frame.locator('#eq').textContent(), 'y = 0x');
+    await page.keyboard.press('End');
+    assert.equal(await frame.locator('#eq').textContent(), 'y = 8x');
+    assert.deepEqual(errors, []);
+    assert.deepEqual(requests, []);
+    await page.screenshot({ path: path.join(evidence, 'external-offline.png') });
+    fs.writeFileSync(path.join(evidence, 'external-offline.json'), JSON.stringify({
+      serviceStopped: true, freshBrowser: true, offline: true, errors, requests,
+      slider: { minimum: -10, intermediate: 0, maximum: 8 },
+    }, null, 2));
     fs.writeFileSync(
       path.join(evidence, "html-api.json"),
       JSON.stringify(
@@ -207,7 +234,11 @@ test("real HTML upload, original/current bytes, large/broken assets, cross-accou
     );
     passed = true;
   } finally {
-    await world.close();
-    if (passed) fs.rmSync(directory, { recursive: true, force: true });
+    await browser?.close();
+    await world?.close();
+    if (passed) {
+      fs.rmSync(evidence, { recursive: true, force: true });
+      fs.rmSync(directory, { recursive: true, force: true });
+    } else console.log('保留 HTML 测试现场：' + directory + '；证据：' + evidence);
   }
 });

@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import {
   htmlLimit,
   isolatedHtml,
-} from "../../../../../packages/shared/src/math/isolation.js";
+} from "@refatos/shared/math/isolation";
 export default function HtmlEditor({
   draft,
   client,

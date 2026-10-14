@@ -1,0 +1,37 @@
+# 班级技术入口
+
+改名单、成绩导入/确认、统计或维护校验时读本页。行为见 [班级规格](../features/classroom.md)，交换关系、统计口径与失败保证见 [班级契约](../contracts/classroom.md)，字段见 [classroom.openapi.json](../../apps/api/src/contracts/classroom.openapi.json)。当前只开放后端，目录 `webEnabled=false`，没有班级页面或已接通的班级 Agent 工具。
+
+## 责任与调用面
+
+[createClassroomModule](../../apps/api/src/modules/classroom/index.js) 接收 `db/mutations/files/clock`，必须有 `mutations.execute/peek` 和受管文件 `read/open`，返回 `router`、顶层 `operations` 与 `port`。班级拥有七类对象及其 `classroom_*` 表，种类由 [repository.kinds](../../apps/api/src/modules/classroom/repository.js) 定义：classes、students、records、exams、tags、imports、results。
+
+[createClassroomOperations / routes](../../apps/api/src/modules/classroom/operations.js) 是公开业务调用面：名单、记录、考试、标签、导入、成绩的读取和写入，以及座位、标签合并、导入确认、学生/班级统计和同场比较。参数为 `{principal, arguments, requestPath, key}`，业务操作在工厂顶层 `operations`，不是 `port.operations`。`port` 只提供同步纯读 `readForExport(principal)`。模块另导出账户 `deleteAccountData` 和恢复维护只读 `validateStoredData`，仓储与 SQL 留模块内部。
+
+## 可信调用与导入提交
+
+老师已经完成导入校对后，服务端使用当前可信 principal 及原逻辑 UUID key 调用确认：
+
+```js
+const result = await classroom.operations.confirmImport({
+  principal: verifiedPrincipal,
+  arguments: { id: importId, body: { baseVersion: currentImportVersion } },
+  key: logicalRequestKey,
+});
+```
+
+确认请求只携带导入的 `baseVersion`，相关考试/班级/学生/成绩基线来自已保存的导入事实，并在确认时重新核验。操作返回 `Promise<{status, body}>`；读取省略 key。HTTP [router](../../apps/api/src/modules/classroom/router.js) 将 params/body/query 放进 arguments，提供 `canonicalRequestPath(req)` 和延迟读 key；进程内调用通常省略 requestPath，沿默认规范模块路径，不接受模型或客户端指定任意路径。合法失败抛 `status/problem`，外账户对象/文件统一 404。
+
+首次创建导入先 `mutations.peek` 检查已有成功回执，无回执才在事务外 [prepareImport](../../apps/api/src/modules/classroom/imports.js) 读取 Excel；准备不占 key，最终仍以 execute 复核并提交。确认由 [assessment.confirmImport](../../apps/api/src/modules/classroom/assessment.js) 在同一事务核对考试/班级/学生/成绩基线，保存成绩、导入状态和成功回执。失败不留部分成绩；未知结果沿 [原键确认](../contracts/workbench.md#写入冲突与未知结果)。
+
+## 运行路径与持久化
+
+- 认证 HTTP 到 router/operations，再到 [roster](../../apps/api/src/modules/classroom/roster.js)、[tags](../../apps/api/src/modules/classroom/tags.js)、imports/assessment，由 repository 写模块表；成绩保留考试时名单快照。
+- 受管 Excel File 经 imports/[workbook](../../apps/api/src/modules/classroom/workbook.js) 在事务外解析，校对草稿与固定原表事实保存在 import，确认生成 results。原卷/定位通过公共 files 读取，固定 rendition 使用文件服务，不另建预览系统。
+- [statistics](../../apps/api/src/modules/classroom/statistics.js) 从保存的活动考试/成绩计算口径并返回参与版本，不存派生结论；导出沿 port，恢复维护沿 [stored-data](../../apps/api/src/modules/classroom/stored-data.js) 校验保存对象及关系。
+
+[模块迁移](../../apps/api/src/modules/classroom/migrations/index.js) 归班级，账户删除由外层生命周期事务调用模块清理。新班级不复用退役 classes 模块 ID 或数据。
+
+## 验证入口
+
+现有 [classroom-core](../../apps/api/test/classroom-core.test.js)、[import](../../apps/api/test/classroom-import.test.js)、[statistics](../../apps/api/test/classroom-statistics.test.js)、[workbook](../../apps/api/test/classroom-workbook.test.js)、[paper](../../apps/api/test/classroom-paper.test.js)、[assessment](../../apps/api/test/classroom-assessment.test.js)、[lifecycle](../../apps/api/test/classroom-lifecycle.test.js) 测试分别覆盖真实 HTTP/SQLite、Excel 字节、固定原卷及恢复/清理。验收条件见 [班级验收](../acceptance/classroom.md)，受管文件转换工具仍按 [SETUP](../SETUP.md#文件转换工具) 准备。没有页面的后端能力按 HTTP 与实际 Excel/文件读回验证，不以不存在的 UI 测试代签。执行范围按 [CI 分工](../agents/github-workflow.md#ci-与本地验证)。

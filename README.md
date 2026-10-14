@@ -44,11 +44,13 @@ npm run dev
 
 ## 开发资料
 
-产品实现位于 `apps/web` 与 `apps/api`，`packages/shared` 保存共享目录和定义，`prototype` 提供交互参考。
+产品实现位于 `apps/web` 与 `apps/api`，`packages/shared` 提供共享目录、协议与数学能力的显式包入口，`prototype` 提供交互参考。
 
 - [产品范围](docs/PRODUCT_SCOPE.md)：产品目标与边界。
 - [文档目录](docs/README.md)：按功能查行为、接口和验证方法。
 - [代码结构](docs/SETUP.md#代码结构)：模块、请求路径和数据归属。
+- [子系统入口](docs/subsystems/README.md)：每个模块的公开操作、实际调用链和验证入口。
+- [编码与验收标准](docs/code-standards.md)：实现、测试和审查标准；[LESSONS](LESSONS.md)沉淀有证据的经验。
 - [当前进度](docs/plans/run-state.md)：已知缺口、授权和下一步。
 - [GitHub 协作与发布](docs/agents/github-workflow.md)：开发主线、PR、CI、版本准备和发布产物；公开部署仍待目标环境确定。
 
