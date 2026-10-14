@@ -93,7 +93,6 @@ jobs:
           printf '%s  %s\n' '940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3' "$RUNNER_TEMP/xpdf.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/xpdf.tar.gz" -C "$RUNNER_TEMP"
           echo "QUESTIONS_XPDF_PDFTOHTML=$RUNNER_TEMP/xpdf-tools-linux-4.06/bin64/pdftohtml" >> "$GITHUB_ENV"
-          "$RUNNER_TEMP/xpdf-tools-linux-4.06/bin64/pdftohtml" -v
           npx playwright install --with-deps chromium
           pandoc --version
           libreoffice --version
