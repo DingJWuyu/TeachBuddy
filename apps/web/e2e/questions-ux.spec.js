@@ -1096,7 +1096,8 @@ test('导入：PDF 明示续题跨页合并，保留两页来源和后续独立�
   await expect(page.getByRole('article', { name: '待检查题干' })).not.toContainText('第二个条件');
   await expect(page.getByRole('button', { name: '2 待检查', exact: true })).toHaveCount(0);
   await page.getByText('未分配片段 · 1', { exact: true }).click();
-  await expect(page.locator('.q-review details pre')).toContainText('第二个条件');
+  await expect(page.locator('.q-unassigned-fragment')).toBeVisible();
+  await expect(page.locator('.q-unassigned-fragment')).toContainText('第二个条件');
   await page.getByLabel('片段处理', { exact: true }).click();
   await page.keyboard.press('Escape');
   await page.getByLabel('片段处理', { exact: true }).selectOption('ignored');

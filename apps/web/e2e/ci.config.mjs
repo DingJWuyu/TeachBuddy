@@ -13,7 +13,7 @@ import recognition from './questions-recognition.config.mjs';
 
 // Reuse each suite's viewport, timezone, assertions and evidence location.
 export default defineConfig({
-  testDir: '.', workers: 1, retries: 0, forbidOnly: Boolean(process.env.CI), reporter: 'list',
+  testDir: '.', workers: 2, retries: 0, forbidOnly: Boolean(process.env.CI), reporter: 'list',
   projects: Object.entries({ auth, authCompleteness, math, protection, calendar, development, retirement, catalog,
     resources: { ...resources, grepInvert: /真实 OCR 运行链/ },
     questions, recognition: { ...recognition, testMatch: 'questions-recognition.spec.js' },

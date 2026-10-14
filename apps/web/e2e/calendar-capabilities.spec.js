@@ -917,15 +917,16 @@ test('真实指针选九十分钟，自动保存后刷新及服务重启仍可�
   await page.getByRole('button', { name: '日历视图', exact: true }).click();
   await page.getByRole('menuitemradio', { name: /^周\s/ }).click();
   const startSlot = page.locator('.fc-timegrid-slot-lane[data-time="15:00:00"]');
-  const endSlot = page.locator('.fc-timegrid-slot-lane[data-time="16:00:00"]');
+  const endSlot = page.locator('.fc-timegrid-slot-lane[data-time="16:15:00"]');
   await startSlot.scrollIntoViewIfNeeded();
   const column = await page.locator('.fc-timegrid-col[data-date="2026-09-25"]').boundingBox();
   const start = await startSlot.boundingBox();
   const end = await endSlot.boundingBox();
   expect(column).not.toBeNull(); expect(start).not.toBeNull(); expect(end).not.toBeNull();
   const x = column.x + column.width / 2;
-  await page.mouse.move(x, start.y + 2); await page.mouse.down();
-  await page.mouse.move(x, end.y + end.height / 2, { steps: 15 }); await page.mouse.up();
+  // Fifteen-minute lanes contain three five-minute hits; selection includes the final hit.
+  await page.mouse.move(x, start.y + start.height / 6); await page.mouse.down();
+  await page.mouse.move(x, end.y + end.height * 5 / 6, { steps: 15 }); await page.mouse.up();
   await expect(page.locator('[name=entry-start]')).toHaveValue('15:00');
   await expect(page.locator('[name=entry-end]')).toHaveValue('16:30');
   const title = '指针选择的函数备课';
@@ -936,7 +937,8 @@ test('真实指针选九十分钟，自动保存后刷新及服务重启仍可�
   await expect(page.locator('[name=entry-title]')).toHaveValue(title);
   await expect(page.locator('[name=entry-end]')).toHaveValue('16:30');
   await page.screenshot({ path: info.outputPath('pointer-selection-restored.png') });
-  const selectedPath = new URL(page.url()).pathname + new URL(page.url()).search;
+  const entry = await saved(title);
+  const selectedPath = `/calendar?entry=${entry.id}`;
   const storageState = await page.context().storageState();
   const directory = world.directory;
   await world.close();

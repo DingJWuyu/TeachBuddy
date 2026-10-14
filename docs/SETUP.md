@@ -79,7 +79,7 @@ WantedBy=default.target
 材料预览与输出还依赖系统工具和字体，不能只安装 npm 依赖：
 
 - `MATERIALS_PANDOC_PATH` 指向 Pandoc 可执行文件，使用者为 `apps/api/src/workbench/files/pandoc.js`。
-- `MATERIALS_OFFICE_ROOT` 指向包含 `program/soffice` 的 LibreOffice 根目录，使用者为 `apps/api/src/workbench/files/converter.js`。Debian/Ubuntu 系统包须同时安装 `libreoffice-writer` 与 `libreoffice-math`，后者负责公式显示，根目录可使用 `/usr/lib/libreoffice`；转换沙箱会同时只读挂载系统包的 `/etc/libreoffice` 配置目录（存在时）。
+- `MATERIALS_OFFICE_ROOT` 指向包含 `program/soffice` 的 LibreOffice 根目录，使用者为 `apps/api/src/workbench/files/converter.js`。Debian/Ubuntu 系统包须安装 `libreoffice-writer`、`libreoffice-math` 与 `libreoffice-impress`，分别提供 Word、公式与 PPT/PPTX 转换所需能力，根目录可使用 `/usr/lib/libreoffice`；转换沙箱会同时只读挂载系统包的 `/etc/libreoffice` 配置目录（存在时）。
 - `QUESTIONS_XPDF_PDFTOHTML` 指向 Xpdf 的 `pdftohtml`，用于题库文字 PDF 的阅读顺序与双栏识别；使用者为 `apps/api/src/modules/questions/native-pdf.js`。Poppler 继续负责页图、裁图和资源正文检索。
 - 转换还调用 `bwrap` 和相应格式工具；准确命令从同目录的 `conversion-worker.mjs` 核对。
 - 工具安装在源码之外的持久目录，配置指向实际可执行文件；新环境独立安装，不从旧任务现场复制。
