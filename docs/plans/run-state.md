@@ -4,7 +4,7 @@
 
 ## 工作现场与授权
 
-当前任务是吸收 Magpie 的现行工程实践，建立单人 agent 开发闭环。允许重整代码、文档、测试和协作流程，保留已实现功能及已认可体验。当前实施分支为 `refactor/agent-workflow`，工作树为 `TeacherWorkspace-agent-workflow`；基线 `71877a7768c904fdd082d5d53864a52c5dc68236`。阶段、派工和未完成验证留该工作树的 `test-results/agent-workflow/task.md`，完成集成后清理本轮现场。此位置只用于接续本轮，不作为新环境开发前置。
+单人 agent 开发闭环已接入：任务路由、子系统运行参考、代码标准、Lessons、固定候选双轴审查和本地/CI 分工均有仓库内入口；最新集成与验证见[核查入口](#核查入口)。工程改造任务已完成，后续业务开发仍按用户选定的产品分区启动。
 
 用户体验运行 `TeacherWorkspace-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
@@ -13,7 +13,6 @@
 | `TeacherWorkspace-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
 | `TeacherWorkspace` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeacherWorkspace-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
-| `TeacherWorkspace-agent-workflow` / `refactor/agent-workflow` | 本轮隔离改造；总控汇总四条有界实施线，固定候选后集中审查与 CI，合入后清理 |
 
 账户、题库、数学、日程、班级后端及两次退役任务均已集成，其临时现场已清理。数学模块后续讨论由用户指定 session 接续，实际新现场以 Git 为准。AI 助理扩展暂停，班级前端与 AI 接入尚未开始；日程暂时保留用户已认可的体验。产品分区逐个打磨，不把旧任务授权延续成新增业务开发。
 
@@ -51,7 +50,6 @@
 
 ### GitHub 交付与首发准备
 
-- 完成本轮工程改造的集中审查、CI、trunk 集成及 preview 核对。开发中的局部检查与完整 CI 分工见[验证约定](../agents/github-workflow.md#ci-与本地验证)，不重复全量验收。
 - 正式版本、目标服务器、域名、真实邮件、生产配置与备份目的地尚未确定，CD 未接入。根版本仍为 `0.3.0`；版本准备需用户指定完整目标版本，CHANGELOG 由工具生成。授权和步骤见[发布指南](../agents/github-workflow.md#准备与发布)。
 - 首个用户版本只开放日程、其他模块占位的发布配置及首发验收尚未完成，当前完整开发界面不能当作日程先行版。
 
@@ -70,7 +68,7 @@
 | 事项 | 已有证明与不足 | 应由谁推进 |
 | --- | --- | --- |
 | 辅助提取与局部校对 | 当前 MinerU 单路方案在冻结八页开发及四页留出中满足具名门槛；保留消费者的实际校对与使用按候选补验，成绩和修订量见[选型验收](../acceptance/ocr-selection.md)。原生 T/W/P 和题目提取继续由固定输入回归保护；原稿缺图不伪造补齐。识别完成不等于题目边界与活动归属全部自动完成 | 按[固定样本提取判据](../acceptance/mvp-matrix.md#extraction)核对实际材料。根式范围、选项标号、标题可能错漏，部分数学文本需补定界符；受损文字可能错读且不提示，不能承诺自动发现每处错误 |
-| 常用文件预览与输出 | 备课退役候选已验证公共转换归位后的可编辑公式、表格、插图 DOCX 及 LibreOffice PDF，并通过现行数学输出与离线回归；常用格式逐页预览的其他证明沿用固定旧版本 | 真实 Word/WPS 编辑、保存、重开与打印仍按下节暂缓 |
+| 常用文件预览与输出 | 最新工程集成 CI 已验证真实文稿/数学输出、离线打开及资源库常用格式逐页预览；可编辑公式、表格、插图的具体保护沿[核查入口](#核查入口)中的现行用例 | 真实 Word/WPS 编辑、保存、重开与打印仍按下节暂缓 |
 | 数学、教学、身份与数据手工全链 | 既有固定版本的导航、资料包和备份往返有验证证据；班级退役及新后端的接口、原卷与恢复路径已验，完整手工教学工作日仍仅有固定旧版本证据 | 产品模型与 Agent 组合另验，完整手工工作日及目标环境按实际后续任务安排 |
 | `fetch failed` 观察 | 本轮未复现，仍无原观察的明确触发条件和因果关闭证据 | 再现时记录入口、请求与环境；不据此认定当前已确认缺陷，也不声称已修复 |
 | 数学保存超时观察 | CI 出现过一次保存请求 35 秒未收到响应；同输入渲染、重复本地原路径及最终 CI 均通过，原因未确定，未放宽超时或保存断言 | 再现时沿请求与服务端处理时序定位；证据在班级集成回执，不声称已修复 |
@@ -95,7 +93,7 @@
 
 ## 接续顺序与完成条件
 
-先完成当前工程改造，再按用户选定的产品分区推进。日程体验保留；数学按[模块边界](math-workshop.md)接续；AI 助理扩展、真实邮件、Office 人工操作及目标设备等待对应条件或用户恢复。已授权且可复现的核心问题由 agent 沿真实路径处理，不把技术验证交给用户。
+按用户选定的产品分区推进。日程体验保留；数学按[模块边界](math-workshop.md)接续；AI 助理扩展、真实邮件、Office 人工操作及目标设备等待对应条件或用户恢复。已授权且可复现的核心问题由 agent 沿真实路径处理，不把技术验证交给用户。
 
 只有具名完成条件满足才改变状态：已实现、已集成和已验证分别记录；缺输入或环境写未验证，待用户取舍写待决定。新任务从核对的 trunk 创建现场，完成后按[集成清理](../agents/module-development.md#集成后的清理)收尾。
 
@@ -105,7 +103,8 @@
 
 | 范围 | 已集成证据 | 可重建入口及边界 |
 | --- | --- | --- |
-| 班级后端与最近完整 CI | [PR #42](https://github.com/DingJWuyu/TeacherWorkspace/pull/42)，`614b7ee3`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38422366903) | [班级验收](../acceptance/classroom.md)；HTTP/SQLite、真实 Excel/原卷、恢复与浏览器已验，班级页面和实际 AI 未验 |
+| 工程闭环与最近完整 CI | [PR #43](https://github.com/DingJWuyu/TeacherWorkspace/pull/43)，`27d3c515`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38620550697) 对应候选 `8ba14a72`，squash 后产品树一致 | 干净 Runner 构建、272 项 HTTP/SQLite、30 项真实输出、220 项浏览器检查通过，零跳过；两轴独立审查无未关闭发现，五模块只读接手演练通过。preview 已重启并核对入口与公共导入；真实模型、GPU OCR、邮件和目标设备沿专项另验 |
+| 班级后端 | [PR #42](https://github.com/DingJWuyu/TeacherWorkspace/pull/42)，`614b7ee3`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38422366903) | [班级验收](../acceptance/classroom.md)；HTTP/SQLite、真实 Excel/原卷、恢复与浏览器已验，班级页面和实际 AI 未验 |
 | 题库核心体验 | [PR #40](https://github.com/DingJWuyu/TeacherWorkspace/pull/40)，`a53f2285`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38387387677) | `apps/web/e2e/questions-ux.config.mjs`、`materials-question-notes*.test.js`、`materials-questions-output.test.js`；实际模型及外部原件按专项另验 |
 | 账户与身份 | [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37)，`de8bd99b`；入口 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39)，`2c43d63e`；[入口 CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38362936254) | `auth-completeness.config.mjs`、`auth-integration.config.mjs`、`fixtures/auth-contract/playwright.config.mjs`、`account-deletion.test.js`；全浏览器进程重启的 Cookie 生命周期、掉电与真实邮件未验 |
 | 工作台昵称 | `1b107651` | `auth-profile.test.js`、`auth-integration.test.js`、`settings-implementation.config.mjs`；真实系统输入法和触屏未验 |
@@ -118,4 +117,4 @@
 
 上述测试文件名相对 `apps/api/test/` 或 `apps/web/e2e/`。模块技术页链接准确源码与验证入口；完整产品交付再展开[验收矩阵](../acceptance/mvp-matrix.md)。
 
-已有本机回执保存在 preview 的 `test-results/`：`classroom-backend-integration/root-receipt.json`、`questions-integration/receipt.json`、`identity-integration/receipt.json`、`auth-ui-integration/receipt.json`、`settings-nickname/receipt.json`、`math-integration/receipt.json`。退役回执为 `remove-lessons-integration/root-receipt.json` 与 `remove-classes-integration/root-receipt.json`；两次退役和班级后端升级前备份位置分别在同目录 `preview-backup.json`。旧数学/日程交接在 `math-handoff/`。这些现存证据和私有备份独立保全，不作为安装、运行或必要回归的前置。
+已有本机回执保存在 preview 的 `test-results/`：`agent-workflow-integration/root-receipt.json`、`classroom-backend-integration/root-receipt.json`、`questions-integration/receipt.json`、`identity-integration/receipt.json`、`auth-ui-integration/receipt.json`、`settings-nickname/receipt.json`、`math-integration/receipt.json`。退役回执为 `remove-lessons-integration/root-receipt.json` 与 `remove-classes-integration/root-receipt.json`；两次退役和班级后端升级前备份位置分别在同目录 `preview-backup.json`。旧数学/日程交接在 `math-handoff/`。这些现存证据和私有备份独立保全，不作为安装、运行或必要回归的前置。
