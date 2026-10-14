@@ -1,5 +1,5 @@
 import { Worker } from "node:worker_threads";
-import { MathSourceError } from "../../../../../packages/shared/src/math/expression.js";
+import { MathSourceError } from "@refatos/shared/math/expression";
 import { mathError } from "./contract.js";
 export const rendererVersion =
   "math-v5-mathjs15.2-geometry-animation";

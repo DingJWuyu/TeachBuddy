@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
 import { useState } from "react";
-import { findFunctionPoints } from "../../../../../packages/shared/src/math/analysis.js";
-import { dynamicState } from "../../../../../packages/shared/src/math/dynamic.js";
+import { findFunctionPoints } from "@refatos/shared/math/analysis";
+import { dynamicState } from "@refatos/shared/math/dynamic";
 import { newElement } from "./model.js";
 import { updateObjects } from "./editing.js";
 

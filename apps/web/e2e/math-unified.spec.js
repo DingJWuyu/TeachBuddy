@@ -15,7 +15,7 @@ test.afterEach(async ({ page }, info) => {
   if (info.status !== info.expectedStatus) await page.screenshot({ path: info.outputPath('failure.png'), fullPage: true });
   await world?.close(); if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
 });
-test('统一作品：空白退出、公式自动保存、刷新、手动图形与步骤', async ({ page }, info) => {
+test('统一作品：空白退出、公式自动保存、刷新、手动图形与滚轮后步骤可达', async ({ page }, info) => {
   await page.screenshot({ path: info.outputPath('home.png') });
   await page.getByRole('button', { name: '新建作品', exact: true }).click();
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
@@ -62,7 +62,17 @@ test('统一作品：空白退出、公式自动保存、刷新、手动图形�
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
   await expect(page.getByLabel('图形表达式', { exact: true })).toBeVisible();
-  await expect(page.locator('.mw-formula-row img')).toBeVisible(); await page.screenshot({ path: info.outputPath('editor-narrow.png') });
+  await expect(page.locator('.mw-formula-row img')).toBeVisible();
+  const stepsButton = page.getByRole('button', { name: '教学步骤', exact: true });
+  const stepsBox = await stepsButton.boundingBox();
+  expect(stepsBox).not.toBeNull();
+  await page.mouse.move(stepsBox.x + stepsBox.width / 2, stepsBox.y + stepsBox.height / 2);
+  await page.mouse.wheel(0, 2600);
+  await expect(stepsButton).toBeInViewport({ ratio: 1 });
+  await stepsButton.click();
+  await expect(page.locator('.mw-step-rail nav button')).toHaveCount(2);
+  await expect(page.getByLabel('步骤标题', { exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('editor-narrow.png') });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 

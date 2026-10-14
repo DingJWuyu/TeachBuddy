@@ -4,7 +4,19 @@
   "type": "module",
   "main": "src/index.js",
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.js",
+    "./math/formula": "./src/math/formula.js",
+    "./math/expression": "./src/math/expression.js",
+    "./math/geometry": "./src/math/geometry.js",
+    "./math/graphics": "./src/math/graphics.js",
+    "./math/dynamic": "./src/math/dynamic.js",
+    "./math/analysis": "./src/math/analysis.js",
+    "./math/isolation": "./src/math/isolation.js",
+    "./math/presentation": "./src/math/presentation.js",
+    "./math/offline": "./src/math/offline.js",
+    "./math/workshop": "./src/math/workshop.js",
+    "./math/workshop-runtime": "./src/math/workshop-runtime.js",
+    "./math/workshop-presentation": "./src/math/workshop-presentation.js"
   },
   "scripts": {
     "build": "node scripts/verify-catalog.mjs"

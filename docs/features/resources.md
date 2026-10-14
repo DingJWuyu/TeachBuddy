@@ -1,5 +1,7 @@
 # 资源库：收录、整理、预览与文件版本
 
+接口、持久化与跨模块调用读[当前技术入口](../subsystems/resources.md)。
+
 资源库保存真实 PPT、模板、图片、文档及外部工具产物，支持已有配色、版式和素材积累；题目编辑归题库，作品制作归数学工坊，实体书籍不在范围。
 
 实现及转换环境的当前状态见[台账](../plans/run-state.md)。本页定义资源行为，完整格式质量由相关验收确认。
@@ -54,7 +56,7 @@ PDF 与 Word/PPT 的 PDF 预览保留原页图，在其上叠加 PDF.js 文字�
 
 文件身份、上传未知结果、补充预览、授权下载见[材料契约的文件与定位](../contracts/materials.md#文件与定位)；分类、文件更新及删除见同页对应节。原件和历史文件持续保留；上传后安全保存原件与预览成功是不同结果。
 
-Web `apps/web/src/features/resources/`，API `apps/api/src/modules/resources/`；共用 `apps/api/src/workbench/files/` 与 `jobs/`。真实认证浏览器流程入口 `apps/web/e2e/resources-ui.config.mjs`，用 `WORKBENCH_WEB_DIST` 指向[隔离构建](../SETUP.md#新的隔离环境)，截图和 trace 可用 `RESOURCE_UI_RESULTS` 指定目录。Office 格式专项入口 `apps/web/e2e/manual-resources.config.mjs`，HTTP `apps/api/test/materials-resources.test.js`，验收 [WB-M013-017](../acceptance/materials.feature)。
+实现与公共文件/任务路径见[资源技术入口](../subsystems/resources.md#运行路径与持久化)。真实认证浏览器流程入口 `apps/web/e2e/resources-ui.config.mjs`，用 `WORKBENCH_WEB_DIST` 指向[隔离构建](../SETUP.md#新的隔离环境)，截图和 trace 可用 `RESOURCE_UI_RESULTS` 指定目录。Office 格式专项入口 `apps/web/e2e/manual-resources.config.mjs`，HTTP `apps/api/test/materials-resources.test.js`，验收 [WB-M013-017](../acceptance/materials.feature)。
 
 按本次改动选择下列回归，执行范围与剩余验证见[项目状态](../plans/run-state.md)：
 
@@ -63,7 +65,7 @@ Web `apps/web/src/features/resources/`，API `apps/api/src/modules/resources/`�
 - 正文与页内查找：真实拖选、系统剪贴板、中英文及跨文字项命中、字面符号、当前页计数与键盘导航。检查当前文件替换/历史恢复、归档与筛选、快速翻页/账户变化的迟到结果；无文字和失败可区分且可重试。缩放 75%-200%、深浅主题和 390px 下实际检查高亮、选择复制与焦点。
 - OCR：沿同一真实认证、HTTP、Job、SQLite 和 Files 入口验证指定页、复制、搜索定位、停止/重试、响应丢失、断网接续、文件更新及来源一致。固定产物[回放](../../apps/web/e2e/fixtures/resources-recognition/README.md)只证明消费机制；获准的真实模型验证设置 `RESOURCE_OCR_REAL_HOME` 为[工具目录](../SETUP.md#本地页识别工具)，检查实际文字/公式/题图并保存页结果和截图，普通回归不启用模型。
 
-浏览器回归使用隔离构建；`RESOURCE_UI_DEV=1` 另验 Vite/StrictMode 的[开发服务路径](../acceptance/README.md#开发服务回归)。上传、往返、刷新、中文文字层以及当前请求范围需有效，卸载或身份变化后旧响应不能覆盖现场。PDF.js worker、CMap 和标准字体随本机构建提供，不依赖外部 CDN；桌面辅助栏、窄屏、主题、提示消退和关闭焦点须实际查看。
+浏览器回归使用隔离构建；`RESOURCE_UI_DEV=1` 另验 Vite/StrictMode 的[开发服务路径](../acceptance/README.md#开发服务回归)。上传、往返、刷新、中文文字层以及当前请求范围需有效，卸载或身份变化后旧响应不能覆盖现场。桌面辅助栏、窄屏、主题、提示消退和关闭焦点须实际查看。
 
 ## 能力边界
 

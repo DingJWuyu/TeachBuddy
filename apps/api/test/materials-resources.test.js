@@ -4,12 +4,19 @@ import addFormats from "ajv-formats";
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import { startResourcesFixture } from "../../web/e2e/fixtures/materials-resources/server.mjs";
-const dataDir = fileURLToPath(
-  new URL("../../../test-results/r32-api/", import.meta.url),
-);
+const runDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'materials-resources-'));
+const dataDir = path.join(runDirectory, 'resources');
+let failed = false;
+test.afterEach(t => { failed ||= !t.passed; });
+test.after(() => {
+  if (failed) console.log('保留资源 HTTP 测试现场：' + runDirectory);
+  else fs.rmSync(runDirectory, { recursive: true, force: true });
+});
 const schemaRoot = new URL(
   "../src/contracts/",
   import.meta.url,
@@ -107,7 +114,7 @@ async function upload() {
 }
 test("MC02 上传后真实收录，重启仍可读取同一资源和原文件", async () => {
   fs.rmSync(dataDir, { recursive: true, force: true });
-  fixture = await startResourcesFixture({ dataDir });
+  fixture = await startResourcesFixture({ dataDir, port: 0 });
   try {
     const file = await upload();
     const input = {
@@ -125,7 +132,7 @@ test("MC02 上传后真实收录，重启仍可读取同一资源和原文件", 
     assert.equal(created.status, 201, JSON.stringify(created));
     assert.equal(created.body.version, 1);
     await fixture.close();
-    fixture = await startResourcesFixture({ dataDir });
+    fixture = await startResourcesFixture({ dataDir, port: 0 });
     assert.deepEqual(
       (await request("GET", `/api/modules/resources/items/${created.body.id}`))
         .body,
@@ -142,7 +149,7 @@ test("MC02 上传后真实收录，重启仍可读取同一资源和原文件", 
 });
 
 test("MC12 分类移动删除、组合检索及跨账户隔离", async () => {
-  fixture = await startResourcesFixture({ dataDir });
+  fixture = await startResourcesFixture({ dataDir, port: 0 });
   try {
     const root = randomUUID(),
       child = randomUUID(),
@@ -231,7 +238,7 @@ test("MC12 分类移动删除、组合检索及跨账户隔离", async () => {
 });
 
 test("MC13-15 替换、补充预览、文件历史、删除恢复及幂等", async () => {
-  fixture = await startResourcesFixture({ dataDir });
+  fixture = await startResourcesFixture({ dataDir, port: 0 });
   try {
     const file = await upload(),
       second = await upload();
@@ -335,7 +342,7 @@ test("MC13-15 替换、补充预览、文件历史、删除恢复及幂等", asy
 });
 
 test("MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与 HTTP 等价", async () => {
-  fixture = await startResourcesFixture({ dataDir });
+  fixture = await startResourcesFixture({ dataDir, port: 0 });
   try {
     let tax = (await request("GET", "/api/modules/resources/taxonomy")).body;
     const folder = randomUUID(),
@@ -452,41 +459,37 @@ test("MC12/22 原子拒绝、已删除对象分类清理、公开 operations 与
   }
 });
 
-test("R31旧库追加resources迁移后原文件与数据仍可读取", async () => {
+test("已保存原文件经重启收录资源后仍可读取", async () => {
   const { createWorkbench } = await import("../src/workbench/index.js");
-  const directory = fileURLToPath(
-    new URL("../../../test-results/r32-upgrade/", import.meta.url),
-  );
-  fs.rmSync(directory, { recursive: true, force: true });
-  fs.mkdirSync(directory, { recursive: true });
+  const directory = fs.mkdtempSync(path.join(runDirectory, 'upgrade-'));
   const old = createWorkbench({
     env: {
       nodeEnv: "test",
-      sqlitePath: directory + "resources.sqlite",
+      sqlitePath: path.join(directory, "resources.sqlite"),
       workbench: {
         mode: "test-principal",
         testPrincipals: ["r32-a", "r32-b"],
         sessionSecret: "isolated-r32-fixture",
-        filesDir: directory + "files",
-        logDir: directory + "logs",
+        filesDir: path.join(directory, "files"),
+        logDir: path.join(directory, "logs"),
       },
     },
   });
   await old.initialize();
   const file = await old.files.store(
     { accountKey: "r32-a" },
-    { name: "旧文件.txt", bytes: Buffer.from("R31保存的原稿") },
+    { name: "已保存文件.txt", bytes: Buffer.from("此前保存的原稿") },
     { key: randomUUID(), method: "POST", path: "/api/workbench/files" },
   );
   await old.close();
-  fixture = await startResourcesFixture({ dataDir: directory });
+  fixture = await startResourcesFixture({ dataDir: directory, port: 0 });
   try {
     assert.deepEqual(
       (await request("GET", `/api/workbench/files/${file.id}`)).body,
       file,
     );
     const saved = await request("POST", "/api/modules/resources/items", {
-      title: "迁移后引用旧原稿",
+      title: "收录此前保存的原稿",
       fileId: file.id,
       folderId: null,
       tagIds: [],
@@ -494,7 +497,7 @@ test("R31旧库追加resources迁移后原文件与数据仍可读取", async ()
     });
     assert.equal(saved.status, 201);
     await fixture.close();
-    fixture = await startResourcesFixture({ dataDir: directory });
+    fixture = await startResourcesFixture({ dataDir: directory, port: 0 });
     assert.equal(
       (await request("GET", `/api/modules/resources/items/${saved.body.id}`))
         .body.fileId,
@@ -508,8 +511,8 @@ test("R31旧库追加resources迁移后原文件与数据仍可读取", async ()
 test("正文搜索经 HTTP 跨重启、筛选和账户隔离，重试保持幂等", async () => {
   let passed = false;
   fs.mkdirSync(dataDir, { recursive: true });
-  const directory = fs.mkdtempSync(dataDir + "-text-");
-  fixture = await startResourcesFixture({ dataDir: directory });
+  const directory = fs.mkdtempSync(path.join(runDirectory, "text-"));
+  fixture = await startResourcesFixture({ dataDir: directory, port: 0 });
   try {
     const file = await upload();
     const created = await request("POST", "/api/modules/resources/items", {
@@ -539,7 +542,7 @@ test("正文搜索经 HTTP 跨重启、筛选和账户隔离，重试保持幂�
       {},
     );
     await fixture.close();
-    fixture = await startResourcesFixture({ dataDir: directory });
+    fixture = await startResourcesFixture({ dataDir: directory, port: 0 });
     assert.deepEqual((await request("GET", route)).body, first.body);
     const key = randomUUID();
     const retry = await request(

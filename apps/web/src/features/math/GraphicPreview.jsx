@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 
 import { useLayoutEffect, useMemo, useRef } from 'react';
-import { renderGraphic } from '../../../../../packages/shared/src/math/graphics.js';
-import { renderDynamic } from '../../../../../packages/shared/src/math/dynamic.js';
-import { mathFontStyle } from '../../../../../packages/shared/src/math/formula.js';
+import { renderGraphic } from '@refatos/shared/math/graphics';
+import { renderDynamic } from '@refatos/shared/math/dynamic';
+import { mathFontStyle } from '@refatos/shared/math/formula';
 
 export default function GraphicPreview({ source, font, selection, onSelect }) {
   const { t } = useTranslation('math');

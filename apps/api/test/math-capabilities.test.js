@@ -14,12 +14,12 @@ import {
   dynamicSource,
   defaultStyle,
 } from "../../web/src/features/math/model.js";
-import { viewportTransform } from "../../../packages/shared/src/math/graphics.js";
+import { viewportTransform } from "@refatos/shared/math/graphics";
 import {
   resolveElements,
   spatialSurfaces,
-} from "../../../packages/shared/src/math/geometry.js";
-import { findFunctionPoints } from "../../../packages/shared/src/math/analysis.js";
+} from "@refatos/shared/math/geometry";
+import { findFunctionPoints } from "@refatos/shared/math/analysis";
 
 const root = "/api/modules/math/v1/works";
 test("real-auth mathematical extensions: persisted expressions, linked geometry, sections, validation and immutable exports", async () => {

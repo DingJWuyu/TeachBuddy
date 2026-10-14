@@ -9,7 +9,7 @@
 ## 实现入口与格式
 
 - API：`apps/api/src/workbench/reliability/`；Web `apps/web/src/features/reliability/`。偏好行为及 API 归[工作台与设置](workbench.md#账户外观与共享呈现)。
-- 当前手动制品格式：`apps/api/src/workbench/reliability/archive.schema.json`；schema 装配 `schema.js`。未实现可靠性设计输入及固定引用保存在[固定设计输入](../../apps/api/src/contracts/planned/reliability/reliability.schema.json)，原始字节与完整相对引用保持，来源摘要见同目录 `provenance.json`；仅供存续能力参考，旧班级片段不再适用，不作为当前资料包或模块扩展的精确 schema。Agent 部分的接续仅在[Agent 规格](agent.md)。
+- 当前手动制品格式：`apps/api/src/workbench/reliability/archive.schema.json`；schema 装配 `schema.js`。未实现恢复保护按本页行为要求推进；Agent 扩展接续读[Agent 规格](agent.md)与[扩展契约](../contracts/agent.md#四模块扩展契约)，恢复开发时以当前模块公开操作形成现行 schema。
 - 维护命令：`node apps/api/src/scripts/reliability.js --help`，提供 backup / restore / activate；实际运行参数以 CLI 为准。维护前固定停服、独占目录和原数据保全范围。
 - 认证离线操作：`apps/api/src/features/auth/recovery.js` 的 `prepareRestoredAuth`，外层不得自行拼认证表清理 SQL。
 
@@ -38,7 +38,7 @@
 <a id="scene"></a>
 ### 逐模块设备现场
 
-设备层设计字段在上述待实现契约的 `Scene` 中定义；当前实现和 UI 范围须分开核对。内容草稿用原请求 schema，尚不合法的输入以原始表单字符串保存，不尝试作为有效业务请求发送。
+本节描述设备现场应保留的行为，具体当前保存形状由 `apps/web/src/features/workbench/` 的设备状态实现定义；未实现字段须在恢复开发时形成现行契约，不能据下表推定已经实现。内容草稿用原请求 schema，尚不合法的输入以原始表单字符串保存，不尝试作为有效业务请求发送。
 
 | 页面 | 必须保留的现场与返回上下文 |
 | --- | --- |

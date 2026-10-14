@@ -18,7 +18,7 @@
 | 跨模块组合 | 受影响的真实跨模块路径及必要回归 |
 | 开发服务、组件挂载与清理 | [开发服务回归](#开发服务回归)，保留 React StrictMode，验证重复初始化后仍可读取、上传和保存 |
 
-测试文件/config 从[功能规格](../README.md#功能规格)进入；命令以根和各 workspace 的 `package.json` 为准。根 `npm run test:e2e` 当前通过 `playwright.config.mjs` 仅选择认证集成场景，不能代表全模块 E2E；模块验证使用相应配置，运行前核对其 `testMatch` 和候选。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。各场景使用自己的 Background。旧场景中的“软删除”对应可恢复的归档/删除；永久删除另按模块规格验收，不用归档场景证明不可恢复操作。
+测试文件/config 从[功能规格](../README.md#功能规格)进入；命令以根和各 workspace 的 `package.json` 为准。根 `npm run test:e2e` 与 `test:ci:browser` 使用同一组确定性产品回归，局部认证使用 `npm run test:auth:e2e`；准确范围由 `apps/web/e2e/ci.config.mjs` 的 project 与 `testMatch` 决定，不代表全部专项。模块验证使用相应配置，运行前核对其 `testMatch` 和候选。真实资源 OCR 运行链及题库外部 E 原稿仍使用显式专项入口，不纳入日常 CI。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。各场景使用自己的 Background。旧场景中的“软删除”对应可恢复的归档/删除；永久删除另按模块规格验收，不用归档场景证明不可恢复操作。
 
 引入 lint、hooks 或新验证工具前，先指出已有检查漏掉的具体问题，确认该工具确实能检出，并评估误报、重复覆盖及持续维护负担。现有构建、集成测试或人工浏览足以提供反馈时沿用；不因缺少某类工具而补齐工具清单。
 

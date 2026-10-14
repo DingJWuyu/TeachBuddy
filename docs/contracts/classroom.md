@@ -20,9 +20,7 @@ HTTP 前缀 `/api/modules/classroom`。可信身份、页面绑定、Origin/保�
 
 列表按明确过滤返回全部匹配 `items`，没有隐藏分页。未知或重复查询参数、重复 UUID 筛选值拒绝。日期使用真实日历日 `YYYY-MM-DD`；分数最多两位小数，计算使用整数百分之一分避免同分误差。范围、正文和数组上限查机器 schema，不由 UI 自行放宽。
 
-`createClassroomModule` 返回 router 与公开 port。模块拥有七类对象及 `classroom_` 表；公开业务操作供 HTTP 和未来 AI 共用。资料包调用同步纯读 `readForExport(principal)`，账户清理由模块 `deleteAccountData` 完成，维护恢复调用只读 `validateStoredData`。SQL 和仓储不开放给其他业务模块。文件内容通过公共 `files.open`，固定预览通过 `files.readRendition`，不复制文件服务。
-
-异步读 Excel 在事务外准备；准备前通过公共 `mutations.peek` 重放已有成功回执，最终仍由 `mutations.execute` 在事务内检查账户、版本及归属。准备阶段不预占幂等键，业务对象和成功回执一次提交。
+班级工厂的顶层 operations、只读 port、可信参数、Excel 异步准备和幂等提交，以及持久化/维护入口见 [班级技术入口](../subsystems/classroom.md)。SQL 和仓储归模块；业务交换保证由本页维护。
 
 ## 资料、关系与版本
 

@@ -4,7 +4,7 @@ import express from "express";
 import { createServer } from "node:http";
 import { pathToFileURL } from "node:url";
 import { createApp } from "../../../../api/src/app.js";
-import { moduleCatalog } from "../../../../../packages/shared/src/moduleCatalog.js";
+import { moduleCatalog } from "@refatos/shared";
 export async function startMathFixture({
   dataDir,
   port = 47411,

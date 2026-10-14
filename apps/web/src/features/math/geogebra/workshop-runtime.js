@@ -1,6 +1,6 @@
 import { executeOperation } from './operations.js';
 import { GeoGebraError } from './controller.js';
-import { workshopPerspective, workshopToolMode, savedWorkshopPlaneViewport, captureWorkshopPlaneViewport, fitWorkshopPlaneViewport } from '../../../../../../packages/shared/src/math/workshop-runtime.js';
+import { workshopPerspective, workshopToolMode, savedWorkshopPlaneViewport, captureWorkshopPlaneViewport, fitWorkshopPlaneViewport } from '@refatos/shared/math/workshop-runtime';
 
 let loaderPromise;
 let nextId = 0;

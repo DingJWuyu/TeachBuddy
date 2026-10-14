@@ -1,6 +1,6 @@
 # 日程契约：安排、事项与提醒
 
-精确字段和操作见[日程机器契约](../../apps/api/src/contracts/schedule-v1.openapi.yaml)，交换预期见[日程案例](schedule-cases.md)，界面及实现归属见[日程规格](../features/schedule.md)。
+精确字段和操作见[当前日程机器契约](../../apps/api/src/contracts/schedule-v2.openapi.json)（[v1 兼容契约](../../apps/api/src/contracts/schedule-v1.openapi.yaml)保留旧请求），交换预期见[日程案例](schedule-cases.md)，界面及实现归属见[日程规格](../features/schedule.md)。
 
 旧客户端带有已退役 `course` 字段的请求，仅能按原账户、原幂等键和原请求体重放已经成功的回执；回执不再含教学关联。没有成功回执的新写入仍拒绝该字段，不创建关联或额外任务。当前请求和新客户端均使用下述独立日程契约。
 
@@ -80,18 +80,8 @@ T53 仅在站内通知查询/写入及 schedule 变更时结算；浏览器工�
 
 ## 公共端口与协议版本
 
-进程内端口与 HTTP 使用同名 schema，具体工厂签名以日程模块入口代码为准；以下约束适用于共同 SQLite 事务。
-
-| 同步端口 | 约束 |
-| --- | --- |
-| `schedule.readOccurrence` | 无时间、无权或不符合原始周节律返回 404；符合节律但超出 until 返回 outside-series |
-| `schedule.listReminderCandidates` | 当前活动实例中 `armedAt < dueAt <= now`，按 dueAt、entryId、originDate 排序；只读，不写通知 |
-| `reminders.captureDue` | 同事务按唯一实例键结算；异常随原写入回滚 |
-
-`beforeChange` 在逻辑安排变更的归属、版本、领域校验通过后，实际修改前同步调用一次；幂等重放不再调用。组合先以闭包注入 schedule，再构造 reminders，最后挂路由；工厂构造不执行业务调用，生产缺依赖即启动失败。clock 由组合入口提供，HTTP 不接收调用者的 now。
-
-
+实际组合、只读 port、可信调用和 `beforeChange/captureDue` 事务装配见 [日程技术入口](../subsystems/schedule.md)。修改前结算、实例身份、原键重放和通知保证仍由本页对应行为约束；当前字段以 v2 为准，旧路径未知结果须沿原路径核实。
 
 ## 模块目录
 
-当前目录使用 ModuleCatalogV4，按 questions、math、resources、schedule、classroom 的稳定顺序注册实际实现；classroom 的 `webEnabled=false`，现有页面顺序不变。日程没有班级或教学记录依赖。目录校验 ID/path 唯一、依赖提供方存在及无环；未知目录版本保留设备草稿并提示升级。
+当前目录与 API/Web 装配统一见 [SETUP](../SETUP.md#代码结构)，日程无班级或教学记录业务依赖。

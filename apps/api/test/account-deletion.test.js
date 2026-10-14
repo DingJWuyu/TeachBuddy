@@ -12,7 +12,7 @@ import { createIntegration as createAgentIntegration } from './fixtures/c26/harn
 import { provider } from './fixtures/c26/provider.js';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { manualQuestionSample } from './first-flow-harness.js';
-import { unscheduledEntry } from './fixtures/teaching-time-schedule/samples.js';
+import { timedEntry, unscheduledEntry } from './fixtures/teaching-time-schedule/samples.js';
 
 const password = 'delete-account-test-password';
 const write = (client, method, route, body, key = randomUUID()) =>
@@ -115,6 +115,43 @@ test('real HTTPS deletion removes owned rows/files, invalidates every session, p
   const fresh = await register(world, body.email);
   assert.notEqual(fresh.principal.accountKey, a.principal.accountKey);
   assert.equal((await fresh.client.request('GET', '/api/modules/classes/items')).status, 404);
+});
+
+test('real HTTPS deletion erases delivered schedule notifications and preserves another account notifications', async t => {
+  let now = '2026-09-21T06:00:00.000Z';
+  const world = await createIntegration({ workbenchClock: () => new Date(now) });
+  let verified = false;
+  t.after(async () => {
+    await world.close();
+    if (verified) fs.rmSync(world.directory, { recursive: true, force: true });
+  });
+  const a = await register(world, 'notice-delete@example.test');
+  const b = await register(world, 'notice-healthy@example.test');
+  for (const owner of [a, b]) {
+    const created = await write(owner.client, 'POST', '/api/modules/schedule/entries',
+      timedEntry({ reminder: { side: 'before', minutes: 10 } }));
+    assert.equal(created.status, 201, created.text);
+  }
+  now = '2026-09-21T09:00:00.000Z';
+  const notices = '/api/modules/schedule/notifications';
+  for (const owner of [a, b]) {
+    const delivered = await owner.client.request('GET', notices);
+    assert.equal(delivered.status, 200, delivered.text);
+    assert.equal(delivered.json.items.length, 1);
+    assert.equal(delivered.json.unreadCount, 1);
+  }
+  const db = world.workbench.db;
+  const otherRows = db.prepare('SELECT * FROM schedule_notifications WHERE accountKey=?').all(b.principal.accountKey);
+  const result = await remove(a.client, deletionBody(a.session));
+  assert.equal(result.status, 204, result.text);
+  assert.deepEqual(db.prepare('SELECT * FROM schedule_notifications WHERE accountKey=?').all(b.principal.accountKey), otherRows);
+  const retained = await b.client.request('GET', notices);
+  assert.equal(retained.status, 200, retained.text);
+  assert.equal(retained.json.items[0].id, otherRows[0].id);
+  assert.equal(retained.json.unreadCount, 1);
+  assert.equal(db.prepare('SELECT count(*) n FROM schedule_notifications WHERE accountKey=?').get(a.principal.accountKey).n, 0,
+    'completed account deletion must erase delivered schedule notifications');
+  verified = true;
 });
 
 test('filesystem failure stays locked across restart; only the cookie-bound original request can continue', async t => {

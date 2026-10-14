@@ -1,0 +1,86 @@
+# 代码标准
+
+实现和 Standards 审查读本页；当前使用结果由对应功能规格、契约和用户指令决定。子系统职责、实际运行路径及文档变更条件从[运行参考](subsystems/README.md)进入；本地/CI 的检查范围从[验证分工](agents/github-workflow.md#ci-与本地验证)进入。
+
+## 改动范围与完整路径
+
+| 规则 | 作者与审查者核对什么 |
+| --- | --- |
+| 一个改动目的对应完整使用结果。 | 从用户输入追到输出、保存和重开，包括调用者、状态与副作用；单个函数正确不能证明操作完成。每项行为改动有目标依据，无关改动单独记录目的。 |
+| 修复覆盖同一根因的入口。 | 搜索共享读者、兄弟分支、调用者和相邻状态；按共用成因修复，不将一种错误的处理扩大到无关情况。 |
+| 改变含义时重查依赖它的结果。 | 接口、公式、列表、时序、布局断点发生变化时，核对其调用者、持久副本及原断言，不仅检查改动行。 |
+| 失败读取表示未知。 | 读取、解析或摘要失败不视为空、无记录或相等；保留已有数据和错误信息，在共享读者处修复。权限判定的必需输入读失败时拒绝放行。 |
+| 用户拥有的内容与配置保持可控。 | 默认值不能覆盖用户明确选择；同步、替换和恢复只处理本操作拥有的数据。向用户提供可编辑副本时核对“用户修改，再同步/重开”的结果。 |
+| 外部契约有原始依据。 | 写其他应用的格式或解释模型/工具输出时，从其源码、正式文档或真实字节取字段含义、类型和边界，不凭字段名猜测。 |
+| 已认可体验持续可用。 | 按当前规格保护已有功能、保存数据和 UI/UX；分批交付记录剩余目标，未开放能力保持未开放，不以旧测试推翻用户确认的行为。 |
+
+面向单用户选择直接、完整、高内聚的方案，复用成熟库与公共端口。自建解析、渲染或新的处理层须有具体缺口；一次性操作先走直接路径，出现实际阻塞或重复需求再增加机制。技术取舍优先正确、简单、稳健和长期可维护，不以实现成本降格，也不为没有需求的高性能、高并发或高可用增加复杂度。方案已被证据否定时，在授权范围内调整或替换。
+
+## 验证质量
+
+- 修 bug 先按用户真实入口、输入、身份和操作 E2E 复现，记录失败及触发条件后再定位。真实文件使用真实字节；已有固定输入优先复用，截断、空值和读失败按受影响边界核对。
+- 断言检查用户或调用者需要的行为。新增回归保护应在旧实现或手动破坏相关保证时产生具名行为失败；编译错误、skip 和测试自身故障不算检出。只对值得长期保护的实际缺口新增自动化。
+- UI 不写单元测试，其他单元测试仅在必须时使用；资源库使用真实浏览器与 HTTP/数据库集成。浏览器核对外观和完整交互，保存后刷新/重开读回，输出文件实际打开，具体判据查[验收入口](acceptance/README.md)。
+- 在受影响页面主动修复明显的视觉、交互和焦点问题；核对受影响主题与尺寸。跨模块或公共文件发现交总控指定唯一写者，不越过任务边界抢写。
+- 默认回归使用隔离数据、文件、邮件和受控模型，不能触及用户实例或私有配置。固定输入来自真实材料，依赖版本锁定；回归请求使用本地替身，真实服务调用单列目标环境专项并核对授权。
+- 测试启动的服务、子进程、异步任务和临时目录由该测试结束或等待退出；时序测试通过控制延迟复现，不以繁忙 Runner 的紧墙钟阈值判正确。
+- 红测试和不稳定测试是当前问题。先区分产品、环境、输入和测试成因，取得新证据后修根因；不能用“基线也红”或单独运行通过跳过问题。跨范围缺陷明确归属和下一动作，不降低当前候选的有效保证。
+- 作者在本地定点复现和自验；大阶段集中独立审查/验收；CI 承担已纳入的完整回归。证据可复用，仅在候选变化、失败或未解疑点出现时补验，具体分工不在本页复制。
+
+## 审查与交付判据
+
+审查固定基线与候选，沿实际源码核对触发、前后行为、状态、失败和兼容语义；同时核对作者的证据覆盖声明。文档更新不证明实现正确，测试数量不证明范围完整。独立 Standards/Spec 和 PR 复用规则见[审查分工](agents/github-workflow.md#审查分工)。
+
+完成记录区分作者自验、独立验收和用户反馈；通过、失败、跳过和未验分别写明。缺输入、真实模型或目标设备时保留对应未验边界，不能从局部 PASS、文件存在或 CI 通过推导整个产品可用。已实现、已集成、已验证分别确认；当前严重审查发现解决、必要证据通过、文档同步及现场清理完成后才交付。
+
+## 文档维护
+
+使用 `writing-for-agents`：入口说明何时读什么，详细事实只维护在所属权威页。产品范围、模块行为、交换语义、技术运行路径、验证、当前状态和运行准备分别归 docs/README 指向的位置；术语与 ADR 沿[领域规则](agents/domain.md)。
+
+改变职责、接口、状态、运行路径、兼容或失败行为时同步相关参考；只保留当前事实，提案留 Issue/PR，执行过程留任务产物。当前有效 Lessons 的最短本仓证据链接按[复盘规则](../LESSONS.md#维护规则)保存，不在功能文档积累修复历史。重要产品或部署变化同步 README。
+
+文档链接到实际源码文件与具名符号，描述签名无法表达的含义和约束；配置清单与具体命令以入库源码为准，不再维护容易失效的副本。移动或删除前核对入链、锚点、程序加载、fixture 及固定版本引用。界面以运行页面和用户指定参考为准，截图留验证产物，不放正式文档。生成文件由工具更新。
+
+## 输入与可重建性
+
+- docs 供人和 agent 阅读，产品构建、运行及业务测试不把文档当数据。机器契约放 apps/api/src/contracts，交换样本放 apps/api/test/fixtures/contracts，其余输入归所属代码/测试目录；固定版本兼容输入保留该版原路径。
+- 启动和必要回归的脚本及可分发固定输入入库，私有配置给模板，外部输入给获取方式和校验值。Git 跟踪文件及间接依赖不能依赖个人绝对路径、旧工作树、仅本机 Git 对象、忽略目录或会话记录。
+- 依赖和构建产物按入库清单与脚本重建；私有配置、持久数据和外部工具按 SETUP 准备。测试创建隔离目录，产物与清理按验收入口执行；skill 临时工作区及不作为读取前置的原始采集路径元数据可保留。
+- 改变依赖、路径或准备方式时，在不复制旧本机目录的独立检出中按文档安装、配置并实际验证。浅克隆、冷缓存或独立缓存按具体依赖选择；字符串搜索或旧缓存中通过不能代替重建。缺工具、输入或硬件明确记录。
+
+## 来源与许可
+
+本页的完整路径、同根因修复、失败读、有效回归和审查判据，以及根入口与 Lessons 机制，参考并改编自 yetone/magpie 的固定源码：
+
+- [代码标准](https://github.com/yetone/magpie/blob/91b9065a5fdf5b7aa0adeeeb17266c121bf5691c/docs/code-standards.md)
+- [子系统维护与审查](https://github.com/yetone/magpie/blob/91b9065a5fdf5b7aa0adeeeb17266c121bf5691c/docs/subsystems/README.md)
+- [Lessons](https://github.com/yetone/magpie/blob/91b9065a5fdf5b7aa0adeeeb17266c121bf5691c/LESSONS.md) 与 [Agent 入口](https://github.com/yetone/magpie/blob/91b9065a5fdf5b7aa0adeeeb17266c121bf5691c/AGENTS.md)
+
+采用的是可用于本仓的工程机制；Go、多平台桌面、社区审查和夜间复盘不构成本仓要求。源文档及其改编部分保留以下 MIT 署名和许可。
+
+<details>
+<summary>Magpie MIT License</summary>
+
+MIT License
+
+Copyright (c) 2026 yetone
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+</details>

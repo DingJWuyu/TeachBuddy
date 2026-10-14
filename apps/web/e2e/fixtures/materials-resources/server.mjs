@@ -1,8 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import express from "express";
-import YAML from "yaml";
-import { moduleCatalog } from "@refatos/shared";
 import { createServer } from "node:http";
 import { createWorkbench } from "../../../../api/src/workbench/index.js";
 import {
@@ -18,46 +16,34 @@ export async function startResourcesFixture({
   if (!dataDir || process.env.NODE_ENV === "production")
     throw new Error("Isolated test data directory required");
   fs.mkdirSync(dataDir, { recursive: true });
-  const origin = `http://localhost:${port}`;
-  const workbench = createWorkbench({
-    env: {
-      nodeEnv: "test",
-      sqlitePath: path.join(dataDir, "resources.sqlite"),
-      workbench: {
-        catalogOverride: [
-          ...moduleCatalog.filter((item) => item.id !== "resources"),
-          YAML.parse(
-            fs.readFileSync(
-              new URL(
-                "../../../../api/src/contracts/materials.openapi.yaml",
-                import.meta.url,
-              ),
-              "utf8",
-            ),
-          ).components.examples.ModuleCatalog.value.items.find(
-            (item) => item.id === "resources",
-          ),
-        ],
-        extraImplementations: {
-          resources: {
-            factory: () =>
-              import("../../../../api/src/modules/resources/index.js"),
-            migrations: () =>
-              import(
-                "../../../../api/src/modules/resources/migrations/index.js"
-              ),
-          },
-        },
-        mode: "test-principal",
-        testPrincipals: ["r32-a", "r32-b"],
-        sessionSecret: "isolated-r32-fixture",
-        trustedOrigins: [origin],
-        filesDir: path.join(dataDir, "files"),
-        logDir: path.join(dataDir, "logs"),
-      },
-    },
+  const server = createServer();
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, "localhost", resolve);
   });
-  await workbench.initialize();
+  const origin = `http://localhost:${server.address().port}`;
+  let workbench;
+  try {
+    workbench = createWorkbench({
+      env: {
+        nodeEnv: "test",
+        sqlitePath: path.join(dataDir, "resources.sqlite"),
+        workbench: {
+          mode: "test-principal",
+          testPrincipals: ["r32-a", "r32-b"],
+          sessionSecret: "isolated-r32-fixture",
+          trustedOrigins: [origin],
+          filesDir: path.join(dataDir, "files"),
+          logDir: path.join(dataDir, "logs"),
+        },
+      },
+    });
+    await workbench.initialize();
+  } catch (error) {
+    await new Promise(resolve => server.close(resolve));
+    await workbench?.close();
+    throw error;
+  }
   const app = express();
   const guards = createGuards({
     identity: workbench.identity,
@@ -93,11 +79,7 @@ export async function startResourcesFixture({
   app.use("/api/workbench", workbench.contextRouter);
   app.use(createWorkbenchErrorHandler());
   if (webDist) app.use(express.static(webDist));
-  const server = createServer(app);
-  await new Promise((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(port, "localhost", resolve);
-  });
+  server.on("request", app);
   return {
     origin,
     workbench,

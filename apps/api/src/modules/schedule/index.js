@@ -54,6 +54,6 @@ export { projectReminderTitle } from './occurrences.js';
 export function deleteAccountData(db, accountKey) {
   for (const table of ['schedule_exceptions', 'schedule_instance_arms'])
     db.prepare(`DELETE FROM ${table} WHERE entryId IN (SELECT id FROM schedule_entries WHERE accountKey=?)`).run(accountKey);
-  for (const table of ['schedule_labels', 'schedule_entries', 'schedule_settings'])
+  for (const table of ['schedule_notifications', 'schedule_labels', 'schedule_entries', 'schedule_settings'])
     db.prepare(`DELETE FROM ${table} WHERE accountKey=?`).run(accountKey);
 }

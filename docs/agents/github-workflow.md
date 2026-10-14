@@ -59,7 +59,7 @@ trunk：preview/integration
 
 1. 总控汇总完整目的，按[CI 与本地验证](#ci-与本地验证)核对已有证据与本次集成新增的验证缺口，保留开发审查证据。候选就绪即创建 PR，让 CI 承担其覆盖的回归。
 2. 总控使用 GitHub CLI 创建 PR。Commit / PR Title 遵循 Conventional Commits；Body 只遵循 `pr` skill，不另设仓库模板或附加必填字段；有关联 Issue 时链接。
-3. 按[审查分工](#审查分工)安排独立 PR review。总控在实际合入前再次核对已验候选 SHA、trunk 基线、已处理的审查发现及 CI。验证后 trunk 若又前进，重新确认与最新 trunk 的集成结果，补验受影响范围并更新证据，再默认 squash 合回 trunk；不能仅凭旧基线上的 CI 通过状态合入。候选或冲突处理改变时同样补验受影响部分。
+3. 按[审查分工](#审查分工)复用或补齐当前候选的独立审查。总控在实际合入前再次核对已验候选 SHA、trunk 基线、已处理的审查发现及 CI。验证后 trunk 若又前进，重新确认与最新 trunk 的集成结果，补验受影响范围并更新证据，再用 `gh pr merge --squash --match-head-commit <已审查 SHA> --subject <PR 标题> --body-file <正文文件>` 合回 trunk；不能仅凭旧基线上的 CI 通过状态合入。候选或冲突处理改变时同样补验受影响部分。
 4. 同步本地与远端成果，完成集成验证与[现场清理](module-development.md#集成后的清理)。`Closes #...` 可在默认分支合并时关闭 Issue；已集成与已发布分别记录。
 
 总控获准执行任务后可主动完成符合上述条件的 PR、审查和 trunk 合并，无需逐次问用户；需求不明、实质争议或重大取舍才交用户。发布仍受[独立授权边界](#准备与发布)约束。
@@ -68,13 +68,19 @@ trunk：preview/integration
 
 | 审查 | 谁执行、审查什么 |
 | --- | --- |
-| 开发中的 code-review | 按 skill 触发条件使用，固定 diff 的 Standards / Spec 双轴审查；不要求每个小改额外调用 |
-| 开发 PR review | 总控派一个或多个 fresh-context 独立 agent 审查待集成候选，可交叉审查；专门的 `pr review` skill 尚待用户后续设计，人数、审查边界及开发审查结论如何复用尚未定稿 |
+| 固定候选的 Standards / Spec | 按 code-review skill 由两个 fresh-context 独立 subagent 分别对照[代码标准](../code-standards.md)与用户目标/现行规格，检查固定 diff、实际调用路径、状态和证据覆盖。作者定点自验后按完整改动目的或大阶段集中执行，不为每个小改追加一轮 |
+| 开发 PR review | 直接复用同一固定候选已完成的 Standards/Spec 独立审查；总控核对基线、PR 候选、审查发现和 CI。没有覆盖当前候选的独立审查时才安排补审 |
 | Release PR review | 总控核对发布范围、授权、版本、两类说明和 CI 是否符合发布约定，不重做功能实现与验收标准审查 |
 
-`pr review` skill 未建立前，总控直接派 fresh-context agent 核查本次集成候选并记录结果，不声称已调用该 skill，也不自行把临时办法定为 skill 规范。审查者只读并报告发现，作者或总控修复，审查者复核；已有证据作为输入，不因创建 PR 机械重跑相同检查。
+作者说明受影响子系统的触发与前后行为，包括接口、状态、兼容和失败变化；保留行为的重构明确说明。审查者从[运行参考](../subsystems/README.md)追到实际源码，核对调用者与状态转换，而非仅相信作者的描述。PR 正文仍按 `pr` skill 表达，不另设字段模板。
 
-agent 共用仓库所有者身份。fresh context 提供独立判断，不构成多个 GitHub 审批人；PR 作者不能用同一账户批准自己，因此不要求第二账户 approval。总控从 GitHub 的提交、Checks 和 Review 核对候选与结果，决定是否集成；验证说明按 `pr` skill 的 Evidence 表达，不另外要求在正文重复填写 SHA、审查或 E2E 字段。
+复用必须覆盖同一基线和候选的完整改动，并具备可核查的 Standards/Spec 结论、已处理发现与实际验证证据。候选改变时补审新增及受影响范围，包括冲突处理；仅 PR 标题/描述改变不重做代码审查。trunk 前进时核对新组合，补缺后更新证据，不因为创建 PR 自动重新跑同一套检查。
+
+审查者只读并报告发现，作者或总控修复，审查者按影响范围复核。运行检查沿[CI 与本地验证](#ci-与本地验证)复用，不要求独立审查者本地重跑 CI 全套。审查不能把未运行检查记为通过。
+
+总控从 GitHub 提交、Checks 和审查记录核对实际结果。合并使用 `gh pr merge --match-head-commit <已审查的完整 SHA>`；候选在审查后被 push 则停止合并，核对新增范围后更新结论。squash 的 subject 与 body 使用本次 PR 的标题和正文，明确传 `--subject` 与 `--body-file`，避免 GitHub 默认消息拼入分支全部提交。提交遵循 Conventional Commits，不自动添加 agent co-author。
+
+agent 共用仓库所有者身份，fresh context 提供独立判断，不构成多个 GitHub 审批人；PR 作者不能用同一账户批准自己，不要求第二账户 approval。Evidence 按 `pr` skill 表达，固定 SHA 和审查记录可保存在 PR review/任务回执，不另外要求正文重复填写。
 
 ## CI 与本地验证
 
@@ -95,7 +101,7 @@ CI 覆盖的是当前脚本选定的回归，并非全仓库测试；本次改�
 
 CI 失败先依据日志与产物区分环境、产品和测试缺陷，再定点复现、修复。修改实现或测试须有复现证据和规格依据，保留有效的行为断言，并在回执中说明改了哪一类、为何需要改；不能为变绿而跳过失败用例或放宽结果要求。
 
-`HTTP and SQLite` 与 `Build, browser and outputs` 并行执行。前者运行 `test:ci`；后者构建三 workspace，运行 `test:ci:outputs` 和 `test:ci:browser`，覆盖认证、统一数学作品与内容保护、日程、模块目录及开发服务。输出回归覆盖公共 DOCX/PDF 转换、数学课堂离线 ZIP、备份恢复及脚本选定的 Cookie、文件和 OCR 回放。回放不证明真实模型识别质量；两组的具体选择与排除以根 `package.json` 为准，重排时须核对没有遗漏或重复承担。
+`HTTP and SQLite` 与 `Build, browser and outputs` 并行执行，具体用例、排除项与构建依赖只以根 [package.json](../../package.json) 和 [CI 配置](../../.github/workflows/ci.yml) 为准。重排时核对没有遗漏或重复承担；受控模型和 OCR 回放不证明真实识别质量。
 
 本地批量验证和 CI 都按依赖组织：前置条件满足后，互不依赖的检查即使某组失败也继续执行，汇总全部结果，减少问题逐轮暴露造成的往返；依赖失败前置的检查记录为受阻。任一失败仍须保留失败退出状态，不能被后续成功覆盖。当前输出与浏览器回归在构建成功后按此执行。
 
@@ -227,6 +233,8 @@ node --env-file=.env apps/api/src/server.js
 维护备份或恢复时也用 `node --env-file=.env apps/api/src/scripts/reliability.js ...`，确保读取相同版本标识。数据库、附件、密钥和外部工具独立准备，产物不包含任何用户数据或私有配置。目标主机的安装、重启持久化、备份还原及上线检查属于接通 CD 时的完成条件。
 
 ## 标准依据
+
+语义说明、追真实运行路径和绑定已审查 head 的规则参考 [Magpie 子系统审查](https://github.com/yetone/magpie/blob/91b9065a5fdf5b7aa0adeeeb17266c121bf5691c/docs/subsystems/README.md#review-a-change)及[代码标准](https://github.com/yetone/magpie/blob/91b9065a5fdf5b7aa0adeeeb17266c121bf5691c/docs/code-standards.md#acceptance-criteria)，署名与许可见[代码标准](../code-standards.md#来源与许可)。本仓的阶段集中审查和 CI 分工优先，不套用上游逐改全量本地运行要求。
 
 - [Trunk Based Development](https://trunkbaseddevelopment.com/)：单一日常集成主线与短期任务分支。
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 与 [SemVer](https://semver.org/)：提交语义与版本递增。
