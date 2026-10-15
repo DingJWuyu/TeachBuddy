@@ -223,3 +223,23 @@ test('首页建议建立真实草稿并聚焦，跨模块和刷新保留输入',
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('侧栏导航在桌面、1024平板与窄屏均可由指针打开', async ({ page }, info) => {
+  for (const width of [1024, 1081, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    if (width > 1080) await page.locator('.tb-topbar').hover();
+    const collapse = page.getByRole('button', { name: '收起侧栏', exact: true }).filter({ visible: true });
+    if (await collapse.count()) await collapse.click();
+    const open = page.getByRole('button', { name: /^(展开侧栏|打开工作台导航)$/ }).filter({ visible: true });
+    await expect(open).toHaveCount(1);
+    await open.click();
+    await expect(row(page, 'questions')).toBeVisible();
+    await page.screenshot({ path: info.outputPath(`pointer-navigation-open-${width}.png`) });
+    await row(page, 'questions').click();
+    await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'questions');
+    if (width <= 1080) await expect(row(page, 'questions')).toBeHidden();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: info.outputPath(`pointer-navigation-${width}.png`) });
+  }
+  expect(errors).toEqual([]);
+});
