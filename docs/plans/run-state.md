@@ -4,6 +4,8 @@
 
 ## 工作现场与授权
 
+当前获准执行[TeachBuddy 项目身份统一](teachbuddy-identity.md)，范围包括仓库内容、GitHub 仓库名称、本机目录和运行配置迁移；保持现有功能及数据，直接使用的第三方组件和许可保留。任务现场为 `TeachBuddy-branding` / `refactor/teachbuddy-identity`，由总控组织代码与文档分工、集中验证、trunk 集成和清理。既有工作树在迁移完成前仍使用下表旧目录名。
+
 当前开发沿[开发约定](../agents/module-development.md)接收明确需求、维护长程任务、分配职责并完成获准交付；子系统运行参考、代码标准、Lessons 和 buffer 各自维护所属信息。全仓职责改造、真实代码中断接手及最近集成的证据见[核查入口](#核查入口)。本轮工程改造已交付，后续按用户选定的任务接续，不自动扩大业务范围。
 
 用户体验运行 `TeacherWorkspace-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
