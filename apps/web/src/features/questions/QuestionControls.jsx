@@ -1,7 +1,7 @@
 import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "questions", ...options });
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon } from '../../components/icons.jsx';
 import { DocumentEditor, DocumentView } from '../../components/materials/index.js';
 import { parseInlineRuns, serializeInlineRuns } from '../../components/materials/documents.js';
@@ -48,7 +48,9 @@ function QuestionParagraph({ block, onChange, label }) {
   const { t } = useTranslation("questions");
   const [text, setText] = useState(() => serializeInlineRuns(block.runs));
   const lastSent = useRef(block);
-  useEffect(() => {
+  // Keep native selection/input against the same block as the committed DOM.
+  // A passive effect can otherwise replace the value between select-all and typing.
+  useLayoutEffect(() => {
     if (JSON.stringify(lastSent.current) !== JSON.stringify(block)) {
       setText(serializeInlineRuns(block.runs));
       lastSent.current = block;

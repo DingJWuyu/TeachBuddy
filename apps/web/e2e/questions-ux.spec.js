@@ -1231,6 +1231,7 @@ test('核心体验：删除和移动段落可局部撤销，保留之后输入',
   await expect(page.getByLabel('题目标题')).toHaveValue('删除后补写的标题');
   await page.getByRole('button', { name: '上移题干第 2 段', exact: true }).click();
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('移动后补写的第二段');
+  await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('移动后补写的第二段');
   await page.getByRole('button', { name: '撤销题干结构操作', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '题干段落 2', exact: true })).toHaveValue('移动后补写的第二段');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
