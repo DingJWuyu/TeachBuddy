@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
-import { startQuestionsFixture } from '../../web/e2e/fixtures/materials-questions/server.mjs';
+import { startQuestionsFixture } from './fixtures/questions/server.mjs';
 
 const evidence = process.env.R33_LOCAL5_EVIDENCE;
 async function world(t, provider) {
@@ -55,7 +55,7 @@ const doc = text => ({ version: 2, blocks: text ? [{ type: 'paragraph', runs: [{
 test('LOCAL005-empty', async t => {
   const e = await world(t, { extract: async () => ({ content: '' }) });
   const form = new FormData();
-  form.append('file', new Blob([fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url))]), 'triangle.png');
+  form.append('file', new Blob([fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url))]), 'triangle.png');
   const file = await e.request('/api/workbench/files', form);
   const input = { title: '空正文', origin: '', input: { kind: 'files', fileIds: [file.id], pages: [] } };
   const created = await e.request(qp + '/imports', input);
@@ -113,7 +113,7 @@ for (const [name, contents, expected, drafts, fragments] of [
     let calls = 0;
     const e = await world(t, { extract: async () => ({ content: contents[calls++] }) });
     const fileIds = [];
-    for (let i = 0; i < contents.length; i++) fileIds.push((await uploadImage(e, fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url)))).id);
+    for (let i = 0; i < contents.length; i++) fileIds.push((await uploadImage(e, fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url)))).id);
     const created = await e.request(qp + '/imports', { title: name, origin: 'local provider control', input: { kind: 'files', fileIds, pages: [] } });
     const job = await e.job(created.jobId);
     const material = await e.request(qp + '/imports/' + created.id, null, 'GET');

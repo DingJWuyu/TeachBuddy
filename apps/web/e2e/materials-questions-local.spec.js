@@ -9,7 +9,7 @@ test("native text mathematical source is editable without retyping", async ({
     .getByLabel("原始文字")
     .fill(
       fs.readFileSync(
-        "apps/web/e2e/fixtures/materials-questions/T.txt",
+        "test/fixtures/questions/T.txt",
         "utf8",
       ),
     );
@@ -39,7 +39,7 @@ async function fileImport(page, kind, name) {
   await page.getByRole("button", { name: kind, exact: true }).click();
   await page
     .getByLabel("选择原稿")
-    .setInputFiles("apps/web/e2e/fixtures/materials-questions/" + name);
+    .setInputFiles("test/fixtures/questions/" + name);
   await page.getByRole("button", { name: "保存原稿并整理" }).click();
   await expect(
     page.getByText("整理失败，原稿已保存", { exact: false }).first(),
@@ -92,7 +92,7 @@ test("supplement preserves unsaved correction and both original files", async ({
     .fill("已辨认内容保留，遮挡条件待核对。");
   await page
     .locator('input[type=file][accept="image/*"]')
-    .setInputFiles("apps/web/e2e/fixtures/materials-questions/I-clear.jpg");
+    .setInputFiles("test/fixtures/questions/I-clear.jpg");
   await expect(page.getByLabel("原稿文件").locator("option")).toHaveCount(2);
   await expect(page.getByLabel("草稿标题")).toHaveValue("遮挡处暂不补数");
   await page.reload();
@@ -109,7 +109,7 @@ for (const file of ["F-truncated.pdf", "PS.pdf"])
     await page.getByRole("button", { name: "下载原稿" }).click();
     const d = await download;
     expect(fs.readFileSync(await d.path())).toEqual(
-      fs.readFileSync("apps/web/e2e/fixtures/materials-questions/" + file),
+      fs.readFileSync("test/fixtures/questions/" + file),
     );
     if (file === "PS.pdf") {
       await expect(page.getByLabel("原稿页码").locator("option")).toHaveCount(
@@ -130,7 +130,7 @@ test("cancel ignores a late provider result and explicit retry retains teacher c
   page,
 }) => {
   const { startQuestionsFixture } = await import(
-    "./fixtures/materials-questions/server.mjs"
+    "../../api/test/fixtures/questions/server.mjs"
   );
   let release,
     calls = 0;
@@ -156,7 +156,7 @@ test("cancel ignores a late provider result and explicit retry retains teacher c
     await page.getByRole("button", { name: "图片", exact: true }).click();
     await page
       .getByLabel("选择原稿")
-      .setInputFiles("apps/web/e2e/fixtures/materials-questions/figure.png");
+      .setInputFiles("test/fixtures/questions/figure.png");
     await page.getByRole("button", { name: "保存原稿并整理" }).click();
     await expect.poll(() => calls).toBe(1);
     await page.getByRole("button", { name: "停止整理", exact: true }).click();

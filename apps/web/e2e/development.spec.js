@@ -6,7 +6,7 @@ import net from 'node:net';
 import https from 'node:https';
 import { startServer } from '../../api/src/server.js';
 import { createClient, createMailer, generateSelfSignedCertificate } from '../../api/test/fixtures/auth-contract/harness.js';
-import { registerMath } from './fixtures/math-static/real.mjs';
+import { registerMath } from '../../api/test/fixtures/math-real.mjs';
 
 let world, directory, failed = false;
 test.beforeAll(async () => {
@@ -58,7 +58,7 @@ test('开发模式资源上传、PDF 中文文字层与重新进入页面', asyn
   await modules.getByRole('link', { name: /^资源库/ }).click();
   await expect(page.locator('.res-browser')).toHaveAttribute('aria-busy', 'false');
   await page.getByLabel('上传第一份资料', { exact: true }).setInputFiles(
-    path.resolve('apps/web/e2e/fixtures/materials/samples/c22.pdf'),
+    path.resolve('test/fixtures/materials/c22.pdf'),
   );
   await expect(page.locator('.res-status')).toContainText('文件已保存');
   await expect(page.getByAltText('第 1 页', { exact: true })).toBeVisible();

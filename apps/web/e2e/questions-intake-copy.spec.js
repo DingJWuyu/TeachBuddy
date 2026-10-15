@@ -186,7 +186,7 @@ test('PDF当前第2页补录保存真实原件、预览版本与页码',async({p
   await start(page);
   await page.locator('.q-finder').getByRole('button',{name:'从资料收录',exact:true}).click();
   await page.getByRole('button',{name:/^上传 PDF/}).click();
-  await page.getByLabel('选择原稿').setInputFiles('apps/web/e2e/fixtures/materials-questions/P.pdf');
+  await page.getByLabel('选择原稿').setInputFiles('test/fixtures/questions/P.pdf');
   await page.getByRole('button',{name:'开始整理',exact:true}).click();
   await expect(page.locator('.q-review-heading')).toContainText(/整理完成|部分内容待处理|整理失败/,{timeout:60000});
   await page.getByLabel('原稿页码').selectOption('2');
@@ -210,7 +210,7 @@ for (const pagination of ['ready','unavailable','legacy']) {
     await start(page);
     await page.locator('.q-finder').getByRole('button',{name:'从资料收录',exact:true}).click();
     await page.getByRole('button',{name:/^上传 Word/}).click();
-    await page.getByLabel('选择原稿').setInputFiles(pagination==='legacy' ? 'apps/web/e2e/fixtures/materials/samples/w.doc' : 'apps/web/e2e/fixtures/materials-questions/W.docx');
+    await page.getByLabel('选择原稿').setInputFiles(pagination==='legacy' ? 'test/fixtures/materials/w.doc' : 'test/fixtures/questions/W.docx');
     await page.getByRole('button',{name:'开始整理',exact:true}).click();
     await expect(page.locator('.q-review-heading')).toContainText(/整理完成|部分内容待处理/,{timeout:60000});
     const entry=(await get(page,'/imports')).items[0];

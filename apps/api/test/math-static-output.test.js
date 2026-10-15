@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { randomUUID } from "node:crypto";
-import { startMathFixture } from "../../web/e2e/fixtures/math-static/server.mjs";
+import { startMathFixture } from "./fixtures/math/server.mjs";
 const samples = JSON.parse(
   fs.readFileSync(
     new URL(

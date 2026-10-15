@@ -3,7 +3,7 @@ import path from "node:path";
 import express from "express";
 import { createServer } from "node:http";
 import { pathToFileURL } from "node:url";
-import { createApp } from "../../../../api/src/app.js";
+import { createApp } from "../../../src/app.js";
 import { moduleCatalog } from "@refatos/shared";
 export async function startMathFixture({
   dataDir,
@@ -36,9 +36,9 @@ export async function startMathFixture({
         catalogOverride: moduleCatalog,
         extraImplementations: {
           math: {
-            factory: () => import("../../../../api/src/modules/math/index.js"),
+            factory: () => import("../../../src/modules/math/index.js"),
             migrations: () =>
-              import("../../../../api/src/modules/math/migrations.js"),
+              import("../../../src/modules/math/migrations.js"),
           },
         },
       },

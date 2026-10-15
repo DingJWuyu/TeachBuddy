@@ -2,7 +2,7 @@ import os from 'node:os';
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
-import { startQuestionsFixture } from "./fixtures/materials-questions/server.mjs";
+import { startQuestionsFixture } from "../../api/test/fixtures/questions/server.mjs";
 test("synthetic page fragments use real upload, review, independent answer navigation and reload", async ({
   page,
 }, testInfo) => {
@@ -44,7 +44,7 @@ test("synthetic page fragments use real upload, review, independent answer navig
     await page.locator(".q-finder").getByRole("button", { name: "从资料收录", exact: true }).click();
     await page.getByRole("button", { name: /上传图片/ }).click();
     const buffer = fs.readFileSync(
-      "apps/web/e2e/fixtures/materials-questions/attempt4/old-page-2.png",
+      "test/fixtures/questions/legacy/old-page-2.png",
     );
     await page.getByLabel("选择原稿").setInputFiles([
       { name: "body.png", mimeType: "image/png", buffer },

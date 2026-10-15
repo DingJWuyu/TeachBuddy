@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { test, expect, chromium } from "@playwright/test";
-import { startRealMath } from "./fixtures/math-static/real.mjs";
+import { startRealMath } from "../../api/test/fixtures/math-real.mjs";
 import {
   register,
   save,
@@ -10,7 +10,7 @@ import {
   evidence,
 } from "./fixtures/math-dynamic/helpers.mjs";
 const fixture = path.resolve(
-  "apps/web/e2e/fixtures/math-dynamic/mx-model-revised.html",
+  "test/fixtures/math/mx-model-revised.html",
 );
 async function importFile(page, file) {
   await page.getByLabel("导入 HTML 文件").setInputFiles(file);

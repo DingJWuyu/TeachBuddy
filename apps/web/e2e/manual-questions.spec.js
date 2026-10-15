@@ -51,7 +51,7 @@ test('有文字层的 PDF 自动拆题，保留原稿并可确认', async ({page
   await start(page);
   await page.getByRole('button',{name:'收录',exact:true}).click();
   await page.getByRole('button',{name:'PDF',exact:true}).click();
-  await page.getByLabel('选择原稿').setInputFiles('apps/web/e2e/fixtures/materials-questions/P.pdf');
+  await page.getByLabel('选择原稿').setInputFiles('test/fixtures/questions/P.pdf');
   await page.getByRole('button',{name:'保存原稿并整理'}).click();
   await expect(page.getByLabel('草稿标题')).toBeVisible({timeout:30000});
   await expect(page.locator('.q-original img').first()).toBeVisible();
@@ -63,7 +63,7 @@ test('有文字层的 PDF 自动拆题，保留原稿并可确认', async ({page
   const original = await downloading;
   expect(original.suggestedFilename()).toBe('P.pdf');
   await original.saveAs(path.join(evidence,'original.pdf'));
-  expect(fs.readFileSync(path.join(evidence,'original.pdf'))).toEqual(fs.readFileSync('apps/web/e2e/fixtures/materials-questions/P.pdf'));
+  expect(fs.readFileSync(path.join(evidence,'original.pdf'))).toEqual(fs.readFileSync('test/fixtures/questions/P.pdf'));
   await page.locator('.q-issue select').selectOption('corrected');
   await page.getByRole('button',{name:'确认收录',exact:true}).click();
   await expect(page.getByRole('button',{name:'查看已入库题目',exact:true})).toBeVisible();
@@ -143,7 +143,7 @@ test('Word 原稿可对照、原生公式与配图可编辑，图片入口保留
   await start(page);
   await page.getByRole('button',{name:'收录',exact:true}).click();
   await page.getByRole('button',{name:'Word',exact:true}).click();
-  await page.getByLabel('选择原稿').setInputFiles('apps/web/e2e/fixtures/materials-questions/W.docx');
+  await page.getByLabel('选择原稿').setInputFiles('test/fixtures/questions/W.docx');
   await page.getByRole('button',{name:'保存原稿并整理'}).click();
   await expect(page.getByLabel('草稿标题')).toBeVisible();
   await expect(page.getByRole('button',{name:'6 待校对',exact:true})).toBeVisible();
@@ -154,7 +154,7 @@ test('Word 原稿可对照、原生公式与配图可编辑，图片入口保留
   await page.getByRole('button',{name:'返回题库',exact:true}).click();
   await page.getByRole('button',{name:'收录',exact:true}).click();
   await page.getByRole('button',{name:'图片',exact:true}).click();
-  await page.getByLabel('选择原稿').setInputFiles('apps/web/e2e/fixtures/materials-questions/I-clear.jpg');
+  await page.getByLabel('选择原稿').setInputFiles('test/fixtures/questions/I-clear.jpg');
   await page.getByRole('button',{name:'保存原稿并整理'}).click();
   await expect(page.locator('.q-original img')).toBeVisible();
   await expect(page.locator('.q-main')).toContainText('图片视觉识别尚未配置');
@@ -182,7 +182,7 @@ test('旧 DOC 本机转换后自动读取，对照校对并保存重开', async 
   await start(page);
   await page.getByRole('button',{name:'收录',exact:true}).click();
   await page.getByRole('button',{name:'Word',exact:true}).click();
-  await page.getByLabel('选择原稿').setInputFiles('apps/web/e2e/fixtures/materials/samples/w.doc');
+  await page.getByLabel('选择原稿').setInputFiles('test/fixtures/materials/w.doc');
   await page.getByLabel('出处',{exact:true}).fill('旧 DOC 本机转换校对');
   await page.getByRole('button',{name:'保存原稿并整理'}).click();
   await expect(page.getByLabel('草稿标题')).toBeVisible({timeout:120000});
@@ -210,7 +210,7 @@ test('旧 DOC 本机转换后自动读取，对照校对并保存重开', async 
   await page.getByRole('button',{name:'下载原稿',exact:true}).click();
   const original = await downloading;
   expect(original.suggestedFilename()).toBe('w.doc');
-  expect(fs.readFileSync(await original.path())).toEqual(fs.readFileSync('apps/web/e2e/fixtures/materials/samples/w.doc'));
+  expect(fs.readFileSync(await original.path())).toEqual(fs.readFileSync('test/fixtures/materials/w.doc'));
   await page.getByLabel('草稿标题').fill('旧 DOC 校对保存题');
   const body = page.locator('.q-review-result .material-editor').first().locator('textarea').first();
   const extracted = await body.inputValue();

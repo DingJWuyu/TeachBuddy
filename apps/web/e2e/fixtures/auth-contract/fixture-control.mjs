@@ -3,16 +3,12 @@
  * inspection, fault injection and fake-mail reading. Every helper talks to the
  * fixture process over HTTP; nothing reaches into the server's memory.
  */
-import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { buildHarness, harnessBuilt } from './harness-build.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SERVER = path.join(HERE, 'substitute-server.mjs');
-const BUILD_LOCK = path.join(os.tmpdir(), 'auth-contract-harness-build.lock');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -27,31 +23,6 @@ export async function healthy(port) {
   }
 }
 
-async function buildWithLock() {
-  if (harnessBuilt()) return;
-  let locked = false;
-  try {
-    const handle = fs.openSync(BUILD_LOCK, 'wx');
-    fs.closeSync(handle);
-    locked = true;
-  } catch {
-    locked = false;
-  }
-  if (locked) {
-    try {
-      await buildHarness({ force: true });
-    } finally {
-      fs.rmSync(BUILD_LOCK, { force: true });
-    }
-    return;
-  }
-  for (let attempt = 0; attempt < 150; attempt += 1) {
-    if (harnessBuilt()) return;
-    await sleep(100);
-  }
-  await buildHarness({ force: true });
-}
-
 /*
  * Returns a handle for the substitute on `port`. If one is already listening
  * (for example the Playwright webServer), it is reused; otherwise this helper
@@ -61,10 +32,10 @@ export async function ensureSubstitute({ port = 47182 } = {}) {
   if (await healthy(port)) {
     return { port, ownProcess: false, stop: async () => {} };
   }
-  await buildWithLock();
   const child = spawn(process.execPath, [SERVER, '--port', String(port)], { stdio: 'ignore' });
-  for (let attempt = 0; attempt < 100; attempt += 1) {
+  for (let attempt = 0; attempt < 1200; attempt += 1) {
     if (await healthy(port)) break;
+    if (child.exitCode !== null || child.signalCode !== null) break;
     await sleep(100);
   }
   if (!(await healthy(port))) {
@@ -75,8 +46,10 @@ export async function ensureSubstitute({ port = 47182 } = {}) {
     port,
     ownProcess: true,
     stop: async () => {
+      if (child.exitCode !== null || child.signalCode !== null) return;
+      const stopped = new Promise(resolve => child.once('exit', resolve));
       child.kill('SIGTERM');
-      await sleep(100);
+      await stopped;
     },
   };
 }
@@ -94,6 +67,7 @@ export async function ensureForeignOrigin({ port, target }) {
   });
   for (let attempt = 0; attempt < 100; attempt += 1) {
     if (await healthy(port)) break;
+    if (child.exitCode !== null || child.signalCode !== null) break;
     await sleep(100);
   }
   if (!(await healthy(port))) {
@@ -104,8 +78,10 @@ export async function ensureForeignOrigin({ port, target }) {
     port,
     ownProcess: true,
     stop: async () => {
+      if (child.exitCode !== null || child.signalCode !== null) return;
+      const stopped = new Promise(resolve => child.once('exit', resolve));
       child.kill('SIGTERM');
-      await sleep(100);
+      await stopped;
     },
   };
 }

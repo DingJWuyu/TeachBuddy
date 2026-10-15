@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import {
   startRealMath,
   registerMath,
-} from "../../web/e2e/fixtures/math-static/real.mjs";
+} from "./fixtures/math-real.mjs";
 import {
   emptySource,
   newElement,

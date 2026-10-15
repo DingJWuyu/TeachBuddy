@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), "questions-evidence-"));
-import { startQuestionsFixture as startFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
+import { startQuestionsFixture as startFixture } from "./fixtures/questions/server.mjs";
 
 test("text import preserves original, produces editable drafts and commits once", async (t) => {
   const runtime = await startFixture({
@@ -396,7 +396,7 @@ test("fixed native T and W preserve six question boundaries and existing answer 
         kind: "text",
         text: fs.readFileSync(
           new URL(
-            "../../web/e2e/fixtures/materials-questions/" + name,
+            "../../../test/fixtures/questions/" + name,
             import.meta.url,
           ),
           "utf8",
@@ -409,7 +409,7 @@ test("fixed native T and W preserve six question boundaries and existing answer 
         new Blob([
           fs.readFileSync(
             new URL(
-              "../../web/e2e/fixtures/materials-questions/" + name,
+              "../../../test/fixtures/questions/" + name,
               import.meta.url,
             ),
           ),
@@ -474,7 +474,7 @@ test("truncated Provider retains complete candidates; retry never replaces saved
     new Blob([
       fs.readFileSync(
         new URL(
-          "../../web/e2e/fixtures/materials-questions/P.pdf",
+          "../../../test/fixtures/questions/P.pdf",
           import.meta.url,
         ),
       ),
@@ -572,7 +572,7 @@ test("Word answer-only image stays in solution and out of student asset snapshot
 test("frozen old visual response runs through Adapter as replay, not live recognition", async (t) => {
   const raw = fs.readFileSync(
     new URL(
-      "../../web/e2e/fixtures/materials-questions/old-I.content.json",
+      "../../../test/fixtures/questions/legacy/old-I.content.json",
       import.meta.url,
     ),
     "utf8",
@@ -588,7 +588,7 @@ test("frozen old visual response runs through Adapter as replay, not live recogn
     new Blob([
       fs.readFileSync(
         new URL(
-          "../../web/e2e/fixtures/materials-questions/P.pdf",
+          "../../../test/fixtures/questions/P.pdf",
           import.meta.url,
         ),
       ),
@@ -956,7 +956,7 @@ test("native nested checks and explanation separation protect confirmation", asy
 
 test("native PDF automatically retains six questions, cross-page answers and diagrams", async (t) => {
   const e = await environment(t);
-  const original = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/P.pdf', import.meta.url));
+  const original = fs.readFileSync(new URL('../../../test/fixtures/questions/P.pdf', import.meta.url));
   const form = new FormData();
   form.append('file', new Blob([original]), 'questions.pdf');
   const file = (await e.call('/api/workbench/files', form)).body;
@@ -1056,7 +1056,7 @@ test("question search excludes answers by default and accepts only explicit bool
 
 test("missing PDF reading tool preserves the original and can retry after configuration is restored", async (t) => {
   const e = await environment(t);
-  const original = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/P.pdf', import.meta.url));
+  const original = fs.readFileSync(new URL('../../../test/fixtures/questions/P.pdf', import.meta.url));
   const form = new FormData();
   form.append('file', new Blob([original]), 'questions.pdf');
   const file = (await e.call('/api/workbench/files', form)).body;

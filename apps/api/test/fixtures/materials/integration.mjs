@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createApp } from "../../../../api/src/app.js";
+import { createApp } from "../../../src/app.js";
 import https from "node:https";
-import { generateSelfSignedCertificate } from "../../../../api/test/fixtures/auth-contract/harness.js";
+import { generateSelfSignedCertificate } from "../auth-contract/harness.js";
 
 /** Real default material composition; only identity is substituted for HTTP tests. */
 export async function startMaterialsHttp(directory) {

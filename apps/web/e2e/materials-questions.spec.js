@@ -58,7 +58,7 @@ test("Word original and formulas are available for review", async ({
   await page.getByRole("button", { name: "Word", exact: true }).click();
   await page
     .getByLabel("选择原稿")
-    .setInputFiles("apps/web/e2e/fixtures/materials-questions/W.docx");
+    .setInputFiles("test/fixtures/questions/W.docx");
   await page.getByRole("button", { name: "保存原稿并整理" }).click();
   await expect(page.getByLabel("草稿标题")).toBeVisible({ timeout: 25000 });
   await expect(page.locator(".q-original")).toContainText("段落");
@@ -101,7 +101,7 @@ test("image failure retains original and supports explicit local crop correction
   await page.getByRole("button", { name: "图片", exact: true }).click();
   await page
     .getByLabel("选择原稿")
-    .setInputFiles("apps/web/e2e/fixtures/materials-questions/figure.png");
+    .setInputFiles("test/fixtures/questions/figure.png");
   await page.getByRole("button", { name: "保存原稿并整理" }).click();
   await expect(
     page.getByText("整理失败，原稿已保存", { exact: false }).first(),

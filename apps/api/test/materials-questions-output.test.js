@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
-import { startQuestionsFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
+import { startQuestionsFixture } from "./fixtures/questions/server.mjs";
 
 async function environment(t) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "questions-output-"));

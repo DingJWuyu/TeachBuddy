@@ -4,7 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
-import { registerMath } from './fixtures/math-static/real.mjs';
+import { registerMath } from '../../api/test/fixtures/math-real.mjs';
 import { http } from '../../api/test/materials-http-fixture.js';
 
 const evidence = path.resolve('test-results/evidence/MANUAL-TEACHING/v1/browser');

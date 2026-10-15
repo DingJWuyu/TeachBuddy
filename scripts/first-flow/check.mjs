@@ -391,7 +391,6 @@ async function main() {
   const build = spawnSync('npm', ['run', 'build'], {
     cwd: repoRoot,
     encoding: 'utf-8',
-    env: { ...process.env, VITE_API_BASE_URL: '/api' }
   });
   const userDbAfter = fs.existsSync(userDb) ? fs.statSync(userDb).mtimeMs : null;
   writeLog('logs/build.log', `$ npm run build\n${build.stdout}\n${build.stderr}\nexit=${build.status}\n`);

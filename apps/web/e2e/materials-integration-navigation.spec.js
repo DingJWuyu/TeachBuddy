@@ -38,7 +38,7 @@ test("最新原生Word校对在真实外壳保存恢复并入库", async ({ page
   await nav(page, "题库");
   await page.getByRole("button", { name: "收录", exact: true }).click();
   await page.getByRole("button", { name: "Word", exact: true }).click();
-  await page.getByLabel("选择原稿").setInputFiles("apps/web/e2e/fixtures/materials-questions/W.docx");
+  await page.getByLabel("选择原稿").setInputFiles("test/fixtures/questions/W.docx");
   await page.getByRole("button", { name: "保存原稿并整理" }).click();
   await expect(page.getByLabel("草稿标题")).toBeVisible({ timeout: 60000 });
   const source = page.locator(".q-review-result textarea").first();

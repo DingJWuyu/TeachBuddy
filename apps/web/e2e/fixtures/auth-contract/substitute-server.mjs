@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BUILD_DIR, buildHarness } from './harness-build.mjs';
+import { buildHarness } from './harness-build.mjs';
 import { WORKBENCH_STATUS, workbenchKey } from './workbench-operations.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -841,8 +841,8 @@ const STATIC_TYPES = {
   '.woff2': 'font/woff2',
 };
 
-function serveStatic(res, pathname) {
-  const root = BUILD_DIR;
+function serveStatic(res, pathname, root) {
+  if (!root) return false;
   const relative = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
   const target = path.resolve(root, relative);
   if (!target.startsWith(path.resolve(root))) {
@@ -1150,7 +1150,7 @@ function handleWorkbench(state, req, res, pathname, body) {
   });
 }
 
-export function createSubstituteServer({ state = createState(), port = 47182, host = '127.0.0.1', foreign = null } = {}) {
+export function createSubstituteServer({ state = createState(), port = 47182, host = '127.0.0.1', foreign = null, buildDir } = {}) {
   state.config.origin = state.config.origin || `http://${host}:${port}`;
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, `http://${host}:${port}`);
@@ -1223,7 +1223,7 @@ fetch(${JSON.stringify(`${foreign}/api/auth/login`)}, {
       sendJson(res, 404, { type: '/problems/fixture/not-found' });
       return;
     }
-    if (!serveStatic(res, pathname)) {
+    if (!serveStatic(res, pathname, buildDir)) {
       sendJson(res, 404, { type: '/problems/fixture/not-found' });
     }
   });
@@ -1247,19 +1247,17 @@ if (isMain) {
   const port = Number(readArg('--port', '47182'));
   const host = readArg('--host', '127.0.0.1');
   const foreign = readArg('--foreign', null);
-  if (args.includes('--build')) {
-    if (args.includes('--build-only')) {
-      await buildHarness({ force: true });
-      process.stdout.write('harness build complete\n');
-      process.exit(0);
-    }
-    await buildHarness({ force: true });
+  const buildDir = foreign ? undefined : await buildHarness();
+  if (args.includes('--build-only')) {
+    process.stdout.write(`harness build: ${buildDir}\n`);
+    process.exit(0);
   }
-  const instance = createSubstituteServer({ port, host, foreign });
+  const instance = createSubstituteServer({ port, host, foreign, buildDir });
   await instance.listen();
   process.stdout.write(`auth-contract substitute listening on http://${host}:${port}\n`);
   const shutdown = async () => {
     await instance.close();
+    if (buildDir) fs.rmSync(buildDir, { recursive: true, force: true });
     process.exit(0);
   };
   process.on('SIGTERM', shutdown);

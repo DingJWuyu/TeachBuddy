@@ -7,7 +7,7 @@ import { randomUUID, createHash } from 'node:crypto';
 import JSZip from 'jszip';
 import Database from 'better-sqlite3';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
-import { registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
+import { registerMath } from './fixtures/math-real.mjs';
 import { doc, question, http, writable, Q } from './materials-http-fixture.js';
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
 
@@ -18,7 +18,7 @@ async function prepare() {
   try {
     const { client, session } = await registerMath(world, email);
     const call = http(client), principal = { accountKey: session.account.accountKey };
-    const png = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url));
+    const png = fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url));
     const file = await world.workbench.files.store(principal, { name: 'figure.png', bytes: png },
       { key: randomUUID(), method: 'POST', path: '/api/workbench/files' });
     const input = question('原题 <script>alert("title")</script>');

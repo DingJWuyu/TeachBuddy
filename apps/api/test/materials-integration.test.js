@@ -50,7 +50,7 @@ test("material composition serves the current v4 catalog through real page-bound
 });
 
 import { randomUUID } from "node:crypto";
-import { startMaterialsHttp } from "../../web/e2e/fixtures/materials-integration/server.mjs";
+import { startMaterialsHttp } from "./fixtures/materials/integration.mjs";
 import { createWorkbench } from "../src/workbench/index.js";
 const doc = (text) => ({
   version: 2,
@@ -151,7 +151,7 @@ test(
         new Blob([
           fs.readFileSync(
             new URL(
-              "../../web/e2e/fixtures/materials/samples/c22.pdf",
+              "../../../test/fixtures/materials/c22.pdf",
               import.meta.url,
             ),
           ),
@@ -222,7 +222,7 @@ test(
     );
     // A raster original still requires OCR, independently of native PDF support.
     const imageBytes = fs.readFileSync(
-      new URL("../../web/e2e/fixtures/materials-questions/I-clear.jpg", import.meta.url),
+      new URL("../../../test/fixtures/questions/I-clear.jpg", import.meta.url),
     );
     const imageForm = new FormData();
     imageForm.append("file", new Blob([imageBytes], { type: "image/jpeg" }), "扫描题页.jpg");

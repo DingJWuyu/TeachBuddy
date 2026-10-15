@@ -14,7 +14,7 @@ async function setup(a) {
   for (const [name, num] of [['同名', '001'], ['同名', '002'], ['乙', '003'], ['丙', '004']]) {
     students.push(await a.call('POST', C + '/students', studentBody(cls.id, name, num), 201));
   }
-  const paper = await upload(a.client, 'paper.png', fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url)));
+  const paper = await upload(a.client, 'paper.png', fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url)));
   const exam = await a.call('POST', C + '/exams', {
     name: '第一次正式考试',
     subject: '数学',

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { startFixture } from './fixture.mjs';
+import { startFixture } from '../../apps/api/test/fixtures/materials/server.mjs';
 const args = process.argv.slice(2);
 const value = (key, fallback) => (args.includes(key) ? args[args.indexOf(key) + 1] : fallback);
 const fixture = await startFixture({

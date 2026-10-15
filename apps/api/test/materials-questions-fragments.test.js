@@ -9,7 +9,7 @@ const root = fileURLToPath(new URL("../../../", import.meta.url));
 const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), "questions-fragments-evidence-"));
 const at = (p) => p.startsWith("test-results/evidence/") ? path.join(evidenceDir, path.basename(p)) : path.resolve(root, p);
 import sharp from "sharp";
-import { startQuestionsFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
+import { startQuestionsFixture } from "./fixtures/questions/server.mjs";
 
 const fragment = (role, text, extra = {}) => ({
   role,
@@ -232,7 +232,7 @@ test("own PDF layout binds a real crop; unverified image associations remain blo
     t,
     [[fragment("question", "如图，求函数性质。", { label: "Q2." })]],
     {
-      file: "apps/web/e2e/fixtures/materials-questions/P.pdf",
+      file: "test/fixtures/questions/P.pdf",
       pages: [1],
     },
   );
@@ -279,12 +279,12 @@ test("own PDF layout binds a real crop; unverified image associations remain blo
 test("fixed O page 2 replay retains only complete prefix and never invents Q3/Q4", async (t) => {
   const raw = fs.readFileSync(
     at(
-      "apps/web/e2e/fixtures/materials-questions/attempt4/old-page-2.content.txt",
+      "test/fixtures/questions/legacy/old-page-2.content.txt",
     ),
     "utf8",
   );
   const e = await setup(t, [raw], {
-    file: "apps/web/e2e/fixtures/materials-questions/attempt4/old-page-2.png",
+    file: "test/fixtures/questions/legacy/old-page-2.png",
   });
   const m = await e.read();
   assert.equal(m.drafts.length, 0);

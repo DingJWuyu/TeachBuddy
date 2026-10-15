@@ -41,7 +41,7 @@ async function notifications(page) { await page.getByRole('button', { name: /^é€
 test.use({ baseURL: origin, ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 }, trace: 'on' });
 test.beforeAll(() => {
   fs.mkdirSync(evidence, { recursive: true });
-  execFileSync('npm', ['run', 'build:web'], { cwd: root, stdio: 'pipe', env: { ...process.env, VITE_API_BASE_URL: '/api' } });
+  execFileSync('npm', ['run', 'build:web'], { cwd: root, stdio: 'pipe' });
 });
 test.beforeEach(async ({ context }) => {
   now = '2026-09-21T06:00:00.000Z';

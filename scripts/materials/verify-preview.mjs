@@ -1,14 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { chromium, expect } from "@playwright/test";
-import { startFixture } from "./fixture.mjs";
-const evidence = path.resolve("test-results/evidence/R31/v1");
+import { startFixture } from "../../apps/api/test/fixtures/materials/server.mjs";
+const evidence = path.resolve(process.env.MATERIALS_EVIDENCE_DIR ?? "test-results/evidence/R31/v1");
+fs.mkdirSync(evidence, { recursive: true });
+const dataDir = fs.mkdtempSync(path.join(evidence, "preview-data-"));
+let passed = false;
 const options = {
-  dataDir: path.resolve("test-results/r31-complete/preview-browser"),
+  dataDir,
   port: 48335,
   webDist: path.resolve("test-results/r31-foundation/web"),
 };
-let fixture = await startFixture({ ...options, reset: true });
+let fixture = await startFixture(options);
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({
@@ -20,7 +23,7 @@ try {
   await page.goto(fixture.origin + "/?preview");
   await page
     .getByLabel("上传材料")
-    .setInputFiles("apps/web/e2e/fixtures/materials/samples/c22.pptx");
+    .setInputFiles("test/fixtures/materials/c22.pptx");
   await expect(page.getByRole("status")).toHaveText("预览已就绪，共 3 页", {
     timeout: 30000,
   });
@@ -61,7 +64,9 @@ try {
       2,
     ),
   );
+  passed = true;
 } finally {
   await browser.close();
   await fixture.close();
+  if (passed) fs.rmSync(dataDir, { recursive: true, force: true });
 }

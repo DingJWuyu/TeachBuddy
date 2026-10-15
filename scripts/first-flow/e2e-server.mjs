@@ -3,8 +3,8 @@
  *
  * Started by playwright.config.mjs when FIRST_FLOW_E2E=1. It serves the built
  * Web assets and the API from one HTTPS origin with two runner-bound test
- * identities. The web build must exist (npm run build:web with
- * VITE_API_BASE_URL=/api); the runner refuses to start otherwise.
+ * identities. Run npm run build:web first; the runner refuses to start
+ * without the built Web assets.
  *
  * Env:
  *   FIRST_FLOW_DATA_DIR  isolated data directory (default test-results/first-flow/e2e-data)

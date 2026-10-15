@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import JSZip from 'jszip';
-import { startMathFixture } from '../../web/e2e/fixtures/math-static/server.mjs';
+import { startMathFixture } from './fixtures/math/server.mjs';
 
 async function source(xml = '<geogebra format="5.0"><construction/></geogebra>', appName = 'classic') {
   const zip = new JSZip();

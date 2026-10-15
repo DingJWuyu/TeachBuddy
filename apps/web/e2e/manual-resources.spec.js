@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { createIntegration } from "../../api/test/fixtures/auth-integration/harness.js";
-import { registerMath } from "./fixtures/math-static/real.mjs";
+import { registerMath } from "../../api/test/fixtures/math-real.mjs";
 import { Document, Packer, Paragraph, ExternalHyperlink, TextRun } from "docx";
 let world;
 async function openInfo(page) {
@@ -182,7 +182,7 @@ test("全部常用格式内容预览，分类搜索及更新后保库重开", as
   await expect(page.locator(".res-status")).toContainText("已保存");
   await page
     .getByLabel("更新文件", { exact: true })
-    .setInputFiles("apps/web/e2e/fixtures/materials/samples/c22.pdf");
+    .setInputFiles("test/fixtures/materials/c22.pdf");
   await page.getByRole("button", { name: "确认更新", exact: true }).click();
   await expect(page.locator(".res-info-file strong")).toHaveText("c22.pdf");
   await openInfo(page);

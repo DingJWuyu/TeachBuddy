@@ -7,7 +7,7 @@ import childProcess from 'node:child_process';
 import {syncBuiltinESMExports} from 'node:module';
 import {randomUUID} from 'node:crypto';
 import {createIntegration} from './fixtures/auth-integration/harness.js';
-import {registerMath} from '../../web/e2e/fixtures/math-static/real.mjs';
+import {registerMath} from './fixtures/math-real.mjs';
 
 test('PDF structure failure retains a redacted diagnostic and source after temporary cleanup and restart', async t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'questions-diagnostic-'));

@@ -16,7 +16,7 @@ test("独立普通进程重启保持同一origin、未知上传原键和新浏�
   async function start() {
     child = spawn(
       process.execPath,
-      ["apps/web/e2e/fixtures/materials-integration/server.mjs"],
+      ["apps/api/test/fixtures/materials/integration.mjs"],
       {
         env: {
           ...process.env,
@@ -94,7 +94,7 @@ test("独立普通进程重启保持同一origin、未知上传原键和新浏�
     });
     await page
       .getByLabel("上传资料", { exact: true })
-      .setInputFiles("apps/web/e2e/fixtures/materials/samples/c22.pdf");
+      .setInputFiles("test/fixtures/materials/c22.pdf");
     await expect(
       page.getByRole("button", { name: "重试确认原请求", exact: true }),
     ).toBeVisible();

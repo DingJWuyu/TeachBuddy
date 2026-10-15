@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import Database from 'better-sqlite3';
-import { startMaterialsHttp } from '../../web/e2e/fixtures/materials-integration/server.mjs';
+import { startMaterialsHttp } from './fixtures/materials/integration.mjs';
 
 const doc = (text = '') => ({ version: 2, blocks: text ? [{ type: 'paragraph', runs: [{ type: 'text', text }] }] : [] });
 const future = { version: 99, blocks: [{ type: 'future-node', payload: { text: '完整保留', opaque: [1, { future: true }] } }] };

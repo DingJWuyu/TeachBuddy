@@ -3,8 +3,8 @@ import path from "node:path";
 import express from "express";
 import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
-import { createApp } from "../../../../api/src/app.js";
-import { createQuestionsModule } from "../../../../api/src/modules/questions/index.js";
+import { createApp } from "../../../src/app.js";
+import { createQuestionsModule } from "../../../src/modules/questions/index.js";
 export async function startQuestionsFixture({
   dataDir,
   port = 48339,
@@ -42,7 +42,7 @@ export async function startQuestionsFixture({
                 (module = createQuestionsModule({ ...deps, provider })),
             }),
             migrations: () =>
-              import("../../../../api/src/modules/questions/migrations/index.js"),
+              import("../../../src/modules/questions/migrations/index.js"),
           },
         },
         jobHandlers: {

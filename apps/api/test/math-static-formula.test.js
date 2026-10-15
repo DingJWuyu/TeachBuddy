@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
-import { startRealMath, registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
+import { startRealMath, registerMath } from './fixtures/math-real.mjs';
 import { emptySource } from '../../web/src/features/math/model.js';
 const root = '/api/modules/math/v1/works';
 const formula = (latex = String.raw`x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}`) => ({ ...emptySource('formula'), latex, caption: '判别式决定实数根的个数' });

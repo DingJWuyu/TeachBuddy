@@ -70,7 +70,6 @@ test.beforeAll(async () => {
       'build', '--outDir', B15_WEB_DIST, '--emptyOutDir'
     ], {
       cwd: path.join(B15_REPO_ROOT, 'apps', 'web'),
-      env: { ...process.env, VITE_API_BASE_URL: '/api' },
       stdio: 'inherit'
     });
   }

@@ -1,9 +1,9 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { createIntegration } from '../../../../api/test/fixtures/auth-integration/harness.js';
+import { createIntegration } from './auth-integration/harness.js';
 import { moduleCatalog } from '@refatos/shared';
-import { moduleImplementations } from '../../../../api/src/workbench/moduleImplementations.js';
+import { moduleImplementations } from '../../src/workbench/moduleImplementations.js';
 export const workbench = { catalogOverride: moduleCatalog, extraImplementations: moduleImplementations };
 export const webDist = path.resolve('apps/web/e2e/fixtures/math-static/dist');
 export function startRealMath(options = {}) {

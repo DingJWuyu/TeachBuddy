@@ -2,11 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import express from "express";
 import { createServer } from "node:http";
-import { createWorkbench } from "../../../../api/src/workbench/index.js";
+import { createWorkbench } from "../../../src/workbench/index.js";
 import {
   createGuards,
   createWorkbenchErrorHandler,
-} from "../../../../api/src/workbench/http.js";
+} from "../../../src/workbench/http.js";
 
 export async function startResourcesFixture({
   dataDir,

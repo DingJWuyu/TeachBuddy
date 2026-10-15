@@ -29,7 +29,7 @@ async function register(world, email) {
 // Statistics is a read seam. Seed fixed confirmed facts in the isolated SQLite
 // database; importing and correcting workbooks is covered by the import tests.
 async function seed(world, accountKey, client) {
-  const png = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url));
+  const png = fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url));
   const boundary = 'statistics-' + randomUUID();
   const upload = await client.request('POST', '/api/workbench/files', {
     headers: { 'Idempotency-Key': randomUUID() }, contentType: `multipart/form-data; boundary=${boundary}`,

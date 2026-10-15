@@ -2,13 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
 import { createServer } from 'node:http';
-import { createApp } from '../../apps/api/src/app.js';
+import { createApp } from '../../../src/app.js';
 import {
   createGuards,
   asyncHandler,
   createMutationHandler,
   createWorkbenchErrorHandler
-} from '../../apps/api/src/workbench/http.js';
+} from '../../../src/workbench/http.js';
 
 export async function startFixture({ dataDir, port = 47331, webDist, reset = false, jobHandlers, conversion } = {}) {
   if (process.env.NODE_ENV === 'production')

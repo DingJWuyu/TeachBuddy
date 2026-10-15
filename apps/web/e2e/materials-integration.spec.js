@@ -52,7 +52,7 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
   await nav(page, "资源库");
   await page
     .getByLabel("上传资料", { exact: true })
-    .setInputFiles("apps/web/e2e/fixtures/materials/samples/c22.pptx");
+    .setInputFiles("test/fixtures/materials/c22.pptx");
   await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible({
     timeout: 60000,
   });
@@ -91,13 +91,13 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
   await expect(page.getByLabel("资源名称")).toHaveValue("集成课堂课件");
   await page
     .getByLabel("更新文件", { exact: true })
-    .setInputFiles("apps/web/e2e/fixtures/materials/samples/c22.pdf");
+    .setInputFiles("test/fixtures/materials/c22.pdf");
   await page.getByRole("button", { name: "确认更新", exact: true }).click();
   await expect(page.locator(".res-file-info strong")).toHaveText("c22.pdf");
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await page
     .getByLabel("上传资料", { exact: true })
-    .setInputFiles("apps/web/e2e/fixtures/materials-questions/figure.png");
+    .setInputFiles("test/fixtures/questions/figure.png");
   await expect(page.getByLabel("资源名称")).toHaveValue("figure.png");
   await page.reload();
   await expect(page.getByLabel("资源名称")).toHaveValue("figure.png");

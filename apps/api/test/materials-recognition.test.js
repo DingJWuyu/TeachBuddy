@@ -6,12 +6,12 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import Database from 'better-sqlite3';
 import { createIntegration } from "./fixtures/auth-integration/harness.js";
-import { registerMath } from "../../web/e2e/fixtures/math-static/real.mjs";
+import { registerMath } from "./fixtures/math-real.mjs";
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
-import { replayRecognizer, sourceImage } from '../../web/e2e/fixtures/materials-questions/recognition/replay.mjs';
+import { replayRecognizer, sourceImage } from '../../../test/fixtures/questions/recognition/replay.mjs';
 
 const base = "/api/workbench/files";
-const image = fs.readFileSync(new URL("../../web/e2e/fixtures/materials-questions/figure.png", import.meta.url));
+const image = fs.readFileSync(new URL("../../../test/fixtures/questions/figure.png", import.meta.url));
 
 test('HTTP cancellation during raw storage waits for owned model stop and retains complete evidence', async () => {
   const gate = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
@@ -103,7 +103,7 @@ test('captured OCR geometry recovers inline subscripts through HTTP and survives
     const accepted = await write(client, endpoint, { renditionFileId: source.renditionFileId, pages: [1] });
     assert.equal((await waitJob(client, accepted.json.id)).state, 'succeeded');
     const page = (await client.request('GET', `${endpoint}/pages/1${query}`)).json;
-    const raw = JSON.parse(fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/recognition/I-3/raw.json', import.meta.url)));
+    const raw = JSON.parse(fs.readFileSync(new URL('../../../test/fixtures/questions/recognition/I-3/raw.json', import.meta.url)));
     const storedRaw = await client.request('GET', `${base}/${page.rawFileId}/content`);
     assert.deepEqual(JSON.parse(storedRaw.text), raw);
     assert.deepEqual(page.blocks.map(b => b.block_content), raw.parsing_res_list.map(b => b.block_content));
@@ -491,7 +491,7 @@ test('retrying a partial job after an engine revision change preserves the origi
   try {
     world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
     let { client } = await registerMath(world, 'recognition-revision@example.test');
-    const pdf = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/P.pdf', import.meta.url));
+    const pdf = fs.readFileSync(new URL('../../../test/fixtures/questions/P.pdf', import.meta.url));
     const file = await upload(client, 'two-pages.pdf', pdf), source = await preview(client, file);
     const endpoint = `${base}/${file.id}/recognition`, query = `?renditionFileId=${source.renditionFileId}`;
     const accepted = await write(client, endpoint, { renditionFileId: source.renditionFileId, pages: [1, 2] });
@@ -671,7 +671,7 @@ test('complete timed-out output stays failed, binds task evidence, and survives 
   try {
     world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
     const { client } = await registerMath(world, 'timeout-evidence@example.test');
-    const pdf = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/P.pdf', import.meta.url));
+    const pdf = fs.readFileSync(new URL('../../../test/fixtures/questions/P.pdf', import.meta.url));
     const file = await upload(client, 'timeout-pages.pdf', pdf), source = await preview(client, file);
     const endpoint = `${base}/${file.id}/recognition`;
     const pageUrl = `${endpoint}/pages/1?renditionFileId=${source.renditionFileId}`;

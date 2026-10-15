@@ -171,7 +171,7 @@ for (const kind of ['文字', '图片']) {
       await capture.getByLabel('原始文字').fill('1. 计算 1+1。\n答案：2\n2. 求 2+3。\n答案：5');
     } else {
       await capture.getByRole('button', { name: /上传图片/ }).click();
-      await capture.getByLabel('选择原稿').setInputFiles(fileURLToPath(new URL('./fixtures/materials-questions/recognition/I-3/page.png', import.meta.url)));
+      await capture.getByLabel('选择原稿').setInputFiles(fileURLToPath(new URL('../../../test/fixtures/questions/recognition/I-3/page.png', import.meta.url)));
     }
     await capture.getByRole('button', { name: '开始整理', exact: true }).click();
     await expect(page.locator('.q-review-result')).toBeVisible();
