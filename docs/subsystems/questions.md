@@ -43,6 +43,8 @@ v2 操作同步返回 `{status, body}`，合法失败抛带 `status/problem` 的
 
 迁移由 [migrations](../../apps/api/src/modules/questions/migrations/index.js) 提供。跨模块不直接读题库表；资料包沿 readForExport，Agent 沿 operations。
 
+[native-text](../../apps/api/src/modules/questions/native-text.js) 拥有 `nativeText` 及题目起始、答案标题、显式续题规则，保留原文字符范围、唯一规范题号匹配和未分配片段。[extraction](../../apps/api/src/modules/questions/extraction.js) 只编排提取；原生 Word、PDF、识别页与[配图定位](../../apps/api/src/modules/questions/extraction-figures.js) 直接读取文本规则，不反向依赖编排入口。
+
 ## 验证入口
 
 入口和受影响场景统一从[题库验证](../acceptance/README.md#题库专项)选择，执行分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。核对保存/刷新后的公式、配图、来源与校对状态，固定回放与真实识别分开。技术入口只描述调用路径，不声明本候选通过。

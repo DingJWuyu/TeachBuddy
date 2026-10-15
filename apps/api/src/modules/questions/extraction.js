@@ -5,8 +5,6 @@ import { validateQuestionContent } from "./materials-content.js";
 import { randomUUID } from "node:crypto";
 import { textDocument } from "./materials-content.js";
 import { nativeText } from "./native-text.js";
-// Temporary handoff exports. Remaining consumers move to native-text.js next.
-export { nativeText, questionStart, answerHeading, continuationHeading } from "./native-text.js";
 import {
   readTranscription,
   mergeExtractions,
