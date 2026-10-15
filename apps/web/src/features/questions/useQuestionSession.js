@@ -127,7 +127,10 @@ export function useQuestionSession({ accountKey, transport, requestedId, onRetur
       return next;
     });
   useEffect(() => {
-    if (requestedId && /^[0-9a-f-]{36}$/i.test(requestedId))
+    // A business refresh remounts this session with the same route. Keep the
+    // persisted editing scene; only a different requested object starts reading.
+    if (requestedId && /^[0-9a-f-]{36}$/i.test(requestedId)
+      && (scene.kind !== 'question' || scene.id !== requestedId))
       patchScene({ kind: "question", id: requestedId, editing: false, compare: false });
   }, [requestedId]);
   const localKey = `questions-materials-draft:${scene.kind}:${scene.id ?? "new"}`;
