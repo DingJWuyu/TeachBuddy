@@ -2,13 +2,13 @@ import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "questions", ...options });
 import { useEffect, useRef, useState } from 'react';
-import { Icon } from '../workbench/icons.jsx';
-import { DocumentEditor, DocumentView } from '../workbench/materials/index.js';
-import { parseInlineRuns, serializeInlineRuns } from '../workbench/documents.js';
-import { Popover } from '../workbench/ModuleOverlays.jsx';
+import { Icon } from '../../components/icons.jsx';
+import { DocumentEditor, DocumentView } from '../../components/materials/index.js';
+import { parseInlineRuns, serializeInlineRuns } from '../../components/materials/documents.js';
+import { Popover } from '../../components/interaction/ModuleOverlays.jsx';
 import { structureChanged, undoStructure } from './document-structure.js';
 import { supportedDocument } from '@refatos/shared';
-import { useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
+import { useModuleDialogFocus } from '../../components/interaction/ModuleMotion.jsx';
 
 const paths = {
   undo: 'M6 4 2 8l4 4M2 8h9a5 5 0 0 1 0 10',

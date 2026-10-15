@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { readLocal, writeLocal } from '../workbench/storage.js';
+import { readLocal, writeLocal } from '../../platform/device/storage.js';
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { renderGraphic } from "@refatos/shared/math/graphics";
 import {

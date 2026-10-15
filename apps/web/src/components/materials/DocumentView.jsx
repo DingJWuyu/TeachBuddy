@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { canRenderMath, supportedDocument } from '@refatos/shared';
-import { MathFormula } from '../MathText.jsx';
-import { workbenchBlob } from '../apiClient.js';
+import { MathFormula } from './MathFormula.jsx';
+import { workbenchBlob } from '../../platform/http/apiClient.js';
 import './materials.css';
 
 export function Formula({ latex, display = false }) {

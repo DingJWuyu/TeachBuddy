@@ -1,6 +1,7 @@
+import { sendHttpRequest, readHttpBody, fileFormData } from '../../platform/http/request.js';
 import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "resources", ...options });
-import { deviceRequestStore, clearDeviceRequestAccount } from "../workbench/deviceRequestStore.js";
+import { deviceRequestStore, clearDeviceRequestAccount } from "../../platform/device/deviceRequestStore.js";
 // Localize known contract identities only. The original problem remains attached
 // to the error for conflict handling and diagnostics.
 function resourceProblemMessage(problem) {
@@ -77,8 +78,7 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
       headers["X-TeachBuddy-Request"] = "1";
       headers["Idempotency-Key"] = key;
       if (input instanceof Blob) {
-        body = new FormData();
-        body.append("file", input, input.name || "upload");
+        body = fileFormData(input, input.name || "upload");
       } else {
         headers["Content-Type"] = "application/json";
         body = JSON.stringify(input);
@@ -86,16 +86,16 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
     }
     let response, value;
     try {
-      response = await transport(path, {
+      response = await sendHttpRequest(transport, path, {
         method,
         headers,
         body,
         credentials: "same-origin",
         cache: "no-store",
-        signal: AbortSignal.any([signal, AbortSignal.timeout(60000)]),
+        signal, timeoutMs: 60000,
       });
       value =
-        blob && response.ok ? await response.blob() : await response.json();
+        await readHttpBody(response, blob && response.ok ? 'blob' : 'json', signal);
     } catch (error) {
       throw Object.assign(
         new Error(

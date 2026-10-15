@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useEffect, useId, useRef, useState } from 'react';
 import { CalendarDialog, CalendarIcon, CalendarMenu, CalendarOverlay, IconButton, isConfirmKey } from './CalendarControls.jsx';
 import { COLORS, changeEnd, defaultTime, endOf, endTimeProblem, formatClock, monthDays, presetRepeat, repeatAnchor, repeatLabel, todayInZone, weekday } from './calendarModel.js';
-import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
+import { useIdempotentSubmit } from '../../platform/saving/useIdempotentSubmit.js';
 import * as api from './api.js';
 import { ConflictPreview, ReminderDialog, reminderLabel } from './CalendarDetails.jsx';
 import { EntryItems } from './CalendarItems.jsx';

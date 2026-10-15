@@ -1,5 +1,6 @@
+import './surfaces.css';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { Icon } from './icons.jsx';
+import { Icon } from '../icons.jsx';
 
 const DURATION = 180;
 

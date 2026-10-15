@@ -1,3 +1,4 @@
+import { sendHttpRequest, readHttpBody, fileFormData } from '../../platform/http/request.js';
 import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "questions", ...options });
 import {
@@ -5,7 +6,7 @@ import {
   workbenchPost,
   workbenchPut,
   workbenchBlob,
-} from "../workbench/apiClient.js";
+} from "../../platform/http/apiClient.js";
 export const base = "/api/modules/questions/v2";
 export async function get(path) {
   return (await workbenchGet(path.startsWith("/api/") ? path : base + path))
@@ -60,15 +61,14 @@ export async function download(id, name) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 export async function upload(transport, file, key) {
-  const body = new FormData();
-  body.append("file", file);
-  const response = await transport("/api/workbench/files", {
+  const body = fileFormData(file);
+  const response = await sendHttpRequest(transport, "/api/workbench/files", {
     method: "POST",
     headers: { "X-TeachBuddy-Request": "1", "Idempotency-Key": key },
     body,
     credentials: "same-origin",
   });
-  const value = await response.json();
+  const value = await readHttpBody(response);
   if (!response.ok) throw Object.assign(Error(value.detail ?? t("原稿保存失败，请重试")), { status: response.status });
   return value.file ?? value;
 }

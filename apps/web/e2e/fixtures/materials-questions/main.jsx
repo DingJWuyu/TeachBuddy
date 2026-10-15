@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import MaterialsQuestionsPage from "../../../src/features/questions/MaterialsQuestionsPage.jsx";
-import { bindWorkbenchTransport } from "../../../src/features/workbench/apiClient.js";
+import { bindWorkbenchTransport } from "../../../src/platform/http/apiClient.js";
 import "./style.css";
 const transport = window.fetch.bind(window);
 bindWorkbenchTransport(transport);

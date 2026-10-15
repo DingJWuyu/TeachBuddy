@@ -5,7 +5,7 @@ import { MathWebAssistant } from './web-ai/MathWebAssistant.jsx';
 import { MathMenu, MenuItem } from './MathMenu.jsx';
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
-import { Icon } from '../workbench/icons.jsx';
+import { Icon } from '../../components/icons.jsx';
 
 export function mathStatusLabel(status) {
   const labels = {

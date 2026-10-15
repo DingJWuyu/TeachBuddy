@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { GeoGebraEditor } from './geogebra/index.js';
 import { MathWebAssistant } from './web-ai/MathWebAssistant.jsx';
 import { useAuxiliaryAssistant } from '../workbench/shellContext.js';
-import { Icon } from '../workbench/icons.jsx';
+import { Icon } from '../../components/icons.jsx';
 import { mathStatusLabel } from './WorkspaceHome.jsx';
 import './ggb-workspace.css';
 

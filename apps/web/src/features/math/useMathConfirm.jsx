@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
 import { useEffect, useRef, useState } from 'react';
-import { ModulePresence } from '../workbench/ModuleMotion.jsx';
-import { ConfirmDialog } from '../workbench/ModuleOverlays.jsx';
+import { ModulePresence } from '../../components/interaction/ModuleMotion.jsx';
+import { ConfirmDialog } from '../../components/interaction/ModuleOverlays.jsx';
 import { useMathDialogKeys } from './useMathDialogKeys.js';
 
 export function useMathConfirm() {

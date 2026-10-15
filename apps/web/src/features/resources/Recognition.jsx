@@ -4,8 +4,8 @@ import { Icon } from "../workbench/chrome/icons.jsx";
 import {
   ModuleDisclosure,
   ModulePresence,
-} from "../workbench/ModuleMotion.jsx";
-import { DocumentView } from "../workbench/materials/DocumentView.jsx";
+} from "../../components/interaction/ModuleMotion.jsx";
+import { DocumentView } from "../../components/materials/DocumentView.jsx";
 
 const active = (state) => ["queued", "running", "cancelling"].includes(state);
 

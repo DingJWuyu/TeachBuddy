@@ -2,8 +2,8 @@ import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
 /** Schedule module API surface: the only endpoints this feature may call. */
 
-import { WorkbenchError, buildQuery, workbenchGet, workbenchPost, workbenchPut } from '../workbench/apiClient.js';
-import { unexpectedSuccessProblem } from '../workbench/problems.js';
+import { WorkbenchError, buildQuery, workbenchGet, workbenchPost, workbenchPut } from '../../platform/http/apiClient.js';
+import { unexpectedSuccessProblem } from '../../platform/http/problems.js';
 
 // This schedule-specific 422 is a confirmed rejection, so the teacher can
 // correct the reminder and submit a new request. Unknown responses retain the
@@ -137,4 +137,13 @@ export async function updateLabel({ key, id, payload }) {
 export async function detachOccurrence({ key, id, originDate, payload }) {
   const { body } = await scheduleWrite(workbenchPost(`/api/modules/schedule/entries/${id}/occurrences/${originDate}/detach`, payload, key));
   return assertObject(body, t("安排"));
+}
+
+export async function listNotifications() {
+  return (await workbenchGet('/api/modules/schedule/notifications')).body;
+}
+
+/** Replays the exact stored path, body and key, including older pending requests. */
+export async function changeNotifications({ key, payload }) {
+  return (await workbenchPost(payload.path, payload.body, key)).body;
 }

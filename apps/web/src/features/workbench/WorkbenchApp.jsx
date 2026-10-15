@@ -4,7 +4,7 @@ import RestoredHome from './chrome/Home.jsx';
 import RestoredSidebar, { useLayoutModel } from './chrome/Sidebar.jsx';
 import RestoredTopbar from './chrome/Topbar.jsx';
 import './chrome/chrome.css';
-import { hasRecoveredDrafts } from './storage.js';
+import { hasRecoveredDrafts } from '../../platform/device/storage.js';
 import { usePreferences } from './usePreferences.js';
 import { SupportHelp, SupportReleases } from './SupportPages.jsx';
 import { AgentProvider, useAgent } from '../agent/AgentProvider.jsx';
@@ -18,13 +18,13 @@ import { ReferenceAction } from '../agent/ReferenceAction.jsx';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { AuxiliaryPanel } from './AuxiliaryPanel.jsx';
-import { Icon } from './icons.jsx';
+import { Icon } from '../../components/icons.jsx';
 import { ShellContext, useWorkbenchShell } from './shellContext.js';
-import { useScene } from './useScene.js';
+import { useScene } from '../../platform/device/useScene.js';
 import { followAnchor, navigate, useRoute } from './routes.js';
 import { WorkbenchSettings } from './WorkbenchSettings.jsx';
 import { workbenchModules, moduleDisplayName } from '../modules/moduleRegistry.js';
-import { workbenchGet } from './apiClient.js';
+import { useScheduleSettings } from '../schedule/useScheduleSettings.js';
 import { useAuth } from '../auth/index.jsx';
 import './workbench.css';
 import './appearance.css';
@@ -97,17 +97,7 @@ function WorkbenchContent({ boot }) {
   });
   const [tools, setTools] = useState([]);
   const [assistant, setAssistant] = useState(null);
-  const [timeZone, setTimeZone] = useState(null);
-  const [timeZoneError, setTimeZoneError] = useState(null);
-  const [timeZoneReload, setTimeZoneReload] = useState(0);
-  useEffect(() => {
-    let cancelled = false;
-    setTimeZoneError(null);
-    workbenchGet('/api/modules/schedule/settings').then(({ body }) => {
-      if (!cancelled) setTimeZone(body.timeZone);
-    }).catch(error => { if (!cancelled) setTimeZoneError(error.message); });
-    return () => { cancelled = true; };
-  }, [route.path, generation, timeZoneReload]);
+  const { timeZone, setTimeZone, timeZoneError, reloadTimeZone } = useScheduleSettings(route.path, generation);
   const activeModule = workbenchModules.find(module => module.id === route.moduleId);
 
   const registerAssistant = useCallback(render => setAssistant(() => render), []);
@@ -127,7 +117,7 @@ function WorkbenchContent({ boot }) {
     generation: `${generation}:${agent.businessRevision}`,
     storageFailed,
     narrow,
-    timeZone, setTimeZone, timeZoneError, reloadTimeZone: () => setTimeZoneReload(value => value + 1),
+    timeZone, setTimeZone, timeZoneError, reloadTimeZone,
     isPanelOpen: Boolean(scene.panelOpen),
     panelMode: scene.panelMode || 'ai',
     panelWidth: scene.panelWidth || 300,

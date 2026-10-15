@@ -7,19 +7,19 @@ import React, {
   useState,
 } from "react";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
-import { useScene } from "../workbench/useScene.js";
-import { useForegroundRefresh } from "../workbench/useForegroundRefresh.js";
+import { useScene } from "../../platform/device/useScene.js";
+import { useForegroundRefresh } from "../../components/interaction/useForegroundRefresh.js";
 import { createResourcesClient, pendingStore } from "./client.js";
-import { reselectDeviceFile } from "../workbench/deviceRequestStore.js";
+import { reselectDeviceFile } from "../../platform/device/deviceRequestStore.js";
 import { Preview } from "./Preview.jsx";
 import { Library } from "./Library.jsx";
 import { ResourceInfo } from "./ResourceInfo.jsx";
 import { Icon } from "../workbench/chrome/icons.jsx";
-import { Popover } from "../workbench/ModuleOverlays.jsx";
+import { Popover } from "../../components/interaction/ModuleOverlays.jsx";
 import { Taxonomy, TaxonomyDialog } from "./Taxonomy.jsx";
 import "./resources.css";
 import { ResourceDialog } from "./ResourceDialog.jsx";
-import { ModulePresence } from "../workbench/ModuleMotion.jsx";
+import { ModulePresence } from "../../components/interaction/ModuleMotion.jsx";
 import { FileHistory } from "./FileHistory.jsx";
 import { Organize } from "./Organize.jsx";
 const root = "/api/modules/resources";

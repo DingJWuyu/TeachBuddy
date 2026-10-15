@@ -152,7 +152,6 @@ export function selectLocalSnapshots(account, names, snapshots) {
     throw error;
   }
 }
-/** Explicit cleanup is handled by deviceData after pending-operation inspection. */
 export function resetLocalReaders(account) {
   const store = storage();
   for (const [key, source] of selected) if (key.startsWith(`${PREFIX}:${account}:`) && (!source || store?.getItem(source) === null)) selected.delete(key);

@@ -1,5 +1,5 @@
-import { workbenchGet, workbenchPut } from './apiClient.js';
-import { useSavableDocument } from './useSavableDocument.js';
+import { workbenchGet, workbenchPut } from '../../platform/http/apiClient.js';
+import { useSavableDocument } from '../../platform/saving/useSavableDocument.js';
 const path = '/api/reliability/v1/preferences';
 const object = value => ({ ...value, id: 'preferences' });
 export function usePreferences(accountKey, generation) {

@@ -1,12 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
-import { readLocal, writeLocal } from '../../workbench/storage.js';
-import { Icon } from '../../workbench/icons.jsx';
+import { readLocal, writeLocal } from '../../../platform/device/storage.js';
+import { Icon } from '../../../components/icons.jsx';
 import { getInstallation, isExtensionCompatible } from './installation.js';
 import { subscribeWebAiAvailability, webAiRequest } from './bridge.js';
 import { mathPrompt, readProposal } from './protocol.js';
-import { ModuleDisclosure, ModulePresence } from '../../workbench/ModuleMotion.jsx';
+import { ModuleDisclosure, ModulePresence } from '../../../components/interaction/ModuleMotion.jsx';
 import './assistant.css';
 
 export function MathWebAssistant({ controller, title, accountKey, onStart, takeRequest }) {

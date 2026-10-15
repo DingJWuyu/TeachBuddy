@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supportedDocument } from '@refatos/shared';
-import { parseInlineRuns } from '../workbench/documents.js';
-import { DocumentView } from '../workbench/materials/index.js';
+import { parseInlineRuns } from '../../components/materials/documents.js';
+import { DocumentView } from '../../components/materials/index.js';
 
 export function assignFragment(material, draftId, fragment, destination) {
   const target = material.drafts.find(draft => draft.id === draftId);

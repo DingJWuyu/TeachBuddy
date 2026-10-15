@@ -12,11 +12,11 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { readLocal, removeLocal, writeLocal } from './storage.js';
-import { useForegroundRefresh } from './useForegroundRefresh.js';
-import { unconfirmedProblem } from './problems.js';
+import { readLocal, removeLocal, writeLocal } from '../device/storage.js';
+import { useForegroundRefresh } from '../../components/interaction/useForegroundRefresh.js';
+import { unconfirmedProblem } from '../http/problems.js';
 import { keepsDraft, isSettled } from './saveStates.js';
-import { newRequestKey } from './uuid.js';
+import { newRequestKey } from '../device/uuid.js';
 
 function draftName(kind, draftId) {
   return `draft:${kind}:${draftId}`;

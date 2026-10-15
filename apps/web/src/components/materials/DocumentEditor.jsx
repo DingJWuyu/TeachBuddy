@@ -1,12 +1,12 @@
-import i18n from "../../../i18n/index.js";
+import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
 import { useState } from 'react';
 import { supportedDocument } from '@refatos/shared';
-import { parseInlineRuns, serializeInlineRuns } from '../documents.js';
+import { parseInlineRuns, serializeInlineRuns } from './documents.js';
 import { DocumentView, Formula, ControlledImage } from './DocumentView.jsx';
 import { Icon } from '../icons.jsx';
-import { Popover, MenuItem } from '../ModuleOverlays.jsx';
+import { Popover, MenuItem } from '../interaction/ModuleOverlays.jsx';
 
 const paragraph = () => ({ type: 'paragraph', runs: [] });
 const kinds = {

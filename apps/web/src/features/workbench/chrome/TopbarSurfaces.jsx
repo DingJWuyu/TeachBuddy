@@ -1,7 +1,7 @@
 import i18n from "../../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
-import { useScene } from '../useScene.js';
+import { useScene } from '../../../platform/device/useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 
 import { useEffect, useMemo, useRef, useState } from 'react';

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import React, { useState } from "react";
 import { ToolPanel } from './WorkspaceControls.jsx';
-import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
+import { ModuleDisclosure } from '../../components/interaction/ModuleMotion.jsx';
 import {
   addParameter,
   updateParameter,

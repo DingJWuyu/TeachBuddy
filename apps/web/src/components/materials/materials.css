@@ -1,3 +1,4 @@
+@import './document.css';
 .material-document,
 .material-editor {
   min-width: 0;

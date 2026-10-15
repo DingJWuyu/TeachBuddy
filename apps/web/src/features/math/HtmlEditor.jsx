@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { ModulePresence } from "../workbench/ModuleMotion.jsx";
+import { ModulePresence } from "../../components/interaction/ModuleMotion.jsx";
 import React, { useEffect, useState } from "react";
 import {
   htmlLimit,

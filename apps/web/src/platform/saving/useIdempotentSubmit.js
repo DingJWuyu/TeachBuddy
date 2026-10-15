@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { newRequestKey } from './uuid.js';
-import { readLocal, removeLocal, writeLocal } from './storage.js';
-import { unconfirmedProblem } from './problems.js';
+import { newRequestKey } from '../device/uuid.js';
+import { readLocal, removeLocal, writeLocal } from '../device/storage.js';
+import { unconfirmedProblem } from '../http/problems.js';
 
 const idle = () => ({ status: 'idle', problem: null, pending: null, result: null });
 function restore(accountKey, name) {

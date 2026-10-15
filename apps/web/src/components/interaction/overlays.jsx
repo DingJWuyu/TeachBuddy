@@ -1,3 +1,4 @@
+import './surfaces.css';
 import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
@@ -10,7 +11,7 @@ const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Icon } from './icons.jsx';
+import { Icon } from '../icons.jsx';
 
 export function Popover({ label, icon = 'more', children, align = 'end', className = '', buttonClassName = 'wb-icon-button' }) {
   useTranslation("workbench");

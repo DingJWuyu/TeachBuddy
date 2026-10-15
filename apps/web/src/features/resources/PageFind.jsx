@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { Icon } from "../workbench/chrome/icons.jsx";
-import { ModulePresence } from "../workbench/ModuleMotion.jsx";
+import { ModulePresence } from "../../components/interaction/ModuleMotion.jsx";
 
 // Match the rendered text itself. RegExp keeps offsets in the original UTF-16
 // string, including case-insensitive matches, so Range never uses folded offsets.

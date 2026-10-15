@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
+import { ModulePresence, useModuleDialogFocus } from '../../components/interaction/ModuleMotion.jsx';
 import { weekdayLabel } from './model.js';
 import { addDays, diffDays, monday, monthDays, monthTitle, shiftMonth } from './calendarModel.js';
 

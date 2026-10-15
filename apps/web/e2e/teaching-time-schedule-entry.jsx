@@ -1,3 +1,4 @@
+import { getWorkbenchContext } from '../src/features/workbench/api.js';
 /**
  * T52 browser harness entry.
  *
@@ -11,11 +12,11 @@ import { StrictMode, useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import SchedulePage from '../src/features/schedule/index.jsx';
 import { AuxiliaryPanel } from '../src/features/workbench/AuxiliaryPanel.jsx';
-import { Icon } from '../src/features/workbench/icons.jsx';
+import { Icon } from '../src/components/icons.jsx';
 import { ShellContext } from '../src/features/workbench/shellContext.js';
-import { getWorkbenchContext, setIdentityLostListener } from '../src/features/workbench/apiClient.js';
-import { useScene } from '../src/features/workbench/useScene.js';
-import { canPersistLocally, setStorageFailureListener } from '../src/features/workbench/storage.js';
+import { setIdentityLostListener } from '../src/platform/http/apiClient.js';
+import { useScene } from '../src/platform/device/useScene.js';
+import { canPersistLocally, setStorageFailureListener } from '../src/platform/device/storage.js';
 import '../src/features/workbench/workbench.css';
 
 function useIsNarrow() {

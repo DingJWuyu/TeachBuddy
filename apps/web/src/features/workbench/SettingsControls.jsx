@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useId, useRef, useState } from 'react';
-import { Presence } from '../workbench/chrome/Presence.jsx';
+import { Presence } from './chrome/Presence.jsx';
 
 export function SettingsDisclosure({ title, children, className = '' }) {
   useTranslation("reliability");

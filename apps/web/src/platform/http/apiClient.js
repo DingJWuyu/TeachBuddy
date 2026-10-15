@@ -1,3 +1,4 @@
+import { sendHttpRequest, readHttpBody } from './request.js';
 /**
  * Same-origin workbench HTTP client.
  *
@@ -40,19 +41,7 @@ export class WorkbenchError extends Error {
   }
 }
 
-function isJsonResponse(response) {
-  const contentType = response.headers.get('content-type') || '';
-  return contentType.includes('application/json') || contentType.includes('application/problem+json');
-}
-
-async function readBody(response) {
-  if (!isJsonResponse(response)) return null;
-  try {
-    return await response.json();
-  } catch (error) {
-    return null;
-  }
-}
+const readBody = response => readHttpBody(response, 'optional-json');
 
 async function request(method, path, { body, idempotencyKey, write = false } = {}) {
   const headers = { Accept: 'application/json' };
@@ -66,13 +55,13 @@ async function request(method, path, { body, idempotencyKey, write = false } = {
   if (!current) throw new WorkbenchError({ kind: 'identity', message: '请重新登录' });
   let response;
   try {
-    response = await current.transport(path, {
+    response = await sendHttpRequest(current.transport, path, {
       method,
       headers,
       credentials: 'same-origin',
       cache: 'no-store',
       body: body === undefined ? undefined : JSON.stringify(body),
-      signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(write ? WRITE_TIMEOUT_MS : READ_TIMEOUT_MS)])
+      signal: current.controller.signal, timeoutMs: write ? WRITE_TIMEOUT_MS : READ_TIMEOUT_MS
     });
   } catch (error) {
     if (binding !== current || current.controller.signal.aborted) throw new WorkbenchError({ kind: 'identity', message: '身份已变更' });
@@ -108,17 +97,17 @@ export function workbenchGet(path) {
 export async function workbenchBlob(path, { signal, timeoutMs = READ_TIMEOUT_MS } = {}) {
   const current = binding;
   if (!current) throw new WorkbenchError({ kind: 'identity', message: '请重新登录' });
-  const signals = [current.controller.signal, AbortSignal.timeout(timeoutMs)];
+  const signals = [current.controller.signal];
   if (signal) signals.push(signal);
-  const response = await current.transport(path, {
-    credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.any(signals)
+  const response = await sendHttpRequest(current.transport, path, {
+    credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.any(signals), timeoutMs
   });
   if (!response.ok) {
     const problem = problemFromResponse(response.status, await readBody(response));
     if (binding === current && problem.kind === 'identity') identityLostListener?.();
     throw new WorkbenchError(problem);
   }
-  const blob = await response.blob();
+  const blob = await readHttpBody(response, 'blob');
   if (binding !== current || current.controller.signal.aborted) {
     throw new WorkbenchError({ kind: 'identity', message: '身份已变更' });
   }
@@ -131,10 +120,6 @@ export function workbenchPost(path, body, idempotencyKey) {
 
 export function workbenchPut(path, body, idempotencyKey) {
   return request('PUT', path, { body, idempotencyKey, write: true });
-}
-
-export function getWorkbenchContext() {
-  return workbenchGet('/api/workbench/context');
 }
 
 export function buildQuery(params) {
@@ -150,7 +135,7 @@ export function buildQuery(params) {
 export async function workbenchEvents(path, signal, onEvent) {
   const current = binding;
   if (!current) throw new Error('身份未确认');
-  const response = await current.transport(path, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'text/event-stream' },
+  const response = await sendHttpRequest(current.transport, path, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'text/event-stream' },
     signal: AbortSignal.any([signal, current.controller.signal]) });
   if (response.status === 401) identityLostListener?.();
   if (!response.ok) throw new Error('无法读取对话');

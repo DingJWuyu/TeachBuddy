@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
-import { Popover, ConfirmDialog } from "../workbench/ModuleOverlays.jsx";
-import { ModulePresence, ModuleDisclosure } from "../workbench/ModuleMotion.jsx";
+import { Popover, ConfirmDialog } from "../../components/interaction/ModuleOverlays.jsx";
+import { ModulePresence, ModuleDisclosure } from "../../components/interaction/ModuleMotion.jsx";
 import { pendingQuestionUpload, uploadQuestionFile } from './uploadRecovery.js';
 import { reviewParagraphs, splitReviewDraft } from './review-drafts.js';
 import React, { useEffect, useRef, useState } from "react";
 import { questionDocuments, supportedDocument } from "@refatos/shared";
-import { DocumentView } from "../workbench/materials/index.js";
-import { readLocal, writeLocal, removeLocal } from "../workbench/storage.js";
-import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
+import { DocumentView } from "../../components/materials/index.js";
+import { readLocal, writeLocal, removeLocal } from "../../platform/device/storage.js";
+import { useForegroundRefresh } from '../../components/interaction/useForegroundRefresh.js';
 import {
   get,
   write,
@@ -16,7 +16,7 @@ import {
   sourceText,
   documentAssets,
 } from "./materials-api.js";
-import { useScrollRestore } from "../workbench/useScrollRestore.js";
+import { useScrollRestore } from "../../components/interaction/useScrollRestore.js";
 import { FragmentReview } from './FragmentReview.jsx';
 import { NoteFragments } from './NoteFragments.jsx';
 import { ImportList, isCompletedImport } from './ImportList.jsx';

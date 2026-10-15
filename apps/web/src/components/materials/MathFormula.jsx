@@ -43,39 +43,3 @@ export function MathFormula({ latex, display = false }) {
     />
   );
 }
-
-function ParagraphView({ block }) {
-  useTranslation("workbench");
-  const runs = block.runs || [];
-  if (runs.length === 0) return <p className="wb-paragraph is-empty" aria-hidden="true" />;
-  return (
-    <p className="wb-paragraph">
-      {runs.map((run, index) => (
-        run.type === 'math'
-          ? <MathFormula key={`run-${index}`} latex={run.latex} />
-          : <span key={`run-${index}`}>{run.text}</span>
-      ))}
-    </p>
-  );
-}
-
-export function DocumentView({ document, className = '' }) {
-  const { t } = useTranslation("workbench");
-  const blocks = document?.blocks || [];
-  if (blocks.length === 0) {
-    return <p className={`wb-paragraph is-empty ${className}`.trim()}>{t("暂无内容")}</p>;
-  }
-  return (
-    <div className={`wb-document ${className}`.trim()}>
-      {blocks.map((block, index) => (
-        block.type === 'math'
-          ? (
-            <div className="wb-math-block" key={`block-${index}`}>
-              <MathFormula latex={block.latex} display />
-            </div>
-          )
-          : <ParagraphView block={block} key={`block-${index}`} />
-      ))}
-    </div>
-  );
-}

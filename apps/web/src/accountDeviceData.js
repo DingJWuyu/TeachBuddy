@@ -1,4 +1,4 @@
-import { markAccountDeleted, clearAccountDeviceData } from './features/workbench/storage.js';
+import { markAccountDeleted, clearAccountDeviceData } from './platform/device/storage.js';
 import { clearQuestionDeviceData } from './features/questions/uploadRecovery.js';
 import { clearResourceDeviceData } from './features/resources/client.js';
 import { clearMathDeviceData } from './features/math/uploadDraft.js';

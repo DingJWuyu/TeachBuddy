@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState, useRef } from "react";
-import { ControlledImage, DocumentView } from "../workbench/materials/DocumentView.jsx";
+import { ControlledImage, DocumentView } from "../../components/materials/DocumentView.jsx";
 import { get, write, download } from "./materials-api.js";
-import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
+import { ModuleDisclosure } from '../../components/interaction/ModuleMotion.jsx';
 export default function OriginalPane({
   material,
   draft,

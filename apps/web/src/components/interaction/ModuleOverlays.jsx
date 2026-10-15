@@ -2,7 +2,7 @@ import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
 import { useEffect, useRef, useState } from 'react';
-import { Icon } from './icons.jsx';
+import { Icon } from '../icons.jsx';
 import { ModulePresence, useModuleDialogFocus } from './ModuleMotion.jsx';
 export { MenuItem } from './overlays.jsx';
 
