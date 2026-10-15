@@ -276,3 +276,77 @@ test("oversized display formula scales intact instead of exceeding a PNG fragmen
   assert.ok(meta.height <= 2400);
   e.complete();
 });
+
+test('long mixed text and formula PNG splits into transparent bounded fragments', async t => {
+  const e = await environment(t);
+  const question = await e.q('/items', {
+    title: '长题分片', source: { kind: 'manual' }, note: '禁止出现在题面里的笔记', starred: false, typeId: null, tagIds: [],
+    answerStatus: 'absent', solution: document([]),
+    body: { version: 2, blocks: Array.from({ length: 36 }, (_, i) => [
+      paragraph('第' + (i + 1) + '段 长题分片可见边界'),
+      { type: 'math', latex: 'f(x)=\\frac{\\sqrt{2x-1}}{x-2}' },
+    ]).flat() },
+  });
+  const accepted = await e.q('/items/' + question.id + '/assets', { baseVersion: question.version, includeAnswers: false, mode: 'question-png', figureFileId: null });
+  const result = await e.job(accepted.id);
+  assert.equal(result.state, 'succeeded');
+  assert.ok(result.outputFileIds.length > 1);
+  const dimensions = [];
+  for (const [i, id] of result.outputFileIds.entries()) {
+    const bytes = await e.bytes(id);
+    const meta = await sharp(bytes).metadata();
+    dimensions.push({ width: meta.width, height: meta.height, alpha: meta.hasAlpha });
+    await evidence(`long-mixed-${i}.png`, bytes);
+  }
+  for (const size of dimensions) {
+    assert.equal(size.width, 1600);
+    assert.equal(size.alpha, true);
+    assert.ok(size.height <= 2400, `height ${size.height} exceeds 2400`);
+  }
+  e.complete();
+});
+
+test('question PNG preserves exact height boundaries and scales oversized figures', async t => {
+  const e = await environment(t);
+  async function picture(height) {
+    return e.upload(await sharp({ create: { width: 1504, height, channels: 4, background: '#1267ab' } }).png().toBuffer());
+  }
+  const first = await picture(1000);
+  for (const target of [2399, 2400, 2401]) {
+    const second = await picture(target - 112 - 1000);
+    const question = await e.q('/items', {
+      title: `边界${target}`, source: { kind: 'manual' }, note: '', starred: false, typeId: null, tagIds: [], answerStatus: 'absent', solution: document([]),
+      body: { version: 2, blocks: [first, second].map(file => ({ type: 'image', fileId: file.id, alt: '边界色块', widthMm: 100 })) },
+    });
+    const accepted = await e.q('/items/' + question.id + '/assets', { baseVersion: question.version, includeAnswers: false, mode: 'question-png', figureFileId: null });
+    const job = await e.job(accepted.id);
+    assert.equal(job.state, 'succeeded');
+    assert.equal(job.outputFileIds.length, target <= 2400 ? 1 : 2);
+    const heights = [];
+    for (const [i, id] of job.outputFileIds.entries()) {
+      const bytes = await e.bytes(id);
+      const meta = await sharp(bytes).metadata();
+      heights.push(meta.height);
+      assert.equal(meta.width, 1600);
+      assert.ok(meta.height <= 2400);
+      assert.equal(meta.hasAlpha, true);
+      await evidence(`boundary-${target}-${i}.png`, bytes);
+    }
+    if (target <= 2400) assert.equal(heights[0], target);
+  }
+  const tall = await picture(5000);
+  const question = await e.q('/items', {
+    title: '超高单图', source: { kind: 'manual' }, note: '', starred: false, typeId: null, tagIds: [], answerStatus: 'absent', solution: document([]),
+    body: { version: 2, blocks: [{ type: 'image', fileId: tall.id, alt: '超高图', widthMm: 100 }] },
+  });
+  for (const mode of ['question-png', 'figure-png']) {
+    const accepted = await e.q('/items/' + question.id + '/assets', { baseVersion: question.version, includeAnswers: false, mode, figureFileId: mode === 'figure-png' ? tall.id : null });
+    const job = await e.job(accepted.id);
+    assert.equal(job.state, 'succeeded');
+    const bytes = await e.bytes(job.outputFileIds[0]);
+    const meta = await sharp(bytes).metadata();
+    assert.equal(meta.height, 2292);
+    assert.equal(meta.width, 1600);
+  }
+  e.complete();
+});
