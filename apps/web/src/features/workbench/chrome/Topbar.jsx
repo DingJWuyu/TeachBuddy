@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Icon } from './icons.jsx';
 import SupportMenu from './SupportMenu.jsx';
 import { followAnchor } from '../routes.js';
-import { useScene } from '../useScene.js';
+import { useScene } from '../../../platform/device/useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 import Notifications from './Notifications.jsx';
 import { workbenchModules, moduleDisplayName } from '../../modules/moduleRegistry.js';

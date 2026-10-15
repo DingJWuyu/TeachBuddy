@@ -8,7 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
-import { startResourcesFixture } from "../../web/e2e/fixtures/materials-resources/server.mjs";
+import { startResourcesFixture } from "./fixtures/resources/server.mjs";
 const runDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'materials-resources-'));
 const dataDir = path.join(runDirectory, 'resources');
 let failed = false;
@@ -101,7 +101,7 @@ async function upload() {
     new Blob([
       fs.readFileSync(
         new URL(
-          "../../web/e2e/fixtures/materials/samples/c22.pdf",
+          "../../../test/fixtures/materials/c22.pdf",
           import.meta.url,
         ),
       ),

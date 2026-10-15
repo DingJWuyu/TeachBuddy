@@ -1,4 +1,4 @@
-// Current four-module walkthrough and shell surfaces, captured at three widths.
+// Current prototype module walkthrough and shell surfaces, captured at three widths.
 // Historical CW reports belong to their fixed Git version, not this runner.
 import { chromium, expect } from '@playwright/test';
 import { openWorkbench } from './session.mjs';

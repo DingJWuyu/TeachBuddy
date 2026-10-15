@@ -225,16 +225,8 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
         }
         return { status: 200, body };
       }
-      // Probe the shared replay seam with a rollback-only callback. No successful
-      // receipt or business write is created until all asynchronous files exist.
-      const prepare = Symbol("prepare");
-      try {
-        return mutations.execute(request, () => {
-          throw prepare;
-        });
-      } catch (e) {
-        if (e !== prepare) throw e;
-      }
+      const replay = mutations.peek(request);
+      if (replay) return replay;
       if (definition.name === "purgeWork") {
         return mutations.execute(request, () => {
           const work = current(principal, id, input.baseVersion, false);

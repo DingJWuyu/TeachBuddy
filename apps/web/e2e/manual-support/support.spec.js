@@ -5,6 +5,7 @@ import { test, expect } from '@playwright/test';
 import { startTeachingAuth } from '../teaching-time-auth/service.mjs';
 import { register, headers } from '../teaching-time-auth/helpers.mjs';
 
+import { importLegacy, saveLegacy, chooseFile } from '../fixtures/math-workspace.js';
 let world;
 let directory;
 test.beforeEach(async ({ page }) => {
@@ -23,9 +24,8 @@ test.afterEach(async ({ context }, info) => {
 
 test('数学双标签页草稿独立', async ({ page, context }) => {
   await page.locator('a[href^="/math"]').first().click();
-  await page.getByRole('button', { name: '新建公式', exact: true }).first().click();
+  await importLegacy(page, 'formula');
   await page.getByLabel('作品名称').fill('数学甲草稿');
-  await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
   await page.getByLabel('LaTeX', { exact: true }).fill('x^2+1');
   const second = await context.newPage(); await second.goto(page.url());
   await expect(second.getByLabel('作品名称')).toHaveValue('数学甲草稿');
@@ -69,10 +69,14 @@ test('日程自动保存中刷新按原请求确认，后续输入继续保存',
 test('日程删除响应丢失后刷新仍用原键确认', async ({ page }) => {
   await page.locator('a[href^="/calendar"]').first().click();
   await page.getByRole('button', { name: '新建任务', exact: true }).click();
+  const created = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/schedule/entries'));
   await page.getByLabel('标题', { exact: true }).fill('需要确认删除的安排');
-  await expect(page.getByRole('status', { name: '已保存', exact: true })).toBeVisible();
+  const creation = await created;
+  expect(creation.status()).toBe(201);
+  const entry = await creation.json();
+  await expect.poll(async () => (await (await page.request.get(world.origin + '/api/modules/schedule/entries/' + entry.id, { headers: headers(page) })).json()).title).toBe('需要确认删除的安排');
   let original;
-  await page.route('**/api/modules/schedule/entries/*/deletion', async route => {
+  await page.route('**/api/modules/schedule/entries/*/delete', async route => {
     original = { key: route.request().headers()['idempotency-key'], body: route.request().postData() };
     await route.fetch(); await route.abort('failed');
   });
@@ -82,14 +86,15 @@ test('日程删除响应丢失后刷新仍用原键确认', async ({ page }) => 
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
-  await page.unroute('**/api/modules/schedule/entries/*/deletion');
-  const wait = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/deletion'));
+  await page.unroute('**/api/modules/schedule/entries/*/delete');
+  const wait = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/delete'));
   await page.getByRole('button', { name: '重试确认', exact: true }).click();
   const request = await wait;
   expect({ key: request.headers()['idempotency-key'], body: request.postData() }).toEqual(original);
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toHaveCount(0);
-  const list = await (await page.request.get(world.origin + '/api/modules/schedule/entries?state=deleted', { headers: headers(page) })).json();
-  expect(list.items).toHaveLength(1);
+  const list = await (await page.request.get(world.origin + '/api/modules/schedule/entries', { headers: headers(page) })).json();
+  expect(list.items).toEqual([]);
+  expect((await page.request.get(world.origin + '/api/modules/schedule/entries/' + entry.id, { headers: headers(page) })).status()).toBe(404);
 });
 
 test('日程本地草稿重开保留原版本，不覆盖别处修改', async ({ page }) => {
@@ -100,7 +105,8 @@ test('日程本地草稿重开保留原版本，不覆盖别处修改', async ({
   const response = await created;
   const entry = await response.json();
   const input = response.request().postDataJSON();
-  await expect(page.getByRole('status', { name: '已保存', exact: true })).toBeVisible();
+  expect(response.status()).toBe(201);
+  await response.finished();
   const updated = await page.request.put(world.origin + '/api/modules/schedule/entries/' + entry.id, {
     headers: { ...headers(page), Origin: world.origin, 'Idempotency-Key': crypto.randomUUID(), 'X-TeachBuddy-Request': '1' },
     data: { ...input, expectedVersion: entry.version, title: '别处已保存内容' }
@@ -126,10 +132,8 @@ test('日程本地草稿重开保留原版本，不覆盖别处修改', async ({
 
 test('数学预览参数和工具展开位置重开，不改作品源码', async ({ page }) => {
   await page.locator('a[href^="/math"]').first().click();
-  await page.getByRole('button', { name: '新建动态演示', exact: true }).first().click();
+  await importLegacy(page, 'dynamic');
   await page.getByLabel('作品名称').fill('独立预览参数');
-  // 演示从空画布开始，先选含 a 参数的真实起点。
-  await page.getByRole('button', { name: '试试二次函数演示', exact: true }).click();
   await page.getByRole('button', { name: '保存', exact: true }).click();
   await expect(page.locator('.math-workspace-status')).toHaveText('已保存');
   await page.getByLabel('a 数值', { exact: true }).fill('2.5');
@@ -218,21 +222,49 @@ test('题库原文件刷新重选以同一摘要和原键确认，不启动整�
   expect(inputs[1].input).toEqual(inputs[0].input);
 });
 
-test('数学 HTML 上传重开后校验原文件并以原键确认', async ({ page }) => {
+test('数学 HTML 上传重开后校验原文件并以原键确认', async ({ page }, info) => {
   await page.locator('a[href^="/math"]').first().click();
   const file = { name: '课堂演示.html', mimeType: 'text/html', buffer: Buffer.from('<!doctype html><html><body><h1>课堂演示</h1></body></html>') };
   let key;
-  await page.route('**/api/workbench/files', async route => { key = route.request().headers()['idempotency-key']; await route.fetch(); await route.abort(); });
-  const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: '导入已有 HTML 演示', exact: true }).click();
-  await (await chooser).setFiles(file);
-  await expect(page.getByRole('button', { name: '重试原文件上传' })).toBeVisible();
+  let originalFileId;
+  await page.route('**/api/workbench/files', async route => {
+    key = route.request().headers()['idempotency-key'];
+    const uploaded = await route.fetch();
+    expect(uploaded.status()).toBe(201);
+    originalFileId = (await uploaded.json()).id;
+    await route.abort();
+  });
+  await chooseFile(page, '导入网页', file);
+  await expect(page.getByRole('button', { name: '重试原文件上传', exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('button', { name: '重选原文件并确认上传' })).toBeVisible();
+  const reselect = page.getByRole('button', { name: '重选原文件并确认上传', exact: true });
+  await expect(reselect).toBeVisible();
   await page.unroute('**/api/workbench/files');
+  let replayCount = 0;
+  page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/workbench/files')) replayCount += 1; });
+  const changed = Buffer.from(file.buffer);
+  changed[changed.length - 1] ^= 1;
+  const wrongChooser = page.waitForEvent('filechooser');
+  await reselect.click();
+  await (await wrongChooser).setFiles({ ...file, buffer: changed });
+  await expect(page.getByRole('alert')).toContainText('内容不匹配');
+  expect(replayCount).toBe(0);
   const replay = page.waitForRequest(request => request.method() === 'POST' && request.url().endsWith('/api/workbench/files'));
-  await page.getByLabel('导入 HTML 文件').setInputFiles(file);
+  const recovered = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/api/workbench/files'));
+  const correctChooser = page.waitForEvent('filechooser');
+  await reselect.click();
+  await (await correctChooser).setFiles(file);
   expect((await replay).headers()['idempotency-key']).toBe(key);
+  const upload = await recovered;
+  expect(upload.status()).toBe(201);
+  expect((await upload.json()).id).toBe(originalFileId);
   await expect(page.getByLabel('作品名称')).toHaveValue('课堂演示.html');
-  await expect(page.getByRole('button', { name: '重选原文件并确认上传' })).toHaveCount(0);
+  await expect(reselect).toHaveCount(0);
+  expect(replayCount).toBe(1);
+  const saved = await saveLegacy(page);
+  expect(saved.originalFileId).toBe(originalFileId);
+  const original = await page.request.get(world.origin + '/api/workbench/files/' + originalFileId + '/content', { headers: headers(page) });
+  expect(original.status()).toBe(200);
+  expect(await original.body()).toEqual(file.buffer);
+  await page.screenshot({ path: info.outputPath('html-upload-recovered.png') });
 });

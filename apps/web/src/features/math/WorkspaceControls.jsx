@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 
 import FunctionInput from './FunctionInput.jsx';
 import { ConstructionFields } from './ConstructionTools.jsx';
-import { Popover, MenuItem } from '../workbench/ModuleOverlays.jsx';
-import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
+import { Popover, MenuItem } from '../../components/interaction/ModuleOverlays.jsx';
+import { ModuleDisclosure } from '../../components/interaction/ModuleMotion.jsx';
 
 export function WorkspaceToolbar({ draft, busy, readOnly, pending, exportOpen, empty,
   onHome, onSave, onCopy, onDelete, onPurge, onExport, onHistory, onDynamic }) {

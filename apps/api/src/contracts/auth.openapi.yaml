@@ -2,7 +2,7 @@ openapi: 3.2.1
 info:
   title: TeachBuddy 账户入口契约
   version: 1.2.0-candidate.1
-  description: I01-I07 沿用 AUTH-CONTRACT-CORRECTION@1 冻结契约；I08 为账户删除、I09 为昵称修改扩展候选，独立验收状态以运行台账为准。docs/contracts/auth.md 拥有跨操作语义与首错顺序，docs/contracts/auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
+  description: I01-I07 沿用 AUTH-CONTRACT-CORRECTION@1 冻结契约；I08 为账户删除、I09 为昵称修改扩展候选，独立验收状态以运行台账为准。docs/contracts/auth.md 拥有跨操作语义与首错顺序，docs/acceptance/auth-cases.md 拥有双向用例。请求封闭、类型严格；响应允许附加字段，已声明字段仍校验。所有响应
     no-store。
 x-contract-status: candidate
 x-accepted-source:

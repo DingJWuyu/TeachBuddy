@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Icon } from "../workbench/chrome/icons.jsx";
-import { Popover } from "../workbench/ModuleOverlays.jsx";
-import { ModulePresence } from "../workbench/ModuleMotion.jsx";
+import { Popover } from "../../components/interaction/ModuleOverlays.jsx";
+import { ModulePresence } from "../../components/interaction/ModuleMotion.jsx";
 import { FileImage } from "./Preview.jsx";
 import { useLayoutEffect, useRef } from "react";
 

@@ -3,7 +3,7 @@ import path from "node:path";
 const evidence = path.resolve(
   process.env.R32_EVIDENCE_DIR ?? "test-results/evidence/R32/v1",
 );
-const samples = path.resolve("apps/web/e2e/fixtures/materials/samples");
+const samples = path.resolve("test/fixtures/materials");
 test("WB-M013-017 真实上传、逐页、笔记、分类、更新和恢复", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/fixture/session");

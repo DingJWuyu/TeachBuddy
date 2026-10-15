@@ -26,7 +26,7 @@ async function harness(directory = fs.mkdtempSync(path.join(os.tmpdir(), 'math-w
   return { directory, get runtime() { return runtime; }, send(method, url, body, key = randomUUID(), account = 'workshop-a') {
     let req = request(runtime.app)[method](url).set('Cookie', runtime.workbench.identity.testPrincipalCookie(account).header.split(';')[0]).set('Origin', 'http://localhost').set('X-TeachBuddy-Request', '1').set('Idempotency-Key', key);
     return body === undefined ? req : req.send(body);
-  }, async bytes(id) { const stream = await runtime.workbench.files.open({ accountKey: 'workshop-a' }, id); const chunks = []; for await (const chunk of stream) chunks.push(chunk); return Buffer.concat(chunks); }, async restart() { await runtime.dataStore.close(); await start(); }, async close() { await runtime.dataStore.close(); } };
+  }, async bytes(id) { const stream = await runtime.workbench.files.open({ accountKey: 'workshop-a' }, id); const chunks = []; for await (const chunk of stream) chunks.push(chunk); return Buffer.concat(chunks); }, async restart() { await runtime.close(); await start(); }, async close() { await runtime.close(); } };
 }
 
 test('workshop real HTTP/SQLite: complete formula source, version history, exports and replay', { timeout: 90000 }, async () => {
@@ -176,6 +176,6 @@ test('workshop complete classroom ZIP: offline file URL, split and 3D, parameter
     await page.getByRole('combobox', { name: '教学步骤' }).selectOption('second'); await page.waitForFunction(() => document.querySelector('.step-description')?.textContent === '三维观察'); assert.equal(await slider.inputValue(), '3');
     await page.getByRole('combobox', { name: '教学步骤' }).selectOption('step1'); await page.waitForFunction(() => document.querySelector('input[type=range]')?.value === '2');
     assert.deepEqual(errors, []); assert.deepEqual(requests, []);
-    const evidence = path.resolve('test-results/math-unified/outputs/graphs'); fs.writeFileSync(path.join(evidence, 'classroom.zip'), bytes); await page.screenshot({ path: path.join(evidence, 'classroom-offline.png'), fullPage: true }); fs.writeFileSync(path.join(evidence, 'classroom-offline.json'), JSON.stringify({ state: 'passed', transport: 'file://', browser: 'fresh Playwright Chromium', offline: true, requests, errors, parameters: 'passed', playback: 'passed', playbackBounds, earlierFirstFrameMilliseconds: 1000, reset: 'passed', steps: 'split -> space -> split', formulas: 1 }, null, 2)); success = true;
+    const evidence = path.resolve('test-results/math-unified/outputs/graphs'); fs.mkdirSync(evidence, { recursive: true }); fs.writeFileSync(path.join(evidence, 'classroom.zip'), bytes); await page.screenshot({ path: path.join(evidence, 'classroom-offline.png'), fullPage: true }); fs.writeFileSync(path.join(evidence, 'classroom-offline.json'), JSON.stringify({ state: 'passed', transport: 'file://', browser: 'fresh Playwright Chromium', offline: true, requests, errors, parameters: 'passed', playback: 'passed', playbackBounds, earlierFirstFrameMilliseconds: 1000, reset: 'passed', steps: 'split -> space -> split', formulas: 1 }, null, 2)); success = true;
   } finally { await browser?.close(); if (success) fs.rmSync(directory, { recursive: true, force: true }); }
 });

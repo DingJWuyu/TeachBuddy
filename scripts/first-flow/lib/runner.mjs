@@ -165,7 +165,7 @@ export async function startFirstFlowRunner(options = {}) {
     ? null
     : (web === 'auto' ? path.join(repoRoot, 'apps', 'web', 'dist') : path.resolve(web));
   if (webDist && !fs.existsSync(path.join(webDist, 'index.html'))) {
-    throw new Error(`Web build not found at ${webDist}. Run "npm run build:web" with VITE_API_BASE_URL=/api first.`);
+    throw new Error(`Web build not found at ${webDist}. Run "npm run build:web" first.`);
   }
 
   const runtimeEnv = createEnv({
@@ -252,7 +252,7 @@ export async function startFirstFlowRunner(options = {}) {
         context.server.close(resolve);
         context.server.closeAllConnections();
       });
-      await context.dataStore.close();
+      await context.close();
     }
   };
 }

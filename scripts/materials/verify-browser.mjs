@@ -5,8 +5,10 @@ import { chromium, expect } from '@playwright/test';
 import sharp from 'sharp';
 import Database from 'better-sqlite3';
 
-const evidence = path.resolve('test-results/evidence/R31/v1');
-const dataDir = path.resolve('test-results/r31-complete/browser-data');
+const evidence = path.resolve(process.env.MATERIALS_EVIDENCE_DIR ?? 'test-results/evidence/R31/v1');
+fs.mkdirSync(evidence, { recursive: true });
+const dataDir = fs.mkdtempSync(path.join(evidence, 'browser-data-'));
+let passed = false;
 const port = 48331,
   origin = `http://localhost:${port}`;
 const checks = [];
@@ -38,13 +40,14 @@ async function start(reset = false) {
 }
 async function stop() {
   if (!child) return;
+  if (child.exitCode !== null || child.signalCode !== null) { child = null; return; }
   const stopped = new Promise((resolve) => child.once('exit', resolve));
   child.kill('SIGTERM');
   await stopped;
   child = null;
 }
 try {
-  await start(true);
+  await start();
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
@@ -55,29 +58,33 @@ try {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(`${origin}/fixture/session`);
-  await expect(page.getByLabel('文稿段落 1', { exact: true })).toHaveValue('已知原稿');
-  await page.getByLabel('文稿段落 1', { exact: true }).fill('中文编辑与行内公式 $\\frac{x+1}{2}$');
+  await expect(page.getByLabel('文稿 段落 1', { exact: true })).toHaveValue('已知原稿');
+  await page.getByLabel('文稿 段落 1', { exact: true }).fill('中文编辑与行内公式 $\\frac{x+1}{2}$');
   await page.getByRole('button', { name: '公式', exact: true }).click();
   await page
-    .getByLabel('文稿公式 1源', { exact: true })
+    .getByLabel('文稿 公式 1源', { exact: true })
     .fill('\\begin{cases}x^2 & x>0\\\\-x & x\\le 0\\end{cases}');
-  await page.getByRole('button', { name: '标题', exact: true }).click();
-  await page.getByLabel('文稿标题 1', { exact: true }).fill('函数与图像');
-  await page.getByRole('button', { name: '列表', exact: true }).click();
-  await page.getByLabel('文稿列表 1用途').selectOption('subquestions');
-  await page.getByLabel('文稿列表 1项目 1标号').fill('(1)');
-  await page.getByLabel('文稿列表 1项目 1段落 1', { exact: true }).fill('求定义域');
+  await page.getByRole('button', { name: '更多内容', exact: true }).first().click();
+  await page.getByRole('menuitem', { name: '标题', exact: true }).click();
+  await page.getByLabel('文稿 标题 1', { exact: true }).fill('函数与图像');
+  await page.getByRole('button', { name: '更多内容', exact: true }).first().click();
+  await page.getByRole('menuitem', { name: '列表', exact: true }).click();
+  await page.getByLabel('文稿 列表 1用途').selectOption('subquestions');
+  await page.getByLabel('文稿 列表 1项目 1标号').fill('(1)');
+  await page.getByLabel('文稿 列表 1项目 1 段落 1', { exact: true }).fill('求定义域');
   await page.getByRole('button', { name: '添加项目', exact: true }).click();
-  await page.getByLabel('文稿列表 1项目 2标号').fill('(2)');
-  await page.getByLabel('文稿列表 1项目 2段落 1', { exact: true }).fill('讨论单调性');
-  await page.getByRole('button', { name: '上移文稿列表 1项目 2', exact: true }).click();
-  await page.getByRole('button', { name: '表格', exact: true }).click();
+  await page.getByLabel('文稿 列表 1项目 2标号').fill('(2)');
+  await page.getByLabel('文稿 列表 1项目 2 段落 1', { exact: true }).fill('讨论单调性');
+  await page.getByRole('button', { name: '上移文稿 列表 1项目 2', exact: true }).click();
+  await page.getByRole('button', { name: '更多内容', exact: true }).first().click();
+  await page.getByRole('menuitem', { name: '表格', exact: true }).click();
   const table = page.getByLabel('编辑文稿').locator('.material-table-scroll');
   await table.getByRole('button', { name: '段落', exact: true }).first().click();
-  await page.getByLabel('文稿表格 1第 1 行第 1 列段落 1', { exact: true }).fill('范围');
+  await page.getByLabel('文稿 表格 1第 1 行第 1 列 段落 1', { exact: true }).fill('范围');
   await table.getByRole('button', { name: '添加行', exact: true }).click();
-  await page.getByRole('button', { name: '教师注记', exact: true }).click();
-  await page.getByLabel('文稿教师注记 1段落 1', { exact: true }).fill('提醒检查端点');
+  await page.getByRole('button', { name: '更多内容', exact: true }).first().click();
+  await page.getByRole('menuitem', { name: '教师注记', exact: true }).click();
+  await page.getByLabel('文稿 教师注记 1 段落 1', { exact: true }).fill('提醒检查端点');
   const imagePath = path.join(dataDir, 'figure.png');
   await sharp({ create: { width: 240, height: 120, channels: 3, background: '#d8e8f4' } })
     .png()
@@ -85,14 +92,14 @@ try {
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: '图片', exact: true }).last().click();
   await (await chooser).setFiles(imagePath);
-  await page.getByLabel('文稿图片 1说明').fill('已知示意图');
+  await page.getByLabel('文稿 图片 1说明').fill('已知示意图');
   await expect(page.getByLabel('文稿预览').getByRole('img', { name: '已知示意图' })).toBeVisible();
   await page.getByRole('button', { name: '保存', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: '已保存' })).toBeVisible();
   const persisted = await (await context.request.get(`${origin}/fixture/document`)).json();
   fs.writeFileSync(path.join(evidence, 'edited-document.json'), JSON.stringify(persisted, null, 2));
   await page.reload();
-  await expect(page.getByLabel('文稿段落 1', { exact: true })).toHaveValue(
+  await expect(page.getByLabel('文稿 段落 1', { exact: true })).toHaveValue(
     '中文编辑与行内公式 $\\frac{x+1}{2}$'
   );
   await page.screenshot({ path: path.join(evidence, 'document-desktop.png'), fullPage: true });
@@ -104,12 +111,12 @@ try {
   db.exec(
     "CREATE TRIGGER fixture_fail_document BEFORE UPDATE ON fixture_documents BEGIN SELECT RAISE(ABORT, 'fixture refuses write'); END"
   );
-  await page.getByLabel('文稿段落 1', { exact: true }).fill('失败后保留编辑');
+  await page.getByLabel('文稿 段落 1', { exact: true }).fill('失败后保留编辑');
   await page.getByRole('button', { name: '保存', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: '保存结果未确认' })).toBeVisible();
-  await expect(page.getByLabel('文稿段落 1', { exact: true })).toHaveValue('失败后保留编辑');
+  await expect(page.getByLabel('文稿 段落 1', { exact: true })).toHaveValue('失败后保留编辑');
   await page.screenshot({ path: path.join(evidence, 'document-save-failed.png'), fullPage: true });
-  await page.getByLabel('文稿段落 1', { exact: true }).fill('失败后继续编辑的新稿');
+  await page.getByLabel('文稿 段落 1', { exact: true }).fill('失败后继续编辑的新稿');
   db.exec('DROP TRIGGER fixture_fail_document');
   db.close();
   await page.getByRole('button', { name: '保存', exact: true }).click();
@@ -130,10 +137,10 @@ try {
     await release;
     await route.fulfill({ response });
   });
-  await page.getByLabel('文稿段落 1', { exact: true }).fill('保存中的原稿');
+  await page.getByLabel('文稿 段落 1', { exact: true }).fill('保存中的原稿');
   await page.getByRole('button', { name: '保存', exact: true }).click();
   await committed;
-  await page.getByLabel('文稿段落 1', { exact: true }).fill('保存中继续编辑');
+  await page.getByLabel('文稿 段落 1', { exact: true }).fill('保存中继续编辑');
   releaseResponse();
   await expect(page.getByRole('button', { name: '保存', exact: true })).toBeEnabled();
   await expect(page.getByRole('status').filter({ hasText: '尚未保存' })).toBeVisible();
@@ -145,7 +152,7 @@ try {
   await stop();
   await start();
   await page.reload();
-  await expect(page.getByLabel('文稿段落 1', { exact: true })).toHaveValue('保存中继续编辑');
+  await expect(page.getByLabel('文稿 段落 1', { exact: true })).toHaveValue('保存中继续编辑');
   expect(await (await context.request.get(`${origin}/fixture/document`)).json()).toEqual(
     finalSaved
   );
@@ -155,11 +162,11 @@ try {
   await page.setViewportSize({ width: 768, height: 1024 });
   await page.screenshot({ path: path.join(evidence, 'document-pad.png'), fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.getByLabel('文稿公式 1源').fill('\\input{secret}');
+  await page.getByLabel('文稿 公式 1源').fill('\\input{secret}');
   await expect(
     page.getByLabel('文稿预览').getByText('公式预览失败：\\input{secret}')
   ).toBeVisible();
-  await page.getByLabel('文稿段落 1', { exact: true }).fill('<img src=x onerror=alert(1)>');
+  await page.getByLabel('文稿 段落 1', { exact: true }).fill('<img src=x onerror=alert(1)>');
   await expect(
     page.getByLabel('文稿预览').getByText('<img src=x onerror=alert(1)>', { exact: true })
   ).toBeVisible();
@@ -192,6 +199,7 @@ try {
     JSON.stringify({ status: 'PASS', origin, dataDir, checks, errors }, null, 2)
   );
   console.log(JSON.stringify({ status: 'PASS', checks }, null, 2));
+  passed = true;
 } catch (error) {
   if (activePage) {
     await activePage.screenshot({
@@ -204,4 +212,5 @@ try {
 } finally {
   await browser?.close();
   await stop();
+  if (passed) fs.rmSync(dataDir, { recursive: true, force: true });
 }

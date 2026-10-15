@@ -1,6 +1,6 @@
 # 材料契约：文件、题目与资源
 
-材料语义已采用，当前能力并非全部达标。精确 HTTP/数据定义在 [materials.openapi.yaml](../../apps/api/src/contracts/materials.openapi.yaml)，交换正反例在[案例](#材料交换用例)，技术接缝在[材料实现](#材料实现)。只处理题目保存时读内容、分类和共享保存；涉及文件才展开文件/任务；题面素材展开输出节。
+修改文件、材料、资源或题目丰富内容的交换保证时读本页；协议/兼容保证变化时同步。定义存在不代表当前能力全部达标。精确 HTTP/数据定义在 [materials.openapi.yaml](../../apps/api/src/contracts/materials.openapi.yaml)，交换正反例在[案例](../acceptance/materials-cases.md)，技术接缝在[材料实现](../subsystems/foundation.md#文件文稿与任务)。只处理题目保存时读内容、分类和共享保存；涉及文件才展开文件/任务；题面素材展开输出节。
 
 ## 共用规则与真实认证边界
 
@@ -28,7 +28,7 @@ v2 读取旧对象时，原 Document.version=1 原样返回；补充空分类、
 
 文件是服务端托管的不可变字节，保存后 fileId 稳定；资源条目的 version 与文件 ID 不混同。相同字节可在同账户共用物理 blob，但不同新上传请求保留独立文件元数据/原文件名，返回 duplicateOfFileId 供 UI 提示，不自动合并资源或题目。跨账户不暴露重复命中。下载必须重新授权，不暴露磁盘路径、对象存储地址或永久公开链接。
 
-上传完成条件是字节写盘、校验、持久元数据与成功记录均成立。浏览器“100% 已发送”不足以成立。转换失败不会撤销原件。文件名只作显示及安全下载名，检测内容格式；压缩炸弹、外部关系、宏与内嵌脚本不执行，解压和转换限额见架构。
+上传完成条件是字节写盘、校验、持久元数据与成功记录均成立。浏览器“100% 已发送”不足以成立。转换失败不会撤销原件。文件名只作显示及安全下载名，检测内容格式；压缩炸弹、外部关系、宏与内嵌脚本不执行，解压和转换限额见[文件执行边界](#文件持久提交与执行边界)。
 
 PNG/JPEG/WebP/PDF 产生实际可读预览；DOCX/DOC/PPTX/PPT 经固定转换得到 PDF 与页图；HTML 与其他文件可保留下载，HTML 只作转义文本预览。Preview.state=ready 表示完整生成且通过页数/输出检查，limited 表示已有真实内容但风险或缺页未解决，failed 表示不可预览。DOC 永远附 legacy-object-loss 风险，不能用进程退出码消除此已知缺口。预览请求可异步，GET 不启动有副作用处理。
 
@@ -136,62 +136,8 @@ retryJob 只接受 partial/failed/interrupted/cancelled；unitIds 为空选择�
 
 本地可重复的转换不涉及新增模型费，恢复可重试；Provider 已发出而无可验证输出时标 provider-result-unknown，后台不自动追加请求。老师在产品中明确点击重试才启动新的受理，部署运维另核准预算。设计 session 不新调模型。R33 在运行接入任务授权下补真实自动提取门槛，不能用此故障分支永久回退为手工录入。
 
-## 场景和端口映射
+## 文件持久提交与执行边界
 
-| BDD | UX | 主要操作/定义 | 写者 |
-| --- | --- | --- | --- |
-| WB-M001 至 M009 | U-M1、2、7 | uploadFile、createImport、saveImportReview、commitImportDrafts、Location、Job | R31 文件；R33 收录 |
-| WB-M010 至 M012 | U-M3 | taxonomy、Question v2、copies、source-location | R33 |
-| WB-M013 至 M017 | U-M4 | Resource、Preview、replaceResourceFile、supplement-preview | R31/R32 |
-| WB-M024 | U-M6 | createQuestionAsset、Document | R33；R31 公共呈现 |
-| WB-M025 至 M028 | U-M7、8 | B11 协议、File、Job、版本适配 | 各模块与共享底座 |
-
-
-## 材料实现
-
-### 选择与数据所有权
-
-沿用 React/Vite、Express、better-sqlite3 单一后端及[静态模块目录](../adr/0001-use-a-single-static-module-catalog.md)。一个教师规模下顺序执行重转换即可；文件目录和 SQLite 一起备份。不建立上传服务、对象存储网关、通用内容平台、分类平台或队列平台。
-
-目录版本过渡见本页[B11 兼容](#b11-兼容与版本过渡)，当前组合与 Web/API 装配见 [SETUP](../SETUP.md#代码结构)。File/Document/Job 是公共底座，不注册为额外业务模块。
-
-| Module | 独占数据与 Implementation | 消费者 |
-| --- | --- | --- |
-| workbench/files | 原件和衍生字节、文件元数据、受控下载、固定页预览与裁图、文件持久提交；本机 LibreOffice/Poppler 隔离调用 | questions/resources、math |
-| workbench/content + shared/materials | 唯一 schema 的校验和受控 Document 呈现；Web 的公共文档编辑/阅读原语，v1/v2 兼容 | 题库、资源库、math |
-| workbench/jobs | 最小持久任务记录、停止意图、重启 interrupted；只承载固定任务类型，不拥有业务草稿和成果选项 | 文件预览、questions 提取/PNG |
-| questions | [题库技术入口](../subsystems/questions.md) | 当前题库与已声明 Agent 工具 |
-| resources | [资源库技术入口](../subsystems/resources.md) | 当前资源页面；全部 Agent 能力尚未接通 |
-
-自动提取的设计目标为“原生读取保存 + B 视觉辅助 + 结构/完整性校验 + 局部校对”。T/Word 先保留原生段落、OMML、图片关系；结构明确时本地自动拆题，通用文本整理失败时可将文本受控排版为页图走同一 B 路线，不能改成空题手填。PDF/扫描/图片按小批原页或区域提取，跨页续题可带相邻页上下文；答案页归并与题面分开。具体模型请求参数不进入公共 schema。R33 必须以真实输入证明这条完整路径，未通过项如实阻塞该实现能力。
-
-当前 DOCX 生成走 `apps/api/src/workbench/files/pandoc.js` 的 Pandoc JSON → DOCX；公式由一般 LaTeX 源转换为可编辑 OMML。LibreOffice 负责 PDF 和 Office 预览，Poppler 负责页图/文本；实际工具与字体条件见[运行指南](../SETUP.md#文件转换工具)。旧 DOC 的公式对象丢失仍需受限状态及补充 PDF，原文件不变。目标 Office 实测和本地 XML 检查是不同证据。
-
-### 公共端口
-
-以下 Interface 固定跨写者调用形式；返回类型是唯一 OpenAPI 的 schema，不另建手写平行 DTO。Error 沿 B11 `{status, problem}`，无权统一 404。principal 必须由可信调用入口提供，不能由 Agent 参数自填。异步操作均在 SQL 事务外；同步读取用于同一事务的引用验证。
-
-| Seam | Interface | 返回/原子性 |
-| --- | --- | --- |
-| 文件写入 | `files.store(principal, {name, mediaType, bytes}, mutation)`，mutation=`{key, method, path}` | Promise<File>；只处理本地字节，不接受 URL。内部完成持久提交/幂等；HTTP upload 也是此操作。 |
-| 文件读取 | `files.read(principal, fileId)`；`files.open(principal, fileId)` | 前者同步 File；后者异步受控可读流。原件与衍生件同样授权，公开结果不含磁盘路径。 |
-| 文件预览 | `files.preview(principal, fileId)`；`files.requestPreview(principal, fileId, mutation)` | 同步 Preview / Promise<Job>；前者无副作用，后者持久受理。 |
-| 转换执行 | `files.ensurePreview(principal, fileId)` | Promise<Preview>，供已受理的本地任务执行；复用已完成衍生件，否则直接受控转换。HTTP preview Job、提取和导出共用，避免单执行器嵌套等待另一个排队 Job。 |
-| 裁图 | `files.crop(principal, CropInput, mutation)` | Promise<File>；校验原稿链、页/框、创建持久 PNG。 |
-| 内容校验 | `content.validate(principal, Document)` | 同步返回原 Document 或契约错误，校验文件归属/格式，不转换源；v1 保留。 |
-| 公共 Web 阅读 | `DocumentView({value, onOpenFile})` | value 为 Document；按内容版本安全呈现，图片通过授权 fileId 获取。 |
-| 公共 Web 编辑 | `DocumentEditor({value, onChange, readOnly, onOpenFile, onPickImage})` | onChange(Document)；onPickImage()返回Promise<File或null>，由调用方完成上传/选择，编辑器不让老师填写fileId。支持本批封闭节点、公式源和错误定位，保存由所属模块负责。 |
-| 业务动作 | [各模块技术入口](../subsystems/README.md) | 工厂返回值及参数按各模块实际实现；题库兼容/v2、班级顶层 operations、日程只读 port 分别说明。 |
-
-Agent 及 M40 调用当前已定义操作，不需要 pi 专属类型。`files.store` 是 M40 保存其生成内容/静态产物的入口，content 接受材料版可表示的数学文档。数学调用与产物路径见[数学技术入口](../subsystems/math.md)，隔离保证见[数学契约](math.md#导出与-html-隔离)。
-
-组合工厂提供 `{db, mutations, files, content, jobs}`，业务模块只注入所需的公共端口，不读取其他模块的表。
-
-Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)` 在调用方已有业务受理事务内同步返回 Job，不嵌套提交 mutations.execute；input 只能是 kind 对应的已验证业务请求/固定快照标识，存在模块自己的记录内，jobs 不存任意可执行指令。`jobs.get(principal,id)`、`jobs.cancel(principal,id,mutation)`、`jobs.retry(principal,id,RetryJob,mutation)` 对应 HTTP。组合入口以固定处理函数绑定执行器，handler 返回进度/文件 ID/JobIssue，业务输出写回各自 Module。固定绑定由组合入口装配；不做动态注册或发现。任务创建衍生文件使用持久保存的独立内部请求键，不复用用户已经确认的受理键；确保同任务重启后不重复产物。
-
-跨模块的执行绑定固定为 `jobs.start({preview, extraction, recognition, 'question-asset'})`，服务器启动前调用一次，缺项以明确未接入的测试handler占位且禁止生产启动。每项具有 `run({principal, job, signal, reportProgress})`，返回Promise的 `{state, outputFileIds, issues}`，state仅succeeded/partial/failed，其他字段复用Job定义；signal为AbortSignal，reportProgress接收Job.progress并持久记录。停止状态由jobs裁决，迟到run结果不能把cancelled改成succeeded。preview/extraction/recognition 另提供同步 `retry({principal, job, unitIds, mutation}) -> Job`，在jobs.retry已开启的事务中调用enqueue并同步更新业务记录，question-asset 不接受 retry。questions 的任务出口见[题库技术入口](../subsystems/questions.md#责任与调用面)；files 提供 preview，共用识别提供 recognition，具体工厂返回形状按所属实现，不以此段统一所有模块。各handler在报告成功前持久保存自己的输出，按jobId/输入单元保持重复执行不重复写入。
-
-### 文件持久性、运行与恢复
 
 文件写入走同一受管文件系统的 staging：写满、校验长度/摘要、fsync 文件后原子 rename 到最终随机/摘要路径并同步目录，最后提交 SQLite 元数据和幂等成功响应。DB 提交前崩溃最多留下未关联 blob，不能出现可读的悬空文件记录；启动核对已知未完成写入，保留已完成文件供同键确认。DB 提交失败时不返回 FileSaved。采用同账户去重时也校验已有 blob 实际存在和摘要。
 
@@ -201,65 +147,5 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target, input}, mutation)
 
 重启先验证 DB 迁移/文件配置，再处理 jobs；queued 可执行，running 标 interrupted，不重发未知 Provider 请求。提取每页/区域的结果与完成状态一起持久提交，重试不从零覆盖校对。task 的成功输出与业务结果一致后才 succeeded。输出及原稿均纳入[部署备份](../features/data.md#部署备份与还原)，恢复须验证真实字节可达，临时文件清理不承担恢复语义。
 
-### 材料迁移
 
-模块迁移沿用 B11 `migrations/index.js` 的有序 `{id, up(db)}` 和 ledger。新 ID 分别为 `materials_files_*`、`materials_jobs_*`、`questions_materials_*`、`resources_*`，既有迁移不重写。每个 worker 独立 DB/文件目录；组合验证使用独立集成库。
-
-迁移验证固定旧库来源版本及运行入口，公共语义冲突按本契约处理。空库、B16 旧库、重复启动迁移都验证，旧数据/账户/布局与 B11 未确认请求保留。题库验证旧题目 v2 读取/编辑和旧客户端保护，不迁移认证内部表。
-
-## 材料交换用例
-
-这些是设计用例，不能标为产品运行 PASS。精确请求、响应和文件格式由 [OpenAPI](../../apps/api/src/contracts/materials.openapi.yaml) 的 schemas、paths、examples 唯一拥有；本节定义交换顺序与断言，语义沿本页前述约定。
-
-### 起点与替身
-
-每个用例单独从 R31 隔离 runner reset。建立可信身份 A/B、不同 Cookie jar，使用同源 HTTPS；写入按 B11 带来源/保护头及新的 UUID 幂等键。用户对象与文件 ID 使用真实响应替换示例 ID，分类/草稿的客户端 ID 保持稳定；示例 File 的100字节和摘要只是协议值，真实文件上传按实际字节返回，不伪造该摘要。
-
-前端使用同版 examples 驱动替身：请求先按对应 requestBody 校验，再按以下序列返回结果和延迟/失败；不能只根据按钮名返回成功。后端测试直接调用相同 HTTP 操作并独立断言预期数据，不能以实现生成的快照作为唯一预期。成功/失败之后 GET 验证状态，所有 mutation failure 检查无部分变更。
-
-原件来源按[实验裁决](../acceptance/mvp-matrix.md)定位 C21 与 C22 固定提交。T/W/P/I/PS 自动拆题用 C21 原件；C22 学生练习是答案泄漏反例，不能作为“无答案”的期望。E 全原件只在保留工作区读取，不复制到本仓库。机器原始结果、校对结果和最终题目分别保存证据。
-
-### 成功、失败与恢复序列
-
-| 用例/BDD | 请求和样本 | 必须验证的结果 |
-| --- | --- | --- |
-| MC01 / M001、M025 | multipart uploadFile；同键重试，同文件不同键再传 | 201 FileSaved 形状；摘要/大小匹配原件。同键同ID，新键可新ID并有账户内 duplicateOfFileId；没有自动建第二个资源。 |
-| MC02 / M013、M014 | CreateResource → ResourceSaved；requestFilePreview {} → Job；轮询 getFilePreview | 原件先201；preview受理202，不提前 ready；最终实际PDF/页图可通过 downloadFile 读取，内容与页序正确。 |
-| MC03 / M001、M009 | CreateTextImport、CreatePdfImport；GET ImportForReview | 原稿/Job同事务201；先自动生成草稿再校对。空正文或非法JSON返回可读取失败Job，不假装空题全部完成。 |
-| MC04 / M003 | CreateCrossPageImport；使用E原稿 | page7/8不是1/2；layout截断产生JobPartial；例6/练习/思考分别4/3/3小问，教师活动留片段，不凭教师活动生成答案。 |
-| MC05 / M005、M006 | Crop → FileSaved；SaveReview全量替换拆分/合并后的draft数组；ConfirmOne → ConfirmedOne | 裁图属于正确原稿，原始字节不变；提交创建题目/映射和import版本原子成功。相同原键响应丢失后恢复不重复；新键且当前baseVersion重复确认也不建第二题。 |
-| MC06 / M007 | ConfirmOne前保留open疑点或answerStatus=unresolved | 409 DraftNotReady，GET题目数不变；修正保存后以新键成功。客户端伪造confirmed/questionId、修改已确认草稿或移除它返回422 invalid-input。 |
-| MC07 / M004、M008 | 故障Provider/进程重启 → JobUnknown；RetryPage | 未确认Provider不自动重发，原稿和已校对结果在。retry返回新Job、attemptOf=旧ID且import.jobId变更；旧任务保留。取消 queued/running 及终态重复取消不清空成功页。 |
-| MC08 / M004 | supplementImport将新照片fileId加入保留材料 | 原件未替换，import.version增加并自动为新增输入受理提取，结果追加候选；可从遮挡位置与补充位置来回核对。 |
-| MC09 / M010 | taxonomy初始{version:1,types:[],tags:[]}，PUT Taxonomy内容带baseVersion；DeleteType | 分类初始空、ID可关联；改名不换ID，删除解除active/deleted题目关联并增加各版本。NFC/casefold同名422 invalid-taxonomy，循环/重复ID同样拒绝。 |
-| MC10 / M011 | CreateManualV2 → QuestionSavedV2；PUT基于保存结果；CopyV2；GET copies/source/for-reference | 直接编辑同ID；复制新ID、采用时Snapshot，笔记/标记按请求。原题删除后副本来源仍可读，relocateQuestion仅修改import题来源位置。 |
-| MC11 / M012 | B11 CreatePasted/引用/未知请求，迁移后GET v2；加入ImageBlock | 原Document v1不强转，旧ID版本关系保留。未知旧请求在原路径重放；旧GET/列表/覆盖新内容返回UnknownVersion，v2可正常操作。 |
-| MC12 / M013 | ResourceFolders；移动/删除folder与tag；listResources组合查询 | 文件夹含后代筛选，多个tag为AND；删除父目录移到保留祖先，不删除资源；q搜索原文件名/名称/备注及当前可提取正文，未完成读取的进度单独返回。 |
-| MC13 / M015 | PreviewLegacyLimited；SupplementPreview | 原DOC显示limited且实际页可读；绑定本账户PDF后resource.version增加，文件历史记录原件及补充预览。原fileId已变或PDF不完整拒绝，不能蒙混成ready。 |
-| MC20 / M024 | PptAsset → Job；figure-png选择题内真实图ID | 获取透明PNG分片与原图，复制公式源可编辑；选其他题图或跨账户fileId拒绝。答案关闭则图片无答案，note永不输出。 |
-| MC21 / M025 | 文件写满前、rename后DB提交前、DB提交后丢响应分别断开/重启 | 未提交不会有可获取的File记录；已提交同键恢复同ID。持久文件缺失返回DiskFailure，不以假成功掩盖。 |
-| MC22 / M026、M027 | 以B/无身份访问每类数据和衍生文件，错误来源/伪造身份；恶意HTML/Office/zip | 401/404/403/422符合顺序，不泄漏A对象信息；HTML转义，转换无宿主网络/文件读写权限，超限明确失败。 |
-
-所有列表返回全部匹配结果；排序按 updatedAt 降序、ID升序，File无列表接口。GET查询不隐式修改对象。taxonomy的 GET 是一次集合读取，改名/删除成功后 UI 更新筛选chip；正在编辑旧baseVersion的题/资源会冲突，不能覆盖分类删除效果。
-
-### 精确拒绝矩阵
-
-| 前置/输入 | HTTP / problem | 数据不变断言 |
-| --- | --- | --- |
-| 缺Cookie / 外账户ID | 401 unauthenticated / 404 not-found | 不返回姓名、路径、内容或当前版本。 |
-| 写请求缺保护头或错误完整来源 | 403 request-not-allowed | 业务操作和文件处理未开始。 |
-| JSON损坏、未知字段、隐式类型、超限 | 400 malformed-json / 422 invalid-input / 413 payload-too-large | 不保存任务/业务半成品；已有原件可读。 |
-| 同键不同JSON/字节 | 409 idempotency-key-reused | 原成功对象/任务保持。 |
-| baseVersion过期 | 409 version-conflict，currentVersion | 不自动merge/overwrite，客户端GET对照再新键。 |
-| 框越界/错原稿链/文字范围越界 | 422 materials/invalid-location | 不创建裁图或修改题来源。 |
-| 不支持Document版本 | 422 invalid-input + unsupported-content-version | 旧字节/节点原样保留。 |
-| import仍running时保存 | 409 materials/import-not-editable | 先停止/等待；校对输入保留在本地。 |
-| 无可重试单元/重试题面素材 | 409 materials/job-not-retryable | 原任务不变。 |
-| taxonomy同名/循环/未知ID | 422 materials/invalid-taxonomy | 集合与关联原子不变。 |
-| 本地文件持久设施失败 | 503 materials/storage-unavailable | 结果未确认时按原键确认，不能主动生成新逻辑请求。 |
-
-problem完整字段由schema拥有。业务 field采用JSON Pointer；解析schema合法后违反跨字段关系也必须返回规定problem，而非500。已成功原键重放先于归属对象的最新版本/状态校验，身份/来源/schema仍先校验。
-
-### 验证方法
-
-用 schema 做真实请求/响应断言，并验证本表的跨字段/状态行为；schema 通过不代替行为检查。样本覆盖当前文件、提取、题面素材及资源操作。UI 优先真实 HTTP 集成和浏览器流程，不写单元测试，临时校验环境不成为产品依赖。
+技术端口与装配见[公共底座](../subsystems/foundation.md#公共端口)；材料迁移的源码归属见[材料迁移](../subsystems/foundation.md#材料迁移)。

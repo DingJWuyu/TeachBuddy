@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useLayoutEffect, useState } from "react";
 import ResourcesPage from "./index.jsx";
-import { readLocal, writeLocal } from "../workbench/storage.js";
+import { readLocal, writeLocal } from "../../platform/device/storage.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 
 /** Adapt the shell deep link to the resource module's account-scoped scene. */

@@ -1231,6 +1231,7 @@ test('核心体验：删除和移动段落可局部撤销，保留之后输入',
   await expect(page.getByLabel('题目标题')).toHaveValue('删除后补写的标题');
   await page.getByRole('button', { name: '上移题干第 2 段', exact: true }).click();
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('移动后补写的第二段');
+  await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('移动后补写的第二段');
   await page.getByRole('button', { name: '撤销题干结构操作', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '题干段落 2', exact: true })).toHaveValue('移动后补写的第二段');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
@@ -1423,3 +1424,46 @@ for (const label of ['题干', '答案与解析']) {
     expect(saved[label === '题干' ? 'body' : 'solution'].blocks[0].runs[0].text).toBe('添加后补写的第一段');
   });
 }
+
+test('分类工具多视口控件保持单行，切换工具和普通查找保留AI草稿', async ({ page }, info) => {
+  await page.getByRole('button', { name: 'AI 助理', exact: true }).click();
+  const assistant = page.getByRole('complementary', { name: '辅助栏', exact: true });
+  const aiInput = assistant.getByRole('textbox', { name: 'AI 输入', exact: true });
+  await assistant.getByRole('button', { name: '新对话', exact: true }).click();
+  await aiInput.fill('切换分类工具后继续备课');
+  await page.getByRole('button', { name: '题库选项', exact: true }).click();
+  await page.getByRole('menuitem', { name: '管理题型与标签', exact: true }).click();
+  const taxonomy = page.locator('.q-taxonomy');
+  await taxonomy.getByLabel('新分类名称').fill('几何证明');
+  await taxonomy.getByRole('button', { name: '新增', exact: true }).click();
+  await taxonomy.getByLabel('分类类别').selectOption('tags');
+  await taxonomy.getByLabel('新分类名称').fill('长名称标签边界检验');
+  await taxonomy.getByRole('button', { name: '新增', exact: true }).click();
+  for (const width of [1440, 1280, 1024]) {
+    await page.setViewportSize({ width, height: 900 });
+    const sizes = await taxonomy.locator('.q-taxonomy-row button').evaluateAll(buttons => buttons.map(button => {
+      const range = document.createRange();
+      range.selectNodeContents(button);
+      return { height: range.getBoundingClientRect().height, lineHeight: parseFloat(getComputedStyle(button).lineHeight) };
+    }));
+    expect(sizes).toHaveLength(2);
+    for (const size of sizes) expect(size.height).toBeLessThanOrEqual(size.lineHeight);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: info.outputPath(`taxonomy-${width}.png`) });
+  }
+  await taxonomy.getByRole('button', { name: '保存分类', exact: true }).click();
+  await expect.poll(async () => (await client.request('GET', '/api/modules/questions/v2/taxonomy')).json.types.map(item => item.name)).toEqual(['几何证明']);
+  await assistant.getByRole('tab', { name: 'AI 助理', exact: true }).click();
+  await expect(aiInput).toHaveValue('切换分类工具后继续备课');
+  await assistant.getByRole('button', { name: '关闭辅助栏', exact: true }).click();
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await finder(page).getByRole('button', { name: '筛选题目', exact: true }).click();
+  await page.getByRole('textbox', { name: '搜索题目', exact: true }).fill('普通浏览');
+  await page.getByRole('button', { name: 'AI 助理', exact: true }).click();
+  await expect(aiInput).toHaveValue('切换分类工具后继续备课');
+  await page.reload();
+  await expect(page.getByRole('textbox', { name: 'AI 输入', exact: true })).toHaveValue('切换分类工具后继续备课');
+  const saved = (await client.request('GET', '/api/modules/questions/v2/taxonomy')).json;
+  expect(saved.types.map(item => item.name)).toEqual(['几何证明']);
+  expect(saved.tags.map(item => item.name)).toEqual(['长名称标签边界检验']);
+});

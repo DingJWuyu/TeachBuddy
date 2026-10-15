@@ -6,7 +6,7 @@ import http from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import sharp from 'sharp';
-import { startFixture } from '../../../scripts/materials/fixture.mjs';
+import { startFixture } from './fixtures/materials/server.mjs';
 import { validateLocation } from '../src/workbench/content/index.js';
 import { validateSchema } from '../src/workbench/content/schema.js';
 

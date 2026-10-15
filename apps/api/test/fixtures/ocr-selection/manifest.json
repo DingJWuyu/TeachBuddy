@@ -24,7 +24,7 @@
   "pages": [
     {
       "id": "D1",
-      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-1/page.png",
+      "image": "test/fixtures/questions/recognition-document-4/I-1/page.png",
       "sha256": "99bcbc3ed10436644dd666e37c6ac44c8e428f0db5cc2de7947bf8260345b715",
       "imageSize": [
         1653,
@@ -41,7 +41,7 @@
     },
     {
       "id": "D2",
-      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-2/page.png",
+      "image": "test/fixtures/questions/recognition-document-4/I-2/page.png",
       "sha256": "3c570d2b67c6a2a1538c3f69445fef9cf47dea63184310a092d6ecb791510059",
       "imageSize": [
         1775,
@@ -58,7 +58,7 @@
     },
     {
       "id": "D3",
-      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-3/page.png",
+      "image": "test/fixtures/questions/recognition-document-4/I-3/page.png",
       "sha256": "e6f7b11f37dbc70e8312b92cb648395af311e7153598c295c925f45637565d1c",
       "imageSize": [
         1653,
@@ -75,7 +75,7 @@
     },
     {
       "id": "D4",
-      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/PS-4/page.png",
+      "image": "test/fixtures/questions/recognition-document-4/PS-4/page.png",
       "sha256": "655014ceb9d66f2006f881afac95f077de02844c9251fb95c68c9e8a0e9f0b62",
       "imageSize": [
         1697,
@@ -257,25 +257,25 @@
     },
     {
       "id": "existing-I1",
-      "path": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-1/page.png",
+      "path": "test/fixtures/questions/recognition-document-4/I-1/page.png",
       "sha256": "99bcbc3ed10436644dd666e37c6ac44c8e428f0db5cc2de7947bf8260345b715",
       "origin": "Tracked original-page fixture; source image only, not its adjacent OCR outputs"
     },
     {
       "id": "existing-I2",
-      "path": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-2/page.png",
+      "path": "test/fixtures/questions/recognition-document-4/I-2/page.png",
       "sha256": "3c570d2b67c6a2a1538c3f69445fef9cf47dea63184310a092d6ecb791510059",
       "origin": "Tracked original-page fixture; source image only, not its adjacent OCR outputs"
     },
     {
       "id": "existing-I3",
-      "path": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-3/page.png",
+      "path": "test/fixtures/questions/recognition-document-4/I-3/page.png",
       "sha256": "e6f7b11f37dbc70e8312b92cb648395af311e7153598c295c925f45637565d1c",
       "origin": "Tracked original-page fixture; source image only, not its adjacent OCR outputs"
     },
     {
       "id": "existing-PS4",
-      "path": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/PS-4/page.png",
+      "path": "test/fixtures/questions/recognition-document-4/PS-4/page.png",
       "sha256": "655014ceb9d66f2006f881afac95f077de02844c9251fb95c68c9e8a0e9f0b62",
       "origin": "Tracked original-page fixture; source image only, not its adjacent OCR outputs"
     },
@@ -295,14 +295,14 @@
   "excludedInputs": [
     {
       "id": "F-obscured",
-      "image": "apps/web/e2e/fixtures/materials-questions/F-obscured.jpg",
+      "image": "test/fixtures/questions/F-obscured.jpg",
       "sha256": "22f041265b8ee52d4f4e57eecd3b25933618fcff62742bdc9906759c91514c38",
       "contentGroup": "original-Q1-Q6",
       "reason": "Damaged input; excluded from ordinary quality and latency denominators"
     },
     {
       "id": "F-truncated",
-      "image": "apps/web/e2e/fixtures/materials-questions/F-truncated.pdf",
+      "image": "test/fixtures/questions/F-truncated.pdf",
       "sha256": "52aa55a6e166571568789dba42927361def9c89e4e67e72763cf43cb24759c9f",
       "contentGroup": "original-Q1-Q6",
       "reason": "Damaged input; excluded from ordinary quality and latency denominators"

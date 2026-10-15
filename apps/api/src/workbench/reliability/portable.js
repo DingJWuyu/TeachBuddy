@@ -4,7 +4,8 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createHash } from "node:crypto";
-import { documentText } from "../../modules/questions/materials-content.js";
+import { documentText } from "../content/document.js";
+
 import { validateArchive } from "./schema.js";
 import { sha256, revision, syncDir } from "./storage.js";
 

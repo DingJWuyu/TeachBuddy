@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useAuxiliaryTools, useWorkbenchShell } from '../workbench/shellContext.js';
-import { useScene } from '../workbench/useScene.js';
+import { useScene } from '../../platform/device/useScene.js';
 
 export function MathTools({ children, sceneKey = 'current' }) {
   const { t } = useTranslation('math');

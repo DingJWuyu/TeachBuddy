@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { isDeletedAccount } from '../workbench/storage.js';
-import { workbenchGet, workbenchPost, workbenchPut, workbenchEvents } from '../workbench/apiClient.js';
+import { isDeletedAccount } from '../../platform/device/storage.js';
+import { workbenchGet, workbenchPost, workbenchPut, workbenchEvents } from '../../platform/http/apiClient.js';
 const Context = createContext(null);
 export const useAgent = () => useContext(Context);
 const base = '/api/agent/conversations';

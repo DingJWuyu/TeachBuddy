@@ -1,7 +1,7 @@
 import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "questions", ...options });
-import { deviceRequestStore, clearDeviceRequestAccount } from '../workbench/deviceRequestStore.js';
-import { readLocal, writeLocal } from '../workbench/storage.js';
+import { deviceRequestStore, clearDeviceRequestAccount } from '../../platform/device/deviceRequestStore.js';
+import { readLocal, writeLocal } from '../../platform/device/storage.js';
 import { upload } from './materials-api.js';
 const store = (account, action = 'get', value) => deviceRequestStore({
   database: 'teachbuddy.questions.uploads', storeName: 'pending', account,

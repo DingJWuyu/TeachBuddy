@@ -1,9 +1,21 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../../api/test/fixtures/c26/harness.js';
 const evidence = process.env.AGENT_EVIDENCE_DIR ?? 'test-results/evidence/C26/v1';
-let world;
-test.beforeEach(async () => { world = await createIntegration(); });
-test.afterEach(async ({ page }) => { await page.close(); await world.close(); });
+let world, directories;
+async function startWorld(options) {
+  const runtime = await createIntegration(options);
+  directories.add(runtime.directory);
+  return runtime;
+}
+test.beforeEach(async () => { directories = new Set(); fs.mkdirSync(evidence, { recursive: true }); world = await startWorld(); });
+test.afterEach(async ({ context }, info) => {
+  await context.close(); await world.close();
+  if (info.status === info.expectedStatus) for (const directory of directories) fs.rmSync(directory, { recursive: true, force: true });
+  else console.error('Agent浏览器失败现场保留：' + [...directories].join(', '));
+});
 async function register(page) {
   await page.goto(world.origin);
   await page.getByRole('button', { name: '创建账户' }).click();
@@ -17,14 +29,15 @@ async function register(page) {
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: '注册', exact: true }).click();
   await expect(page.locator('.wb-shell')).toBeVisible();
+  await page.getByRole('button', { name: '知道了', exact: true }).click();
 }
 test('WB-AG-001/004: 同一持久草稿从首页到右栏再刷新', async ({ page }) => {
   await register(page);
-  await page.getByRole('button', { name: '新对话', exact: true }).click();
+  await page.locator('.restored-start').click();
   await page.getByRole('textbox', { name: 'AI 输入' }).fill('请帮我准备等差数列的课堂练习');
   await expect(page.getByText('草稿已保存', { exact: true })).toBeVisible();
-  await page.getByRole('link', { name: '题库', exact: true }).click();
-  await page.locator('.wb-ai-entry').click();
+  await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
+  await page.getByRole('button', {name:'AI 助理', exact:true}).click();
   await expect(page.getByRole('textbox', { name: 'AI 输入' })).toHaveValue('请帮我准备等差数列的课堂练习');
   await page.reload();
   await expect(page.getByRole('textbox', { name: 'AI 输入' })).toHaveValue('请帮我准备等差数列的课堂练习');
@@ -32,16 +45,26 @@ test('WB-AG-001/004: 同一持久草稿从首页到右栏再刷新', async ({ pa
 });
 
 for (const tag of ['deepseek','glm']) test(`WB-AG-003/007: ${tag} live模型结果保留库重启，桌面Pad窄屏打开实际题目`,async({page})=>{
+ const reportPath = path.join(evidence, `live-${tag}.json`);
+ test.skip(!fs.existsSync(reportPath), `缺少授权真实模型报告 ${reportPath}；获取步骤见 docs/acceptance/README.md 的 Agent 真实模型保留库`);
+ const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+ test.skip(!report.directory || !fs.existsSync(path.join(report.directory, 'workspace.sqlite')), '报告对应的隔离数据库缺失，请按验收入口准备同一候选的报告和数据库');
+ expect(report.kind).toBe('live'); expect(report.status).toBe('completed');
  await world.close();
- const fs=await import('node:fs');const report=JSON.parse(fs.readFileSync(`${evidence}/live-${tag}.json`,'utf8'));
- const os=await import('node:os');const path=await import('node:path');const directory=fs.mkdtempSync(path.join(os.tmpdir(),`c26-browser-live-${tag}-`));fs.cpSync(report.directory,directory,{recursive:true});
- world=await createIntegration({directory});
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),`c26-browser-live-${tag}-`));fs.cpSync(report.directory,directory,{recursive:true});
+ world=await startWorld({directory});
  await page.goto(world.origin);await page.getByLabel('邮箱',{exact:true}).fill(`c26-${tag}@example.test`);await page.getByLabel('密码',{exact:true}).fill('c26-live-local-password');await page.getByRole('button',{name:'登录',exact:true}).click();
  await expect(page.locator('.agent-tool')).toHaveCount(6);await expect(page.getByText('已完成',{exact:true})).toBeVisible();
  await page.screenshot({path:`${evidence}/${tag}-home-desktop.png`});
  for(const [width,height,name]of [[1440,900,'desktop'],[820,1180,'pad'],[390,844,'mobile']]){
   await page.setViewportSize({width,height});
-  await expect.poll(()=>page.locator('.wb-sidebar').evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(width <= 1080 ? 72 : 256);
+  if (width <= 1080) {
+   await expect(page.locator('.tb-sidebar')).toBeHidden();
+   await page.getByRole('button',{name:'打开工作台导航',exact:true}).click();
+   await expect(page.locator('.tb-sidebar')).toBeVisible();
+   expect(await page.locator('.tb-sidebar').evaluate(el=>el.getBoundingClientRect().width)).toBeLessThan(width);
+   await page.locator('.tb-sidebar').getByRole('button',{name:'关闭',exact:true}).click();
+  } else await expect.poll(()=>page.locator('.tb-sidebar').evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(256);
   await expect(page.locator('.agent-tool')).toHaveCount(6);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await expect.poll(()=>page.locator('.agent-thread').evaluate(el=>{const frame=el.getBoundingClientRect();return [...el.querySelectorAll('.agent-tool,.agent-message')].filter(item=>{const box=item.getBoundingClientRect();return box.left<frame.left-1||box.right>frame.right+1;}).map(item=>({width:el.clientWidth,display:getComputedStyle(el).display,left:item.getBoundingClientRect().left-frame.left,right:item.getBoundingClientRect().right-frame.right}));})).toEqual([]);
@@ -52,12 +75,12 @@ for (const tag of ['deepseek','glm']) test(`WB-AG-003/007: ${tag} live模型结�
  await expect(page).toHaveURL(/\/questions\//);
  await expect(page.getByText(`数列进阶-${tag}`,{exact:true}).first()).toBeVisible();
  await page.screenshot({path:`${evidence}/${tag}-copy-open.png`});
- await page.locator('.wb-ai-entry').click();
+ await page.getByRole('button', {name:'AI 助理', exact:true}).click();
  await expect(page.locator('.agent-tool')).toHaveCount(6);
 });
 
 test('WB-AG-005: 独立浏览器草稿冲突保留双方内容，明确选择后保存',async({page,browser})=>{
- await register(page);await page.getByRole('button',{name:'新对话',exact:true}).click();
+ await register(page);await page.locator('.restored-start').click();
  await page.getByRole('textbox',{name:'AI 输入'}).fill('共同的初始草稿');await expect(page.getByText('草稿已保存',{exact:true})).toBeVisible();
  const other=await browser.newContext({ignoreHTTPSErrors:true});const second=await other.newPage();
  try {
@@ -78,8 +101,8 @@ test('WB-AG-005: 独立浏览器草稿冲突保留双方内容，明确选择后
 test('WB-AG-020: 无assistant的真实SDK 404工具卡刷新仍在',async({page})=>{
  const {provider}=await import('../../../api/test/fixtures/c26/provider.js');
  const {randomUUID}=await import('node:crypto');const p=await provider([[{type:'toolCall',id:'missing-ui',name:'wb_get_question',arguments:{id:randomUUID()}}]]);
- await world.close();world=await createIntegration({agent:p.config});
- await register(page);await page.getByRole('button',{name:'新对话',exact:true}).click();await page.getByRole('textbox',{name:'AI 输入'}).fill('读取这道题');
+ await world.close();world=await startWorld({agent:p.config});
+ await register(page);await page.locator('.restored-start').click();await page.getByRole('textbox',{name:'AI 输入'}).fill('读取这道题');
  await expect(page.getByText('草稿已保存',{exact:true})).toBeVisible();await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.locator('.agent-tool[data-tool-state="rejected"]')).toHaveCount(1);
  await expect(page.locator('.agent-message:not(.is-user)')).toHaveCount(0);
@@ -89,7 +112,7 @@ test('WB-AG-020: 无assistant的真实SDK 404工具卡刷新仍在',async({page}
 });
 
 test('恢复回归: 首次snapshot失败后恢复输入，事件缺号后重新建立SSE',async({page})=>{
- await register(page);await page.getByRole('button',{name:'新对话',exact:true}).click();
+ await register(page);await page.locator('.restored-start').click();
  await page.getByRole('textbox',{name:'AI 输入'}).fill('持久恢复草稿');await expect(page.getByText('草稿已保存',{exact:true})).toBeVisible();
  let failed=false, streams=0;
  await page.route(/\/api\/agent\/conversations\/[^/?]+$/,route=>{
@@ -106,7 +129,7 @@ test('恢复回归: 首次snapshot失败后恢复输入，事件缺号后重新�
 });
 
 test('恢复回归: 断网期间另一设备保存后，干净草稿随重连同步',async({page,browser})=>{
- await register(page);await page.getByRole('button',{name:'新对话',exact:true}).click();
+ await register(page);await page.locator('.restored-start').click();
  await page.getByRole('textbox',{name:'AI 输入'}).fill('同步前草稿');await expect(page.getByText('草稿已保存',{exact:true})).toBeVisible();
  const other=await browser.newContext({ignoreHTTPSErrors:true});const second=await other.newPage();
  try {
@@ -123,8 +146,8 @@ test('恢复回归: 断网期间另一设备保存后，干净草稿随重连同
 test('WB-AG-010: 已提交202丢失后原键重试，不清空下一条输入',async({page})=>{
  const {provider}=await import('../../../api/test/fixtures/c26/provider.js');
  const p=await provider([[{type:'text',text:'首轮完成'}]]);
- await world.close();world=await createIntegration({agent:p.config});await register(page);
- await page.getByRole('button',{name:'新对话',exact:true}).click();
+ await world.close();world=await startWorld({agent:p.config});await register(page);
+ await page.locator('.restored-start').click();
  await page.getByRole('textbox',{name:'AI 输入'}).fill('第一条请求');await expect(page.getByText('草稿已保存',{exact:true})).toBeVisible();
  let lost=false;const keys=[];
  await page.route('**/api/agent/conversations/*/turns',async route=>{
@@ -146,12 +169,14 @@ test('WB-AG-002/009: Agent写入不覆盖手工未保存题面，保存时可对
  let question,pageId;
  const doc=text=>({version:1,blocks:[{type:'paragraph',runs:[{type:'text',text}]}]});
  const p=await provider([()=>[{type:'toolCall',id:'editor-update',name:'wb_update_question',arguments:{id:question.id,body:{baseVersion:1,title:question.title,body:doc('Agent已保存的题面'),solution:question.solution,note:'',starred:false}}}],[{type:'text',text:'已保存修改'}]]);
- await world.close();world=await createIntegration({agent:p.config});
+ await world.close();world=await startWorld({agent:p.config});
  page.on('request',request=>{pageId=request.headers()['x-teachbuddy-page']??pageId;});await register(page);
  const response=await page.request.post(world.origin+'/api/modules/questions/items',{headers:{Origin:world.origin,'X-TeachBuddy-Request':'1','X-TeachBuddy-Page':pageId,'Idempotency-Key':crypto.randomUUID()},data:manualQuestionSample()});expect(response.status()).toBe(201);question=await response.json();
- await page.getByRole('button',{name:'新对话',exact:true}).click();await expect(page.getByRole('textbox',{name:'AI 输入'})).toBeVisible();
- await page.goto(world.origin+'/questions/'+question.id);await page.getByRole('textbox',{name:'题目标题',exact:true}).fill('老师正在输入而尚未保存的内容');
- await page.locator('.wb-ai-entry').click();await page.getByRole('textbox',{name:'AI 输入'}).fill('请把当前题面的保存版本改为Agent已保存的题面');await expect(page.getByText('草稿已保存',{exact:true})).toBeVisible();await page.getByRole('button',{name:'发送',exact:true}).click();
+ await page.locator('.restored-start').click();await expect(page.getByRole('textbox',{name:'AI 输入'})).toBeVisible();
+ await page.goto(world.origin+'/questions/'+question.id);await page.getByRole('button',{name:'编辑题目',exact:true}).click();await page.getByRole('textbox',{name:'题目标题',exact:true}).fill('老师正在输入而尚未保存的内容');
+ await page.getByRole('button', {name:'AI 助理', exact:true}).click();
+ await expect(page.getByRole('textbox',{name:'题目标题',exact:true})).toHaveValue('老师正在输入而尚未保存的内容');
+ await page.getByRole('textbox',{name:'AI 输入'}).fill('请把当前题面的保存版本改为Agent已保存的题面');await expect(page.getByText('草稿已保存',{exact:true})).toBeVisible();await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.locator('.agent-tool[data-tool-state="confirmed"]')).toHaveCount(1);
  await expect(page.getByRole('textbox',{name:'题目标题',exact:true})).toHaveValue('老师正在输入而尚未保存的内容');
  await page.getByRole('button',{name:'保存题目',exact:true}).click();

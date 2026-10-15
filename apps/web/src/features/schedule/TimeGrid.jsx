@@ -11,7 +11,7 @@ import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
 import { addDays, diffDays, eventOf, formatClock, monday, shiftMonth } from './calendarModel.js';
 import { localParts } from './zoned.js';
 import { IconButton } from './CalendarControls.jsx';
-import { ModulePresence, useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
+import { ModulePresence, useModuleDialogFocus } from '../../components/interaction/ModuleMotion.jsx';
 
 const plugins = [timeGridPlugin, dayGridPlugin, interactionPlugin];
 

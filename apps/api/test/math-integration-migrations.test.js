@@ -47,6 +47,8 @@ function fileHashes(directory) {
 
 async function closeLibrary(runtime) {
   if (!runtime) return;
+  if (runtime.close) return runtime.close();
+  // The frozen R31 application owns a separate legacy store.
   try { await runtime.workbench.close(); }
   finally { await runtime.dataStore.close(); }
 }

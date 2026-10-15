@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
 import { defaultNavigation } from '@refatos/shared';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
-import { registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
+import { registerMath } from './fixtures/math-real.mjs';
 import { takeSnapshot } from '../src/workbench/reliability/portable.js';
 
 const path = '/api/workbench/navigation';

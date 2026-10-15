@@ -6,7 +6,7 @@ import path from 'node:path';
 import {randomUUID,createHash} from 'node:crypto';
 import JSZip from 'jszip';
 import {createIntegration} from './fixtures/auth-integration/harness.js';
-import {registerMath} from '../../web/e2e/fixtures/math-static/real.mjs';
+import {registerMath} from './fixtures/math-real.mjs';
 
 async function legacy(t) {
   const directory=fs.mkdtempSync(path.join(os.tmpdir(),'questions-legacy-'));
@@ -31,7 +31,7 @@ async function legacy(t) {
 
 test('legacy DOC preserves existing equation objects, figures and fixed conversion paragraphs through review and restart',async t=>{
   const h=await legacy(t);
-  const bytes=fs.readFileSync(new URL('../../web/e2e/fixtures/materials/samples/w.doc',import.meta.url));
+  const bytes=fs.readFileSync(new URL('../../../test/fixtures/materials/w.doc',import.meta.url));
   const form=new FormData();form.append('file',new Blob([bytes]),'legacy.doc');
   const file=await h.request('/api/workbench/files',form);
   const created=await h.request('/api/modules/questions/v2/imports',{title:'旧版数学资料',origin:'固定真实 DOC',input:{kind:'files',fileIds:[file.id],pages:[]}});

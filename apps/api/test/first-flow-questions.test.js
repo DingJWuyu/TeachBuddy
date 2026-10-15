@@ -1,6 +1,6 @@
 // B13 data-side integration coverage for the question bank over the frozen
 // workbench seam. Cases map to WB-001..004, WB-009, WB-013, WB-014 and
-// WB-016 in docs/acceptance/first-flow.feature.
+// WB-016 in docs/acceptance/materials.feature.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {

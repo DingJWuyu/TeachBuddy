@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { test, expect, chromium } from "@playwright/test";
-import { startRealMath } from "./fixtures/math-static/real.mjs";
+import { startRealMath } from "../../api/test/fixtures/math-real.mjs";
 import {
   register,
   save,

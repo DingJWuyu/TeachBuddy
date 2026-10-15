@@ -1,21 +1,12 @@
-import { casefold } from "./casefold.js";
+import { problems, contractError, invalidInput, materialsError } from "../../workbench/problems.js";
+import { casefold } from "../../workbench/text.js";
 import { questionDocuments, supportedDocument } from "@refatos/shared";
 import { randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
-import {
-  invalidInput,
-  objectDeleted,
-  compareByUpdatedDescThenId,
-} from "./contract.js";
-import { materialsError } from "../../workbench/jobs/index.js";
+import { compareByUpdatedDescThenId } from "./legacy-contract.js";
 import { validateLocation } from "../../workbench/content/index.js";
-import {
-  validateQuestionContent,
-  validateTaxonomyIds,
-  documentText,
-  images,
-  walkBlocks,
-} from "./materials-content.js";
+import { documentText, images, walkBlocks } from "../../workbench/content/document.js";
+import { validateQuestionContent, validateTaxonomyIds } from "./materials-content.js";
 const busy = new Set(["queued", "running", "cancelling"]);
 export function createMaterialsService({ store: s, files, content, jobs }) {
   const assertWritable = (question) => {
@@ -227,7 +218,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
     setQuestionDeletionV2({ principal: p, id, input }) {
       const q = s.question(p, id);
       s.check(q, input.baseVersion, false);
-      if (input.deleted && q.deletedAt) throw objectDeleted();
+      if (input.deleted && q.deletedAt) throw contractError(problems.objectDeleted());
       assertWritable(q);
       return s.writeQuestion(p, {
         ...s.bump(q),
@@ -451,7 +442,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
     setImportDeletion({ principal: p, id, input }) {
       const m = s.get("imports", p, id);
       s.check(m, input.baseVersion, false);
-      if (input.deleted && m.deletedAt) throw objectDeleted();
+      if (input.deleted && m.deletedAt) throw contractError(problems.objectDeleted());
       return s.save("imports", p, {
         ...s.bump(m),
         deletedAt: input.deleted ? s.stamp() : null,

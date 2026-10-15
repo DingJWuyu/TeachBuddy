@@ -1,17 +1,9 @@
+import { problems, contractError, invalidInput } from "../../workbench/problems.js";
 // Business operations for the question bank. These functions are also the
 // callable surface future agent adapters consume; they never touch the HTTP
 // layer and always run inside the caller's mutation transaction.
 import { randomUUID } from "node:crypto";
-import {
-  compareByUpdatedDescThenId,
-  flattenDocumentText,
-  matchesSearch,
-  normalizeSearchQuery,
-  notFound,
-  objectDeleted,
-  versionConflict,
-  invalidInput,
-} from "./contract.js";
+import { compareByUpdatedDescThenId, flattenDocumentText, matchesSearch, normalizeSearchQuery } from "./legacy-contract.js";
 import {
   validateCreateQuestion,
   validateCopyQuestion,
@@ -40,7 +32,7 @@ export function createQuestionsService({ repository, now = () => new Date(), has
       requireAccountKey(principal),
       questionId,
     );
-    if (!record) throw notFound();
+    if (!record) throw contractError(problems.notFound());
     return record;
   }
 
@@ -157,9 +149,9 @@ export function createQuestionsService({ repository, now = () => new Date(), has
     requireAccountKey(principal);
     const body = validateUpdateQuestion(input);
     const current = requireOwned(principal, questionId);
-    if (current.deletedAt !== null) throw objectDeleted();
+    if (current.deletedAt !== null) throw contractError(problems.objectDeleted());
     if (body.baseVersion !== current.version)
-      throw versionConflict(current.version);
+      throw contractError(problems.versionConflict(current.version));
     assertLegacy(current);
     const next = {
       ...current,
@@ -179,9 +171,9 @@ export function createQuestionsService({ repository, now = () => new Date(), has
     const accountKey = requireAccountKey(principal);
     const body = validateCopyQuestion(input);
     const source = requireOwned(principal, questionId);
-    if (source.deletedAt !== null) throw objectDeleted();
+    if (source.deletedAt !== null) throw contractError(problems.objectDeleted());
     if (body.baseVersion !== source.version)
-      throw versionConflict(source.version);
+      throw contractError(problems.versionConflict(source.version));
     const at = timestamp();
     const record = {
       id: randomUUID(),
@@ -224,11 +216,11 @@ export function createQuestionsService({ repository, now = () => new Date(), has
     const body = validateSetDeletion(input);
     const current = requireOwned(principal, questionId);
     if (body.baseVersion !== current.version)
-      throw versionConflict(current.version);
+      throw contractError(problems.versionConflict(current.version));
     // Deleting an already-deleted object is the 409 object-deleted case. Restoring
     // an active object is not: the object is not deleted, so it is a same-content
     // write and bumps the version like any other new request (workbench.md).
-    if (body.deleted && current.deletedAt !== null) throw objectDeleted();
+    if (body.deleted && current.deletedAt !== null) throw contractError(problems.objectDeleted());
     const at = timestamp();
     assertLegacy(current);
     const next = {

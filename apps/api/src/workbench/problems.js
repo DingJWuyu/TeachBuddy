@@ -107,3 +107,10 @@ export function mapErrorToResponse(error) {
       };
   }
 }
+
+export function materialsError(type, status = 422, field = "", detail = "") {
+  return Object.assign(new Error(type), {
+    status,
+    problem: { type: `/problems/materials/${type}`, field, detail },
+  });
+}

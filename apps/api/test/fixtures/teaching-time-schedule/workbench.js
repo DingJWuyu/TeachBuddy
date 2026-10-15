@@ -7,7 +7,7 @@ import { createWorkbenchLogger } from '../../../src/workbench/logger.js';
 import { createModuleCatalogHandler, createWorkbenchRouters } from '../../../src/workbench/http.js';
 import { createScheduleModule, migrations as scheduleMigrations } from '../../../src/modules/schedule/index.js';
 import { fixtureBeforeChange, fixtureClock } from './runtime.js';
-import { createPreferencesRouter, preferenceMigrations } from '../../../src/reliability/preferences.js';
+import { createPreferencesRouter, preferenceMigrations } from '../../../src/workbench/preferences.js';
 
 /** Fixture-only descriptors; the real v2 catalog (with requires) is T53's. */
 export const fixtureCatalog = Object.freeze([

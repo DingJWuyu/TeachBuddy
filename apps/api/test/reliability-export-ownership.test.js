@@ -7,10 +7,10 @@ import https from 'node:https';
 import { randomUUID, createHash } from 'node:crypto';
 import JSZip from 'jszip';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
-import { registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
+import { registerMath } from './fixtures/math-real.mjs';
 import { emptySource } from '../../web/src/features/math/model.js';
 import { doc, question, http, Q } from './materials-http-fixture.js';
-import { replayRecognizer, sourceImage } from '../../web/e2e/fixtures/materials-questions/recognition/replay.mjs';
+import { replayRecognizer, sourceImage } from '../../../test/fixtures/questions/recognition/replay.mjs';
 import { weeklyEntry, overrideContent } from './fixtures/teaching-time-schedule/samples.js';
 
 const R = '/api/modules/resources/items';

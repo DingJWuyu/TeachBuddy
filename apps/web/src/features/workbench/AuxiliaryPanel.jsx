@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
  */
 
 import { useRef } from 'react';
-import { Icon } from './icons.jsx';
+import { Icon } from '../../components/icons.jsx';
 import { AgentWorkspace } from '../agent/AgentWorkspace.jsx';
 import { useWorkbenchShell } from './shellContext.js';
 

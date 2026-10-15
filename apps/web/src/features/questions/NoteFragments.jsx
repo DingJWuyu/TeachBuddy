@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { DocumentView } from '../workbench/materials/index.js';
+import { DocumentView } from '../../components/materials/index.js';
 import { QuestionDocumentEditor } from './QuestionControls.jsx';
 
 export function NoteFragments({ fragments = [], editing = false, onChange, onRemove, onPickImage, resetKey }) {

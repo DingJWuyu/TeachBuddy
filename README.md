@@ -48,7 +48,7 @@ npm run dev
 
 - [产品范围](docs/PRODUCT_SCOPE.md)：产品目标与边界。
 - [文档目录](docs/README.md)：按功能查行为、接口和验证方法。
-- [代码结构](docs/SETUP.md#代码结构)：模块、请求路径和数据归属。
+- [代码结构](docs/subsystems/README.md#代码结构)：模块、请求路径和数据归属。
 - [子系统入口](docs/subsystems/README.md)：每个模块的公开操作、实际调用链和验证入口。
 - [编码与验收标准](docs/code-standards.md)：实现、测试和审查标准；[LESSONS](LESSONS.md)沉淀有证据的经验。
 - [当前进度](docs/plans/run-state.md)：已知缺口、授权和下一步。

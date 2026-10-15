@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import AnalysisTools from './AnalysisTools.jsx';
 import ConstructionTools from './ConstructionTools.jsx';
 import SurfaceProperties from './SurfaceTools.jsx';
-import { Icon } from '../workbench/icons.jsx';
-import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
+import { Icon } from '../../components/icons.jsx';
+import { ModuleDisclosure } from '../../components/interaction/ModuleMotion.jsx';
 import { ObjectProperties, ToolPanel } from './WorkspaceControls.jsx';
 import DynamicTools from './DynamicTools.jsx';
 

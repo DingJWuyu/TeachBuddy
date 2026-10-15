@@ -1,5 +1,5 @@
 import path from "node:path";
-import { startResourcesFixture } from "./server.mjs";
+import { startResourcesFixture } from "../../../../api/test/fixtures/resources/server.mjs";
 const fixture = await startResourcesFixture({
   dataDir: path.resolve(
     process.env.R32_DATA_DIR ?? "test-results/r32-browser/data",

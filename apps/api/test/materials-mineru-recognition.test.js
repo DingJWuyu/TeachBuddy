@@ -8,12 +8,12 @@ import JSZip from 'jszip';
 import Database from 'better-sqlite3';
 import {backup} from '../src/workbench/reliability/backup.js';
 import {createIntegration} from './fixtures/auth-integration/harness.js';
-import {registerMath} from '../../web/e2e/fixtures/math-static/real.mjs';
+import {registerMath} from './fixtures/math-real.mjs';
 
 const base='/api/workbench/files';
 const fixtures=new URL('./fixtures/mineru-recognition/',import.meta.url);
 const captured=id=>JSON.parse(fs.readFileSync(new URL(`${id}/middle_json.json`,fixtures)));
-const sources=[{id:'D2',width:1775,height:2425,path:'../../web/e2e/fixtures/materials-questions/recognition-document-4/I-2/page.png'},
+const sources=[{id:'D2',width:1775,height:2425,path:'../../../test/fixtures/questions/recognition-document-4/I-2/page.png'},
   {id:'D8',width:1654,height:2339,path:'./fixtures/ocr-selection/pages/D8.png'}];
 const write=(client,url,body)=>client.request('POST',url,{body,headers:{'Idempotency-Key':randomUUID()}});
 async function waitJob(client,id) {
@@ -104,7 +104,7 @@ test('official MinerU typed mathematics and table eq survive HTTP persistence an
 test('structured fragment documents retain nested image references and reject foreign assets atomically',async()=>{
   const directory=fs.mkdtempSync(path.join(os.tmpdir(),'mineru-fragments-'));
   const backupTarget=directory+'-backup';
-  const figure=fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png',import.meta.url));
+  const figure=fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png',import.meta.url));
   const raw={pages:[{blocks:[
     {type:'text',bbox:[.1,.1,.9,.2],content:[{type:'text',content:'Q1. 请观察下表。'}]},
     {type:'table',bbox:[.1,.3,.9,.9],content:[{type:'table_body',content:'<table><tr><td>记录</td><td><eq>x<y</eq><img src="imgs/figure.png"/></td></tr></table>'}]},
@@ -236,7 +236,7 @@ test('typed table eq keeps source LaTeX through HTTP persistence and reopen',asy
 
 test('typed list fragments select original children once, retain long text, math and images, and respect question boundaries',async()=>{
   const directory=fs.mkdtempSync(path.join(os.tmpdir(),'mineru-list-fragments-'));
-  const figure=fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png',import.meta.url));
+  const figure=fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png',import.meta.url));
   const latex=String.raw`f(x)=\begin{cases}x,&x>0\\`+'\n'+String.raw`x^2,&x\leq0\end{cases}`;
   const raw={pages:[{blocks:[
     {type:'list',bbox:[.1,.1,.9,.3],content:[

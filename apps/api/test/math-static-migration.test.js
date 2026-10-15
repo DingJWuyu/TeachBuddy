@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { randomUUID } from "node:crypto";
-import { startFixture } from "../../../scripts/materials/fixture.mjs";
-import { startMathFixture } from "../../web/e2e/fixtures/math-static/server.mjs";
+import { startFixture } from "./fixtures/materials/server.mjs";
+import { startMathFixture } from "./fixtures/math/server.mjs";
 import { manualQuestionSample } from "./first-flow-harness.js";
 test("R31 database upgrade retains files, documents, questions and replay across two restarts", async () => {
   const dataDir = `test-results/m41/migration-${randomUUID()}`;

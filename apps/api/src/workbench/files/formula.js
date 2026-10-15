@@ -1,5 +1,5 @@
 import { checkFormula } from "@refatos/shared/math/formula";
-import { materialsError } from "../jobs/index.js";
+import { materialsError } from "../problems.js";
 import { pandocDocument, runPandocSync } from "./pandoc.js";
 
 export function validateFormulas(formulas) {

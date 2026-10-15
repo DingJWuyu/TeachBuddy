@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { startFixture } from "../../../scripts/materials/fixture.mjs";
+import { startFixture } from "./fixtures/materials/server.mjs";
 const delay = () => new Promise((r) => setTimeout(r, 15));
 test("persistent handlers retain partial units, cancellation, unknown provider and interrupted restart without resending", async (t) => {
   const root = path.resolve("test-results/r31-complete/jobs");

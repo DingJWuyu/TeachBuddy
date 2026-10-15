@@ -2,7 +2,7 @@ import { classRetirementMigrations } from '../src/workbench/retire-classes.js';
 import { retirementMigrations } from '../src/workbench/retire-lessons.js';
 import { recognitionMigrations } from '../src/workbench/recognition/migrations.js';
 import { migrations as reliabilityMigrations } from '../src/workbench/reliability/storage.js';
-import { preferenceMigrations } from '../src/reliability/preferences.js';
+import { preferenceMigrations } from '../src/workbench/preferences.js';
 import { navigationMigrations } from '../src/workbench/navigation.js';
 import { migrations as agentMigrations } from '../src/agent/store.js';
 import { jobMigrations } from '../src/workbench/jobs/migrations.js';
@@ -21,8 +21,8 @@ import { createMigrationRunner, prefixForModule } from '../src/workbench/migrati
 import { openWorkbenchDatabase } from '../src/workbench/storage.js';
 import { createWorkbench } from '../src/workbench/index.js';
 import { createEnv } from '../src/config/env.js';
-import { createDataStore } from '../src/core/dataStore.js';
-import { hashPassword } from '../src/core/auth.js';
+import { createDataStore } from './fixtures/legacy-source/dataStore.js';
+import { hashPassword } from './fixtures/legacy-source/auth.js';
 import { moduleCatalog } from '@refatos/shared';
 import { startServer } from '../src/server.js';
 import { ACCOUNT_A, createTempRoot, createWorkbenchContext } from './workbench-test-context.js';
@@ -81,11 +81,11 @@ test('an existing account and layout database is upgraded without losing its dat
       [...PRODUCT_MIGRATIONS, 'workbench_probe_init', 'workbench_retirement_001_lessons', 'workbench_retirement_002_classes', 'agent_001_conversations']
     );
 
-    assert.equal(upgraded.dataStore.findUserByEmail('old-teacher@example.test').id, user.id);
-    const stored = upgraded.dataStore.forAccount(user.id).list('workspaceLayouts')[0];
-    for (const key of Object.keys(layout)) assert.deepEqual(stored[key], layout[key]);
+    assert.equal(upgraded.workbench.db.prepare('SELECT * FROM users WHERE email=?').get('old-teacher@example.test').id, user.id);
+    const stored = upgraded.workbench.db.prepare('SELECT * FROM workspaceLayouts WHERE ownerId=?').get(user.id);
+    for (const key of Object.keys(layout)) assert.deepEqual(JSON.parse(stored[key]), layout[key]);
   } finally {
-    await upgraded.dataStore.close();
+    await upgraded.close();
     fs.rmSync(rootDir, { recursive: true, force: true });
   }
 });

@@ -9,8 +9,8 @@ export async function deviceMath(page) {
 }
 export async function currentApi(page, expression) {
   return page.evaluate(expression => {
-    const host = document.querySelector('.mw-graph-host > div');
-    const api = window.mathTestApis?.[host?.id] ?? window.mathTestApi;
+    const host = document.querySelector('.mw-graph-host > div, .math-geogebra-host > div');
+    const api = window.mathTestApis?.[host?.id];
     if (typeof api?.exists !== 'function') return null;
     try {
     if (!expression) return { names: api.getAllObjectNames(), types: api.getAllObjectNames().map(name => [name, api.getObjectType(name)]) };

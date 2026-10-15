@@ -1,9 +1,9 @@
 import { PreviewFixture } from './PreviewFixture.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { DocumentEditor, DocumentView } from '../../../src/features/workbench/materials/index.js';
+import { DocumentEditor, DocumentView } from '../../../src/components/materials/index.js';
 import './style.css';
-import { bindWorkbenchTransport } from '../../../src/features/workbench/apiClient.js';
+import { bindWorkbenchTransport } from '../../../src/platform/http/apiClient.js';
 // Explicit test-principal fixture; the product binds A11's page transport.
 bindWorkbenchTransport(window.fetch.bind(window));
 function Page() {

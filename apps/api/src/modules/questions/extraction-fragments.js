@@ -1,11 +1,7 @@
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
-import {
-  emptyDocument,
-  textDocument,
-  documentText,
-  images,
-} from "./materials-content.js";
+import { documentText, images } from "../../workbench/content/document.js";
+import { emptyDocument, textDocument } from "./materials-content.js";
 
 // Stable identities belong to a source unit and fragment, never to a question number.
 export function extractionId(...values) {

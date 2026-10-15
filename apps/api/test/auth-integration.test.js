@@ -30,8 +30,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { manualQuestionSample, variantCopySample } from './first-flow-harness.js';
-import { createDataStore } from '../src/core/dataStore.js';
-import { hashPassword } from '../src/core/auth.js';
+import { createDataStore } from './fixtures/legacy-source/dataStore.js';
+import { hashPassword } from './fixtures/legacy-source/auth.js';
 
 const Q = '/api/modules/questions/items';
 async function account(world, email = 'matrix@example.test', rememberMe = true) {
@@ -135,7 +135,7 @@ test('old database retains stable accountKey, credentials, layout and migration 
       assert.equal(login.json.account.accountKey, legacy.id);
       assert.equal(login.json.account.nickname, '旧账户');
       assert.equal(world.workbench.db.prepare("SELECT COUNT(*) n FROM workbench_migrations WHERE moduleId='auth'").get().n, 8);
-      assert.equal(world.dataStore.forAccount(legacy.id).list('workspaceLayouts').length, 1);
+      assert.equal(world.workbench.db.prepare('SELECT count(*) AS total FROM workspaceLayouts WHERE ownerId=?').get(legacy.id).total, 1);
     } finally { await world.close(); }
   }
 });

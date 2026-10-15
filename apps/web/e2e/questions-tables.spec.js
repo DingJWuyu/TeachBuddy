@@ -5,18 +5,18 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomUUID, createHash} from 'node:crypto';
 import {createIntegration} from '../../api/test/fixtures/auth-integration/harness.js';
-import {registerMath} from './fixtures/math-static/real.mjs';
-import {sourceImage} from './fixtures/materials-questions/recognition/replay.mjs';
-import {documentText, images, walkBlocks} from '../../api/src/modules/questions/materials-content.js';
+import {registerMath} from '../../api/test/fixtures/math-real.mjs';
+import {sourceImage} from '../../../test/fixtures/questions/recognition/replay.mjs';
+import {documentText, images, walkBlocks} from '../../api/src/workbench/content/document.js';
 
 const base='/api/modules/questions/v2';
-const recordedPages=fileURLToPath(new URL('./fixtures/materials-questions/recognition-document-4/',import.meta.url));
+const recordedPages=fileURLToPath(new URL('../../../test/fixtures/questions/recognition-document-4/',import.meta.url));
 const externalPdf=()=>{
   const bytes=fs.readFileSync(process.env.M33_PRIVATE_PDF);
   expect(createHash('sha256').update(bytes).digest('hex')).toBe('b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a');
   return bytes;
 };
-const pdf=path.resolve('apps/web/e2e/fixtures/materials-questions/P.pdf');
+const pdf=path.resolve('test/fixtures/questions/P.pdf');
 const email='questions-tables@example.test';
 let world, client, recognizer;
 test.beforeEach(async()=>{
@@ -134,7 +134,7 @@ test('HTTP：最终 document-4 四图保留六题五答案三图，几何下标�
 });
 
 test('HTTP：练习范围的变号题目按原顺序拆分，下一题之前的连续双图只归前题',async()=>{
-  const figure=fs.readFileSync(new URL('./fixtures/materials-questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
+  const figure=fs.readFileSync(new URL('../../../test/fixtures/questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
   const file=await upload(sourceImage('I-1'),'numbered.png');
   const html='<p>教学环节：随堂练习</p>'+table([header,[
     '１７． 如图求 $u(t)=1.25t+8$。<img src="imgs/one.png"/><img src="imgs/two.png"/>\\n１８． 判断 $v(t)$ 在 $(2,5]$ 上的性质。',
@@ -170,7 +170,7 @@ test('HTTP：检测表不把空题、函数名称、小数或引用中的数字�
 });
 
 test('HTTP：数字题后的集中配图不猜归属，新小结及表外报告保持未分配',async()=>{
-  const figure=fs.readFileSync(new URL('./fixtures/materials-questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
+  const figure=fs.readFileSync(new URL('../../../test/fixtures/questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
   const file=await upload(sourceImage('I-1'),'mixed.png');
   const html='<p>教学环节：课后作业</p>'+table([header,['1. 如图判断 $a(t)=2t$。<p>2. 如图判断 $b(t)=t^2$。</p><img src="imgs/shared.png"/>','活动','点评']])+
     '<p>教学环节：课堂小结</p>'+table([header,['1. 回顾 $f(-x)=f(x)$。','活动','点评']])+'<p>1. 调查过程</p><p>调查目的：分析课堂效果。</p>';
@@ -294,7 +294,7 @@ test('HTTP：隐式续题不借用未选前页、非相邻页或另一原件',as
 });
 
 for(const interruption of ['failed','cancelled'])test(`HTTP：隐式续题在${interruption}后重试，人工稿、忽略和入库身份保留`,async()=>{
-  const file=await upload(fs.readFileSync(path.resolve('apps/web/e2e/fixtures/materials-questions/PS.pdf')),'scan.pdf');
+  const file=await upload(fs.readFileSync(path.resolve('test/fixtures/questions/PS.pdf')),'scan.pdf');
   let entered, resumed=false;const reached=new Promise(resolve=>{entered=resolve;});
   recognizer.run=async input=>{
     recognizer.calls.push('controlled');
@@ -409,7 +409,7 @@ test('HTTP：真实 E.pdf 提取三题，例题续页保留四个原式与两页
 });
 
 test('HTTP：表头换列及例号系数变化仍只取内容列，保留原公式和同格图',async()=>{
-  const figure=fs.readFileSync(new URL('./fixtures/materials-questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
+  const figure=fs.readFileSync(new URL('../../../test/fixtures/questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
   const file=await upload(sourceImage('I-1'),'table.png');
   await recognize(file,[1],[response(table([['设计点评','教学内容','教师活动'],
     ['点评不能进题干','【练习42】求 $h(s)=9s-2$。\\n(1) 计算 $h(3)$。','活动不能进题干'],
@@ -461,7 +461,7 @@ test('HTTP：新环节及含跨列内容的表格保持待处理，普通回顾�
 });
 
 test('HTTP：同格多个题目不猜配图，字面文本与数学转义分别保留',async()=>{
-  const figure=fs.readFileSync(new URL('./fixtures/materials-questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
+  const figure=fs.readFileSync(new URL('../../../test/fixtures/questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
   const file=await upload(sourceImage('I-1'),'table.png');
   await recognize(file,[1],[response(table([header,['【练习1】如图，保留字符串 \\name。 $\\begin{cases} t,&t&lt;0\\\\t^2,&t&gt;0\\end{cases}$'+
     '【练习2】如图分析。<img src="imgs/plot.png"/>','教师说明','点评']]),[{name:'imgs/plot.png',bytes:figure}])]);
@@ -474,7 +474,7 @@ test('HTTP：同格多个题目不猜配图，字面文本与数学转义分别�
 
 test('HTTP：单页重试保留同名题目的人工公式配图、入库和忽略状态',async()=>{
   const file=await upload(fs.readFileSync(pdf),'material.pdf');
-  const figure=fs.readFileSync(new URL('./fixtures/materials-questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
+  const figure=fs.readFileSync(new URL('../../../test/fixtures/questions/recognition/I-1/derived/imgs/img_in_image_box_323_511_1330_984.png',import.meta.url));
   await recognize(file,[1,2],[intro(),response(table([
     ['(1) 前题内容待归属。','教师巡视','教学目的'],
     ['【练习】如图计算 $g(t)=7t+4$。<img src="imgs/plot.png"/>','教师巡视','教学目的'],
@@ -541,6 +541,14 @@ test('HTTP：不同原件不继承教学表头',async()=>{
   expect(recognizer.calls).toHaveLength(2);
 });
 
+async function saveImportProgress(page) {
+  const saved = page.waitForResponse(response => response.request().method() === 'PUT'
+    && /\/api\/modules\/questions\/v2\/imports\/[^/]+$/.test(new URL(response.url()).pathname));
+  await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+  expect((await saved).status()).toBe(200);
+  await expect(page.getByRole('button', { name: '保存检查进度', exact: true })).toBeEnabled();
+}
+
 for(const withFigure of [false,true])test(withFigure
   ? '浏览器：受控图文表片段归入题干后保存、刷新和入库保留图片引用与来源'
   : '浏览器：D8 未分配活动表归入题干后保存、刷新和入库保留原结构与来源',async({page},info)=>{
@@ -555,7 +563,7 @@ for(const withFigure of [false,true])test(withFigure
   recognizer.run=async({width,height})=>{
     recognizer.calls.push({width,height});
     return {raw,pageBlocks:raw.pages[0].blocks,width,height,assets:withFigure?[{
-      name:'imgs/figure.png',bytes:fs.readFileSync(path.resolve('apps/web/e2e/fixtures/materials-questions/figure.png')),
+      name:'imgs/figure.png',bytes:fs.readFileSync(path.resolve('test/fixtures/questions/figure.png')),
     }]:[],derivations:[],
       originalAssets:fs.readdirSync(path.join(fixtures,'images')).map(name=>({name:`images/${name}`,bytes:fs.readFileSync(path.join(fixtures,'images',name))}))};
   };
@@ -584,7 +592,7 @@ for(const withFigure of [false,true])test(withFigure
   await page.locator('summary').filter({hasText:'未分配片段'}).click();
   await page.screenshot({path:info.outputPath('D8-before.png'),fullPage:true,animations:'disabled'});
   await page.getByRole('button',{name:'归入题干',exact:true}).click();
-  await page.getByRole('button',{name:'保存检查进度',exact:true}).click();
+  await saveImportProgress(page);
   await page.reload();
   await expect(page.getByRole('button',{name:'修改题目',exact:true})).toBeEnabled();
   const reopened=await request('GET',`${base}/imports/${created.id}`);
@@ -597,9 +605,7 @@ for(const withFigure of [false,true])test(withFigure
   await page.locator('summary').filter({hasText:'未分配片段'}).click();
   await expect(page.getByLabel('片段处理')).toHaveValue('assigned');
   await expect(page.getByRole('button',{name:'归入题干',exact:true})).toBeDisabled();
-  await page.getByLabel('片段处理').selectOption('unassigned');
-  await expect(page.getByRole('button',{name:'归入题干',exact:true})).toBeEnabled();
-  await page.getByLabel('片段处理').selectOption('ignored');
+  await expect(page.getByLabel('片段处理')).toBeDisabled();
   await page.locator('summary').filter({hasText:'未分配片段'}).click();
   await page.getByRole('button',{name:'修改题目',exact:true}).click();
   await page.getByLabel('答案状态',{exact:true}).selectOption('absent');
@@ -676,7 +682,7 @@ test('浏览器：列表中的活动与点评分别归入题干，保存重开�
   await page.locator('summary').filter({hasText:'未分配片段'}).click();
   await page.screenshot({path:info.outputPath('list-before.png'),fullPage:true,animations:'disabled'});
   await page.getByRole('button',{name:'归入题干',exact:true}).first().click();
-  await page.getByRole('button',{name:'保存检查进度',exact:true}).click();await page.reload();
+  await saveImportProgress(page);await page.reload();
   await expect(page.getByRole('button',{name:'修改题目',exact:true})).toBeEnabled();
   const first=await request('GET',`${base}/imports/${created.id}`);
   fs.writeFileSync(info.outputPath('list-first-readback.json'),JSON.stringify({before,first},null,2));
@@ -686,7 +692,7 @@ test('浏览器：列表中的活动与点评分别归入题干，保存重开�
   expect(first.drafts[0].body.blocks.at(-1).items).toHaveLength(1);
   await page.locator('summary').filter({hasText:'未分配片段'}).click();
   await page.getByRole('button',{name:'归入题干',exact:true}).nth(1).click();
-  await page.getByRole('button',{name:'保存检查进度',exact:true}).click();await page.reload();
+  await saveImportProgress(page);await page.reload();
   await expect(page.getByRole('button',{name:'修改题目',exact:true})).toBeEnabled();
   const both=await request('GET',`${base}/imports/${created.id}`);
   fs.writeFileSync(info.outputPath('list-both-readback.json'),JSON.stringify(both,null,2));

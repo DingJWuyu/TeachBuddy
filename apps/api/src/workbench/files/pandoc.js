@@ -3,7 +3,7 @@ import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { BorderStyle, BuilderElement, Document, Paragraph, Packer, StringValueElement, TableProperties } from "docx";
 import sharp from "sharp";
-import { materialsError } from "../jobs/index.js";
+import { materialsError } from "../problems.js";
 
 export const pandocDocument = (blocks) => ({
   "pandoc-api-version": [1, 23, 1, 2], meta: {}, blocks,

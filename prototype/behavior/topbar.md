@@ -2,6 +2,8 @@
 
 Status: Mixed (既有顶部栏已验收；日程提醒待评审)
 
+本文只维护原型的体验参考和适用边界；认可范围见 [manifest](manifest.md)。现行产品从[文档入口](../../docs/README.md)读取，原型样例、存储与旧场景结果不定义产品能力。
+
 运行入口见 [manifest](manifest.md)，共用关闭、焦点与渐进出现规则见 [外壳](shell.md)，导航与搜索见 [导航](navigation.md)。本文件拥有 J5、J6、J8-J10、J14、J15 与 S3、S3a、S4、S7、S10-S12、S25。
 
 ## Journeys and states

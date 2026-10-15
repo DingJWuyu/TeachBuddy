@@ -370,3 +370,34 @@ test('WB-AG-013/022: 首个写入已确认后停止，同批未开始调用取�
  const endpoint=await start(c);const s=await finished(c,endpoint);assert.equal(s.turns[0].state,'stopped',JSON.stringify(s));assert.deepEqual(s.toolCalls.map(t=>t.state),['confirmed','cancelled']);assert.equal((await c.request('GET','/api/modules/questions/items')).json.items.length,1);assert.equal(p.requests(),1);
  }finally{await w.close();}
 });
+
+test('WB-AG-008/019: v2 copies preserve active/deleted queries and missing-source precedence', async () => {
+  let source, activeCopy, deletedCopy;
+  const p = await provider([
+    [{ type: 'toolCall', id: 'active-copies', name: 'wb_list_derivatives', arguments: {} }],
+    [{ type: 'text', text: '完成' }],
+    [{ type: 'toolCall', id: 'deleted-copies', name: 'wb_list_derivatives', arguments: {} }],
+    [{ type: 'text', text: '完成' }],
+  ].map((response, index) => index % 2 ? response : () => [{ ...response[0], arguments: { id: source.id, query: { state: index === 0 ? 'active' : 'deleted' } } }]));
+  const w = await createIntegration({ agent: p.config });
+  try {
+    const c = await register(w);
+    const body = { title: '当前文稿原题', body: { version: 2, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text: '题干' }] }] },
+      solution: { version: 2, blocks: [] }, answerStatus: 'absent', typeId: null, tagIds: [], starred: false, note: '', source: { kind: 'manual' } };
+    const base = '/api/modules/questions/v2/items';
+    const created = await write(c, 'POST', base, body); assert.equal(created.status, 201, created.text); source = created.json;
+    const { source: ignored, ...copyBody } = body;
+    activeCopy = (await write(c, 'POST', `${base}/${source.id}/copies`, { ...copyBody, baseVersion: 1, title: '保留副本' })).json;
+    deletedCopy = (await write(c, 'POST', `${base}/${source.id}/copies`, { ...copyBody, baseVersion: 1, title: '归档副本' })).json;
+    assert.equal((await write(c, 'POST', `${base}/${deletedCopy.id}/deletion`, { baseVersion: 1, deleted: true })).status, 200);
+    for (const [name, expected] of [['active-copies', activeCopy.id], ['deleted-copies', deletedCopy.id]]) {
+      const result = await finished(c, await start(c));
+      assert.equal(result.turns[0].state, 'completed', JSON.stringify(result));
+      assert.deepEqual(result.toolCalls.find(call => call.toolCallId === name || call.name === 'wb_list_derivatives').result.items.map(item => item.id), [expected]);
+    }
+    const principal = { accountKey: (await c.request('GET', '/api/workbench/context')).json.accountKey };
+    const operation = w.workbench.loader.get('questions').port.operations.listQuestionCopiesForAgent;
+    assert.throws(() => operation({ principal, id: randomUUID(), query: { unknown: true } }), error => error.status === 404);
+    assert.throws(() => operation({ principal, id: source.id, query: { unknown: true } }), error => error.problem.field === '/query/unknown');
+  } finally { await w.close(); }
+});

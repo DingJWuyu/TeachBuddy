@@ -1,6 +1,6 @@
 Feature: 教师账户入口与工作台身份交接
   契约存在不代表实现通过，执行结果须区分 frontend-substitute、real-api/fake-mail 和 real-auth/real-mail。
-  交换数据与状态码唯一依据 apps/api/src/contracts/auth.openapi.yaml，CC细节见 docs/contracts/auth-cases.md。
+  交换数据与状态码唯一依据 apps/api/src/contracts/auth.openapi.yaml，CC细节见 docs/acceptance/auth-cases.md。
 
   Background:
     Given 使用本批独立冻结的认证契约与隔离的同源HTTPS环境

@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { createDataStore } from '../src/core/dataStore.js';
+import { createDataStore } from './fixtures/legacy-source/dataStore.js';
 import {
   createFirstFlowHarness,
   manualQuestionSample

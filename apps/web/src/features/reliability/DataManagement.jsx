@@ -1,13 +1,13 @@
 import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
-import { SettingsConfirm, SettingsDisclosure } from "./SettingsControls.jsx";
+import { SettingsConfirm, SettingsDisclosure } from "../workbench/SettingsControls.jsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   workbenchGet,
   workbenchPost,
   workbenchBlob,
-} from "../workbench/apiClient.js";
-import { useIdempotentSubmit } from "../workbench/useIdempotentSubmit.js";
+} from "../../platform/http/apiClient.js";
+import { useIdempotentSubmit } from "../../platform/saving/useIdempotentSubmit.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import "./reliability.css";
 const base = "/api/reliability/v1";

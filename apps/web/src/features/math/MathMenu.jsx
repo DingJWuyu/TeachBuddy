@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Icon } from '../workbench/icons.jsx';
-import { ModulePresence } from '../workbench/ModuleMotion.jsx';
-export { MenuItem } from '../workbench/overlays.jsx';
+import { Icon } from '../../components/icons.jsx';
+import { ModulePresence } from '../../components/interaction/ModuleMotion.jsx';
+export { MenuItem } from '../../components/interaction/overlays.jsx';
 
 export function MathMenu({ label, className = '', children }) {
   const [open, setOpen] = useState(false);

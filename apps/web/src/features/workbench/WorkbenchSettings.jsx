@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../auth/index.jsx';
 import { DataManagement } from '../reliability/DataManagement.jsx';
-import { SettingsConfirm } from '../reliability/SettingsControls.jsx';
+import { SettingsConfirm } from './SettingsControls.jsx';
 import { useWorkbenchShell } from './shellContext.js';
 import './settings-shell.css';
 import { LANGUAGES } from './chrome/sidebarHeadData.js';

@@ -1,26 +1,27 @@
 # Behavior records
 
-A package keeps one `behavior.md` for its session. The accepted version uses a manifest and documents split by product area or shared concern. Each behavior has one owner; other documents link to that owner.
+A package keeps one `behavior.md` for its session. The integrated reference uses a manifest and documents split by reference area or shared concern. Each behavior has one owner; other documents link to that owner.
 
 Keep journey, state, and scenario IDs stable across edits and document moves. Read existing ownership before assigning new IDs. Reuse shared rules by reference rather than repeating them in each journey.
 
 ## Manifest
 
-Keep the accepted manifest as an index:
+Keep the integrated manifest as an index:
 
 - Run entry, prerequisites, and shared artifact locations.
-- Each behavior document's link, scope, and owned IDs.
+- Each behavior document's link, scope, acceptance status, and owned IDs.
+- The project's authoritative product docs, and the boundary between prototype intent and current product requirements.
 
 Detailed behavior and scenario coverage belong in the owning documents.
 
 ## Record format
 
-Use the sections below where applicable. A package includes its baseline delta and decision trail. Accepted documents omit those session sections and contain only current confirmed behavior, rationale, and agreed limitations. Reference the manifest for shared run information.
+Use the sections below where applicable. A package includes its baseline delta and decision trail. Integrated documents omit those session sections and describe current reference behavior, rationale, limitations, and explicit accepted versus provisional scopes. Reference the manifest for shared run information.
 
 ```markdown
 # <Scope> behavior
 
-Status: In review | Accepted
+Status: In review | Accepted | Mixed | Draft
 
 ## Scope
 
@@ -53,10 +54,13 @@ For each state: ID, visible content, and available or disabled actions.
 For each scenario: ID, starting conditions, representative data, reproducible
 steps, expected states and transitions, and how to reset it.
 
-Coverage table: one row per scenario and supported viewport class. Include
-exact dimensions, links to its visual states and interaction-check results,
-and the verification outcome. This table is the evidence index. Name gaps and
-user-agreed exclusions explicitly instead of leaving ambiguous empty cells.
+Package coverage: one row per scenario and supported viewport class, with exact
+dimensions, visual states, interaction results, and verification outcomes. Name
+gaps and agreed exclusions explicitly. Integrated references retain scenario
+meaning and reproducible check entries; task results stay with the task. Index
+only selected enduring visual inputs, giving their purpose and accepted scope.
+Use fixed Git links for necessary historical provenance instead of maintaining
+large per-image pass tables or repair logs.
 
 ## Visible information
 

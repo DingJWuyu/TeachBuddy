@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Icon } from "../workbench/chrome/icons.jsx";
-import { ModuleDisclosure } from "../workbench/ModuleMotion.jsx";
+import { ModuleDisclosure } from "../../components/interaction/ModuleMotion.jsx";
 
 export function ResourceInfo({
   item,

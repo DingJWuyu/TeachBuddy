@@ -1,4 +1,4 @@
-import { isDeletedAccount } from '../workbench/storage.js';
+import { isDeletedAccount } from '../../platform/device/storage.js';
 // Move existing device state out of the active namespaces before mounting any
 // editor after a time-point restore. Values remain byte-for-byte inspectable.
 const tracker = (account) => `teachbuddy:data-recovery:${account}`;

@@ -2,25 +2,61 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import sharp from 'sharp';
+import path from 'node:path';
+import { emptySource, emptyDynamicSource, newElement, defaultStyle } from '../src/features/math/model.js';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { register } from './fixtures/math-dynamic/helpers.mjs';
+import { installMathProbe, enterMath, savedMath, currentApi } from './math-unified-helpers.mjs';
 
+import { importMathSource, chooseFile } from './fixtures/math-workspace.js';
 let world;
 test.beforeEach(async ({ page }) => {
-  world = await createIntegration();
+  world = await createIntegration({ webDist: path.resolve(process.env.WORKBENCH_WEB_DIST ?? 'apps/web/dist') });
   await register(page, world, 'math-workspace@example.test');
   const tutorial = page.getByRole('button', { name: '知道了', exact: true });
   if (await tutorial.isVisible()) await tutorial.click();
   await page.getByRole('navigation', { name: '功能模块', exact: true }).getByRole('link', { name: /^数学工坊/ }).click();
 });
 test.afterEach(async ({ page }, info) => {
-  if (info.status !== info.expectedStatus) await page.screenshot({ path: info.outputPath('failure.png') });
+  if (info.status !== info.expectedStatus) {
+    await page.screenshot({ path: info.outputPath('failure.png') });
+    fs.writeFileSync(info.outputPath('world.json'), JSON.stringify({ directory: world?.directory }));
+  }
   if (world) {
     await world.close();
     if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
     world = null;
   }
 });
+
+// Compatibility coverage for saved formula/plane/space/dynamic/html sources.
+// New unified works are covered by math-unified; legacy input comes through import.
+async function importSource(page, source, title = '兼容作品') {
+  const input = structuredClone(source);
+  // Old sources on disk must be complete. Start blank editing by removing a real
+  // imported item through the UI, rather than inventing an unsupported empty file.
+  const emptyFormula = input.kind === 'formula' && !input.latex;
+  const emptyGraph = input.scene && !input.scene.elements.length;
+  const emptySpace = input.kind === 'space' && !input.points.length;
+  if (emptyFormula) input.latex = 'x';
+  if (emptyGraph) input.scene.elements = [newElement('point', 'Seed')];
+  if (emptySpace) input.points = [{ id: 'Seed', x: 0, y: 0, z: 0, label: { text: 'Seed', dx: 10, dy: -10 }, style: defaultStyle() }];
+  const work = await importMathSource(page, input, title);
+  if (emptyFormula) {
+    await page.getByLabel('LaTeX', { exact: true }).fill('');
+    await page.getByRole('button', { name: '常用结构', exact: true }).click();
+  } else if (emptyGraph || emptySpace) {
+    await selectTools(page, '对象');
+    await page.getByRole('button', { name: '移除对象', exact: true }).click();
+  }
+  return work;
+}
+
+async function archived(page, show = true) {
+  await page.getByRole('button', { name: '作品操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: show ? '已归档' : '我的作品', exact: true }).click();
+}
+function workRow(page, title) { return page.locator('.mw-library-row').filter({ has: page.getByText(title, { exact: true }) }); }
 
 async function save(page) {
   const request = page.waitForResponse(response => response.url().includes('/api/modules/math/v1/works')
@@ -44,14 +80,14 @@ async function selectTools(page, name) {
 }
 
 test('动态作品归档后仍显示保存的初态，恢复后参数可用', async ({ page }) => {
-  await page.getByRole('button', { name: '新建动态演示', exact: true }).click();
+  await importSource(page, emptyDynamicSource());
   await page.getByRole('button', { name: '试试二次函数演示', exact: true }).click();
   await page.getByLabel('作品名称').fill('归档动态预览');
   await save(page);
   await page.getByRole('button', { name: '作品操作', exact: true }).click();
   await page.getByRole('menuitem', { name: '归档作品', exact: true }).click();
-  await page.getByLabel('已归档', { exact: true }).check();
-  await page.locator('.math-library').getByRole('button', { name: '归档动态预览 动态演示', exact: true }).click();
+  await archived(page);
+  await workRow(page, '归档动态预览').locator('>button').click();
   await expect(page.locator('.math-archived-preview svg [data-object="f"]')).toBeVisible();
   await expect(page.locator('.math-archived-preview')).toContainText('定位点 (0,0)');
   await expect(page.getByRole('slider')).toHaveCount(0);
@@ -60,7 +96,7 @@ test('动态作品归档后仍显示保存的初态，恢复后参数可用', as
 });
 
 test('图形撤销重做保留服务器版本，历史恢复先成为可撤销草稿', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+  await importSource(page, emptySource('plane'));
   await page.getByRole('button', { name: '从 y = x² 开始', exact: true }).click();
   await page.getByLabel('作品名称').fill('历史恢复图形');
   const first = await save(page);
@@ -84,10 +120,10 @@ test('图形撤销重做保留服务器版本，历史恢复先成为可撤销�
   await expect(dialog.locator('svg [data-object="f1"]')).toBeVisible();
   await page.screenshot({ path: info.outputPath('history-desktop.png') });
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(dialog.getByRole('button', { name: '恢复为草稿', exact: true })).toBeInViewport();
+  await expect(dialog.getByRole('button', { name: '恢复版本', exact: true })).toBeInViewport();
   await page.screenshot({ path: info.outputPath('history-mobile.png') });
   await page.setViewportSize({ width: 1440, height: 900 });
-  await dialog.getByRole('button', { name: '恢复为草稿', exact: true }).click();
+  await dialog.getByRole('button', { name: '恢复版本', exact: true }).click();
   await expect(page.getByLabel('expression', { exact: true })).toHaveValue('x^2');
   await expect(page.locator('.math-workspace-status')).toHaveText('未保存');
   await page.getByRole('button', { name: '撤销', exact: true }).click();
@@ -103,38 +139,32 @@ test('图形撤销重做保留服务器版本，历史恢复先成为可撤销�
 });
 
 test('导出的制作源重新导入为独立作品，错误文件保留当前草稿', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建动态演示', exact: true }).click();
+  await importSource(page, emptyDynamicSource());
   await page.getByRole('button', { name: '试试二次函数演示', exact: true }).click();
   await page.getByLabel('作品名称').fill('导出后重新制作');
   const original = await save(page);
   const target = info.outputPath('dynamic.json');
   await download(page, 'source', target);
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  const picker = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: '导入制作源 JSON', exact: true }).click();
   const response = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/api/modules/math/v1/works'));
-  await (await picker).setFiles(target);
+  await chooseFile(page, '导入作品', target);
   const imported = await (await response).json();
   expect(imported.id).not.toBe(original.id);
   expect(imported.source).toEqual(original.source);
   await expect(page.getByRole('slider', { name: 'a 滑杆', exact: true })).toBeVisible();
   await page.getByLabel('作品名称').fill('保留我的草稿');
-  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
   await page.getByLabel('导入制作源文件').setInputFiles({ name: 'broken.json', mimeType: 'application/json', buffer: Buffer.from('{ broken') });
   await expect(page.getByRole('alert')).toContainText('不是有效');
-  await page.getByRole('button', { name: '继续制作', exact: true }).click();
   await expect(page.getByLabel('作品名称')).toHaveValue('保留我的草稿');
-  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
   await page.getByLabel('导入制作源文件').setInputFiles({ name: 'invalid.json', mimeType: 'application/json', buffer: Buffer.from('{"kind":"dynamic","schemaVersion":1}') });
   await page.getByRole('dialog').getByRole('button', { name: '继续', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('请检查');
-  await page.getByRole('button', { name: '继续制作', exact: true }).click();
   await expect(page.getByLabel('作品名称')).toHaveValue('保留我的草稿');
 });
 
 test('导入响应丢失后刷新确认原请求，只创建一份作品', async ({ page }) => {
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
-  await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
+  await importSource(page, emptySource('formula'));
+  await page.getByRole('button', { name: '公式源码', exact: true }).click();
   await page.getByLabel('LaTeX', { exact: true }).fill('x+1');
   const original = await save(page);
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
@@ -146,18 +176,18 @@ test('导入响应丢失后刷新确认原请求，只创建一份作品', async
     if (!drop) return route.continue();
     drop = false; await route.fetch(); await route.abort('failed');
   });
-  await page.getByLabel('导入制作源文件').setInputFiles({ name: '恢复导入.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(original.source)) });
-  await expect(page.getByRole('button', { name: '确认操作结果', exact: true })).toBeEnabled();
+  await chooseFile(page, '导入作品', { name: '恢复导入.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(original.source)) });
+  await expect(page.getByRole('button', { name: '确认结果', exact: true })).toBeEnabled();
   await page.reload();
-  await page.getByRole('button', { name: '确认操作结果', exact: true }).click();
+  await page.getByRole('button', { name: '确认结果', exact: true }).click();
   await expect(page.getByLabel('作品名称')).toHaveValue('恢复导入');
   expect(keys.length).toBe(2); expect(new Set(keys).size).toBe(1);
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await expect(page.locator('.math-work-row')).toHaveCount(2);
+  await expect(page.locator('.mw-library-row')).toHaveCount(2);
 });
 
 test('平面图制作动态副本，保留图形和原作品', async ({ page }) => {
-  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+  await importSource(page, emptySource('plane'));
   await page.getByRole('button', { name: '从 y = x² 开始', exact: true }).click();
   await page.getByLabel('作品名称').fill('原来的函数图');
   const original = await save(page);
@@ -171,7 +201,7 @@ test('平面图制作动态副本，保留图形和原作品', async ({ page }) 
   expect(dynamic.source.kind).toBe('dynamic');
   expect(dynamic.source.scene.viewport).toEqual(original.source.scene.viewport);
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await page.locator('.math-library').getByRole('button', { name: '原来的函数图 平面图形', exact: true }).click();
+  await workRow(page, '原来的函数图').locator('>button').click();
   await page.getByRole('button', { name: '图形与标注', exact: true }).click();
   await expect(page.getByLabel('expression', { exact: true })).toHaveValue('x^2');
 });
@@ -179,7 +209,7 @@ test('平面图制作动态副本，保留图形和原作品', async ({ page }) 
 test('可视化公式支持逐字输入、结构组合、撤销和保存导出，资源全部本地加载', async ({ page, context }, info) => {
   const external = [];
   page.on('request', request => { if (/^https?:/.test(request.url()) && new URL(request.url()).origin !== world.origin) external.push(request.url()); });
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
+  await importSource(page, emptySource('formula'));
   await page.getByRole('button', { name: '可视化编辑', exact: true }).click();
   const field = page.locator('math-field');
   await expect(field).toBeVisible();
@@ -194,7 +224,7 @@ test('可视化公式支持逐字输入、结构组合、撤销和保存导出�
   await field.press('ControlOrMeta+Z');
   await field.press('ControlOrMeta+Shift+Z');
   await expect.poll(() => field.evaluate(el => el.value)).toContain('+3');
-  await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
+  await page.getByRole('button', { name: '公式源码', exact: true }).click();
   const latex = await page.getByLabel('LaTeX', { exact: true }).inputValue();
   expect(latex).toContain('\\frac{x+1}{2}');
   await page.getByRole('button', { name: '可视化编辑', exact: true }).click();
@@ -222,9 +252,9 @@ test('可视化公式支持逐字输入、结构组合、撤销和保存导出�
   expect(external).toEqual([]);
 });
 
-test('公式新工具适配深色与窄屏，历史读取失败可重试，取消恢复保留输入', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
-  await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
+test('旧公式工具适配深色与窄屏，历史读取失败可重试，取消恢复保留输入', async ({ page }, info) => {
+  await importSource(page, emptySource('formula'));
+  await page.getByRole('button', { name: '公式源码', exact: true }).click();
   await page.getByLabel('LaTeX', { exact: true }).fill('x+1');
   const first = await save(page);
   await page.getByLabel('LaTeX', { exact: true }).fill('x+2');
@@ -232,7 +262,7 @@ test('公式新工具适配深色与窄屏，历史读取失败可重试，取�
   await page.getByRole('button', { name: '可视化编辑', exact: true }).click();
   await page.getByRole('link', { name: /账户：/ }).click();
   await page.getByRole('button', { name: '深色', exact: true }).click();
-  await expect(page.locator('html')).toHaveAttribute('data-workbench-theme', 'dark');
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
   await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^数学工坊/ }).click();
   const field = page.locator('math-field');
   await expect(field).toBeVisible();
@@ -245,7 +275,7 @@ test('公式新工具适配深色与窄屏，历史读取失败可重试，取�
     await page.screenshot({ path: info.outputPath(`formula-dark-${width}.png`) });
   }
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
+  await page.getByRole('button', { name: '公式源码', exact: true }).click();
   await page.getByLabel('LaTeX', { exact: true }).fill('不要丢掉这个草稿');
   let unavailable = true;
   await page.route('**/api/modules/math/v1/works/*/versions', route => unavailable ? route.abort('failed') : route.continue());
@@ -258,11 +288,11 @@ test('公式新工具适配深色与窄屏，历史读取失败可重试，取�
   await history.getByLabel('保存记录').selectOption(String(first.version));
   await expect(history.getByRole('img', { name: '当前公式预览' })).toBeVisible();
   await page.screenshot({ path: info.outputPath('history-dark.png') });
-  await history.getByRole('button', { name: '恢复为草稿' }).click();
+  await history.getByRole('button', { name: '恢复版本' }).click();
   await page.getByRole('dialog', { name: '确认操作', exact: true }).getByRole('button', { name: '取消', exact: true }).click();
   await expect(history).toBeVisible();
   await history.getByLabel('保存记录').selectOption(String(first.version + 1));
-  await history.getByRole('button', { name: '恢复为草稿' }).click();
+  await history.getByRole('button', { name: '恢复版本' }).click();
   await page.getByRole('dialog', { name: '确认操作', exact: true }).getByRole('button', { name: '取消', exact: true }).focus();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: '确认操作', exact: true })).toBeHidden();
@@ -273,63 +303,44 @@ test('公式新工具适配深色与窄屏，历史读取失败可重试，取�
 });
 
 test('归档当前作品后返回工坊，刷新不重开作品', async ({ page }) => {
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
+  await importSource(page, emptySource('formula'));
   await page.getByLabel('作品名称').fill('归档流程验证');
-  await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
+  await page.getByRole('button', { name: '公式源码', exact: true }).click();
   await page.getByLabel('LaTeX', { exact: true }).fill('x^2');
   const work = await save(page);
   await page.goto(`${world.origin}/math?workId=${work.id}`);
   await expect(page.getByLabel('作品名称')).toHaveValue('归档流程验证');
   await page.getByRole('button', { name: '作品操作', exact: true }).click();
   await page.getByRole('menuitem', { name: /^(删除|归档)作品$/ }).click();
-  await expect(page.getByRole('button', { name: '新建公式', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '新建作品', exact: true })).toBeVisible();
   await expect(page.getByLabel('作品名称')).toBeHidden();
   await page.reload();
-  await expect(page.getByRole('button', { name: '新建公式', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '新建作品', exact: true })).toBeVisible();
   await expect(page).toHaveURL(`${world.origin}/math`);
-  await page.getByLabel('已归档', { exact: true }).check();
-  const actions = page.getByRole('group', { name: '归档流程验证的归档操作', exact: true });
+  await archived(page);
+  const actions = workRow(page, '归档流程验证');
   await actions.getByRole('button', { name: '恢复', exact: true }).click();
-  await expect(page.getByText('没有已归档的作品', { exact: true })).toBeVisible();
-  await page.getByLabel('已归档', { exact: true }).uncheck();
-  await page.locator('.math-library').getByRole('button', { name: '归档流程验证 公式', exact: true }).click();
+  await expect(page.getByText('没有归档作品', { exact: true })).toBeVisible();
+  await archived(page, false);
+  await workRow(page, '归档流程验证').locator('>button').click();
   await expect(page.getByLabel('LaTeX', { exact: true })).toHaveValue('x^2');
   await page.getByRole('button', { name: '作品操作', exact: true }).click();
   await page.getByRole('menuitem', { name: '归档作品', exact: true }).click();
-  await page.getByLabel('已归档', { exact: true }).check();
+  await archived(page);
   await actions.getByRole('button', { name: '彻底删除', exact: true }).click();
-  await page.getByRole('dialog', { name: '彻底删除作品' }).getByRole('button', { name: '取消', exact: true }).click();
+  await page.getByRole('dialog', { name: '彻底删除' }).getByRole('button', { name: '取消', exact: true }).click();
   await expect(actions.getByRole('button', { name: '彻底删除', exact: true })).toBeFocused();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(actions.getByRole('button', { name: '彻底删除', exact: true })).toBeInViewport();
   await actions.getByRole('button', { name: '彻底删除', exact: true }).click();
-  await page.getByRole('dialog', { name: '彻底删除作品' }).getByRole('button', { name: '彻底删除', exact: true }).click();
-  await expect(page.getByText('没有已归档的作品', { exact: true })).toBeVisible();
+  await page.getByRole('dialog', { name: '彻底删除' }).getByRole('button', { name: '彻底删除', exact: true }).click();
+  await expect(page.getByText('没有归档作品', { exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByText('没有已归档的作品', { exact: true })).toBeVisible();
-});
-
-test('输入焦点框贴合完整控件，搜索框包含图标', async ({ page }, info) => {
-  const search = page.getByLabel('搜索作品', { exact: true });
-  await search.click();
-  await page.screenshot({ path: info.outputPath('search-focus.png') });
-  const parent = page.locator('.math-library-search');
-  expect(await parent.evaluate(el => getComputedStyle(el).boxShadow)).not.toBe('none');
-  expect(await search.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('none');
-  expect(await search.evaluate(el => getComputedStyle(el).boxShadow)).toBe('none');
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
-  for (const control of [page.getByLabel('作品名称'), page.getByLabel('LaTeX', { exact: true })]) {
-    if (await control.count() === 0) await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
-    await control.click();
-    const style = await control.evaluate(el => ({ offset: getComputedStyle(el).outlineOffset, shadow: getComputedStyle(el).boxShadow }));
-    expect(parseFloat(style.offset)).toBeLessThanOrEqual(0);
-    expect(style.shadow).toContain('inset');
-  }
-  await page.screenshot({ path: info.outputPath('formula-focus.png') });
+  await expect(page.getByText('没有归档作品', { exact: true })).toBeVisible();
 });
 
 test('归档和彻底删除的响应丢失后按原请求确认，刷新返回首页', async ({ page }) => {
-  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+  await importSource(page, emptySource('plane'));
   await page.getByRole('button', { name: '从 y = x² 开始', exact: true }).click();
   await page.getByLabel('作品名称').fill('请求确认作品');
   await save(page);
@@ -345,27 +356,27 @@ test('归档和彻底删除的响应丢失后按原请求确认，刷新返回�
     });
     await page.getByRole('button', { name: '作品操作', exact: true }).click();
     await page.getByRole('menuitem', { name: action === 'deletion' ? '归档作品' : '彻底删除', exact: true }).click();
-    if (action === 'purge') await page.getByRole('dialog', { name: '彻底删除作品' }).getByRole('button', { name: '彻底删除', exact: true }).click();
+    if (action === 'purge') await page.getByRole('dialog', { name: '彻底删除' }).getByRole('button', { name: '彻底删除', exact: true }).click();
     await expect(page.getByRole('button', { name: action === 'deletion' ? '确认归档结果' : '确认删除结果', exact: true })).toBeEnabled();
     await page.getByRole('button', { name: '返回工坊', exact: true }).click();
     await page.reload();
-    await page.getByRole('button', { name: '确认操作结果', exact: true }).click();
-    await expect(page.getByRole('button', { name: '确认操作结果', exact: true })).toBeHidden();
+    await page.getByRole('button', { name: '确认结果', exact: true }).click();
+    await expect(page.getByRole('button', { name: '确认结果', exact: true })).toBeHidden();
     expect(keys.length).toBeGreaterThanOrEqual(2);
     expect(new Set(keys).size).toBe(1);
     await page.reload();
-    await expect(page.getByRole('button', { name: '新建公式', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: '新建作品', exact: true })).toBeVisible();
     if (action === 'deletion') {
-      await page.getByLabel('已归档', { exact: true }).check();
-      await page.locator('.math-library').getByRole('button', { name: '请求确认作品 平面图形', exact: true }).click();
+      await archived(page);
+      await workRow(page, '请求确认作品').locator('>button').click();
       await expect(page.getByRole('button', { name: '恢复作品', exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: '图形与标注', exact: true })).toBeHidden();
-    } else await expect(page.getByText('没有已归档的作品', { exact: true })).toBeVisible();
+    } else await expect(page.getByText('没有归档作品', { exact: true })).toBeVisible();
   }
 });
 
-test('新建图形直接编辑，保存重开及真实导出，窄屏操作可达', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+test('导入旧平面图后编辑保存重开及真实导出，窄屏操作可达', async ({ page }, info) => {
+  await importSource(page, emptySource('plane'));
   await expect(page.getByLabel('搜索作品', { exact: true })).toBeHidden();
   await page.getByRole('button', { name: '添加函数', exact: true }).click();
   await expect(page.getByRole('region', { name: '图形编辑', exact: true })).toBeVisible();
@@ -411,8 +422,8 @@ test('新建图形直接编辑，保存重开及真实导出，窄屏操作可�
 });
 
 test('公式片段插入光标处，另存和作品切换保留正确版本', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
-  await page.getByRole('button', { name: 'LaTeX 源码', exact: true }).click();
+  await importSource(page, emptySource('formula'));
+  await page.getByRole('button', { name: '公式源码', exact: true }).click();
   const latex = page.getByLabel('LaTeX', { exact: true });
   await latex.fill('x+y');
   await latex.press('Home');
@@ -433,7 +444,7 @@ test('公式片段插入光标处，另存和作品切换保留正确版本', as
   await page.getByLabel('作品名称').fill('求根公式副本');
   await save(page);
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await page.locator('.math-library').getByRole('button', { name: '求根公式 公式', exact: true }).click();
+  await workRow(page, '求根公式').locator('>button').click();
   await expect(page.getByLabel('作品名称')).toHaveValue('求根公式');
   await expect(page.locator('#math-export-options')).toHaveCount(0);
   await expect(page.locator('.math-formula-preview img')).toBeVisible();
@@ -442,7 +453,7 @@ test('公式片段插入光标处，另存和作品切换保留正确版本', as
 });
 
 test('演示对象、参数、步骤切换保留修改，下载物可离线运行', async ({ page, browser }, info) => {
-  await page.getByRole('button', { name: '新建动态演示', exact: true }).click();
+  await importSource(page, emptyDynamicSource());
   await page.getByRole('button', { name: '试试二次函数演示', exact: true }).click();
   await expect(page.getByRole('slider', { name: 'k 滑杆', exact: true })).toBeInViewport();
   await page.getByRole('button', { name: '课堂展示', exact: true }).click();
@@ -481,15 +492,12 @@ test('演示对象、参数、步骤切换保留修改，下载物可离线运�
   } finally { await offline.close(); }
 });
 
-test('空间图形编辑和放弃新建保护，菜单导入 HTML 后可再次编辑', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建空间图形', exact: true }).click();
+test('导入旧空间源保持草稿，网页导入后可修改源码并恢复历史', async ({ page }, info) => {
+  await importSource(page, emptySource('space'));
   await page.getByRole('button', { name: '正方体示例', exact: true }).click();
   await page.getByLabel('作品名称').fill('正方体截面');
   await page.getByLabel('z', { exact: true }).fill('3');
-  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
-  await page.getByRole('dialog', { name: '确认操作' }).getByRole('button', { name: '取消', exact: true }).click();
-  await page.getByRole('button', { name: '继续制作', exact: true }).click();
+  await page.reload();
   await selectTools(page, '对象');
   await expect(page.getByLabel('z', { exact: true })).toHaveValue('3');
   await selectTools(page, '画布');
@@ -498,14 +506,12 @@ test('空间图形编辑和放弃新建保护，菜单导入 HTML 后可再次�
   expect(space.source.points[0].z).toBe(3);
   expect(space.source.azimuth).toBe(45);
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: '导入已有 HTML 演示', exact: true }).click();
-  await (await chooser).setFiles({ name: '面积演示.html', mimeType: 'text/html',
+  await chooseFile(page, '导入网页', { name: '面积演示.html', mimeType: 'text/html',
     buffer: Buffer.from('<!doctype html><meta charset="utf-8"><h1>三角形面积</h1><button onclick="document.querySelector(\'output\').textContent=6">计算</button><output>0</output>') });
   await expect(page.getByLabel('作品名称')).toHaveValue('面积演示.html');
   const html = await save(page);
   await page.getByRole('button', { name: '编辑源码', exact: true }).click();
-  const editor = page.getByLabel('HTML 源码');
+  const editor = page.getByLabel('网页源码');
   await editor.fill((await editor.inputValue()).replace('textContent=6', 'textContent=12'));
   await save(page);
   await page.reload();
@@ -519,7 +525,7 @@ test('空间图形编辑和放弃新建保护，菜单导入 HTML 后可再次�
   const history = page.getByRole('dialog', { name: '历史版本', exact: true });
   await history.getByLabel('保存记录').selectOption(String(html.version));
   await expect(history.locator('iframe')).toHaveCount(0);
-  await history.getByRole('button', { name: '恢复为草稿' }).click();
+  await history.getByRole('button', { name: '恢复版本' }).click();
   await expect(page.locator('iframe[title="作品隔离预览"]')).toHaveCount(0);
   const restored = await save(page);
   expect(restored.originalFileId).toBe(html.originalFileId);
@@ -529,39 +535,24 @@ test('空间图形编辑和放弃新建保护，菜单导入 HTML 后可再次�
 });
 
 
-test('空白公式随时返回，结构输入和草稿恢复无需源码，首页用途可见', async ({ page }, info) => {
-  await expect(page.getByRole('button', { name: '新建动态演示', exact: true })).toBeInViewport();
-  await page.screenshot({ path: info.outputPath('home-desktop.png') });
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
-  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: '继续制作', exact: true })).toHaveCount(0);
-  await page.reload();
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
+test('导入的旧公式保留结构输入和设备草稿恢复', async ({ page }, info) => {
+  await importSource(page, emptySource('formula'));
   await page.getByRole('button', { name: '分式', exact: true }).click();
   await page.getByLabel('分子', { exact: true }).fill('x+3');
   await page.getByLabel('分母', { exact: true }).fill('4');
   await expect(page.getByLabel('LaTeX', { exact: true })).toHaveCount(0);
-  await expect(page.getByRole('img', { name: '当前公式预览' })).toBeVisible();
-  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^资源库/ }).click();
+  await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^数学工坊/ }).click();
   await page.reload();
-  await page.getByRole('button', { name: '继续制作', exact: true }).click();
   await expect(page.getByLabel('分子', { exact: true })).toHaveValue('x+3');
   await expect(page.getByLabel('分母', { exact: true })).toHaveValue('4');
   await expect(page.getByRole('img', { name: '当前公式预览' })).toBeVisible();
-  await expect.poll(() => page.getByRole('img', { name: '当前公式预览' }).evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
   await page.screenshot({ path: info.outputPath('guided-formula.png') });
-  const saved = await save(page);
-  expect(saved.source.latex).toBe('\\frac{x+3}{4}');
-  await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.getByRole('button', { name: '返回工坊', exact: true })).toBeInViewport();
-  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: info.outputPath('home-mobile.png') });
+  expect((await save(page)).source.latex).toBe('\\frac{x+3}{4}');
 });
 
 test('画布选择与右侧联动，空间棱在当前对象处编辑', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建空间图形', exact: true }).click();
+  await importSource(page, emptySource('space'));
   await page.getByRole('button', { name: '正方体示例', exact: true }).click();
   const canvas = page.getByLabel('数学图形编辑画布');
   await canvas.getByRole('button', { name: '选择 B', exact: true }).first().focus();
@@ -584,7 +575,7 @@ async function addGraph(page, name) {
 }
 
 test('自然数学输入、分段表单和数值分析可保存重开，渐近线不误报零点', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+  await importSource(page, emptySource('plane'));
   await page.getByRole('button', { name: '从 y = x² 开始', exact: true }).click();
   await page.getByLabel('expression', { exact: true }).fill('x²-2x-3');
   await expect(page.locator('.math-graphic-preview [data-object="f1"] path').first()).toBeVisible();
@@ -621,7 +612,7 @@ test('自然数学输入、分段表单和数值分析可保存重开，渐近�
 });
 
 test('关联构造随点变化，改名保持引用，删除依赖可取消并撤销', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+  await importSource(page, emptySource('plane'));
   await addGraph(page, '添加点');
   await page.getByLabel('at-x', { exact: true }).fill('-2');
   await addGraph(page, '添加点');
@@ -653,21 +644,21 @@ test('关联构造随点变化，改名保持引用，删除依赖可取消并�
 });
 
 test('平面渲染错误显示双语具体原因，修正后可保存重开', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+  await importSource(page, emptySource('plane'));
   await addGraph(page, '添加圆 / 椭圆');
   await page.getByLabel('rx', { exact: true }).fill('0');
   const error = page.getByRole('alert');
   await expect(error).toHaveText('半径必须大于零，请将水平半径和垂直半径都设为正数。');
   await expect(error).toHaveAttribute('title', '半径必须大于零，请将水平半径和垂直半径都设为正数。');
   await page.screenshot({ path: info.outputPath('radius-error-zh.png'), animations: 'disabled' });
-  await page.locator('.tb-language-row').click();
+  await page.getByRole('button', { name: /^(简体中文|English)$/ }).click();
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect(error).toHaveText('Radii must be greater than zero. Set both the horizontal and vertical radii to positive values.');
   await expect(error).toHaveAttribute('title', 'Radii must be greater than zero. Set both the horizontal and vertical radii to positive values.');
   await page.screenshot({ path: info.outputPath('radius-error-en.png'), animations: 'disabled' });
   await page.getByLabel('rx', { exact: true }).fill('1');
   await expect(error).toHaveCount(0);
-  await page.locator('.tb-language-row').click();
+  await page.getByRole('button', { name: /^(简体中文|English)$/ }).click();
   await page.getByRole('menuitemradio', { name: '简体中文 Chinese (Simplified)', exact: true }).click();
   const radiusSaved = await save(page);
   expect(radiusSaved.render.state).toBe('ready');
@@ -679,7 +670,7 @@ test('平面渲染错误显示双语具体原因，修正后可保存重开', as
   await addGraph(page, '添加函数');
   await page.getByLabel('expression', { exact: true }).fill('sqrt(-1)');
   await expect(error).toHaveText('当前窗口内函数无有效值，请调整表达式、定义域或画布范围。');
-  await page.locator('.tb-language-row').click();
+  await page.getByRole('button', { name: /^(简体中文|English)$/ }).click();
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect(error).toHaveText('The function has no valid values in the current window. Adjust its expression, domain, or canvas range.');
   await expect(error).toHaveAttribute('title', 'The function has no valid values in the current window. Adjust its expression, domain, or canvas range.');
@@ -688,7 +679,7 @@ test('平面渲染错误显示双语具体原因，修正后可保存重开', as
   await expect(error).toHaveAttribute('title', '请检查表达式的括号、运算符和分段条件');
   await page.getByLabel('expression', { exact: true }).fill('x^2');
   await expect(error).toHaveCount(0);
-  await page.locator('.tb-language-row').click();
+  await page.getByRole('button', { name: /^(简体中文|English)$/ }).click();
   await page.getByRole('menuitemradio', { name: '简体中文 Chinese (Simplified)', exact: true }).click();
   expect((await save(page)).render.state).toBe('ready');
 
@@ -697,19 +688,19 @@ test('平面渲染错误显示双语具体原因，修正后可保存重开', as
   await page.getByRole('button', { name: '颜色与样式', exact: true }).click();
   await page.getByLabel('style-fontSize', { exact: true }).fill('64');
   await expect(error).toHaveText('文字超出画布，请缩小字号或精简标注。');
-  await page.locator('.tb-language-row').click();
+  await page.getByRole('button', { name: /^(简体中文|English)$/ }).click();
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect(error).toHaveText('The text exceeds the canvas. Reduce its font size or shorten the label.');
   await expect(error).toHaveAttribute('title', 'The text exceeds the canvas. Reduce its font size or shorten the label.');
   await page.getByLabel('text', { exact: true }).fill('说明');
   await expect(error).toHaveCount(0);
-  await page.locator('.tb-language-row').click();
+  await page.getByRole('button', { name: /^(简体中文|English)$/ }).click();
   await page.getByRole('menuitemradio', { name: '简体中文 Chinese (Simplified)', exact: true }).click();
   expect((await save(page)).render.state).toBe('ready');
 });
 
 test('空间面和截面保存重开及真实 SVG 下载，错误平面可修正', async ({ page }, info) => {
-  await page.getByRole('button', { name: '新建空间图形', exact: true }).click();
+  await importSource(page, emptySource('space'));
   await page.getByRole('button', { name: '正方体示例', exact: true }).click();
   await expect(page.locator('.math-graphic-preview [data-surface]')).toHaveCount(6);
   await addGraph(page, '添加截面');
@@ -724,7 +715,7 @@ test('空间面和截面保存重开及真实 SVG 下载，错误平面可修正
   const sectionError = page.getByRole('alert');
   await expect(sectionError).toHaveText('截平面的法向量不能为零，请将 a、b、c 中至少一个系数设为非零。');
   await page.screenshot({ path: info.outputPath('section-error-zh.png'), animations: 'disabled' });
-  await page.locator('.tb-language-row').click();
+  await page.getByRole('button', { name: /^(简体中文|English)$/ }).click();
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect(sectionError).toHaveText('The section plane normal cannot be zero. Set at least one of a, b, or c to a nonzero value.');
   await expect(sectionError).not.toHaveAttribute('title', /[\u4e00-\u9fff]/);
@@ -732,7 +723,7 @@ test('空间面和截面保存重开及真实 SVG 下载，错误平面可修正
   await page.getByLabel('section-c', { exact: true }).fill('1');
   await expect(sectionError).toHaveCount(0);
   await expect(page.locator('.math-graphic-preview [data-surface="S1"]')).toBeVisible();
-  await page.locator('.tb-language-row').click();
+  await page.getByRole('button', { name: /^(简体中文|English)$/ }).click();
   await page.getByRole('menuitemradio', { name: '简体中文 Chinese (Simplified)', exact: true }).click();
   const repaired = await save(page);
   expect(repaired.version).toBe(saved.version + 1);
@@ -753,7 +744,7 @@ test('空间面和截面保存重开及真实 SVG 下载，错误平面可修正
   await page.screenshot({ path: info.outputPath('section-desktop.png') });
   await page.getByRole('link', { name: /账户：/ }).click();
   await page.getByRole('button', { name: '深色', exact: true }).click();
-  await expect(page.locator('html')).toHaveAttribute('data-workbench-theme', 'dark');
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
   await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^数学工坊/ }).click();
   for (const width of [1440, 1024, 390]) {
     await page.setViewportSize({ width, height: 900 });
@@ -765,7 +756,7 @@ test('空间面和截面保存重开及真实 SVG 下载，错误平面可修正
 });
 
 test('自动播放可暂停重置，轨迹和几何联动在实际下载物禁网后可用', async ({ page, browser }, info) => {
-  await page.getByRole('button', { name: '新建动态演示', exact: true }).click();
+  await importSource(page, emptyDynamicSource());
   await page.getByRole('button', { name: '试试二次函数演示', exact: true }).click();
   await addGraph(page, '添加点');
   await addGraph(page, '关联构造…');
@@ -811,7 +802,7 @@ test('自动播放可暂停重置，轨迹和几何联动在实际下载物禁�
 
 
 test('公式延迟聚焦不能抢回作品名输入，键盘和点击仍可回到公式', async ({ page }) => {
-  await page.getByRole('button', { name: '新建公式', exact: true }).click();
+  await importSource(page, emptySource('formula'));
   await page.getByRole('button', { name: '可视化编辑', exact: true }).click();
   const field = page.locator('math-field'), title = page.getByLabel('作品名称');
   await expect(field).toBeVisible();
@@ -837,8 +828,8 @@ test('公式延迟聚焦不能抢回作品名输入，键盘和点击仍可回�
   await expect.poll(() => field.evaluate(el => el.value)).toBe('x+1+2');
 });
 
-test('从空白空间画布创建面可独立保存，不要求额外添加棱', async ({ page }) => {
-  await page.getByRole('button', { name: '新建空间图形', exact: true }).click();
+test('旧空间源移空后创建面可独立保存，不要求额外添加棱', async ({ page }) => {
+  await importSource(page, emptySource('space'));
   await addGraph(page, '添加点');
   await addGraph(page, '添加点'); await page.getByLabel('x', { exact: true }).fill('2');
   await addGraph(page, '添加点'); await page.getByLabel('y', { exact: true }).fill('2');
@@ -851,7 +842,7 @@ test('从空白空间画布创建面可独立保存，不要求额外添加棱',
 });
 
 test('多级构造的中间对象可改名，后续引用同步且仍拒绝循环', async ({ page }) => {
-  await page.getByRole('button', { name: '新建平面图形', exact: true }).click();
+  await importSource(page, emptySource('plane'));
   await addGraph(page, '添加点');
   await addGraph(page, '添加点'); await page.getByLabel('at-x', { exact: true }).fill('4');
   await addGraph(page, '关联构造…');
@@ -871,4 +862,82 @@ test('多级构造的中间对象可改名，后续引用同步且仍拒绝循�
   expect(work.source.scene.elements[3].construction.refs).toEqual(['M', 'P2']);
   expect(work.render.state).toBe('ready');
   await page.reload(); await expect(page.locator('.math-graphic-preview [data-object="M"]')).toBeVisible();
+});
+
+
+test('未知制作源只读打开并保留完整内容，禁止旧编辑器保存', async ({ page }) => {
+  const work = await importSource(page, { ...emptySource('formula'), latex: 'x+1' }, '未来格式作品');
+  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  const source = { schemaVersion: 9, kind: 'future', payload: { formulas: ['x+1'], opaque: '完整原文' } };
+  await page.route(`**/api/modules/math/v1/works/${work.id}`, async route => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...await response.json(), source } });
+  });
+  await workRow(page, '未来格式作品').locator('>button').click();
+  await expect(page.getByText('作品格式需要更新，请升级后编辑。', { exact: true })).toBeVisible();
+  expect(JSON.parse(await page.locator('.math-formula pre').innerText())).toEqual(source);
+  await expect(page.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
+  await expect(page.locator('.math-formula-editor')).toHaveCount(0);
+  await page.reload();
+  expect(JSON.parse(await page.locator('.math-formula pre').innerText())).toEqual(source);
+  await expect(page.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
+});
+
+
+test('已有旧 GeoGebra 类型从作品列表打开并刷新，完整构造仍可读', async ({ page }) => {
+  await installMathProbe(page);
+  await page.reload();
+  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  await enterMath(page, 'A=(2,3)', 'A');
+  const original = await savedMath(page);
+  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  // Seed a real historical type through the authenticated creation endpoint.
+  // The GGB bytes come from the actual local editor, not a fabricated engine file.
+  await page.route('**/api/modules/math/v1/works', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    const input = JSON.parse(route.request().postData());
+    const source = { schemaVersion: 1, kind: 'geogebra', appName: 'classic', base64: original.source.graph.base64 };
+    const response = await route.fetch({ postData: JSON.stringify({ ...input, source }) });
+    await route.fulfill({ response });
+  });
+  const legacy = await importSource(page, { ...emptySource('formula'), latex: 'x+1' }, '旧画布作品');
+  expect(legacy.source.kind).toBe('geogebra');
+  await page.unroute('**/api/modules/math/v1/works');
+  await expect.poll(async () => (await currentApi(page, 'A'))?.coords, { timeout: 90000 }).toEqual([2,3]);
+  await expect(page.locator('.math-geogebra')).toHaveAttribute('aria-busy', 'false');
+  // Resize the real mounted canvas before leaving. Native layout XML changes
+  // must not turn an untouched saved construction into an unsaved edit.
+  const width = await page.locator('.math-geogebra-host canvas').first().evaluate(canvas => canvas.width);
+  await page.setViewportSize({ width: 1200, height: 850 });
+  await expect.poll(() => page.locator('.math-geogebra-host canvas').first().evaluate(canvas => canvas.width)).not.toBe(width);
+  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  expect(await currentApi(page, 'A')).toBeNull();
+  await workRow(page, '旧画布作品').locator('>button').click();
+  await expect(page.locator('.math-ggb-workspace')).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect.poll(async () => (await currentApi(page, 'A'))?.coords, { timeout: 90000 }).toEqual([2,3]);
+  await expect(page.locator('.math-ggb-status')).toContainText(`已保存 · 版本 ${legacy.version}`);
+  await page.reload();
+  await expect.poll(async () => (await currentApi(page, 'A'))?.coords, { timeout: 90000 }).toEqual([2,3]);
+  await expect(page.getByLabel('作品名称', { exact: true })).toHaveValue('旧画布作品');
+  // The layout guard must still preserve a real pointer edit and its revision.
+  const canvas = await page.locator('.math-geogebra-host canvas').first().boundingBox();
+  const view = await page.evaluate(() => {
+    const host = document.querySelector('.math-geogebra-host > div');
+    const raw = window.mathTestApis[host.id].getViewProperties(1);
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+  });
+  const point = (x, y) => ({ x: canvas.x + (x - view.xMin) / view.invXscale, y: canvas.y + view.height - (y - view.yMin) / view.invYscale });
+  const from = point(2, 3), to = point(1, 2);
+  await page.mouse.move(from.x, from.y); await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 15 }); await page.mouse.up();
+  const dragged = (await currentApi(page, 'A')).coords;
+  expect(dragged[0]).toBeCloseTo(1, 2); expect(dragged[1]).toBeCloseTo(2, 2);
+  const response = page.waitForResponse(result => result.request().method() === 'PUT' && result.url().endsWith(`/works/${legacy.id}`));
+  await page.getByRole('button', { name: '保存', exact: true }).click();
+  const result = await response; expect(result.status()).toBe(200);
+  const saved = await result.json();
+  expect(saved.id).toBe(legacy.id); expect(saved.version).toBe(legacy.version + 1);
+  await page.reload();
+  await expect.poll(async () => (await currentApi(page, 'A'))?.coords, { timeout: 90000 }).toEqual(dragged);
 });

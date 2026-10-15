@@ -46,6 +46,7 @@ test('四模块真实外壳、辅助栏、前进后退、未知及非法深链�
     await page.getByRole('button', { name: 'AI 助理', exact: true }).click();
     await expect(page.locator('.wb-shell')).not.toHaveClass(/has-panel/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(await page.evaluate(() => document.body.scrollHeight <= innerHeight + 1)).toBe(true);
   }
   await row(page, 'questions').click();
   await row(page, 'resources').click();
@@ -97,7 +98,7 @@ test('题目数学详情、资源一次消费与 Agent 返回现场', async ({ p
   const q = await create(page, '/api/modules/questions/v2/items', question('目录题目'));
   const sample = JSON.parse(fs.readFileSync(new URL('../../api/test/fixtures/contracts/math-samples.json', import.meta.url))).find(item => item.id === 'create-formula').value;
   const math = await create(page, '/api/modules/math/v1/works', { ...sample, title: '目录公式' });
-  const uploaded = await page.request.post(world.origin + '/api/workbench/files', { multipart: { file: { name: 'catalog.png', mimeType: 'image/png', buffer: fs.readFileSync(new URL('./fixtures/materials-questions/figure.png', import.meta.url)) } }, headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': randomUUID() } });
+  const uploaded = await page.request.post(world.origin + '/api/workbench/files', { multipart: { file: { name: 'catalog.png', mimeType: 'image/png', buffer: fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url)) } }, headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': randomUUID() } });
   expect(uploaded.status()).toBe(201);
   const resource = await create(page, '/api/modules/resources/items', { title: '目录资料', fileId: (await uploaded.json()).id, folderId: null, tagIds: [], note: '' });
   for (const [path, name, id, title] of [[`/questions/${q.id}`, 'question', 'questions', '目录题目'], [`/math?workId=${math.id}`, 'math', 'math', '目录公式'], [`/resources/${resource.id}`, 'resource', 'resources', '目录资料']]) {
@@ -167,3 +168,78 @@ for (const [name, path, main] of [['schedule', '/calendar', '.cal-board']]) {
     }
   });
 }
+
+test('外壳反馈草稿、教程进度和学期在刷新后保留', async ({ page }, info) => {
+  const original = page.url();
+  await page.getByRole('button', { name: '发送反馈', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: '发送反馈', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(original);
+  await page.getByRole('button', { name: '错误报告', exact: true }).click();
+  await page.getByRole('textbox', { name: '反馈内容', exact: true }).fill('刷新与切换后保留的外壳反馈');
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await page.getByRole('button', { name: '发送反馈', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '反馈内容', exact: true })).toHaveValue('刷新与切换后保留的外壳反馈');
+  await page.getByRole('button', { name: '发送', exact: true }).click();
+  await page.getByRole('button', { name: '知道了', exact: true }).click();
+  await page.getByRole('button', { name: '使用教程', exact: true }).click();
+  await page.getByRole('dialog', { name: '快速上手', exact: true }).getByRole('button', { name: '题库', exact: true }).click();
+  await expect(page.getByRole('progressbar', { name: '教程完成进度' })).toHaveAttribute('aria-valuenow', '1');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: '隐私与数据保护', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Trusted, Secure & Private', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.locator('.tb-term-button').click();
+  await page.getByRole('button', { name: '新学期', exact: true }).click();
+  await page.getByLabel('名称 *', { exact: true }).fill('2026秋季学期');
+  await page.getByLabel('开始日期 *', { exact: true }).fill('2026-09-01');
+  await page.getByLabel('结束日期 *', { exact: true }).fill('2027-01-31');
+  await page.getByRole('button', { name: '创建学期', exact: true }).click();
+  await page.reload();
+  await expect(page.getByRole('combobox', { name: '2026秋季学期', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '使用教程', exact: true }).click();
+  await expect(page.getByRole('progressbar', { name: '教程完成进度' })).toHaveAttribute('aria-valuenow', '1');
+  await page.keyboard.press('Escape');
+  await page.screenshot({ path: info.outputPath('shell-restored.png') });
+  expect(errors).toEqual([]);
+});
+
+test('首页建议建立真实草稿并聚焦，跨模块和刷新保留输入', async ({ page }, info) => {
+  await route(page, '/', 'home');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: '梳理一节课的讲解顺序', exact: true }).click();
+  const input = page.getByRole('textbox', { name: 'AI 输入', exact: true });
+  await expect(input).toHaveValue('梳理一节课的讲解顺序');
+  await expect(input).toBeFocused();
+  await expect(page.getByRole('button', { name: '新对话', exact: true })).toBeHidden();
+  await expect(page.getByRole('button', { name: '对话历史', exact: true })).toBeHidden();
+  await page.screenshot({ path: info.outputPath('home-mobile-draft.png') });
+  await page.setViewportSize({ width: 1680, height: 910 });
+  await row(page, 'resources').click();
+  await page.locator('.tb-global-nav').getByRole('link', { name: '首页', exact: true }).click();
+  await expect(input).toHaveValue('梳理一节课的讲解顺序');
+  await page.reload();
+  await expect(input).toHaveValue('梳理一节课的讲解顺序');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('侧栏导航在桌面、1024平板与窄屏均可由指针打开', async ({ page }, info) => {
+  for (const width of [1024, 1081, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    if (width > 1080) await page.locator('.tb-topbar').hover();
+    const collapse = page.getByRole('button', { name: '收起侧栏', exact: true }).filter({ visible: true });
+    if (await collapse.count()) await collapse.click();
+    const open = page.getByRole('button', { name: /^(展开侧栏|打开工作台导航)$/ }).filter({ visible: true });
+    await expect(open).toHaveCount(1);
+    await open.click();
+    await expect(row(page, 'questions')).toBeVisible();
+    await page.screenshot({ path: info.outputPath(`pointer-navigation-open-${width}.png`) });
+    await row(page, 'questions').click();
+    await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'questions');
+    if (width <= 1080) await expect(row(page, 'questions')).toBeHidden();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: info.outputPath(`pointer-navigation-${width}.png`) });
+  }
+  expect(errors).toEqual([]);
+});

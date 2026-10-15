@@ -6,7 +6,7 @@ import fs from "node:fs";
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { validate } from "../src/modules/math/contract.js";
-import { startMathFixture } from "../../web/e2e/fixtures/math-static/server.mjs";
+import { startMathFixture } from "./fixtures/math/server.mjs";
 import {
   emptySource,
   newElement,

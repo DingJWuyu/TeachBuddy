@@ -7,7 +7,7 @@ import childProcess from 'node:child_process';
 import {syncBuiltinESMExports} from 'node:module';
 import {randomUUID} from 'node:crypto';
 import {createIntegration} from './fixtures/auth-integration/harness.js';
-import {registerMath} from '../../web/e2e/fixtures/math-static/real.mjs';
+import {registerMath} from './fixtures/math-real.mjs';
 
 test('PDF structure failure retains a redacted diagnostic and source after temporary cleanup and restart', async t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'questions-diagnostic-'));
@@ -54,7 +54,7 @@ await import('/private/teacher/input-secret.mjs?token=synthetic-url-token');\n`)
   assert.equal(job.state, 'succeeded');
   assert.equal(temporary.length, 1, 'injection must hit the actual structure subprocess');
   assert.ok(temporary.every(dir => !fs.existsSync(dir)), 'temporary parse input is cleaned');
-  const readTask = () => JSON.parse(runtime.dataStore.db.prepare('SELECT value FROM questions_materials_tasks WHERE id=?').get(material.jobId).value);
+  const readTask = () => JSON.parse(runtime.workbench.db.prepare('SELECT value FROM questions_materials_tasks WHERE id=?').get(material.jobId).value);
   const task = readTask();
   if (process.env.PDF_DIAGNOSTIC_EVIDENCE) {
     fs.mkdirSync(process.env.PDF_DIAGNOSTIC_EVIDENCE, {recursive: true});

@@ -52,7 +52,7 @@ test('workshop saved viewport: real HTTP PNG/SVG, whole poster retain the saved 
     }
     fs.writeFileSync(path.join(evidence, 'graph-http-origin.json'), JSON.stringify(checks, null, 2));
     assert.deepEqual(response.body.source, source); fs.writeFileSync(path.join(evidence, 'classroom.zip'), await bytesFor(response.body.render.presentationFileId)); success = true;
-  } finally { await runtime.dataStore.close(); if (success) fs.rmSync(directory, { recursive: true, force: true }); }
+  } finally { await runtime.close(); if (success) fs.rmSync(directory, { recursive: true, force: true }); }
 });
 
 test('workshop saved viewport: actual offline classroom contains the opening range and preserves live panning on resize', { timeout: 60000 }, async () => {

@@ -5,9 +5,9 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import JSZip from 'jszip';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
-import { registerMath } from './fixtures/math-static/real.mjs';
-import { pageNames, sourceImage, replayRecognizer } from './fixtures/materials-questions/recognition/replay.mjs';
-import { documentText, images, walkBlocks } from '../../api/src/modules/questions/materials-content.js';
+import { registerMath } from '../../api/test/fixtures/math-real.mjs';
+import { pageNames, sourceImage, replayRecognizer } from '../../../test/fixtures/questions/recognition/replay.mjs';
+import { documentText, images, walkBlocks } from '../../api/src/workbench/content/document.js';
 
 const base = '/api/modules/questions/v2';
 let world, client, recognizer, beforePage, email;

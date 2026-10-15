@@ -10,13 +10,13 @@ Work with the user to agree the **shared interface** that lets frontend and back
 
 ## Establish the starting point
 
-Read [product-behavior-design's artifact layout](../product-behavior-design/SKILL.md#artifacts) and [behavior record definition](../product-behavior-design/references/record.md) as the input contract. Start from its accepted manifest, follow ownership to the selected behavior records and shared concerns, and use their coverage tables to reach the relevant runtime scenarios and evidence. Reuse the existing journey, state, and scenario IDs.
+Read [product-behavior-design's artifact layout](../product-behavior-design/SKILL.md#artifacts) and [behavior record definition](../product-behavior-design/references/record.md) as the input contract. Read the project document entry for the authoritative product scope, existing contracts, and acceptance definitions. Then read the prototype manifest's per-scope status, follow ownership to selected behavior records and shared concerns, and use their scenario entries to reach the relevant runtime and selected visual inputs. The integrated prototype may be Mixed or Draft; its simulations and historical passes do not define current product capabilities. Reuse the existing journey, state, and scenario IDs.
 
-Consume the selected scope of the current integrated accepted version. Keep these inputs read-only. If that scope is ambiguous, still in review, or awaiting integration, identify the input gap with the user before designing the dependent interface. Other accepted scopes can proceed independently.
+Consume only the selected explicitly accepted scope of the current integrated reference. Keep these inputs read-only. If that scope is ambiguous, still in review, or awaiting integration, identify the input gap with the user before designing the dependent interface. Other accepted scopes can proceed independently.
 
 When resuming, compare the current behavior with the source revision recorded in the contract. Reopen agreements affected by a behavior change before treating them as ready.
 
-Explore the existing interfaces, relevant code, domain language, and recorded decisions. Bring the accepted behavior and established decisions into the discussion as settled constraints; surface conflicts with the current system rather than silently choosing a source to override.
+Explore the existing interfaces, relevant code, domain language, and recorded decisions. Bring confirmed design intent and established product decisions into the discussion with their owners and applicable scope. Existing product specs/contracts remain authoritative for current production behavior; surface a conflict as a named input gap rather than silently overriding either source.
 
 ## Design together
 
@@ -38,7 +38,7 @@ Use `writing-for-agents` to maintain the following artifacts as agreements form.
 
 **Contract entry**
 
-- Identify the scope, agreement status, and exact accepted source revision. Link the manifest, owning behavior records, and relevant evidence through their existing entries.
+- Identify the scope, agreement status, and exact source revision and accepted scope. Link the authoritative product docs, manifest, owning reference records, and relevant visual inputs or task evidence through their existing entries.
 - Map the in-scope upstream scenario IDs and referenced states to shared interface definitions and contract cases, or to the side that owns the behavior entirely.
 - Link the shared definitions, cases, glossary, and relevant decisions. Distinguish confirmed agreements from proposals, and name open decisions with the IDs and interface elements they block.
 

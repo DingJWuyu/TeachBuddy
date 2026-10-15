@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { startQuestionsFixture } from '../../web/e2e/fixtures/materials-questions/server.mjs';
+import { startQuestionsFixture } from './fixtures/questions/server.mjs';
 
 const doc = text => ({ version: 2, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text }] }] });
 const writable = q => Object.fromEntries(['title', 'body', 'solution', 'answerStatus', 'note', 'starred', 'typeId', 'tagIds'].map(key => [key, q[key]]));
@@ -59,7 +59,7 @@ test('import list reports job state and adopted notes survive old clients, resta
   const e = await environment(t), m = await e.material();
   const listing = await e.q('/imports', null, 'GET');
   assert.equal(listing.body.items[0].jobState, 'succeeded');
-  const png = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url));
+  const png = fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url));
   const form = new FormData(); form.append('file', new Blob([png]), 'note.png');
   const uploaded = await e.call('/api/workbench/files', form);
   assert.equal(uploaded.status, 201);
@@ -126,7 +126,7 @@ test('note assignment rejects forged sources, duplicate adoption and foreign ima
     assert.equal((await e.q('/imports/' + m.id, bad, 'PUT')).status, 422);
   }
   const form = new FormData();
-  form.append('file', new Blob([fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url))]), 'foreign.png');
+  form.append('file', new Blob([fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url))]), 'foreign.png');
   const file = await e.call('/api/workbench/files', form, 'POST', 'r33-b');
   const bad = structuredClone(input);
   bad.drafts[0].noteFragments[0].document = { version: 2, blocks: [{ type: 'image', fileId: file.body.id, alt: '', widthMm: 40 }] };

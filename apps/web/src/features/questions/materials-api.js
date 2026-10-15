@@ -1,3 +1,4 @@
+import { sendHttpRequest, readHttpBody, fileFormData } from '../../platform/http/request.js';
 import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "questions", ...options });
 import {
@@ -5,7 +6,7 @@ import {
   workbenchPost,
   workbenchPut,
   workbenchBlob,
-} from "../workbench/apiClient.js";
+} from "../../platform/http/apiClient.js";
 export const base = "/api/modules/questions/v2";
 export async function get(path) {
   return (await workbenchGet(path.startsWith("/api/") ? path : base + path))
@@ -60,52 +61,14 @@ export async function download(id, name) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 export async function upload(transport, file, key) {
-  const body = new FormData();
-  body.append("file", file);
-  const response = await transport("/api/workbench/files", {
+  const body = fileFormData(file);
+  const response = await sendHttpRequest(transport, "/api/workbench/files", {
     method: "POST",
     headers: { "X-TeachBuddy-Request": "1", "Idempotency-Key": key },
     body,
     credentials: "same-origin",
   });
-  const value = await response.json();
+  const value = await readHttpBody(response);
   if (!response.ok) throw Object.assign(Error(value.detail ?? t("原稿保存失败，请重试")), { status: response.status });
   return value.file ?? value;
-}
-export const empty = () => ({ version: 2, blocks: [] });
-export function sourceText(document) {
-  const out = [];
-  function visit(blocks) {
-    for (const b of blocks) {
-      if (b.latex) out.push(b.latex);
-      if (b.runs)
-        out.push(b.runs.map((r) => r.text ?? `$${r.latex}$`).join(""));
-      for (const i of b.items ?? []) {
-        out.push(i.label);
-        visit(i.blocks);
-      }
-      for (const row of b.rows ?? [])
-        for (const cell of row) visit(cell.blocks);
-    }
-  }
-  visit(document?.blocks ?? []);
-  return out.join("\n");
-}
-
-export function documentAssets(document) {
-  const figures = [],
-    formulas = [];
-  function visit(blocks) {
-    for (const block of blocks) {
-      if (block.type === "image") figures.push(block);
-      if (block.latex) formulas.push(block.latex);
-      for (const run of block.runs ?? [])
-        if (run.latex) formulas.push(run.latex);
-      for (const item of block.items ?? []) visit(item.blocks);
-      for (const row of block.rows ?? [])
-        for (const cell of row) visit(cell.blocks);
-    }
-  }
-  visit(document?.blocks ?? []);
-  return { figures, formulas };
 }

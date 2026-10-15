@@ -4,7 +4,7 @@
 
 ## 工作现场与授权
 
-单人 agent 开发闭环的整体改造仍在进行，当前访谈已收敛，等待用户核对[完整目标与完成判据](agent-workflow.md)后进入实施。已有任务路由、子系统运行参考、代码标准、Lessons 和 CI 改进见[核查入口](#核查入口)，这些结果不代替全仓健康核查与新 Agent 实际交付、接手演练。
+单人 agent 开发闭环的整体改造已获用户明确开工授权，全仓调查与实施包已完成，当前进入集中审查与交付，按[完整目标、执行计划与完成判据](agent-workflow.md)推进。已有任务路由、子系统运行参考、代码标准、Lessons 和 CI 改进见[核查入口](#核查入口)，这些结果不代替全仓健康核查与新 Agent 实际交付、接手演练。
 
 用户体验运行 `TeacherWorkspace-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
@@ -13,6 +13,16 @@
 | `TeacherWorkspace-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
 | `TeacherWorkspace` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeacherWorkspace-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
+| `TeacherWorkspace-workflow` / `refactor/agent-workflow-health` | 总控负责本轮工程改造；从 `71b6abf8` 创建，完成获准集成、验证与证据保全后清理 |
+| `TeacherWorkspace-workflow-backend` / `refactor/workflow-backend` | API 职责与生命周期包，独立实现及定点验证，主任务集成完成后清理 |
+| `TeacherWorkspace-workflow-frontend` / `refactor/workflow-frontend` | Web 公共能力、通知归属与失效代码包，后续业务会话包依赖它 |
+| `TeacherWorkspace-workflow-validation` / `refactor/workflow-validation` | 夹具、脚本、依赖与 CI 包；与源码包交叉导入由总控集成 |
+| `TeacherWorkspace-workflow-calendar` / `refactor/workflow-calendar-tests` | 日程验证按行为归并，保持原 CI 集合；完成集成后清理 |
+| `TeacherWorkspace-workflow-native-text` / `refactor/workflow-native-text` | 原生文本规则实际实现/中断接手，沿[任务页](native-text-ownership.md)执行 |
+| `TeacherWorkspace-workflow-questions` / `refactor/workflow-questions-session` | 题库业务会话归属，依赖已集成的前端公共包 |
+| `TeacherWorkspace-workflow-resources` / `refactor/workflow-resources-session` | 资源收录/恢复操作归属，与既有 resources 业务现场分开 |
+| `TeacherWorkspace-workflow-math` / `refactor/workflow-math-session` | 数学作品会话归属，保持编辑器与既有体验 |
+| `TeacherWorkspace-workflow-current-e2e` / `refactor/workflow-current-e2e` | 当前主应用旧专项入口修复，保留有效兼容与恢复保护，依赖数学候选 |
 
 账户、题库、数学、日程、班级后端及两次退役任务均已集成，其临时现场已清理。数学模块后续讨论由用户指定 session 接续，实际新现场以 Git 为准。AI 助理扩展暂停，班级前端与 AI 接入尚未开始；日程暂时保留用户已认可的体验。产品分区逐个打磨，不把旧任务授权延续成新增业务开发。
 
@@ -20,7 +30,7 @@
 
 ## 开发基线
 
-当前是一个应用和一个 SQLite 持久底座。五个业务模块注册后端，四个模块开放 Web 页面；新班级 `classroom` 只有后端。备课及旧班级教学 `classes` 已退役，公共文稿、文件、转换、OCR、日程及有效旧库升级能力保留。接口和装配事实见[代码结构](../SETUP.md#代码结构)。
+当前是一个应用和一个 SQLite 持久底座。五个业务模块注册后端，四个模块开放 Web 页面；新班级 `classroom` 只有后端。备课及旧班级教学 `classes` 已退役，公共文稿、文件、转换、OCR、日程及有效旧库升级能力保留。接口和装配事实见[代码结构](../subsystems/README.md#代码结构)。
 
 本机运行 MinerU Standard Pro-2605 Q8 单路 OCR；旧机器结果可读，不自动重做。质量和剩余误读只按[选型验收](../acceptance/ocr-selection.md)描述。新检出所需样本、依赖清单和工具安装已入库，外部 E 原稿按[固定输入](../acceptance/samples.md#固定输入与回放)取得并校验。
 
@@ -44,13 +54,13 @@
 | --- | --- | --- |
 | 数据管理与恢复 | 个人资料包、各模块误删恢复的公共支持、实例备份还原及旧身份撤销；源码、快照和附件曾有本机验证，业务删除与恢复规则由所属分区拥有 | [数据规格](../features/data.md)、[核查入口](#核查入口) |
 | 文件、材料与识别 | 固定预览、文件版本、转换及本地单路 OCR 已被题库和资源库使用；输入限制、校对与输出各按所属分区验证 | [材料契约](../contracts/materials.md)、[识别契约](../contracts/recognition.md)、[选型验收](../acceptance/ocr-selection.md) |
-| 公共保存与模块装配 | 单一静态目录装配五个后端模块，四个现有 Web 页面开放；账户隔离、版本、幂等、冲突及资料导出只读端口沿公共约定 | [共享契约](../contracts/workbench.md)、[代码结构](../SETUP.md#代码结构) |
+| 公共保存与模块装配 | 单一静态目录装配五个后端模块，四个现有 Web 页面开放；账户隔离、版本、幂等、冲突及资料导出只读端口沿公共约定 | [共享契约](../contracts/workbench.md)、[代码结构](../subsystems/README.md#代码结构) |
 
 ## 剩余事项
 
 ### Agent 工程改造
 
-按[任务目标](agent-workflow.md)完成全仓代码与文档职责核查、可靠长程执行和验证交付机制、buffer 发现入口及真实接手演练。需求接手、文档类型、文件职责、范围外发现和原型确认偏好已逐项讨论；当前只沉淀目标和核查事实，尚未开始本轮实施。
+按[任务目标](agent-workflow.md)完成全仓代码与文档职责核查、可靠长程执行和验证交付机制、buffer 发现入口及真实接手演练。用户已确认完整目标并授权实施；进度和依赖统一维护在该任务页，不以本轮部分改动通过代替整体完成。
 
 ### GitHub 交付与首发准备
 
@@ -62,6 +72,7 @@
 | 事项 | 当前事实 | 下一动作与完成条件 |
 | --- | --- | --- |
 | 班级界面与 AI 接入 | 名单、座位、记录、正式考试及统计后端已集成；教师页面和班级 AI 工具未实现 | 按[班级规格](../features/classroom.md)设计原型并消费现有接口；AI 由老师主动提问触发，等待用户启动该线 |
+| 设备恢复后的用户接续 | 底座保留并隔离恢复前设备草稿和未决请求，主应用尚未接入查看、下载与对照后重新提交；旧设备管理设置入口已移除 | 保留[恢复保护要求](../features/data.md)，待相应业务设计接入；本轮只清除不可达旧 UI，不恢复被移除的设置 |
 | AI 助理业务工具与恢复衔接 | 首批只有题库工具；其余业务工具和恢复后旧操作完整处理未实现，设计不等于能力 | 保持暂停，恢复时基于当前模块端口及[Agent/数据判据](../acceptance/mvp-matrix.md)实施，不恢复退役模块 |
 | 通用外部 AI 文本交接 | 预览提问、复制外链、粘贴/上传回流仍属范围，未接入通用界面；数学网页 AI 是独立实现 | 随 AI 助理恢复后推进，旧偏好字段不算完成 |
 | 数学网页 AI 商店分发 | 本机 Chrome/Edge 安装识别、登录返回及更新接续有验证，商店包和材料已准备；尚无已发布条目 | 待开发者账号核验、真实联系与公开隐私说明、审核可访问入口；用户批准发布后验证商店安装和自动更新。正式域名确定后补扩展连接范围 |
@@ -97,7 +108,7 @@
 
 ## 接续顺序与完成条件
 
-当前优先沿[工程改造目标](agent-workflow.md)接续，后续业务开发按用户选定的产品分区推进。日程体验保留；数学按[模块边界](math-workshop.md)接续；AI 助理扩展、真实邮件、Office 人工操作及目标设备等待对应条件或用户恢复。已授权且可复现的核心问题由 agent 沿真实路径处理，不把技术验证交给用户。
+当前优先沿[工程改造目标](agent-workflow.md)接续，后续业务开发按用户选定的产品分区推进。日程体验保留；数学按[模块边界](../features/math.md#保存源与后续开发边界)接续；AI 助理扩展、真实邮件、Office 人工操作及目标设备等待对应条件或用户恢复。已授权且可复现的核心问题由 agent 沿真实路径处理，不把技术验证交给用户。
 
 只有具名完成条件满足才改变状态：已实现、已集成和已验证分别记录；缺输入或环境写未验证，待用户取舍写待决定。新任务从核对的 trunk 创建现场，完成后按[集成清理](../agents/module-development.md#集成后的清理)收尾。
 
@@ -112,8 +123,8 @@
 | 题库核心体验 | [PR #40](https://github.com/DingJWuyu/TeacherWorkspace/pull/40)，`a53f2285`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38387387677) | `apps/web/e2e/questions-ux.config.mjs`、`materials-question-notes*.test.js`、`materials-questions-output.test.js`；实际模型及外部原件按专项另验 |
 | 账户与身份 | [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37)，`de8bd99b`；入口 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39)，`2c43d63e`；[入口 CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38362936254) | `auth-completeness.config.mjs`、`auth-integration.config.mjs`、`fixtures/auth-contract/playwright.config.mjs`、`account-deletion.test.js`；全浏览器进程重启的 Cookie 生命周期、掉电与真实邮件未验 |
 | 工作台昵称 | `1b107651` | `auth-profile.test.js`、`auth-integration.test.js`、`settings-implementation.config.mjs`；真实系统输入法和触屏未验 |
-| 数学统一作品与网页 AI | [PR #36](https://github.com/DingJWuyu/TeacherWorkspace/pull/36)，`1c36e798`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38219664891) | [数学验证](../features/math.md#验证入口)；真实 DeepSeek 曾完成起稿/读图/续改，扩展回归另用受控网页。商店、目标设备未验；弹窗修复见 `math-unified-repair.spec.js` |
-| 日程 | 产品候选 `22baf397`，集成 `da025690` | `calendar-emstudio`、`calendar-dialog-keyboard`、`calendar-capabilities`、`calendar-time-zone` E2E 配置及日程 HTTP；固定旧版本的教学关联已退役，不属当前能力 |
+| 数学统一作品与网页 AI | [PR #36](https://github.com/DingJWuyu/TeacherWorkspace/pull/36)，`1c36e798`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38219664891) | [数学验证](../acceptance/README.md#数学专项)；真实 DeepSeek 曾完成起稿/读图/续改，扩展回归另用受控网页。商店、目标设备未验；弹窗修复见 `math-unified-repair.spec.js` |
+| 日程 | 产品候选 `22baf397`，集成 `da025690` | `schedule/playwright.config.mjs` 下的 capabilities、interaction、keyboard、consistency、time-zone 行为专项及日程 HTTP；固定旧版本的教学关联已退役，不属当前能力 |
 | 材料与 OCR | 选型候选 `472eaf6a`，独立安装/开发服务 `170634b9`，消费者回归 `1b01b7e5` | [识别](../contracts/recognition.md)、[样本](../acceptance/samples.md)、[选型验收](../acceptance/ocr-selection.md)；真实 GPU 推理与 raw 回放分开，独立 clone 仍依赖宿主 OS/GPU 驱动 |
 | 退役兼容与公共底座 | 备课 [PR #38](https://github.com/DingJWuyu/TeacherWorkspace/pull/38)，`9e9edf6c`；旧班级 [PR #41](https://github.com/DingJWuyu/TeacherWorkspace/pull/41)，`0a0a737e` | `lessons-retirement.test.js`、`classes-retirement.test.js`、`test/fixtures/retirement/`、`module-retirement.config.mjs`；保留当前恢复和升级测试，不恢复产品入口 |
 | 发布基础设施 | [PR #27](https://github.com/DingJWuyu/TeacherWorkspace/pull/27)、[PR #28](https://github.com/DingJWuyu/TeacherWorkspace/pull/28)、[PR #32](https://github.com/DingJWuyu/TeacherWorkspace/pull/32)；[打包演练](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38127024596) | 曾在独立目录下载校验、安装生产依赖、HTTPS 启动并验证备份准备；未正式打 Tag、Release 或部署 |

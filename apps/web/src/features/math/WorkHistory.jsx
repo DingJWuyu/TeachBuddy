@@ -2,7 +2,7 @@ import i18n from '../../i18n/index.js';
 import { useTranslation } from 'react-i18next';
 
 import { useEffect, useRef, useState } from 'react';
-import { useModuleDialogFocus } from '../workbench/ModuleMotion.jsx';
+import { useModuleDialogFocus } from '../../components/interaction/ModuleMotion.jsx';
 import FormulaPreview from './FormulaPreview.jsx';
 import GraphicPreview from './GraphicPreview.jsx';
 import { useMathDialogKeys } from './useMathDialogKeys.js';

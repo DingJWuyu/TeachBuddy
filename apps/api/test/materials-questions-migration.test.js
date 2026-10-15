@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { extractLegacySource } from "./fixtures/legacy-source/extract.mjs";
-import { startQuestionsFixture } from "../../web/e2e/fixtures/materials-questions/server.mjs";
+import { startQuestionsFixture } from "./fixtures/questions/server.mjs";
 test("fixed R31 v1 database upgrades preserving original request replay, IDs and documents", async (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "r33-upgrade-"));
   let runtime, passed = false;

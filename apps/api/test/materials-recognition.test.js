@@ -4,14 +4,15 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { createQuestionsModule } from "../src/modules/questions/index.js";
 import Database from 'better-sqlite3';
 import { createIntegration } from "./fixtures/auth-integration/harness.js";
-import { registerMath } from "../../web/e2e/fixtures/math-static/real.mjs";
+import { registerMath } from "./fixtures/math-real.mjs";
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
-import { replayRecognizer, sourceImage } from '../../web/e2e/fixtures/materials-questions/recognition/replay.mjs';
+import { replayRecognizer, sourceImage } from '../../../test/fixtures/questions/recognition/replay.mjs';
 
 const base = "/api/workbench/files";
-const image = fs.readFileSync(new URL("../../web/e2e/fixtures/materials-questions/figure.png", import.meta.url));
+const image = fs.readFileSync(new URL("../../../test/fixtures/questions/figure.png", import.meta.url));
 
 test('HTTP cancellation during raw storage waits for owned model stop and retains complete evidence', async () => {
   const gate = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
@@ -103,7 +104,7 @@ test('captured OCR geometry recovers inline subscripts through HTTP and survives
     const accepted = await write(client, endpoint, { renditionFileId: source.renditionFileId, pages: [1] });
     assert.equal((await waitJob(client, accepted.json.id)).state, 'succeeded');
     const page = (await client.request('GET', `${endpoint}/pages/1${query}`)).json;
-    const raw = JSON.parse(fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/recognition/I-3/raw.json', import.meta.url)));
+    const raw = JSON.parse(fs.readFileSync(new URL('../../../test/fixtures/questions/recognition/I-3/raw.json', import.meta.url)));
     const storedRaw = await client.request('GET', `${base}/${page.rawFileId}/content`);
     assert.deepEqual(JSON.parse(storedRaw.text), raw);
     assert.deepEqual(page.blocks.map(b => b.block_content), raw.parsing_res_list.map(b => b.block_content));
@@ -491,7 +492,7 @@ test('retrying a partial job after an engine revision change preserves the origi
   try {
     world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
     let { client } = await registerMath(world, 'recognition-revision@example.test');
-    const pdf = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/P.pdf', import.meta.url));
+    const pdf = fs.readFileSync(new URL('../../../test/fixtures/questions/P.pdf', import.meta.url));
     const file = await upload(client, 'two-pages.pdf', pdf), source = await preview(client, file);
     const endpoint = `${base}/${file.id}/recognition`, query = `?renditionFileId=${source.renditionFileId}`;
     const accepted = await write(client, endpoint, { renditionFileId: source.renditionFileId, pages: [1, 2] });
@@ -671,7 +672,7 @@ test('complete timed-out output stays failed, binds task evidence, and survives 
   try {
     world = await createIntegration({ directory, workbench: { recognition: { recognizer } } });
     const { client } = await registerMath(world, 'timeout-evidence@example.test');
-    const pdf = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/P.pdf', import.meta.url));
+    const pdf = fs.readFileSync(new URL('../../../test/fixtures/questions/P.pdf', import.meta.url));
     const file = await upload(client, 'timeout-pages.pdf', pdf), source = await preview(client, file);
     const endpoint = `${base}/${file.id}/recognition`;
     const pageUrl = `${endpoint}/pages/1?renditionFileId=${source.renditionFileId}`;
@@ -737,3 +738,50 @@ test('normal API close waits for late evidence and handler persistence before cl
     else console.error(`Retained close evidence integration: ${directory}`);
   }
 });
+
+// The legacy extract provider remains an accepted question-import boundary.
+const importFragment = text => ({ role: 'question', label: '1.', section: '', group: '', text, content: [{ text }], continues: '', doubts: [] });
+for (const [name, contents, expected, drafts, fragments] of [
+  ['empty OCR response fails without creating drafts or fragments', [''], 'failed', 0, 0],
+  ['whitespace OCR response fails without creating drafts or fragments', [' \n\t '], 'failed', 0, 0],
+  ['invalid JSON OCR response remains an editable fragment', ['not JSON'], 'partial', 0, 1],
+  ['truncated OCR response retains its complete question prefix', ['{"fragments":[' + JSON.stringify(importFragment('完整题干')) + ',{"role":"question"'], 'partial', 1, 1],
+  ['successful and empty OCR pages retain the successful draft', [JSON.stringify({ fragments: [importFragment('完整题干')] }), ''], 'partial', 1, 0],
+  ['all empty OCR pages fail without creating drafts or fragments', ['', ''], 'failed', 0, 0],
+]) {
+  test(name, async () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'recognition-provider-response-'));
+    let world, passed = false, calls = 0;
+    const provider = { extract: async () => ({ content: contents[calls++] }) };
+    try {
+      world = await createIntegration({ directory, workbench: { extraImplementations: {
+        questions: {
+          factory: async () => ({ createQuestionsModule: deps => createQuestionsModule({ ...deps, provider }) }),
+          migrations: () => import('../src/modules/questions/migrations/index.js'),
+        },
+      } } });
+      const { client } = await registerMath(world, 'provider-response@example.test');
+      const fileIds = [];
+      for (let i = 0; i < contents.length; i++) fileIds.push((await upload(client)).id);
+      const route = '/api/modules/questions/v2/imports';
+      const created = await write(client, route, { title: name, origin: 'controlled extract provider', input: { kind: 'files', fileIds, pages: [] } });
+      assert.equal(created.status, 201, created.text);
+      const job = await waitJob(client, created.json.jobId);
+      const response = await client.request('GET', `${route}/${created.json.id}`);
+      assert.equal(response.status, 200, response.text);
+      const material = response.json;
+      assert.equal(job.state, expected);
+      assert.equal(material.drafts.length, drafts);
+      assert.equal(material.fragments.length, fragments);
+      assert.equal(calls, contents.length);
+      if (name.startsWith('empty OCR')) assert.ok(job.issues.some(issue => issue.code === 'empty-response'));
+      if (name.startsWith('invalid JSON')) assert.equal(material.fragments[0].text, 'not JSON');
+      if (drafts) assert.ok(JSON.stringify(material.drafts[0].body).includes('完整题干'));
+      passed = true;
+    } finally {
+      await world?.close();
+      if (passed) fs.rmSync(directory, { recursive: true, force: true });
+      else console.error(`Retained OCR provider response regression: ${directory}`);
+    }
+  });
+}

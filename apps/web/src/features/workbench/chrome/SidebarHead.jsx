@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useScene } from '../useScene.js';
+import { useScene } from '../../../platform/device/useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 import { createPortal } from 'react-dom';
 import { Icon } from './icons.jsx';

@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import yauzl from "yauzl";
 import { DOMParser } from "@xmldom/xmldom";
 import { stableRequestKey } from "./request-key.js";
-import { nativeText } from "./extraction.js";
+import { nativeText } from "./native-text.js";
 import { normalizeMath } from "./native-math.js";
 const local = (n) => n.localName ?? n.nodeName.split(":").at(-1);
 const children = (n) =>

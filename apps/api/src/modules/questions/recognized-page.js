@@ -1,6 +1,7 @@
-import { nativeText, questionStart, answerHeading, continuationHeading } from "./extraction.js";
+import { nativeText, questionStart, answerHeading, continuationHeading } from "./native-text.js";
 import { extractionId, questionLabel } from "./extraction-fragments.js";
-import { documentText, images, walkBlocks } from "./materials-content.js";
+import { documentText, images, walkBlocks } from "../../workbench/content/document.js";
+
 import { readTeachingTables } from "./recognized-tables.js";
 
 const length = text => [...text].length;

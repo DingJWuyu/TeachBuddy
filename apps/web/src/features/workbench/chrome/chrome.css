@@ -3205,6 +3205,20 @@ body.is-dragging-item * {
   }
 }
 
+/* Match the shell's drawer breakpoint inside this scope. An equally specific
+ * unscoped rule loses to the scoped desktop default through scope proximity. */
+@media (max-width: 1080px) {
+  :scope .tb-mobile-menu {
+    display: grid;
+    width: 36px;
+    height: 36px;
+  }
+
+  :scope .tb-sidebar-toggle {
+    display: none;
+  }
+}
+
 @media (max-width: 700px) {
   :scope,
   :scope.is-sidebar-collapsed {
@@ -3405,7 +3419,6 @@ body.is-dragging-item * {
 @media (max-width:1080px) {
   .tb-prototype .tb-sidebar { position:fixed; top:0; bottom:0; left:0; z-index:90; width:min(326px,calc(100vw - 36px)); height:100dvh; }
   .tb-prototype .tb-sidebar:not(.is-mobile-open) { display:none; }
-  .tb-prototype .tb-mobile-menu { display:grid; place-items:center; width:36px; height:36px; }
   .tb-prototype .tb-sidebar-mobile-head { display:flex; align-items:center; justify-content:space-between; height:52px; padding:0 14px; border-bottom: 1px solid var(--tb-line); }
   .tb-prototype .tb-mobile-scrim.is-visible { position:fixed; inset:0; z-index:80; display:block; background: #191b1f57; }
 }

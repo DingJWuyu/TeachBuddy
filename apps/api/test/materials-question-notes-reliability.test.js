@@ -6,7 +6,7 @@ import { randomUUID, createHash } from 'node:crypto';
 import Database from 'better-sqlite3';
 import JSZip from 'jszip';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
-import { registerMath } from '../../web/e2e/fixtures/math-static/real.mjs';
+import { registerMath } from './fixtures/math-real.mjs';
 import { doc, paragraph, http, Q } from './materials-http-fixture.js';
 import { backup, restore, activate } from '../src/workbench/reliability/backup.js';
 
@@ -51,7 +51,7 @@ async function prepare(t) {
   const { client } = await registerMath(state.world, email);
   state.client = client;
   state.call = http(client, state.trace);
-  state.png = fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url));
+  state.png = fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url));
   state.fileId = await upload(client, state.png);
   const accepted = await state.call('POST', imports, {
     title: '含教学说明的原始材料', origin: '真实文本解析，不调用模型',

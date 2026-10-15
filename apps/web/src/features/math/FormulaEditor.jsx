@@ -4,7 +4,7 @@ const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
 import { useRef } from 'react';
 import FormulaPreview from './FormulaPreview.jsx';
 import VisualFormulaInput from './VisualFormulaInput.jsx';
-import { ModuleDisclosure } from '../workbench/ModuleMotion.jsx';
+import { ModuleDisclosure } from '../../components/interaction/ModuleMotion.jsx';
 
 const templates = {
   fraction: { get title() { return t("分式"); }, fields: [['top', '分子', 'x+1'], ['bottom', '分母', '2']], latex: v => `\\frac{${v.top}}{${v.bottom}}` },

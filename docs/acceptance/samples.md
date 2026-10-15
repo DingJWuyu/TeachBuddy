@@ -8,10 +8,10 @@
 
 | 用途 | 输入位置与使用方式 |
 | --- | --- |
-| 通用材料、题库与 Office | `apps/web/e2e/fixtures/materials/`、`materials-questions/`、`office/`；自编源材料和实际文件随仓库提供 |
+| 通用材料、题库与 Office | 仓库根 `test/fixtures/materials/`、`test/fixtures/questions/` 与人工 Office 的 `apps/web/e2e/fixtures/office/`；自编源材料和实际文件随仓库提供 |
 | OCR 方案比较 | `apps/api/test/fixtures/ocr-selection/` 的输入、分组、真值及勘误；比较方法和当前结果见[选型验收](ocr-selection.md)，原始识别成绩与人工采用分开 |
-| 题库与资源识别消费 | `apps/web/e2e/fixtures/materials-questions/recognition/`、`recognition-document-4/` 与 `resources-recognition/`；固定机器结果仅证明消费与保存 |
-| 外部 PDF E 与扩展页 | 完整 PDF 按下节下载和校验，用 `M33_PRIVATE_PDF` 显式指定；E7/E8/E9 的固定机器结果在 `recognition-document-4/`，完整原件与渲染页均核对摘要；可选覆盖参数见[题库验证](../features/questions.md#接口代码与判断结果) |
+| 题库与资源识别消费 | 仓库根 `test/fixtures/questions/recognition/`、`test/fixtures/questions/recognition-document-4/` 与 `apps/web/e2e/fixtures/resources-recognition/`；固定机器结果仅证明消费与保存 |
+| 外部 PDF E 与扩展页 | 完整 PDF 按下节下载和校验，用 `M33_PRIVATE_PDF` 显式指定；E7/E8/E9 的固定机器结果在 `test/fixtures/questions/recognition-document-4/`，完整原件与渲染页均核对摘要；可选覆盖参数见[题库验证](README.md#题库专项) |
 
 缺少外部 PDF、模型或目标设备时，只将对应专项标为未验证，不影响仓库固定样本的必要消费回归。测试生成结果放在输出目录，固定输入保持只读；当前验证安排见[项目状态](../plans/run-state.md#核查入口)。
 
@@ -57,7 +57,7 @@ E 的期望结构仅由原页核对：例6与续页合并、练习三小问保�
 
 ## Office 格式与成果
 
-Office 样本可按上述内容独立物化，不等待识别实验。
+Office 样本可按上述内容独立物化，不等待识别实验。公共预览输入为仓库根 `test/fixtures/materials/{c22.pdf,c22.ppt,c22.pptx,w.doc}`；Web fixture 的页面入口不拥有第二份原件。
 
 | ID | 固定材料与输出 |
 | --- | --- |
@@ -71,13 +71,13 @@ O-L/O-H/O-X 是公共 Office 转换的固定版式输入，可分别生成学生
 
 题库固定 W 的图片节点直接位于 `w:p` 下，缺少 `w:r` 包裹。原生提取可读出三张图，但 LibreOffice 分页预览不显示它们；其原生提取评分不能代替合法 DOCX 的分页兼容验证。原件保持固定，不静默修写字节。
 
-Office 输入 `materials/samples/w.doc` 与题库 W 原件不同：旧 DOC 有 Q6 答案，但 Q3 分段公式对象已不在原件中；按实际原件评分，缺失内容保持缺失。题库 `materials-questions/W.docx` 包含有效 Q3 公式，Q6 无答案，仍按六题标准评分。旧 DOC 的格式风险提示不能单独证明转换丢失；需对照原件对象、转换稿与可见页面。
+Office 输入 `test/fixtures/materials/w.doc` 与题库 W 原件不同：旧 DOC 有 Q6 答案，但 Q3 分段公式对象已不在原件中；按实际原件评分，缺失内容保持缺失。题库 `test/fixtures/questions/W.docx` 包含有效 Q3 公式，Q6 无答案，仍按六题标准评分。旧 DOC 的格式风险提示不能单独证明转换丢失；需对照原件对象、转换稿与可见页面。
 
 这些是可重复生成的兼容性样本，不宣称代表所有历史 WPS 文档。后续用老师实际常用资料补验，不把收集私人资料设为固定样本验证的前置。
 
 ### 人工 Office 样本
 
-固定文件在 [Office fixtures](../../apps/web/e2e/fixtures/office/)：`docx/` 含教案、讲义、练习的学生/教师六份 DOCX；`source/` 含对应 Markdown、公式和配图。`make-sources.py` 重建 Markdown 源，不生成 DOCX，也不代表产品转换器。目标环境的当前安排见[项目状态](../plans/run-state.md#用户验收与待决定)，在相应验收任务中执行以下操作。
+固定文件在 [Office fixtures](../../apps/web/e2e/fixtures/office)：`docx/` 含教案、讲义、练习的学生/教师六份 DOCX；`source/` 含对应 Markdown、公式和配图。`make-sources.py` 重建 Markdown 源，不生成 DOCX，也不代表产品转换器。目标环境的当前安排见[项目状态](../plans/run-state.md#用户验收与待决定)，在相应验收任务中执行以下操作。
 
 1. 在 Word、WPS 中分别从 [学生讲义](../../apps/web/e2e/fixtures/office/docx/handout-student.docx) 原件开始。确认中文、分式、根式、分段函数、对数公式和配图完整。
 2. 第一轮改“我的判断”的中文、例 1 分母 `x-2` 为 `x-5`、第二页根式内指数 `2` 为 `3`。另存带软件名的新 DOCX，关闭重开，核对修改及公式可编辑性。
@@ -96,7 +96,7 @@ Office 输入 `materials/samples/w.doc` 与题库 W 原件不同：旧 DOC 有 Q
 | M-D 动态 | 一件 `y=a(x-h)²+k` 作品：a 滑杆取 -2、1、2，顶点可拖动控制 h/k，三步依次展示母函数、平移和解析式；保存后再修改可调范围及步骤文字。初始 a=1,h=1,k=-4 时过 `(-1,0)、(1,-4)、(3,0)`；a=-2,h=0,k=1 时 `(0,1)` 为顶点，`(1,-1)` 在曲线上。拖动顶点后曲线、标签与公式同步。 |
 | M-X 外部 AI HTML | 用一个允许模型在独立提示中生成约一屏的 `y=kx` 滑杆演示 HTML，作为外部工具产物导入，不先改成实验者内部数据结构。保存原始 HTML/提示/实际 ID；导入、重开、改 k 范围或标题后再下载。若有 CDN 依赖，记录能否本地化和实际可改范围，不假定任意 HTML 都可结构化编辑。 |
 
-M-X 需使用获准模型的固定输出，区别于制作工具自产 M-D；无需登录外部 AI 网页或另买模型。可复用 M-D 的一次真实修改来覆盖 MA-04，不增加无价值的生成次数。下载后关闭所有制作服务再检验离线。
+M-X 的固定修订输入在仓库根 `test/fixtures/math/mx-model-revised.html`；来源和使用边界随固定样本维护。M-X 需使用获准模型的固定输出，区别于制作工具自产 M-D；无需登录外部 AI 网页或另买模型。可复用 M-D 的一次真实修改来覆盖 MA-04，不增加无价值的生成次数。下载后关闭所有制作服务再检验离线。
 
 ## pi 业务样本
 

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { GeoGebraEditor } from './geogebra/index.js';
 import { MathWebAssistant } from './web-ai/MathWebAssistant.jsx';
 import { useAuxiliaryAssistant } from '../workbench/shellContext.js';
-import { Icon } from '../workbench/icons.jsx';
+import { Icon } from '../../components/icons.jsx';
 import { mathStatusLabel } from './WorkspaceHome.jsx';
 import './ggb-workspace.css';
 
@@ -27,6 +27,9 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
   const serializedInteraction = useRef(0);
   const serializedObjects = useRef('');
   const initializedController = useRef(null);
+  // Loading and resizing can change native layout XML without editing objects.
+  // Apply the same content check to lifecycle capture and explicit flush.
+  const unchangedWithoutInteraction = useCallback(objects => !interacted.current && objects === serializedObjects.current, []);
   const assistant = useCallback(() => <MathWebAssistant controller={draft.deletedAt ? null : controller} title={draft.title} accountKey={accountKey}/>, [controller, draft.title, draft.deletedAt, accountKey]);
   useAuxiliaryAssistant(assistant);
 
@@ -36,7 +39,7 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
     let objects;
     try { objects = JSON.stringify(controller.read().objects); }
     catch (error) { if (error.code !== 'busy') throw error; }
-    if (!interacted.current && objects === serializedObjects.current) return;
+    if (unchangedWithoutInteraction(objects)) return;
     if (snapshot.revision === serializedRevision.current) return;
     const latest = current.current.draft;
     if (snapshot.base64 !== serializedBase64.current) {
@@ -47,7 +50,7 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
     if (objects) serializedObjects.current = objects;
     serializedInteraction.current = interactionSequence.current;
     dirtyMarker.current = null;
-  }, [controller]);
+  }, [controller, unchangedWithoutInteraction]);
 
   // Capture before the editor's passive cleanup destroys the official API.
   useLayoutEffect(() => {
@@ -76,14 +79,15 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
           const snapshot = await controller.serialize();
           if (!live.current) return snapshot;
           if (snapshot.revision !== controller.read().revision) continue;
+          const objects = JSON.stringify(controller.read().objects);
           const { draft: latest, onChangeSource: change } = current.current;
           if (serializedRevision.current !== snapshot.revision) {
             if (snapshot.base64 === serializedBase64.current && dirtyMarker.current) current.current.onUnchanged(...dirtyMarker.current);
-            if (snapshot.base64 !== serializedBase64.current) change({ ...latest.source, base64: snapshot.base64 }, serializedRevision.current >= 0 || controller.read().objects.length > 0);
+            if (snapshot.base64 !== serializedBase64.current && !unchangedWithoutInteraction(objects)) change({ ...latest.source, base64: snapshot.base64 }, serializedRevision.current >= 0 || controller.read().objects.length > 0);
             serializedBase64.current = snapshot.base64;
             serializedRevision.current = snapshot.revision;
           }
-          serializedObjects.current = JSON.stringify(controller.read().objects);
+          serializedObjects.current = objects;
           serializedInteraction.current = interactionSequence.current;
           dirtyMarker.current = null;
           return snapshot;
@@ -95,7 +99,7 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
     });
     readTask.current = task;
     return task;
-  }, [controller, t]);
+  }, [controller, t, unchangedWithoutInteraction]);
 
   useEffect(() => {
     flushRef.current = controller ? flush : null;
@@ -142,7 +146,7 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
     if (snapshot.origin !== 'manual') interacted.current = true;
     // Imported files emit layout notifications before the user starts editing.
     if (snapshot.origin === 'manual' && !interacted.current) {
-      if (JSON.stringify(snapshot.objects) === serializedObjects.current) { serializedRevision.current = snapshot.revision; return; }
+      if (unchangedWithoutInteraction(JSON.stringify(snapshot.objects))) { serializedRevision.current = snapshot.revision; return; }
       // Native animations change object values without another pointer gesture.
       interacted.current = true;
     }

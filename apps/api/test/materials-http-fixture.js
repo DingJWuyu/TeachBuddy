@@ -70,7 +70,7 @@ export async function seedRich(client) {
   const boundary = "mta-" + randomUUID();
   const png = fs.readFileSync(
     new URL(
-      "../../web/e2e/fixtures/materials-questions/figure.png",
+      "../../../test/fixtures/questions/figure.png",
       import.meta.url,
     ),
   );

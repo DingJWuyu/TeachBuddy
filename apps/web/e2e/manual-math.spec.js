@@ -1,444 +1,269 @@
-import { test, expect } from "@playwright/test";
-import fs from "node:fs";
-import { pathToFileURL } from "node:url";
-import sharp from "sharp";
-import { createIntegration } from "../../api/test/fixtures/auth-integration/harness.js";
-import { register, save } from "./fixtures/math-dynamic/helpers.mjs";
+import { test, expect } from '@playwright/test';
+import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import sharp from 'sharp';
+import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
+import { emptyDynamicSource, newElement } from '../src/features/math/model.js';
+import { register } from './fixtures/math-dynamic/helpers.mjs';
+import { importLegacy, openTool, addGraphic, selectObject, disclosure, saveLegacy as save, downloadLegacy as download } from './fixtures/math-workspace.js';
+
 let world;
-test.afterEach(async ({ page }, info) => {
-  if (world) {
-    if (info.status !== info.expectedStatus)
-      await page.screenshot({ path: info.outputPath("failure.png") });
-    await world.close();
-    if (info.status === info.expectedStatus)
-      fs.rmSync(world.directory, { recursive: true, force: true });
-    world = null;
-  }
-});
-async function start(page, kind = "演示", useStartingPoint = true) {
+let directory;
+test.beforeEach(async ({ page }) => {
   world = await createIntegration();
-  await register(page, world, "manual-math@example.test");
-  await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "数学工坊", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: `新建${kind}`, exact: true })
-    .first()
-    .click();
-  await page.getByRole("button", { name: "作品与工具", exact: true }).click();
-  if (kind === "演示" && useStartingPoint)
-    await page
-      .getByRole("button", { name: "二次函数起点", exact: true })
-      .click();
+  directory = world.directory;
+  await register(page, world, 'manual-math@example.test');
+  await page.getByRole('button', { name: '知道了', exact: true }).click();
+  await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^数学工坊/ }).click();
+});
+test.afterEach(async ({ context }, info) => {
+  await context.close();
+  await world?.close();
+  if (info.status === info.expectedStatus) fs.rmSync(directory, { recursive: true, force: true });
+  else fs.writeFileSync(info.outputPath('fixture-directory.txt'), directory);
+});
+async function start(page, kind = 'dynamic') {
+  await importLegacy(page, kind);
+  if (kind === 'plane') {
+    await openTool(page, 'objects');
+    while (await page.getByLabel('图形列表').getByRole('button').count()) {
+      await page.getByLabel('图形列表').getByRole('button').first().click();
+      await page.getByRole('button', { name: '移除对象', exact: true }).click();
+    }
+  }
 }
-test("手动添加参数后可以保存演示", async ({ page }) => {
+async function label(page, text) {
+  await disclosure(page, '图上标注');
+  await page.getByLabel('label-text', { exact: true }).fill(text);
+}
+async function transparent(file) {
+  const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  expect(data.some((value, index) => index % 4 === 3 && value === 0)).toBe(true);
+  return info;
+}
+
+test('旧动态源添加参数后可保存重开', async ({ page }) => {
   await start(page);
-  await page.getByRole("button", { name: "添加参数", exact: true }).click();
+  await openTool(page, 'parameters');
+  await page.getByRole('button', { name: '添加参数', exact: true }).click();
   const saved = await save(page);
   expect(saved.source.parameters).toHaveLength(4);
+  await page.reload();
+  await openTool(page, 'parameters');
+  await expect(page.locator('.math-parameter-group')).toHaveCount(4);
 });
 
-async function tools(page) {
-  if (!(await page.locator(".math-tools-panel").isVisible()))
-    await page.getByRole("button", { name: "作品与工具", exact: true }).click();
-}
-async function section(page, name) {
-  await tools(page);
-  const details = page
-    .locator(".math-tools-panel details")
-    .filter({
-      has: page.locator("summary", { hasText: new RegExp(`^${name}$`) }),
-    })
-    .first();
-  if (!(await details.evaluate((e) => e.open)))
-    await details.locator("summary").click();
-  return details;
-}
-async function download(page, format, target) {
-  await page.getByLabel("导出格式").selectOption(format);
-  const event = page.waitForEvent("download");
-  await page.getByRole("button", { name: "下载", exact: true }).click();
-  await (await event).saveAs(target);
-  return target;
-}
-test("动态参数改名、范围、步骤说明、对象增删与离线展示", async ({
-  page,
-  browser,
-}, info) => {
+test('旧动态源参数改名范围、步骤说明、对象增删与真实离线展示', async ({ page, browser }, info) => {
   await start(page);
-  await page.getByLabel("作品名称").fill("手动正弦探究");
-  await page.getByLabel("parameter-0-name", { exact: true }).fill("b");
-  await page.getByLabel("parameter-0-min", { exact: true }).fill("-1");
-  await page.getByLabel("parameter-0-max", { exact: true }).fill("1");
-  await page.getByLabel("parameter-0-step", { exact: true }).fill("0.25");
+  await page.getByLabel('作品名称').fill('手动正弦探究');
+  await openTool(page, 'parameters');
+  for (const [key, value] of Object.entries({ name: 'b', min: '-1', max: '1', step: '0.25' })) await page.getByLabel(`parameter-0-${key}`, { exact: true }).fill(value);
   await page.reload();
-  await tools(page);
-  await expect(
-    page.getByLabel("parameter-0-name", { exact: true }),
-  ).toHaveValue("b");
-  await page.getByRole("button", { name: "应用参数 1", exact: true }).click();
-  await page.getByLabel("选择对象").selectOption("0");
-  await page.getByLabel("expression", { exact: true }).fill("b*sin(x-h)+k");
-  await page
-    .getByLabel("label-text", { exact: true })
-    .fill("y={b}sin(x-{h})+{k}");
-  await page.getByRole("button", { name: "添加文字", exact: true }).click();
-  await page.getByLabel("text", { exact: true }).fill("观察振幅随参数变化");
-  await page.getByLabel("at-y", { exact: true }).fill("3");
-  await section(page, "步骤");
-  await page
-    .getByLabel("步骤 1 说明")
-    .fill("先观察振幅。\n再比较平移前后的图像。");
-  await page.getByLabel("步骤 2 标题").fill("向右平移");
+  await openTool(page, 'parameters');
+  await expect(page.getByLabel('parameter-0-name', { exact: true })).toHaveValue('b');
+  await page.getByRole('button', { name: '应用参数 1', exact: true }).click();
+  await selectObject(page, 'f');
+  await page.getByLabel('expression', { exact: true }).fill('b*sin(x-h)+k');
+  await label(page, 'y={b}sin(x-{h})+{k}');
+  await addGraphic(page, '添加文字');
+  await page.getByLabel('text', { exact: true }).fill('观察振幅随参数变化');
+  await page.getByLabel('at-y', { exact: true }).fill('3');
+  await openTool(page, 'steps');
+  await page.getByLabel('步骤 1 说明').fill('先观察振幅。\n再比较平移前后的图像。');
+  await disclosure(page, '2 · 平移后曲线');
+  await page.getByLabel('步骤 2 标题').fill('向右平移');
   const first = await save(page);
-  expect(first.render.state).toBe("ready");
-  expect(first.source.scene.elements[0].expression).toBe("b*sin(x-h)+k");
-  expect(first.source.steps[2].values[0]).toEqual({ name: "b", value: -1 });
-  expect(first.source.steps.every((s) => s.visibleIds.includes("T1"))).toBe(
-    true,
-  );
-  await page.getByLabel("选择对象").selectOption("1");
-  await page.getByLabel("id", { exact: true }).fill("Q");
-  const renamed = await save(page);
-  expect(renamed.source.drags[0].pointId).toBe("Q");
-  await page.getByRole("button", { name: "移除对象", exact: true }).click();
+  expect(first.render.state).toBe('ready');
+  expect(first.source.scene.elements[0].expression).toBe('b*sin(x-h)+k');
+  expect(first.source.steps[2].values[0]).toEqual({ name: 'b', value: -1 });
+  expect(first.source.steps.every(step => step.visibleIds.includes('T1'))).toBe(true);
+  await selectObject(page, 'P');
+  await page.getByLabel('id', { exact: true }).fill('Q');
+  expect((await save(page)).source.drags[0].pointId).toBe('Q');
+  await page.getByRole('button', { name: '移除对象', exact: true }).click();
   const removed = await save(page);
   expect(removed.source.drags).toEqual([]);
-  expect(removed.source.steps.every((s) => !s.visibleIds.includes("Q"))).toBe(
-    true,
-  );
+  expect(removed.source.steps.every(step => !step.visibleIds.includes('Q'))).toBe(true);
   await page.reload();
-  await tools(page);
-  await section(page, "步骤");
-  await expect(page.getByLabel("步骤 1 说明")).toHaveValue(
-    "先观察振幅。\n再比较平移前后的图像。",
-  );
-  await page.screenshot({ path: info.outputPath("dynamic.png") });
-  const file = await download(page, "html", info.outputPath("dynamic.html"));
-  const context = await browser.newContext({ offline: true });
+  await openTool(page, 'steps');
+  await expect(page.getByLabel('步骤 1 说明')).toHaveValue('先观察振幅。\n再比较平移前后的图像。');
+  const file = await download(page, 'html', info.outputPath('dynamic.html'));
+  await world.close(); world = null;
+  const offline = await browser.newContext({ offline: true });
   try {
-    const offline = await context.newPage();
-    await offline.goto(pathToFileURL(file).href);
-    const frame = offline.frameLocator("iframe");
-    await expect(frame.locator(".step-description")).toContainText(
-      "先观察振幅",
-    );
-    await frame.getByRole("button", { name: "向右平移", exact: true }).click();
-    await expect(frame.getByLabel("h 数值")).toHaveValue("1");
-    await frame.getByLabel("b 数值").fill("0.5");
-    await expect(frame.locator("svg")).toContainText("y=0.5sin");
-  } finally {
-    await context.close();
-  }
-});
-test("平面任意函数、圆、线段、多边形与标注保存并导出透明图片", async ({
-  page,
-}, info) => {
-  await start(page, "平面图形");
-  await page.getByLabel("作品名称").fill("三角函数与单位圆");
-  await page.getByRole("button", { name: "添加函数", exact: true }).click();
-  await page.getByLabel("expression", { exact: true }).fill("2*sin(x)+1");
-  await page.getByLabel("label-text", { exact: true }).fill("振幅为二");
-  await page
-    .getByRole("button", { name: "添加圆 / 椭圆", exact: true })
-    .click();
-  await page.getByLabel("rx", { exact: true }).fill("1");
-  await page.getByLabel("ry", { exact: true }).fill("1");
-  await page.getByRole("button", { name: "添加线段", exact: true }).click();
-  await page.getByLabel("to-x", { exact: true }).fill("3");
-  await page.getByLabel("arrow", { exact: true }).selectOption("end");
-  await page.getByRole("button", { name: "添加多边形", exact: true }).click();
-  await page.getByRole("button", { name: "添加顶点", exact: true }).click();
-  await page.getByLabel("points-3-x", { exact: true }).fill("-2");
-  await page.getByRole("button", { name: "添加文字", exact: true }).click();
-  await page.getByLabel("text", { exact: true }).fill("单位圆与正弦函数");
-  await page.getByLabel("at-y", { exact: true }).fill("4");
-  const saved = await save(page);
-  expect(saved.render.state).toBe("ready");
-  await page.reload();
-  await tools(page);
-  const svg = await download(page, "svg", info.outputPath("plane.svg"));
-  expect(fs.readFileSync(svg, "utf8")).toContain("单位圆与正弦函数");
-  const png = await download(page, "png", info.outputPath("plane.png"));
-  const { data, info: meta } = await sharp(png)
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  expect(meta.width).toBe(1600);
-  expect(data.some((v, i) => i % 4 === 3 && v === 0)).toBe(true);
-  await page.screenshot({ path: info.outputPath("plane-page.png") });
-});
-test("空间自定义顶点与棱、改名删点、投影保存重开", async ({ page }, info) => {
-  await start(page, "空间图形");
-  await page.getByRole("button", { name: "正方体起点", exact: true }).click();
-  await page.getByLabel("选择对象").selectOption("0");
-  await page.getByLabel("id", { exact: true }).fill("O");
-  await page.getByLabel("label-text", { exact: true }).fill("原点 O");
-  await page.getByLabel("选择对象").selectOption("7");
-  await page.getByRole("button", { name: "移除对象", exact: true }).click();
-  await page.getByRole("button", { name: "添加空间点", exact: true }).click();
-  await page.getByLabel("z", { exact: true }).fill("4");
-  await page.getByRole("button", { name: "添加棱", exact: true }).click();
-  await section(page, "棱");
-  const count = await page.getByLabel(/^edge-\d+-to$/).count();
-  await page.getByLabel(`edge-${count - 1}-to`, { exact: true }).fill("P0");
-  await page
-    .getByLabel(`edge-${count - 1}-style-dash`, { exact: true })
-    .selectOption("dashed");
-  await page.getByLabel("azimuth", { exact: true }).fill("45");
-  await page.getByLabel("elevation", { exact: true }).fill("30");
-  const saved = await save(page);
-  expect(saved.render.state).toBe("ready");
-  expect(
-    saved.source.edges.every(
-      (e) => e.from !== "A" && e.to !== "A" && e.from !== "D1" && e.to !== "D1",
-    ),
-  ).toBe(true);
-  await page.reload();
-  await tools(page);
-  await expect(page.getByLabel("azimuth", { exact: true })).toHaveValue("45");
-  await download(page, "svg", info.outputPath("space.svg"));
-  await download(page, "png", info.outputPath("space.png"));
-  await page.screenshot({ path: info.outputPath("space-page.png") });
-});
-test("HTML 导入、源码修改、保存重开及离线交互", async ({
-  page,
-  browser,
-}, info) => {
-  await start(page, "公式");
-  page.on("dialog", (dialog) => dialog.accept());
-  await page.getByLabel("导入 HTML 文件").setInputFiles({
-    name: "外部演示.html",
-    mimeType: "text/html",
-    buffer: Buffer.from(
-      '<!doctype html><meta charset="utf-8"><h1>三角形面积</h1><button onclick="document.querySelector(\'output\').textContent=6">计算</button><output>0</output>',
-    ),
-  });
-  await expect(page.getByLabel("作品名称")).toHaveValue("外部演示.html");
-  await save(page);
-  await page.getByRole("button", { name: "编辑源码", exact: true }).click();
-  const editor = page.getByLabel("HTML 源码");
-  await expect(editor).toContainText("三角形面积");
-  await editor.fill(
-    (await editor.inputValue())
-      .replace("三角形面积", "底为四、高为三")
-      .replace("textContent=6", "textContent=12"),
-  );
-  await save(page);
-  await page.reload();
-  await page.getByRole("button", { name: "运行预览", exact: true }).click();
-  const preview = page
-    .frameLocator('iframe[title="作品隔离预览"]')
-    .frameLocator("iframe");
-  await expect(preview.locator("h1")).toHaveText("底为四、高为三");
-  await preview.getByRole("button", { name: "计算" }).click();
-  await expect(preview.locator("output")).toHaveText("12");
-  const file = await download(page, "html", info.outputPath("external.html"));
-  const context = await browser.newContext({ offline: true });
-  try {
-    const offline = await context.newPage();
-    await offline.goto(pathToFileURL(file).href);
-    const frame = offline.frameLocator("iframe");
-    await frame.getByRole("button", { name: "计算" }).click();
-    await expect(frame.locator("output")).toHaveText("12");
-  } finally {
-    await context.close();
-  }
+    const display = await offline.newPage();
+    await display.goto(pathToFileURL(file).href);
+    const frame = display.frameLocator('iframe');
+    await expect(frame.locator('.step-description')).toContainText('先观察振幅');
+    await frame.getByRole('button', { name: '向右平移', exact: true }).click();
+    await expect(frame.getByLabel('h 数值')).toHaveValue('1');
+    await frame.getByLabel('b 数值').fill('0.5');
+    await expect(frame.locator('svg')).toContainText('y=0.5sin');
+  } finally { await offline.close(); }
 });
 
-test("公式中文说明、透明导出与服务重启", async ({
-  page,
-  browser,
-}, info) => {
-  world = await createIntegration();
-  await register(page, world, "manual-math@example.test");
-  await page.goto(world.origin + "/math");
-  await page
-    .getByRole("button", { name: "新建公式", exact: true })
-    .first()
-    .click();
-  await page.getByLabel("作品名称").fill("判别式与根");
-  await page
-    .getByLabel("LaTeX", { exact: true })
-    .fill("x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}");
-  await page
-    .getByLabel("中文说明")
-    .fill("判别式大于零时，方程有两个不同的实根。");
+test('旧平面源函数、圆、线段、多边形与标注保存并导出透明图片', async ({ page }, info) => {
+  await start(page, 'plane');
+  await page.getByLabel('作品名称').fill('三角函数与单位圆');
+  await page.getByRole('button', { name: '添加函数', exact: true }).click();
+  await page.getByLabel('expression', { exact: true }).fill('2*sin(x)+1');
+  await label(page, '振幅为二');
+  await addGraphic(page, '添加圆 / 椭圆');
+  await page.getByLabel('rx', { exact: true }).fill('1');
+  await page.getByLabel('ry', { exact: true }).fill('1');
+  await addGraphic(page, '添加线段');
+  await page.getByLabel('to-x', { exact: true }).fill('3');
+  await page.getByLabel('arrow', { exact: true }).selectOption('end');
+  await addGraphic(page, '添加多边形');
+  await page.getByRole('button', { name: '添加顶点', exact: true }).click();
+  await page.getByLabel('points-3-x', { exact: true }).fill('-2');
+  await addGraphic(page, '添加文字');
+  await page.getByLabel('text', { exact: true }).fill('单位圆与正弦函数');
+  await page.getByLabel('at-y', { exact: true }).fill('4');
+  expect((await save(page)).render.state).toBe('ready');
+  await page.reload();
+  const svg = await download(page, 'svg', info.outputPath('plane.svg'));
+  expect(fs.readFileSync(svg, 'utf8')).toContain('单位圆与正弦函数');
+  expect((await transparent(await download(page, 'png', info.outputPath('plane.png')))).width).toBe(1600);
+});
+
+test('旧空间源自定义顶点与棱、改名删点、投影保存重开', async ({ page }, info) => {
+  await start(page, 'space');
+  await selectObject(page, 'A');
+  await page.getByLabel('id', { exact: true }).fill('O');
+  await label(page, '原点 O');
+  await selectObject(page, 'D1');
+  await page.getByRole('button', { name: '移除对象', exact: true }).click();
+  await addGraphic(page, '添加点');
+  await page.getByLabel('z', { exact: true }).fill('4');
+  const addedPoint = await page.getByLabel('id', { exact: true }).inputValue();
+  await addGraphic(page, '添加棱');
+  await page.getByLabel('棱终点', { exact: true }).selectOption(addedPoint);
+  await disclosure(page, '颜色与样式');
+  await page.getByLabel('style-dash', { exact: true }).selectOption('dashed');
+  await openTool(page, 'canvas');
+  await page.getByLabel('azimuth', { exact: true }).fill('45');
+  await page.getByLabel('elevation', { exact: true }).fill('30');
   const saved = await save(page);
-  expect(saved.render.state).toBe("ready");
-  const png = await download(page, "png", info.outputPath("formula.png"));
-  const { data } = await sharp(png)
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  expect(data.some((v, i) => i % 4 === 3 && v === 0)).toBe(true);
-  await download(page, "svg", info.outputPath("formula.svg"));
+  expect(saved.render.state).toBe('ready');
+  expect(saved.source.edges.every(edge => !['A', 'D1'].includes(edge.from) && !['A', 'D1'].includes(edge.to))).toBe(true);
+  await page.reload();
+  await openTool(page, 'canvas');
+  await expect(page.getByLabel('azimuth', { exact: true })).toHaveValue('45');
+  await download(page, 'svg', info.outputPath('space.svg'));
+  await download(page, 'png', info.outputPath('space.png'));
+});
+
+test('HTML 从当前菜单导入、源码修改、保存重开及真实离线交互', async ({ page, browser }, info) => {
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: '作品操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '导入网页', exact: true }).click();
+  await (await chooser).setFiles({ name: '外部演示.html', mimeType: 'text/html', buffer: Buffer.from('<!doctype html><meta charset="utf-8"><h1>三角形面积</h1><button onclick="document.querySelector(\'output\').textContent=6">计算</button><output>0</output>') });
+  await expect(page.getByLabel('作品名称')).toHaveValue('外部演示.html');
+  await save(page);
+  await page.getByRole('button', { name: '编辑源码', exact: true }).click();
+  const editor = page.getByLabel('网页源码');
+  await editor.fill((await editor.inputValue()).replace('三角形面积', '底为四、高为三').replace('textContent=6', 'textContent=12'));
+  await save(page);
+  await page.reload();
+  await page.getByRole('button', { name: '运行预览', exact: true }).click();
+  const preview = page.frameLocator('iframe[title="作品隔离预览"]').frameLocator('iframe');
+  await expect(preview.locator('h1')).toHaveText('底为四、高为三');
+  await preview.getByRole('button', { name: '计算' }).click();
+  await expect(preview.locator('output')).toHaveText('12');
+  const file = await download(page, 'html', info.outputPath('external.html'));
+  await world.close(); world = null;
+  const offline = await browser.newContext({ offline: true });
+  try {
+    const display = await offline.newPage();
+    await display.goto(pathToFileURL(file).href);
+    const frame = display.frameLocator('iframe');
+    await frame.getByRole('button', { name: '计算' }).click();
+    await expect(frame.locator('output')).toHaveText('12');
+  } finally { await offline.close(); }
+});
+
+test('旧公式源中文说明、透明导出与服务重启', async ({ page, browser }, info) => {
+  await start(page, 'formula');
+  await page.getByLabel('作品名称').fill('判别式与根');
+  await page.getByLabel('LaTeX', { exact: true }).fill('x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}');
+  await disclosure(page, '说明与样式');
+  await page.getByLabel('中文说明').fill('判别式大于零时，方程有两个不同的实根。');
+  const saved = await save(page);
+  expect(saved.render.state).toBe('ready');
+  await transparent(await download(page, 'png', info.outputPath('formula.png')));
+  await download(page, 'svg', info.outputPath('formula.svg'));
   const directory = world.directory;
   const storageState = await page.context().storageState();
   await world.close();
   world = await createIntegration({ directory });
-  const context = await browser.newContext({
-    storageState,
-    ignoreHTTPSErrors: true,
-  });
+  const context = await browser.newContext({ storageState, ignoreHTTPSErrors: true });
   try {
     const reopened = await context.newPage();
     await reopened.goto(world.origin + `/math?workId=${saved.id}`);
-    await expect(reopened.getByLabel("中文说明")).toHaveValue(
-      "判别式大于零时，方程有两个不同的实根。",
-    );
-    await reopened.getByLabel("中文说明").fill("再次修改并保存的中文说明");
-    const changed = await save(reopened);
-    expect(changed.version).toBe(2);
-  } finally {
-    await context.close();
-  }
+    await reopened.getByRole('button', { name: '知道了', exact: true }).click();
+    await expect(reopened.getByLabel('中文说明')).toHaveValue('判别式大于零时，方程有两个不同的实根。');
+    await reopened.getByLabel('中文说明').fill('再次修改并保存的中文说明');
+    expect((await save(reopened)).version).toBe(saved.version + 1);
+  } finally { await context.close(); }
 });
-test("从空白制作拖动点与分步演示，移除全部参数后仍可保存", async ({
-  page,
-}, info) => {
-  world = await createIntegration();
-  await register(page, world, "blank-math@example.test");
-  await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "数学工坊", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "新建演示", exact: true })
-    .first()
-    .click();
-  await tools(page);
-  await expect(page.getByLabel("选择对象").locator("option")).toHaveCount(0);
-  await page.getByLabel("作品名称").fill("自己制作的动点");
-  await page.getByRole("button", { name: "添加点", exact: true }).click();
-  await page.getByLabel("at-y", { exact: true }).fill("2");
-  await page.getByLabel("label-text", { exact: true }).fill("横坐标 {t}");
-  await section(page, "拖动绑定");
-  await page.getByRole("button", { name: "添加拖动", exact: true }).click();
-  await expect(page.getByLabel("at-x", { exact: true })).toHaveValue("t");
-  await section(page, "步骤");
-  await page.getByRole("button", { name: "添加步骤", exact: true }).click();
-  await page.getByLabel("步骤 1 标题").fill("起点");
-  await page.getByLabel("步骤 1 说明").fill("拖动蓝点观察横坐标");
-  await page.getByRole("button", { name: "添加步骤", exact: true }).click();
-  await page.getByLabel("步骤 2 t", { exact: true }).fill("3");
-  let saved = await save(page);
-  expect(saved.render.state).toBe("ready");
-  await page
-    .locator(".math-dynamic")
-    .getByRole("button", { name: "步骤 2", exact: true })
-    .click();
-  await expect(page.getByLabel("t 数值", { exact: true })).toHaveValue("3");
-  await page.getByLabel("t 数值", { exact: true }).fill("4");
-  await expect(page.locator(".math-dynamic svg")).toContainText("横坐标 4");
-  const dot = page.locator('.math-dynamic [data-object="P1"] circle');
-  const box = await dot.boundingBox();
+
+test('旧动态源对象标识冲突保留原点与拖动绑定', async ({ page }) => {
+  await start(page);
+  await selectObject(page, 'P');
+  await page.getByLabel('id', { exact: true }).fill('f');
+  await expect(page.getByRole('alert')).toContainText('对象标识已存在');
+  await expect(page.getByLabel('id', { exact: true })).toHaveValue('P');
+  const saved = await save(page);
+  expect(saved.source.drags[0].pointId).toBe('P');
+  expect(saved.render.state).toBe('ready');
+});
+
+
+test('旧动态源拖动绑定、步骤开场及移除全部参数后保存重开', async ({ page }) => {
+  const source = emptyDynamicSource();
+  source.scene.elements = [newElement('point', 'P1')];
+  await importLegacy(page, 'dynamic', '动点旧作品', source);
+  await selectObject(page, 'P1');
+  await page.getByLabel('at-y', { exact: true }).fill('2');
+  await label(page, '横坐标 {t}');
+  await openTool(page, 'parameters');
+  await page.locator('summary').filter({ hasText: /^拖动图上的点$/ }).click();
+  await page.getByRole('button', { name: '添加拖动', exact: true }).click();
+  await openTool(page, 'objects');
+  await expect(page.getByLabel('at-x', { exact: true })).toHaveValue('t');
+  await openTool(page, 'steps');
+  await page.getByRole('button', { name: '添加步骤', exact: true }).click();
+  await page.getByLabel('步骤 1 标题').fill('起点');
+  await page.getByLabel('步骤 1 说明').fill('拖动蓝点观察横坐标');
+  await page.getByRole('button', { name: '添加步骤', exact: true }).click();
+  await page.getByLabel('步骤 2 t', { exact: true }).fill('3');
+  expect((await save(page)).render.state).toBe('ready');
+  await page.locator('.math-dynamic').getByRole('button', { name: '步骤 2', exact: true }).click();
+  await expect(page.getByLabel('t 数值', { exact: true })).toHaveValue('3');
+  await page.getByLabel('t 数值', { exact: true }).fill('4');
+  await expect(page.locator('.math-dynamic svg')).toContainText('横坐标 4');
+  const box = await page.locator('.math-dynamic [data-object="P1"] circle').boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2 - 40, box.y + box.height / 2, {
-    steps: 5,
-  });
+  await page.mouse.move(box.x + box.width / 2 - 40, box.y + box.height / 2, { steps: 5 });
   await page.mouse.up();
-  await expect(page.getByLabel("t 数值", { exact: true })).not.toHaveValue("4");
-  await page.getByRole("button", { name: "设为初始状态", exact: true }).click();
-  saved = await save(page);
+  await expect(page.getByLabel('t 数值', { exact: true })).not.toHaveValue('4');
+  await page.getByRole('button', { name: '设为开场画面', exact: true }).click();
+  let saved = await save(page);
   expect(saved.source.initialStepId).toBe(saved.source.steps[1].id);
-  page.on("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: "移除参数 t", exact: true }).click();
+  await openTool(page, 'parameters');
+  await page.getByRole('button', { name: '移除参数 t', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '继续', exact: true }).click();
   saved = await save(page);
   expect(saved.source.parameters).toEqual([]);
   expect(saved.source.drags).toEqual([]);
-  await page.getByRole("button", { name: "移除步骤 2", exact: true }).click();
-  await page.getByRole("button", { name: "移除步骤 1", exact: true }).click();
-  saved = await save(page);
-  expect(saved.source.initialStepId).toBeNull();
+  await openTool(page, 'steps');
+  await page.getByRole('button', { name: '移除步骤 2', exact: true }).click();
+  await disclosure(page, '1 · 起点');
+  await page.getByRole('button', { name: '移除步骤 1', exact: true }).click();
+  expect((await save(page)).source.initialStepId).toBeNull();
   await page.reload();
-  await tools(page);
-  await expect(page.getByLabel("选择对象").locator("option")).toHaveCount(1);
-  await page.screenshot({ path: info.outputPath("from-blank.png") });
-});
-
-test("对象标识冲突保留原点与拖动绑定", async ({ page }) => {
-  await start(page);
-  await page.getByLabel("选择对象").selectOption("1");
-  await page.getByLabel("id", { exact: true }).fill("f");
-  await expect(page.getByRole("alert")).toContainText("对象标识已存在");
-  await expect(page.getByLabel("id", { exact: true })).toHaveValue("P");
-  const saved = await save(page);
-  expect(saved.source.drags[0].pointId).toBe("P");
-  expect(saved.render.state).toBe("ready");
-});
-
-for (const content of ["纯文字步骤", "已应用参数", "参数编辑稿"]) {
-  test(`二次函数起点保护${content}并允许明确替换`, async ({ page }) => {
-    await start(page, "演示", false);
-    if (content === "纯文字步骤") {
-      await section(page, "步骤");
-      await page.getByRole("button", { name: "添加步骤", exact: true }).click();
-      await page.getByLabel("步骤 1 标题").fill("判别式讨论");
-      await page.getByLabel("步骤 1 说明").fill("先讨论判别式小于零的情况，再添加图形。");
-    } else {
-      await section(page, "参数");
-      await page.getByLabel("parameter-0-name", { exact: true }).fill("t");
-      await page.getByLabel("parameter-0-min", { exact: true }).fill("-7");
-      if (content === "已应用参数")
-        await page.getByRole("button", { name: "应用参数 1", exact: true }).click();
-    }
-    await expect(page.getByLabel("选择对象").locator("option")).toHaveCount(0);
-    const checkPreserved = async () => {
-      if (content === "纯文字步骤") {
-        await section(page, "步骤");
-        await expect(page.getByLabel("步骤 1 标题")).toHaveValue("判别式讨论");
-        await expect(page.getByLabel("步骤 1 说明")).toHaveValue("先讨论判别式小于零的情况，再添加图形。");
-      } else {
-        await section(page, "参数");
-        await expect(page.getByLabel("parameter-0-name", { exact: true })).toHaveValue("t");
-        await expect(page.getByLabel("parameter-0-min", { exact: true })).toHaveValue("-7");
-        await expect(page.getByRole("button", { name: "应用参数 1", exact: true }))[
-          content === "参数编辑稿" ? "toBeEnabled" : "toBeDisabled"
-        ]();
-      }
-      await expect(page.getByLabel("选择对象").locator("option")).toHaveCount(0);
-    };
-    const dialogs = [];
-    let accept = false;
-    page.on("dialog", async (dialog) => {
-      dialogs.push(dialog.message());
-      await (accept ? dialog.accept() : dialog.dismiss());
-    });
-    await page.getByRole("button", { name: "二次函数起点", exact: true }).click();
-    expect(dialogs).toHaveLength(1);
-    expect(dialogs[0]).toContain("替换当前演示");
-    await checkPreserved();
-    await page.reload();
-    await checkPreserved();
-    accept = true;
-    await page.getByRole("button", { name: "二次函数起点", exact: true }).click();
-    expect(dialogs).toHaveLength(2);
-    await section(page, "步骤");
-    await expect(page.getByLabel("步骤 1 标题")).toHaveValue("母函数");
-    await expect(page.getByLabel("步骤 1 说明")).toHaveValue("");
-    const saved = await save(page);
-    expect(saved.source.scene.elements).toHaveLength(2);
-    expect(saved.source.parameters.map((p) => p.name)).toEqual(["a", "h", "k"]);
-    await page.reload();
-    await section(page, "步骤");
-    await expect(page.getByLabel("步骤 1 标题")).toHaveValue("母函数");
-    await expect(page.getByLabel("步骤 1 说明")).toHaveValue("");
-  });
-}
-
-test("二次函数起点直接填充真正空白稿", async ({ page }) => {
-  await start(page, "演示", false);
-  const dialogs = [];
-  page.on("dialog", async (dialog) => {
-    dialogs.push(dialog.message());
-    await dialog.dismiss();
-  });
-  await page.getByRole("button", { name: "二次函数起点", exact: true }).click();
-  await expect(page.getByLabel("选择对象").locator("option")).toHaveCount(2);
-  expect(dialogs).toEqual([]);
-  const saved = await save(page);
-  expect(saved.source.steps[0].title).toBe("母函数");
+  await openTool(page, 'objects');
+  await expect(page.getByLabel('图形列表').getByRole('button')).toHaveCount(1);
 });

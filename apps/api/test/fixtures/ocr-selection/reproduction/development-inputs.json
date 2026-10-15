@@ -12,7 +12,7 @@
   "pages": [
     {
       "id": "D1",
-      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-1/page.png",
+      "image": "test/fixtures/questions/recognition-document-4/I-1/page.png",
       "sha256": "99bcbc3ed10436644dd666e37c6ac44c8e428f0db5cc2de7947bf8260345b715",
       "imageSize": [
         1653,
@@ -21,7 +21,7 @@
     },
     {
       "id": "D2",
-      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-2/page.png",
+      "image": "test/fixtures/questions/recognition-document-4/I-2/page.png",
       "sha256": "3c570d2b67c6a2a1538c3f69445fef9cf47dea63184310a092d6ecb791510059",
       "imageSize": [
         1775,
@@ -30,7 +30,7 @@
     },
     {
       "id": "D3",
-      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/I-3/page.png",
+      "image": "test/fixtures/questions/recognition-document-4/I-3/page.png",
       "sha256": "e6f7b11f37dbc70e8312b92cb648395af311e7153598c295c925f45637565d1c",
       "imageSize": [
         1653,
@@ -39,7 +39,7 @@
     },
     {
       "id": "D4",
-      "image": "apps/web/e2e/fixtures/materials-questions/recognition-document-4/PS-4/page.png",
+      "image": "test/fixtures/questions/recognition-document-4/PS-4/page.png",
       "sha256": "655014ceb9d66f2006f881afac95f077de02844c9251fb95c68c9e8a0e9f0b62",
       "imageSize": [
         1697,

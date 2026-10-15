@@ -3,7 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { test, expect } from '@playwright/test';
 import sharp from 'sharp';
-import { startRealMath } from './fixtures/math-static/real.mjs';
+import { startRealMath } from '../../api/test/fixtures/math-real.mjs';
 const evidence = path.resolve(process.env.M41_EVIDENCE_DIR || 'test-results/m41/real-output');
 const works = '/api/modules/math/v1/works';
 const rootFormula = String.raw`x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}`;

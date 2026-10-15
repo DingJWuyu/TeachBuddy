@@ -2,7 +2,7 @@
 
 ## 项目入口
 
-- 接手、实施或交付任务时读[开发约定](docs/agents/module-development.md)；当前工作树、授权、暂停和剩余事项只查[运行台账](docs/plans/run-state.md)。本次用户指令及已生效授权优先，阅读参考不扩大写入或外部操作权限。
+- 接手、实施或交付任务时读[开发约定](docs/agents/module-development.md)；全局工作现场与授权查[运行台账](docs/plans/run-state.md)，长程任务沿其指向的当前记录接续。本次用户指令及已生效授权优先，阅读参考不扩大写入或外部操作权限。
 - 核对实际能力与运行入口时读 [README](README.md)；配置、隔离与部署读 [SETUP](docs/SETUP.md)。`apps/` 是产品实现，`prototype/` 是交互参考。
 - 查范围、行为、契约或验收时从[文档入口](docs/README.md)按任务展开；产品范围不能由旧代码或原型反推。身份交接或退出读取[认证契约](docs/contracts/auth.md)。
 - 修改或审查子系统时先读[运行参考](docs/subsystems/README.md)，追到实际源码与调用路径。涉及模块装配、跨模块访问或公共职责时另读[模块边界决议](docs/adr/0001-use-a-single-static-module-catalog.md)。
@@ -11,6 +11,8 @@
 ## 模块 session 接手
 
 负责某分区但未收到具体实施目标时，先按[接手流程](docs/agents/module-development.md#接手与完成)确认职责和现场；执行任务只读其相关规格、契约与运行参考。
+
+长程任务接续按[当前任务记录](docs/agents/module-development.md#当前任务记录)，范围外发现按[范围与发现](docs/agents/module-development.md#范围与发现)处理。
 
 ## 开发与验证规则
 

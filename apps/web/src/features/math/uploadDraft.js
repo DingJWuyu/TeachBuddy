@@ -1,4 +1,4 @@
-import { deviceRequestStore, clearDeviceRequestAccount } from '../workbench/deviceRequestStore.js';
+import { deviceRequestStore, clearDeviceRequestAccount } from '../../platform/device/deviceRequestStore.js';
 export function uploadDraft(account, action, value) {
   return deviceRequestStore({ database: 'teachbuddy.math.uploads', storeName: 'pending',
     account, name: 'pending:math-upload', action, value });

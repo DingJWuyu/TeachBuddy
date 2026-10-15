@@ -8,7 +8,7 @@ const internalKey = (value) => {
 import { validateSchema } from "../content/schema.js";
 import { invalidInput } from "../problems.js";
 import { imageTypes } from "./index.js";
-import { materialsError } from "../jobs/index.js";
+import { materialsError } from "../problems.js";
 export function createPreviews({
   db,
   mutations,

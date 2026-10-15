@@ -1,0 +1,109 @@
+
+.wb-document {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wb-paragraph {
+  font-size: 14px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+.wb-paragraph.is-empty {
+  min-height: 4px;
+}
+
+.wb-math-block {
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.wb-formula {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.wb-formula.is-display {
+  display: block;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+
+.wb-formula-failed {
+  display: inline-block;
+  max-width: 100%;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: light-dark(#fdf3f5, var(--app-soft));
+  color: var(--wb-danger);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+
+.wb-document-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wb-document-readonly {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: light-dark(#fbf7ee, var(--app-soft));
+}
+
+.wb-block {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 4px;
+}
+
+.wb-inline-editor,
+.wb-math-block-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.wb-inline-preview,
+.wb-math-block-preview {
+  padding: 2px 4px;
+  color: var(--wb-ink);
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.wb-math-block-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.wb-latex-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.wb-preview-empty {
+  color: light-dark(#c3c4c8, var(--app-faint));
+}
+
+.wb-block-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wb-block-add {
+  display: flex;
+  gap: 6px;
+}
+

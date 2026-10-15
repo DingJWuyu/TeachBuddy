@@ -4,7 +4,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import { C, createClassroomWorld, teacher, upload, studentBody } from './classroom-http-fixture.js';
 export async function seedExam(a) {
-  const file = await upload(a.client, 'triangle.png', fs.readFileSync(new URL('../../web/e2e/fixtures/materials-questions/figure.png', import.meta.url)), 'image/png');
+  const file = await upload(a.client, 'triangle.png', fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url)), 'image/png');
   const tag = await a.call('POST', C + '/tags', {
     name: '函数'
   }, 201);

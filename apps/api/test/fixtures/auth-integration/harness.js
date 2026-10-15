@@ -30,7 +30,7 @@ export async function createIntegration(options = {}) {
     });
     await context.workbench.initialize();
     server.on('request', context.app);
-  } catch (error) { server.close(); await context?.workbench.close(); await error.cleanup; throw error; }
+  } catch (error) { server.close(); await context?.close(); await error.cleanup; throw error; }
   return { ...context, origin, directory, mailer, clock,
     client: () => createClient(origin, { transport: https }),
     async close() {
@@ -38,7 +38,7 @@ export async function createIntegration(options = {}) {
       server.closeAllConnections();
       for (const socket of sockets) socket.destroy();
       await serverClosed;
-      await context.workbench.close();
+      await context.close();
     }
   };
 }

@@ -1,6 +1,6 @@
 # 日程契约：安排、事项与提醒
 
-精确字段和操作见[当前日程机器契约](../../apps/api/src/contracts/schedule-v2.openapi.json)（[v1 兼容契约](../../apps/api/src/contracts/schedule-v1.openapi.yaml)保留旧请求），交换预期见[日程案例](schedule-cases.md)，界面及实现归属见[日程规格](../features/schedule.md)。
+精确字段和操作见[当前日程机器契约](../../apps/api/src/contracts/schedule-v2.openapi.json)（[v1 兼容契约](../../apps/api/src/contracts/schedule-v1.openapi.yaml)保留旧请求），交换预期见[日程案例](../acceptance/schedule-cases.md)，界面及实现归属见[日程规格](../features/schedule.md)。
 
 旧客户端带有已退役 `course` 字段的请求，仅能按原账户、原幂等键和原请求体重放已经成功的回执；回执不再含教学关联。没有成功回执的新写入仍拒绝该字段，不创建关联或额外任务。当前请求和新客户端均使用下述独立日程契约。
 
@@ -84,4 +84,4 @@ T53 仅在站内通知查询/写入及 schedule 变更时结算；浏览器工�
 
 ## 模块目录
 
-当前目录与 API/Web 装配统一见 [SETUP](../SETUP.md#代码结构)，日程无班级或教学记录业务依赖。
+当前目录与 API/Web 装配统一见 [应用装配](../subsystems/README.md#代码结构)，日程无班级或教学记录业务依赖。

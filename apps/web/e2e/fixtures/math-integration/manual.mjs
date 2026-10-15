@@ -1,7 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { createIntegration } from '../../../../api/test/fixtures/auth-integration/harness.js';
-import { registerMath } from '../math-static/real.mjs';
+import { registerMath } from '../../../../api/test/fixtures/math-real.mjs';
 const directory=path.resolve(process.env.M43_DATA_DIR ?? '/tmp/teacher-m43-manual');
 fs.mkdirSync(directory,{recursive:true});
 const world=await createIntegration({directory});

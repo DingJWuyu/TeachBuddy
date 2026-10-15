@@ -2,7 +2,7 @@
 
 接口、持久化与跨模块调用读[当前技术入口](../subsystems/math.md)。
 
-制作行为读本页，交换字段读[数学契约](../contracts/math.md)，安装运行读[数学运行依赖](../SETUP.md#数学运行依赖)。后续开发边界见[数学任务](../plans/math-workshop.md)，当前授权、状态与剩余验证见[项目状态](../plans/run-state.md)。集成状态以项目状态及 Git 为准。
+制作行为读本页，交换字段读[数学契约](../contracts/math.md)，安装运行读[数学运行依赖](../SETUP.md#数学运行依赖)。当前授权、状态与剩余验证见[项目状态](../plans/run-state.md)。集成状态以项目状态及 Git 为准。
 
 ## 一个作品、一处制作
 
@@ -38,7 +38,7 @@
 
 ## 导入、归档与兼容
 
-“导入制作源 JSON”沿完整 Source 校验保存为独立作品，不修改原件；客户端文件上限 1 MiB。HTML 使用下节的独立入口。当前源为 `schemaVersion=1, kind=workshop`，完整字段由[数学契约](../contracts/math.md)和 schema 维护。
+“导入制作源 JSON”沿完整 Source 校验保存为独立作品，不修改原件；客户端文件上限 1 MiB。HTML 使用下节的独立入口。当前统一制作源的版本与字段由[数学契约](../contracts/math.md)和 schema 维护。
 
 旧 `formula`、`plane`、`space`、`dynamic`、`geogebra` 与 `html` 源仍可读取，并按各自已有兼容页面打开；旧历史 revision、文件、引用快照及成功回执保留。新建作品统一使用 workshop，本轮不要求迁移测试用途旧作品。
 
@@ -69,12 +69,12 @@
 
 课堂 ZIP 已在 Linux Chromium 的禁网 `file://` 场景独立验证，公式、参数、步骤和二维/三维内容不依赖制作服务、账号或 CDN；播放及轨迹沿同一运行时实现。Windows Chrome/Edge、教师实际 PPT/WPS 和触屏设备仍需目标环境验证，不能由 Linux 结果推定。
 
-## 制作实现
+## 保存源与后续开发边界
 
-当前编辑器、共享数学入口、保存事务、渲染与离线打包链统一见[数学技术入口](../subsystems/math.md)。完整 GGB 是构造的唯一保存源，派生对象信息不另存一份几何真相。对象改名、删除及参数范围修改同步维护步骤、播放和轨迹引用，受影响内容先确认；服务故障不伪装为用户数学错误。旧类型只服务已有内容，兼容行为见本页[导入、归档与兼容](#导入归档与兼容)。
+完整 GGB 是图形构造的唯一保存源，派生对象信息不另存一份几何真相。对象改名、删除及参数范围修改同步维护步骤、播放和轨迹引用，受影响内容先确认；服务故障不伪装成用户数学错误。旧类型保持可读与既有兼容，不形成另一套新制作流程。
 
-## 验证入口
+后续任务继续围绕独立数学模块的制作、编辑、管理、导出与演示完整流程；不授权拆成独立应用或重建公共底座。自然语言是主要制作方式，直接手动制作仍有清楚入口。保留认可布局、渐进呈现、全局顶栏星芒图标与数学侧栏自有视觉，不恢复独立草稿管理界面。旧班级教学联动已退役，新班级未来接入另行设计，不扩大为全站 Agent 开发。GeoGebra 固定本地引擎与正常 DeepSeek 网页账户连接继续有效；商店分发、优化选择和具体任务授权只在台账维护。
 
-统一制作浏览器回归使用 `apps/web/e2e/math-unified.config.mjs`，连续输入、弹窗与播放使用 `math-unified-repair.config.mjs`；保存保护和取消分别使用 `math-geogebra.config.mjs` 中的具名场景。API 核验入口为 `apps/api/test/math-workshop.test.js`、`math-workshop-view.test.js` 和既有 `math-*.test.js`，固定输入在 `apps/api/test/fixtures/math-workshop/`。网页桥回归按[扩展说明](../../extensions/math-web-ai/README.md)执行。
+## 接口与验收
 
-验收须操作真实界面、刷新读回并打开实际文件，区分作者自验、独立核验和用户目标环境。运行与必要回归只依赖仓库内源码、固定输入及按运行指南准备的工具；preview 的 `test-results/math-handoff/math-unified/` 只提供既有执行证据，不是安装或接手前置。整体完成条件与剩余验证在[项目状态](../plans/run-state.md)维护。
+交换与隔离保证见[数学契约](../contracts/math.md)，编辑器/渲染/打包的当前路径见[数学技术入口](../subsystems/math.md)。真实制作、保存重开、离线输出与网页桥的入口和目标设备边界见[数学专项](../acceptance/README.md#数学专项)，完整判据见[数学验收](../acceptance/mvp-matrix.md#math)。

@@ -8,11 +8,11 @@ import { randomUUID } from "node:crypto";
 import {
   startRealMath,
   registerMath,
-} from "../../web/e2e/fixtures/math-static/real.mjs";
+} from "./fixtures/math-real.mjs";
 const root = "/api/modules/math/v1/works";
 const fixture = fs.readFileSync(
   new URL(
-    "../../web/e2e/fixtures/math-dynamic/mx-model-revised.html",
+    "../../../test/fixtures/math/mx-model-revised.html",
     import.meta.url,
   ),
 );

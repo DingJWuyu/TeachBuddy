@@ -3,8 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { workbenchPaths } from '@refatos/shared';
 import { createEnv, env as defaultEnv } from './config/env.js';
-import { createDataStore } from './core/dataStore.js';
-import { createAuthCodeSender } from './core/mail.js';
+import { createAuthCodeSender } from './features/auth/mail.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { createWorkbench, assertFoundationRuntime } from './workbench/index.js';
@@ -42,7 +41,6 @@ export function createApp(options = {}) {
     : path.resolve(runtimeEnv.workbench.webDist);
   const workbench = options.workbench ?? createWorkbench({ env: runtimeEnv, logger: options.workbenchLogger,
     clock: options.workbenchClock, mathRuntimeDirectory: path.join(webAssetDirectory, 'vendor/math/geogebra') });
-  let dataStore;
   try {
     // A preconstructed fixture must use the same real page/session verification
     // as the default composition. All routers retain this identity object.
@@ -53,7 +51,6 @@ export function createApp(options = {}) {
       workbench.identity.resolvePrincipal = runtimeEnv.workbench.resolvePrincipal;
       workbench.identity.isAccountActive = accountKey => authModule?.isAccountActive(accountKey) ?? false;
     }
-    dataStore = options.dataStore ?? createDataStore(runtimeEnv, { db: workbench.db });
     if (!testIdentity) {
       workbench.migrations.run([{ moduleId: 'auth', migrations }], { knownModuleIds: ['auth'] });
       const gaps = workbench.db.prepare('SELECT accountId, reason FROM auth_legacy_gaps').all();
@@ -77,10 +74,9 @@ export function createApp(options = {}) {
     error.cleanup.catch(() => {});
     throw error;
   }
-  const closeStore = dataStore.close.bind(dataStore);
   let closing;
-  dataStore.close = () => {
-    closing ??= (async () => { await workbench.close(); await closeStore(); })();
+  const close = () => {
+    closing ??= Promise.resolve().then(() => workbench.close());
     closing.catch(() => { closing = undefined; });
     return closing;
   };
@@ -122,5 +118,5 @@ export function createApp(options = {}) {
   app.use(notFound);
   app.use(errorHandler);
 
-  return { app, dataStore, env: runtimeEnv, workbench, authModule };
+  return { app, env: runtimeEnv, workbench, authModule, close };
 }

@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
-import { startFixture } from "../../../scripts/materials/fixture.mjs";
+import { startFixture } from "./fixtures/materials/server.mjs";
 
 export async function harness(t, options = {}) {
   const root = path.resolve("test-results/r31-complete/api");
@@ -205,7 +205,7 @@ test("HTTP DOCX makes real PDF pages and an immutable crop, while unsupported or
 test("HTTP real PDF/PPTX/PPT and legacy DOC retain every page and legacy risk on retry", async (t) => {
   const h = await harness(t);
   const base = fileURLToPath(
-    new URL("../../web/e2e/fixtures/materials/samples", import.meta.url),
+    new URL("../../../test/fixtures/materials", import.meta.url),
   );
   for (const [name, count, state] of [
     ["c22.pdf", 3, "ready"],
@@ -333,7 +333,7 @@ test("same conversion sandbox cannot read a host sentinel or reach the host netw
   fs.copyFileSync(
     fileURLToPath(
       new URL(
-        "../../web/e2e/fixtures/materials/samples/c22.pdf",
+        "../../../test/fixtures/materials/c22.pdf",
         import.meta.url,
       ),
     ),

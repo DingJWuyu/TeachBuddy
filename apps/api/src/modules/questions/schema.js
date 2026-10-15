@@ -1,8 +1,9 @@
+import { invalidInput } from "../../workbench/problems.js";
 // Request validation for the first-flow operations. The workbench HTTP layer
 // owns the request pipeline, but the modules keep their own copy of the rules
 // so direct business callers get the same contract rejections and storage can
 // never receive an unvalidated aggregate.
-import { assertDocument, invalidInput, isBlankDocument, pointerField } from './contract.js';
+import { assertDocument, isBlankDocument, pointerField } from "./legacy-contract.js";
 
 const MAX_VERSION = Number.MAX_SAFE_INTEGER;
 const MAX_TITLE_LENGTH = 200;
@@ -48,12 +49,10 @@ function requireVersion(value, pointer) {
   return value;
 }
 
-
 function requireBoolean(value, pointer) {
   if (typeof value !== 'boolean') throw invalidInput(pointer, 'invalid-type');
   return value;
 }
-
 
 function validateSource(value, pointer) {
   requireObject(value, pointer);

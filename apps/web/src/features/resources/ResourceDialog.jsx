@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useModuleDialogFocus } from "../workbench/ModuleMotion.jsx";
+import { useModuleDialogFocus } from "../../components/interaction/ModuleMotion.jsx";
 
 export function ResourceDialog({ label, onClose, children }) {
   const ref = useRef(null);

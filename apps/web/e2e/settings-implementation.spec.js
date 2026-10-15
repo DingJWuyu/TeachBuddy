@@ -4,6 +4,7 @@ import { backup, restore, activate } from '../../api/src/workbench/reliability/b
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { register, login, headers, track } from './teaching-time-auth/helpers.mjs';
+import { importLegacy } from './fixtures/math-workspace.js';
 let world;
 let extraDirectories;
 test.beforeEach(async ({ page }) => {
@@ -193,8 +194,7 @@ test('语言选择立即应用真实界面并写入账户偏好', async ({ page 
 });
 test('数学参数校验随当前语言显示，修正后可保存重开原始内容', async ({ page }, info) => {
   await page.goto(world.origin + '/math');
-  await page.getByRole('button', { name: '新建动态演示', exact: true }).click();
-  await page.getByRole('button', { name: '试试二次函数演示', exact: true }).click();
+  await importLegacy(page, 'dynamic');
   await page.getByRole('button', { name: '设置滑杆', exact: true }).click();
   const name = page.getByLabel('parameter-0-name', { exact: true });
   await name.fill('x');
@@ -213,10 +213,10 @@ test('数学参数校验随当前语言显示，修正后可保存重开原始�
   await page.getByRole('button', { name: '应用参数 1', exact: true }).click();
   await expect(error).toHaveCount(0);
   await page.getByLabel('作品名称', { exact: true }).fill('教师原文参数探究');
-  const saved = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/api/modules/math/v1/works'));
+  const saved = page.waitForResponse(response => response.request().method() === 'PUT' && /\/api\/modules\/math\/v1\/works\/[^/]+$/.test(new URL(response.url()).pathname));
   await page.getByRole('button', { name: '保存', exact: true }).click();
   const response = await saved;
-  expect(response.status()).toBe(201);
+  expect(response.status()).toBe(200);
   const work = await response.json();
   expect(work.title).toBe('教师原文参数探究');
   expect(work.source.parameters[0]).toMatchObject({ name: 'b', label: '系数 a' });

@@ -12,7 +12,7 @@ for (const kind of ["T", "W"])
         .getByLabel("原始文字")
         .fill(
           fs.readFileSync(
-            "apps/web/e2e/fixtures/materials-questions/T.txt",
+            "test/fixtures/questions/T.txt",
             "utf8",
           ),
         );
@@ -20,7 +20,7 @@ for (const kind of ["T", "W"])
       await page.getByRole("button", { name: "Word", exact: true }).click();
       await page
         .getByLabel("选择原稿")
-        .setInputFiles("apps/web/e2e/fixtures/materials-questions/W.docx");
+        .setInputFiles("test/fixtures/questions/W.docx");
     }
     const created = page.waitForResponse(
       (r) =>

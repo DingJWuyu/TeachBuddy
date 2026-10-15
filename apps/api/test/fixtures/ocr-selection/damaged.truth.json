@@ -5,7 +5,7 @@
   "inputs": [
     {
       "id": "F-obscured",
-      "image": "apps/web/e2e/fixtures/materials-questions/F-obscured.jpg",
+      "image": "test/fixtures/questions/F-obscured.jpg",
       "referenceOrigin": "Visual inspection of the damaged source image and the tracked I-clear.jpg original",
       "imageSize": [1775, 2425],
       "approximateDamageBounds": [795, 242, 862, 303],
@@ -24,7 +24,7 @@
     },
     {
       "id": "F-truncated",
-      "image": "apps/web/e2e/fixtures/materials-questions/F-truncated.pdf",
+      "image": "test/fixtures/questions/F-truncated.pdf",
       "evaluation": "Opening/parsing the damaged PDF must report a clear failure when no readable page can be obtained. Do not return invented page content. If a decoder retains a readable page, evaluate only that visible page and record the partial recovery explicitly."
     }
   ]

@@ -6,7 +6,7 @@ import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from './icons.jsx';
 import { workbenchModules, moduleDisplayName } from '../../modules/moduleRegistry.js';
-import { ModulePresence, useModuleDialogFocus } from '../ModuleMotion.jsx';
+import { ModulePresence, useModuleDialogFocus } from '../../../components/interaction/ModuleMotion.jsx';
 const names = ids => ids.map(id => moduleDisplayName(workbenchModules.find(m => m.id === id)) || t("暂不可用模块")).join('、') || t("空");
 function Summary({ layout }) {
   const { t } = useTranslation("workbench");

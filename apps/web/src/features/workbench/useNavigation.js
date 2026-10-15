@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { defaultNavigation, includeNewNavigationModules, validNavigation } from '@refatos/shared';
-import { workbenchGet, workbenchPut, WorkbenchError } from './apiClient.js';
-import { unconfirmedProblem } from './problems.js';
-import { readLocal } from './storage.js';
-import { useSavableDocument } from './useSavableDocument.js';
-import { useScene } from './useScene.js';
+import { workbenchGet, workbenchPut, WorkbenchError } from '../../platform/http/apiClient.js';
+import { unconfirmedProblem } from '../../platform/http/problems.js';
+import { readLocal } from '../../platform/device/storage.js';
+import { useSavableDocument } from '../../platform/saving/useSavableDocument.js';
+import { useScene } from '../../platform/device/useScene.js';
 
 const path = '/api/workbench/navigation';
 function checked(value, submitted) {

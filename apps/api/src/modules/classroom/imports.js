@@ -1,7 +1,7 @@
 import { isDeepStrictEqual } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { readScoreWorkbook, WorkbookInputError } from './workbook.js';
-import { account, required, active, version, changed, timestamp, listed, conflict } from './problems.js';
+import { account, required, active, version, changed, timestamp, listed, conflict } from './records.js';
 import { fail, isScoreValue } from './schema.js';
 import { issue, validateScores } from './scores.js';
 export function createImports({

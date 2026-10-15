@@ -4,8 +4,9 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { DOMParser } from "@xmldom/xmldom";
 import sharp from "sharp";
-import { nativeText } from './extraction.js';
-import { documentText } from './materials-content.js';
+import { nativeText } from './native-text.js';
+import { documentText } from "../../workbench/content/document.js";
+
 import { extractionId } from "./extraction-fragments.js";
 import { convertFile } from '../../workbench/files/converter.js';
 const execute = promisify(execFile);

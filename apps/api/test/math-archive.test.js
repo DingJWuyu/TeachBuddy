@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { startMathFixture } from '../../web/e2e/fixtures/math-static/server.mjs';
+import { startMathFixture } from './fixtures/math/server.mjs';
 import { emptySource } from '../../web/src/features/math/model.js';
 
 test('math archive and purge: version, account, rollback, replay and restart', async () => {

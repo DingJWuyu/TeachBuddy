@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWorkbenchShell } from '../workbench/shellContext.js';
-import { useScene } from '../workbench/useScene.js';
-import { useIdempotentSubmit } from '../workbench/useIdempotentSubmit.js';
-import { useForegroundRefresh } from '../workbench/useForegroundRefresh.js';
+import { useScene } from '../../platform/device/useScene.js';
+import { useIdempotentSubmit } from '../../platform/saving/useIdempotentSubmit.js';
+import { useForegroundRefresh } from '../../components/interaction/useForegroundRefresh.js';
 import { CalendarDialog, CalendarIcon, CalendarOverlay, IconButton, MiniCalendar, MonthTitle, ViewMenu } from './CalendarControls.jsx';
 import { MoveItemDialog } from './CalendarItems.jsx';
 import { reminderLabel } from './CalendarDetails.jsx';
