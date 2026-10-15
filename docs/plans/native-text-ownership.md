@@ -1,6 +1,6 @@
 # 原生题目文本规则归属
 
-本任务是[工程改造](agent-workflow.md)中的 B3，同时用于验证实际代码任务的中断接手。范围已确认，可直接实施；首位作者阶段已完成并停在下述中间点，接续作者只依据本页和仓库继续，不依赖旧聊天。完成后将稳定事实归入题库技术参考，本页随主任务收尾。
+本任务是[工程改造](agent-workflow.md)中的 B3，同时用于验证实际代码任务的中断接手。首位作者在真实中间点停下，接续作者已仅依据本页、台账和 Git 完成调用迁移及指定 HTTP 自验；尚待总控整体审查与集成。稳定事实已归入题库技术参考，本页随主任务收尾。
 
 ## 目标与边界
 
@@ -28,12 +28,12 @@
 
 ## 当前状态
 
-首位作者已完成约定中间成果，整体任务未完成、未集成、未执行 HTTP 验证。需求无未决项，当前没有外部阻塞。
+两位作者的约定实现及本地定点验证已完成，未集成、未独立审查、未运行完整 CI。需求无未决项，当前没有外部阻塞；总控继续整体依赖核对与交付。
 
-- 现场：`TeacherWorkspace-workflow-native-text` / `refactor/workflow-native-text`；首位作者 session 为 `/root/health_native_start`，派发配置为 `gpt-6.1-sol/high`。
-- 输入基线：`40cbc9f89c591feda61bde9e68e97cb0701aab41`；代码候选：`7d8102189b829caee8a7f70c9668ec16fef0da19`（`refactor(questions): extract native text rule owner`）。本页的接手事实另存后续文档提交；接续时用 `git log`、`git status` 核对分支最新 HEAD。
+- 现场：`TeacherWorkspace-workflow-native-text` / `refactor/workflow-native-text`；首位作者 session 为 `/root/health_native_start`，接续作者为 `/root/health_native_resume`，两阶段派发配置均为 `gpt-6.1-sol/high`。
+- 输入基线：`40cbc9f89c591feda61bde9e68e97cb0701aab41`；接手 HEAD 为 `1a6231e3`，当时工作树干净；最终代码及技术参考候选：`6514c53b54b6af3cffddd3f315126629441de1a5`（`refactor(questions): complete native text consumer migration`）。本页事实另存后续文档提交；接续时用 `git log`、`git status` 核对分支最新 HEAD。
 - 已实现：`native-text.js` 完整拥有 `nativeText`、三个公开正则及内部 `inlineAnswer`，沿用 `questionLabel` 和现有文稿构造能力；`extraction.js` 主流程直接导入 `nativeText`。迁出规则正文与基线逐字节一致，没有改算法、正则、ID、匹配或来源位置。
-- 真实未完成点：`recognized-page.js`、`extraction-figures.js`、`native-word.js`、`native-pdf.js` 仍从 `extraction.js` 导入文本规则；`extraction.js` 明示保留四个临时转导出。因此反向依赖仍在，不能把这一候选当作最终职责拆分结果。测试/脚本消费者、题库技术参考和必要 HTTP 路径均待接续作者核对。
+- 接续已完成：`recognized-page.js`、`extraction-figures.js`、`native-word.js`、`native-pdf.js` 直接导入 `native-text.js`，移除 `extraction.js` 四个临时转导出。搜索 `apps/`、`scripts/`、`packages/` 后只有模块装配仍导入提取 handler，无测试或脚本需迁移。拥有者仅依赖现有文稿及片段能力，实际依赖不回到提取编排，原循环解除。[题库技术参考](../subsystems/questions.md#运行路径与持久化)已同步当前归属。
 
 ### 首位作者验证
 
@@ -47,9 +47,27 @@
 | `node --input-type=module` 加载拥有者、提取编排及上述四个剩余消费者，逐项断言临时导出与拥有者的四个导出严格相等 | 通过；只证明模块加载及临时接线有效，不证明 HTTP 行为或循环已解除 |
 | `git diff --check` | 通过 |
 
-### 接续动作
+### 接续作者验证
 
-1. 核对本页、台账、Git 候选和未提交状态；保留首位作者成果。依赖已从本工作树安装，Office/Xpdf/Pandoc 尚未在本阶段核对或准备，按 SETUP 继续。
-2. 迁移上述四个消费者并搜索直接导入测试/脚本，全部直接读取 `native-text.js`；移除 `extraction.js` 的四个临时转导出，核对实际依赖消除反向循环。保持原算法及现有固定材料字节不变。
-3. 按上文完成判据定点真实运行 text import、native text、fixed native T and W、native PDF automatically、至少一个图边公式分支，以及 standalone answer heading/section；现阶段这些全部未验，不能复用语法或加载结果代替。
-4. 更新题库技术参考和本页，记录候选、命令、实际结果及剩余事项，交总控整体依赖核对、独立审查和集成。首位作者未执行 push、PR、trunk/main 或远端操作；本现场与安装日志为接续保留。
+在上述最终代码候选执行，未改变算法、测试断言或固定输入。复用首位作者在本工作树的 `npm ci` 安装；实际工具核对为 LibreOffice 26.8.0.3、Pandoc 3.11、Xpdf 4.06，以及系统 Bubblewrap/Poppler。工具来自源码之外的持久安装目录，不读取用户 `.env`、资料或运行实例；无真实模型、邮件调用，无 GeoGebra 重建。
+
+| 实际命令与检查 | 结果与边界 |
+| --- | --- |
+| 下列 `node --test` 定点命令 | 8 项通过、0 失败、0 跳过，退出 0；日志为 `test-results/workflow-health/native-text/resume-http.log`。真实隔离 HTTP/SQLite 路径覆盖文本、DOCX、PDF、contact 图边可编辑公式、跨页答案与原图、原件字节/重启读回，以及答案标题、重复题号、未分配片段及原文位置 |
+| `python3` 读取输入基线的 `export const questionStart =` 至 `// A transport is explicitly injected` 之前正文，与 `native-text.js` 的同起点至文件结尾直接比较 | 完整 7551 字节相等，保护算法、正则、ID 及位置逻辑；未修改固定材料 |
+| `node --input-type=module` 加载拥有者、提取编排及四个消费者，并断言四个规则只在拥有者导出、不再由编排转导出；`rg -n 'extraction\.js' apps scripts packages --glob '!package-lock.json'` | 加载及导出断言通过；仅 `questions/index.js` 导入 `createExtractionHandler`。实际源码核对 `native-text` 的文稿及片段依赖不导入编排 |
+| `git diff --check`，技术参考新增相对文件与锚点核对 | 通过 |
+
+定点命令在本工作树根执行，所用环境变量按 SETUP 指向已核实的持久工具：`MATERIALS_OFFICE_ROOT=/home/liam_t/.local/share/teacherworkspace-tools/libreoffice-26.8/opt/libreoffice26.8`、`MATERIALS_PANDOC_PATH=/home/liam_t/.local/share/teacherworkspace-tools/pandoc-3.11/bin/pandoc`、`QUESTIONS_XPDF_PDFTOHTML=/home/liam_t/.local/share/teacherworkspace-tools/xpdf-tools-linux-4.06/bin64/pdftohtml`。换机按 SETUP 准备并替换实际路径，不依赖这些本机目录。
+
+```bash
+node --test --test-concurrency=1 --test-name-pattern='^text import|^native text import|^fixed native T and W|^native PDF automatically|^native PDF figure boundary.*variant=contact$|^standalone common answer headings|^standalone answer section|^answer section keeps leading' apps/api/test/materials-questions.test.js apps/api/test/materials-questions-output.test.js
+```
+
+实际同时设置 `TMPDIR=$PWD/test-results/workflow-health/native-text/resume-tmp`、`QUESTIONS_OUTPUT_EVIDENCE_DIR=$PWD/test-results/workflow-health/native-text/output` 和 `PDF_STRUCTURE_EVIDENCE=$PWD/test-results/workflow-health/native-text/pdf`，日志重定向到上述 `resume-http.log`。本次隔离临时库与转换目录在通过后清理；原始日志及 `output/`、`pdf/`、`native-originals/` 有效证据保留供总控，摘要见同目录 `resume-receipt.json`。现有实际场景已保护所迁规则，无需新增镜像单测或放宽断言。
+
+### 总控接续
+
+1. 核对最终候选与上述证据，对完整 B3 及工程候选集中执行整体依赖检查、独立 Standards/Spec 审查和必要 CI。作者自验不代替这些结果；完整输出套件、外部 E 原件、真实 OCR/模型及目标 Office 不在本次验证范围。
+2. 按主任务授权集成后清理本现场与任务分支，维护全局台账。本作者未执行 push、PR、trunk/main、远端或用户服务操作。
+3. 这一结果只证明按入库记录从计划中间点独立接手，不代表随机掉电、所有长程任务或全仓健康均已证明。
