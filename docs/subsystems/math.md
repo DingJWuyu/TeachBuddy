@@ -31,6 +31,7 @@ const result = await math.port.operations.exportWork({
 
 
 - [useMathWorkSession](../../apps/web/src/features/math/useMathWorkSession.js) 拥有作品持久会话与保存/恢复流程；[Web 数学入口](../../apps/web/src/features/math/index.jsx) 保留页面入口和 renderer 分派，[LegacyWorkspace](../../apps/web/src/features/math/LegacyWorkspace.jsx) 承接旧源工作区。统一制作的编辑/试演细节仍由 [workshop editor](../../apps/web/src/features/math/workshop/editor.js) 拥有；认证请求到 module router/service，保存到 `math_works` 和 `math_revisions`，导出记录到 `math_exports`，表结构见 [migrations](../../apps/api/src/modules/math/migrations.js)。
+- 旧画布的 [GgbWorkspace](../../apps/web/src/features/math/GgbWorkspace.jsx) 在实时捕获与离开时的 `flush` 共用变化判据：未发生交互且构造对象未变时，不把运行时布局重排的序列化差异写成业务修改；实际对象编辑仍捕获并进入原保存流程。
 - 普通源沿 [render](../../apps/api/src/modules/math/render.js) 与 [render-worker](../../apps/api/src/modules/math/render-worker.js)；工坊沿 [workshop-render](../../apps/api/src/modules/math/workshop-render.js)，生成固定 PNG/SVG 后存 File。纯公式与数学视图保留各自格式限制。
 - 离线演示沿 [presentation](../../apps/api/src/modules/math/presentation.js) 或 [workshop-presentation](../../apps/api/src/modules/math/workshop-presentation.js)，使用公开 shared 入口打包本地运行资源；外部 HTML 使用隔离包装器，边界见 [隔离语义](../contracts/math.md#导出与-html-隔离)。
 
