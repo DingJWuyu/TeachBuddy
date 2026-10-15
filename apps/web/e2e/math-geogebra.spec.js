@@ -60,10 +60,10 @@ test('保存响应丢失后同键确认，保留随后编辑且不重复创建�
     if (route.request().method() !== 'POST' || intercepted) return route.continue();
     intercepted = true; originalRequest = route.request(); const result = await route.fetch(); expect(result.status()).toBe(201); savedOnServer = await result.json(); await route.abort('failed');
   });
-  await enterMath(page,'A=(2,3)','A'); await expect(page.locator('.mw-save-state')).toHaveText('保存结果待确认');
+  await enterMath(page,'A=(2,3)','A'); await expect(page.locator('.mw-save-state')).toHaveText('待确认');
   await enterMath(page,'B=(5,6)','B');
   const confirmation = page.waitForRequest(request => request.method()==='POST' && request.url().endsWith('/works'));
-  await page.getByRole('button',{ name:'确认操作结果', exact:true }).click(); const request=await confirmation;
+  await page.getByRole('button',{ name:'确认结果', exact:true }).click(); const request=await confirmation;
   expect(request.headers()['idempotency-key']).toBe(originalRequest.headers()['idempotency-key']); expect(request.postData()).toBe(originalRequest.postData());
   const saved=await savedMath(page); expect(saved.id).toBe(savedOnServer.id); expect(saved.version).toBe(savedOnServer.version+1); expect(await coords(page,'B')).toEqual([5,6]);
   await page.getByRole('button',{name:'返回工坊',exact:true}).click(); await expect(page.locator('.mw-library-row')).toHaveCount(1);
